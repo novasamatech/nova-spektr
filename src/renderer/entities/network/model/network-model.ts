@@ -152,8 +152,6 @@ const createProviderFx = createEffect(
         onError: (error?: unknown) => {
           if (DEBUG_NETWORKS) {
             console.info('🔴 Provider error ==> ', chainId, error);
-          } else {
-            console.error('Provider error:', chainId, error);
           }
           boundFailed(chainId);
         },
