@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type VoidFn } from '@polkadot/api/types';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { persist } from 'effector-storage/local';
-import { combineEvents, spread } from 'patronum';
+import { combineEvents, interval, spread } from 'patronum';
 
 import {
   ProviderType,
@@ -50,6 +50,12 @@ const $populated = createStore(false);
 // Promise-based mutex to prevent concurrent API creation for the same chain
 // Stores the promise of the API creation in progress, allowing concurrent requests to await the same promise
 const apiCreationPromises = new Map<ChainId, Promise<ApiPromise>>();
+
+// Track when connections enter CONNECTING state to detect stuck connections
+const $connectingStartTimes = createStore<Record<ChainId, number>>({});
+
+// Track failed node attempts for auto balance to rotate nodes
+const $failedNodeAttempts = createStore<Record<ChainId, number>>({});
 
 const populateChainsFx = createEffect(async (): Promise<Record<ChainId, Chain> | null> => {
   const chains = await chainsService.getChainsData();
@@ -376,12 +382,21 @@ sample({
 
 sample({
   clock: createProviderFx.done,
-  source: $connectionStatuses,
-  fn: (statuses, { params }) => ({
-    ...statuses,
-    [params.chainId]: ConnectionStatus.CONNECTING,
+  source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
+  fn: ({ statuses, startTimes }, { params }) => ({
+    newStatuses: {
+      ...statuses,
+      [params.chainId]: ConnectionStatus.CONNECTING,
+    },
+    newStartTimes: {
+      ...startTimes,
+      [params.chainId]: Date.now(),
+    },
   }),
-  target: $connectionStatuses,
+  target: spread({
+    newStatuses: $connectionStatuses,
+    newStartTimes: $connectingStartTimes,
+  }),
 });
 
 sample({
@@ -407,13 +422,18 @@ sample({
 // HINT: We cannot rely on Provider.onConnected because it fires BEFORE we have API
 sample({
   clock: createApiFx.done,
-  source: $connectionStatuses,
-  fn: (statuses, { params }) => ({
-    newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.CONNECTED },
-    event: { chainId: params.chainId, status: ConnectionStatus.CONNECTED },
-  }),
+  source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
+  fn: ({ statuses, startTimes }, { params }) => {
+    const { [params.chainId]: _, ...newStartTimes } = startTimes;
+    return {
+      newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.CONNECTED },
+      newStartTimes,
+      event: { chainId: params.chainId, status: ConnectionStatus.CONNECTED },
+    };
+  },
   target: spread({
     newStatuses: $connectionStatuses,
+    newStartTimes: $connectingStartTimes,
     event: connectionStatusChanged,
   }),
 });
@@ -421,13 +441,18 @@ sample({
 // Add error handling for createApiFx failures
 sample({
   clock: createApiFx.fail,
-  source: $connectionStatuses,
-  fn: (statuses, { params }) => ({
-    newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.ERROR },
-    event: { chainId: params.chainId, status: ConnectionStatus.ERROR },
-  }),
+  source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
+  fn: ({ statuses, startTimes }, { params }) => {
+    const { [params.chainId]: _, ...newStartTimes } = startTimes;
+    return {
+      newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.ERROR },
+      newStartTimes,
+      event: { chainId: params.chainId, status: ConnectionStatus.ERROR },
+    };
+  },
   target: spread({
     newStatuses: $connectionStatuses,
+    newStartTimes: $connectingStartTimes,
     event: connectionStatusChanged,
   }),
 });
@@ -435,39 +460,54 @@ sample({
 // Add error handling for createProviderFx failures
 sample({
   clock: createProviderFx.fail,
-  source: $connectionStatuses,
-  fn: (statuses, { params }) => ({
-    newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.ERROR },
-    event: { chainId: params.chainId, status: ConnectionStatus.ERROR },
-  }),
+  source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
+  fn: ({ statuses, startTimes }, { params }) => {
+    const { [params.chainId]: _, ...newStartTimes } = startTimes;
+    return {
+      newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.ERROR },
+      newStartTimes,
+      event: { chainId: params.chainId, status: ConnectionStatus.ERROR },
+    };
+  },
   target: spread({
     newStatuses: $connectionStatuses,
+    newStartTimes: $connectingStartTimes,
     event: connectionStatusChanged,
   }),
 });
 
 sample({
   clock: disconnected,
-  source: $connectionStatuses,
-  fn: (statuses, chainId) => ({
-    newStatuses: { ...statuses, [chainId]: ConnectionStatus.DISCONNECTED },
-    event: { chainId, status: ConnectionStatus.DISCONNECTED },
-  }),
+  source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
+  fn: ({ statuses, startTimes }, chainId) => {
+    const { [chainId]: _, ...newStartTimes } = startTimes;
+    return {
+      newStatuses: { ...statuses, [chainId]: ConnectionStatus.DISCONNECTED },
+      newStartTimes,
+      event: { chainId, status: ConnectionStatus.DISCONNECTED },
+    };
+  },
   target: spread({
     newStatuses: $connectionStatuses,
+    newStartTimes: $connectingStartTimes,
     event: connectionStatusChanged,
   }),
 });
 
 sample({
   clock: failed,
-  source: $connectionStatuses,
-  fn: (statuses, chainId) => ({
-    newStatuses: { ...statuses, [chainId]: ConnectionStatus.ERROR },
-    event: { chainId, status: ConnectionStatus.ERROR },
-  }),
+  source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
+  fn: ({ statuses, startTimes }, chainId) => {
+    const { [chainId]: _, ...newStartTimes } = startTimes;
+    return {
+      newStatuses: { ...statuses, [chainId]: ConnectionStatus.ERROR },
+      newStartTimes,
+      event: { chainId, status: ConnectionStatus.ERROR },
+    };
+  },
   target: spread({
     newStatuses: $connectionStatuses,
+    newStartTimes: $connectingStartTimes,
     event: connectionStatusChanged,
   }),
 });
@@ -486,6 +526,266 @@ sample({
     provider: providers[chainId],
   }),
   target: disconnectConnectionFx,
+});
+
+// =====================================================
+// =========== Stuck Connection Detection =============
+// =====================================================
+
+const connectionStuckDetected = createEvent<ChainId>();
+
+// Cleanup stuck connection resources
+const cleanupStuckConnectionFx = createEffect(
+  async ({
+    chainId,
+    provider,
+    api,
+  }: {
+    chainId: ChainId;
+    provider?: ProviderWithMetadata;
+    api?: ApiPromise;
+  }): Promise<ChainId> => {
+    const cleanupPromises: Promise<void>[] = [];
+
+    if (api) {
+      cleanupPromises.push(
+        api.disconnect().catch(() => {
+          // Ignore disconnect errors
+        }),
+      );
+    }
+    if (provider) {
+      cleanupPromises.push(
+        provider.disconnect().catch(() => {
+          // Ignore disconnect errors
+        }),
+      );
+    }
+
+    await Promise.all(cleanupPromises);
+    return chainId;
+  },
+);
+
+// Periodic check for stuck connections (every 10 seconds)
+const startStuckConnectionCheck = createEvent();
+const stopStuckConnectionCheck = createEvent();
+
+const { tick: stuckConnectionTick } = interval({
+  start: startStuckConnectionCheck,
+  stop: stopStuckConnectionCheck,
+  timeout: 10000, // Check every 10 seconds
+  leading: true,
+});
+
+// Start checking when networks are populated
+sample({
+  clock: $populated.updates,
+  filter: (populated) => populated,
+  target: startStuckConnectionCheck,
+});
+
+// Stop checking when networks are not populated
+sample({
+  clock: $populated.updates,
+  filter: (populated) => !populated,
+  target: stopStuckConnectionCheck,
+});
+
+// Check for stuck connections on each tick
+const stuckChainsFound = createEvent<ChainId[]>();
+
+sample({
+  clock: stuckConnectionTick,
+  source: {
+    statuses: $connectionStatuses,
+    startTimes: $connectingStartTimes,
+  },
+  fn: ({ statuses, startTimes }) => {
+    const now = Date.now();
+    const stuckChains: ChainId[] = [];
+
+    for (const [chainId, status] of Object.entries(statuses)) {
+      if (status === ConnectionStatus.CONNECTING) {
+        const startTime = startTimes[chainId as ChainId];
+        if (startTime && now - startTime > 30000) {
+          // Connection stuck for more than 30 seconds
+          stuckChains.push(chainId as ChainId);
+        }
+      }
+    }
+
+    return stuckChains;
+  },
+  target: stuckChainsFound,
+});
+
+// Split array of stuck chains into individual events
+// eslint-disable-next-line effector/no-watch
+sample({
+  clock: stuckChainsFound,
+  fn: (stuckChains) => stuckChains,
+}).watch((stuckChains) => {
+  // Only process if there are stuck chains
+  if (stuckChains.length > 0) {
+    // Trigger event for each stuck chain individually
+    for (const chainId of stuckChains) {
+      connectionStuckDetected(chainId);
+    }
+  }
+});
+
+// Handle stuck connections - cleanup first, then decide on retry or error
+sample({
+  clock: connectionStuckDetected,
+  source: {
+    chains: $chains,
+    connections: $connections,
+    providers: $providers,
+    apis: $apis,
+    failedAttempts: $failedNodeAttempts,
+  },
+  filter: ({ chains }, chainId) => {
+    const chain = chains[chainId];
+    return nonNullable(chain);
+  },
+  fn: ({ providers, apis }, chainId) => ({
+    chainId,
+    provider: providers[chainId],
+    api: apis[chainId],
+  }),
+  target: cleanupStuckConnectionFx,
+});
+
+// Remove cleaned up resources from stores
+sample({
+  clock: cleanupStuckConnectionFx.doneData,
+  source: {
+    providers: $providers,
+    apis: $apis,
+    metadataSubscriptions: $metadataSubscriptions,
+  },
+  fn: ({ providers, apis, metadataSubscriptions }, chainId) => {
+    const { [chainId]: _p, ...restProviders } = providers;
+    const { [chainId]: _a, ...restApis } = apis;
+    const { [chainId]: _s, ...restMetadataSubs } = metadataSubscriptions;
+
+    return {
+      newProviders: restProviders,
+      newApis: restApis,
+      newMetadataSubs: restMetadataSubs,
+    };
+  },
+  target: spread({
+    newProviders: $providers,
+    newApis: $apis,
+    newMetadataSubs: $metadataSubscriptions,
+  }),
+});
+
+// Retry with rotated nodes after cleanup
+sample({
+  clock: cleanupStuckConnectionFx.doneData,
+  source: {
+    chains: $chains,
+    connections: $connections,
+    metadata: $metadata,
+    failedAttempts: $failedNodeAttempts,
+    startTimes: $connectingStartTimes,
+  },
+  filter: ({ chains, connections, failedAttempts }, chainId) => {
+    const chain = chains[chainId];
+    const connection = connections[chainId];
+    if (!chain || !connection) return false;
+
+    const isAutoBalance = networkUtils.isAutoBalanceConnection(connection);
+    const allNodes = chain.nodes.concat(connection.customNodes || []);
+    const currentAttempts = failedAttempts[chainId] ?? 0;
+
+    // Only retry if auto balance and we have more nodes to try
+    return isAutoBalance && allNodes.length > 1 && currentAttempts < allNodes.length;
+  },
+  fn: ({ chains, connections, metadata, failedAttempts, startTimes }, chainId) => {
+    const connection = connections[chainId]!;
+    const chain = chains[chainId]!;
+    const actualMetadata = networkUtils.getNewestMetadata(metadata)[chainId];
+    const currentAttempts = failedAttempts[chainId] ?? 0;
+
+    // Increment failed attempts
+    const newFailedAttempts = {
+      ...failedAttempts,
+      [chainId]: currentAttempts + 1,
+    };
+
+    // Rotate nodes based on failed attempts
+    const nodes = networkUtils.getChainNodesRotated(chain, connection, currentAttempts + 1);
+
+    return {
+      chainId,
+      nodes,
+      metadata: actualMetadata,
+      providerType: ProviderType.WEB_SOCKET,
+      DEBUG_NETWORKS: false,
+      newFailedAttempts,
+      newStartTimes: {
+        ...startTimes,
+        [chainId]: Date.now(), // Reset start time for new attempt
+      },
+    };
+  },
+  target: spread({
+    newFailedAttempts: $failedNodeAttempts,
+    newStartTimes: $connectingStartTimes,
+    createProvider: createProviderFx,
+  }),
+});
+
+// Set to ERROR for stuck single node connections or exhausted auto balance (after cleanup)
+sample({
+  clock: cleanupStuckConnectionFx.doneData,
+  source: {
+    chains: $chains,
+    connections: $connections,
+    failedAttempts: $failedNodeAttempts,
+    statuses: $connectionStatuses,
+    startTimes: $connectingStartTimes,
+  },
+  filter: ({ chains, connections, failedAttempts }, chainId) => {
+    const chain = chains[chainId];
+    const connection = connections[chainId];
+    if (!chain || !connection) return false;
+
+    const isAutoBalance = networkUtils.isAutoBalanceConnection(connection);
+    const allNodes = chain.nodes.concat(connection.customNodes || []);
+    const currentAttempts = failedAttempts[chainId] ?? 0;
+
+    // Set to ERROR if single node OR all nodes exhausted (not retrying)
+    return !isAutoBalance || allNodes.length <= 1 || currentAttempts >= allNodes.length;
+  },
+  fn: ({ statuses, startTimes }, chainId) => {
+    const { [chainId]: _, ...newStartTimes } = startTimes;
+    return {
+      newStatuses: { ...statuses, [chainId]: ConnectionStatus.ERROR },
+      newStartTimes,
+      event: { chainId, status: ConnectionStatus.ERROR },
+    };
+  },
+  target: spread({
+    newStatuses: $connectionStatuses,
+    newStartTimes: $connectingStartTimes,
+    event: connectionStatusChanged,
+  }),
+});
+
+// Clear failed attempts on successful connection
+sample({
+  clock: createApiFx.done,
+  source: $failedNodeAttempts,
+  fn: (failedAttempts, { params }) => {
+    const { [params.chainId]: _, ...rest } = failedAttempts;
+    return rest;
+  },
+  target: $failedNodeAttempts,
 });
 
 // =====================================================

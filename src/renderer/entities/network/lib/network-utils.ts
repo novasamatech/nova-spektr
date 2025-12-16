@@ -30,6 +30,7 @@ export const networkUtils = {
 
   getNewestMetadata,
   getChainNodes,
+  getChainNodesRotated,
   getLightClientChains,
   getProxyExternalApi,
 
@@ -132,6 +133,31 @@ function getChainNodes(chain: Chain, connection: Connection | null) {
   return !connection || networkUtils.isAutoBalanceConnection(connection)
     ? chain.nodes.concat(connection?.customNodes || []).map((node) => node.url)
     : [connection?.activeNode?.url || ''];
+}
+
+/**
+ * Rotates nodes for auto balance connections by moving failed nodes to the end.
+ * This helps ensure different nodes are tried when retrying after failures.
+ *
+ * @param chain - The chain configuration
+ * @param connection - The connection configuration
+ * @param failedAttempts - Number of failed attempts (used to rotate nodes)
+ *
+ * @returns Array of node URLs, rotated based on failed attempts
+ */
+function getChainNodesRotated(chain: Chain, connection: Connection | null, failedAttempts: number = 0) {
+  const nodes = getChainNodes(chain, connection);
+
+  // Only rotate for auto balance connections with multiple nodes
+  if (connection && networkUtils.isAutoBalanceConnection(connection) && nodes.length > 1) {
+    // Rotate by moving first N nodes to the end, where N is the number of failed attempts
+    const rotationOffset = failedAttempts % nodes.length;
+    if (rotationOffset > 0) {
+      return [...nodes.slice(rotationOffset), ...nodes.slice(0, rotationOffset)];
+    }
+  }
+
+  return nodes;
 }
 
 function chainNameToUrl(name: string): string {
