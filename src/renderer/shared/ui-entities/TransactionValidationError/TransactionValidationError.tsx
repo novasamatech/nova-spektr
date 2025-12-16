@@ -196,38 +196,25 @@ const TransactionDryRunError = ({ error }: { error: TransactionValidationDryRunE
   const chainName = error.chainName || error.failureChain;
   const cleanReason = getHumanReadableXcmError(error.failureReason, error.failureChain);
 
+  const i18nKey = isTooExpensive
+    ? 'transfer.dryRunTooExpensive.description'
+    : isFeesNotMet
+      ? 'transfer.dryRunFeesNotMet.description'
+      : cleanReason
+        ? 'transfer.dryRunError.descriptionWithReason'
+        : 'transfer.dryRunError.description';
+
   return (
     <FootnoteText className="max-w-full break-all text-text-primary">
-      {isTooExpensive ? (
-        <Trans
-          t={t}
-          i18nKey="transfer.dryRunTooExpensive.description"
-          values={{
-            chain: chainName,
-          }}
-          components={{
-            br: <br />,
-          }}
-        />
-      ) : isFeesNotMet ? (
-        <Trans
-          t={t}
-          i18nKey="transfer.dryRunFeesNotMet.description"
-          values={{
-            reason: cleanReason,
-            chain: chainName,
-          }}
-        />
-      ) : (
-        <Trans
-          t={t}
-          i18nKey={cleanReason ? 'transfer.dryRunError.descriptionWithReason' : 'transfer.dryRunError.description'}
-          values={{
-            reason: cleanReason,
-            chain: chainName,
-          }}
-        />
-      )}
+      <Trans
+        t={t}
+        i18nKey={i18nKey}
+        values={{
+          reason: cleanReason,
+          chain: chainName,
+        }}
+        components={isTooExpensive ? { br: <br /> } : undefined}
+      />
     </FootnoteText>
   );
 };
