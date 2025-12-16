@@ -4,7 +4,7 @@ import { combine, createEffect, createStore, sample } from 'effector';
 
 import { type Asset, type Chain, type ChainId } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { TEST_ACCOUNTS, getNativeAsset, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
+import { TEST_ACCOUNTS, getNativeAsset, nullable, withTimeout, withdrawableAmountBN } from '@/shared/lib/utils';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -46,7 +46,11 @@ const calculateChainFeeFx = createEffect(
         signatories: [TEST_ACCOUNTS[0], TEST_ACCOUNTS[1]],
       });
 
-      const fee = await transactionService.getTransactionFee(fakeTx, api);
+      const fee = await withTimeout(transactionService.getTransactionFee(fakeTx, api), 5000, null);
+
+      if (nullable(fee)) {
+        return { chain, fee: null };
+      }
 
       // Cache the result
       feeCache.set(chain.chainId, fee);
