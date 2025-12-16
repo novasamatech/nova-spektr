@@ -110,10 +110,14 @@ const createScopeWithFilters = async (
   // Provide wallets via the walletsUpdated event
   await allSettled(notificationModel.events.walletsUpdated, { scope, params: wallets });
 
+  // Convert selected to disabled (wallets NOT in selectedWalletIds are disabled)
+  const selectedSet = new Set(selectedWalletIds);
+  const disabledWalletIds = wallets.filter((w) => !selectedSet.has(w.id)).map((w) => w.id);
+
   await allSettled(notificationModel.events.settingsSaved, {
     scope,
     params: {
-      selectedWalletIds,
+      disabledWalletIds,
       notificationEvents: enabledEvents,
       soundEnabled: false,
     },
@@ -147,60 +151,54 @@ describe('entities/notification/model/notification-model', () => {
       await allSettled(notificationModel.events.walletsUpdated, { scope, params: [mockWallet, mockWallet2] });
 
       // Wallets are stored internally - we verify by checking that filtering works
+      // Disable wallet 2 (only wallet 1 should receive notifications)
       await allSettled(notificationModel.events.settingsSaved, {
         scope,
-        params: { selectedWalletIds: [1], notificationEvents: ALL_EVENTS, soundEnabled: false },
+        params: { disabledWalletIds: [2], notificationEvents: ALL_EVENTS, soundEnabled: false },
       });
 
-      // The wallet IDs should now be available for filtering
-      const selectedIds = scope.getState(notificationModel.$selectedWalletIds);
-      expect(selectedIds.has(1)).toBe(true);
+      // The disabled wallet IDs should now be stored
+      const disabledIds = scope.getState(notificationModel.$disabledWalletIds);
+      expect(disabledIds.has(2)).toBe(true);
+      expect(disabledIds.has(1)).toBe(false);
     });
 
-    test('should auto-enable new wallets when they are added', async () => {
+    test('should have new wallets enabled by default (not in disabled list)', async () => {
       const scope = fork();
 
-      // User saves settings with wallet 1 selected
+      // User saves settings with wallet 2 disabled
       await allSettled(notificationModel.events.walletsUpdated, { scope, params: [mockWallet] });
       await allSettled(notificationModel.events.settingsSaved, {
         scope,
-        params: { selectedWalletIds: [1], notificationEvents: ALL_EVENTS, soundEnabled: false },
+        params: { disabledWalletIds: [], notificationEvents: ALL_EVENTS, soundEnabled: false },
       });
 
-      // Now add wallet 2 (new wallet)
+      // Now add wallet 2 (new wallet) - it should NOT be in disabled list
       await allSettled(notificationModel.events.walletsUpdated, { scope, params: [mockWallet, mockWallet2] });
 
-      const selectedIds = scope.getState(notificationModel.$selectedWalletIds);
+      const disabledIds = scope.getState(notificationModel.$disabledWalletIds);
 
-      // Both wallets should be selected - wallet 2 was auto-enabled as new
-      expect(selectedIds.has(1)).toBe(true);
-      expect(selectedIds.has(2)).toBe(true);
+      // New wallet 2 should not be disabled (enabled by default)
+      expect(disabledIds.has(2)).toBe(false);
     });
 
-    test('should not re-enable deliberately disabled wallets', async () => {
+    test('should keep deliberately disabled wallets disabled', async () => {
       const scope = fork();
 
-      // Both wallets exist, user saves with both selected
+      // Both wallets exist, user disables wallet 2
       await allSettled(notificationModel.events.walletsUpdated, { scope, params: [mockWallet, mockWallet2] });
       await allSettled(notificationModel.events.settingsSaved, {
         scope,
-        params: { selectedWalletIds: [1, 2], notificationEvents: ALL_EVENTS, soundEnabled: false },
-      });
-
-      // User deliberately disables wallet 2 by saving settings with only wallet 1
-      await allSettled(notificationModel.events.settingsSaved, {
-        scope,
-        params: { selectedWalletIds: [1], notificationEvents: ALL_EVENTS, soundEnabled: false },
+        params: { disabledWalletIds: [2], notificationEvents: ALL_EVENTS, soundEnabled: false },
       });
 
       // Same wallets update again (no new wallets)
       await allSettled(notificationModel.events.walletsUpdated, { scope, params: [mockWallet, mockWallet2] });
 
-      const selectedIds = scope.getState(notificationModel.$selectedWalletIds);
+      const disabledIds = scope.getState(notificationModel.$disabledWalletIds);
 
-      // Only wallet 1 should remain selected - wallet 2 was deliberately disabled
-      expect(selectedIds.has(1)).toBe(true);
-      expect(selectedIds.has(2)).toBe(false);
+      // Wallet 2 should remain disabled
+      expect(disabledIds.has(2)).toBe(true);
     });
   });
 
@@ -618,7 +616,7 @@ describe('entities/notification/model/notification-model', () => {
       await allSettled(notificationModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [],
+          disabledWalletIds: [],
           notificationEvents: ALL_EVENTS,
           soundEnabled: true,
         },
@@ -635,7 +633,7 @@ describe('entities/notification/model/notification-model', () => {
       await allSettled(notificationModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [],
+          disabledWalletIds: [],
           notificationEvents: ALL_EVENTS,
           soundEnabled: true,
         },
@@ -654,7 +652,7 @@ describe('entities/notification/model/notification-model', () => {
       await allSettled(notificationModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [],
+          disabledWalletIds: [],
           notificationEvents: ALL_EVENTS,
           soundEnabled: false,
         },
