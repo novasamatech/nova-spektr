@@ -50,8 +50,9 @@ const $populated = createStore(false);
 // Track when connections enter CONNECTING state
 const $connectingStartTimes = createStore<Record<ChainId, number>>({});
 
-// Mutex to prevent concurrent API creation for the same chain
-const apiCreationLocks = new Set<ChainId>();
+// Promise-based mutex to prevent concurrent API creation for the same chain
+// Stores the promise of the API creation in progress, allowing concurrent requests to await the same promise
+const apiCreationPromises = new Map<ChainId, Promise<ApiPromise>>();
 
 const populateChainsFx = createEffect(async (): Promise<Record<ChainId, Chain> | null> => {
   const chains = await chainsService.getChainsData();
@@ -129,10 +130,10 @@ const createProviderFx = createEffect(
           const api = currentApis[chainId];
 
           // Trigger API recreation when provider reconnects but API is missing or disconnected
-          // Use mutex to prevent concurrent API creation
+          // Use promise-based mutex to prevent concurrent API creation
           if (!api || !api.isConnected) {
             // Check if API creation is already in progress for this chain
-            if (apiCreationLocks.has(chainId)) {
+            if (apiCreationPromises.has(chainId)) {
               return;
             }
             boundChainConnected(chainId);
@@ -189,47 +190,39 @@ type CreateApiParams = {
   existingApi: ApiPromise | null;
 };
 const createApiFx = createEffect(async ({ chainId, provider, existingApi }: CreateApiParams): Promise<ApiPromise> => {
-  // Mutex: Check if API creation is already in progress for this chain
-  if (apiCreationLocks.has(chainId)) {
-    // Wait for the existing API creation to complete
-    // eslint-disable-next-line effector/no-getState
-    const currentApis = $apis.getState();
-    const existingApiInstance = currentApis[chainId];
-    if (existingApiInstance && existingApiInstance.isConnected) {
-      return existingApiInstance;
-    }
-    // If no connected API exists, wait a bit and check again
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    // eslint-disable-next-line effector/no-getState
-    const apisAfterWait = $apis.getState();
-    const apiAfterWait = apisAfterWait[chainId];
-    if (apiAfterWait && apiAfterWait.isConnected) {
-      return apiAfterWait;
-    }
-    // If still no API, throw to trigger retry
-    throw new Error(`API creation already in progress for chainId: ${chainId}`);
+  // Check if API creation is already in progress for this chain
+  const existingPromise = apiCreationPromises.get(chainId);
+  if (existingPromise) {
+    // Return the existing promise - concurrent requests will await the same promise
+    return existingPromise;
   }
 
-  // Mutex: Acquire lock
-  apiCreationLocks.add(chainId);
+  // Check if we already have a connected API
+  if (nonNullable(existingApi) && existingApi.isConnected) {
+    return Promise.resolve(existingApi);
+  }
 
-  try {
-    if (nonNullable(existingApi)) {
+  // Create the API creation promise
+  const apiPromise = (async (): Promise<ApiPromise> => {
+    try {
       // If API exists but is disconnected, create a new one instead of reusing the disconnected one
-      if (!existingApi.isConnected) {
+      if (nonNullable(existingApi) && !existingApi.isConnected) {
         // Fall through to create a new API
-      } else {
-        return Promise.resolve(existingApi);
       }
-    }
 
-    const api = networkService.createApi(chainId, provider);
-    await api.isReady;
-    return api;
-  } finally {
-    // Mutex: Release lock
-    apiCreationLocks.delete(chainId);
-  }
+      const api = networkService.createApi(chainId, provider);
+      await api.isReady;
+      return api;
+    } finally {
+      // Clean up the promise from the map when done (success or failure)
+      apiCreationPromises.delete(chainId);
+    }
+  })();
+
+  // Store the promise so concurrent requests can await it
+  apiCreationPromises.set(chainId, apiPromise);
+
+  return apiPromise;
 });
 
 type DisconnectParams = {
