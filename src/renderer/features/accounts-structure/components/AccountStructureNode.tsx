@@ -4,14 +4,13 @@ import { type MouseEvent, memo, useMemo, useRef, useState } from 'react';
 
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, toAddress } from '@/shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { LabelText, SmallTitleText } from '@/shared/ui/Typography';
-import { Address } from '@/shared/ui-entities/Address/Address';
 import { AsyncItem, useIntersectionObserver } from '@/shared/ui-kit';
-import { type AccountNode, identity, identityService } from '@/domains/network';
-import { contactModel } from '@/entities/contact';
+import { type AccountNode, useAccountName } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { accountNodeConfigTransformer } from '@/sdk/account';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
 type AccountStructureNodeProps = {
@@ -25,30 +24,16 @@ type AccountStructureNodeProps = {
 export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProps) => {
   const { t } = useI18n();
   const highlightedNodesIds = useUnit(accountsStructureModel.$highlightedNodesIds);
-  const identities = useUnit(identity.$list);
   const chain = useUnit(accountsStructureModel.$selectedChain);
   const heldAccountNode = useUnit(accountsStructureModel.$heldAccountNode);
   const wallets = useUnit(walletModel.$wallets);
-  const contacts = useUnit(contactModel.$contacts);
 
   const [isIntersecting, setIsIntersecting] = useState(true);
 
   const connections = useNodeConnections();
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
   const hasOutgoing = useMemo(() => connections.some((conn) => conn.source === id), [connections, id]);
-  const title = useMemo(() => {
-    const contact = contacts.find((c) => c.accountId === data.node.account.accountId);
-    if (contact) {
-      return contact.name;
-    }
-
-    if (data.node.account.name) {
-      return data.node.account.name;
-    }
-
-    const accountIdentity = chain ? identities[chain.chainId]?.[data.node.account.accountId] : undefined;
-    return accountIdentity ? identityService.getFullName(accountIdentity) : '';
-  }, [contacts, identities, chain, data.node.account]);
+  const title = useAccountName({ accountId: data.node.account.accountId, chain });
 
   const wallet = walletUtils.getWalletById(wallets, data.node.account.walletId);
   const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, wallet: wallet, t });
@@ -121,13 +106,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
                   )}
                 </div>
                 <div className="flex min-h-[56px] px-4 py-2 align-middle text-sm text-text-secondary">
-                  <Address
-                    address={toAddress(data.node.account.accountId, { prefix: chain?.addressPrefix })}
-                    title={title}
-                    variant="short"
-                    showIcon
-                    iconSize={24}
-                  />
+                  {chain && <NamedAccount accountId={data.node.account.accountId} chain={chain} title={title} />}
                 </div>
               </div>
             </AsyncItem>
