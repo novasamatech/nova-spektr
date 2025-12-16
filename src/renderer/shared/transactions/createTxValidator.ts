@@ -35,6 +35,10 @@ type ValidatorRule<A> = (
   params: RulesParams<A>,
 ) => TransactionValidationBalanceError | Promise<TransactionValidationBalanceError> | undefined;
 
+export type DryRunRule<A> = (
+  params: RulesParams<A>,
+) => TransactionValidationFatalError | Promise<TransactionValidationFatalError | undefined> | undefined;
+
 export type ValidationResult = {
   errors: (
     | TransactionValidationBalanceError
@@ -50,6 +54,7 @@ export type Validator<A> = (params: ValidatorParams<A>) => Promise<ValidationRes
 export function createTxValidator<A>(params?: {
   DEBUG?: boolean;
   additionalBalanceRules?: ValidatorRule<A>[];
+  dryRunRules?: DryRunRule<A>[];
 }): Validator<A> {
   const validator: Validator<A> = async ({
     transaction,
@@ -136,10 +141,21 @@ export function createTxValidator<A>(params?: {
         }
       }
 
-      result.errors = result.errors.concat(
-        transactionPermissionErrors,
-        result.balanceValidationResults.filter((x) => x.balance.success === false),
-      );
+      // Dry run validations (only if no other errors)
+      const balanceErrors = result.balanceValidationResults.filter((x) => x.balance.success === false);
+      const hasOtherErrors = transactionPermissionErrors.length > 0 || balanceErrors.length > 0;
+
+      const dryRunErrors: TransactionValidationFatalError[] = [];
+      if (params?.dryRunRules && !hasOtherErrors) {
+        for (const rule of params.dryRunRules) {
+          const res = await rule(ruleArgs);
+          if (nonNullable(res)) {
+            dryRunErrors.push(res);
+          }
+        }
+      }
+
+      result.errors = result.errors.concat(transactionPermissionErrors, balanceErrors, dryRunErrors);
 
       result.available = getAvailableBalances(result.balanceValidationResults);
 

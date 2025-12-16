@@ -2,6 +2,7 @@ import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 import { t } from 'i18next';
 
+import { getHumanReadableXcmError } from '@/shared/api/xcm/service/xcm-error-utils';
 import { type Asset, type Chain } from '@/shared/core';
 import { assert, formatAmount, validateAddress } from '@/shared/lib/utils';
 import { createTxValidator } from '@/shared/transactions';
@@ -203,6 +204,12 @@ export const TransferRules = {
   },
 };
 
+export type DryRunResult = {
+  success: boolean | null;
+  failureReason?: string;
+  failureChain?: string;
+};
+
 export const transferValidator = createTxValidator<{
   amount: BN;
   sourceChain: Chain;
@@ -211,10 +218,11 @@ export const transferValidator = createTxValidator<{
   originFee: BN;
   destinationFee: BN;
   balancePreservation: BalancePreservation;
+  dryRunResult?: DryRunResult;
 }>({
   // ATTENTION - this order is important, this is how it's calculated on chain
   additionalBalanceRules: [
-    // origin fee (network fee)
+    // origin fee (submission fee + delivery fee)
     // withdraws from initiator in native asset with keepAlive
     ({ route, originFee, destinationChain, sourceChain, asset, getBalance }) => {
       // works only in case of xcm transfer
@@ -234,18 +242,9 @@ export const transferValidator = createTxValidator<{
         action: 'origin fee',
       };
     },
-    // amount + destination fee (for XCM) or just amount (for same-chain)
+    // amount
     // withdraws from initiator in source asset
-    ({
-      route,
-      amount,
-      destinationFee,
-      sourceChain,
-      sourceAsset,
-      getBalance,
-      balancePreservation,
-      destinationChain,
-    }) => {
+    ({ route, amount, sourceChain, sourceAsset, destinationChain, getBalance, balancePreservation }) => {
       const initiator = accountService.findInitiator(route);
       assert(initiator, 'Initiator not found');
 
@@ -253,18 +252,48 @@ export const transferValidator = createTxValidator<{
 
       const balance = getBalance(initiator.accountId, sourceChain.chainId, sourceAsset.assetId);
       assert(balance, `Balance for account ${initiator.accountId} not found`);
-
-      // For XCM transfers, combine amount + destination fee with keepAlive
-      // For same-chain transfers, use only amount with user's balancePreservation choice
       const isXcm = destinationChain.chainId !== sourceChain.chainId;
-      const totalAmount = isXcm && destinationFee && !destinationFee.isZero() ? amount.add(destinationFee) : amount;
       const preservation = isXcm ? 'keepAlive' : balancePreservation;
 
       return {
         account: initiator,
-        balance: balanceService.tryWithdraw(balance, totalAmount, preservation),
+        balance: balanceService.tryWithdraw(balance, amount, preservation),
         asset: sourceAsset,
         action: 'sending amount',
+      };
+    },
+    // destination fee
+    // withdraws from initiator in source asset (for XCM only)
+    ({ route, destinationFee, destinationChain, sourceChain, sourceAsset, getBalance }) => {
+      if (destinationChain.chainId === sourceChain.chainId) return;
+      if (destinationFee.isZero()) return;
+
+      const initiator = accountService.findInitiator(route);
+      assert(initiator, 'Initiator not found');
+
+      const balance = getBalance(initiator.accountId, sourceChain.chainId, sourceAsset.assetId);
+      assert(balance, `Balance for account ${initiator.accountId} not found`);
+
+      return {
+        account: initiator,
+        balance: balanceService.tryWithdraw(balance, destinationFee, 'keepAlive'),
+        asset: sourceAsset,
+        action: 'destination fee',
+      };
+    },
+  ],
+  dryRunRules: [
+    ({ dryRunResult }) => {
+      if (!dryRunResult || dryRunResult.success !== false) {
+        return undefined;
+      }
+
+      const errorMessage = dryRunResult.failureReason
+        ? getHumanReadableXcmError(dryRunResult.failureReason, dryRunResult.failureChain)
+        : t('transfer.dryRunError.title');
+
+      return {
+        message: errorMessage,
       };
     },
   ],
