@@ -27,10 +27,10 @@ const destinationChanged = createEvent<AccountId | null>();
 const rawAmountChanged = createEvent<string>();
 const initiatorAccountIdChanged = createEvent<AccountId | null>();
 const buildTransferDryRunResult = createEvent<{
-  success: boolean;
+  success: boolean | null;
   failureReason?: string;
   failureChain?: string;
-} | null>();
+}>();
 
 const rawAmountChangedDebounced = debounce({
   source: rawAmountChanged,
@@ -52,7 +52,7 @@ const $destination = restore(destinationChanged, null).reset(xcmStarted, xcmStop
 
 const $rawAmount = restore(rawAmountChanged, null).reset(xcmStarted, xcmStopped);
 const $initiatorAccountId = restore(initiatorAccountIdChanged, null).reset(xcmStarted, xcmStopped);
-const $buildTransferDryRunResult = restore(buildTransferDryRunResult, null).reset(xcmStarted, xcmStopped);
+const $buildTransferDryRunResult = restore(buildTransferDryRunResult, { success: null }).reset(xcmStarted, xcmStopped);
 
 const $originFee = combine({ realFee: $realOriginFee, fakeFee: $fakeOriginFee }, ({ realFee, fakeFee }) => {
   return realFee ?? fakeFee;
@@ -230,7 +230,7 @@ sample({
   clock: detectHopChainsFx.doneData,
   filter: (result): result is DetectHopChainsResult => result !== null,
   fn: (result) => {
-    if (!result) return null;
+    if (!result) return { success: null };
     const dryRunResult = result.dryRunResult;
     if (!dryRunResult.destination?.success) {
       const error = normalizeXcmError(
@@ -240,7 +240,7 @@ sample({
       const failureChain = dryRunResult.failureChain;
       const isPathError = isPathUnavailableError(error, failureChain);
       if (!isPathError) {
-        return null;
+        return { success: null };
       }
       return {
         success: false,
@@ -248,7 +248,7 @@ sample({
         failureChain,
       };
     }
-    return null;
+    return { success: true };
   },
   target: buildTransferDryRunResult,
 });
@@ -259,7 +259,7 @@ sample({
     const errorMessage = error instanceof Error ? error.message : String(error);
     const isPathError = isPathUnavailableError(errorMessage);
     if (!isPathError) {
-      return null;
+      return { success: null };
     }
     return {
       success: false,
@@ -687,6 +687,8 @@ const buildTransferFx = takeLast({
               failureChain,
             });
           }
+        } else if (dryRunResult && dryRunResult.destination?.success === true) {
+          buildTransferDryRunResult({ success: true });
         }
       },
     });
@@ -775,7 +777,7 @@ const $buildTransferParams = combine(
 
 sample({
   clock: [destinationChangedDebounced, rawAmountChangedDebounced],
-  fn: () => null,
+  fn: () => ({ success: true }),
   target: buildTransferDryRunResult,
 });
 
@@ -836,14 +838,14 @@ const $xcmData = combine(
 
 sample({
   clock: [rawAmountChanged, destinationChanged, xcmChainSelected, xcmStarted, xcmStopped],
-  fn: () => null,
+  fn: () => ({ success: true }),
   target: buildTransferDryRunResult,
 });
 
 sample({
   clock: $buildTransferParams,
   filter: (params) => params === null,
-  fn: () => null,
+  fn: () => ({ success: true }),
   target: buildTransferDryRunResult,
 });
 
