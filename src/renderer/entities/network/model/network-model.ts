@@ -51,6 +51,9 @@ const $populated = createStore(false);
 const $connectingStartTimes = createStore<Record<ChainId, number>>({});
 const STUCK_CONNECTION_THRESHOLD = 60000; // 60 seconds
 
+// Mutex to prevent concurrent API creation for the same chain
+const apiCreationLocks = new Set<ChainId>();
+
 const populateChainsFx = createEffect(async (): Promise<Record<ChainId, Chain> | null> => {
   const chains = await chainsService.getChainsData();
   return nonNullable(chains) ? chainsService.getChainsMap(chains) : null;
@@ -120,6 +123,7 @@ const createProviderFx = createEffect(
 
     const boundDisconnected = scopeBind(disconnected, { safe: true });
     const boundFailed = scopeBind(failed, { safe: true });
+    const boundChainConnected = scopeBind(chainConnected, { safe: true });
 
     const provider = networkService.createProvider(
       chainId,
@@ -150,12 +154,23 @@ const createProviderFx = createEffect(
             providerType: provider?.constructor.name,
           });
 
-          // VALIDATION: Check if we need to trigger API creation
+          // FIX: Trigger API recreation when provider reconnects but API is missing or disconnected
+          // Use mutex to prevent concurrent API creation
           if (!api || !api.isConnected) {
+            // Check if API creation is already in progress for this chain
+            if (apiCreationLocks.has(chainId)) {
+              console.log(
+                `[MUTEX] API creation already in progress for chainId: ${chainId}, skipping duplicate request`,
+              );
+              return;
+            }
+
             console.warn(`[VALIDATION] Provider reconnected but API missing/disconnected for chainId: ${chainId}`, {
               shouldTriggerApiCreation: true,
               currentStatus: status,
             });
+            console.log(`[FIX] Triggering chainConnected event to recreate API for chainId: ${chainId}`);
+            boundChainConnected(chainId);
           }
 
           if (DEBUG_NETWORKS) {
@@ -219,91 +234,125 @@ type CreateApiParams = {
   existingApi: ApiPromise | null;
 };
 const createApiFx = createEffect(async ({ chainId, provider, existingApi }: CreateApiParams): Promise<ApiPromise> => {
-  console.log(`[DEBUG] createApiFx START for chainId: ${chainId}`, {
-    hasExistingApi: nonNullable(existingApi),
-    providerType: provider.constructor.name,
-  });
-
-  if (nonNullable(existingApi)) {
-    // VALIDATION: Check if existing API is actually usable
-    const apiIsConnected = existingApi.isConnected;
-    const apiIsReady = existingApi.isReady;
-
-    console.log(`[VALIDATION] createApiFx - existing API check for chainId: ${chainId}`, {
-      apiIsConnected,
-      apiIsReady: typeof apiIsReady === 'object' ? 'Promise' : apiIsReady,
-      apiType: existingApi.constructor.name,
-    });
-
-    // VALIDATION: If API exists but is disconnected, we might need to recreate
-    if (!apiIsConnected) {
-      console.warn(`[VALIDATION] Existing API is disconnected for chainId: ${chainId}`, {
-        shouldRecreate: true,
-        currentApiState: {
-          isConnected: apiIsConnected,
-          hasProvider: !!provider,
-        },
-      });
+  // MUTEX: Check if API creation is already in progress for this chain
+  if (apiCreationLocks.has(chainId)) {
+    console.log(`[MUTEX] API creation already in progress for chainId: ${chainId}, skipping duplicate request`);
+    // Wait for the existing API creation to complete
+    // eslint-disable-next-line effector/no-getState
+    const currentApis = $apis.getState();
+    const existingApiInstance = currentApis[chainId];
+    if (existingApiInstance && existingApiInstance.isConnected) {
+      return existingApiInstance;
     }
-
-    console.log(`[DEBUG] createApiFx SKIP (existing API) for chainId: ${chainId}`);
-    return Promise.resolve(existingApi);
+    // If no connected API exists, wait a bit and check again
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    // eslint-disable-next-line effector/no-getState
+    const apisAfterWait = $apis.getState();
+    const apiAfterWait = apisAfterWait[chainId];
+    if (apiAfterWait && apiAfterWait.isConnected) {
+      return apiAfterWait;
+    }
+    // If still no API, throw to trigger retry
+    throw new Error(`API creation already in progress for chainId: ${chainId}`);
   }
 
-  const api = networkService.createApi(chainId, provider);
-  const startTime = Date.now();
-  const CONNECTION_TIMEOUT = 30000; // 30 seconds
-
-  // Set up timeout detection
-  const timeoutId = setTimeout(() => {
-    const elapsed = Date.now() - startTime;
-    console.warn(`[DEBUG] createApiFx TIMEOUT WARNING for chainId: ${chainId}`, {
-      elapsedMs: elapsed,
-      apiIsConnected: api.isConnected,
-      apiIsReady: api.isReady,
-    });
-  }, CONNECTION_TIMEOUT);
+  // MUTEX: Acquire lock
+  apiCreationLocks.add(chainId);
+  console.log(`[MUTEX] Acquired lock for API creation, chainId: ${chainId}`);
 
   try {
-    console.log(`[DEBUG] createApiFx WAITING for api.isReady for chainId: ${chainId}`);
-
-    // VALIDATION: Log provider state before waiting
-    type ProviderWithMethods = { connect?: () => unknown; disconnect?: () => unknown };
-    const providerWithMethods: ProviderWithMethods = provider;
-    console.log(`[VALIDATION] createApiFx - provider state before api.isReady for chainId: ${chainId}`, {
+    console.log(`[DEBUG] createApiFx START for chainId: ${chainId}`, {
+      hasExistingApi: nonNullable(existingApi),
       providerType: provider.constructor.name,
-      providerHasConnect: typeof providerWithMethods.connect === 'function',
-      providerHasDisconnect: typeof providerWithMethods.disconnect === 'function',
     });
 
-    // VALIDATION: Check if api.isReady is actually a promise
-    const readyPromise = api.isReady;
-    if (!(readyPromise instanceof Promise)) {
-      console.error(`[VALIDATION] api.isReady is not a Promise for chainId: ${chainId}`, {
-        type: typeof readyPromise,
-        value: readyPromise,
+    if (nonNullable(existingApi)) {
+      // VALIDATION: Check if existing API is actually usable
+      const apiIsConnected = existingApi.isConnected;
+      const apiIsReady = existingApi.isReady;
+
+      console.log(`[VALIDATION] createApiFx - existing API check for chainId: ${chainId}`, {
+        apiIsConnected,
+        apiIsReady: typeof apiIsReady === 'object' ? 'Promise' : apiIsReady,
+        apiType: existingApi.constructor.name,
       });
+
+      // FIX: If API exists but is disconnected, create a new one instead of reusing the disconnected one
+      if (!apiIsConnected) {
+        console.warn(`[VALIDATION] Existing API is disconnected for chainId: ${chainId}`, {
+          shouldRecreate: true,
+          currentApiState: {
+            isConnected: apiIsConnected,
+            hasProvider: !!provider,
+          },
+        });
+        console.log(`[FIX] Creating new API instead of reusing disconnected API for chainId: ${chainId}`);
+        // Fall through to create a new API
+      } else {
+        console.log(`[DEBUG] createApiFx SKIP (existing API is connected) for chainId: ${chainId}`);
+        return Promise.resolve(existingApi);
+      }
     }
 
-    await readyPromise;
-    const elapsed = Date.now() - startTime;
-    console.log(`[DEBUG] createApiFx SUCCESS for chainId: ${chainId}`, {
-      elapsedMs: elapsed,
-      apiIsConnected: api.isConnected,
-    });
-    clearTimeout(timeoutId);
-    return api;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    const elapsed = Date.now() - startTime;
-    console.error(`[DEBUG] createApiFx ERROR for chainId: ${chainId}`, {
-      error,
-      errorMessage: error instanceof Error ? error.message : String(error),
-      errorStack: error instanceof Error ? error.stack : undefined,
-      elapsedMs: elapsed,
-      apiIsConnected: api.isConnected,
-    });
-    throw error;
+    const api = networkService.createApi(chainId, provider);
+    const startTime = Date.now();
+    const CONNECTION_TIMEOUT = 30000; // 30 seconds
+
+    // Set up timeout detection
+    const timeoutId = setTimeout(() => {
+      const elapsed = Date.now() - startTime;
+      console.warn(`[DEBUG] createApiFx TIMEOUT WARNING for chainId: ${chainId}`, {
+        elapsedMs: elapsed,
+        apiIsConnected: api.isConnected,
+        apiIsReady: api.isReady,
+      });
+    }, CONNECTION_TIMEOUT);
+
+    try {
+      console.log(`[DEBUG] createApiFx WAITING for api.isReady for chainId: ${chainId}`);
+
+      // VALIDATION: Log provider state before waiting
+      type ProviderWithMethods = { connect?: () => unknown; disconnect?: () => unknown };
+      const providerWithMethods: ProviderWithMethods = provider;
+      console.log(`[VALIDATION] createApiFx - provider state before api.isReady for chainId: ${chainId}`, {
+        providerType: provider.constructor.name,
+        providerHasConnect: typeof providerWithMethods.connect === 'function',
+        providerHasDisconnect: typeof providerWithMethods.disconnect === 'function',
+      });
+
+      // VALIDATION: Check if api.isReady is actually a promise
+      const readyPromise = api.isReady;
+      if (!(readyPromise instanceof Promise)) {
+        console.error(`[VALIDATION] api.isReady is not a Promise for chainId: ${chainId}`, {
+          type: typeof readyPromise,
+          value: readyPromise,
+        });
+      }
+
+      await readyPromise;
+      const elapsed = Date.now() - startTime;
+      console.log(`[DEBUG] createApiFx SUCCESS for chainId: ${chainId}`, {
+        elapsedMs: elapsed,
+        apiIsConnected: api.isConnected,
+      });
+      clearTimeout(timeoutId);
+      return api;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      const elapsed = Date.now() - startTime;
+      console.error(`[DEBUG] createApiFx ERROR for chainId: ${chainId}`, {
+        error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        elapsedMs: elapsed,
+        apiIsConnected: api.isConnected,
+      });
+      throw error;
+    }
+  } finally {
+    // MUTEX: Release lock
+    apiCreationLocks.delete(chainId);
+    console.log(`[MUTEX] Released lock for API creation, chainId: ${chainId}`);
   }
 });
 
