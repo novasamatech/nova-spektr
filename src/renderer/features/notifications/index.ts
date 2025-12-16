@@ -1,3 +1,7 @@
-export { NotificationsList } from './NotificationsList';
+export { NotificationsList, notificationListModel } from './NotificationsList';
 export { EmptyNotifications } from './EmptyNotifications';
-export { notificationsSettingsModel, notificationsSettingsFeature } from './NotificationsSettings';
+export {
+  notificationsSettingsModel,
+  notificationsSettingsFeature,
+  NotificationsSettingsModal,
+} from './NotificationsSettings';
