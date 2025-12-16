@@ -27,7 +27,13 @@ const EVENT_OPTIONS = [
   { event: NotificationEvent.OPERATION_REJECTED, labelKey: 'eventOperationRejected' },
 ] as const;
 
-export const NotificationsSettingsModal = () => {
+type Props = {
+  isOpen?: boolean;
+  onToggle?: (isOpen: boolean) => void;
+  showTrigger?: boolean;
+};
+
+export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle, showTrigger = true }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$allWallets);
@@ -38,7 +44,11 @@ export const NotificationsSettingsModal = () => {
   const [selectedWalletIds, setSelectedWalletIds] = useState(() => savedSelectedWalletIds);
   const [enabledEvents, setEnabledEvents] = useState(() => savedNotificationEvents);
   const [soundEnabled, setSoundEnabled] = useState(() => savedSoundEnabled);
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+
+  const isControlled = controlledIsOpen !== undefined;
+  const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
+  const setIsOpen = isControlled ? onToggle! : setInternalIsOpen;
 
   useEffect(() => {
     if (isOpen) {
@@ -93,14 +103,16 @@ export const NotificationsSettingsModal = () => {
 
   return (
     <Modal size="md" isOpen={isOpen} onToggle={setIsOpen}>
-      <Modal.Trigger>
-        <Plate className="p-0">
-          <button className="flex w-full cursor-pointer items-center gap-x-2 rounded-md p-3 transition hover:shadow-card-shadow focus:shadow-card-shadow">
-            <Icon className="row-span-2" name="notification" size={36} />
-            <BodyText>{t('settings.notificationsSettings.plateTitle')}</BodyText>
-          </button>
-        </Plate>
-      </Modal.Trigger>
+      {showTrigger && (
+        <Modal.Trigger>
+          <Plate className="p-0">
+            <button className="flex w-full cursor-pointer items-center gap-x-2 rounded-md p-3 transition hover:shadow-card-shadow focus:shadow-card-shadow">
+              <Icon className="row-span-2" name="notification" size={36} />
+              <BodyText>{t('settings.notificationsSettings.plateTitle')}</BodyText>
+            </button>
+          </Plate>
+        </Modal.Trigger>
+      )}
 
       <Modal.Title close>{t('settings.notificationsSettings.modalTitle')}</Modal.Title>
 

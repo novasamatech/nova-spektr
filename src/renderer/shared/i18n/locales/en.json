@@ -1652,7 +1652,10 @@
       },
       "viewOperation": "View Operation"
     },
+    "emptySearchDescription": "Update the search or cancel filtering",
+    "emptySearchTitle": "Nothing was found",
     "noNotificationsDescription": "You don't have notifications yet",
+    "searchPlaceholder": "Search by wallet or event type",
     "title": "Notifications",
     "toast": {
       "batch": {

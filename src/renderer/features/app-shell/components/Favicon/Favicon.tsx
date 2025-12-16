@@ -32,11 +32,14 @@ const createBadgedFaviconDataUrl = (canvas: HTMLCanvasElement, imageSrc: string)
       const badgeX = size - BADGE_SIZE - 2;
       const badgeY = size - BADGE_SIZE - 2;
 
+      // Cut out transparent padding area from the favicon
+      ctx.globalCompositeOperation = 'destination-out';
       ctx.beginPath();
       ctx.arc(badgeX + BADGE_SIZE / 2, badgeY + BADGE_SIZE / 2, BADGE_SIZE / 2 + BADGE_PADDING, 0, 2 * Math.PI);
-      ctx.fillStyle = 'white';
       ctx.fill();
 
+      // Draw the badge on top
+      ctx.globalCompositeOperation = 'source-over';
       ctx.beginPath();
       ctx.arc(badgeX + BADGE_SIZE / 2, badgeY + BADGE_SIZE / 2, BADGE_SIZE / 2, 0, 2 * Math.PI);
       ctx.fillStyle = BADGE_COLOR;
