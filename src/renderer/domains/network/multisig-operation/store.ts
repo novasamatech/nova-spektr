@@ -147,8 +147,7 @@ const createOperationNotification = (
   });
 
   return {
-    // Don't use operation.id which can change when operation is re-added,
-    key: `${NotificationType.MULTISIG_OPERATION}:${operation.chainId}:${operation.callHash}:${operation.accountId}:${operation.status}`,
+    key: `${NotificationType.MULTISIG_OPERATION}:${multisigOperationService.getOperationKey(operation)}:${operation.status}`,
     type: NotificationType.MULTISIG_OPERATION,
     status: getNotificationStatus(operation.status),
     issuer: operation.accountId,
