@@ -351,7 +351,6 @@ const referendumsGqlSchema = z.object({
 
 const requestCollectivesReferendumsMapToGovernance = async (url: string, chainId: ChainId) => {
   const client = new GraphQLClient(url);
-  console.log('requestCollectivesReferendumsMapToGovernance', url, chainId);
   const result = await client.request(GET_REFERENDUMS_QUERY, {
     pallet: 'fellowship',
     chainId,
