@@ -29,9 +29,9 @@ export const NotificationsList = () => {
   }
 
   return (
-    <div className="mx-auto mt-4 flex w-[736px] flex-1 flex-col gap-4 overflow-y-auto">
+    <div className="mt-4 flex h-full w-full flex-1 flex-col items-center overflow-y-auto pl-6">
       {notificationGroups.map(([date, notifications]) => (
-        <section className="flex w-full flex-col gap-1" key={date}>
+        <section className="flex w-[736px] flex-col gap-1" key={date}>
           <FootnoteText className="ml-2 flex h-8 items-center text-text-tertiary">{date}</FootnoteText>
           <ul className="flex flex-col gap-y-1.5">
             {notifications.map((notification) => (
