@@ -1192,6 +1192,7 @@
       "descriptionPlaceholder": "Choose an operation description",
       "searchLabel": "Search",
       "searchPlaceholder": "Search",
+      "selectAll": "Select all",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },

@@ -1,19 +1,13 @@
-import { Listbox, Transition } from '@headlessui/react';
-import { Fragment, useId, useMemo } from 'react';
+import * as RadixPopover from '@radix-ui/react-popover';
+import { useId, useMemo, useState } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Checkbox } from '@/shared/ui-kit';
+import { Checkbox, useTheme } from '@/shared/ui-kit';
 import { Icon } from '../../Icon/Icon';
 import { CaptionText, FootnoteText, LabelText } from '../../Typography';
-import {
-  OptionStyle,
-  OptionStyleTheme,
-  OptionsContainerStyle,
-  OptionsContainerStyleTheme,
-  SelectButtonStyle,
-  ViewClass,
-} from '../common/constants';
-import { type DropdownOption, type DropdownResult, type Position, type Theme } from '../common/types';
+import { OptionStyle, OptionStyleTheme, OptionsContainerStyleTheme, SelectButtonStyle } from '../common/constants';
+import { type DropdownOption, type DropdownResult, type Theme } from '../common/types';
 
 type Props = {
   className?: string;
@@ -24,9 +18,9 @@ type Props = {
   invalid?: boolean;
   selectedIds?: DropdownOption['id'][];
   options: DropdownOption[];
-  position?: Position;
   tabIndex?: number;
   theme?: Theme;
+  showSelectAll?: boolean;
   onChange: (data: DropdownResult[]) => void;
 };
 
@@ -40,19 +34,23 @@ export const MultiSelect = ({
   selectedIds = [],
   options,
   onChange,
-  position = 'down',
   tabIndex,
   theme = 'light',
+  showSelectAll = false,
 }: Props) => {
+  const { t } = useI18n();
   const id = useId();
+  const { portalContainer } = useTheme();
+  const [isOpen, setIsOpen] = useState(false);
+
   const selectedOptions = useMemo(
     () => options.filter((option) => selectedIds?.includes(option.id)),
     [options, selectedIds],
   );
 
+  const allSelected = options.length > 0 && selectedOptions.length === options.length;
+
   const getSelectButtonElement = () => {
-    // if one option selected we show that option
-    // otherwise we show placeholder and selected options count (if not 0)
     if (selectedOptions.length === 0) {
       return (
         <FootnoteText as="span" className="text-text-secondary">
@@ -81,15 +79,38 @@ export const MultiSelect = ({
     );
   };
 
+  const handleOptionClick = (option: DropdownOption) => {
+    const isSelected = selectedIds.includes(option.id);
+    let newSelection: DropdownResult[];
+
+    if (isSelected) {
+      newSelection = selectedOptions.filter((o) => o.id !== option.id).map((o) => ({ id: o.id, value: o.value }));
+    } else {
+      newSelection = [...selectedOptions, option].map((o) => ({ id: o.id, value: o.value }));
+    }
+
+    onChange(newSelection);
+  };
+
+  const handleSelectAllClick = () => {
+    if (allSelected) {
+      onChange([]);
+    } else {
+      onChange(options.map((o) => ({ id: o.id, value: o.value })));
+    }
+  };
+
   const selectElement = (
-    <Listbox multiple by="id" disabled={disabled} value={selectedOptions} onChange={onChange}>
-      {({ open }) => (
-        <div className={cnTw('relative', className)}>
-          <Listbox.Button
+    <RadixPopover.Root open={isOpen} onOpenChange={setIsOpen}>
+      <div className={cnTw('relative', className)}>
+        <RadixPopover.Trigger asChild>
+          <button
             id={id}
+            type="button"
+            disabled={disabled}
             className={cnTw(
-              open && SelectButtonStyle[theme].open,
-              !open && !invalid && SelectButtonStyle[theme].closed,
+              isOpen && SelectButtonStyle[theme].open,
+              !isOpen && !invalid && SelectButtonStyle[theme].closed,
               invalid && SelectButtonStyle[theme].invalid,
               SelectButtonStyle[theme].disabled,
               'inline-flex w-full cursor-pointer items-center justify-between gap-x-2 py-2 pr-2 text-start',
@@ -99,56 +120,90 @@ export const MultiSelect = ({
             tabIndex={tabIndex}
           >
             {getSelectButtonElement()}
-            <Icon name={open ? 'up' : 'down'} size={16} />
-          </Listbox.Button>
+            <Icon name={isOpen ? 'up' : 'down'} size={16} />
+          </button>
+        </RadixPopover.Trigger>
 
-          <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <Listbox.Options
-              className={cnTw(
-                OptionsContainerStyle,
-                OptionsContainerStyleTheme[theme],
-                position !== 'auto' && ViewClass[position],
-              )}
-            >
-              {options.map(({ id, value, element }) => (
-                <Listbox.Option
-                  key={id}
-                  value={{ id, value }}
-                  className={({ active }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, false))}
-                  onClick={(e) => {
-                    /**
-                     * A workaround against the bug in headlessui that triggers
-                     * a synthetic click on input with an old value and causes
-                     * an infinite loop of changes
-                     *
-                     * https://github.com/tailwindlabs/headlessui/issues/3476
-                     * https://github.com/tailwindlabs/headlessui/issues/3507
-                     * https://github.com/tailwindlabs/headlessui/issues/3520
-                     * https://github.com/tailwindlabs/headlessui/issues/3562
-                     * https://github.com/tailwindlabs/headlessui/issues/3655
-                     */
-                    if (e.target instanceof HTMLInputElement) {
+        <RadixPopover.Portal container={portalContainer}>
+          <RadixPopover.Content
+            align="start"
+            sideOffset={4}
+            className={cnTw(
+              'z-50 max-h-60 overflow-auto rounded-sm border px-1 py-1 shadow-card-shadow',
+              'w-[var(--radix-popover-trigger-width)]',
+              OptionsContainerStyleTheme[theme],
+            )}
+          >
+            {showSelectAll && (
+              <>
+                <div
+                  role="option"
+                  aria-selected={allSelected}
+                  className={cnTw(
+                    OptionStyle,
+                    OptionStyleTheme[theme](false, false),
+                    'w-full cursor-pointer text-left',
+                  )}
+                  tabIndex={0}
+                  onClick={handleSelectAllClick}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
+                      handleSelectAllClick();
                     }
                   }}
                 >
-                  {({ selected }) => (
-                    <div
-                      className={cnTw(
-                        'pointer-events-none w-full',
-                        selected ? 'text-text-primary' : 'text-text-secondary',
-                      )}
-                    >
-                      <Checkbox checked={selected}>{element}</Checkbox>
-                    </div>
+                  <div
+                    className={cnTw(
+                      'pointer-events-none w-full',
+                      allSelected ? 'text-text-primary' : 'text-text-secondary',
+                    )}
+                  >
+                    <Checkbox checked={allSelected}>{t('general.input.selectAll')}</Checkbox>
+                  </div>
+                </div>
+
+                <hr className="my-1 border-divider" />
+              </>
+            )}
+
+            {options.map(({ id: optionId, value, element }) => {
+              const isSelected = selectedIds.includes(optionId);
+
+              return (
+                <div
+                  key={optionId}
+                  role="option"
+                  aria-selected={isSelected}
+                  className={cnTw(
+                    OptionStyle,
+                    OptionStyleTheme[theme](false, false),
+                    'w-full cursor-pointer text-left',
                   )}
-                </Listbox.Option>
-              ))}
-            </Listbox.Options>
-          </Transition>
-        </div>
-      )}
-    </Listbox>
+                  tabIndex={0}
+                  onClick={() => handleOptionClick({ id: optionId, value, element })}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleOptionClick({ id: optionId, value, element });
+                    }
+                  }}
+                >
+                  <div
+                    className={cnTw(
+                      'pointer-events-none w-full',
+                      isSelected ? 'text-text-primary' : 'text-text-secondary',
+                    )}
+                  >
+                    <Checkbox checked={isSelected}>{element}</Checkbox>
+                  </div>
+                </div>
+              );
+            })}
+          </RadixPopover.Content>
+        </RadixPopover.Portal>
+      </div>
+    </RadixPopover.Root>
   );
 
   if (!label) {
