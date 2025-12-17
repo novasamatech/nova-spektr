@@ -9,6 +9,7 @@ import { LabelText, SmallTitleText } from '@/shared/ui/Typography';
 import { Address } from '@/shared/ui-entities/Address/Address';
 import { AsyncItem, useIntersectionObserver } from '@/shared/ui-kit';
 import { type AccountNode, identity, identityService } from '@/domains/network';
+import { contactModel } from '@/entities/contact';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { accountNodeConfigTransformer } from '@/sdk/account';
 import { accountsStructureModel } from '../model/accountsStructureModel';
@@ -28,6 +29,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const chain = useUnit(accountsStructureModel.$selectedChain);
   const heldAccountNode = useUnit(accountsStructureModel.$heldAccountNode);
   const wallets = useUnit(walletModel.$wallets);
+  const contacts = useUnit(contactModel.$contacts);
 
   const [isIntersecting, setIsIntersecting] = useState(true);
 
@@ -35,13 +37,18 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
   const hasOutgoing = useMemo(() => connections.some((conn) => conn.source === id), [connections, id]);
   const title = useMemo(() => {
+    const contact = contacts.find((c) => c.accountId === data.node.account.accountId);
+    if (contact) {
+      return contact.name;
+    }
+
     if (data.node.account.name) {
       return data.node.account.name;
     }
 
     const accountIdentity = chain ? identities[chain.chainId]?.[data.node.account.accountId] : undefined;
     return accountIdentity ? identityService.getFullName(accountIdentity) : '';
-  }, [identities, chain, data.node.account]);
+  }, [contacts, identities, chain, data.node.account]);
 
   const wallet = walletUtils.getWalletById(wallets, data.node.account.walletId);
   const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, wallet: wallet, t });

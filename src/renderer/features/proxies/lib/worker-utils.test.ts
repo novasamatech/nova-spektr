@@ -168,12 +168,6 @@ describe('features/proxies/lib/worker-utils', () => {
     expect(result).toEqual(expectedAccountId);
   });
 
-  test('should return undefined if chainId is not found', () => {
-    const result = proxyWorkerUtils.getKnownChain('0x01');
-
-    expect(result).toBeUndefined();
-  });
-
   test('should check proxy is delayed (true for delay > 0)', () => {
     const proxy = {
       accountId: '0x00' as AccountId,

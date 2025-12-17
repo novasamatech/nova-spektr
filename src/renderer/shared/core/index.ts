@@ -76,7 +76,7 @@ export type {
   MultisigOperationNotification,
   ProxyAction,
 } from './types/notification';
-export { NotificationType } from './types/notification';
+export { NotificationEvent, NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
 

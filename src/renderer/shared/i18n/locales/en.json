@@ -1214,7 +1214,10 @@
         "section": "the {action} of {balance}"
       },
       "fatal": {
-        "intro": "Internal error:"
+        "intro": "Dry run error:"
+      },
+      "network": {
+        "title": "Network connection error"
       },
       "permission": {
         "intro": "Some wallet in the execution route has access restrictions set by the proxy connection.",
@@ -1724,7 +1727,10 @@
       },
       "viewOperation": "View Operation"
     },
+    "emptySearchDescription": "Update the search or cancel filtering",
+    "emptySearchTitle": "Nothing was found",
     "noNotificationsDescription": "You don't have notifications yet",
+    "searchPlaceholder": "Search by wallet or event type",
     "title": "Notifications",
     "toast": {
       "batch": {
@@ -2348,6 +2354,22 @@
       "titleAdd": "Add custom node",
       "titleEdit": "Edit custom node"
     },
+    "notificationsSettings": {
+      "eventOperationCreated": "Operation created",
+      "eventOperationExecuted": "Operation executed",
+      "eventOperationRejected": "Operation rejected",
+      "eventWalletCreated": "Wallet created",
+      "general": "General",
+      "modalTitle": "Notifications settings",
+      "plateTitle": "Notifications",
+      "preferences": "Preferences",
+      "preferencesDescription": "Select wallets and events to be notified about their activity by displaying popup",
+      "saveButton": "Save",
+      "soundEnabled": "Sound notification",
+      "soundRestricted": "Sound is restricted by your browser. Please allow audio in site settings.",
+      "walletsMultiPlaceholder": "Wallets",
+      "walletsPlaceholder": "Select wallets"
+    },
     "overview": {
       "generalLabel": "General",
       "githubDescription": "Contribute and explore our open-source project on GitHub for collaborative code shaping!",
@@ -2701,6 +2723,7 @@
     },
     "multisigTransactionExist": "Multisig transaction already exists",
     "myselfButton": "Myself",
+    "networkConnectionError": "The {network} network is not connected. Go to Settings → Network to select a different RPC endpoint.",
     "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
