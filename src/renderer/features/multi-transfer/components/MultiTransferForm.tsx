@@ -1,11 +1,15 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent } from 'react';
+import { type FormEvent, memo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { Button } from '@/shared/ui';
+import { Button, DetailRow } from '@/shared/ui';
+import { AssetBalance, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
+import { AssetFiatBalance } from '@/entities/price';
+import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 
 import { UploadCSV } from './MultiTransferUpload';
@@ -18,12 +22,10 @@ type Props = {
 export const MultiTransferForm = ({ formId }: Props) => {
   const { t } = useI18n();
   const { submit } = useForm(formModel.form);
-  // const chain = fields.chain;
-  // const availableChains = useUnit(formModel.$availableChains);
 
-  const parsedCsv = useUnit(formModel.$parsedCsv);
-  const csvError = useUnit(formModel.$csvError);
-  const canSubmit = !!parsedCsv?.length && nullable(csvError);
+  const canSubmit = useUnit(formModel.$canSubmit);
+  const wallets = useUnit(walletModel.$wallets);
+  const txErrors = useUnit(formModel.$txErrors);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -35,8 +37,11 @@ export const MultiTransferForm = ({ formId }: Props) => {
       <ScrollArea>
         <form id={formId} onSubmit={handleSubmit}>
           <Box padding={[4, 5]} gap={4}>
+            <TransactionValidationError errors={txErrors} wallets={wallets} />
             <NetworkSelect />
             <UploadCSV />
+            <TotalAmountSection />
+            <FeeSection />
           </Box>
         </form>
       </ScrollArea>
@@ -49,3 +54,38 @@ export const MultiTransferForm = ({ formId }: Props) => {
     </>
   );
 };
+
+const TotalAmountSection = memo(() => {
+  const { t } = useI18n();
+
+  const amount = useUnit(formModel.$amount);
+  const asset = useUnit(formModel.$asset);
+
+  if (nullable(amount) || nullable(asset)) return null;
+
+  return (
+    <DetailRow label={t('multiTransfer.form.fields.amount.label', 'Total amount')}>
+      <div className="flex flex-col items-end gap-y-0.5">
+        <AssetBalance value={amount} asset={asset} showSymbol />
+        <AssetFiatBalance asset={asset} amount={amount} />
+      </div>
+    </DetailRow>
+  );
+});
+
+const FeeSection = memo(() => {
+  const fee = useUnit(formModel.$fee);
+  const pendingFee = useUnit(formModel.$pendingFee);
+  const multisigDeposit = useUnit(formModel.$multisigDeposit);
+  const hasMultisigAccount = useUnit(formModel.$hasMultisigAccount);
+  const asset = useUnit(formModel.$asset);
+
+  if (nullable(asset)) return null;
+
+  return (
+    <>
+      {hasMultisigAccount && <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} />}
+      <FeeWithLabel asset={asset} fee={fee} isLoading={pendingFee} />
+    </>
+  );
+});

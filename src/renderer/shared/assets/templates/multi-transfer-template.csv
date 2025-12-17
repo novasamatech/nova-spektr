@@ -1,0 +1,15 @@
+# Multi Transfer CSV Template
+# 
+# Column descriptions:
+# recipient          - Recipient address in SS58 format
+# amount             - Transfer amount in planks
+#
+# Token Precision Reference:
+# 1 DOT  = 10000000000 (10^10 in planks)
+# Other tokens may have different precision levels
+#
+# Example for DOT: 10000000000 (1 DOT)
+#
+recipient,amount
+5C5BDLw8tzzWB6XQbVPuzeL34d6GmPYPH1NaqsWBaJWzz42J,10000000000
+5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty,20000000000

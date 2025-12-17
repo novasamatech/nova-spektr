@@ -36,7 +36,7 @@ export const $defaultFeatures = createStore({
   callData: true,
   hiddenWallets: true,
   vestedTransfer: true,
-  multiTransfer: true,
+  multiTransfer: false,
   appCustomOperations: true,
 
   // experimental feature

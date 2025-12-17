@@ -1606,12 +1606,29 @@
     "unknownMessage": " made an unknown action"
   },
   "multiTransfer": {
+    "confirmation": {
+      "labels": {
+        "parsedFile": "Parsed file",
+        "totalAmount": "Total amount"
+      }
+    },
     "errors": {
       "csv": {
+        "errorTitle_one": "Found {count} error",
+        "errorTitle_other": "Found {count} errors",
+        "fieldErrors": {
+          "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
+          "INVALID_VALUE": "Invalid value",
+          "OUT_OF_RANGE": "Value out of range",
+          "RECIPIENT_HAS_LESS_THAN_ED": "Recipient has less than ED",
+          "UNKNOWN_ERROR": "Unknown error"
+        },
         "invalidDataDescription": "File couldn’t be read. Please check data formatting and try again.",
+        "invalidDataRow": "Row {row}",
         "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
         "issueLine": "Row {row} — {path}: {message}",
         "issuesTitle": "Found {count} errors",
+        "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
         "title": "CSV error"
       },
       "form": {
@@ -1622,7 +1639,11 @@
     },
     "form": {
       "fields": {
+        "amount": {
+          "label": "Total amount"
+        },
         "csvFile": {
+          "exampleButton": "Example",
           "label": "Data table file",
           "placeholder": "Select CSV file on your computer"
         },
@@ -1638,11 +1659,23 @@
     "parsedFile": {
       "buttons": {
         "hide": "Hide preview",
-        "openPreview": "Preview"
+        "openPreview": "Preview",
+        "parsedFile": "Parsed file"
       },
       "headers": {
         "amount": "Amount",
         "recipient": "Recipient"
+      },
+      "table": {
+        "buttons": {
+          "download": "Download",
+          "showMore": "Show more"
+        },
+        "footer": {
+          "downloadDescription": "You can download parsed file to review them.",
+          "errorsCount_one": "Found {count} error.",
+          "errorsCount_other": "Found {count} errors."
+        }
       },
       "title": "Parsed file"
     }
@@ -2042,6 +2075,8 @@
       "destinationOn": "Set reward destination on",
       "editDelegationOn": "Edit delegation on",
       "editFlexibleOn": "Edit flexible multisig on",
+      "multiTransfer": "Multi Transfer",
+      "multiTransferOn": "Multi Transfer on",
       "nominateOn": "Change Validators on",
       "proxy": "Proxy",
       "redeemOn": "Withdraw Unstaked { asset } on",
@@ -2085,6 +2120,7 @@
       "destination": "Set reward destination",
       "editDelegation": "Edit Delegation",
       "editFlexible": "Edit flexible multisig",
+      "multiTransfer": "Multi Transfer",
       "nominate": "Change Validators",
       "proxy": "Proxy",
       "redeem": "Withdraw Unstaked",

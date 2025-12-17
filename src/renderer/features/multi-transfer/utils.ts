@@ -2,7 +2,11 @@ import { BN } from '@polkadot/util';
 import { parse } from 'csv-parse/sync';
 import { z } from 'zod';
 
+import { type Chain } from '@/shared/core';
 import { downloadFiles, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { merge } from '@/shared/lib/utils/arrays';
+import { totalAmountBN } from '@/shared/lib/utils/balance';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   MultiTransferCsvError,
   MultiTransferFieldError,
@@ -10,7 +14,7 @@ import {
   type ValidationIssue,
 } from '@/entities/multi-transfer';
 
-import { type ValidationSchemaOptions } from './types';
+import { Step, type ValidationSchemaOptions } from './types';
 
 const MAX_U128 = new BN(2).pow(new BN(128));
 const CSV_HEADERS = ['recipient', 'amount'];
@@ -18,11 +22,41 @@ const CSV_FIELDS = ['recipient', 'amount'];
 const MAX_CSV_ROWS = 1000;
 
 export const multiTransferUtils = {
+  isNoneStep,
+  isInitStep,
+  isConfirmStep,
+  isSignStep,
+  isSubmitStep,
+
   parseCSV,
   createValidationSchema,
   validateCSV,
   downloadCsvWithIssues,
+  parseRecipientField,
+  parseAmountField,
+  getIssueKey,
+  mergeValidationIssues,
 };
+
+function isNoneStep(step: Step): boolean {
+  return step === Step.NONE;
+}
+
+function isInitStep(step: Step): boolean {
+  return step === Step.INIT;
+}
+
+function isConfirmStep(step: Step): boolean {
+  return step === Step.CONFIRM;
+}
+
+function isSignStep(step: Step): boolean {
+  return step === Step.SIGN;
+}
+
+function isSubmitStep(step: Step): boolean {
+  return step === Step.SUBMIT;
+}
 
 type ParseResult =
   | { success: true; data: MultiTransferRowSerialized[] }
@@ -51,7 +85,7 @@ async function parseCSV(file: File): Promise<ParseResult> {
       return { success: false, error: MultiTransferCsvError.STRUCTURE };
     }
 
-    const data = parse<MultiTransferRowSerialized>(fileContent, {
+    const rawData = parse<{ recipient: string; amount: string }>(fileContent, {
       columns: CSV_FIELDS,
       relax_column_count_more: true,
       skip_empty_lines: true,
@@ -60,6 +94,17 @@ async function parseCSV(file: File): Promise<ParseResult> {
       from: 2,
       to: MAX_CSV_ROWS + 1,
     });
+
+    const data: MultiTransferRowSerialized[] = rawData.map((row) => ({
+      recipient: {
+        raw: row.recipient,
+        parsed: null,
+      },
+      amount: {
+        raw: row.amount,
+        parsed: null,
+      },
+    }));
 
     return { success: true, data };
   } catch (error) {
@@ -95,8 +140,43 @@ function createValidationSchema(options: ValidationSchemaOptions) {
   });
 }
 
+export function parseRecipientField(value: string, chain: Chain): AccountId | null {
+  try {
+    if (!validateAddress(value, chain)) {
+      return null;
+    }
+    return toAccountId(value);
+  } catch {
+    return null;
+  }
+}
+
+export function parseAmountField(value: string): BN | null {
+  try {
+    const bn = new BN(value);
+    if (bn.gt(new BN(0)) && bn.lt(MAX_U128)) {
+      return bn;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 function isFieldError(value: unknown): value is MultiTransferFieldError {
   return typeof value === 'string' && Object.values(MultiTransferFieldError).includes(value as MultiTransferFieldError);
+}
+
+export function getIssueKey(issue: ValidationIssue): string {
+  return `${issue.row}-${issue.path}-${issue.message}`;
+}
+
+export function mergeValidationIssues(existing: ValidationIssue[], newIssues: ValidationIssue[]): ValidationIssue[] {
+  return merge({
+    a: existing,
+    b: newIssues,
+    mergeBy: getIssueKey,
+  });
 }
 
 function validateCSV(records: MultiTransferRowSerialized[], options: ValidationSchemaOptions) {
@@ -108,7 +188,30 @@ function validateCSV(records: MultiTransferRowSerialized[], options: ValidationS
 
     try {
       const schema = createValidationSchema(options);
-      schema.parse(record);
+      const parsed = schema.parse({
+        recipient: record.recipient.raw,
+        amount: record.amount.raw,
+      });
+
+      const recipientId = parsed.recipient;
+      const amount = parsed.amount;
+      const recipientBalances = options.recipientBalances;
+
+      if (recipientBalances) {
+        const balance = recipientBalances.get(recipientId);
+        if (balance) {
+          const totalBalance = totalAmountBN(balance);
+          // If recipient has less than ED and amount is less than ED, add error
+          if (totalBalance.lt(balance.ed) && amount.lt(balance.ed)) {
+            issues.push({
+              row: rowIndex,
+              path: 'recipient',
+              severity: 'error',
+              message: MultiTransferFieldError.RECIPIENT_HAS_LESS_THAN_ED,
+            });
+          }
+        }
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         for (const issue of error.issues) {
@@ -151,7 +254,7 @@ function downloadCsvWithIssues(rows: MultiTransferRowSerialized[], issues: Valid
       .map((error) => `${error.path}: ${error.message}`)
       .join(' | ');
 
-    return [row.recipient, row.amount, errorMessages].join(',');
+    return [row.recipient.raw, row.amount.raw, errorMessages].join(',');
   });
 
   const csvContent = [header, ...dataRows].join('\n');
