@@ -1190,6 +1190,7 @@
       "amountLabel": "Amount",
       "availableLabel": "Available:",
       "descriptionPlaceholder": "Choose an operation description",
+      "nothingFound": "Nothing found",
       "searchLabel": "Search",
       "searchPlaceholder": "Search",
       "selectAll": "Select all",

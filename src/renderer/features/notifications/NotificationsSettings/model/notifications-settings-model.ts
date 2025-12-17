@@ -1,7 +1,10 @@
 import { sample } from 'effector';
 
 import { notificationModel } from '@/entities/notification';
-import { walletModel } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
+
+// Filter wallets to only include multisig and flexible multisig types
+const $multisigWallets = walletModel.$allWallets.map((wallets) => wallets.filter(walletUtils.isMultisig));
 
 // Re-export settings state from notification entity
 const $notificationEvents = notificationModel.$notificationEvents;
@@ -9,9 +12,9 @@ const $disabledWalletIds = notificationModel.$disabledWalletIds;
 const $soundEnabled = notificationModel.$soundEnabled;
 
 // Connect wallet updates to notification model
-// This bridges the two entities from the feature layer
+// This bridges the two entities from the feature layer (only multisig wallets)
 sample({
-  clock: walletModel.$allWallets,
+  clock: $multisigWallets,
   target: notificationModel.events.walletsUpdated,
 });
 
@@ -20,6 +23,9 @@ export const notificationsSettingsModel = {
   $notificationEvents,
   $disabledWalletIds,
   $soundEnabled,
+
+  // Filtered wallets for notifications (only multisig types)
+  $wallets: $multisigWallets,
 
   // Events (from entity)
   events: {
