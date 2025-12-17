@@ -39,15 +39,23 @@ const iconConfig: Record<NotificationStatus, { name: IconNames; className: strin
 };
 
 export const MultisigOperationNotificationComponent = ({
-  notification: { callHash, callTimepoint, chainId, issuer, status, operationId },
+  notification: { callHash, callTimepoint, chainId, issuer, status },
 }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
 
   const operation = useStoreMap({
     store: multisigOperation.$list,
-    keys: [operationId],
-    fn: (operations) => operations.find((op) => op.id === operationId),
+    keys: [callHash, callTimepoint.height, callTimepoint.index, chainId, issuer],
+    fn: (operations) =>
+      operations.find(
+        (op) =>
+          op.callHash === callHash &&
+          op.blockCreated === callTimepoint.height &&
+          op.indexCreated === callTimepoint.index &&
+          op.chainId === chainId &&
+          op.accountId === issuer,
+      ),
   });
 
   const multisigAccount = useStoreMap({
