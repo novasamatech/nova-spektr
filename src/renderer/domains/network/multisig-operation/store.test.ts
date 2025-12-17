@@ -67,7 +67,6 @@ describe('multisig operation store notifications', () => {
       expect(notifications).toHaveLength(1);
       expect(notifications[0]).toMatchObject({
         type: NotificationType.MULTISIG_OPERATION,
-        operationId: operation.id,
       });
     });
 
@@ -99,7 +98,6 @@ describe('multisig operation store notifications', () => {
       expect(notifications).toHaveLength(1);
       expect(notifications[0]).toMatchObject({
         type: NotificationType.MULTISIG_OPERATION,
-        operationId: operation.id,
       });
     });
 
@@ -212,7 +210,7 @@ describe('multisig operation store notifications', () => {
 
       expect(notifications).toHaveLength(1);
       expect(notifications[0]).toMatchObject({
-        operationId: 'op-new',
+        callHash: newOperation.callHash,
       });
     });
   });
@@ -278,8 +276,20 @@ describe('multisig operation store notifications', () => {
 
     it('should send notification for new pending operation', async () => {
       const accountId = createAccountId('1');
-      const operation1 = createTestOperation({ id: 'op-1', accountId, status: 'executed', timestamp: 1000, callHash: '0x1111' });
-      const operation2 = createTestOperation({ id: 'op-2', accountId, status: 'pending', timestamp: 1000, callHash: '0x2222' });
+      const operation1 = createTestOperation({
+        id: 'op-1',
+        accountId,
+        status: 'executed',
+        timestamp: 1000,
+        callHash: '0x1111',
+      });
+      const operation2 = createTestOperation({
+        id: 'op-2',
+        accountId,
+        status: 'pending',
+        timestamp: 1000,
+        callHash: '0x2222',
+      });
       const account = createTestAccount({ accountId, createdAt: 500 });
 
       const notifications: unknown[] = [];
@@ -304,7 +314,7 @@ describe('multisig operation store notifications', () => {
       // The new pending operation should trigger notification
       expect(notifications).toHaveLength(1);
       expect(notifications[0]).toMatchObject({
-        operationId: 'op-2',
+        callHash: operation2.callHash,
         status: 'info',
       });
     });
