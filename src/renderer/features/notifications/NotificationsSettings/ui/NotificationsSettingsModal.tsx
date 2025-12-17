@@ -17,7 +17,6 @@ import {
 } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
-import { walletModel } from '@/entities/wallet';
 import { notificationsSettingsModel } from '../model/notifications-settings-model';
 
 const EVENT_OPTIONS = [
@@ -36,7 +35,7 @@ type Props = {
 export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle, showTrigger = true }: Props) => {
   const { t } = useI18n();
 
-  const wallets = useUnit(walletModel.$allWallets);
+  const wallets = useUnit(notificationsSettingsModel.$wallets);
   const savedDisabledWalletIds = useUnit(notificationsSettingsModel.$disabledWalletIds);
   const savedNotificationEvents = useUnit(notificationsSettingsModel.$notificationEvents);
   const savedSoundEnabled = useUnit(notificationsSettingsModel.$soundEnabled);
