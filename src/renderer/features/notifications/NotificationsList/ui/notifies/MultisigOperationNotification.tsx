@@ -10,7 +10,7 @@ import { formatSectionAndMethod, nonNullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { BodyText, Button, Icon, type IconNames } from '@/shared/ui';
 import { AssetBalance, WalletIcon } from '@/shared/ui-entities';
-import { accounts, multisigOperation } from '@/domains/network';
+import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
@@ -39,15 +39,33 @@ const iconConfig: Record<NotificationStatus, { name: IconNames; className: strin
 };
 
 export const MultisigOperationNotificationComponent = ({
-  notification: { callHash, callTimepoint, chainId, issuer, status, operationId },
+  notification: { callHash, callTimepoint, chainId, issuer, status },
 }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
 
+  const operationId = multisigOperationService.getOperationId(
+    chainId,
+    callHash,
+    issuer,
+    callTimepoint.height,
+    callTimepoint.index,
+  );
+
   const operation = useStoreMap({
     store: multisigOperation.$list,
     keys: [operationId],
-    fn: (operations) => operations.find((op) => op.id === operationId),
+    fn: (operations) =>
+      operations.find(
+        (op) =>
+          multisigOperationService.getOperationId(
+            op.chainId,
+            op.callHash,
+            op.accountId,
+            op.blockCreated,
+            op.indexCreated,
+          ) === operationId,
+      ),
   });
 
   const multisigAccount = useStoreMap({

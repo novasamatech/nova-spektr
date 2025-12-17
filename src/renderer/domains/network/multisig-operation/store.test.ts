@@ -16,7 +16,7 @@ const createTestOperation = (params: Partial<MultisigOperation> = {}): MultisigO
   transaction: null,
   method: null,
   section: null,
-  callHash: '0x1234',
+  callHash: params.callHash ?? '0x1234',
   callData: null,
   chainId: polkadotChainId,
   accountId: params.accountId ?? createAccountId('1'),
@@ -67,7 +67,6 @@ describe('multisig operation store notifications', () => {
       expect(notifications).toHaveLength(1);
       expect(notifications[0]).toMatchObject({
         type: NotificationType.MULTISIG_OPERATION,
-        operationId: operation.id,
       });
     });
 
@@ -99,7 +98,6 @@ describe('multisig operation store notifications', () => {
       expect(notifications).toHaveLength(1);
       expect(notifications[0]).toMatchObject({
         type: NotificationType.MULTISIG_OPERATION,
-        operationId: operation.id,
       });
     });
 
@@ -212,7 +210,7 @@ describe('multisig operation store notifications', () => {
 
       expect(notifications).toHaveLength(1);
       expect(notifications[0]).toMatchObject({
-        operationId: 'op-new',
+        callHash: newOperation.callHash,
       });
     });
   });
@@ -278,8 +276,20 @@ describe('multisig operation store notifications', () => {
 
     it('should send notification for new pending operation', async () => {
       const accountId = createAccountId('1');
-      const operation1 = createTestOperation({ id: 'op-1', accountId, status: 'executed', timestamp: 1000 });
-      const operation2 = createTestOperation({ id: 'op-2', accountId, status: 'pending', timestamp: 1000 });
+      const operation1 = createTestOperation({
+        id: 'op-1',
+        accountId,
+        status: 'executed',
+        timestamp: 1000,
+        callHash: '0x1111',
+      });
+      const operation2 = createTestOperation({
+        id: 'op-2',
+        accountId,
+        status: 'pending',
+        timestamp: 1000,
+        callHash: '0x2222',
+      });
       const account = createTestAccount({ accountId, createdAt: 500 });
 
       const notifications: unknown[] = [];
@@ -304,9 +314,62 @@ describe('multisig operation store notifications', () => {
       // The new pending operation should trigger notification
       expect(notifications).toHaveLength(1);
       expect(notifications[0]).toMatchObject({
-        operationId: 'op-2',
+        callHash: operation2.callHash,
         status: 'info',
       });
+    });
+  });
+
+  describe('notification deduplication', () => {
+    it('should not produce duplicate notification when same operation is added with different id', async () => {
+      const accountId = createAccountId('1');
+      const callHash = '0xabcd1234';
+
+      // First operation
+      const operation1 = {
+        ...createTestOperation({
+          id: 'op-block100-index0',
+          accountId,
+          timestamp: 1000,
+        }),
+        callHash,
+      };
+
+      // Same operation but with different id (e.g., from different block/index)
+      const operation2 = {
+        ...createTestOperation({
+          id: 'op-block200-index1',
+          accountId,
+          timestamp: 1000,
+        }),
+        callHash, // Same callHash means it's the same logical operation
+      };
+
+      const account = createTestAccount({ accountId, createdAt: 500 });
+
+      const notifications: unknown[] = [];
+      const scope = fork({
+        values: [
+          [accounts.__test.$list, [account]],
+          [multisigOperation.__test.$populated, true],
+        ],
+      });
+
+      createWatch({
+        unit: notificationModel.events.notificationsAdded,
+        fn: params => notifications.push(...params),
+        scope,
+      });
+
+      // Initial state
+      await allSettled(multisigOperation.__test.$list, { scope, params: [] });
+      // Add first operation - should trigger notification
+      await allSettled(multisigOperation.__test.$list, { scope, params: [operation1] });
+      // Add second operation with different id but same callHash - should NOT trigger duplicate
+      await allSettled(multisigOperation.__test.$list, { scope, params: [operation1, operation2] });
+
+      // Should only have 1 notification, not 2
+      expect(notifications).toHaveLength(1);
     });
   });
 });
