@@ -147,7 +147,7 @@ const createOperationNotification = (
   });
 
   return {
-    key: `${NotificationType.MULTISIG_OPERATION}:${multisigOperationService.getOperationKey(operation)}:${operation.status}`,
+    key: `${NotificationType.MULTISIG_OPERATION}-${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.accountId, operation.blockCreated, operation.indexCreated)}-${operation.status}`,
     type: NotificationType.MULTISIG_OPERATION,
     status: getNotificationStatus(operation.status),
     issuer: operation.accountId,
@@ -176,11 +176,18 @@ const createOperationNotification = (
 
 const operationChanges = pairwise($list)
   .map(({ prev: prevState, current: update }) => {
-    const previousOpsMap = new Map(prevState.map(op => [multisigOperationService.getOperationKey(op), op]));
+    const previousOpsMap = new Map(
+      prevState.map(op => [
+        multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated),
+        op,
+      ]),
+    );
     const changes: MultisigOperation[] = [];
 
     for (const item of update) {
-      const previousOp = previousOpsMap.get(multisigOperationService.getOperationKey(item));
+      const previousOp = previousOpsMap.get(
+        multisigOperationService.getOperationId(item.chainId, item.callHash, item.accountId, item.blockCreated, item.indexCreated),
+      );
 
       if (!previousOp) {
         changes.push(item);

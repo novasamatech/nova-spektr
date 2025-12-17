@@ -44,18 +44,28 @@ export const MultisigOperationNotificationComponent = ({
   const { t } = useI18n();
   const navigate = useNavigate();
 
-  const operationKey = multisigOperationService.getOperationKey({
+  const operationId = multisigOperationService.getOperationId(
     chainId,
     callHash,
-    accountId: issuer,
-    blockCreated: callTimepoint.height,
-    indexCreated: callTimepoint.index,
-  });
+    issuer,
+    callTimepoint.height,
+    callTimepoint.index,
+  );
 
   const operation = useStoreMap({
     store: multisigOperation.$list,
-    keys: [operationKey],
-    fn: (operations) => operations.find((op) => multisigOperationService.getOperationKey(op) === operationKey),
+    keys: [operationId],
+    fn: (operations) =>
+      operations.find(
+        (op) =>
+          multisigOperationService.getOperationId(
+            op.chainId,
+            op.callHash,
+            op.accountId,
+            op.blockCreated,
+            op.indexCreated,
+          ) === operationId,
+      ),
   });
 
   const multisigAccount = useStoreMap({
