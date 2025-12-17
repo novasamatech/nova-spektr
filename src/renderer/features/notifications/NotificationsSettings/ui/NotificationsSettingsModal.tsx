@@ -20,7 +20,6 @@ import { WalletIcon } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { walletModel } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
 import { notificationsSettingsModel } from '../model/notifications-settings-model';
 
@@ -40,7 +39,7 @@ type Props = {
 export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle, showTrigger = true }: Props) => {
   const { t } = useI18n();
 
-  const wallets = useUnit(walletModel.$allWallets);
+  const wallets = useUnit(notificationsSettingsModel.$wallets);
   const allAccounts = useUnit(accounts.$list);
   const chains = useUnit(networkModel.$chains);
   const savedDisabledWalletIds = useUnit(notificationsSettingsModel.$disabledWalletIds);
