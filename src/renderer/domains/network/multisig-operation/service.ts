@@ -54,6 +54,16 @@ function getOperationId(chainId: ChainId, callHash: string, accountId: AccountId
   return `${chainId}-${callHash}-${accountId}-${block}-${index}`;
 }
 
+function getOperationKey(operation: {
+  chainId: ChainId;
+  callHash: string;
+  accountId: AccountId;
+  blockCreated: number;
+  indexCreated: number;
+}) {
+  return `${operation.chainId}:${operation.callHash}:${operation.accountId}:${operation.blockCreated}:${operation.indexCreated}`;
+}
+
 function getEventId(operationId: string, signer: string, status: 'approve' | 'reject') {
   return `${operationId}-${signer}-${status}`;
 }
@@ -244,6 +254,7 @@ function generateMultisigOperationRelativeLink(params: MultisigOperationDeepLink
 
 export const multisigOperationService = {
   getOperationId,
+  getOperationKey,
   getEventId,
   getTransactionFromChain,
   getMultisigAccountId,

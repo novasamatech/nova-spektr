@@ -161,7 +161,6 @@ const createOperationNotification = (
       index: operation.indexCreated,
     },
     chainId: operation.chainId,
-    operationId: operation.id,
     link: {
       title: 'notifications.details.viewOperation',
       path: relativeLink,
@@ -176,15 +175,13 @@ const createOperationNotification = (
   };
 };
 
-const getOperationKey = (op: MultisigOperation) => `${op.chainId}:${op.callHash}:${op.accountId}`;
-
 const operationChanges = pairwise($list)
   .map(({ prev: prevState, current: update }) => {
-    const previousOpsMap = new Map(prevState.map(op => [getOperationKey(op), op]));
+    const previousOpsMap = new Map(prevState.map(op => [multisigOperationService.getOperationKey(op), op]));
     const changes: MultisigOperation[] = [];
 
     for (const item of update) {
-      const previousOp = previousOpsMap.get(getOperationKey(item));
+      const previousOp = previousOpsMap.get(multisigOperationService.getOperationKey(item));
 
       if (!previousOp) {
         changes.push(item);
