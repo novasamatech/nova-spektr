@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { NotificationEvent } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { performSearch } from '@/shared/lib/utils';
 import {
   BodyText,
   Button,
@@ -17,7 +18,10 @@ import {
 } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
+import { accounts } from '@/domains/network';
+import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { walletSelectService } from '@/aggregates/wallet-select';
 import { notificationsSettingsModel } from '../model/notifications-settings-model';
 
 const EVENT_OPTIONS = [
@@ -37,6 +41,8 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$allWallets);
+  const allAccounts = useUnit(accounts.$list);
+  const chains = useUnit(networkModel.$chains);
   const savedDisabledWalletIds = useUnit(notificationsSettingsModel.$disabledWalletIds);
   const savedNotificationEvents = useUnit(notificationsSettingsModel.$notificationEvents);
   const savedSoundEnabled = useUnit(notificationsSettingsModel.$soundEnabled);
@@ -67,21 +73,26 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
   }, [isOpen, savedDisabledWalletIds, savedNotificationEvents, savedSoundEnabled]);
 
   const walletOptions = useMemo(() => {
-    const query = walletSearchQuery.toLowerCase();
+    const filteredWallets = performSearch({
+      records: wallets,
+      query: walletSearchQuery,
+      getMeta: (wallet) => ({
+        allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
+      }),
+      weights: { name: 1, allAddresses: 0.8 },
+    });
 
-    return wallets
-      .filter((wallet) => !query || wallet.name.toLowerCase().includes(query))
-      .map((wallet) => ({
-        id: String(wallet.id),
-        value: wallet,
-        element: (
-          <div className="flex items-center gap-x-1.5">
-            <WalletIcon type={wallet.type} size={18} />
-            <span className="text-footnote">{wallet.name}</span>
-          </div>
-        ),
-      }));
-  }, [wallets, walletSearchQuery]);
+    return filteredWallets.map((wallet) => ({
+      id: String(wallet.id),
+      value: wallet,
+      element: (
+        <div className="flex items-center gap-x-1.5">
+          <WalletIcon type={wallet.type} size={18} />
+          <span className="text-footnote">{wallet.name}</span>
+        </div>
+      ),
+    }));
+  }, [wallets, walletSearchQuery, allAccounts, chains]);
 
   const toggleEvent = (event: NotificationEvent) => {
     setEnabledEvents((prev) => {
