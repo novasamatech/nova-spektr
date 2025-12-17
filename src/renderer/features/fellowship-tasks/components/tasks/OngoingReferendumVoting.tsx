@@ -73,7 +73,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
     if (isPending) return;
 
     const connectedGovernanceReferendumSummaryText =
-      connectedGovernanceReferendumSummary?.[connectedGovernanceReferendum?.referendumId].summary;
+      connectedGovernanceReferendumSummary?.[connectedGovernanceReferendum?.referendumId]?.summary;
     if (connectedGovernanceReferendum && connectedGovernanceReferendumSummaryText) {
       return (
         <ReferendumTaskMarkdown compact>

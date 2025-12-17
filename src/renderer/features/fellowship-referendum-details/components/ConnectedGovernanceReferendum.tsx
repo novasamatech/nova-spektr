@@ -43,38 +43,44 @@ export const ConnectedGovernanceReferendum = ({ fellowshipReferendum }: Props) =
 
   const navigate = useNavigate();
 
-  const { data: connectedReferendum } = useConnectedReferendum(fellowshipReferendum.id);
+  const { data: governanceReferendumConnection } = useConnectedReferendum(fellowshipReferendum.id);
 
-  const governanceApi = apis[connectedReferendum?.chainId];
+  const governanceApi = apis[governanceReferendumConnection?.chainId];
 
-  const { data: governanceReferendums } = useReferendums({ api: governanceApi });
+  const { data: governanceReferendums, pending: isGovernanceReferendumsLoading } = useReferendums({
+    api: governanceApi,
+  });
 
   const connectedGovernanceReferendum = useMemo(
-    () => governanceReferendums.find(x => x.referendumId === connectedReferendum?.referendumId),
-    [governanceReferendums, connectedReferendum?.referendumId],
+    () => governanceReferendums.find(x => x.referendumId === governanceReferendumConnection?.referendumId),
+    [governanceReferendums, governanceReferendumConnection?.referendumId],
   );
 
   const { data: connectedGovernanceReferendumSummary } = useReferendumSummary({
-    chainId: connectedReferendum?.chainId,
-    referendumIds: [connectedReferendum?.referendumId],
+    chainId: governanceReferendumConnection?.chainId,
+    referendumIds: [governanceReferendumConnection?.referendumId],
   });
 
   const onViewClick = useCallback(() => {
     navigate(
       generatePath(Paths.GOVERNANCE_REFERENDUM, {
-        chainId: connectedReferendum?.chainId,
-        referendumId: connectedReferendum?.referendumId,
+        chainId: governanceReferendumConnection?.chainId,
+        referendumId: governanceReferendumConnection?.referendumId,
       }),
     );
   }, []);
 
-  if (nullable(connectedReferendum) || nullable(connectedGovernanceReferendum)) {
+  if (nullable(governanceReferendumConnection)) {
     return null;
   }
 
-  const chain = chains[connectedReferendum.chainId];
+  if (isGovernanceReferendumsLoading) {
+    return <Skeleton height="254px" width="100%" />;
+  }
+
+  const chain = chains[governanceReferendumConnection.chainId];
   const connectedGovernanceReferendumSummaryText =
-    connectedGovernanceReferendumSummary?.[connectedReferendum?.referendumId].summary;
+    connectedGovernanceReferendumSummary?.[governanceReferendumConnection?.referendumId].summary;
   const timelineApi = chain.additional?.timelineChain ? apis[chain.additional.timelineChain] : null;
 
   return (
@@ -88,15 +94,17 @@ export const ConnectedGovernanceReferendum = ({ fellowshipReferendum }: Props) =
 
         <Separator className="mt-4 mb-2" />
 
-        <GovernanceReferendumCard
-          timelineApi={timelineApi!}
-          chain={chain}
-          governanceReferendum={connectedGovernanceReferendum}
-          api={governanceApi}
-          onViewClick={onViewClick}
-        />
-
-        <Separator className="my-4" />
+        {connectedGovernanceReferendum ? (
+          <GovernanceReferendumCard
+            timelineApi={timelineApi!}
+            chain={chain}
+            governanceReferendum={connectedGovernanceReferendum}
+            api={governanceApi}
+            onViewClick={onViewClick}
+          />
+        ) : (
+          <Skeleton height="86px" width="100%" />
+        )}
 
         <Proposal referendum={fellowshipReferendum} />
       </Box>
@@ -179,28 +187,31 @@ const Proposal = ({ referendum }: { referendum: Referendum }) => {
   const { proposalHash, proposalJSON } = referendum.proposal;
 
   return (
-    <div>
-      <div className="flex items-center">
-        <FootnoteText className="text-text-tertiary">{t('fellowship.whitelist.callHash')}</FootnoteText>
-        <FootnoteText className="ml-auto text-text-tertiary">{truncate(proposalHash, 7, 7)}</FootnoteText>
-        <Copy value={proposalHash} notification={t('fellowship.whitelist.callHashCopied')}>
-          <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
-        </Copy>
+    <>
+      <Separator className="my-4" />
+      <div>
+        <div className="flex items-center">
+          <FootnoteText className="text-text-tertiary">{t('fellowship.whitelist.callHash')}</FootnoteText>
+          <FootnoteText className="ml-auto text-text-tertiary">{truncate(proposalHash, 7, 7)}</FootnoteText>
+          <Copy value={proposalHash} notification={t('fellowship.whitelist.callHashCopied')}>
+            <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
+          </Copy>
+        </div>
+        <div className="mt-2 flex items-center justify-between">
+          <FootnoteText className="text-text-tertiary">{t('fellowship.whitelist.callData')}</FootnoteText>
+          <Modal size="fit" height="lg">
+            <Modal.Trigger>
+              <Button className="p-0" size="sm" variant="text">
+                {t('fellowship.whitelist.viewJson')}
+              </Button>
+            </Modal.Trigger>
+            <Modal.Title close>{t('fellowship.whitelist.callData')}</Modal.Title>
+            <Modal.Content>
+              <Json value={proposalJSON} />
+            </Modal.Content>
+          </Modal>
+        </div>
       </div>
-      <div className="mt-2 flex items-center justify-between">
-        <FootnoteText className="text-text-tertiary">{t('fellowship.whitelist.callData')}</FootnoteText>
-        <Modal size="fit" height="lg">
-          <Modal.Trigger>
-            <Button className="p-0" size="sm" variant="text">
-              {t('fellowship.whitelist.viewJson')}
-            </Button>
-          </Modal.Trigger>
-          <Modal.Title close>{t('fellowship.whitelist.callData')}</Modal.Title>
-          <Modal.Content>
-            <Json value={proposalJSON} />
-          </Modal.Content>
-        </Modal>
-      </div>
-    </div>
+    </>
   );
 };

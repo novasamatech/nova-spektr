@@ -22,6 +22,6 @@ projects:
       - src/renderer/entities/staking/**
 
   SubQuery Collectives:
-    schema: http://localhost:3000
+    schema: https://subquery-collectives-stg.novasama-tech.org
     include:
       - src/renderer/domains/collectives/**

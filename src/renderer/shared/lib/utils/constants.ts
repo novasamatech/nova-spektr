@@ -60,7 +60,7 @@ export const ONE_DAY = new BN(24 * 60 * 60 * 1000);
 
 export const MONTH = 30 * 24 * 60 * 60 * 1000;
 
-const CHAINS_CONFIG_VERSION = 'v1';
+const CHAINS_CONFIG_VERSION = 'v2';
 const TOKENS_CONFIG_VERSION = 'v1';
 export const CHAINS_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/chains/${CHAINS_CONFIG_VERSION}/${process.env.CHAINS_FILE + '.json'}`;
 export const TOKENS_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/tokens/${TOKENS_CONFIG_VERSION}/${process.env.TOKENS_FILE + '.json'}`;

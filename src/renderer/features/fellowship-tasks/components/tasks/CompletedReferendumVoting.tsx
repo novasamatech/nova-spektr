@@ -52,7 +52,7 @@ export const CompletedReferendumVoting = memo(({ referendum }: Props) => {
 
   const content = useMemo(() => {
     const connectedGovernanceReferendumSummaryText =
-      connectedGovernanceReferendumSummary?.[connectedGovernanceReferendum?.referendumId].summary;
+      connectedGovernanceReferendumSummary?.[connectedGovernanceReferendum?.referendumId]?.summary;
     if (connectedGovernanceReferendum && connectedGovernanceReferendumSummaryText) {
       return (
         <ReferendumTaskMarkdown compact>

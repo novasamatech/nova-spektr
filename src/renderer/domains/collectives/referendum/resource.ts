@@ -378,7 +378,7 @@ export const collectivesReferendumsMapToGovernanceResource = createQueryResource
     const sourceUrl = externalApi?.url;
     if (!sourceUrl) return {};
 
-    const result = await requestCollectivesReferendumsMapToGovernance('http://localhost:3000', chain.chainId);
+    const result = await requestCollectivesReferendumsMapToGovernance(sourceUrl, chain.chainId);
 
     return dictionary(result, 'index', item =>
       item.relatedReferendum
