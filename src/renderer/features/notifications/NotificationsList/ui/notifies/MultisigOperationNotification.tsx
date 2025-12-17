@@ -1,4 +1,4 @@
-import { useStoreMap } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +12,7 @@ import { BodyText, Button, Icon, type IconNames } from '@/shared/ui';
 import { AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { accounts, multisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { operationTitleTransformer } from '@/features/multisig-operations';
@@ -43,6 +44,7 @@ export const MultisigOperationNotificationComponent = ({
 }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const chains = useUnit(networkModel.$chains);
 
   const operation = useStoreMap({
     store: multisigOperation.$list,
@@ -76,6 +78,9 @@ export const MultisigOperationNotificationComponent = ({
   const externalTitle = useTransformer(operationTitleTransformer, {
     operation,
     showCoreTransaction: showCoreTransaction,
+    chains,
+    asset,
+    t,
   });
 
   const titleData = useMemo(() => {
