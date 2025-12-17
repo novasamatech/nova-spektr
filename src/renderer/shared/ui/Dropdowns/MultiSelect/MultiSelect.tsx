@@ -160,10 +160,7 @@ export const MultiSelect = ({
                 const relatedTarget = e.relatedTarget as Node | null;
                 if (relatedTarget) {
                   const popoverContent = document.querySelector('[data-radix-popper-content-wrapper]');
-                  if (
-                    containerRef.current?.contains(relatedTarget) ||
-                    popoverContent?.contains(relatedTarget)
-                  ) {
+                  if (containerRef.current?.contains(relatedTarget) || popoverContent?.contains(relatedTarget)) {
                     return;
                   }
                 }
