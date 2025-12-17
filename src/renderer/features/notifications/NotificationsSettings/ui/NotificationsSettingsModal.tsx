@@ -50,6 +50,8 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
   const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
   const setIsOpen = isControlled ? onToggle! : setInternalIsOpen;
 
+  const [walletSearchQuery, setWalletSearchQuery] = useState('');
+
   // Selected wallet IDs for MultiSelect (enabled = not disabled)
   const selectedWalletIds = useMemo(
     () => new Set(wallets.filter((w) => !disabledWalletIds.has(w.id)).map((w) => w.id)),
@@ -64,9 +66,12 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
     }
   }, [isOpen, savedDisabledWalletIds, savedNotificationEvents, savedSoundEnabled]);
 
-  const walletOptions = useMemo(
-    () =>
-      wallets.map((wallet) => ({
+  const walletOptions = useMemo(() => {
+    const query = walletSearchQuery.toLowerCase();
+
+    return wallets
+      .filter((wallet) => !query || wallet.name.toLowerCase().includes(query))
+      .map((wallet) => ({
         id: String(wallet.id),
         value: wallet,
         element: (
@@ -75,9 +80,8 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
             <span className="text-footnote">{wallet.name}</span>
           </div>
         ),
-      })),
-    [wallets],
-  );
+      }));
+  }, [wallets, walletSearchQuery]);
 
   const toggleEvent = (event: NotificationEvent) => {
     setEnabledEvents((prev) => {
@@ -164,6 +168,7 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
               options={walletOptions}
               showSelectAll
               onChange={handleWalletChange}
+              onSearch={setWalletSearchQuery}
             />
           </div>
 
