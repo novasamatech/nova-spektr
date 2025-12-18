@@ -1,26 +1,21 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { generatePath, useParams } from 'react-router-dom';
 
-import { nonNullable } from '@/shared/lib/utils';
+import { type ChainId } from '@/shared/core';
 import { referendaPallet } from '@/shared/pallet/referenda';
 import { Paths } from '@/shared/routes';
 import { referendumService } from '@/entities/governance';
-import { ReferendumDetailsModal, networkSelectorModel } from '@/features/governance';
+import { type AggregatedReferendum, ReferendumDetailsModal, networkSelectorModel } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { RemoveVotesModal } from '@/widgets/RemoveVotesModal';
 import { RevoteModal, VoteModal } from '@/widgets/VoteModal';
 import { governancePageAggregate } from '../aggregates/governancePage';
 import { DEFAULT_GOVERNANCE_CHAIN } from '../lib/constants';
 
-export const GovernanceReferendumDetails = () => {
+export const GovernanceReferendumDetails = memo(() => {
   const { chainId, referendumId } = useParams<'chainId' | 'referendumId'>();
 
-  const [showVoteModal, setShowVoteModal] = useState(false);
-  const [showRevoteModal, setShowRevoteModal] = useState(false);
-  const [showRemoveVoteModal, setShowRemoveVoteModal] = useState(false);
-
-  const network = useUnit(networkSelectorModel.$network);
   const currentReferendums = useUnit(governancePageAggregate.$currentReferendums);
 
   if (!referendumId) {
@@ -32,99 +27,136 @@ export const GovernanceReferendumDetails = () => {
   const selectedReferendum = useMemo(() => {
     if (!selectedReferendumId) return null;
 
-    const referendum = currentReferendums.find(({ referendumId }) => {
-      return referendaPallet.helpers.toReferendumId(parseInt(referendumId)) === selectedReferendumId;
-    });
-
-    return referendum ?? null;
+    return (
+      currentReferendums.find(({ referendumId }) => {
+        return referendaPallet.helpers.toReferendumId(parseInt(referendumId)) === selectedReferendumId;
+      }) ?? null
+    );
   }, [currentReferendums, selectedReferendumId]);
 
+  if (!selectedReferendum) {
+    return null;
+  }
+
+  return <GovernanceReferendumDetailsModal referendum={selectedReferendum} chainId={chainId as ChainId} />;
+});
+
+type Props = {
+  referendum: AggregatedReferendum;
+  chainId?: ChainId;
+  onClose?: VoidFunction;
+};
+
+export const GovernanceReferendumDetailsModal = ({ referendum, chainId, onClose: onCloseProp }: Props) => {
+  const [showVoteModal, setShowVoteModal] = useState(false);
+  const [showRevoteModal, setShowRevoteModal] = useState(false);
+  const [showRemoveVoteModal, setShowRemoveVoteModal] = useState(false);
+
+  const network = useUnit(networkSelectorModel.$network);
+
+  const votes = useMemo(() => {
+    if (referendumService.isCompleted(referendum)) {
+      return [];
+    }
+    return referendum.voting.votes.map(({ voter, vote }) => ({
+      vote,
+      voter,
+      referendum: referendum.referendumId,
+      track: referendum.track,
+    }));
+  }, [referendum.voting.votes, referendum.referendumId]);
+
   useEffect(() => {
-    if (nonNullable(selectedReferendum) && referendumService.isCompleted(selectedReferendum)) {
+    if (referendumService.isCompleted(referendum)) {
       setShowVoteModal(false);
       setShowRevoteModal(false);
       setShowRemoveVoteModal(false);
     }
-  }, [selectedReferendum]);
+  }, [referendum]);
+
+  const onClose = useCallback(() => {
+    setShowVoteModal(false);
+    setShowRevoteModal(false);
+    setShowRemoveVoteModal(false);
+
+    if (onCloseProp) {
+      onCloseProp();
+    } else {
+      navigationModel.events.navigateTo(
+        generatePath(Paths.GOVERNANCE_LIST, { chainId: chainId || DEFAULT_GOVERNANCE_CHAIN }),
+      );
+    }
+  }, [chainId, onCloseProp]);
+
+  const onVoteRequest = useCallback(() => {
+    setShowVoteModal(true);
+    setShowRevoteModal(false);
+    setShowRemoveVoteModal(false);
+  }, []);
+
+  const onRemoveVoteRequest = useCallback(() => {
+    setShowRemoveVoteModal(true);
+    setShowRevoteModal(false);
+    setShowVoteModal(false);
+  }, []);
+
+  const onRevoteRequest = useCallback(() => {
+    setShowRevoteModal(true);
+    setShowRemoveVoteModal(false);
+    setShowVoteModal(false);
+  }, []);
+
+  const closeVoteModal = useCallback(() => setShowVoteModal(false), []);
+  const closeRevoteModal = useCallback(() => setShowRevoteModal(false), []);
+  const closeRemoveVoteModal = useCallback(() => setShowRemoveVoteModal(false), []);
+
+  if (!network) {
+    return null;
+  }
 
   return (
     <>
-      {nonNullable(selectedReferendum) && nonNullable(network) && (
-        <ReferendumDetailsModal
-          referendum={selectedReferendum}
+      <ReferendumDetailsModal
+        referendum={referendum}
+        chain={network.chain}
+        timelineApi={network.timelineApi}
+        asset={network.asset}
+        onClose={onClose}
+        onVoteRequest={onVoteRequest}
+        onRemoveVoteRequest={onRemoveVoteRequest}
+        onRevoteRequest={onRevoteRequest}
+      />
+
+      {showVoteModal && referendumService.isOngoing(referendum) && (
+        <VoteModal
+          referendum={referendum}
           chain={network.chain}
-          timelineApi={network.timelineApi}
           asset={network.asset}
-          onClose={() => {
-            setShowVoteModal(false);
-            setShowRevoteModal(false);
-            setShowRemoveVoteModal(false);
-            navigationModel.events.navigateTo(
-              generatePath(Paths.GOVERNANCE_LIST, { chainId: chainId || DEFAULT_GOVERNANCE_CHAIN }),
-            );
-          }}
-          onVoteRequest={() => {
-            setShowVoteModal(true);
-            setShowRevoteModal(false);
-            setShowRemoveVoteModal(false);
-          }}
-          onRemoveVoteRequest={() => {
-            setShowRemoveVoteModal(true);
-            setShowRevoteModal(false);
-            setShowVoteModal(false);
-          }}
-          onRevoteRequest={() => {
-            setShowRevoteModal(true);
-            setShowRemoveVoteModal(false);
-            setShowVoteModal(false);
-          }}
+          onClose={closeVoteModal}
+          onSuccess={closeVoteModal}
         />
       )}
 
-      {showVoteModal &&
-        nonNullable(selectedReferendum) &&
-        nonNullable(network) &&
-        referendumService.isOngoing(selectedReferendum) && (
-          <VoteModal
-            referendum={selectedReferendum}
-            chain={network.chain}
-            asset={network.asset}
-            onClose={() => setShowVoteModal(false)}
-            onSuccess={() => setShowVoteModal(false)}
-          />
-        )}
+      {showRevoteModal && referendumService.isOngoing(referendum) && (
+        <RevoteModal
+          referendum={referendum}
+          chain={network.chain}
+          asset={network.asset}
+          onClose={closeRevoteModal}
+          onVoteSuccess={closeRevoteModal}
+        />
+      )}
 
-      {showRevoteModal &&
-        nonNullable(network) &&
-        nonNullable(selectedReferendum) &&
-        referendumService.isOngoing(selectedReferendum) && (
-          <RevoteModal
-            referendum={selectedReferendum}
-            chain={network.chain}
-            asset={network.asset}
-            onClose={() => setShowRevoteModal(false)}
-            onVoteSuccess={() => setShowRevoteModal(false)}
-          />
-        )}
-
-      {showRemoveVoteModal &&
-        nonNullable(selectedReferendum) &&
-        nonNullable(network) &&
-        referendumService.isOngoing(selectedReferendum) && (
-          <RemoveVotesModal
-            single
-            votes={selectedReferendum.voting.votes.map(({ voter, vote }) => ({
-              vote,
-              voter,
-              referendum: selectedReferendum.referendumId,
-              track: selectedReferendum.track,
-            }))}
-            chain={network.chain}
-            asset={network.asset}
-            api={network.api}
-            onClose={() => setShowRemoveVoteModal(false)}
-          />
-        )}
+      {showRemoveVoteModal && referendumService.isOngoing(referendum) && (
+        <RemoveVotesModal
+          single
+          votes={votes}
+          chain={network.chain}
+          asset={network.asset}
+          api={network.api}
+          onClose={closeRemoveVoteModal}
+        />
+      )}
     </>
   );
 };

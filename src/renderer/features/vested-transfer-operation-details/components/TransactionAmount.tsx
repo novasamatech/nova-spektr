@@ -7,7 +7,7 @@ import { AssetBalance } from '@/shared/ui-entities';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { AssetFiatBalance } from '@/entities/price';
-import { getTransactionAmount } from '@/entities/transaction';
+import { findCoreTransaction, getTransactionAmount, isVestedTransferTransaction } from '@/entities/transaction';
 
 type Props = {
   operation: MultisigOperation;
@@ -15,6 +15,11 @@ type Props = {
 
 export const TransactionAmount = ({ operation }: Props) => {
   const chains = useUnit(networkModel.$chains);
+
+  const coreTx = findCoreTransaction(operation.transaction);
+  if (!isVestedTransferTransaction(coreTx)) {
+    return null;
+  }
 
   const chain = chains[operation.chainId];
   const asset = chain ? getNativeAsset(chain.assets) : null;

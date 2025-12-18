@@ -1,0 +1,37 @@
+import { createStore } from 'effector';
+
+import { type GovernanceApi } from '@/shared/api/governance';
+import { type Chain, type ChainId, type ReferendumId } from '@/shared/core';
+import { createSubscriptionResource } from '@/shared/query';
+
+export type ReferendumTitleSubscriptionParams = {
+  chain: Chain;
+  service: GovernanceApi;
+};
+
+type TitlesCache = Record<ChainId, Record<ReferendumId, string>>;
+
+const $sharedTitlesCache = createStore<TitlesCache>({});
+
+export const referendumTitleResource = createSubscriptionResource<ReferendumTitleSubscriptionParams>({
+  key: ({ chain }) => [chain.chainId],
+})
+  .subscribe<Record<ReferendumId, string>>(({ chain, service }, callback) => {
+    service.getReferendumList(chain, data => {
+      if (data.value) {
+        callback(data.value);
+      }
+    });
+
+    return () => {};
+  })
+  .cache({
+    store: $sharedTitlesCache,
+    map: (state, titles, { chain }) => {
+      const chainId = chain.chainId;
+      const prev = state[chainId] ?? {};
+
+      return { ...state, [chainId]: { ...prev, ...titles } };
+    },
+  })
+  .build();

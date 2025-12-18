@@ -134,6 +134,23 @@ export const isEditFlexibleTransaction = (
   );
 };
 
+export const isVestedTransferTransaction = (transaction?: DecodedTransaction | null) => {
+  if (!transaction) {
+    return false;
+  }
+
+  if (transaction?.type === TransactionType.VESTED_TRANSFER) {
+    return true;
+  }
+
+  if (transaction?.type === TransactionType.BATCH_ALL) {
+    const batchTx = findCoreBatchAll(transaction);
+    return batchTx?.type === TransactionType.VESTED_TRANSFER;
+  }
+
+  return false;
+};
+
 export const hasTransaction = (
   transaction: Transaction | DecodedTransaction,
   filter: (transaction: Transaction | DecodedTransaction) => boolean,

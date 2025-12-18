@@ -44,19 +44,39 @@ type Props = {
   referendum: OngoingReferendum;
   transaction: Transaction | null;
   tags: string[];
+  connectedGovernanceReferendumSummary: string | null;
 };
 
-export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props) => {
+export const OngoingReferendumVoting = ({
+  referendum,
+  tags,
+  transaction,
+  connectedGovernanceReferendumSummary,
+}: Props) => {
   const { t } = useI18n();
 
   const { data: meta, pending: pendingMetadata } = useMetadata(referendum);
   const { data: rfc, pending: pendingSummary } = useRfcProposalSummary(referendum);
 
+  const isSpendProposal = referendum.proposal ? referendumService.isSpendProposal(referendum.proposal) : false;
   const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
-  const isPending = referendum && (isRFCProposal ? pendingSummary : pendingMetadata);
+
+  const isPending = useMemo(() => {
+    if (!referendum) return false;
+    if (isRFCProposal) return pendingSummary;
+    return pendingMetadata;
+  }, [referendum, isRFCProposal, pendingSummary, pendingMetadata]);
 
   const content = useMemo(() => {
     if (isPending) return;
+
+    if (connectedGovernanceReferendumSummary) {
+      return (
+        <ReferendumTaskMarkdown compact>
+          {tasksService.cutMarkdown(connectedGovernanceReferendumSummary)}
+        </ReferendumTaskMarkdown>
+      );
+    }
 
     if (rfc?.summary) {
       return <ReferendumTaskMarkdown compact>{tasksService.cutMarkdown(rfc.summary)}</ReferendumTaskMarkdown>;
@@ -67,15 +87,13 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
     }
 
     return t('fellowship.tasks.task.anyReferendum.noDescription');
-  }, [meta, rfc, isPending]);
+  }, [meta, rfc, isPending, connectedGovernanceReferendumSummary, t]);
 
   const title = useMemo(() => {
-    const isSpendProposal = referendum.proposal ? referendumService.isSpendProposal(referendum.proposal) : false;
-
     return isSpendProposal
       ? t('governance.referendums.spendReferendumTitle')
       : t('governance.referendums.referendumTitle', { index: referendum.id });
-  }, [referendum.proposal]);
+  }, [isSpendProposal, referendum.id]);
 
   return (
     <Box direction="row" gap={2}>
