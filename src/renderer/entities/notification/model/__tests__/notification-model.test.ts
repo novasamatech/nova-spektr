@@ -1,6 +1,5 @@
 import { allSettled, fork } from 'effector';
 
-import { localStorageService } from '@/shared/api/local-storage';
 import { storageService } from '@/shared/api/storage';
 import {
   type CreateNotificationParams,
@@ -601,16 +600,12 @@ describe('entities/notification/model/notification-model', () => {
   });
 
   describe('sound settings', () => {
-    const SOUND_ENABLED_KEY = 'notification_sound_enabled';
-
     test('should have sound disabled by default', () => {
       const scope = fork();
       expect(scope.getState(notificationModel.$soundEnabled)).toBe(false);
     });
 
     test('should update $soundEnabled when settingsSaved is called', async () => {
-      vi.spyOn(localStorageService, 'saveToStorage').mockImplementation((_, value) => value);
-
       const scope = fork();
 
       await allSettled(notificationModel.events.settingsSaved, {
@@ -625,28 +620,32 @@ describe('entities/notification/model/notification-model', () => {
       expect(scope.getState(notificationModel.$soundEnabled)).toBe(true);
     });
 
-    test('should persist sound setting to localStorage when settingsSaved is called', async () => {
-      const saveSpy = vi.spyOn(localStorageService, 'saveToStorage').mockImplementation((_, value) => value);
-
+    test('should update $settings store when settingsSaved is called', async () => {
       const scope = fork();
 
       await allSettled(notificationModel.events.settingsSaved, {
         scope,
         params: {
-          disabledWalletIds: [],
-          notificationEvents: ALL_EVENTS,
+          disabledWalletIds: [1],
+          notificationEvents: [NotificationEvent.WALLET_CREATED],
           soundEnabled: true,
         },
       });
 
-      expect(saveSpy).toHaveBeenCalledWith(SOUND_ENABLED_KEY, true);
+      expect(scope.getState(notificationModel.$settings)).toEqual({
+        disabledWalletIds: [1],
+        notificationEvents: [NotificationEvent.WALLET_CREATED],
+        soundEnabled: true,
+      });
     });
 
     test('should allow toggling sound setting off', async () => {
-      vi.spyOn(localStorageService, 'saveToStorage').mockImplementation((_, value) => value);
-
       const scope = fork({
-        values: new Map().set(notificationModel.$soundEnabled, true),
+        values: new Map().set(notificationModel.$settings, {
+          notificationEvents: ALL_EVENTS,
+          disabledWalletIds: [],
+          soundEnabled: true,
+        }),
       });
 
       await allSettled(notificationModel.events.settingsSaved, {

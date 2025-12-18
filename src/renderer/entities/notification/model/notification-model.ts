@@ -1,7 +1,7 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { persist } from 'effector-storage/local';
 import { throttle } from 'patronum';
 
-import { localStorageService } from '@/shared/api/local-storage';
 import { storageService } from '@/shared/api/storage';
 import {
   type CreateNotificationParams,
@@ -17,10 +17,6 @@ import { createBuffer } from '@/shared/effector';
 import { merge } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-const NOTIFICATION_EVENTS_KEY = 'notification_events';
-const DISABLED_WALLET_IDS_KEY = 'notification_disabled_wallet_ids';
-const SOUND_ENABLED_KEY = 'notification_sound_enabled';
-
 const SOUND_THROTTLE_MS = 1000;
 
 const ALL_EVENTS = [
@@ -30,17 +26,31 @@ const ALL_EVENTS = [
   NotificationEvent.OPERATION_REJECTED,
 ];
 
-const initialNotificationEvents = localStorageService.getFromStorage(NOTIFICATION_EVENTS_KEY, ALL_EVENTS);
-const initialDisabledWalletIds = localStorageService.getFromStorage<ID[]>(DISABLED_WALLET_IDS_KEY, []);
-const initialSoundEnabled = localStorageService.getFromStorage(SOUND_ENABLED_KEY, false);
+type NotificationSettings = {
+  notificationEvents: NotificationEvent[];
+  disabledWalletIds: ID[];
+  soundEnabled: boolean;
+};
 
 const $notifications = createStore<Notification[]>([]);
 const $unreadCount = $notifications.map((notifications) => notifications.reduce((acc, n) => acc + (n.read ? 0 : 1), 0));
 const $hasUnread = $unreadCount.map((count) => count > 0);
 
-const $notificationEvents = createStore<Set<NotificationEvent>>(new Set(initialNotificationEvents));
-const $disabledWalletIds = createStore<Set<ID>>(new Set(initialDisabledWalletIds));
-const $soundEnabled = createStore(initialSoundEnabled);
+const $settings = createStore<NotificationSettings>({
+  notificationEvents: ALL_EVENTS,
+  disabledWalletIds: [],
+  soundEnabled: false,
+});
+
+persist({
+  key: 'notification_settings',
+  store: $settings,
+  sync: true,
+});
+
+const $notificationEvents = $settings.map(({ notificationEvents }) => new Set(notificationEvents));
+const $disabledWalletIds = $settings.map(({ disabledWalletIds }) => new Set(disabledWalletIds));
+const $soundEnabled = $settings.map(({ soundEnabled }) => soundEnabled);
 
 const $wallets = createStore<Wallet[]>([]);
 const walletsUpdated = createEvent<Wallet[]>();
@@ -128,18 +138,6 @@ const editNotificationFx = createEffect((notification: Notification): Promise<No
   return storageService.notifications.update(notification.id, notification).then(() => notification);
 });
 
-const saveNotificationEventsFx = createEffect((value: NotificationEvent[]): NotificationEvent[] => {
-  return localStorageService.saveToStorage(NOTIFICATION_EVENTS_KEY, value);
-});
-
-const saveDisabledWalletIdsFx = createEffect((value: ID[]): ID[] => {
-  return localStorageService.saveToStorage(DISABLED_WALLET_IDS_KEY, value);
-});
-
-const saveSoundEnabledFx = createEffect((value: boolean): boolean => {
-  return localStorageService.saveToStorage(SOUND_ENABLED_KEY, value);
-});
-
 const playSoundFx = createEffect(async (): Promise<void> => {
   const audio = new Audio(new URL('../../../shared/assets/sounds/notification.mp3', import.meta.url).href);
   await audio.play();
@@ -156,38 +154,7 @@ sample({
 
 sample({
   clock: settingsSaved,
-  fn: ({ notificationEvents }) => new Set(notificationEvents),
-  target: $notificationEvents,
-});
-
-sample({
-  clock: settingsSaved,
-  fn: ({ disabledWalletIds }) => new Set(disabledWalletIds),
-  target: $disabledWalletIds,
-});
-
-sample({
-  clock: settingsSaved,
-  fn: ({ notificationEvents }) => notificationEvents,
-  target: saveNotificationEventsFx,
-});
-
-sample({
-  clock: settingsSaved,
-  fn: ({ disabledWalletIds }) => disabledWalletIds,
-  target: saveDisabledWalletIdsFx,
-});
-
-sample({
-  clock: settingsSaved,
-  fn: ({ soundEnabled }) => soundEnabled,
-  target: $soundEnabled,
-});
-
-sample({
-  clock: settingsSaved,
-  fn: ({ soundEnabled }) => soundEnabled,
-  target: saveSoundEnabledFx,
+  target: $settings,
 });
 
 sample({
@@ -351,6 +318,7 @@ export const notificationModel = {
   $notificationEvents,
   $disabledWalletIds,
   $soundEnabled,
+  $settings,
 
   events: {
     notificationsStarted: populateNotificationsFx,
