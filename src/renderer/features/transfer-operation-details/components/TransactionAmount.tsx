@@ -2,7 +2,13 @@ import { cnTw } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
 import { type MultisigOperation } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
-import { getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
+import {
+  findCoreTransaction,
+  getTransactionAmount,
+  isTransferTransaction,
+  isXcmTransaction,
+  useTransactionAsset,
+} from '@/entities/transaction';
 
 type Props = {
   operation: MultisigOperation;
@@ -11,6 +17,12 @@ type Props = {
 
 // TODO it should be separated into multiple components for each set of operations (transfer/staking)
 export const TransactionAmount = ({ operation, className }: Props) => {
+  const coreTx = findCoreTransaction(operation.transaction);
+
+  if (!isTransferTransaction(coreTx) && !isXcmTransaction(coreTx)) {
+    return null;
+  }
+
   const transaction = operation.transaction;
   const value = transaction ? getTransactionAmount(transaction) : null;
   const asset = useTransactionAsset(transaction, operation.chainId);
