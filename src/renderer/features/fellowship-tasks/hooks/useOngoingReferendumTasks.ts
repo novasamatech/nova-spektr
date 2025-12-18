@@ -11,6 +11,7 @@ import {
   useMembers,
   useReferendumsMapToGovernance,
 } from '@/domains/collectives';
+import { useReferendumSummary } from '@/domains/governance';
 import { useFellowshipMember, useFellowshipMemberVotes } from '@/aggregates/fellowship-member';
 import { useFellowshipApi, useFellowshipBlock, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { governancePageAggregate } from '@/pages/Governance/aggregates/governancePage';
@@ -48,6 +49,19 @@ export const useOngoingReferendumTasks = () => {
   const governanceReferendumsById = useMemo(() => {
     return dictionary(currentGovernanceReferendums, 'referendumId');
   }, [currentGovernanceReferendums]);
+
+  // Batch fetch governance referendum summaries
+  const { governanceChainId, governanceReferendumIds } = useMemo(() => {
+    const connected = Object.values(referendumsMapToGovernance).filter(nonNullable);
+    const chainId = connected[0]?.chainId ?? null;
+    const ids = connected.map(c => c.referendumId);
+    return { governanceChainId: chainId, governanceReferendumIds: ids };
+  }, [referendumsMapToGovernance]);
+
+  const { data: governanceReferendumSummaries } = useReferendumSummary({
+    chainId: governanceChainId,
+    referendumIds: governanceReferendumIds,
+  });
 
   const tasks = useMemo<TaskDescription[]>(() => {
     if (!nonNullable(member) || !nonNullable(currentBlock) || !nonNullable(maxRank)) {
@@ -120,8 +134,11 @@ export const useOngoingReferendumTasks = () => {
 
     const otherTasks = groups.other
       ? groups.other.map<TaskDescription>(referendum => {
-          const connectedGovernanceReferendumId = referendumsMapToGovernance[referendum.id].referendumId;
-          const connectedGovernanceReferendum = governanceReferendumsById[connectedGovernanceReferendumId];
+          const connectedReferendumRelation = referendumsMapToGovernance[referendum.id] ?? null;
+          const connectedGovernanceReferendumId = connectedReferendumRelation?.referendumId;
+          const connectedGovernanceReferendum = connectedGovernanceReferendumId
+            ? governanceReferendumsById[connectedGovernanceReferendumId]
+            : null;
 
           const referendumWithLowerEndBlock =
             nonNullable(connectedGovernanceReferendum) && nonNullable(connectedGovernanceReferendum.end)
@@ -133,15 +150,20 @@ export const useOngoingReferendumTasks = () => {
 
           const weight = getWeight(referendumWithLowerEndBlock);
 
+          const connectedSummary = connectedGovernanceReferendumId
+            ? (governanceReferendumSummaries?.[connectedGovernanceReferendumId]?.summary ?? null)
+            : null;
+
           return {
             id: `referendum_${referendumWithLowerEndBlock.id}`,
             weight: weight.sortingScore,
             group: 'active',
             body: OngoingReferendumVoting,
             meta: {
-              referendumWithLowerEndBlock,
+              referendum: referendumWithLowerEndBlock,
               transaction: operations[`referendum_${referendumWithLowerEndBlock.id}`]?.coreTx ?? null,
               tags: weight.tags,
+              connectedGovernanceReferendumSummary: connectedSummary,
             },
             hasVoted: hasUserVoted(referendumWithLowerEndBlock),
           };
@@ -149,7 +171,18 @@ export const useOngoingReferendumTasks = () => {
       : [];
 
     return [...evidenceTasks, ...otherTasks];
-  }, [member, currentBlock, maxRank, referendums, votes, members, operations, governanceReferendumsById]);
+  }, [
+    member,
+    currentBlock,
+    maxRank,
+    referendums,
+    votes,
+    members,
+    operations,
+    governanceReferendumsById,
+    referendumsMapToGovernance,
+    governanceReferendumSummaries,
+  ]);
 
   return {
     data: tasks,

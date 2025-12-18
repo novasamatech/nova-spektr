@@ -7,8 +7,6 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService } from '@/domains/collectives';
-import { useReferendumSummary } from '@/domains/governance';
-import { useConnectedReferendum } from '../../hooks/useConnectedReferendum';
 import { useMetadata } from '../../hooks/useMetadata';
 import { useRfcProposalSummary } from '../../hooks/useRfcProposalSummary';
 import { tasksService } from '../../service';
@@ -46,19 +44,19 @@ type Props = {
   referendum: OngoingReferendum;
   transaction: Transaction | null;
   tags: string[];
+  connectedGovernanceReferendumSummary: string | null;
 };
 
-export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props) => {
+export const OngoingReferendumVoting = ({
+  referendum,
+  tags,
+  transaction,
+  connectedGovernanceReferendumSummary,
+}: Props) => {
   const { t } = useI18n();
 
   const { data: meta, pending: pendingMetadata } = useMetadata(referendum);
   const { data: rfc, pending: pendingSummary } = useRfcProposalSummary(referendum);
-  const { data: connectedGovernanceReferendum } = useConnectedReferendum(referendum.id);
-  const { data: connectedGovernanceReferendumSummary, pending: pendingConnectedGovernanceReferendumSummary } =
-    useReferendumSummary({
-      chainId: connectedGovernanceReferendum?.chainId,
-      referendumIds: [connectedGovernanceReferendum?.referendumId],
-    });
 
   const isSpendProposal = referendum.proposal ? referendumService.isSpendProposal(referendum.proposal) : false;
   const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
@@ -67,17 +65,15 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
     if (!referendum) return false;
     if (isRFCProposal) return pendingSummary;
     return pendingMetadata;
-  }, [referendum, isRFCProposal, pendingSummary, pendingConnectedGovernanceReferendumSummary, pendingMetadata]);
+  }, [referendum, isRFCProposal, pendingSummary, pendingMetadata]);
 
   const content = useMemo(() => {
     if (isPending) return;
 
-    const connectedGovernanceReferendumSummaryText =
-      connectedGovernanceReferendumSummary?.[connectedGovernanceReferendum?.referendumId]?.summary;
-    if (connectedGovernanceReferendum && connectedGovernanceReferendumSummaryText) {
+    if (connectedGovernanceReferendumSummary) {
       return (
         <ReferendumTaskMarkdown compact>
-          {tasksService.cutMarkdown(connectedGovernanceReferendumSummaryText)}
+          {tasksService.cutMarkdown(connectedGovernanceReferendumSummary)}
         </ReferendumTaskMarkdown>
       );
     }
@@ -91,7 +87,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
     }
 
     return t('fellowship.tasks.task.anyReferendum.noDescription');
-  }, [meta, rfc, isPending]);
+  }, [meta, rfc, isPending, connectedGovernanceReferendumSummary, t]);
 
   const title = useMemo(() => {
     return isSpendProposal

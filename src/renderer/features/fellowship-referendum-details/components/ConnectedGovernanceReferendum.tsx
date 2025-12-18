@@ -14,7 +14,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, truncate } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { Button, FootnoteText, HeadlineText, IconButton, Separator, TitleText } from '@/shared/ui';
-import { Box, Copy, Json, Label, Markdown, Modal, Skeleton } from '@/shared/ui-kit';
+import { Box, Copy, JsonArgs, Label, Markdown, Modal, Skeleton } from '@/shared/ui-kit';
 import { type Referendum, referendumService } from '@/domains/collectives';
 import {
   useReferendumSummary,
@@ -33,10 +33,10 @@ import { useConnectedReferendum } from '../hooks/useConnectedReferendum';
 import { Card } from './Card';
 
 type Props = {
-  fellowshipReferendum: Referendum;
+  referendum: Referendum;
 };
 
-export const ConnectedGovernanceReferendum = ({ fellowshipReferendum }: Props) => {
+export const ConnectedGovernanceReferendum = ({ referendum: fellowshipReferendum }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
   const apis = useUnit(networkModel.$apis);
@@ -58,7 +58,7 @@ export const ConnectedGovernanceReferendum = ({ fellowshipReferendum }: Props) =
 
   const { data: connectedGovernanceReferendumSummary } = useReferendumSummary({
     chainId: governanceReferendumConnection?.chainId,
-    referendumIds: [governanceReferendumConnection?.referendumId],
+    referendumIds: governanceReferendumConnection ? [governanceReferendumConnection.referendumId] : null,
   });
 
   const onViewClick = useCallback(() => {
@@ -207,7 +207,7 @@ const Proposal = ({ referendum }: { referendum: Referendum }) => {
             </Modal.Trigger>
             <Modal.Title close>{t('fellowship.whitelist.callData')}</Modal.Title>
             <Modal.Content>
-              <Json value={proposalJSON} />
+              <JsonArgs value={proposalJSON} />
             </Modal.Content>
           </Modal>
         </div>

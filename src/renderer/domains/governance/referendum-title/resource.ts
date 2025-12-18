@@ -2,7 +2,7 @@ import { createStore } from 'effector';
 
 import { type GovernanceApi } from '@/shared/api/governance';
 import { type Chain, type ChainId, type ReferendumId } from '@/shared/core';
-import { createQueryResource } from '@/shared/query';
+import { createSubscriptionResource } from '@/shared/query';
 
 export type ReferendumTitleSubscriptionParams = {
   chain: Chain;
@@ -13,23 +13,17 @@ type TitlesCache = Record<ChainId, Record<ReferendumId, string>>;
 
 const $sharedTitlesCache = createStore<TitlesCache>({});
 
-export const referendumTitleResource = createQueryResource<ReferendumTitleSubscriptionParams>({
+export const referendumTitleResource = createSubscriptionResource<ReferendumTitleSubscriptionParams>({
   key: ({ chain }) => [chain.chainId],
 })
-  .request<Record<ReferendumId, string>>(({ chain, service }) => {
-    return new Promise(resolve => {
-      let result: Record<ReferendumId, string> = {};
-
-      service.getReferendumList(chain, data => {
-        if (!data.done && data.value) {
-          result = { ...result, ...data.value };
-        }
-
-        if (data.done) {
-          resolve(result);
-        }
-      });
+  .subscribe<Record<ReferendumId, string>>(({ chain, service }, callback) => {
+    service.getReferendumList(chain, data => {
+      if (data.value) {
+        callback(data.value);
+      }
     });
+
+    return () => {};
   })
   .cache({
     store: $sharedTitlesCache,
