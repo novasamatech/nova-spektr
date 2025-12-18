@@ -34,19 +34,16 @@ multisigOperationsSDK(transferOperationDetailFeature, {
       return 'crossChain';
     }
   },
-  title({ operation, showCoreTransaction }) {
-    const { t } = useI18n();
-
-    if (nullable(operation)) return null;
+  title({ operation, showCoreTransaction, asset, t }) {
+    if (nullable(operation) || nullable(asset) || nullable(t)) return null;
 
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
 
     if (isTransferTransaction(transaction)) {
-      const asset = useTransactionAsset(transaction, operation.chainId);
       const amount = transaction ? getTransactionAmount(transaction) : null;
 
       return {
-        title: t('operations.titles.transfer', { asset: asset?.symbol }),
+        title: t('operations.titles.transfer', { asset: asset.symbol }),
         amount: asset && amount ? { value: amount, asset } : undefined,
         sourceChainId: operation.chainId,
       };
@@ -54,7 +51,6 @@ multisigOperationsSDK(transferOperationDetailFeature, {
 
     if (isXcmTransaction(transaction)) {
       const coreTx = findCoreTransaction(transaction);
-      const asset = useTransactionAsset(coreTx, operation.chainId);
       const amount = coreTx ? getTransactionAmount(coreTx) : null;
 
       return {
@@ -64,6 +60,8 @@ multisigOperationsSDK(transferOperationDetailFeature, {
         destinationChainId: transaction?.args.destinationChain,
       };
     }
+
+    return null;
   },
   logTitle({ operation, showCoreTransaction }) {
     const { t } = useI18n();

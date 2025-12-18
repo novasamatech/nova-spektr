@@ -1,5 +1,4 @@
 import { createFeature } from '@/shared/feature';
-import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { isEditFlexibleTransaction } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
@@ -16,10 +15,8 @@ multisigOperationsSDK(flexibleOperationDetailFeature, {
       return 'proxyMst';
     }
   },
-  title({ operation }) {
-    const { t } = useI18n();
-
-    if (nullable(operation)) return null;
+  title({ operation, t }) {
+    if (nullable(operation) || nullable(t)) return null;
 
     if (isEditFlexibleTransaction(operation.transaction)) {
       return {
