@@ -1,11 +1,8 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import { useUnit } from 'effector-react';
-import { t } from 'i18next';
 
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
-import { networkModel } from '@/entities/network';
 import {
   TransactionTitle,
   findCoreTransaction,
@@ -38,10 +35,8 @@ multisigOperationsSDK(multiTransferOperationDetailFeature, {
       return 'multiTransfer';
     }
   },
-  title({ operation, showCoreTransaction }) {
-    const chains = useUnit(networkModel.$chains);
-
-    if (nullable(operation)) return null;
+  title({ operation, showCoreTransaction, chains, t }) {
+    if (nullable(operation) || nullable(chains) || nullable(t)) return null;
 
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
 
