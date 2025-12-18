@@ -6,7 +6,7 @@ import { cnTw, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, CaptionText, FootnoteText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
-import { Modal, ScrollArea } from '@/shared/ui-kit';
+import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
 import { useAccountName } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
@@ -17,6 +17,8 @@ type TableData = MultiTransferRow & {
 };
 
 type RowStatus = 'error' | 'valid';
+
+const NUM_FORMATTER = new Intl.NumberFormat('en-US');
 
 const STATUS_TEXT_COLORS: Record<RowStatus, string> = {
   error: 'text-text-negative',
@@ -133,10 +135,24 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
               {hasInvalidValue || nullable(row.amount.parsed) || nullable(asset) ? (
                 <span className="shrink-0 text-body">{row.amount.raw}</span>
               ) : (
-                <>
-                  <AssetBalance value={row.amount.parsed} asset={asset} showSymbol />
-                  <AssetFiatBalance asset={asset} amount={row.amount.parsed} />
-                </>
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <div className="flex flex-col items-end">
+                      <AssetBalance
+                        value={row.amount.parsed}
+                        asset={asset}
+                        showSymbol
+                        className="border-b border-filter-border text-inherit"
+                      />
+                      <AssetFiatBalance asset={asset} amount={row.amount.parsed} className="text-inherit" />
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    {t('multiTransfer.parsedFile.table.hints.planks', {
+                      amount: NUM_FORMATTER.format(BigInt(row.amount.raw)),
+                    })}
+                  </Tooltip.Content>
+                </Tooltip>
               )}
               {fieldIssues.length > 0 && (
                 <CaptionText className={cnTw('text-right text-inherit', STATUS_TEXT_COLORS[status])}>
