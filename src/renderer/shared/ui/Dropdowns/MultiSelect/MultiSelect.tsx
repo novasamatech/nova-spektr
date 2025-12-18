@@ -1,5 +1,5 @@
 import * as RadixPopover from '@radix-ui/react-popover';
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
@@ -97,26 +97,33 @@ export const MultiSelect = ({
     );
   };
 
-  const handleOptionClick = (option: DropdownOption) => {
-    const isSelected = selectedIds.includes(option.id);
-    let newSelection: DropdownResult[];
+  const handleOptionClick = useCallback(
+    (option: DropdownOption) => {
+      const isSelected = selectedIds.includes(option.id);
+      let newSelectedIds: DropdownOption['id'][];
 
-    if (isSelected) {
-      newSelection = selectedOptions.filter((o) => o.id !== option.id).map((o) => ({ id: o.id, value: o.value }));
-    } else {
-      newSelection = [...selectedOptions, option].map((o) => ({ id: o.id, value: o.value }));
-    }
+      if (isSelected) {
+        newSelectedIds = selectedIds.filter((id) => id !== option.id);
+      } else {
+        newSelectedIds = [...selectedIds, option.id];
+      }
 
-    onChange(newSelection);
-  };
+      onChange(newSelectedIds.map((id) => ({ id, value: options.find((o) => o.id === id)?.value ?? id })));
+    },
+    [selectedIds, options, onChange],
+  );
 
-  const handleSelectAllClick = () => {
+  const handleSelectAllClick = useCallback(() => {
+    const filteredIds = new Set(options.map((o) => o.id));
+
     if (allSelected) {
-      onChange([]);
+      const newSelectedIds = selectedIds.filter((id) => !filteredIds.has(id));
+      onChange(newSelectedIds.map((id) => ({ id, value: id })));
     } else {
-      onChange(options.map((o) => ({ id: o.id, value: o.value })));
+      const newSelectedIds = [...new Set([...selectedIds, ...options.map((o) => o.id)])];
+      onChange(newSelectedIds.map((id) => ({ id, value: options.find((o) => o.id === id)?.value ?? id })));
     }
-  };
+  }, [options, allSelected, selectedIds, onChange]);
 
   const selectElement = (
     <RadixPopover.Root open={isOpen} onOpenChange={setIsOpen}>
