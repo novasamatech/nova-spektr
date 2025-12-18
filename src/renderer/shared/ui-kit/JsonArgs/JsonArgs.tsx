@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-import { Json } from '@/shared/ui-kit';
+import { Json } from '../Json/Json';
 
 type Props = {
   value: object;

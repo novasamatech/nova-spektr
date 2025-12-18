@@ -35,6 +35,7 @@ export { StepIndicator, type Step } from './StepIndicator/StepIndicator';
 export { Field } from './Field/Field';
 export { Input } from './Input/Input';
 export { Json } from './Json/Json';
+export { JsonArgs } from './JsonArgs/JsonArgs';
 export { Tabs } from './Tabs/Tabs';
 export { Box } from './Box/Box';
 export { QrReader, type QrScanResult } from './QrReader/QrReader';
