@@ -201,7 +201,7 @@ export const MultiSelect = ({
               }
             }}
           >
-            {showSelectAll && options.length > 0 && (
+            {showSelectAll && options.length > 0 && !searchQuery && (
               <>
                 <div
                   role="option"
