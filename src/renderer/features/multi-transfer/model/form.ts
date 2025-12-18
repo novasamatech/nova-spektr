@@ -84,7 +84,12 @@ const $csvError = createStore<MultiTransferCsvError | null>(null).reset(csvReset
 const $csvIssues = createStore<ValidationIssue[] | null>(null).reset(csvReset);
 const $recipientBalances = createStore<Map<AccountId, Balance>>(new Map()).reset(csvReset);
 
+const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
 const parseFileFx = createEffect<File, MultiTransferRowSerialized[], MultiTransferCsvError>(async (file) => {
+  if (file.size > MAX_FILE_SIZE) {
+    throw MultiTransferCsvError.STRUCTURE;
+  }
+
   const parsed = await multiTransferUtils.parseCSV(file);
   if (parsed.success) return parsed.data;
 

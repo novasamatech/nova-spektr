@@ -63,9 +63,9 @@ type ParseResult =
   | { success: false; error: MultiTransferCsvError };
 
 async function parseCSV(file: File): Promise<ParseResult> {
-  const fileContent = await file.text();
-
   try {
+    const fileContent = await file.text();
+
     const headerCheck = parse(fileContent, {
       to: 1,
       trim: true,
