@@ -74,3 +74,12 @@ Custom.args = {
   options: customOptions,
   onChange: () => {},
 };
+
+export const WithSelectAll = Template.bind({});
+WithSelectAll.args = {
+  placeholder: 'Select an option',
+  selectedIds: [options[0].id],
+  options,
+  showSelectAll: true,
+  onChange: () => {},
+};

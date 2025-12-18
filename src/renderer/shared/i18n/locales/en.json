@@ -1187,11 +1187,14 @@
       "retryLoading": "Retry"
     },
     "input": {
+      "all": "All",
       "amountLabel": "Amount",
       "availableLabel": "Available:",
       "descriptionPlaceholder": "Choose an operation description",
+      "nothingFound": "Nothing found",
       "searchLabel": "Search",
       "searchPlaceholder": "Search",
+      "selectAll": "Select all",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
@@ -2282,7 +2285,7 @@
       "eventOperationRejected": "Operation rejected",
       "eventWalletCreated": "Wallet created",
       "general": "General",
-      "modalTitle": "Notifications settings",
+      "modalTitle": "Notification settings",
       "plateTitle": "Notifications",
       "preferences": "Preferences",
       "preferencesDescription": "Select wallets and events to be notified about their activity by displaying popup",
