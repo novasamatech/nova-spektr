@@ -2,13 +2,12 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { TransactionType } from '@/shared/core';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { AssetFiatBalance } from '@/entities/price';
-import { getTransactionAmount } from '@/entities/transaction';
+import { getTransactionAmount, isMultiTransferTransaction } from '@/entities/transaction';
 
 type Props = {
   operation: MultisigOperation;
@@ -17,18 +16,16 @@ type Props = {
 export const TransactionAmount = memo(({ operation }: Props) => {
   const chains = useUnit(networkModel.$chains);
 
+  if (!isMultiTransferTransaction(operation.transaction)) {
+    return null;
+  }
+
   const chain = chains[operation.chainId];
   const asset = chain ? getNativeAsset(chain.assets) : null;
   const transaction = operation.transaction;
 
-  let amount: BN | null = null;
-  if (transaction?.type === TransactionType.BATCH_ALL) {
-    const batchAmounts: string[] = transaction.args?.transactions?.map(getTransactionAmount);
-    amount = batchAmounts.reduce((amount, currentAmount) => amount.add(new BN(currentAmount)), BN_ZERO);
-  } else {
-    const txAmount = transaction && getTransactionAmount(transaction);
-    amount = txAmount ? new BN(txAmount) : null;
-  }
+  const batchAmounts: string[] = transaction?.args?.transactions?.map(getTransactionAmount);
+  const amount = batchAmounts.reduce((amount, currentAmount) => amount.add(new BN(currentAmount)), BN_ZERO);
 
   if (!asset || !amount) {
     return null;
