@@ -5,6 +5,7 @@ import { TEST_IDS } from '@/shared/constants';
 import { type ChainId, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type TxMetadata, assert, createTxMetadata, upgradeNonce } from '@/shared/lib/utils';
+import { isElectron } from '@/shared/lib/utils/browser';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Box, Tabs } from '@/shared/ui-kit';
@@ -59,6 +60,12 @@ export const ScanMultiframeQr = ({
   const setupTransactions = async (): Promise<void> => {
     const metadataMap: Record<AccountId, Record<ChainId, TxMetadata>> = {};
 
+    // LOG: Metadata fetching for era debugging
+    console.group(`[ERA-DEBUG] setupTransactions - Metadata Fetching (${isElectron() ? 'ELECTRON' : 'WEB'})`);
+    console.log('Total signingPayloads:', signingPayloads.length);
+    console.log('Tab:', tab);
+    console.log('isMetadataProofsSupported:', isMetadataProofsSupported);
+
     for (const signingPayload of signingPayloads) {
       const accountId = signingPayload.signatory.accountId;
       const chainId = signingPayload.chain.chainId;
@@ -68,12 +75,16 @@ export const ScanMultiframeQr = ({
       }
 
       if (!metadataMap[accountId][chainId]) {
-        metadataMap[accountId][chainId] = await createTxMetadata(
-          signingPayload.signatory.accountId,
-          signingPayload.api,
-        );
+        const metadata = await createTxMetadata(signingPayload.signatory.accountId, signingPayload.api);
+        console.log(`Metadata for ${accountId} on ${chainId}:`, {
+          blockNumber: metadata.signerPayloadBase.blockNumber,
+          blockHash: metadata.signerPayloadBase.blockHash,
+          mortalLength: metadata.mortalLength,
+        });
+        metadataMap[accountId][chainId] = metadata;
       }
     }
+    console.groupEnd();
 
     const transactionPromises = signingPayloads.map(async (signingPayload, nonceIncrement) => {
       const signatory = signingPayload.signatory;
@@ -151,11 +162,30 @@ export const ScanMultiframeQr = ({
 
     if (txRequests.length === 0) return;
 
+    // LOG: Pre-encoding validation for era debugging
+    console.group('[ERA-DEBUG] setupTransactions - Pre-Encoding Validation');
+    console.log('Number of transactions:', txRequests.length);
+    // eslint-disable-next-line no-restricted-syntax
+    txRequests.forEach((tx, idx) => {
+      console.log(`Transaction ${idx}:`, {
+        signPayloadLength: tx.signPayload.length,
+        signPayloadFirstBytes: Array.from(tx.signPayload.slice(0, 10)),
+        signPayloadLastBytes: Array.from(tx.signPayload.slice(-10)),
+      });
+    });
+    console.groupEnd();
+
     transactionService.logPayload(txRequests.map(({ info }) => info));
 
     const transactionsEncoded = u8aConcat(
       TRANSACTION_BULK.encode({ TransactionBulk: 'V1', payload: txRequests.map((t) => t.signPayload) }),
     );
+
+    // LOG: Post-encoding validation
+    console.group('[ERA-DEBUG] setupTransactions - Post-Encoding');
+    console.log('transactionsEncoded length:', transactionsEncoded.length);
+    console.log('transactionsEncoded first 20 bytes:', Array.from(transactionsEncoded.slice(0, 20)));
+    console.groupEnd();
     const bulk = createMultipleSignPayload(transactionsEncoded);
 
     setQrPayload(bulk);

@@ -260,6 +260,23 @@ async function createPayloadWithProof(
   // Set era explicitly for security reason - immortal transactions can be used in replay attacks.
   const era = createEra(api, signerPayloadBase.blockNumber, mortalLength);
 
+  // LOG: Era debugging for multiple transaction encoding
+  // Note: We can't import isElectron here due to circular dependencies, so we'll check manually
+  const isElectronEnv = typeof window !== 'undefined' && typeof (window as any).App === 'object';
+  console.group(
+    `[ERA-DEBUG] createPayloadWithProof (${isElectronEnv ? 'ELECTRON' : 'WEB'}) - nonceIncrement: ${nonceIncrement ?? 'none'}`,
+  );
+  console.log('blockNumber:', signerPayloadBase.blockNumber);
+  console.log('blockHash:', signerPayloadBase.blockHash);
+  console.log('mortalLength:', mortalLength);
+  console.log('era.toHex():', era.toHex());
+  console.log('era.toNumber():', era.toNumber());
+  console.log('extrinsic.version:', extrinsic.version);
+  console.log('api.extrinsicVersion:', api.extrinsicVersion);
+  console.log('version mismatch:', extrinsic.version !== api.extrinsicVersion);
+  console.log('isImmortal (era === 0):', era.toNumber() === 0);
+  console.groupEnd();
+
   const metadataHex = api.runtimeMetadata.toHex();
 
   const merkleizedMetadata = merkleizeMetadata(metadataHex, {
@@ -316,6 +333,17 @@ function createPayloadWithMetadata(extrinsic: Extrinsic, api: ApiPromise, metada
 
   // Set era explicitly for security reason - immortal transactions can be used in replay attacks.
   const era = createEra(api, signerPayloadBase.blockNumber, mortalLength);
+
+  // LOG: Era debugging for legacy path (for comparison)
+  console.group('[ERA-DEBUG] createPayloadWithMetadata');
+  console.log('blockNumber:', signerPayloadBase.blockNumber);
+  console.log('blockHash:', signerPayloadBase.blockHash);
+  console.log('mortalLength:', mortalLength);
+  console.log('era.toHex():', era.toHex());
+  console.log('era.toNumber():', era.toNumber());
+  console.log('api.extrinsicVersion:', api.extrinsicVersion);
+  console.log('isImmortal (era === 0):', era.toNumber() === 0);
+  console.groupEnd();
 
   const signingPayload = new GenericSignerPayload(api.registry, {
     ...signerPayloadBase,
