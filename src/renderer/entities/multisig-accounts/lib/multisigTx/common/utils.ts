@@ -36,7 +36,6 @@ export const buildMultisigTx = (
     multisigTx.args.callHash,
     multisigTx.accountId,
     params.timepoint.height,
-    params.timepoint.index,
   );
   const eventId = multisigOperationService.getEventId(operationId, signatoryAccountId, 'approve');
 

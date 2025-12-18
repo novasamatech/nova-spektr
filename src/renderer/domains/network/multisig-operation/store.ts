@@ -15,8 +15,8 @@ import { Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { decodeCallData } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 import { accounts } from '../account/store';
-import { type AnyAccount } from '../account/types';
 
 import { deserializeOperation, serializeOperation } from './helpers';
 import { fetchResource, subscribeEventsResource, subscribeResource } from './resource';
@@ -132,10 +132,17 @@ const getNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancell
   }
 };
 
-const createOperationNotification = (
-  operation: MultisigOperation,
-  walletName?: string,
-): CreateMultisigOperationParams => {
+type CreateNotificationParams = {
+  operation: MultisigOperation;
+  walletName?: string;
+  issuer: AccountId;
+};
+
+const createOperationNotification = ({
+  operation,
+  walletName,
+  issuer,
+}: CreateNotificationParams): CreateMultisigOperationParams => {
   const description = walletName ? `by ${walletName}` : undefined;
 
   const relativeLink = multisigOperationService.generateMultisigOperationRelativeLink({
@@ -147,10 +154,10 @@ const createOperationNotification = (
   });
 
   return {
-    key: `${NotificationType.MULTISIG_OPERATION}-${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.accountId, operation.blockCreated, operation.indexCreated)}-${operation.status}`,
+    key: `${NotificationType.MULTISIG_OPERATION}-${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.accountId, operation.blockCreated)}-${operation.status}`,
     type: NotificationType.MULTISIG_OPERATION,
     status: getNotificationStatus(operation.status),
-    issuer: operation.accountId,
+    issuer,
     title: getNotificationTitle(operation.status),
     description,
     multisigAccountId: operation.accountId,
@@ -178,7 +185,12 @@ const operationChanges = pairwise($list)
   .map(({ prev: prevState, current: update }) => {
     const previousOpsMap = new Map(
       prevState.map(op => [
-        multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated),
+        multisigOperationService.getOperationId(
+          op.chainId,
+          op.callHash,
+          op.accountId,
+          op.blockCreated,
+        ),
         op,
       ]),
     );
@@ -186,7 +198,12 @@ const operationChanges = pairwise($list)
 
     for (const item of update) {
       const previousOp = previousOpsMap.get(
-        multisigOperationService.getOperationId(item.chainId, item.callHash, item.accountId, item.blockCreated, item.indexCreated),
+        multisigOperationService.getOperationId(
+          item.chainId,
+          item.callHash,
+          item.accountId,
+          item.blockCreated,
+        ),
       );
 
       if (!previousOp) {
@@ -205,7 +222,15 @@ sample({
   source: { populated: $populated, accountsList: accounts.$list },
   filter: ({ populated }) => populated,
   fn: ({ accountsList }, operations) => {
-    const accountsMap = new Map<AccountId, AnyAccount>(accountsList.map(account => [account.accountId, account]));
+    const accountsMap = new Map(
+      accountsList.filter(accountUtils.isAnyMultisigAccount).map(account => {
+        const multisigAccountId = accountUtils.isFlexibleMultisigAccount(account)
+          ? account.multisigAccountId
+          : account.accountId;
+
+        return [multisigAccountId, account];
+      }),
+    );
 
     return operations
       .filter(operation => {
@@ -215,8 +240,9 @@ sample({
       })
       .map(operation => {
         const account = accountsMap.get(operation.accountId);
+        const issuer = account?.accountId ?? operation.accountId;
 
-        return createOperationNotification(operation, account?.name);
+        return createOperationNotification({ operation, walletName: account?.name, issuer });
       });
   },
   target: notificationModel.events.notificationsAdded,

@@ -40,7 +40,7 @@ const iconConfig: Record<NotificationStatus, { name: IconNames; className: strin
 };
 
 export const MultisigOperationNotificationComponent = ({
-  notification: { callHash, callTimepoint, chainId, issuer, status },
+  notification: { callHash, callTimepoint, chainId, issuer, multisigAccountId, status },
 }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -49,9 +49,8 @@ export const MultisigOperationNotificationComponent = ({
   const operationId = multisigOperationService.getOperationId(
     chainId,
     callHash,
-    issuer,
+    multisigAccountId,
     callTimepoint.height,
-    callTimepoint.index,
   );
 
   const operation = useStoreMap({
@@ -60,13 +59,8 @@ export const MultisigOperationNotificationComponent = ({
     fn: (operations) =>
       operations.find(
         (op) =>
-          multisigOperationService.getOperationId(
-            op.chainId,
-            op.callHash,
-            op.accountId,
-            op.blockCreated,
-            op.indexCreated,
-          ) === operationId,
+          multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated) ===
+          operationId,
       ),
   });
 
@@ -81,7 +75,7 @@ export const MultisigOperationNotificationComponent = ({
     keys: [multisigAccount],
     fn: (wallets) => {
       if (!multisigAccount) return null;
-      return wallets.find((w) => w.accounts.some((acc) => acc.accountId === multisigAccount.accountId));
+      return wallets.find((w) => w.id === multisigAccount?.walletId);
     },
   });
 

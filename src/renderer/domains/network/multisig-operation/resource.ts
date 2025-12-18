@@ -83,7 +83,6 @@ function mapSubqueryOperationRecord(
     response.callHash,
     response.accountId,
     response.blockCreated,
-    response.indexCreated,
   );
   const api = apis[response.chainId];
 
@@ -166,7 +165,6 @@ const fetchOnchainOperations = async (api: ApiPromise, accountId: AccountId, cha
       key.callHash,
       key.accountId,
       multisig.when.height,
-      multisig.when.index,
     );
 
     const events = multisig.approvals.map<MultisigEvent>(accountId => ({
@@ -320,7 +318,6 @@ export const subscribeEventsResource = createSubscriptionResource<
             data.callHash,
             data.multisigAccountId,
             data.timepoint.height,
-            data.timepoint.index,
           );
 
           const eventStatus = event.method === 'MultisigCancelled' ? 'reject' : 'approve';

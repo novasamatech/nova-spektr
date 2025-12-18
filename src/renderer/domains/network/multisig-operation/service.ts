@@ -50,8 +50,8 @@ function getOtherSignatories(account: MultisigAccount | FlexibleMultisigAccount,
   );
 }
 
-function getOperationId(chainId: ChainId, callHash: string, accountId: AccountId, block: number, index: number) {
-  return `${chainId}-${callHash}-${accountId}-${block}-${index}`;
+function getOperationId(chainId: ChainId, callHash: string, accountId: AccountId, block: number) {
+  return `${chainId}-${callHash}-${accountId}-${block}`;
 }
 
 function getEventId(operationId: string, signer: string, status: 'approve' | 'reject') {
