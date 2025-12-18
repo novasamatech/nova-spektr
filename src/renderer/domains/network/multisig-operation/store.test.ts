@@ -1,11 +1,10 @@
 import { allSettled, createWatch, fork } from 'effector';
 
-import { CryptoType, NotificationType, SigningType } from '@/shared/core';
+import { AccountType, CryptoType, type MultisigAccount, NotificationType, SigningType } from '@/shared/core';
 import { createAccountId, polkadotChainId } from '@/shared/mocks';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { notificationModel } from '@/entities/notification';
 import { accounts } from '../account/store';
-import { type AnyAccount } from '../account/types';
 
 import { multisigOperation } from './store';
 import { type MultisigOperation } from './types';
@@ -27,7 +26,7 @@ const createTestOperation = (params: Partial<MultisigOperation> = {}): MultisigO
   timestamp: params.timestamp ?? 1000,
 });
 
-const createTestAccount = (params: Partial<AnyAccount> = {}): AnyAccount => ({
+const createTestMultisigAccount = (params: { accountId?: ReturnType<typeof createAccountId>; createdAt?: number } = {}): MultisigAccount => ({
   id: 'test-account',
   type: 'universal',
   accountId: params.accountId ?? createAccountId('1'),
@@ -36,6 +35,9 @@ const createTestAccount = (params: Partial<AnyAccount> = {}): AnyAccount => ({
   signingType: SigningType.POLKADOT_VAULT,
   cryptoType: CryptoType.SR25519,
   createdAt: params.createdAt,
+  accountType: AccountType.MULTISIG,
+  signatories: [{ accountId: createAccountId('3') }],
+  threshold: 2,
 });
 
 describe('multisig operation store notifications', () => {
@@ -43,7 +45,7 @@ describe('multisig operation store notifications', () => {
     it('should send notification for new operation when account has no createdAt (legacy)', async () => {
       const accountId = createAccountId('1');
       const operation = createTestOperation({ accountId, timestamp: 1000 });
-      const account = createTestAccount({ accountId, createdAt: undefined });
+      const account = createTestMultisigAccount({ accountId, createdAt: undefined });
 
       const notifications: unknown[] = [];
       const scope = fork({
@@ -76,7 +78,7 @@ describe('multisig operation store notifications', () => {
       const operationTimestamp = 1000; // After account creation
 
       const operation = createTestOperation({ accountId, timestamp: operationTimestamp });
-      const account = createTestAccount({ accountId, createdAt: accountCreatedAt });
+      const account = createTestMultisigAccount({ accountId, createdAt: accountCreatedAt });
 
       const notifications: unknown[] = [];
       const scope = fork({
@@ -107,7 +109,7 @@ describe('multisig operation store notifications', () => {
       const operationTimestamp = 1000; // Before account creation
 
       const operation = createTestOperation({ accountId, timestamp: operationTimestamp });
-      const account = createTestAccount({ accountId, createdAt: accountCreatedAt });
+      const account = createTestMultisigAccount({ accountId, createdAt: accountCreatedAt });
 
       const notifications: unknown[] = [];
       const scope = fork({
@@ -134,7 +136,7 @@ describe('multisig operation store notifications', () => {
       const timestamp = 1000;
 
       const operation = createTestOperation({ accountId, timestamp });
-      const account = createTestAccount({ accountId, createdAt: timestamp });
+      const account = createTestMultisigAccount({ accountId, createdAt: timestamp });
 
       const notifications: unknown[] = [];
       const scope = fork({
@@ -161,7 +163,7 @@ describe('multisig operation store notifications', () => {
       const differentAccountId = createAccountId('2');
 
       const operation = createTestOperation({ accountId: operationAccountId, timestamp: 1000 });
-      const account = createTestAccount({ accountId: differentAccountId, createdAt: 500 });
+      const account = createTestMultisigAccount({ accountId: differentAccountId, createdAt: 500 });
 
       const notifications: unknown[] = [];
       const scope = fork({
@@ -189,7 +191,7 @@ describe('multisig operation store notifications', () => {
 
       const oldOperation = createTestOperation({ id: 'op-old', accountId, timestamp: 1000 });
       const newOperation = createTestOperation({ id: 'op-new', accountId, timestamp: 2000 });
-      const account = createTestAccount({ accountId, createdAt: accountCreatedAt });
+      const account = createTestMultisigAccount({ accountId, createdAt: accountCreatedAt });
 
       const notifications: unknown[] = [];
       const scope = fork({
@@ -219,7 +221,7 @@ describe('multisig operation store notifications', () => {
     it('should NOT send notification on initial population (first update)', async () => {
       const accountId = createAccountId('1');
       const operation = createTestOperation({ accountId, timestamp: 1000 });
-      const account = createTestAccount({ accountId, createdAt: 500 });
+      const account = createTestMultisigAccount({ accountId, createdAt: 500 });
 
       const notifications: unknown[] = [];
       const scope = fork({
@@ -247,7 +249,7 @@ describe('multisig operation store notifications', () => {
       const accountId = createAccountId('1');
       const pendingOperation = createTestOperation({ accountId, status: 'pending', timestamp: 1000 });
       const executedOperation = { ...pendingOperation, status: 'executed' as const };
-      const account = createTestAccount({ accountId, createdAt: 500 });
+      const account = createTestMultisigAccount({ accountId, createdAt: 500 });
 
       const notifications: unknown[] = [];
       const scope = fork({
@@ -290,7 +292,7 @@ describe('multisig operation store notifications', () => {
         timestamp: 1000,
         callHash: '0x2222',
       });
-      const account = createTestAccount({ accountId, createdAt: 500 });
+      const account = createTestMultisigAccount({ accountId, createdAt: 500 });
 
       const notifications: unknown[] = [];
       const scope = fork({
@@ -345,7 +347,7 @@ describe('multisig operation store notifications', () => {
         callHash, // Same callHash means it's the same logical operation
       };
 
-      const account = createTestAccount({ accountId, createdAt: 500 });
+      const account = createTestMultisigAccount({ accountId, createdAt: 500 });
 
       const notifications: unknown[] = [];
       const scope = fork({
