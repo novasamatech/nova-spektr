@@ -1,4 +1,3 @@
-import { useUnit } from 'effector-react';
 import { t } from 'i18next';
 
 import { TransactionType } from '@/shared/core';
@@ -6,7 +5,6 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById, nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
-import { networkModel } from '@/entities/network';
 import { TransactionTitle, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
@@ -53,11 +51,8 @@ multisigOperationsSDK(stakingOperationDetailFeature, {
       return icon;
     }
   },
-  title({ operation, showCoreTransaction }) {
-    const { t } = useI18n();
-    const chains = useUnit(networkModel.$chains);
-
-    if (nullable(operation)) return null;
+  title({ operation, showCoreTransaction, chains, t }) {
+    if (nullable(operation) || nullable(chains) || nullable(t)) return null;
 
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);

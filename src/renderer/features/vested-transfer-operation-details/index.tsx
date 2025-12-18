@@ -1,5 +1,4 @@
 import { BN } from '@polkadot/util';
-import { useUnit } from 'effector-react';
 import { t } from 'i18next';
 
 import { TransactionType } from '@/shared/core';
@@ -7,7 +6,6 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
-import { networkModel } from '@/entities/network';
 import { TransactionTitle, findCoreBatchAll, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 import { confirmTransactionInfoSlot } from '@/features/multisig-operations';
@@ -57,10 +55,8 @@ multisigOperationsSDK(vestedTransferOperationDetailFeature, {
       return icon;
     }
   },
-  title({ operation, showCoreTransaction }) {
-    const chains = useUnit(networkModel.$chains);
-
-    if (nullable(operation)) return null;
+  title({ operation, showCoreTransaction, chains }) {
+    if (nullable(operation) || nullable(chains)) return null;
 
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
 
