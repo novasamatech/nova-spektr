@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, ButtonWebLink, DetailRow, FootnoteText, Icon, LargeTitleText, Separator } from '@/shared/ui';
 import { AccountSelect, SignatorySelect, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
-import { Box, Field, Modal, ScrollArea } from '@/shared/ui-kit';
+import { Box, Field, JsonArgs, Modal, ScrollArea } from '@/shared/ui-kit';
 import { transactionService } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
@@ -17,8 +17,6 @@ import { OperationSign } from '@/features/operations';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { confirmModel } from '../model/confirm';
 import { Step, formModel } from '../model/form';
-
-import { JsonArgs } from './JsonArgs';
 
 type Props = {
   payload: SignerPayloadJSON;
