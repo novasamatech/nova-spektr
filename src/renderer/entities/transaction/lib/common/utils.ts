@@ -134,6 +134,15 @@ export const isEditFlexibleTransaction = (
   );
 };
 
+export const isMultiTransferTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
+  if (transaction?.type === TransactionType.BATCH_ALL) {
+    const transactions = (transaction.args as { transactions?: Transaction[] })?.transactions || [];
+    // Multi-transfer is a batch with TRANSFER transactions (can be 1 or more)
+    return transactions.length > 0 && transactions.every((tx) => tx.type === TransactionType.TRANSFER);
+  }
+  return false;
+};
+
 export const hasTransaction = (
   transaction: Transaction | DecodedTransaction,
   filter: (transaction: Transaction | DecodedTransaction) => boolean,
