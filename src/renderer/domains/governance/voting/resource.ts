@@ -15,7 +15,7 @@ export type VotingSubscriptionParams = {
 const $sharedVotingCache = createStore<Record<ChainId, VotingMap>>({});
 
 export const subscriptionResource = createSubscriptionResource<VotingSubscriptionParams>({
-  key: ({ api, accounts }) => [api.genesisHash.toHex(), accounts.join('-fuck-')],
+  key: ({ api, accounts }) => [api.genesisHash.toHex(), accounts.join('-')],
 })
   .subscribe<VotingMap>(({ api, tracks, accounts }, callback) => {
     return governanceSubscribeService.subscribeVotingFor(api, tracks, accounts, callback);
