@@ -134,12 +134,30 @@ export const isEditFlexibleTransaction = (
   );
 };
 
-export const isMultiTransferTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
+export const isMultiTransferTransaction = (transaction?: Transaction | DecodedTransaction | null) => {
   if (transaction?.type === TransactionType.BATCH_ALL) {
     const transactions = (transaction.args as { transactions?: Transaction[] })?.transactions || [];
     // Multi-transfer is a batch with TRANSFER transactions (can be 1 or more)
     return transactions.length > 0 && transactions.every((tx) => tx.type === TransactionType.TRANSFER);
   }
+
+  return false;
+};
+
+export const isVestedTransferTransaction = (transaction?: DecodedTransaction | null) => {
+  if (!transaction) {
+    return false;
+  }
+
+  if (transaction?.type === TransactionType.VESTED_TRANSFER) {
+    return true;
+  }
+
+  if (transaction?.type === TransactionType.BATCH_ALL) {
+    const batchTx = findCoreBatchAll(transaction);
+    return batchTx?.type === TransactionType.VESTED_TRANSFER;
+  }
+
   return false;
 };
 
