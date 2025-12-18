@@ -75,7 +75,6 @@ export type FlexibleMultisigOperationNotification = MultisigBaseNotification & {
 export type MultisigOperationNotification = MultisigBaseNotification & {
   callHash: CallHash;
   callTimepoint: Timepoint;
-  operationId: string;
 };
 
 export type ProxyAction = BaseNotification & {

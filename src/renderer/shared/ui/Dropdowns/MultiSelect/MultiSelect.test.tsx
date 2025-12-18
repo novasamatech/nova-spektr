@@ -1,6 +1,13 @@
-import { act, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import { MultiSelect } from './MultiSelect';
+
+vi.mock('@/shared/i18n', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
 
 describe('ui/Dropdowns/MultiSelect', () => {
   const options = [
@@ -23,16 +30,41 @@ describe('ui/Dropdowns/MultiSelect', () => {
     expect(placeholder).toBeInTheDocument();
   });
 
-  test('should call onSelected', async () => {
+  test('should open dropdown and show options on click', async () => {
+    render(<MultiSelect {...defaultProps} />);
+
+    const button = screen.getByRole('button');
+    fireEvent.click(button);
+
+    const option = screen.getByRole('option', { name: options[0].element });
+    expect(option).toBeInTheDocument();
+  });
+
+  test('should show search input when onSearch is provided', async () => {
+    const spySearch = jest.fn();
+    render(<MultiSelect {...defaultProps} onSearch={spySearch} />);
+
+    const button = screen.getByRole('button');
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByRole('textbox')).toBeInTheDocument();
+    });
+
+    const option = screen.getByRole('option', { name: options[0].element });
+    expect(option).toBeInTheDocument();
+  });
+
+  test('should call onSelected when option is clicked', async () => {
     const spySelected = jest.fn();
     render(<MultiSelect {...defaultProps} onChange={spySelected} />);
 
     const button = screen.getByRole('button');
-    await act(() => button.click());
+    fireEvent.click(button);
 
     const option = screen.getByRole('option', { name: options[0].element });
-    await act(() => option.click());
+    fireEvent.click(option);
 
-    expect(spySelected).toBeCalledWith([{ id: options[0].id, value: options[0].value }]);
+    expect(spySelected).toHaveBeenCalledWith([{ id: options[0].id, value: options[0].value }]);
   });
 });
