@@ -1,5 +1,6 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { TransactionType } from '@/shared/core';
 import { getNativeAsset } from '@/shared/lib/utils';
@@ -13,7 +14,7 @@ type Props = {
   operation: MultisigOperation;
 };
 
-export const TransactionAmount = ({ operation }: Props) => {
+export const TransactionAmount = memo(({ operation }: Props) => {
   const chains = useUnit(networkModel.$chains);
 
   const chain = chains[operation.chainId];
@@ -43,4 +44,4 @@ export const TransactionAmount = ({ operation }: Props) => {
       <AssetFiatBalance asset={asset} amount={amount} className="text-headline" />
     </div>
   );
-};
+});

@@ -19,7 +19,7 @@ type Props = {
   formId: string;
 };
 
-export const MultiTransferForm = ({ formId }: Props) => {
+export const MultiTransferForm = memo(({ formId }: Props) => {
   const { t } = useI18n();
   const { submit } = useForm(formModel.form);
 
@@ -53,7 +53,7 @@ export const MultiTransferForm = ({ formId }: Props) => {
       </Modal.Footer>
     </>
   );
-};
+});
 
 const TotalAmountSection = memo(() => {
   const { t } = useI18n();

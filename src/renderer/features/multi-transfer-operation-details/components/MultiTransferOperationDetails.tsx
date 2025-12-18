@@ -1,5 +1,6 @@
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -14,7 +15,7 @@ type Props = {
   operation: MultisigOperation;
 };
 
-export const MultiTransferOperationDetails = ({ operation }: Props) => {
+export const MultiTransferOperationDetails = memo(({ operation }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
 
@@ -40,7 +41,7 @@ export const MultiTransferOperationDetails = ({ operation }: Props) => {
       </MultiTransferPreview>
     </DetailRow>
   );
-};
+});
 
 function extractTransfer(tx: Transaction | DecodedTransaction): MultiTransferRow {
   const { dest, value } = tx.args;
