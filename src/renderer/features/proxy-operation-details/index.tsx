@@ -44,11 +44,8 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
       return 'proxyMst';
     }
   },
-  title({ operation, showCoreTransaction }) {
-    const { t } = useI18n();
-    const chains = useUnit(networkModel.$chains);
-
-    if (nullable(operation)) return null;
+  title({ operation, showCoreTransaction, chains, t }) {
+    if (nullable(operation) || nullable(chains) || nullable(t)) return null;
 
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);

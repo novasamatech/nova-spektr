@@ -1,9 +1,12 @@
 import { type BN } from '@polkadot/util';
+import { useUnit } from 'effector-react';
+import { type TFunction } from 'i18next';
 import { memo, useMemo } from 'react';
 
 import {
   type Asset,
   type AssetByChains,
+  type Chain,
   type ChainId,
   type FlexibleMultisigAccount,
   type MultisigAccount,
@@ -17,6 +20,7 @@ import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box, Copy, Tooltip } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
 import {
   TransactionTitle,
@@ -47,12 +51,19 @@ export type OperationTitle = {
 };
 
 export const operationTitleTransformer = createTransformer<
-  { operation?: MultisigOperation; showCoreTransaction?: boolean },
+  {
+    operation?: MultisigOperation;
+    showCoreTransaction?: boolean;
+    chains?: Record<ChainId, Chain>;
+    asset?: Asset | null;
+    t?: TFunction;
+  },
   OperationTitle
 >();
 
 export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false }: Props) => {
   const { t } = useI18n();
+  const chains = useUnit(networkModel.$chains);
 
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(multisigAccount);
   const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
@@ -66,6 +77,9 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   const externalTitle = useTransformer(operationTitleTransformer, {
     operation,
     showCoreTransaction,
+    chains,
+    asset,
+    t,
   });
 
   let titleData: OperationTitle;
