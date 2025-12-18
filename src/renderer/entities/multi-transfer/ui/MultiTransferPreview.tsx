@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -38,20 +38,26 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
   const { t } = useI18n();
   const [visibleCount, setVisibleCount] = useState(MAX_VISIBLE_ROWS);
 
-  const getRowIssues = (rowIndex: number) => {
-    if (!issues) return [];
-    return issues.filter((issue) => issue.row === rowIndex);
-  };
+  const getRowIssues = useCallback(
+    (rowIndex: number) => {
+      if (!issues) return [];
+      return issues.filter((issue) => issue.row === rowIndex);
+    },
+    [issues],
+  );
 
-  const getFieldIssues = (rowIndex: number, field: 'recipient' | 'amount') => {
-    if (!issues) return [];
-    return issues.filter((issue) => issue.row === rowIndex && issue.path === field);
-  };
+  const getFieldIssues = useCallback(
+    (rowIndex: number, field: 'recipient' | 'amount') => {
+      if (!issues) return [];
+      return issues.filter((issue) => issue.row === rowIndex && issue.path === field);
+    },
+    [issues],
+  );
 
-  const getRowStatus = (rowIssues: ValidationIssue[]): RowStatus => {
+  const getRowStatus = useCallback((rowIssues: ValidationIssue[]): RowStatus => {
     if (rowIssues.length > 0) return 'error';
     return 'valid';
-  };
+  }, []);
 
   const allData: TableData[] = useMemo(
     () => transfers.map((transfer, idx) => ({ ...transfer, index: idx + 1 })),
@@ -142,7 +148,7 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
         },
       },
     ],
-    [t, chain, asset, getRowIssues, getFieldIssues],
+    [t, chain, asset, getRowIssues, getFieldIssues, getRowStatus],
   );
 
   const errorsCount = issues?.filter((issue) => issue.severity === 'error').length ?? 0;
