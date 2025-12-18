@@ -17,7 +17,7 @@ export const subscriptionResource = createSubscriptionResource<ReferendumSubscri
 })
   .subscribe<Referendum[]>(({ api }, callback) => {
     return governanceSubscribeService.subscribeReferendums(api, result => {
-      if (!result.done && result.value) {
+      if (result.value) {
         callback(result.value);
       }
     });
