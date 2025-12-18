@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { type Chain, type ChainId, ExternalType, type ReferendumId as GovernanceReferendumId } from '@/shared/core';
 import { dictionary, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
+import { referendumId } from '@/shared/pallet/referenda/schema';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { createQueryResource } from '@/shared/query';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
@@ -28,11 +30,11 @@ const referendumsGqlSchema = z.object({
   referendums: z.object({
     nodes: z.array(
       z.object({
-        index: z.custom<ReferendumId>(),
+        index: referendumId,
         relatedReferendum: z.nullable(
           z.object({
-            chainId: z.custom<ChainId>(),
-            index: z.custom<ReferendumId>(),
+            chainId: pjsSchema.hex,
+            index: referendumId,
           }),
         ),
       }),
