@@ -417,6 +417,7 @@ export const balanceSubModel = {
   unsubscribeAccounts,
 
   fetchAccounts,
+  fetchAccountIds,
   fetchWallet,
 
   __test: {
