@@ -73,7 +73,9 @@ export const MultisigOperationNotificationComponent = ({
   const multisigAccount = useStoreMap({
     store: accounts.$list,
     keys: [issuer],
-    fn: (allAccounts) => allAccounts.filter(accountUtils.isAnyMultisigAccount).find((acc) => acc.accountId === issuer),
+    fn: (allAccounts) =>
+      allAccounts.filter(accountUtils.isFlexibleMultisigAccount).find((acc) => acc.multisigAccountId === issuer) ||
+      allAccounts.filter(accountUtils.isAnyMultisigAccount).find((acc) => acc.accountId === issuer),
   });
 
   const wallet = useStoreMap({
@@ -81,6 +83,15 @@ export const MultisigOperationNotificationComponent = ({
     keys: [multisigAccount],
     fn: (wallets) => {
       if (!multisigAccount) return null;
+
+      if (accountUtils.isFlexibleMultisigAccount(multisigAccount)) {
+        return wallets.find((w) =>
+          w.accounts.some(
+            (acc) => acc.accountId === multisigAccount.accountId && accountUtils.isFlexibleMultisigAccount(acc),
+          ),
+        );
+      }
+
       return wallets.find((w) => w.accounts.some((acc) => acc.accountId === multisigAccount.accountId));
     },
   });
