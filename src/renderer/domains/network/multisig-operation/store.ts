@@ -1,5 +1,5 @@
 import { attach, createEffect, createStore, restore, sample, scopeBind } from 'effector';
-import { once, readonly } from 'patronum';
+import { once, readonly, spread } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
@@ -174,40 +174,48 @@ const createOperationNotification = (
   };
 };
 
+const getOperationKey = (op: MultisigOperation) =>
+  multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated);
+
+const getNotificationKey = (op: MultisigOperation) =>
+  `${NotificationType.MULTISIG_OPERATION}-${getOperationKey(op)}-${op.status}`;
+
 const operationChanges = pairwise($list)
   .map(({ prev: prevState, current: update }) => {
-    const previousOpsMap = new Map(
-      prevState.map(op => [
-        multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated),
-        op,
-      ]),
-    );
-    const changes: MultisigOperation[] = [];
+    const previousOpsMap = new Map(prevState.map(op => [getOperationKey(op), op]));
+    const currentOpsMap = new Map(update.map(op => [getOperationKey(op), op]));
+
+    const added: MultisigOperation[] = [];
+    const removedKeys: string[] = [];
 
     for (const item of update) {
-      const previousOp = previousOpsMap.get(
-        multisigOperationService.getOperationId(item.chainId, item.callHash, item.accountId, item.blockCreated, item.indexCreated),
-      );
+      const previousOp = previousOpsMap.get(getOperationKey(item));
 
       if (!previousOp) {
-        changes.push(item);
+        added.push(item);
       } else if (previousOp.status !== item.status && item.status !== 'pending') {
-        changes.push(item);
+        added.push(item);
       }
     }
 
-    return changes;
+    for (const prevOp of prevState) {
+      if (!currentOpsMap.has(getOperationKey(prevOp))) {
+        removedKeys.push(getNotificationKey(prevOp));
+      }
+    }
+
+    return { added, removedKeys };
   })
-  .filter({ fn: notifications => notifications.length > 0 });
+  .filter({ fn: ({ added, removedKeys }) => added.length > 0 || removedKeys.length > 0 });
 
 sample({
   clock: operationChanges,
   source: { populated: $populated, accountsList: accounts.$list },
   filter: ({ populated }) => populated,
-  fn: ({ accountsList }, operations) => {
+  fn: ({ accountsList }, { added, removedKeys }) => {
     const accountsMap = new Map<AccountId, AnyAccount>(accountsList.map(account => [account.accountId, account]));
 
-    return operations
+    const notificationsToAdd = added
       .filter(operation => {
         const account = accountsMap.get(operation.accountId);
 
@@ -218,8 +226,16 @@ sample({
 
         return createOperationNotification(operation, account?.name);
       });
+
+    return {
+      added: notificationsToAdd,
+      removed: { keys: removedKeys },
+    };
   },
-  target: notificationModel.events.notificationsAdded,
+  target: spread({
+    added: notificationModel.events.notificationsAdded,
+    removed: notificationModel.events.notificationsRemoved,
+  }),
 });
 
 deriveFromResources({

@@ -1,5 +1,5 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
-import { throttle } from 'patronum';
+import { spread, throttle } from 'patronum';
 
 import { localStorageService } from '@/shared/api/local-storage';
 import { storageService } from '@/shared/api/storage';
@@ -93,6 +93,7 @@ const $enabledEventMatchers = $notificationEvents.map((enabledEvents): EventMatc
 });
 
 const notificationsAdded = createEvent<CreateNotificationParams[]>();
+const notificationsRemoved = createEvent<{ keys: string[] }>();
 const notificationsFiltered = createEvent<CreateNotificationParams[]>();
 const notificationsViewed = createEvent();
 const notificationEdited = createEvent<Notification>();
@@ -116,6 +117,11 @@ const addNotificationsFx = createEffect(async (notifications: CreateNotification
   }));
 
   return storageService.notifications.createAll(notificationsWithMetadata).then((r) => r ?? []);
+});
+
+const removeNotificationsFx = createEffect(async (notifications: Notification[]): Promise<ID[]> => {
+  const idsToRemove = notifications.map((n) => n.id);
+  return storageService.notifications.deleteAll(idsToRemove).then((r) => r ?? []);
 });
 
 const markAllAsReadFx = createEffect((notifications: Notification[]): Promise<Notification[]> => {
@@ -248,6 +254,23 @@ sample({
 });
 
 sample({
+  clock: notificationsRemoved,
+  source: $notifications,
+  fn: (notifications, { keys }) => {
+    const allThatLeft = notifications.filter((n) => !keys.includes(n.key));
+    const notificationsToRemove = notifications.filter((n) => keys.includes(n.key));
+    return {
+      allThatLeft,
+      notificationsToRemove,
+    };
+  },
+  target: spread({
+    allThatLeft: $notifications,
+    notificationsToRemove: removeNotificationsFx,
+  }),
+});
+
+sample({
   clock: notificationsFiltered,
   filter: (notifications) => notifications.length > 0,
   target: addNotificationsFx,
@@ -355,6 +378,7 @@ export const notificationModel = {
   events: {
     notificationsStarted: populateNotificationsFx,
     notificationsAdded,
+    notificationsRemoved,
     notificationsViewed,
     notificationEdited,
     notificationsSaved: addNotificationsFx.doneData,
