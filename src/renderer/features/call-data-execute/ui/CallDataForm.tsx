@@ -6,13 +6,12 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { TransactionValidationError } from '@/shared/ui-entities';
-import { Box, Field, Input, Modal, ScrollArea } from '@/shared/ui-kit';
+import { Box, Field, Input, JsonArgs, Modal, ScrollArea } from '@/shared/ui-kit';
 import { Fee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 
 import { InitiatorSelect } from './InitiatorSelect';
-import { JsonArgs } from './JsonArgs';
 import { NetworkSelect } from './NetworkSelect';
 import { SignatorySelect } from './SignatorySelect';
 

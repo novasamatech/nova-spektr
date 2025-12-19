@@ -1,0 +1,13 @@
+import { type NullableMap } from '@/shared/core';
+import { nonNullableMap } from '@/shared/lib/utils';
+import { useResource } from '@/shared/query';
+
+import { type ReferendumSubscriptionParams, subscriptionResource } from './resource';
+
+export const useReferendums = (params: NullableMap<ReferendumSubscriptionParams>) => {
+  return useResource(subscriptionResource, {
+    params: nonNullableMap(params) ? params : null,
+    defaultValue: [],
+    map: (cache, { api }) => cache[api.genesisHash.toHex()],
+  });
+};

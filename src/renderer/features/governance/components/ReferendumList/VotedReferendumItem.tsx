@@ -8,9 +8,9 @@ import { useI18n } from '@/shared/i18n';
 import { formatBalance, toNumberWithPrecision } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, Icon } from '@/shared/ui';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
+import { ReferendumEndTimer } from '@/widgets/ReferendumEndTimer';
 import { listAggregate } from '../../aggregates/list';
 import { type AggregatedReferendum } from '../../types/structs';
-import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
