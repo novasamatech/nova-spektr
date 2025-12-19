@@ -14,7 +14,6 @@ import {
   createTxValidationStore,
   createTxValidator,
 } from '@/shared/transactions';
-import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
 import {
   type AnyAccount,
@@ -118,12 +117,69 @@ const $args = combine($call, form.fields.chain.$value, (call, chain) => {
   return transactionEntitiesService.formatCall(call, chain);
 });
 
-const $route = createRouteStore({
+const $signatories = createSignatoriesStore({
   chain: form.fields.chain.$value,
-  initiator: form.fields.initiator.$value,
-  signatory: form.fields.signatory.$value,
   accounts: walletModel.$availableAccounts,
+  initiator: form.fields.initiator.$value,
 });
+
+const $signatory = combine(
+  {
+    selectedSignatory: form.fields.signatory.$value,
+    signatories: $signatories,
+    initiator: form.fields.initiator.$value,
+    chain: form.fields.chain.$value,
+  },
+  ({ selectedSignatory, signatories, initiator, chain }) => {
+    if (nullable(initiator) || nullable(chain)) {
+      return null;
+    }
+
+    const selectedSignatoryAvailable =
+      nonNullable(selectedSignatory) &&
+      signatories.some((s) => s.accountId === selectedSignatory.accountId) &&
+      accountService.isAccountAvailableOnChain(selectedSignatory, chain);
+
+    if (selectedSignatoryAvailable) {
+      return selectedSignatory;
+    }
+
+    if (signatories.length > 0) {
+      const firstSignatory = signatories.at(0) ?? null;
+      if (nonNullable(firstSignatory) && accountService.isAccountAvailableOnChain(firstSignatory, chain)) {
+        return firstSignatory;
+      }
+    }
+
+    return null;
+  },
+);
+
+const $route = combine(
+  {
+    chain: form.fields.chain.$value,
+    initiator: form.fields.initiator.$value,
+    signatory: $signatory,
+    accounts: walletModel.$availableAccounts,
+  },
+  ({ chain, initiator, signatory, accounts }) => {
+    if (nullable(chain) || nullable(initiator)) {
+      return [];
+    }
+
+    const finalSignatory = signatory || initiator;
+
+    if (!accountService.isAccountAvailableOnChain(initiator, chain)) {
+      return [];
+    }
+
+    if (!accountService.isAccountAvailableOnChain(finalSignatory, chain)) {
+      return [];
+    }
+
+    return accountService.findRoute(initiator, finalSignatory, accounts, chain);
+  },
+);
 
 const { $tx: $wrappedTx } = createWrappedTxStore({
   api: $api,
@@ -267,12 +323,6 @@ const $availableChains = combine(
   },
 );
 
-const $signatories = createSignatoriesStore({
-  chain: form.fields.chain.$value,
-  accounts: walletModel.$availableAccounts,
-  initiator: form.fields.initiator.$value,
-});
-
 const $showSignatories = combine(
   $signatories,
   form.fields.initiator.$value,
@@ -324,6 +374,20 @@ sample({
 });
 
 sample({
+  clock: [form.fields.initiator.$value, form.fields.chain.$value, $signatories, flowStarted],
+  source: {
+    signatory: $signatory,
+    currentSignatory: form.fields.signatory.$value,
+  },
+  filter: ({ signatory, currentSignatory }) => {
+    if (nullable(signatory)) return false;
+    return nullable(currentSignatory) || currentSignatory.accountId !== signatory.accountId;
+  },
+  fn: ({ signatory }) => signatory,
+  target: form.fields.signatory.change,
+});
+
+sample({
   clock: form.fields.chain.change,
   source: {
     initiator: form.fields.initiator.$value,
@@ -346,18 +410,6 @@ sample({
     return allAccounts.filter((a) => accountService.isAccountAvailableOnChain(a, chain))?.at(0) ?? null;
   },
   target: form.fields.initiator.change,
-});
-
-// Preselect signatory when initiator changes
-sample({
-  clock: [$signatories],
-  source: {
-    selectedSignatory: form.fields.signatory.$value,
-  },
-  filter: ({ selectedSignatory }, signatories) =>
-    !selectedSignatory || !signatories.some((s) => s.accountId === selectedSignatory.accountId),
-  fn: (_, signatories) => signatories.at(0) ?? null,
-  target: form.fields.signatory.change,
 });
 
 sample({
