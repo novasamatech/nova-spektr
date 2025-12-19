@@ -82,7 +82,15 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
           const status = getRowStatus(rowIssues);
           return (
             <div className="flex justify-start">
-              <span className={cnTw('shrink-0 text-body', STATUS_TEXT_COLORS[status])}>{row.index}</span>
+              <span
+                className={cnTw(
+                  'shrink-0 text-body',
+                  STATUS_TEXT_COLORS[status],
+                  STATUS_TEXT_COLORS[status] === STATUS_TEXT_COLORS.valid && 'text-text-tertiary',
+                )}
+              >
+                {row.index}
+              </span>
             </div>
           );
         },
@@ -90,7 +98,7 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
       {
         key: 'recipient',
         title: t('multiTransfer.parsedFile.headers.recipient'),
-        width: '460px',
+        width: '430px',
         render: (_, row) => {
           const rowIssues = getRowIssues(row.index);
           const fieldIssues = getFieldIssues(row.index, 'recipient');
@@ -119,7 +127,7 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
             <span>{t('multiTransfer.parsedFile.headers.amount')}</span>
           </div>
         ),
-        width: '200px',
+        width: '120px',
         render: (_, row) => {
           const rowIssues = getRowIssues(row.index);
           const fieldIssues = getFieldIssues(row.index, 'amount');
@@ -154,7 +162,7 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
   const errorsCount = issues?.filter((issue) => issue.severity === 'error').length ?? 0;
 
   return (
-    <Modal size="lg" height="fit">
+    <Modal size="fit" height="fit">
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>
         <div className="flex gap-x-2">
@@ -163,7 +171,7 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
         </div>
       </Modal.Title>
       <Modal.Content>
-        <div className="px-2 pb-3">
+        <div className="w-160 px-2 pb-3">
           <ScrollArea>
             <Table columns={columns} data={tableData} cellAlign="top" className="w-full rounded-lg" />
             {hasMore && (
