@@ -1,4 +1,5 @@
-import { type Chain } from '@/shared/core';
+import { type Balance, type Chain } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const enum Step {
   NONE,
@@ -10,4 +11,5 @@ export const enum Step {
 
 export type ValidationSchemaOptions = {
   chain: Chain;
+  recipientBalances?: Map<AccountId, Balance>;
 };
