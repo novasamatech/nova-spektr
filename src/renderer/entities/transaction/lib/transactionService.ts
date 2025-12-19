@@ -305,6 +305,9 @@ async function createPayloadWithProof(
     },
   }).toPayload();
 
+  // LOG: Full signing payload for debugging
+  console.log('[ERA-DEBUG] Full signingPayload:', JSON.stringify(signingPayload, null, 2));
+
   const extrinsicPayload = api.registry.createType('ExtrinsicPayload', signingPayload, {
     version: signingPayload.version,
   });
