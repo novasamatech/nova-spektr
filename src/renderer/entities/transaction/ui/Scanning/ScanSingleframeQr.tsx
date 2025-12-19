@@ -146,7 +146,9 @@ export const ScanSingleframeQr = ({
             <Box shrink={0} fitContainer>
               <Tabs.List>
                 <Tabs.Trigger value="new">
-                  {t('signing.qrNewVaultTitle', { version: getPolkadotVaultVersion(account.signingType) })}
+                  {t('signing.qrNewVaultTitle', {
+                    version: getPolkadotVaultVersion({ signingType: account.signingType, isBulkTx: false }),
+                  })}
                 </Tabs.Trigger>
                 <Tabs.Trigger value="legacy">{t('signing.qrLegacyVaultTitle')}</Tabs.Trigger>
               </Tabs.List>

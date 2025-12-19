@@ -180,7 +180,7 @@ export const ScanMultiframeQr = ({
             <Box shrink={0} fitContainer>
               <Tabs.List>
                 <Tabs.Trigger value="new">
-                  {t('signing.qrNewVaultTitle', { version: getPolkadotVaultVersion(signingType) })}
+                  {t('signing.qrNewVaultTitle', { version: getPolkadotVaultVersion({ signingType, isBulkTx: true }) })}
                 </Tabs.Trigger>
                 <Tabs.Trigger value="legacy">{t('signing.qrLegacyVaultTitle')}</Tabs.Trigger>
               </Tabs.List>
