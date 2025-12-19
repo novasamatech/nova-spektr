@@ -5,14 +5,12 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Button, ButtonWebLink, DetailRow, Icon, LargeTitleText, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
-import { Box, Modal } from '@/shared/ui-kit';
+import { Box, JsonArgs, Modal } from '@/shared/ui-kit';
 import { transactionService } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
 import { FeeWithLabel } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { confirmModel } from '../model/confirm';
-
-import { JsonArgs } from './JsonArgs';
 
 type Props = {
   onGoBack?: () => void;
