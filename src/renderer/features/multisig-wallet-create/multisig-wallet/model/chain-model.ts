@@ -128,10 +128,8 @@ const $chainsData = combine(
     balances: balanceModel.$balanceMap,
     chains: $filteredChains,
     chainFees: $chainFees,
-    chosenChainFee: flowModel.$fee,
-    currentChain: formModel.$chain,
   },
-  ({ signatories, balances, chains, chainFees, initiators, chosenChainFee, currentChain }) => {
+  ({ signatories, balances, chains, chainFees, initiators }) => {
     // Apply filter logic
     if (chains.length === 0 || nullable(initiators)) {
       return {
@@ -144,11 +142,7 @@ const $chainsData = combine(
     const unavailableChains: ChainWithFeeAndBalance[] = [];
 
     for (const chain of chains) {
-      let fee: string | null = chainFees[chain.chainId] ?? null;
-
-      if (currentChain && chain.chainId === currentChain.chainId) {
-        fee = chosenChainFee?.toString() ?? null;
-      }
+      const fee: string | null = chainFees[chain.chainId] ?? null;
 
       const asset = getNativeAsset(chain.assets);
       const initiator =
