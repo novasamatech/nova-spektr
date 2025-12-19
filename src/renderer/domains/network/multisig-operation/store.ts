@@ -174,22 +174,22 @@ const createOperationNotification = (
   };
 };
 
-const getOperationKey = (op: MultisigOperation) =>
+const getOperationId = (op: MultisigOperation) =>
   multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated);
 
 const getNotificationKey = (op: MultisigOperation) =>
-  `${NotificationType.MULTISIG_OPERATION}-${getOperationKey(op)}-${op.status}`;
+  `${NotificationType.MULTISIG_OPERATION}-${getOperationId(op)}-${op.status}`;
 
 const operationChanges = pairwise($list)
   .map(({ prev: prevState, current: update }) => {
-    const previousOpsMap = new Map(prevState.map(op => [getOperationKey(op), op]));
-    const currentOpsMap = new Map(update.map(op => [getOperationKey(op), op]));
+    const previousOpsMap = new Map(prevState.map(op => [getOperationId(op), op]));
+    const currentOpsMap = new Map(update.map(op => [getOperationId(op), op]));
 
     const added: MultisigOperation[] = [];
     const removedKeys: string[] = [];
 
     for (const item of update) {
-      const previousOp = previousOpsMap.get(getOperationKey(item));
+      const previousOp = previousOpsMap.get(getOperationId(item));
 
       if (!previousOp) {
         added.push(item);
@@ -199,7 +199,7 @@ const operationChanges = pairwise($list)
     }
 
     for (const prevOp of prevState) {
-      if (!currentOpsMap.has(getOperationKey(prevOp))) {
+      if (!currentOpsMap.has(getOperationId(prevOp))) {
         removedKeys.push(getNotificationKey(prevOp));
       }
     }
