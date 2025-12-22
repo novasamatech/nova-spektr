@@ -3,16 +3,14 @@ import { useEffect, useRef } from 'react';
 
 import faviconDev from '@/app/favicon.dev.png';
 import faviconProd from '@/app/favicon.png';
-
+import { isDev } from '@/shared/lib/utils';
 import { faviconModel } from '../../model/favicon-model';
 
 const BADGE_SIZE = 16;
 const BADGE_PADDING = 4;
 const BADGE_COLOR = '#4649F6';
 
-// Import favicon directly because vite-plugin-favicons only generates .ico in dev mode,
-// and .ico files can't be loaded into canvas for badge rendering.
-const FAVICON_SRC = import.meta.env.DEV ? faviconDev : faviconProd;
+const FAVICON_SRC = isDev() ? faviconDev : faviconProd;
 
 const getFaviconLink = () => {
   return document.querySelector<HTMLLinkElement>("link[rel='icon']");
