@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { nonNullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { memberService } from '@/domains/collectives';
 import {
   useFellowshipMember,
@@ -29,29 +29,27 @@ export const useMemberEvidenceTasks = () => {
   const tasks = useMemo(() => {
     const tasks: TaskDescription[] = [];
 
-    if (nonNullable(member) && memberService.isCoreMember(member)) {
-      if (shouldRetentionRequest && !hasRetentionEvidence) {
-        tasks.push({
-          id: 'evidence',
-          weight: 1,
-          group: 'personal',
-          body: RequestRetention,
-          meta: { transaction: operations['evidence']?.coreTx ?? null, tags: [] },
-        });
-      } else if (
-        memberService.canPromote(member) &&
-        promotionCountdown?.canSubmitPromotionEvidence &&
-        !hasPromotionEvidence
-      ) {
-        tasks.push({
-          id: 'evidence',
-          weight: 1,
-          group: 'personal',
-          body: RequestPromotion,
-          meta: { transaction: operations['evidence']?.coreTx ?? null, tags: [] },
-        });
-      }
+    if (nullable(member) || !memberService.isCoreMember(member)) {
+      return tasks;
     }
+
+    const task = {
+      id: 'evidence',
+      weight: 1,
+      group: 'personal',
+      meta: { transaction: operations['evidence']?.coreTx ?? null, tags: [] },
+    } as const;
+
+    if (shouldRetentionRequest && !hasRetentionEvidence && memberService.shouldProve(member)) {
+      tasks.push({ ...task, body: RequestRetention });
+    } else if (
+      memberService.canPromote(member) &&
+      promotionCountdown?.canSubmitPromotionEvidence &&
+      !hasPromotionEvidence
+    ) {
+      tasks.push({ ...task, body: RequestPromotion });
+    }
+
     return tasks;
   }, [
     operations,
