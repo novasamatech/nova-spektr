@@ -7,8 +7,14 @@ const BADGE_SIZE = 16;
 const BADGE_PADDING = 4;
 const BADGE_COLOR = '#4649F6';
 
+// Must select PNG favicon because .ico files can't be loaded into canvas.
+// Build generates multiple <link rel="icon"> tags with .ico first, so we explicitly target PNG.
 const getFaviconLink = () => {
-  return document.querySelector<HTMLLinkElement>("link[rel='icon']");
+  return (
+    document.querySelector<HTMLLinkElement>("link[rel='icon'][type='image/png'][sizes='48x48']") ??
+    document.querySelector<HTMLLinkElement>("link[rel='icon'][type='image/png']") ??
+    document.querySelector<HTMLLinkElement>("link[rel='icon']")
+  );
 };
 
 const createBadgedFaviconDataUrl = (canvas: HTMLCanvasElement, imageSrc: string): Promise<string> => {
