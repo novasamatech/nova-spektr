@@ -83,7 +83,6 @@ export const MultisigOperationNotificationComponent = ({
 
       if (
         nonNullable(flexibleMultisigAccount) &&
-        flexibleMultisigAccount.accountId &&
         multisigService.isFlexibleMultisigOperation(operation, flexibleMultisigAccount.accountId)
       ) {
         return flexibleMultisigAccount;
