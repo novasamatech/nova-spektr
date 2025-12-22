@@ -169,14 +169,6 @@ const $route = combine(
 
     const finalSignatory = signatory || initiator;
 
-    if (!accountService.isAccountAvailableOnChain(initiator, chain)) {
-      return [];
-    }
-
-    if (!accountService.isAccountAvailableOnChain(finalSignatory, chain)) {
-      return [];
-    }
-
     return accountService.findRoute(initiator, finalSignatory, accounts, chain);
   },
 );
