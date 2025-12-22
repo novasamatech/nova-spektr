@@ -252,7 +252,7 @@ sample({
   target: [stepChanged, form.reset],
 });
 
-const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
+const $allChains = networkModel.$chainsList;
 
 const $availableChains = combine(
   {
