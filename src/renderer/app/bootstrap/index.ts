@@ -138,6 +138,7 @@ export const bootstrap = () => {
     import('@/features/proxy-basket').then(({ proxyBasketFeature }) => proxyBasketFeature),
 
     import('@/features/vested-transfer-operation-details').then(({ vestedTransferOperationDetailFeature }) => vestedTransferOperationDetailFeature),
+    import('@/features/multi-transfer-operation-details').then(({ multiTransferOperationDetailFeature }) => multiTransferOperationDetailFeature),
 
     import('@/features/import-db').then(({ importDBFeature }) => importDBFeature),
     import('@/features/hidden-wallets').then(({ hiddenWalletsFeature }) => hiddenWalletsFeature),
