@@ -257,8 +257,17 @@ sample({
   clock: notificationsRemoved,
   source: $notifications,
   fn: (notifications, { keys }) => {
-    const allThatLeft = notifications.filter((n) => !keys.includes(n.key));
-    const notificationsToRemove = notifications.filter((n) => keys.includes(n.key));
+    const allThatLeft: Notification[] = [];
+    const notificationsToRemove: Notification[] = [];
+    
+    for (const n of notifications) {
+      if (keys.includes(n.key)) {
+        notificationsToRemove.push(n);
+      } else {
+        allThatLeft.push(n);
+      }
+    }
+    
     return {
       allThatLeft,
       notificationsToRemove,
