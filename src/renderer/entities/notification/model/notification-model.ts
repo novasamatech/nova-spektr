@@ -259,7 +259,7 @@ sample({
   fn: (notifications, { keys }) => {
     const allThatLeft: Notification[] = [];
     const notificationsToRemove: Notification[] = [];
-    
+
     for (const n of notifications) {
       if (keys.includes(n.key)) {
         notificationsToRemove.push(n);
@@ -267,7 +267,7 @@ sample({
         allThatLeft.push(n);
       }
     }
-    
+
     return {
       allThatLeft,
       notificationsToRemove,
