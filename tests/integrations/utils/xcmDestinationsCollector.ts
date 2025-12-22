@@ -1,9 +1,18 @@
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 
+import { Native, getSupportedDestinations } from '@paraspell/sdk-pjs';
+
+import {
+  XCM_DESTINATION_BLACKLIST,
+  XCM_DESTINATION_WHITELIST_LEGACY,
+  type XcmDestinationBlacklistEntry,
+  type XcmDestinationWhitelistEntry,
+  getXcmWhitelist,
+} from '@/shared/api/xcm/service/constants';
 import { spellXcmService } from '@/shared/api/xcm/service/spellXcmService';
-import { type Chain, type ChainId } from '@/shared/core';
-import { CHAIN_ID_TO_SPELL_NAME_MAP } from '@/shared/lib/utils';
+import { type Asset, AssetType, type Chain, type ChainId } from '@/shared/core';
+import { CHAIN_ID_TO_SPELL_NAME_MAP, nonNullable } from '@/shared/lib/utils';
 
 /**
  * Represents an XCM transfer destination route
@@ -12,6 +21,16 @@ export type XcmDestination = {
   sourceNetwork: string;
   token: string;
   destinationNetwork: string;
+};
+
+/**
+ * Statistics about XCM destination filtering
+ */
+export type XcmDestinationStats = {
+  totalFromParaSpell: number;
+  afterWhitelist: number;
+  bannedByBlacklist: number;
+  filteredByWhitelist: number;
 };
 
 /**
@@ -34,14 +53,119 @@ export function getChainBySpellName(spellName: string, allChains: Chain[]): Chai
 }
 
 /**
- * Collects all available XCM destinations for all chains and assets
+ * Checks if a route is blacklisted
+ */
+function isRouteBlacklisted(sourceChainId: ChainId, destinationChainId: ChainId): boolean {
+  return XCM_DESTINATION_BLACKLIST.some((entry: XcmDestinationBlacklistEntry) => {
+    const hasSource = nonNullable(entry.sourceChainId);
+    const hasDestination = nonNullable(entry.destinationChainId);
+
+    if (hasSource && hasDestination) {
+      return entry.sourceChainId === sourceChainId && entry.destinationChainId === destinationChainId;
+    }
+
+    if (hasSource) {
+      return entry.sourceChainId === sourceChainId;
+    }
+
+    if (hasDestination) {
+      return entry.destinationChainId === destinationChainId;
+    }
+
+    return false;
+  });
+}
+
+let cachedWhitelistForTest: XcmDestinationWhitelistEntry[] | null = null;
+
+/**
+ * Gets whitelist entries for testing (uses cached from service or loads)
+ */
+async function getWhitelistForTest(chains: Chain[]): Promise<XcmDestinationWhitelistEntry[]> {
+  if (cachedWhitelistForTest) {
+    return cachedWhitelistForTest;
+  }
+
+  try {
+    const entries = await getXcmWhitelist(chains);
+    cachedWhitelistForTest = entries;
+    return entries;
+  } catch {
+    // Fallback to legacy
+    return XCM_DESTINATION_WHITELIST_LEGACY;
+  }
+}
+
+/**
+ * Checks if a route is whitelisted
+ */
+function isRouteWhitelisted(
+  sourceChainId: ChainId,
+  destinationChainId: ChainId,
+  sourceAssetSymbol?: string,
+  whitelistEntries?: XcmDestinationWhitelistEntry[],
+): boolean {
+  const entries = whitelistEntries || XCM_DESTINATION_WHITELIST_LEGACY;
+
+  if (!entries || entries.length === 0) {
+    return false;
+  }
+
+  return entries.some((entry) => {
+    if (entry.sourceChainId !== sourceChainId || entry.destinationChainId !== destinationChainId) {
+      return false;
+    }
+
+    if (sourceAssetSymbol && entry.sourceAsset && entry.sourceAsset !== sourceAssetSymbol) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+/**
+ * Gets chain ID by spell name
+ */
+function getChainIdBySpellName(spellChainName: string): ChainId | null {
+  const entry = Object.entries(CHAIN_ID_TO_SPELL_NAME_MAP).find(([, name]) => name === spellChainName);
+  return entry ? (entry[0] as ChainId) : null;
+}
+
+/**
+ * Creates currency input for ParaSpell SDK
+ */
+function createCurrencyInput(
+  asset: Asset,
+  amount: string,
+): { amount: string | number; symbol: string | ReturnType<typeof Native> } {
+  const isNativeAsset = asset.type === AssetType.NATIVE;
+
+  return {
+    amount: Number(amount),
+    symbol: isNativeAsset ? Native(asset.symbol) : asset.symbol,
+  };
+}
+
+/**
+ * Collects all available XCM destinations for all chains and assets with
+ * statistics
  *
  * @param chains - Array of all available chains
  *
- * @returns Array of XCM destinations
+ * @returns Object containing destinations array and statistics
  */
-export function collectXcmDestinations(chains: Chain[]): XcmDestination[] {
+export async function collectXcmDestinationsWithStats(chains: Chain[]): Promise<{
+  destinations: XcmDestination[];
+  stats: XcmDestinationStats;
+}> {
   const destinations: XcmDestination[] = [];
+  let totalFromParaSpell = 0;
+  let bannedByBlacklist = 0;
+  let filteredByWhitelist = 0;
+
+  // Load whitelist from nova-utils
+  const whitelistEntries = await getWhitelistForTest(chains);
 
   for (const chain of chains) {
     const sourceNetwork = chain.name;
@@ -56,42 +180,106 @@ export function collectXcmDestinations(chains: Chain[]): XcmDestination[] {
     for (const asset of chain.assets) {
       const token = asset.symbol;
 
-      // Get available destinations for this chain and asset
-      const availableDestinations = spellXcmService.getAvailableTransfers(chain, asset);
+      try {
+        // Get all destinations from ParaSpell SDK (before filtering)
+        const currencyInput = createCurrencyInput(asset, '0');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const allParaSpellDestinations = getSupportedDestinations(spellChainName as any, currencyInput);
+        totalFromParaSpell += allParaSpellDestinations.length;
 
-      // Map spell names back to chain names
-      for (const spellDestinationName of availableDestinations) {
-        const destinationChain = getChainBySpellName(spellDestinationName, chains);
-
-        if (destinationChain) {
-          destinations.push({
-            sourceNetwork,
-            token,
-            destinationNetwork: destinationChain.name,
-          });
-        } else {
-          // If we can't find the chain, still include the spell name
-          destinations.push({
-            sourceNetwork,
-            token,
-            destinationNetwork: spellDestinationName,
-          });
+        if (allParaSpellDestinations.length > 0) {
+          console.log(
+            `\n📦 ParaSpell library returned ${allParaSpellDestinations.length} destinations for ${sourceNetwork} -> ${token}:`,
+          );
+          console.log(`   ${allParaSpellDestinations.join(', ')}`);
         }
+
+        // Apply filtering logic (same as in spellXcmService)
+        const filteredDestinations = allParaSpellDestinations.filter((destinationChainName) => {
+          const destinationChainId = getChainIdBySpellName(destinationChainName);
+          if (!destinationChainId) {
+            console.log(`   ⚠️  ${destinationChainName}: No chain ID mapping found (skipped)`);
+            return false;
+          }
+
+          // Check if blacklisted
+          if (isRouteBlacklisted(chain.chainId, destinationChainId)) {
+            bannedByBlacklist++;
+            console.log(`   🚫 ${destinationChainName}: BLACKLISTED`);
+            return false;
+          }
+
+          // Check if whitelisted
+          const isWhitelisted = isRouteWhitelisted(chain.chainId, destinationChainId, asset.symbol, whitelistEntries);
+          if (!isWhitelisted) {
+            filteredByWhitelist++;
+            console.log(`   ⚪ ${destinationChainName}: Not whitelisted (filtered out)`);
+            return false;
+          }
+
+          console.log(`   ✅ ${destinationChainName}: Whitelisted (kept)`);
+          return true;
+        });
+
+        // Map spell names back to chain names
+        for (const spellDestinationName of filteredDestinations) {
+          const destinationChain = getChainBySpellName(spellDestinationName, chains);
+
+          if (destinationChain) {
+            destinations.push({
+              sourceNetwork,
+              token,
+              destinationNetwork: destinationChain.name,
+            });
+          } else {
+            // If we can't find the chain, still include the spell name
+            destinations.push({
+              sourceNetwork,
+              token,
+              destinationNetwork: spellDestinationName,
+            });
+          }
+        }
+      } catch (error) {
+        // Skip if ParaSpell SDK throws an error
+        console.log(`   ❌ Error getting destinations for ${sourceNetwork} -> ${token}: ${error}`);
+        continue;
       }
     }
   }
 
-  return destinations;
+  return {
+    destinations,
+    stats: {
+      totalFromParaSpell,
+      afterWhitelist: destinations.length,
+      bannedByBlacklist,
+      filteredByWhitelist,
+    },
+  };
+}
+
+/**
+ * Collects all available XCM destinations for all chains and assets
+ *
+ * @param chains - Array of all available chains
+ *
+ * @returns Promise resolving to array of XCM destinations
+ */
+export async function collectXcmDestinations(chains: Chain[]): Promise<XcmDestination[]> {
+  const result = await collectXcmDestinationsWithStats(chains);
+  return result.destinations;
 }
 
 /**
  * Formats XCM destinations into a human-readable markdown document
  *
  * @param destinations - Array of XCM destinations to format
+ * @param stats - Optional statistics about filtering
  *
  * @returns Formatted markdown string
  */
-export function formatXcmDestinationsMarkdown(destinations: XcmDestination[]): string {
+export function formatXcmDestinationsMarkdown(destinations: XcmDestination[], stats?: XcmDestinationStats): string {
   // Calculate statistics
   const uniqueSourceNetworks = new Set(destinations.map((d) => d.sourceNetwork));
   const uniqueDestinationNetworks = new Set(destinations.map((d) => d.destinationNetwork));
@@ -170,6 +358,19 @@ export function formatXcmDestinationsMarkdown(destinations: XcmDestination[]): s
   markdown += `- **Unique Destination Networks:** ${uniqueDestinationNetworks.size}\n`;
   markdown += `- **Total Unique Networks:** ${allNetworks.size}\n`;
   markdown += `- **Unique Tokens/Assets:** ${uniqueTokens.size}\n\n`;
+
+  // Filtering statistics
+  if (stats) {
+    markdown += '### Filtering Statistics\n\n';
+    markdown += 'Statistics about how destinations are filtered from ParaSpell library:\n\n';
+    markdown += '| Metric | Count |\n';
+    markdown += '|--------|-------|\n';
+    markdown += `| Total destinations from ParaSpell library | ${stats.totalFromParaSpell} |\n`;
+    markdown += `| Destinations after whitelist applied | ${stats.afterWhitelist} |\n`;
+    markdown += `| Destinations banned by blacklist | ${stats.bannedByBlacklist} |\n`;
+    markdown += `| Destinations filtered by whitelist (not whitelisted) | ${stats.filteredByWhitelist} |\n`;
+    markdown += '\n';
+  }
 
   // Most connected networks
   markdown += '### Most Connected Networks\n\n';
@@ -253,14 +454,19 @@ export function formatXcmDestinationsMarkdown(destinations: XcmDestination[]): s
  * Saves XCM destinations to a markdown file
  *
  * @param destinations - Array of XCM destinations to save
+ * @param stats - Optional statistics about filtering
  * @param outputPath - Optional path to save the file (defaults to
  *
  *   Tests/integrations/docs/xcm-destinations.md)
  *
  * @returns The path where the file was saved
  */
-export function saveXcmDestinationsToFile(destinations: XcmDestination[], outputPath?: string): string {
-  const markdown = formatXcmDestinationsMarkdown(destinations);
+export function saveXcmDestinationsToFile(
+  destinations: XcmDestination[],
+  stats?: XcmDestinationStats,
+  outputPath?: string,
+): string {
+  const markdown = formatXcmDestinationsMarkdown(destinations, stats);
   const finalPath = outputPath || join(process.cwd(), 'tests/integrations/docs/xcm-destinations.md');
 
   writeFileSync(finalPath, markdown, 'utf-8');

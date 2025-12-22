@@ -5,15 +5,26 @@
 
 ## Summary
 
-**Generated on:** 2025-12-22T08:21:24.544Z
+**Generated on:** 2025-12-22T09:57:32.409Z
 
 ### Statistics
 
-- **Total Transfer Routes:** 46
-- **Unique Source Networks:** 15
+- **Total Transfer Routes:** 88
+- **Unique Source Networks:** 19
 - **Unique Destination Networks:** 19
 - **Total Unique Networks:** 22
-- **Unique Tokens/Assets:** 6
+- **Unique Tokens/Assets:** 10
+
+### Filtering Statistics
+
+Statistics about how destinations are filtered from ParaSpell library:
+
+| Metric | Count |
+|--------|-------|
+| Total destinations from ParaSpell library | 3068 |
+| Destinations after whitelist applied | 88 |
+| Destinations banned by blacklist | 385 |
+| Destinations filtered by whitelist (not whitelisted) | 1404 |
 
 ### Most Connected Networks
 
@@ -33,10 +44,14 @@ Number of routes per token:
 
 | Token | Route Count |
 |-------|-------------|
-| DOT | 21 |
-| KSM | 16 |
-| GLMR | 4 |
-| MOVR | 3 |
+| DOT | 28 |
+| KSM | 24 |
+| GLMR | 10 |
+| USDT | 10 |
+| ASTR | 6 |
+| MOVR | 5 |
+| RMRK | 2 |
+| BSX | 1 |
 | ACA | 1 |
 | MYTH | 1 |
 
@@ -58,9 +73,138 @@ This section lists all available XCM transfer routes organized by source network
 
 ---
 
-## Kusama Asset Hub
+## Basilisk
 
 *8 transfer routes available*
+
+### BSX
+
+| Destination Network |
+|---------------------|
+| Karura |
+
+### KSM
+
+| Destination Network |
+|---------------------|
+| Bifrost Kusama |
+| Karura |
+| Kusama Asset Hub |
+| Shiden |
+
+### USDT
+
+| Destination Network |
+|---------------------|
+| Bifrost Kusama |
+| Karura |
+| Kusama Asset Hub |
+
+---
+
+## Bifrost Kusama
+
+*9 transfer routes available*
+
+### KSM
+
+| Destination Network |
+|---------------------|
+| Basilisk |
+| Karura |
+| Kusama Asset Hub |
+| Shiden |
+
+### MOVR
+
+| Destination Network |
+|---------------------|
+| Karura |
+| Shiden |
+
+### USDT
+
+| Destination Network |
+|---------------------|
+| Basilisk |
+| Karura |
+| Kusama Asset Hub |
+
+---
+
+## Bifrost Polkadot
+
+*14 transfer routes available*
+
+### ASTR
+
+| Destination Network |
+|---------------------|
+| Acala |
+| Astar |
+| Hydration |
+
+### DOT
+
+| Destination Network |
+|---------------------|
+| Acala |
+| Astar |
+| Hydration |
+| Polkadot Asset Hub |
+
+### GLMR
+
+| Destination Network |
+|---------------------|
+| Acala |
+| Astar |
+| Hydration |
+
+### USDT
+
+| Destination Network |
+|---------------------|
+| Acala |
+| Astar |
+| Hydration |
+| Polkadot Asset Hub |
+
+---
+
+## Hydration
+
+*9 transfer routes available*
+
+### ASTR
+
+| Destination Network |
+|---------------------|
+| Acala |
+| Astar |
+| Bifrost Polkadot |
+
+### DOT
+
+| Destination Network |
+|---------------------|
+| Acala |
+| Astar |
+| Bifrost Polkadot |
+
+### GLMR
+
+| Destination Network |
+|---------------------|
+| Acala |
+| Astar |
+| Bifrost Polkadot |
+
+---
+
+## Kusama Asset Hub
+
+*10 transfer routes available*
 
 ### KSM
 
@@ -74,6 +218,13 @@ This section lists all available XCM transfer routes organized by source network
 | Kusama People |
 | Kusama Relay |
 | Shiden |
+
+### RMRK
+
+| Destination Network |
+|---------------------|
+| Bifrost Kusama |
+| Karura |
 
 ---
 

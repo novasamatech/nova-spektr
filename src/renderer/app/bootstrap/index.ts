@@ -1,5 +1,7 @@
 /* eslint-disable import-x/max-dependencies */
 
+import { chainsService } from '@/shared/api/network';
+import { spellXcmService } from '@/shared/api/xcm/service/spellXcmService';
 import { kernelModel } from '@/shared/core';
 import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';
@@ -53,6 +55,20 @@ const populate = async () => {
   governanceMetaProvider.populate();
   portfolioModel.populate();
   balanceModel.populate();
+
+  // Initialize XCM whitelist from nova-utils (non-blocking)
+  chainsService
+    .getChainsData()
+    .then((chains) => {
+      if (chains && chains.length > 0) {
+        spellXcmService.initializeXcmWhitelist(chains).catch((error) => {
+          console.warn('Failed to initialize XCM whitelist in bootstrap:', error);
+        });
+      }
+    })
+    .catch((error) => {
+      console.warn('Failed to load chains for XCM whitelist initialization:', error);
+    });
 
   // TODO rework as populate effects
   kernelModel.events.appStarted();

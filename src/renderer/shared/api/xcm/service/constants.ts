@@ -1,4 +1,4 @@
-import { type ChainId } from '@/shared/core';
+import { type Chain, type ChainId } from '@/shared/core';
 
 export type XcmDestinationBlacklistEntry = {
   sourceChainId?: ChainId | null;
@@ -11,6 +11,27 @@ export type XcmDestinationWhitelistEntry = {
   sourceAsset?: string;
   destinationAsset?: string;
 };
+
+/**
+ * Gets the XCM whitelist entries.
+ *
+ * This function will attempt to load from nova-utils, falling back to legacy
+ * hardcoded list.
+ *
+ * @param chains - Array of all available chains (required for nova-utils
+ *   loading)
+ *
+ * @returns Promise resolving to whitelist entries
+ */
+export async function getXcmWhitelist(chains: Chain[]): Promise<XcmDestinationWhitelistEntry[]> {
+  try {
+    const { loadXcmWhitelistFromNovaUtils } = await import('./xcmWhitelistService');
+    return await loadXcmWhitelistFromNovaUtils(chains);
+  } catch (error) {
+    console.warn('Failed to load XCM whitelist from nova-utils, using legacy whitelist:', error);
+    return XCM_DESTINATION_WHITELIST_LEGACY;
+  }
+}
 
 export const XCM_DESTINATION_BLACKLIST: XcmDestinationBlacklistEntry[] = [
   {
@@ -138,7 +159,12 @@ export const XCM_DESTINATION_BLACKLIST: XcmDestinationBlacklistEntry[] = [
   },
 ];
 
-export const XCM_DESTINATION_WHITELIST: XcmDestinationWhitelistEntry[] = [
+/**
+ * Legacy hardcoded whitelist (kept as fallback).
+ *
+ * This will be replaced by data from nova-utils repository
+ */
+export const XCM_DESTINATION_WHITELIST_LEGACY: XcmDestinationWhitelistEntry[] = [
   {
     sourceChainId: '0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c', // Acala
     destinationChainId: '0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6', // Astar

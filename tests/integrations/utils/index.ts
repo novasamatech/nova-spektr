@@ -24,9 +24,11 @@ export { FeatureTestEnvironment } from './FeatureTestEnvironment';
 export { FeatureTestBuilder, type FeatureTestBuilderOptions } from './FeatureTestBuilder';
 export {
   collectXcmDestinations,
+  collectXcmDestinationsWithStats,
   formatXcmDestinationsMarkdown,
   getChainBySpellName,
   saveXcmDestinationsToFile,
   type XcmDestination,
+  type XcmDestinationStats,
 } from './xcmDestinationsCollector';
 export { createNodeFetchPolyfill, setupFetchPolyfill } from './fetchPolyfill';

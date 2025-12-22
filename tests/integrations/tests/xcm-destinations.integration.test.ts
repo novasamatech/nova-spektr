@@ -5,8 +5,7 @@ import { type Chain } from '@/shared/core';
 import {
   FeatureTestBuilder,
   type FeatureTestEnvironment,
-  type XcmDestination,
-  collectXcmDestinations,
+  collectXcmDestinationsWithStats,
   saveXcmDestinationsToFile,
   setupFetchPolyfill,
 } from '../utils';
@@ -91,6 +90,10 @@ describe('XCM Destinations Collection', () => {
     }
     allChains = chains;
 
+    // Initialize XCM whitelist from nova-utils
+    const { spellXcmService } = await import('@/shared/api/xcm/service/spellXcmService');
+    await spellXcmService.initializeXcmWhitelist(allChains);
+
     // Create minimal test environment (required for integration test setup)
     env = await new FeatureTestBuilder().build();
   });
@@ -107,17 +110,22 @@ describe('XCM Destinations Collection', () => {
   });
 
   it('should collect all available XCM destinations and save to markdown', async () => {
-    // Collect all XCM destinations for all chains and assets
-    const destinations: XcmDestination[] = collectXcmDestinations(allChains);
+    // Collect all XCM destinations for all chains and assets with statistics
+    const { destinations, stats } = await collectXcmDestinationsWithStats(allChains);
 
     // Verify we collected some destinations
     expect(destinations.length).toBeGreaterThan(0);
 
-    // Save to markdown file
-    const outputPath = saveXcmDestinationsToFile(destinations);
+    // Save to markdown file with statistics
+    const outputPath = saveXcmDestinationsToFile(destinations, stats);
 
-    // Log success message
+    // Log success message with statistics
     console.log(`\n✅ Collected ${destinations.length} XCM destinations`);
+    console.log(`📊 Statistics:`);
+    console.log(`   - Total destinations from ParaSpell library: ${stats.totalFromParaSpell}`);
+    console.log(`   - Destinations after whitelist applied: ${stats.afterWhitelist}`);
+    console.log(`   - Destinations banned by blacklist: ${stats.bannedByBlacklist}`);
+    console.log(`   - Destinations filtered by whitelist (not whitelisted): ${stats.filteredByWhitelist}`);
     console.log(`📄 Saved to: ${outputPath}`);
   });
 });
