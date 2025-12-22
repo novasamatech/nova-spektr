@@ -31,6 +31,8 @@ export const SalaryInductModal = ({ disabled, children }: Props) => {
   const account = useUnit(salaryInduct.$account);
   const wallet = useUnit(salaryInduct.$wallet);
   const fee = useUnit(salaryInduct.$fee);
+  const inBasket = useUnit(salaryInduct.$inBasket);
+
   const { active: activeSalary, passive: passiveSalary } = useUnit(memberSalary.$memberSalary);
 
   let salary: string | null = null;
@@ -42,9 +44,9 @@ export const SalaryInductModal = ({ disabled, children }: Props) => {
     if (disabled) return;
 
     if (open) {
-      salaryInduct.flow.open(null);
+      salaryInduct.gate.open(null);
     } else {
-      salaryInduct.flow.close(null);
+      salaryInduct.gate.close(null);
     }
 
     setOpen(open);
@@ -71,7 +73,7 @@ export const SalaryInductModal = ({ disabled, children }: Props) => {
         isOpen={open}
         variant="success"
         autoCloseTimeout={2000}
-        title={t('operation.addedToBasket')}
+        title={inBasket ? t('operation.addedToBasket') : t('operation.removedFromBasket')}
         onClose={() => handleToggle(false)}
       />
     );
@@ -116,7 +118,7 @@ export const SalaryInductModal = ({ disabled, children }: Props) => {
             <Modal.Footer>
               {wallet && basketUtils.isBasketAvailable(wallet) && (
                 <Button pallet="secondary" onClick={handleBasketSave}>
-                  {t('operation.addToBasket')}
+                  {inBasket ? t('operation.removeFromBasket') : t('operation.addToBasket')}
                 </Button>
               )}
               {nonNullable(wallet) && <SignButton type={wallet.type} onClick={handleSign} />}

@@ -1,4 +1,4 @@
-import { type ChainId, type HexString, type KeyType } from '@/shared/core';
+import { type ChainId, type HexString, type VaultShardAccount } from '@/shared/core';
 
 export type ImportFileKey = { key: Omit<ImportedDerivation, 'chainId'> };
 export type ImportFileChain = { [key: HexString]: ImportFileKey[] };
@@ -15,27 +15,27 @@ export const enum ValidationError {
 
 export const enum DerivationValidationError {
   INVALID_PATH = 'INVALID_PATH',
-  MISSING_NAME = 'MISSING_NAME',
   WRONG_SHARDS_NUMBER = 'WRONG_SHARDS_NUMBER',
   PASSWORD_PATH = 'PASSWORD_PATH',
+  ETHEREUM_SINGLE_SLASH = 'ETHEREUM_SINGLE_SLASH',
 }
 
 export type ImportedDerivation = {
   derivationPath?: string;
   chainId?: string;
   sharded?: string;
-  name?: string;
-  type?: string;
 };
 
 export type DerivationWithPath = ImportedDerivation & Required<Pick<ImportedDerivation, 'derivationPath'>>;
 
 export type TypedImportedDerivation = {
   derivationPath: string;
-  name?: string;
-  type: KeyType;
   chainId: ChainId;
   sharded?: string;
+};
+
+export type DerivationKeyDraft = Pick<VaultShardAccount, 'chainId' | 'derivationPath'> & {
+  groupId?: VaultShardAccount['groupId'];
 };
 
 export type ParsedData = {

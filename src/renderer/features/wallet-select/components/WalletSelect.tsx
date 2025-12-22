@@ -7,6 +7,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
+import { useWalletName } from '@/domains/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletList } from '../model/list';
@@ -43,6 +44,8 @@ export const WalletSelect = memo(() => {
 
 const WalletSelectTrigger = memo(
   ({ wallet, ...rest }: Pick<ComponentProps<'button'>, 'onClick'> & { wallet: Wallet }) => {
+    const walletName = useWalletName(wallet);
+
     return (
       <button
         type="button"
@@ -56,7 +59,7 @@ const WalletSelectTrigger = memo(
               <Slot id={walletIconSlot} props={{ wallet, size: 32 }} />
             </div>
             <div className="flex min-w-0 flex-col">
-              <BodyText className="truncate text-text-primary">{wallet.name}</BodyText>
+              <BodyText className="truncate text-text-primary">{walletName}</BodyText>
               <WalletFiatBalance wallet={wallet} className="truncate" />
             </div>
           </div>

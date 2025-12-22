@@ -3,34 +3,39 @@ import { createGate } from 'effector-react';
 import { reshape, spread } from 'patronum';
 
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { createTxStore } from '@/shared/transactions';
-import { votingService } from '@/domains/collectives';
+import { type OngoingReferendum, votingService } from '@/domains/collectives';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { fellowshipVotingFeature } from './feature';
-import { votingStatus } from './votingStatus';
 
-const flow = createGate<{ vote: 'aye' | 'nay' | null }>({ defaultState: { vote: null } });
+const flow = createGate<{ referendum: OngoingReferendum | null; vote: 'aye' | 'nay' | null }>({
+  defaultState: { referendum: null, vote: null },
+});
 
+const $referendum = flow.state.map(({ referendum }) => referendum);
 const $vote = flow.state.map(({ vote }) => vote);
 
-const { $api, $chain, $wallets } = reshape({
+const { $api, $chain, $account, $member, $wallets } = reshape({
   source: fellowshipVotingFeature.input,
   shape: {
     $api: x => x?.api ?? null,
     $wallets: x => x?.wallets ?? [],
     $chain: x => x?.chain ?? null,
+    $account: x => x?.account ?? null,
+    $member: x => x?.member ?? null,
   },
 });
 
 const $coreTx = combine(
   {
     input: fellowshipVotingFeature.input,
-    account: votingStatus.$votingAccount,
-    referendum: votingStatus.$referendum,
-    member: votingStatus.$currentMember,
+    account: $account,
+    referendum: $referendum,
+    member: $member,
     vote: $vote,
   },
   ({ input, referendum, account, member, vote }) => {
@@ -49,7 +54,7 @@ const $coreTx = combine(
   },
 );
 
-const $votingWallet = combine($wallets, votingStatus.$votingAccount, (wallets, account) => {
+const $votingWallet = combine($wallets, $account, (wallets, account) => {
   if (nullable(account)) return null;
 
   return wallets.find(w => w.id === account.walletId) ?? null;
@@ -62,7 +67,7 @@ const { $fee, $wrappedTx } = createTxStore({
   $wallets,
   $chain,
   $coreTx,
-  $account: votingStatus.$votingAccount,
+  $account,
 });
 
 // Signing
@@ -74,7 +79,7 @@ sample({
   clock: sign,
   source: {
     transactions: $wrappedTx,
-    account: votingStatus.$votingAccount,
+    account: $account,
     chain: $chain,
   },
   fn: ({ transactions, account, chain }) => {
@@ -103,7 +108,7 @@ sample({
   source: {
     open: flow.status,
     transactions: $wrappedTx,
-    account: votingStatus.$votingAccount,
+    account: $account,
     chain: $chain,
   },
   filter: ({ open, transactions, account, chain }) => {
@@ -125,23 +130,38 @@ sample({
 
 // Basket
 
-const saveToBasket = createEvent();
-const removeFromBasket = createEvent();
+type SaveToBasketParams = {
+  referendumId: ReferendumId;
+  vote: 'aye' | 'nay';
+};
+
+const saveToBasket = createEvent<SaveToBasketParams>();
+const removeFromBasket = createEvent<ReferendumId>();
 
 sample({
   clock: saveToBasket,
   source: {
     existing: basketOperations.$list,
-    account: votingStatus.$votingAccount,
-    coreTx: $coreTx,
+    account: $account,
+    member: $member,
+    input: fellowshipVotingFeature.input,
   },
-  fn: ({ existing, account, coreTx }) => {
-    if (nullable(account) || nullable(coreTx)) {
+  fn: ({ existing, account, member, input }, params) => {
+    if (nullable(account) || nullable(member) || nullable(input) || nullable(input.chain)) {
       return {
         add: [],
         remove: [],
       };
     }
+
+    const coreTx = votingService.createVoteTransaction({
+      pallet: 'fellowship',
+      rank: member.rank,
+      account,
+      chain: input.chain,
+      aye: params.vote === 'aye',
+      referendumId: params.referendumId,
+    });
 
     const existingTransactions = existing.filter(o => {
       if (o.initiatorAccountId !== account.accountId) return false;
@@ -174,30 +194,50 @@ sample({
   clock: removeFromBasket,
   source: {
     existing: basketOperations.$list,
-    account: votingStatus.$votingAccount,
-    coreTx: $coreTx,
+    account: $account,
   },
-  fn: ({ existing, account, coreTx }) => {
-    if (nullable(account) || nullable(coreTx)) {
+  fn: ({ existing, account }, referendumId) => {
+    if (nullable(account)) {
       return [];
     }
 
-    const existingTransactions = existing.filter(o => {
+    return existing.filter(o => {
       if (o.initiatorAccountId !== account.accountId) return false;
       if (!votingService.isVotingTransaction(o.coreTx)) return false;
 
-      return coreTx.args.poll === o.coreTx.args.poll;
+      return o.coreTx.args.poll === referendumId;
     });
-
-    return existingTransactions;
   },
   target: basketOperations.removeTransactions,
 });
+
+export const $inBasket = combine(
+  {
+    basket: basketOperations.$list,
+    referendum: $referendum,
+    account: $account,
+  },
+  ({ basket, referendum, account }) => {
+    if (!referendum || !account) return { aye: false, nay: false };
+
+    const existing = basket.filter(o => {
+      if (o.initiatorAccountId !== account.accountId) return false;
+      if (!votingService.isVotingTransaction(o.coreTx)) return false;
+      return o.coreTx.args.poll === referendum.id;
+    });
+
+    return {
+      aye: existing.some(t => t.coreTx.args.aye === true),
+      nay: existing.some(t => t.coreTx.args.aye === false),
+    };
+  },
+);
 
 export const voting = {
   flow,
   $fee,
   $wrappedTx,
+  $inBasket,
   sign,
   saveToBasket,
   removeFromBasket,

@@ -1,13 +1,14 @@
+import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { BN } from '@polkadot/util';
-import { attach, createEffect, createStore, sample } from 'effector';
+import { attach, combine, createEffect, createStore, sample } from 'effector';
 import { t } from 'i18next';
 import { produce } from 'immer';
+import { throttle } from 'patronum';
 
-import { type ID } from '@/shared/core';
+import { ConnectionStatus, type ID } from '@/shared/core';
 import { createAsyncPipeline } from '@/shared/di';
 import { series } from '@/shared/effector';
-import { attachToFeatureInput } from '@/shared/feature';
 import { nullable, transferableAmountBN } from '@/shared/lib/utils';
 import { transactionService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -16,18 +17,45 @@ import { getExtrinsic } from '@/entities/transaction';
 import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { type ValidationResult } from '@/features/operations/OperationsValidation';
 
-import { basketOperationsFeature } from './feature';
 import { list } from './list';
 
 export type ValidationParams = {
   transaction: BasketTransaction;
   signerOptions?: Partial<SignerOptions>;
+  api: ApiPromise;
 };
 
 const validationAsyncPipeline = createAsyncPipeline<NonNullable<ValidationResult>[], ValidationParams>();
 
 const $pending = createStore<Record<ID, boolean>>({});
 const $validatingResults = createStore<Record<ID, NonNullable<ValidationResult>[]>>({});
+
+const $chainsFromList = list.$all.map(transactions => {
+  return new Set(
+    transactions.map(transaction => {
+      return transaction.coreTx.chainId;
+    }),
+  );
+});
+
+const $apisFromChainsListConnected = combine(
+  {
+    chainsFromList: $chainsFromList,
+    chains: networkModel.$chains,
+    connectionStatuses: networkModel.$connectionStatuses,
+  },
+  ({ chainsFromList, chains, connectionStatuses }) => {
+    if (chainsFromList.size === 0) return false;
+
+    const neededChains = Object.values(chains).filter(chain => {
+      return chainsFromList.has(chain.chainId);
+    });
+
+    return neededChains.every(chain => {
+      return connectionStatuses[chain.chainId] === ConnectionStatus.CONNECTED;
+    });
+  },
+);
 
 const validateFeeFx = attach({
   source: {
@@ -69,9 +97,9 @@ const validateFeeFx = attach({
   },
 });
 
-const validateTransactionFx = createEffect(async ({ transaction, signerOptions }: ValidationParams) => {
-  return validateFeeFx({ transaction, signerOptions }).then(r => {
-    return validationAsyncPipeline.apply(r, { transaction, signerOptions });
+const validateTransactionFx = createEffect(async ({ transaction, signerOptions, api }: ValidationParams) => {
+  return validateFeeFx({ transaction, signerOptions, api }).then(r => {
+    return validationAsyncPipeline.apply(r, { transaction, signerOptions, api });
   });
 });
 
@@ -124,22 +152,25 @@ sample({
 });
 
 sample({
-  clock: attachToFeatureInput(basketOperationsFeature, list.$all),
-  fn({ data: transactions }) {
-    return transactions.map(transaction => {
+  clock: [throttle($apisFromChainsListConnected, 500), list.$all],
+  source: { list: list.$all, apisFromChainsListConnected: $apisFromChainsListConnected, apis: networkModel.$apis },
+  filter: ({ apisFromChainsListConnected, list }) => apisFromChainsListConnected && list.length > 0,
+  fn({ list, apis }) {
+    return list.map(transaction => {
+      const api = apis[transaction.coreTx.chainId];
       // TODO pass signerOptions
-      return { transaction, signerOptions: undefined };
+      return { transaction, api, signerOptions: undefined };
     });
   },
   target: validateTransactionsFx,
 });
 
 const validateAllFx = attach({
-  source: list.$all,
-  mapParams(_: void, transactions) {
-    return transactions.map(transaction => {
-      // TODO pass signerOptions
-      return { transaction, signerOptions: undefined };
+  source: { list: list.$all, apis: networkModel.$apis },
+  mapParams(_: void, { list, apis }) {
+    return list.map(transaction => {
+      const api = apis[transaction.coreTx.chainId];
+      return { transaction, api, signerOptions: undefined };
     });
   },
   effect: validateTransactionsFx,
@@ -148,6 +179,7 @@ const validateAllFx = attach({
 export const validation = {
   validationAsyncPipeline,
   $validatingResults,
+  $apisFromChainsListConnected,
   $pending,
   validateAll: validateAllFx,
   validateTransaction: validateTransactionFx,

@@ -1,3 +1,4 @@
+import { type AnyJson } from '@polkadot/types/types';
 import { type BN } from '@polkadot/util';
 
 import { type ChainId, type HexString } from '@/shared/core';
@@ -34,6 +35,9 @@ export type UnknownProposal = {
 
 export type WhitelistProposal = {
   type: 'Whitelist';
+  proposalHex: HexString;
+  proposalHash: HexString;
+  proposalJSON: Record<string, AnyJson>;
 };
 
 export type SpendProposal = {
@@ -123,13 +127,3 @@ export type CompletedReferendum =
   | KilledReferendum;
 
 export type Referendum = OngoingReferendum | CompletedReferendum;
-
-export type ReferendumWithEvidence = {
-  index: ReferendumId;
-  evidence: {
-    hash: HexString;
-  }[];
-  completed: boolean;
-  pallet: CollectivePalletsType;
-  chainId: ChainId;
-};

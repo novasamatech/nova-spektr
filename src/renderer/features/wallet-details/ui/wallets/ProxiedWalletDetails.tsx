@@ -9,7 +9,7 @@ import { isEthereumAccountId, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
 import { ChainAccountsList, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, useWalletName } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
@@ -46,6 +46,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
   useGate(walletProxiesModel.flow, { wallet });
 
   const { t } = useI18n();
+  const walletName = useWalletName(wallet);
 
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
@@ -113,7 +114,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
         <div className="flex flex-col gap-y-2.5 px-5 pb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between">
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon
@@ -126,7 +127,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
               {!isRenameInputOpen && (
                 <>
                   <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
-                    {wallet.name}
+                    {walletName}
                   </HeadlineText>
                   <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
                     <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />

@@ -52,7 +52,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const fee = useUnit(approveModel.$fee);
   const isFeeLoading = useUnit(approveModel.$isFeeLoading);
 
-  const isDepositLoading = useUnit(approveModel.$isDepositLoading);
+  const isDepositRequired = useUnit(approveModel.$isDepositRequired);
   const multisigDeposit = useUnit(approveModel.$multisigDeposit);
   const signingPayloads = useUnit(approveModel.$signingPayloads);
   const unsignedAccounts = useUnit(approveModel.$unsignedAccounts);
@@ -140,7 +140,6 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
             unsignedAccounts={unsignedAccounts}
             chain={chain}
             nativeAsset={nativeAsset}
-            asset={asset}
             operation={operation}
             onSubmit={onFormSubmit}
           />
@@ -152,7 +151,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
             chain={chain}
             fee={fee}
             isFeeLoading={isFeeLoading}
-            isDepositLoading={isDepositLoading}
+            isDepositRequired={isDepositRequired}
             signAccount={signAccount}
             multisigDeposit={multisigDeposit}
             valid={valid}

@@ -4,12 +4,13 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, getNativeAsset, nonNullable, truncate } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account, AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
+import { AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { Copy } from '@/shared/ui-kit';
 import { type MultisigOperation, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 type Props = {
   operation: MultisigOperation;
@@ -88,7 +89,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
               ) : (
                 <div className="flex min-w-min">
                   <FootnoteText className="text-text-secondary">
-                    <Account accountId={depositorSignatory.accountId} chain={chain} variant="short" />
+                    <NamedAccount accountId={depositorSignatory.accountId} chain={chain} variant="short" />
                   </FootnoteText>
                 </div>
               )}

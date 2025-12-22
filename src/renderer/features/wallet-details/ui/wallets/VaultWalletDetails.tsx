@@ -8,7 +8,6 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { KeyType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
@@ -16,7 +15,7 @@ import { isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { Hash, type IdenticonIconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Copy, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
-import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts, useWalletName } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { VaultAccountsList, accountUtils, permissionUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
@@ -52,6 +51,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   useGate(walletProxiesModel.flow, { wallet });
   const { t } = useI18n();
 
+  const walletName = useWalletName(wallet);
   const allChains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProxiesModel.$hasWalletProxies);
   const keysToAdd = useUnit(vaultDetailsModel.$keysToAdd);
@@ -90,16 +90,20 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const handleConstructorKeys = (keys: DerivationKeyDraft[]) => {
     toggleConstructorModal();
 
-    const draftKeySet = new Set(keys.map(k => k.chainId + k.derivationPath));
-    const existingKeySet = new Set(walletAccounts.map(a => a.chainId + a.derivationPath));
+    const draftKeySet = new Set(keys.map(k => k.chainId + k.derivationPath + (k?.groupId ?? '')));
+    const existingKeySet = new Set(
+      walletAccounts.map(a => a.chainId + a.derivationPath + ((a as VaultShardAccount)?.groupId ?? '')),
+    );
 
-    const keysToRemove = walletAccounts.filter(a => !draftKeySet.has(a.chainId + a.derivationPath));
+    const keysToRemove = walletAccounts.filter(
+      a => !draftKeySet.has(a.chainId + a.derivationPath + ((a as VaultShardAccount)?.groupId ?? '')),
+    );
 
     if (keysToRemove.length > 0) {
       vaultDetailsModel.events.keysRemoved(keysToRemove);
     }
 
-    const keysToAdd = keys.filter(k => !existingKeySet.has(k.chainId + k.derivationPath));
+    const keysToAdd = keys.filter(k => !existingKeySet.has(k.chainId + k.derivationPath + (k?.groupId ?? '')));
 
     if (keysToAdd.length > 0) {
       vaultDetailsModel.events.keysAdded(keysToAdd);
@@ -108,14 +112,18 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
     }
   };
 
-  const handleImportedKeys = (keys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
+  const handleImportedKeys = (keys: DerivationKeyDraft[]) => {
     toggleImportModal();
-    const newKeys = keys.filter(key => {
-      return key.keyType === KeyType.MAIN || !(key as VaultChainAccount | VaultShardAccount).accountId;
-    });
 
-    vaultDetailsModel.events.keysAdded(newKeys);
-    toggleScanModal();
+    const existingKeySet = new Set(walletAccounts.map(a => a.chainId + a.derivationPath));
+
+    const keysToAdd = keys.filter(k => !existingKeySet.has(k.chainId + k.derivationPath));
+
+    if (keysToAdd.length > 0) {
+      vaultDetailsModel.events.keysAdded(keysToAdd);
+
+      toggleScanModal();
+    }
   };
 
   const handleVaultKeys = (accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
@@ -184,7 +192,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
           {t('walletDetails.common.title')}
         </Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-6 flex items-center justify-between px-5">
+          <div className="mb-6 flex justify-between px-5">
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon address={toAddress(accoundId)} type={wallet.type} size={42} theme={theme} />
@@ -192,7 +200,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
               {!isRenameInputOpen && (
                 <>
                   <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
-                    {wallet.name}
+                    {walletName}
                   </HeadlineText>
                   <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
                     <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />
@@ -276,7 +284,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
 
       <KeyConstructor
         isOpen={isConstructorModalOpen}
-        title={wallet.name}
+        title={walletName ?? ''}
         existingKeys={walletAccounts}
         onConfirm={handleConstructorKeys}
         onClose={toggleConstructorModal}

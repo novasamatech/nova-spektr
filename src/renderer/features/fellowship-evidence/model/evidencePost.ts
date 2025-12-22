@@ -1,18 +1,19 @@
-import { combine, createEvent, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { createGate } from 'effector-react';
 import { reshape } from 'patronum';
 
-import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
-import { evidence, evidenceService } from '@/domains/collectives';
+import { evidenceService } from '@/domains/collectives';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { evidenceForm } from './evidenceForm';
+import { evidenceIPFS } from './evidenceIPFS';
 import { fellowshipEvidenceFeature } from './feature';
 
-const flow = createFlow(null);
+const flow = createGate();
 
 const { $api, $chain, $wallet, $wallets, $account } = reshape({
   source: fellowshipEvidenceFeature.input,
@@ -30,9 +31,13 @@ const $coreTx = combine(
     input: fellowshipEvidenceFeature.input,
     account: $account,
     wish: evidenceForm.$wish,
-    evidence: evidenceForm.$evidence,
+    fromScratchEvidence: evidenceForm.$evidence,
+    ipfsEvidence: evidenceIPFS.$evidence,
+    flowType: evidenceForm.$flowType,
   },
-  ({ input, account, wish, evidence }) => {
+  ({ input, account, wish, fromScratchEvidence, ipfsEvidence, flowType }) => {
+    const evidence = flowType === 'ipfsUpload' ? ipfsEvidence : fromScratchEvidence;
+
     if (nullable(input) || nullable(account) || nullable(wish) || nullable(evidence)) {
       return null;
     }
@@ -115,39 +120,29 @@ sample({
   target: submitModel.events.formInitiated,
 });
 
-const evidenceReqiested = sample({
-  clock: submitModel.output.formSubmitted,
-  source: {
-    api: $api,
-    account: $account,
-    chain: $chain,
-  },
-  filter: ({ api, account, chain }) => {
-    return nonNullable(api) && nonNullable(account) && nonNullable(chain?.chainId);
-  },
-  fn({ api, account, chain }) {
-    if (nullable(api) || nullable(account) || nullable(chain)) return null;
-    return { api, account, chain };
-  },
-});
-
-sample({
-  clock: evidenceReqiested.filter({ fn: nonNullable }),
-  fn({ api, account, chain }) {
-    return {
-      palletType: 'fellowship' as const,
-      api,
-      chainId: chain.chainId,
-      accounts: [account.accountId],
-    };
-  },
-  target: evidence.request,
-});
-
 // Steps
 
 const setStep = createEvent<'closed' | 'form' | 'submit'>();
 const $step = restore(setStep, 'closed');
+
+const setActiveWish = createEvent<'Promotion' | 'Retention' | null>();
+const $activeWish = restore(setActiveWish, null);
+
+const openSubmitModal = createEvent();
+const closeSubmitModal = createEvent();
+const $submitModalOpen = createStore(false);
+
+sample({
+  clock: openSubmitModal,
+  fn: () => true,
+  target: $submitModalOpen,
+});
+
+sample({
+  clock: closeSubmitModal,
+  fn: () => false,
+  target: $submitModalOpen,
+});
 
 sample({
   clock: evidenceForm.evidenceUploaded,
@@ -156,9 +151,24 @@ sample({
 });
 
 sample({
+  clock: evidenceForm.evidenceUploaded,
+  target: $activeWish,
+});
+
+sample({
   clock: $step,
   filter: step => step === 'closed',
-  target: evidenceForm.reset,
+  target: [evidenceForm.reset, $activeWish.reinit],
+});
+
+sample({
+  clock: evidenceIPFS.uploadFileToIPFS.done,
+  source: {
+    ipfsStep: evidenceIPFS.$step,
+    flowType: evidenceForm.$flowType,
+  },
+  filter: ({ ipfsStep, flowType }) => ipfsStep === 'preview' && flowType === 'ipfsUpload',
+  target: openSubmitModal,
 });
 
 // Basket
@@ -189,10 +199,15 @@ export const evidencePost = {
   flow,
   $fee,
   $step,
+  $activeWish,
+  $submitModalOpen,
   $wallet,
   $account,
   $wrappedTx,
   sign,
   saveToBasket,
   setStep,
+  setActiveWish,
+  openSubmitModal,
+  closeSubmitModal,
 };

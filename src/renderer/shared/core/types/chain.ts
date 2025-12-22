@@ -33,6 +33,8 @@ export const enum ChainOptions {
   REGULAR_PROXY = 'regular_proxy',
   PURE_PROXY = 'pure_proxy',
   ETHEREUM_BASED = 'ethereum_based',
+  VESTED_TRANSFER = 'vested_transfer',
+  MULTI_TRANSFER = 'multi_transfer',
 }
 
 export type RpcNode = {

@@ -1,26 +1,31 @@
 import { type TFunction } from 'i18next';
 import { t } from 'i18next';
 import { groupBy, unionBy } from 'lodash';
+import { parse } from 'yaml';
 
 import {
-  AccountType,
   type Address,
   type Chain,
   type ChainId,
-  CryptoType,
   type DraftAccount,
   type HexString,
-  KeyType,
-  SigningType,
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { entries, toAccountId } from '@/shared/lib/utils';
+import {
+  DerivationError,
+  derivationTokensToString,
+  entries,
+  parseDerivation,
+  toAccountId,
+  validateDerivation,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { KEY_NAMES, SHARDED_KEY_NAMES } from '@/entities/wallet';
+import { networkUtils } from '@/entities/network';
 
 import { type ErrorDetails } from './derivation-import-error';
 import {
+  type DerivationKeyDraft,
   DerivationValidationError,
   type DerivationWithPath,
   type ImportFileChain,
@@ -35,7 +40,8 @@ import {
 const IMPORT_FILE_VERSION = '1';
 
 export const importKeysUtils = {
-  isFileStructureValid,
+  isYamlStructureValid,
+  parseYamlFile,
   parseTextFile,
   updateTextStructure,
   getDerivationsFromFile,
@@ -46,7 +52,7 @@ export const importKeysUtils = {
   getErrorsText,
 };
 
-function isFileStructureValid(result: unknown): result is ParsedImportFile {
+function isYamlStructureValid(result: unknown): result is ParsedImportFile {
   const isVersionValid =
     result && typeof result === 'object' && 'version' in result && result.version === IMPORT_FILE_VERSION;
   if (!isVersionValid) return false;
@@ -69,20 +75,19 @@ function isFileStructureValid(result: unknown): result is ParsedImportFile {
   });
 }
 
-function processString(str: string) {
-  const parts = str.split('//');
-  const lastPart = parts[parts.length - 1];
-  const shardPattern = /^0\.\.\.(\d+)$/;
-
-  const match = lastPart.match(shardPattern);
-  if (match) {
-    const shard = match[1];
-    const processedString = parts.slice(0, -1).join('//');
-
-    return { path: processedString, shard };
-  } else {
-    return { path: str };
+function parseYamlFile(fileContent: string) {
+  let structure: unknown;
+  try {
+    // using default core scheme converts 0x strings into numeric values
+    structure = parse(fileContent, renameDerivationPathKeyReviver, { schema: 'failsafe' });
+  } catch {
+    return null;
   }
+  if (isYamlStructureValid(structure)) {
+    return structure;
+  }
+
+  return null;
 }
 
 function parseTextFile(fileContent: string): ParsedData | null {
@@ -116,16 +121,15 @@ function parseTextFile(fileContent: string): ParsedData | null {
       currentChainId = chainIdMatch[1];
     }
 
-    const derivationPathMatch = line.match(/^(\/{1,2}[^\s:]*):\s*([^[]+?)\s*\[([^\]]+)\]$/);
+    const derivationPathMatch = line.match(/^(\/{1,2}[^\s:]*)/);
 
     if (derivationPathMatch) {
-      const { path, shard } = processString(derivationPathMatch[1]);
+      const { tokens, raw, shardCount } = parseDerivation(derivationPathMatch[1]);
+      const path = shardCount ? derivationTokensToString(tokens.toSpliced(-2)) : raw;
 
       const derivationPathParams = {
         derivationPath: path,
-        sharded: shard,
-        name: derivationPathMatch[2],
-        type: derivationPathMatch[3] as KeyType,
+        sharded: shardCount?.toString(),
         chainId: currentChainId,
       };
       derivationPaths.push(derivationPathParams);
@@ -150,8 +154,6 @@ function updateTextStructure(parsedData: ParsedData): ParsedImportFile {
     const importFileKey: ImportFileKey = {
       key: {
         derivationPath: path.derivationPath,
-        name: path.name,
-        type: path.type,
         ...(path.sharded && { sharded: path.sharded }),
       },
     };
@@ -199,34 +201,38 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
 function shouldIgnoreDerivation(derivation: ImportedDerivation, chains: Record<ChainId, Chain>): boolean {
   if (!derivation.derivationPath) return true;
 
-  const AllKeyTypes = [KeyType.MAIN, KeyType.PUBLIC, KeyType.HOT, KeyType.CUSTOM];
-
   const isChainParamValid = derivation.chainId && chains[derivation.chainId as ChainId];
-  const isTypeParamValid = derivation.type && Object.values(AllKeyTypes).includes(derivation.type as KeyType);
-  const isShardedAllowedForType =
-    !derivation.sharded || (derivation.type !== KeyType.PUBLIC && derivation.type !== KeyType.HOT);
 
-  return !isChainParamValid || !isTypeParamValid || !isShardedAllowedForType;
+  return !isChainParamValid;
 }
 
-function getDerivationError(derivation: DerivationWithPath): DerivationValidationError[] | undefined {
-  const errors: DerivationValidationError[] = [];
+function getDerivationError(
+  derivation: DerivationWithPath,
+  chains: Record<ChainId, Chain>,
+): DerivationValidationError[] | undefined {
+  const errs: DerivationValidationError[] = [];
 
   const sharded = derivation.sharded && parseInt(derivation.sharded);
 
   const isShardedParamValid = !sharded || (!isNaN(sharded) && sharded <= 50 && sharded > 1);
-  if (!isShardedParamValid) errors.push(DerivationValidationError.WRONG_SHARDS_NUMBER);
+  if (!isShardedParamValid) errs.push(DerivationValidationError.WRONG_SHARDS_NUMBER);
 
-  const isPathStartAndEndValid = /^(\/\/|\/)[^/].*[^/]$/.test(derivation.derivationPath);
-  if (!isPathStartAndEndValid) errors.push(DerivationValidationError.INVALID_PATH);
+  const derivationChain = derivation.chainId ? chains[derivation.chainId as ChainId] : null;
+  const isEthereumBased = derivationChain ? networkUtils.isEthereumBased(derivationChain.options) : false;
 
-  const hasPasswordPath = derivation.derivationPath.includes('///');
-  if (hasPasswordPath) errors.push(DerivationValidationError.PASSWORD_PATH);
+  const { isValid, errors } = validateDerivation(derivation.derivationPath, { isEthereumBased });
 
-  const isNameValid = derivation.type !== KeyType.CUSTOM || derivation.name;
-  if (!isNameValid) errors.push(DerivationValidationError.MISSING_NAME);
+  const hasEthereumSoftError = errors.includes(DerivationError.ETHEREUM_SINGLE_SLASH);
+  const hasPasswordPathError = errors.includes(DerivationError.PASSWORD_NOT_SUPPORTED);
+  const hasInvalidPathError = !isValid && !hasEthereumSoftError && !hasPasswordPathError;
 
-  if (errors.length) return errors;
+  if (hasInvalidPathError) errs.push(DerivationValidationError.INVALID_PATH);
+
+  if (hasEthereumSoftError) errs.push(DerivationValidationError.ETHEREUM_SINGLE_SLASH);
+
+  if (hasPasswordPathError) errs.push(DerivationValidationError.PASSWORD_PATH);
+
+  if (errs.length) return errs;
 }
 
 type DraftAccounts = (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
@@ -235,47 +241,29 @@ function mergeChainDerivations(existingDerivations: DraftAccounts, importedDeriv
   let addedKeys = 0;
   let duplicatedKeys = 0;
 
-  const existingDerivationsByPath = groupBy(existingDerivations, 'derivationPath');
-  const shards = existingDerivations.filter((d) => d.accountType === AccountType.SHARD);
-  const shardsByPath = groupBy(shards, (d) => d.derivationPath.slice(0, d.derivationPath.lastIndexOf('//')));
-
-  const importedDerivationsAccounts = importedDerivations.reduce<DraftAccounts>((acc, d) => {
+  const importedDerivationsAccounts = importedDerivations.reduce<DerivationKeyDraft[]>((acc, d) => {
     if (!d.sharded) {
       acc.push({
-        name: d.name || KEY_NAMES[d.type],
         derivationPath: d.derivationPath,
         chainId: d.chainId,
-        cryptoType: CryptoType.SR25519,
-        signingType: SigningType.POLKADOT_VAULT,
-        accountType: AccountType.CHAIN,
-        keyType: d.type,
-        type: 'chain',
       });
 
       return acc;
     }
 
-    const groupId = shardsByPath[d.derivationPath]?.length
-      ? shardsByPath[d.derivationPath][0].groupId
-      : crypto.randomUUID();
-
+    const groupId = crypto.randomUUID();
     for (let i = 0; i < Number(d.sharded); i++) {
       acc.push({
-        name: d.name || SHARDED_KEY_NAMES[d.type],
         derivationPath: d.derivationPath + '//' + i,
         chainId: d.chainId,
-        cryptoType: CryptoType.SR25519,
-        signingType: SigningType.POLKADOT_VAULT,
-        accountType: AccountType.SHARD,
-        keyType: d.type,
         groupId,
-        type: 'chain',
       });
     }
 
     return acc;
   }, []);
 
+  const existingDerivationsByPath = groupBy(existingDerivations, 'derivationPath');
   const uniqueDerivations = unionBy(importedDerivationsAccounts, 'derivationPath');
   duplicatedKeys += importedDerivationsAccounts.length - uniqueDerivations.length;
 
@@ -292,9 +280,9 @@ function mergeChainDerivations(existingDerivations: DraftAccounts, importedDeriv
   });
 
   return {
-    mergedDerivations: [...existingDerivations, ...newDerivationsAccounts],
-    added: addedKeys,
-    duplicated: duplicatedKeys,
+    addedDerivations: newDerivationsAccounts,
+    addedCount: addedKeys,
+    duplicatedCount: duplicatedKeys,
   };
 }
 
@@ -311,29 +299,31 @@ function renameDerivationPathKeyReviver(key: unknown, value: unknown) {
 
 const DERIVATION_ERROR_LABEL = {
   [DerivationValidationError.INVALID_PATH]: t('dynamicDerivations.importKeys.error.invalidPath'),
+  [DerivationValidationError.ETHEREUM_SINGLE_SLASH]: t('dynamicDerivations.importKeys.error.invalidEthereumPath'),
   [DerivationValidationError.PASSWORD_PATH]: t('dynamicDerivations.importKeys.error.invalidPasswordPath'),
-  [DerivationValidationError.MISSING_NAME]: t('dynamicDerivations.importKeys.error.missingName'),
   [DerivationValidationError.WRONG_SHARDS_NUMBER]: t('dynamicDerivations.importKeys.error.wrongShardsNumber'),
 };
 
-function getErrorsText(t: TFunction, error: ValidationError, details?: ErrorDetails): string {
+function getErrorsText(t: TFunction, error: ValidationError, details?: ErrorDetails): string[] {
   if (error === ValidationError.INVALID_FILE_STRUCTURE) {
-    return t('dynamicDerivations.importKeys.error.invalidFile');
+    return [t('dynamicDerivations.importKeys.error.invalidFile')];
   }
   if (error === ValidationError.INVALID_ROOT) {
-    return t('dynamicDerivations.importKeys.error.invalidRoot');
+    return [t('dynamicDerivations.importKeys.error.invalidRoot')];
   }
 
-  if (error !== ValidationError.DERIVATIONS_ERROR || !details) return '';
+  if (error !== ValidationError.DERIVATIONS_ERROR || !details) return [];
 
-  return Object.keys(details).reduce<string>((acc, error) => {
-    const invalidValues = details[error as DerivationValidationError];
+  return Object.keys(details).reduce<string[]>((acc, errorKey) => {
+    const invalidValues = details[errorKey as DerivationValidationError];
     if (!invalidValues.length) return acc;
-    const errorText = t(DERIVATION_ERROR_LABEL[error as DerivationValidationError], {
+    const errorText = t(DERIVATION_ERROR_LABEL[errorKey as DerivationValidationError], {
       count: invalidValues.length,
       invalidValues: invalidValues.join(', '),
     });
 
-    return `${acc}${errorText} `;
-  }, '');
+    acc.push(errorText);
+
+    return acc;
+  }, []);
 }

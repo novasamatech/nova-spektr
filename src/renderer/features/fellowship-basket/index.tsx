@@ -4,13 +4,15 @@ import { t } from 'i18next';
 import { type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { type IconNames } from '@/shared/ui';
-import { salaryService, votingService } from '@/domains/collectives';
+import { referendum as referendumDomain, referendumService, salaryService, votingService } from '@/domains/collectives';
 import { ChainTitle, OperationTitle } from '@/entities/chain';
 import { TransactionTitle } from '@/entities/transaction';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import { basketSDK } from '@/sdk/basket';
 import {
+  FellowshipEvidenceVoting,
   FellowshipSalaryInductConfirmation,
   FellowshipSalaryPayoutConfirmation,
   FellowshipSalaryRequestConfirmation,
@@ -32,6 +34,7 @@ const getModalTitle = (transaction: Transaction) => {
     [TransactionType.COLLECTIVE_SALARY_PAYOUT]: t('fellowship.salary.salaryPayout'),
     [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: t('fellowship.salary.promotionTitle'),
     [TransactionType.COLLECTIVE_SALARY_INDUCT]: t('fellowship.salary.salaryInduct'),
+    [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: t('fellowship.voting.title'),
   };
 
   return transaction.type in title ? title[transaction.type] : null;
@@ -45,6 +48,7 @@ const getRecordTitle = (transaction: Transaction) => {
     [TransactionType.COLLECTIVE_SALARY_PAYOUT]: t('fellowship.basket.salaryPayout'),
     [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: t('fellowship.basket.submitEvidence'),
     [TransactionType.COLLECTIVE_SALARY_INDUCT]: t('fellowship.basket.salaryInduct'),
+    [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: t('fellowship.basket.vote'),
   };
 
   return transaction.type in title ? title[transaction.type] : null;
@@ -58,6 +62,7 @@ const getIcon = (transaction: Transaction): IconNames | undefined => {
     [TransactionType.COLLECTIVE_SALARY_REQUEST]: 'unknownMst',
     [TransactionType.COLLECTIVE_SALARY_PAYOUT]: 'unknownMst',
     [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: 'unknownMst',
+    [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: 'voteMst',
   };
 
   return icon[transaction.type];
@@ -103,7 +108,7 @@ basketSDK(fellowshipBasketFeature, {
     return null;
   },
   transactionConfirmDetails({ transaction }) {
-    useGate(confirm.flow, transaction);
+    useGate(confirm.gate, transaction);
 
     const tx = basketOperationsService.getCoreTx(transaction);
 
@@ -131,16 +136,42 @@ basketSDK(fellowshipBasketFeature, {
       return <FellowshipSubmitEvidenceConfirmation id={transaction.id} hideSignButton />;
     }
 
+    if (votingService.isEvidenceVotingTransaction(tx)) {
+      return <FellowshipEvidenceVoting id={transaction.id} hideSignButton />;
+    }
+
     return null;
   },
-  validation(result, { transaction }) {
+  async validation(result, { transaction, api }) {
+    if (votingService.isVotingTransaction(transaction.coreTx)) {
+      const referendums = await referendumDomain.request({
+        api,
+        palletType: 'fellowship',
+        referendums: [transaction.coreTx.args.poll as ReferendumId],
+      });
+
+      const referendum = referendums.find(r => r.id === parseInt(transaction.coreTx.args.poll)) ?? null;
+
+      if (nullable(referendum) || referendumService.isCompleted(referendum)) {
+        return [
+          ...result,
+          {
+            name: 'referendumCompleted',
+            errorText: t('fellowship.errors.noLongerValid.errorText'),
+            label: t('fellowship.errors.noLongerValid.label'),
+          },
+        ];
+      }
+    }
+
     if (
       votingService.isVotingTransaction(transaction.coreTx) ||
       salaryService.isSalaryInductTransaction(transaction.coreTx) ||
       salaryService.isSalaryRequestTransaction(transaction.coreTx) ||
       salaryService.isSalaryPayoutTransaction(transaction.coreTx) ||
       transaction.coreTx.type === TransactionType.COLLECTIVE_SET_ACTIVE ||
-      transaction.coreTx.type === TransactionType.COLLECTIVE_SUBMIT_EVIDENCE
+      transaction.coreTx.type === TransactionType.COLLECTIVE_SUBMIT_EVIDENCE ||
+      votingService.isEvidenceVotingTransaction(transaction.coreTx)
     ) {
       return result;
     }

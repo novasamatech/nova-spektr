@@ -2,13 +2,22 @@ import { attach, createApi, createEffect, createEvent, createStore, sample } fro
 import { produce } from 'immer';
 import { nanoid } from 'nanoid';
 
-import { type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
-import { type DerivationError, validateDerivation } from '@/shared/lib/utils';
+import {
+  type Chain,
+  type ChainId,
+  type DraftAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
+} from '@/shared/core';
+import { type DerivationError, TokenType, parseDerivation, validateDerivation } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
+import { accountUtils } from '@/entities/wallet';
 
-export const DEFAULT_CHAIN = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+export const DEFAULT_CHAIN = '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f'; // Polkadot AH
 
-export type DerivationKeyDraft = Pick<VaultChainAccount, 'chainId' | 'derivationPath'>;
+export type DerivationKeyDraft = Pick<VaultShardAccount, 'chainId' | 'derivationPath'> & {
+  groupId?: VaultShardAccount['groupId'];
+};
 
 export type Callbacks = {
   onConfirm: (keys: DerivationKeyDraft[]) => void;
@@ -20,7 +29,7 @@ const callbacksApi = createApi($callbacks, {
   reset: () => null,
 });
 
-const init = createEvent<(VaultChainAccount | VaultShardAccount)[]>();
+const init = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
 const addKey = createEvent();
 const removeKey = createEvent<string>();
 const updateKey = createEvent<[string, Partial<DerivationKeyDraft>]>();
@@ -31,30 +40,78 @@ const $keys = createStore<Record<string, DerivationKeyDraft>>({});
 const $hasChanged = createStore(false).reset(init);
 const $errors = createStore<Record<string, DerivationError[]>>({}).reset(init);
 
-const getKeyValidationErrors = (
+function getOtherDerivationPaths(
+  keyId: string,
+  relayChainId: ChainId,
+  isEthereumBased: boolean,
+  keys: Record<string, DerivationKeyDraft>,
+  chains: Record<ChainId, Chain>,
+) {
+  return Object.entries(keys)
+    .filter(([otherKeyId]) => otherKeyId !== keyId)
+    .filter(([, otherKey]) => {
+      const otherChain = chains[otherKey.chainId];
+
+      if (isEthereumBased) {
+        const isOtherKeyEthereumBased = networkUtils.isEthereumBased(otherChain.options);
+        return isOtherKeyEthereumBased;
+      }
+
+      const isOtherKeyOnTheSameRelayChain = (otherChain.parentId ?? otherChain.chainId) === relayChainId;
+      return isOtherKeyOnTheSameRelayChain;
+    })
+    .map(([, otherKey]) => otherKey.derivationPath);
+}
+
+function getKeyValidationErrors(
   keyId: string,
   keys: Record<string, DerivationKeyDraft>,
   chains: Record<ChainId, Chain>,
-): DerivationError[] => {
+) {
   const { derivationPath, chainId } = keys[keyId];
   const chain = chains[chainId];
-  const isEthereumBased = networkUtils.isEthereumBased(chain.options);
   const relayChainId = chain.parentId ?? chain.chainId;
+  const isEthereumBased = networkUtils.isEthereumBased(chain.options);
 
-  const relatedPaths: string[] = [];
-  for (const [otherKeyId, otherKey] of Object.entries(keys)) {
-    if (otherKeyId === keyId) continue;
-    const otherChain = chains[otherKey.chainId];
-    const shouldInclude = isEthereumBased
-      ? networkUtils.isEthereumBased(otherChain.options)
-      : (otherChain.parentId ?? otherChain.chainId) === relayChainId;
-    if (shouldInclude) {
-      relatedPaths.push(otherKey.derivationPath);
+  const otherPaths = getOtherDerivationPaths(keyId, relayChainId, isEthereumBased, keys, chains);
+  const { errors } = validateDerivation(derivationPath, { otherPaths, isEthereumBased });
+
+  return errors;
+}
+
+function mergeShardedAccounts(
+  accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[],
+): DerivationKeyDraft[] {
+  const accountGroups = accountUtils.getAccountsAndShardGroups(accounts as (VaultChainAccount | VaultShardAccount)[]);
+  return accountGroups.map((a) => {
+    if (Array.isArray(a)) {
+      return { chainId: a[0].chainId, derivationPath: accountUtils.getDerivationPath(a), groupId: a[0].groupId };
     }
-  }
+    return { chainId: a.chainId, derivationPath: a.derivationPath };
+  });
+}
 
-  return validateDerivation(derivationPath, { otherPaths: relatedPaths, isEthereum: isEthereumBased });
-};
+function expandShardedDerivations(derivations: DerivationKeyDraft[]) {
+  return derivations.flatMap((derivation) => {
+    const parsed = parseDerivation(derivation.derivationPath);
+
+    if (parsed.shardCount !== undefined && parsed.shardCount >= 2) {
+      const groupId = derivation.groupId ?? crypto.randomUUID();
+      const expandedKeys: DerivationKeyDraft[] = [];
+
+      for (let i = 0; i < parsed.shardCount; i += 1) {
+        const shardPath = parsed.tokens
+          .map((t) => (t.type === TokenType.SHARD_RANGE ? i.toString() : t.value))
+          .join('');
+        expandedKeys.push({ ...derivation, derivationPath: shardPath, groupId });
+      }
+
+      return expandedKeys;
+    }
+
+    return derivation;
+  });
+}
 
 const submitFx = createEffect<
   { keys: Record<string, DerivationKeyDraft>; chains: Record<ChainId, Chain> },
@@ -67,9 +124,7 @@ const submitFx = createEffect<
   for (const keyId of Object.keys(keys)) {
     const validationErrors = getKeyValidationErrors(keyId, keys, chains);
     errors[keyId] = validationErrors;
-    if (validationErrors.length > 0) {
-      hasErrors = true;
-    }
+    hasErrors = hasErrors || validationErrors.length > 0;
   }
 
   if (hasErrors) {
@@ -81,14 +136,16 @@ const submitFx = createEffect<
 
 sample({
   clock: init,
-  fn: (existingKeys) =>
+  fn: (existingAccounts) =>
     produce<Record<string, DerivationKeyDraft>>({}, (draft) => {
-      for (const existingKey of existingKeys) {
+      const derivationKeys = mergeShardedAccounts(existingAccounts);
+      for (const key of derivationKeys) {
         const id = nanoid();
 
         draft[id] = {
-          chainId: existingKey.chainId,
-          derivationPath: existingKey.derivationPath,
+          chainId: key.chainId,
+          derivationPath: key.derivationPath,
+          groupId: key.groupId,
         };
       }
     }),
@@ -158,7 +215,10 @@ sample({
   clock: submitFx.doneData,
   target: attach({
     source: { callbacks: $callbacks, keys: $keys },
-    effect: ({ callbacks, keys }) => callbacks?.onConfirm(Object.values(keys)),
+    effect: ({ callbacks, keys }) => {
+      const expandedKeys = expandShardedDerivations(Object.values(keys));
+      callbacks?.onConfirm(expandedKeys);
+    },
   }),
 });
 

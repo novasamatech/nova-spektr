@@ -9,7 +9,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, useAccountName } from '@/domains/network';
 import { useStakingData } from '@/entities/staking';
 import { type NominatorInfo } from '../lib/types';
 
@@ -82,18 +82,21 @@ export const NominatorsList = ({
     );
   };
 
-  const getContent = (stake: NominatorInfo<AnyAccount>): ReactNode => (
-    <>
-      <Address
-        title={stake.account.name}
-        variant="truncate"
-        address={toAddress(stake.account.accountId, { prefix: chain.addressPrefix })}
-        showIcon
-        iconSize={20}
-      />
-      <div className="ml-auto">{getUnstakeBadge(stake) || getRedeemBadge(stake)}</div>
-    </>
-  );
+  const getContent = (stake: NominatorInfo<AnyAccount>): ReactNode => {
+    const accountName = useAccountName({ accountId: stake.account.accountId, chain });
+    return (
+      <>
+        <Address
+          title={accountName}
+          variant="truncate"
+          address={toAddress(stake.account.accountId, { prefix: chain.addressPrefix })}
+          showIcon
+          iconSize={20}
+        />
+        <div className="ml-auto">{getUnstakeBadge(stake) || getRedeemBadge(stake)}</div>
+      </>
+    );
+  };
 
   const hasShards = nominators.some(Array.isArray);
 

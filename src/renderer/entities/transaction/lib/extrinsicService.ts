@@ -1,13 +1,21 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
+import { hexToU8a, isHex } from '@polkadot/util';
 
 import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { multisigOperationService } from '@/domains/network';
 
-import { DEFAULT_FEE_ASSET_ITEM } from './common/constants';
-import { hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
+import { isControllerMissing, isOldMultisigPallet } from './common/utils';
+
+/**
+ * Converts asset value to appropriate format for createType. If the value is
+ * hex string, converts to Uint8Array, otherwise returns as is
+ */
+const prepareAssetForType = (asset: any) => {
+  return isHex(asset) ? hexToU8a(asset) : asset;
+};
 
 export const getExtrinsic: Record<
   TransactionType,
@@ -18,16 +26,19 @@ export const getExtrinsic: Record<
       ? api.tx.balances.transferKeepAlive(dest, value)
       : api.tx.balances.transfer(dest, value);
   },
-  [TransactionType.TRANSFER_ALL]: ({ dest }, api) => {
-    return api.tx.balances.transferAll(dest, false);
+  [TransactionType.TRANSFER_ALL]: ({ dest, keepAlive = false }, api) => {
+    return api.tx.balances.transferAll(dest, keepAlive);
   },
   [TransactionType.TRANSFER_ALLOW_DEATH]: ({ dest, value }, api) => {
     return api.tx.balances.transferAllowDeath(dest, value);
   },
+  [TransactionType.VESTED_TRANSFER]: ({ target, locked, startingBlock, perBlock }, api) => {
+    return api.tx.vesting.vestedTransfer(target, { locked, startingBlock, perBlock });
+  },
   [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset, palletName = 'assets' }, api) => {
     const type = api.tx[palletName].transfer.meta.args[0].type;
     // @ts-expect-error Incorrect polkadot-js/api types
-    const location = api.createType(type, asset);
+    const location = api.createType(type, prepareAssetForType(asset));
 
     return api.tx[palletName].transfer(location, dest, value);
   },
@@ -35,14 +46,14 @@ export const getExtrinsic: Record<
     if (api.tx.currencies) {
       const type = api.tx.currencies.transfer.meta.args[1].type;
       // @ts-expect-error Incorrect polkadot-js/api types
-      const location = api.createType(type, asset);
+      const location = api.createType(type, prepareAssetForType(asset));
 
       return api.tx.currencies.transfer(dest, location, value);
     }
 
     const type = api.tx.tokens.transfer.meta.args[1].type;
     // @ts-expect-error Incorrect polkadot-js/api types
-    const location = api.createType(type, asset);
+    const location = api.createType(type, prepareAssetForType(asset));
 
     return api.tx.tokens.transfer(dest, location, value);
   },
@@ -58,36 +69,17 @@ export const getExtrinsic: Record<
   ) => api.tx.multisig.approveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight),
   [TransactionType.MULTISIG_CANCEL_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callHash }, api) =>
     api.tx.multisig.cancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash),
-  [TransactionType.XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-    return api.tx.xcmPallet.limitedReserveTransferAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
-      Unlimited: true,
-    });
-  },
-  [TransactionType.XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-    return api.tx.xcmPallet.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
-      Unlimited: true,
-    });
-  },
-  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-    return api.tx.polkadotXcm.limitedReserveTransferAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
-      Unlimited: true,
-    });
-  },
-  [TransactionType.POLKADOT_XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-    return api.tx.polkadotXcm.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
-      Unlimited: true,
-    });
-  },
-  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-    return api.tx.polkadotXcm.transferAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
-      Unlimited: true,
-    });
-  },
-  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: ({ xcmDest, xcmAsset, xcmWeight }, api) => {
-    const weight = hasDestWeight(api) ? xcmWeight : { Unlimited: true };
-
-    return api.tx.xTokens.transferMultiasset(xcmAsset, xcmDest, weight);
-  },
+  [TransactionType.XCM_LIMITED_TRANSFER]: handleXcmTransaction,
+  [TransactionType.XCM_TELEPORT]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_TELEPORT]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: handleXcmTransaction,
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_RESERVE_WITHDRAW]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: handleXcmTransaction,
+  [TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: handleXcmTransaction,
+  [TransactionType.XTOKENS_TRANSFER]: handleXcmTransaction,
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSETS]: handleXcmTransaction,
   // controller arg removed from bond but changes not released yet
   // https://github.com/paritytech/substrate/pull/14039
   [TransactionType.BOND]: ({ controller, value, payee }, api) =>
@@ -190,6 +182,10 @@ export const getExtrinsic: Record<
     return beneficiary ? api.tx[`${pallet}Salary`].payoutOther(beneficiary) : api.tx[`${pallet}Salary`].payout();
   },
 };
+
+function handleXcmTransaction(args: Record<string, any>, _api: ApiPromise) {
+  return args.spellExtrinsic as SubmittableExtrinsic<'promise'>;
+}
 
 type WrapAsMultiParams<T extends Transaction = Transaction> = {
   api: ApiPromise;

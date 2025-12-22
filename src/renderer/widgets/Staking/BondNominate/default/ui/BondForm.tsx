@@ -4,19 +4,12 @@ import { type FormEvent, useMemo, useState } from 'react';
 import { RewardsDestination } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import {
-  formatAsset,
-  fromPrecision,
-  getNativeAsset,
-  toAddress,
-  toShortAddress,
-  transferableAmount,
-} from '@/shared/lib/utils';
+import { formatAsset, getNativeAsset, toAddress, toShortAddress, transferableAmount } from '@/shared/lib/utils';
 import { Button, Combobox, DetailRow, FootnoteText, Icon, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
 import { AssetBalance, Identicon, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
+import { accounts, useAccountsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel } from '@/entities/transaction';
@@ -112,6 +105,7 @@ const Amount = () => {
   const network = useUnit(formModel.$networkStore);
   const bondBalanceRange = useUnit(formModel.$bondBalanceRange);
   const reusableLock = useUnit(formModel.$reusableLock);
+  const setReuseLockMode = useUnit(formModel.setReuseLockMode);
 
   if (!network) {
     return null;
@@ -129,6 +123,7 @@ const Amount = () => {
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
         onChange={amount.onChange}
+        onKeyDown={() => setReuseLockMode(false)}
       />
       <InputHint active={amount.hasError} variant="error">
         {t(amount.errorMessage)}
@@ -136,11 +131,7 @@ const Amount = () => {
 
       {reusableLock && showReuseLockBtn && (
         <div className="flex justify-end">
-          <Button
-            size="sm"
-            pallet="secondary"
-            onClick={() => amount.onChange(fromPrecision(reusableLock, network.asset.precision))}
-          >
+          <Button size="sm" pallet="secondary" onClick={() => setReuseLockMode(true)}>
             {t('governance.vote.reuseLock')}: {formatAsset(reusableLock, network.asset)}
           </Button>
         </div>
@@ -159,6 +150,7 @@ const Destination = () => {
   const network = useUnit(formModel.$networkStore);
   const destinationAccounts = useUnit(formModel.$destinationAccounts);
   const destinationQuery = useUnit(formModel.$destinationQuery);
+  const resolvedDestinationAccounts = useAccountsNames(destinationAccounts, network?.chain);
 
   const [payout, setPayout] = useState('');
   const [activeOptionId, setActiveOptionId] = useState<string>('0');
@@ -176,7 +168,7 @@ const Destination = () => {
     title: dest.title,
   }));
 
-  const destinationOptions = destinationAccounts.map((account) => {
+  const destinationOptions = resolvedDestinationAccounts.map((account) => {
     const isShard = accountUtils.isVaultShardAccount(account);
     const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 

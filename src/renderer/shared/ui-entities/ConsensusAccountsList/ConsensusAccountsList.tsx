@@ -50,7 +50,7 @@ type Props = {
   bgColor?: string;
 };
 export const ConsensusAccountsList = memo(({ accounts, bgColor }: Props) => {
-  const { list } = useDeferredList({ list: accounts, forceFirstRender: true });
+  const { list } = useDeferredList({ list: accounts });
 
   const [evmAccounts, restAccounts] = partition(list, ([chain]) => networkUtils.isEthereumBased(chain.options));
   const [consensusAccounts, otherAccounts] = partition(restAccounts, ([chain]) => isConsensusChain(chain));

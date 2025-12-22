@@ -5,11 +5,10 @@ import { Trans } from 'react-i18next';
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { nullable, toAddress } from '@/shared/lib/utils';
 import { Alert, FootnoteText, InputHint } from '@/shared/ui';
 import { Field, Select } from '@/shared/ui-kit';
-import { type AnyAccount, accountService } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
+import { type AnyAccount, accountService, useAccountName } from '@/domains/network';
 import { Address } from '../Address/Address';
 import { AssetBalance } from '../AssetBalance/AssetBalance';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
@@ -21,6 +20,30 @@ function getAccount(v: { account: AnyAccount; balance: BN | string } | AnyAccoun
 function getBalance(v: { account: AnyAccount; balance: BN | string } | AnyAccount) {
   return 'balance' in v ? v.balance : '';
 }
+
+type SignatoryProps = {
+  signatory: { account: AnyAccount; balance: BN | string } | AnyAccount;
+  network: { chain: Chain; asset: Asset };
+};
+
+const SignatoryItem = ({ signatory, network }: SignatoryProps) => {
+  const signer = getAccount(signatory);
+  const balance = getBalance(signatory);
+  const address = toAddress(signer.accountId, { prefix: network.chain.addressPrefix });
+  const accountName = useAccountName({
+    accountId: signer.accountId,
+    chain: network.chain,
+  });
+
+  return (
+    <Select.Item value={signer.id.toString()}>
+      <div className="flex w-full items-center justify-between">
+        <Address showIcon variant="truncate" iconSize={20} address={address} title={accountName} canCopy={false} />
+        <AssetBalance value={balance.toString()} asset={network.asset} />
+      </div>
+    </Select.Item>
+  );
+};
 
 type Props = {
   signatory: AnyAccount | null;
@@ -82,30 +105,10 @@ export const SignatorySelect = ({
         height="md"
         onChange={value => selectSigner(value)}
       >
-        {signatories.map(v => {
-          const signer = getAccount(v);
-          const balance = getBalance(v);
-          const isShard = accountUtils.isVaultShardAccount(signer);
-          const address = toAddress(signer.accountId, { prefix: network.chain.addressPrefix });
-
-          return (
-            <Select.Item key={signer.id} value={signer.id.toString()}>
-              <div className="flex w-full items-center justify-between">
-                <Address
-                  showIcon
-                  variant="truncate"
-                  iconSize={20}
-                  address={address}
-                  title={isShard ? toShortAddress(address, 16) : signer.name}
-                  canCopy={false}
-                />
-                <AssetBalance value={balance.toString()} asset={network.asset} />
-              </div>
-            </Select.Item>
-          );
-        })}
+        {signatories.map(v => (
+          <SignatoryItem key={getAccount(v).id} signatory={v} network={network} />
+        ))}
       </Select>
-
       <InputHint variant="error" active={hasError}>
         {errorText}
       </InputHint>

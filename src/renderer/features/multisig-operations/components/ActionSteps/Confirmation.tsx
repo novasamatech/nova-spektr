@@ -1,13 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN } from '@polkadot/util';
-import { useStoreMap, useUnit } from 'effector-react';
-import { useEffect } from 'react';
+import { useUnit } from 'effector-react';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById, getAssetByTypeExtras, getNativeAsset } from '@/shared/lib/utils';
-import { Button, DetailRow, Icon } from '@/shared/ui';
+import { Button, Icon } from '@/shared/ui';
 import {
   type TransactionValidationBalanceError,
   TransactionValidationError,
@@ -15,11 +14,9 @@ import {
   type TransactionValidationPermissionError,
 } from '@/shared/ui-entities';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
-import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
-import { FeeWithLabel, MultisigDepositFee, XcmFee, isXcmTransaction } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
-import { xcmTransferModel } from '@/widgets/Transfer';
 import { operationsContextModel } from '../../model/context';
 import { Details } from '../Details';
 
@@ -38,7 +35,7 @@ type Props = {
   multisigDeposit: BN;
   valid: boolean;
   isFeeLoading: boolean;
-  isDepositLoading: boolean;
+  isDepositRequired?: boolean;
   onSign: () => void;
   onGoBack?: () => void;
   errors?: (
@@ -56,10 +53,10 @@ export const Confirmation = ({
   multisigDeposit,
   valid,
   isFeeLoading,
-  isDepositLoading,
   onSign,
   onGoBack,
   errors,
+  isDepositRequired = false,
 }: Props) => {
   const { t } = useI18n();
 
@@ -68,7 +65,9 @@ export const Confirmation = ({
 
   const signerWallet = wallets.find(w => w.id === signAccount?.walletId);
 
-  const xcmConfig = useUnit(xcmTransferModel.$config);
+  const hasRequiredDeposit = !isDepositRequired || !multisigDeposit.isZero();
+  const canSign = !isFeeLoading && hasRequiredDeposit && valid;
+
   const transaction = operation.transaction;
   let asset: Asset | null = null;
   if (transaction) {
@@ -78,24 +77,6 @@ export const Confirmation = ({
       asset = getAssetById(transaction.args.asset, chain.assets) ?? getNativeAsset(chain.assets);
     }
   }
-
-  const xcmApi = useStoreMap({
-    store: networkModel.$apis,
-    keys: [transaction],
-    fn: (apis, [transaction]) => {
-      if (transaction && isXcmTransaction(transaction)) {
-        return apis[transaction.args.destinationChain] ?? null;
-      }
-
-      return null;
-    },
-  });
-
-  useEffect(() => {
-    if (asset) {
-      xcmTransferModel.events.xcmStarted({ chain, asset });
-    }
-  }, [chain, asset]);
 
   return (
     <div className="flex flex-col items-center gap-y-3 px-5 pb-4">
@@ -109,29 +90,15 @@ export const Confirmation = ({
       {initiator && signAccount && (
         <Details api={api} operation={operation} account={initiator} chain={chain} signatory={signAccount} />
       )}
-      {asset && (
-        <>
-          <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={isDepositLoading} />
-          <FeeWithLabel fee={fee} asset={asset} isLoading={isFeeLoading} />
-        </>
-      )}
-      {isXcmTransaction(transaction) && xcmConfig && xcmApi && asset && (
-        <DetailRow label={t('operation.xcmFee')} className="text-text-primary">
-          <XcmFee api={xcmApi} transaction={transaction} asset={asset} config={xcmConfig} />
-        </DetailRow>
-      )}
+      {asset && isDepositRequired && <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} />}
+      {asset && <FeeWithLabel fee={fee} asset={asset} isLoading={isFeeLoading} />}
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (
           <Button variant="text" onClick={onGoBack}>
             {t('operation.goBackButton')}
           </Button>
         )}
-        <SignButton
-          disabled={isFeeLoading || isDepositLoading || !valid}
-          className="ml-auto"
-          type={signerWallet?.type}
-          onClick={onSign}
-        />
+        <SignButton disabled={!canSign} className="ml-auto" type={signerWallet?.type} onClick={onSign} />
       </div>
     </div>
   );

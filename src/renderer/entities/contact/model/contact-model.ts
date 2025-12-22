@@ -1,7 +1,8 @@
-import { createEffect, createStore, sample } from 'effector';
+import { attach, createEffect, createStore, sample } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { type Contact, kernelModel } from '@/shared/core';
+import { kernelModel } from '@/shared/core/model/kernel-model';
+import { type Contact } from '@/shared/core/types/contact';
 import { merge, splice } from '@/shared/lib/utils';
 
 const $contacts = createStore<Contact[]>([]);
@@ -12,6 +13,29 @@ const populateContactsFx = createEffect((): Promise<Contact[]> => {
 
 const createContactFx = createEffect(async (contact: Omit<Contact, 'id'>): Promise<Contact | undefined> => {
   return storageService.contacts.create(contact);
+});
+
+const undoDeleteContactFx = attach({
+  source: $contacts,
+  mapParams: (contact: Omit<Contact, 'id'>, existingContacts: Contact[]) => ({
+    contact,
+    existingContacts,
+  }),
+  effect: createEffect(
+    async ({
+      contact,
+      existingContacts,
+    }: {
+      contact: Omit<Contact, 'id'>;
+      existingContacts: Contact[];
+    }): Promise<Contact | undefined> => {
+      const hasDuplicate = existingContacts.some((c) => c.accountId === contact.accountId);
+      if (hasDuplicate) {
+        return undefined;
+      }
+      return storageService.contacts.create(contact);
+    },
+  ),
 });
 
 const createContactsFx = createEffect((contacts: Omit<Contact, 'id'>[]): Promise<Contact[] | undefined> => {
@@ -42,7 +66,7 @@ $contacts
   .on(populateContactsFx.doneData, (_, contacts) => {
     return contacts;
   })
-  .on([createContactFx.doneData, createContactsFx.doneData], (state, contact) => {
+  .on([createContactFx.doneData, createContactsFx.doneData, undoDeleteContactFx.doneData], (state, contact) => {
     return contact ? state.concat(contact) : state;
   })
   .on(deleteContactFx.doneData, (state, contactId) => {
@@ -71,6 +95,7 @@ export const contactModel = {
   effects: {
     createContactFx,
     createContactsFx,
+    undoDeleteContactFx,
     deleteContactFx,
     updateContactFx,
     updateContactsFx,

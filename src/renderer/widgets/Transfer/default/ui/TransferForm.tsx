@@ -5,7 +5,7 @@ import { type FormEvent, memo, useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type ChainId, type Wallet } from '@/shared/core';
+import { type Address as AddressType, type Chain, type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import {
@@ -21,6 +21,7 @@ import {
   validateAddress,
   withdrawableAmount,
 } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, CaptionText, FootnoteText, Icon, InputHint, Switch } from '@/shared/ui';
 import {
   AccountSelect,
@@ -31,15 +32,16 @@ import {
   WalletIcon,
 } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
-import { accountService, accounts } from '@/domains/network';
+import { accountService, accounts, useAccountName, useAccountsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
-import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '../model/form-model';
+import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
 type Props = {
   onGoBack: () => void;
@@ -255,6 +257,13 @@ const XcmChainSelector = memo(() => {
 
 const { services, constants } = walletSelectFeature;
 
+const AccountAddressItem = memo(
+  ({ accountId, chain, address }: { accountId: AccountId; chain: Chain; address: AddressType }) => {
+    const resolvedName = useAccountName({ accountId, chain });
+    return <Address showIcon title={resolvedName} address={address} />;
+  },
+);
+
 const Destination = memo(() => {
   const { t } = useI18n();
 
@@ -266,13 +275,6 @@ const Destination = memo(() => {
   const wallets = useUnit(walletModel.$wallets);
   const accountsList = useUnit(walletModel.$availableAccounts);
   const network = useUnit(formModel.$networkStore);
-
-  const walletsMap = useMemo(() => {
-    return wallets.reduce<Record<number, Wallet>>((acc, wallet) => {
-      acc[wallet.id] = wallet;
-      return acc;
-    }, {});
-  }, [wallets]);
 
   const [query, setQuery] = useState('');
 
@@ -292,10 +294,12 @@ const Destination = memo(() => {
     setQuery('');
   }, [chain]);
 
+  const resolvedAccounts = useAccountsNames(accountsList, chain);
+
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
     if (nullable(chain)) return [];
 
-    const filteredAccounts = accountsList.filter((account) => {
+    const filteredAccounts = resolvedAccounts.filter((account) => {
       const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
       const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
       const queryPass = includesMultiple([account.name, address], query);
@@ -314,19 +318,12 @@ const Destination = memo(() => {
       const accountOptions: ComboboxItem[] = [];
 
       for (const account of accountsGroup) {
-        const wallet = walletsMap[account.walletId];
         const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-
-        const title = nonNullable(wallet)
-          ? account.name === wallet.name
-            ? account.name
-            : `${account.name} (${wallet.name})`
-          : account.name;
 
         accountOptions.push({
           id: address,
           value: { address, walletId: account.walletId },
-          label: <Address showIcon title={title} address={address} />,
+          label: <AccountAddressItem accountId={account.accountId} chain={chain} address={address} />,
         });
       }
 
@@ -345,7 +342,7 @@ const Destination = memo(() => {
     }
 
     return ownAccountOptions;
-  }, [query, chain, wallets, accountsList]);
+  }, [query, chain, resolvedAccounts, wallets, initiator.value]);
 
   const contactOptions = useMemo<ComboboxGroup[]>(() => {
     if (validateAddress(query, chain)) return [];
@@ -379,7 +376,7 @@ const Destination = memo(() => {
 
   const prefixElement = (
     <Identicon
-      invalid={destination.hasError}
+      invalid={destination.touched && destination.hasError}
       size={20}
       address={toAddress(destination.value, { prefix: chain?.addressPrefix })}
       background={false}
@@ -397,11 +394,12 @@ const Destination = memo(() => {
         <Combobox
           data-testid={TEST_IDS.OPERATIONS.RECIPIENT_INPUT}
           placeholder={t('transfer.recipientPlaceholder')}
-          invalid={destination.hasError}
+          invalid={destination.touched && destination.hasError}
           value={destination.value.trim()}
           prefixElement={prefixElement}
           height="md"
           onChange={destination.onChange}
+          onBlur={destination.markAsTouched}
           onInput={setQuery}
         >
           {options.map((group) => (
@@ -414,7 +412,6 @@ const Destination = memo(() => {
             </Combobox.Group>
           ))}
         </Combobox>
-
         {isMyselfXcmEnabled && (
           <Button pallet="secondary" testId={TEST_IDS.OPERATIONS.MYSELF_BUTTON} onClick={handleChange}>
             {t('transfer.myselfButton')}
@@ -422,7 +419,7 @@ const Destination = memo(() => {
         )}
       </Box>
 
-      <InputHint active={destination.hasError} variant="error">
+      <InputHint active={destination.touched && destination.hasError} variant="error">
         {t(destination.errorMessage, destination.errorValues)}
       </InputHint>
     </Field>
@@ -439,8 +436,9 @@ const Amount = memo(() => {
   const accountAvailableBalance = useUnit(formModel.$available);
   const network = useUnit(formModel.$networkStore);
   const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
+  const isXcm = useUnit(formModel.$isXcm);
 
-  const showMaxButton = accountAvailableBalance?.gtn(0) ?? false;
+  const showMaxButton = !isXcm && (accountAvailableBalance?.gtn(0) ?? false);
   const showEDSwitch = useUnit(formModel.$showEDSwitch);
 
   if (!network) {
@@ -450,7 +448,7 @@ const Amount = memo(() => {
   return (
     <div className="flex flex-col gap-y-2">
       <AmountInput
-        invalid={amount.hasError}
+        invalid={amount.touched && amount.hasError}
         value={amount.value}
         balance={accountAvailableBalance?.toString() ?? null}
         balancePlaceholder={t('general.input.availableLabel')}
@@ -465,12 +463,12 @@ const Amount = memo(() => {
         }
         testId={TEST_IDS.OPERATIONS.AMOUNT_INPUT}
         onChange={(value: string) => amount.onChange(value)}
+        onBlur={amount.markAsTouched}
         onKeyDown={() => formModel.events.toggleMaxMode(false)}
       />
-      <InputHint active={amount.hasError} variant="error">
+      <InputHint active={amount.touched && amount.hasError} variant="error">
         {t(amount.errorMessage)}
       </InputHint>
-
       {showEDSwitch && (
         <div className="flex justify-end">
           <Switch
@@ -502,51 +500,73 @@ const FeeSection = memo(() => {
   const initiator = useUnit(formModel.form.fields.initiator.$value);
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
-  const coreTx = useUnit(formModel.$coreTx);
-  const feeTx = useUnit(formModel.$feeTx);
   const isXcm = useUnit(formModel.$isXcm);
-  const xcmConfig = useUnit(formModel.$xcmConfig);
-  const xcmApi = useUnit(formModel.$xcmApi);
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
-  const deliveryFee = useUnit(formModel.$deliveryFee);
+  const originFee = useUnit(formModel.$originFee);
+  const destinationFee = useUnit(formModel.$destinationFee);
+  const isDestinationFeeLoading = useUnit(xcmSpellTransferModel.$isDestinationFeeLoading);
+  const shouldShowFees = useUnit(xcmSpellTransferModel.$shouldShowFees);
 
   if (!network) {
     return null;
   }
 
   const isMultisig = initiator && accountUtils.isAnyMultisigAccount(initiator);
+  const nativeAsset = getNativeAsset(network.chain.assets)!;
 
   return (
     <div className="flex flex-col gap-y-2">
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
-          asset={getNativeAsset(network.chain.assets)}
+          asset={nativeAsset}
           threshold={initiator.threshold || 1}
           onDepositChange={(deposit) => formModel.multisigDepositChanged(new BN(deposit))}
         />
       )}
 
-      <FeeWithLabel
-        label={t('operation.networkFee')}
-        asset={getNativeAsset(network.chain.assets)!}
-        fee={fee}
-        isLoading={pendingFee}
-      />
+      {isXcm ? (
+        shouldShowFees ? (
+          <>
+            {(() => {
+              const originFeeAvailable = originFee !== null;
+              const destinationFeeAvailable = destinationFee !== null;
 
-      {isXcm && xcmApi && xcmConfig && (
-        <XcmFeeWithLabel
-          api={xcmApi}
-          config={xcmConfig}
-          asset={network.asset}
-          transaction={coreTx || feeTx}
-          onFeeChange={formModel.xcmFeeChanged}
-          onFeeLoading={formModel.isXcmFeeLoadingChanged}
-        />
+              const showOriginFee =
+                originFeeAvailable || (!originFeeAvailable && !destinationFeeAvailable && isDestinationFeeLoading);
+              const showDestinationFee =
+                destinationFeeAvailable || (!destinationFeeAvailable && !originFeeAvailable && isDestinationFeeLoading);
+
+              const originFeeLoading = isDestinationFeeLoading;
+              const destinationFeeLoading = isDestinationFeeLoading;
+
+              return (
+                <>
+                  {showOriginFee ? (
+                    <FeeWithLabel
+                      label={t('operation.originNetworkFee')}
+                      asset={nativeAsset}
+                      fee={originFee}
+                      isLoading={originFeeLoading}
+                    />
+                  ) : null}
+                  {showDestinationFee ? (
+                    <FeeWithLabel
+                      label={t('operation.destinationNetworkFee')}
+                      asset={nativeAsset}
+                      fee={destinationFee}
+                      isLoading={destinationFeeLoading}
+                    />
+                  ) : null}
+                </>
+              );
+            })()}
+          </>
+        ) : null
+      ) : (
+        <FeeWithLabel label={t('operation.networkFee')} asset={nativeAsset} fee={fee} isLoading={pendingFee} />
       )}
-
-      {isXcm && deliveryFee && <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />}
     </div>
   );
 });
@@ -606,15 +626,21 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const isPreparingTransaction = useUnit(formModel.$isPreparingTransaction);
+  const errors = useUnit(formModel.$errors);
+  const hasErrors = errors.length > 0;
+  const isLoading = isPreparingTransaction && !hasErrors;
 
   return (
-    <div className="mt-4 flex items-center justify-between">
-      <Button variant="text" onClick={onGoBack}>
-        {t('operation.goBackButton')}
-      </Button>
-      <Button form="transfer-form" type="submit" disabled={!canSubmit}>
-        {t('transfer.continueButton')}
-      </Button>
+    <div className="mt-4 flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <Button variant="text" onClick={onGoBack}>
+          {t('operation.goBackButton')}
+        </Button>
+        <Button form="transfer-form" type="submit" disabled={!canSubmit || hasErrors} isLoading={isLoading}>
+          {t('transfer.continueButton')}
+        </Button>
+      </div>
     </div>
   );
 });

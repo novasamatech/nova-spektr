@@ -1,7 +1,6 @@
-import { useUnit } from 'effector-react';
-
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { referendumService } from '@/domains/collectives';
+import { useFellowshipMember } from '@/aggregates/fellowship-member';
 import { referendumActionsSlot } from '@/features/fellowship-referendum-details';
 import { referendumVotingTaskActionSlot } from '@/features/fellowship-tasks';
 
@@ -10,11 +9,11 @@ import { VotingActions } from './components/VotingActions';
 import { VotingButtons } from './components/VotingButtons';
 import { VotingButtonsCompleted } from './components/VotingButtonsCompleted';
 import { VotingConfirmation } from './components/VotingConfirmation';
+import { useReferendumVote } from './hooks/useReferendumVote';
 import { fellowshipVotingFeature } from './model/feature';
-import { fellowship } from './model/fellowship';
-import { votingStatus } from './model/votingStatus';
+import { voting } from './model/voting';
 
-export { fellowshipVotingFeature, VotingConfirmation, votingStatus, fellowship };
+export { fellowshipVotingFeature, VotingConfirmation, voting };
 
 fellowshipVotingFeature.inject(referendumVotingTaskActionSlot, ({ referendum, transaction, dateThresholds }) => {
   return (
@@ -25,12 +24,26 @@ fellowshipVotingFeature.inject(referendumVotingTaskActionSlot, ({ referendum, tr
   );
 });
 
-fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum }) => {
-  const voting = useUnit(votingStatus.$referendumVoting);
+fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum, onClose }) => {
+  const { data: vote } = useReferendumVote(referendum);
+  const { data: fellowshipMember } = useFellowshipMember();
 
-  if (nonNullable(referendum) && referendumService.isCompleted(referendum) && nonNullable(voting)) {
+  const proposerAccountId = nonNullable(referendum) && referendumService.getProposer(referendum);
+
+  const isCurrentUser =
+    nonNullable(fellowshipMember) && nonNullable(proposerAccountId) && fellowshipMember.accountId === proposerAccountId;
+
+  if (nullable(referendum)) {
+    return null;
+  }
+
+  if (referendumService.isCompleted(referendum) && nonNullable(vote)) {
     return <VotingButtonsCompleted referendum={referendum} evidence={evidence} />;
   }
 
-  return <VotingButtons referendum={referendum} evidence={evidence} />;
+  if (referendumService.isOngoing(referendum) && !isCurrentUser) {
+    return <VotingButtons referendum={referendum} evidence={evidence} onClose={onClose} />;
+  }
+
+  return null;
 });

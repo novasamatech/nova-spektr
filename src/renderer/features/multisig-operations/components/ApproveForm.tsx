@@ -22,11 +22,10 @@ type Props = {
   chain: Chain;
   nativeAsset: Asset;
   onSubmit: () => void;
-  asset: Asset | null;
   operation: MultisigOperation;
 };
 
-export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, asset, operation }: Props) => {
+export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, operation }: Props) => {
   const { t } = useI18n();
 
   const balances = useUnit(balanceModel.$balanceMap);
@@ -34,7 +33,7 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, as
   const allWallets = useUnit(walletModel.$wallets);
   const fee = useUnit(approveModel.$fee);
   const isFeeLoading = useUnit(approveModel.$isFeeLoading);
-  const isDepositLoading = useUnit(approveModel.$isDepositLoading);
+  const isDepositRequired = useUnit(approveModel.$isDepositRequired);
   const multisigDeposit = useUnit(approveModel.$multisigDeposit);
   const wallets = useUnit(walletModel.$wallets);
   const errors = useUnit(approveModel.$errors);
@@ -91,10 +90,10 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, as
 
       <Separator className="my-1 w-full" />
 
-      {asset && (
+      {nativeAsset && (
         <>
-          <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={isDepositLoading} />
-          {signatory && <FeeWithLabel fee={fee} asset={asset} isLoading={isFeeLoading} />}
+          {isDepositRequired && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit} />}
+          {signatory && <FeeWithLabel fee={fee} asset={nativeAsset} isLoading={isFeeLoading} />}
         </>
       )}
 

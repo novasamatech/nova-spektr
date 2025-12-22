@@ -1,5 +1,5 @@
 import { type ChainId, ProxyVariant } from '@/shared/core';
-import { createAsyncTaskPool } from '@/shared/lib/utils';
+import { createAsyncTaskPool, keys } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService } from '../account/service';
 import { type AnyAccount } from '../account/types';
@@ -37,7 +37,7 @@ async function syncAccounts<const Providers extends AccountProvider<any>[]>({
 }: Params<Providers>): Promise<SyncResult<Providers>> {
   const possingAccounts = accounts.filter(accountService.hasPermissionToMakeActions);
   let foundAccounts: InferProviderAccount<Providers[number]>[] = [];
-  const inputChains = Object.keys(chains) as ChainId[];
+  const inputChains = keys(chains);
 
   if (possingAccounts.length === 0) {
     return {
@@ -63,7 +63,9 @@ async function syncAccounts<const Providers extends AccountProvider<any>[]>({
     const resultsIds = searchResults.map(a => a.accountId);
     const nextSearchCandidates = resultsIds.filter(a => !foundAccountIds.has(a));
 
-    resultsIds.forEach(foundAccountIds.add, foundAccountIds);
+    for (const id of resultsIds) {
+      foundAccountIds.add(id);
+    }
     foundAccounts = foundAccounts.concat(searchResults);
 
     if (nextSearchCandidates.length > 0) {

@@ -11,6 +11,7 @@ import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
+import { appCustomOperationsFeature } from '@/features/app-custom-operations';
 import { assetsSettingsModel, portfolioModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
@@ -18,10 +19,12 @@ import { callDataExecuteFeature } from '@/features/call-data-execute';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
+import { multiTransferFeature } from '@/features/multi-transfer';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
+import { vestedTransferFeature } from '@/features/vested-transfer';
 
 const configureDomains = () => {
   const config = createFeature({ name: 'spektr/config' });
@@ -73,6 +76,9 @@ export const bootstrap = () => {
     basketNavigationFeature,
     stakingNavigationFeature,
     governanceNavigationFeature,
+    vestedTransferFeature,
+    multiTransferFeature,
+    appCustomOperationsFeature,
 
     import('@/features/wallet-select').then(({ walletSelectFeature }) => walletSelectFeature.feature),
     import('@/features/wallet-details').then(({ walletDetailsFeature }) => walletDetailsFeature),
@@ -113,6 +119,7 @@ export const bootstrap = () => {
     import('@/features/fellowship-tasks').then(({ fellowshipTasksFeature }) => fellowshipTasksFeature),
     import('@/features/fellowship-voting').then(({ fellowshipVotingFeature }) => fellowshipVotingFeature),
     import('@/features/fellowship-voting-history').then(({ fellowshipVotingHistoryFeature }) => fellowshipVotingHistoryFeature),
+    import('@/features/fellowship-overview').then(({ fellowshipOverviewFeature }) => fellowshipOverviewFeature),
 
     import('@/features/basket-operations').then(({ basketOperationsFeature }) => basketOperationsFeature),
 
@@ -130,8 +137,15 @@ export const bootstrap = () => {
     import('@/features/proxy-operation-details').then(({ proxyOperationDetailFeature }) => proxyOperationDetailFeature),
     import('@/features/proxy-basket').then(({ proxyBasketFeature }) => proxyBasketFeature),
 
+    import('@/features/vested-transfer-operation-details').then(({ vestedTransferOperationDetailFeature }) => vestedTransferOperationDetailFeature),
+    import('@/features/multi-transfer-operation-details').then(({ multiTransferOperationDetailFeature }) => multiTransferOperationDetailFeature),
+
     import('@/features/import-db').then(({ importDBFeature }) => importDBFeature),
     import('@/features/hidden-wallets').then(({ hiddenWalletsFeature }) => hiddenWalletsFeature),
+    import('@/features/notifications').then(({ notificationsSettingsFeature }) => notificationsSettingsFeature),
+
+    import('@/features/fellowship-promotion').then(({ fellowshipPromotionFeature }) => fellowshipPromotionFeature),
+    import('@/features/fellowship-retention').then(({ fellowshipRetentionFeature }) => fellowshipRetentionFeature),
     import('@/features/assethub-migration-modal').then(({ assethubMigrationModalFeature }) => assethubMigrationModalFeature),
     import('@/features/dapp-browser').then(({ dappBrowserFeature }) => dappBrowserFeature),
   ]);

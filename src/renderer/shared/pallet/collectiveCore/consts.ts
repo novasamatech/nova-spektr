@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { z } from 'zod';
 
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
@@ -28,6 +29,9 @@ export const consts = {
    * Represents the highest possible rank in this pallet.
    */
   maxRank(type: PalletType, api: ApiPromise) {
-    return pjsSchema.u32.parse(getPallet(type, api)['maxRank']);
+    // u16 is preferred
+    const schema = z.union([pjsSchema.u16, pjsSchema.u32]);
+
+    return schema.parse(getPallet(type, api)['maxRank']);
   },
 };

@@ -8,9 +8,10 @@ import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { isEthereumAccountId, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
-import { Account, AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
+import { AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { useWalletName } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardMd, accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
@@ -18,6 +19,7 @@ import { ChangeSignatories } from '@/features/flexible-change-signatories';
 import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy } from '@/features/proxy-add';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { walletDetailsUtils } from '../../lib/utils';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -40,6 +42,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   useGate(walletProxiesModel.flow, { wallet });
 
   const { t } = useI18n();
+  const walletName = useWalletName(wallet);
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProxiesModel.$hasWalletProxies);
@@ -74,11 +77,6 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   let chain = null;
   if (nonNullable(multisigAccount)) {
     chain = chains[multisigAccount.chainId];
-  }
-
-  let multisigAccountName = '';
-  if (nonNullable(multisigAccount)) {
-    multisigAccountName = getSignatoryName(multisigAccount.multisigAccountId);
   }
 
   const canCreateProxy = useMemo(() => {
@@ -214,7 +212,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
         <div className="mb-6 flex flex-col gap-y-2.5 px-5">
-          <Box direction="row" verticalAlign="center">
+          <Box direction="row">
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon
@@ -227,7 +225,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
               {!isRenameInputOpen && (
                 <>
                   <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
-                    {wallet.name}
+                    {walletName}
                   </HeadlineText>
                   <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
                     <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />
@@ -250,13 +248,12 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
             <div className="flex items-center gap-1 text-footnote">
               <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
               <WalletIcon type={WalletType.MULTISIG} size={16} />
-              <Account
+              <NamedAccount
                 accountId={multisigAccount.multisigAccountId}
                 chain={chain}
                 hideIcon
                 hideAddress
                 variant="short"
-                title={multisigAccountName}
               />
               <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
               <ChainIcon chain={chain} size={16} />

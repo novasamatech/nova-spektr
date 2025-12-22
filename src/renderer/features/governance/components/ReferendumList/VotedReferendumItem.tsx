@@ -8,16 +8,16 @@ import { useI18n } from '@/shared/i18n';
 import { formatBalance, toNumberWithPrecision } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, Icon } from '@/shared/ui';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
+import { ReferendumEndTimer } from '@/widgets/ReferendumEndTimer';
 import { listAggregate } from '../../aggregates/list';
 import { type AggregatedReferendum } from '../../types/structs';
-import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
 
 type Props = {
   referendum: AggregatedReferendum;
-  network: { api: ApiPromise; chain: Chain; asset: Asset };
+  network: { api: ApiPromise; timelineApi: ApiPromise; chain: Chain; asset: Asset };
   votes: { value: BN; vote: string }[];
   onSelect: (value: AggregatedReferendum) => void;
 };
@@ -45,7 +45,7 @@ export const VotedReferendumItem = memo(({ referendum, network, votes, onSelect 
       <div className="flex w-full items-center gap-x-2">
         <VotingStatusBadge referendum={referendum} />
 
-        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={network.api} />
+        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} timelineApi={network.timelineApi} />
 
         <div className="ml-auto flex text-text-secondary">
           {referendumId && <FootnoteText className="text-inherit">#{referendumId}</FootnoteText>}

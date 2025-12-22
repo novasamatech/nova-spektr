@@ -1,7 +1,6 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, Icon, LargeTitleText } from '@/shared/ui';
@@ -25,7 +24,7 @@ type Props = PropsWithChildren<{
 }>;
 
 export const SalaryRegisterModal = ({ disabled, children }: Props) => {
-  useFlow(salaryRequest.flow, null);
+  useGate(salaryRequest.gate);
 
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -34,6 +33,8 @@ export const SalaryRegisterModal = ({ disabled, children }: Props) => {
   const account = useUnit(salaryRequest.$account);
   const wallet = useUnit(salaryRequest.$wallet);
   const fee = useUnit(salaryRequest.$fee);
+  const inBasket = useUnit(salaryRequest.$inBasket);
+
   const { active: activeSalary, passive: passiveSalary } = useUnit(memberSalary.$memberSalary);
 
   let salary: string | null = null;
@@ -67,7 +68,7 @@ export const SalaryRegisterModal = ({ disabled, children }: Props) => {
         isOpen={open}
         variant="success"
         autoCloseTimeout={2000}
-        title={t('operation.addedToBasket')}
+        title={inBasket ? t('operation.addedToBasket') : t('operation.removedFromBasket')}
         onClose={() => handleToggle(false)}
       />
     );
@@ -93,7 +94,7 @@ export const SalaryRegisterModal = ({ disabled, children }: Props) => {
       </Modal.Title>
       <Modal.Content>
         <Box horizontalAlign="center" padding={6}>
-          <Icon name="requestSalary" size={60} />
+          <Icon name="request" size={60} />
         </Box>
 
         {salary && (
@@ -118,7 +119,7 @@ export const SalaryRegisterModal = ({ disabled, children }: Props) => {
             <Modal.Footer>
               {wallet && basketUtils.isBasketAvailable(wallet) && (
                 <Button pallet="secondary" onClick={handleBasketSave}>
-                  {t('operation.addToBasket')}
+                  {inBasket ? t('operation.removeFromBasket') : t('operation.addToBasket')}
                 </Button>
               )}
               {nonNullable(wallet) && <SignButton type={wallet.type} onClick={handleSign} />}

@@ -23,8 +23,7 @@ describe('ui/Inputs/InputFile', () => {
     const input = screen.getByTestId('file-input') as HTMLInputElement;
     await user.upload(input, file);
 
-    expect(input.files?.[0]).toStrictEqual(file);
-    expect(input.files?.item(0)).toStrictEqual(file);
-    expect(input.files).toHaveLength(1);
+    expect(spyChange).toHaveBeenCalledWith(file);
+    expect(spyChange).toHaveBeenCalledTimes(1);
   });
 });

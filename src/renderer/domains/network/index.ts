@@ -22,15 +22,21 @@ export { accountSync } from './account-sync/store';
 export { accountSyncService } from './account-sync/service';
 export type { SyncedMultisigAccount, SyncedProxyAccount, SyncedAccount } from './account-sync/types';
 
+export { useAccountName, useAccountsNames, useWalletName, useWalletsNames } from './account/hooks';
+export { $accountNameCache, createAccountNameCacheKey, accountsNameResource } from './account/resource';
+
 export { balanceService } from './balance/service';
 export type { BalanceUpdateResult, BalancePreservation } from './balance/types';
 
 export { identity } from './identity/store';
 export { identityService } from './identity/service';
+export { useIdentities, useIdentity } from './identity/hooks';
 export type { AccountIdentity, IdentityMap } from './identity/types';
 
-export { block } from './block';
+export { block } from './block/store';
+export { useBlock, useBlockTime, useBlockTimestamp } from './block/hooks';
 
 export { multisigOperation } from './multisig-operation/store';
 export { multisigOperationService } from './multisig-operation/service';
+export type { MultisigOperationDeepLinkParams } from './multisig-operation/service';
 export type { MultisigEvent, MultisigOperation } from './multisig-operation/types';

@@ -5,8 +5,9 @@ import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@/shared/ui';
 import { DefaultExplorer, ExplorerIcons } from '@/shared/ui/ExplorerLink/constants';
-import { Account } from '@/shared/ui-entities';
+import { Address } from '@/shared/ui-entities';
 import { Box, Copy } from '@/shared/ui-kit';
+import { useAccountName } from '@/domains/network';
 import { QrTextGenerator } from '@/entities/transaction';
 import { assetTransactionUtils } from '../lib/utils';
 import { receiveModel } from '../model/receive-model';
@@ -22,6 +23,10 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
   const { t } = useI18n();
 
   const selectedAccount = useUnit(receiveModel.$selectedAccount);
+  const resolvedName = useAccountName({
+    accountId: selectedAccount?.accountId ?? null,
+    chain,
+  });
 
   if (!selectedAccount) return null;
 
@@ -40,13 +45,7 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
         <QrTextGenerator className="mb-4" payload={qrCodePayload} />
       </div>
       <div className="flex w-full items-center justify-between bg-main-app-background px-5 py-3">
-        <Account
-          variant="truncate"
-          accountId={selectedAccount.accountId}
-          chain={chain}
-          title={selectedAccount.name}
-          hideExplorers
-        />
+        <Address variant="truncate" address={address} title={resolvedName} />
         <Copy
           value={address}
           notification={t(assetTransactionUtils.getStatusTitle(isUnifiedAddress ? 'unified' : 'regular'))}

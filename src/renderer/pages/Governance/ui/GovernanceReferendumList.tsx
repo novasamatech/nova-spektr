@@ -48,7 +48,7 @@ export const GovernanceReferendumList = () => {
       {isRegularState && (
         <Box direction="column" gap={3} padding={[0, 0, 10]}>
           <OngoingReferendums
-            api={network?.api}
+            timelineApi={network?.timelineApi}
             chain={network?.chain}
             asset={network?.asset}
             referendums={ongoing}
@@ -60,7 +60,7 @@ export const GovernanceReferendumList = () => {
           />
           <AsyncItem>
             <CompletedReferendums
-              api={network?.api}
+              timelineApi={network?.timelineApi}
               chain={network?.chain}
               asset={network?.asset}
               referendums={completed}

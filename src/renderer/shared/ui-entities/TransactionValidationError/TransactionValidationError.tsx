@@ -2,15 +2,32 @@ import { type BN, BN_ZERO } from '@polkadot/util';
 import { type ReactNode, memo } from 'react';
 import { Trans } from 'react-i18next';
 
+import { categorizeXcmError, getHumanReadableXcmError } from '@/shared/api/xcm/service/xcm-error-utils';
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Asset, type ProxyType, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatAsset, groupBy, nonNullable, nullable } from '@/shared/lib/utils';
-import { Alert } from '@/shared/ui';
+import { Alert, FootnoteText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type AnyAccount, type BalanceUpdateResult } from '@/domains/network';
+import { useWalletName } from '@/domains/network';
 import { ProxyTypeName } from '@/entities/proxy';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
+
+const PermissionErrorItem = memo(({ wallet, permission }: { wallet: Wallet; permission: string }) => {
+  const { t } = useI18n();
+  const walletName = useWalletName(wallet);
+  const permissionTranslationKey = ProxyTypeName[permission as ProxyType] ?? permission;
+
+  return (
+    <Box as="span" direction="row" gap={1} verticalAlign="center">
+      <WalletIcon type={wallet.type} size={16} />
+      <span>
+        {walletName}: {t(permissionTranslationKey)}
+      </span>
+    </Box>
+  );
+});
 
 export type TransactionValidationFatalError = {
   message: string;
@@ -28,11 +45,27 @@ export type TransactionValidationBalanceError = {
   asset: Asset;
 };
 
+export type TransactionValidationNetworkError = {
+  networkError: true;
+  message: string;
+};
+
+export type TransactionValidationDryRunError = {
+  dryRunError: true;
+  failureReason: string;
+  failureChain?: string;
+  chainName?: string;
+  title?: string;
+  description?: ReactNode;
+};
+
 type Props = {
   errors: (
     | TransactionValidationPermissionError
     | TransactionValidationBalanceError
     | TransactionValidationFatalError
+    | TransactionValidationNetworkError
+    | TransactionValidationDryRunError
   )[];
   wallets: Wallet[];
 };
@@ -40,8 +73,12 @@ type Props = {
 export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
   const { t } = useI18n();
 
-  const fatalErrors = errors.filter(e => 'message' in e);
-  const permissionErrors = errors.filter(e => 'permission' in e);
+  const fatalErrors = errors.filter(
+    (e): e is TransactionValidationFatalError => 'message' in e && !('networkError' in e),
+  );
+  const networkErrors = errors.filter((e): e is TransactionValidationNetworkError => 'networkError' in e);
+  const dryRunErrors = errors.filter((e): e is TransactionValidationDryRunError => 'dryRunError' in e);
+  const permissionErrors = errors.filter((e): e is TransactionValidationPermissionError => 'permission' in e);
   const balanceErrors = groupBy(
     errors.filter(e => 'balance' in e),
     e => e.account.id,
@@ -53,11 +90,26 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
     for (const error of fatalErrors) {
       errorNodes.push(
         <span data-testid={TEST_IDS.VALIDATIONS.FATAL}>
-          <span className="font-bold">{t('general.transactionErrors.fatal.intro')}</span>
-          <br />
-          <span className="break-all">{error.message}</span>
+          {t('general.transactionErrors.fatal.intro')}
+          <span className="break-all">{` ${error.message}`}</span>
         </span>,
       );
+    }
+  }
+
+  if (networkErrors.length > 0) {
+    for (const error of networkErrors) {
+      errorNodes.push(
+        <FootnoteText key="network-error" className="max-w-full break-words text-text-primary">
+          {error.message}
+        </FootnoteText>,
+      );
+    }
+  }
+
+  if (dryRunErrors.length > 0) {
+    for (const error of dryRunErrors) {
+      errorNodes.push(<TransactionDryRunError key="dry-run-error" error={error} />);
     }
   }
 
@@ -78,10 +130,23 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
     );
   }
 
+  const hasErrors = errors.length > 0;
   const renderDot = errorNodes.length > 1;
+  const hasNetworkError = networkErrors.length > 0;
+  const hasDryRunError = dryRunErrors.length > 0;
+  const title =
+    hasDryRunError && dryRunErrors[0]?.title
+      ? dryRunErrors[0].title
+      : hasNetworkError
+        ? t('general.transactionErrors.network.title')
+        : t('general.transactionErrors.title');
+
+  if (!hasErrors) {
+    return null;
+  }
 
   return (
-    <Alert active={errors.length > 0} variant="error" title={t('general.transactionErrors.title')}>
+    <Alert active={hasErrors} variant="error" title={title}>
       <Box as="span" gap={2}>
         {errorNodes.map((n, i) => (
           <Alert.Item key={i} withDot={renderDot}>
@@ -111,19 +176,46 @@ const TransactionPermissionError = ({
         const wallet = wallets.find(w => w.id === e.account.walletId);
         if (nullable(wallet)) return null;
 
-        const permissionTranslationKey = ProxyTypeName[e.permission as ProxyType] ?? e.permission;
-
-        return (
-          <Box key={`${wallet.name}${e.permission}`} as="span" direction="row" gap={1} verticalAlign="center">
-            <WalletIcon type={wallet.type} size={16} />
-            <span>
-              {wallet.name}: {t(permissionTranslationKey)}
-            </span>
-          </Box>
-        );
+        return <PermissionErrorItem key={`${wallet.id}${e.permission}`} wallet={wallet} permission={e.permission} />;
       })}
       <span data-testid={dataTestId}>{t('general.transactionErrors.permission.message')}</span>
     </Box>
+  );
+};
+
+const TransactionDryRunError = ({ error }: { error: TransactionValidationDryRunError }) => {
+  const { t } = useI18n();
+
+  if (error.description) {
+    return <FootnoteText className="max-w-full break-all text-text-primary">{error.description}</FootnoteText>;
+  }
+
+  const errorInfo = categorizeXcmError(error.failureReason);
+  const isTooExpensive = errorInfo.isTooExpensive;
+  const isFeesNotMet = errorInfo.isFeesNotMet;
+  const chainName = error.chainName || error.failureChain;
+  const cleanReason = getHumanReadableXcmError(error.failureReason, error.failureChain);
+
+  const i18nKey = isTooExpensive
+    ? 'transfer.dryRunTooExpensive.description'
+    : isFeesNotMet
+      ? 'transfer.dryRunFeesNotMet.description'
+      : cleanReason
+        ? 'transfer.dryRunError.descriptionWithReason'
+        : 'transfer.dryRunError.description';
+
+  return (
+    <FootnoteText className="max-w-full break-all text-text-primary">
+      <Trans
+        t={t}
+        i18nKey={i18nKey}
+        values={{
+          reason: cleanReason,
+          chain: chainName,
+        }}
+        components={isTooExpensive ? { br: <br /> } : undefined}
+      />
+    </FootnoteText>
   );
 };
 
@@ -142,6 +234,7 @@ const TransactionBalanceError = ({
   if (nullable(account)) return null;
   const wallet = wallets.find(w => w.id === account.walletId);
   if (nullable(wallet)) return null;
+  const walletName = useWalletName(wallet);
 
   const assetGroups = groupBy(errors, e => e.asset.symbol);
   const groupedByActionErrors = groupBy(errors, e => `${e.action}_${e.asset.symbol}`);
@@ -189,7 +282,7 @@ const TransactionBalanceError = ({
           components={{
             wallet: (
               <span className="relative top-1 -mt-1 inline-flex items-center gap-1">
-                <WalletIcon type={wallet.type} size={16} /> {wallet.name}
+                <WalletIcon type={wallet.type} size={16} /> {walletName}
               </span>
             ),
           }}

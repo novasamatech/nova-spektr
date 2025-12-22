@@ -25,6 +25,11 @@
     }
   },
   "addressBook": {
+    "actions": {
+      "delete": "Delete",
+      "edit": "Edit"
+    },
+    "contactDeleted": "Contact deleted",
     "contactList": {
       "emptySearchDescription": "Try to search for another name",
       "emptySearchLabel": "No contact with entered name were found",
@@ -65,6 +70,25 @@
       "typeAddressButton": "Type the address",
       "typeNameButton": "Type a name"
     },
+    "importContacts": {
+      "button": "Import",
+      "conflicts": {
+        "description": "Some contacts below already exists in your address book. Do you want to replace it or keep current versions?",
+        "keepCurrentButton": "Keep current",
+        "replaceButton": "Replace",
+        "title": "Import options"
+      },
+      "errors": {
+        "description": "Certain contacts don't match required format. Check guidelines on Wiki, update your file, and try uploading again.",
+        "emptyList": "File has no accounts to import",
+        "fileTooLarge": "File is too large. Maximum file size is 1MB",
+        "title": "Import failed"
+      },
+      "loading": "Importing contacts...",
+      "success": "Contacts imported",
+      "tooltip": "Import address book from JSON file:",
+      "wikiLink": "Wiki guidelines"
+    },
     "removeConfirm": {
       "cancelButton": "Cancel",
       "confirmButton": "Delete",
@@ -72,7 +96,8 @@
       "title": "Delete contact"
     },
     "searchPlaceholder": "Search",
-    "title": "Address Book"
+    "title": "Address Book",
+    "undo": "Undo"
   },
   "assetBalance": {
     "locked": "Locked",
@@ -160,6 +185,7 @@
       "proceedButton": "Delete",
       "title": "Delete this operation?"
     },
+    "removedFromBasket": "Transaction removed from basket",
     "searchPlaceholder": "Search",
     "selectAll": "Select all",
     "selectedStatus_one": "{ selected } out of { count } operation selected",
@@ -169,6 +195,7 @@
       "title": "Sign { transactions } operations"
     },
     "title": "Basket",
+    "undo": "Undo",
     "validationError": "Unavailable",
     "validationWarning": {
       "cancelButton": "Cancel",
@@ -219,6 +246,10 @@
     "noDecodedTxTitle": "No data available",
     "placeholder": "Paste the call data here",
     "title": "Submit call data"
+  },
+  "common": {
+    "continue": "Continue",
+    "or": "or"
   },
   "createMultisigAccount": {
     "accountsTab": "Accounts",
@@ -381,6 +412,7 @@
       "continueButton": "Continue",
       "downloadTemplateButton": "Download the template",
       "error": {
+        "invalidEthereumPath": "Ethereum chains don't support soft derivations",
         "invalidFile": "Incorrect file format",
         "invalidPasswordPath": "Invalid password path",
         "invalidPasswordPath_one": "Password derivation path {invalidValues} is not allowed, please check the file.",
@@ -389,9 +421,6 @@
         "invalidPath_one": "Derivation path {invalidValues} is not valid, please check the file.",
         "invalidPath_other": "Derivation paths {invalidValues} are not valid, please check the file.",
         "invalidRoot": "The public key doesn’t match.",
-        "missingName": "Missing name",
-        "missingName_one": "Name is not specified for the key with {invalidValues}, please check the file.",
-        "missingName_other": "Name is not specified for the keys with {invalidValues}, please check the file.",
         "wrongShardsNumber": "Wrong shards number",
         "wrongShardsNumber_one": "Number of shards {invalidValues} is not valid, please check the file.",
         "wrongShardsNumber_other": "Numbers of shards {invalidValues} are not valid, please check the file."
@@ -417,8 +446,10 @@
       "derivationCannotEndWithSlash": "The derivation path cannot end with a slash.",
       "derivationDuplicate": "This path is already in use. Choose another one or use the existing account.",
       "derivationEmpty": "The derivation path cannot be empty.",
+      "derivationEmptySegment": "Derivation segment cannot be empty.",
       "derivationEthereumSingleSlash": "Ethereum chains don't support soft derivations",
       "derivationHasSpaces": "The derivation path name can't contain spaces.",
+      "derivationInvalidShardRange": "Derivation shard range should contain at least 2 shards.",
       "derivationMustStartWithSlash": "The derivation path must start with / or //.",
       "derivationPasswordNotSupported": "Derivation paths with ///password are not supported.",
       "derivationPathLabel": "Derivation path",
@@ -463,9 +494,16 @@
   "fellowship": {
     "activityFeed": {
       "activityModal": {
+        "loadMore": "Load more",
+        "no-results": {
+          "filters": "No members match the current filters.",
+          "general": "No members found.",
+          "search": "\"{query}\" did not match any address or identity.\nPlease try searching with another term.",
+          "title": "Nothing found"
+        },
         "nothing-found": {
           "clear": "Clear search",
-          "description": "“{query}” did not match any event address or identity. Please try searching with another term.",
+          "description": "\"{query}\" did not match any address or identity.\nPlease try searching with another term.",
           "title": "Nothing found"
         },
         "search-placeholder": "Search by event, address or identity",
@@ -478,15 +516,20 @@
         },
         "title": "All events"
       },
-      "lastActivityCardTitle": "Last events",
+      "lastActivityCardTitle": "Latest events",
       "record": {
         "activeChanged": "changed his status to {status}",
         "demoted": "has been bumped to rank {rank}",
         "imported": "has been imported with rank {rank}",
         "promoted": "has been promoted to rank {rank}",
         "proven": "proved his rank {rank}",
-        "submittedPromotion": "submitted evidence with a wish to promotion",
-        "submittedRetention": "submitted evidence with a wish to retention"
+        "referendumFallback": "created a referendum <link></link>",
+        "submittedPromotion": "submitted <evidence>evidence</evidence> with a wish to promotion",
+        "submittedRetention": "submitted <evidence>evidence</evidence> with a wish to retention"
+      },
+      "referendum": {
+        "promote": "created a referendum <link></link> to promote {target} to rank {rank}",
+        "retain": "created a referendum <link></link> to retain {target} at rank {rank}"
       },
       "viewList": "View list"
     },
@@ -512,6 +555,10 @@
         "action": "Open network settings",
         "description": "Referendum information such as the description and voting statistics cannot be accessed and may be outdated.\nPlease check the connection in your network settings.",
         "title": "You are not connected to this network"
+      },
+      "noLongerValid": {
+        "errorText": "Referendum has ended",
+        "label": "No longer valid"
       }
     },
     "evidenceModal": {
@@ -536,8 +583,11 @@
     "members": {
       "active": "Active",
       "activity": "Activity",
+      "activityTooltip": "Minimum participation rate in eligible votes required to maintain rank. Lower ranks must vote more often; requirement decreases with higher ranks.",
       "agreement": "Agreement",
+      "agreementTooltip": "Minimum percentage of votes that should align with consensus of higher-ranked members, ensuring decisions follow established Fellowship norms.",
       "emptyList": "There is no members",
+      "inactive": "Inactive",
       "modalAccountTitle": "Account",
       "modalTitle": "Fellowship members",
       "myProfile": "My profile",
@@ -547,22 +597,113 @@
     "n/a": "N/A",
     "noAccount": "Account not found",
     "noProfile": "Profile doesn’t exist",
+    "overview": {
+      "match": "match",
+      "matches": "matches",
+      "matchingArticles": "matching articles",
+      "members": {
+        "clearAll": "Clear all",
+        "filters": {
+          "allRanks": "All ranks",
+          "allStatuses": "All Statuses",
+          "selectRank": "Select rank"
+        },
+        "status": {
+          "active": "Active",
+          "passive": "Passive"
+        },
+        "table": {
+          "account": "Account",
+          "rank": "Rank",
+          "salary": "Salary (USDT)",
+          "status": "Status"
+        },
+        "you": "You"
+      },
+      "modalTitle": "Fellowship overview",
+      "readyForPromotion": "Ready for promotion",
+      "retentionProgress": "Retention progress: {progress}%",
+      "searchPlaceholder": "Search by address or identity",
+      "tabs": {
+        "codex": "Codex",
+        "members": "Members",
+        "ranks": "Ranks"
+      },
+      "title": "Fellowship overview",
+      "toNextRank": "to next rank",
+      "viewDetails": "View details"
+    },
     "profile": {
       "active": "Active",
       "activeSalary": "Active salary",
-      "activity": "Activity",
       "activityFeed": {
-        "activeFalse": "Status passive",
-        "activeTrue": "Status active",
+        "clear": "Clear",
         "demoted": "Demoted to rank {rank}",
+        "filterAll": "All events",
+        "filterPromotion": "Promotion",
+        "filterReferendum": "Referendum",
+        "filterRetention": "Retention",
+        "filterSalary": "Salary",
+        "filterStatus": "Status",
         "imported": "Imported to rank {rank}",
-        "paid": "Salary",
+        "noEventsDesc": "Your history will appear here",
+        "noEventsTitle": "No events yet",
+        "paid": "Salary payout completed",
         "promoted": "Promoted to rank {rank}",
-        "proven": "Proven at rank {rank}",
-        "requestedPromotion": "Promotion requested",
-        "requestedRetention": "Retention requested"
+        "proven": "Retained at rank {rank}",
+        "referendum": "fellowship.profile.activityFeed.referendum",
+        "referendumCreated": "Referendum #{number} created",
+        "referendumFailed": "{type} referendum failed",
+        "referendumSuccess": "{type} referendum passed successfully",
+        "requestedPromotion": "Submitted evidence to promotion",
+        "requestedRetention": "Submitted report to retention",
+        "status": "Status switched to {status}",
+        "statusActive": "active",
+        "statusInactive": "passive",
+        "viewEvidence": "View evidence",
+        "viewExtrinsic": "View on Subscan",
+        "viewReferendum": "View referendum"
+      },
+      "alerts": {
+        "bumped": {
+          "description": "Negative fellows' opinion resulted in rank downgrade.",
+          "title": "You have been bumped to rank {rank}"
+        },
+        "promoted": {
+          "description": "Positive fellows' opinion allowed promotion to Rank {rank}.",
+          "title": "Promotion referendum passed successfully"
+        },
+        "promotionFailed": {
+          "description": "Fellowship members found the evidence insufficient for promotion on Rank {rank}.",
+          "title": "Promotion referendum failed"
+        },
+        "promotionRequestWhenRetentionReferendumExists": {
+          "description": "The retention referendum now references the promotion report which may lead to unpredictable outcomes. To fix this, it is recommended to resubmit retention report.",
+          "title": "Promotion report submitted with an open retention referendum"
+        },
+        "proven": {
+          "description": "Positive fellows' opinion allowed retention of current rank.",
+          "title": "Retention referendum passed successfully"
+        },
+        "resubmitPromotionEvidence": "Resubmit promotion evidence",
+        "resubmitRetentionEvidence": "Resubmit retention evidence",
+        "retentionFailed": {
+          "description": "Fellowship members found the report insufficient for retention on Rank {rank}.",
+          "title": "Retention referendum failed"
+        },
+        "retentionRequestWhenPromotionReferendumExists": {
+          "description": "The promotion referendum now references the retention report which may lead to unpredictable outcomes. To fix this, it is recommended to resubmit promotion evidence.",
+          "title": "Retention report submitted with an open promotion referendum"
+        },
+        "severalReferendums": {
+          "description": "You can find referemdums results by clicking View history.",
+          "title": "Several referendums have ended during your absence"
+        },
+        "viewReferendum": "View referendum"
       },
       "fellow": "Fellow",
+      "history": "History",
+      "inactive": "Inactive",
       "modalTitle": "Profile",
       "passiveSalary": "Passive salary",
       "ready": "Ready",
@@ -576,6 +717,43 @@
           "title": "Review changes before switching status"
         },
         "title": "Switching status on"
+      },
+      "switchStatus": "Switch status"
+    },
+    "promotion": {
+      "canSubmit": {
+        "description": "It is recommended to submit promotion evidence before the promotion period ends to avoid delays in referendum creation.",
+        "promotionPeriodTooltip": "Promotion period\n{from} - {to}",
+        "submitAnytime": "Submit evidence anytime",
+        "submitButton": "Submit evidence",
+        "submitEvidenceTooltip": "Submit promotion evidence\nby {to}",
+        "title": "You can submit promotion evidence"
+      },
+      "referendumCreated": {
+        "description": "until the referendum ends",
+        "title": "Promotion referendum created",
+        "viewButton": "View referendum"
+      },
+      "submitted": {
+        "dangerZoneTooltip": "Danger zone - evidence may be demoted",
+        "description": "Evidence is under approval. It is editable until referendum is created.",
+        "editButton": "Edit",
+        "ensureAwareness": "Ensure fellows are aware of the evidence",
+        "safeZoneTooltip": "Safe zone - evidence is being reviewed",
+        "statusGood": "Good",
+        "submittedOnTooltip": "Promotion evidence submitted on\n{date}",
+        "title": "Promotion evidence submitted",
+        "viewButton": "View",
+        "warningZoneTooltip": "Warning zone - consider promoting evidence"
+      },
+      "title": "PROMOTION PERIOD",
+      "waiting": {
+        "dangerZoneTooltip": "Danger zone - promotion opportunity is imminent",
+        "description": "You will be eligible for promotion starting from {date}",
+        "safeZoneTooltip": "Safe zone - plenty of time until promotion",
+        "title": "Awaiting promotion opportunity",
+        "untilOpportunity": "until promotion opportunity",
+        "warningZoneTooltip": "Warning zone - promotion opportunity ahead"
       }
     },
     "rank": {
@@ -590,9 +768,25 @@
       "8": "Masters constant",
       "9": "Grand master"
     },
+    "ranks": {
+      "activity": "Activity",
+      "activityDescription": "Activity shows how much you participate in referenda.",
+      "agreement": "Agreement",
+      "agreementDescription": "Agreement reflects how closely your votes align with other members.",
+      "approxAcademicAnalogue": "Approx. academic analogue:",
+      "codex": "Codex",
+      "currentProgressDescription": "From Humble to Master, each rank defines expectations, evaluation criteria, and growing influence on the protocol.",
+      "currentProgressTitle": "Current progress & rank specifications",
+      "detailsInCodexText": "Details can be found in the",
+      "fromIDan": "From I Dan",
+      "material": "Material:",
+      "requirements": "Requirements",
+      "youreHere": "You're here"
+    },
     "referendums": {
       "completed": "Completed referendums",
       "ongoing": "Ongoing referendums",
+      "tab": "Referendums",
       "tracks": {
         "architects": "Architects",
         "architectsAdept": "Architects Adept",
@@ -617,10 +811,114 @@
         "retainAtViDan": "Retain At VI Dan"
       }
     },
+    "retention": {
+      "button": {
+        "edit": "Edit",
+        "submitReport": "Submit report",
+        "view": "View"
+      },
+      "criticalExpired": {
+        "description": "You must submit report",
+        "title": "Last call to submit retention report"
+      },
+      "criticalLastCall": {
+        "description": "You risk being bumped if you don't submit retention report before {to}",
+        "title": "Last call to submit retention report"
+      },
+      "normal": {
+        "description": "Be prepared to submit the report between {from} – {to}",
+        "title": "Contribute according to rank requirements"
+      },
+      "referendumCreated": {
+        "description": "until the referendum ends",
+        "title": "Retention referendum #{referendumId} created"
+      },
+      "submitted": {
+        "description": "Report is under review. It is editable until referendum is created.",
+        "title": "Retention report submitted"
+      },
+      "timeline": {
+        "dangerZone": "Evidence submission deadline: {from} – {to}.\nYou risk not starting the referendum on time and falling out of the retention period.",
+        "safeZone": "Active work period.\nBe ready to submit retention report\n{from} – {to}",
+        "submittedOn": "Retention report submitted\n{submissionDate}",
+        "warningZone": "Recommended period to submit the retention report\n{from} – {to}"
+      },
+      "timer": {
+        "ensureAwareness": "Ensure fellows are aware of the report",
+        "riskBumped": "Risk being bumped anytime",
+        "untilEnd": "until the end of retention period"
+      },
+      "title": "RETENTION PERIOD",
+      "warningUrgent": {
+        "description": "Might not be enough time to create a referendum. Submit report before {to}",
+        "title": "Submit retention report now"
+      }
+    },
     "salary": {
       "beneficiary": "Beneficiary",
       "cardTitle": "Evidence & Salary",
-      "evidence": "Evidence",
+      "editBeneficiary": "Edit beneficiary",
+      "evidence": {
+        "continue": "Continue",
+        "fetchingContent": "Fetching content from IPFS...",
+        "fromScratch": {
+          "step1": "Write report",
+          "step2": "Review and submit"
+        },
+        "ipfsUpload": {
+          "description": "You can either input an IPFS hash/URL or upload a markdown file directly.",
+          "dragDropFile": "Select *.md file on your computer",
+          "fileHint": "Supports .md and .txt files",
+          "fileLabel": "Select File",
+          "hashLabel": "Report hash",
+          "hashPlaceholder": "Enter hash/URL",
+          "hashPlaceholderOptional": "Enter IPFS hash or URL (optional)",
+          "inputHash": "Input Hash/URL",
+          "selectedFile": "Selected: {name}",
+          "step1": "Upload report",
+          "step2": "Review and submit",
+          "submit": "Process",
+          "title": "Upload Evidence from IPFS",
+          "uploadFile": "Upload File",
+          "validationError": "Please enter a URL/hash or import a file"
+        },
+        "or": "or",
+        "preview": {
+          "back": "Back",
+          "confirm": "Confirm & Submit",
+          "description": "Review your evidence before submitting.",
+          "edit": "Edit",
+          "step2": "Review and submit",
+          "title": "Preview Evidence"
+        },
+        "promotionEvidenceExistsWarning": {
+          "cancel": "Cancel",
+          "description": "Promotion evidence already submitted. Submitting retention report will replace it.\n\nAt the end of the retention period, retention report must be submitted to avoid being bumped.",
+          "submit": "Submit",
+          "title": "Are you sure you want to submit retention report?"
+        },
+        "promotionPeriodWarning": {
+          "cancel": "Cancel",
+          "description": "It is recommended to prioritize submitting the retention report before submitting promotion evidence to avoid being bumped.",
+          "submit": "Submit",
+          "title": "Retention period ends in 30 days"
+        },
+        "retentionPeriodWarning": {
+          "cancel": "Cancel",
+          "description": "It might be too early to submit your retention report. We recommend submitting no earlier than month before the retention period ends. Please ensure you have gathered sufficient work evidence for the current retention period before submitting.",
+          "submit": "Submit",
+          "title": "Are you sure you want to submit retention report?"
+        },
+        "submitOptions": {
+          "fromScratch": "From scratch",
+          "uploadFromIPFS": "Upload from IPFS"
+        },
+        "submitPromotionReport": "Submit promotion report",
+        "submitRetentionReport": "Submit retention report",
+        "uploadSuccess": "Upload successful",
+        "uploadingToIPFS": "Uploading to IPFS...",
+        "validating": "Validating..."
+      },
       "evidenceForm": {
         "areas": {
           "label": "Areas of expertise and interest",
@@ -635,8 +933,10 @@
         "evidence": {
           "label": "Evidence text",
           "placeholder": "Enter more about the work you did, add links, and tell about your future work plans",
-          "required": "Evidence are required"
+          "required": "Evidence URL/hash or file is required"
         },
+        "fetchError": "Failed to fetch content from IPFS",
+        "required": "Please provide either a hash/URL or select a file",
         "uploadError": "Upload error"
       },
       "modalTitle": "Evidence & Salary",
@@ -668,20 +968,28 @@
       "retentionLeft": "Retention evidence within:",
       "retentionSubmit": "Submit evidence",
       "salary": "Salary",
-      "salaryInduct": "Induct salary on",
+      "salaryInduct": "Activate salary on",
       "salaryInfo": {
         "beneficiary": "Beneficiary",
-        "inductSalary": "Payments activation:",
+        "editBeneficiary": "Edit Beneficiary",
+        "inductSalary": "Activate to start receiving",
         "inductSalaryAction": "Activate",
         "inductSalaryCall": "Your salary: {salary}, activate it.",
+        "inductSalarySuccess": "Payments activated",
+        "insufficientRank": "To start receiving salary you need to achieve Rank I",
         "payoutSalary": "Withdraw",
-        "payoutSalaryCall": "Payout a {salary} salary within:",
-        "payoutSalarySuccess": "Salary payout was completed successfully.",
+        "payoutSalaryCall": "{salary} to the next payout",
+        "payoutSalarySuccess": "Withdrawal completed",
         "requestSalary": "Request",
         "requestSalaryCall": "Request a {salary} salary within:",
-        "requestSalarySuccess": "Salary request was completed successfully."
+        "requestSalarySuccess": "Salary requested",
+        "selectBeneficiary": "Select beneficiary",
+        "timeToNextCycle": "until next cycle",
+        "timeToNextPayout": "to the next payout",
+        "timeToRequest": "left to request",
+        "timeToWithdraw": "left to withdraw"
       },
-      "salaryPayout": "Request payout on",
+      "salaryPayout": "Withdraw salary on",
       "salaryRequest": "Request salary on",
       "submitEvidenceConfirm": {
         "evidence": "Evidence",
@@ -699,9 +1007,10 @@
       }
     },
     "tasks": {
+      "active": "Active",
       "cardTitle": "Actions Required",
       "completed": "Completed",
-      "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
+      "emptyDescription": "Great job! You’ve finished all available tasks.",
       "emptyTitle": "All tasks completed",
       "general": "General",
       "labels": {
@@ -709,12 +1018,13 @@
         "importantVote": "OPINION MATTERS",
         "urgent": "LAST CALL"
       },
-      "noAccountDescription": "Account not found. Please add or create account to the {chain} network.",
-      "noAccountTitle": "List tasks is empty",
+      "noAccountDescription": "Account not found. Please add or create an account on the {chain} network.",
+      "noAccountTitle": "Task list is empty",
       "personal": "Personal",
       "reviewBasket": "Confirm now",
       "reviewBasketTitle_one": "Decision",
       "reviewBasketTitle_other": "Decisions",
+      "tab": "Tasks",
       "task": {
         "anyReferendum": {
           "noDescription": "No description provided",
@@ -725,9 +1035,10 @@
           "retentionTitle": "Review retention evidence"
         },
         "promotion": {
-          "description": "From now you can submit an evidence that will demonstrate that you are qualified for a new Rank (Rank {rank}). Submit the promotion request form, and your submission will be reviewed by other fellows to determine if you meet the requirements for this Rank.",
+          "description": "To be promoted to Rank {rank}, you must submit your work evidence for the past year.",
           "request": "Submit",
-          "title": "Feel ready for a promotion?"
+          "title": "Submit promotion evidence",
+          "until": "Submit until {date}"
         },
         "promotionVoting": {
           "mergedPullRequests": "Merged",
@@ -741,26 +1052,27 @@
           "retentionTitle": "Retain at { rank }"
         },
         "requestPayout": {
-          "description": "Your current earnings are {salary}. Don’t forget to get your salary on time to receive your funds on time.",
+          "description": "Current earnings: {salary}. Withdraw your earnings on time to receive your funds as scheduled.",
           "request": "Withdraw",
           "title": "Withdraw your salary",
           "until": "Submit until {date}"
         },
         "requestSalary": {
-          "description": "Your current earnings are {salary}. Don’t forget to submit your request on time to receive your payout on time.",
+          "description": "Current earnings: {salary}. Submit your payout request on time to ensure timely payment.",
           "request": "Request",
           "title": "Request your salary",
           "until": "Submit until {date}"
         },
         "requestSalaryInduct": {
-          "description": "To start receiving regular payments, you need to request payment activation. Your current salary is {salary}.",
+          "description": "Activate your salary to start receiving regular payments. Current salary: {salary}.",
           "request": "Activate",
-          "title": "Activate your payments"
+          "title": "Activate your payments",
+          "until": "Activate until {date}"
         },
         "retention": {
-          "description": "To maintain your Rank {rank} position, you must submit evidence of your work from the past three months.",
+          "description": "To retain your Rank {rank}, you must submit your work report covering the past three months.",
           "request": "Submit",
-          "title": "Submit your retention evidence",
+          "title": "Submit retention evidence",
           "until": "Submit until {date}"
         },
         "retentionVoting": {
@@ -775,11 +1087,12 @@
           "rfcOrWhitelist": "What do you think?",
           "spend": "How do you find this payment request?"
         }
-      }
+      },
+      "voted": "Voted"
     },
     "title": "Fellowship",
     "tooltips": {
-      "noAccount": "Please add or create account to the { chain } network",
+      "noAccount": "Please add or create an account on the { chain } network",
       "noProfile": "You are not a fellowship member"
     },
     "voting": {
@@ -830,13 +1143,22 @@
       "noVotes": "No opinions have been submitted yet",
       "showHistoryButton": "View more",
       "spend": "Other members find the payment request to be",
-      "subtitle": "Other members find the evidence to be",
-      "subtitlePromotionRetention": "Other members find it to be",
+      "subtitle": "Other members find it to be",
+      "subtitlePromotionRetention": "Other members find the evidence to be",
+      "subtitleRetention": "Other members find the report to be",
       "voteEnded": "Opinion collection has concluded, the fellowship oracle identified it to be",
       "voteEndedPromotionRetention": "Opinion collection has concluded, the fellowship oracle identified the evidence to be",
       "votes_one": "{ count } vote",
       "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
+    },
+    "whitelist": {
+      "aiGenerated": "AI generated",
+      "callData": "Call data",
+      "callHash": "Call hash",
+      "callHashCopied": "Call hash copied!",
+      "summary": "Summary",
+      "viewJson": "View JSON"
     }
   },
   "flexibleMultisig": {
@@ -855,7 +1177,7 @@
       "cancelButton": "Cancel",
       "closeButton": "Close",
       "continueButton": "Continue",
-      "networkSettingsLink": "Network settings",
+      "networkSettingsLink": "Open network settings",
       "pasteButton": "Paste",
       "refreshButton": "Refresh",
       "submitButton": "Submit",
@@ -873,17 +1195,21 @@
       "retryLoading": "Retry"
     },
     "input": {
+      "all": "All",
       "amountLabel": "Amount",
       "availableLabel": "Available:",
       "descriptionPlaceholder": "Choose an operation description",
+      "nothingFound": "Nothing found",
       "searchLabel": "Search",
       "searchPlaceholder": "Search",
+      "selectAll": "Select all",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
     "notifications": {
       "addressCopied": "Address copied!",
-      "copiedToClipboard": "Copied to clipboard!"
+      "copiedToClipboard": "Copied to clipboard!",
+      "operationLinkCopied": "Operation link copied!"
     },
     "timeout": {
       "expired": "Expired"
@@ -899,7 +1225,10 @@
         "section": "the {action} of {balance}"
       },
       "fatal": {
-        "intro": "Internal error:"
+        "intro": "Dry run error:"
+      },
+      "network": {
+        "title": "Network connection error"
       },
       "permission": {
         "intro": "Some wallet in the execution route has access restrictions set by the proxy connection.",
@@ -1173,6 +1502,7 @@
       "treasuryMediumSpend": "Treasury: Medium spend",
       "treasurySmallSpend": "Treasury: Small spend",
       "treasurySmallTips": "Treasury: Small tips",
+      "viewReferendum": "View referendum",
       "vote": {
         "noVoteForReferendum": "No vote for referendum",
         "timeoutReferendumError": "Timeout referendum error"
@@ -1290,6 +1620,81 @@
     "title": "Log",
     "unknownMessage": " made an unknown action"
   },
+  "multiTransfer": {
+    "confirmation": {
+      "labels": {
+        "parsedFile": "Parsed file",
+        "totalAmount": "Total amount"
+      }
+    },
+    "errors": {
+      "csv": {
+        "errorTitle_one": "Found {count} error",
+        "errorTitle_other": "Found {count} errors",
+        "fieldErrors": {
+          "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
+          "INVALID_VALUE": "Invalid value",
+          "OUT_OF_RANGE": "Value out of range",
+          "RECIPIENT_HAS_LESS_THAN_ED": "Recipient has less than ED",
+          "UNKNOWN_ERROR": "Unknown error"
+        },
+        "invalidDataDescription": "File couldn’t be read. Please check data formatting and try again.",
+        "invalidDataRow": "Row {row}",
+        "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
+        "issueLine": "Row {row} — {path}: {message}",
+        "issuesTitle": "Found {count} errors",
+        "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
+        "title": "CSV error"
+      },
+      "form": {
+        "chainRequired": "Chain is required",
+        "csvRequired": "CSV file is required",
+        "signatoryRequired": "Signatory is required"
+      }
+    },
+    "form": {
+      "fields": {
+        "amount": {
+          "label": "Total amount"
+        },
+        "csvFile": {
+          "exampleButton": "Example",
+          "label": "Data table file",
+          "placeholder": "Select CSV file on your computer"
+        },
+        "network": {
+          "label": "Recipient network",
+          "placeholder": "Select network..."
+        }
+      },
+      "hints": {
+        "selectChainFirst": "Select a network before uploading CSV"
+      }
+    },
+    "parsedFile": {
+      "buttons": {
+        "hide": "Hide preview",
+        "openPreview": "Preview",
+        "parsedFile": "Parsed file"
+      },
+      "headers": {
+        "amount": "Amount",
+        "recipient": "Recipient"
+      },
+      "table": {
+        "buttons": {
+          "download": "Download",
+          "showMore": "Show more"
+        },
+        "footer": {
+          "downloadDescription": "You can download parsed file to review them.",
+          "errorsCount_one": "Found {count} error.",
+          "errorsCount_other": "Found {count} errors."
+        }
+      },
+      "title": "Parsed file"
+    }
+  },
   "multisigOperations": {
     "noSignatory": "Add signatory wallet before making multisig operation",
     "title": "Multisig Operations"
@@ -1299,16 +1704,19 @@
     "balancesLabel": "Portfolio",
     "basketLabel": "Basket",
     "callDataLabel": "Submit call data",
+    "customOperationLabel": "Custom operation",
     "fellowship": "Fellowship",
     "governance": "Governance",
     "historyLabel": "History",
     "mstOperationLabel": "Operations",
+    "multiTransferLabel": "Multi-transfer",
     "multipleWalletsLabel": "Multiple wallets",
     "notificationsLabel": "Notifications",
     "settingsLabel": "Settings",
     "stakingLabel": "Staking",
     "transfersLabel": "Transfer",
     "unknownWalletLabel": "Unknown wallet",
+    "vestedTransfersLabel": "Vested transfer",
     "walletsLabel": "Wallets"
   },
   "notifications": {
@@ -1318,14 +1726,35 @@
       "flexibleMultisigEditedTitle": "Flexible multisig has been edited",
       "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength }",
       "multisigCreatedTitle": "New multisig wallet added",
+      "multisigOperationDetails": "in <wallet><walletIcon /><name>{name}</name></wallet>  on  <chain />",
       "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
       "proxyRemovedDetails": "<chain />  is no longer available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyRemovedTitle": "Delegated authority wallet has been removed",
-      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>"
+      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>",
+      "status": {
+        "created": "created",
+        "executed": "executed",
+        "rejected": "rejected"
+      },
+      "viewOperation": "View Operation"
     },
+    "emptySearchDescription": "Update the search or cancel filtering",
+    "emptySearchTitle": "Nothing was found",
     "noNotificationsDescription": "You don't have notifications yet",
-    "title": "Notifications"
+    "searchPlaceholder": "Search by wallet or event type",
+    "title": "Notifications",
+    "toast": {
+      "batch": {
+        "delegatedAuthorityWalletsAdded": "{count} delegated authority wallets added",
+        "flexibleMultisigWalletsAdded": "{count} flexible multisig wallets added",
+        "flexibleMultisigWalletsEdited": "{count} flexible multisig wallets edited",
+        "multisigOperationsUpdated": "{count} multisig operations updated",
+        "multisigWalletsAdded": "{count} multisig wallets added",
+        "walletsAddedDescription": "Open the wallet selector to see the full list"
+      },
+      "viewOperations": "View Operations"
+    }
   },
   "onboarding": {
     "accountAddressLabel": "Account address",
@@ -1478,13 +1907,23 @@
     }
   },
   "operation": {
+    "accountNotFoundButton": "Close",
+    "accountNotFoundDescription": "Your account is not listed as a signatory in this multisig.\nPlease add account to sign operation.",
+    "accountNotFoundTitle": "No account to sign operation",
     "addCallDataButton": "Add call data",
     "addToBasket": "Add to basket",
     "addedToBasket": "Added to basket",
     "advanced": "Advanced",
+    "alreadySignedCloseButton": "Close",
+    "alreadySignedTitle": "Operation already signed",
+    "alreadySignedViewButton": "View",
     "approveButton": "Approve",
     "cancelTitle": "Reject",
     "closeButton": "Close",
+    "connectionTimeoutButton": "Close",
+    "connectionTimeoutDescription": "Can't connect to the network in 10 seconds. You can retry later with the same link.",
+    "connectionTimeoutRetryButton": "Retry",
+    "connectionTimeoutTitle": "Connection timeout",
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
     "createFlexibleMultisig": {
@@ -1496,6 +1935,7 @@
     "deliveryFee": "Delivery fee",
     "deliveryFeeErrorDescription": "The account<account />doesn't have enough tokens to pay the delivery fee of {fee} {symbol}<br />Transferable balance: {balance} {symbol}. Please top up the balance and of this account and try again.",
     "deliveryFeeErrorTitle": "Not enough tokens to pay the delivery fee",
+    "destinationNetworkFee": "Destination Network Fee",
     "details": {
       "accessType": "Access type",
       "account": "Account",
@@ -1513,6 +1953,7 @@
       "destinationChain": "To network",
       "fromNetwork": "From network",
       "multisigWallet": "Wallet",
+      "parsedFile": "Parsed file",
       "payee": "Rewards destination",
       "recipient": "Recipient",
       "referendum": "Referendum",
@@ -1542,13 +1983,21 @@
     "networkFeeTotal": "Total network fee",
     "networkFee_one": "Network fee",
     "networkFee_other": "Network fees",
+    "networkNotAvailableButton": "Close",
+    "networkNotAvailableTitle": "Network not available",
     "noSignatoryErrorDescription": "The wallet<wallet />does not have an account on the {network} network. You cannot sign this opperation. Please add an account on {network} network.",
     "noSignatoryErrorTitle": "No account for {network}",
     "openOperationsButton": "Open operations",
+    "operationNotFoundButton": "Close",
+    "operationNotFoundDescription": "The operation you're trying to access could not be found.\nPlease check the parameters and try again.",
+    "operationNotFoundTitle": "Operation not found",
+    "originNetworkFee": "Origin Network Fee",
     "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
     "rejectInProgress": "Submitting Rejection...",
+    "removeFromBasket": "Remove from basket",
+    "removedFromBasket": "Removed from basket",
     "selectAccount": "Select account",
     "selectAccountLabel": "Account",
     "selectSignatory": "Select signatory",
@@ -1576,6 +2025,7 @@
       "executed": "Executed",
       "signing": "On signing"
     },
+    "submitError": "Operation Failed",
     "submitErrorButton": "Close",
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
@@ -1643,6 +2093,8 @@
       "destinationOn": "Set reward destination on",
       "editDelegationOn": "Edit delegation on",
       "editFlexibleOn": "Edit flexible multisig on",
+      "multiTransfer": "Multi Transfer",
+      "multiTransferOn": "Multi Transfer on",
       "nominateOn": "Change Validators on",
       "proxy": "Proxy",
       "redeemOn": "Withdraw Unstaked { asset } on",
@@ -1665,6 +2117,8 @@
       "unknownOn": "Unknown Operation on",
       "unlockOn": "Unlock on",
       "unstakeOn": "Unstake { asset } on",
+      "vestedTransfer": "Vested transfer",
+      "vestedTransferOn": "Vested transfer on",
       "vote": "Vote { asset } on"
     },
     "noOperationsDescription": "You haven't made any operations yet. <br /> If you updated your Flexible Multisig, previous operations are available on the old multisig.",
@@ -1672,6 +2126,7 @@
     "noOperationsTitle": "Operation list is empty",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. <br /> Transaction history for other types of wallets will be available later. Stay tuned.",
     "operationCreated": "Operation created",
+    "shareOperationTooltip": "Share transaction link with signatories",
     "title": "Operations",
     "titles": {
       "addProxy": "Add delegated authority (proxy)",
@@ -1683,6 +2138,7 @@
       "destination": "Set reward destination",
       "editDelegation": "Edit Delegation",
       "editFlexible": "Edit flexible multisig",
+      "multiTransfer": "Multi Transfer",
       "nominate": "Change Validators",
       "proxy": "Proxy",
       "redeem": "Withdraw Unstaked",
@@ -1700,6 +2156,7 @@
       "unknown": "Unknown Operation",
       "unlock": "Unlock",
       "unstake": "Unstake",
+      "vestedTransfer": "Vested transfer",
       "vote": "Vote"
     },
     "viewOperation": "View operation"
@@ -1908,6 +2365,22 @@
       "title": "Networks",
       "titleAdd": "Add custom node",
       "titleEdit": "Edit custom node"
+    },
+    "notificationsSettings": {
+      "eventOperationCreated": "Operation created",
+      "eventOperationExecuted": "Operation executed",
+      "eventOperationRejected": "Operation rejected",
+      "eventWalletCreated": "Wallet created",
+      "general": "General",
+      "modalTitle": "Notification settings",
+      "plateTitle": "Notifications",
+      "preferences": "Preferences",
+      "preferencesDescription": "Select wallets and events to be notified about their activity by displaying popup",
+      "saveButton": "Save",
+      "soundEnabled": "Sound notification",
+      "soundRestricted": "Sound is restricted by your browser. Please allow audio in site settings.",
+      "walletsMultiPlaceholder": "Wallets",
+      "walletsPlaceholder": "Select wallets"
     },
     "overview": {
       "generalLabel": "General",
@@ -2228,6 +2701,19 @@
     "destinationChainPlaceholder": "Select recipient network",
     "destinationCryptoError": "Unsupported address format for {network}",
     "destinationFormatError": "Address has incorrect format",
+    "dryRunError": {
+      "description": "The transfer cannot be completed on {chain} chain.",
+      "descriptionWithReason": "The transfer cannot be completed on {chain} chain. {reason}",
+      "title": "Transfer path unavailable"
+    },
+    "dryRunFeesNotMet": {
+      "description": "The transfer cannot be completed on {chain} chain. {reason}",
+      "title": "Insufficient funds for transfer"
+    },
+    "dryRunTooExpensive": {
+      "description": "The transfer amount is insufficient to cover execution fees on {chain} chain.<br />Please increase the transfer amount.",
+      "title": "Insufficient fees for transfer"
+    },
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "expired": "Transaction expired",
@@ -2249,6 +2735,7 @@
     },
     "multisigTransactionExist": "Multisig transaction already exists",
     "myselfButton": "Myself",
+    "networkConnectionError": "The {network} network is not connected. Go to Settings → Network to select a different RPC endpoint.",
     "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
@@ -2287,6 +2774,88 @@
     "sender": "Sender",
     "title": "Send",
     "wallet": "Wallet"
+  },
+  "vestedTransfer": {
+    "confirmation": {
+      "labels": {
+        "parsedFile": "Parsed file",
+        "totalAmount": "Total amount"
+      }
+    },
+    "errors": {
+      "csv": {
+        "errorTitle_one": "Found {count} error",
+        "errorTitle_other": "Found {count} errors",
+        "fieldErrors": {
+          "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
+          "INVALID_VALUE": "Invalid value",
+          "MAX_VESTING_SCHEDULES_REACHED": "Max vesting schedules reached",
+          "MIN_VESTED_TRANSFER": "Min vested transfer is <asset />",
+          "OUT_OF_RANGE": "Value out of range",
+          "START_BLOCK_IN_PAST": "Block in the past. Make sure you are using relaychain block number",
+          "UNKNOWN_ERROR": "Unknown error"
+        },
+        "invalidDataRow": "Row {row}",
+        "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
+        "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
+        "warningTitle_one": "Found {count} warning",
+        "warningTitle_other": "Found {count} warnings"
+      },
+      "form": {
+        "chainRequired": "Chain is required",
+        "csvRequired": "CSV file is required",
+        "notEnoughMultisigTokens": "Not enough tokens to pay multisig deposit and network fee",
+        "signatoryRequired": "Signatory is required"
+      }
+    },
+    "form": {
+      "fields": {
+        "amount": {
+          "label": "Total amount"
+        },
+        "csvFile": {
+          "exampleButton": "Example",
+          "label": "Data table file",
+          "placeholder": "Select CSV file on your computer"
+        },
+        "network": {
+          "label": "Recipient network",
+          "placeholder": "Select network..."
+        }
+      }
+    },
+    "parsedFile": {
+      "buttons": {
+        "openPreview": "Preview",
+        "parsedFile": "Parsed file"
+      },
+      "table": {
+        "buttons": {
+          "download": "Download",
+          "showMore": "Show more"
+        },
+        "footer": {
+          "downloadDescription": "You can download parsed file to review them.",
+          "errorsCount_one": "Found {count} error.",
+          "errorsCount_other": "Found {count} errors.",
+          "warningsCount_one": "Found {count} warning.",
+          "warningsCount_other": "Found {count} warnings."
+        },
+        "headers": {
+          "locked": "Locked",
+          "perBlock": "Per block",
+          "recipient": "Recipient",
+          "startBlock": "Start block"
+        },
+        "hints": {
+          "perBlock": "Tokens released per block during vesting",
+          "planks": "{amount} planks",
+          "startBlock": "Block number when vesting starts",
+          "startBlockTime": "Starts on {date} at {time}"
+        }
+      },
+      "title": "Parsed file"
+    }
   },
   "voteChart": {
     "aye": "Aye",
@@ -2343,6 +2912,9 @@
       "renameSaveButton": "Save",
       "renameTitle": "Rename wallet",
       "renameWallet": "Enter wallet name",
+      "renameWalletSuccessDescription": "Address book contact name updated",
+      "renameWalletSuccessTitle": "Wallet renamed",
+      "renameWalletWarning": "Address book contact names update automatically after rename",
       "title": "Wallet details",
       "viewDetails": "View details",
       "walletRemoved": "Wallet removed",

@@ -54,6 +54,17 @@ function canPromote(member: Member) {
 }
 
 /**
+ * Gavin does not need to prove himself.
+ */
+function shouldProve(member: Member) {
+  return member.rank < 7 && member.rank !== 0;
+}
+
+function isRetentionRestricted(member: Member) {
+  return member.rank === 0;
+}
+
+/**
  * Case when evidence is posted but the referendum has not been created yet.
  * This check validates the user's ability to vote in this potential
  * referendum.
@@ -117,6 +128,8 @@ export const memberService = {
   canPromote,
   canVoteForProposal,
   getActivityAndAgreementThresholds,
+  shouldProve,
+  isRetentionRestricted,
 
   createSetActiveTransaction,
   isSetActiveTransaction,

@@ -4,15 +4,15 @@ import { t } from 'i18next';
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { toAccountId } from '@/shared/lib/utils';
+import { getAssetById, nullable, toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
-import { Account } from '@/shared/ui-entities';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
 import {
   TransactionTitle,
   findCoreTransaction,
+  getTransactionAmount,
   isAddProxyTransaction,
   isManageProxyTransaction,
   isProxyTypeTransaction,
@@ -20,8 +20,7 @@ import {
   isRemovePureProxyTransaction,
 } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
-
-import { ProxyOperationTitle } from './components/ProxyOperationTitle';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 export const proxyOperationDetailFeature = createFeature({
   name: 'proxy/operation-details',
@@ -45,11 +44,21 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
       return 'proxyMst';
     }
   },
-  title({ operation, showCoreTransaction }) {
+  title({ operation, showCoreTransaction, chains, t }) {
+    if (nullable(operation) || nullable(chains) || nullable(t)) return null;
+
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
+
     if (title) {
-      return <ProxyOperationTitle operation={operation} title={title} />;
+      const asset = transaction && getAssetById(transaction.args.asset, chains[operation.chainId]?.assets);
+      const amount = transaction && getTransactionAmount(transaction);
+
+      return {
+        title: title ? t(title) : undefined,
+        amount: asset && amount ? { value: amount, asset } : undefined,
+        sourceChainId: operation.chainId,
+      };
     }
   },
   logTitle({ operation, showCoreTransaction }) {
@@ -75,7 +84,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isAddProxyTransaction(transaction) && delegate) {
       result.push(
         <DetailRow label={t('operation.details.delegateTo')} className="text-text-secondary">
-          <Account accountId={toAccountId(delegate)} variant="short" chain={chain} />
+          <NamedAccount accountId={toAccountId(delegate)} variant="short" chain={chain} />
         </DetailRow>,
       );
     }
@@ -83,7 +92,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isRemoveProxyTransaction(transaction) && delegate) {
       result.push(
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-          <Account accountId={toAccountId(delegate)} variant="short" chain={chain} />
+          <NamedAccount accountId={toAccountId(delegate)} variant="short" chain={chain} />
         </DetailRow>,
       );
     }
@@ -91,7 +100,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isRemovePureProxyTransaction(transaction) && sender) {
       result.push(
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-          <Account accountId={sender} variant="short" chain={chain} />
+          <NamedAccount accountId={sender} variant="short" chain={chain} />
         </DetailRow>,
       );
     }

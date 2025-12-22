@@ -8,12 +8,13 @@ import { CollectiveRank, TrackDescription } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { evidenceService, memberService, salaryService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
+import { usePromotionCountdown } from '@/aggregates/fellowship-promotion';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipEvidenceFeature } from '../model/feature';
 import { memberSalary } from '../model/memberSalary';
 import { profile } from '../model/profile';
 
-import { EvidencePostFlowModal } from './EvidencePostFlowModal';
+import { EvidencePostFlowTrigger } from './EvidencePostFlowTrigger';
 
 export const PromotionInfo = memo(() => {
   const { t } = useI18n();
@@ -27,6 +28,7 @@ export const PromotionInfo = memo(() => {
   const claimStatus = useUnit(memberSalary.$memberClaimStatus);
   const currentMember = useUnit(profile.$member);
   const account = useUnit(profile.$account);
+  const { data: promotionCountdown } = usePromotionCountdown();
 
   const isCoreMember = nonNullable(currentMember) && memberService.isCoreMember(currentMember);
   const isInducted = nonNullable(claimStatus) && salaryService.isInducted(claimStatus);
@@ -59,24 +61,33 @@ export const PromotionInfo = memo(() => {
         <CaptionText className="text-text-secondary uppercase">{t('fellowship.salary.promotionNextRank')}</CaptionText>
         <CollectiveRank showName rank={nextTrack?.id ?? 0} />
       </Box>
-      {!hasPromotionEvidence && (
-        <Box direction="row">
-          <Box gap={1} grow={1}>
-            <FootnoteText className="text-text-secondary">{t('fellowship.salary.promotionUntilNext')}</FootnoteText>
-            {timeLeft === 0 && <SmallTitleText>{t('fellowship.salary.promotionReadyToApply')}</SmallTitleText>}
-            {timeLeft > 0 && (
-              <SmallTitleText>
-                <Duration seconds={timeLeft / 1000} />
-              </SmallTitleText>
-            )}
-          </Box>
-          {timeLeft === 0 && (
-            <EvidencePostFlowModal wish="Promotion">
+      {!hasPromotionEvidence &&
+        (promotionCountdown?.canSubmitPromotionEvidence ? (
+          <Box direction="row">
+            <Box gap={1} grow={1}>
+              <FootnoteText className="text-text-secondary">
+                {t('fellowship.promotion.canSubmit.submitAnytime')}
+              </FootnoteText>
+              <SmallTitleText>{t('fellowship.salary.promotionReadyToApply')}</SmallTitleText>
+            </Box>
+            <EvidencePostFlowTrigger wish="Promotion">
               <Button disabled={disabled}>{t('general.button.applyButton')}</Button>
-            </EvidencePostFlowModal>
-          )}
-        </Box>
-      )}
+            </EvidencePostFlowTrigger>
+          </Box>
+        ) : (
+          <Box direction="row">
+            <Box gap={1} grow={1}>
+              <FootnoteText className="text-text-secondary">{t('fellowship.salary.promotionUntilNext')}</FootnoteText>
+              {timeLeft > 0 ? (
+                <SmallTitleText>
+                  <Duration seconds={timeLeft / 1000} />
+                </SmallTitleText>
+              ) : (
+                <SmallTitleText>{t('fellowship.salary.promotionReadyToApply')}</SmallTitleText>
+              )}
+            </Box>
+          </Box>
+        ))}
       {hasPromotionEvidence && (
         <Box direction="row" verticalAlign="center">
           <Box gap={1} grow={1}>
@@ -85,9 +96,9 @@ export const PromotionInfo = memo(() => {
           </Box>
           <Box direction="row" gap={4}>
             <IconButton name="eye" size={16} onClick={openEvidence} />
-            <EvidencePostFlowModal wish="Promotion">
+            <EvidencePostFlowTrigger wish="Promotion">
               <IconButton name="editKeys" size={16} />
-            </EvidencePostFlowModal>
+            </EvidencePostFlowTrigger>
           </Box>
         </Box>
       )}

@@ -13,8 +13,9 @@ import {
   type FlexibleMultisigAccount,
   type MultisigAccount,
 } from '@/shared/core';
-import { isEqual, merge, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
+import { groupBy, isEqual, merge, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { Paths } from '@/shared/routes';
 import { transactionService } from '../transaction/service';
 
 import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, WRAP_EXTRINSIC_CALL_INDEX } from './constants';
@@ -129,10 +130,16 @@ const mergeEvents = (oldEvents: MultisigEvent[], events: MultisigEvent[]) =>
     sort: (a, b) => a.blockCreated - b.blockCreated,
   });
 
-const mergeMultisigOperations = (a: MultisigOperation[], b: MultisigOperation[]): MultisigOperation[] => {
+/*
+ * Performs an actual merge of old operations with new operations with update if they have the same id.
+ */
+const mergeMultisigOperations = (
+  oldOperations: MultisigOperation[],
+  updated: MultisigOperation[],
+): MultisigOperation[] => {
   return merge({
-    a,
-    b,
+    a: oldOperations,
+    b: updated,
     filter: (a, b) => {
       if (isEqual(a, b)) {
         return false;
@@ -159,6 +166,82 @@ const mergeMultisigOperations = (a: MultisigOperation[], b: MultisigOperation[])
   });
 };
 
+/**
+ * First this function filters out old operations that are not present in
+ * update. Then it merges the remaining operations with the update. (Pending
+ * means that operations comes from chain, as indexer supplies only not pending
+ * operations)
+ *
+ * This is needed because we work with Events AT BEST, it may happen that our db
+ * has extra operations that are not on the chain anymore nor were executed. We
+ * want to filter them out. For example, if we have a fork and operation was
+ * executed in the different block than we first recevied event of.
+ */
+const updateMultisigOperations = (
+  oldOperations: MultisigOperation[],
+  update: MultisigOperation[],
+): MultisigOperation[] => {
+  const updatedPendingOperations = groupBy(
+    update.filter(o => o.status === 'pending'),
+    o => o.chainId,
+  );
+
+  const filtered = oldOperations.filter(o => {
+    // Indirect evidence of onchain operation
+    if (o.status !== 'pending') return true;
+
+    const group = updatedPendingOperations[o.chainId];
+
+    if (group) {
+      return group.some(o1 => o1.id === o.id);
+    }
+
+    return true;
+  });
+
+  return mergeMultisigOperations(filtered, update);
+};
+
+export type MultisigOperationDeepLinkParams = {
+  chainId: string;
+  callHash: string;
+  accountId: AccountId;
+  blockCreated: number;
+  indexCreated: number;
+};
+
+function generateDeepLink(path: string, params: Record<string, string>): string {
+  const searchParams = new URLSearchParams(params);
+
+  return `${window.location.origin}/#${path}?${searchParams.toString()}`;
+}
+
+function generateRelativeLink(path: string, params: Record<string, string>): string {
+  const searchParams = new URLSearchParams(params);
+
+  return `${path}?${searchParams.toString()}`;
+}
+
+function generateMultisigOperationDeepLink(params: MultisigOperationDeepLinkParams): string {
+  return generateDeepLink(Paths.OPERATIONS, {
+    chainId: params.chainId,
+    callHash: params.callHash,
+    accountId: params.accountId,
+    blockCreated: params.blockCreated.toString(),
+    indexCreated: params.indexCreated.toString(),
+  });
+}
+
+function generateMultisigOperationRelativeLink(params: MultisigOperationDeepLinkParams): string {
+  return generateRelativeLink(Paths.OPERATIONS, {
+    chainId: params.chainId,
+    callHash: params.callHash,
+    accountId: params.accountId,
+    blockCreated: params.blockCreated.toString(),
+    indexCreated: params.indexCreated.toString(),
+  });
+}
+
 export const multisigOperationService = {
   getOperationId,
   getEventId,
@@ -166,9 +249,15 @@ export const multisigOperationService = {
   getMultisigAccountId,
 
   mergeEvents,
+  updateMultisigOperations,
   mergeMultisigOperations,
 
   isMultisigSupported,
   getOtherSignatories,
   sortSignatories,
+
+  generateDeepLink,
+  generateRelativeLink,
+  generateMultisigOperationDeepLink,
+  generateMultisigOperationRelativeLink,
 };

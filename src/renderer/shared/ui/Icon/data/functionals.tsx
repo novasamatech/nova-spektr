@@ -23,6 +23,7 @@ import ExportIcon from '@/shared/assets/images/functionals/export.svg?jsx';
 import EyeSlashedIcon from '@/shared/assets/images/functionals/eye-slashed.svg?jsx';
 import EyeIcon from '@/shared/assets/images/functionals/eye.svg?jsx';
 import ForgetIcon from '@/shared/assets/images/functionals/forget.svg?jsx';
+import HistoryIcon from '@/shared/assets/images/functionals/history.svg?jsx';
 import ImportIcon from '@/shared/assets/images/functionals/import.svg?jsx';
 import LinkIcon from '@/shared/assets/images/functionals/link.svg?jsx';
 import LockIcon from '@/shared/assets/images/functionals/lock.svg?jsx';
@@ -42,18 +43,20 @@ import ReferendumIcon from '@/shared/assets/images/functionals/referendum.svg?js
 import RefreshIcon from '@/shared/assets/images/functionals/refresh.svg?jsx';
 import RenameUnderlineIcon from '@/shared/assets/images/functionals/rename-underlined.svg?jsx';
 import RenameIcon from '@/shared/assets/images/functionals/rename.svg?jsx';
-import RequestSalaryIcon from '@/shared/assets/images/functionals/request salary.svg?jsx';
+import RequestSalaryIcon from '@/shared/assets/images/functionals/request-salary.svg?jsx';
 import RetainIcon from '@/shared/assets/images/functionals/retain.svg?jsx';
 import RFCVotingIcon from '@/shared/assets/images/functionals/rfc-voting.svg?jsx';
 import SalaryIcon from '@/shared/assets/images/functionals/salary.svg?jsx';
 import SearchIcon from '@/shared/assets/images/functionals/search.svg?jsx';
 import SettingsLiteIcon from '@/shared/assets/images/functionals/settings-lite.svg?jsx';
+import ShareIcon from '@/shared/assets/images/functionals/share.svg?jsx';
 import SwitchIcon from '@/shared/assets/images/functionals/switch.svg?jsx';
 import ThumbDownIcon from '@/shared/assets/images/functionals/thumb-down.svg?jsx';
 import ThumbUpIcon from '@/shared/assets/images/functionals/thumb-up.svg?jsx';
 import UpdateIcon from '@/shared/assets/images/functionals/update.svg?jsx';
 import UploadFileIcon from '@/shared/assets/images/functionals/upload-file.svg?jsx';
 import ViewValidatorsIcon from '@/shared/assets/images/functionals/view-validators.svg?jsx';
+import VolumeIcon from '@/shared/assets/images/functionals/volume.svg?jsx';
 import VotedIcon from '@/shared/assets/images/functionals/voted.svg?jsx';
 import VotingCheckFilled from '@/shared/assets/images/functionals/voting-check-filled.svg?jsx';
 import WarnCutoutIcon from '@/shared/assets/images/functionals/warning-cutout.svg?jsx';
@@ -90,6 +93,7 @@ const FunctionalImages = {
   uploadFile: { svg: UploadFileIcon },
   import: { svg: ImportIcon },
   export: { svg: ExportIcon },
+  share: { svg: ShareIcon },
   editKeys: { svg: EditKeysIcon },
   more: { svg: MoreIcon },
   rename: { svg: RenameIcon },
@@ -114,7 +118,7 @@ const FunctionalImages = {
   evidence: { svg: EvidenceIcon },
   salary: { svg: SalaryIcon },
   withdraw: { svg: WithdrawIcon },
-  requestSalary: { svg: RequestSalaryIcon },
+  request: { svg: RequestSalaryIcon },
   promoteVoting: { svg: PromoteVotingIcon },
   positive: { svg: PositiveIcon },
   negative: { svg: NegativeIcon },
@@ -122,6 +126,8 @@ const FunctionalImages = {
   createPureProxy: { svg: CreatePureProxyIcon },
   delegate: { svg: DelegateIcon },
   changeSignatories: { svg: ChangeSignatoriesIcon },
+  history: { svg: HistoryIcon },
+  volume: { svg: VolumeIcon },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

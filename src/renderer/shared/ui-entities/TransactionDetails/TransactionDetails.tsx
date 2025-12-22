@@ -7,7 +7,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { CaptionText, DetailRow, FootnoteText, Icon, Separator } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, useAccountName } from '@/domains/network';
 import { AccountsModal } from '@/entities/staking';
 import { walletUtils } from '@/entities/wallet';
 // eslint-disable-next-line boundaries/element-types
@@ -46,6 +46,14 @@ export const TransactionDetails = memo(({ wallets, chain, initiators, signatory,
   const initiatorMeta = useTransformer(accountNodeConfigTransformer, { account: firstInitiator || signatory, t });
   const initiatorWalletType = initiatorMeta ? initiatorMeta.title.toLowerCase() : '';
   const isComplexAccountStructure = nullable(initiators.find(i => i === signatory));
+  const firstInitiatorName = useAccountName({
+    accountId: firstInitiator?.accountId ?? null,
+    chain,
+  });
+  const signatoryName = useAccountName({
+    accountId: signatory?.accountId ?? null,
+    chain,
+  });
 
   return (
     <dl className="flex w-full flex-col gap-y-4 text-footnote">
@@ -65,7 +73,12 @@ export const TransactionDetails = memo(({ wallets, chain, initiators, signatory,
               </div>
             )}
             {initiators.length === 1 && nonNullable(firstInitiator) && (
-              <AccountComponent variant="short" accountId={firstInitiator.accountId} chain={chain} />
+              <AccountComponent
+                variant="short"
+                accountId={firstInitiator.accountId}
+                chain={chain}
+                title={firstInitiatorName}
+              />
             )}
             {initiators.length > 1 && (
               <button
@@ -96,7 +109,12 @@ export const TransactionDetails = memo(({ wallets, chain, initiators, signatory,
 
           {nonNullable(firstInitiator) && (
             <DetailRow label={t('transaction.details.initiatorAccount', { type: initiatorWalletType })}>
-              <AccountComponent variant="short" accountId={firstInitiator.accountId} chain={chain} />
+              <AccountComponent
+                variant="short"
+                accountId={firstInitiator.accountId}
+                chain={chain}
+                title={firstInitiatorName}
+              />
             </DetailRow>
           )}
 
@@ -113,7 +131,12 @@ export const TransactionDetails = memo(({ wallets, chain, initiators, signatory,
 
           {nonNullable(signatory) && (
             <DetailRow label={t('transaction.details.sinatoryAccount')}>
-              <AccountComponent variant="short" accountId={signatory?.accountId} chain={chain} />{' '}
+              <AccountComponent
+                variant="short"
+                accountId={signatory?.accountId}
+                chain={chain}
+                title={signatoryName}
+              />{' '}
             </DetailRow>
           )}
         </>

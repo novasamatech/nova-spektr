@@ -1,39 +1,31 @@
-import { useStoreMap, useUnit } from 'effector-react';
-import { useTranslation } from 'react-i18next';
-
+import { useI18n } from '@/shared/i18n';
+import { toAddress } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { FootnoteText, SmallTitleText, TitleText } from '@/shared/ui/Typography';
-import { Account } from '@/shared/ui-entities';
+import { Address } from '@/shared/ui-entities';
 import { Markdown, Skeleton } from '@/shared/ui-kit';
 import { Box } from '@/shared/ui-kit/Box/Box';
+import { type Referendum } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
-import { details } from '../model/details';
-import { fellowshipReferendumsDetailsFeature } from '../model/feature';
+import { useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
+import { useDescription } from '../hooks/useDescription';
+import { useProposer } from '../hooks/useProposer';
 
 import { Card } from './Card';
 
-export const AdditionalContext = () => {
-  const { t } = useTranslation();
-  const evidence = useUnit(details.$evidence);
-  const description = useUnit(details.$description);
-  const pendingMeta = useUnit(details.$pendingMeta);
+type Props = {
+  referendum: Referendum | null;
+};
 
-  const chain = useStoreMap({
-    store: fellowshipReferendumsDetailsFeature.input,
-    keys: [],
-    fn: store => store?.chain ?? null,
-  });
+export const AdditionalContext = ({ referendum }: Props) => {
+  const { t } = useI18n();
 
-  const proposer = useUnit(details.$proposer);
-  const memberId = proposer || evidence?.accountId;
+  const chain = useFellowshipChain();
+  const { data: proposer } = useProposer(referendum);
+  const { data: description, pending } = useDescription(referendum);
+  const { data: identity } = useFellowshipIdentity(proposer?.accountId);
 
-  const identity = useStoreMap({
-    store: details.$identities,
-    keys: [memberId],
-    fn: (list, [accountId]) => (accountId && list[accountId]) ?? null,
-  });
-
-  if (pendingMeta)
+  if (pending) {
     return (
       <Card>
         <Box padding={6}>
@@ -41,6 +33,7 @@ export const AdditionalContext = () => {
         </Box>
       </Card>
     );
+  }
 
   if (!description?.trim())
     return (
@@ -56,14 +49,12 @@ export const AdditionalContext = () => {
     <Card>
       <Box padding={6} gap={4}>
         <TitleText>{t('fellowship.evidenceModal.additionalContext')}</TitleText>
-        {memberId && chain ? (
+        {proposer && chain ? (
           <Box direction="row" verticalAlign="center" gap={1}>
             <FootnoteText className="text-text-tertiary">{t('fellowship.evidenceModal.by')}</FootnoteText>
-            <Account
-              accountId={memberId}
-              chain={chain}
+            <Address
+              address={toAddress(proposer.accountId)}
               title={identity ? identityService.getFullName(identity) : undefined}
-              hideExplorers
               hideAddress
             />
           </Box>

@@ -5,7 +5,7 @@ import { createGate } from 'effector-react';
 import { and, delay, not, or, spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
-import { type FlexibleMultisigOperationNotification, type NoID, NotificationType, type Wallet } from '@/shared/core';
+import { type CreateFlexibleMultisigOperationParams, NotificationType, type Wallet } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { Step, assert, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -449,21 +449,29 @@ sample({
     initiatorWallet: $initiatorWallet,
     signatories: signatoryModel.$signatories,
     threshold: formModel.$threshold,
+    chainId: $chainId,
   },
-  filter: ({ multisigAccount, initiatorWallet, threshold }) => {
-    return nonNullable(multisigAccount) && nonNullable(initiatorWallet) && nonNullable(threshold);
-  },
-  fn: ({ multisigAccount, initiatorWallet, signatories, threshold }) => {
-    const notification: NoID<FlexibleMultisigOperationNotification> = {
-      read: false,
+  filter: ({ multisigAccount, initiatorWallet, threshold, chainId }) =>
+    nonNullable(multisigAccount) && nonNullable(initiatorWallet) && nonNullable(threshold) && nonNullable(chainId),
+  fn: ({ multisigAccount, initiatorWallet, signatories, threshold, chainId }) => {
+    const notification: CreateFlexibleMultisigOperationParams = {
+      key: `${NotificationType.FLEXIBLE_MULTISIG_EDITED}:${multisigAccount!.accountId}`,
       walletId: initiatorWallet!.id,
       type: NotificationType.FLEXIBLE_MULTISIG_EDITED,
-      dateCreated: Date.now(),
+      status: 'info',
+      issuer: multisigAccount!.accountId,
+      title: 'Flexible multisig wallet edited',
+      description: `${threshold}/${signatories.length} threshold`,
+      chainId: chainId!,
       multisigAccountId: multisigAccount!.accountId,
       accountId: multisigAccount!.accountId,
       accountName: multisigAccount!.name,
       signatories: signatories.map((signatory) => toAccountId(signatory.address)),
       threshold: threshold!,
+      batch: {
+        title: 'notifications.toast.batch.flexibleMultisigWalletsEdited',
+        description: 'notifications.toast.batch.walletsAddedDescription',
+      },
     };
 
     return [notification];

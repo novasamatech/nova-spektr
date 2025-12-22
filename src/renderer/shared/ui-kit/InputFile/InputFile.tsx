@@ -7,12 +7,13 @@ export type HTMLInputFileProps = 'required' | 'disabled' | 'accept' | 'placehold
 
 type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> & {
   invalid?: boolean;
+  defaultFileName?: string;
   onChange?: (file: File) => void;
 };
 
 export const InputFile = forwardRef<HTMLInputElement, Props>(
-  ({ placeholder, invalid = false, onChange, ...props }, ref) => {
-    const [fileName, setFileName] = useState('');
+  ({ placeholder, invalid = false, defaultFileName = '', onChange, ...props }, ref) => {
+    const [fileName, setFileName] = useState(defaultFileName);
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
       const files = event.target.files;
@@ -20,6 +21,8 @@ export const InputFile = forwardRef<HTMLInputElement, Props>(
 
       const file = files.item(0);
       if (!file) return;
+
+      event.target.value = '';
 
       const fileName = file.name;
       const fileFormat = fileName.slice(fileName.lastIndexOf('.'), fileName.length);

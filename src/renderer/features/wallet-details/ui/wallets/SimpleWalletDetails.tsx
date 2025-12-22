@@ -10,6 +10,7 @@ import { HeadlineText, IconButton, Separator } from '@/shared/ui';
 import { ChainAccountsList, ConsensusAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { useWalletName } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
@@ -34,6 +35,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   useGate(walletProxiesModel.flow, { wallet });
   const { t } = useI18n();
 
+  const walletName = useWalletName(wallet);
   const allChains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProxiesModel.$hasWalletProxies);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
@@ -100,7 +102,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
     <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
-        <div className="mb-6 flex items-center justify-between px-5">
+        <div className="mb-6 flex justify-between px-5">
           <Box direction="row" verticalAlign="center" gap={2} height="fit">
             <div className="mr-1">
               <WalletAccountIcon
@@ -114,7 +116,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
             {!isRenameInputOpen && (
               <>
                 <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
-                  {wallet.name}
+                  {walletName}
                 </HeadlineText>
                 <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
                   <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />

@@ -8,7 +8,7 @@ import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {
-  fee: string | BN;
+  fee: string | BN | null;
   loading?: boolean;
   asset: Asset;
   className?: string;
@@ -19,6 +19,15 @@ export const DeliveryFee = memo(({ fee, loading, asset, className }: Props) => {
 
   if (loading) {
     return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
+  }
+
+  if (!fee) {
+    return (
+      <div className="flex flex-col items-end gap-y-0.5">
+        <AssetBalance value="N/A" asset={asset} className={className} />
+        <AssetFiatBalance asset={asset} amount="N/A" />
+      </div>
+    );
   }
 
   return (

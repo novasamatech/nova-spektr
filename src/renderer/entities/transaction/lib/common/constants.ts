@@ -26,6 +26,7 @@ export const STAKING_SECTION = 'staking';
 export const PROXY_SECTION = 'proxy';
 export const MULTISIG_SECTION = 'multisig';
 export const GOVERNANCE_SECTION = 'convictionVoting';
+export const VESTING_SECTION = 'vesting';
 
 export const TransferTypes = [
   TransactionType.TRANSFER,
@@ -47,6 +48,11 @@ export const XcmTypes = [
   TransactionType.POLKADOT_XCM_LIMITED_TRANSFER,
   TransactionType.POLKADOT_XCM_TRANSFER_ASSETS,
   TransactionType.XTOKENS_TRANSFER_MULTIASSET,
+  TransactionType.POLKADOT_XCM_RESERVE_WITHDRAW,
+  TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN,
+  TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN,
+  TransactionType.XTOKENS_TRANSFER,
+  TransactionType.XTOKENS_TRANSFER_MULTIASSETS,
 ];
 
 export type TransferTransactionTypes =
@@ -61,7 +67,12 @@ export type XcmTransactionTypes =
   | TransactionType.POLKADOT_XCM_TELEPORT
   | TransactionType.POLKADOT_XCM_LIMITED_TRANSFER
   | TransactionType.POLKADOT_XCM_TRANSFER_ASSETS
-  | TransactionType.XTOKENS_TRANSFER_MULTIASSET;
+  | TransactionType.XTOKENS_TRANSFER_MULTIASSET
+  | TransactionType.POLKADOT_XCM_RESERVE_WITHDRAW
+  | TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN
+  | TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN
+  | TransactionType.XTOKENS_TRANSFER
+  | TransactionType.XTOKENS_TRANSFER_MULTIASSETS;
 
 export type MultisigTransactionTypes =
   | TransactionType.MULTISIG_APPROVE_AS_MULTI

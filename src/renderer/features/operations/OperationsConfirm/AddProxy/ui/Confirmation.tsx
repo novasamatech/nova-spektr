@@ -4,11 +4,12 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account, TransactionDetails } from '@/shared/ui-entities';
+import { TransactionDetails } from '@/shared/ui-entities';
 import { SignButton } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
 import { Fee, FeeWithLabel, MultisigDepositFee, ProxyDepositLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -56,7 +57,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         </DetailRow>
 
         <DetailRow label={t('proxy.details.delegateTo')} className="text-text-secondary">
-          <Account accountId={toAccountId(delegate)} chain={chain} variant="short" />
+          <NamedAccount accountId={toAccountId(delegate)} chain={chain} variant="short" />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />

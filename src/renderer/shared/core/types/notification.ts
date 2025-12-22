@@ -14,13 +14,44 @@ export const enum NotificationType {
 
   PROXY_CREATED = 'ProxyCreatedNotification',
   PROXY_REMOVED = 'ProxyRemovedNotification',
+
+  MULTISIG_OPERATION = 'MultisigOperationNotification',
 }
+
+// User-facing notification event categories for settings
+export enum NotificationEvent {
+  WALLET_CREATED = 'wallet_created',
+  OPERATION_CREATED = 'operation_created',
+  OPERATION_EXECUTED = 'operation_executed',
+  OPERATION_REJECTED = 'operation_rejected',
+}
+
+export type NotificationStatus = 'info' | 'success' | 'error';
+
+export type BatchParams = {
+  title: string;
+  description?: string;
+  link?: {
+    title: string;
+    path: string;
+  };
+};
 
 type BaseNotification = {
   id: ID;
+  key: string;
   read: boolean;
   dateCreated: number;
   type: NotificationType;
+  status: NotificationStatus;
+  issuer: AccountId;
+  chainId: ChainId;
+  title: string;
+  description?: string;
+  link?: {
+    title: string;
+    path: string;
+  };
 };
 
 type MultisigBaseNotification = BaseNotification & {
@@ -44,11 +75,9 @@ export type FlexibleMultisigOperationNotification = MultisigBaseNotification & {
 export type MultisigOperationNotification = MultisigBaseNotification & {
   callHash: CallHash;
   callTimepoint: Timepoint;
-  chainId: ChainId;
 };
 
 export type ProxyAction = BaseNotification & {
-  chainId: ChainId;
   proxyType: ProxyType;
   proxyVariant: ProxyVariant;
   proxyAccountId: AccountId;
@@ -60,3 +89,18 @@ export type Notification =
   | FlexibleMultisigOperationNotification
   | MultisigOperationNotification
   | ProxyAction;
+
+type NotificationInput<T extends Notification> = Omit<T, 'id' | 'read' | 'dateCreated'> & {
+  batch: BatchParams;
+};
+
+export type CreateMultisigCreatedParams = NotificationInput<MultisigCreated>;
+export type CreateFlexibleMultisigOperationParams = NotificationInput<FlexibleMultisigOperationNotification>;
+export type CreateMultisigOperationParams = NotificationInput<MultisigOperationNotification>;
+export type CreateProxyActionParams = NotificationInput<ProxyAction>;
+
+export type CreateNotificationParams =
+  | CreateMultisigCreatedParams
+  | CreateFlexibleMultisigOperationParams
+  | CreateMultisigOperationParams
+  | CreateProxyActionParams;

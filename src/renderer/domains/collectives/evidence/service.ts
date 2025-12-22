@@ -3,9 +3,11 @@ import { CID } from 'multiformats/cid';
 import { create as createDigest } from 'multiformats/hashes/digest';
 
 import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
+import { type FeedRecord } from '../feed/types';
 import { memberService } from '../member/service';
 import { type CoreMember, type Member } from '../member/types';
 
@@ -32,14 +34,64 @@ function getEvidenceUploadIpfsUrl() {
 }
 
 function getPromotionPeriod(member: CoreMember, periods: EvidencePeriods) {
-  const period = periods.minPromotionPeriod.at(member.rank) ?? pjsSchema.helpers.toBlockHeight(1);
-  return period;
+  const promotionPeriod = periods.minPromotionPeriod.at(member.rank) ?? 1;
+  return pjsSchema.helpers.toBlockHeight(Math.max(promotionPeriod, 1));
 }
 
-function getBlockUntilNextPropotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
+function getPromotionStartBlock(member: Member, feeds?: FeedRecord[]) {
+  if (!memberService.isCoreMember(member)) {
+    return null;
+  }
+
+  if (member.lastPromotion !== 0) {
+    return member.lastPromotion;
+  }
+
+  const importedRecord = feeds?.find(f => f.accountId === member.accountId && f.type === 'imported');
+
+  return importedRecord?.block ?? null;
+}
+
+function getMemberWithPromotionStart(member: Member, feeds?: FeedRecord[]) {
+  if (!memberService.isCoreMember(member)) {
+    return null;
+  }
+
+  const promotionStartBlock = getPromotionStartBlock(member, feeds);
+
+  if (!promotionStartBlock || promotionStartBlock === member.lastPromotion) {
+    return member;
+  }
+
+  return {
+    ...member,
+    lastPromotion: promotionStartBlock,
+  };
+}
+
+function getPromotionWindow(member: CoreMember, periods: EvidencePeriods) {
   const promotionPeriod = getPromotionPeriod(member, periods);
-  const gone = currentBlock - member.lastPromotion;
-  return Math.max(0, promotionPeriod - gone);
+  const start = member.lastPromotion;
+  const end = start + promotionPeriod;
+
+  return {
+    from: start,
+    to: end,
+  };
+}
+
+function getEndPromotionBlock(member: Member, periods: EvidencePeriods) {
+  if (memberService.isCoreMember(member)) {
+    const promotionPeriod = getPromotionPeriod(member, periods);
+    return (promotionPeriod + member.lastPromotion) as BlockHeight;
+  }
+
+  return null;
+}
+
+function getBlockUntilNextPromotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
+  const window = getPromotionWindow(member, periods);
+  return Math.max(0, window.to - currentBlock) as BlockHeight;
 }
 
 function getDemotionPeriod(member: CoreMember, periods: EvidencePeriods) {
@@ -53,19 +105,23 @@ function getDemotionPeriod(member: CoreMember, periods: EvidencePeriods) {
 function getEndDemotionBlock(member: Member, periods: EvidencePeriods) {
   if (memberService.isCoreMember(member)) {
     const demotionPeriod = getDemotionPeriod(member, periods);
-    return demotionPeriod + member.lastProof;
+    if (nonNullable(demotionPeriod)) {
+      return (demotionPeriod + member.lastProof) as BlockHeight;
+    }
   }
 
-  return Number.POSITIVE_INFINITY;
+  return null;
 }
 
 function getBlocksUntilDemotion(member: Member, periods: EvidencePeriods, currentBlock: BlockHeight) {
   if (memberService.isCoreMember(member)) {
     const endDemotionBlock = getEndDemotionBlock(member, periods);
-    return Math.max(0, endDemotionBlock - currentBlock);
+    if (nonNullable(endDemotionBlock)) {
+      return Math.max(0, endDemotionBlock - currentBlock) as BlockHeight;
+    }
   }
 
-  return Number.POSITIVE_INFINITY;
+  return null;
 }
 
 type EvidenceTransactionParams = {
@@ -100,8 +156,12 @@ export const evidenceService = {
   getEvidenceUploadIpfsUrl,
   getCidByEvidence,
   getEvidenceFromCid,
+  getPromotionStartBlock,
+  getMemberWithPromotionStart,
   getPromotionPeriod,
-  getBlockUntilNextPropotion,
+  getPromotionWindow,
+  getEndPromotionBlock,
+  getBlockUntilNextPromotion,
   getDemotionPeriod,
   getBlocksUntilDemotion,
   getEndDemotionBlock,

@@ -37,26 +37,11 @@ const PROXY_ACCOUNT_QUERY = gql`
         type
         extrinsicIndex
         blockNumber
+        spawner
       }
     }
   }
 `;
-
-const PURE_PROXY_QUERY = gql`
-  query PureProxies($accounts: [String!]) {
-    pureProxies(filter: { accountId: { in: $accounts } }) {
-      nodes {
-        accountId
-        chainId
-      }
-    }
-  }
-`;
-
-const pureProxySchema = z.object({
-  accountId: accountIdSchema,
-  chainId: chainIdSchema,
-});
 
 const proxySchema = z.object({
   accountId: accountIdSchema,
@@ -66,6 +51,7 @@ const proxySchema = z.object({
   type: z.string(),
   extrinsicIndex: z.number(),
   blockNumber: z.number().transform(pjsSchema.helpers.toBlockHeight),
+  spawner: accountIdSchema.nullable().transform(val => val ?? undefined),
 });
 
 export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
@@ -84,18 +70,6 @@ export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
     );
 
     const parsed = response.proxieds.nodes.map(x => proxySchema.parse(x));
-
-    const accountIds = parsed.map(x => x.accountId);
-
-    const pureProxiesResponse = await client.request<{ pureProxies: { nodes: unknown[] } }, { accounts: AccountId[] }>(
-      PURE_PROXY_QUERY,
-      { accounts: accountIds },
-    );
-    //todo remove when reindexing is done
-    const pureProxies = pureProxiesResponse.pureProxies.nodes.map(x => pureProxySchema.parse(x));
-
-    // Create lookup set for pure proxies
-    const pureProxyLookup = new Set(pureProxies.map(pp => `${pp.accountId}:${pp.chainId}`));
 
     const indexerChainGroups = groupBy(parsed, g => g.chainId);
 
@@ -138,9 +112,6 @@ export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
           });
           if (nullable(proxyFromIndexer)) continue;
 
-          // Check if this account is a pure proxy using the PureProxy table data
-          const isPureProxy = proxyFromIndexer.isPureProxy || pureProxyLookup.has(`${accountId}:${chainId}`);
-
           result.push({
             type: 'proxy',
             accountId,
@@ -149,9 +120,10 @@ export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
             deposit: proxied.value.deposit,
             delay: proxy.delay,
             proxyType: proxy.proxyType,
-            proxyVariant: isPureProxy ? ProxyVariant.PURE : ProxyVariant.REGULAR,
+            proxyVariant: proxyFromIndexer.isPureProxy ? ProxyVariant.PURE : ProxyVariant.REGULAR,
             blockNumber: proxyFromIndexer.blockNumber,
             extrinsicIndex: proxyFromIndexer.extrinsicIndex,
+            spawner: proxyFromIndexer.spawner,
           });
         }
       }

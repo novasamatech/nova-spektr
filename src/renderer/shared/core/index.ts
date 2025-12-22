@@ -24,7 +24,7 @@ export type {
 } from './types/wallet';
 export { WalletType, SigningType } from './types/wallet';
 
-export { AccountType, KeyType } from './types/account';
+export { AccountType, AccountNameType, KeyType } from './types/account';
 export type {
   WatchOnlyAccount,
   VaultBaseAccount,
@@ -65,12 +65,18 @@ export { ProxyVariant } from './types/proxy';
 
 export type {
   Notification,
+  NotificationStatus,
+  CreateNotificationParams,
+  CreateMultisigCreatedParams,
+  CreateFlexibleMultisigOperationParams,
+  CreateMultisigOperationParams,
+  CreateProxyActionParams,
   MultisigCreated,
   FlexibleMultisigOperationNotification,
   MultisigOperationNotification,
   ProxyAction,
 } from './types/notification';
-export { NotificationType } from './types/notification';
+export { NotificationEvent, NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
 

@@ -5,13 +5,13 @@ import { Trans } from 'react-i18next';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { entries, nullable, toAccountId } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { entries, toAccountId } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
-import { Account, AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { votingService } from '@/entities/governance';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { detailsAggregate } from '../../aggregates/details';
 import { votingListService } from '../../lib/votingListService';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -44,29 +44,6 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
     });
   }, [votes, referendum]);
 
-  const accountsNames = useMemo(() => {
-    if (nullable(activeWallet)) return {};
-
-    const addressMap: Record<AccountId, string> = {};
-    for (const account of activeWallet.accounts) {
-      addressMap[account.accountId] = account.name;
-    }
-
-    const accounts = [
-      ...votesList.map((vote) => vote.accountId),
-      ...referendum.votedByDelegates.map((delegate) => delegate.delegator),
-    ];
-
-    const votedAccounts: Record<AccountId, string> = {};
-    for (const accountId of accounts) {
-      if (nullable(addressMap[accountId])) continue;
-
-      votedAccounts[accountId] = addressMap[accountId];
-    }
-
-    return votedAccounts;
-  }, [activeWallet, votesList, referendum]);
-
   if (!activeWallet) return null;
 
   return (
@@ -87,14 +64,7 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
             <Fragment key={accountId}>
               <div className="col-span-5">
                 <BodyText className="text-text-secondary">
-                  <Account
-                    hideAddress
-                    variant="short"
-                    iconSize={16}
-                    title={accountsNames[accountId]}
-                    accountId={accountId}
-                    chain={chain}
-                  />
+                  <NamedAccount hideAddress variant="short" iconSize={16} accountId={accountId} chain={chain} />
                 </BodyText>
               </div>
               <BodyText className="col-span-2 px-2">{t(`governance.referendum.${vote.decision}`)}</BodyText>
@@ -119,11 +89,10 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
               <div className="col-span-5">
                 <BodyText className="text-text-secondary">
                   {/* TODO: display delegated identity in subtitle */}
-                  <Account
+                  <NamedAccount
                     hideAddress
                     variant="short"
                     iconSize={16}
-                    title={accountsNames[toAccountId(delegate.delegator)]}
                     accountId={toAccountId(delegate.delegator)}
                     chain={chain}
                   />

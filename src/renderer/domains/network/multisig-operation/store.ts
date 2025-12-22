@@ -1,12 +1,22 @@
-import { attach, createEffect, createStore, sample, scopeBind } from 'effector';
+import { attach, createEffect, createStore, restore, sample, scopeBind } from 'effector';
+import { once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
-import { type HexString } from '@/shared/core';
-import { createQueuedEffect } from '@/shared/effector';
+import {
+  type CreateMultisigOperationParams,
+  type HexString,
+  type NotificationStatus,
+  NotificationType,
+} from '@/shared/core';
+import { createQueuedEffect, pairwise } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
+import { Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
+import { notificationModel } from '@/entities/notification';
 import { decodeCallData } from '@/entities/transaction';
+import { accounts } from '../account/store';
+import { type AnyAccount } from '../account/types';
 
 import { deserializeOperation, serializeOperation } from './helpers';
 import { fetchResource, subscribeEventsResource, subscribeResource } from './resource';
@@ -14,6 +24,11 @@ import { multisigOperationService } from './service';
 import { type MultisigOperation } from './types';
 
 const $list = createStore<MultisigOperation[]>([]);
+
+const $populated = restore(
+  once($list.updates).map(() => true),
+  false,
+);
 
 const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
@@ -33,8 +48,17 @@ const removeTransactionsFx = createEffect((operations: MultisigOperation[]) => {
   return storageService.multisigOperations.deleteAll(operations.map(t => t.id)).then(result => result ?? []);
 });
 
-const syncOperationsFx = createQueuedEffect(async (operations: MultisigOperation[]) => {
-  await storageService.multisigOperations.insertAll(operations.map(serializeOperation));
+/**
+ * We want to sync operations between database and in-memory store. Its
+ * important to do so because operations can be deleted from the database
+ * without calling removeTransactionsFx (f.e. in case of fork).
+ */
+const syncInMemoryOperationsToDbFx = createQueuedEffect(async (allOperations: MultisigOperation[]) => {
+  const dbOperations = await storageService.multisigOperations.readAll();
+  const dbOperationIds = dbOperations.map(op => op.id);
+
+  await storageService.multisigOperations.deleteAll(dbOperationIds);
+  await storageService.multisigOperations.insertAll(allOperations.map(serializeOperation));
 });
 
 const $callDataUpdated = createStore<MultisigOperation | null>(null);
@@ -83,11 +107,126 @@ const removeOperationsForAccountFx = attach({
   },
 });
 
+const getNotificationStatus = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
+  switch (operationStatus) {
+    case 'pending':
+      return 'info';
+    case 'executed':
+      return 'success';
+    case 'cancelled':
+    case 'error':
+      return 'error';
+  }
+};
+
+const getNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): string => {
+  switch (operationStatus) {
+    case 'pending':
+      return 'Multisig operation created';
+    case 'executed':
+      return 'Multisig operation executed';
+    case 'cancelled':
+      return 'Multisig operation rejected';
+    case 'error':
+      return 'Multisig operation error';
+  }
+};
+
+const createOperationNotification = (
+  operation: MultisigOperation,
+  walletName?: string,
+): CreateMultisigOperationParams => {
+  const description = walletName ? `by ${walletName}` : undefined;
+
+  const relativeLink = multisigOperationService.generateMultisigOperationRelativeLink({
+    chainId: operation.chainId,
+    callHash: operation.callHash,
+    accountId: operation.accountId,
+    blockCreated: operation.blockCreated,
+    indexCreated: operation.indexCreated,
+  });
+
+  return {
+    key: `${NotificationType.MULTISIG_OPERATION}-${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.accountId, operation.blockCreated, operation.indexCreated)}-${operation.status}`,
+    type: NotificationType.MULTISIG_OPERATION,
+    status: getNotificationStatus(operation.status),
+    issuer: operation.accountId,
+    title: getNotificationTitle(operation.status),
+    description,
+    multisigAccountId: operation.accountId,
+    callHash: operation.callHash,
+    callTimepoint: {
+      height: operation.blockCreated,
+      index: operation.indexCreated,
+    },
+    chainId: operation.chainId,
+    link: {
+      title: 'notifications.details.viewOperation',
+      path: relativeLink,
+    },
+    batch: {
+      title: 'notifications.toast.batch.multisigOperationsUpdated',
+      link: {
+        title: 'notifications.toast.viewOperations',
+        path: Paths.OPERATIONS,
+      },
+    },
+  };
+};
+
+const operationChanges = pairwise($list)
+  .map(({ prev: prevState, current: update }) => {
+    const previousOpsMap = new Map(
+      prevState.map(op => [
+        multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated),
+        op,
+      ]),
+    );
+    const changes: MultisigOperation[] = [];
+
+    for (const item of update) {
+      const previousOp = previousOpsMap.get(
+        multisigOperationService.getOperationId(item.chainId, item.callHash, item.accountId, item.blockCreated, item.indexCreated),
+      );
+
+      if (!previousOp) {
+        changes.push(item);
+      } else if (previousOp.status !== item.status && item.status !== 'pending') {
+        changes.push(item);
+      }
+    }
+
+    return changes;
+  })
+  .filter({ fn: notifications => notifications.length > 0 });
+
+sample({
+  clock: operationChanges,
+  source: { populated: $populated, accountsList: accounts.$list },
+  filter: ({ populated }) => populated,
+  fn: ({ accountsList }, operations) => {
+    const accountsMap = new Map<AccountId, AnyAccount>(accountsList.map(account => [account.accountId, account]));
+
+    return operations
+      .filter(operation => {
+        const account = accountsMap.get(operation.accountId);
+
+        return !account?.createdAt || operation.timestamp >= account.createdAt;
+      })
+      .map(operation => {
+        const account = accountsMap.get(operation.accountId);
+
+        return createOperationNotification(operation, account?.name);
+      });
+  },
+  target: notificationModel.events.notificationsAdded,
+});
+
 deriveFromResources({
   store: $list,
   resources: [fetchResource, subscribeResource],
   map(state, operations) {
-    return multisigOperationService.mergeMultisigOperations(state, operations);
+    return multisigOperationService.updateMultisigOperations(state, operations);
   },
 });
 
@@ -95,16 +234,18 @@ deriveFromResources({
   store: $list,
   resources: [subscribeEventsResource],
   map: (state, { chainId, operationId, event }) => {
-    const operation = state.find(x => x.id === operationId && x.chainId === chainId);
-    if (!operation) return state;
+    const operationIndex = state.findIndex(x => x.id === operationId && x.chainId === chainId);
+    const operation = state[operationIndex];
 
-    const newOperation = {
+    if (operationIndex === -1 || !operation) return state;
+
+    const updatedOperation = {
       ...operation,
       status: event.status === 'reject' ? 'cancelled' : operation.status,
       events: multisigOperationService.mergeEvents(operation.events, [event]),
     };
 
-    return multisigOperationService.mergeMultisigOperations(state, [newOperation]);
+    return multisigOperationService.mergeMultisigOperations(state, [updatedOperation]);
   },
 });
 
@@ -138,7 +279,8 @@ sample({
 
 sample({
   clock: $list,
-  target: syncOperationsFx,
+  filter: list => list.length > 0,
+  target: syncInMemoryOperationsToDbFx,
 });
 
 // Handle successful call data updates
@@ -156,6 +298,7 @@ sample({
 
 export const multisigOperation = {
   $list,
+  $populated: readonly($populated),
   $callDataUpdated,
 
   populate: populateFx,
@@ -168,4 +311,9 @@ export const multisigOperation = {
   unsubscribe: subscribeResource.unsubscribe,
   subscribeEvents: subscribeEventsResource.subscribe,
   unsubscribeEvents: subscribeEventsResource.unsubscribe,
+
+  __test: {
+    $list,
+    $populated,
+  },
 };

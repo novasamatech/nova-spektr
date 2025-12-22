@@ -3,16 +3,16 @@ import { memo, useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { getRelativeTimeFromApi, nonNullable, nullable } from '@/shared/lib/utils';
-import { Alert, Button, Duration, FootnoteText, SmallTitleText } from '@/shared/ui';
+import { Alert, Button, Duration, FootnoteText, IconButton, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { memberService } from '@/domains/collectives';
+import { evidenceService, memberService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipEvidenceFeature } from '../model/feature';
 import { profile } from '../model/profile';
 
-import { EvidencePostFlowModal } from './EvidencePostFlowModal';
+import { EvidencePostFlowTrigger } from './EvidencePostFlowTrigger';
 
 export const RetentionInfo = memo(() => {
   const { t } = useI18n();
@@ -26,6 +26,7 @@ export const RetentionInfo = memo(() => {
   const showAttention = useUnit(evidenceInfo.$showAttention);
   const hasRetentionEvidence = useUnit(evidenceInfo.$hasRetentionEvidence);
   const hasPromotionEvidence = useUnit(evidenceInfo.$hasPromotionEvidence);
+  const memberEvidence = useUnit(evidenceInfo.$memberEvidence);
 
   const isCoreMember = nonNullable(currentMember) && memberService.isCoreMember(currentMember);
   const disabled = nullable(account) || !accountService.hasPermissionToMakeActions(account) || !isCoreMember;
@@ -52,19 +53,32 @@ export const RetentionInfo = memo(() => {
               {timeLeft === 0 ? t('general.timeout.expired') : <Duration seconds={timeLeft / 1000} />}
             </SmallTitleText>
           </Box>
-          <EvidencePostFlowModal wish="Retention">
+          <EvidencePostFlowTrigger wish="Retention">
             <Button disabled={disabled}>{t('fellowship.salary.retentionSubmit')}</Button>
-          </EvidencePostFlowModal>
+          </EvidencePostFlowTrigger>
         </Box>
       )}
 
       {hasRetentionEvidence && (
-        <Box direction="row">
+        <Box direction="row" verticalAlign="center">
           <Box gap={1} grow={1}>
             <FootnoteText className="text-text-secondary">{t('fellowship.salary.retentionApplied')}</FootnoteText>
             <SmallTitleText>{t('fellowship.salary.retentionAppliedDescription')}</SmallTitleText>
           </Box>
-          {/*TODO implement evidence manipulation*/}
+          <Box direction="row" gap={4}>
+            <IconButton
+              name="eye"
+              size={16}
+              onClick={() => {
+                if (memberEvidence) {
+                  window.open(evidenceService.getEvidenceIpfsUrl(memberEvidence.hash), '_blank');
+                }
+              }}
+            />
+            <EvidencePostFlowTrigger wish="Retention">
+              <IconButton name="editKeys" size={16} />
+            </EvidencePostFlowTrigger>
+          </Box>
         </Box>
       )}
 

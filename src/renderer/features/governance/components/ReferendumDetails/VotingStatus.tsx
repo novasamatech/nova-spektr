@@ -6,14 +6,14 @@ import { nonNullable } from '@/shared/lib/utils';
 import { Button, FootnoteText } from '@/shared/ui';
 import { ReferendumVoteChart, referendumService, votingService } from '@/entities/governance';
 import { EmptyAccountMessage } from '@/features/emptyList';
+import { ReferendumEndTimer } from '@/widgets/ReferendumEndTimer';
 import { type AggregatedReferendum } from '../../types/structs';
-import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { Threshold } from './Threshold';
 
 type Props = {
-  api: ApiPromise;
+  timelineApi: ApiPromise;
   referendum: AggregatedReferendum;
   asset: Asset;
   wallet: Wallet | null;
@@ -25,7 +25,7 @@ type Props = {
 };
 
 export const VotingStatus = ({
-  api,
+  timelineApi,
   referendum,
   asset,
   wallet,
@@ -60,7 +60,12 @@ export const VotingStatus = ({
       <div className="flex w-full justify-between gap-x-1">
         <VotingStatusBadge passing={isPassing} referendum={referendum} />
 
-        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} shortDateFormat />
+        <ReferendumEndTimer
+          status={referendum.status}
+          endBlock={referendum.end}
+          timelineApi={timelineApi}
+          shortDateFormat
+        />
       </div>
 
       {votedFractions && (

@@ -1,3 +1,4 @@
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type Weight } from '@polkadot/types/interfaces';
 import { type BN } from '@polkadot/util';
 import { camelCase } from 'lodash';
@@ -6,6 +7,7 @@ import { type ClaimAction } from '@/shared/api/governance';
 import {
   type Address,
   type Asset,
+  AssetType,
   type Chain,
   type ChainId,
   type Conviction,
@@ -18,7 +20,7 @@ import {
 } from '@/shared/core';
 import { formatAmount, getAssetId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type MultisigOperation } from '@/domains/network';
+import { type BalancePreservation, type MultisigOperation } from '@/domains/network';
 import { type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
 import { TransferType } from './common/constants';
@@ -48,9 +50,13 @@ export const transactionBuilder = {
   buildAddProxy,
   buildKillPureProxy,
   buildRemoveProxy,
+  buildVestedTransfer,
+  buildMultiTransfer,
 
   buildBatchAll,
 };
+
+type InputMode = 'regular' | 'max';
 
 type TransferParams = {
   chain: Chain;
@@ -58,21 +64,38 @@ type TransferParams = {
   accountId: AccountId;
   destination: string;
   amount: string;
-  transferAll?: boolean;
-  allowDeath?: boolean;
+  inputMode: InputMode;
+  balancePreservation: BalancePreservation;
   xcmData?: {
     args: {
-      xcmFee: string;
-      deliveryFee: string;
-      xcmAsset?: NonNullable<unknown>;
-      xcmWeight: string;
-      xcmDest?: NonNullable<unknown>;
-      xcmBeneficiary?: NonNullable<unknown>;
       destinationChain: ChainId;
+      spellExtrinsic?: SubmittableExtrinsic<'promise'>;
+      destinationFee?: string;
+      originFee?: string;
     };
     transactionType: TransactionType;
   };
 };
+
+function isNativeAsset(asset: Asset) {
+  return asset.type === AssetType.NATIVE;
+}
+
+function getTransactionType(asset: Asset, inputMode: InputMode, balancePreservation: BalancePreservation) {
+  if (isNativeAsset(asset)) {
+    const allowDeath = inputMode === 'regular' && balancePreservation === 'allowDeath';
+    if (allowDeath) {
+      return TransactionType.TRANSFER_ALLOW_DEATH;
+    }
+
+    if (inputMode === 'max') {
+      return TransactionType.TRANSFER_ALL;
+    }
+  }
+
+  return TransferType[asset.type] ?? TransactionType.TRANSFER;
+}
+
 function buildTransfer({
   chain,
   accountId,
@@ -80,20 +103,10 @@ function buildTransfer({
   asset,
   amount,
   xcmData,
-  transferAll,
-  allowDeath,
+  balancePreservation,
+  inputMode,
 }: TransferParams): Transaction {
-  let transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
-  if (xcmData) {
-    transactionType = xcmData.transactionType;
-  }
-  if (transferAll) {
-    transactionType = TransactionType.TRANSFER_ALL;
-  }
-  if (allowDeath) {
-    transactionType = TransactionType.TRANSFER_ALLOW_DEATH;
-  }
-
+  const transactionType = xcmData?.transactionType ?? getTransactionType(asset, inputMode, balancePreservation);
   const palletName =
     asset.typeExtras && 'palletName' in asset.typeExtras ? camelCase(asset.typeExtras.palletName) : 'assets';
 
@@ -105,6 +118,7 @@ function buildTransfer({
       palletName,
       dest: destination,
       value: formatAmount(amount, asset.precision),
+      keepAlive: balancePreservation === 'keepAlive',
       ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
       ...xcmData?.args,
     },
@@ -769,4 +783,55 @@ function buildRemoveProxy({ chain, accountId, delegate, proxyType, delay }: Remo
       delay,
     },
   };
+}
+
+type VestingSchedule = {
+  target: AccountId;
+  locked: BN;
+  startingBlock: BN;
+  perBlock: BN;
+};
+
+type VestedTransferParams = {
+  chain: Chain;
+  accountId: AccountId;
+  vestingSchedule: VestingSchedule[];
+};
+
+function buildVestedTransfer({ chain, accountId, vestingSchedule }: VestedTransferParams): Transaction {
+  const vestingTxs = vestingSchedule.map((v) => ({
+    chainId: chain.chainId,
+    accountId,
+    type: TransactionType.VESTED_TRANSFER,
+    args: {
+      target: v.target,
+      locked: v.locked.toString(),
+      startingBlock: v.startingBlock.toString(),
+      perBlock: v.perBlock.toString(),
+    },
+  }));
+
+  if (vestingTxs.length === 1) return vestingTxs[0];
+
+  return buildBatchAll({ chain, accountId, transactions: vestingTxs });
+}
+
+type MultiTransferParams = {
+  chain: Chain;
+  accountId: AccountId;
+  transfers: { recipient: AccountId; amount: BN }[];
+};
+
+function buildMultiTransfer({ chain, accountId, transfers }: MultiTransferParams): Transaction {
+  const transferTxs = transfers.map((t) => ({
+    chainId: chain.chainId,
+    accountId,
+    type: TransactionType.TRANSFER,
+    args: {
+      dest: t.recipient,
+      value: t.amount.toString(),
+    },
+  }));
+
+  return buildBatchAll({ chain, accountId, transactions: transferTxs });
 }

@@ -1,18 +1,22 @@
+import { createStore } from 'effector';
+
 import { type ChainId } from '@/shared/core';
-import { createRemoteResource } from '@/shared/resource';
-import { type CollectivePalletsType } from '../_lib/types';
+import { pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { createQueryResource } from '@/shared/query';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type RfcDetails } from './types';
 
-type RequestParams = {
+export type RfcSummaryRequestParams = {
   prNumber: string;
   palletType: CollectivePalletsType;
   chainId: ChainId;
 };
 
-export const rfcSummaryResource = createRemoteResource<RequestParams, RfcDetails>({
-  cache: { ttl: Number.POSITIVE_INFINITY },
-  async fn({ prNumber, chainId, palletType }) {
+export const rfcSummaryResource = createQueryResource<RfcSummaryRequestParams>({
+  key: ({ palletType, chainId }) => [palletType, chainId],
+})
+  .request<RfcDetails>(async ({ prNumber, chainId, palletType }) => {
     const url = new URL('/api/v1/rfc-summaries/single', 'https://opengov-backend-dev.novasama-tech.org');
 
     const request = fetch(url, {
@@ -36,5 +40,17 @@ export const rfcSummaryResource = createRemoteResource<RequestParams, RfcDetails
       title: summary.title,
       summary: summary.summary ?? '',
     };
-  },
-});
+  })
+  .cache<CollectivesStruct<Record<string, RfcDetails>>>({
+    store: createStore({}),
+    staleAfter: Number.POSITIVE_INFINITY,
+    map(state, rfcDetail) {
+      const previousState = pickNestedValue(state, rfcDetail.palletType, rfcDetail.chainId) ?? {};
+
+      return setNestedValue(state, rfcDetail.palletType, rfcDetail.chainId, {
+        ...previousState,
+        [rfcDetail.prNumber]: rfcDetail,
+      });
+    },
+  })
+  .build();

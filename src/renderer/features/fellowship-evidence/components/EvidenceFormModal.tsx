@@ -1,9 +1,8 @@
 /* eslint-disable i18next/no-literal-string */
 import { useForm } from 'effector-forms';
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type FormEventHandler, type PropsWithChildren, memo } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { Alert, Button, InputHint, Separator } from '@/shared/ui';
 import { Box, Field, Modal, TextArea } from '@/shared/ui-kit';
@@ -16,7 +15,7 @@ type Props = PropsWithChildren<{
 }>;
 
 export const EvidenceFormModal = memo(({ isOpen, wish, children, onToggle }: Props) => {
-  useFlow(evidenceForm.flow, { wish });
+  useGate(evidenceForm.flow, { wish });
 
   const { t } = useI18n();
   const { fields, submit } = useForm(evidenceForm.form);

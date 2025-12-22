@@ -26,6 +26,7 @@ export type ValidationResult =
   | {
       name: string;
       errorText: string;
+      label?: string;
     }
   | undefined;
 
@@ -102,8 +103,8 @@ export type TransferAmountFeeStore = {
   isMultisig: boolean;
   isProxy: boolean;
   fee: BN;
-  xcmFee: BN;
-  deliveryFee: BN;
+  originFee: BN;
+  destinationFee: BN;
 };
 
 export type TransferFeeStore = Omit<TransferAmountFeeStore, 'balance' | 'network'> & {

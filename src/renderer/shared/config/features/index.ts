@@ -15,6 +15,7 @@ export const $defaultFeatures = createStore({
   staking: true,
   governance: true,
   fellowship: true,
+  codex: false,
   importDB: isDev(),
   operations: true,
   basket: true,
@@ -34,6 +35,9 @@ export const $defaultFeatures = createStore({
   multisigRemark: false,
   callData: true,
   hiddenWallets: true,
+  vestedTransfer: true,
+  multiTransfer: true,
+  appCustomOperations: true,
 
   // experimental feature
   dappBrowser: false,

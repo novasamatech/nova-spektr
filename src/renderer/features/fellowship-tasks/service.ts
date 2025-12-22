@@ -1,3 +1,4 @@
+import { nonNullable } from '@/shared/lib/utils';
 import { type TrackId } from '@/shared/pallet/referenda';
 import { type BlockHeight } from '@/shared/polkadotjs-schemas';
 import {
@@ -6,6 +7,8 @@ import {
   type Member,
   type OngoingReferendum,
   evidenceService,
+  memberService,
+  referendumService,
   trackService,
 } from '@/domains/collectives';
 
@@ -83,7 +86,12 @@ function getReferendumUserImportanceScore(maximumAvailableVotingWeight: number, 
 /**
  * Weights are adjustable and can be changed after feedback
  */
-function getSortingScope(urgencyScore: number, controversyScore: number, userImportanceScore: number) {
+function getSortingScope(
+  urgencyScore: number,
+  controversyScore: number,
+  userImportanceScore: number,
+  hasUserVoted: boolean,
+) {
   const isUrgent = urgencyScore > 0.3;
   const isControversial = controversyScore > 0.5;
   const isImportantVote = userImportanceScore > 0.5;
@@ -101,6 +109,9 @@ function getSortingScope(urgencyScore: number, controversyScore: number, userImp
   }
   if (isControversial) {
     sortingScore += 0.25;
+  }
+  if (hasUserVoted) {
+    sortingScore -= 100;
   }
 
   return {
@@ -121,11 +132,13 @@ function getReferendumImportance({
   maximumAvailableVotingWeight,
   memberVotingWeight,
   currentBlock,
+  hasUserVoted,
 }: {
   referendum: OngoingReferendum;
   maximumAvailableVotingWeight: number;
   memberVotingWeight: number;
   currentBlock: BlockHeight;
+  hasUserVoted: boolean;
 }): Importance {
   const urgencyScore = getUrgencyScore(referendum.ends - currentBlock);
   const controversyScore = getReferendumControversyScore(referendum, maximumAvailableVotingWeight);
@@ -136,6 +149,7 @@ function getReferendumImportance({
     urgencyScore,
     controversyScore,
     userImportanceScore,
+    hasUserVoted,
   );
 
   if (isUrgent) {
@@ -172,7 +186,7 @@ function getEvidenceImportance(
 
   if (evidence.wish === 'Retention') {
     const blocksLeft = evidenceService.getBlocksUntilDemotion(member, periods, currentBlock);
-    const urgencyScore = getUrgencyScore(blocksLeft);
+    const urgencyScore = nonNullable(blocksLeft) ? getUrgencyScore(blocksLeft) : 0;
     const isUrgent = urgencyScore > 0.3;
     const tags: string[] = [];
 
@@ -237,10 +251,35 @@ function cutMarkdown(markdown: string) {
   return result.join(' ') + '...';
 }
 
+type ReferendumAllowanceParams = {
+  referendum: OngoingReferendum;
+  members: Member[];
+};
+
+const isRetentionReferendumAllowed = ({ referendum, members }: ReferendumAllowanceParams) => {
+  const proposerAccountId = referendumService.getProposer(referendum);
+
+  if (!proposerAccountId) {
+    return true;
+  }
+
+  const proposerMember = members.find(member => member.accountId === proposerAccountId);
+  if (!proposerMember) {
+    return true;
+  }
+
+  if (trackService.isRetentionTrack(referendum.track) && memberService.isRetentionRestricted(proposerMember)) {
+    return false;
+  }
+
+  return true;
+};
+
 export const tasksService = {
   getReferendumUserImportanceScore,
   getMaximumAvailableVotingWeight,
   getReferendumImportance,
   getEvidenceImportance,
   cutMarkdown,
+  isRetentionReferendumAllowed,
 };

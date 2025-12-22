@@ -20,7 +20,7 @@ import {
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { type IdenticonIconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
-import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts, useWalletName } from '@/domains/network';
 import { permissionUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy } from '@/features/proxy-add';
@@ -51,6 +51,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   useGate(walletProxiesModel.flow, { wallet });
 
   const { t } = useI18n();
+  const walletName = useWalletName(wallet);
 
   const hasProxies = useUnit(walletProxiesModel.$hasWalletProxies);
   const connected = useUnit(walletConnectReconnect.$connected);
@@ -126,7 +127,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
           {t('walletDetails.common.title')}
         </Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-4 flex items-center justify-between px-5 pt-4 pb-6">
+          <div className="mb-4 flex justify-between px-5 pt-4 pb-6">
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon
@@ -139,7 +140,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
               {!isRenameInputOpen && (
                 <>
                   <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
-                    {wallet.name}
+                    {walletName}
                   </HeadlineText>
                   <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
                     <StatusLabel variant={connected ? 'success' : 'waiting'} />

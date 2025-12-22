@@ -1,9 +1,12 @@
 /* eslint-disable import-x/max-dependencies */
-import { type BN, BN_ZERO } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { t } from 'i18next';
 import { and, debounce, not, or, spread } from 'patronum';
 
-import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
+import { spellXcmService } from '@/shared/api/xcm';
+import { categorizeXcmError } from '@/shared/api/xcm/service/xcm-error-utils';
+import { type Address, type Asset, type Chain, type Transaction } from '@/shared/core';
 import { createSubscription } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import {
@@ -30,17 +33,41 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
+import { type TransactionValidationDryRunError, type TransactionValidationNetworkError } from '@/shared/ui-entities';
 import { type AnyAccount, type BalancePreservation, accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { transferValidator } from '@/features/operations/OperationsValidation';
 import { type NetworkStore } from '../lib/types';
 
-import { xcmTransferModel } from './xcm-transfer-model';
+import { xcmSpellTransferModel } from './xcm-spell-transfer-model';
+
+function normalizeFee(fee: BN | null | undefined): BN {
+  return fee && !fee.isZero() ? fee : BN_ZERO;
+}
+
+function calculateMaxTransferableAmount(
+  availableBalance: BN,
+  originFee: BN | null | undefined,
+  destinationFee: BN | null | undefined,
+): BN {
+  let maxAmount = availableBalance;
+  const normalizedOriginFee = normalizeFee(originFee);
+  const normalizedDestinationFee = normalizeFee(destinationFee);
+
+  if (!normalizedOriginFee.isZero()) {
+    maxAmount = BN.max(BN_ZERO, maxAmount.sub(normalizedOriginFee));
+  }
+  if (!normalizedDestinationFee.isZero()) {
+    maxAmount = BN.max(BN_ZERO, maxAmount.sub(normalizedDestinationFee));
+  }
+
+  return maxAmount;
+}
 
 type FormParams = {
   initiator: AnyAccount | null;
@@ -59,8 +86,8 @@ type FormSubmitEvent = FormParams & {
   route: AnyAccount[];
   destinationChain: Chain;
   fee: BN;
-  xcmFee: BN;
-  deliveryFee: BN;
+  originFee: BN;
+  destinationFee: BN | null;
   multisigDeposit: BN;
   rawAmount: string;
   balancePreservation: BalancePreservation;
@@ -84,6 +111,17 @@ const setMaxMode = createEvent<boolean>();
 const $isMaxModeEnabled = createStore(false)
   .on(setMaxMode, (_, update) => update)
   .reset(formInitiated);
+const $inputMode = $isMaxModeEnabled.map((isMaxModeEnabled) => (isMaxModeEnabled ? 'max' : 'regular'));
+
+const maxModeFinalAmountApplied = createEvent();
+const $hasMaxModeFinalAmountBeenApplied = createStore(false)
+  .on(maxModeFinalAmountApplied, () => true)
+  .reset(formInitiated, setMaxMode.filter({ fn: (enabled) => !enabled }));
+
+const $maxModeAvailableBalanceAfterFees = createStore<BN | null>(null).reset(
+  formInitiated,
+  setMaxMode.filter({ fn: (enabled) => !enabled }),
+);
 
 const $isEdSwitchVisible = createStore(false)
   .on(setMaxMode.filter({ fn: (value) => value }), () => true)
@@ -141,7 +179,7 @@ const form: Form<FormParams> = createForm<FormParams>({
       }),
     },
   },
-  validateOn: ['submit'],
+  validateOn: ['change'],
 });
 
 const $destination = form.fields.destination.$value;
@@ -250,7 +288,7 @@ const $destinationAsset = combine(
     chain: $destinationChain,
     sourceAsset: $asset,
     isXcm: $isXcm,
-    transferDirection: xcmTransferModel.$transferDirection,
+    transferDirection: xcmSpellTransferModel.$transferDirection,
   },
   ({ chain, sourceAsset, isXcm, transferDirection }) => {
     if (isXcm) {
@@ -277,7 +315,7 @@ const $destinationBalance = combine(
   },
 );
 
-const $destinationBalanceEd = $destinationBalance.map((b) => b?.ed);
+const $destinationBalanceEd = $destinationBalance.map((b) => b?.ed ?? null);
 
 const $hasDestinationBalanceError = combine(
   { amount: $amount, accountId: $destinationAccountId, balance: $destinationBalance },
@@ -333,15 +371,19 @@ const $coreTx = combine(
   {
     network: $networkStore,
     isXcm: $isXcm,
-    form: form.$values,
-    xcmData: xcmTransferModel.$xcmData,
+    formValues: form.$values,
+    isFormValid: form.$isValid,
+    xcmData: xcmSpellTransferModel.$xcmData,
     isConnected: $isChainConnected,
     initiator: form.fields.initiator.$value,
-    isExistentialDepositEnabled: $isExistentialDepositEnabled,
-    isMaxModeEnabled: $isMaxModeEnabled,
+    inputMode: $inputMode,
+    balancePreservation: $balancePreservationStrategy,
   },
-  ({ network, isXcm, form, xcmData, isConnected, initiator, isExistentialDepositEnabled, isMaxModeEnabled }) => {
-    if (!network || !initiator || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) {
+  ({ isFormValid, network, isXcm, formValues, xcmData, isConnected, initiator, inputMode, balancePreservation }) => {
+    if (!isFormValid || !network || !initiator || !isConnected || !validateAddress(formValues.destination)) {
+      return null;
+    }
+    if (isXcm && !xcmData) {
       return null;
     }
 
@@ -349,11 +391,11 @@ const $coreTx = combine(
       chain: network.chain,
       asset: network.asset,
       accountId: initiator.accountId,
-      amount: form.amount,
-      destination: form.destination,
-      xcmData,
-      transferAll: isMaxModeEnabled && isExistentialDepositEnabled,
-      allowDeath: !isMaxModeEnabled && isExistentialDepositEnabled,
+      amount: formValues.amount,
+      destination: formValues.destination,
+      xcmData: isXcm ? xcmData : undefined,
+      balancePreservation,
+      inputMode,
     });
   },
 );
@@ -362,7 +404,7 @@ const $mockDestination = combine(
   {
     network: $networkStore,
     isXcm: $isXcm,
-    xcmChain: xcmTransferModel.$xcmChain,
+    xcmChain: xcmSpellTransferModel.$xcmChain,
   },
   ({ isXcm, xcmChain, network }) => {
     if (nullable(network)) {
@@ -377,19 +419,15 @@ const $feeCoreTx = combine(
   {
     network: $networkStore,
     isXcm: $isXcm,
-    xcmData: xcmTransferModel.$xcmData,
+    xcmData: xcmSpellTransferModel.$xcmData,
     isConnected: $isChainConnected,
     initiator: form.fields.initiator.$value,
     mockDestination: $mockDestination,
+    inputMode: $inputMode,
+    balancePreservation: $balancePreservationStrategy,
   },
-  ({ network, isXcm, xcmData, isConnected, initiator, mockDestination }) => {
-    if (
-      nullable(network) ||
-      nullable(initiator) ||
-      nullable(isConnected) ||
-      nullable(mockDestination) ||
-      (isXcm && nullable(xcmData))
-    ) {
+  ({ network, isXcm, xcmData, isConnected, initiator, mockDestination, inputMode, balancePreservation }) => {
+    if (nullable(network) || nullable(initiator) || nullable(isConnected) || nullable(mockDestination) || isXcm) {
       return null;
     }
 
@@ -399,7 +437,9 @@ const $feeCoreTx = combine(
       accountId: initiator.accountId,
       amount: '1',
       destination: mockDestination,
-      xcmData,
+      xcmData: isXcm ? xcmData : undefined,
+      inputMode,
+      balancePreservation,
     });
   },
 );
@@ -414,18 +454,35 @@ const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   feeTransaction: $feeCoreTx,
 });
 
-const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
-
-const $calculationExtrinsic = combine(
+const $networkFee = combine(
   {
-    api: $api,
-    tx: $calculationTx,
+    isXcm: $isXcm,
+    originFee: xcmSpellTransferModel.$originFee,
+    regularFee: $fee,
   },
-  ({ api, tx }) => {
-    if (!api || !tx) return null;
-    return getExtrinsic[tx.type](tx.args, api);
+  ({ isXcm, originFee, regularFee }) => {
+    if (isXcm) {
+      return originFee;
+    }
+    return regularFee;
   },
 );
+
+const $networkFeePending = combine(
+  {
+    isXcm: $isXcm,
+    xcmFeeLoading: xcmSpellTransferModel.$isDestinationFeeLoading,
+    regularFeePending: $pendingFee,
+  },
+  ({ isXcm, xcmFeeLoading, regularFeePending }) => {
+    if (isXcm) {
+      return xcmFeeLoading;
+    }
+    return regularFeePending;
+  },
+);
+
+const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
 
 // validation
 
@@ -450,9 +507,29 @@ const {
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $calculationTx,
-    xcmFee: xcmTransferModel.$xcmFee,
-    deliveryFee: xcmTransferModel.$deliveryFee,
+    originFee: combine(
+      {
+        isXcm: $isXcm,
+        originFee: xcmSpellTransferModel.$originFee,
+      },
+      ({ isXcm, originFee }) => {
+        // For regular transfers, use BN_ZERO so XCM validation rules don't apply
+        return isXcm ? (originFee ?? BN_ZERO) : BN_ZERO;
+      },
+    ),
+    destinationFee: combine(
+      {
+        isXcm: $isXcm,
+        destinationFee: xcmSpellTransferModel.$destinationFee,
+      },
+      ({ isXcm, destinationFee }) => {
+        // For regular transfers, use BN_ZERO so XCM validation rules don't apply
+        return isXcm ? (destinationFee ?? BN_ZERO) : BN_ZERO;
+      },
+    ),
     balancePreservation: $balancePreservationStrategy,
+    excludeActions: combine($isXcm, (isXcm) => (isXcm ? ['fee'] : [])),
+    dryRunResult: xcmSpellTransferModel.$buildTransferDryRunResult,
   },
 });
 
@@ -461,14 +538,14 @@ const errorsDebounced = debounce({
   timeout: 300,
 });
 
-const $errors = createStore($errorsImmediate.defaultState).reset(formInitiated);
+const $validationErrors = createStore($errorsImmediate.defaultState).reset(formInitiated);
 
 sample({
   clock: errorsDebounced,
   source: $validationPending,
   filter: (pending) => !pending,
   fn: (_, errors) => errors,
-  target: $errors,
+  target: $validationErrors,
 });
 
 // available balance
@@ -485,12 +562,37 @@ const $availableBalance = combine(
 );
 
 sample({
+  clock: setMaxMode.filter({ fn: (enabled) => enabled }),
   source: {
     balance: $availableBalance,
     balancePreservationStrategy: $balancePreservationStrategy,
   },
-  fn: ({ balance, balancePreservationStrategy }) => {
+  filter: ({ balance }) => nonNullable(balance),
+  fn: ({ balance, balancePreservationStrategy }) =>
+    balanceService.withdrawableAmount(balance!, balancePreservationStrategy),
+  target: $maxModeAvailableBalanceAfterFees,
+});
+
+sample({
+  source: {
+    balance: $availableBalance,
+    balancePreservationStrategy: $balancePreservationStrategy,
+    isMaxModeEnabled: $isMaxModeEnabled,
+    availableBalanceAfterFees: $maxModeAvailableBalanceAfterFees,
+    hasFinalAmountBeenApplied: $hasMaxModeFinalAmountBeenApplied,
+  },
+  fn: ({
+    balance,
+    balancePreservationStrategy,
+    isMaxModeEnabled,
+    availableBalanceAfterFees,
+    hasFinalAmountBeenApplied,
+  }) => {
     if (nullable(balance)) return null;
+
+    if (isMaxModeEnabled && nonNullable(availableBalanceAfterFees) && hasFinalAmountBeenApplied) {
+      return availableBalanceAfterFees;
+    }
 
     return balanceService.withdrawableAmount(balance, balancePreservationStrategy);
   },
@@ -529,27 +631,33 @@ const $showEDSwitch = combine(
 );
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
-const $isMultisigAccount = $route.map((route) => route.find(accountUtils.isAnyMultisigAccount) ?? null);
+const $multisigAccount = $route.map((route) => route.find(accountUtils.isAnyMultisigAccount) ?? null);
 
 const $destinationChains = combine(
   {
     network: $networkStore,
     chains: networkModel.$chains,
     statuses: networkModel.$connectionStatuses,
-    transferDirections: xcmTransferModel.$transferDirections,
+    transferDirections: xcmSpellTransferModel.$transferDirections,
   },
   ({ network, chains, statuses, transferDirections }) => {
     if (!network || !transferDirections) return [];
 
-    const xcmChains = transferDirections.reduce<Chain[]>((acc, chain) => {
-      const chainId = `0x${chain.destination.chainId}` as ChainId;
-
-      if (statuses[chainId] && networkUtils.isConnectedStatus(statuses[chainId])) {
-        acc.push(chains[chainId]);
-      }
-
-      return acc;
-    }, []);
+    const xcmChains = transferDirections
+      .map((chainName) => {
+        const chain = Object.values(chains).find((chain) => {
+          const spellName = spellXcmService.getSpellChainName(chain);
+          return spellName === chainName;
+        });
+        return chain;
+      })
+      .filter((chain): chain is Chain => {
+        if (!chain) return false;
+        const spellName = spellXcmService.getSpellChainName(chain);
+        if (!spellName) return false;
+        const chainId = chain.chainId;
+        return statuses[chainId] && networkUtils.isConnectedStatus(statuses[chainId]);
+      });
 
     return [network.chain].concat(xcmChains);
   },
@@ -575,18 +683,36 @@ const $isMyselfXcmEnabled = combine(
   ({ isXcm, destinationAccounts }) => isXcm && destinationAccounts.length > 0,
 );
 
+const $isCoreTxReady = $coreTx.map(nonNullable);
+const $isTxReady = $tx.map(nonNullable);
+
+const $areTransactionsReady = and($isCoreTxReady, $isTxReady);
+
+const $hasDryRunError = combine(
+  {
+    isXcm: $isXcm,
+    buildTransferDryRunResult: xcmSpellTransferModel.$buildTransferDryRunResult,
+  },
+  ({ isXcm, buildTransferDryRunResult }) => {
+    if (!isXcm) return false;
+    return buildTransferDryRunResult?.success === false;
+  },
+);
+
 const $canSubmit = and(
   form.$isValid,
   $valid,
   not($hasDestinationBalanceError),
-  or(not($isXcm), not(xcmTransferModel.$isXcmFeeLoading), not(xcmTransferModel.$isDeliveryFeeLoading)),
+  or(not($isXcm), not(xcmSpellTransferModel.$isDestinationFeeLoading)),
+  or(not($isXcm), $areTransactionsReady),
+  or(not($isXcm), not($hasDryRunError)),
 );
 
 // Fields connections
 
 sample({
   clock: formInitiated,
-  target: [form.reset, xcmTransferModel.events.xcmStarted],
+  target: [form.reset, xcmSpellTransferModel.events.xcmStarted, xcmSpellTransferModel.events.xcmStopped],
 });
 
 sample({
@@ -666,7 +792,7 @@ sample({
 sample({
   clock: form.fields.destinationChain.change.filter({ fn: nonNullable }),
   fn: (chain) => chain.chainId,
-  target: xcmTransferModel.events.xcmChainSelected,
+  target: xcmSpellTransferModel.events.xcmChainSelected,
 });
 
 sample({
@@ -681,28 +807,155 @@ sample({
     if (nullable(address)) return null;
     return validateAddress(address) ? toAccountId(address) : null;
   },
-  target: xcmTransferModel.events.destinationChanged,
+  target: xcmSpellTransferModel.events.destinationChanged,
 });
 
 sample({
   clock: form.fields.amount.change,
-  source: $networkStore,
-  filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
-  fn: ({ asset }, amount) => formatAmount(amount, asset.precision),
-  target: xcmTransferModel.events.amountChanged,
+  source: $hasMaxModeFinalAmountBeenApplied,
+  filter: (hasFinalAmountBeenApplied) => !hasFinalAmountBeenApplied,
+  fn: (_, amount) => amount,
+  target: xcmSpellTransferModel.events.rawAmountChanged,
 });
 
-// Max Mode: update amount field when max mode is enabled and available balance changes
 sample({
-  clock: [$available, setMaxMode.filter({ fn: (enabled) => enabled })],
+  clock: form.fields.initiator.change,
+  fn: (initiator) => initiator?.accountId ?? null,
+  target: xcmSpellTransferModel.events.initiatorAccountIdChanged,
+});
+
+sample({
+  clock: setMaxMode.filter({ fn: (enabled) => enabled }),
+  source: {
+    availableBalance: $available,
+    network: $networkStore,
+    isXcm: $isXcm,
+    originFee: xcmSpellTransferModel.$originFee,
+    destinationFee: xcmSpellTransferModel.$destinationFee,
+    asset: $asset,
+  },
+  filter: ({ availableBalance, network, asset }) =>
+    nonNullable(availableBalance) && nonNullable(network) && nonNullable(asset),
+  fn: ({ availableBalance, isXcm, originFee, destinationFee, asset }) => {
+    if (!isXcm) {
+      return toAssetPrecision(availableBalance!, asset!.precision);
+    }
+    const maxTransferableAmount = calculateMaxTransferableAmount(availableBalance!, originFee, destinationFee);
+    return toAssetPrecision(maxTransferableAmount, asset!.precision);
+  },
+  target: form.fields.amount.change,
+});
+
+sample({
+  clock: $available,
   source: {
     isMaxModeEnabled: $isMaxModeEnabled,
-    available: $available,
     network: $networkStore,
+    currentAmountValue: form.fields.amount.$value,
+    isRegularFeePending: $networkFeePending,
+    isXcm: $isXcm,
+    isXcmFeeLoading: xcmSpellTransferModel.$isDestinationFeeLoading,
+    isValidationPending: $validationPending,
+    hasFinalAmountBeenApplied: $hasMaxModeFinalAmountBeenApplied,
+    originFee: xcmSpellTransferModel.$originFee,
+    destinationFee: xcmSpellTransferModel.$destinationFee,
+    asset: $asset,
   },
-  filter: ({ isMaxModeEnabled, available, network }) =>
-    isMaxModeEnabled && nonNullable(available) && nonNullable(network),
-  fn: ({ available, network }) => toAssetPrecision(available!, network!.asset.precision),
+  filter: (
+    {
+      isMaxModeEnabled,
+      network,
+      currentAmountValue,
+      isRegularFeePending,
+      isXcm,
+      isXcmFeeLoading,
+      isValidationPending,
+      hasFinalAmountBeenApplied,
+      originFee,
+      destinationFee,
+      asset,
+    },
+    availableBalance,
+  ) => {
+    if (!isMaxModeEnabled || nullable(network) || nullable(availableBalance) || nullable(asset)) return false;
+    if (hasFinalAmountBeenApplied) return false;
+    const isAnyFeePending = isXcm ? isXcmFeeLoading : isRegularFeePending;
+    if (isAnyFeePending || isValidationPending) return false;
+    if (!isXcm) {
+      const newAmountValue = toAssetPrecision(availableBalance!, asset!.precision);
+      return currentAmountValue !== newAmountValue;
+    }
+    const maxTransferableAmount = calculateMaxTransferableAmount(availableBalance!, originFee, destinationFee);
+    if (maxTransferableAmount.isZero() && !availableBalance!.isZero()) {
+      return false;
+    }
+    const newAmountValue = toAssetPrecision(maxTransferableAmount, asset!.precision);
+    return currentAmountValue !== newAmountValue;
+  },
+  fn: ({ isXcm, originFee, destinationFee, asset, currentAmountValue }, availableBalance) => {
+    if (!isXcm) {
+      return toAssetPrecision(availableBalance!, asset!.precision);
+    }
+    const maxTransferableAmount = calculateMaxTransferableAmount(availableBalance!, originFee, destinationFee);
+    if (maxTransferableAmount.isZero() && !availableBalance!.isZero()) {
+      return currentAmountValue;
+    }
+    return toAssetPrecision(maxTransferableAmount, asset!.precision);
+  },
+  target: form.fields.amount.change,
+});
+
+const xcmFeesCalculatedForMaxMode = createEvent<{
+  availableBalanceAfterFees: BN;
+  maxTransferableAmountFormatted: string;
+}>();
+
+sample({
+  clock: [xcmSpellTransferModel.$originFee, xcmSpellTransferModel.$destinationFee],
+  source: {
+    isMaxModeEnabled: $isMaxModeEnabled,
+    isXcm: $isXcm,
+    isXcmFeeLoading: xcmSpellTransferModel.$isDestinationFeeLoading,
+    isRegularFeePending: $networkFeePending,
+    balance: $availableBalance,
+    balancePreservationStrategy: $balancePreservationStrategy,
+    network: $networkStore,
+    asset: $asset,
+    originFee: xcmSpellTransferModel.$originFee,
+    destinationFee: xcmSpellTransferModel.$destinationFee,
+  },
+  filter: ({ isMaxModeEnabled, isXcm, isXcmFeeLoading, isRegularFeePending, balance, network, asset }) => {
+    if (!isMaxModeEnabled || !isXcm || nullable(balance) || nullable(network) || nullable(asset)) return false;
+    return !isXcmFeeLoading && !isRegularFeePending;
+  },
+  fn: ({ balance, balancePreservationStrategy, originFee, destinationFee, asset }) => {
+    const availableBalanceAfterFees = balanceService.withdrawableAmount(balance!, balancePreservationStrategy);
+    const maxTransferableAmount = calculateMaxTransferableAmount(availableBalanceAfterFees, originFee, destinationFee);
+
+    return {
+      availableBalanceAfterFees,
+      maxTransferableAmountFormatted: toAssetPrecision(maxTransferableAmount, asset!.precision),
+    };
+  },
+  target: xcmFeesCalculatedForMaxMode,
+});
+
+sample({
+  clock: xcmFeesCalculatedForMaxMode,
+  fn: ({ availableBalanceAfterFees }) => availableBalanceAfterFees,
+  target: $maxModeAvailableBalanceAfterFees,
+});
+
+sample({
+  clock: xcmFeesCalculatedForMaxMode,
+  target: maxModeFinalAmountApplied,
+});
+
+sample({
+  clock: xcmFeesCalculatedForMaxMode,
+  source: $hasMaxModeFinalAmountBeenApplied,
+  filter: (hasFinalAmountBeenApplied) => hasFinalAmountBeenApplied,
+  fn: (_, { maxTransferableAmountFormatted }) => maxTransferableAmountFormatted,
   target: form.fields.amount.change,
 });
 
@@ -718,13 +971,27 @@ const formSubmitFinished = sample({
     coreTx: $coreTx,
     tx: $tx,
     fee: $fee,
-    xcmFee: xcmTransferModel.$xcmFee,
-    deliveryFee: xcmTransferModel.$deliveryFee,
+    isXcm: $isXcm,
+    originFee: xcmSpellTransferModel.$originFee,
+    destinationFee: xcmSpellTransferModel.$destinationFee,
     multisigDeposit: $multisigDeposit,
     balancePreservation: $balancePreservationStrategy,
   },
   fn: (
-    { chain, initiator, network, route, coreTx, tx, multisigDeposit, fee, xcmFee, deliveryFee, balancePreservation },
+    {
+      chain,
+      initiator,
+      network,
+      route,
+      coreTx,
+      tx,
+      multisigDeposit,
+      fee,
+      isXcm,
+      originFee,
+      destinationFee,
+      balancePreservation,
+    },
     form,
   ) => {
     if (
@@ -750,8 +1017,8 @@ const formSubmitFinished = sample({
       multisigDeposit,
       route,
       fee,
-      xcmFee,
-      deliveryFee: deliveryFee,
+      originFee: isXcm ? (originFee ?? BN_ZERO) : BN_ZERO,
+      destinationFee: isXcm ? (destinationFee ?? null) : null,
       balancePreservation,
     } satisfies FormSubmitEvent;
   },
@@ -762,11 +1029,92 @@ sample({
   target: formSubmitted,
 });
 
-sample({
-  clock: $calculationExtrinsic,
-  filter: nonNullable,
-  target: xcmTransferModel.events.deliveryFeeRequested,
-});
+const $hasAmountAndAddress = combine(
+  {
+    amount: form.fields.amount.$value,
+    destination: form.fields.destination.$value,
+  },
+  ({ amount, destination }) => {
+    return Boolean(amount && destination && validateAddress(destination));
+  },
+);
+
+const $errors = combine(
+  {
+    validationErrors: $validationErrors,
+    hasAmountAndAddress: $hasAmountAndAddress,
+    isChainConnected: $isChainConnected,
+    isFormValid: form.$isValid,
+    network: $networkStore,
+    buildTransferDryRunResult: xcmSpellTransferModel.$buildTransferDryRunResult,
+    xcmChain: xcmSpellTransferModel.$xcmChain,
+  },
+  ({
+    validationErrors,
+    hasAmountAndAddress,
+    isChainConnected,
+    isFormValid,
+    network,
+    buildTransferDryRunResult,
+    xcmChain,
+  }) => {
+    const result: (
+      | (typeof validationErrors)[number]
+      | TransactionValidationNetworkError
+      | TransactionValidationDryRunError
+    )[] = [...validationErrors];
+
+    if (validationErrors.length > 0) return result;
+    if (!hasAmountAndAddress || !isFormValid) return result;
+
+    if (!isChainConnected && network) {
+      result.push({
+        networkError: true,
+        message: t('transfer.networkConnectionError', { network: network.chain.name }),
+      });
+      return result;
+    }
+
+    if (buildTransferDryRunResult?.success === false && isChainConnected) {
+      const failureReason = buildTransferDryRunResult.failureReason || '';
+      const errorInfo = categorizeXcmError(failureReason);
+
+      if (!errorInfo.isInsufficientBalance) {
+        result.push({
+          dryRunError: true,
+          failureReason,
+          failureChain: buildTransferDryRunResult.failureChain,
+          chainName: xcmChain?.name,
+        });
+      }
+    }
+
+    return result;
+  },
+);
+
+const $isPreparingTransaction = combine(
+  {
+    hasAmountAndAddress: $hasAmountAndAddress,
+    isFormValid: form.$isValid,
+    isXcm: $isXcm,
+    isDestinationFeeLoading: xcmSpellTransferModel.$isDestinationFeeLoading,
+    pendingFee: $networkFeePending,
+    coreTx: $coreTx,
+    tx: $tx,
+    xcmData: xcmSpellTransferModel.$xcmData,
+  },
+  ({ hasAmountAndAddress, isFormValid, isXcm, isDestinationFeeLoading, pendingFee, coreTx, tx, xcmData }) => {
+    if (!hasAmountAndAddress || !isFormValid) return false;
+
+    if (isXcm && !xcmData) return true;
+    if (isXcm && isDestinationFeeLoading) return true;
+    if (!isXcm && pendingFee) return true;
+    if (!coreTx || !tx) return true;
+
+    return false;
+  },
+);
 
 export const formModel = {
   form,
@@ -779,7 +1127,7 @@ export const formModel = {
   $signatoryBalance,
 
   $proxyAccount,
-  $multisigAccount: $isMultisigAccount,
+  $multisigAccount,
 
   $isMyselfXcmEnabled,
   $isMyselfXcmOpened,
@@ -790,11 +1138,11 @@ export const formModel = {
   $destinationBalanceEd,
   $hasDestinationBalanceError,
 
-  $fee,
-  $pendingFee,
+  $fee: $networkFee,
+  $pendingFee: $networkFeePending,
   $multisigDeposit,
-  $xcmFee: xcmTransferModel.$xcmFee,
-  $deliveryFee: xcmTransferModel.$deliveryFee,
+  $originFee: xcmSpellTransferModel.$originFee,
+  $destinationFee: xcmSpellTransferModel.$destinationFee,
 
   $coreTx,
   $feeTx,
@@ -808,14 +1156,15 @@ export const formModel = {
 
   $errors,
 
-  $xcmConfig: xcmTransferModel.$config,
-  $xcmApi: xcmTransferModel.$apiDestination,
+  $xcmApi: xcmSpellTransferModel.$apiDestination,
 
   $isExistentialDepositEnabled,
   $isMaxModeEnabled,
   $showEDSwitch,
   $showAccountDeathAlert,
   $isNative,
+
+  $isPreparingTransaction,
 
   formInitiated,
   formCleared: form.reset,
@@ -825,8 +1174,6 @@ export const formModel = {
   xcmDestinationCancelled,
 
   multisigDepositChanged,
-  isXcmFeeLoadingChanged: xcmTransferModel.events.isXcmFeeLoadingChanged,
-  xcmFeeChanged: xcmTransferModel.events.xcmFeeChanged,
 
   formSubmitted,
 

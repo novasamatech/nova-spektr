@@ -1,4 +1,5 @@
 import { createFeature } from '@/shared/feature';
+import { nullable } from '@/shared/lib/utils';
 import { isEditFlexibleTransaction } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
@@ -14,9 +15,14 @@ multisigOperationsSDK(flexibleOperationDetailFeature, {
       return 'proxyMst';
     }
   },
-  title({ operation }) {
+  title({ operation, t }) {
+    if (nullable(operation) || nullable(t)) return null;
+
     if (isEditFlexibleTransaction(operation.transaction)) {
-      return <FlexibleOperationTitle operation={operation} title="operations.titles.editFlexible" />;
+      return {
+        title: t('operations.titles.editFlexible'),
+        sourceChainId: operation.chainId,
+      };
     }
   },
   logTitle({ operation }) {

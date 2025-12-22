@@ -25,9 +25,12 @@ export { CollectiveReferendumVoteChart } from './CollectiveReferendumVoteChart/C
 export { SignatorySelect } from './SignatorySelect/SignatorySelect';
 export { Identicon, type IdenticonIconTheme } from './Identicon/Identicon';
 export { WalletIcon } from './WalletIcon/WalletIcon';
+export { VotingButtonWithTooltip } from './VotingButtonWithTooltip/VotingButtonWithTooltip';
 export {
   TransactionValidationError,
-  type TransactionValidationFatalError,
   type TransactionValidationBalanceError,
+  type TransactionValidationDryRunError,
+  type TransactionValidationFatalError,
+  type TransactionValidationNetworkError,
   type TransactionValidationPermissionError,
 } from './TransactionValidationError/TransactionValidationError';

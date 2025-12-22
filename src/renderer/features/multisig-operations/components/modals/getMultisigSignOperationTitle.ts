@@ -16,6 +16,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.TRANSFER_ALL]: crossChain => `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
   [TransactionType.TRANSFER_ALLOW_DEATH]: crossChain =>
     `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.VESTED_TRANSFER]: () => `operations.modalTitles.vestedTransfer`,
   [TransactionType.MULTISIG_AS_MULTI]: () => 'operations.modalTitles.approveMultisig',
   [TransactionType.MULTISIG_APPROVE_AS_MULTI]: () => 'operations.modalTitles.approveMultisig',
   [TransactionType.MULTISIG_CANCEL_AS_MULTI]: () => 'operations.modalTitles.cancelMultisig',
@@ -30,6 +31,16 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: crossChain =>
     `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
   [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: crossChain =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.POLKADOT_XCM_RESERVE_WITHDRAW]: crossChain =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: crossChain =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: crossChain =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.XTOKENS_TRANSFER]: crossChain =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSETS]: crossChain =>
     `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
   // Staking
   [TransactionType.BOND]: () => 'operations.modalTitles.startStakingOn',

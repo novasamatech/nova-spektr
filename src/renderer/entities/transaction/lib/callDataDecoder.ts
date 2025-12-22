@@ -4,7 +4,6 @@ import { type Type } from '@polkadot/types';
 import { type Call } from '@polkadot/types/interfaces';
 import { type HexString } from '@polkadot/util/types';
 
-import { xcmService } from '@/shared/api/xcm';
 import { type CallData, type Chain, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -17,6 +16,7 @@ import {
   PROXY_SECTION,
   STAKING_SECTION,
   TRANSFER_SECTIONS,
+  VESTING_SECTION,
   XCM_SECTIONS,
 } from './common/constants';
 
@@ -221,6 +221,17 @@ const getCallDataParser: Record<
       value: decoded.args[1].toString(),
     };
   },
+  [TransactionType.VESTED_TRANSFER]: (decoded): Record<string, any> => {
+    const schedule = decoded.args[1] as any;
+    return {
+      target: decoded.args[0].toString(),
+      schedule: {
+        locked: schedule.locked.toString(),
+        perBlock: schedule.perBlock.toString(),
+        startingBlock: schedule.startingBlock.toString(),
+      },
+    };
+  },
   [TransactionType.ASSET_TRANSFER]: (decoded): Record<string, any> => {
     return {
       assetId: decoded.args[0].toString(),
@@ -235,58 +246,92 @@ const getCallDataParser: Record<
       value: decoded.args[2].toString(),
     };
   },
-  [TransactionType.XCM_LIMITED_TRANSFER]: (decoded, chainId, chains): Record<string, any> => {
-    const parsedData = xcmService.parseXcmPalletExtrinsic({
-      dest: decoded.args[0].toHuman(),
-      beneficiary: decoded.args[1].toHuman(),
-      assets: decoded.args[2].toHuman(),
-    });
-
-    return xcmService.decodeXcm(chainId, chains, parsedData);
+  [TransactionType.XCM_LIMITED_TRANSFER]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      beneficiary: decoded.args[1].toString(),
+      assets: decoded.args[2].toString(),
+    };
   },
-  [TransactionType.XCM_TELEPORT]: (decoded, chainId, chains): Record<string, any> => {
-    const parsedData = xcmService.parseXcmPalletExtrinsic({
-      dest: decoded.args[0].toHuman(),
-      beneficiary: decoded.args[1].toHuman(),
-      assets: decoded.args[2].toHuman(),
-    });
-
-    return xcmService.decodeXcm(chainId, chains, parsedData);
+  [TransactionType.XCM_TELEPORT]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      beneficiary: decoded.args[1].toString(),
+      assets: decoded.args[2].toString(),
+    };
   },
-  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (decoded, chainId, chains): Record<string, any> => {
-    const parsedData = xcmService.parseXcmPalletExtrinsic({
-      dest: decoded.args[0].toHuman(),
-      beneficiary: decoded.args[1].toHuman(),
-      assets: decoded.args[2].toHuman(),
-    });
-
-    return xcmService.decodeXcm(chainId, chains, parsedData);
+  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      beneficiary: decoded.args[1].toString(),
+      assets: decoded.args[2].toString(),
+    };
   },
-  [TransactionType.POLKADOT_XCM_TELEPORT]: (decoded, chainId, chains): Record<string, any> => {
-    const parsedData = xcmService.parseXcmPalletExtrinsic({
-      dest: decoded.args[0].toHuman(),
-      beneficiary: decoded.args[1].toHuman(),
-      assets: decoded.args[2].toHuman(),
-    });
-
-    return xcmService.decodeXcm(chainId, chains, parsedData);
+  [TransactionType.POLKADOT_XCM_TELEPORT]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      beneficiary: decoded.args[1].toString(),
+      assets: decoded.args[2].toString(),
+    };
   },
-  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: (decoded, chainId, chains): Record<string, any> => {
-    const parsedData = xcmService.parseXcmPalletExtrinsic({
-      dest: decoded.args[0].toHuman(),
-      beneficiary: decoded.args[1].toHuman(),
-      assets: decoded.args[2].toHuman(),
-    });
-
-    return xcmService.decodeXcm(chainId, chains, parsedData);
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      beneficiary: decoded.args[1].toString(),
+      assets: decoded.args[2].toString(),
+    };
   },
-  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (decoded, chainId, chains): Record<string, any> => {
-    const parsedData = xcmService.parseXTokensExtrinsic({
-      asset: decoded.args[0].toHuman(),
-      dest: decoded.args[1].toHuman(),
-    });
-
-    return xcmService.decodeXcm(chainId, chains, parsedData);
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (decoded): Record<string, any> => {
+    return {
+      asset: decoded.args[0].toString(),
+      dest: decoded.args[1].toString(),
+    };
+  },
+  [TransactionType.POLKADOT_XCM_RESERVE_WITHDRAW]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      beneficiary: decoded.args[1].toString(),
+      assets: decoded.args[2].toString(),
+      feeAssetItem: decoded.args[3].toString(),
+    };
+  },
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      assets: decoded.args[1].toString(),
+      assetsTransferType: decoded.args[2].toString(),
+      remoteFeesId: decoded.args[3].toString(),
+      feesTransferType: decoded.args[4].toString(),
+      customXcmOnDest: decoded.args[5].toString(),
+      weightLimit: decoded.args[6].toString(),
+    };
+  },
+  [TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      assets: decoded.args[1].toString(),
+      assetsTransferType: decoded.args[2].toString(),
+      remoteFeesId: decoded.args[3].toString(),
+      feesTransferType: decoded.args[4].toString(),
+      customXcmOnDest: decoded.args[5].toString(),
+      weightLimit: decoded.args[6].toString(),
+    };
+  },
+  [TransactionType.XTOKENS_TRANSFER]: (decoded): Record<string, any> => {
+    return {
+      currencyId: decoded.args[0].toString(),
+      amount: decoded.args[1].toString(),
+      dest: decoded.args[2].toString(),
+      destWeightLimit: decoded.args[3]?.toString(),
+    };
+  },
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSETS]: (decoded): Record<string, any> => {
+    return {
+      assets: decoded.args[0].toString(),
+      feeItem: decoded.args[1]?.toString(),
+      dest: decoded.args[2].toString(),
+      destWeightLimit: decoded.args[3]?.toString(),
+    };
   },
   [TransactionType.BOND]: (decoded): Record<string, any> => {
     const args: Record<string, any> = {};
@@ -515,8 +560,18 @@ export const getTransactionType = (method: string, section: string): Transaction
   const multisigType = getMultisigTxType(method, section);
   const governanceType = getGovernanceTxType(method, section);
   const collectiveType = getCollectiveTxType(method, section);
+  const vestingType = getVestingTxType(method, section);
 
-  return transferType || stakingType || xcmType || proxyType || multisigType || governanceType || collectiveType;
+  return (
+    transferType ||
+    stakingType ||
+    xcmType ||
+    proxyType ||
+    multisigType ||
+    governanceType ||
+    collectiveType ||
+    vestingType
+  );
 };
 
 const getTransferTxType = (method: string, section: string): TransactionType | undefined => {
@@ -554,6 +609,7 @@ const getXcmTxType = (method: string, section: string): TransactionType | undefi
     return {
       limitedReserveTransferAssets: TransactionType.XCM_LIMITED_TRANSFER,
       limitedTeleportAssets: TransactionType.XCM_TELEPORT,
+      transferAssetsUsingTypeAndThen: TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN,
     }[method];
   }
 
@@ -561,11 +617,18 @@ const getXcmTxType = (method: string, section: string): TransactionType | undefi
     return {
       limitedReserveTransferAssets: TransactionType.POLKADOT_XCM_LIMITED_TRANSFER,
       limitedTeleportAssets: TransactionType.POLKADOT_XCM_TELEPORT,
+      transferAssets: TransactionType.POLKADOT_XCM_TRANSFER_ASSETS,
+      reserveTransferAssets: TransactionType.POLKADOT_XCM_RESERVE_WITHDRAW,
+      transferAssetsUsingTypeAndThen: TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN,
     }[method];
   }
 
-  if (method === 'transferMultiasset' && section === 'xTokens') {
-    return TransactionType.XTOKENS_TRANSFER_MULTIASSET;
+  if (section === 'xTokens') {
+    return {
+      transferMultiasset: TransactionType.XTOKENS_TRANSFER_MULTIASSET,
+      transfer: TransactionType.XTOKENS_TRANSFER,
+      transferMultiassets: TransactionType.XTOKENS_TRANSFER_MULTIASSETS,
+    }[method];
   }
 
   return undefined;
@@ -611,5 +674,13 @@ const getCollectiveTxType = (method: string, section: string): TransactionType |
   return {
     vote: TransactionType.COLLECTIVE_VOTE,
     set_active: TransactionType.COLLECTIVE_SET_ACTIVE,
+  }[method];
+};
+
+const getVestingTxType = (method: string, section: string): TransactionType | undefined => {
+  if (VESTING_SECTION !== section) return;
+
+  return {
+    vestedTransfer: TransactionType.VESTED_TRANSFER,
   }[method];
 };

@@ -1,3 +1,4 @@
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { and, not, spread } from 'patronum';
 
@@ -5,6 +6,7 @@ import { type Asset, type Chain } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
+  fromPrecision,
   getRelaychainAsset,
   nonNullable,
   nullable,
@@ -20,6 +22,7 @@ import {
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { stakingResource, stakingUtils } from '@/entities/staking';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -36,6 +39,11 @@ const formInitiated = createEvent<WalletData>();
 const formSubmitted = createEvent();
 const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
+
+const setReuseLockMode = createEvent<boolean>();
+const $isReuseLockModeEnabled = createStore(false)
+  .on(setReuseLockMode, (_, update) => update)
+  .reset(formInitiated);
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 const $chain = $networkStore.map((network) => network?.chain ?? null);
@@ -70,7 +78,6 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
 });
-// Computed
 
 const $initiatorBalance = combine(
   {
@@ -84,16 +91,12 @@ const $initiatorBalance = combine(
 
     const { chain, asset } = network;
 
-    const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
-
-    return balance ? reservableAmountBN(balance) : null;
+    return balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
   },
 );
 
-const $bondBalanceRange = combine($initiatorBalance, (initiatorBalance) => {
-  if (!initiatorBalance || initiatorBalance.isZero()) return ZERO_BALANCE;
-
-  return [ZERO_BALANCE, initiatorBalance];
+const $reservableAmount = $initiatorBalance.map((initiatorBalance) => {
+  return initiatorBalance ? reservableAmountBN(initiatorBalance) : null;
 });
 
 const $api = combine(
@@ -110,13 +113,31 @@ const $coreTx = combine(
     formParams: form.$values,
   },
   ({ network, formParams }) => {
-    if (!formParams || !formParams.signatory) return null;
+    if (!formParams || !formParams.signatory || !formParams.amount) return null;
 
     return transactionBuilder.buildBondExtra({
       chain: network!.chain,
       asset: network!.asset,
       accountId: formParams.signatory.accountId,
       amount: formParams.amount,
+    });
+  },
+);
+
+const $feeTx = combine(
+  {
+    network: $networkStore,
+    signatory: form.fields.signatory.$value,
+    reservableAmount: $reservableAmount,
+  },
+  ({ network, signatory, reservableAmount }) => {
+    if (!signatory || !reservableAmount || !network) return null;
+
+    return transactionBuilder.buildBondExtra({
+      chain: network.chain,
+      asset: network.asset,
+      accountId: signatory.accountId,
+      amount: fromPrecision(reservableAmount, network.asset.precision),
     });
   },
 );
@@ -128,6 +149,34 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: $chain,
   transaction: $coreTx,
+  feeTransaction: $feeTx,
+});
+
+const $available = combine({ reservableAmount: $reservableAmount, fee: $fee }).map(({ reservableAmount, fee }) => {
+  if (nullable(reservableAmount) || nullable(fee)) return null;
+
+  const available = reservableAmount.sub(fee);
+  return BN.max(BN_ZERO, available);
+});
+
+const $bondBalanceRange = combine($available, (available) => {
+  if (!available || available.isZero()) return ZERO_BALANCE;
+
+  return [ZERO_BALANCE, available];
+});
+
+const $reusableLock = combine({
+  balance: $initiatorBalance,
+  available: $available,
+  initiator: form.fields.initiator.$value,
+}).map(({ balance, available, initiator }) => {
+  if (nullable(balance) || nullable(available) || nullable(initiator)) {
+    return null;
+  }
+
+  const reusableLock = stakingUtils.reusableLockBN(balance);
+
+  return BN.min(available, reusableLock);
 });
 
 // Transaction validation
@@ -221,6 +270,23 @@ sample({
 
 sample({
   clock: formInitiated,
+  source: {
+    networkStore: $networkStore,
+    api: $api,
+  },
+  filter: ({ networkStore, api }, { initiator }) => {
+    return Boolean(networkStore) && Boolean(api) && nonNullable(initiator);
+  },
+  fn: ({ networkStore, api }, { initiator }) => ({
+    chainId: networkStore!.chain.chainId,
+    api: api!,
+    accounts: [initiator!.accountId],
+  }),
+  target: stakingResource.subscribe,
+});
+
+sample({
+  clock: formInitiated,
   source: $signatories,
   filter: (signatories) => signatories.length === 1,
   fn: (signatories) => signatories.at(0) ?? null,
@@ -239,6 +305,19 @@ sample({
   target: form.fields.initiator.setErrors,
 });
 
+sample({
+  clock: [$reusableLock, setReuseLockMode.filter({ fn: (enabled) => enabled })],
+  source: {
+    isReuseLockModeEnabled: $isReuseLockModeEnabled,
+    reusableLock: $reusableLock,
+    network: $networkStore,
+  },
+  filter: ({ isReuseLockModeEnabled, reusableLock, network }) =>
+    isReuseLockModeEnabled && nonNullable(reusableLock) && nonNullable(network),
+  fn: ({ reusableLock, network }) => fromPrecision(reusableLock!, network!.asset.precision),
+  target: form.fields.amount.change,
+});
+
 // Submit
 
 sample({
@@ -255,8 +334,13 @@ sample({
 });
 
 sample({
+  clock: formSubmitted,
+  target: stakingResource.unsubscribe,
+});
+
+sample({
   clock: formCleared,
-  target: [form.reset],
+  target: [form.reset, stakingResource.unsubscribe],
 });
 
 export const formModel = {
@@ -268,6 +352,7 @@ export const formModel = {
   $bondBalanceRange,
   $proxyBalance,
   $proxiedAccount,
+  $reusableLock,
 
   $fee,
   $multisigDeposit,
@@ -282,6 +367,8 @@ export const formModel = {
   $isMultisig,
   $canSubmit,
   $errors,
+
+  setReuseLockMode,
 
   events: {
     formInitiated,

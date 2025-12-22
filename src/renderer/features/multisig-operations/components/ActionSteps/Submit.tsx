@@ -106,7 +106,7 @@ export const Submit = ({ api, tx, operation, account, txPayload, signature, isRe
     }
     if (errorMessage) {
       return {
-        title: t('operation.feeErrorTitle'),
+        title: t('operation.submitError'),
         content: <Animation variant="error" />,
         description: errorMessage,
       };

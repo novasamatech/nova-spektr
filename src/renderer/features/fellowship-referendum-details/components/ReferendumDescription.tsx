@@ -1,52 +1,57 @@
-import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
-import { type Referendum, trackService } from '@/domains/collectives';
-import { details } from '../model/details';
+import { type Evidence, type Referendum, trackService } from '@/domains/collectives';
+import { useEvidenceContent } from '../hooks/useEvidenceContent';
+import { useMetadata } from '../hooks/useMetadata';
 
 import { AdditionalContext } from './AdditionalContext';
 import { Card } from './Card';
+import { ConnectedGovernanceReferendum } from './ConnectedGovernanceReferendum';
 
 type Props = {
   referendum: Referendum | null;
+  evidence: Evidence | null;
 };
 
-export const ReferendumDescription = memo(({ referendum }: Props) => {
-  useFlow(details.flow, { referendum });
-
-  const referendumMeta = useUnit(details.$referendumMeta);
-  const pendingEvidence = useUnit(details.$pendingEvidence);
-  const evidence = useUnit(details.$evidence);
+export const ReferendumDescription = memo(({ referendum, evidence }: Props) => {
+  const { data: referendumMeta } = useMetadata(referendum);
+  const { data: evidenceContent, pending: pendingEvidenceContent } = useEvidenceContent({ referendum, evidence });
 
   const canHaveEvidence =
     nonNullable(referendum) &&
     nonNullable(referendumMeta) &&
     (trackService.isPromotionTrack(referendumMeta.track) || trackService.isRetentionTrack(referendumMeta.track));
 
-  const shouldRenderEvidence = nonNullable(evidence) && !pendingEvidence;
-  const shouldRenderEvidencePending = canHaveEvidence && nullable(evidence) && pendingEvidence;
-  const shouldRenderEvidenceAlert = canHaveEvidence && nullable(evidence) && !pendingEvidence;
+  const shouldRenderEvidence = nonNullable(evidenceContent) && !pendingEvidenceContent;
+  const shouldRenderEvidencePending = canHaveEvidence && nullable(evidenceContent) && pendingEvidenceContent;
+  const shouldRenderEvidenceAlert = canHaveEvidence && nullable(evidenceContent) && !pendingEvidenceContent;
 
   return (
-    <div className="flex h-full flex-col">
-      {shouldRenderEvidencePending ? <Skeleton height="16lh" width="100%" /> : null}
+    <div className="flex h-full flex-col gap-4">
+      {shouldRenderEvidencePending ? (
+        <Card>
+          <Box padding={6}>
+            <Skeleton height="16lh" width="100%" />
+          </Box>
+        </Card>
+      ) : null}
       {shouldRenderEvidence ? (
         <Card>
           <Box padding={6}>
-            <Markdown>{evidence.content ?? ''}</Markdown>
+            <Markdown>{evidenceContent.content ?? ''}</Markdown>
           </Box>
         </Card>
       ) : null}
 
       {shouldRenderEvidenceAlert ? <NoEvidence /> : null}
 
+      {nonNullable(referendum) && <ConnectedGovernanceReferendum referendum={referendum} />}
       <div className="flex-1">
-        <AdditionalContext />
+        <AdditionalContext referendum={referendum} />
       </div>
     </div>
   );

@@ -6,7 +6,15 @@ import { and, not, spread } from 'patronum';
 
 import { type ChainId, type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
-import { getNativeAsset, keys, nonNullable, nullable, toAccountId, withdrawableAmountBN } from '@/shared/lib/utils';
+import {
+  assert,
+  getNativeAsset,
+  keys,
+  nonNullable,
+  nullable,
+  toAccountId,
+  withdrawableAmountBN,
+} from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathType, Paths } from '@/shared/routes';
@@ -140,13 +148,15 @@ const $coreTx = combine(
   ({ signatory, proxiedAccount, data, isPureProxiedNeedToBeKilled, chain }) => {
     if (!signatory || !data || !proxiedAccount || !chain) return null;
     if (isPureProxiedNeedToBeKilled) {
+      assert(proxiedAccount.spawner, 'spawner is required');
+
       return transactionBuilder.buildKillPureProxy({
         chain,
         accountId: signatory.accountId,
-        spawner: data.spawner,
+        spawner: proxiedAccount.spawner,
         proxyType: data.proxyType,
         index: 0,
-        height: proxiedAccount.blockNumber,
+        height: proxiedAccount.entropyBlockNumber,
         extIndex: proxiedAccount.extrinsicIndex,
       });
     }
@@ -277,7 +287,7 @@ sample({
       chain,
       proxyAccount: proxy,
       proxiedAccount: proxied,
-      spawner: proxy.accountId,
+      spawner: proxied.spawner!,
       proxyType: proxy.proxyType,
     } satisfies RemoveProxyStore;
   },
@@ -301,7 +311,9 @@ sample({
   source: {
     api: $removeProxyStore.map((store) => store?.api ?? null),
   },
-  filter: ({ api }, { proxied }) => nonNullable(proxied) && nonNullable(api),
+  filter: ({ api }, { proxied }) => {
+    return nonNullable(proxied) && nonNullable(api);
+  },
   fn: ({ api }, { proxied }) => {
     return {
       api: api!,
@@ -356,7 +368,7 @@ const confirmEvent = sample({
         chain: chain,
         tx,
         coreTx,
-        spawner: toAccountId(removeProxyStore.spawner),
+        spawner: removeProxyStore.spawner ? toAccountId(removeProxyStore.spawner) : undefined,
         delegate: toAccountId(removeProxyStore.proxyAccount.accountId),
         proxyType: removeProxyStore.proxyType,
         fee: fee.toString(),
@@ -409,34 +421,21 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
-  source: {
-    removeProxyStore: $removeProxyStore,
-    wrappedTx: $tx,
-    coreTx: $coreTx,
-    account: $proxiedAccount,
-  },
-  filter: (proxyData) => {
-    return nonNullable(proxyData.removeProxyStore) && nonNullable(proxyData.wrappedTx) && nonNullable(proxyData.coreTx);
-  },
-  fn: ({ account, removeProxyStore, wrappedTx, coreTx }, signParams) => ({
-    event: {
-      ...signParams,
-      chain: removeProxyStore!.chain,
-      account: account!,
-      wrappedTxs: [wrappedTx!],
-      coreTxs: [coreTx!],
-    },
+  clock: signModel.signed,
+  source: $step,
+  filter: (step) => step !== Step.NONE,
+  fn: (_, signatureResult) => ({
+    event: signatureResult,
     step: Step.SUBMIT,
   }),
   target: spread({
-    event: submitModel.events.formInitiated,
+    event: submitModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: {
     step: $step,
     chain: $chain,
@@ -444,8 +443,14 @@ sample({
     proxy: $proxyAccount,
     chainProxies: $chainProxies,
   },
-  filter: ({ step, chain, proxied, proxy }) => {
-    return removeProxyUtils.isSubmitStep(step) && nonNullable(chain) && nonNullable(proxied) && nonNullable(proxy);
+  filter: ({ step, chain, proxied, proxy, chainProxies }) => {
+    return (
+      removeProxyUtils.isSubmitStep(step) &&
+      nonNullable(chain) &&
+      nonNullable(proxied) &&
+      nonNullable(proxy) &&
+      nonNullable(chainProxies)
+    );
   },
   fn: ({ chainProxies, proxied, proxy, chain }) => {
     const proxyToRemove = chainProxies[chain!.chainId].find(
@@ -461,7 +466,7 @@ sample({
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: {
     step: $step,
     wallet: $wallet,
@@ -507,7 +512,7 @@ sample({
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: $isMultisig,
   filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
@@ -515,7 +520,7 @@ sample({
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: $removeProxyStore,
   filter: (removeProxyStore, results) =>
     nonNullable(removeProxyStore) && submitUtils.isSuccessResult(results[0].result),

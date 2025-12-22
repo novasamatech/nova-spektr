@@ -1,4 +1,4 @@
-import { type ChainId, type CryptoType, type ID, type SigningType } from '@/shared/core';
+import { type AccountNameType, type ChainId, type CryptoType, type ID, type SigningType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 /**
@@ -13,10 +13,12 @@ export interface UniversalAccount {
   id: string;
   type: 'universal';
   name: string;
+  nameType?: AccountNameType;
   walletId: ID;
   accountId: AccountId;
   cryptoType: CryptoType;
   signingType: SigningType;
+  createdAt?: number;
 }
 
 /**
@@ -28,11 +30,13 @@ export interface ChainAccount {
   id: string;
   type: 'chain';
   name: string;
+  nameType?: AccountNameType;
   walletId: ID;
   chainId: ChainId;
   accountId: AccountId;
   cryptoType: CryptoType;
   signingType: SigningType;
+  createdAt?: number;
 }
 
 export type AnyAccount = UniversalAccount | ChainAccount;

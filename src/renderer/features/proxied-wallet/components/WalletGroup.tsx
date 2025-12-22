@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { type Wallet, type WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -7,7 +7,7 @@ import { performSearch } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { Accordion, Box, Tooltip } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
+import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelectService } from '@/aggregates/wallet-select';
 
@@ -26,14 +26,18 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
   const allAccounts = useUnit(accounts.$list);
   const chains = useUnit(networkModel.$chains);
 
-  const filteredWallets = performSearch({
-    query,
-    records: wallets,
-    getMeta: wallet => ({
-      allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
-    }),
-    weights: { name: 1, allAddresses: 0.8 },
-  });
+  const resolvedWallets = useWalletsNames(wallets);
+
+  const filteredWallets = useMemo(() => {
+    return performSearch({
+      query,
+      records: resolvedWallets,
+      getMeta: wallet => ({
+        allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
+      }),
+      weights: { name: 1, allAddresses: 0.8 },
+    });
+  }, [resolvedWallets, query, allAccounts, chains]);
 
   if (filteredWallets.length === 0) {
     return null;

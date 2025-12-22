@@ -1,13 +1,12 @@
-import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { groupBy, nullable } from '@/shared/lib/utils';
+import { groupBy, nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
 import { Box, EmptyMessage, ScrollArea } from '@/shared/ui-kit';
-import { fellowshipTasksFeature } from '../model/feature';
-import { memberProfile } from '../model/memberProfile';
-import { tasks } from '../model/tasks';
+import { useFellowshipAccount } from '@/aggregates/fellowship-member';
+import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useTasks } from '../hooks/useTasks';
 
 import { Basket } from './Basket';
 import { TasksGroup } from './TasksGroup';
@@ -15,20 +14,30 @@ import { Title } from './Title';
 
 export const Tasks = () => {
   const { t } = useI18n();
-  const input = useUnit(fellowshipTasksFeature.input);
-  const activeTasks = useUnit(tasks.$list);
-  const pending = useUnit(tasks.pending);
-  const hasAccount = useUnit(memberProfile.$hasAccount);
 
+  const api = useFellowshipApi();
+
+  const { data: activeTasks, pending } = useTasks();
+  const { data: account, pending: pendingAccount } = useFellowshipAccount();
+
+  const hasAccount = nonNullable(account);
   const groups = useMemo(() => groupBy(activeTasks, task => task.group), [activeTasks]);
 
   const tasksCount = useMemo(() => {
     const personalCount = groups.personal?.length ?? 0;
-    const generalCount = groups.general?.filter(task => !task.hasVoted).length ?? 0;
+    const generalCount = groups.active?.filter(task => !task.hasVoted).length ?? 0;
     return personalCount + generalCount;
   }, [groups]);
 
-  if (nullable(input) || pending) {
+  if (!pendingAccount && !hasAccount) {
+    return (
+      <div className="flex h-full flex-col items-stretch justify-stretch overflow-hidden rounded-xl border border-filter-border">
+        <AccountNotFound />
+      </div>
+    );
+  }
+
+  if (nullable(api) || pending) {
     return (
       <div className="flex h-full grow flex-col items-center justify-center overflow-hidden rounded-xl border border-filter-border bg-card-background">
         <Loader color="primary" size={24} />
@@ -37,15 +46,15 @@ export const Tasks = () => {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border">
+    <div className="flex h-full flex-col items-stretch justify-stretch overflow-hidden rounded-xl border border-filter-border">
       <Title count={tasksCount} />
       {hasAccount && activeTasks.length ? (
         <ScrollArea>
           {groups.personal ? (
             <TasksGroup key="pesonal" title={t('fellowship.tasks.personal')} group={groups.personal} />
           ) : null}
-          {groups.general ? (
-            <TasksGroup key="general" title={t('fellowship.tasks.general')} group={groups.general} />
+          {groups.active ? (
+            <TasksGroup key="active" title={t('fellowship.tasks.active')} group={groups.active} />
           ) : null}
           {groups.completed ? (
             <TasksGroup key="completed" title={t('fellowship.tasks.completed')} group={groups.completed} async />
@@ -75,12 +84,12 @@ const AllDone = () => {
 
 const AccountNotFound = () => {
   const { t } = useI18n();
-  const chainName = useUnit(tasks.$chainName);
+  const chain = useFellowshipChain();
 
   return (
     <EmptyMessage
       title={t('fellowship.tasks.noAccountTitle')}
-      description={t('fellowship.tasks.noAccountDescription', { chain: chainName })}
+      description={t('fellowship.tasks.noAccountDescription', { chain: chain?.name ?? 'Unknown' })}
     />
   );
 };

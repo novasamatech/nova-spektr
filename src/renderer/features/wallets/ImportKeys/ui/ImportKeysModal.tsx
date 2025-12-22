@@ -1,21 +1,22 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
+import derivations_template_url from '@/shared/assets/templates/polkadot-vault-derivations-template.yaml?url';
 import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, InfoLink, InputHint } from '@/shared/ui';
 import { InputFile, Modal } from '@/shared/ui-kit';
-import { TEMPLATE_GITHUB_LINK } from '../lib/constants';
 import { importKeysUtils } from '../lib/import-keys-utils';
+import { type DerivationKeyDraft } from '../lib/types';
 import { importKeysModel } from '../model/import-keys-model';
 
 type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
   existingKeys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[];
-  onConfirm: (keys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => void;
+  onConfirm: (keys: DerivationKeyDraft[]) => void;
   onClose: () => void;
 };
 
@@ -23,8 +24,11 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
   const { t } = useI18n();
 
   const validationError = useUnit(importKeysModel.$validationError);
-  const mergedKeys = useUnit(importKeysModel.$mergedKeys);
+  const keysToAdd = useUnit(importKeysModel.$keysToAdd);
   const successReport = useUnit(importKeysModel.$successReport);
+  const errorMessages = validationError
+    ? importKeysUtils.getErrorsText(t, validationError.error, validationError.details)
+    : [];
 
   useEffect(() => {
     if (!isOpen) return;
@@ -73,8 +77,12 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
               />
             </div>
 
-            <InputHint active={nonNullable(validationError)} variant="error">
-              {validationError && importKeysUtils.getErrorsText(t, validationError.error, validationError.details)}
+            <InputHint as="div" active={errorMessages.length > 0} variant="error">
+              {errorMessages.map((message, index) => (
+                <span className="block" key={`${message}-${index}`}>
+                  {message}
+                </span>
+              ))}
             </InputHint>
           </div>
 
@@ -91,13 +99,13 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
             ))}
           </Alert>
 
-          <InfoLink url={TEMPLATE_GITHUB_LINK} className="ml-2" iconName="import" iconPosition="right">
+          <InfoLink url={derivations_template_url} className="ml-2" iconName="import" iconPosition="right" download>
             {t('dynamicDerivations.importKeys.downloadTemplateButton')}
           </InfoLink>
         </div>
       </Modal.Content>
       <Modal.Footer align="end">
-        <Button disabled={nonNullable(validationError?.error) || !successReport} onClick={() => onConfirm(mergedKeys)}>
+        <Button disabled={nonNullable(validationError?.error) || !successReport} onClick={() => onConfirm(keysToAdd)}>
           {t('dynamicDerivations.importKeys.continueButton')}
         </Button>
       </Modal.Footer>

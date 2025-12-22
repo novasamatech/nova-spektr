@@ -134,6 +134,33 @@ export const isEditFlexibleTransaction = (
   );
 };
 
+export const isMultiTransferTransaction = (transaction?: Transaction | DecodedTransaction | null) => {
+  if (transaction?.type === TransactionType.BATCH_ALL) {
+    const transactions = (transaction.args as { transactions?: Transaction[] })?.transactions || [];
+    // Multi-transfer is a batch with TRANSFER transactions (can be 1 or more)
+    return transactions.length > 0 && transactions.every((tx) => tx.type === TransactionType.TRANSFER);
+  }
+
+  return false;
+};
+
+export const isVestedTransferTransaction = (transaction?: DecodedTransaction | null) => {
+  if (!transaction) {
+    return false;
+  }
+
+  if (transaction?.type === TransactionType.VESTED_TRANSFER) {
+    return true;
+  }
+
+  if (transaction?.type === TransactionType.BATCH_ALL) {
+    const batchTx = findCoreBatchAll(transaction);
+    return batchTx?.type === TransactionType.VESTED_TRANSFER;
+  }
+
+  return false;
+};
+
 export const hasTransaction = (
   transaction: Transaction | DecodedTransaction,
   filter: (transaction: Transaction | DecodedTransaction) => boolean,
@@ -153,6 +180,7 @@ export const isWrappedInBatchAll = (type: TransactionType) => {
     TransactionType.DELEGATE,
     TransactionType.UNDELEGATE,
     TransactionType.REMOVE_VOTE,
+    TransactionType.VESTED_TRANSFER,
   ]);
 
   return batchAllOperations.has(type);
@@ -243,6 +271,10 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
     } else {
       return vote.SplitAbstain.abstain.replaceAll(',', '');
     }
+  }
+
+  if (txType === TransactionType.VESTED_TRANSFER) {
+    return tx.args.schedule.locked;
   }
 
   return null;

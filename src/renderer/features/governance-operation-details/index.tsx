@@ -3,12 +3,12 @@ import { t } from 'i18next';
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { getAssetById, nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
-import { TransactionTitle, findCoreTransaction } from '@/entities/transaction';
+import { TransactionTitle, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
 import { GovernanceDelegateDetails } from './components/GovernanceDelegateDetails';
-import { GovernanceOperationTitle } from './components/GovernanceOperationTitle';
 import { GovernanceVoteDetails } from './components/GovernanceVoteDetails';
 
 export const governanceOperationDetailFeature = createFeature({
@@ -49,11 +49,21 @@ multisigOperationsSDK(governanceOperationDetailFeature, {
       return icon;
     }
   },
-  title({ operation, showCoreTransaction }) {
+  title({ operation, showCoreTransaction, chains, t }) {
+    if (nullable(operation) || nullable(chains) || nullable(t)) return null;
+
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
+
     if (title) {
-      return <GovernanceOperationTitle operation={operation} title={title} />;
+      const asset = transaction && getAssetById(transaction.args.asset, chains[operation.chainId]?.assets);
+      const amount = transaction && getTransactionAmount(transaction);
+
+      return {
+        title: title ? t(title, { asset: asset?.symbol }) : undefined,
+        amount: asset && amount ? { value: amount, asset } : undefined,
+        sourceChainId: operation.chainId,
+      };
     }
   },
   logTitle({ operation, showCoreTransaction }) {

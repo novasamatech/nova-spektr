@@ -1,8 +1,7 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 
 import { type HexString } from '@/shared/core';
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toRomanNumeral } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
@@ -28,7 +27,7 @@ type Props = PropsWithChildren<{
 }>;
 
 export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }: Props) => {
-  useFlow(evidencePost.flow, null);
+  useGate(evidencePost.flow);
 
   const { t } = useI18n();
   const [step, setStep] = useState<Step>('confirm');

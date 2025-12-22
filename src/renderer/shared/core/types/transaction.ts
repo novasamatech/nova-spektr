@@ -12,6 +12,7 @@ export const enum TransactionType {
   TRANSFER_ALL = 'transfer_all',
   ORML_TRANSFER = 'ormlTransfer',
   ASSET_TRANSFER = 'assetTransfer',
+  VESTED_TRANSFER = 'vestedTransfer',
 
   MULTISIG_AS_MULTI = 'multisig_as_multi',
   MULTISIG_APPROVE_AS_MULTI = 'multisig_approve_as_multi',
@@ -23,6 +24,11 @@ export const enum TransactionType {
   POLKADOT_XCM_TELEPORT = 'polkadotxcm_limited_teleport_assets',
   POLKADOT_XCM_TRANSFER_ASSETS = 'polkadotxcm_transfer_assets',
   XTOKENS_TRANSFER_MULTIASSET = 'xtokens_transfer_multiasset',
+  POLKADOT_XCM_RESERVE_WITHDRAW = 'polkadotxcm_reserve_withdraw_assets',
+  POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN = 'polkadotxcm_transfer_assets_using_type_and_then',
+  XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN = 'xcm_transfer_assets_using_type_and_then',
+  XTOKENS_TRANSFER = 'xtokens_transfer',
+  XTOKENS_TRANSFER_MULTIASSETS = 'xtokens_transfer_multiassets',
 
   BOND = 'bond',
   STAKE_MORE = 'bondExtra',
