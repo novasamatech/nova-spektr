@@ -140,6 +140,6 @@ function isFlexibleMultisigOperation(operation: MultisigOperation, flexibleMulti
     operation.method === 'batchAll' &&
     operation.section === 'utility' &&
     Array.isArray(transactions) &&
-    transactions.every((t: DecodedTransaction) => flexibleMultisigAccountId === toAccountId(t.args.real))
+    transactions.every((t: DecodedTransaction) => t.args.real && flexibleMultisigAccountId === toAccountId(t.args.real))
   );
 }
