@@ -312,7 +312,7 @@ export const formModel = {
     formCleared,
     destinationQueryChanged,
     destinationTypeChanged,
-    multisigDepositChanged, // todo fucking change it
+    multisigDepositChanged, // todo change it
   },
   output: {
     formSubmitted,
