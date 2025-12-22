@@ -50,6 +50,11 @@ export const useRetentionPeriod = () => {
 
     const from = member.lastProof;
     const length = evidenceService.getDemotionPeriod(member, periods);
+    // If demotion period is 0, retention does not require
+    if (Number(length) === 0) {
+      return null;
+    }
+
     const to = pjsSchema.helpers.toBlockHeight(Number(from) + Number(length));
 
     return {
