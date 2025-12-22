@@ -1,26 +1,26 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useRef } from 'react';
 
+import faviconDev from '@/app/favicon.dev.png';
+import faviconProd from '@/app/favicon.png';
+
 import { faviconModel } from '../../model/favicon-model';
 
 const BADGE_SIZE = 16;
 const BADGE_PADDING = 4;
 const BADGE_COLOR = '#4649F6';
 
-// Must select PNG favicon because .ico files can't be loaded into canvas.
-// Build generates multiple <link rel="icon"> tags with .ico first, so we explicitly target PNG.
+// Import favicon directly because vite-plugin-favicons only generates .ico in dev mode,
+// and .ico files can't be loaded into canvas for badge rendering.
+const FAVICON_SRC = import.meta.env.DEV ? faviconDev : faviconProd;
+
 const getFaviconLink = () => {
-  return (
-    document.querySelector<HTMLLinkElement>("link[rel='icon'][type='image/png'][sizes='48x48']") ??
-    document.querySelector<HTMLLinkElement>("link[rel='icon'][type='image/png']") ??
-    document.querySelector<HTMLLinkElement>("link[rel='icon']")
-  );
+  return document.querySelector<HTMLLinkElement>("link[rel='icon']");
 };
 
 const createBadgedFaviconDataUrl = (canvas: HTMLCanvasElement, imageSrc: string): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
     img.src = imageSrc;
 
     img.onload = () => {
@@ -59,28 +59,18 @@ const createBadgedFaviconDataUrl = (canvas: HTMLCanvasElement, imageSrc: string)
 export const Favicon = () => {
   const hasBadge = useUnit(faviconModel.$hasBadge);
   const canvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
-  const originalFaviconRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const link = getFaviconLink();
-    if (link && !originalFaviconRef.current) {
-      originalFaviconRef.current = link.href;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!originalFaviconRef.current) return;
-
     const link = getFaviconLink();
     if (!link) return;
 
     if (!hasBadge) {
-      link.href = originalFaviconRef.current;
+      link.href = FAVICON_SRC;
 
       return;
     }
 
-    createBadgedFaviconDataUrl(canvasRef.current, originalFaviconRef.current).then((dataUrl) => {
+    createBadgedFaviconDataUrl(canvasRef.current, FAVICON_SRC).then((dataUrl) => {
       link.href = dataUrl;
     });
   }, [hasBadge]);
