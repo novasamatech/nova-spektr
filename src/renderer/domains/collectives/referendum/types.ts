@@ -1,6 +1,7 @@
+import { type AnyJson } from '@polkadot/types/types';
 import { type BN } from '@polkadot/util';
 
-import { type ChainId } from '@/shared/core';
+import { type ChainId, type HexString } from '@/shared/core';
 import { type ReferendumId, type TrackId } from '@/shared/pallet/referenda';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType } from '../_lib/types';
@@ -34,6 +35,9 @@ export type UnknownProposal = {
 
 export type WhitelistProposal = {
   type: 'Whitelist';
+  proposalHex: HexString;
+  proposalHash: HexString;
+  proposalJSON: Record<string, AnyJson>;
 };
 
 export type SpendProposal = {

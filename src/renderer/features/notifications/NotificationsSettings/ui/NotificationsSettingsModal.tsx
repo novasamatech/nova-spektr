@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { NotificationEvent } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { performSearch } from '@/shared/lib/utils';
 import {
   BodyText,
   Button,
@@ -17,7 +18,9 @@ import {
 } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
-import { walletModel } from '@/entities/wallet';
+import { accounts } from '@/domains/network';
+import { networkModel } from '@/entities/network';
+import { walletSelectService } from '@/aggregates/wallet-select';
 import { notificationsSettingsModel } from '../model/notifications-settings-model';
 
 const EVENT_OPTIONS = [
@@ -36,12 +39,14 @@ type Props = {
 export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle, showTrigger = true }: Props) => {
   const { t } = useI18n();
 
-  const wallets = useUnit(walletModel.$allWallets);
-  const savedSelectedWalletIds = useUnit(notificationsSettingsModel.$selectedWalletIds);
+  const wallets = useUnit(notificationsSettingsModel.$wallets);
+  const allAccounts = useUnit(accounts.$list);
+  const chains = useUnit(networkModel.$chains);
+  const savedDisabledWalletIds = useUnit(notificationsSettingsModel.$disabledWalletIds);
   const savedNotificationEvents = useUnit(notificationsSettingsModel.$notificationEvents);
   const savedSoundEnabled = useUnit(notificationsSettingsModel.$soundEnabled);
 
-  const [selectedWalletIds, setSelectedWalletIds] = useState(() => savedSelectedWalletIds);
+  const [disabledWalletIds, setDisabledWalletIds] = useState(() => savedDisabledWalletIds);
   const [enabledEvents, setEnabledEvents] = useState(() => savedNotificationEvents);
   const [soundEnabled, setSoundEnabled] = useState(() => savedSoundEnabled);
   const [internalIsOpen, setInternalIsOpen] = useState(false);
@@ -50,28 +55,43 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
   const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
   const setIsOpen = isControlled ? onToggle! : setInternalIsOpen;
 
+  const [walletSearchQuery, setWalletSearchQuery] = useState('');
+
+  // Selected wallet IDs for MultiSelect (enabled = not disabled)
+  const selectedWalletIds = useMemo(
+    () => new Set(wallets.filter((w) => !disabledWalletIds.has(w.id)).map((w) => w.id)),
+    [wallets, disabledWalletIds],
+  );
+
   useEffect(() => {
     if (isOpen) {
-      setSelectedWalletIds(savedSelectedWalletIds);
+      setDisabledWalletIds(savedDisabledWalletIds);
       setEnabledEvents(savedNotificationEvents);
       setSoundEnabled(savedSoundEnabled);
     }
-  }, [isOpen, savedSelectedWalletIds, savedNotificationEvents, savedSoundEnabled]);
+  }, [isOpen, savedDisabledWalletIds, savedNotificationEvents, savedSoundEnabled]);
 
-  const walletOptions = useMemo(
-    () =>
-      wallets.map((wallet) => ({
-        id: String(wallet.id),
-        value: wallet,
-        element: (
-          <div className="flex items-center gap-x-1.5">
-            <WalletIcon type={wallet.type} size={18} />
-            <span className="text-footnote">{wallet.name}</span>
-          </div>
-        ),
-      })),
-    [wallets],
-  );
+  const walletOptions = useMemo(() => {
+    const filteredWallets = performSearch({
+      records: wallets,
+      query: walletSearchQuery,
+      getMeta: (wallet) => ({
+        allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
+      }),
+      weights: { name: 1, allAddresses: 0.8 },
+    });
+
+    return filteredWallets.map((wallet) => ({
+      id: String(wallet.id),
+      value: wallet,
+      element: (
+        <div className="flex items-center gap-x-1.5">
+          <WalletIcon type={wallet.type} size={18} />
+          <span className="text-footnote">{wallet.name}</span>
+        </div>
+      ),
+    }));
+  }, [wallets, walletSearchQuery, allAccounts, chains]);
 
   const toggleEvent = (event: NotificationEvent) => {
     setEnabledEvents((prev) => {
@@ -83,12 +103,13 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
   };
 
   const handleWalletChange = (options: { id: string }[]) => {
-    setSelectedWalletIds(new Set(options.map((opt) => Number(opt.id))));
+    const enabledIds = new Set(options.map((opt) => Number(opt.id)));
+    setDisabledWalletIds(new Set(wallets.filter((w) => !enabledIds.has(w.id)).map((w) => w.id)));
   };
 
   const handleSave = () => {
     notificationsSettingsModel.events.settingsSaved({
-      selectedWalletIds: [...selectedWalletIds],
+      disabledWalletIds: [...disabledWalletIds],
       notificationEvents: [...enabledEvents],
       soundEnabled,
     });
@@ -155,8 +176,9 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
               multiPlaceholder={t('settings.notificationsSettings.walletsMultiPlaceholder')}
               selectedIds={[...selectedWalletIds].map(String)}
               options={walletOptions}
-              position="down"
+              showSelectAll
               onChange={handleWalletChange}
+              onSearch={setWalletSearchQuery}
             />
           </div>
 

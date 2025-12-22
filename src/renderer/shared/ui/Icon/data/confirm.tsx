@@ -6,6 +6,7 @@ import CrossChainIcon from '@/shared/assets/images/confirm/crosschain.svg?jsx';
 import DeactivateIcon from '@/shared/assets/images/confirm/deactivate.svg?jsx';
 import DelegatedAuthoritiesIcon from '@/shared/assets/images/confirm/delegated-authorities.svg?jsx';
 import EditDelegationIcon from '@/shared/assets/images/confirm/edit-delegation.svg?jsx';
+import MultiTransferIcon from '@/shared/assets/images/confirm/multi-transfer.svg?jsx';
 import MultisigCreationIcon from '@/shared/assets/images/confirm/multisig-creation.svg?jsx';
 import ReturnToStakeIcon from '@/shared/assets/images/confirm/return-to-stake.svg?jsx';
 import RevokeDelegationIcon from '@/shared/assets/images/confirm/revoke-delegation.svg?jsx';
@@ -36,6 +37,7 @@ const ConfirmImages = {
   activateConfirm: { svg: ActivateIcon },
   deactivateConfirm: { svg: DeactivateIcon },
   vestedTransferConfirm: { svg: VestedTransferIcon },
+  multiTransfer: { svg: MultiTransferIcon },
 } as const;
 
 export type Confirm = keyof typeof ConfirmImages;

@@ -1,4 +1,4 @@
-import { useStoreMap } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -10,8 +10,9 @@ import { formatSectionAndMethod, nonNullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { BodyText, Button, Icon, type IconNames } from '@/shared/ui';
 import { AssetBalance, WalletIcon } from '@/shared/ui-entities';
-import { accounts, multisigOperation } from '@/domains/network';
+import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { operationTitleTransformer } from '@/features/multisig-operations';
@@ -39,21 +40,42 @@ const iconConfig: Record<NotificationStatus, { name: IconNames; className: strin
 };
 
 export const MultisigOperationNotificationComponent = ({
-  notification: { callHash, callTimepoint, chainId, issuer, status, operationId },
+  notification: { callHash, callTimepoint, chainId, issuer, status },
 }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const chains = useUnit(networkModel.$chains);
+
+  const operationId = multisigOperationService.getOperationId(
+    chainId,
+    callHash,
+    issuer,
+    callTimepoint.height,
+    callTimepoint.index,
+  );
 
   const operation = useStoreMap({
     store: multisigOperation.$list,
     keys: [operationId],
-    fn: (operations) => operations.find((op) => op.id === operationId),
+    fn: (operations) =>
+      operations.find(
+        (op) =>
+          multisigOperationService.getOperationId(
+            op.chainId,
+            op.callHash,
+            op.accountId,
+            op.blockCreated,
+            op.indexCreated,
+          ) === operationId,
+      ),
   });
 
   const multisigAccount = useStoreMap({
     store: accounts.$list,
     keys: [issuer],
-    fn: (allAccounts) => allAccounts.filter(accountUtils.isAnyMultisigAccount).find((acc) => acc.accountId === issuer),
+    fn: (allAccounts) =>
+      allAccounts.filter(accountUtils.isFlexibleMultisigAccount).find((acc) => acc.multisigAccountId === issuer) ||
+      allAccounts.filter(accountUtils.isAnyMultisigAccount).find((acc) => acc.accountId === issuer),
   });
 
   const wallet = useStoreMap({
@@ -61,6 +83,15 @@ export const MultisigOperationNotificationComponent = ({
     keys: [multisigAccount],
     fn: (wallets) => {
       if (!multisigAccount) return null;
+
+      if (accountUtils.isFlexibleMultisigAccount(multisigAccount)) {
+        return wallets.find((w) =>
+          w.accounts.some(
+            (acc) => acc.accountId === multisigAccount.accountId && accountUtils.isFlexibleMultisigAccount(acc),
+          ),
+        );
+      }
+
       return wallets.find((w) => w.accounts.some((acc) => acc.accountId === multisigAccount.accountId));
     },
   });
@@ -76,6 +107,9 @@ export const MultisigOperationNotificationComponent = ({
   const externalTitle = useTransformer(operationTitleTransformer, {
     operation,
     showCoreTransaction: showCoreTransaction,
+    chains,
+    asset,
+    t,
   });
 
   const titleData = useMemo(() => {
