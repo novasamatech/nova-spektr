@@ -4,7 +4,6 @@ import { type CallBase } from '@polkadot/types/types';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { readonly, throttle } from 'patronum';
 
-import { chainsService } from '@/shared/api/network';
 import { type CallData, type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
@@ -253,7 +252,7 @@ sample({
   target: [stepChanged, form.reset],
 });
 
-const $allChains = networkModel.$chains.map((chains) => chainsService.sortChains(Object.values(chains)));
+const $allChains = networkModel.$chainsList;
 
 const $availableChains = combine(
   {
