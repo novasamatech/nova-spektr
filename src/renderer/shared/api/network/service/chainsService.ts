@@ -75,8 +75,8 @@ function sortChains<T extends Pick<Chain, 'name' | 'options' | 'chainId' | 'pare
   // Helper to sort relaychain groups: relay first, then parachains (priority: name starts with relay), then alpha
   function sortRelayGroup(chains: T[], relayChainId: string, relayName: 'polkadot' | 'kusama') {
     chains.sort((a, b) => {
-      if (a.chainId === relayChainId) return -1;
-      if (b.chainId === relayChainId) return 1;
+      if (a.chainId === relayChainId) return 1;
+      if (b.chainId === relayChainId) return -1;
       const pa = parachainPriority(a, relayName);
       const pb = parachainPriority(b, relayName);
       if (pa !== pb) return pa - pb;
