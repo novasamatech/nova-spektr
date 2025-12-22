@@ -1,10 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type GraphQLClient } from 'graphql-request';
 
-import { type Chain, type ChainId } from '@/shared/core';
-import { dictionary } from '@/shared/lib/utils';
+import { type Chain, type ChainId, type DecodedTransaction } from '@/shared/core';
+import { dictionary, toAccountId } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type MultisigOperation } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 
 import { FILTER_MULTISIG_ACCOUNT_IDS } from './graphql/queries/multisigs';
@@ -13,6 +14,7 @@ export const multisigService = {
   filterMultisigsAccounts,
   findFlexibleMultisigs,
   getUniqMultisigs,
+  isFlexibleMultisigOperation,
 };
 
 export type MultisigResult = {
@@ -117,4 +119,27 @@ async function findFlexibleMultisigs(
   }
 
   return [...Array.from(flexMultisigs.values())];
+}
+
+/**
+ * Checks if an operation belongs to a flexible multisig account. Handles both
+ * direct proxy.proxy calls and Nova Wallet's utility.batchAll wrapper.
+ */
+function isFlexibleMultisigOperation(operation: MultisigOperation, flexibleMultisigAccountId: AccountId): boolean {
+  const isProxyTx =
+    operation.method === 'proxy' &&
+    operation.section === 'proxy' &&
+    flexibleMultisigAccountId === toAccountId(operation.transaction?.args.real);
+
+  if (isProxyTx) return true;
+
+  // Nova Wallet wraps proxy calls inside utility.batchAll transactions instead of sending direct proxy.proxy calls.
+  const transactions = operation.transaction?.args.transactions;
+
+  return (
+    operation.method === 'batchAll' &&
+    operation.section === 'utility' &&
+    Array.isArray(transactions) &&
+    transactions.every((t: DecodedTransaction) => flexibleMultisigAccountId === toAccountId(t.args.real))
+  );
 }

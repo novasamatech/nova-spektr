@@ -3,15 +3,16 @@ import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import { type DecodedTransaction, type MultisigOperationNotification, type NotificationStatus } from '@/shared/core';
+import { type MultisigOperationNotification, type NotificationStatus } from '@/shared/core';
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { formatSectionAndMethod, nonNullable, toAccountId } from '@/shared/lib/utils';
+import { formatSectionAndMethod, nonNullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { BodyText, Button, Icon, type IconNames } from '@/shared/ui';
 import { AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
+import { multisigService } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
@@ -80,22 +81,11 @@ export const MultisigOperationNotificationComponent = ({
         .filter(accountUtils.isFlexibleMultisigAccount)
         .find((acc) => acc.multisigAccountId === issuer);
 
-      const isProxyTx =
-        operation.method === 'proxy' &&
-        operation.section === 'proxy' &&
-        flexibleMultisigAccount?.accountId === toAccountId(operation.transaction?.args.real);
-
-      // Nova Wallet wraps proxy calls inside utility.batchAll transactions instead of sending direct proxy.proxy calls.
-      // Without this check, operations created by Nova Wallet would
-      // be treated as regular multisig operations instead of flexible multisig operations.
-      const isBatchAllTx =
-        operation.method === 'batchAll' &&
-        operation.section === 'utility' &&
-        operation.transaction?.args.transactions.some(
-          (t: DecodedTransaction) => flexibleMultisigAccount?.accountId && t.args.real,
-        );
-
-      if (isProxyTx || isBatchAllTx) {
+      if (
+        nonNullable(flexibleMultisigAccount) &&
+        flexibleMultisigAccount.accountId &&
+        multisigService.isFlexibleMultisigOperation(operation, flexibleMultisigAccount.accountId)
+      ) {
         return flexibleMultisigAccount;
       }
 
