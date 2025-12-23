@@ -54,7 +54,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
   const destination = operationDetailsUtils.getDestination(operation, chains, destinationChain);
   const delegateAccountId = delegate ? toAccountId(delegate) : null;
   const spawnerAccountId = spawner ? toAccountId(spawner) : null;
-  const destinationAccountId = destination ? toAccountId(destination) : null;
+  const destinationAccountId = operationDetailsUtils.getDestinationAccountId(operation) ?? null;
   const payeeAccountId = typeof payee === 'object' ? toAccountId(payee.Account) : null;
 
   const delegationTarget = operationDetailsUtils.getDelegationTarget(operation);

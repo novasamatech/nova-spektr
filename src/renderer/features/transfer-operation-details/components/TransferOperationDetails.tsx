@@ -6,7 +6,7 @@ import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { getXcmTransactionBeneficiary, isXcmTransaction } from '@/entities/transaction';
+import { isXcmTransaction } from '@/entities/transaction';
 import { NamedAccount } from '@/widgets/NameResolver';
 
 type Props = {
@@ -20,10 +20,7 @@ export const TransferOperationDetails = ({ operation }: Props) => {
   const transaction = operation.transaction ?? undefined;
   const result = [];
 
-  const destination =
-    transaction && isXcmTransaction(transaction)
-      ? getXcmTransactionBeneficiary(transaction)
-      : operationDetailsUtils.getDestinationAccountId(operation);
+  const destination = operationDetailsUtils.getDestinationAccountId(operation);
   const destinationChain = operationDetailsUtils.getDestinationChain(operation);
 
   if (destination) {
