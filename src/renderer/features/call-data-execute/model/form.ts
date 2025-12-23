@@ -350,13 +350,9 @@ sample({
 
 // Preselect signatory when initiator changes
 sample({
-  clock: [$signatories],
-  source: {
-    selectedSignatory: form.fields.signatory.$value,
-  },
-  filter: ({ selectedSignatory }, signatories) =>
-    !selectedSignatory || !signatories.some((s) => s.accountId === selectedSignatory.accountId),
-  fn: (_, signatories) => signatories.at(0) ?? null,
+  clock: $signatories,
+  filter: (signatories) => signatories.length === 1,
+  fn: (signatories) => signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
 
