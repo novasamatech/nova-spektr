@@ -1,6 +1,6 @@
 import { extractBeneficiaryFromXcmInstructions } from '@/shared/api/xcm';
 import { type DecodedTransaction, type Transaction } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { isProxyTransaction, isXcmTransaction } from './common/utils';
 
@@ -28,10 +28,15 @@ export const getXcmTransactionBeneficiary = (tx: Transaction | DecodedTransactio
 
   // For XCM transactions with beneficiary field, use beneficiary (not dest)
   if (coreTx.args.beneficiary) {
-    return coreTx.args.beneficiary;
+    const beneficiary = pjsSchema.accountId.safeParse(coreTx.args.beneficiary);
+    if (beneficiary.success) {
+      return beneficiary.data;
+    }
   }
 
   try {
+    if (typeof coreTx.args.customXcmOnDest !== 'string') return undefined;
+
     return extractBeneficiaryFromXcmInstructions(coreTx.args.customXcmOnDest);
   } catch {
     console.error('Error extracting beneficiary from XCM instructions', coreTx.args.customXcmOnDest);

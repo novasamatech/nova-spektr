@@ -1,53 +1,55 @@
 import { convertLocationToUrlJson } from '@paraspell/xcm-analyser';
+import { z } from 'zod';
 
-import { toAccountId } from '@/shared/lib/utils';
+import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+
+type JsonObject = Record<string, unknown>;
+const isRecord = (value: unknown): value is JsonObject => value !== null && typeof value === 'object';
+
+/**
+ * Capitalizes first letter and normalizes id suffixes (accountId32 ->
+ * AccountId32)
+ */
+const capitalizeKey = (key: string): string => key.charAt(0).toUpperCase() + key.slice(1).replace(/id(\d+)/i, 'Id$1');
+
+const transformInteriorElement = (element: JsonObject): JsonObject =>
+  Object.fromEntries(Object.entries(element).map(([key, value]) => [capitalizeKey(key), value]));
+
+/** Matches XCM junction keys like x1, x2, X3, etc. */
+const isJunctionKey = (key: string): boolean => /^x\d+$/i.test(key);
+
+const transformInterior = (interior: JsonObject): JsonObject => {
+  const result: JsonObject = {};
+
+  for (const [key, value] of Object.entries(interior)) {
+    if (!isJunctionKey(key) || !Array.isArray(value) || value.length === 0) {
+      result[key] = value;
+      continue;
+    }
+
+    const firstElement = value[0];
+    if (typeof firstElement === 'object' && nonNullable(firstElement)) {
+      result[key.toUpperCase()] = transformInteriorElement(firstElement);
+    }
+  }
+
+  return result;
+};
 
 /**
  * Transforms the internal XCM location object format to the format expected by
  * ParaSpell library. Converts lowercase keys (x1, accountId32) to uppercase
  * (X1, AccountId32) and array format to object format.
  */
-export const transformLocationToLibraryFormat = (location: unknown): unknown => {
-  if (!location || typeof location !== 'object' || location === null) return location;
+export const transformLocationToLibraryFormat = (location: JsonObject): unknown => {
+  if (!isRecord(location.interior)) return location;
 
   try {
-    const locationObj = location;
-    if (!('interior' in locationObj) || typeof locationObj.interior !== 'object' || locationObj.interior === null) {
-      return location;
-    }
-
-    const transformed: Record<string, unknown> = {};
-
-    if ('parents' in locationObj) {
-      transformed.parents = locationObj.parents;
-    }
-
-    const interior = locationObj.interior;
-    const transformedInterior: Record<string, unknown> = {};
-
-    for (const [key, value] of Object.entries(interior)) {
-      const upperKey = key.toUpperCase();
-      if (key.match(/^x\d+$/i) && Array.isArray(value) && value.length > 0) {
-        const firstElement = value[0];
-        if (firstElement && typeof firstElement === 'object' && firstElement !== null) {
-          const transformedElement: Record<string, unknown> = {};
-          for (const [innerKey, innerValue] of Object.entries(firstElement)) {
-            const capitalizedKey = innerKey
-              .charAt(0)
-              .toUpperCase()
-              .concat(innerKey.slice(1).replace(/id(\d+)/i, 'Id$1'));
-            transformedElement[capitalizedKey] = innerValue;
-          }
-          transformedInterior[upperKey] = transformedElement;
-        }
-      } else {
-        transformedInterior[key] = value;
-      }
-    }
-
-    transformed.interior = transformedInterior;
-    return transformed;
+    return {
+      ...('parents' in location && { parents: location.parents }),
+      interior: transformInterior(location.interior),
+    };
   } catch {
     return location;
   }
@@ -57,7 +59,7 @@ export const transformLocationToLibraryFormat = (location: unknown): unknown => 
  * Extracts AccountId32 from a location object using ParaSpell library.
  */
 export const extractAccountIdFromLocation = (location: unknown): AccountId | undefined => {
-  if (!location || typeof location !== 'object') return undefined;
+  if (!isRecord(location)) return undefined;
 
   try {
     const transformedLocation = transformLocationToLibraryFormat(location);
@@ -76,26 +78,38 @@ export const extractAccountIdFromLocation = (location: unknown): AccountId | und
   return undefined;
 };
 
+const xcmInstructionSchema = z.object({
+  depositAsset: z.object({ beneficiary: z.unknown() }).optional(),
+});
+
+const xcmInstructionsSchema = z.object({
+  v4: z.array(xcmInstructionSchema),
+});
+
+const jsonStringSchema = z.string().transform((str, ctx) => {
+  try {
+    return JSON.parse(str);
+  } catch {
+    ctx.addIssue({ code: 'custom', message: 'Invalid JSON' });
+
+    return z.NEVER;
+  }
+});
+
 /**
  * Extracts beneficiary account ID from XCM instructions in customXcmOnDest.
  * Prioritizes direct DepositAsset instructions over SetAppendix ones.
  */
-export const extractBeneficiaryFromXcmInstructions = (customXcmOnDest: unknown): AccountId | undefined => {
-  if (typeof customXcmOnDest !== 'string') return undefined;
+export const extractBeneficiaryFromXcmInstructions = (customXcmOnDest: string): AccountId | undefined => {
+  const result = jsonStringSchema.pipe(xcmInstructionsSchema).safeParse(customXcmOnDest);
+  if (!result.success) return undefined;
 
-  try {
-    const xcmInstructions = JSON.parse(customXcmOnDest);
-    if (!xcmInstructions?.v4 || !Array.isArray(xcmInstructions.v4)) return undefined;
+  for (const instruction of result.data.v4) {
+    const beneficiary = instruction.depositAsset?.beneficiary;
+    if (!beneficiary) continue;
 
-    for (const instruction of xcmInstructions.v4) {
-      const beneficiary = instruction?.depositAsset?.beneficiary;
-      if (beneficiary) {
-        const accountId = extractAccountIdFromLocation(beneficiary);
-        if (accountId) return accountId;
-      }
-    }
-  } catch {
-    console.error('Error extracting beneficiary from XCM instructions', customXcmOnDest);
+    const accountId = extractAccountIdFromLocation(beneficiary);
+    if (accountId) return accountId;
   }
 
   return undefined;
