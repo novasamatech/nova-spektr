@@ -22,6 +22,8 @@ import {
 } from '../QrCode/QrGenerator/common/utils';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 
+import { getPolkadotVaultVersion } from './common/utils';
+
 type Props = {
   api: ApiPromise;
   chain: Chain;
@@ -52,7 +54,6 @@ export const ScanSingleframeQr = ({
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [qrPayload, setQrPayload] = useState<Uint8Array>();
 
-  const isPV = account.signingType === SigningType.POLKADOT_VAULT;
   const isMetadataProofsSupported = chain.additional?.supportsGenericLedgerApp ?? false;
   const isEthereumAccount = accountUtils.isEthereumBased(account);
 
@@ -77,7 +78,7 @@ export const ScanSingleframeQr = ({
         );
 
         let signPayload: Uint8Array;
-        if (isPV) {
+        if (account.signingType === SigningType.POLKADOT_VAULT) {
           assert(derivationPath, 'Derivation path not found');
           signPayload = createDynamicDerivationsSignWithProofPayload(
             rootAccountId,
@@ -106,7 +107,7 @@ export const ScanSingleframeQr = ({
         const { payload } = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
 
         let signPayload: Uint8Array;
-        if (isPV && !isEthereumAccount) {
+        if (account.signingType === SigningType.POLKADOT_VAULT && !isEthereumAccount) {
           assert(derivationPath, 'Derivation path not found');
           signPayload = createDynamicDerivationsSignPayload(
             rootAccountId,
@@ -145,7 +146,9 @@ export const ScanSingleframeQr = ({
             <Box shrink={0} fitContainer>
               <Tabs.List>
                 <Tabs.Trigger value="new">
-                  {t('signing.qrNewVaultTitle', { version: isPV ? '7.1' : '7.0' })}
+                  {t('signing.qrNewVaultTitle', {
+                    version: getPolkadotVaultVersion({ signingType: account.signingType, isBulkTx: false }),
+                  })}
                 </Tabs.Trigger>
                 <Tabs.Trigger value="legacy">{t('signing.qrLegacyVaultTitle')}</Tabs.Trigger>
               </Tabs.List>

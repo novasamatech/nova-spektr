@@ -51,6 +51,7 @@ export const transactionBuilder = {
   buildKillPureProxy,
   buildRemoveProxy,
   buildVestedTransfer,
+  buildMultiTransfer,
 
   buildBatchAll,
 };
@@ -813,4 +814,24 @@ function buildVestedTransfer({ chain, accountId, vestingSchedule }: VestedTransf
   if (vestingTxs.length === 1) return vestingTxs[0];
 
   return buildBatchAll({ chain, accountId, transactions: vestingTxs });
+}
+
+type MultiTransferParams = {
+  chain: Chain;
+  accountId: AccountId;
+  transfers: { recipient: AccountId; amount: BN }[];
+};
+
+function buildMultiTransfer({ chain, accountId, transfers }: MultiTransferParams): Transaction {
+  const transferTxs = transfers.map((t) => ({
+    chainId: chain.chainId,
+    accountId,
+    type: TransactionType.TRANSFER,
+    args: {
+      dest: t.recipient,
+      value: t.amount.toString(),
+    },
+  }));
+
+  return buildBatchAll({ chain, accountId, transactions: transferTxs });
 }

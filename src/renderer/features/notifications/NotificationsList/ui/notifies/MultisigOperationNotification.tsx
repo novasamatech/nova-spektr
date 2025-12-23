@@ -12,6 +12,7 @@ import { BodyText, Button, Icon, type IconNames } from '@/shared/ui';
 import { AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
+import { multisigService } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
@@ -72,8 +73,23 @@ export const MultisigOperationNotificationComponent = ({
 
   const multisigAccount = useStoreMap({
     store: accounts.$list,
-    keys: [issuer],
-    fn: (allAccounts) => allAccounts.filter(accountUtils.isAnyMultisigAccount).find((acc) => acc.accountId === issuer),
+    keys: [issuer, operation],
+    fn: (allAccounts) => {
+      if (!operation) return null;
+
+      const flexibleMultisigAccount = allAccounts
+        .filter(accountUtils.isFlexibleMultisigAccount)
+        .find((acc) => acc.multisigAccountId === issuer);
+
+      if (
+        nonNullable(flexibleMultisigAccount) &&
+        multisigService.isFlexibleMultisigOperation(operation, flexibleMultisigAccount.accountId)
+      ) {
+        return flexibleMultisigAccount;
+      }
+
+      return allAccounts.filter(accountUtils.isAnyMultisigAccount).find((acc) => acc.accountId === issuer);
+    },
   });
 
   const wallet = useStoreMap({
@@ -81,6 +97,15 @@ export const MultisigOperationNotificationComponent = ({
     keys: [multisigAccount],
     fn: (wallets) => {
       if (!multisigAccount) return null;
+
+      if (accountUtils.isFlexibleMultisigAccount(multisigAccount)) {
+        return wallets.find((w) =>
+          w.accounts.some(
+            (acc) => acc.accountId === multisigAccount.accountId && accountUtils.isFlexibleMultisigAccount(acc),
+          ),
+        );
+      }
+
       return wallets.find((w) => w.accounts.some((acc) => acc.accountId === multisigAccount.accountId));
     },
   });
