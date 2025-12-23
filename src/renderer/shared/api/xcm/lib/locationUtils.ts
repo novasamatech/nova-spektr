@@ -78,6 +78,7 @@ export const extractAccountIdFromLocation = (location: unknown): AccountId | und
 
 /**
  * Extracts beneficiary account ID from XCM instructions in customXcmOnDest.
+ * Prioritizes direct DepositAsset instructions over SetAppendix ones.
  */
 export const extractBeneficiaryFromXcmInstructions = (customXcmOnDest: unknown): AccountId | undefined => {
   if (typeof customXcmOnDest !== 'string') return undefined;
@@ -91,16 +92,6 @@ export const extractBeneficiaryFromXcmInstructions = (customXcmOnDest: unknown):
       if (beneficiary) {
         const accountId = extractAccountIdFromLocation(beneficiary);
         if (accountId) return accountId;
-      }
-
-      if (instruction?.setAppendix && Array.isArray(instruction.setAppendix)) {
-        for (const appendixInstruction of instruction.setAppendix) {
-          const appendixBeneficiary = appendixInstruction?.depositAsset?.beneficiary;
-          if (appendixBeneficiary) {
-            const accountId = extractAccountIdFromLocation(appendixBeneficiary);
-            if (accountId) return accountId;
-          }
-        }
       }
     }
   } catch {
