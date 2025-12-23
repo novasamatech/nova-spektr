@@ -1690,6 +1690,9 @@
           "downloadDescription": "You can download parsed file to review them.",
           "errorsCount_one": "Found {count} error.",
           "errorsCount_other": "Found {count} errors."
+        },
+        "hints": {
+          "planks": "{amount} planks"
         }
       },
       "title": "Parsed file"
