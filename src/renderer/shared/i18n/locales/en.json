@@ -1151,6 +1151,14 @@
       "votes_one": "{ count } vote",
       "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
+    },
+    "whitelist": {
+      "aiGenerated": "AI generated",
+      "callData": "Call data",
+      "callHash": "Call hash",
+      "callHashCopied": "Call hash copied!",
+      "summary": "Summary",
+      "viewJson": "View JSON"
     }
   },
   "flexibleMultisig": {
@@ -1494,6 +1502,7 @@
       "treasuryMediumSpend": "Treasury: Medium spend",
       "treasurySmallSpend": "Treasury: Small spend",
       "treasurySmallTips": "Treasury: Small tips",
+      "viewReferendum": "View referendum",
       "vote": {
         "noVoteForReferendum": "No vote for referendum",
         "timeoutReferendumError": "Timeout referendum error"

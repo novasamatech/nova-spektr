@@ -33,9 +33,10 @@ const getStatusLabel = (type: CompletedReferendum['type'], t: TFunction): { icon
 
 type Props = {
   referendum: CompletedReferendum;
+  connectedGovernanceReferendumSummary: string | null;
 };
 
-export const CompletedReferendumVoting = memo(({ referendum }: Props) => {
+export const CompletedReferendumVoting = memo(({ referendum, connectedGovernanceReferendumSummary }: Props) => {
   const { t } = useI18n();
 
   const { data: meta } = useMetadata(referendum);
@@ -43,15 +44,20 @@ export const CompletedReferendumVoting = memo(({ referendum }: Props) => {
   const type = referendum.type;
   const label = getStatusLabel(type, t);
 
-  const content = useMemo(
-    () =>
-      meta?.description ? (
-        <ReferendumTaskMarkdown compact>{tasksService.cutMarkdown(meta.description)}</ReferendumTaskMarkdown>
-      ) : (
-        t('fellowship.tasks.task.anyReferendum.noDescription')
-      ),
-    [meta],
-  );
+  const content = useMemo(() => {
+    if (connectedGovernanceReferendumSummary) {
+      return (
+        <ReferendumTaskMarkdown compact>
+          {tasksService.cutMarkdown(connectedGovernanceReferendumSummary)}
+        </ReferendumTaskMarkdown>
+      );
+    }
+    return meta?.description ? (
+      <ReferendumTaskMarkdown compact>{tasksService.cutMarkdown(meta.description)}</ReferendumTaskMarkdown>
+    ) : (
+      t('fellowship.tasks.task.anyReferendum.noDescription')
+    );
+  }, [meta, connectedGovernanceReferendumSummary, t]);
 
   return (
     <Slot

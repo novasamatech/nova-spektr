@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { Compact } from '@polkadot/types';
 import { u8aToHex } from '@polkadot/util';
+import { blake2AsHex } from '@polkadot/util-crypto';
 import { createStore } from 'effector';
 
 import { type ChainId, type HexString } from '@/shared/core';
@@ -54,9 +55,11 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
 
     if (struct.section === 'polkadotXcm' && struct.method === 'send') {
       //todo learn how to read arguments (multilocation chainId and call)
-
       return {
         type: 'Whitelist',
+        proposalHex,
+        proposalHash: blake2AsHex(proposalHex),
+        proposalJSON: struct.toHuman(),
       };
     }
 

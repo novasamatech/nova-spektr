@@ -12,11 +12,11 @@ import { FootnoteText, HeadlineText, IconButton } from '@/shared/ui';
 import { Box, Copy, Skeleton } from '@/shared/ui-kit';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
 import { networkUtils } from '@/entities/network';
+import { ReferendumEndTimer } from '@/widgets/ReferendumEndTimer';
 import { listAggregate } from '../../aggregates/list';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { listService } from '../../lib/listService';
 import { type AggregatedReferendum } from '../../types/structs';
-import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotedBy } from '../VotedBy';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
