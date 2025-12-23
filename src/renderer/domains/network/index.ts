@@ -23,7 +23,14 @@ export { accountSyncService } from './account-sync/service';
 export type { SyncedMultisigAccount, SyncedProxyAccount, SyncedAccount } from './account-sync/types';
 
 export { useAccountName, useAccountsNames, useWalletName, useWalletsNames } from './account/hooks';
-export { $accountNameCache, createAccountNameCacheKey, accountsNameResource } from './account/resource';
+export {
+  $accountNameCache,
+  $walletNameCache,
+  createAccountNameCacheKey,
+  createWalletNameCacheKey,
+  accountsNameResource,
+  walletsNameResource,
+} from './account/resource';
 
 export { balanceService } from './balance/service';
 export type { BalanceUpdateResult, BalancePreservation } from './balance/types';
