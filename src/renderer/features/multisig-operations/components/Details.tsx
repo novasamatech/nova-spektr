@@ -24,6 +24,7 @@ import {
   isProxyTransaction,
   isRemoveProxyTransaction,
   isRemovePureProxyTransaction,
+  isTransferTransaction,
   isUndelegateTransaction,
   isXcmTransaction,
 } from '@/entities/transaction';
@@ -142,6 +143,8 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
     return { wallet, account };
   }, [operation, wallets]);
 
+  const hasSender = isXcmTransaction(transaction) || isTransferTransaction(transaction);
+
   const isDividerVisible =
     (isXcmTransaction(transaction) && transaction?.args.destinationChain) ||
     isManageProxyTransaction(transaction) ||
@@ -187,7 +190,10 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
       )}
 
       {account && (
-        <DetailRow label={t('operation.details.account')} className="text-text-secondary">
+        <DetailRow
+          label={t(hasSender ? 'operation.details.sender' : 'operation.details.account')}
+          className="text-text-secondary"
+        >
           <NamedAccount chain={chain} accountId={account.accountId} variant="short" />
         </DetailRow>
       )}
