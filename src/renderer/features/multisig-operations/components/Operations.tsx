@@ -52,6 +52,10 @@ export const Operations = () => {
     [filteredTxs, formatDate],
   );
 
+  const sortedTxs = useMemo(() => {
+    return Object.entries(groupedTxs).sort(sortByDateDesc);
+  }, [groupedTxs]);
+
   useEffect(() => {
     return () => deepLinkModel.operationsPageClosed();
   }, []);
@@ -87,27 +91,25 @@ export const Operations = () => {
 
             {filteredTxs.length > 0 && (
               <div className="mt-4 flex h-full w-full flex-col items-center overflow-y-auto pl-6">
-                {Object.entries(groupedTxs)
-                  .sort(sortByDateDesc)
-                  .map(([date, txs]) => (
-                    <section className="mt-6 w-fit" key={date}>
-                      <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
-                      <ul className="flex w-[736px] flex-col gap-y-1.5">
-                        {txs
-                          .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
-                          .map(tx => (
-                            <li key={tx.id} ref={tx.id === focusedOperationId ? focusedRef : undefined}>
-                              <Operation
-                                key={`${tx.id}-${tx.id === focusedOperationId}`}
-                                operation={tx}
-                                multisigAccount={multisigAccount}
-                                isDefaultOpen={tx.id === focusedOperationId}
-                              />
-                            </li>
-                          ))}
-                      </ul>
-                    </section>
-                  ))}
+                {sortedTxs.map(([date, txs]) => (
+                  <section className="mt-6 w-fit" key={date}>
+                    <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
+                    <ul className="flex w-[736px] flex-col gap-y-1.5">
+                      {txs
+                        .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+                        .map(tx => (
+                          <li key={tx.id} ref={tx.id === focusedOperationId ? focusedRef : undefined}>
+                            <Operation
+                              key={`${tx.id}-${tx.id === focusedOperationId}`}
+                              operation={tx}
+                              multisigAccount={multisigAccount}
+                              isDefaultOpen={tx.id === focusedOperationId}
+                            />
+                          </li>
+                        ))}
+                    </ul>
+                  </section>
+                ))}
               </div>
             )}
           </Box>
