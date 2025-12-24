@@ -176,26 +176,41 @@ const mergeMultisigOperations = (
  * has extra operations that are not on the chain anymore nor were executed. We
  * want to filter them out. For example, if we have a fork and operation was
  * executed in the different block than we first recevied event of.
+ *
+ * IMPORTANT: We only filter pending operations for the same accountId as the
+ * update, to prevent operations from other wallets from disappearing when
+ * switching wallets.
  */
 const updateMultisigOperations = (
   oldOperations: MultisigOperation[],
   update: MultisigOperation[],
 ): MultisigOperation[] => {
+  // Group pending operations by both chainId and accountId
   const updatedPendingOperations = groupBy(
     update.filter(o => o.status === 'pending'),
-    o => o.chainId,
+    o => `${o.chainId}-${o.accountId}`,
   );
 
+  // Get unique accountIds from the update to only filter operations for those accounts
+  const updatedAccountIds = new Set(update.map(o => o.accountId));
+
   const filtered = oldOperations.filter(o => {
-    // Indirect evidence of onchain operation
+    // Keep all non-pending operations
     if (o.status !== 'pending') return true;
 
-    const group = updatedPendingOperations[o.chainId];
+    // Only filter pending operations for accounts that are in the update
+    // This prevents operations from other wallets from being filtered out
+    if (!updatedAccountIds.has(o.accountId)) return true;
+
+    const group = updatedPendingOperations[`${o.chainId}-${o.accountId}`];
 
     if (group) {
+      // If there are pending operations for this chain+account, only keep those that exist in the update
       return group.some(o1 => o1.id === o.id);
     }
 
+    // If no pending operations in update for this chain+account, keep the old one
+    // (it might have been executed/cancelled, but we'll update it when we get the status)
     return true;
   });
 
