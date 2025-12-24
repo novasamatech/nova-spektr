@@ -189,7 +189,7 @@ export const MultiSelect = ({
             align="start"
             sideOffset={4}
             className={cnTw(
-              'z-50 max-h-60 overflow-auto rounded-sm border px-1 py-1 shadow-card-shadow',
+              'pointer-events-auto z-50 max-h-60 overflow-auto rounded-sm border px-1 py-1 shadow-card-shadow',
               'w-[var(--radix-popover-trigger-width)]',
               OptionsContainerStyleTheme[theme],
             )}
