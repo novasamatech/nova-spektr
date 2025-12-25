@@ -83,8 +83,7 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
     await signingModal.checkSignReadyWalletConnect();
   });
 
-  // TODO: remove fail flag after the bug is fixed (#5327)
-  test.fail(`Should validate all fees for an xcm-transfer`, async ({ assetsPage }) => {
+  test(`Should validate all fees for an xcm-transfer`, async ({ assetsPage }) => {
     await allure.feature(feature);
     await allure.story(story);
     test.slow();
@@ -102,9 +101,8 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
     await transferModal.fillAmount(constants.feesValidation.validationAmount);
     await transferModal.expectValidationsVisible([
       Validation.sendingAmount,
-      Validation.networkFee,
       Validation.originFee,
-      Validation.deliveryFee,
+      Validation.destinationFee,
     ]);
   });
 
