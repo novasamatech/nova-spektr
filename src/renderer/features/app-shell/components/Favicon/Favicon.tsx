@@ -1,11 +1,16 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useRef } from 'react';
 
+import faviconDev from '@/app/favicon.dev.png';
+import faviconProd from '@/app/favicon.png';
+import { isDev } from '@/shared/lib/utils';
 import { faviconModel } from '../../model/favicon-model';
 
 const BADGE_SIZE = 16;
 const BADGE_PADDING = 4;
 const BADGE_COLOR = '#4649F6';
+
+const FAVICON_SRC = isDev() ? faviconDev : faviconProd;
 
 const getFaviconLink = () => {
   return document.querySelector<HTMLLinkElement>("link[rel='icon']");
@@ -14,7 +19,6 @@ const getFaviconLink = () => {
 const createBadgedFaviconDataUrl = (canvas: HTMLCanvasElement, imageSrc: string): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
     img.src = imageSrc;
 
     img.onload = () => {
@@ -53,29 +57,21 @@ const createBadgedFaviconDataUrl = (canvas: HTMLCanvasElement, imageSrc: string)
 export const Favicon = () => {
   const hasBadge = useUnit(faviconModel.$hasBadge);
   const canvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
-  const originalFaviconRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const link = getFaviconLink();
-    if (link && !originalFaviconRef.current) {
-      originalFaviconRef.current = link.href;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!originalFaviconRef.current) return;
-
     const link = getFaviconLink();
     if (!link) return;
 
     if (!hasBadge) {
-      link.href = originalFaviconRef.current;
+      link.href = FAVICON_SRC;
+      link.type = 'image/png';
 
       return;
     }
 
-    createBadgedFaviconDataUrl(canvasRef.current, originalFaviconRef.current).then((dataUrl) => {
+    createBadgedFaviconDataUrl(canvasRef.current, FAVICON_SRC).then((dataUrl) => {
       link.href = dataUrl;
+      link.type = 'image/png';
     });
   }, [hasBadge]);
 

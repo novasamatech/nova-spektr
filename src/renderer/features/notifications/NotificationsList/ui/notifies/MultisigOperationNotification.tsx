@@ -79,16 +79,12 @@ export const MultisigOperationNotificationComponent = ({
 
       const flexibleMultisigAccount = allAccounts
         .filter(accountUtils.isFlexibleMultisigAccount)
-        .find((acc) => acc.multisigAccountId === issuer);
+        .filter((acc) => acc.multisigAccountId === issuer)
+        .find((acc) => multisigService.isFlexibleMultisigOperation(operation, acc.accountId));
 
-      if (
-        nonNullable(flexibleMultisigAccount) &&
-        multisigService.isFlexibleMultisigOperation(operation, flexibleMultisigAccount.accountId)
-      ) {
-        return flexibleMultisigAccount;
-      }
+      if (nonNullable(flexibleMultisigAccount)) return flexibleMultisigAccount;
 
-      return allAccounts.filter(accountUtils.isAnyMultisigAccount).find((acc) => acc.accountId === issuer);
+      return allAccounts.filter(accountUtils.isMultisigAccount).find((acc) => acc.accountId === issuer);
     },
   });
 
