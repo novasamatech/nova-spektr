@@ -17,7 +17,6 @@ export const substrateChains = [
   { name: 'Polkadot Asset Hub' },
   { name: 'Robonomics' },
   { name: 'Zeitgeist' },
-  { name: 'Integritee Parachain' },
   { name: 'Centrifuge Parachain' },
   { name: 'Hydration' },
   { name: 'Interlay' },

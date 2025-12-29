@@ -21,7 +21,13 @@ import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type MultisigEvent, type MultisigOperation } from '@/domains/network';
 import { type TransactionVote, votingService } from '@/entities/governance';
-import { isDelegateTransaction, isProxyTransaction, isUndelegateTransaction } from '@/entities/transaction';
+import {
+  getXcmTransactionBeneficiary,
+  isDelegateTransaction,
+  isProxyTransaction,
+  isUndelegateTransaction,
+  isXcmTransaction,
+} from '@/entities/transaction';
 
 export const getMultisigExtrinsicLink = (
   callHash?: HexString,
@@ -101,6 +107,11 @@ export const getDestination = (
 export const getDestinationAccountId = (tx: MultisigOperation): AccountId | undefined => {
   const coreTx = getCoreTx(tx);
   if (!coreTx) return undefined;
+
+  // For XCM transactions, use beneficiary extraction from XCM instructions
+  if (isXcmTransaction(coreTx)) {
+    return getXcmTransactionBeneficiary(coreTx);
+  }
 
   return coreTx.args.dest;
 };

@@ -50,7 +50,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
 
   public async expectTransferFeeNotZero(): Promise<void> {
     const feeRow = this.page.getByTestId(TransferModalElements.feeRowLocator);
-    const fee = feeRow.getByTestId(TransferModalElements.tokenAmountLocator);
+    const fees = feeRow.getByTestId(TransferModalElements.tokenAmountLocator);
     const feeLoaders = feeRow.getByTestId(TEST_IDS.OPERATIONS.FEE_LOADER);
 
     await step('Wait until all fees are loaded', async () => {
@@ -61,12 +61,15 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     });
 
     await step('Expect transfer fee to be greater than 0', async () => {
-      const feeText = await fee.textContent();
+      const allFees = await fees.all();
+      for (const fee of allFees) {
+        const feeText = await fee.textContent();
 
-      const numericMatch = feeText?.match(/(\d+\.?\d*)/);
-      const feeValue = numericMatch ? parseFloat(numericMatch[0]) : 0;
+        const numericMatch = feeText?.match(/(\d+\.?\d*)/);
+        const feeValue = numericMatch ? parseFloat(numericMatch[0]) : 0;
 
-      expect(feeValue, `Fee should be > 0, got "${feeText}"`).toBeGreaterThan(0);
+        expect(feeValue, `Fee should be > 0, got "${feeText}"`).toBeGreaterThan(0);
+      }
     });
   }
 
