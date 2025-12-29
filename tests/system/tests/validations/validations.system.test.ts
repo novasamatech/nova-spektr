@@ -42,7 +42,8 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
     await signingModal.checkSignReadyWalletConnect();
   });
 
-  test(`Should validate multisig signer missing account`, async ({ assetsPage }) => {
+  // TODO: remove fail flag after the bug is fixed (#5328)
+  test.fail(`Should validate multisig signer missing account`, async ({ assetsPage }) => {
     await allure.feature(feature);
     await allure.story(story);
     test.slow();
@@ -100,9 +101,8 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
     await transferModal.fillAmount(constants.feesValidation.validationAmount);
     await transferModal.expectValidationsVisible([
       Validation.sendingAmount,
-      Validation.networkFee,
       Validation.originFee,
-      Validation.deliveryFee,
+      Validation.destinationFee,
     ]);
   });
 

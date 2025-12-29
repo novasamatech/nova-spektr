@@ -64,12 +64,14 @@ export const Favicon = () => {
 
     if (!hasBadge) {
       link.href = FAVICON_SRC;
+      link.type = 'image/png';
 
       return;
     }
 
     createBadgedFaviconDataUrl(canvasRef.current, FAVICON_SRC).then((dataUrl) => {
       link.href = dataUrl;
+      link.type = 'image/png';
     });
   }, [hasBadge]);
 
