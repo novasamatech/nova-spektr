@@ -18,7 +18,7 @@ import {
 } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
+import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelectService } from '@/aggregates/wallet-select';
 import { notificationsSettingsModel } from '../model/notifications-settings-model';
@@ -55,12 +55,14 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
   const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
   const setIsOpen = isControlled ? onToggle! : setInternalIsOpen;
 
+  const resolvedWallets = useWalletsNames(wallets);
+
   const [walletSearchQuery, setWalletSearchQuery] = useState('');
 
   // Selected wallet IDs for MultiSelect (enabled = not disabled)
   const selectedWalletIds = useMemo(
-    () => new Set(wallets.filter((w) => !disabledWalletIds.has(w.id)).map((w) => w.id)),
-    [wallets, disabledWalletIds],
+    () => new Set(resolvedWallets.filter((w) => !disabledWalletIds.has(w.id)).map((w) => w.id)),
+    [resolvedWallets, disabledWalletIds],
   );
 
   useEffect(() => {
@@ -73,7 +75,7 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
 
   const walletOptions = useMemo(() => {
     const filteredWallets = performSearch({
-      records: wallets,
+      records: resolvedWallets,
       query: walletSearchQuery,
       getMeta: (wallet) => ({
         allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
@@ -91,7 +93,7 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
         </div>
       ),
     }));
-  }, [wallets, walletSearchQuery, allAccounts, chains]);
+  }, [resolvedWallets, walletSearchQuery, allAccounts, chains]);
 
   const toggleEvent = (event: NotificationEvent) => {
     setEnabledEvents((prev) => {
@@ -104,7 +106,7 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
 
   const handleWalletChange = (options: { id: string }[]) => {
     const enabledIds = new Set(options.map((opt) => Number(opt.id)));
-    setDisabledWalletIds(new Set(wallets.filter((w) => !enabledIds.has(w.id)).map((w) => w.id)));
+    setDisabledWalletIds(new Set(resolvedWallets.filter((w) => !enabledIds.has(w.id)).map((w) => w.id)));
   };
 
   const handleSave = () => {
