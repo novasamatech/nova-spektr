@@ -8,26 +8,40 @@ import { BaseLoginPage } from '../pages/loginPage/BaseLoginPage';
 type TestFixtures = {
   page: Page;
   loginPage: BaseLoginPage;
-  assetsPage: BaseAssetsPage;
+
+  transfersPage: BaseAssetsPage;
+
+  validationsPage: BaseAssetsPage;
 };
 
 type WorkerFixtures = {
   sharedContext: BrowserContext;
-  appBootstrapped: void;
+  validationsContext: BrowserContext;
+  transfersContext: BrowserContext;
 };
+
+async function applyInitFlags(context: BrowserContext) {
+  await context.addInitScript(() => {
+    const flags: Record<string, string> = {
+      assethub_migration_modal_seen_kusama: 'true',
+      assethub_migration_modal_seen_polkadot: 'true',
+    };
+    for (const [k, v] of Object.entries(flags)) localStorage.setItem(k, v);
+  });
+}
+
+async function bootstrapDb(context: BrowserContext, dbPath: string) {
+  const tmp = await context.newPage();
+  const login = new BaseLoginPage(tmp, new LoginPageElements());
+  await login.importDatabase(dbPath);
+  await tmp.close();
+}
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
   sharedContext: [
     async ({ browser }, use) => {
       const context = await browser.newContext({ ignoreHTTPSErrors: true, permissions: [] });
-
-      await context.addInitScript(() => {
-        const flags: Record<string, string> = {
-          assethub_migration_modal_seen_kusama: 'true',
-          assethub_migration_modal_seen_polkadot: 'true',
-        };
-        for (const [k, v] of Object.entries(flags)) localStorage.setItem(k, v);
-      });
+      await applyInitFlags(context);
 
       await use(context);
       await context.close();
@@ -35,15 +49,26 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     { scope: 'worker' } as const,
   ],
 
-  appBootstrapped: [
-    async ({ sharedContext }, use) => {
-      const tmp = await sharedContext.newPage();
-      const login = new BaseLoginPage(tmp, new LoginPageElements());
+  validationsContext: [
+    async ({ browser }, use) => {
+      const context = await browser.newContext({ ignoreHTTPSErrors: true, permissions: [] });
+      await applyInitFlags(context);
+      await bootstrapDb(context, 'validations/validations_tests_db.json');
 
-      await login.importDatabase('validations/validations_tests_db.json');
+      await use(context);
+      await context.close();
+    },
+    { scope: 'worker' } as const,
+  ],
 
-      await tmp.close();
-      await use(undefined);
+  transfersContext: [
+    async ({ browser }, use) => {
+      const context = await browser.newContext({ ignoreHTTPSErrors: true, permissions: [] });
+      await applyInitFlags(context);
+      await bootstrapDb(context, 'transfers/transfers_tests_db.json');
+
+      await use(context);
+      await context.close();
     },
     { scope: 'worker' } as const,
   ],
@@ -58,10 +83,24 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     await use(new BaseLoginPage(page, new LoginPageElements()));
   },
 
-  assetsPage: async ({ page, appBootstrapped: _bootstrapped }, use) => {
+  validationsPage: async ({ validationsContext }, use) => {
+    const page = await validationsContext.newPage();
     const assets = new BaseAssetsPage(page, new AssetsPageElements());
     await assets.gotoMain();
+
     await use(assets);
+
+    await page.close();
+  },
+
+  transfersPage: async ({ transfersContext }, use) => {
+    const page = await transfersContext.newPage();
+    const assets = new BaseAssetsPage(page, new AssetsPageElements());
+    await assets.gotoMain();
+
+    await use(assets);
+
+    await page.close();
   },
 });
 

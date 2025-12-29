@@ -29,15 +29,10 @@ export const xcmTransferTestCases = [
   },
 ];
 
-export const proxyTransferTestCases = [
-  {
-    chainName: 'Novasama Testnet - Governance',
-    amount: '0.1',
-    recipient: '5Gy5tdSg9KLxZMkHRTkFTEHz3QGYrmKbFzBGoyZjkg45JFNP',
-  },
-];
-
 export const transferConstants = {
   multisig_name: 'multisig_transfer',
-  proxy_name: 'Proxy_transfer',
+  nova_name: 'nova_transfer',
+  proxy_name: 'proxy_transfer',
+  vault_name: 'vault_transfer',
+  watch_only_name: 'watch_only_transfer',
 };
