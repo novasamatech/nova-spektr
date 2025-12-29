@@ -3,7 +3,7 @@ export const validationConstants = {
     chainName: 'Polkadot Relay',
     xcmChainName: 'Polkadot Asset Hub',
     assetId: 0,
-    walletName: 'Nova_fees_test',
+    walletName: 'Nova Autotest-1',
     validationAmount: '100',
   },
   amountValidation: {
@@ -16,7 +16,7 @@ export const validationConstants = {
   },
   missingAccountValidation: {
     multisigName: 'Msig_missing_account_test',
-    chainName: 'Novasama Testnet - Governance',
+    chainName: 'Kusama Asset Hub',
     assetId: 0,
   },
   permissionsValidation: {
@@ -30,12 +30,12 @@ export const validationConstants = {
   },
   proxyDepositValidation: {
     walletName: 'Proxy_deposit_test',
-    chainName: 'Polkadot Relay',
+    chainName: 'Polkadot Asset Hub',
     proxyWalletAddress: 'Nova Autotest-1',
   },
   multisigDepositValidation: {
     msigName: 'Msig_deposit_test',
-    chainName: 'Novasama Testnet - Governance',
+    chainName: 'Polkadot Asset Hub',
     assetId: 0,
   },
 };
@@ -47,8 +47,8 @@ export enum Validation {
   balance = 'balance error',
   sendingAmount = 'sending amount error',
   networkFee = 'network fee error',
-  originFee = 'origin-fee error',
-  deliveryFee = 'delivery fee error',
+  originFee = 'origin fee error',
+  destinationFee = 'destination fee error',
   multisigDeposit = 'multisig deposit error',
   proxyDeposit = 'proxy deposit error',
 }
