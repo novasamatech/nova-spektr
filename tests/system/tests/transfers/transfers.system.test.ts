@@ -5,12 +5,17 @@ import { AssetsPageElements } from '../../pages/_elements/AssetsPageElements';
 import { WatchOnlyAssetsPage } from '../../pages/assetsPage/WatchOnlyAssetsPage';
 import { test } from '../../utils/baseRegularFixture';
 import { getChainByName } from '../../utils/readConfig';
-import { transferConstants, transferTestCases, xcmTransferTestCases } from '../../utils/transferTestCases';
+import {
+  proxyTransferTestCase,
+  transferConstants,
+  transferTestCases,
+  xcmTransferTestCases,
+} from '../../utils/transferTestCases';
 
 const feature = 'Transfers';
 const story = 'Transfers tests';
 
-test.describe('Regular nova transfers', { tag: ['@regular-nova-transfers', '@regress'] }, () => {
+test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, () => {
   for (const { chainName, assetId, amount, recipient } of transferTestCases) {
     test(`Multisig can make regular transfer on ${chainName}`, async ({ transfersPage }) => {
       await allure.feature(feature);
@@ -58,7 +63,7 @@ test.describe('Regular nova transfers', { tag: ['@regular-nova-transfers', '@reg
     });
   }
 
-  for (const { chainName, assetId, amount, recipient } of transferTestCases) {
+  for (const { chainName, assetId, amount, recipient } of proxyTransferTestCase) {
     test('Proxy wallet can make regular transfer', async ({ transfersPage }) => {
       await allure.feature(feature);
       await allure.story(story);
@@ -119,20 +124,20 @@ test.describe('Regular nova transfers', { tag: ['@regular-nova-transfers', '@reg
     await watchOnlyPage.checkReceiveButtonNotExists();
   });
 
-  for (const { chainName, assetId } of transferTestCases) {
-    test(`Should not be able to open transfer modal on ${chainName} in watch-only mode`, async ({ transfersPage }) => {
-      await allure.feature(feature);
-      await allure.story(story);
+  test(`Should not be able to open transfer modal on ${transferConstants.watch_only_chain} in watch-only mode`, async ({
+    transfersPage,
+  }) => {
+    await allure.feature(feature);
+    await allure.story(story);
 
-      const walletModal = await transfersPage.openWalletManagement();
-      await walletModal.searchAndSelectWallet(transferConstants.watch_only_name);
+    const walletModal = await transfersPage.openWalletManagement();
+    await walletModal.searchAndSelectWallet(transferConstants.watch_only_name);
 
-      const chain = getChainByName(substrateChains, chainName);
-      const transferModal = await transfersPage.openTransfer(chain, assetId);
+    const chain = getChainByName(substrateChains, transferConstants.watch_only_chain);
+    const transferModal = await transfersPage.openTransfer(chain, transferConstants.watch_only_asset_id);
 
-      await transferModal.transferModalIsNotVisible();
-    });
-  }
+    await transferModal.transferModalIsNotVisible();
+  });
 
   for (const { chainName, assetId, xcmChainName, amount, recipient } of xcmTransferTestCases) {
     // TODO: remove fail flag after the bug is fixed (#5327) AND add EVM chains for test

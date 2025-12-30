@@ -33,7 +33,7 @@ export class DelegateAuthorityModalWindow extends BaseModal<DelegateModalElement
       for (const v of list) {
         const locs = getValidationLocators(this.page, v);
 
-        await Promise.race(locs.map((l) => l.waitFor({ state: 'visible' }))).catch(() => {
+        await Promise.race(locs.map((l) => l.waitFor({ state: 'visible', timeout: 15000 }))).catch(() => {
           throw new Error(`Validation "${v}" did not appear.`);
         });
 

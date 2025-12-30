@@ -106,6 +106,25 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
     ]);
   });
 
+  test(`Should validate for inactive account`, async ({ validationsPage }) => {
+    await allure.feature(feature);
+    await allure.story(story);
+    test.slow();
+
+    const walletModal = await validationsPage.openWalletManagement();
+    await walletModal.searchAndSelectWallet(constants.inactiveAccountValidation.walletName);
+
+    const chain = getChainByName(substrateChains, constants.inactiveAccountValidation.chainName);
+
+    const transferModal = await validationsPage.openTransfer(chain, constants.inactiveAccountValidation.assetId);
+    await transferModal.chooseXcmChain(constants.inactiveAccountValidation.xcmChainName);
+
+    await transferModal.clickMyselfButton();
+
+    await transferModal.fillAmount(constants.inactiveAccountValidation.validationAmount);
+    await transferModal.expectValidationsVisible(Validation.inactiveAccount);
+  });
+
   test(`Should validate for multisig deposit`, async ({ validationsPage }) => {
     await allure.feature(feature);
     await allure.story(story);

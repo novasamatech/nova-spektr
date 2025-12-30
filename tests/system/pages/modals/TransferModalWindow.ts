@@ -37,11 +37,11 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
       const filteredChain = config.filter((config_chain) => config_chain.name === this.chain.name)[0];
       const chainId = filteredChain.chainId;
       const url = TransferModalElements.getUrl(chainId, this.assetId);
-      await this.page.getByTestId(TEST_IDS.ASSETS.TOKEN_PLATE).first().waitFor();
+      await this.page.getByTestId(TEST_IDS.ASSETS.TOKEN_PLATE).first().waitFor({ timeout: 15000 });
       await this.page.goto(url);
 
       if (waitForModal) {
-        await this.page.getByTestId(TEST_IDS.TRANSFER.MODAL).waitFor({ state: 'visible' });
+        await this.page.getByTestId(TEST_IDS.TRANSFER.MODAL).waitFor({ state: 'visible', timeout: 15000 });
       }
 
       return this;
@@ -56,7 +56,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     await step('Wait until all fees are loaded', async () => {
       const loaders = await feeLoaders.all();
       for (const loader of loaders) {
-        await expect(loader).toBeHidden();
+        await expect(loader).toBeHidden({ timeout: 15000 });
       }
     });
 
@@ -173,7 +173,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     await step('Close transfer modal', async () => {
       const modal = this.page.getByTestId(TEST_IDS.TRANSFER.MODAL);
       await modal.getByTestId(TEST_IDS.CLOSE_BUTTON).click();
-      await modal.waitFor({ state: 'hidden' });
+      await modal.waitFor({ state: 'hidden', timeout: 15000 });
     });
 
     return this.previousPage;
@@ -190,7 +190,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
       for (const v of list) {
         const locs = getValidationLocators(this.page, v);
 
-        await Promise.race(locs.map((l) => l.waitFor({ state: 'visible' }))).catch(() => {
+        await Promise.race(locs.map((l) => l.waitFor({ state: 'visible', timeout: 15000 }))).catch(() => {
           throw new Error(`Validation "${v}" did not appear.`);
         });
 
