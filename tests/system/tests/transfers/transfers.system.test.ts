@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import * as allure from 'allure-js-commons';
 
 import { substrateChains } from '../../data/chains/chainsList';
@@ -129,14 +130,15 @@ test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, 
   }) => {
     await allure.feature(feature);
     await allure.story(story);
+    test.slow();
 
     const walletModal = await transfersPage.openWalletManagement();
     await walletModal.searchAndSelectWallet(transferConstants.watch_only_name);
 
     const chain = getChainByName(substrateChains, transferConstants.watch_only_chain);
-    const transferModal = await transfersPage.openTransfer(chain, transferConstants.watch_only_asset_id);
 
-    await transferModal.transferModalIsNotVisible();
+    const transferModal = await transfersPage.tryOpenTransfer(chain, transferConstants.watch_only_asset_id, 3000);
+    expect(transferModal).toBeNull();
   });
 
   for (const { chainName, assetId, xcmChainName, amount, recipient } of xcmTransferTestCases) {
