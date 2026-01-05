@@ -2380,6 +2380,7 @@
       "preferences": "Preferences",
       "preferencesDescription": "Select wallets and events to be notified about their activity by displaying popup",
       "saveButton": "Save",
+      "settingsSaved": "Settings saved",
       "soundEnabled": "Sound notification",
       "soundRestricted": "Sound is restricted by your browser. Please allow audio in site settings.",
       "walletsMultiPlaceholder": "Wallets",

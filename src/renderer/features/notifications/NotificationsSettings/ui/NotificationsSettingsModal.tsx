@@ -5,6 +5,7 @@ import { NotificationEvent } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
 import {
+  Animation,
   BodyText,
   Button,
   FootnoteText,
@@ -17,7 +18,7 @@ import {
   Switch,
 } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
-import { Modal } from '@/shared/ui-kit';
+import { Box, Modal, useNotification } from '@/shared/ui-kit';
 import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelectService } from '@/aggregates/wallet-select';
@@ -38,6 +39,7 @@ type Props = {
 
 export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle, showTrigger = true }: Props) => {
   const { t } = useI18n();
+  const notification = useNotification();
 
   const wallets = useUnit(notificationsSettingsModel.$wallets);
   const allAccounts = useUnit(accounts.$list);
@@ -116,6 +118,15 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
       soundEnabled,
     });
     setIsOpen(false);
+
+    notification.modal({
+      content: (
+        <Box width={60} padding={4} gap={1} verticalAlign="center" horizontalAlign="center">
+          <Animation variant="success" width={80} height={80} />
+          <SmallTitleText>{t('settings.notificationsSettings.settingsSaved')}</SmallTitleText>
+        </Box>
+      ),
+    });
   };
 
   const handlePlaySound = (e: React.MouseEvent) => {
