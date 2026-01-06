@@ -269,7 +269,7 @@ sample({
       event: revokeDelegationData.map((revokeData) => {
         const target = revokeData.target;
         const delegation = delegations[target];
-        const delegationData = Object.values(delegation)[0];
+        const delegationData = (delegation && Object.values(delegation)[0]) ?? null;
 
         return {
           chain: walletData.chain!,
