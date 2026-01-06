@@ -42,21 +42,21 @@ export const Confirmation = ({
   const confirmStore = useStoreMap({
     store: confirmModel.$confirmStore,
     keys: [id],
-    fn: (value, [id]) => value?.[id],
+    fn: (value, [id]) => (value ? value[id] : null) ?? null,
   });
 
   const lockPeriods = useStoreMap({
     store: lockPeriodsModel.$lockPeriods,
-    keys: [confirmStore.meta.chain],
+    keys: [confirmStore?.meta.chain],
     fn: (locks, [chain]) => (chain ? (locks[chain.chainId] ?? null) : null),
   });
 
-  useGate(locksPeriodsAggregate.gates.flow, { chain: confirmStore.meta.chain });
-  useGate(locksAggregate.gates.flow, { chain: confirmStore.meta.chain });
+  useGate(locksPeriodsAggregate.gates.flow, { chain: confirmStore?.meta.chain });
+  useGate(locksAggregate.gates.flow, { chain: confirmStore?.meta.chain });
 
   const trackLocks = useUnit(locksAggregate.$trackLocks);
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
-  const nativeAsset = getNativeAsset(confirmStore.meta.chain.assets);
+
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
   if (!confirmStore) {
@@ -67,6 +67,7 @@ export const Confirmation = ({
     );
   }
 
+  const nativeAsset = getNativeAsset(confirmStore.meta.chain.assets);
   const signerWallet = confirmStore.wallets.signatory;
 
   const amountValue = config.withFormatAmount
