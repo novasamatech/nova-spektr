@@ -50,10 +50,11 @@ const $revokeDelegationData = combine(
   ({ initiator, delegate, activeTracks }) => {
     if (nullable(initiator) || nullable(delegate)) return null;
 
-    const tracks = activeTracks[delegate][initiator.accountId].map(Number);
+    const accountTracks = activeTracks[delegate]?.[initiator.accountId];
+    if (nullable(accountTracks)) return null;
 
     return {
-      tracks,
+      tracks: accountTracks.map(Number),
       locks: { [initiator.accountId]: new BN(0) },
     } satisfies RevokeDelegationData;
   },
@@ -185,7 +186,7 @@ const dataSubmitted = sample({
     ) {
       const asset = getRelaychainAsset(chain.assets)!;
       const delegation = delegations[delegate];
-      const delegationData = Object.values(delegation)[0];
+      const delegationData = (delegation && Object.values(delegation)[0]) ?? null;
       const transferable = transferableAmount(
         balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId),
       );
