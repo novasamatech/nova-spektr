@@ -18,7 +18,7 @@ import {
   type Transaction,
   TransactionType,
 } from '@/shared/core';
-import { formatAmount, getAssetId } from '@/shared/lib/utils';
+import { formatAmount, getAssetId, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type BalancePreservation, type MultisigOperation } from '@/domains/network';
 import { type TransactionVote, type VoteTransaction } from '@/entities/governance';
@@ -790,6 +790,7 @@ type VestingSchedule = {
   locked: BN;
   startingBlock: BN;
   perBlock: BN;
+  unlockedAtStartBlock?: BN;
 };
 
 type VestedTransferParams = {
@@ -799,17 +800,48 @@ type VestedTransferParams = {
 };
 
 function buildVestedTransfer({ chain, accountId, vestingSchedule }: VestedTransferParams): Transaction {
-  const vestingTxs = vestingSchedule.map((v) => ({
-    chainId: chain.chainId,
-    accountId,
-    type: TransactionType.VESTED_TRANSFER,
-    args: {
-      target: v.target,
-      locked: v.locked.toString(),
-      startingBlock: v.startingBlock.toString(),
-      perBlock: v.perBlock.toString(),
-    },
-  }));
+  const vestingTxs: Transaction[] = [];
+
+  for (const v of vestingSchedule) {
+    if (nonNullable(v.unlockedAtStartBlock)) {
+      vestingTxs.push({
+        chainId: chain.chainId,
+        accountId,
+        type: TransactionType.VESTED_TRANSFER,
+        args: {
+          target: v.target,
+          locked: v.unlockedAtStartBlock.toString(),
+          startingBlock: v.startingBlock.toString(),
+          perBlock: v.unlockedAtStartBlock.toString(),
+        },
+      });
+
+      const remainingLocked = v.locked.sub(v.unlockedAtStartBlock);
+      vestingTxs.push({
+        chainId: chain.chainId,
+        accountId,
+        type: TransactionType.VESTED_TRANSFER,
+        args: {
+          target: v.target,
+          locked: remainingLocked.toString(),
+          startingBlock: v.startingBlock.toString(),
+          perBlock: v.perBlock.toString(),
+        },
+      });
+    } else {
+      vestingTxs.push({
+        chainId: chain.chainId,
+        accountId,
+        type: TransactionType.VESTED_TRANSFER,
+        args: {
+          target: v.target,
+          locked: v.locked.toString(),
+          startingBlock: v.startingBlock.toString(),
+          perBlock: v.perBlock.toString(),
+        },
+      });
+    }
+  }
 
   if (vestingTxs.length === 1) return vestingTxs[0];
 
