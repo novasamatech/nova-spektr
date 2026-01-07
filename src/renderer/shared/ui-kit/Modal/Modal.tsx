@@ -65,6 +65,7 @@ const Root = ({
                 'w-148': size === 'mdlg',
                 'w-modal-lg': size === 'lg',
                 'w-modal-xl': size === 'xl',
+                'w-modal-xxl': size === 'xxl',
                 'w-full': size === 'full',
                 'w-fit': size === 'fit',
                 'h-fit': height === 'fit',
