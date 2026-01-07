@@ -96,7 +96,7 @@ function createValidationSchema(options: ValidationSchemaOptions) {
         .transform(toAccountId)
         .refine((accountId) => {
           const existingSchedulesCount = existingVestingSchedules[accountId] ?? 0;
-          return new BN(existingSchedulesCount).lt(maxVestingSchedules);
+          return new BN(existingSchedulesCount).lte(maxVestingSchedules);
         }, VestingFieldError.MAX_VESTING_SCHEDULES_REACHED),
 
       locked: safeBN()
@@ -217,15 +217,17 @@ function validateCSV(records: VestingScheduleRaw[], options: ValidationSchemaOpt
     const record = records[i];
     const rowIndex = i + 1;
 
+    const targetAccountId = toAccountId(record.target);
+    const schedulesToAdd = nonNullable(record.unlockedAtStartBlock) ? 2 : 1;
+    if (nullable(validationOptions.existingVestingSchedules[targetAccountId])) {
+      validationOptions.existingVestingSchedules[targetAccountId] = schedulesToAdd;
+    } else {
+      validationOptions.existingVestingSchedules[targetAccountId] += schedulesToAdd;
+    }
+
     try {
       const schema = createValidationSchema(validationOptions);
       schema.parse(record);
-      const targetAccountId = toAccountId(record.target);
-      if (nullable(validationOptions.existingVestingSchedules[targetAccountId])) {
-        validationOptions.existingVestingSchedules[targetAccountId] = 1;
-      } else {
-        validationOptions.existingVestingSchedules[targetAccountId] += 1;
-      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         for (const issue of error.issues) {
