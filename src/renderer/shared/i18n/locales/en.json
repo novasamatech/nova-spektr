@@ -2848,13 +2848,15 @@
           "locked": "Locked",
           "perBlock": "Per block",
           "recipient": "Recipient",
-          "startBlock": "Start block"
+          "startBlock": "Start block",
+          "unlockedAtStartBlock": "Unlocked at start"
         },
         "hints": {
           "perBlock": "Tokens released per block during vesting",
           "planks": "{amount} planks",
           "startBlock": "Block number when vesting starts",
-          "startBlockTime": "Starts on {date} at {time}"
+          "startBlockTime": "Starts on {date} at {time}",
+          "unlockedAtStartBlock": "Amount unlocked at starting block"
         }
       },
       "title": "Parsed file"
