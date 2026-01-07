@@ -110,6 +110,7 @@ function createValidationSchema(options: ValidationSchemaOptions) {
       perBlock: safeBN().refine((bn) => bn.gt(BN_ZERO) && bn.lt(MAX_U128), VestingFieldError.OUT_OF_RANGE),
 
       unlockedAtStartBlock: safeBN()
+        .refine((bn) => bn.gte(minVestedTransfer), VestingFieldError.MIN_VESTED_TRANSFER)
         .refine((bn) => bn.lt(MAX_U128), VestingFieldError.OUT_OF_RANGE)
         .optional(),
     })
@@ -122,6 +123,19 @@ function createValidationSchema(options: ValidationSchemaOptions) {
       },
       {
         message: VestingFieldError.OUT_OF_RANGE,
+        path: ['unlockedAtStartBlock'],
+      },
+    )
+    .refine(
+      (data) => {
+        if (nonNullable(data.unlockedAtStartBlock)) {
+          const remainingLocked = data.locked.sub(data.unlockedAtStartBlock);
+          return remainingLocked.gte(minVestedTransfer);
+        }
+        return true;
+      },
+      {
+        message: VestingFieldError.MIN_VESTED_TRANSFER,
         path: ['unlockedAtStartBlock'],
       },
     );
