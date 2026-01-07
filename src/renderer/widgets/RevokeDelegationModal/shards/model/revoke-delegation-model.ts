@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, delay, spread } from 'patronum';
+import { assert } from '@/shared/lib/utils';
 
 import {
   type MultisigTxWrapper,
@@ -118,7 +119,7 @@ sample({
     return transactionService.getTxWrappers({
       wallet: walletData.wallet!,
       wallets,
-      account: walletData.wallet!.accounts[0],
+      account: walletData.wallet!.accounts[0]!,
       signatories: signatory ? [signatory] : [],
     });
   },
@@ -153,7 +154,8 @@ sample({
   },
   fn: ({ activeTracks }, { delegate, accounts }) => {
     return accounts.map((account) => {
-      const tracksNumber = Object.keys(activeTracks[delegate][account.accountId]).map(Number);
+      const tracks = activeTracks[delegate]?.[account.accountId];
+      const tracksNumber = tracks ? Object.keys(tracks).map(Number) : [];
 
       return {
         account,
@@ -187,13 +189,14 @@ sample({
     return !!walletData.chain || revokeDelegationData.length > 0;
   },
   fn: ({ walletData, revokeDelegationData, activeTracks }) => {
-    return revokeDelegationData.map((data) =>
-      transactionBuilder.buildUndelegate({
+    return revokeDelegationData.map((data) => {
+      const tracks = activeTracks[data.target]?.[data.account.accountId];
+      return transactionBuilder.buildUndelegate({
         chain: walletData.chain!,
         accountId: data.account!.accountId,
-        tracks: activeTracks[data.target][data.account.accountId].map(Number),
-      }),
-    );
+        tracks: tracks ? tracks.map(Number) : [],
+      });
+    });
   },
   target: $coreTxs,
 });
@@ -204,7 +207,7 @@ sample({
   filter: (api, transactions) => !!api && !!transactions?.length,
   fn: (api, transactions) => ({
     api: api!,
-    transaction: transactions![0].wrappedTx,
+    transaction: transactions![0]!.wrappedTx,
   }),
   target: getTransactionFeeFx,
 });
@@ -269,7 +272,9 @@ sample({
       event: revokeDelegationData.map((revokeData) => {
         const target = revokeData.target;
         const delegation = delegations[target];
-        const delegationData = (delegation && Object.values(delegation)[0]) ?? null;
+        const delegationData = delegation && Object.values(delegation)[0];
+
+        assert(delegationData, 'Delegation data is not found');
 
         return {
           chain: walletData.chain!,
@@ -285,12 +290,12 @@ sample({
           initiator: revokeData.account,
           signatory: revokeData.account,
           delegate: revokeData.target,
-          locks: revokeData.locks[revokeData.account!.accountId],
+          locks: revokeData.locks[revokeData.account!.accountId]!,
           route: txWrappers.map((wrapper) =>
             wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
           ),
-          coreTx: coreTxs[0],
-          tx: coreTxs[0],
+          coreTx: coreTxs[0]!,
+          tx: coreTxs[0]!,
         } satisfies RevokeDelegationConfirm;
       }),
       step: Step.CONFIRM,

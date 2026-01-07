@@ -20,7 +20,7 @@ vi.mock('@/shared/i18n', () => ({
 }));
 
 const testChain = polkadotChain;
-const testAsset = testChain.assets[0];
+const testAsset = testChain.assets[0]!;
 
 const defaultProps = {
   asset: testAsset as Asset,
@@ -66,7 +66,7 @@ describe('pages/Assets/AssetCard', () => {
     const textHidden = screen.queryByText('assetBalance.transferable');
     expect(textHidden).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getAllByRole('button')[0]);
+    await userEvent.click(screen.getAllByRole('button')[0]!);
 
     const text = screen.queryByText('assetBalance.transferable');
     expect(text).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe('pages/Assets/AssetCard', () => {
 
     expect(window.location.href).toEqual(new URL('/assets', origin).toString());
 
-    const button = screen.getAllByRole('button')[1];
+    const button = screen.getAllByRole('button')[1]!;
     act(() => button.click());
 
     const chainId = defaultProps.chainId;

@@ -28,7 +28,10 @@ export const fetchStakingRewards = async ({
   };
 
   const sums = keys(baseMap).reduce<Record<AccountId, BN>>((acc, accountId) => {
-    acc[accountId] = new BN(baseMap[accountId]);
+    const value = baseMap[accountId];
+    if (value !== undefined) {
+      acc[accountId] = new BN(value);
+    }
 
     return acc;
   }, {});
@@ -50,7 +53,7 @@ export const fetchStakingRewards = async ({
             sums[accountId] = new BN(0);
           }
 
-          sums[accountId] = sums[accountId].add(new BN(amount));
+          sums[accountId] = sums[accountId]!.add(new BN(amount));
         }
       } catch (error) {
         console.error('Staking: rewards request failed for', url, error);
@@ -60,7 +63,7 @@ export const fetchStakingRewards = async ({
 
   const aggregated: RewardsMap = keys(sums).reduce<RewardsMap>(
     (acc, accountId) => {
-      acc[accountId] = sums[accountId].toString();
+      acc[accountId] = sums[accountId]!.toString();
 
       return acc;
     },

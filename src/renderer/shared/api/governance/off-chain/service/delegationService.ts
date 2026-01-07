@@ -137,7 +137,7 @@ async function getDelegatesForAccount(chain: Chain, accountId: AccountId): Promi
 }
 
 function calculateTotalVotes(voteAmount: BN, tracks: number[], chain: Chain): BN {
-  return toPrecision(voteAmount, chain.assets[0].precision).mul(new BN(tracks.length));
+  return toPrecision(voteAmount, chain.assets[0]!.precision).mul(new BN(tracks.length));
 }
 
 export const delegationService: DelegationApi = {

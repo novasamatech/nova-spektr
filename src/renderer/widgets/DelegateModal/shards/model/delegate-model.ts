@@ -132,7 +132,7 @@ sample({
     return transactionService.getTxWrappers({
       wallet: walletData.wallet!,
       wallets,
-      account: walletData.wallet!.accounts[0],
+      account: walletData.wallet!.accounts[0]!,
       signatories,
     });
   },
@@ -207,7 +207,7 @@ sample({
   filter: (api, transactions) => nonNullable(api) && (transactions?.length ?? 0) > 0,
   fn: (api, transactions) => ({
     api: api!,
-    transaction: transactions![0].wrappedTx,
+    transaction: transactions![0]!.wrappedTx,
   }),
   target: getTransactionFeeFx,
 });
@@ -330,6 +330,7 @@ sample({
 
     return {
       events: shards.map((shard, index) => {
+        const coreTx = coreTxs[index]!;
         const transferable = transferableAmount(
           balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId),
         );
@@ -346,12 +347,12 @@ sample({
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
           signatory: delegateData!.signatory!,
           locks: delegateData!.locks[shard.accountId],
-          coreTx: coreTxs[index],
+          coreTx,
           initiator: shard,
           route: txWrappers.map((wrapper) =>
             wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
           ),
-          tx: coreTxs[index],
+          tx: coreTx,
         } satisfies DelegateConfirm;
       }),
       step: Step.CONFIRM,
@@ -482,7 +483,7 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

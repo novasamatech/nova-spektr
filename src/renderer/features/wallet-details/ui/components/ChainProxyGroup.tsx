@@ -31,7 +31,7 @@ export const ChainProxyGroup = ({ chain, proxies, totalDeposit, canCreateProxy, 
               {totalDeposit ? (
                 <AssetBalance
                   value={totalDeposit.replaceAll(',', '')}
-                  asset={chain.assets[0]}
+                  asset={chain.assets[0]!}
                   className="text-help-text"
                 />
               ) : (

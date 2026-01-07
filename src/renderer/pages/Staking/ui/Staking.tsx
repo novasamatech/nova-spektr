@@ -150,7 +150,7 @@ export const Staking = () => {
   const { rewards, isRewardsLoading } = useStakingRewards(accountIds, activeChain);
 
   useEffect(() => {
-    setChainId(localStorageService.getFromStorage(STAKING_NETWORK, DEFAULT_STAKING_CHAIN));
+    setChainId(localStorageService.getFromStorage(STAKING_NETWORK, DEFAULT_STAKING_CHAIN) ?? null);
   }, []);
 
   useEffect(() => {

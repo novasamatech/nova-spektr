@@ -123,7 +123,7 @@ export const CodexTab = () => {
   useEffect(() => {
     const currentActiveSectionExists = sections.some((section: Section) => section.id === activeSection);
     if (!currentActiveSectionExists && sections.length > 0) {
-      setActiveSection(sections[0].id);
+      setActiveSection(sections[0]!.id);
     }
   }, [sections, activeSection]);
 

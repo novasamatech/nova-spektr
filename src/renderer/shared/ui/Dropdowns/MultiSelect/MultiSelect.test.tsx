@@ -36,7 +36,7 @@ describe('ui/Dropdowns/MultiSelect', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    const option = screen.getByRole('option', { name: options[0].element });
+    const option = screen.getByRole('option', { name: options[0]!.element });
     expect(option).toBeInTheDocument();
   });
 
@@ -51,7 +51,7 @@ describe('ui/Dropdowns/MultiSelect', () => {
       expect(screen.getByRole('textbox')).toBeInTheDocument();
     });
 
-    const option = screen.getByRole('option', { name: options[0].element });
+    const option = screen.getByRole('option', { name: options[0]!.element });
     expect(option).toBeInTheDocument();
   });
 
@@ -62,9 +62,9 @@ describe('ui/Dropdowns/MultiSelect', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    const option = screen.getByRole('option', { name: options[0].element });
+    const option = screen.getByRole('option', { name: options[0]!.element });
     fireEvent.click(option);
 
-    expect(spySelected).toHaveBeenCalledWith([{ id: options[0].id, value: options[0].value }]);
+    expect(spySelected).toHaveBeenCalledWith([{ id: options[0]!.id, value: options[0]!.value }]);
   });
 });

@@ -40,7 +40,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
     const tempCancellation = [];
 
     if (cancellation.length) {
-      const cancelSignatories = account.signatories.find(s => s.accountId === cancellation[0].accountId);
+      const cancelSignatories = account.signatories.find(s => s.accountId === cancellation[0]!.accountId);
       if (cancelSignatories) {
         tempCancellation.push(cancelSignatories);
       }

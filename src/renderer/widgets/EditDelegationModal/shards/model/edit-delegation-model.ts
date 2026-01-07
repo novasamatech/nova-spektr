@@ -108,7 +108,7 @@ const $api = combine(
   ({ apis, walletData }) => {
     if (!walletData.chain) return null;
 
-    return apis[walletData.chain.chainId] || null;
+    return apis[walletData.chain.chainId] ?? null;
   },
 );
 
@@ -146,7 +146,7 @@ sample({
     return transactionService.getTxWrappers({
       wallet: walletData.wallet!,
       wallets,
-      account: walletData.wallet!.accounts[0],
+      account: walletData.wallet!.accounts[0]!,
       signatories,
     });
   },
@@ -211,21 +211,21 @@ sample({
 
     return accounts.map((shard) => {
       const conviction = delegateData!.isUnchanged
-        ? activeDelegations[shard.accountId].conviction
+        ? activeDelegations[shard.accountId]?.conviction
         : delegateData!.conviction;
       const amount = delegateData!.isUnchanged
-        ? activeDelegations[shard.accountId].balance.toString()
-        : walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision);
+        ? activeDelegations[shard.accountId]?.balance.toString()
+        : walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0]!.precision);
 
       return transactionBuilder.buildEditDelegation({
         chain: walletData.chain!,
         accountId: shard.accountId,
         balance: amount || '0',
         conviction: conviction || 'None',
-        previousConviction: activeDelegations[shard.accountId].conviction || 'None',
+        previousConviction: activeDelegations[shard.accountId]?.conviction || 'None',
         target: target.accountId,
         tracks,
-        undelegateTracks: activeTracks[target!.accountId]?.[shard.accountId].map(Number) || [],
+        undelegateTracks: activeTracks[target!.accountId]?.[shard.accountId]?.map(Number) || [],
       });
     });
   },
@@ -238,7 +238,7 @@ sample({
   filter: (api, transactions) => Boolean(api) && Boolean(transactions?.length),
   fn: (api, transactions) => ({
     api: api!,
-    transaction: transactions![0].wrappedTx,
+    transaction: transactions![0]!.wrappedTx,
   }),
   target: getTransactionFeeFx,
 });
@@ -375,6 +375,9 @@ sample({
           return null;
         }
 
+        const coreTx = coreTxs[index]!;
+        const transaction = transactions![index]!;
+
         return {
           chain: walletData.chain!,
           asset: asset!,
@@ -386,17 +389,17 @@ sample({
           ...delegateData!,
           signatory: delegateData!.signatory!,
           ...(isUnchanged && {
-            balance: getBalanceBn(activeDelegations[shard.accountId].balance.toString(), asset.precision).toString(),
-            conviction: activeDelegations[shard.accountId].conviction,
+            balance: getBalanceBn(activeDelegations[shard.accountId]?.balance.toString() ?? '0', asset.precision).toString(),
+            conviction: activeDelegations[shard.accountId]?.conviction,
           }),
-          previousConviction: activeDelegations[shard.accountId].conviction,
+          previousConviction: activeDelegations[shard.accountId]?.conviction ?? 'None',
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
           locks: delegateData!.locks[shard.accountId],
-          coreTx: coreTxs[index],
+          coreTx,
           route: [shard],
-          tx: transactions![index].wrappedTx,
+          tx: transaction.wrappedTx,
           initiator: shard,
         } satisfies EditDelegationConfirm;
       })
@@ -531,7 +534,7 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

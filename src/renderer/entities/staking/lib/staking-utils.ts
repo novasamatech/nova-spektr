@@ -17,7 +17,7 @@ async function getControllers(api: ApiPromise, accounts: AccountId[]): Promise<A
     const controllers = await api.query.staking.bonded.multi(accounts);
 
     return controllers.map((controller, index) =>
-      controller.isNone ? accounts[index] : toAccountId(controller.unwrap().toString()),
+      controller.isNone ? accounts[index]! : toAccountId(controller.unwrap().toString()),
     );
   } catch (error) {
     console.warn(error);
@@ -37,6 +37,7 @@ async function listenToLedger(
     try {
       const staking = data.reduce<StakingMap>((acc, ledger, index) => {
         const account = accounts[index];
+        if (!account) return acc;
 
         if (ledger.isNone) {
           acc[account] = undefined;

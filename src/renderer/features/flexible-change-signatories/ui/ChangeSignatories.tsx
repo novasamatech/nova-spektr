@@ -82,7 +82,7 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
   }
 
   return (
-    <Modal isOpen={isModalOpen} size={MODAL_SIZE[step].size} height={MODAL_SIZE[step].height} onToggle={onToggle}>
+    <Modal isOpen={isModalOpen} size={MODAL_SIZE[step]!.size} height={MODAL_SIZE[step]!.height} onToggle={onToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
 
       <Modal.Title close>
@@ -101,7 +101,7 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
                 <Signatory
                   key={index}
                   isOwnAccount={index === 0}
-                  isDuplicate={duplicateSignatories[toAccountId(signatory.address)]?.includes(index)}
+                  isDuplicate={duplicateSignatories[toAccountId(signatory.address)]?.includes(index) ?? false}
                   isInvalidAddress={invalidAddresses.includes(signatory.address)}
                   signatoryIndex={index}
                   signatory={signatory}

@@ -21,10 +21,10 @@ export const useNetworkData = (chainId = '0x00' as ChainId): NetworkData => {
   const connections = useUnit(networkModel.$connections);
 
   return {
-    api: apis[chainId],
-    chain: chains[chainId],
-    connectionStatus: connectionStatuses[chainId],
-    connection: connections[chainId],
+    api: apis[chainId]!,
+    chain: chains[chainId]!,
+    connectionStatus: connectionStatuses[chainId]!,
+    connection: connections[chainId]!,
     // TODO: Try to remove all extendedChain usage in future
     extendedChain: {
       ...chains[chainId],

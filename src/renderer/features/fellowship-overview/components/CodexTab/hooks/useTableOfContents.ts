@@ -58,7 +58,7 @@ const parseMarkdownToTableOfContents = (markdownContent: string): TableOfContent
   }
 
   if (toc.length > 0) {
-    toc[0].isExpanded = true;
+    toc[0]!.isExpanded = true;
   }
 
   return toc;

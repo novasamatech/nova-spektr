@@ -143,7 +143,7 @@ function isPureProxiedAccount(account: Partial<AnyAccount>): account is ProxiedA
 // Matchers
 
 function isAccountWithShards(accounts: AnyAccount | VaultShardAccount[]): accounts is VaultShardAccount[] {
-  return Array.isArray(accounts) && isVaultShardAccount(accounts[0]);
+  return Array.isArray(accounts) && isVaultShardAccount(accounts[0]!);
 }
 
 function isChainIdMatch(account: AnyAccount, chainId: ChainId): boolean {
@@ -218,7 +218,7 @@ function getAccountsAndShardGroups(accounts: AnyAccount[]): (VaultChainAccount |
 function getSignatoryAccounts<T extends VaultBaseAccount>(accountIds: AccountId[], accounts: T[]): T[] {
   const accountsMap = keyBy(accounts, 'accountId');
 
-  return accountIds.map((id) => accountsMap[id]);
+  return accountIds.map((id) => accountsMap[id]!);
 }
 
 type DerivationPathLike = {
@@ -228,7 +228,7 @@ type DerivationPathLike = {
 function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): string {
   if (!Array.isArray(data)) return data.derivationPath;
 
-  return data[0].derivationPath.replace(/\d+$/, `0...${data.length - 1}`);
+  return data[0]!.derivationPath.replace(/\d+$/, `0...${data.length - 1}`);
 }
 
 // Proxied accounts

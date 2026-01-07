@@ -91,8 +91,8 @@ export const VaultAccountsList = memo(({ chains, accountsMap, className, onShard
               <ul>
                 {group.accounts.map((account) => {
                   const isSharded = accountUtils.isAccountWithShards(account);
-                  const accountId = isSharded ? account[0].accountId : account.accountId;
-                  const chain = allChains[isSharded ? account[0].chainId : account.chainId];
+                  const accountId = isSharded ? account[0]!.accountId : account.accountId;
+                  const chain = allChains[isSharded ? account[0]!.chainId : account.chainId]!;
                   const derivationPath = accountUtils.getDerivationPath(account);
 
                   return (

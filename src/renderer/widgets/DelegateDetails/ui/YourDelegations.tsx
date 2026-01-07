@@ -109,7 +109,7 @@ export const YourDelegations = () => {
                       i18nKey="general.actions.duration"
                       values={{ duration: locksService.getLockPeriodsMultiplier(activeDelegation.conviction) }}
                       components={{
-                        balance: <AssetBalance value={activeDelegation.balance} asset={chain.assets[0]} />,
+                        balance: <AssetBalance value={activeDelegation.balance} asset={chain.assets[0]!} />,
                       }}
                     />
                   </BodyText>

@@ -43,7 +43,10 @@ const getDataFromCallData = (
 
   const { method, section } = api.registry.findMetaCall(extrinsicCall.callIndex);
 
-  const extrinsicFn = api.tx[section][method];
+  const extrinsicFn = api.tx[section]?.[method];
+  if (!extrinsicFn) {
+    throw new Error(`Unknown extrinsic: ${section}.${method}`);
+  }
   const extrinsic = extrinsicFn(...extrinsicCall.args);
 
   if (!decoded) {
@@ -207,24 +210,24 @@ const getCallDataParser: Record<
   [TransactionType.TRANSFER]: (decoded, chainId, chains): Record<string, any> => {
     return {
       assetId: getNativeAssetId(chains, chainId),
-      dest: decoded.args[0].toString(),
-      value: decoded.args[1].toString(),
+      dest: decoded.args[0]!.toString(),
+      value: decoded.args[1]!.toString(),
     };
   },
   [TransactionType.TRANSFER_ALL]: (decoded, chainId, chains): Record<string, any> => {
-    return { assetId: getNativeAssetId(chains, chainId), dest: decoded.args[0].toString() };
+    return { assetId: getNativeAssetId(chains, chainId), dest: decoded.args[0]!.toString() };
   },
   [TransactionType.TRANSFER_ALLOW_DEATH]: (decoded, chainId, chains): Record<string, any> => {
     return {
       assetId: getNativeAssetId(chains, chainId),
-      dest: decoded.args[0].toString(),
-      value: decoded.args[1].toString(),
+      dest: decoded.args[0]!.toString(),
+      value: decoded.args[1]!.toString(),
     };
   },
   [TransactionType.VESTED_TRANSFER]: (decoded): Record<string, any> => {
     const schedule = decoded.args[1] as any;
     return {
-      target: decoded.args[0].toString(),
+      target: decoded.args[0]!.toString(),
       schedule: {
         locked: schedule.locked.toString(),
         perBlock: schedule.perBlock.toString(),
@@ -234,102 +237,102 @@ const getCallDataParser: Record<
   },
   [TransactionType.ASSET_TRANSFER]: (decoded): Record<string, any> => {
     return {
-      assetId: decoded.args[0].toString(),
-      dest: decoded.args[1].toString(),
-      value: decoded.args[2].toString(),
+      assetId: decoded.args[0]!.toString(),
+      dest: decoded.args[1]!.toString(),
+      value: decoded.args[2]!.toString(),
     };
   },
   [TransactionType.ORML_TRANSFER]: (decoded): Record<string, any> => {
     return {
-      dest: decoded.args[0].toString(),
-      assetId: decoded.args[1].toString(),
-      value: decoded.args[2].toString(),
+      dest: decoded.args[0]!.toString(),
+      assetId: decoded.args[1]!.toString(),
+      value: decoded.args[2]!.toString(),
     };
   },
   [TransactionType.XCM_LIMITED_TRANSFER]: (decoded): Record<string, any> => {
     return {
-      dest: decoded.args[0].toString(),
-      beneficiary: decoded.args[1].toString(),
-      assets: decoded.args[2].toString(),
+      dest: decoded.args[0]!.toString(),
+      beneficiary: decoded.args[1]!.toString(),
+      assets: decoded.args[2]!.toString(),
     };
   },
   [TransactionType.XCM_TELEPORT]: (decoded): Record<string, any> => {
     return {
-      dest: decoded.args[0].toString(),
-      beneficiary: decoded.args[1].toString(),
-      assets: decoded.args[2].toString(),
+      dest: decoded.args[0]!.toString(),
+      beneficiary: decoded.args[1]!.toString(),
+      assets: decoded.args[2]!.toString(),
     };
   },
   [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (decoded): Record<string, any> => {
     return {
-      dest: decoded.args[0].toString(),
-      beneficiary: decoded.args[1].toString(),
-      assets: decoded.args[2].toString(),
+      dest: decoded.args[0]!.toString(),
+      beneficiary: decoded.args[1]!.toString(),
+      assets: decoded.args[2]!.toString(),
     };
   },
   [TransactionType.POLKADOT_XCM_TELEPORT]: (decoded): Record<string, any> => {
     return {
-      dest: decoded.args[0].toString(),
-      beneficiary: decoded.args[1].toString(),
-      assets: decoded.args[2].toString(),
+      dest: decoded.args[0]!.toString(),
+      beneficiary: decoded.args[1]!.toString(),
+      assets: decoded.args[2]!.toString(),
     };
   },
   [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: (decoded): Record<string, any> => {
     return {
-      dest: decoded.args[0].toString(),
-      beneficiary: decoded.args[1].toString(),
-      assets: decoded.args[2].toString(),
+      dest: decoded.args[0]!.toString(),
+      beneficiary: decoded.args[1]!.toString(),
+      assets: decoded.args[2]!.toString(),
     };
   },
   [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (decoded): Record<string, any> => {
     return {
-      asset: decoded.args[0].toString(),
-      dest: decoded.args[1].toString(),
+      asset: decoded.args[0]!.toString(),
+      dest: decoded.args[1]!.toString(),
     };
   },
   [TransactionType.POLKADOT_XCM_RESERVE_WITHDRAW]: (decoded): Record<string, any> => {
     return {
-      dest: decoded.args[0].toString(),
-      beneficiary: decoded.args[1].toString(),
-      assets: decoded.args[2].toString(),
-      feeAssetItem: decoded.args[3].toString(),
+      dest: decoded.args[0]!.toString(),
+      beneficiary: decoded.args[1]!.toString(),
+      assets: decoded.args[2]!.toString(),
+      feeAssetItem: decoded.args[3]!.toString(),
     };
   },
   [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: (decoded): Record<string, any> => {
     return {
-      dest: decoded.args[0].toString(),
-      assets: decoded.args[1].toString(),
-      assetsTransferType: decoded.args[2].toString(),
-      remoteFeesId: decoded.args[3].toString(),
-      feesTransferType: decoded.args[4].toString(),
-      customXcmOnDest: decoded.args[5].toString(),
-      weightLimit: decoded.args[6].toString(),
+      dest: decoded.args[0]!.toString(),
+      assets: decoded.args[1]!.toString(),
+      assetsTransferType: decoded.args[2]!.toString(),
+      remoteFeesId: decoded.args[3]!.toString(),
+      feesTransferType: decoded.args[4]!.toString(),
+      customXcmOnDest: decoded.args[5]!.toString(),
+      weightLimit: decoded.args[6]!.toString(),
     };
   },
   [TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: (decoded): Record<string, any> => {
     return {
-      dest: decoded.args[0].toString(),
-      assets: decoded.args[1].toString(),
-      assetsTransferType: decoded.args[2].toString(),
-      remoteFeesId: decoded.args[3].toString(),
-      feesTransferType: decoded.args[4].toString(),
-      customXcmOnDest: decoded.args[5].toString(),
-      weightLimit: decoded.args[6].toString(),
+      dest: decoded.args[0]!.toString(),
+      assets: decoded.args[1]!.toString(),
+      assetsTransferType: decoded.args[2]!.toString(),
+      remoteFeesId: decoded.args[3]!.toString(),
+      feesTransferType: decoded.args[4]!.toString(),
+      customXcmOnDest: decoded.args[5]!.toString(),
+      weightLimit: decoded.args[6]!.toString(),
     };
   },
   [TransactionType.XTOKENS_TRANSFER]: (decoded): Record<string, any> => {
     return {
-      currencyId: decoded.args[0].toString(),
-      amount: decoded.args[1].toString(),
-      dest: decoded.args[2].toString(),
+      currencyId: decoded.args[0]!.toString(),
+      amount: decoded.args[1]!.toString(),
+      dest: decoded.args[2]!.toString(),
       destWeightLimit: decoded.args[3]?.toString(),
     };
   },
   [TransactionType.XTOKENS_TRANSFER_MULTIASSETS]: (decoded): Record<string, any> => {
     return {
-      assets: decoded.args[0].toString(),
+      assets: decoded.args[0]!.toString(),
       feeItem: decoded.args[1]?.toString(),
-      dest: decoded.args[2].toString(),
+      dest: decoded.args[2]!.toString(),
       destWeightLimit: decoded.args[3]?.toString(),
     };
   },
@@ -337,11 +340,11 @@ const getCallDataParser: Record<
     const args: Record<string, any> = {};
     let index = 0;
     if (decoded.args.length === BOND_WITH_CONTROLLER_ARGS_AMOUNT) {
-      args.controller = decoded.args[index++].toString();
+      args.controller = decoded.args[index++]!.toString();
     }
 
-    args.value = decoded.args[index++].toString();
-    const payee = decoded.args[index++].toString();
+    args.value = decoded.args[index++]!.toString();
+    const payee = decoded.args[index++]!.toString();
 
     try {
       args.payee = JSON.parse(payee);
@@ -356,13 +359,13 @@ const getCallDataParser: Record<
     return args;
   },
   [TransactionType.UNSTAKE]: (decoded): Record<string, any> => {
-    return { value: decoded.args[0].toString() };
+    return { value: decoded.args[0]!.toString() };
   },
   [TransactionType.CHILL]: (): Record<string, any> => {
     return {};
   },
   [TransactionType.RESTAKE]: (decoded): Record<string, any> => {
-    return { value: decoded.args[0].toString() };
+    return { value: decoded.args[0]!.toString() };
   },
   [TransactionType.REDEEM]: (): Record<string, any> => {
     return {};
@@ -371,15 +374,15 @@ const getCallDataParser: Record<
     return { targets: (decoded.args[0] as any).map((a: Type) => a.toString()) };
   },
   [TransactionType.STAKE_MORE]: (decoded): Record<string, any> => {
-    return { maxAdditional: decoded.args[0].toString() };
+    return { maxAdditional: decoded.args[0]!.toString() };
   },
   [TransactionType.DESTINATION]: (decoded): Record<string, any> => {
     const args: Record<string, any> = {};
     try {
-      args.payee = JSON.parse(decoded.args[0].toString());
+      args.payee = JSON.parse(decoded.args[0]!.toString());
     } catch (e) {
       console.warn(e);
-      args.payee = decoded.args[0].toString();
+      args.payee = decoded.args[0]!.toString();
     }
 
     if (typeof args.payee === 'object') {
@@ -389,137 +392,137 @@ const getCallDataParser: Record<
     return args;
   },
   [TransactionType.BATCH_ALL]: (decoded): Record<string, any> => {
-    return { calls: decoded.args[0].toHex() };
+    return { calls: decoded.args[0]!.toHex() };
   },
   [TransactionType.MULTISIG_AS_MULTI]: (decoded): Record<string, any> => {
     const baseParams = {
-      threshold: decoded.args[0].toString(),
-      otherSignatories: decoded.args[1].toHuman(),
-      timepoint: decoded.args[2].toString(),
-      call: decoded.args[3].toHex(),
+      threshold: decoded.args[0]!.toString(),
+      otherSignatories: decoded.args[1]!.toHuman(),
+      timepoint: decoded.args[2]!.toString(),
+      call: decoded.args[3]!.toHex(),
     };
 
     if (decoded.args.length === OLD_MULTISIG_ARGS_AMOUNT) {
       return {
         ...baseParams,
-        storeCall: decoded.args[4].toString(),
-        maxWeight: decoded.args[5].toString(),
+        storeCall: decoded.args[4]!.toString(),
+        maxWeight: decoded.args[5]!.toString(),
       };
     }
 
     return {
       ...baseParams,
-      maxWeight: decoded.args[4].toHuman(),
+      maxWeight: decoded.args[4]!.toHuman(),
     };
   },
   [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (decoded): Record<string, any> => {
     return {
-      threshold: decoded.args[0].toString(),
-      otherSignatories: decoded.args[1].toHuman(),
-      timepoint: decoded.args[2].toString(),
-      callHash: decoded.args[3].toHex(),
-      maxWeight: decoded.args[4].toHuman(),
+      threshold: decoded.args[0]!.toString(),
+      otherSignatories: decoded.args[1]!.toHuman(),
+      timepoint: decoded.args[2]!.toString(),
+      callHash: decoded.args[3]!.toHex(),
+      maxWeight: decoded.args[4]!.toHuman(),
     };
   },
   [TransactionType.MULTISIG_CANCEL_AS_MULTI]: (decoded): Record<string, any> => {
     return {
-      threshold: decoded.args[0].toString(),
-      otherSignatories: decoded.args[1].toHuman(),
-      timepoint: decoded.args[2].toString(),
-      callHash: decoded.args[3].toHex(),
+      threshold: decoded.args[0]!.toString(),
+      otherSignatories: decoded.args[1]!.toHuman(),
+      timepoint: decoded.args[2]!.toString(),
+      callHash: decoded.args[3]!.toHex(),
     };
   },
   [TransactionType.ADD_PROXY]: (decoded): Record<string, any> => {
     return {
-      delegate: decoded.args[0].toString(),
-      proxyType: decoded.args[1].toString(),
-      delay: decoded.args[2].toString(),
+      delegate: decoded.args[0]!.toString(),
+      proxyType: decoded.args[1]!.toString(),
+      delay: decoded.args[2]!.toString(),
     };
   },
   [TransactionType.CREATE_PURE_PROXY]: (decoded): Record<string, any> => {
     return {
-      proxyType: decoded.args[0].toString(),
-      delay: decoded.args[1].toString(),
-      index: decoded.args[2].toString(),
+      proxyType: decoded.args[0]!.toString(),
+      delay: decoded.args[1]!.toString(),
+      index: decoded.args[2]!.toString(),
     };
   },
   [TransactionType.REMOVE_PROXY]: (decoded): Record<string, any> => {
     return {
-      delegate: decoded.args[0].toString(),
-      proxyType: decoded.args[1].toString(),
-      delay: decoded.args[2].toString(),
+      delegate: decoded.args[0]!.toString(),
+      proxyType: decoded.args[1]!.toString(),
+      delay: decoded.args[2]!.toString(),
     };
   },
   [TransactionType.KILL_PURE_PROXY]: (decoded): Record<string, any> => {
     return {
-      spawner: decoded.args[0].toString(),
-      proxyType: decoded.args[1].toString(),
-      index: decoded.args[2].toString(),
-      height: decoded.args[3].toString(),
-      extIndex: decoded.args[4].toString(),
+      spawner: decoded.args[0]!.toString(),
+      proxyType: decoded.args[1]!.toString(),
+      index: decoded.args[2]!.toString(),
+      height: decoded.args[3]!.toString(),
+      extIndex: decoded.args[4]!.toString(),
     };
   },
   [TransactionType.PROXY]: (decoded): Record<string, any> => {
     return {
-      real: decoded.args[0].toString(),
-      forceProxyType: decoded.args[1].toString(),
-      call: decoded.args[2].toHex(),
+      real: decoded.args[0]!.toString(),
+      forceProxyType: decoded.args[1]!.toString(),
+      call: decoded.args[2]!.toHex(),
     };
   },
   [TransactionType.REMARK]: (decoded): Record<string, any> => {
-    return { remark: decoded.args[0].toString() };
+    return { remark: decoded.args[0]!.toString() };
   },
   [TransactionType.REMARK_WITH_EVENT]: (decoded): Record<string, any> => {
-    return { remark: decoded.args[0].toString() };
+    return { remark: decoded.args[0]!.toString() };
   },
   [TransactionType.UNLOCK]: (decoded): Record<string, any> => {
     return {
-      class: decoded.args[0].toString(),
-      target: decoded.args[1].toString(),
+      class: decoded.args[0]!.toString(),
+      target: decoded.args[1]!.toString(),
     };
   },
   [TransactionType.VOTE]: (decoded): Record<string, any> => {
     return {
-      referendum: decoded.args[0].toString(),
-      vote: decoded.args[1].toHuman(),
+      referendum: decoded.args[0]!.toString(),
+      vote: decoded.args[1]!.toHuman(),
     };
   },
   [TransactionType.REMOVE_VOTE]: (decoded): Record<string, any> => {
     return {
-      track: decoded.args[0].toString(),
-      referendum: decoded.args[1].toString(),
+      track: decoded.args[0]!.toString(),
+      referendum: decoded.args[1]!.toString(),
     };
   },
   [TransactionType.UNDELEGATE]: (decoded): Record<string, any> => {
     return {
-      track: decoded.args[0].toString(),
+      track: decoded.args[0]!.toString(),
     };
   },
   [TransactionType.DELEGATE]: (decoded): Record<string, any> => {
     return {
-      track: decoded.args[0].toString(),
-      target: decoded.args[1].toString(),
-      conviction: decoded.args[2].toString(),
-      balance: decoded.args[3].toString(),
+      track: decoded.args[0]!.toString(),
+      target: decoded.args[1]!.toString(),
+      conviction: decoded.args[2]!.toString(),
+      balance: decoded.args[3]!.toString(),
     };
   },
   [TransactionType.EDIT_DELEGATION]: (decoded): Record<string, any> => {
     return {
-      track: decoded.args[0].toString(),
-      target: decoded.args[1].toString(),
-      conviction: decoded.args[2].toString(),
-      balance: decoded.args[3].toString(),
+      track: decoded.args[0]!.toString(),
+      target: decoded.args[1]!.toString(),
+      conviction: decoded.args[2]!.toString(),
+      balance: decoded.args[3]!.toString(),
     };
   },
   [TransactionType.COLLECTIVE_VOTE]: (decoded): Record<string, any> => {
     return {
-      pool: decoded.args[0].toString(),
-      aye: decoded.args[1].toPrimitive(),
+      pool: decoded.args[0]!.toString(),
+      aye: decoded.args[1]!.toPrimitive(),
     };
   },
   [TransactionType.COLLECTIVE_SET_ACTIVE]: (decoded): Record<string, any> => {
     return {
-      isActive: decoded.args[0].toPrimitive(),
+      isActive: decoded.args[0]!.toPrimitive(),
     };
   },
   [TransactionType.COLLECTIVE_SALARY_REQUEST]: (): Record<string, any> => {
@@ -535,8 +538,8 @@ const getCallDataParser: Record<
   },
   [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: (decoded): Record<string, any> => {
     return {
-      wish: decoded.args[0].toString(),
-      evidence: decoded.args[1].toString(),
+      wish: decoded.args[0]!.toString(),
+      evidence: decoded.args[1]!.toString(),
     };
   },
   [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: (): Record<string, any> => {

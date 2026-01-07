@@ -7,9 +7,9 @@ import { proxyTransferTestCases, transferConstants } from '../../utils/transferT
 
 const feature = 'Wallets. Proxy wallets';
 const story = 'Transfers';
-const recipient = proxyTransferTestCases[0].recipient;
-const amount = proxyTransferTestCases[0].amount;
-const chainName = proxyTransferTestCases[0].chainName;
+const recipient = proxyTransferTestCases[0]!.recipient;
+const amount = proxyTransferTestCases[0]!.amount;
+const chainName = proxyTransferTestCases[0]!.chainName;
 
 test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }, () => {
   test('Proxy wallet can make regular transfer', async ({ loginPage }) => {

@@ -28,7 +28,7 @@ const $walletData = $walletDataShards.map((data) => {
   if (!data) return null;
 
   return {
-    initiator: data.shards[0],
+    initiator: data.shards[0]!,
     chain: data.chain,
     wallet: data.wallet,
   };
@@ -49,7 +49,7 @@ const $api = combine(
     apis: networkModel.$apis,
     walletData: $walletData,
   },
-  ({ apis, walletData }) => (walletData ? apis[walletData.chain.chainId] : null),
+  ({ apis, walletData }) => (walletData ? (apis[walletData.chain.chainId] ?? null) : null),
 );
 
 const requestMultisigDeposit = sample({
@@ -79,7 +79,7 @@ sample({
 sample({
   clock: flowStarted,
   fn: (data) => ({
-    initiator: data.shards[0],
+    initiator: data.shards[0]!,
     chain: data.chain,
     wallet: data.wallet,
   }),
@@ -230,7 +230,7 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

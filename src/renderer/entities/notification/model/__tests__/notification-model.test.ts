@@ -227,7 +227,7 @@ describe('entities/notification/model/notification-model', () => {
       // Try to add notification with same key
       const duplicateNotification: CreateNotificationParams[] = [
         {
-          ...newNotificationParams[0],
+          ...newNotificationParams[0]!,
           key: 'test-key-1', // Same key as existing
         },
       ];
@@ -596,7 +596,7 @@ describe('entities/notification/model/notification-model', () => {
       await allSettled(notificationModel.events.notificationEdited, { scope, params: editedNotification });
 
       const result = scope.getState(notificationModel.$notifications);
-      expect(result[0].title).toBe('Updated title');
+      expect(result[0]!.title).toBe('Updated title');
     });
   });
 

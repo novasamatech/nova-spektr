@@ -36,7 +36,7 @@ sample({
     chains: networkModel.$chains,
   },
   filter: ({ shards, chains }) => shards.length > 0 && Object.keys(chains).length > 0,
-  fn: ({ shards, chains }) => chains[shards[0].chainId],
+  fn: ({ shards, chains }) => chains[shards[0]!.chainId],
   target: $chain,
 });
 

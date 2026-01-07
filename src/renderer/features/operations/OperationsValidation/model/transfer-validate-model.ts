@@ -71,7 +71,7 @@ const rootValidateFx = createEffect(
           network: { chain: chain, asset: asset },
           balance: {
             native: transferableAmount(
-              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId),
+              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0]!.assetId),
             ),
             balance: transferableAmount(balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId)),
           },
@@ -91,11 +91,11 @@ const rootValidateFx = createEffect(
           originFee: transaction.args.xcmData?.args.originFee || '0',
           destinationFee: transaction.args.xcmData?.args.destinationFee || '0',
           isProxy: false,
-          isNative: chain.assets[0].assetId === asset.assetId,
+          isNative: chain.assets[0]!.assetId === asset.assetId,
           isXcm: Boolean(transaction.args.xcmData),
           balance: {
             native: transferableAmount(
-              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId),
+              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0]!.assetId),
             ),
             balance: transferableAmount(balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId)),
           },
@@ -115,11 +115,11 @@ const rootValidateFx = createEffect(
           fee: new BN(fee),
           originFee: new BN(transaction.args.xcmData?.args.originFee || '0'),
           destinationFee: new BN(transaction.args.xcmData?.args.destinationFee || '0'),
-          isNative: chain.assets[0].assetId === asset.assetId,
+          isNative: chain.assets[0]!.assetId === asset.assetId,
           isXcm: Boolean(transaction.args.xcmData),
           balance: {
             native: transferableAmount(
-              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId),
+              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0]!.assetId),
             ),
             balance: transferableAmount(balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId)),
           },
@@ -139,11 +139,11 @@ const rootValidateFx = createEffect(
           originFee: new BN(transaction.args.xcmData?.args.originFee || '0'),
           destinationFee: new BN(transaction.args.xcmData?.args.destinationFee || '0'),
           isProxy: false,
-          isNative: chain.assets[0].assetId === asset.assetId,
+          isNative: chain.assets[0]!.assetId === asset.assetId,
           isXcm: Boolean(transaction.args.xcmData),
           balance: {
             native: transferableAmount(
-              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId),
+              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0]!.assetId),
             ),
             balance: transferableAmount(balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId)),
           },
@@ -164,7 +164,7 @@ const validateFx = attach({
   mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = getAssetById(transaction.args.asset, chain.assets) || chain.assets[0];
+    const asset = getAssetById(transaction.args.asset, chain.assets) || chain.assets[0]!;
 
     return {
       id,

@@ -24,8 +24,8 @@ describe('contactImportUtils', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data).toHaveLength(2);
-        expect(result.data[0].name).toBe('Alice');
-        expect(result.data[1].name).toBe('Bob');
+        expect(result.data[0]!.name).toBe('Alice');
+        expect(result.data[1]!.name).toBe('Bob');
       }
     });
 
@@ -133,9 +133,9 @@ describe('contactImportUtils', () => {
       const conflicts = contactImportUtils.detectAccountIdConflicts(imported, existing);
 
       expect(conflicts).toHaveLength(1);
-      expect(conflicts[0].imported.name).toBe('Alice');
-      expect(conflicts[0].existing.name).toBe('OldAlice');
-      expect(conflicts[0].existing.id).toBe(1);
+      expect(conflicts[0]!.imported.name).toBe('Alice');
+      expect(conflicts[0]!.existing.name).toBe('OldAlice');
+      expect(conflicts[0]!.existing.id).toBe(1);
     });
 
     it('should detect multiple conflicts', () => {
@@ -171,8 +171,8 @@ describe('contactImportUtils', () => {
 
       const resolved = contactImportUtils.resolveNameConflicts(imported, existing);
 
-      expect(resolved[0].name).toBe('Alice');
-      expect(resolved[1].name).toBe('Bob');
+      expect(resolved[0]!.name).toBe('Alice');
+      expect(resolved[1]!.name).toBe('Bob');
     });
 
     it('should add (1) suffix for duplicate name with different accountId', () => {
@@ -188,7 +188,7 @@ describe('contactImportUtils', () => {
 
       const resolved = contactImportUtils.resolveNameConflicts(imported, existing);
 
-      expect(resolved[0].name).toBe('Alice (1)');
+      expect(resolved[0]!.name).toBe('Alice (1)');
     });
 
     it('should not add suffix for same accountId (accountId conflict, not name conflict)', () => {
@@ -204,7 +204,7 @@ describe('contactImportUtils', () => {
 
       const resolved = contactImportUtils.resolveNameConflicts(imported, existing);
 
-      expect(resolved[0].name).toBe('Alice');
+      expect(resolved[0]!.name).toBe('Alice');
     });
 
     it('should increment suffix when (1) already exists', () => {
@@ -226,7 +226,7 @@ describe('contactImportUtils', () => {
 
       const resolved = contactImportUtils.resolveNameConflicts(imported, existing);
 
-      expect(resolved[0].name).toBe('Alice (2)');
+      expect(resolved[0]!.name).toBe('Alice (2)');
     });
 
     it('should handle multiple duplicates within imported file', () => {
@@ -239,9 +239,9 @@ describe('contactImportUtils', () => {
 
       const resolved = contactImportUtils.resolveNameConflicts(imported, existing);
 
-      expect(resolved[0].name).toBe('Alice');
-      expect(resolved[1].name).toBe('Alice (1)');
-      expect(resolved[2].name).toBe('Alice (2)');
+      expect(resolved[0]!.name).toBe('Alice');
+      expect(resolved[1]!.name).toBe('Alice (1)');
+      expect(resolved[2]!.name).toBe('Alice (2)');
     });
 
     it('should handle case-insensitive name matching', () => {
@@ -257,7 +257,7 @@ describe('contactImportUtils', () => {
 
       const resolved = contactImportUtils.resolveNameConflicts(imported, existing);
 
-      expect(resolved[0].name).toBe('alice (1)');
+      expect(resolved[0]!.name).toBe('alice (1)');
     });
   });
 });

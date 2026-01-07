@@ -289,7 +289,9 @@ const $proxyTypes = combine(
   },
   ({ apis, statuses, chain }) => {
     if (!chain?.chainId) return [];
-    if (networkUtils.isConnectedStatus(statuses[chain.chainId])) {
+
+    const status = statuses[chain.chainId];
+    if (status && networkUtils.isConnectedStatus(status)) {
       return getProxyTypes(apis[chain.chainId]);
     }
 
@@ -307,7 +309,10 @@ const $isChainConnected = combine(
   ({ chain, statuses }) => {
     if (!chain?.chainId) return false;
 
-    return networkUtils.isConnectedStatus(statuses[chain.chainId]);
+    const status = statuses[chain.chainId];
+    if (!status) return false;
+
+    return networkUtils.isConnectedStatus(status);
   },
 );
 
@@ -474,7 +479,7 @@ sample({
 sample({
   source: $availableAccounts,
   filter: (avilableAccounts) => avilableAccounts.length > 0,
-  fn: (avilableAccounts) => avilableAccounts[0],
+  fn: (avilableAccounts) => avilableAccounts[0]!,
   target: form.fields.initiator.change,
 });
 

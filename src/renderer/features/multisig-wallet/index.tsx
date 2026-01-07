@@ -151,13 +151,13 @@ transactionSDK(multisigWalletFeature, {
         section: 'multisig',
         method: 'asMulti',
         args: {
-          threshold: parseInt(extrinsic.args[0].toString()),
+          threshold: parseInt(extrinsic.args[0]!.toString()),
           // @ts-expect-error TODO use zod schema
-          otherSignatories: extrinsic.args[1].toHuman(),
-          timepoint: extrinsic.args[2].toString(),
-          call: extrinsic.args[3].toHex(),
+          otherSignatories: extrinsic.args[1]!.toHuman(),
+          timepoint: extrinsic.args[2]!.toString(),
+          call: extrinsic.args[3]!.toHex(),
           // @ts-expect-error TODO use zod schema
-          maxWeight: extrinsic.args[4].toHuman(),
+          maxWeight: extrinsic.args[4]!.toHuman(),
         },
       };
 

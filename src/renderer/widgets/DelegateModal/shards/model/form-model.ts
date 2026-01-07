@@ -244,7 +244,7 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : null;
+    return network ? (apis[network.chain.chainId] ?? null) : null;
   },
 );
 
@@ -301,13 +301,13 @@ sample({
   fn: (accountsBalances) => {
     if (accountsBalances.length === 0) return ZERO_BALANCE;
 
-    if (accountsBalances.length === 1) return accountsBalances[0];
+    if (accountsBalances.length === 1) return accountsBalances[0]!;
 
     const minBondBalance = accountsBalances.reduce<string>((acc, balance) => {
       if (!balance) return acc;
 
       return new BN(balance).lt(new BN(acc)) ? balance : acc;
-    }, accountsBalances[0]);
+    }, accountsBalances[0]!);
 
     return minBondBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance];
   },

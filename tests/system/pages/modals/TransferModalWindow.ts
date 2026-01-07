@@ -35,7 +35,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     return await step(`Open transfer modal for chain "${this.chain.name}" and asset ID ${this.assetId}`, async () => {
       const config = await readConfig();
       const filteredChain = config.filter((config_chain) => config_chain.name === this.chain.name)[0];
-      const chainId = filteredChain.chainId;
+      const chainId = filteredChain!.chainId;
       const url = TransferModalElements.getUrl(chainId, this.assetId);
       await this.page.getByTestId(TEST_IDS.ASSETS.TOKEN_PLATE).first().waitFor();
       await this.page.goto(url);

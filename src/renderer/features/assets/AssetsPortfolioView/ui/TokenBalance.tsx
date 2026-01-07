@@ -43,7 +43,7 @@ export const TokenBalance = memo(({ asset }: Props) => {
         className="text-text-primar text-right"
       />
       <AssembledAssetAmount asset={asset} balance={chain.balance} />
-      <AssetLinks assetId={asset.chains[0].assetId} chainId={chain.chainId} wallet={wallet} />
+      <AssetLinks assetId={asset.chains[0]!.assetId} chainId={chain.chainId} wallet={wallet} />
     </Plate>
   );
 });

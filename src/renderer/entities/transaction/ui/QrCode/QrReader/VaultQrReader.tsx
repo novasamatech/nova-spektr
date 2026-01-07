@@ -41,7 +41,7 @@ const createFrame = (metadata?: Uint8Array[]): RaptorFrame => {
     throw QR_READER_DECODE_ERRORS[DecodeQrError.INVALID];
   }
 
-  return new RaptorFrame(metadata[0]);
+  return new RaptorFrame(metadata[0]!);
 };
 
 const enum Status {

@@ -140,8 +140,8 @@ export const Confirmation = ({
             }
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={meta.multisigDeposit} asset={meta.chain.assets[0]} />
-              <AssetFiatBalance asset={meta.chain.assets[0]} amount={meta.multisigDeposit} />
+              <AssetBalance value={meta.multisigDeposit} asset={meta.chain.assets[0]!} />
+              <AssetFiatBalance asset={meta.chain.assets[0]!} amount={meta.multisigDeposit} />
             </div>
           </DetailRow>
         )}

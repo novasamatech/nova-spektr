@@ -154,7 +154,9 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
       }
 
       const [first, ...rest] = signatories;
-      await this.selectMyAccount(first.account);
+      if (first) {
+        await this.selectMyAccount(first.account);
+      }
 
       for (const s of rest) {
         await this.addSignatoryWithName(s.account, s.name ?? s.account);

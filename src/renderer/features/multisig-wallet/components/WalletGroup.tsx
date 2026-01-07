@@ -70,7 +70,7 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
 
             if (walletUtils.isFlexibleMultisig(wallet)) {
               const chainId = wallet.accounts.find(accountUtils.isFlexibleMultisigAccount)?.chainId;
-              chain = chainId ? chains[chainId] : null;
+              chain = chainId ? chains[chainId] ?? null : null;
               label = t('wallets.flexibleMultisigFlexLabel');
             }
 

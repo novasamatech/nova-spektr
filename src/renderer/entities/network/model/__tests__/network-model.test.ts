@@ -89,7 +89,7 @@ describe('entities/network/model/network-model', () => {
     await allSettled(networkModel.startNetworks, { scope });
 
     expect(spyCreateProvider).toHaveBeenCalledWith(
-      mockChainMap[polkadotChainId].chainId,
+      mockChainMap[polkadotChainId]!.chainId,
       ProviderType.WEB_SOCKET,
       { metadata: mockMetadata, nodes: ['http://localhost:8080'] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
@@ -125,7 +125,7 @@ describe('entities/network/model/network-model', () => {
 
     expect(connectMock).toHaveBeenCalled();
     expect(spyCreateProvider).toHaveBeenCalledWith(
-      mockChainMap[polkadotChainId].chainId,
+      mockChainMap[polkadotChainId]!.chainId,
       ProviderType.LIGHT_CLIENT,
       { metadata: mockMetadata, nodes: [''] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },

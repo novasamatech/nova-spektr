@@ -49,7 +49,7 @@ export const WebSplashScreen = () => {
   const { t } = useI18n();
 
   const screen = useMemo(() => {
-    return screens[Math.floor(Math.random() * screens.length)];
+    return screens[Math.floor(Math.random() * screens.length)]!;
   }, []);
 
   return (

@@ -270,41 +270,49 @@ const AccountsSelector = () => {
     groups.map((shards) => {
       const isAccountWithShards = accountUtils.isAccountWithShards(shards);
       if (isAccountWithShards) {
-        const groupValue = shards.reduce((acc, curr) => acc.add(new BN(accountsBalances[curr.accountId])), new BN(0));
+        const groupValue = shards.reduce(
+          (acc, curr) => acc.add(new BN(accountsBalances[curr.accountId] ?? '0')),
+          new BN(0),
+        );
 
         return {
           id: '',
           value: '',
           group: {
-            groupName: shards[0].name,
+            groupName: shards[0]!.name,
             groupValue: (
-              <AssetBalance value={groupValue} asset={chain.assets[0]} className="text-footnote text-inherit" />
+              <AssetBalance value={groupValue} asset={chain.assets[0]!} className="text-footnote text-inherit" />
             ),
-            list: shards.map((account) => ({
-              id: account.id.toString(),
-              value: account,
-              element: (
-                <Address
-                  address={toAddress(account.accountId, { prefix: chain.addressPrefix })}
-                  variant="short"
-                  canCopy={false}
-                  showIcon
-                />
-              ),
-              additionalElement: (
-                <AccountInfo account={account} chain={chain} balance={accountsBalances[account.accountId]} />
-              ),
-            })),
+            list: shards.map((account) => {
+              const balance = accountsBalances[account.accountId];
+
+              return {
+                id: account.id.toString(),
+                value: account,
+                element: (
+                  <Address
+                    address={toAddress(account.accountId, { prefix: chain.addressPrefix })}
+                    variant="short"
+                    canCopy={false}
+                    showIcon
+                  />
+                ),
+                additionalElement: balance && (
+                  <AccountInfo account={account} chain={chain} balance={balance} />
+                ),
+              };
+            }),
           },
         };
       }
       const address = toAddress(shards.accountId, { prefix: chain.addressPrefix });
+      const balance = accountsBalances[shards.accountId];
 
       return {
         id: shards.id.toString(),
         value: shards,
         element: <Address title={shards.name} address={address} variant="short" canCopy={false} showIcon />,
-        additionalElement: <AccountInfo account={shards} chain={chain} balance={accountsBalances[shards.accountId]} />,
+        additionalElement: balance && <AccountInfo account={shards} chain={chain} balance={balance} />,
       };
     }) || [];
 
@@ -344,7 +352,7 @@ const AccountInfo = ({ account, chain, balance }: AccountProps) => (
     </div>
     <AssetBalance
       value={balance}
-      asset={chain.assets[0]}
+      asset={chain.assets[0]!}
       className="w-full text-right text-footnote text-text-secondary"
     />
   </div>

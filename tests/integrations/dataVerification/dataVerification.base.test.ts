@@ -27,13 +27,13 @@ describe('Verification function can verify parachains', () => {
     polkadotParachains = polkadotChains;
     kusamaParachains = kusamaChains;
 
-    polkadotApi = await createWsConnection(polkadot.nodes[0].url);
-    kusamaApi = await createWsConnection(kusama.nodes[0].url);
+    polkadotApi = await createWsConnection(polkadot.nodes[0]!.url);
+    kusamaApi = await createWsConnection(kusama.nodes[0]!.url);
     testAccounts = await getTestAccounts(TestAccountsURL);
   });
 
   test.each(polkadotParachains)('Can verify data for polkadot parachain: $name', async (parachain) => {
-    const parachainApi = await createWsConnection(parachain.nodes[0].url);
+    const parachainApi = await createWsConnection(parachain.nodes[0]!.url);
     const parachainAccount = testAccounts.find((data) => data.chainId == parachain.chainId.slice(2));
     const storageKey = polkadotApi.query.system.account.key(parachainAccount?.account);
 
@@ -44,7 +44,7 @@ describe('Verification function can verify parachains', () => {
   });
 
   test.each(kusamaParachains)('Can verify data for kusama parachain: $name', async (parachain) => {
-    const parachainApi = await createWsConnection(parachain.nodes[0].url);
+    const parachainApi = await createWsConnection(parachain.nodes[0]!.url);
     const parachainAccount = testAccounts.find((data) => data.chainId == parachain.chainId.slice(2));
     const storageKey = polkadotApi.query.system.account.key(parachainAccount?.account);
 
@@ -55,7 +55,7 @@ describe('Verification function can verify parachains', () => {
   });
 
   test.each(kusamaParachains)('Verification return false if nonce was changed for $name', async (parachain) => {
-    const parachainApi = await createWsConnection(parachain.nodes[0].url);
+    const parachainApi = await createWsConnection(parachain.nodes[0]!.url);
     const parachainAccount = testAccounts.find((data) => data.chainId == parachain.chainId.slice(2));
     const storageKey = polkadotApi.query.system.account.key(parachainAccount?.account);
 
@@ -69,7 +69,7 @@ describe('Verification function can verify parachains', () => {
   });
 
   test.each(polkadotParachains)('Verification return false if balance was changed for $name', async (parachain) => {
-    const parachainApi = await createWsConnection(parachain.nodes[0].url);
+    const parachainApi = await createWsConnection(parachain.nodes[0]!.url);
     const parachainAccount = testAccounts.find((data) => data.chainId == parachain.chainId.slice(2));
     const storageKey = polkadotApi.query.system.account.key(parachainAccount?.account);
 

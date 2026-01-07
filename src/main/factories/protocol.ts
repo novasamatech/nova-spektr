@@ -6,7 +6,7 @@ import { type BrowserWindow, app } from 'electron';
 export function registerDeepLinkProtocol() {
   if (!process.defaultApp) {
     app.setAsDefaultProtocolClient(electronProtocol);
-  } else if (process.argv.length > 1) {
+  } else if (process.argv.length > 1 && process.argv[1]) {
     app.setAsDefaultProtocolClient(electronProtocol, process.execPath, [path.resolve(process.argv[1])]);
   }
 }

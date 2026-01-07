@@ -202,7 +202,7 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : null;
+    return network ? (apis[network.chain.chainId] ?? null) : null;
   },
 );
 
@@ -254,7 +254,7 @@ const $coreTx = combine(
     const finalConviction = isUnchanged ? signatoryDelegation?.conviction : conviction;
     const finalAmount = isUnchanged
       ? signatoryDelegation?.balance.toString()
-      : walletData.chain && formatAmount(amount, walletData.chain.assets[0].precision);
+      : walletData.chain && formatAmount(amount, walletData.chain.assets[0]!.precision);
 
     return transactionBuilder.buildEditDelegation({
       chain: walletData.chain!,
@@ -418,7 +418,7 @@ sample({
     return !!network && allEqual(balances, (a, b) => a.eq(b));
   },
   fn: (network, { shards, activeDelegations }) => {
-    const accountId = shards[0].accountId;
+    const accountId = shards[0]!.accountId;
     const balance = activeDelegations[accountId].balance.toString();
     const precision = network!.asset.precision;
 
@@ -437,7 +437,7 @@ sample({
     return allEqual(convictions);
   },
   fn: ({ activeDelegations, shards }) => {
-    const accountId = shards[0].accountId;
+    const accountId = shards[0]!.accountId;
 
     return { conviction: activeDelegations[accountId].conviction, isUnchanged: shards.length > 1 };
   },
@@ -450,7 +450,7 @@ sample({
 sample({
   clock: formInitiated,
   fn: ({ activeDelegations, shards }) => {
-    const accountId = shards[0].accountId;
+    const accountId = shards[0]!.accountId;
 
     return activeDelegations[accountId].conviction;
   },

@@ -83,9 +83,9 @@ sample({
         ...formData,
         initiator: formData.initiator!,
         signatory: formData.signatory!,
-        coreTx: transactions[0].coreTx,
+        coreTx: transactions[0]!.coreTx,
         route: [formData.initiator!],
-        tx: transactions[0].coreTx,
+        tx: transactions[0]!.coreTx,
       } satisfies UnlockConfirm,
     ],
     step: Step.CONFIRM,
@@ -110,7 +110,7 @@ sample({
     event: {
       signingPayloads: wrappedTxs!.map((tx, index) => ({
         chain: chain!,
-        account: unlockData!.shards[index],
+        account: unlockData!.shards[index]!,
         signatory: unlockData!.signatory,
         transaction: tx!,
       })),
@@ -146,7 +146,7 @@ sample({
       event: {
         ...signParams,
         chain: unlockData.chain!,
-        account: unlockData.unlockData!.shards[0],
+        account: unlockData.unlockData!.shards[0]!,
         signatory: unlockData.unlockData!.signatory,
         coreTxs: unlockData.coreTxs!,
         wrappedTxs: unlockData.wrappedTxs!,

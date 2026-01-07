@@ -81,16 +81,16 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
             }
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={multisigDeposit} asset={chain.assets[0]} />
-              <AssetFiatBalance asset={chain.assets[0]} amount={multisigDeposit} />
+              <AssetBalance value={multisigDeposit} asset={chain.assets[0]!} />
+              <AssetFiatBalance asset={chain.assets[0]!} amount={multisigDeposit} />
             </div>
           </DetailRow>
         )}
 
-        <FeeWithLabel fee={fee} asset={chain.assets[0]} label={t('staking.networkFee', { count: 1 })} />
+        <FeeWithLabel fee={fee} asset={chain.assets[0]!} label={t('staking.networkFee', { count: 1 })} />
 
         {totalFee !== fee && (
-          <FeeWithLabel fee={totalFee} asset={chain.assets[0]} label={t('staking.networkFeeTotal')} />
+          <FeeWithLabel fee={totalFee} asset={chain.assets[0]!} label={t('staking.networkFeeTotal')} />
         )}
       </TransactionDetails>
 

@@ -61,7 +61,7 @@ export function buildMenuTemplate(): Menu {
   ];
 
   if (ENVIRONMENT.IS_STAGE || ENVIRONMENT.IS_DEV) {
-    const viewSubmenu = template[1].submenu as MenuItemConstructorOptions[];
+    const viewSubmenu = template[1]?.submenu as MenuItemConstructorOptions[] | undefined;
     if (viewSubmenu) {
       viewSubmenu.push({
         role: 'toggleDevTools',
@@ -89,7 +89,7 @@ export function buildMenuTemplate(): Menu {
 
     // Window menu
     // This also has specific functionality on macOS
-    template[3].submenu = [
+    template[3]!.submenu = [
       { label: 'Close', accelerator: 'CmdOrCtrl+W', role: 'close' },
       { label: 'Minimize', accelerator: 'CmdOrCtrl+M', role: 'minimize' },
       { label: 'Zoom', role: 'zoom' },

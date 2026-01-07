@@ -79,7 +79,7 @@ sample({
   filter: accounts => accounts.length > 0,
   fn: accounts => ({
     chainId: IDENTITY_CHAIN,
-    accounts: [accounts[0].accountId],
+    accounts: [accounts[0]!.accountId],
   }),
   target: requestIdentityFx,
 });

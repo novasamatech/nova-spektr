@@ -109,7 +109,7 @@ sample({
   clock: networkModel.output.connectionStatusChanged,
   source: $reconnectMap,
   filter: (reconnectMap, { status, chainId }) => {
-    return reconnectMap[chainId] && networkUtils.isDisconnectedStatus(status);
+    return (reconnectMap[chainId] && networkUtils.isDisconnectedStatus(status)) ?? false;
   },
   fn: (reconnectMap, { chainId }) => {
     const { [chainId]: _, ...rest } = reconnectMap;

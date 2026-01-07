@@ -25,7 +25,7 @@ export const VestedTransferOperationDetails = ({ operation }: Props) => {
   if (nullable(transaction) || nullable(chain)) return null;
 
   const timelineChainId = chain.additional?.timelineChain;
-  const timelineApi = nonNullable(timelineChainId) ? apis[timelineChainId] : apis[chain.chainId];
+  const timelineApi = (nonNullable(timelineChainId) ? apis[timelineChainId] : apis[chain.chainId]) ?? null;
   const asset = getNativeAsset(chain.assets);
 
   const vestingSchedule: VestingScheduleRaw[] =

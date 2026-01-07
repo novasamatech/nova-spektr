@@ -88,9 +88,9 @@ export const AccountsMultiSelector = ({
       return (
         <FootnoteText
           as="span"
-          className={cnTw(typeof selectedOptions[0].element === 'string' && 'truncate', 'w-full')}
+          className={cnTw(typeof selectedOptions[0]!.element === 'string' && 'truncate', 'w-full')}
         >
-          {selectedOptions[0].element}
+          {selectedOptions[0]!.element}
         </FootnoteText>
       );
     }

@@ -307,7 +307,7 @@ const batchedNotifications = createBuffer({
   const toasts: ToastData[] = [];
   for (const [, items] of grouped) {
     if (items.length > 1) {
-      const first = items[0];
+      const first = items[0]!;
       const batchParams = first.batch;
 
       toasts.push({
@@ -318,7 +318,7 @@ const batchedNotifications = createBuffer({
         count: items.length,
       });
     } else {
-      const item = items[0];
+      const item = items[0]!;
       toasts.push({ ...item });
     }
   }

@@ -85,7 +85,7 @@ export const VestingSchedulePreview = memo(
             )}
 
             {fieldIssues.length > 0 && (
-              <FieldIssues issue={fieldIssues[0]} asset={asset} minVestedTransfer={minVestedTransfer} />
+              <FieldIssues issue={fieldIssues[0]!} asset={asset} minVestedTransfer={minVestedTransfer} />
             )}
           </div>
         );
@@ -129,7 +129,7 @@ export const VestingSchedulePreview = memo(
                 <TargetAccount target={row.target} chain={chain} />
                 {fieldIssues.length > 0 && (
                   <FieldIssues
-                    issue={fieldIssues[0]}
+                    issue={fieldIssues[0]!}
                     className="text-left"
                     asset={asset}
                     minVestedTransfer={minVestedTransfer}

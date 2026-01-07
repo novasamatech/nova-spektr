@@ -514,7 +514,7 @@ sample({
 sample({
   clock: submitModel.done,
   source: $isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });
@@ -523,7 +523,7 @@ sample({
   clock: submitModel.done,
   source: $removeProxyStore,
   filter: (removeProxyStore, results) =>
-    nonNullable(removeProxyStore) && submitUtils.isSuccessResult(results[0].result),
+    nonNullable(removeProxyStore) && submitUtils.isSuccessResult(results[0]!.result),
   target: flowFinished,
 });
 

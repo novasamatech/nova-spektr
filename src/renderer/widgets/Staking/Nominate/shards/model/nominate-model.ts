@@ -72,7 +72,7 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData ? apis[walletData.chain.chainId] : undefined;
+    return walletData ? (apis[walletData.chain.chainId] ?? null) : null;
   },
   { skipVoid: false },
 );
@@ -128,7 +128,7 @@ sample({
       chain: walletData!.chain,
       wallet: walletData!.wallet,
       wallets,
-      account: walletData!.shards[0],
+      account: walletData!.shards[0]!,
       signatories,
     });
   },
@@ -201,7 +201,7 @@ sample({
   filter: (api, transactions) => Boolean(api) && Boolean(transactions?.length),
   fn: (api, transactions) => ({
     api: api!,
-    transaction: transactions![0].wrappedTx,
+    transaction: transactions![0]!.wrappedTx,
   }),
   target: getTransactionFeeFx,
 });
@@ -297,13 +297,13 @@ sample({
         asset: getRelaychainAsset(walletData!.chain.assets)!,
         ...nominateData!,
         ...feeData,
-        coreTx: coreTxs[index],
+        coreTx: coreTxs[index]!,
 
         api: api!,
         initiator: shard,
         signatory: shard,
         route: [shard],
-        tx: coreTxs[index],
+        tx: coreTxs[index]!,
       })),
       step: Step.CONFIRM,
     };
@@ -332,7 +332,7 @@ sample({
       event: {
         signingPayloads: transactions!.map((tx, index) => ({
           chain: walletData!.chain,
-          account: wrapper ? wrapper.proxyAccount : nominateData!.shards[index],
+          account: wrapper ? wrapper.proxyAccount : nominateData!.shards[index]!,
           signatory: nominateData!.signatory,
           transaction: tx.wrappedTx,
         })),
@@ -360,7 +360,7 @@ sample({
     event: {
       ...signParams,
       chain: nominateFlowData.walletData!.chain,
-      account: nominateFlowData.nominateData!.shards[0],
+      account: nominateFlowData.nominateData!.shards[0]!,
       signatory: nominateFlowData.nominateData!.signatory,
       coreTxs: nominateFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: nominateFlowData.transactions!.map((tx) => tx.wrappedTx),
@@ -382,7 +382,7 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

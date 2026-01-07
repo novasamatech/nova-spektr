@@ -57,7 +57,7 @@ const prepareBondNominateDataFx = createEffect(async ({ transaction, accounts, c
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: chain.assets[0]!,
     amount: bondTx.args.value,
     validators,
     destination: bondTx.args.dest,
@@ -78,7 +78,7 @@ const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chai
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: chain.assets[0]!,
     amount: transaction.coreTx.args.maxAdditional,
     signatory: account!,
     fee: fee.toString(),
@@ -107,7 +107,7 @@ const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chain
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: chain.assets[0]!,
     initiator: account!,
     signatory: account!,
     validators,
@@ -127,7 +127,7 @@ const preparePayeeDataFx = createEffect(async ({ transaction, accounts, chains, 
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: chain.assets[0]!,
     destination: transaction.coreTx.args.dest,
     initiator: account!,
     signatory: account!,
@@ -150,7 +150,7 @@ const prepareUnstakeDataFx = createEffect(async ({ transaction, accounts, chains
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: chain.assets[0]!,
     amount: coreTx.args.value,
     api: apis[chain.chainId],
     signatory: account!,
@@ -171,7 +171,7 @@ const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: chain.assets[0]!,
     amount: transaction.coreTx.args.value,
     signatory: account!,
     initiator: account!,
@@ -202,7 +202,7 @@ const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chain
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: chain.assets[0]!,
     signatory: account!,
     initiator: account!,
     amount,

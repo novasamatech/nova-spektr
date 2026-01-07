@@ -64,8 +64,8 @@ export const ConnectedGovernanceReferendum = ({ referendum: fellowshipReferendum
   const onViewClick = useCallback(() => {
     navigate(
       generatePath(Paths.GOVERNANCE_REFERENDUM, {
-        chainId: governanceReferendumConnection?.chainId,
-        referendumId: governanceReferendumConnection?.referendumId,
+        chainId: governanceReferendumConnection?.chainId ?? null,
+        referendumId: governanceReferendumConnection?.referendumId ?? null,
       }),
     );
   }, []);
@@ -147,7 +147,7 @@ export const GovernanceReferendumCard = memo(
     let endBlock: BlockHeight | null = null;
     let status: ReferendumStatus | null = null;
     if (governanceReferendumService.isOngoing(governanceReferendum)) {
-      track = tracks[governanceReferendum.track];
+      track = tracks[governanceReferendum.track] ?? null;
       endBlock = governanceReferendumService.getReferendumEndTime(governanceReferendum, track, undecidingTimeout);
       status = governanceReferendumService.getReferendumStatus(governanceReferendum);
     }

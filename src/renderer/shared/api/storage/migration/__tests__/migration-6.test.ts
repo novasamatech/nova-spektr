@@ -89,7 +89,7 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
 
     const newWallets = [
       createSingleShardWallet(5000, {
-        name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
+        name: `${db.wallets[0]!.name} - ${db.accounts2[2]!.name}`,
         rootAccountId: BASE_ACCOUNT_1,
       }),
     ];
@@ -130,7 +130,7 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
 
     const newWallets = [
       createPolkadotWallet(5000, {
-        name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
+        name: `${db.wallets[0]!.name} - ${db.accounts2[2]!.name}`,
         rootAccountId: BASE_ACCOUNT_1,
       }),
     ];
@@ -164,7 +164,7 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
 
     const newWallets = [
       createPolkadotWallet(5000, {
-        name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
+        name: `${db.wallets[0]!.name} - ${db.accounts2[2]!.name}`,
         rootAccountId: BASE_ACCOUNT_1,
       }),
     ];
@@ -215,7 +215,7 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
 
     const newWallets = [
       createPolkadotWallet(5000, {
-        name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
+        name: `${db.wallets[0]!.name} - ${db.accounts2[2]!.name}`,
         rootAccountId: BASE_ACCOUNT_1,
       }),
     ];
@@ -259,12 +259,12 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
 
     const newWallets = [
       createPolkadotWallet(1, {
-        name: db.wallets[0].name,
+        name: db.wallets[0]!.name,
         rootAccountId: BASE_ACCOUNT_1,
       }),
 
       createSingleShardWallet(5000, {
-        name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
+        name: `${db.wallets[0]!.name} - ${db.accounts2[2]!.name}`,
         rootAccountId: BASE_ACCOUNT_2,
       }),
     ];
@@ -273,7 +273,7 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
       createVaultChainAccount('1', { walletId: 1, derivationPath: '//dot/1' }),
       createVaultChainAccount('2', { walletId: 1, derivationPath: '//dot/2' }),
 
-      createVaultBaseAccount('4', { walletId: 5000, name: db.accounts2[3].name, accountId: BASE_ACCOUNT_2 }),
+      createVaultBaseAccount('4', { walletId: 5000, name: db.accounts2[3]!.name, accountId: BASE_ACCOUNT_2 }),
     ];
 
     await migrateMultishardAccounts(transactionMock);
@@ -309,12 +309,12 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
 
     const newWallets = [
       createPolkadotWallet(1, {
-        name: db.wallets[0].name,
+        name: db.wallets[0]!.name,
         rootAccountId: BASE_ACCOUNT_1,
       }),
 
       createPolkadotWallet(5000, {
-        name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
+        name: `${db.wallets[0]!.name} - ${db.accounts2[2]!.name}`,
         rootAccountId: BASE_ACCOUNT_2,
       }),
     ];

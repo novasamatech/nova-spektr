@@ -105,7 +105,7 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
               ) : (
                 <TargetAccount recipient={row.recipient.parsed} chain={chain} />
               )}
-              {fieldIssues.length > 0 && (
+              {fieldIssues.length > 0 && fieldIssues[0] && (
                 <CaptionText className={cnTw('text-left text-inherit', STATUS_TEXT_COLORS[status])}>
                   {t(`multiTransfer.errors.csv.fieldErrors.${fieldIssues[0].message}`)}
                 </CaptionText>
@@ -154,7 +154,7 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
                   </Tooltip.Content>
                 </Tooltip>
               )}
-              {fieldIssues.length > 0 && (
+              {fieldIssues.length > 0 && fieldIssues[0] && (
                 <CaptionText className={cnTw('text-right text-inherit', STATUS_TEXT_COLORS[status])}>
                   {t(`multiTransfer.errors.csv.fieldErrors.${fieldIssues[0].message}`)}
                 </CaptionText>
