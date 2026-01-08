@@ -1,4 +1,5 @@
-import { combine, createEvent, sample } from 'effector';
+import { createEvent, sample } from 'effector';
+import { or } from 'patronum';
 
 import { type ID, type NotificationEvent } from '@/shared/core';
 import { createForm } from '@/shared/forms';
@@ -45,7 +46,7 @@ sample({
 });
 
 sample({
-  clock: formOpened,
+  clock: [formOpened, $disabledWalletIds, $notificationEvents, $soundEnabled],
   source: {
     disabledWalletIds: $disabledWalletIds,
     notificationEvents: $notificationEvents,
@@ -54,13 +55,10 @@ sample({
   target: form.setForm,
 });
 
-const $isTouched = combine(
-  {
-    wallets: form.fields.disabledWalletIds.$touched,
-    events: form.fields.notificationEvents.$touched,
-    sound: form.fields.soundEnabled.$touched,
-  },
-  ({ wallets, events, sound }) => wallets || events || sound,
+const $isTouched = or(
+  form.fields.disabledWalletIds.$touched,
+  form.fields.notificationEvents.$touched,
+  form.fields.soundEnabled.$touched,
 );
 
 export const notificationsSettingsModel = {
