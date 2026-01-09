@@ -118,7 +118,7 @@ export const VestingSchedulePreview = memo(
         {
           key: 'target',
           title: t('vestedTransfer.parsedFile.table.headers.recipient'),
-          width: '460px',
+          width: '465px',
           render: (_, row) => {
             if (nullable(row.target) || nullable(chain)) return null;
             const rowIssues = getRowIssues(row.index);
