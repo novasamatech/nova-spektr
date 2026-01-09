@@ -2794,6 +2794,7 @@
         "errorTitle_one": "Found {count} error",
         "errorTitle_other": "Found {count} errors",
         "fieldErrors": {
+          "DUPLICATE_TARGET": "Duplicate recipient",
           "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
           "INVALID_VALUE": "Invalid value",
           "MAX_VESTING_SCHEDULES_REACHED": "Max vesting schedules reached",

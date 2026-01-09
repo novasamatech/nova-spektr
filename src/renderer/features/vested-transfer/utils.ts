@@ -86,7 +86,14 @@ function createTransformSchema() {
 }
 
 function createValidationSchema(options: ValidationSchemaOptions) {
-  const { chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules } = options;
+  const {
+    chain,
+    minStartingBlock,
+    minVestedTransfer,
+    maxVestingSchedules,
+    existingVestingSchedules,
+    targetOccurrences = {},
+  } = options;
 
   return z
     .object({
@@ -97,7 +104,11 @@ function createValidationSchema(options: ValidationSchemaOptions) {
         .refine((accountId) => {
           const existingSchedulesCount = existingVestingSchedules[accountId] ?? 0;
           return new BN(existingSchedulesCount).lte(maxVestingSchedules);
-        }, VestingFieldError.MAX_VESTING_SCHEDULES_REACHED),
+        }, VestingFieldError.MAX_VESTING_SCHEDULES_REACHED)
+        .refine((accountId) => {
+          const occurrences = targetOccurrences[accountId] ?? 0;
+          return occurrences <= 1;
+        }, VestingFieldWarning.DUPLICATE_TARGET),
 
       locked: safeBN()
         .refine((bn) => bn.gte(minVestedTransfer), VestingFieldError.MIN_VESTED_TRANSFER)
@@ -212,12 +223,18 @@ async function parseCSV(file: File): Promise<ParseResult> {
 function validateCSV(records: VestingScheduleRaw[], options: ValidationSchemaOptions) {
   const validationOptions = cloneDeep(options);
   const issues: ValidationIssue[] = [];
+  const targetOccurrences: Record<string, number> = {};
 
   for (let i = 0; i < records.length; i++) {
     const record = records[i];
     const rowIndex = i + 1;
 
     const targetAccountId = toAccountId(record.target);
+
+    // Build target occurrences map
+    targetOccurrences[targetAccountId] = (targetOccurrences[targetAccountId] ?? 0) + 1;
+    validationOptions.targetOccurrences = targetOccurrences;
+
     const schedulesToAdd = nonNullable(record.unlockedAtStartBlock) ? 2 : 1;
     if (nullable(validationOptions.existingVestingSchedules[targetAccountId])) {
       validationOptions.existingVestingSchedules[targetAccountId] = schedulesToAdd;
