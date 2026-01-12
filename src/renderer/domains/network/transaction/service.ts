@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Call, type DispatchError, type Weight, type WeightV2 } from '@polkadot/types/interfaces';
+import { type Call, type DispatchError, type Weight } from '@polkadot/types/interfaces';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { type Registry } from '@polkadot/types/types';
 import { type BN, BN_ZERO, hexToU8a } from '@polkadot/util';
@@ -214,21 +214,17 @@ function isBatchExtrinsic(extrinsic: Extrinsic) {
 }
 
 function getBlockLimit(api: ApiPromise): { refTime: BN; proofSize: BN } {
-  const isWeightV2 = !!api.registry.createType<WeightV2>('Weight').proofSize;
-
   const maxExtrinsicWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.unwrapOrDefault();
   const maxExtrinsicRefTime = maxExtrinsicWeight.refTime.toBn();
-  const maxExtrinsicProofSize = isWeightV2 ? maxExtrinsicWeight.proofSize?.toBn?.() || BN_ZERO : BN_ZERO;
+  const maxExtrinsicProofSize = maxExtrinsicWeight.proofSize?.toBn?.() ?? BN_ZERO;
 
   const refTimeLimit = maxExtrinsicRefTime.muln(LEAVE_SOME_SPACE_MULTIPLIER);
-  const proofSizeLimit = isWeightV2 ? maxExtrinsicProofSize.muln(LEAVE_SOME_SPACE_MULTIPLIER) : BN_ZERO;
+  const proofSizeLimit = maxExtrinsicProofSize.muln(LEAVE_SOME_SPACE_MULTIPLIER);
 
   return { refTime: refTimeLimit, proofSize: proofSizeLimit };
 }
 
 async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
-  const isWeightV2 = !!api.registry.createType<WeightV2>('Weight').proofSize;
-
   const blockLimits = getBlockLimit(api);
   const result: Extrinsic[][] = [[]];
   let totalRefTime = BN_ZERO;
@@ -245,10 +241,10 @@ async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
     }
 
     const newTotalRefTime = totalRefTime.add(weight.refTime.toBn());
-    const newTotalProofSize = isWeightV2 ? totalProofSize.add(weight.proofSize?.toBn?.() || BN_ZERO) : BN_ZERO;
+    const newTotalProofSize = totalProofSize.add(weight.proofSize?.toBn?.() ?? BN_ZERO);
 
-    const wouldExceedRefTime = newTotalRefTime.gte(blockLimits.refTime);
-    const wouldExceedProofSize = isWeightV2 ? newTotalProofSize.gte(blockLimits.proofSize) : false;
+    const wouldExceedRefTime = newTotalRefTime.gt(blockLimits.refTime);
+    const wouldExceedProofSize = newTotalProofSize.gt(blockLimits.proofSize);
     const wouldExceed = wouldExceedRefTime || wouldExceedProofSize;
 
     if (!wouldExceed && result.length > 0) {
@@ -261,7 +257,7 @@ async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
     } else {
       result.push([extrinsic]);
       totalRefTime = weight.refTime.toBn();
-      totalProofSize = isWeightV2 ? weight.proofSize?.toBn?.() || BN_ZERO : BN_ZERO;
+      totalProofSize = weight.proofSize?.toBn?.() ?? BN_ZERO;
     }
   }
   return result;
