@@ -222,7 +222,7 @@ async function getBlockLimit(api: ApiPromise): Promise<BlockWeight> {
 
   const blockWeight = await api.query.system.blockWeight();
 
-  const totalUsedInLastBlock = new BlockWeight(
+  const usedSpaceInLastBlock = new BlockWeight(
     blockWeight.normal.refTime
       .toBn()
       .add(blockWeight.operational.refTime.toBn())
@@ -232,12 +232,12 @@ async function getBlockLimit(api: ApiPromise): Promise<BlockWeight> {
       .add(blockWeight.mandatory.proofSize?.toBn?.() ?? BN_ZERO),
   );
 
-  const freeInLastBlock = new BlockWeight(
-    maxBlock.refTime.sub(totalUsedInLastBlock.refTime),
-    maxBlock.proofSize.sub(totalUsedInLastBlock.proofSize),
+  const freeSpaceInLastBlock = new BlockWeight(
+    maxBlock.refTime.sub(usedSpaceInLastBlock.refTime),
+    maxBlock.proofSize.sub(usedSpaceInLastBlock.proofSize),
   );
 
-  return BlockWeight.min(maxExtrinsic.withMargin(), freeInLastBlock.withMargin());
+  return BlockWeight.min(maxExtrinsic.withMargin(), freeSpaceInLastBlock.withMargin());
 }
 
 async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
