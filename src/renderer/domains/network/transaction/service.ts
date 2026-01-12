@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Call, type DispatchError, type Weight } from '@polkadot/types/interfaces';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { type Registry } from '@polkadot/types/types';
-import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
+import { BN_ZERO, hexToU8a } from '@polkadot/util';
 
 import { type Transaction as DeprecatedTransaction, type HexString } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
@@ -11,7 +11,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { type AnyAccount } from '../account/types';
 
-import { LEAVE_SOME_SPACE_MULTIPLIER } from './constants';
+import { BlockWeight } from './helpers';
 import { type AnyDecodedTransaction, type AnyTransaction, type EncodedTransaction, type Extrinsic } from './types';
 
 const wrapTransactionTransformer = createTransformer<
@@ -213,46 +213,37 @@ function isBatchExtrinsic(extrinsic: Extrinsic) {
   );
 }
 
-async function getBlockLimit(api: ApiPromise): Promise<{ refTime: BN; proofSize: BN }> {
+async function getBlockLimit(api: ApiPromise): Promise<BlockWeight> {
   const maxExtrinsicWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.unwrapOrDefault();
-  const maxExtrinsicRefTime = maxExtrinsicWeight.refTime.toBn();
-  const maxExtrinsicProofSize = maxExtrinsicWeight.proofSize?.toBn?.() ?? BN_ZERO;
+  const maxExtrinsic = BlockWeight.fromWeight(maxExtrinsicWeight);
 
-  const maxBlockRefTime = api.consts.system.blockWeights.maxBlock.refTime.toBn();
-  const maxBlockProofSize = api.consts.system.blockWeights.maxBlock.proofSize?.toBn?.() ?? BN_ZERO;
+  const maxBlockWeight = api.consts.system.blockWeights.maxBlock;
+  const maxBlock = BlockWeight.fromWeight(maxBlockWeight);
 
   const blockWeight = await api.query.system.blockWeight();
 
-  const totalRefTime = blockWeight.normal.refTime
-    .toBn()
-    .add(blockWeight.operational.refTime.toBn())
-    .add(blockWeight.mandatory.refTime.toBn());
-
-  const totalProofSize = (blockWeight.normal.proofSize?.toBn?.() ?? BN_ZERO)
-    .add(blockWeight.operational.proofSize?.toBn?.() ?? BN_ZERO)
-    .add(blockWeight.mandatory.proofSize?.toBn?.() ?? BN_ZERO);
-
-  const freeRefTimeInLastBlock = maxBlockRefTime.sub(totalRefTime);
-  const freeProofSizeInLastBlock = maxBlockProofSize.sub(totalProofSize);
-
-  const refTimeLimit = BN.min(
-    maxExtrinsicRefTime.muln(LEAVE_SOME_SPACE_MULTIPLIER),
-    freeRefTimeInLastBlock.muln(LEAVE_SOME_SPACE_MULTIPLIER),
+  const totalUsedInLastBlock = new BlockWeight(
+    blockWeight.normal.refTime
+      .toBn()
+      .add(blockWeight.operational.refTime.toBn())
+      .add(blockWeight.mandatory.refTime.toBn()),
+    (blockWeight.normal.proofSize?.toBn?.() ?? BN_ZERO)
+      .add(blockWeight.operational.proofSize?.toBn?.() ?? BN_ZERO)
+      .add(blockWeight.mandatory.proofSize?.toBn?.() ?? BN_ZERO),
   );
 
-  const proofSizeLimit = BN.min(
-    maxExtrinsicProofSize.muln(LEAVE_SOME_SPACE_MULTIPLIER),
-    freeProofSizeInLastBlock.muln(LEAVE_SOME_SPACE_MULTIPLIER),
+  const freeInLastBlock = new BlockWeight(
+    maxBlock.refTime.sub(totalUsedInLastBlock.refTime),
+    maxBlock.proofSize.sub(totalUsedInLastBlock.proofSize),
   );
 
-  return { refTime: refTimeLimit, proofSize: proofSizeLimit };
+  return BlockWeight.min(maxExtrinsic.withMargin(), freeInLastBlock.withMargin());
 }
 
 async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
-  const blockLimits = await getBlockLimit(api);
+  const blockLimit = await getBlockLimit(api);
   const result: Extrinsic[][] = [[]];
-  let totalRefTime = BN_ZERO;
-  let totalProofSize = BN_ZERO;
+  let totalWeight = new BlockWeight(BN_ZERO, BN_ZERO);
 
   const txsWeights: Partial<Record<string, Weight>> = {};
 
@@ -264,24 +255,18 @@ async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
       txsWeights[key] = weight;
     }
 
-    const newTotalRefTime = totalRefTime.add(weight.refTime.toBn());
-    const newTotalProofSize = totalProofSize.add(weight.proofSize?.toBn?.() ?? BN_ZERO);
+    const callWeight = BlockWeight.fromWeight(weight);
+    const newTotalWeight = totalWeight.add(callWeight);
 
-    const wouldExceedRefTime = newTotalRefTime.gt(blockLimits.refTime);
-    const wouldExceedProofSize = newTotalProofSize.gt(blockLimits.proofSize);
-    const wouldExceed = wouldExceedRefTime || wouldExceedProofSize;
-
-    if (!wouldExceed && result.length > 0) {
+    if (newTotalWeight.fitsIn(blockLimit) && result.length > 0) {
       const lastBuffer = result.at(-1);
       if (lastBuffer) {
         lastBuffer.push(extrinsic);
       }
-      totalRefTime = newTotalRefTime;
-      totalProofSize = newTotalProofSize;
+      totalWeight = newTotalWeight;
     } else {
       result.push([extrinsic]);
-      totalRefTime = weight.refTime.toBn();
-      totalProofSize = weight.proofSize?.toBn?.() ?? BN_ZERO;
+      totalWeight = callWeight;
     }
   }
   return result;
