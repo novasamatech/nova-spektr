@@ -2375,11 +2375,15 @@
       "eventOperationRejected": "Operation rejected",
       "eventWalletCreated": "Wallet created",
       "general": "General",
+      "leaveButton": "Leave",
+      "leaveDescription": "If you exit, the changes will not be saved.",
+      "leaveTitle": "Do you want to leave without saving?",
       "modalTitle": "Notification settings",
       "plateTitle": "Notifications",
       "preferences": "Preferences",
       "preferencesDescription": "Select wallets and events to be notified about their activity by displaying popup",
       "saveButton": "Save",
+      "settingsSaved": "Settings saved",
       "soundEnabled": "Sound notification",
       "soundRestricted": "Sound is restricted by your browser. Please allow audio in site settings.",
       "walletsMultiPlaceholder": "Wallets",
@@ -2848,13 +2852,15 @@
           "locked": "Locked",
           "perBlock": "Per block",
           "recipient": "Recipient",
-          "startBlock": "Start block"
+          "startBlock": "Start block",
+          "unlockedAtStartBlock": "Unlocked at start"
         },
         "hints": {
           "perBlock": "Tokens released per block during vesting",
           "planks": "{amount} planks",
           "startBlock": "Block number when vesting starts",
-          "startBlockTime": "Starts on {date} at {time}"
+          "startBlockTime": "Starts on {date} at {time}",
+          "unlockedAtStartBlock": "Amount unlocked at starting block"
         }
       },
       "title": "Parsed file"
