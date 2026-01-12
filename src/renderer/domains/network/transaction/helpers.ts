@@ -28,7 +28,7 @@ export class BlockWeight {
     return this.refTime.lt(limit.refTime) && this.proofSize.lt(limit.proofSize);
   }
 
-  static min(a: BlockWeight, b: BlockWeight): BlockWeight {
+  static takeMinimums(a: BlockWeight, b: BlockWeight): BlockWeight {
     return new BlockWeight(BN.min(a.refTime, b.refTime), BN.min(a.proofSize, b.proofSize));
   }
 }

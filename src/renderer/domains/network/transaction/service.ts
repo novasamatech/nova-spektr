@@ -237,7 +237,7 @@ async function getBlockLimit(api: ApiPromise): Promise<BlockWeight> {
     maxBlock.proofSize.sub(usedSpaceInLastBlock.proofSize),
   );
 
-  return BlockWeight.min(maxExtrinsic.withMargin(), freeSpaceInLastBlock.withMargin());
+  return BlockWeight.takeMinimums(maxExtrinsic.withMargin(), freeSpaceInLastBlock.withMargin());
 }
 
 async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
