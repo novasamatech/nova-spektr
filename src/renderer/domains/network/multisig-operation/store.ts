@@ -16,7 +16,6 @@ import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { decodeCallData } from '@/entities/transaction';
 import { accounts } from '../account/store';
-import { type AnyAccount } from '../account/types';
 
 import { deserializeOperation, serializeOperation } from './helpers';
 import { fetchResource, subscribeEventsResource, subscribeResource } from './resource';
@@ -210,14 +209,20 @@ const operationChanges = pairwise($list)
 
 sample({
   clock: operationChanges,
-  source: { populated: $populated, accountsList: accounts.$list },
+  source: {
+    populated: $populated,
+    accountsMap: accounts.$list.map(accountsList => new Map(accountsList.map(account => [account.accountId, account]))),
+  },
   filter: ({ populated }) => populated,
-  fn: ({ accountsList }, { added, removedKeys }) => {
-    const accountsMap = new Map<AccountId, AnyAccount>(accountsList.map(account => [account.accountId, account]));
-
+  fn: ({ accountsMap }, { added, removedKeys }) => {
     const notificationsToAdd = added
       .filter(operation => {
         const account = accountsMap.get(operation.accountId);
+
+        // Don't notify the operation creator
+        if (operation.status === 'pending' && accountsMap.has(operation.depositor)) {
+          return false;
+        }
 
         return !account?.createdAt || operation.timestamp >= account.createdAt;
       })
