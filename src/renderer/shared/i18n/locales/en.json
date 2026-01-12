@@ -1632,6 +1632,7 @@
         "errorTitle_one": "Found {count} error",
         "errorTitle_other": "Found {count} errors",
         "fieldErrors": {
+          "DUPLICATE_RECIPIENT": "Duplicate recipient",
           "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
           "INVALID_VALUE": "Invalid value",
           "OUT_OF_RANGE": "Value out of range",
@@ -1644,7 +1645,9 @@
         "issueLine": "Row {row} — {path}: {message}",
         "issuesTitle": "Found {count} errors",
         "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
-        "title": "CSV error"
+        "title": "CSV error",
+        "warningTitle_one": "Found {count} warning",
+        "warningTitle_other": "Found {count} warnings"
       },
       "form": {
         "chainRequired": "Chain is required",
@@ -1689,7 +1692,9 @@
         "footer": {
           "downloadDescription": "You can download parsed file to review them.",
           "errorsCount_one": "Found {count} error.",
-          "errorsCount_other": "Found {count} errors."
+          "errorsCount_other": "Found {count} errors.",
+          "warningsCount_one": "Found {count} warning.",
+          "warningsCount_other": "Found {count} warnings."
         },
         "hints": {
           "planks": "{amount} planks"
@@ -2794,6 +2799,7 @@
         "errorTitle_one": "Found {count} error",
         "errorTitle_other": "Found {count} errors",
         "fieldErrors": {
+          "DUPLICATE_TARGET": "Duplicate recipient",
           "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
           "INVALID_VALUE": "Invalid value",
           "MAX_VESTING_SCHEDULES_REACHED": "Max vesting schedules reached",

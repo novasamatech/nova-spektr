@@ -28,11 +28,15 @@ export enum MultiTransferFieldError {
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
+export enum MultiTransferFieldWarning {
+  DUPLICATE_RECIPIENT = 'DUPLICATE_RECIPIENT',
+}
+
 export type RowIndex = number;
 export type RowValues = keyof MultiTransferRow;
 export type ValidationIssue = {
   row: RowIndex;
   path: RowValues;
-  severity: 'error';
-  message: MultiTransferFieldError;
+  severity: 'error' | 'warning';
+  message: MultiTransferFieldError | MultiTransferFieldWarning;
 };
