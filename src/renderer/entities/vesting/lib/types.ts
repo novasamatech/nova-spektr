@@ -7,6 +7,7 @@ export type VestingScheduleRaw = {
   locked: string;
   startingBlock: string;
   perBlock: string;
+  unlockedAtStartBlock?: string;
 };
 
 export type VestingSchedule = {
@@ -14,6 +15,7 @@ export type VestingSchedule = {
   locked: BN;
   startingBlock: BN;
   perBlock: BN;
+  unlockedAtStartBlock?: BN;
 };
 
 export type ExistingVestingSchedule = Record<AccountId, Omit<VestingSchedule, 'target'>[]>;
@@ -39,7 +41,7 @@ export enum VestingFieldWarning {
 }
 
 export type RowIndex = number;
-export type RowValues = 'target' | 'locked' | 'startingBlock' | 'perBlock';
+export type RowValues = 'target' | 'locked' | 'startingBlock' | 'perBlock' | 'unlockedAtStartBlock';
 export type ValidationIssue = {
   row: RowIndex;
   path: RowValues;
