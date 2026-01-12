@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
-import { AsyncItem, Graphics } from '@/shared/ui-kit';
+import { Accordion, AsyncItem, Graphics } from '@/shared/ui-kit';
 import { notificationListModel } from '../model/notification-list-model';
 
 import { NotificationRow } from './NotificationRow';
@@ -31,15 +31,21 @@ export const NotificationsList = () => {
   return (
     <div className="mt-4 flex h-full w-full flex-1 flex-col items-center overflow-y-auto pl-6">
       {notificationGroups.map(([date, notifications]) => (
-        <section className="flex w-[736px] flex-col gap-1" key={date}>
-          <FootnoteText className="ml-2 flex h-8 items-center text-text-tertiary">{date}</FootnoteText>
-          <ul className="flex flex-col gap-y-1.5">
-            {notifications.map((notification) => (
-              <AsyncItem key={notification.id}>
-                <NotificationRow notification={notification} />
-              </AsyncItem>
-            ))}
-          </ul>
+        <section className="flex w-[736px] flex-col" key={date}>
+          <Accordion initialOpen>
+            <Accordion.Trigger>
+              <FootnoteText className="text-text-tertiary">{date}</FootnoteText>
+            </Accordion.Trigger>
+            <Accordion.Content>
+              <ul className="mt-1 flex flex-col gap-y-1.5">
+                {notifications.map((notification) => (
+                  <AsyncItem key={notification.id}>
+                    <NotificationRow notification={notification} />
+                  </AsyncItem>
+                ))}
+              </ul>
+            </Accordion.Content>
+          </Accordion>
         </section>
       ))}
     </div>
