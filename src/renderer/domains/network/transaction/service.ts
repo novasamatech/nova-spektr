@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Call, type DispatchError, type Weight } from '@polkadot/types/interfaces';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { type Registry } from '@polkadot/types/types';
-import { type BN, BN_ZERO, hexToU8a } from '@polkadot/util';
+import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 
 import { type Transaction as DeprecatedTransaction, type HexString } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
@@ -213,19 +213,43 @@ function isBatchExtrinsic(extrinsic: Extrinsic) {
   );
 }
 
-function getBlockLimit(api: ApiPromise): { refTime: BN; proofSize: BN } {
+async function getBlockLimit(api: ApiPromise): Promise<{ refTime: BN; proofSize: BN }> {
   const maxExtrinsicWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.unwrapOrDefault();
   const maxExtrinsicRefTime = maxExtrinsicWeight.refTime.toBn();
   const maxExtrinsicProofSize = maxExtrinsicWeight.proofSize?.toBn?.() ?? BN_ZERO;
 
-  const refTimeLimit = maxExtrinsicRefTime.muln(LEAVE_SOME_SPACE_MULTIPLIER);
-  const proofSizeLimit = maxExtrinsicProofSize.muln(LEAVE_SOME_SPACE_MULTIPLIER);
+  const maxBlockRefTime = api.consts.system.blockWeights.maxBlock.refTime.toBn();
+  const maxBlockProofSize = api.consts.system.blockWeights.maxBlock.proofSize?.toBn?.() ?? BN_ZERO;
+
+  const blockWeight = await api.query.system.blockWeight();
+
+  const totalRefTime = blockWeight.normal.refTime
+    .toBn()
+    .add(blockWeight.operational.refTime.toBn())
+    .add(blockWeight.mandatory.refTime.toBn());
+
+  const totalProofSize = (blockWeight.normal.proofSize?.toBn?.() ?? BN_ZERO)
+    .add(blockWeight.operational.proofSize?.toBn?.() ?? BN_ZERO)
+    .add(blockWeight.mandatory.proofSize?.toBn?.() ?? BN_ZERO);
+
+  const freeRefTimeInLastBlock = maxBlockRefTime.sub(totalRefTime);
+  const freeProofSizeInLastBlock = maxBlockProofSize.sub(totalProofSize);
+
+  const refTimeLimit = BN.min(
+    maxExtrinsicRefTime.muln(LEAVE_SOME_SPACE_MULTIPLIER),
+    freeRefTimeInLastBlock.muln(LEAVE_SOME_SPACE_MULTIPLIER),
+  );
+
+  const proofSizeLimit = BN.min(
+    maxExtrinsicProofSize.muln(LEAVE_SOME_SPACE_MULTIPLIER),
+    freeProofSizeInLastBlock.muln(LEAVE_SOME_SPACE_MULTIPLIER),
+  );
 
   return { refTime: refTimeLimit, proofSize: proofSizeLimit };
 }
 
 async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
-  const blockLimits = getBlockLimit(api);
+  const blockLimits = await getBlockLimit(api);
   const result: Extrinsic[][] = [[]];
   let totalRefTime = BN_ZERO;
   let totalProofSize = BN_ZERO;
