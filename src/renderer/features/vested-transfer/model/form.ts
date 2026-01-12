@@ -432,9 +432,13 @@ sample({
 
 sample({
   clock: [flowStarted, $availableChains],
-  source: $availableChains,
-  filter: (chains) => chains.length > 0,
-  fn: (chains) => chains.at(0)!,
+  source: {
+    chains: $availableChains,
+    selectedChain: form.fields.chain.$value,
+  },
+  filter: ({ chains, selectedChain }) =>
+    chains.length > 0 && (nullable(selectedChain) || !chains.some((chain) => chain.chainId === selectedChain.chainId)),
+  fn: ({ chains }) => chains[0],
   target: form.fields.chain.change,
 });
 
