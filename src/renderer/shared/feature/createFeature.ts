@@ -14,6 +14,7 @@ type Reasons = 'manual' | 'gate';
 
 type Params<T> = Partial<StatusParams<T, Reasons>> & {
   name: `${Uncapitalize<string>}/${Uncapitalize<string>}`;
+  initializer?: () => void;
   scope?: Scope;
 };
 
@@ -25,6 +26,7 @@ export const isFeature = (x: unknown): x is Feature<unknown> => {
 
 export const createFeature = <T = object>({
   name,
+  initializer,
   filter,
   // @ts-expect-error dynamic value
   input = createStore({}),
@@ -180,6 +182,8 @@ export const createFeature = <T = object>({
       });
     }
   };
+
+  initializer?.();
 
   // Combine
 

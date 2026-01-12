@@ -6,11 +6,12 @@ import { NotificationsSettingsModal } from './ui/NotificationsSettingsModal';
 
 export const notificationsSettingsFeature = createFeature({
   name: 'notifications/settings',
+  initializer: () => {
+    notificationsSettingsFeature.inject(generalActionsSlot, {
+      order: 1,
+      render: () => <NotificationsSettingsModal />,
+    });
+  },
 });
 
 export { notificationsSettingsModel, NotificationsSettingsModal };
-
-notificationsSettingsFeature.inject(generalActionsSlot, {
-  order: 1,
-  render: () => <NotificationsSettingsModal />,
-});
