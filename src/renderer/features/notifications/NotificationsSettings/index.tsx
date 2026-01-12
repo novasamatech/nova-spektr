@@ -1,10 +1,14 @@
+import { createFeature } from '@/shared/feature';
 import { generalActionsSlot } from '@/pages/Settings/Overview/components';
 
-import { notificationsSettingsFeature } from './model/feature';
 import { notificationsSettingsModel } from './model/notifications-settings-model';
 import { NotificationsSettingsModal } from './ui/NotificationsSettingsModal';
 
-export { notificationsSettingsModel, notificationsSettingsFeature, NotificationsSettingsModal };
+export const notificationsSettingsFeature = createFeature({
+  name: 'notifications/settings',
+});
+
+export { notificationsSettingsModel, NotificationsSettingsModal };
 
 notificationsSettingsFeature.inject(generalActionsSlot, {
   order: 1,
