@@ -1,3 +1,4 @@
+import { type Page } from '@playwright/test';
 import { step } from 'allure-js-commons';
 
 import { BasePage } from '../BasePage';
@@ -40,5 +41,14 @@ export class WatchOnlyOnboardingPage extends BasePage<OnboardingPageElements> {
     });
 
     return this;
+  }
+
+  public async openSubscanInNewTab(): Promise<Page> {
+    return await step('Open Subscan in a new tab', async () => {
+      const popupPromise = this.page.waitForEvent('popup'); // allowed: inside class
+      await this.page.getByRole('link', { name: this.pageElements.subscanLabel }).click();
+
+      return await popupPromise;
+    });
   }
 }

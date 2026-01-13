@@ -24,9 +24,9 @@ export function getValidationLocators(page: Page, v: Validation) {
     case Validation.networkFee:
       return [balance, page.getByTestId(ValidationElements.networkFeeAmountError)];
     case Validation.originFee:
-      return [balance, page.getByTestId(ValidationElements.crossChainFeeAmountError)];
-    case Validation.deliveryFee:
-      return [balance, page.getByTestId(ValidationElements.deliveryFeeAmountError)];
+      return [balance, page.getByTestId(ValidationElements.originFeeAmountError)];
+    case Validation.destinationFee:
+      return [balance, page.getByTestId(ValidationElements.destinationFeeAmountError)];
     case Validation.multisigDeposit:
       return [balance, page.getByTestId(ValidationElements.multisigDepositError)];
     case Validation.proxyDeposit:
