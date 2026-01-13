@@ -1,10 +1,10 @@
 import { getWalletBySource } from '@talismn/connect-wallets';
-import { createEffect, createStore, sample } from 'effector';
+import { attach, createEffect, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type HexString } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { assert, createTxMetadata } from '@/shared/lib/utils';
+import { assert, createTxMetadata, upgradeNonce } from '@/shared/lib/utils';
 import { transactionService } from '@/entities/transaction';
 import { polkadotExtensionService } from '@/features/extension-wallet';
 import { type ExtrinsicSigningPayload } from '../lib/types';
@@ -17,46 +17,131 @@ export type SignResponse = {
   txPayload: ReturnType<typeof transactionService.createPayloadWithMetadata>;
 };
 
-const flow = createGate<{ payloads: ExtrinsicSigningPayload[] }>({ defaultState: { payloads: [] } });
+const flow = createGate<{
+  payloads: ExtrinsicSigningPayload[];
+  signatory: ExtrinsicSigningPayload['signatory'] | null;
+}>({
+  defaultState: { payloads: [], signatory: null },
+});
 
 const $step = createStore<Step>('idle');
 const $signed = createStore<SignResponse[]>([]).reset(flow.close);
 
-const signFx = createEffect(async ({ api, extrinsic, signatory }: ExtrinsicSigningPayload): Promise<SignResponse> => {
-  if (!polkadotExtensionService.isExtensionAccount(signatory)) {
-    throw new Error('Incorrect account for signing');
-  }
+const $signatory = flow.state.map(({ signatory }) => signatory);
+const $transactions = createStore<ReturnType<typeof transactionService.createPayloadWithMetadata>[]>([]);
+const $signingTotal = createStore<number>(0).reset(flow.close);
+const $signingCurrent = createStore<number>(0).reset(flow.close);
 
-  const wallet = getWalletBySource(signatory.extension);
-  assert(wallet, 'Wallet not found');
+const setupTransactionFx = createEffect(
+  async (
+    payloads: ExtrinsicSigningPayload[],
+  ): Promise<ReturnType<typeof transactionService.createPayloadWithMetadata>[]> => {
+    const payload = payloads.at(0);
+    assert(payload, "Can't prepare empty payload");
 
-  const metadata = await createTxMetadata(signatory.accountId, api);
-  const txPayload = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
+    const signatory = payload.signatory;
 
-  transactionService.logPayload([txPayload]);
+    let metadata = await createTxMetadata(signatory.accountId, payload.api);
 
-  // Init connection
-  await wallet.enable('Nova Spektr');
-  // Method for signing
-  const signPayload = wallet?.signer?.signPayload;
-  assert(signPayload, 'Signer not found');
+    const transactions: ReturnType<typeof transactionService.createPayloadWithMetadata>[] = [];
 
-  // @ts-expect-error No types for signPayload method
-  const { signature, signedTransaction } = await signPayload(txPayload.unsigned);
+    for (const { api, extrinsic } of payloads) {
+      const txPayload = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
+      transactions.push(txPayload);
+      metadata = upgradeNonce(metadata, 1);
+    }
 
-  return {
-    signature,
-    signedTransaction,
-    txPayload: txPayload,
-  };
+    transactionService.logPayload(transactions);
+
+    return transactions;
+  },
+);
+
+const signFx = attach({
+  source: $signatory,
+  async effect(
+    signatory,
+    { txPayload }: { txPayload: ReturnType<typeof transactionService.createPayloadWithMetadata> },
+  ) {
+    assert(signatory, 'Signatory is required');
+    if (!polkadotExtensionService.isExtensionAccount(signatory)) {
+      throw new Error('Incorrect account for signing');
+    }
+
+    const wallet = getWalletBySource(signatory.extension);
+    assert(wallet, 'Wallet not found');
+
+    // Init connection
+    await wallet.enable('Nova Spektr');
+    // Method for signing
+    const signPayload = wallet?.signer?.signPayload;
+    assert(signPayload, 'Signer not found');
+
+    // @ts-expect-error No types for signPayload method
+    const { signature, signedTransaction } = await signPayload(txPayload.unsigned);
+
+    return {
+      signature,
+      signedTransaction,
+      txPayload: txPayload,
+    };
+  },
 });
 
-const signAllFx = series(signFx);
+const signWithProgressFx = createEffect(
+  async (params: {
+    txPayload: ReturnType<typeof transactionService.createPayloadWithMetadata>;
+    index: number;
+  }): Promise<SignResponse> => {
+    return signFx(params);
+  },
+);
+
+const signAllFx = series(signWithProgressFx);
+
+sample({
+  clock: setupTransactionFx.doneData,
+  target: $transactions,
+});
+
+sample({
+  clock: flow.close,
+  target: $transactions.reinit,
+});
 
 sample({
   clock: flow.open,
+  filter: ({ payloads }) => payloads.length > 0,
   fn: ({ payloads }) => payloads,
+  target: setupTransactionFx,
+});
+
+sample({
+  clock: setupTransactionFx.doneData,
+  fn: (transactions) => transactions.length,
+  target: $signingTotal,
+});
+
+sample({
+  clock: setupTransactionFx.doneData,
+  fn: () => 0,
+  target: $signingCurrent,
+});
+
+sample({
+  clock: setupTransactionFx.doneData,
+  fn: (transactions) =>
+    transactions.map((txPayload, index) => ({
+      txPayload,
+      index: index + 1,
+    })),
   target: signAllFx,
+});
+
+sample({
+  clock: signWithProgressFx,
+  fn: ({ index }) => index,
+  target: $signingCurrent,
 });
 
 sample({
@@ -98,5 +183,7 @@ sample({
 export const polkadotExtensionSign = {
   $step,
   $signed,
+  $signingCurrent,
+  $signingTotal,
   flow,
 };
