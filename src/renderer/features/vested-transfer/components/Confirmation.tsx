@@ -35,6 +35,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
     locked: vesting.locked.toString(),
     startingBlock: vesting.startingBlock.toString(),
     perBlock: vesting.perBlock.toString(),
+    unlockedAtStartBlock: vesting.unlockedAtStartBlock?.toString(),
   }));
 
   const timelineChainId = chain.additional?.timelineChain;

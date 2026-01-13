@@ -21,21 +21,22 @@ test.describe(
       expect(await page.isVisible(watchOnlyAssetsPage.pageElements.assetsPageLocator)).toBeTruthy();
     });
 
-    test('Link from info button lead to subscan', async ({ loginPage, page, context }) => {
+    test('Link from info button lead to subscan', async ({ loginPage }) => {
       await allure.feature('Onboarding');
       await allure.story('Onboarding via Watch-only');
+
       const watchOnlyPage = await loginPage.gotoOnboarding().then((onboarding) => onboarding.clickWatchOnlyButton());
+
       await watchOnlyPage
         .fillAccountAddress(baseTestConfig.test_address)
         .then((account) => account.clickFirstInfoButton());
 
       let newPage: Page;
 
-      await allure.step('Click on Subscan link', async () => {
-        [newPage] = await Promise.all([
-          context.waitForEvent('page'),
-          page.getByRole('link', { name: watchOnlyPage.pageElements.subscanLabel }).click(),
-        ]);
+      await allure.step('Click on Subscan link and open Subscan page', async () => {
+        newPage = await watchOnlyPage.openSubscanInNewTab();
+        await newPage.waitForLoadState('domcontentloaded');
+        expect(newPage.url()).toContain('subscan.io');
       });
 
       await allure.step('Wait for the new page to load', async () => {

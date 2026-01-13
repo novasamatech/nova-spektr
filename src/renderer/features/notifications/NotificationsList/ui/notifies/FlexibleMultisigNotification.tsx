@@ -1,6 +1,3 @@
-import { combine } from 'effector';
-import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 
 import { NotificationType, WalletType } from '@/shared/core';
@@ -9,9 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { BodyText } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
-import { accountUtils } from '@/entities/wallet';
 
 type Props = {
   notification: FlexibleMultisigOperationNotification;
@@ -20,19 +15,7 @@ type Props = {
 export const FlexibleMultisigNotification = ({ notification }: Props) => {
   const { t } = useI18n();
 
-  const { threshold, signatories, accountName, walletId } = notification;
-
-  const $walletAccounts = useMemo(
-    () => combine(accounts.$list, (accountsList) => accountsList.filter((account) => account.walletId === walletId)),
-    [walletId],
-  );
-
-  const walletAccounts = useUnit($walletAccounts);
-
-  const chainId = useMemo(() => {
-    const flexibleMultisigAccount = walletAccounts.find(accountUtils.isFlexibleMultisigAccount);
-    return flexibleMultisigAccount?.chainId;
-  }, [walletAccounts]);
+  const { threshold, signatories, accountName, chainId } = notification;
 
   const isEdited = notification.type === NotificationType.FLEXIBLE_MULTISIG_EDITED;
   const titleKey = isEdited
