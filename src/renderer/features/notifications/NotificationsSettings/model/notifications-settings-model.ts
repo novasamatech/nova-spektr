@@ -1,8 +1,11 @@
-import { createEvent, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
+import i18next from 'i18next';
 import { or } from 'patronum';
+import { toast } from 'sonner';
 
 import { type ID, type NotificationEvent } from '@/shared/core';
 import { createForm } from '@/shared/forms';
+import { nonNullable } from '@/shared/lib/utils';
 import { notificationModel } from '@/entities/notification';
 import { walletModel, walletUtils } from '@/entities/wallet';
 
@@ -19,6 +22,7 @@ type SettingsSnapshot = {
 };
 
 const $previousSettings = createStore<SettingsSnapshot | null>(null);
+const $activeToastId = createStore<string | number | null>(null);
 
 sample({
   clock: $multisigWallets,
@@ -49,6 +53,27 @@ const form = createForm<FormParams>({
 const formOpened = createEvent();
 const modalClosed = createEvent<SettingsSnapshot>();
 const undoSettings = createEvent();
+
+const showSettingsSavedToastFx = createEffect((activeToastId: string | number | null) => {
+  if (activeToastId) {
+    toast.dismiss(activeToastId);
+  }
+
+  return toast.success(i18next.t('settings.notificationsSettings.settingsSaved'), {
+    action: {
+      label: i18next.t('settings.notificationsSettings.undoButton'),
+      onClick: () => undoSettings(),
+    },
+  });
+});
+
+const showSettingsRestoredToastFx = createEffect(() => {
+  toast.success(i18next.t('settings.notificationsSettings.settingsRestored'));
+});
+
+// Track active toast ID
+$activeToastId.on(showSettingsSavedToastFx.doneData, (_, id) => id);
+$activeToastId.on(undoSettings, () => null);
 
 sample({
   clock: formOpened,
@@ -87,12 +112,25 @@ sample({
   target: notificationModel.events.settingsSaved,
 });
 
+// Show toast when modal closes
+sample({
+  clock: modalClosed,
+  source: $activeToastId,
+  target: showSettingsSavedToastFx,
+});
+
 // Restore previous settings on undo
 sample({
   clock: undoSettings,
   source: $previousSettings,
-  filter: (settings): settings is SettingsSnapshot => settings !== null,
+  filter: (settings): settings is SettingsSnapshot => nonNullable(settings),
   target: notificationModel.events.settingsSaved,
+});
+
+// Show restored toast on undo
+sample({
+  clock: undoSettings,
+  target: showSettingsRestoredToastFx,
 });
 
 const $isTouched = or(
@@ -114,7 +152,6 @@ export const notificationsSettingsModel = {
   events: {
     formOpened,
     modalClosed,
-    undoSettings,
     soundPlayed: notificationModel.events.soundPlayed,
   },
 };

@@ -17,7 +17,7 @@ import {
   Switch,
 } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
-import { Modal, useNotification } from '@/shared/ui-kit';
+import { Modal } from '@/shared/ui-kit';
 import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelectService } from '@/aggregates/wallet-select';
@@ -38,7 +38,6 @@ type Props = {
 
 export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle, showTrigger = true }: Props) => {
   const { t } = useI18n();
-  const notification = useNotification();
 
   const wallets = useUnit(notificationsSettingsModel.$wallets);
   const allAccounts = useUnit(accounts.$list);
@@ -129,16 +128,6 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
           disabledWalletIds: [...disabledWalletIds.value],
           notificationEvents: [...notificationEvents.value],
           soundEnabled: soundEnabled.value,
-        });
-
-        notification.toast.success(t('settings.notificationsSettings.settingsSaved'), {
-          action: {
-            label: t('settings.notificationsSettings.undoButton'),
-            onClick: () => {
-              notificationsSettingsModel.events.undoSettings();
-              notification.toast.success(t('settings.notificationsSettings.settingsRestored'));
-            },
-          },
         });
       }
     }
