@@ -242,15 +242,19 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
       <ConfirmModal
         title={t('settings.notificationsSettings.leaveTitle')}
         description={t('settings.notificationsSettings.leaveDescription')}
-        cancelText={t('general.button.cancelButton')}
-        confirmText={t('settings.notificationsSettings.leaveButton')}
-        type="warning"
+        cancelText={t('settings.notificationsSettings.leaveButton')}
+        confirmText={t('settings.notificationsSettings.saveButton')}
+        cancelPallet="error"
+        type="alert"
         isOpen={isConfirmOpen}
         onConfirm={() => {
           setConfirmOpen(false);
+          handleSave();
+        }}
+        onCancel={() => {
+          setConfirmOpen(false);
           setIsOpen(false);
         }}
-        onCancel={() => setConfirmOpen(false)}
       />
     </>
   );

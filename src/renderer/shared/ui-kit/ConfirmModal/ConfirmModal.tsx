@@ -12,6 +12,7 @@ type Props = {
   cancelText: string;
   confirmText: string;
   type?: 'alert' | 'warning';
+  cancelPallet?: 'primary' | 'secondary' | 'error';
   isOpen?: boolean;
   onToggle?: (open: boolean) => void;
   onCancel?: () => void;
@@ -24,6 +25,7 @@ const Root = ({
   cancelText,
   confirmText,
   type = 'alert',
+  cancelPallet = 'secondary',
   children,
   isOpen,
   onToggle,
@@ -59,7 +61,7 @@ const Root = ({
             </AlertDialog.Description>
             <Box horizontalAlign="center" direction="row" gap={3} padding={[4, 0, 0]}>
               <AlertDialog.Cancel asChild>
-                <Button className="flex-1" size="sm" variant="fill" pallet="secondary" onClick={onCancel}>
+                <Button className="flex-1" size="sm" variant="fill" pallet={cancelPallet} onClick={onCancel}>
                   {cancelText}
                 </Button>
               </AlertDialog.Cancel>
