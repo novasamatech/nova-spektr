@@ -11,6 +11,8 @@ import { type ExtrinsicSigningPayload } from '../lib/types';
 
 type Step = 'idle' | 'signing' | 'rejected' | 'failed' | 'success';
 
+const PJS_EXTENSION_SIGN_RATE_LIMIT = 3000;
+
 export type SignResponse = {
   signature: HexString;
   signedTransaction?: Uint8Array | HexString;
@@ -79,6 +81,10 @@ const signFx = attach({
 
     // @ts-expect-error No types for signPayload method
     const { signature, signedTransaction } = await signPayload(txPayload.unsigned);
+
+    if (polkadotExtensionService.isPolkadotExtensionAccount(signatory)) {
+      await new Promise((resolve) => setTimeout(resolve, PJS_EXTENSION_SIGN_RATE_LIMIT));
+    }
 
     return {
       signature,
