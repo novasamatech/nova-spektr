@@ -17,4 +17,5 @@ export type ValidationSchemaOptions = {
   minVestedTransfer: BN;
   maxVestingSchedules: BN;
   existingVestingSchedules: Record<AccountId, number>;
+  targetOccurrences?: Record<AccountId, number>;
 };

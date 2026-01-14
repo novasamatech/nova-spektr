@@ -1,5 +1,6 @@
 import { BN } from '@polkadot/util';
 import { parse } from 'csv-parse/sync';
+import { cloneDeep } from 'lodash';
 import { z } from 'zod';
 
 import { type Chain } from '@/shared/core';
@@ -10,6 +11,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   MultiTransferCsvError,
   MultiTransferFieldError,
+  MultiTransferFieldWarning,
   type MultiTransferRowSerialized,
   type ValidationIssue,
 } from '@/entities/multi-transfer';
@@ -127,13 +129,17 @@ const safeBN = () =>
   });
 
 function createValidationSchema(options: ValidationSchemaOptions) {
-  const { chain } = options;
+  const { chain, recipientOccurrences = {} } = options;
 
   return z.object({
     recipient: z
       .string()
       .refine((value) => validateAddress(value, chain), MultiTransferFieldError.INVALID_SS58_ADDRESS)
-      .transform(toAccountId),
+      .transform(toAccountId)
+      .refine((accountId) => {
+        const occurrences = recipientOccurrences[accountId] ?? 0;
+        return occurrences <= 1;
+      }, MultiTransferFieldWarning.DUPLICATE_RECIPIENT),
     amount: safeBN()
       .refine((bn) => bn.gt(new BN(0)), MultiTransferFieldError.OUT_OF_RANGE)
       .refine((bn) => bn.lt(MAX_U128), MultiTransferFieldError.OUT_OF_RANGE),
@@ -167,6 +173,12 @@ function isFieldError(value: unknown): value is MultiTransferFieldError {
   return typeof value === 'string' && Object.values(MultiTransferFieldError).includes(value as MultiTransferFieldError);
 }
 
+function isFieldWarning(value: unknown): value is MultiTransferFieldWarning {
+  return (
+    typeof value === 'string' && Object.values(MultiTransferFieldWarning).includes(value as MultiTransferFieldWarning)
+  );
+}
+
 export function getIssueKey(issue: ValidationIssue): string {
   return `${issue.row}-${issue.path}-${issue.message}`;
 }
@@ -180,14 +192,21 @@ export function mergeValidationIssues(existing: ValidationIssue[], newIssues: Va
 }
 
 function validateCSV(records: MultiTransferRowSerialized[], options: ValidationSchemaOptions) {
+  const validationOptions = cloneDeep(options);
   const issues: ValidationIssue[] = [];
+  const recipientOccurrences: Record<string, number> = {};
 
   for (let i = 0; i < records.length; i++) {
     const record = records[i];
     const rowIndex = i + 1;
 
+    // Build recipient occurrences map
+    const recipientAccountId = toAccountId(record.recipient.raw);
+    recipientOccurrences[recipientAccountId] = (recipientOccurrences[recipientAccountId] ?? 0) + 1;
+    validationOptions.recipientOccurrences = recipientOccurrences;
+
     try {
-      const schema = createValidationSchema(options);
+      const schema = createValidationSchema(validationOptions);
       const parsed = schema.parse({
         recipient: record.recipient.raw,
         amount: record.amount.raw,
@@ -216,13 +235,18 @@ function validateCSV(records: MultiTransferRowSerialized[], options: ValidationS
       if (error instanceof z.ZodError) {
         for (const issue of error.issues) {
           const path = issue.path[0] as ValidationIssue['path'];
+          let severity: ValidationIssue['severity'] = 'error';
           let message: ValidationIssue['message'] = MultiTransferFieldError.UNKNOWN_ERROR;
 
           if (isFieldError(issue.message)) {
             message = issue.message;
           }
+          if (isFieldWarning(issue.message)) {
+            severity = 'warning';
+            message = issue.message;
+          }
 
-          issues.push({ row: rowIndex, path, severity: 'error', message });
+          issues.push({ row: rowIndex, path, severity, message });
         }
       } else {
         issues.push({
@@ -235,7 +259,7 @@ function validateCSV(records: MultiTransferRowSerialized[], options: ValidationS
     }
   }
 
-  const hasErrors = issues.length > 0;
+  const hasErrors = issues.some((issue) => issue.severity === 'error');
 
   return {
     success: !hasErrors,
@@ -244,17 +268,21 @@ function validateCSV(records: MultiTransferRowSerialized[], options: ValidationS
 }
 
 function downloadCsvWithIssues(rows: MultiTransferRowSerialized[], issues: ValidationIssue[]) {
-  const columns = [...CSV_HEADERS, 'errors'];
+  const columns = [...CSV_HEADERS, 'errors', 'warnings'];
   const header = columns.join(',');
 
   const dataRows = rows.map((row, index) => {
     const rowIndex = index + 1;
     const errorMessages = issues
-      .filter((issue) => issue.row === rowIndex)
+      .filter((issue) => issue.row === rowIndex && issue.severity === 'error')
       .map((error) => `${error.path}: ${error.message}`)
       .join(' | ');
+    const warningMessages = issues
+      .filter((issue) => issue.row === rowIndex && issue.severity === 'warning')
+      .map((warning) => `${warning.path}: ${warning.message}`)
+      .join(' | ');
 
-    return [row.recipient.raw, row.amount.raw, errorMessages].join(',');
+    return [row.recipient.raw, row.amount.raw, errorMessages, warningMessages].join(',');
   });
 
   const csvContent = [header, ...dataRows].join('\n');

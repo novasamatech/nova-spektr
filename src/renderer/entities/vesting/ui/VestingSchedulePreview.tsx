@@ -99,9 +99,10 @@ export const VestingSchedulePreview = memo(
     );
     const tableData = useMemo(() => allData.slice(0, visibleCount), [allData, visibleCount]);
     const hasMore = visibleCount < allData.length;
+    const hasUnlockedAtStartBlock = vestingSchedule.some((schedule) => nonNullable(schedule.unlockedAtStartBlock));
 
-    const columns: Column<TableData>[] = useMemo(
-      () => [
+    const columns: Column<TableData>[] = useMemo(() => {
+      const baseColumns: Column<TableData>[] = [
         {
           key: 'index',
           title: '',
@@ -117,7 +118,7 @@ export const VestingSchedulePreview = memo(
         {
           key: 'target',
           title: t('vestedTransfer.parsedFile.table.headers.recipient'),
-          width: '460px',
+          width: '465px',
           render: (_, row) => {
             if (nullable(row.target) || nullable(chain)) return null;
             const rowIssues = getRowIssues(row.index);
@@ -236,12 +237,58 @@ export const VestingSchedulePreview = memo(
               ),
             ),
         },
-      ],
-      [t, chain, asset, getRowIssues, getFieldIssues, timelineApi],
-    );
+      ];
+
+      if (hasUnlockedAtStartBlock) {
+        baseColumns.push({
+          key: 'unlockedAtStartBlock',
+          title: (
+            <div className="flex w-full justify-end gap-x-1">
+              <span>{t('vestedTransfer.parsedFile.table.headers.unlockedAtStartBlock')}</span>
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div>
+                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('vestedTransfer.parsedFile.table.hints.unlockedAtStartBlock')}</Tooltip.Content>
+              </Tooltip>
+            </div>
+          ),
+          width: '140px',
+          render: (_, row) =>
+            renderCell(row, 'unlockedAtStartBlock', ({ row }) =>
+              row.unlockedAtStartBlock && asset ? (
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <div className="flex flex-col items-end">
+                      <AssetBalance
+                        value={row.unlockedAtStartBlock}
+                        asset={asset}
+                        showSymbol
+                        className="border-b border-filter-border text-inherit"
+                      />
+                      <AssetFiatBalance asset={asset} amount={row.unlockedAtStartBlock} className="text-inherit" />
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    {t('vestedTransfer.parsedFile.table.hints.planks', {
+                      amount: NUM_FORMATTER.format(BigInt(row.unlockedAtStartBlock)),
+                    })}
+                  </Tooltip.Content>
+                </Tooltip>
+              ) : (
+                <span className="shrink-0 text-body">{row.unlockedAtStartBlock}</span>
+              ),
+            ),
+        });
+      }
+
+      return baseColumns;
+    }, [t, chain, asset, getRowIssues, getFieldIssues, timelineApi, vestingSchedule]);
 
     return (
-      <Modal size="xl" height="fit">
+      <Modal size={hasUnlockedAtStartBlock ? 'xxl' : 'xl'} height="fit">
         <Modal.Trigger>{children}</Modal.Trigger>
         <Modal.Title close>
           <div className="flex gap-x-2">
