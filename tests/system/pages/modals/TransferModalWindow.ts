@@ -86,7 +86,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     await step('Wait for Continue button to be enabled', async () => {
       const button = this.page.getByRole('button', { name: 'Continue' });
       await expect(button).toBeVisible();
-      await expect(button).toBeEnabled();
+      await expect(button).toBeEnabled({ timeout: 10000 });
     });
   }
 

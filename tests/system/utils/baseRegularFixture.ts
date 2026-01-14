@@ -11,6 +11,8 @@ type TestFixtures = {
 
   transfersPage: BaseAssetsPage;
 
+  xcmTransfersPage: BaseAssetsPage;
+
   validationsPage: BaseAssetsPage;
 };
 
@@ -94,6 +96,16 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
   },
 
   transfersPage: async ({ transfersContext }, use) => {
+    const page = await transfersContext.newPage();
+    const assets = new BaseAssetsPage(page, new AssetsPageElements());
+    await assets.gotoMain();
+
+    await use(assets);
+
+    await page.close();
+  },
+
+  xcmTransfersPage: async ({ transfersContext }, use) => {
     const page = await transfersContext.newPage();
     const assets = new BaseAssetsPage(page, new AssetsPageElements());
     await assets.gotoMain();
