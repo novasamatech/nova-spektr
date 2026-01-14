@@ -2803,7 +2803,8 @@
           "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
           "INVALID_VALUE": "Invalid value",
           "MAX_VESTING_SCHEDULES_REACHED": "Max vesting schedules reached",
-          "MIN_VESTED_TRANSFER": "Min vested transfer is <asset />",
+          "MIN_VESTED_TRANSFER": "Min vested transfer is <minVestedTransfer />",
+          "CLIFF_MIN_VESTED_TRANSFER": "Amount that remains locked after start block must be greater than <minVestedTransfer />. Current: <remainingLockedAmount />",
           "OUT_OF_RANGE": "Value out of range",
           "START_BLOCK_IN_PAST": "Block in the past. Make sure you are using relaychain block number",
           "UNKNOWN_ERROR": "Unknown error"
@@ -2864,6 +2865,7 @@
         "hints": {
           "perBlock": "Tokens released per block during vesting",
           "planks": "{amount} planks",
+          "locked": "Total locked amount",
           "startBlock": "Block number when vesting starts",
           "startBlockTime": "Starts on {date} at {time}",
           "unlockedAtStartBlock": "Amount unlocked at starting block"
