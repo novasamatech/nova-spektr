@@ -15,10 +15,12 @@ import { networkModel } from '@/entities/network';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import {
+  CliffMinVestedTransferError,
+  MinVestedTransferError,
   type ValidationIssue,
   VestingCsvError,
+  VestingFieldError,
   VestingSchedulePreview,
-  renderVestingFieldError,
 } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
@@ -279,18 +281,30 @@ const ValidationsAlert = () => {
       row?.locked && row?.unlockedAtStartBlock
         ? new BN(row.locked).sub(new BN(row.unlockedAtStartBlock)).toString()
         : null;
-    const customErrorContent = renderVestingFieldError({
-      issue,
-      asset,
-      minVestedTransfer,
-      remainingLockedAmount,
-    });
 
-    if (customErrorContent) {
+    const isMinVestedTransferError =
+      issue.message === VestingFieldError.MIN_VESTED_TRANSFER && nonNullable(minVestedTransfer) && nonNullable(asset);
+
+    const isCliffMinVestedTransferError =
+      issue.message === VestingFieldError.CLIFF_MIN_VESTED_TRANSFER &&
+      nonNullable(minVestedTransfer) &&
+      nonNullable(asset) &&
+      nonNullable(remainingLockedAmount);
+
+    if (isMinVestedTransferError || isCliffMinVestedTransferError) {
       const rowPrefix = t('vestedTransfer.errors.csv.invalidDataRow', { row: issue.row });
       return (
         <Alert.Item key={issue.row}>
-          {rowPrefix}:&nbsp;{customErrorContent}
+          {rowPrefix}:&nbsp;
+          {isMinVestedTransferError ? (
+            <MinVestedTransferError minVestedTransfer={minVestedTransfer} asset={asset} />
+          ) : (
+            <CliffMinVestedTransferError
+              minVestedTransfer={minVestedTransfer}
+              remainingLockedAmount={remainingLockedAmount!}
+              asset={asset}
+            />
+          )}
         </Alert.Item>
       );
     }

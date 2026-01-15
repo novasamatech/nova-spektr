@@ -15,7 +15,8 @@ import { useBlockTimestamp, useIdentity } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
 import { type ValidationIssue, VestingFieldError, type VestingScheduleRaw } from '../lib/types';
 
-import { renderVestingFieldError } from './VestingFieldErrorRenderer';
+import { CliffMinVestedTransferError } from './CliffMinVestedTransferError';
+import { MinVestedTransferError } from './MinVestedTransferError';
 
 type TableData = VestingScheduleRaw & {
   index: number;
@@ -350,17 +351,29 @@ const FieldIssues = memo(
   }) => {
     const { t } = useI18n();
 
-    const customErrorContent = renderVestingFieldError({
-      issue,
-      asset,
-      minVestedTransfer,
-      remainingLockedAmount,
-    });
+    const isMinVestedTransferError =
+      issue.message === VestingFieldError.MIN_VESTED_TRANSFER && nonNullable(minVestedTransfer) && nonNullable(asset);
+
+    const isCliffMinVestedTransferError =
+      issue.message === VestingFieldError.CLIFF_MIN_VESTED_TRANSFER &&
+      nonNullable(minVestedTransfer) &&
+      nonNullable(asset) &&
+      nonNullable(remainingLockedAmount);
 
     return (
       <div className="flex flex-col">
         <CaptionText className={cnTw('text-right text-inherit', className)}>
-          {customErrorContent ?? t(`vestedTransfer.errors.csv.fieldErrors.${issue.message}`)}
+          {isMinVestedTransferError ? (
+            <MinVestedTransferError minVestedTransfer={minVestedTransfer} asset={asset} />
+          ) : isCliffMinVestedTransferError ? (
+            <CliffMinVestedTransferError
+              minVestedTransfer={minVestedTransfer}
+              remainingLockedAmount={remainingLockedAmount}
+              asset={asset}
+            />
+          ) : (
+            t(`vestedTransfer.errors.csv.fieldErrors.${issue.message}`)
+          )}
         </CaptionText>
       </div>
     );
