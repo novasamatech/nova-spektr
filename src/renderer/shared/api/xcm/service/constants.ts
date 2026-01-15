@@ -88,10 +88,6 @@ export const XCM_DESTINATION_BLACKLIST: XcmDestinationBlacklistEntry[] = [
   },
   {
     sourceChainId: '0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d', // Hydration
-    destinationChainId: '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f', // Polkadot Asset Hub
-  },
-  {
-    sourceChainId: '0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d', // Hydration
     destinationChainId: '0xf6ee56e9c5277df5b4ce6ae9983ee88f3cbed27d31beeb98f9f84f997a1ab0b9', // Mythos
   },
   {
@@ -225,7 +221,6 @@ export const XCM_DESTINATION_WHITELIST_LEGACY: XcmDestinationWhitelistEntry[] = 
     sourceChainId: '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f', // Polkadot Asset Hub
     destinationChainId: '0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6', // Astar
     sourceAsset: 'DOT',
-    destinationAsset: 'USDT-Statemint',
   },
   {
     sourceChainId: '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f', // Polkadot Asset Hub
@@ -377,6 +372,26 @@ export const XCM_DESTINATION_WHITELIST_LEGACY: XcmDestinationWhitelistEntry[] = 
     sourceChainId: '0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d', // Moonbeam
     destinationChainId: '0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d', // Hydration
     sourceAsset: 'GLMR',
+  },
+  {
+    sourceChainId: '0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d', // Hydration
+    destinationChainId: '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f', // Polkadot Asset Hub
+    sourceAsset: 'DOT',
+  },
+  {
+    sourceChainId: '0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d', // Hydration
+    destinationChainId: '0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c', // Acala
+    sourceAsset: 'DOT',
+  },
+  {
+    sourceChainId: '0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d', // Hydration
+    destinationChainId: '0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6', // Astar
+    sourceAsset: 'DOT',
+  },
+  {
+    sourceChainId: '0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d', // Hydration
+    destinationChainId: '0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b', // Bifrost Polkadot
+    sourceAsset: 'DOT',
   },
   {
     sourceChainId: '0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b', // Moonriver

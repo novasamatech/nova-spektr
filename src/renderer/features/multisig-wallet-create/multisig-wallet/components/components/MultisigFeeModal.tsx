@@ -194,7 +194,8 @@ type ChainWithFeeAndBalance = {
 };
 const TokenWithFee = ({ chain, fee, asset, balance }: ChainWithFeeAndBalance) => {
   const { t } = useI18n();
-  const isLoading = useUnit(chainSelectorModel.$isLoading);
+  const pendingFees = useUnit(chainSelectorModel.$pendingFees);
+  const isLoading = pendingFees[chain.chainId] ?? true;
 
   return (
     <Box

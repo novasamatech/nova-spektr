@@ -6,20 +6,23 @@ import { cnTw, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, CaptionText, FootnoteText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
-import { Modal, ScrollArea } from '@/shared/ui-kit';
+import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
 import { useAccountName } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
 import { MultiTransferFieldError, type MultiTransferRow, type ValidationIssue } from '../lib/types';
 
+type RowStatus = 'error' | 'warning' | 'valid';
+
 type TableData = MultiTransferRow & {
   index: number;
 };
 
-type RowStatus = 'error' | 'valid';
+const NUM_FORMATTER = new Intl.NumberFormat('en-US');
 
 const STATUS_TEXT_COLORS: Record<RowStatus, string> = {
   error: 'text-text-negative',
+  warning: 'text-text-warning',
   valid: 'text-text-primary',
 };
 
@@ -55,7 +58,8 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
   );
 
   const getRowStatus = useCallback((rowIssues: ValidationIssue[]): RowStatus => {
-    if (rowIssues.length > 0) return 'error';
+    if (rowIssues.some((i) => i.severity === 'error')) return 'error';
+    if (rowIssues.some((i) => i.severity === 'warning')) return 'warning';
     return 'valid';
   }, []);
 
@@ -82,15 +86,7 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
           const status = getRowStatus(rowIssues);
           return (
             <div className="flex justify-start">
-              <span
-                className={cnTw(
-                  'shrink-0 text-body',
-                  STATUS_TEXT_COLORS[status],
-                  STATUS_TEXT_COLORS[status] === STATUS_TEXT_COLORS.valid && 'text-text-tertiary',
-                )}
-              >
-                {row.index}
-              </span>
+              <span className={cnTw('shrink-0 text-body', STATUS_TEXT_COLORS[status])}>{row.index}</span>
             </div>
           );
         },
@@ -98,7 +94,7 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
       {
         key: 'recipient',
         title: t('multiTransfer.parsedFile.headers.recipient'),
-        width: '430px',
+        width: '460px',
         render: (_, row) => {
           const rowIssues = getRowIssues(row.index);
           const fieldIssues = getFieldIssues(row.index, 'recipient');
@@ -127,7 +123,7 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
             <span>{t('multiTransfer.parsedFile.headers.amount')}</span>
           </div>
         ),
-        width: '120px',
+        width: '200px',
         render: (_, row) => {
           const rowIssues = getRowIssues(row.index);
           const fieldIssues = getFieldIssues(row.index, 'amount');
@@ -141,10 +137,24 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
               {hasInvalidValue || nullable(row.amount.parsed) || nullable(asset) ? (
                 <span className="shrink-0 text-body">{row.amount.raw}</span>
               ) : (
-                <>
-                  <AssetBalance value={row.amount.parsed} asset={asset} showSymbol />
-                  <AssetFiatBalance asset={asset} amount={row.amount.parsed} />
-                </>
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <div className="flex flex-col items-end">
+                      <AssetBalance
+                        value={row.amount.parsed}
+                        asset={asset}
+                        showSymbol
+                        className="border-b border-filter-border text-inherit"
+                      />
+                      <AssetFiatBalance asset={asset} amount={row.amount.parsed} className="text-inherit" />
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    {t('multiTransfer.parsedFile.table.hints.planks', {
+                      amount: NUM_FORMATTER.format(BigInt(row.amount.raw)),
+                    })}
+                  </Tooltip.Content>
+                </Tooltip>
               )}
               {fieldIssues.length > 0 && (
                 <CaptionText className={cnTw('text-right text-inherit', STATUS_TEXT_COLORS[status])}>
@@ -159,10 +169,11 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
     [t, chain, asset, getRowIssues, getFieldIssues, getRowStatus],
   );
 
-  const errorsCount = issues?.filter((issue) => issue.severity === 'error').length ?? 0;
+  const errorCount = issues?.filter((issue) => issue.severity === 'error').length ?? 0;
+  const warningCount = issues?.filter((issue) => issue.severity === 'warning').length ?? 0;
 
   return (
-    <Modal size="fit" height="fit">
+    <Modal size="lg" height="fit">
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>
         <div className="flex gap-x-2">
@@ -171,7 +182,7 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
         </div>
       </Modal.Title>
       <Modal.Content>
-        <div className="w-160 px-2 pb-3">
+        <div className="px-2 pb-3">
           <ScrollArea>
             <Table columns={columns} data={tableData} cellAlign="top" className="w-full rounded-lg" />
             {hasMore && (
@@ -188,10 +199,17 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
         <Modal.Footer>
           <div className="flex w-full flex-row items-center justify-between">
             <div className="flex flex-col">
-              {errorsCount > 0 && (
+              {errorCount > 0 && (
                 <FootnoteText className="text-text-negative">
                   {t('multiTransfer.parsedFile.table.footer.errorsCount', {
-                    count: errorsCount,
+                    count: errorCount,
+                  })}
+                </FootnoteText>
+              )}
+              {warningCount > 0 && (
+                <FootnoteText className="text-text-warning">
+                  {t('multiTransfer.parsedFile.table.footer.warningsCount', {
+                    count: warningCount,
                   })}
                 </FootnoteText>
               )}
