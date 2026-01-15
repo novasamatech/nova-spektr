@@ -10,13 +10,12 @@ import { formatSectionAndMethod, nonNullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { BodyText, Button, Icon, type IconNames } from '@/shared/ui';
 import { AssetBalance, WalletIcon } from '@/shared/ui-entities';
-import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
+import { type OperationTitle, accounts, multisigOperation, multisigOperationService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { multisigService } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { operationTitleTransformer } from '@/features/multisig-operations';
 
 type Props = {
   notification: MultisigOperationNotification;
@@ -114,7 +113,7 @@ export const MultisigOperationNotificationComponent = ({
   const asset = useTransactionAsset(coreTx, chainId);
   const amount = coreTx ? getTransactionAmount(coreTx) : null;
 
-  const externalTitle = useTransformer(operationTitleTransformer, {
+  const externalTitle = useTransformer(multisigOperationService.operationTitleTransformer, {
     operation,
     showCoreTransaction: showCoreTransaction,
     chains,
@@ -122,7 +121,7 @@ export const MultisigOperationNotificationComponent = ({
     t,
   });
 
-  const titleData = useMemo(() => {
+  const titleData: OperationTitle = useMemo(() => {
     if (externalTitle) {
       return externalTitle;
     }

@@ -1,24 +1,15 @@
-import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { type TFunction } from 'i18next';
 import { memo, useMemo } from 'react';
 
-import {
-  type Asset,
-  type AssetByChains,
-  type Chain,
-  type ChainId,
-  type FlexibleMultisigAccount,
-  type MultisigAccount,
-} from '@/shared/core';
-import { createTransformer, useTransformer } from '@/shared/di';
+import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { Accordion } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box, Copy, Tooltip } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, type OperationTitle, multisigOperationService } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
@@ -40,27 +31,6 @@ type Props = {
   isDefaultOpen?: boolean;
 };
 
-export type OperationTitle = {
-  title?: string;
-  amount?: {
-    value: BN | string;
-    asset: Asset | AssetByChains;
-  };
-  sourceChainId?: ChainId;
-  destinationChainId?: ChainId; // For XCM transactions
-};
-
-export const operationTitleTransformer = createTransformer<
-  {
-    operation?: MultisigOperation;
-    showCoreTransaction?: boolean;
-    chains?: Record<ChainId, Chain>;
-    asset?: Asset | null;
-    t?: TFunction;
-  },
-  OperationTitle
->();
-
 export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
@@ -74,7 +44,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
     [operation, multisigAccount],
   );
 
-  const externalTitle = useTransformer(operationTitleTransformer, {
+  const externalTitle = useTransformer(multisigOperationService.operationTitleTransformer, {
     operation,
     showCoreTransaction,
     chains,

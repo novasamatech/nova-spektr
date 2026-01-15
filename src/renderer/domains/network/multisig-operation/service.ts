@@ -1,10 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type GenericExtrinsic } from '@polkadot/types';
 import { type AnyTuple } from '@polkadot/types/types';
+import { type BN } from '@polkadot/util';
 import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
+import { type TFunction } from 'i18next';
 
 import {
+  type Asset,
+  type AssetByChains,
   type CallHash,
   type Chain,
   type ChainId,
@@ -13,6 +17,7 @@ import {
   type FlexibleMultisigAccount,
   type MultisigAccount,
 } from '@/shared/core';
+import { createTransformer } from '@/shared/di';
 import { groupBy, isEqual, merge, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
@@ -257,7 +262,30 @@ function generateMultisigOperationRelativeLink(params: MultisigOperationDeepLink
   });
 }
 
+export type OperationTitle = {
+  title?: string;
+  amount?: {
+    value: BN | string;
+    asset: Asset | AssetByChains;
+  };
+  sourceChainId?: ChainId;
+  destinationChainId?: ChainId;
+};
+
+const operationTitleTransformer = createTransformer<
+  {
+    operation?: MultisigOperation;
+    showCoreTransaction?: boolean;
+    chains?: Record<ChainId, Chain>;
+    asset?: Asset | null;
+    t?: TFunction;
+  },
+  OperationTitle
+>();
+
 export const multisigOperationService = {
+  operationTitleTransformer: operationTitleTransformer,
+
   getOperationId,
   getEventId,
   getTransactionFromChain,
