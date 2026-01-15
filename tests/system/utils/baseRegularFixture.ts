@@ -20,6 +20,7 @@ type WorkerFixtures = {
   sharedContext: BrowserContext;
   validationsContext: BrowserContext;
   transfersContext: BrowserContext;
+  xcmTransfersContext: BrowserContext;
 };
 
 async function applyInitFlags(context: BrowserContext) {
@@ -75,6 +76,18 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     { scope: 'worker' } as const,
   ],
 
+  xcmTransfersContext: [
+    async ({ browser }, use) => {
+      const context = await browser.newContext({ ignoreHTTPSErrors: true, permissions: [] });
+      await applyInitFlags(context);
+      await bootstrapDb(context, 'transfers/transfers_tests_db.json');
+
+      await use(context);
+      await context.close();
+    },
+    { scope: 'worker' } as const,
+  ],
+
   page: async ({ sharedContext }, use) => {
     const page = await sharedContext.newPage();
     await use(page);
@@ -105,8 +118,8 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     await page.close();
   },
 
-  xcmTransfersPage: async ({ transfersContext }, use) => {
-    const page = await transfersContext.newPage();
+  xcmTransfersPage: async ({ xcmTransfersContext }, use) => {
+    const page = await xcmTransfersContext.newPage();
     const assets = new BaseAssetsPage(page, new AssetsPageElements());
     await assets.gotoMain();
 
