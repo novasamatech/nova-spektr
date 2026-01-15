@@ -132,13 +132,19 @@ sample({
 sample({
   clock: create,
   fn: ({ account, name }) => {
+    const trimmedName = name.trim();
     return {
       wallet: {
-        name: name.trim(),
+        name: trimmedName,
         type: WalletTypeFromExtension(account.extension),
         signingType: SigningType.EXTENSION,
       },
-      accounts: [account],
+      accounts: [
+        {
+          ...account,
+          name: trimmedName,
+        },
+      ],
     };
   },
   target: createWalletFx,
