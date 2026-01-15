@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Call, type DispatchError, type Weight } from '@polkadot/types/interfaces';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { type Registry } from '@polkadot/types/types';
-import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
+import { BN_ZERO, hexToU8a } from '@polkadot/util';
 
 import { type Transaction as DeprecatedTransaction, type HexString } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
@@ -11,7 +11,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { type AnyAccount } from '../account/types';
 
-import { LEAVE_SOME_SPACE_MULTIPLIER } from './constants';
+import { BlockWeight } from './helpers';
 import { type AnyDecodedTransaction, type AnyTransaction, type EncodedTransaction, type Extrinsic } from './types';
 
 const wrapTransactionTransformer = createTransformer<
@@ -213,29 +213,37 @@ function isBatchExtrinsic(extrinsic: Extrinsic) {
   );
 }
 
-async function getBlockLimit(api: ApiPromise): Promise<BN> {
-  const maxExtrinsicWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.value.refTime.toBn();
-  const maxBlockWeight = api.consts.system.blockWeights.maxBlock.refTime.toBn();
+async function getBlockLimit(api: ApiPromise): Promise<BlockWeight> {
+  const maxExtrinsicWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.unwrapOrDefault();
+  const maxExtrinsic = BlockWeight.fromWeight(maxExtrinsicWeight);
+
+  const maxBlockWeight = api.consts.system.blockWeights.maxBlock;
+  const maxBlock = BlockWeight.fromWeight(maxBlockWeight);
+
   const blockWeight = await api.query.system.blockWeight();
 
-  const totalWeight = blockWeight.normal.refTime
-    .toBn()
-    .add(blockWeight.operational.refTime.toBn())
-    .add(blockWeight.mandatory.refTime.toBn());
-
-  const freeSpaceInLastBlock = maxBlockWeight.sub(totalWeight);
-
-  return BN.min(
-    maxExtrinsicWeight.muln(LEAVE_SOME_SPACE_MULTIPLIER),
-    freeSpaceInLastBlock.muln(LEAVE_SOME_SPACE_MULTIPLIER),
+  const usedSpaceInLastBlock = new BlockWeight(
+    blockWeight.normal.refTime
+      .toBn()
+      .add(blockWeight.operational.refTime.toBn())
+      .add(blockWeight.mandatory.refTime.toBn()),
+    (blockWeight.normal.proofSize?.toBn?.() ?? BN_ZERO)
+      .add(blockWeight.operational.proofSize?.toBn?.() ?? BN_ZERO)
+      .add(blockWeight.mandatory.proofSize?.toBn?.() ?? BN_ZERO),
   );
+
+  const freeSpaceInLastBlock = new BlockWeight(
+    maxBlock.refTime.sub(usedSpaceInLastBlock.refTime),
+    maxBlock.proofSize.sub(usedSpaceInLastBlock.proofSize),
+  );
+
+  return BlockWeight.takeMinimums(maxExtrinsic.withMargin(), freeSpaceInLastBlock.withMargin());
 }
 
 async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
   const blockLimit = await getBlockLimit(api);
   const result: Extrinsic[][] = [[]];
-
-  let totalRefTime = BN_ZERO;
+  let totalWeight = new BlockWeight(BN_ZERO, BN_ZERO);
 
   const txsWeights: Partial<Record<string, Weight>> = {};
 
@@ -243,32 +251,32 @@ async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
     const key = `${call.section}.${call.method}`;
     const extrinsic = api.tx(call);
     const weight = txsWeights[key] || (await getExtrinsicWeight(extrinsic));
-
     if (!txsWeights[key]) {
       txsWeights[key] = weight;
     }
 
-    totalRefTime = totalRefTime.add(weight.refTime.toBn());
+    const callWeight = BlockWeight.fromWeight(weight);
+    const newTotalWeight = totalWeight.add(callWeight);
 
-    if (totalRefTime.lt(blockLimit) && result.length > 0) {
+    if (newTotalWeight.fitsIn(blockLimit) && result.length > 0) {
       const lastBuffer = result.at(-1);
       if (lastBuffer) {
         lastBuffer.push(extrinsic);
       }
+      totalWeight = newTotalWeight;
     } else {
       result.push([extrinsic]);
-
-      totalRefTime = weight.refTime.toBn();
+      totalWeight = callWeight;
     }
   }
-
   return result;
 }
 
 async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise): Promise<Extrinsic[]> {
   if (isBatchExtrinsic(extrinsic)) {
-    // @ts-expect-error calls arg is Vec<Call>
-    const splitted = await splitCallsByWeight(api, extrinsic.args.at(0) ?? []);
+    const callsArg = extrinsic.args.at(0);
+    const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
+    const splitted = await splitCallsByWeight(api, calls);
     const batched = splitted
       .map(e => {
         if (e.length === 0) return null;

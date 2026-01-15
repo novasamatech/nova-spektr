@@ -58,7 +58,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       });
 
       // Save with only some events enabled
-      await allSettled(notificationsSettingsModel.events.settingsSaved, {
+      await allSettled(notificationsSettingsModel.events.modalClosed, {
         scope,
         params: {
           disabledWalletIds: [],
@@ -91,7 +91,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       });
 
       // Save with wallet 2 disabled
-      await allSettled(notificationsSettingsModel.events.settingsSaved, {
+      await allSettled(notificationsSettingsModel.events.modalClosed, {
         scope,
         params: {
           disabledWalletIds: [2],
@@ -125,7 +125,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
           .set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
-      await allSettled(notificationsSettingsModel.events.settingsSaved, {
+      await allSettled(notificationsSettingsModel.events.modalClosed, {
         scope,
         params: {
           disabledWalletIds: [],
@@ -150,7 +150,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
           .set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
-      await allSettled(notificationsSettingsModel.events.settingsSaved, {
+      await allSettled(notificationsSettingsModel.events.modalClosed, {
         scope,
         params: {
           disabledWalletIds: [1, 3],
@@ -185,7 +185,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       });
 
       // First save - disable some events
-      await allSettled(notificationsSettingsModel.events.settingsSaved, {
+      await allSettled(notificationsSettingsModel.events.modalClosed, {
         scope,
         params: {
           disabledWalletIds: [],
@@ -197,7 +197,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       expect(saveSpy).toHaveBeenCalledWith(NOTIFICATION_EVENTS_KEY, [NotificationEvent.WALLET_CREATED]);
 
       // Second save - disable a wallet
-      await allSettled(notificationsSettingsModel.events.settingsSaved, {
+      await allSettled(notificationsSettingsModel.events.modalClosed, {
         scope,
         params: {
           disabledWalletIds: [2],
@@ -227,7 +227,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
           .set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
-      await allSettled(notificationsSettingsModel.events.settingsSaved, {
+      await allSettled(notificationsSettingsModel.events.modalClosed, {
         scope,
         params: {
           disabledWalletIds: [],
@@ -252,7 +252,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
           .set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
-      await allSettled(notificationsSettingsModel.events.settingsSaved, {
+      await allSettled(notificationsSettingsModel.events.modalClosed, {
         scope,
         params: {
           disabledWalletIds: [1, 2, 3], // All wallets disabled
@@ -283,7 +283,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       });
 
       // Disable OPERATION_CREATED
-      await allSettled(notificationsSettingsModel.events.settingsSaved, {
+      await allSettled(notificationsSettingsModel.events.modalClosed, {
         scope,
         params: {
           disabledWalletIds: [],
@@ -310,7 +310,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       });
 
       // Disable wallet 2
-      await allSettled(notificationsSettingsModel.events.settingsSaved, {
+      await allSettled(notificationsSettingsModel.events.modalClosed, {
         scope,
         params: {
           disabledWalletIds: [2],
@@ -338,7 +338,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
 
       const scope = fork();
 
-      await allSettled(notificationsSettingsModel.events.settingsSaved, {
+      await allSettled(notificationsSettingsModel.events.modalClosed, {
         scope,
         params: {
           disabledWalletIds: [],
