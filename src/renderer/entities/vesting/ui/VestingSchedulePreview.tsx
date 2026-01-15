@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN, type BN as BNType } from '@polkadot/util';
+import { BN } from '@polkadot/util';
 import { format } from 'date-fns';
 import { type PropsWithChildren, memo, useCallback, useMemo, useState } from 'react';
 
@@ -345,7 +345,7 @@ const FieldIssues = memo(
   }: {
     issue: ValidationIssue;
     asset: Asset | null;
-    minVestedTransfer?: BNType | null;
+    minVestedTransfer?: BN | null;
     remainingLockedAmount?: string | null;
     className?: string;
   }) => {
