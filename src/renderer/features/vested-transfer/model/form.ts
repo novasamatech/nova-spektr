@@ -472,8 +472,13 @@ const $canSubmit = combine(
     isFormValid: form.$isValid,
     isTxValid: $isTxValid,
     fee: $fee,
+    csvIssues: $csvIssues,
+    csvError: $csvError,
   },
-  ({ isFormValid, isTxValid, fee }) => isFormValid && isTxValid && nonNullable(fee),
+  ({ isFormValid, isTxValid, fee, csvIssues, csvError }) => {
+    const hasCsvErrors = nonNullable(csvError) || csvIssues?.some((issue) => issue.severity === 'error');
+    return isFormValid && isTxValid && nonNullable(fee) && !hasCsvErrors;
+  },
 );
 
 // submit flow
