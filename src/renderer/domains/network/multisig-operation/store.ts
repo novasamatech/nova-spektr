@@ -1,5 +1,7 @@
 import { attach, createEffect, createStore, restore, sample, scopeBind } from 'effector';
+import { t } from 'i18next';
 import { once, readonly, spread } from 'patronum';
+
 
 import { storageService } from '@/shared/api/storage';
 import {
@@ -11,13 +13,14 @@ import {
   NotificationType,
 } from '@/shared/core';
 import { createQueuedEffect, pairwise } from '@/shared/effector';
-import { formatBalance, nonNullable } from '@/shared/lib/utils';
+import { formatBalance, getAssetById, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
 import { Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
-import { decodeCallData } from '@/entities/transaction';
+import { decodeCallData, findCoreTransaction } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 import { accounts } from '../account/store';
 import { type AnyAccount } from '../account/types';
 
@@ -148,9 +151,26 @@ const getStatusSuffix = (operationStatus: 'pending' | 'executed' | 'cancelled' |
   }
 };
 
-const getOperationNotificationTitle = (operation: MultisigOperation, chains: Record<ChainId, Chain>): string => {
-  // ToDo: doesn't return proper result
-  const transformerResult = multisigOperationService.operationTitleTransformer({ operation, chains });
+const getOperationNotificationTitle = (
+  operation: MultisigOperation,
+  chains: Record<ChainId, Chain>,
+  account?: AnyAccount,
+): string => {
+  const showCoreTransaction = account ? accountUtils.isFlexibleMultisigAccount(account) : false;
+
+  const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+
+  const chain = chains[operation.chainId];
+  const assetId = coreTx?.args?.['assetId'];
+  const asset = assetId && chain ? (getAssetById(assetId, chain.assets) ?? null) : null;
+
+  const transformerResult = multisigOperationService.operationTitleTransformer({
+    operation,
+    showCoreTransaction,
+    chains,
+    asset,
+    t: t,
+  });
 
   let title: string;
   let formattedAmount: string | undefined;
@@ -173,10 +193,10 @@ const getOperationNotificationTitle = (operation: MultisigOperation, chains: Rec
 const createOperationNotification = (
   operation: MultisigOperation,
   chains: Record<ChainId, Chain>,
-  walletName?: string,
+  account?: AnyAccount,
 ): CreateMultisigOperationParams => {
-  const description = walletName ? `by ${walletName}` : undefined;
-  const title = getOperationNotificationTitle(operation, chains);
+  const description = account?.name ? `by ${account.name}` : undefined;
+  const title = getOperationNotificationTitle(operation, chains, account);
 
   const relativeLink = multisigOperationService.generateMultisigOperationRelativeLink({
     chainId: operation.chainId,
@@ -264,7 +284,7 @@ sample({
       .map(operation => {
         const account = accountsMap.get(operation.accountId);
 
-        return createOperationNotification(operation, chains, account?.name);
+        return createOperationNotification(operation, chains, account);
       });
 
     return {
