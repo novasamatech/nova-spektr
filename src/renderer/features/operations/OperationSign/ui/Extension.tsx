@@ -23,20 +23,22 @@ const ValidationErrorLabels: Record<ValidationErrors, string> = {
 };
 
 export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGoBack, onResult }: SigningProps) => {
-  useGate(polkadotExtensionSign.flow, { payloads: signingPayloads });
+  const payload = signingPayloads[0];
+  const signatory = payload.signatory;
+
+  useGate(polkadotExtensionSign.flow, { payloads: signingPayloads, signatory });
 
   const { t } = useI18n();
-  const payload = signingPayloads[0];
 
   const step = useUnit(polkadotExtensionSign.$step);
   const signed = useUnit(polkadotExtensionSign.$signed);
+  const signingCurrent = useUnit(polkadotExtensionSign.$signingCurrent);
+  const signingTotal = useUnit(polkadotExtensionSign.$signingTotal);
 
   // TODO show validation error
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
-  const account = payload.signatory;
-
-  useGate(operationSignModel.SignerGate, account);
+  useGate(operationSignModel.SignerGate, signatory);
 
   useEffect(() => {
     if (signed.length) {
@@ -50,7 +52,7 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
     let balanceValidationError;
 
     for (const { signature, txPayload } of response) {
-      isVerified = transactionService.verifySignature(txPayload.payload, signature, payload.signatory.accountId);
+      isVerified = transactionService.verifySignature(txPayload.payload, signature, signatory.accountId);
       balanceValidationError = validateBalance && (await validateBalance());
     }
 
@@ -121,7 +123,11 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
         </div>
       )}
 
-      <SmallTitleText>Signing...</SmallTitleText>
+      <SmallTitleText>
+        {signingTotal > 1 && signingCurrent > 0
+          ? t('signing.signingMultipleInProgress', { current: signingCurrent, total: signingTotal })
+          : t('signing.signingInProgress')}
+      </SmallTitleText>
 
       <div className="mt-5 flex w-full justify-between">
         <Button variant="text" onClick={onGoBack}>
