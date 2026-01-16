@@ -322,7 +322,7 @@ const $canSubmit = combine(
     csvError: $csvError,
   },
   ({ isFormValid, isTxValid, fee, csvIssues, csvError }) => {
-    const hasCsvErrors = nonNullable(csvError) || (nonNullable(csvIssues) && csvIssues.length > 0);
+    const hasCsvErrors = nonNullable(csvError) || csvIssues?.some((issue) => issue.severity === 'error');
     return isFormValid && isTxValid && nonNullable(fee) && !hasCsvErrors;
   },
 );
