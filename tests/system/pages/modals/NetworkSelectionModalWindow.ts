@@ -42,9 +42,7 @@ export class NetworkSelectionModalWindow extends BaseModal<MultisigModalElements
 
   private async applySelection(): Promise<void> {
     await step('Click Apply to confirm network selection', async () => {
-      while (await this.page.getByTestId(MultisigModalElements.applyButton).isVisible()) {
-        await this.page.getByTestId(MultisigModalElements.applyButton).click();
-      }
+      await this.page.getByTestId(MultisigModalElements.applyButton).click();
     });
   }
 
