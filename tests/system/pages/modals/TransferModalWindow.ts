@@ -83,10 +83,14 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
   }
 
   private async waitForContinueButtonToBeEnabled(): Promise<void> {
-    await step('Wait for Continue button to be enabled', async () => {
+    await step('Wait for Continue button to be enabled and not loading', async () => {
       const button = this.page.getByRole('button', { name: 'Continue' });
       await expect(button).toBeVisible();
       await expect(button).toBeEnabled({ timeout: 10000 });
+
+      // Wait for loading spinner to disappear (fee calculation)
+      const loader = button.getByTestId('Icon:loader');
+      await expect(loader).toBeHidden({ timeout: 15000 });
     });
   }
 
