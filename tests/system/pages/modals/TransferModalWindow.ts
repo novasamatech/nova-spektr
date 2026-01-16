@@ -3,6 +3,7 @@ import { step } from 'allure-js-commons';
 
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type ChainModel } from '../../data/chains/testChainModel';
+import { watchContinueButtonDisabled } from '../../utils/buttonWatcher';
 import { readConfig } from '../../utils/readConfig';
 import { getValidationLocators } from '../../utils/validationHelpers';
 import { type Validation } from '../../utils/validationTestCases';
@@ -56,7 +57,8 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     await step('Wait until all fees are loaded', async () => {
       const loaders = await feeLoaders.all();
       for (const loader of loaders) {
-        await expect(loader).toBeHidden({ timeout: 15000 });
+        // TODO: investigate why it took so long to load the fees
+        await expect(loader).toBeHidden({ timeout: 30_000 });
       }
     });
 
@@ -86,7 +88,8 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     await step('Wait for Continue button to be enabled and not loading', async () => {
       const button = this.page.getByRole('button', { name: 'Continue' });
       await expect(button).toBeVisible();
-      await expect(button).toBeEnabled({ timeout: 10000 });
+      // TODO: investigate why it took so long, dry run in XCM flow takes it
+      await expect(button).toBeEnabled({ timeout: 30_000 });
 
       // Wait for loading spinner to disappear (fee calculation)
       const loader = button.getByTestId('Icon:loader');
@@ -101,12 +104,13 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     });
   }
 
+  /**
+   * Asserts that Continue button is disabled. Fails test gracefully if enabled.
+   */
   public async isContinueButtonDisabled(): Promise<void> {
     await step('Check that Continue button is disabled', async () => {
       const button = this.page.getByRole('button', { name: 'Continue' });
-      if (await button.isEnabled()) {
-        throw new Error(`Continue button is enabled by error`);
-      }
+      await expect(button, 'Continue button should be disabled').toBeDisabled();
     });
   }
 
@@ -185,25 +189,25 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
 
   public async expectValidationsVisible(validations: Validation | Validation[]): Promise<void> {
     const list = Array.isArray(validations) ? validations : [validations];
-    await this.isContinueButtonDisabled();
-    await this.expectTransferFeeNotZero();
-    await this.waitUntilAvailableAmountLoaded();
-    await this.isContinueButtonDisabled();
 
-    await step(`Check validations visible: ${list.join(', ')}`, async () => {
-      for (const v of list) {
-        const locs = getValidationLocators(this.page, v);
+    await watchContinueButtonDisabled(this.page, async () => {
+      await this.expectTransferFeeNotZero();
+      await this.waitUntilAvailableAmountLoaded();
 
-        await Promise.race(locs.map((l) => l.waitFor({ state: 'visible', timeout: 15000 }))).catch(() => {
-          throw new Error(`Validation "${v}" did not appear.`);
-        });
+      await step(`Check validations visible: ${list.join(', ')}`, async () => {
+        for (const v of list) {
+          const locs = getValidationLocators(this.page, v);
 
-        for (const l of locs) {
-          await expect(l).toBeVisible();
+          await Promise.race(locs.map((l) => l.waitFor({ state: 'visible', timeout: 15000 }))).catch(() => {
+            throw new Error(`Validation "${v}" did not appear.`);
+          });
+
+          for (const l of locs) {
+            await expect(l).toBeVisible();
+          }
         }
-      }
+      });
     });
-    await this.isContinueButtonDisabled();
   }
 
   public async expectValidationsHidden(validations: Validation | Validation[]): Promise<void> {

@@ -1,7 +1,5 @@
-import * as allure from 'allure-js-commons';
-
 import { MultisigModalElements } from '../../pages/_elements/MultisigModalElements';
-import { test } from '../../utils/baseRegularFixture';
+import { setupTestMetadata, test } from '../../utils/baseRegularFixture';
 import { multisigOnboardingSignatories } from '../../utils/multisigOnboardingTestCases';
 
 const feature = 'Onboarding. Multisig Vault';
@@ -10,9 +8,11 @@ const regularMultisigType = MultisigModalElements.regularMultisigType;
 const flexibleMultisigType = MultisigModalElements.flexibleMultisigType;
 
 test.describe('Multisig Vault onboarding', { tag: ['@regress'] }, () => {
+  test.beforeEach(async () => {
+    await setupTestMetadata(feature, story);
+  });
+
   test('Can create regular multisig wallet', async ({ loginPage }) => {
-    await allure.feature(feature);
-    await allure.story(story);
     const onboardingPage = await loginPage.importDatabase('multisigOnboarding/multisig_onboarding.json');
     const assetsPage = await onboardingPage.gotoMain();
     const walletModal = await assetsPage.openWalletManagement();
@@ -34,8 +34,6 @@ test.describe('Multisig Vault onboarding', { tag: ['@regress'] }, () => {
   });
 
   test('Can create flexible multisig wallet', async ({ loginPage }) => {
-    await allure.feature(feature);
-    await allure.story(story);
     const onboardingPage = await loginPage.importDatabase('multisigOnboarding/multisig_onboarding.json');
     const assetsPage = await onboardingPage.gotoMain();
     const walletModal = await assetsPage.openWalletManagement();

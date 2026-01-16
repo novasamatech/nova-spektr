@@ -1,5 +1,6 @@
 import { type BrowserContext, type Page, test as base } from '@playwright/test';
 import { step } from 'allure-js-commons';
+import * as allure from 'allure-js-commons';
 
 import { AssetsPageElements } from '../pages/_elements/AssetsPageElements';
 import { LoginPageElements } from '../pages/_elements/LoginPageElements';
@@ -8,33 +9,29 @@ import { BaseAssetsPage } from '../pages/assetsPage/BaseAssetsPage';
 import { BaseLoginPage } from '../pages/loginPage/BaseLoginPage';
 import { BaseSettingsPage } from '../pages/settingsPage/BaseSettingsPage';
 
-// Shared element instances (stateless, reusable)
 const assetsElements = new AssetsPageElements();
 const loginElements = new LoginPageElements();
 const settingsElements = new SettingsPageElements();
 
 type DbFixture = 'transfers' | 'validations' | 'none';
 
-type TestFixtures = {
+type TestScopedFixtures = {
+  page: Page;
+  context: BrowserContext;
   assetsPage: BaseAssetsPage;
   loginPage: BaseLoginPage;
   settingsPage: BaseSettingsPage;
 };
 
-type WorkerFixtures = {
-  workerContext: BrowserContext;
-  workerPage: Page;
+type WorkerScopedTestFixtures = {
+  assetsPage: BaseAssetsPage;
+  loginPage: BaseLoginPage;
+  settingsPage: BaseSettingsPage;
 };
 
-type FixtureConfig = {
-  dbFixture: DbFixture;
-  /**
-   * Whether to wait for network connections before running tests (default:
-   * true)
-   */
-  waitForConnections?: boolean;
-  /** Timeout for waiting for network connections in ms (default: 60000) */
-  connectionTimeout?: number;
+type WorkerScopedWorkerFixtures = {
+  workerContext: BrowserContext;
+  workerPage: Page;
 };
 
 const DB_PATHS: Record<Exclude<DbFixture, 'none'>, string> = {
@@ -49,11 +46,54 @@ async function applyInitFlags(context: BrowserContext) {
   });
 }
 
-// Factory to create test fixture with specific database and options
-function createTestFixture(config: FixtureConfig) {
+// =============================================================================
+// BASE TEST - Test-scoped fixtures (fresh context/page per test)
+// Used for: onboarding tests, tests that need isolated state
+// =============================================================================
+export const test = base.extend<TestScopedFixtures>({
+  context: async ({ browser }, use) => {
+    const context = await browser.newContext({
+      ignoreHTTPSErrors: true,
+      permissions: [],
+    });
+    await applyInitFlags(context);
+    await use(context);
+    await context.close();
+  },
+
+  page: async ({ context }, use) => {
+    const page = await context.newPage();
+    await use(page);
+    await page.close();
+  },
+
+  assetsPage: async ({ page }, use) => {
+    await use(new BaseAssetsPage(page, assetsElements));
+  },
+
+  loginPage: async ({ page }, use) => {
+    await use(new BaseLoginPage(page, loginElements));
+  },
+
+  settingsPage: async ({ page }, use) => {
+    await use(new BaseSettingsPage(page, settingsElements));
+  },
+});
+
+// =============================================================================
+// WORKER-SCOPED TEST FACTORY - Shared context/page per worker
+// Used for: transfers, validations (tests that share initialized state)
+// =============================================================================
+type WorkerFixtureConfig = {
+  dbFixture: DbFixture;
+  waitForConnections?: boolean;
+  connectionTimeout?: number;
+};
+
+function createWorkerScopedFixture(config: WorkerFixtureConfig) {
   const { dbFixture, waitForConnections = true, connectionTimeout = 60_000 } = config;
 
-  return base.extend<TestFixtures, WorkerFixtures>({
+  return base.extend<WorkerScopedTestFixtures, WorkerScopedWorkerFixtures>({
     workerContext: [
       async ({ browser }, use) => {
         const context = await browser.newContext({
@@ -113,11 +153,14 @@ function createTestFixture(config: FixtureConfig) {
   });
 }
 
-// Base test without database (for onboarding tests)
-export const test = createTestFixture({ dbFixture: 'none', waitForConnections: false });
+// Pre-configured worker-scoped fixtures for specific test suites
+export const transfersTest = createWorkerScopedFixture({ dbFixture: 'transfers' });
+export const validationsTest = createWorkerScopedFixture({ dbFixture: 'validations' });
 
-// Pre-configured fixtures for specific test suites (with connection waiting enabled)
-export const transfersTest = createTestFixture({ dbFixture: 'transfers' });
-export const validationsTest = createTestFixture({ dbFixture: 'validations' });
+// Helper to set up Allure test metadata
+export const setupTestMetadata = async (feature: string, story: string): Promise<void> => {
+  await allure.feature(feature);
+  await allure.story(story);
+};
 
 export { expect } from '@playwright/test';

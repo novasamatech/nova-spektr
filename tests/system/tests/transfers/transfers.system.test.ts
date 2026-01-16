@@ -1,30 +1,24 @@
 import { expect } from '@playwright/test';
-import * as allure from 'allure-js-commons';
 
 import { substrateChains } from '../../data/chains/chainsList';
 import { AssetsPageElements } from '../../pages/_elements/AssetsPageElements';
 import { WatchOnlyAssetsPage } from '../../pages/assetsPage/WatchOnlyAssetsPage';
-import { transfersTest as test } from '../../utils/baseRegularFixture';
+import { setupTestMetadata, transfersTest as test } from '../../utils/baseRegularFixture';
 import { getChainByName } from '../../utils/readConfig';
 import { proxyTransferTestCase, transferConstants, transferTestCases } from '../../utils/transferTestCases';
 
 const feature = 'Transfers';
 const story = 'Transfers tests';
 
-const setupTestMetadata = async (): Promise<void> => {
-  await allure.feature(feature);
-  await allure.story(story);
-  test.slow();
-};
-
 test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, () => {
-  // Run all tests serially in one worker, sharing the same page session
   test.describe.configure({ mode: 'serial' });
+
+  test.beforeEach(async () => {
+    await setupTestMetadata(feature, story);
+  });
 
   for (const { chainName, assetId, amount, recipient } of transferTestCases) {
     test(`Multisig can make regular transfer on ${chainName}`, async ({ assetsPage }) => {
-      await setupTestMetadata();
-
       const walletModal = await assetsPage.openWalletManagement();
       await walletModal.searchAndSelectWallet(transferConstants.multisig_name);
 
@@ -44,8 +38,6 @@ test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, 
 
   for (const { chainName, assetId, amount, recipient } of transferTestCases) {
     test(`Nova, single wallet, can make regular transfer on ${chainName}`, async ({ assetsPage }) => {
-      await setupTestMetadata();
-
       const walletModal = await assetsPage.openWalletManagement();
       await walletModal.searchAndSelectWallet(transferConstants.nova_name);
 
@@ -66,8 +58,6 @@ test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, 
 
   for (const { chainName, assetId, amount, recipient } of proxyTransferTestCase) {
     test('Proxy wallet can make regular transfer', async ({ assetsPage }) => {
-      await setupTestMetadata();
-
       const walletModal = await assetsPage.openWalletManagement();
       await walletModal.searchAndSelectWallet(transferConstants.proxy_name);
 
@@ -88,8 +78,6 @@ test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, 
 
   for (const { chainName, assetId, amount, recipient } of transferTestCases) {
     test(`Polkadot Vault, single wallet, can make regular transfer on ${chainName}`, async ({ assetsPage }) => {
-      await setupTestMetadata();
-
       const walletModal = await assetsPage.openWalletManagement();
       await walletModal.searchAndSelectWallet(transferConstants.vault_name);
 
@@ -109,8 +97,6 @@ test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, 
   }
 
   test('Watch-only transfer buttons should not be visible', async ({ assetsPage }) => {
-    await setupTestMetadata();
-
     const walletModal = await assetsPage.openWalletManagement();
     await walletModal.searchAndSelectWallet(transferConstants.watch_only_name);
 
@@ -123,8 +109,6 @@ test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, 
   test(`Should not be able to open transfer modal on ${transferConstants.watch_only_chain} in watch-only mode`, async ({
     assetsPage,
   }) => {
-    await setupTestMetadata();
-
     const walletModal = await assetsPage.openWalletManagement();
     await walletModal.searchAndSelectWallet(transferConstants.watch_only_name);
 
