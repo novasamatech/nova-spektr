@@ -291,23 +291,23 @@ async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise): Promise<Ex
   return [extrinsic];
 }
 
-function getWrappedCallsFromExtrinsic(extrinsic: Extrinsic): Call[] {
+function getBatchWrappedCallsFromExtrinsic(extrinsic: Extrinsic): Call[] {
   if (isBatchExtrinsic(extrinsic)) {
     const callsArg = extrinsic.args.at(0);
     const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
 
-    return calls.flatMap(call => getWrappedCallsFromCall(call));
+    return calls.flatMap(call => getBatchWrappedCallsFromCall(call));
   }
 
   return [extrinsic.method as Call];
 }
 
-function getWrappedCallsFromCall(call: Call): Call[] {
+function getBatchWrappedCallsFromCall(call: Call): Call[] {
   if (call.section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(call.method)) {
     const callsArg = call.args?.at?.(0) || call.args?.[0];
     const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
 
-    return calls.flatMap(nestedCall => getWrappedCallsFromCall(nestedCall));
+    return calls.flatMap(nestedCall => getBatchWrappedCallsFromCall(nestedCall));
   }
 
   return [call as Call];
@@ -450,8 +450,8 @@ export const transactionService = {
   getExtrinsicWeight,
   getTransactionWeight,
 
-  getWrappedCallsFromExtrinsic,
-  getWrappedCallsFromCall,
+  getBatchWrappedCallsFromExtrinsic,
+  getBatchWrappedCallsFromCall,
 
   splitExtrinsic,
   submitExtrinsic,
