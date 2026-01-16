@@ -30,7 +30,7 @@ export const Operations = () => {
   const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
   const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
   const isDeepLinkLoading = useUnit(deepLinkModel.$isDeepLinkLoading);
-  const isLoading = useUnit(multisigOperation.requestOperations.pending);
+  const isLoading = useUnit(multisigOperation.initialOnChainFetch.pending);
 
   const [focusedRef, scrollToFocused] = useScrollTo<HTMLLIElement>(300);
 

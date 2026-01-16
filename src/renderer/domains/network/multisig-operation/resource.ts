@@ -1,19 +1,108 @@
 import { gql } from '@apollo/client';
 import { type ApiPromise } from '@polkadot/api';
+import { type QueryableStorageMultiArg } from '@polkadot/api/types';
+import { type Option } from '@polkadot/types';
+import { type PalletMultisigMultisig } from '@polkadot/types/lookup';
 import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
 import { type Chain, type ChainId, type DecodedTransaction, type HexString } from '@/shared/core';
-import { entries, getCreatedDateFromApi, nullable, validateCallData } from '@/shared/lib/utils';
+import {
+  entries,
+  getCreatedDateFromApi,
+  getNativeAssetId,
+  nonNullable,
+  nullable,
+  toAccountId,
+  validateCallData,
+} from '@/shared/lib/utils';
 import { multisigPallet } from '@/shared/pallet/multisig';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { createSubscriptionResource as createQuerySubscriptionResource } from '@/shared/query';
 import { createRemoteResource, createSubscriptionResource } from '@/shared/resource';
 import { decodeCallData } from '@/entities/transaction';
 
 import { INDEXER_URL } from './constants';
 import { multisigOperationService } from './service';
 import { type MultisigEvent, type MultisigOperation } from './types';
+
+type CreateOperationParams = {
+  api: ApiPromise;
+  chain: Chain;
+  accountId: AccountId;
+  callHash: HexString;
+  multisig: PalletMultisigMultisig;
+};
+
+async function createOperationFromMultisig({
+  api,
+  chain,
+  accountId,
+  callHash,
+  multisig,
+}: CreateOperationParams): Promise<MultisigOperation> {
+  const chainId = api.genesisHash.toHex();
+  const nativeAssetId = getNativeAssetId(chain.assets);
+  const blockHeight = multisig.when.height.toNumber();
+  const extrinsicIndex = multisig.when.index.toNumber();
+
+  const timestamp = await getCreatedDateFromApi(blockHeight, api);
+  const operationId = multisigOperationService.getOperationId(
+    chainId,
+    callHash,
+    accountId,
+    blockHeight,
+    extrinsicIndex,
+  );
+
+  const events = multisig.approvals.map<MultisigEvent>(approver => ({
+    id: multisigOperationService.getEventId(operationId, approver.toString(), 'approve'),
+    chainId,
+    accountId: toAccountId(approver.toString()),
+    status: 'approve',
+    callHash,
+    blockCreated: pjsSchema.helpers.toBlockHeight(blockHeight),
+    indexCreated: extrinsicIndex,
+    timestamp,
+  }));
+
+  const transaction = await multisigOperationService.getTransactionFromChain({
+    api,
+    callHash,
+    blockHeight,
+    extrinsicIndex,
+  });
+
+  const callData = transaction?.method.toHex() || null;
+
+  let decodedTransaction: DecodedTransaction | null = null;
+  try {
+    if (callData && validateCallData(callData, callHash)) {
+      decodedTransaction = decodeCallData(api, accountId, callData, nativeAssetId);
+    }
+  } catch {
+    // do nothing
+  }
+
+  return {
+    id: operationId,
+    chainId,
+    status: 'pending',
+    accountId: toAccountId(accountId.toString()),
+    callHash,
+    callData,
+    depositor: toAccountId(multisig.depositor.toString()),
+    blockCreated: pjsSchema.helpers.toBlockHeight(blockHeight),
+    indexCreated: extrinsicIndex,
+    deposit: multisig.deposit,
+    method: transaction?.method?.method ?? null,
+    section: transaction?.method?.section ?? null,
+    timestamp,
+    events,
+    transaction: decodedTransaction,
+  };
+}
 
 const operationsGqlSchema = z.object({
   timestamp: z.number().transform(value => value * 1000),
@@ -42,6 +131,22 @@ const operationsGqlSchema = z.object({
     ),
   }),
 });
+
+const multisigEvent = z.union([
+  pjsSchema.tupleMap(
+    ['accountId', pjsSchema.accountId],
+    ['timepoint', multisigPallet.schema.multisigTimepoint],
+    ['multisigAccountId', pjsSchema.accountId],
+    ['callHash', pjsSchema.rawString],
+  ),
+  pjsSchema.tupleMap(
+    ['accountId', pjsSchema.accountId],
+    ['timepoint', multisigPallet.schema.multisigTimepoint],
+    ['multisigAccountId', pjsSchema.accountId],
+    ['callHash', pjsSchema.rawString],
+    ['status', pjsSchema.enumType('Ok', 'Basic', 'Empty', 'Err', 'None')],
+  ),
+]);
 
 const operationsQuery = gql`
   query List($accountId: String!) {
@@ -86,14 +191,15 @@ function mapSubqueryOperationRecord(
     response.indexCreated,
   );
   const api = apis[response.chainId];
+  const chain = chains[response.chainId];
 
-  if (nullable(api)) return null;
+  if (nullable(api) || nullable(chain)) return null;
 
   let transaction: DecodedTransaction | null = null;
 
   try {
     if (response.callData && validateCallData(response.callData, response.callHash)) {
-      transaction = decodeCallData(api, response.accountId, response.callData, chains);
+      transaction = decodeCallData(api, response.accountId, response.callData, getNativeAssetId(chain.assets));
     }
   } catch {
     // do nothing
@@ -125,37 +231,21 @@ function mapSubqueryOperationRecord(
 async function fetchOperationsHistory(
   accountId: AccountId,
   apis: Record<ChainId, ApiPromise>,
-  existing: MultisigOperation[],
   chains: Record<ChainId, Chain>,
 ): Promise<MultisigOperation[]> {
   const client = new GraphQLClient(INDEXER_URL);
   const result = await client.request<any, { accountId: AccountId }>(operationsQuery, { accountId });
 
-  const existingMultisigs = new Set(existing.map(e => e.id));
-
   return result.multisigOperations.nodes
     .map((node: unknown) => mapSubqueryOperationRecord(node, apis, chains))
-    .filter((x: MultisigOperation | null) => {
-      if (nullable(x)) return false;
-
-      // we consider "pending" operations from indexer as invalid. All pending operations should be fetched from chain directly.
-      if (x.status === 'pending') {
-        return false;
-      }
-
-      // filtering out existing operations
-      if (existingMultisigs.has(x.id)) {
-        return false;
-      }
-
-      return true;
-    });
+    .filter(nonNullable);
 }
 
-const fetchOnchainOperations = async (api: ApiPromise, accountId: AccountId, chains: Record<ChainId, Chain>) => {
+const fetchOnchainOperations = async (api: ApiPromise, accountId: AccountId, chain: Chain) => {
   const operations: MultisigOperation[] = [];
   const chainId = api.genesisHash.toHex();
   const response = await multisigPallet.storage.multisigs(api, accountId);
+  const nativeAssetId = getNativeAssetId(chain.assets);
 
   for (const { key, multisig } of response) {
     if (nullable(multisig)) continue;
@@ -192,7 +282,7 @@ const fetchOnchainOperations = async (api: ApiPromise, accountId: AccountId, cha
     let decodedTransaction: DecodedTransaction | null = null;
     try {
       if (callData && validateCallData(callData, key.callHash)) {
-        decodedTransaction = callData ? decodeCallData(api, accountId, callData, chains) : null;
+        decodedTransaction = callData ? decodeCallData(api, accountId, callData, nativeAssetId) : null;
       }
     } catch {
       // do nothing
@@ -225,27 +315,13 @@ const fetchAllOnchainOperations = async (
   accountId: AccountId,
   chains: Record<ChainId, Chain>,
 ) => {
-  const requests = Object.values(apis).map(api => fetchOnchainOperations(api, accountId, chains));
+  const requests = Object.values(apis).map(api =>
+    fetchOnchainOperations(api, accountId, chains[api.genesisHash.toHex()]!),
+  );
   const operations = await Promise.allSettled(requests);
 
   return operations.map(result => (result.status === 'fulfilled' ? result.value : [])).flat();
 };
-
-const multisigEvent = z.union([
-  pjsSchema.tupleMap(
-    ['accountId', pjsSchema.accountId],
-    ['timepoint', multisigPallet.schema.multisigTimepoint],
-    ['multisigAccountId', pjsSchema.accountId],
-    ['callHash', pjsSchema.rawString],
-  ),
-  pjsSchema.tupleMap(
-    ['accountId', pjsSchema.accountId],
-    ['timepoint', multisigPallet.schema.multisigTimepoint],
-    ['multisigAccountId', pjsSchema.accountId],
-    ['callHash', pjsSchema.rawString],
-    ['status', pjsSchema.enumType('Ok', 'Basic', 'Empty', 'Err', 'None')],
-  ),
-]);
 
 type RequestParams = {
   apis: Record<ChainId, ApiPromise>;
@@ -253,14 +329,155 @@ type RequestParams = {
   accountId: AccountId;
 };
 
-export const fetchResource = createRemoteResource<RequestParams, MultisigOperation[]>({
+export const fetchOffchainResource = createRemoteResource<RequestParams, MultisigOperation[]>({
   async fn({ apis, accountId, chains }) {
-    const chainOperations = await fetchAllOnchainOperations(apis, accountId, chains);
-    const historicOperations = await fetchOperationsHistory(accountId, apis, chainOperations, chains);
-
-    return chainOperations.concat(historicOperations);
+    return fetchOperationsHistory(accountId, apis, chains);
   },
 });
+
+//this resource is only being used for deep links, not actually merged into the list of operations
+export const fetchAllOperationsResource = createRemoteResource<RequestParams, MultisigOperation[]>({
+  async fn({ apis, accountId, chains }) {
+    const chainOperations = fetchAllOnchainOperations(apis, accountId, chains);
+    const historicOperations = fetchOffchainResource.request({ apis, accountId, chains });
+    const [chainOperationsResult, historicOperationsResult] = await Promise.all([chainOperations, historicOperations]);
+
+    return chainOperationsResult.concat(historicOperationsResult);
+  },
+});
+
+export const initialOnChainFetch = createRemoteResource<
+  { apis: Record<ChainId, ApiPromise>; accountId: AccountId; chains: Record<ChainId, Chain> },
+  { callHashesByChain: Record<ChainId, HexString[]>; onChainData: Record<HexString, MultisigOperation> }
+>({
+  async fn({ apis, accountId, chains }) {
+    const callHashesByChain: Record<ChainId, HexString[]> = {};
+    const onChainData: Record<HexString, MultisigOperation> = {};
+
+    for (const api of Object.values(apis)) {
+      const storageEntries = await api.query.multisig.multisigs.entries(accountId);
+      const chain = chains[api.genesisHash.toHex()];
+
+      if (!chain) continue;
+
+      for (const [storageKey, optionalMultisig] of storageEntries) {
+        // Extract callHash from the storage key (second argument)
+        const [, callHashArg] = storageKey.args;
+        const callHash = callHashArg.toHex();
+
+        if (optionalMultisig.isSome) {
+          const multisig = optionalMultisig.unwrap();
+
+          callHashesByChain[api.genesisHash.toHex()] = [
+            ...(callHashesByChain[api.genesisHash.toHex()] || []),
+            callHash,
+          ];
+
+          onChainData[callHash] = await createOperationFromMultisig({
+            api,
+            chain,
+            accountId,
+            callHash,
+            multisig,
+          });
+        }
+      }
+    }
+
+    return {
+      callHashesByChain,
+      onChainData,
+    };
+  },
+});
+
+export const subscribeOnchainResource = createQuerySubscriptionResource<{
+  api: ApiPromise;
+  hashes: Record<AccountId, HexString[]>;
+  chain: Chain;
+}>({
+  key: ({ api }) => api.genesisHash.toHex(),
+})
+  .subscribe<Record<HexString, MultisigOperation | null>>(async ({ chain, api, hashes }, callback) => {
+    const queries: QueryableStorageMultiArg<'promise'>[] = [];
+    const paths: HexString[] = [];
+
+    for (const [accountId, callHashes] of entries(hashes)) {
+      for (const callHash of callHashes) {
+        queries.push([api.query.multisig.multisigs, [accountId, callHash]]);
+        paths.push(callHash);
+      }
+    }
+
+    const unsubscribe = await api.queryMulti(queries, (results: Option<PalletMultisigMultisig>[]) => {
+      console.log('huy queryMulti', api.genesisHash.toHex());
+      const onChainData: Record<HexString, MultisigOperation | null> = {};
+
+      // eslint-disable-next-line no-restricted-syntax
+      results.forEach(async (optionalMultisig, index: number) => {
+        const callHash = paths[index]!;
+
+        if (optionalMultisig.isNone) {
+          onChainData[callHash] = null;
+        } else {
+          const multisig = optionalMultisig.unwrap();
+
+          let accountId: AccountId | null = null;
+          for (const [localAccountId, callHashes] of entries(hashes)) {
+            if (callHashes.includes(callHash)) {
+              accountId = localAccountId;
+              break;
+            }
+          }
+
+          if (!accountId) {
+            console.error('accountId not found for callHash', callHash);
+            return;
+          }
+
+          onChainData[callHash] = await createOperationFromMultisig({
+            api,
+            chain,
+            accountId,
+            callHash,
+            multisig,
+          });
+        }
+      });
+
+      callback(onChainData);
+    });
+
+    return unsubscribe;
+  })
+  .build();
+
+export const subscribeOnChainEventsResource = createQuerySubscriptionResource<{
+  api: ApiPromise;
+  accountId: AccountId;
+}>({
+  key: ({ api }) => api.genesisHash.toHex(),
+})
+  .subscribe<HexString>(async ({ api, accountId }, callback) => {
+    const unsubscribeNewMultisig = await polkadotjsHelpers.subscribeSystemEvents(
+      { api, section: 'multisig', methods: ['NewMultisig'] },
+      event => {
+        if (api.events.multisig.NewMultisig.is(event)) {
+          const [_, multisigAccount, callHash] = event.data;
+
+          // Check if this multisig belongs to current user
+          if (accountId === toAccountId(multisigAccount.toString())) {
+            callback(callHash.toHex());
+          }
+        }
+      },
+    );
+
+    return () => {
+      unsubscribeNewMultisig();
+    };
+  })
+  .build();
 
 export const subscribeResource = createSubscriptionResource<RequestParams, MultisigOperation[]>({
   pool: params => `${params.accountId}_${Object.keys(params.apis).join('_')}`,
@@ -269,17 +486,13 @@ export const subscribeResource = createSubscriptionResource<RequestParams, Multi
 
     fetchAllOnchainOperations(apis, accountId, chains).then(chainOperations => {
       callback({ done: true, value: chainOperations });
-
-      fetchOperationsHistory(accountId, apis, chainOperations, chains).then(historicOperations => {
-        callback({ done: true, value: historicOperations });
-      });
     });
 
     for (const api of Object.values(apis)) {
       const unsubscribeFn = polkadotjsHelpers.subscribeSystemEvents(
         { api, section: 'multisig', methods: ['NewMultisig'] },
         () => {
-          fetchOnchainOperations(api, accountId, chains).then(operations => {
+          fetchOnchainOperations(api, accountId, chains[api.genesisHash.toHex()]!).then(operations => {
             callback({ done: true, value: operations });
           });
         },

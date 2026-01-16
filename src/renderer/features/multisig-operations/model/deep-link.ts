@@ -325,7 +325,7 @@ const operationFetchRequested = sample({
 sample({
   clock: operationFetchRequested,
   fn: ({ apis, chains, accountId }) => ({ apis, chains, accountId }),
-  target: multisigOperation.requestOperations,
+  target: multisigOperation.requestAllOperations,
 });
 
 const $pendingOperationId = createStore<string | null>(null)
@@ -333,13 +333,13 @@ const $pendingOperationId = createStore<string | null>(null)
   .reset(operationsPageClosed);
 
 sample({
-  clock: multisigOperation.requestOperations.finally,
+  clock: multisigOperation.requestAllOperations.finally,
   source: {
     pendingOperationId: $pendingOperationId,
-    operations: multisigOperation.$list,
   },
-  filter: ({ pendingOperationId, operations }) => {
-    if (nullable(pendingOperationId)) return false;
+  filter: ({ pendingOperationId }, response) => {
+    if (nullable(pendingOperationId) || response.status !== 'done') return false;
+    const operations = response.result;
     const operationExists = operations.some(op => op.id === pendingOperationId);
     return !operationExists;
   },

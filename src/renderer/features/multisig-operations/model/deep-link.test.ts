@@ -180,7 +180,7 @@ describe('multisig operations deep link', () => {
         .set(accounts.__test.$list, [mockAccount])
         .set(multisigOperation.__test.$list, [])
         .set(multisigOperation.__test.$populated, true),
-      handlers: [[multisigOperation.requestOperations, () => []]],
+      handlers: [[multisigOperation.requestOnchainOperations, () => []]],
     });
 
     const deepLinkData: MultisigOperationDeepLinkData = {

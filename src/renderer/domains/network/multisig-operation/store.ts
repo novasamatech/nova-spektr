@@ -1,32 +1,64 @@
-import { attach, createEffect, createStore, restore, sample, scopeBind } from 'effector';
-import { once, readonly, spread } from 'patronum';
+import { type ApiPromise } from '@polkadot/api';
+import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
+import { produce } from 'immer';
+import { uniqBy } from 'lodash';
+import { debug, once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
-import {
-  type CreateMultisigOperationParams,
-  type HexString,
-  type NotificationStatus,
-  NotificationType,
-} from '@/shared/core';
-import { createQueuedEffect, pairwise } from '@/shared/effector';
+import { type Chain, type ChainId, type HexString } from '@/shared/core';
+import { series } from '@/shared/effector';
+import { entries, getNativeAssetId, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
-import { Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
-import { notificationModel } from '@/entities/notification';
 import { decodeCallData } from '@/entities/transaction';
-import { accounts } from '../account/store';
-import { type AnyAccount } from '../account/types';
 
 import { deserializeOperation, serializeOperation } from './helpers';
-import { fetchResource, subscribeEventsResource, subscribeResource } from './resource';
+import {
+  fetchAllOperationsResource,
+  fetchOffchainResource,
+  initialOnChainFetch,
+  subscribeEventsResource,
+  subscribeOnChainEventsResource,
+  subscribeOnchainResource,
+} from './resource';
 import { multisigOperationService } from './service';
 import { type MultisigOperation } from './types';
 
-const $list = createStore<MultisigOperation[]>([]);
+// const $list = createStore<MultisigOperation[]>([]);
+
+const subscribeToAccount = createEvent<{
+  apis: Record<ChainId, ApiPromise>;
+  accountId: AccountId;
+  chains: Record<ChainId, Chain>;
+}>();
+
+const unsubscribeFromAccount = createEvent<AccountId>();
+
+const $trackedCallHashes = createStore<Record<ChainId, { api: ApiPromise; hashes: Record<AccountId, HexString[]> }>>(
+  {},
+);
+
+debug($trackedCallHashes);
+
+const $offChainOperations = createStore<MultisigOperation[]>([]);
+const $onChainData = createStore<Record<HexString, MultisigOperation | null>>({});
+const $onChainOperations = $onChainData.map(state => Object.values(state).filter(nonNullable));
+
+debug($onChainData);
+
+const $allOperations = combine(
+  {
+    onChain: $onChainOperations,
+    offChain: $offChainOperations,
+  },
+  state => {
+    return uniqBy(state.onChain.concat(state.offChain), o => o.id);
+  },
+);
 
 const $populated = restore(
-  once($list.updates).map(() => true),
+  once($allOperations.updates).map(() => true),
   false,
 );
 
@@ -34,32 +66,33 @@ const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
 );
 
-const addOperationsFx = createEffect(async (operations: MultisigOperation[]) => {
-  return storageService.multisigOperations
-    .createAll(operations.map(serializeOperation))
-    .then(result => result?.map(deserializeOperation) ?? []);
-});
+//not being used
+// const addOperationsFx = createEffect(async (operations: MultisigOperation[]) => {
+//   return storageService.multisigOperations
+//     .createAll(operations.map(serializeOperation))
+//     .then(result => result?.map(deserializeOperation) ?? []);
+// });
 
 const updateOperationsFx = createEffect((operations: MultisigOperation[]) => {
   return storageService.multisigOperations.updateAll(operations.map(serializeOperation)).then(() => operations);
 });
 
-const removeTransactionsFx = createEffect((operations: MultisigOperation[]) => {
-  return storageService.multisigOperations.deleteAll(operations.map(t => t.id)).then(result => result ?? []);
-});
+// const removeTransactionsFx = createEffect((operations: MultisigOperation[]) => {
+//   return storageService.multisigOperations.deleteAll(operations.map(t => t.id)).then(result => result ?? []);
+// });
 
-/**
- * We want to sync operations between database and in-memory store. Its
- * important to do so because operations can be deleted from the database
- * without calling removeTransactionsFx (f.e. in case of fork).
- */
-const syncInMemoryOperationsToDbFx = createQueuedEffect(async (allOperations: MultisigOperation[]) => {
-  const dbOperations = await storageService.multisigOperations.readAll();
-  const dbOperationIds = dbOperations.map(op => op.id);
+// /**
+//  * We want to sync operations between database and in-memory store. Its
+//  * important to do so because operations can be deleted from the database
+//  * without calling removeTransactionsFx (f.e. in case of fork).
+//  */
+// const syncInMemoryOperationsToDbFx = createQueuedEffect(async (allOperations: MultisigOperation[]) => {
+//   const dbOperations = await storageService.multisigOperations.readAll();
+//   const dbOperationIds = dbOperations.map(op => op.id);
 
-  await storageService.multisigOperations.deleteAll(dbOperationIds);
-  await storageService.multisigOperations.insertAll(allOperations.map(serializeOperation));
-});
+//   await storageService.multisigOperations.deleteAll(dbOperationIds);
+//   await storageService.multisigOperations.insertAll(allOperations.map(serializeOperation));
+// });
 
 const $callDataUpdated = createStore<MultisigOperation | null>(null);
 
@@ -76,11 +109,12 @@ const updateCallDataFx = attach({
   async effect({ apis, chains }, { operation, callData }: UpdateCallDataParams) {
     const update = scopeBind(updateOperationsFx, { safe: true });
     const api = apis[operation.chainId];
-    if (!api) {
+    const chain = chains[operation.chainId];
+    if (!api || !chain) {
       throw new Error(`Api from tx not found: ${operation.chainId}`);
     }
     try {
-      const decoded = decodeCallData(api, operation.accountId, callData, chains);
+      const decoded = decodeCallData(api, operation.accountId, callData, getNativeAssetId(chain.assets));
       const newOperation: MultisigOperation = {
         ...operation,
         section: decoded.section,
@@ -98,205 +132,223 @@ const updateCallDataFx = attach({
   },
 });
 
-const removeOperationsForAccountFx = attach({
-  source: $list,
-  effect(operations, accountId: AccountId) {
-    const remove = scopeBind(removeTransactionsFx, { safe: true });
-    const operationsToRemove = operations.filter(o => o.accountId === accountId);
-    return remove(operationsToRemove);
-  },
-});
+// not being used
+// const removeOperationsForAccountFx = attach({
+//   source: $list,
+//   effect(operations, accountId: AccountId) {
+//     const remove = scopeBind(removeTransactionsFx, { safe: true });
+//     const operationsToRemove = operations.filter(o => o.accountId === accountId);
+//     return remove(operationsToRemove);
+//   },
+// });
 
-const getNotificationStatus = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
-  switch (operationStatus) {
-    case 'pending':
-      return 'info';
-    case 'executed':
-      return 'success';
-    case 'cancelled':
-    case 'error':
-      return 'error';
-  }
-};
+// const operationChanges = pairwise($list)
+//   .map(({ prev: prevState, current: update }) => {
+//     const previousOpsMap = new Map(prevState.map(op => [getOperationId(op), op]));
+//     const currentOpsMap = new Map(update.map(op => [getOperationId(op), op]));
 
-const getNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): string => {
-  switch (operationStatus) {
-    case 'pending':
-      return 'Multisig operation created';
-    case 'executed':
-      return 'Multisig operation executed';
-    case 'cancelled':
-      return 'Multisig operation rejected';
-    case 'error':
-      return 'Multisig operation error';
-  }
-};
+//     const added: MultisigOperation[] = [];
+//     const removedKeys: string[] = [];
 
-const createOperationNotification = (
-  operation: MultisigOperation,
-  walletName?: string,
-): CreateMultisigOperationParams => {
-  const description = walletName ? `by ${walletName}` : undefined;
+//     for (const item of update) {
+//       const previousOp = previousOpsMap.get(getOperationId(item));
 
-  const relativeLink = multisigOperationService.generateMultisigOperationRelativeLink({
-    chainId: operation.chainId,
-    callHash: operation.callHash,
-    accountId: operation.accountId,
-    blockCreated: operation.blockCreated,
-    indexCreated: operation.indexCreated,
-  });
+//       if (!previousOp) {
+//         added.push(item);
+//       } else if (previousOp.status !== item.status && item.status !== 'pending') {
+//         added.push(item);
+//       }
+//     }
 
-  return {
-    key: `${NotificationType.MULTISIG_OPERATION}-${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.accountId, operation.blockCreated, operation.indexCreated)}-${operation.status}`,
-    type: NotificationType.MULTISIG_OPERATION,
-    status: getNotificationStatus(operation.status),
-    issuer: operation.accountId,
-    title: getNotificationTitle(operation.status),
-    description,
-    multisigAccountId: operation.accountId,
-    callHash: operation.callHash,
-    callTimepoint: {
-      height: operation.blockCreated,
-      index: operation.indexCreated,
-    },
-    chainId: operation.chainId,
-    link: {
-      title: 'notifications.details.viewOperation',
-      path: relativeLink,
-    },
-    batch: {
-      title: 'notifications.toast.batch.multisigOperationsUpdated',
-      link: {
-        title: 'notifications.toast.viewOperations',
-        path: Paths.OPERATIONS,
-      },
-    },
-  };
-};
+//     for (const prevOp of prevState) {
+//       if (!currentOpsMap.has(getOperationId(prevOp))) {
+//         removedKeys.push(getNotificationKey(prevOp));
+//       }
+//     }
 
-const getOperationId = (op: MultisigOperation) =>
-  multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated);
+//     return { added, removedKeys };
+//   })
+//   .filter({ fn: ({ added, removedKeys }) => added.length > 0 || removedKeys.length > 0 });
 
-const getNotificationKey = (op: MultisigOperation) =>
-  `${NotificationType.MULTISIG_OPERATION}-${getOperationId(op)}-${op.status}`;
+// sample({
+//   clock: operationChanges,
+//   source: { populated: $populated, accountsList: accounts.$list },
+//   filter: ({ populated }) => populated,
+//   fn: ({ accountsList }, { added, removedKeys }) => {
+//     const accountsMap = new Map<AccountId, AnyAccount>(accountsList.map(account => [account.accountId, account]));
 
-const operationChanges = pairwise($list)
-  .map(({ prev: prevState, current: update }) => {
-    const previousOpsMap = new Map(prevState.map(op => [getOperationId(op), op]));
-    const currentOpsMap = new Map(update.map(op => [getOperationId(op), op]));
+//     const notificationsToAdd = added
+//       .filter(operation => {
+//         const account = accountsMap.get(operation.accountId);
 
-    const added: MultisigOperation[] = [];
-    const removedKeys: string[] = [];
+//         return !account?.createdAt || operation.timestamp >= account.createdAt;
+//       })
+//       .map(operation => {
+//         const account = accountsMap.get(operation.accountId);
 
-    for (const item of update) {
-      const previousOp = previousOpsMap.get(getOperationId(item));
+//         return createOperationNotification(operation, account?.name);
+//       });
 
-      if (!previousOp) {
-        added.push(item);
-      } else if (previousOp.status !== item.status && item.status !== 'pending') {
-        added.push(item);
-      }
-    }
-
-    for (const prevOp of prevState) {
-      if (!currentOpsMap.has(getOperationId(prevOp))) {
-        removedKeys.push(getNotificationKey(prevOp));
-      }
-    }
-
-    return { added, removedKeys };
-  })
-  .filter({ fn: ({ added, removedKeys }) => added.length > 0 || removedKeys.length > 0 });
-
-sample({
-  clock: operationChanges,
-  source: { populated: $populated, accountsList: accounts.$list },
-  filter: ({ populated }) => populated,
-  fn: ({ accountsList }, { added, removedKeys }) => {
-    const accountsMap = new Map<AccountId, AnyAccount>(accountsList.map(account => [account.accountId, account]));
-
-    const notificationsToAdd = added
-      .filter(operation => {
-        const account = accountsMap.get(operation.accountId);
-
-        return !account?.createdAt || operation.timestamp >= account.createdAt;
-      })
-      .map(operation => {
-        const account = accountsMap.get(operation.accountId);
-
-        return createOperationNotification(operation, account?.name);
-      });
-
-    return {
-      added: notificationsToAdd,
-      removed: { keys: removedKeys },
-    };
-  },
-  target: spread({
-    added: notificationModel.events.notificationsAdded,
-    removed: notificationModel.events.notificationsRemoved,
-  }),
-});
+//     return {
+//       added: notificationsToAdd,
+//       removed: { keys: removedKeys },
+//     };
+//   },
+//   target: spread({
+//     added: notificationModel.events.notificationsAdded,
+//     removed: notificationModel.events.notificationsRemoved,
+//   }),
+// });
 
 deriveFromResources({
-  store: $list,
-  resources: [fetchResource, subscribeResource],
-  map(state, operations) {
-    return multisigOperationService.updateMultisigOperations(state, operations);
+  store: $offChainOperations,
+  resources: [fetchOffchainResource],
+  map(state, operations, { accountId }) {
+    const operationWithoutGivenAccount = state.filter(o => o.accountId !== accountId);
+    return multisigOperationService.mergeMultisigOperations(operationWithoutGivenAccount, operations);
   },
 });
 
 deriveFromResources({
-  store: $list,
-  resources: [subscribeEventsResource],
-  map: (state, { chainId, operationId, event }) => {
-    const operationIndex = state.findIndex(x => x.id === operationId && x.chainId === chainId);
-    const operation = state[operationIndex];
+  store: $onChainData,
+  resources: [initialOnChainFetch],
+  map(state, { onChainData }) {
+    return { ...state, ...onChainData };
+  },
+});
 
-    if (operationIndex === -1 || !operation) return state;
+deriveFromResources({
+  store: $trackedCallHashes,
+  resources: [initialOnChainFetch],
+  map(state, { callHashesByChain }, { apis, accountId }) {
+    return produce(state, draft => {
+      for (const [chainId, api] of entries(apis)) {
+        const existing = draft[chainId] || { api, hashes: {} };
+        const newHashes = callHashesByChain[chainId] ?? [];
 
-    const updatedOperation = {
-      ...operation,
-      status: event.status === 'reject' ? 'cancelled' : operation.status,
-      events: multisigOperationService.mergeEvents(operation.events, [event]),
-    };
+        const newHashesMap = { ...existing.hashes };
+        newHashesMap[accountId] = newHashes;
 
-    return multisigOperationService.mergeMultisigOperations(state, [updatedOperation]);
+        draft[chainId] = {
+          api,
+          hashes: newHashesMap,
+        };
+      }
+    });
   },
 });
 
 sample({
-  clock: populateFx.doneData,
-  target: $list,
-});
-
-sample({
-  clock: addOperationsFx.doneData,
-  source: $list,
-  fn: multisigOperationService.mergeMultisigOperations,
-  target: $list,
-});
-
-sample({
-  clock: updateOperationsFx.doneData,
-  source: $list,
-  fn: multisigOperationService.mergeMultisigOperations,
-  target: $list,
-});
-
-sample({
-  clock: removeTransactionsFx.doneData,
-  source: $list,
-  fn(list, removedIds) {
-    return list.filter(l => !removedIds.includes(l.id));
+  clock: $trackedCallHashes,
+  source: {
+    chains: networkModel.$chains,
   },
-  target: $list,
+  fn: ({ chains }, state) => {
+    const values = Object.values(state).map(el => ({
+      api: el.api,
+      hashes: el.hashes,
+      chain: chains[el.api.genesisHash.toHex()]!,
+    }));
+
+    return values;
+  },
+  target: series(subscribeOnchainResource.subscribe, { parallel: true }),
 });
 
 sample({
-  clock: $list,
-  filter: list => list.length > 0,
-  target: syncInMemoryOperationsToDbFx,
+  clock: subscribeOnchainResource.push,
+  source: $onChainData,
+  fn: (state, clockData) =>
+    produce(state, draft => {
+      Object.assign(draft, clockData.result);
+    }),
+  target: $onChainData,
+});
+
+sample({
+  clock: subscribeOnChainEventsResource.push,
+  source: $trackedCallHashes,
+  fn: (state, { params, result }) =>
+    produce(state, draft => {
+      draft[params.api.genesisHash.toHex()]?.hashes[params.accountId]?.push(result);
+    }),
+  target: $trackedCallHashes,
+});
+
+// deriveFromResources({
+//   store: $onChainOperations,
+//   resources: [fetchOnchainResource, subscribeResource],
+//   map(state, operations) {
+//     return multisigOperationService.mergeMultisigOperations(state, operations);
+//   },
+// });
+
+//important place to solve changes from
+// deriveFromResources({
+//   store: $mafuckaList,
+//   resources: [subscribeEventsResource],
+//   map: (state, { chainId, operationId, event }) => {
+//     const operationIndex = state.findIndex(x => x.id === operationId && x.chainId === chainId);
+//     const operation = state[operationIndex];
+
+//     if (operationIndex === -1 || !operation) return state;
+
+//     const updatedOperation = {
+//       ...operation,
+//       status: event.status === 'reject' ? 'cancelled' : operation.status,
+//       events: multisigOperationService.mergeEvents(operation.events, [event]),
+//     };
+
+//     return multisigOperationService.mergeMultisigOperations(state, [updatedOperation]);
+//   },
+// });
+
+// sample({
+//   clock: populateFx.doneData,
+//   target: $list,
+// });
+
+//need to find a workaround (derived store should not be used as a target)
+// sample({
+//   clock: addOperationsFx.doneData,
+//   source: $list,
+//   fn: multisigOperationService.mergeMultisigOperations,
+//   target: $list,
+// });
+
+//need to find a workaround (derived store should not be used as a target)
+// sample({
+//   clock: updateOperationsFx.doneData,
+//   source: $mafuckaList,
+//   fn: multisigOperationService.mergeMultisigOperations,
+//   target: $mafuckaList,
+// });
+
+//need to find a workaround (derived store should not be used as a target)
+// sample({
+//   clock: removeTransactionsFx.doneData,
+//   source: $list,
+//   fn(list, removedIds) {
+//     return list.filter(l => !removedIds.includes(l.id));
+//   },
+//   target: $list,
+// });
+
+// sample({
+//   clock: $list,
+//   filter: list => list.length > 0,
+//   target: syncInMemoryOperationsToDbFx,
+// });
+
+sample({
+  clock: subscribeToAccount,
+  target: [initialOnChainFetch.request, fetchOffchainResource.request],
+});
+
+sample({
+  clock: subscribeToAccount,
+  fn: ({ accountId, apis }) => Object.values(apis).map(api => ({ api, accountId })),
+  target: series(subscribeOnChainEventsResource.subscribe, { parallel: true }),
 });
 
 // Handle successful call data updates
@@ -313,23 +365,30 @@ sample({
 });
 
 export const multisigOperation = {
-  $list,
+  $list: $allOperations,
   $populated: readonly($populated),
   $callDataUpdated,
 
+  //API
+  subscribeToAccount,
+  unsubscribeFromAccount,
+  requestAllOperations: fetchAllOperationsResource.request,
+
   populate: populateFx,
-  addOperations: addOperationsFx,
+  // addOperations: addOperationsFx,
   updateOperations: updateOperationsFx,
-  removeOperationsForAccount: removeOperationsForAccountFx,
+  // removeOperationsForAccount: removeOperationsForAccountFx,
   updateCallData: updateCallDataFx,
-  requestOperations: fetchResource.request,
-  subscribe: subscribeResource.subscribe,
-  unsubscribe: subscribeResource.unsubscribe,
+  // requestOnchainOperations: fetchOnchainResource.request,
+  requestOffchainOperations: fetchOffchainResource.request,
+  initialOnChainFetch: initialOnChainFetch.request,
+  subscribe: subscribeOnchainResource.subscribe,
+  unsubscribe: subscribeOnchainResource.unsubscribe,
   subscribeEvents: subscribeEventsResource.subscribe,
   unsubscribeEvents: subscribeEventsResource.unsubscribe,
 
   __test: {
-    $list,
+    $list: $allOperations,
     $populated,
   },
 };

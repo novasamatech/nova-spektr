@@ -91,12 +91,13 @@ const $filteredOperations = combine(
 sample({
   // TODO: costil' around dynamic array of apis
   clock: throttle(multisigOperationsFeature.running, 500),
-  target: [multisigOperation.subscribe, multisigOperation.subscribeEvents],
+  target: multisigOperation.subscribeToAccount,
 });
 
+//think about unsub
 sample({
   clock: multisigOperationsFeature.stopped,
-  target: [multisigOperation.unsubscribe, multisigOperation.unsubscribeEvents],
+  target: [multisigOperation.unsubscribeEvents],
 });
 
 export const operationsContextModel = {

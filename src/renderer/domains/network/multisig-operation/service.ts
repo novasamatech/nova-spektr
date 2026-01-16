@@ -9,11 +9,14 @@ import {
   type Chain,
   type ChainId,
   ChainOptions,
+  type CreateMultisigOperationParams,
   CryptoType,
   type FlexibleMultisigAccount,
   type MultisigAccount,
+  type NotificationStatus,
+  NotificationType,
 } from '@/shared/core';
-import { groupBy, isEqual, merge, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
+import { isEqual, merge, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import { transactionService } from '../transaction/service';
@@ -140,19 +143,7 @@ const mergeMultisigOperations = (
   return merge({
     a: oldOperations,
     b: updated,
-    filter: (a, b) => {
-      if (isEqual(a, b)) {
-        return false;
-      }
-
-      // Update should be skipped if the new record is in a "pending" state while the existing record is already completed.
-      // This can happen after operation approval, when the subquery indexer hasn't received that update yet.
-      if (b.status === 'pending' && a.status !== 'pending') {
-        return false;
-      }
-
-      return true;
-    },
+    filter: (a, b) => !isEqual(a, b),
     mergeBy: a => a.id,
     sort: (a, b) => a.blockCreated - b.blockCreated,
     merge: (a, b) => ({
@@ -166,56 +157,56 @@ const mergeMultisigOperations = (
   });
 };
 
-/**
- * First this function filters out old operations that are not present in
- * update. Then it merges the remaining operations with the update. (Pending
- * means that operations comes from chain, as indexer supplies only not pending
- * operations)
- *
- * This is needed because we work with Events AT BEST, it may happen that our db
- * has extra operations that are not on the chain anymore nor were executed. We
- * want to filter them out. For example, if we have a fork and operation was
- * executed in the different block than we first recevied event of.
- *
- * IMPORTANT: We only filter pending operations for the same accountId as the
- * update, to prevent operations from other wallets from disappearing when
- * switching wallets.
- */
-const updateMultisigOperations = (
-  oldOperations: MultisigOperation[],
-  update: MultisigOperation[],
-): MultisigOperation[] => {
-  // Group pending operations by both chainId and accountId
-  const updatedPendingOperations = groupBy(
-    update.filter(o => o.status === 'pending'),
-    o => `${o.chainId}-${o.accountId}`,
-  );
+// /**
+//  * First this function filters out old operations that are not present in
+//  * update. Then it merges the remaining operations with the update. (Pending
+//  * means that operations comes from chain, as indexer supplies only not pending
+//  * operations)
+//  *
+//  * This is needed because we work with Events AT BEST, it may happen that our db
+//  * has extra operations that are not on the chain anymore nor were executed. We
+//  * want to filter them out. For example, if we have a fork and operation was
+//  * executed in the different block than we first recevied event of.
+//  *
+//  * IMPORTANT: We only filter pending operations for the same accountId as the
+//  * update, to prevent operations from other wallets from disappearing when
+//  * switching wallets.
+//  */
+// const updateMultisigOperations = (
+//   oldOperations: MultisigOperation[],
+//   update: MultisigOperation[],
+// ): MultisigOperation[] => {
+//   // Group pending operations by both chainId and accountId
+//   const updatedPendingOperations = groupBy(
+//     update.filter(o => o.status === 'pending'),
+//     o => `${o.chainId}-${o.accountId}`,
+//   );
 
-  // Get unique accountIds from the update to only filter operations for those accounts
-  const updatedAccountIds = new Set(update.map(o => o.accountId));
+//   // Get unique accountIds from the update to only filter operations for those accounts
+//   const updatedAccountIds = new Set(update.map(o => o.accountId));
 
-  const filtered = oldOperations.filter(o => {
-    // Keep all non-pending operations
-    if (o.status !== 'pending') return true;
+//   const filtered = oldOperations.filter(o => {
+//     // Keep all non-pending operations
+//     if (o.status !== 'pending') return true;
 
-    // Only filter pending operations for accounts that are in the update
-    // This prevents operations from other wallets from being filtered out
-    if (!updatedAccountIds.has(o.accountId)) return true;
+//     // Only filter pending operations for accounts that are in the update
+//     // This prevents operations from other wallets from being filtered out
+//     if (!updatedAccountIds.has(o.accountId)) return true;
 
-    const group = updatedPendingOperations[`${o.chainId}-${o.accountId}`];
+//     const group = updatedPendingOperations[`${o.chainId}-${o.accountId}`];
 
-    if (group) {
-      // If there are pending operations for this chain+account, only keep those that exist in the update
-      return group.some(o1 => o1.id === o.id);
-    }
+//     if (group) {
+//       // If there are pending operations for this chain+account, only keep those that exist in the update
+//       return group.some(o1 => o1.id === o.id);
+//     }
 
-    // If no pending operations in update for this chain+account, keep the old one
-    // (it might have been executed/cancelled, but we'll update it when we get the status)
-    return true;
-  });
+//     // If no pending operations in update for this chain+account, keep the old one
+//     // (it might have been executed/cancelled, but we'll update it when we get the status)
+//     return true;
+//   });
 
-  return mergeMultisigOperations(filtered, update);
-};
+//   return mergeMultisigOperations(filtered, update);
+// };
 
 export type MultisigOperationDeepLinkParams = {
   chainId: string;
@@ -257,6 +248,79 @@ function generateMultisigOperationRelativeLink(params: MultisigOperationDeepLink
   });
 }
 
+const getNotificationStatus = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
+  switch (operationStatus) {
+    case 'pending':
+      return 'info';
+    case 'executed':
+      return 'success';
+    case 'cancelled':
+    case 'error':
+      return 'error';
+  }
+};
+
+const getNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): string => {
+  switch (operationStatus) {
+    case 'pending':
+      return 'Multisig operation created';
+    case 'executed':
+      return 'Multisig operation executed';
+    case 'cancelled':
+      return 'Multisig operation rejected';
+    case 'error':
+      return 'Multisig operation error';
+  }
+};
+
+const createOperationNotification = (
+  operation: MultisigOperation,
+  walletName?: string,
+): CreateMultisigOperationParams => {
+  const description = walletName ? `by ${walletName}` : undefined;
+
+  const relativeLink = multisigOperationService.generateMultisigOperationRelativeLink({
+    chainId: operation.chainId,
+    callHash: operation.callHash,
+    accountId: operation.accountId,
+    blockCreated: operation.blockCreated,
+    indexCreated: operation.indexCreated,
+  });
+
+  return {
+    key: `${NotificationType.MULTISIG_OPERATION}-${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.accountId, operation.blockCreated, operation.indexCreated)}-${operation.status}`,
+    type: NotificationType.MULTISIG_OPERATION,
+    status: getNotificationStatus(operation.status),
+    issuer: operation.accountId,
+    title: getNotificationTitle(operation.status),
+    description,
+    multisigAccountId: operation.accountId,
+    callHash: operation.callHash,
+    callTimepoint: {
+      height: operation.blockCreated,
+      index: operation.indexCreated,
+    },
+    chainId: operation.chainId,
+    link: {
+      title: 'notifications.details.viewOperation',
+      path: relativeLink,
+    },
+    batch: {
+      title: 'notifications.toast.batch.multisigOperationsUpdated',
+      link: {
+        title: 'notifications.toast.viewOperations',
+        path: Paths.OPERATIONS,
+      },
+    },
+  };
+};
+
+// const getOperationId = (op: MultisigOperation) =>
+// multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated);
+
+const getNotificationKey = (op: MultisigOperation) =>
+  `${NotificationType.MULTISIG_OPERATION}-${getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated)}-${op.status}`;
+
 export const multisigOperationService = {
   getOperationId,
   getEventId,
@@ -264,7 +328,7 @@ export const multisigOperationService = {
   getMultisigAccountId,
 
   mergeEvents,
-  updateMultisigOperations,
+  // updateMultisigOperations,
   mergeMultisigOperations,
 
   isMultisigSupported,
@@ -275,4 +339,7 @@ export const multisigOperationService = {
   generateRelativeLink,
   generateMultisigOperationDeepLink,
   generateMultisigOperationRelativeLink,
+
+  getNotificationKey,
+  createOperationNotification,
 };
