@@ -146,8 +146,8 @@ function createValidationSchema(options: ValidationSchemaOptions) {
         return true;
       },
       {
-        message: VestingFieldError.MIN_VESTED_TRANSFER,
-        path: ['unlockedAtStartBlock'],
+        message: VestingFieldError.CLIFF_MIN_VESTED_TRANSFER,
+        path: ['locked'],
       },
     );
 }
