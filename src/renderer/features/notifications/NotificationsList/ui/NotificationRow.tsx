@@ -3,6 +3,7 @@ import { type ReactNode } from 'react';
 import {
   type FlexibleMultisigOperationNotification,
   type MultisigCreated,
+  type MultisigEventNotification as MultisigEventNotificationType,
   type MultisigOperationNotification as MultisigOperationNotificationType,
   type Notification,
   type ProxyAction,
@@ -13,6 +14,7 @@ import { FootnoteText } from '@/shared/ui';
 
 import { FlexibleMultisigNotification } from './notifies/FlexibleMultisigNotification';
 import { MultisigCreatedNotification } from './notifies/MultisigCreatedNotification';
+import { MultisigEventNotificationComponent } from './notifies/MultisigEventNotification';
 import { MultisigOperationNotificationComponent } from './notifies/MultisigOperationNotification';
 import { ProxyCreatedNotification } from './notifies/ProxyCreatedNotification';
 import { ProxyRemovedNotification } from './notifies/ProxyRemovedNotification';
@@ -30,6 +32,9 @@ const Notifications: Record<NotificationType, (n: Notification) => ReactNode> = 
   [NotificationType.MULTISIG_EXECUTED]: () => null,
   [NotificationType.MULTISIG_OPERATION]: (n) => (
     <MultisigOperationNotificationComponent notification={n as MultisigOperationNotificationType} />
+  ),
+  [NotificationType.MULTISIG_EVENT]: (n) => (
+    <MultisigEventNotificationComponent notification={n as MultisigEventNotificationType} />
   ),
   [NotificationType.PROXY_CREATED]: (n) => <ProxyCreatedNotification notification={n as ProxyAction} />,
   [NotificationType.PROXY_REMOVED]: (n) => <ProxyRemovedNotification notification={n as ProxyAction} />,
