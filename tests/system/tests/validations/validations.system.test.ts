@@ -43,14 +43,17 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
   });
 
   // TODO: remove fail flag after the bug is fixed (#5328)
-  test.fail(`Should validate multisig signer missing account`, async ({ assetsPage }) => {
+  test(`Should validate multisig signer missing account`, async ({ assetsPage }) => {
     const walletModal = await assetsPage.openWalletManagement();
     await walletModal.searchAndSelectWallet(constants.missingAccountValidation.multisigName);
 
     const chain = getChainByName(substrateChains, constants.missingAccountValidation.chainName);
     const transferModal = await assetsPage.openTransfer(chain, constants.missingAccountValidation.assetId);
+    await transferModal.fillRecipient('0x1234567890123456789012345678901234567890');
+    await transferModal.fillAmount('100');
 
-    await transferModal.expectValidationsVisible(Validation.missingAccount);
+    // TODO: fee are not calculated if there is no account in that network for the wallet
+    await transferModal.expectValidationsVisible(Validation.missingAccount, false);
   });
 
   // TODO: remove fail flag after the bug is fixed (?) available is not loaded in this case

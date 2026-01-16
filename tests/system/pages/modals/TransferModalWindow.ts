@@ -187,11 +187,16 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     return this.previousPage;
   }
 
-  public async expectValidationsVisible(validations: Validation | Validation[]): Promise<void> {
+  public async expectValidationsVisible(
+    validations: Validation | Validation[],
+    transferFeeNotZero = true,
+  ): Promise<void> {
     const list = Array.isArray(validations) ? validations : [validations];
 
     await watchContinueButtonDisabled(this.page, async () => {
-      await this.expectTransferFeeNotZero();
+      if (transferFeeNotZero) {
+        await this.expectTransferFeeNotZero();
+      }
       await this.waitUntilAvailableAmountLoaded();
 
       await step(`Check validations visible: ${list.join(', ')}`, async () => {
