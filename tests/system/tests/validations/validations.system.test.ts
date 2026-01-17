@@ -56,8 +56,7 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
     await transferModal.expectValidationsVisible(Validation.missingAccount, false);
   });
 
-  // TODO: remove fail flag after the bug is fixed (?) available is not loaded in this case
-  test.fail(`Should validate available amount for a transfer`, async ({ assetsPage }) => {
+  test(`Should validate available amount for a transfer`, async ({ assetsPage }) => {
     const walletModal = await assetsPage.openWalletManagement();
     await walletModal.searchAndSelectWallet(constants.amountValidation.amount_account_name);
 
