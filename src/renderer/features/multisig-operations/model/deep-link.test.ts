@@ -179,8 +179,8 @@ describe('multisig operations deep link', () => {
         .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
         .set(accounts.__test.$list, [mockAccount])
         .set(multisigOperation.__test.$list, [])
+        .set(multisigOperation.$initialLoadingComplete, true)
         .set(multisigOperation.__test.$populated, true),
-      handlers: [[multisigOperation.requestAllOperations, () => []]],
     });
 
     const deepLinkData: MultisigOperationDeepLinkData = {

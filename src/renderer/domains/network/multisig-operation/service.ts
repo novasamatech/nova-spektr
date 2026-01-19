@@ -1,20 +1,21 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type GenericExtrinsic } from '@polkadot/types';
 import { type AnyTuple } from '@polkadot/types/types';
-import { u8aToHex } from '@polkadot/util';
+import { BN, u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 
 import {
   type CallHash,
   type Chain,
-  type ChainId,
   ChainOptions,
   type CreateMultisigOperationParams,
   CryptoType,
   type FlexibleMultisigAccount,
   type MultisigAccount,
+  type NoID,
   type NotificationStatus,
   NotificationType,
+  type Serializable,
 } from '@/shared/core';
 import { isEqual, merge, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
@@ -22,17 +23,11 @@ import { Paths } from '@/shared/routes';
 import { transactionService } from '../transaction/service';
 
 import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, WRAP_EXTRINSIC_CALL_INDEX } from './constants';
-import { type MultisigEvent, type MultisigOperation } from './types';
+import { type MultisigOperation } from './types';
 
 /**
  * Public keys of signers' wallets are compared byte-for-byte and sorted
- * ascending before being used to generate the multisig address. For example,
- * consider the scenario with three addresses, A, B, and C, starting with 5FUGT,
- * 5HMfS, and 5GhKJ. If we build the ABC multisig with the accounts in that
- * specific order (i.e. first A, then B, and C), the real order of the accounts
- * in the multisig will be ACB. If, in the Extrinsic tab, we initiate a multisig
- * call with C, the order of the other signatories will be first A, then B. If
- * we put first B, then A, the transaction will fail.
+ * ascending before being used to generate the multisig address.
  */
 function sortSignatories(signatories: AccountId[]) {
   return Array.from(signatories).sort((a, b) => a.localeCompare(b));
@@ -53,13 +48,27 @@ function getOtherSignatories(account: MultisigAccount | FlexibleMultisigAccount,
   );
 }
 
-function getOperationId(chainId: ChainId, callHash: string, accountId: AccountId, block: number, index: number) {
+function getOperationId(chainId: string, callHash: string, accountId: string, block: number, index: number) {
   return `${chainId}-${callHash}-${accountId}-${block}-${index}`;
 }
 
 function getEventId(operationId: string, signer: string, status: 'approve' | 'reject') {
   return `${operationId}-${signer}-${status}`;
 }
+
+export const serializeOperation = <T extends NoID<MultisigOperation>>(tx: T) => {
+  return {
+    ...tx,
+    deposit: tx.deposit?.toString(),
+  } as Serializable<T>;
+};
+
+export const deserializeOperation = (tx: Serializable<MultisigOperation>): MultisigOperation => {
+  return {
+    ...tx,
+    deposit: tx.deposit ? new BN(tx.deposit) : undefined,
+  };
+};
 
 function findInnerExtrinsicCall(extrinsic: GenericExtrinsic<AnyTuple>) {
   const findAsMulti = (method: any): any => {
@@ -124,15 +133,6 @@ function isMultisigSupported(chain: Chain) {
   return chain.options?.includes(ChainOptions.MULTISIG) ?? false;
 }
 
-const mergeEvents = (oldEvents: MultisigEvent[], events: MultisigEvent[]) =>
-  merge({
-    a: oldEvents,
-    b: events,
-    mergeBy: a => a.id,
-    filter: (a, b) => !isEqual(a, b),
-    sort: (a, b) => a.blockCreated - b.blockCreated,
-  });
-
 /*
  * Performs an actual merge of old operations with new operations with update if they have the same id.
  */
@@ -165,36 +165,28 @@ export type MultisigOperationDeepLinkParams = {
   indexCreated: number;
 };
 
-function generateDeepLink(path: string, params: Record<string, string>): string {
-  const searchParams = new URLSearchParams(params);
-
-  return `${window.location.origin}/#${path}?${searchParams.toString()}`;
-}
-
-function generateRelativeLink(path: string, params: Record<string, string>): string {
-  const searchParams = new URLSearchParams(params);
-
-  return `${path}?${searchParams.toString()}`;
-}
-
 function generateMultisigOperationDeepLink(params: MultisigOperationDeepLinkParams): string {
-  return generateDeepLink(Paths.OPERATIONS, {
+  const searchParams = new URLSearchParams({
     chainId: params.chainId,
     callHash: params.callHash,
     accountId: params.accountId,
     blockCreated: params.blockCreated.toString(),
     indexCreated: params.indexCreated.toString(),
   });
+
+  return `${window.location.origin}/#${Paths.OPERATIONS}?${searchParams.toString()}`;
 }
 
 function generateMultisigOperationRelativeLink(params: MultisigOperationDeepLinkParams): string {
-  return generateRelativeLink(Paths.OPERATIONS, {
+  const searchParams = new URLSearchParams({
     chainId: params.chainId,
     callHash: params.callHash,
     accountId: params.accountId,
     blockCreated: params.blockCreated.toString(),
     indexCreated: params.indexCreated.toString(),
   });
+
+  return `${Paths.OPERATIONS}?${searchParams.toString()}`;
 }
 
 const getNotificationStatus = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
@@ -264,27 +256,19 @@ const createOperationNotification = (
   };
 };
 
-const getNotificationKey = (op: MultisigOperation) =>
-  `${NotificationType.MULTISIG_OPERATION}-${getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated)}-${op.status}`;
-
 export const multisigOperationService = {
   getOperationId,
   getEventId,
   getTransactionFromChain,
   getMultisigAccountId,
 
-  mergeEvents,
   mergeMultisigOperations,
 
   isMultisigSupported,
   getOtherSignatories,
-  sortSignatories,
 
-  generateDeepLink,
-  generateRelativeLink,
   generateMultisigOperationDeepLink,
   generateMultisigOperationRelativeLink,
 
-  getNotificationKey,
   createOperationNotification,
 };

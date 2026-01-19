@@ -14,16 +14,14 @@ import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
 import { decodeCallData } from '@/entities/transaction';
 
-import { deserializeOperation, serializeOperation } from './helpers';
 import {
-  fetchAllOperationsResource,
   fetchOffchainResource,
   initialOnChainFetch,
   subscribeEventsResource,
   subscribeNewMultisigEventsResource,
   subscribeOnchainResource,
 } from './resource';
-import { multisigOperationService } from './service';
+import { deserializeOperation, multisigOperationService, serializeOperation } from './service';
 import { type MultisigEvent, type MultisigOperation } from './types';
 
 const subscribeToAccounts = createEvent<{
@@ -45,6 +43,20 @@ const $trackedCallHashes = createStore<Record<ChainId, { api: ApiPromise; hashes
 const $offChainOperations = createStore<MultisigOperation[]>([]);
 const $onChainOperationsByCallhash = createStore<Record<HexString, MultisigOperation | null>>({});
 const $onChainOperations = $onChainOperationsByCallhash.map(state => Object.values(state).filter(nonNullable));
+
+const $initialOnChainFetched = createStore(false)
+  .on(initialOnChainFetch.request.finally, (_, effect) => effect.status === 'done')
+  .reset(unsubscribeFromAccounts);
+
+const $offChainFetched = createStore(false)
+  .on(fetchOffchainResource.request.finally, (_, effect) => effect.status === 'done')
+  .reset(unsubscribeFromAccounts);
+
+const $initialLoadingComplete = combine(
+  $initialOnChainFetched,
+  $offChainFetched,
+  (onChain, offChain) => onChain && offChain,
+);
 
 const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
@@ -363,7 +375,7 @@ const $completedLiveOperations = combine(
 
       if (!events || events.length === 0) return op;
 
-      const newEvents = op.events.concat(events.map(e => e.event));
+      const newEvents = uniqBy(op.events.concat(events.map(e => e.event)), e => e.id);
       const newStatus = newEvents.find(e => e.status === 'reject') ? 'cancelled' : 'executed';
       return { ...op, events: newEvents, status: newStatus };
     }) satisfies MultisigOperation[];
@@ -403,12 +415,12 @@ export const multisigOperation = {
   $list: $allOperations,
   $populated: readonly($populated),
   $callDataUpdated,
+  $initialLoadingComplete,
 
   //API
   subscribeToAccounts,
   unsubscribeFromAccounts,
   refetchOffchainOperations,
-  requestAllOperations: fetchAllOperationsResource.request,
 
   populate: populateFx,
   updateOperations: updateOperationsFx,

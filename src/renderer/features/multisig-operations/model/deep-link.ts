@@ -299,51 +299,60 @@ sample({
   target: setFocusedOperationId,
 });
 
-const operationFetchRequested = sample({
+const operationWaitingRequested = sample({
   clock: accountChecked,
   source: {
-    apis: networkModel.$apis,
-    chains: networkModel.$chains,
     operations: multisigOperation.$list,
     operationsPopulated: multisigOperation.$populated,
+    isInitialLoadingComplete: multisigOperation.$initialLoadingComplete,
   },
-  filter: ({ operations, operationsPopulated }, { multisigAccountId, data }) => {
+  filter: ({ operations, operationsPopulated, isInitialLoadingComplete }, { multisigAccountId, data }) => {
     if (!operationsPopulated) return false;
     if (nullable(multisigAccountId)) return false;
+
     const operationId = getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId });
     const operationExists = operations.some(op => op.id === operationId);
-    return !operationExists;
-  },
-  fn: ({ apis, chains }, { data, multisigAccountId }) => ({
-    apis,
-    chains,
-    accountId: multisigAccountId!,
-    operationId: getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId! }),
-  }),
-});
 
-sample({
-  clock: operationFetchRequested,
-  fn: ({ apis, chains, accountId }) => ({ apis, chains, accountIds: [accountId] }),
-  target: multisigOperation.requestAllOperations,
+    // If operation exists, we don't need to wait
+    if (operationExists) return false;
+
+    // If operation doesn't exist AND we are still loading, we should wait
+    return !isInitialLoadingComplete;
+  },
+  fn: (_, { data, multisigAccountId }) => getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId! }),
 });
 
 const $pendingOperationId = createStore<string | null>(null)
-  .on(operationFetchRequested, (_, req) => req.operationId)
+  .on(operationWaitingRequested, (_, operationId) => operationId)
   .reset(operationsPageClosed);
 
 sample({
-  clock: multisigOperation.requestAllOperations.finally,
+  clock: multisigOperation.$initialLoadingComplete,
   source: {
     pendingOperationId: $pendingOperationId,
+    operations: multisigOperation.$list,
   },
-  filter: ({ pendingOperationId }, response) => {
-    if (nullable(pendingOperationId) || response.status !== 'done') return false;
-    const operations = response.result;
+  filter: ({ pendingOperationId }, isComplete) => nonNullable(pendingOperationId) && isComplete,
+  fn: ({ pendingOperationId, operations }) => {
     const operationExists = operations.some(op => op.id === pendingOperationId);
     return !operationExists;
   },
   target: operationNotFoundModalOpened,
+});
+
+sample({
+  clock: multisigOperation.$initialLoadingComplete,
+  source: {
+    pendingOperationId: $pendingOperationId,
+    operations: multisigOperation.$list,
+    walletId: walletSelect.$selectedWalletId,
+  },
+  filter: ({ pendingOperationId, operations }, isComplete) => {
+    if (!isComplete || nullable(pendingOperationId)) return false;
+    return operations.some(op => op.id === pendingOperationId);
+  },
+  fn: ({ pendingOperationId }) => pendingOperationId,
+  target: setFocusedOperationId,
 });
 
 function generateMultisigOperationDeepLink(

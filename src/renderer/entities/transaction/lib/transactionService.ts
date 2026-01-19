@@ -28,7 +28,8 @@ import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO transaction service should be inside network domain
 // eslint-disable-next-line boundaries/element-types
-import { type AnyAccount, type Extrinsic, accountService } from '@/domains/network';
+import { accountService } from '@/domains/network';
+import { type AnyAccount, type Extrinsic } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
 import { getExtrinsic, wrapAsMulti, wrapAsProxy } from './extrinsicService';

@@ -241,44 +241,6 @@ async function fetchOperationsHistory(
     .filter(nonNullable);
 }
 
-const fetchOnchainOperations = async (api: ApiPromise, accountId: AccountId, chain: Chain) => {
-  const storageEntries = await api.query.multisig.multisigs.entries(accountId);
-  const operations: MultisigOperation[] = [];
-
-  for (const [storageKey, optionalMultisig] of storageEntries) {
-    if (optionalMultisig.isNone) continue;
-
-    const multisig = optionalMultisig.unwrap();
-    const [, callHashArg] = storageKey.args;
-    const callHash = callHashArg.toHex();
-
-    const operation = await createOperationFromMultisig({
-      api,
-      chain,
-      accountId,
-      callHash,
-      multisig,
-    });
-
-    operations.push(operation);
-  }
-
-  return operations;
-};
-
-const fetchAllOnchainOperations = async (
-  apis: Record<ChainId, ApiPromise>,
-  accountIds: AccountId[],
-  chains: Record<ChainId, Chain>,
-) => {
-  const requests = accountIds.flatMap(accountId =>
-    Object.values(apis).map(api => fetchOnchainOperations(api, accountId, chains[api.genesisHash.toHex()]!)),
-  );
-  const operations = await Promise.allSettled(requests);
-
-  return operations.map(result => (result.status === 'fulfilled' ? result.value : [])).flat();
-};
-
 type RequestParams = {
   apis: Record<ChainId, ApiPromise>;
   chains: Record<ChainId, Chain>;
@@ -288,17 +250,6 @@ type RequestParams = {
 export const fetchOffchainResource = createRemoteResource<RequestParams, MultisigOperation[]>({
   async fn({ apis, accountIds, chains }) {
     return fetchOperationsHistory(accountIds, apis, chains);
-  },
-});
-
-//this resource is only being used for deep links, not actually merged into the list of operations
-export const fetchAllOperationsResource = createRemoteResource<RequestParams, MultisigOperation[]>({
-  async fn({ apis, accountIds, chains }) {
-    const chainOperations = fetchAllOnchainOperations(apis, accountIds, chains);
-    const historicOperations = fetchOffchainResource.request({ apis, accountIds, chains });
-    const [chainOperationsResult, historicOperationsResult] = await Promise.all([chainOperations, historicOperations]);
-
-    return chainOperationsResult.concat(historicOperationsResult);
   },
 });
 
