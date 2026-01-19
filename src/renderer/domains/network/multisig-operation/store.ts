@@ -3,6 +3,7 @@ import { once, readonly, spread } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
+  type CreateMultisigEventParams,
   type CreateMultisigOperationParams,
   type HexString,
   type NotificationStatus,
@@ -20,7 +21,7 @@ import { accounts } from '../account/store';
 import { deserializeOperation, serializeOperation } from './helpers';
 import { fetchResource, subscribeEventsResource, subscribeResource } from './resource';
 import { multisigOperationService } from './service';
-import { type MultisigOperation } from './types';
+import { type MultisigEvent, type MultisigOperation } from './types';
 
 const $accountsMap = accounts.$list.map(
   accountsList => new Map(accountsList.map(account => [account.accountId, account])),
@@ -177,11 +178,61 @@ const createOperationNotification = (
   };
 };
 
+const createEventNotification = (
+  operation: MultisigOperation,
+  event: MultisigEvent,
+  signerName?: string,
+): CreateMultisigEventParams => {
+  const relativeLink = multisigOperationService.generateMultisigOperationRelativeLink({
+    chainId: operation.chainId,
+    callHash: operation.callHash,
+    accountId: operation.accountId,
+    blockCreated: operation.blockCreated,
+    indexCreated: operation.indexCreated,
+  });
+
+  const eventId = `${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.accountId, operation.blockCreated, operation.indexCreated)}-${event.id}`;
+
+  return {
+    key: `${NotificationType.MULTISIG_EVENT}-${eventId}`,
+    type: NotificationType.MULTISIG_EVENT,
+    status: event.status === 'approve' ? 'success' : 'error',
+    issuer: operation.accountId,
+    title: event.status === 'approve' ? 'Multisig operation signed' : 'Multisig operation rejected',
+    description: signerName ? `by ${signerName}` : undefined,
+    multisigAccountId: operation.accountId,
+    callHash: operation.callHash,
+    callTimepoint: {
+      height: operation.blockCreated,
+      index: operation.indexCreated,
+    },
+    chainId: operation.chainId,
+    signerAccountId: event.accountId,
+    eventStatus: event.status,
+    link: {
+      title: 'notifications.details.viewOperation',
+      path: relativeLink,
+    },
+    batch: {
+      title: 'notifications.toast.batch.multisigEventsUpdated',
+      link: {
+        title: 'notifications.toast.viewOperations',
+        path: Paths.OPERATIONS,
+      },
+    },
+  };
+};
+
 const getOperationId = (op: MultisigOperation) =>
   multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated);
 
 const getNotificationKey = (op: MultisigOperation) =>
   `${NotificationType.MULTISIG_OPERATION}-${getOperationId(op)}-${op.status}`;
+
+type NewEvent = {
+  operation: MultisigOperation;
+  event: MultisigEvent;
+};
 
 const operationChanges = pairwise($list)
   .map(({ prev: prevState, current: update }) => {
@@ -190,6 +241,7 @@ const operationChanges = pairwise($list)
 
     const added: MultisigOperation[] = [];
     const removedKeys: string[] = [];
+    const newEvents: NewEvent[] = [];
 
     for (const item of update) {
       const previousOp = previousOpsMap.get(getOperationId(item));
@@ -198,6 +250,13 @@ const operationChanges = pairwise($list)
         added.push(item);
       } else if (previousOp.status !== item.status && item.status !== 'pending') {
         added.push(item);
+      } else if (previousOp.events.length !== item.events.length) {
+        const previousEventIds = new Set(previousOp.events.map(e => e.id));
+        for (const event of item.events) {
+          if (!previousEventIds.has(event.id)) {
+            newEvents.push({ operation: item, event });
+          }
+        }
       }
     }
 
@@ -207,9 +266,11 @@ const operationChanges = pairwise($list)
       }
     }
 
-    return { added, removedKeys };
+    return { added, removedKeys, newEvents };
   })
-  .filter({ fn: ({ added, removedKeys }) => added.length > 0 || removedKeys.length > 0 });
+  .filter({
+    fn: ({ added, removedKeys, newEvents }) => added.length > 0 || removedKeys.length > 0 || newEvents.length > 0,
+  });
 
 sample({
   clock: operationChanges,
@@ -218,8 +279,8 @@ sample({
     accountsMap: $accountsMap,
   },
   filter: ({ populated }) => populated,
-  fn: ({ accountsMap }, { added, removedKeys }) => {
-    const notificationsToAdd = added
+  fn: ({ accountsMap }, { added, removedKeys, newEvents }) => {
+    const operationNotifications = added
       .filter(operation => {
         // Don't notify the operation creator
         if (operation.status === 'pending' && accountsMap.has(operation.depositor)) {
@@ -236,8 +297,23 @@ sample({
         return createOperationNotification(operation, account?.name);
       });
 
+    const eventNotifications = newEvents
+      .filter(({ event }) => {
+        // Don't notify if the current user caused the event
+        if (accountsMap.has(event.accountId)) {
+          return false;
+        }
+
+        return true;
+      })
+      .map(({ operation, event }) => {
+        const signerAccount = accountsMap.get(event.accountId);
+
+        return createEventNotification(operation, event, signerAccount?.name);
+      });
+
     return {
-      added: notificationsToAdd,
+      added: [...operationNotifications, ...eventNotifications],
       removed: { keys: removedKeys },
     };
   },

@@ -360,7 +360,13 @@ function generateMultisigOperationDeepLink(
 }
 
 export function getOperationIdFromDeepLink(data: MultisigOperationDeepLinkData): string {
-  return `${data.chainId}-${data.callHash}-${data.accountId}-${data.blockCreated}-${data.indexCreated}`;
+  return multisigOperationService.getOperationId(
+    data.chainId,
+    data.callHash,
+    data.accountId,
+    data.blockCreated,
+    data.indexCreated,
+  );
 }
 
 export const deepLinkModel = {
