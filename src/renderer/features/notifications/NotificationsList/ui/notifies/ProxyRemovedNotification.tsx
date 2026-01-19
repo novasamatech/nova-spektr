@@ -56,7 +56,7 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
       {
         accountId: notification.proxiedAccountId,
         proxyVariant: notification.proxyVariant,
-        connections: [],
+        connections: [{ proxyAccountId: notification.proxyAccountId, proxyType: notification.proxyType, delay: 0 }],
       },
       chain?.addressPrefix,
     );
