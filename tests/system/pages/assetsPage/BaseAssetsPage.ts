@@ -1,5 +1,6 @@
 import { step } from 'allure-js-commons';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { type ChainModel } from '../../data/chains/testChainModel';
 import { BasePage } from '../BasePage';
 import { type AssetsPageElements } from '../_elements/AssetsPageElements';
@@ -20,6 +21,26 @@ export class BaseAssetsPage extends BasePage<AssetsPageElements> {
         chain,
         assetId,
       ).openTransferModal();
+    });
+  }
+
+  public async tryOpenTransfer(
+    chain: ChainModel,
+    assetId: number,
+    timeout = 3000,
+  ): Promise<TransferModalWindow | null> {
+    return await step(`Try to open transfer modal for ${chain.name} (asset ID: ${assetId})`, async () => {
+      const modal = new TransferModalWindow(this.page, new TransferModalElements(), this, chain, assetId);
+
+      await modal.openTransferModal(false);
+
+      try {
+        await this.page.getByTestId(TEST_IDS.TRANSFER.MODAL).waitFor({ state: 'visible', timeout });
+
+        return modal;
+      } catch {
+        return null;
+      }
     });
   }
 

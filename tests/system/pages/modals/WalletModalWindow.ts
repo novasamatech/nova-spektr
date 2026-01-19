@@ -81,7 +81,7 @@ export class WalletModalWindow extends BaseModal<WalletModalElements> {
 
       await this.page
         .getByTestId(TEST_IDS.WALLET_MANAGEMENT.WALLET_SEARCH)
-        .waitFor({ state: 'hidden' })
+        .waitFor({ state: 'hidden', timeout: 15000 })
         .catch(() => {});
 
       return this.previousPage;

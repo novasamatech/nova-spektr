@@ -6,6 +6,13 @@ export const validationConstants = {
     walletName: 'Nova Autotest-1',
     validationAmount: '100',
   },
+  inactiveAccountValidation: {
+    chainName: 'Polkadot Asset Hub',
+    xcmChainName: 'Bifrost Polkadot',
+    assetId: 0,
+    walletName: 'Nova Autotest-1',
+    validationAmount: '0.00001',
+  },
   amountValidation: {
     chainName: 'Novasama Testnet - Governance',
     assetId: 0,
@@ -51,4 +58,5 @@ export enum Validation {
   destinationFee = 'destination fee error',
   multisigDeposit = 'multisig deposit error',
   proxyDeposit = 'proxy deposit error',
+  inactiveAccount = 'inactive account error',
 }

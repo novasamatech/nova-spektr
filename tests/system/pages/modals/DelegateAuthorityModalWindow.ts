@@ -1,6 +1,7 @@
 import { type Page, expect } from '@playwright/test';
 import { step } from 'allure-js-commons';
 
+import { watchContinueButtonDisabled } from '../../utils/buttonWatcher';
 import { getValidationLocators } from '../../utils/validationHelpers';
 import { type Validation } from '../../utils/validationTestCases';
 import { BaseModal } from '../BaseModalWindow';
@@ -25,24 +26,24 @@ export class DelegateAuthorityModalWindow extends BaseModal<DelegateModalElement
 
   public async expectValidationsVisible(validations: Validation | Validation[]): Promise<void> {
     const list = Array.isArray(validations) ? validations : [validations];
-    await this.isContinueButtonDisabled();
-    await this.expectTransferFeeNotZero();
-    await this.isContinueButtonDisabled();
 
-    await step(`Check validations visible: ${list.join(', ')}`, async () => {
-      for (const v of list) {
-        const locs = getValidationLocators(this.page, v);
+    await watchContinueButtonDisabled(this.page, async () => {
+      await this.expectTransferFeeNotZero();
 
-        await Promise.race(locs.map((l) => l.waitFor({ state: 'visible' }))).catch(() => {
-          throw new Error(`Validation "${v}" did not appear.`);
-        });
+      await step(`Check validations visible: ${list.join(', ')}`, async () => {
+        for (const v of list) {
+          const locs = getValidationLocators(this.page, v);
 
-        for (const l of locs) {
-          await expect(l).toBeVisible();
+          await Promise.race(locs.map((l) => l.waitFor({ state: 'visible', timeout: 15000 }))).catch(() => {
+            throw new Error(`Validation "${v}" did not appear.`);
+          });
+
+          for (const l of locs) {
+            await expect(l).toBeVisible();
+          }
         }
-      }
+      });
     });
-    await this.isContinueButtonDisabled();
   }
 
   public async expectValidationsHidden(validations: Validation | Validation[]): Promise<void> {
@@ -65,12 +66,13 @@ export class DelegateAuthorityModalWindow extends BaseModal<DelegateModalElement
     });
   }
 
+  /**
+   * Asserts that Continue button is disabled. Fails test gracefully if enabled.
+   */
   public async isContinueButtonDisabled(): Promise<void> {
     await step('Check that Continue button is disabled', async () => {
       const button = this.page.getByRole('button', { name: 'Continue' });
-      if (await button.isEnabled()) {
-        throw new Error(`Continue button is enabled by error`);
-      }
+      await expect(button, 'Continue button should be disabled').toBeDisabled();
     });
   }
 
