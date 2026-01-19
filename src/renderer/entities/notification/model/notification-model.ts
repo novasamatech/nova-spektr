@@ -73,8 +73,11 @@ const EVENT_MATCHERS: Record<NotificationEvent, (n: CreateNotificationParams) =>
     ].includes(n.type),
   [NotificationEvent.OPERATION_CREATED]: (n) => n.type === NotificationType.MULTISIG_OPERATION && n.status === 'info',
   [NotificationEvent.OPERATION_EXECUTED]: (n) =>
-    n.type === NotificationType.MULTISIG_OPERATION && n.status === 'success',
-  [NotificationEvent.OPERATION_REJECTED]: (n) => n.type === NotificationType.MULTISIG_OPERATION && n.status === 'error',
+    (n.type === NotificationType.MULTISIG_OPERATION || n.type === NotificationType.MULTISIG_EVENT) &&
+    n.status === 'success',
+  [NotificationEvent.OPERATION_REJECTED]: (n) =>
+    (n.type === NotificationType.MULTISIG_OPERATION || n.type === NotificationType.MULTISIG_EVENT) &&
+    n.status === 'error',
 };
 
 type EventMatcher = (n: CreateNotificationParams) => boolean;
