@@ -18,7 +18,7 @@
     "renderer:dev": "cross-env CHAINS_FILE=chains_dev TOKENS_FILE=tokens_dev LOGGER=false vite build --mode development -c vite.config.renderer.ts",
     "renderer:dev:watch": "cross-env CHAINS_FILE=chains_dev TOKENS_FILE=tokens_dev LOGGER=false vite --mode development -c vite.config.renderer.ts",
     "renderer:staging": "cross-env CHAINS_FILE=chains TOKENS_FILE=tokens vite build --mode staging -c vite.config.renderer.ts",
-    "renderer:prod": "cross-env CHAINS_FILE=chains TOKENS_FILE=tokens vite build --mode production -c vite.config.renderer.ts",
+    "renderer:prod": "cross-env CHAINS_FILE=chains TOKENS_FILE=tokens vite bmuuild --mode production -c vite.config.renderer.ts",
     "renderer:preview": "vite preview --mode staging --port $(pnpm --silent run config renderer.server.port) -c vite.config.renderer.ts",
     "preload:dev": "vite build --mode development -c vite.config.preload.ts",
     "preload:dev:watch": "vite build --mode development -c vite.config.preload.ts --watch",

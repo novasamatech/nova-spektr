@@ -12,6 +12,7 @@ import { accountUtils } from '@/entities/wallet';
 import { multisigService } from '@/features/multisig-wallet';
 
 import { deepLinkModel } from './deep-link';
+import './notifications';
 
 const $trigger = createStore<string>('');
 const $debouncedApis = createStore<Record<ChainId, ApiPromise>>({});

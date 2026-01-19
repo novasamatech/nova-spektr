@@ -2,19 +2,17 @@ import { type ApiPromise } from '@polkadot/api';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { produce } from 'immer';
 import { uniqBy } from 'lodash';
-import { interval, once, readonly, spread } from 'patronum';
+import { once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
-import { type Chain, type ChainId, type HexString, NotificationType } from '@/shared/core';
-import { pairwise, series } from '@/shared/effector';
+import { type Chain, type ChainId, type HexString } from '@/shared/core';
+import { series } from '@/shared/effector';
 import { entries, getNativeAssetId, groupBy, keys, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query/types';
 import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
-import { notificationModel } from '@/entities/notification';
 import { decodeCallData } from '@/entities/transaction';
-import { accounts } from '../account/store';
 
 import { deserializeOperation, serializeOperation } from './helpers';
 import {
@@ -249,14 +247,10 @@ sample({
   target: [initialOnChainFetch.request, fetchOffchainResource.request],
 });
 
-const { tick } = interval({
-  start: subscribeToAccounts,
-  stop: unsubscribeFromAccounts,
-  timeout: 30000,
-});
+const refetchOffchainOperations = createEvent();
 
 sample({
-  clock: tick,
+  clock: refetchOffchainOperations,
   source: {
     apis: $subscribedApis,
     accountIds: $subscribedAccounts,
@@ -405,71 +399,6 @@ sample({
   target: $callDataUpdated,
 });
 
-const getOperationId = (op: MultisigOperation) =>
-  multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated);
-
-const getNotificationKey = (op: MultisigOperation) =>
-  `${NotificationType.MULTISIG_OPERATION}-${getOperationId(op)}-${op.status}`;
-
-const operationChanges = pairwise($allOperations)
-  .map(({ prev: prevState, current: update }) => {
-    const previousOpsMap = new Map(prevState.map(op => [getOperationId(op), op]));
-    const currentOpsMap = new Map(update.map(op => [getOperationId(op), op]));
-
-    const added: MultisigOperation[] = [];
-    const removedKeys: string[] = [];
-
-    for (const item of update) {
-      const previousOp = previousOpsMap.get(getOperationId(item));
-
-      if (!previousOp) {
-        added.push(item);
-      } else if (previousOp.status !== item.status && item.status !== 'pending') {
-        added.push(item);
-      }
-    }
-
-    for (const prevOp of prevState) {
-      if (!currentOpsMap.has(getOperationId(prevOp))) {
-        removedKeys.push(getNotificationKey(prevOp));
-      }
-    }
-
-    return { added, removedKeys };
-  })
-  .filter({ fn: ({ added, removedKeys }) => added.length > 0 || removedKeys.length > 0 });
-
-sample({
-  clock: operationChanges,
-  source: { populated: $populated, accountsList: accounts.$list },
-  filter: ({ populated }) => populated,
-  fn: ({ accountsList }, { added, removedKeys }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const accountsMap = new Map<AccountId, any>(accountsList.map(account => [account.accountId, account]));
-
-    const notificationsToAdd = added
-      .filter(operation => {
-        const account = accountsMap.get(operation.accountId);
-
-        return !account?.createdAt || operation.timestamp >= account.createdAt;
-      })
-      .map(operation => {
-        const account = accountsMap.get(operation.accountId);
-
-        return multisigOperationService.createOperationNotification(operation, account?.name);
-      });
-
-    return {
-      added: notificationsToAdd,
-      removed: { keys: removedKeys },
-    };
-  },
-  target: spread({
-    added: notificationModel.events.notificationsAdded,
-    removed: notificationModel.events.notificationsRemoved,
-  }),
-});
-
 export const multisigOperation = {
   $list: $allOperations,
   $populated: readonly($populated),
@@ -478,6 +407,7 @@ export const multisigOperation = {
   //API
   subscribeToAccounts,
   unsubscribeFromAccounts,
+  refetchOffchainOperations,
   requestAllOperations: fetchAllOperationsResource.request,
 
   populate: populateFx,
