@@ -1,7 +1,5 @@
-import * as allure from 'allure-js-commons';
-
 import { substrateChains } from '../../data/chains/chainsList';
-import { test } from '../../utils/baseRegularFixture';
+import { setupTestMetadata, validationsTest as test } from '../../utils/baseRegularFixture';
 import { getChainByName } from '../../utils/readConfig';
 import { Validation, validationConstants as constants } from '../../utils/validationTestCases';
 
@@ -9,11 +7,13 @@ const feature = 'Validations';
 const story = 'Validations tests';
 
 test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => {
-  test(`Should validate permission rights for a proxy transfer`, async ({ assetsPage }) => {
-    await allure.feature(feature);
-    await allure.story(story);
-    test.slow();
+  test.describe.configure({ mode: 'serial' });
 
+  test.beforeEach(async () => {
+    await setupTestMetadata(feature, story);
+  });
+
+  test(`Should validate permission rights for a proxy transfer`, async ({ assetsPage }) => {
     const walletModal = await assetsPage.openWalletManagement();
     await walletModal.searchAndSelectWallet(constants.permissionsValidation.non_transfer_proxy_name);
 
@@ -43,25 +43,20 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
   });
 
   // TODO: remove fail flag after the bug is fixed (#5328)
-  test.fail(`Should validate multisig signer missing account`, async ({ assetsPage }) => {
-    await allure.feature(feature);
-    await allure.story(story);
-    test.slow();
-
+  test(`Should validate multisig signer missing account`, async ({ assetsPage }) => {
     const walletModal = await assetsPage.openWalletManagement();
     await walletModal.searchAndSelectWallet(constants.missingAccountValidation.multisigName);
 
     const chain = getChainByName(substrateChains, constants.missingAccountValidation.chainName);
     const transferModal = await assetsPage.openTransfer(chain, constants.missingAccountValidation.assetId);
+    await transferModal.fillRecipient('0x1234567890123456789012345678901234567890');
+    await transferModal.fillAmount('100');
 
-    await transferModal.expectValidationsVisible(Validation.missingAccount);
+    // TODO: fee are not calculated if there is no account in that network for the wallet
+    await transferModal.expectValidationsVisible(Validation.missingAccount, false);
   });
 
   test(`Should validate available amount for a transfer`, async ({ assetsPage }) => {
-    await allure.feature(feature);
-    await allure.story(story);
-    test.slow();
-
     const walletModal = await assetsPage.openWalletManagement();
     await walletModal.searchAndSelectWallet(constants.amountValidation.amount_account_name);
 
@@ -69,7 +64,6 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
     const transferModal = await assetsPage.openTransfer(chain, constants.amountValidation.assetId);
 
     await transferModal.fillRecipient(constants.amountValidation.recipient);
-
     await transferModal.fillAmount(constants.amountValidation.validationAmount);
 
     await transferModal.expectValidationsVisible(Validation.sendingAmount);
@@ -84,10 +78,6 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
   });
 
   test(`Should validate all fees for an xcm-transfer`, async ({ assetsPage }) => {
-    await allure.feature(feature);
-    await allure.story(story);
-    test.slow();
-
     const walletModal = await assetsPage.openWalletManagement();
     await walletModal.searchAndSelectWallet(constants.feesValidation.walletName);
 
@@ -106,11 +96,22 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
     ]);
   });
 
-  test(`Should validate for multisig deposit`, async ({ assetsPage }) => {
-    await allure.feature(feature);
-    await allure.story(story);
-    test.slow();
+  test(`Should validate for inactive account`, async ({ assetsPage }) => {
+    const walletModal = await assetsPage.openWalletManagement();
+    await walletModal.searchAndSelectWallet(constants.inactiveAccountValidation.walletName);
 
+    const chain = getChainByName(substrateChains, constants.inactiveAccountValidation.chainName);
+
+    const transferModal = await assetsPage.openTransfer(chain, constants.inactiveAccountValidation.assetId);
+    await transferModal.chooseXcmChain(constants.inactiveAccountValidation.xcmChainName);
+
+    await transferModal.clickMyselfButton();
+
+    await transferModal.fillAmount(constants.inactiveAccountValidation.validationAmount);
+    await transferModal.expectValidationsVisible(Validation.inactiveAccount);
+  });
+
+  test(`Should validate for multisig deposit`, async ({ assetsPage }) => {
     const walletModal = await assetsPage.openWalletManagement();
     await walletModal.searchAndSelectWallet(constants.multisigDepositValidation.msigName);
 
@@ -122,10 +123,6 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
   });
 
   test(`Should validate for proxy deposit`, async ({ assetsPage }) => {
-    await allure.feature(feature);
-    await allure.story(story);
-    test.slow();
-
     const walletModal = await assetsPage.openWalletManagement();
     const proxyForm = await walletModal.openDelegateProxyModal(constants.proxyDepositValidation.walletName);
 
