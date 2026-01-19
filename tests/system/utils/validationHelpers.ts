@@ -9,6 +9,7 @@ export function getValidationLocators(page: Page, v: Validation) {
   const missingAccount = page.getByTestId(TEST_IDS.VALIDATIONS.MISSING_ACCOUNT);
   const permission = page.getByTestId(TEST_IDS.VALIDATIONS.PERMISSION);
   const balance = page.getByTestId(TEST_IDS.VALIDATIONS.BALANCE);
+  const inactiveAccount = page.getByTestId(TEST_IDS.VALIDATIONS.INACTIVE_ACCOUNT);
 
   switch (v) {
     case Validation.fatal:
@@ -17,6 +18,8 @@ export function getValidationLocators(page: Page, v: Validation) {
       return [missingAccount];
     case Validation.permission:
       return [permission];
+    case Validation.inactiveAccount:
+      return [inactiveAccount];
     case Validation.balance:
       return [balance];
     case Validation.sendingAmount:
