@@ -1716,7 +1716,7 @@
     "fellowship": "Fellowship",
     "governance": "Governance",
     "historyLabel": "History",
-    "mstOperationLabel": "Operations",
+    "mstOperationLabel": "Multisig Operations",
     "multiTransferLabel": "Multi-transfer",
     "multipleWalletsLabel": "Multiple wallets",
     "notificationsLabel": "Notifications",
@@ -2134,8 +2134,13 @@
     "noOperationsTitle": "Operation list is empty",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. <br /> Transaction history for other types of wallets will be available later. Stay tuned.",
     "operationCreated": "Operation created",
+    "searchPlaceholder": "Search",
     "shareOperationTooltip": "Share transaction link with signatories",
-    "title": "Operations",
+    "tabs": {
+      "history": "History",
+      "pending": "Pending"
+    },
+    "title": "Multisig Operations",
     "titles": {
       "addProxy": "Add delegated authority (proxy)",
       "approveMultisig": "Approve multisig operation",
