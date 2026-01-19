@@ -231,7 +231,6 @@ sample({
     enabledEventMatchers: $enabledEventMatchers,
   },
   fn: ({ notifications, disabledAccountIds, enabledEventMatchers }, incomingNotifications) => {
-    console.log('notificationsAdded', { incomingNotifications });
     const existingKeys = new Set(notifications.map((n) => n.key));
     const newNotifications: CreateNotificationParams[] = [];
 
