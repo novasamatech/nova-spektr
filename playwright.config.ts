@@ -22,6 +22,9 @@ export default defineConfig({
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: renderer.server.origin,
 
+    /* Ignore HTTPS errors for localhost development */
+    ignoreHTTPSErrors: true,
+
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
@@ -31,7 +34,13 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        // Fix for ERR_CERT_VERIFIER_CHANGED errors
+        launchOptions: {
+          args: ['--ignore-certificate-errors', '--ignore-certificate-errors-spki-list'],
+        },
+      },
     },
   ],
 

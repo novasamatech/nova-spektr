@@ -1,6 +1,5 @@
-import * as allure from 'allure-js-commons';
-
 import { ethChains } from '../../data/chains/chainsList';
+import { setupTestMetadata } from '../../utils/baseRegularFixture';
 import { test } from '../../utils/feeFixture';
 
 test.describe(
@@ -9,11 +8,12 @@ test.describe(
     tag: ['@fee-test', '@eth-test'],
   },
   () => {
+    test.beforeEach(async () => {
+      await setupTestMetadata('Integration Cases', 'Can load fee for EVM chains');
+    });
+
     ethChains.forEach((chain) => {
       test(`Can load fee for ${chain.name}`, async ({ vaultWallet }) => {
-        await allure.feature('Integration Cases');
-        await allure.story('Can load fee for EVM chains');
-        test.slow();
         const assetsPage = await vaultWallet.gotoMain();
         await assetsPage.checkTransferFee(chain);
       });

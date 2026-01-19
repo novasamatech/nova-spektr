@@ -1,132 +1,166 @@
 import { type BrowserContext, type Page, test as base } from '@playwright/test';
+import { step } from 'allure-js-commons';
+import * as allure from 'allure-js-commons';
 
 import { AssetsPageElements } from '../pages/_elements/AssetsPageElements';
 import { LoginPageElements } from '../pages/_elements/LoginPageElements';
+import { SettingsPageElements } from '../pages/_elements/SettingsPageElements';
 import { BaseAssetsPage } from '../pages/assetsPage/BaseAssetsPage';
 import { BaseLoginPage } from '../pages/loginPage/BaseLoginPage';
+import { BaseSettingsPage } from '../pages/settingsPage/BaseSettingsPage';
 
-type TestFixtures = {
+const assetsElements = new AssetsPageElements();
+const loginElements = new LoginPageElements();
+const settingsElements = new SettingsPageElements();
+
+type DbFixture = 'transfers' | 'validations' | 'none';
+
+type TestScopedFixtures = {
   page: Page;
+  context: BrowserContext;
+  assetsPage: BaseAssetsPage;
   loginPage: BaseLoginPage;
-
-  transfersPage: BaseAssetsPage;
-
-  xcmTransfersPage: BaseAssetsPage;
-
-  validationsPage: BaseAssetsPage;
+  settingsPage: BaseSettingsPage;
 };
 
-type WorkerFixtures = {
-  sharedContext: BrowserContext;
-  validationsContext: BrowserContext;
-  transfersContext: BrowserContext;
-  xcmTransfersContext: BrowserContext;
+type WorkerScopedTestFixtures = {
+  assetsPage: BaseAssetsPage;
+  loginPage: BaseLoginPage;
+  settingsPage: BaseSettingsPage;
+};
+
+type WorkerScopedWorkerFixtures = {
+  workerContext: BrowserContext;
+  workerPage: Page;
+};
+
+const DB_PATHS: Record<Exclude<DbFixture, 'none'>, string> = {
+  transfers: 'transfers/transfers_tests_db.json',
+  validations: 'validations/validations_tests_db.json',
 };
 
 async function applyInitFlags(context: BrowserContext) {
   await context.addInitScript(() => {
-    const flags: Record<string, string> = {
-      assethub_migration_modal_seen_kusama: 'true',
-      assethub_migration_modal_seen_polkadot: 'true',
-    };
-    for (const [k, v] of Object.entries(flags)) localStorage.setItem(k, v);
+    localStorage.setItem('assethub_migration_modal_seen_kusama', 'true');
+    localStorage.setItem('assethub_migration_modal_seen_polkadot', 'true');
   });
 }
 
-async function bootstrapDb(context: BrowserContext, dbPath: string) {
-  const tmp = await context.newPage();
-  const login = new BaseLoginPage(tmp, new LoginPageElements());
-  await login.importDatabase(dbPath);
-  await tmp.close();
-}
+// =============================================================================
+// BASE TEST - Test-scoped fixtures (fresh context/page per test)
+// Used for: onboarding tests, tests that need isolated state
+// =============================================================================
+export const test = base.extend<TestScopedFixtures>({
+  context: async ({ browser }, use) => {
+    const context = await browser.newContext({
+      ignoreHTTPSErrors: true,
+      permissions: [],
+    });
+    await applyInitFlags(context);
+    await use(context);
+    await context.close();
+  },
 
-export const test = base.extend<TestFixtures, WorkerFixtures>({
-  sharedContext: [
-    async ({ browser }, use) => {
-      const context = await browser.newContext({ ignoreHTTPSErrors: true, permissions: [] });
-      await applyInitFlags(context);
-
-      await use(context);
-      await context.close();
-    },
-    { scope: 'worker' } as const,
-  ],
-
-  validationsContext: [
-    async ({ browser }, use) => {
-      const context = await browser.newContext({ ignoreHTTPSErrors: true, permissions: [] });
-      await applyInitFlags(context);
-      await bootstrapDb(context, 'validations/validations_tests_db.json');
-
-      await use(context);
-      await context.close();
-    },
-    { scope: 'worker' } as const,
-  ],
-
-  transfersContext: [
-    async ({ browser }, use) => {
-      const context = await browser.newContext({ ignoreHTTPSErrors: true, permissions: [] });
-      await applyInitFlags(context);
-      await bootstrapDb(context, 'transfers/transfers_tests_db.json');
-
-      await use(context);
-      await context.close();
-    },
-    { scope: 'worker' } as const,
-  ],
-
-  xcmTransfersContext: [
-    async ({ browser }, use) => {
-      const context = await browser.newContext({ ignoreHTTPSErrors: true, permissions: [] });
-      await applyInitFlags(context);
-      await bootstrapDb(context, 'transfers/transfers_tests_db.json');
-
-      await use(context);
-      await context.close();
-    },
-    { scope: 'worker' } as const,
-  ],
-
-  page: async ({ sharedContext }, use) => {
-    const page = await sharedContext.newPage();
+  page: async ({ context }, use) => {
+    const page = await context.newPage();
     await use(page);
     await page.close();
   },
 
+  assetsPage: async ({ page }, use) => {
+    await use(new BaseAssetsPage(page, assetsElements));
+  },
+
   loginPage: async ({ page }, use) => {
-    await use(new BaseLoginPage(page, new LoginPageElements()));
+    await use(new BaseLoginPage(page, loginElements));
   },
 
-  validationsPage: async ({ validationsContext }, use) => {
-    const page = await validationsContext.newPage();
-    const assets = new BaseAssetsPage(page, new AssetsPageElements());
-    await assets.gotoMain();
-
-    await use(assets);
-
-    await page.close();
-  },
-
-  transfersPage: async ({ transfersContext }, use) => {
-    const page = await transfersContext.newPage();
-    const assets = new BaseAssetsPage(page, new AssetsPageElements());
-    await assets.gotoMain();
-
-    await use(assets);
-
-    await page.close();
-  },
-
-  xcmTransfersPage: async ({ xcmTransfersContext }, use) => {
-    const page = await xcmTransfersContext.newPage();
-    const assets = new BaseAssetsPage(page, new AssetsPageElements());
-    await assets.gotoMain();
-
-    await use(assets);
-
-    await page.close();
+  settingsPage: async ({ page }, use) => {
+    await use(new BaseSettingsPage(page, settingsElements));
   },
 });
+
+// =============================================================================
+// WORKER-SCOPED TEST FACTORY - Shared context/page per worker
+// Used for: transfers, validations (tests that share initialized state)
+// =============================================================================
+type WorkerFixtureConfig = {
+  dbFixture: DbFixture;
+  waitForConnections?: boolean;
+  connectionTimeout?: number;
+};
+
+function createWorkerScopedFixture(config: WorkerFixtureConfig) {
+  const { dbFixture, waitForConnections = true, connectionTimeout = 60_000 } = config;
+
+  return base.extend<WorkerScopedTestFixtures, WorkerScopedWorkerFixtures>({
+    workerContext: [
+      async ({ browser }, use) => {
+        const context = await browser.newContext({
+          ignoreHTTPSErrors: true,
+          permissions: [],
+        });
+        await applyInitFlags(context);
+        await use(context);
+        await context.close();
+      },
+      { scope: 'worker' },
+    ],
+
+    // Single page per worker - created once, initialized with DB and connections
+    workerPage: [
+      async ({ workerContext }, use) => {
+        const page = await workerContext.newPage();
+
+        // Step 1: Import database if needed
+        if (dbFixture !== 'none') {
+          const login = new BaseLoginPage(page, loginElements);
+          await login.importDatabase(DB_PATHS[dbFixture]);
+        }
+
+        // Step 2: Wait for all network connections to be established
+        if (dbFixture !== 'none' && waitForConnections) {
+          const settings = new BaseSettingsPage(page, settingsElements);
+          await settings.waitForNetworkConnections(connectionTimeout);
+        }
+
+        // Step 3: Navigate to assets page and wait for it to be ready
+        const assets = new BaseAssetsPage(page, assetsElements);
+        await assets.gotoMain();
+
+        await use(page);
+        await page.close();
+      },
+      { scope: 'worker' },
+    ],
+
+    // Wraps workerPage in page object, navigates to assets page before each test
+    assetsPage: async ({ workerPage }, use) => {
+      const assets = new BaseAssetsPage(workerPage, assetsElements);
+      await step('Navigate to Assets page', async () => {
+        await assets.gotoMain();
+      });
+      await use(assets);
+    },
+
+    loginPage: async ({ workerPage }, use) => {
+      await use(new BaseLoginPage(workerPage, loginElements));
+    },
+
+    settingsPage: async ({ workerPage }, use) => {
+      await use(new BaseSettingsPage(workerPage, settingsElements));
+    },
+  });
+}
+
+// Pre-configured worker-scoped fixtures for specific test suites
+export const transfersTest = createWorkerScopedFixture({ dbFixture: 'transfers' });
+export const validationsTest = createWorkerScopedFixture({ dbFixture: 'validations' });
+
+// Helper to set up Allure test metadata
+export const setupTestMetadata = async (feature: string, story: string): Promise<void> => {
+  await allure.feature(feature);
+  await allure.story(story);
+};
 
 export { expect } from '@playwright/test';

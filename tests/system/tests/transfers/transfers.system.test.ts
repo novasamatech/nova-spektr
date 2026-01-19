@@ -1,32 +1,29 @@
 import { expect } from '@playwright/test';
-import * as allure from 'allure-js-commons';
 
 import { substrateChains } from '../../data/chains/chainsList';
 import { AssetsPageElements } from '../../pages/_elements/AssetsPageElements';
 import { WatchOnlyAssetsPage } from '../../pages/assetsPage/WatchOnlyAssetsPage';
-import { test } from '../../utils/baseRegularFixture';
+import { setupTestMetadata, transfersTest as test } from '../../utils/baseRegularFixture';
 import { getChainByName } from '../../utils/readConfig';
 import { proxyTransferTestCase, transferConstants, transferTestCases } from '../../utils/transferTestCases';
 
 const feature = 'Transfers';
 const story = 'Transfers tests';
 
-const setupTestMetadata = async (): Promise<void> => {
-  await allure.feature(feature);
-  await allure.story(story);
-  test.slow();
-};
-
 test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, () => {
-  for (const { chainName, assetId, amount, recipient } of transferTestCases) {
-    test(`Multisig can make regular transfer on ${chainName}`, async ({ transfersPage }) => {
-      await setupTestMetadata();
+  test.describe.configure({ mode: 'serial' });
 
-      const walletModal = await transfersPage.openWalletManagement();
+  test.beforeEach(async () => {
+    await setupTestMetadata(feature, story);
+  });
+
+  for (const { chainName, assetId, amount, recipient } of transferTestCases) {
+    test(`Multisig can make regular transfer on ${chainName}`, async ({ assetsPage }) => {
+      const walletModal = await assetsPage.openWalletManagement();
       await walletModal.searchAndSelectWallet(transferConstants.multisig_name);
 
       const chain = getChainByName(substrateChains, chainName);
-      const transferModal = await transfersPage.openTransfer(chain, assetId);
+      const transferModal = await assetsPage.openTransfer(chain, assetId);
 
       await transferModal.fillRecipient(recipient);
       await transferModal.expectTransferFeeNotZero();
@@ -40,14 +37,12 @@ test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, 
   }
 
   for (const { chainName, assetId, amount, recipient } of transferTestCases) {
-    test(`Nova, single wallet, can make regular transfer on ${chainName}`, async ({ transfersPage }) => {
-      await setupTestMetadata();
-
-      const walletModal = await transfersPage.openWalletManagement();
+    test(`Nova, single wallet, can make regular transfer on ${chainName}`, async ({ assetsPage }) => {
+      const walletModal = await assetsPage.openWalletManagement();
       await walletModal.searchAndSelectWallet(transferConstants.nova_name);
 
       const chain = getChainByName(substrateChains, chainName);
-      const transferModal = await transfersPage.openTransfer(chain, assetId);
+      const transferModal = await assetsPage.openTransfer(chain, assetId);
 
       await transferModal.fillRecipient(recipient);
       await transferModal.expectTransferFeeNotZero();
@@ -62,14 +57,12 @@ test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, 
   }
 
   for (const { chainName, assetId, amount, recipient } of proxyTransferTestCase) {
-    test('Proxy wallet can make regular transfer', async ({ transfersPage }) => {
-      await setupTestMetadata();
-
-      const walletModal = await transfersPage.openWalletManagement();
+    test('Proxy wallet can make regular transfer', async ({ assetsPage }) => {
+      const walletModal = await assetsPage.openWalletManagement();
       await walletModal.searchAndSelectWallet(transferConstants.proxy_name);
 
       const chain = getChainByName(substrateChains, chainName);
-      const transferModal = await transfersPage.openTransfer(chain, assetId);
+      const transferModal = await assetsPage.openTransfer(chain, assetId);
 
       await transferModal.fillRecipient(recipient);
       await transferModal.expectTransferFeeNotZero();
@@ -84,14 +77,12 @@ test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, 
   }
 
   for (const { chainName, assetId, amount, recipient } of transferTestCases) {
-    test(`Polkadot Vault, single wallet, can make regular transfer on ${chainName}`, async ({ transfersPage }) => {
-      await setupTestMetadata();
-
-      const walletModal = await transfersPage.openWalletManagement();
+    test(`Polkadot Vault, single wallet, can make regular transfer on ${chainName}`, async ({ assetsPage }) => {
+      const walletModal = await assetsPage.openWalletManagement();
       await walletModal.searchAndSelectWallet(transferConstants.vault_name);
 
       const chain = getChainByName(substrateChains, chainName);
-      const transferModal = await transfersPage.openTransfer(chain, assetId);
+      const transferModal = await assetsPage.openTransfer(chain, assetId);
 
       await transferModal.fillRecipient(recipient);
       await transferModal.expectTransferFeeNotZero();
@@ -105,29 +96,25 @@ test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, 
     });
   }
 
-  test('Watch-only transfer buttons should not be visible', async ({ transfersPage }) => {
-    await setupTestMetadata();
-
-    const walletModal = await transfersPage.openWalletManagement();
+  test('Watch-only transfer buttons should not be visible', async ({ assetsPage }) => {
+    const walletModal = await assetsPage.openWalletManagement();
     await walletModal.searchAndSelectWallet(transferConstants.watch_only_name);
 
-    const watchOnlyPage = new WatchOnlyAssetsPage(transfersPage.getPage(), new AssetsPageElements());
+    const watchOnlyPage = new WatchOnlyAssetsPage(assetsPage.getPage(), new AssetsPageElements());
 
     await watchOnlyPage.checkTransferButtonNotExists();
     await watchOnlyPage.checkReceiveButtonNotExists();
   });
 
   test(`Should not be able to open transfer modal on ${transferConstants.watch_only_chain} in watch-only mode`, async ({
-    transfersPage,
+    assetsPage,
   }) => {
-    await setupTestMetadata();
-
-    const walletModal = await transfersPage.openWalletManagement();
+    const walletModal = await assetsPage.openWalletManagement();
     await walletModal.searchAndSelectWallet(transferConstants.watch_only_name);
 
     const chain = getChainByName(substrateChains, transferConstants.watch_only_chain);
 
-    const transferModal = await transfersPage.tryOpenTransfer(chain, transferConstants.watch_only_asset_id, 3000);
+    const transferModal = await assetsPage.tryOpenTransfer(chain, transferConstants.watch_only_asset_id, 3000);
     expect(transferModal).toBeNull();
   });
 });
