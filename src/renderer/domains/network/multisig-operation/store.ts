@@ -299,16 +299,12 @@ sample({
 
     const eventNotifications = newEvents
       .filter(({ event }) => {
-        console.log({ event, has: accountsMap.has(event.accountId) });
-
         // Don't notify if the current user caused the event
         if (accountsMap.has(event.accountId)) {
           return false;
         }
 
-        const account = accountsMap.get(event.accountId);
-
-        return !account?.createdAt || event.timestamp >= account.createdAt;
+        return true;
       })
       .map(({ operation, event }) => {
         const signerAccount = accountsMap.get(event.accountId);
