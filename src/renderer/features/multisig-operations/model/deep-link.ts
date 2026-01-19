@@ -324,7 +324,7 @@ const operationFetchRequested = sample({
 
 sample({
   clock: operationFetchRequested,
-  fn: ({ apis, chains, accountId }) => ({ apis, chains, accountId }),
+  fn: ({ apis, chains, accountId }) => ({ apis, chains, accountIds: [accountId] }),
   target: multisigOperation.requestAllOperations,
 });
 

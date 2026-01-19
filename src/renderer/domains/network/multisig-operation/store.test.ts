@@ -372,4 +372,42 @@ describe('multisig operation store notifications', () => {
       expect(notifications).toHaveLength(1);
     });
   });
+
+  describe('multi-account support', () => {
+    it('should send notifications for operations from multiple accounts', async () => {
+      const account1Id = createAccountId('1');
+      const account2Id = createAccountId('2');
+
+      const op1 = createTestOperation({ id: 'op-1', accountId: account1Id, timestamp: 1000 });
+      const op2 = createTestOperation({ id: 'op-2', accountId: account2Id, timestamp: 1000 });
+
+      const account1 = createTestAccount({ accountId: account1Id, createdAt: 500 });
+      const account2 = createTestAccount({ accountId: account2Id, createdAt: 500 });
+
+      const notifications: unknown[] = [];
+      const scope = fork({
+        values: [
+          [accounts.__test.$list, [account1, account2]],
+          [multisigOperation.__test.$populated, true],
+        ],
+      });
+
+      createWatch({
+        unit: notificationModel.events.notificationsAdded,
+        fn: params => notifications.push(...params),
+        scope,
+      });
+
+      await allSettled(multisigOperation.__test.$list, { scope, params: [] });
+      await allSettled(multisigOperation.__test.$list, { scope, params: [op1, op2] });
+
+      expect(notifications).toHaveLength(2);
+      expect(notifications).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ multisigAccountId: account1Id }),
+          expect.objectContaining({ multisigAccountId: account2Id }),
+        ]),
+      );
+    });
+  });
 });
