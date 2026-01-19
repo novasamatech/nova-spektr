@@ -1,11 +1,13 @@
 import * as allure from 'allure-js-commons';
 
-import { expect, test } from '../../utils/baseRegularFixture';
+import { expect, setupTestMetadata, test } from '../../utils/baseRegularFixture';
 
 test.describe('Polkadot Vault onboarding', { tag: '@regress' }, () => {
+  test.beforeEach(async () => {
+    await setupTestMetadata('Onboarding', 'Onboarding via Polkadot Vault');
+  });
+
   test('Show camera access denied if no permissions', async ({ loginPage, page }) => {
-    await allure.feature('Onboarding');
-    await allure.story('Onboarding via Polkadot Vault');
     const polkadotVaultOnboardingPage = await loginPage
       .gotoOnboarding()
       .then((onboarding) => onboarding.clickPolkadotVaultButton());
@@ -15,9 +17,6 @@ test.describe('Polkadot Vault onboarding', { tag: '@regress' }, () => {
   });
 
   test('Default settings for assets page', async ({ loginPage }) => {
-    await allure.feature('Onboarding');
-    await allure.story('Onboarding via Polkadot Vault');
-    test.slow();
     const vaultWallet = await loginPage.createVaultSubstrateWallet();
     const assetsPage = await vaultWallet.gotoMain();
     const settingsWidget = await assetsPage.openSettingsWidget();
