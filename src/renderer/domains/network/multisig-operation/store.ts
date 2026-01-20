@@ -44,16 +44,12 @@ const $initialOnChainFetched = createStore(false)
   .reset(unsubscribeFromAccounts);
 
 const $offChainFetched = createStore(false)
-  .on(fetchOffchainResource.fetch.finally, (_, effect) => {
-    return effect.status === 'done';
-  })
+  .on(fetchOffchainResource.fetch.finally, (_, effect) => effect.status === 'done')
   .reset(unsubscribeFromAccounts);
 
-const $initialLoadingComplete = combine(
-  $initialOnChainFetched,
-  $offChainFetched,
-  (onChain, offChain) => onChain && offChain,
-);
+const $initialLoadingComplete = combine($initialOnChainFetched, $offChainFetched, (onChain, offChain) => {
+  return onChain && offChain;
+});
 
 const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
@@ -178,7 +174,7 @@ sample({
 sample({
   clock: subscribeToAccounts,
   fn: ({ apis, accountIds, chains }) => ({ apis, chains, accountIds }),
-  target: [initialOnChainFetch.start, fetchOffchainResource.start],
+  target: [initialOnChainFetch.fetch, fetchOffchainResource.fetch],
 });
 
 const refetchOffchainOperations = createEvent();
@@ -338,6 +334,8 @@ export const multisigOperation = {
   $populated: readonly($populated),
   $callDataUpdated,
   $initialLoadingComplete,
+  $onChainReady: readonly($initialOnChainFetched),
+  $offChainReady: readonly($offChainFetched),
 
   //API
   subscribeToAccounts,
@@ -353,7 +351,7 @@ export const multisigOperation = {
   __test: {
     $list: $offChainOperations,
     $populated,
-    $initialOnChainFetched,
-    $offChainFetched,
+    $onChainReady: $initialOnChainFetched,
+    $offChainReady: $offChainFetched,
   },
 };

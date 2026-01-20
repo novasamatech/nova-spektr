@@ -239,6 +239,8 @@ async function fetchOperationsHistory(
   const client = new GraphQLClient(INDEXER_URL);
   const result = await client.request<any, { accountIds: AccountId[] }>(operationsQuery, { accountIds });
 
+  console.log('penis fetchOperationsHistory', result);
+
   return result.multisigOperations.nodes
     .map((node: unknown) => mapSubqueryOperationRecord(node, apis, chains))
     .filter(nonNullable);

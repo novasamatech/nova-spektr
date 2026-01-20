@@ -93,6 +93,13 @@ const $filteredOperations = combine(
   },
 );
 
+const $isTabDataLoading = combine(
+  { tab: $tab, onChainReady: multisigOperation.$onChainReady, offChainReady: multisigOperation.$offChainReady },
+  ({ tab, onChainReady, offChainReady }) => {
+    return tab === 'pending' ? !onChainReady : !offChainReady;
+  },
+);
+
 sample({
   // TODO: costil' around dynamic array of apis
   clock: throttle(multisigOperationsFeature.running, 500),
@@ -123,6 +130,7 @@ export const operationsContextModel = {
   $multisigAccount,
   $initiator,
   $tab,
+  $isTabDataLoading,
 
   setFilters,
   resetFilters,
