@@ -34,27 +34,19 @@ import { type ProxyTransaction } from './types';
 function checkCallPermission(proxyType: ProxyType, call: string): boolean {
   // known pallets that can be checked by hand.
   // this list may extend later, but it will be perfect if polkadot sdk will implement permission checks with query
-  const Staking: string[] = ['utility', 'staking', 'session', 'fastUnstake', 'voterList', 'nominationPools'];
-  const NominationPools: string[] = ['utility', 'nominationPools'];
+  const Staking: string[] = ['staking', 'session', 'fastUnstake', 'voterList', 'nominationPools'];
+  const NominationPools: string[] = ['nominationPools'];
   const CancelProxy: string[] = ['proxy'];
   const Auction: string[] = ['auctions', 'crowdloan', 'registrar', 'slots'];
   const IdentityJudgement: string[] = ['identityJudgement'];
-  const Governance: string[] = [
-    'utility',
-    'treasury',
-    'bounties',
-    'childBounties',
-    'convictionVoting',
-    'referenda',
-    'whitelist',
-  ];
+  const Governance: string[] = ['treasury', 'bounties', 'childBounties', 'convictionVoting', 'referenda', 'whitelist'];
 
   if (proxyType === 'Any') {
     return true;
   }
 
   if (proxyType === 'NonTransfer') {
-    return call !== 'balances' && call !== 'assets' && call !== 'currencies' && call !== 'tokens';
+    return call !== 'balances' && call !== 'assets' && call !== 'currencies' && call !== 'tokens' && call !== 'vesting';
   }
 
   if (proxyType === 'Staking') {
@@ -111,7 +103,8 @@ function checkPermission(
       const connection = account.connections.find(c => c.proxyAccountId === proxyAccount.accountId);
       if (nullable(connection)) return null;
 
-      if (checkCallPermission(connection.proxyType, extrinsic.method.section) === false) {
+      const wrappedCalls = transactionService.getBatchWrappedCallsFromExtrinsic(extrinsic);
+      if (wrappedCalls.some(call => checkCallPermission(connection.proxyType, call.section) === false)) {
         return { account, permission: connection.proxyType };
       }
     } else {
