@@ -13,13 +13,13 @@ describe('multisigOperation store', () => {
   it('should set initialLoadingComplete to true only when both resources are fetched', async () => {
     const scope = fork({
       handlers: new Map<any, any>([
-        [initialOnChainFetch.request, async () => ({ callHashesByChain: {}, onChainData: {} })],
-        [fetchOffchainResource.request, async () => []],
+        [initialOnChainFetch.fetch, async () => ({ callHashesByChain: {}, onChainData: {} })],
+        [fetchOffchainResource.fetch, async () => []],
       ]),
     });
 
     // Trigger on-chain fetch completion
-    await allSettled(initialOnChainFetch.request, {
+    await allSettled(initialOnChainFetch.fetch, {
       scope,
       params: {} as any,
     });
@@ -27,7 +27,7 @@ describe('multisigOperation store', () => {
     expect(scope.getState(multisigOperation.$initialLoadingComplete)).toBe(false);
 
     // Trigger off-chain fetch completion
-    await allSettled(fetchOffchainResource.request, {
+    await allSettled(fetchOffchainResource.fetch, {
       scope,
       params: {} as any,
     });
@@ -38,17 +38,17 @@ describe('multisigOperation store', () => {
   it('should reset initialLoadingComplete when unsubscribing', async () => {
     const scope = fork({
       handlers: new Map<any, any>([
-        [initialOnChainFetch.request, async () => ({ callHashesByChain: {}, onChainData: {} })],
-        [fetchOffchainResource.request, async () => []],
+        [initialOnChainFetch.fetch, async () => ({ callHashesByChain: {}, onChainData: {} })],
+        [fetchOffchainResource.fetch, async () => []],
       ]),
     });
 
     // Complete loading
-    await allSettled(initialOnChainFetch.request, {
+    await allSettled(initialOnChainFetch.fetch, {
       scope,
       params: {} as any,
     });
-    await allSettled(fetchOffchainResource.request, {
+    await allSettled(fetchOffchainResource.fetch, {
       scope,
       params: {} as any,
     });

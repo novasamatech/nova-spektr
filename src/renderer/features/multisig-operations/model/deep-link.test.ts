@@ -7,7 +7,7 @@ vi.mock('./constants', () => ({
 
 import { AccountType, ConnectionStatus, CryptoType, SigningType } from '@/shared/core';
 import { createAccountId, polkadotChain, polkadotChainId } from '@/shared/mocks';
-import { accounts, multisigOperation } from '@/domains/network';
+import { accounts, initialOnChainFetch, multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
 import { type MultisigOperationDeepLinkData, deepLinkModel } from './deep-link';
@@ -308,7 +308,7 @@ describe('multisig operations deep link', () => {
 
     it('should show operation not found modal after loading completes without operation', async () => {
       const scope = fork({
-        handlers: [[multisigOperation.initialOnChainFetch, () => ({ onChainData: {}, callHashesByChain: {} })]],
+        handlers: [[initialOnChainFetch.fetch, () => ({ onChainData: {}, callHashesByChain: {} })]],
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
@@ -328,7 +328,7 @@ describe('multisig operations deep link', () => {
       expect(scope.getState(deepLinkModel.$isOperationNotFoundModalOpen)).toBe(false);
 
       // Simulate initial loading completing without the operation
-      await allSettled(multisigOperation.initialOnChainFetch, {
+      await allSettled(initialOnChainFetch.fetch, {
         scope,
         params: { apis: {}, chains: {}, accountIds: [] },
       });
@@ -340,7 +340,7 @@ describe('multisig operations deep link', () => {
       const mockOperation = createMockOperation('pending');
 
       const scope = fork({
-        handlers: [[multisigOperation.initialOnChainFetch, () => ({ onChainData: {}, callHashesByChain: {} })]],
+        handlers: [[initialOnChainFetch.fetch, () => ({ onChainData: {}, callHashesByChain: {} })]],
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
@@ -363,7 +363,7 @@ describe('multisig operations deep link', () => {
       await allSettled(multisigOperation.__test.$list, { scope, params: [mockOperation] });
 
       // Simulate loading completing
-      await allSettled(multisigOperation.initialOnChainFetch, {
+      await allSettled(initialOnChainFetch.fetch, {
         scope,
         params: { apis: {}, chains: {}, accountIds: [] },
       });

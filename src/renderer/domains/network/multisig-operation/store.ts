@@ -10,18 +10,18 @@ import { series } from '@/shared/effector';
 import { entries, getNativeAssetId, groupBy, keys, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query/types';
-import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
 import { decodeCallData } from '@/entities/transaction';
 
 import {
+  $offChainOperations,
   fetchOffchainResource,
   initialOnChainFetch,
   subscribeEventsResource,
   subscribeNewMultisigEventsResource,
   subscribeOnchainResource,
 } from './resource';
-import { deserializeOperation, multisigOperationService, serializeOperation } from './service';
+import { deserializeOperation, serializeOperation } from './service';
 import { type MultisigEvent, type MultisigOperation } from './types';
 
 const subscribeToAccounts = createEvent<{
@@ -40,16 +40,15 @@ const $trackedCallHashes = createStore<Record<ChainId, { api: ApiPromise; hashes
   {},
 );
 
-const $offChainOperations = createStore<MultisigOperation[]>([]);
 const $onChainOperationsByCallhash = createStore<Record<HexString, MultisigOperation | null>>({});
 const $onChainOperations = $onChainOperationsByCallhash.map(state => Object.values(state).filter(nonNullable));
 
 const $initialOnChainFetched = createStore(false)
-  .on(initialOnChainFetch.request.finally, (_, effect) => effect.status === 'done')
+  .on(initialOnChainFetch.fetch.finally, (_, effect) => effect.status === 'done')
   .reset(unsubscribeFromAccounts);
 
 const $offChainFetched = createStore(false)
-  .on(fetchOffchainResource.request.finally, (_, effect) => {
+  .on(fetchOffchainResource.fetch.finally, (_, effect) => {
     return effect.status === 'done';
   })
   .reset(unsubscribeFromAccounts);
@@ -106,27 +105,20 @@ const updateCallDataFx = attach({
   },
 });
 
-deriveFromResources({
-  store: $offChainOperations,
-  resources: [fetchOffchainResource],
-  map(state, operations, { accountIds }) {
-    const operationWithoutGivenAccounts = state.filter(o => !accountIds.includes(o.accountId));
-    return multisigOperationService.mergeMultisigOperations(operationWithoutGivenAccounts, operations);
-  },
-});
-
-deriveFromResources({
-  store: $onChainOperationsByCallhash,
-  resources: [initialOnChainFetch],
-  map(state, { onChainData }) {
+sample({
+  clock: initialOnChainFetch.push,
+  source: $onChainOperationsByCallhash,
+  fn: (state, { result: { onChainData } }) => {
     return { ...state, ...onChainData };
   },
+  target: $onChainOperationsByCallhash,
 });
 
-deriveFromResources({
-  store: $trackedCallHashes,
-  resources: [initialOnChainFetch],
-  map(state, { callHashesByChain }, { apis, accountIds }) {
+sample({
+  clock: initialOnChainFetch.push,
+  source: $trackedCallHashes,
+  fn: (state, { params, result: { callHashesByChain } }) => {
+    const { apis, accountIds } = params;
     return produce(state, draft => {
       for (const [chainId, api] of entries(apis)) {
         const existing = draft[chainId] || { api, hashes: {} };
@@ -145,6 +137,7 @@ deriveFromResources({
       }
     });
   },
+  target: $trackedCallHashes,
 });
 
 sample({
@@ -258,7 +251,7 @@ sample({
 sample({
   clock: subscribeToAccounts,
   fn: ({ apis, accountIds, chains }) => ({ apis, chains, accountIds }),
-  target: [initialOnChainFetch.request, fetchOffchainResource.request],
+  target: [initialOnChainFetch.start, fetchOffchainResource.start],
 });
 
 const refetchOffchainOperations = createEvent();
@@ -271,7 +264,7 @@ sample({
     chains: networkModel.$chains,
   },
   filter: ({ accountIds }) => accountIds.length > 0,
-  target: fetchOffchainResource.request,
+  target: fetchOffchainResource.start,
 });
 
 sample({
@@ -294,7 +287,7 @@ sample({
     chains: networkModel.$chains,
   },
   filter: ({ accountIds }) => accountIds.length > 0,
-  target: fetchOffchainResource.request,
+  target: fetchOffchainResource.start,
 });
 
 // Handle explicit unsubscribe (e.g., when feature stops)
@@ -427,8 +420,8 @@ export const multisigOperation = {
   populate: populateFx,
   updateOperations: updateOperationsFx,
   updateCallData: updateCallDataFx,
-  requestOffchainOperations: fetchOffchainResource.request,
-  initialOnChainFetch: initialOnChainFetch.request,
+  requestOffchainOperations: fetchOffchainResource.start,
+  initialOnChainFetch: initialOnChainFetch.start,
 
   __test: {
     $list: $offChainOperations,

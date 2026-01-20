@@ -3,6 +3,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type QueryableStorageMultiArg } from '@polkadot/api/types';
 import { type Option } from '@polkadot/types';
 import { type PalletMultisigMultisig } from '@polkadot/types/lookup';
+import { createStore } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
@@ -19,8 +20,8 @@ import {
 import { multisigPallet } from '@/shared/pallet/multisig';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
-import { createSubscriptionResource as createQuerySubscriptionResource } from '@/shared/query';
-import { createRemoteResource } from '@/shared/resource';
+import { createQueryResource, createSubscriptionResource } from '@/shared/query';
+import { type MapCacheFn } from '@/shared/query/types';
 // eslint-disable-next-line boundaries/element-types, boundaries/entry-point
 import { decodeCallData } from '@/entities/transaction/lib/callDataDecoder';
 
@@ -43,7 +44,7 @@ async function createOperationFromMultisig({
   callHash,
   multisig,
 }: CreateOperationParams): Promise<MultisigOperation> {
-  const chainId = api.genesisHash.toHex();
+  const chainId = chain.chainId;
   const nativeAssetId = getNativeAssetId(chain.assets);
   const blockHeight = multisig.when.height.toNumber();
   const extrinsicIndex = multisig.when.index.toNumber();
@@ -248,20 +249,33 @@ type RequestParams = {
   accountIds: AccountId[];
 };
 
-export const fetchOffchainResource = createRemoteResource<RequestParams, MultisigOperation[]>({
-  async fn({ apis, accountIds, chains }) {
-    return fetchOperationsHistory(accountIds, apis, chains);
-  },
-});
+export const $offChainOperations = createStore<MultisigOperation[]>([]);
 
-export const initialOnChainFetch = createRemoteResource<
-  RequestParams,
-  {
-    callHashesByChain: Record<ChainId, Record<AccountId, HexString[]>>;
-    onChainData: Record<HexString, MultisigOperation>;
-  }
->({
-  async fn({ apis, accountIds, chains }) {
+const offChainCacheMapper: MapCacheFn<RequestParams, MultisigOperation[], MultisigOperation[]> = (
+  cache,
+  operations,
+  { accountIds },
+) => {
+  const operationsWithoutGivenAccounts = cache.filter(o => !accountIds.includes(o.accountId));
+  return multisigOperationService.mergeMultisigOperations(operationsWithoutGivenAccounts, operations);
+};
+
+export const fetchOffchainResource = createQueryResource<RequestParams>({
+  key: ({ accountIds }) => accountIds.join('-'),
+})
+  .request(async ({ apis, accountIds, chains }) => {
+    return fetchOperationsHistory(accountIds, apis, chains);
+  })
+  .cache({
+    store: $offChainOperations,
+    map: offChainCacheMapper,
+  })
+  .build();
+
+export const initialOnChainFetch = createQueryResource<RequestParams>({
+  key: ({ accountIds }) => accountIds.join('-'),
+})
+  .request(async ({ apis, accountIds, chains }) => {
     const callHashesByChain: Record<ChainId, Record<AccountId, HexString[]>> = {};
     const onChainData: Record<HexString, MultisigOperation> = {};
 
@@ -303,10 +317,10 @@ export const initialOnChainFetch = createRemoteResource<
       callHashesByChain,
       onChainData,
     };
-  },
-});
+  })
+  .build();
 
-export const subscribeOnchainResource = createQuerySubscriptionResource<{
+export const subscribeOnchainResource = createSubscriptionResource<{
   api: ApiPromise;
   hashes: Record<AccountId, HexString[]>;
   chain: Chain;
@@ -367,7 +381,7 @@ export const subscribeOnchainResource = createQuerySubscriptionResource<{
   })
   .build();
 
-export const subscribeNewMultisigEventsResource = createQuerySubscriptionResource<{
+export const subscribeNewMultisigEventsResource = createSubscriptionResource<{
   api: ApiPromise;
   accountId: AccountId;
 }>({
@@ -394,7 +408,7 @@ export const subscribeNewMultisigEventsResource = createQuerySubscriptionResourc
   })
   .build();
 
-export const subscribeEventsResource = createQuerySubscriptionResource<{
+export const subscribeEventsResource = createSubscriptionResource<{
   api: ApiPromise;
   accountId: AccountId;
 }>({
