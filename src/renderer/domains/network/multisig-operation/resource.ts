@@ -3,8 +3,9 @@ import { type ApiPromise } from '@polkadot/api';
 import { type QueryableStorageMultiArg } from '@polkadot/api/types';
 import { type Option } from '@polkadot/types';
 import { type PalletMultisigMultisig } from '@polkadot/types/lookup';
-import { createStore } from 'effector';
+import { createStore, sample } from 'effector';
 import { GraphQLClient } from 'graphql-request';
+import { produce } from 'immer';
 import { z } from 'zod';
 
 import { type Chain, type ChainId, type DecodedTransaction, type HexString } from '@/shared/core';
@@ -251,6 +252,13 @@ type RequestParams = {
 
 export const $offChainOperations = createStore<MultisigOperation[]>([]);
 
+// Shared store for on-chain operations (updated by initialOnChainFetch + subscribeOnchainResource)
+export const $onChainOperationsByCallhash = createStore<Record<HexString, MultisigOperation | null>>({});
+
+// Shared store for tracked call hashes (updated by initialOnChainFetch + subscribeNewMultisigEventsResource)
+type TrackedCallHashesState = Record<ChainId, { api: ApiPromise; hashes: Record<AccountId, HexString[]> }>;
+export const $trackedCallHashes = createStore<TrackedCallHashesState>({});
+
 const offChainCacheMapper: MapCacheFn<RequestParams, MultisigOperation[], MultisigOperation[]> = (
   cache,
   operations,
@@ -318,7 +326,46 @@ export const initialOnChainFetch = createQueryResource<RequestParams>({
       onChainData,
     };
   })
+  .cache({
+    store: $onChainOperationsByCallhash,
+    map: (cache, { onChainData }) => ({ ...cache, ...onChainData }),
+  })
   .build();
+
+// Sample for initialOnChainFetch to update $trackedCallHashes
+// (resource can only have one cache, so this requires a sample block)
+sample({
+  clock: initialOnChainFetch.push,
+  source: $trackedCallHashes,
+  fn: (state, { params, result: { callHashesByChain } }) => {
+    const { apis, accountIds } = params;
+    return produce(state, draft => {
+      for (const [chainId, api] of entries(apis)) {
+        const existing = draft[chainId] || { api, hashes: {} };
+        const fetchedHashes = callHashesByChain[chainId] || {};
+
+        const newHashesMap = { ...existing.hashes };
+
+        for (const accountId of accountIds) {
+          newHashesMap[accountId] = fetchedHashes[accountId] || [];
+        }
+
+        draft[chainId] = {
+          api,
+          hashes: newHashesMap,
+        };
+      }
+    });
+  },
+  target: $trackedCallHashes,
+});
+
+// Cache mapper for subscribeOnchainResource - merges subscription updates into shared store
+const onChainSubscriptionCacheMapper: MapCacheFn<
+  { api: ApiPromise; hashes: Record<AccountId, HexString[]>; chain: Chain },
+  Record<HexString, MultisigOperation | null>,
+  Record<HexString, MultisigOperation | null>
+> = (cache, result) => ({ ...cache, ...result });
 
 export const subscribeOnchainResource = createSubscriptionResource<{
   api: ApiPromise;
@@ -379,7 +426,34 @@ export const subscribeOnchainResource = createSubscriptionResource<{
 
     return unsubscribe;
   })
+  .cache({
+    store: $onChainOperationsByCallhash,
+    map: onChainSubscriptionCacheMapper,
+  })
   .build();
+
+// Cache mapper for subscribeNewMultisigEventsResource - adds new hashes to tracked call hashes
+const newMultisigEventsCacheMapper: MapCacheFn<
+  { api: ApiPromise; accountId: AccountId },
+  HexString,
+  TrackedCallHashesState
+> = (cache, newCallHash, { api, accountId }) => {
+  return produce(cache, draft => {
+    const chainId = api.genesisHash.toHex();
+
+    // Ensure the chain entry exists (fixes race condition when NewMultisig arrives before initialOnChainFetch)
+    if (!draft[chainId]) {
+      draft[chainId] = { api, hashes: {} };
+    }
+
+    // Ensure the account hashes array exists
+    if (!draft[chainId].hashes[accountId]) {
+      draft[chainId].hashes[accountId] = [];
+    }
+
+    draft[chainId].hashes[accountId]!.push(newCallHash);
+  });
+};
 
 export const subscribeNewMultisigEventsResource = createSubscriptionResource<{
   api: ApiPromise;
@@ -405,6 +479,10 @@ export const subscribeNewMultisigEventsResource = createSubscriptionResource<{
     return () => {
       unsubscribeNewMultisig();
     };
+  })
+  .cache({
+    store: $trackedCallHashes,
+    map: newMultisigEventsCacheMapper,
   })
   .build();
 

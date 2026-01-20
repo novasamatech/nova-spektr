@@ -1,13 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
-import { produce } from 'immer';
 import { uniqBy } from 'lodash';
 import { once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { entries, getNativeAssetId, groupBy, keys, nonNullable } from '@/shared/lib/utils';
+import { getNativeAssetId, groupBy, keys, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query/types';
 import { networkModel } from '@/entities/network';
@@ -15,6 +14,8 @@ import { decodeCallData } from '@/entities/transaction';
 
 import {
   $offChainOperations,
+  $onChainOperationsByCallhash,
+  $trackedCallHashes,
   fetchOffchainResource,
   initialOnChainFetch,
   subscribeEventsResource,
@@ -36,11 +37,6 @@ const unsubscribeFromAccounts = createEvent();
 const $subscribedAccounts = createStore<AccountId[]>([]);
 const $subscribedApis = createStore<Record<ChainId, ApiPromise>>({});
 
-const $trackedCallHashes = createStore<Record<ChainId, { api: ApiPromise; hashes: Record<AccountId, HexString[]> }>>(
-  {},
-);
-
-const $onChainOperationsByCallhash = createStore<Record<HexString, MultisigOperation | null>>({});
 const $onChainOperations = $onChainOperationsByCallhash.map(state => Object.values(state).filter(nonNullable));
 
 const $initialOnChainFetched = createStore(false)
@@ -106,41 +102,6 @@ const updateCallDataFx = attach({
 });
 
 sample({
-  clock: initialOnChainFetch.push,
-  source: $onChainOperationsByCallhash,
-  fn: (state, { result: { onChainData } }) => {
-    return { ...state, ...onChainData };
-  },
-  target: $onChainOperationsByCallhash,
-});
-
-sample({
-  clock: initialOnChainFetch.push,
-  source: $trackedCallHashes,
-  fn: (state, { params, result: { callHashesByChain } }) => {
-    const { apis, accountIds } = params;
-    return produce(state, draft => {
-      for (const [chainId, api] of entries(apis)) {
-        const existing = draft[chainId] || { api, hashes: {} };
-        const fetchedHashes = callHashesByChain[chainId] || {};
-
-        const newHashesMap = { ...existing.hashes };
-
-        for (const accountId of accountIds) {
-          newHashesMap[accountId] = fetchedHashes[accountId] || [];
-        }
-
-        draft[chainId] = {
-          api,
-          hashes: newHashesMap,
-        };
-      }
-    });
-  },
-  target: $trackedCallHashes,
-});
-
-sample({
   clock: $trackedCallHashes,
   source: {
     chains: networkModel.$chains,
@@ -171,40 +132,6 @@ sample({
     return removedOperations.concat(newRemovedOperations);
   },
   target: $removedOperations,
-});
-
-sample({
-  clock: subscribeOnchainResource.push,
-  source: $onChainOperationsByCallhash,
-  fn: (state, clockData) => {
-    return {
-      ...state,
-      ...clockData.result,
-    };
-  },
-  target: $onChainOperationsByCallhash,
-});
-
-sample({
-  clock: subscribeNewMultisigEventsResource.push,
-  source: $trackedCallHashes,
-  fn: (state, { params, result }) =>
-    produce(state, draft => {
-      const chainId = params.api.genesisHash.toHex();
-
-      // Ensure the chain entry exists (fixes race condition when NewMultisig arrives before initialOnChainFetch)
-      if (!draft[chainId]) {
-        draft[chainId] = { api: params.api, hashes: {} };
-      }
-
-      // Ensure the account hashes array exists
-      if (!draft[chainId].hashes[params.accountId]) {
-        draft[chainId].hashes[params.accountId] = [];
-      }
-
-      draft[chainId].hashes[params.accountId]!.push(result);
-    }),
-  target: $trackedCallHashes,
 });
 
 // Helper function to generate unsubscribe keys for accounts and apis
