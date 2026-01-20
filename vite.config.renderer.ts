@@ -122,10 +122,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
           },
         },
       }),
-      favicons(
-        mode === 'development'
-          ? resolve(folders.rendererRoot, 'app/favicon.dev.png')
-          : resolve(folders.rendererRoot, 'app/favicon.png'),
+      favicons(resolve(folders.rendererRoot, 'app/favicon.png'),
         {
           appName: 'Nova Spektr',
           appShortName: 'Spektr',

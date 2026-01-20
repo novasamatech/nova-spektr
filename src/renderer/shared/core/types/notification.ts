@@ -16,6 +16,7 @@ export const enum NotificationType {
   PROXY_REMOVED = 'ProxyRemovedNotification',
 
   MULTISIG_OPERATION = 'MultisigOperationNotification',
+  MULTISIG_EVENT = 'MultisigEventNotification',
 }
 
 // User-facing notification event categories for settings
@@ -77,6 +78,13 @@ export type MultisigOperationNotification = MultisigBaseNotification & {
   callTimepoint: Timepoint;
 };
 
+export type MultisigEventNotification = MultisigBaseNotification & {
+  callHash: CallHash;
+  callTimepoint: Timepoint;
+  signerAccountId: AccountId;
+  eventStatus: 'approve' | 'reject';
+};
+
 export type ProxyAction = BaseNotification & {
   proxyType: ProxyType;
   proxyVariant: ProxyVariant;
@@ -88,6 +96,7 @@ export type Notification =
   | MultisigCreated
   | FlexibleMultisigOperationNotification
   | MultisigOperationNotification
+  | MultisigEventNotification
   | ProxyAction;
 
 type NotificationInput<T extends Notification> = Omit<T, 'id' | 'read' | 'dateCreated'> & {
@@ -97,10 +106,12 @@ type NotificationInput<T extends Notification> = Omit<T, 'id' | 'read' | 'dateCr
 export type CreateMultisigCreatedParams = NotificationInput<MultisigCreated>;
 export type CreateFlexibleMultisigOperationParams = NotificationInput<FlexibleMultisigOperationNotification>;
 export type CreateMultisigOperationParams = NotificationInput<MultisigOperationNotification>;
+export type CreateMultisigEventParams = NotificationInput<MultisigEventNotification>;
 export type CreateProxyActionParams = NotificationInput<ProxyAction>;
 
 export type CreateNotificationParams =
   | CreateMultisigCreatedParams
   | CreateFlexibleMultisigOperationParams
   | CreateMultisigOperationParams
+  | CreateMultisigEventParams
   | CreateProxyActionParams;
