@@ -10,7 +10,7 @@ export const settingsNavigationFeature = createFeature({
 });
 
 settingsNavigationFeature.inject(navigationBottomLinksSlot, {
-  order: 2,
+  order: 3,
   render() {
     const { t } = useI18n();
     return <NavItem icon="settings" title={t('navigation.settingsLabel')} link={Paths.SETTINGS} />;
