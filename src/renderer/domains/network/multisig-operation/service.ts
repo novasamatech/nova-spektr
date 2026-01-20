@@ -8,6 +8,7 @@ import {
   type CallHash,
   type Chain,
   ChainOptions,
+  type CreateMultisigEventParams,
   type CreateMultisigOperationParams,
   CryptoType,
   type FlexibleMultisigAccount,
@@ -23,7 +24,7 @@ import { Paths } from '@/shared/routes';
 import { transactionService } from '../transaction/service';
 
 import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, WRAP_EXTRINSIC_CALL_INDEX } from './constants';
-import { type MultisigOperation } from './types';
+import { type MultisigEvent, type MultisigOperation } from './types';
 
 /**
  * Public keys of signers' wallets are compared byte-for-byte and sorted
@@ -256,6 +257,51 @@ const createOperationNotification = (
   };
 };
 
+const createEventNotification = (
+  operation: MultisigOperation,
+  event: MultisigEvent,
+  signerName?: string,
+): CreateMultisigEventParams => {
+  const relativeLink = multisigOperationService.generateMultisigOperationRelativeLink({
+    chainId: operation.chainId,
+    callHash: operation.callHash,
+    accountId: operation.accountId,
+    blockCreated: operation.blockCreated,
+    indexCreated: operation.indexCreated,
+  });
+
+  const eventId = `${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.accountId, operation.blockCreated, operation.indexCreated)}-${event.id}`;
+
+  return {
+    key: `${NotificationType.MULTISIG_EVENT}-${eventId}`,
+    type: NotificationType.MULTISIG_EVENT,
+    status: event.status === 'approve' ? 'success' : 'error',
+    issuer: operation.accountId,
+    title: event.status === 'approve' ? 'Multisig operation signed' : 'Multisig operation rejected',
+    description: signerName ? `by ${signerName}` : undefined,
+    multisigAccountId: operation.accountId,
+    callHash: operation.callHash,
+    callTimepoint: {
+      height: operation.blockCreated,
+      index: operation.indexCreated,
+    },
+    chainId: operation.chainId,
+    signerAccountId: event.accountId,
+    eventStatus: event.status,
+    link: {
+      title: 'notifications.details.viewOperation',
+      path: relativeLink,
+    },
+    batch: {
+      title: 'notifications.toast.batch.multisigEventsUpdated',
+      link: {
+        title: 'notifications.toast.viewOperations',
+        path: Paths.OPERATIONS,
+      },
+    },
+  };
+};
+
 export const multisigOperationService = {
   getOperationId,
   getEventId,
@@ -271,4 +317,5 @@ export const multisigOperationService = {
   generateMultisigOperationRelativeLink,
 
   createOperationNotification,
+  createEventNotification,
 };
