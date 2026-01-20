@@ -181,6 +181,7 @@ const $reassignTx = combine(
       oldAccountId: multisigService.getMultisigAccountId(multisigAccount),
       newAccountId: newMultisigAccountId,
       signerAccountId: signer.accountId,
+      proxyType: multisigAccount.proxyType,
     });
   },
 );
