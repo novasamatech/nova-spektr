@@ -1,5 +1,3 @@
-import { multisigOperationService } from '@/domains/network';
-
 export { operationLogTitleTransformer } from './components/LogModal';
 export { operationDetailsSlot } from './components/OperationFullInfo';
 export { operationIconTransformer } from './components/OperationIcon';

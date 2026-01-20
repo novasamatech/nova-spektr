@@ -15,7 +15,6 @@ import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { operationTitleTransformer } from '@/features/multisig-operations';
 
 type Props = {
   notification: MultisigEventNotification;
@@ -83,7 +82,7 @@ export const MultisigEventNotificationComponent = ({
   const asset = useTransactionAsset(coreTx, chainId);
   const amount = coreTx ? getTransactionAmount(coreTx) : null;
 
-  const externalTitle = useTransformer(operationTitleTransformer, {
+  const externalTitle = useTransformer(multisigOperationService.operationTitleTransformer, {
     operation,
     showCoreTransaction: showCoreTransaction,
     chains,

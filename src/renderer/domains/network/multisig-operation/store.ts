@@ -2,7 +2,6 @@ import { attach, createEffect, createStore, restore, sample, scopeBind } from 'e
 import { t } from 'i18next';
 import { once, readonly, spread } from 'patronum';
 
-
 import { storageService } from '@/shared/api/storage';
 import {
   type Chain,
@@ -23,12 +22,12 @@ import { notificationModel } from '@/entities/notification';
 import { decodeCallData, findCoreTransaction } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { accounts } from '../account/store';
+import { type AnyAccount } from '../account/types';
 
 import { deserializeOperation, serializeOperation } from './helpers';
 import { fetchResource, subscribeEventsResource, subscribeResource } from './resource';
 import { multisigOperationService } from './service';
 import { type MultisigEvent, type MultisigOperation } from './types';
-import { AnyAccount } from '../account/types';
 
 const $accountsMap = accounts.$list.map(
   accountsList => new Map(accountsList.map(account => [account.accountId, account])),
