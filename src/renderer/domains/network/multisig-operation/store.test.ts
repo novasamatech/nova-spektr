@@ -158,7 +158,7 @@ describe('multisig operation store notifications', () => {
 
     it('should send notification for operation when account is not found', async () => {
       const operationAccountId = createAccountId('1');
-      const differentAccountId = createAccountId('2');
+      const differentAccountId = createAccountId('3');
 
       const operation = createTestOperation({ accountId: operationAccountId, timestamp: 1000 });
       const account = createTestAccount({ accountId: differentAccountId, createdAt: 500 });

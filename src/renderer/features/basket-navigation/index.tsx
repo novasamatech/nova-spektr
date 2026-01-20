@@ -16,7 +16,7 @@ export const basketNavigationFeature = createFeature({
 });
 
 basketNavigationFeature.inject(navigationBottomLinksSlot, {
-  order: 0,
+  order: 1,
   render() {
     const { t } = useI18n();
     const accounts = useUnit(walletSelect.$selectedAccounts);
