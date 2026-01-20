@@ -24,6 +24,11 @@ type SubscriptionParams<Params, Response, Cache> = {
     store: StoreWritable<Cache>;
     map: MapCacheFn<Params, Response, Cache>;
   };
+  /**
+   * When true, unsubscribes and recreates subscription on every subscribe call,
+   * even if key already exists
+   */
+  recreateOnSubscribe?: boolean;
 };
 
 type CacheOrDefault<Cache, Response> = [Cache] extends [never] ? DefaultCache<Response> : Cache;
@@ -32,6 +37,7 @@ function build<Params, Response, Cache>({
   key,
   fn,
   cache,
+  recreateOnSubscribe = false,
 }: SubscriptionParams<Params, Response, Cache>): SubscriptionResource<Params, Response, Cache> {
   const createKey = wrapKeyFactory(key);
 
@@ -52,13 +58,25 @@ function build<Params, Response, Cache>({
     console.error('failed to subscribe', error);
   });
 
-  const subscribeFx = createEffect((params: Params) => {
+  const subscribeFx = createEffect(async (params: Params) => {
     const boundPush = scopeBind(push, { safe: true });
+    const subKey = createKey(params);
 
-    let sub = subscriptions[createKey(params)];
+    let sub = subscriptions[subKey];
     if (sub) {
-      sub.count++;
-      return;
+      if (recreateOnSubscribe) {
+        // Unsubscribe from existing subscription before recreating
+        if (sub.unsubscribe instanceof Promise) {
+          const unsub = await sub.unsubscribe;
+          unsub();
+        } else {
+          sub.unsubscribe();
+        }
+        delete subscriptions[subKey];
+      } else {
+        sub.count++;
+        return;
+      }
     }
 
     const unsubscribe = fn(params, (result) => {
@@ -69,7 +87,7 @@ function build<Params, Response, Cache>({
       unsubscribe,
       count: 1,
     };
-    subscriptions[createKey(params)] = sub;
+    subscriptions[subKey] = sub;
   });
 
   const unsubscribeFx = createEffect((key: ResourceRequestKey) => {
@@ -120,7 +138,13 @@ function build<Params, Response, Cache>({
   };
 }
 
-export const createSubscriptionResource = <Params>({ key }: { key: KeyFn<Params> }) => {
+export const createSubscriptionResource = <Params>({
+  key,
+  recreateOnSubscribe = false,
+}: {
+  key: KeyFn<Params>;
+  recreateOnSubscribe?: boolean;
+}) => {
   const internal = <Response = never, Cache = never>(
     params: Partial<SubscriptionParams<Params, Response, Cache>> = {},
   ) => {
@@ -141,6 +165,7 @@ export const createSubscriptionResource = <Params>({ key }: { key: KeyFn<Params>
             cache: params.cache,
             key,
             fn: params.fn,
+            recreateOnSubscribe,
           }) as SubscriptionResource<Params, Response, CacheOrDefault<Cache, Response>>;
         } else {
           const cacheStore = createDefaultCacheStore<Response>();
@@ -153,6 +178,7 @@ export const createSubscriptionResource = <Params>({ key }: { key: KeyFn<Params>
             },
             key,
             fn: params.fn,
+            recreateOnSubscribe,
           }) as SubscriptionResource<Params, Response, CacheOrDefault<Cache, Response>>;
         }
       },

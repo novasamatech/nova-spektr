@@ -17,7 +17,8 @@ import {
 import { groupBy, nonNullable, toKeysRecord } from '@/shared/lib/utils';
 // TODO wallet model should be either in wallets domain or wallets feature
 // eslint-disable-next-line boundaries/element-types
-import { type AnyAccount, type AnyAccountDraft, accounts } from '@/domains/network';
+import { accounts } from '@/domains/network';
+import { type AnyAccount, type AnyAccountDraft } from '@/domains/network';
 
 type DbWallet = Omit<Wallet, 'accounts'>;
 

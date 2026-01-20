@@ -122,22 +122,19 @@ const config: UserConfigFn = async ({ mode, command }) => {
           },
         },
       }),
-      favicons(resolve(folders.rendererRoot, 'app/favicon.png'),
-        {
-          appName: 'Nova Spektr',
-          appShortName: 'Spektr',
-          appDescription:
-            'Enterprise desktop wallet for Polkadot supporting multisigs, staking, light clients and more',
-          icons: {
-            android: true,
-            appleIcon: true,
-            appleStartup: true,
-            favicons: true,
-            windows: true,
-            yandex: true,
-          },
+      favicons(resolve(folders.rendererRoot, 'app/favicon.png'), {
+        appName: 'Nova Spektr',
+        appShortName: 'Spektr',
+        appDescription: 'Enterprise desktop wallet for Polkadot supporting multisigs, staking, light clients and more',
+        icons: {
+          android: true,
+          appleIcon: true,
+          appleStartup: true,
+          favicons: true,
+          windows: true,
+          yandex: true,
         },
-      ),
+      }),
 
       isProd &&
         command === 'build' &&
