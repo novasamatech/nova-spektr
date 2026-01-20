@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { uniqBy } from 'lodash';
-import { once, readonly } from 'patronum';
+import { and, once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
@@ -40,20 +40,14 @@ const $subscribedApis = createStore<Record<ChainId, ApiPromise>>({});
 const $onChainOperations = $onChainOperationsByCallhash.map(state => Object.values(state).filter(nonNullable));
 
 const $initialOnChainFetched = createStore(false)
-  .on(initialOnChainFetch.fetch.finally, (_, effect) => effect.status === 'done')
+  .on(initialOnChainFetch.fetch.done, () => true)
   .reset(unsubscribeFromAccounts);
 
 const $offChainFetched = createStore(false)
-  .on(fetchOffchainResource.fetch.finally, (_, effect) => {
-    return effect.status === 'done';
-  })
+  .on(fetchOffchainResource.fetch.done, () => true)
   .reset(unsubscribeFromAccounts);
 
-const $initialLoadingComplete = combine(
-  $initialOnChainFetched,
-  $offChainFetched,
-  (onChain, offChain) => onChain && offChain,
-);
+const $initialLoadingComplete = and($initialOnChainFetched, $offChainFetched);
 
 const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
@@ -178,7 +172,7 @@ sample({
 sample({
   clock: subscribeToAccounts,
   fn: ({ apis, accountIds, chains }) => ({ apis, chains, accountIds }),
-  target: [initialOnChainFetch.start, fetchOffchainResource.start],
+  target: [initialOnChainFetch.fetch, fetchOffchainResource.fetch],
 });
 
 const refetchOffchainOperations = createEvent();
@@ -338,6 +332,8 @@ export const multisigOperation = {
   $populated: readonly($populated),
   $callDataUpdated,
   $initialLoadingComplete,
+  $onChainReady: readonly($initialOnChainFetched),
+  $offChainReady: readonly($offChainFetched),
 
   //API
   subscribeToAccounts,
@@ -353,7 +349,7 @@ export const multisigOperation = {
   __test: {
     $list: $offChainOperations,
     $populated,
-    $initialOnChainFetched,
-    $offChainFetched,
+    $onChainReady: $initialOnChainFetched,
+    $offChainReady: $offChainFetched,
   },
 };

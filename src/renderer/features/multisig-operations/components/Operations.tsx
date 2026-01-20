@@ -8,7 +8,6 @@ import { sortByDateDesc } from '@/shared/lib/utils';
 import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText, Loader } from '@/shared/ui';
 import { Box, ScrollArea } from '@/shared/ui-kit';
-import { multisigOperation } from '@/domains/network';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
@@ -29,7 +28,7 @@ export const Operations = () => {
   const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
   const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
   const isDeepLinkLoading = useUnit(deepLinkModel.$isDeepLinkLoading);
-  const isInitialLoadingCompleted = useUnit(multisigOperation.$initialLoadingComplete);
+  const isTabDataLoading = useUnit(operationsContextModel.$isTabDataLoading);
 
   const [focusedRef, scrollToFocused] = useScrollTo<HTMLLIElement>(300);
 
@@ -78,13 +77,13 @@ export const Operations = () => {
       {multisigAccount && (
         <ScrollArea>
           <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
-            {(!isInitialLoadingCompleted || isDeepLinkLoading) && (
+            {(isTabDataLoading || isDeepLinkLoading) && (
               <div className="mt-4 flex w-full justify-center">
                 <Loader color="primary" size={25} />
               </div>
             )}
 
-            {isInitialLoadingCompleted && filteredTxs.length === 0 && (
+            {!isTabDataLoading && filteredTxs.length === 0 && (
               <EmptyOperations
                 multisigAccount={multisigAccount}
                 isEmptyFromFilters={operations.length !== filteredTxs.length}
