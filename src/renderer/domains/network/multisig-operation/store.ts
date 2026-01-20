@@ -49,7 +49,10 @@ const $initialOnChainFetched = createStore(false)
   .reset(unsubscribeFromAccounts);
 
 const $offChainFetched = createStore(false)
-  .on(fetchOffchainResource.request.finally, (_, effect) => effect.status === 'done')
+  .on(fetchOffchainResource.request.finally, (_, effect) => {
+    console.log('penis', effect);
+    return effect.status === 'done';
+  })
   .reset(unsubscribeFromAccounts);
 
 const $initialLoadingComplete = combine(

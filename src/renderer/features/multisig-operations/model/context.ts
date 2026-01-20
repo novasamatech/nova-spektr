@@ -90,7 +90,8 @@ const $filteredOperations = combine(
 
 sample({
   // TODO: costil' around dynamic array of apis
-  clock: multisigOperationsFeature.running,
+  clock: throttle(multisigOperationsFeature.running, 500),
+  filter: ({ accountIds, apis }) => accountIds.length > 0 && Object.keys(apis).length > 0,
   fn: ({ accountIds, apis, chains }) => ({ accountIds, apis, chains }),
   target: multisigOperation.subscribeToAccounts,
 });
