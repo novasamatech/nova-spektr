@@ -434,5 +434,7 @@ export const multisigOperation = {
   __test: {
     $list: $offChainOperations,
     $populated,
+    $initialOnChainFetched,
+    $offChainFetched,
   },
 };

@@ -169,8 +169,13 @@ sample({
 
 const $isDeepLinkLoading = createStore(false)
   .on(operationExistsCheck, (_, { exists }) => !exists)
-  .on($focusedOperationId.updates, () => false)
-  .reset(operationsPageClosed);
+  .on($focusedOperation.updates, (state, operation) => (nonNullable(operation) ? false : state))
+  .on(operationNotFoundModalOpened, () => false)
+  .on(alreadySignedModalOpened, () => false)
+  .on(connectionTimeoutModalOpened, () => false)
+  .on(accountNotFoundModalOpened, () => false)
+  .on(networkNotAvailableModalOpened, () => false)
+  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
 sample({
   clock: processDeepLink,
