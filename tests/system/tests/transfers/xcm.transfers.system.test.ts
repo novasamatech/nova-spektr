@@ -1,39 +1,39 @@
-import * as allure from 'allure-js-commons';
-
 import { substrateChains } from '../../data/chains/chainsList';
-import { test } from '../../utils/baseRegularFixture';
+import { setupTestMetadata, transfersTest as test } from '../../utils/baseRegularFixture';
 import { getChainByName } from '../../utils/readConfig';
-import { xcmTransferTestCases } from '../../utils/transferTestCases';
+import { transferConstants, xcmTransferTestCases } from '../../utils/transferTestCases';
 
-const feature = 'Wallets. XCM transfers.';
-const story = 'Transfers';
+const feature = 'Transfers';
+const story = 'Transfers tests';
 
 test.describe('XCM transfers', { tag: ['@xcm-transfers', '@regress'] }, () => {
+  test.describe.configure({ mode: 'serial' });
+
+  test.beforeEach(async () => {
+    await setupTestMetadata(feature, story);
+  });
+
   for (const { chainName, assetId, xcmChainName, amount, recipient } of xcmTransferTestCases) {
-    // TODO: remove fail flag after the bug is fixed (#5327) AND add EVM chains for test
-    test.fail(
-      `Polkadot Vault, single wallet, can make regular xcm transfer from ${chainName} to ${xcmChainName}`,
-      async ({ loginPage }) => {
-        await allure.feature(feature);
-        await allure.story(story);
-        test.slow();
-        const vaultWallet = await loginPage.importDatabase('transfers/pv-root-polkadot.json');
-        const assetsPage = await vaultWallet.gotoMain();
-        const chain = getChainByName(substrateChains, chainName);
+    // TODO: add EVM chains for test
+    test(`Polkadot Vault, single wallet, can make regular xcm transfer from ${chainName} to ${xcmChainName}`, async ({
+      assetsPage,
+    }) => {
+      const walletModal = await assetsPage.openWalletManagement();
+      await walletModal.searchAndSelectWallet(transferConstants.vault_name);
 
-        const transferModal = await assetsPage.openTransfer(chain, assetId);
-        await transferModal.chooseXcmChain(xcmChainName);
+      const chain = getChainByName(substrateChains, chainName);
 
-        await transferModal.fillRecipient(recipient);
-        await transferModal.expectTransferFeeNotZero();
+      const transferModal = await assetsPage.openTransfer(chain, assetId);
+      await transferModal.chooseXcmChain(xcmChainName);
 
-        await transferModal.fillAmount(amount);
+      await transferModal.expectTransferFeeNotZero();
+      await transferModal.fillRecipient(recipient);
+      await transferModal.fillAmount(amount);
 
-        const confirmationModal = await transferModal.openConfirmationModal();
-        const signingModal = await confirmationModal.confirm();
+      const confirmationModal = await transferModal.openConfirmationModal();
+      const signingModal = await confirmationModal.confirm();
 
-        await signingModal.checkQRCode();
-      },
-    );
+      await signingModal.checkQRCode();
+    });
   }
 });

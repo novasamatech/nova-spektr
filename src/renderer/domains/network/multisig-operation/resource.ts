@@ -420,7 +420,7 @@ export const subscribeEventsResource = createQuerySubscriptionResource<{
         callback({
           operationId,
           event: {
-            id: multisigOperationService.getEventId(operationId, accountId, eventStatus),
+            id: multisigOperationService.getEventId(operationId, data.accountId, eventStatus),
             accountId: data.accountId,
             status: eventStatus,
             indexCreated: data.timepoint.index,

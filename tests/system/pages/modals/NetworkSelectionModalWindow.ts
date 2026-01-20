@@ -1,4 +1,5 @@
 import { type Page } from '@playwright/test';
+import { expect } from '@playwright/test';
 import { step } from 'allure-js-commons';
 
 import { BaseModal } from '../BaseModalWindow';
@@ -21,15 +22,21 @@ export class NetworkSelectionModalWindow extends BaseModal<MultisigModalElements
     });
   }
 
-  private async selectNetworkByName(name: string): Promise<void> {
-    await step(`Select network containing "${name}" from the list`, async () => {
+  private async selectNetworkByName(name: string, timeout = 10_000): Promise<void> {
+    await step(`Select network "${name}" (waiting up to ${timeout / 1000}s for active state)`, async () => {
       const networkOption = this.page.getByRole('radio', { name });
+      await expect(networkOption).toBeVisible({ timeout: 5000 });
 
-      if (!(await networkOption.isDisabled())) {
-        await networkOption.click();
-      } else {
-        throw new Error(`Network containing "${name}" is disabled and cannot be selected`);
+      try {
+        await expect(networkOption).toBeEnabled({ timeout });
+      } catch {
+        throw new Error(
+          `Network "${name}" is not in active state after ${timeout / 1000} seconds. ` +
+            `The network connection may not be established.`,
+        );
       }
+
+      await networkOption.click();
     });
   }
 

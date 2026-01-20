@@ -70,10 +70,12 @@ export type {
   CreateMultisigCreatedParams,
   CreateFlexibleMultisigOperationParams,
   CreateMultisigOperationParams,
+  CreateMultisigEventParams,
   CreateProxyActionParams,
   MultisigCreated,
   FlexibleMultisigOperationNotification,
   MultisigOperationNotification,
+  MultisigEventNotification,
   ProxyAction,
 } from './types/notification';
 export { NotificationEvent, NotificationType } from './types/notification';

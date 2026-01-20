@@ -2,7 +2,7 @@ import { type Page } from '@playwright/test';
 import * as allure from 'allure-js-commons';
 
 import { baseTestConfig } from '../../BaseTestConfig';
-import { expect, test } from '../../utils/baseRegularFixture';
+import { expect, setupTestMetadata, test } from '../../utils/baseRegularFixture';
 
 test.describe(
   'Watch only wallet onboarding',
@@ -10,9 +10,11 @@ test.describe(
     tag: '@regress',
   },
   () => {
+    test.beforeEach(async () => {
+      await setupTestMetadata('Onboarding', 'Onboarding via Watch-only');
+    });
+
     test('Can add watch only wallet', async ({ loginPage, page }) => {
-      await allure.feature('Onboarding');
-      await allure.story('Onboarding via Watch-only');
       const watchOnlyPage = await loginPage.gotoOnboarding().then((onboarding) => onboarding.clickWatchOnlyButton());
       const watchOnlyAssetsPage = await watchOnlyPage.createWatchOnlyAccount(
         baseTestConfig.test_name,
@@ -22,9 +24,6 @@ test.describe(
     });
 
     test('Link from info button lead to subscan', async ({ loginPage }) => {
-      await allure.feature('Onboarding');
-      await allure.story('Onboarding via Watch-only');
-
       const watchOnlyPage = await loginPage.gotoOnboarding().then((onboarding) => onboarding.clickWatchOnlyButton());
 
       await watchOnlyPage

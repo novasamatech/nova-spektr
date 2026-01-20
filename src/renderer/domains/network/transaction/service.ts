@@ -291,6 +291,28 @@ async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise): Promise<Ex
   return [extrinsic];
 }
 
+function getBatchWrappedCallsFromExtrinsic(extrinsic: Extrinsic): Call[] {
+  if (isBatchExtrinsic(extrinsic)) {
+    const callsArg = extrinsic.args.at(0);
+    const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
+
+    return calls.flatMap(call => getBatchWrappedCallsFromCall(call));
+  }
+
+  return [extrinsic.method as Call];
+}
+
+function getBatchWrappedCallsFromCall(call: Call): Call[] {
+  if (call.section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(call.method)) {
+    const callsArg = call.args?.at?.(0) || call.args?.[0];
+    const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
+
+    return calls.flatMap(nestedCall => getBatchWrappedCallsFromCall(nestedCall));
+  }
+
+  return [call as Call];
+}
+
 const decodeDispatchError = (error: DispatchError | SpRuntimeDispatchError, registry: Registry): string => {
   let errorInfo = error.toString();
 
@@ -427,6 +449,9 @@ export const transactionService = {
   getTransactionFee,
   getExtrinsicWeight,
   getTransactionWeight,
+
+  getBatchWrappedCallsFromExtrinsic,
+  getBatchWrappedCallsFromCall,
 
   splitExtrinsic,
   submitExtrinsic,

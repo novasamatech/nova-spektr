@@ -15,7 +15,6 @@ import { deepLinkModel } from '../model/deep-link';
 
 import { EmptyOperations } from './EmptyOperations';
 import { Operation } from './Operation';
-import { OperationsFilter } from './OperationsFilter';
 import { AccountNotFoundModal } from './modals/AccountNotFoundModal';
 import { AlreadySignedModal } from './modals/AlreadySignedModal';
 import { ConnectionTimeoutModal } from './modals/ConnectionTimeoutModal';
@@ -79,8 +78,6 @@ export const Operations = () => {
       {multisigAccount && (
         <ScrollArea>
           <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
-            {operations.length > 0 && <OperationsFilter operations={operations} />}
-
             {(!isInitialLoadingCompleted || isDeepLinkLoading) && (
               <div className="mt-4 flex w-full justify-center">
                 <Loader color="primary" size={25} />
@@ -95,11 +92,11 @@ export const Operations = () => {
             )}
 
             {filteredTxs.length > 0 && (
-              <div className="mt-4 flex h-full w-full flex-col items-center overflow-y-auto pl-6">
+              <div className="flex h-full w-full flex-col items-center overflow-y-auto px-6">
                 {sortedTxs.map(([date, txs]) => (
-                  <section className="mt-6 w-fit" key={date}>
+                  <section className="w-full" key={date}>
                     <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
-                    <ul className="flex w-[736px] flex-col gap-y-1.5">
+                    <ul className="flex w-full flex-col gap-y-1.5">
                       {txs.map(tx => (
                         <li key={tx.id} ref={tx.id === focusedOperationId ? focusedRef : undefined}>
                           <Operation

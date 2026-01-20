@@ -28,6 +28,10 @@ export abstract class BasePage<T extends BasePageElements = BasePageElements> {
     return this;
   }
 
+  public getPage(): Page {
+    return this.page;
+  }
+
   async click(testId: string) {
     await step(`Click element with testId: ${testId}`, async () => {
       await this.page.getByTestId(testId).click();
