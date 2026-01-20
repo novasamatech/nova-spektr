@@ -1,5 +1,5 @@
 import { combine, createEvent, restore, sample } from 'effector';
-import { throttle } from 'patronum';
+import { interval, throttle } from 'patronum';
 
 import { TransactionType } from '@/shared/core';
 import { type AnyAccount, type MultisigOperation, accountService, multisigOperation } from '@/domains/network';
@@ -96,12 +96,25 @@ const $filteredOperations = combine(
 sample({
   // TODO: costil' around dynamic array of apis
   clock: throttle(multisigOperationsFeature.running, 500),
-  target: [multisigOperation.subscribe, multisigOperation.subscribeEvents],
+  filter: ({ accountIds, apis }) => accountIds.length > 0 && Object.keys(apis).length > 0,
+  fn: ({ accountIds, apis, chains }) => ({ accountIds, apis, chains }),
+  target: multisigOperation.subscribeToAccounts,
 });
 
 sample({
-  clock: multisigOperationsFeature.stopped,
-  target: [multisigOperation.unsubscribe, multisigOperation.unsubscribeEvents],
+  clock: throttle(multisigOperationsFeature.stopped, 500),
+  target: multisigOperation.unsubscribeFromAccounts,
+});
+
+const { tick } = interval({
+  start: multisigOperationsFeature.running,
+  stop: multisigOperationsFeature.stopped,
+  timeout: 30000,
+});
+
+sample({
+  clock: tick,
+  target: multisigOperation.refetchOffchainOperations,
 });
 
 export const operationsContextModel = {
