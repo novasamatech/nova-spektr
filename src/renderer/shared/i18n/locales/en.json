@@ -1729,11 +1729,16 @@
   },
   "notifications": {
     "details": {
+      "eventStatus": {
+        "rejected": "rejected",
+        "signed": "signed"
+      },
       "flexibleMultisigCreatedTitle": "New flexible multisig wallet added",
       "flexibleMultisigDescription": "<strong>{name}</strong> on <chain /> with threshold { threshold } out of { signatoriesLength } signatories.",
       "flexibleMultisigEditedTitle": "Flexible multisig has been edited",
       "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength }",
       "multisigCreatedTitle": "New multisig wallet added",
+      "multisigEventDetails": "by <wallet><walletIcon /><name>{name}</name></wallet>  on  <chain />",
       "multisigOperationDetails": "in <wallet><walletIcon /><name>{name}</name></wallet>  on  <chain />",
       "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
@@ -1757,6 +1762,7 @@
         "delegatedAuthorityWalletsAdded": "{count} delegated authority wallets added",
         "flexibleMultisigWalletsAdded": "{count} flexible multisig wallets added",
         "flexibleMultisigWalletsEdited": "{count} flexible multisig wallets edited",
+        "multisigEventsUpdated": "{count} multisig events",
         "multisigOperationsUpdated": "{count} multisig operations updated",
         "multisigWalletsAdded": "{count} multisig wallets added",
         "walletsAddedDescription": "Open the wallet selector to see the full list"
