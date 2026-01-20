@@ -9,9 +9,10 @@ import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
+import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { operationsContextModel } from '../model/context';
 
-type FilterName = 'status' | 'network' | 'type';
+type FilterName = 'network' | 'type';
 
 type FiltersOptions = Record<FilterName, Set<DropdownOption>>;
 
@@ -37,24 +38,19 @@ const getFilterableTxType = (op: MultisigOperation): TransactionType | 'UNKNOWN_
 };
 
 const EmptyOptions: FiltersOptions = {
-  status: new Set<DropdownOption>(),
   network: new Set<DropdownOption>(),
   type: new Set<DropdownOption>(),
 };
 
-type Props = {
-  operations: MultisigOperation[];
-};
-
-export const OperationsFilter = ({ operations }: Props) => {
+export const OperationsFilter = () => {
   const { t } = useI18n();
 
+  const operations = useUnit(selectedWalletMultisigOperations.$list);
   const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(EmptyOptions);
 
   const selectedOptions = useUnit(operationsContextModel.$filter);
   const chains = useUnit(networkModel.$chains);
 
-  const StatusOptions = getStatusOptions(t);
   const TransactionOptions = getTransactionOptions(t);
   const NetworkOptions = Object.values(chains).map(({ chainId, name }) => ({
     id: chainId,
@@ -72,14 +68,10 @@ export const OperationsFilter = ({ operations }: Props) => {
         const txType = getFilterableTxType(tx);
         const xcmDestination = tx.transaction?.args.destinationChain;
 
-        const statusOption = StatusOptions.find(s => s.value === tx.status);
         const originNetworkOption = NetworkOptions.find(s => s.value === tx.chainId);
         const destNetworkOption = NetworkOptions.find(s => s.value === xcmDestination);
         const typeOption = TransactionOptions.find(s => s.value === txType);
 
-        if (statusOption) {
-          acc.status.add(statusOption);
-        }
         if (originNetworkOption) {
           acc.network.add(originNetworkOption);
         }
@@ -93,7 +85,6 @@ export const OperationsFilter = ({ operations }: Props) => {
         return acc;
       },
       {
-        status: new Set<DropdownOption>(),
         network: new Set<DropdownOption>(),
         type: new Set<DropdownOption>(),
       },
@@ -109,18 +100,10 @@ export const OperationsFilter = ({ operations }: Props) => {
     operationsContextModel.resetFilters();
   };
 
-  const filtersSelected =
-    selectedOptions.network.length || selectedOptions.status.length || selectedOptions.type.length;
+  const filtersSelected = selectedOptions.network.length || selectedOptions.type.length;
 
   return (
-    <div className="my-4 ml-6 flex h-9 w-[736px] items-center gap-2">
-      <MultiSelect
-        className="w-[200px]"
-        placeholder={t('operations.filters.statusPlaceholder')}
-        selectedIds={selectedOptions.status}
-        options={[...filtersOptions.status]}
-        onChange={value => handleFilterChange(value, 'status')}
-      />
+    <div className="flex h-9 items-center gap-2">
       <MultiSelect
         className="w-[200px]"
         placeholder={t('operations.filters.networkPlaceholder')}
@@ -137,37 +120,12 @@ export const OperationsFilter = ({ operations }: Props) => {
       />
 
       {Boolean(filtersSelected) && (
-        <Button variant="text" className="ml-auto h-8.5 py-0" onClick={clearFilters}>
+        <Button variant="text" className="h-8.5 py-0" onClick={clearFilters}>
           {t('operations.filters.clearAll')}
         </Button>
       )}
     </div>
   );
-};
-
-const getStatusOptions = (t: TFunction): DropdownOption<MultisigOperation['status']>[] => {
-  return [
-    {
-      id: 'pending',
-      value: 'pending',
-      element: t('operation.status.signing'),
-    },
-    {
-      id: 'cancelled',
-      value: 'cancelled',
-      element: t('operation.status.cancelled'),
-    },
-    {
-      id: 'error',
-      value: 'error',
-      element: t('operation.status.error'),
-    },
-    {
-      id: 'executed',
-      value: 'executed',
-      element: t('operation.status.executed'),
-    },
-  ];
 };
 
 const getTransactionOptions = (t: TFunction) => {
