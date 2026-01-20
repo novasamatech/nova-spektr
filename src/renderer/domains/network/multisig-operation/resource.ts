@@ -21,7 +21,8 @@ import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { createSubscriptionResource as createQuerySubscriptionResource } from '@/shared/query';
 import { createRemoteResource } from '@/shared/resource';
-import { decodeCallData } from '@/entities/transaction';
+// eslint-disable-next-line boundaries/element-types, boundaries/entry-point
+import { decodeCallData } from '@/entities/transaction/lib/callDataDecoder';
 
 import { INDEXER_URL } from './constants';
 import { multisigOperationService } from './service';

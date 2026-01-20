@@ -50,7 +50,6 @@ const $initialOnChainFetched = createStore(false)
 
 const $offChainFetched = createStore(false)
   .on(fetchOffchainResource.request.finally, (_, effect) => {
-    console.log('penis', effect);
     return effect.status === 'done';
   })
   .reset(unsubscribeFromAccounts);
