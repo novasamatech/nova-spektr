@@ -119,8 +119,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$list, [])
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, true)
-          .set(multisigOperation.__test.$offChainFetched, true),
+          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$offChainReady, true),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
@@ -139,8 +139,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$list, [])
-          .set(multisigOperation.__test.$initialOnChainFetched, true)
-          .set(multisigOperation.__test.$offChainFetched, true)
+          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$offChainReady, true)
           .set(multisigOperation.__test.$populated, true),
       });
 
@@ -160,8 +160,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, false)
           .set(multisigOperation.__test.$populated, false)
-          .set(multisigOperation.__test.$initialOnChainFetched, false)
-          .set(multisigOperation.__test.$offChainFetched, false),
+          .set(multisigOperation.__test.$onChainReady, false)
+          .set(multisigOperation.__test.$offChainReady, false),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
@@ -187,8 +187,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$list, [])
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, true)
-          .set(multisigOperation.__test.$offChainFetched, true),
+          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$offChainReady, true),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
@@ -217,8 +217,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$list, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, true)
-          .set(multisigOperation.__test.$offChainFetched, true),
+          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$offChainReady, true),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
@@ -240,8 +240,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$list, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, true)
-          .set(multisigOperation.__test.$offChainFetched, true),
+          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$offChainReady, true),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
@@ -264,8 +264,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$list, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, true)
-          .set(multisigOperation.__test.$offChainFetched, true),
+          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$offChainReady, true),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
@@ -292,8 +292,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$list, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, false)
-          .set(multisigOperation.__test.$offChainFetched, false),
+          .set(multisigOperation.__test.$onChainReady, false)
+          .set(multisigOperation.__test.$offChainReady, false),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
@@ -316,8 +316,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$list, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, false)
-          .set(multisigOperation.__test.$offChainFetched, true),
+          .set(multisigOperation.__test.$onChainReady, false)
+          .set(multisigOperation.__test.$offChainReady, true),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
@@ -348,8 +348,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$list, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, false)
-          .set(multisigOperation.__test.$offChainFetched, true),
+          .set(multisigOperation.__test.$onChainReady, false)
+          .set(multisigOperation.__test.$offChainReady, true),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
@@ -382,8 +382,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$list, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, true)
-          .set(multisigOperation.__test.$offChainFetched, true),
+          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$offChainReady, true),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
@@ -406,8 +406,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$list, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, true)
-          .set(multisigOperation.__test.$offChainFetched, true),
+          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$offChainReady, true),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
@@ -435,8 +435,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$list, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, true)
-          .set(multisigOperation.__test.$offChainFetched, true),
+          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$offChainReady, true),
       });
 
       // Store initial deep link data
@@ -468,8 +468,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$list, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, true)
-          .set(multisigOperation.__test.$offChainFetched, true),
+          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$offChainReady, true),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
@@ -529,8 +529,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$list, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, true)
-          .set(multisigOperation.__test.$offChainFetched, true),
+          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$offChainReady, true),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
@@ -565,8 +565,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$list, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$initialOnChainFetched, true)
-          .set(multisigOperation.__test.$offChainFetched, true),
+          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$offChainReady, true),
       });
 
       await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
