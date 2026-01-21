@@ -23,14 +23,13 @@ import { ChainTitle, XcmChains } from '@/entities/chain';
 import { networkModel, useNetworkData } from '@/entities/network';
 import { OperationTitleStatus } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { walletModel } from '@/entities/wallet';
 import {
   TransactionTitle,
   findCoreTransaction,
   getTransactionAmount,
   useTransactionAsset,
 } from '@/entities/transaction';
-import { accountUtils } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { deepLinkModel } from '../model/deep-link';
 
 import { OperationFullInfo } from './OperationFullInfo';
@@ -126,7 +125,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
       isDefaultOpen={isDefaultOpen}
       className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow"
     >
-      <Accordion.Button buttonClass="p-3" iconWrapper="px-1.5">
+      <Accordion.Button buttonClass="px-4 py-2" iconWrapper="px-1.5">
         <div className="flex h-[52px] w-full items-center gap-x-2 overflow-hidden">
           <div className="flex w-[500px] min-w-0 items-center gap-x-2">
             <OperationIcon operation={operation} account={multisigAccount} />
