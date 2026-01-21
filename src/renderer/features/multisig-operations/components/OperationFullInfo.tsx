@@ -1,14 +1,12 @@
-import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { type CallData, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { validateCallData } from '@/shared/lib/utils';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
 import { Box, Json, Modal } from '@/shared/ui-kit';
-import { type MultisigOperation, accounts, multisigOperation } from '@/domains/network';
+import { type MultisigOperation, multisigOperation } from '@/domains/network';
 import { useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { transactionService } from '@/entities/transaction';
@@ -17,9 +15,7 @@ import { accountUtils } from '@/entities/wallet';
 import { OperationAdvancedDetails } from './OperationAdvancedDetails';
 import { OperationDetails } from './OperationDetails';
 import { OperationSignatories } from './OperationSignatories';
-import { ApproveTxModal } from './modals/ApproveTx';
 import { CallDataModal } from './modals/CallDataModal';
-import { RejectTxModal } from './modals/RejectTx';
 
 type Props = {
   operation: MultisigOperation;
@@ -36,7 +32,6 @@ export const operationDetailsSlot = createSlot<SlotProps>();
 export const OperationFullInfo = memo(({ operation, account }: Props) => {
   const { t } = useI18n();
   const { api, chain, extendedChain } = useNetworkData(operation.chainId);
-  const allAccounts = useUnit(accounts.$list);
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
 
   const explorerLink = operationDetailsUtils.getMultisigExtrinsicLink(
@@ -60,16 +55,6 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
       return null;
     }
   }, [api, chain, operation.callData]);
-
-  const hasAccount = allAccounts.some(a => {
-    return a.accountId === operation.depositor && !accountUtils.isWatchOnlyAccount(a);
-  });
-
-  const isRejectAvailable = operation.status === 'pending' && hasAccount;
-
-  const isFinalSigning = account && operation.events.length === account.threshold - 1;
-  const isApproveAvailable =
-    !isFinalSigning || (operation.callData && validateCallData(operation.callData, operation.callHash));
 
   const setupCallData = (callData: CallData) => {
     multisigOperation.updateCallData({ operation, callData });
@@ -123,21 +108,6 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
           <Slot id={operationDetailsSlot} props={{ operation, showCoreTransaction }} />
 
           <OperationAdvancedDetails operation={operation} />
-        </div>
-
-        <div className="mt-3 flex items-center">
-          {isRejectAvailable && account && (
-            <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
-              <Button pallet="error" variant="fill">
-                {t('operation.rejectButton')}
-              </Button>
-            </RejectTxModal>
-          )}
-          {account && isApproveAvailable && (
-            <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
-              <Button className="ml-auto">{t('operation.approveButton')}</Button>
-            </ApproveTxModal>
-          )}
         </div>
       </div>
 

@@ -91,11 +91,11 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
 
       <div className="flex flex-col gap-y-2">
         {Boolean(walletSignatories.length) && (
-          <>
-            <FootnoteText className="mb-2 text-text-tertiary" as="h4">
+          <div>
+            <FootnoteText className="text-text-tertiary" as="h4">
               {t('operation.walletSignatoriesTitle')}
             </FootnoteText>
-            <ul className="flex flex-col gap-y-2">
+            <ul className="flex flex-col">
               {walletSignatories.map(signatory => (
                 <SignatoryCard
                   key={signatory.accountId}
@@ -108,15 +108,15 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
                 </SignatoryCard>
               ))}
             </ul>
-          </>
+          </div>
         )}
 
         {Boolean(contactSignatories.length) && (
-          <>
-            <FootnoteText className="mb-2 text-text-tertiary" as="h4">
+          <div>
+            <FootnoteText className="text-text-tertiary" as="h4">
               {t('operation.contactSignatoriesTitle')}
             </FootnoteText>
-            <ul className="flex flex-col gap-y-2">
+            <ul className="flex flex-col">
               {contactSignatories.map(signatory => (
                 <SignatoryCard
                   key={signatory.accountId}
@@ -140,7 +140,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
                 </SignatoryCard>
               ))}
             </ul>
-          </>
+          </div>
         )}
       </div>
 

@@ -1961,6 +1961,7 @@
       "delegationTarget": "Delegate",
       "delegationTracks": "Tracks",
       "delegationVotes": "Number of votes",
+      "dateTime": "Date & Time",
       "deposit": "Multisig deposit",
       "depositor": "Depositor",
       "description": "Description",
