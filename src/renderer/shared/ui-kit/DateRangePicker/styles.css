@@ -3,11 +3,11 @@
 
   --rdp-day_button-border-radius: 6px; /* The border radius of the day cells. */
 
-  --rdp-day_button-height: 32px; /* The height of the day cells. */
-  --rdp-day_button-width: 32px; /* The width of the day cells. */
+  --rdp-day_button-height: 38px; /* The height of the day cells. */
+  --rdp-day_button-width: 38px; /* The width of the day cells. */
 
-  --rdp-day-height: 32px; /* The height of the day cells. */
-  --rdp-day-width: 32px; /* The width of the day cells. */
+  --rdp-day-height: 38px; /* The height of the day cells. */
+  --rdp-day-width: 38px; /* The width of the day cells. */
 
   --rdp-outside-opacity: 0.25; /* The opacity of the days outside the current month. */
 

@@ -393,6 +393,12 @@
     "walletsTab": "Your wallets",
     "yourAccounts": "Your accounts"
   },
+  "dateRangePicker": {
+    "lastMonth": "Last month",
+    "lastWeek": "Last week",
+    "lastYear": "Last year",
+    "resetButton": "Reset"
+  },
   "delegate": {
     "title": "Delegations"
   },
@@ -1180,7 +1186,6 @@
       "networkSettingsLink": "Open network settings",
       "pasteButton": "Paste",
       "refreshButton": "Refresh",
-      "resetButton": "Reset",
       "submitButton": "Submit",
       "uploadButton": "Upload"
     },

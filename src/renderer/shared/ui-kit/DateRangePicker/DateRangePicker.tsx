@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, startOfDay, subMonths, subWeeks, subYears } from 'date-fns';
 import { type DateRange, DayPicker } from 'react-day-picker';
 
 import { useI18n } from '@/shared/i18n';
@@ -14,6 +14,35 @@ const formatRange = (range: DateRange | undefined): string => {
   if (range.from) return format(range.from, 'LLL dd');
   return '';
 };
+
+type Preset = {
+  labelKey: string;
+  getRange: () => DateRange;
+};
+
+const presets: Preset[] = [
+  {
+    labelKey: 'dateRangePicker.lastWeek',
+    getRange: () => {
+      const today = startOfDay(new Date());
+      return { from: subWeeks(today, 1), to: today };
+    },
+  },
+  {
+    labelKey: 'dateRangePicker.lastMonth',
+    getRange: () => {
+      const today = startOfDay(new Date());
+      return { from: subMonths(today, 1), to: today };
+    },
+  },
+  {
+    labelKey: 'dateRangePicker.lastYear',
+    getRange: () => {
+      const today = startOfDay(new Date());
+      return { from: subYears(today, 1), to: today };
+    },
+  },
+];
 
 export interface DateRangePickerProps {
   value?: DateRange;
@@ -53,6 +82,20 @@ export const DateRangePicker = ({ value, placeholder = '', isDisabled = false, o
 
       <Popover.Content>
         <div className="flex flex-col">
+          <div className="flex gap-2 border-b border-filter-border px-3 py-2">
+            {presets.map(preset => (
+              <Button
+                key={preset.labelKey}
+                variant="chip"
+                pallet="secondary"
+                size="sm"
+                disabled={isDisabled}
+                onClick={() => onChange?.(preset.getRange())}
+              >
+                {t(preset.labelKey)}
+              </Button>
+            ))}
+          </div>
           <DayPicker
             mode="range"
             navLayout="around"
@@ -66,7 +109,7 @@ export const DateRangePicker = ({ value, placeholder = '', isDisabled = false, o
           />
           <div className="flex justify-end border-t border-filter-border px-3 py-2">
             <Button variant="text" size="sm" disabled={isDisabled} onClick={handleReset}>
-              {t('general.button.resetButton')}
+              {t('dateRangePicker.resetButton')}
             </Button>
           </div>
         </div>
