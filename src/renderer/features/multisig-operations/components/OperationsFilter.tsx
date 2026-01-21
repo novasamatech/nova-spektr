@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { useEffect, useState } from 'react';
+import { type DateRange } from 'react-day-picker';
 
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -48,7 +49,6 @@ export const OperationsFilter = () => {
 
   const operations = useUnit(selectedWalletMultisigOperations.$list);
   const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(EmptyOptions);
-
   const selectedOptions = useUnit(operationsContextModel.$filter);
   const chains = useUnit(networkModel.$chains);
 
@@ -97,18 +97,28 @@ export const OperationsFilter = () => {
     operationsContextModel.setFilters(newSelectedOptions);
   };
 
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    const newSelectedOptions = { ...selectedOptions, dateRange: range };
+    operationsContextModel.setFilters(newSelectedOptions);
+  };
+
   const clearFilters = () => {
     operationsContextModel.resetFilters();
   };
 
-  const filtersSelected = selectedOptions.network.length || selectedOptions.type.length;
+  const filtersSelected =
+    selectedOptions.network.length ||
+    selectedOptions.type.length ||
+    selectedOptions.dateRange?.from ||
+    selectedOptions.dateRange?.to;
 
   return (
     <div className="flex h-9 items-center gap-2">
       <div className="w-[200px]">
         <DateRangePicker
+          value={selectedOptions.dateRange}
           placeholder={t('operations.filters.dateRangePlaceholder')}
-          onChange={value => console.log(value)}
+          onChange={handleDateRangeChange}
         />
       </div>
       <MultiSelect

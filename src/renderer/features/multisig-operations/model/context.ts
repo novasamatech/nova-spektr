@@ -1,5 +1,7 @@
+import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
 import { combine, createEvent, restore, sample } from 'effector';
 import { interval, throttle } from 'patronum';
+import { type DateRange } from 'react-day-picker';
 
 import { TransactionType } from '@/shared/core';
 import { type AnyAccount, type MultisigOperation, accountService, multisigOperation } from '@/domains/network';
@@ -11,8 +13,11 @@ import { walletSelect } from '@/aggregates/wallet-select';
 
 import { multisigOperationsFeature } from './feature';
 
-type FilterName = 'network' | 'type';
-type SelectedFilters = Record<FilterName, string[]>;
+interface SelectedFilters {
+  network: string[];
+  type: string[];
+  dateRange?: DateRange;
+}
 export type TabFilter = 'pending' | 'history';
 
 const filterTx = (tx: MultisigOperation, filters: SelectedFilters, tab: TabFilter) => {
@@ -22,10 +27,25 @@ const filterTx = (tx: MultisigOperation, filters: SelectedFilters, tab: TabFilte
   const hasDestination = !filters.network.length || filters.network.includes(xcmDestination);
   const hasTxType = !filters.type.length || filters.type.includes(getFilterableTxType(tx));
 
+  let isInDateRange = true;
+  if (filters.dateRange) {
+    const { from, to } = filters.dateRange;
+
+    if (from || to) {
+      const txDate = new Date(tx.timestamp);
+
+      if (from && to) {
+        isInDateRange = isWithinInterval(txDate, { start: startOfDay(from), end: endOfDay(to) });
+      } else if (from) {
+        isInDateRange = isAfter(txDate, startOfDay(from)) || txDate.getTime() === startOfDay(from).getTime();
+      }
+    }
+  }
+
   const statusMatchesTab =
     tab === 'pending' ? tx.status === 'pending' : ['executed', 'cancelled', 'error'].includes(tx.status);
 
-  return (hasOrigin || hasDestination) && hasTxType && statusMatchesTab;
+  return (hasOrigin || hasDestination) && hasTxType && isInDateRange && statusMatchesTab;
 };
 
 const getFilterableTxType = (op: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
@@ -56,6 +76,7 @@ const setTab = createEvent<TabFilter>();
 const $filter = restore(setFilters, {
   network: [],
   type: [],
+  dateRange: undefined,
 }).reset(resetFilters);
 
 const $tab = restore(setTab, 'pending');
