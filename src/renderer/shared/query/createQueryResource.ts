@@ -10,7 +10,7 @@ import {
 } from 'effector';
 import { readonly } from 'patronum';
 
-import { createQueuedEffect } from '@/shared/effector';
+import { createBuffer, createQueuedEffect } from '@/shared/effector';
 import { createCache, nonNullable } from '@/shared/lib/utils';
 
 import { createDefaultCacheMapper, createDefaultCacheStore, wrapKeyFactory } from './generic';
@@ -18,12 +18,44 @@ import { type DefaultCache, type KeyFn, type MapCacheFn, type Resource, type Res
 
 type RequestFn<Params, Response> = (params: Params, signal: AbortSignal) => Response | Promise<Response>;
 
+/**
+ * Configuration for DB cache integration with query resources.
+ */
+type DbCacheParams<Cache, Serialized> = {
+  /** Storage service with readAll and insertAll methods */
+  storage: {
+    readAll(): Promise<Serialized[]>;
+    insertAll(items: Serialized[]): Promise<unknown>;
+  };
+  /** Transform cache item for database storage */
+  serialize: (item: Cache extends (infer T)[] ? T : never) => Serialized;
+  /** Transform item from database storage */
+  deserialize: (item: Serialized) => Cache extends (infer T)[] ? T : never;
+  /** Buffer timeframe in ms before syncing to DB (default: 1000) */
+  bufferMs?: number;
+  /**
+   * Custom function to merge DB data into cache. If not provided, DB data
+   * replaces cache.
+   */
+  updateCache?: (cache: Cache, dbItems: (Cache extends (infer T)[] ? T : never)[]) => Cache;
+};
+
 interface QueryResource<Params, Response, Cache> extends Resource<Params, Response, Cache> {
   fetch: Effect<Params, Response>;
   $pending: Store<Record<ResourceRequestKey, boolean>>;
+  /**
+   * Effect to populate cache from DB. Call on startup. Only present if
+   * .dbCache() was used.
+   */
+  populateFromDb?: Effect<void, unknown[]>;
+  /**
+   * Store indicating if DB population is complete. Only present if .dbCache()
+   * was used.
+   */
+  $dbPopulated?: Store<boolean>;
 }
 
-type QueryParams<Params, Response, Cache> = {
+type QueryParams<Params, Response, Cache, Serialized = unknown> = {
   fn: RequestFn<Params, Response>;
   key: KeyFn<Params>;
   cache: {
@@ -35,6 +67,7 @@ type QueryParams<Params, Response, Cache> = {
     count: number;
     delay: number;
   };
+  dbCache?: DbCacheParams<Cache, Serialized>;
   // TODO support batching
   batch?: {
     frame: number;
@@ -44,12 +77,13 @@ type QueryParams<Params, Response, Cache> = {
 
 type CacheOrDefault<Cache, Response> = [Cache] extends [never] ? DefaultCache<Response> : Cache;
 
-function build<Params, Response, Cache>({
+function build<Params, Response, Cache, Serialized>({
   key,
   fn,
   retry,
   cache,
-}: QueryParams<Params, Response, Cache>): QueryResource<Params, Response, Cache> {
+  dbCache,
+}: QueryParams<Params, Response, Cache, Serialized>): QueryResource<Params, Response, Cache> {
   const createKey = wrapKeyFactory(key);
 
   const push = createEvent<{ params: Params; result: Response }>();
@@ -137,7 +171,7 @@ function build<Params, Response, Cache>({
     target: abortFx,
   });
 
-  return {
+  const resource: QueryResource<Params, Response, Cache> = {
     createKey,
     push: readonly(push),
     $cache: readonly(cache.store),
@@ -147,6 +181,64 @@ function build<Params, Response, Cache>({
     fetch: fetchFx,
     $pending: readonly($pending),
   };
+
+  // Wire DB persistence if configured
+  if (dbCache) {
+    const { storage, serialize, deserialize, bufferMs = 1000 } = dbCache;
+
+    // Populate from DB on startup
+    const populateFromDbFx = createEffect(async () => {
+      const items = await storage.readAll();
+      return items.map(deserialize);
+    });
+
+    const $dbPopulated = createStore(false).on(populateFromDbFx.done, () => true);
+
+    // Wire populate to cache store (merge with existing data)
+    sample({
+      clock: populateFromDbFx.doneData,
+      source: cache.store,
+      fn: (currentCache, dbItems) => {
+        if (dbCache.updateCache) {
+          // Use provided update function
+          return dbCache.updateCache(currentCache, dbItems as any);
+        }
+
+        // Default: DB data replaces cache if cache is array
+        if (Array.isArray(currentCache) && Array.isArray(dbItems)) {
+          return dbItems as unknown as Cache;
+        }
+
+        return currentCache;
+      },
+      target: cache.store,
+    });
+
+    // Sync to DB with queuing (prevents race conditions)
+    const syncToDbFx = createQueuedEffect(async (items: Cache) => {
+      if (!Array.isArray(items) || items.length === 0) return;
+      await storage.insertAll(items.map(serialize));
+    });
+
+    // Buffer rapid updates before syncing
+    const bufferedSync = createBuffer({
+      source: sample({ clock: cache.store.updates }),
+      timeframe: bufferMs,
+    });
+
+    // Wire buffered sync to DB
+    sample({
+      clock: bufferedSync,
+      source: cache.store,
+      fn: (items) => items,
+      target: syncToDbFx,
+    });
+
+    resource.populateFromDb = populateFromDbFx as Effect<void, unknown[]>;
+    resource.$dbPopulated = readonly($dbPopulated);
+  }
+
+  return resource;
 }
 
 export const createQueryResource = <Params>({ key }: { key: KeyFn<Params> }) => {
@@ -161,23 +253,29 @@ export const createQueryResource = <Params>({ key }: { key: KeyFn<Params> }) => 
       cache<Cache>(cache: NonNullable<QueryParams<Params, Response, Cache>['cache']>) {
         return internal<Response, Cache>({ ...params, cache } as Partial<QueryParams<Params, Response, Cache>>);
       },
+      dbCache<Serialized>(config: DbCacheParams<Cache, Serialized>) {
+        return internal<Response, Cache>({ ...params, dbCache: config } as Partial<
+          QueryParams<Params, Response, Cache>
+        >);
+      },
       build(): QueryResource<Params, Response, CacheOrDefault<Cache, Response>> {
         if (!params.fn) {
           throw new Error('Missing request function');
         }
 
         if (params.cache) {
-          return build<Params, Response, Cache>({
+          return build<Params, Response, Cache, unknown>({
             cache: params.cache,
             key,
             retry: params.retry,
             fn: params.fn,
+            dbCache: params.dbCache,
           }) as QueryResource<Params, Response, CacheOrDefault<Cache, Response>>;
         } else {
           const cacheStore = createDefaultCacheStore<Response>();
           const cacheMapper = createDefaultCacheMapper<Params, Response>(wrapKeyFactory(key));
 
-          return build<Params, Response, DefaultCache<Response>>({
+          return build<Params, Response, DefaultCache<Response>, unknown>({
             cache: {
               store: cacheStore,
               map: cacheMapper,

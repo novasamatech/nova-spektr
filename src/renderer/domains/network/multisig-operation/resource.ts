@@ -8,6 +8,7 @@ import { GraphQLClient } from 'graphql-request';
 import { produce } from 'immer';
 import { z } from 'zod';
 
+import { storageService } from '@/shared/api/storage';
 import { type Chain, type ChainId, type DecodedTransaction, type HexString } from '@/shared/core';
 import {
   entries,
@@ -27,7 +28,7 @@ import { type MapCacheFn } from '@/shared/query/types';
 import { decodeCallData } from '@/entities/transaction/lib/callDataDecoder';
 
 import { INDEXER_URL } from './constants';
-import { multisigOperationService } from './service';
+import { deserializeOperation, multisigOperationService, serializeOperation } from './service';
 import { type MultisigEvent, type MultisigOperation } from './types';
 
 type CreateOperationParams = {
@@ -277,6 +278,12 @@ export const fetchOffchainResource = createQueryResource<RequestParams>({
   .cache({
     store: $offChainOperations,
     map: offChainCacheMapper,
+  })
+  .dbCache({
+    storage: storageService.multisigOperations,
+    serialize: serializeOperation,
+    deserialize: deserializeOperation,
+    updateCache: (cache, dbOps) => multisigOperationService.mergeMultisigOperations(dbOps, cache),
   })
   .build();
 

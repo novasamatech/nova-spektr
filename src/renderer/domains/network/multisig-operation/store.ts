@@ -22,7 +22,7 @@ import {
   subscribeNewMultisigEventsResource,
   subscribeOnchainResource,
 } from './resource';
-import { deserializeOperation, serializeOperation } from './service';
+import { serializeOperation } from './service';
 import { type MultisigEvent, type MultisigOperation } from './types';
 
 const subscribeToAccounts = createEvent<{
@@ -48,10 +48,6 @@ const $offChainFetched = createStore(false)
   .reset(unsubscribeFromAccounts);
 
 const $initialLoadingComplete = and($initialOnChainFetched, $offChainFetched);
-
-const populateFx = createEffect(() =>
-  storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
-);
 
 const updateOperationsFx = createEffect((operations: MultisigOperation[]) => {
   return storageService.multisigOperations.updateAll(operations.map(serializeOperation)).then(() => operations);
@@ -298,6 +294,10 @@ const $completedLiveOperations = combine(
   },
 );
 
+// DB Cache is now integrated into fetchOffchainResource via .dbCache()
+// The resource's populateFromDb effect loads data directly into $offChainOperations
+// and syncs updates back to DB automatically
+
 const $allOperations = combine(
   {
     onChain: $onChainOperations,
@@ -305,6 +305,8 @@ const $allOperations = combine(
     offChain: $offChainOperations,
   },
   ({ onChain, completedLiveOperations, offChain }) => {
+    // Priority order: on-chain (live) > completed live > off-chain (indexer + DB cache merged)
+    // uniqBy keeps first occurrence, so earlier sources win
     return uniqBy(onChain.concat(completedLiveOperations).concat(offChain), o => o.id);
   },
 );
@@ -334,13 +336,14 @@ export const multisigOperation = {
   $initialLoadingComplete,
   $onChainReady: readonly($initialOnChainFetched),
   $offChainReady: readonly($offChainFetched),
+  $dbPopulated: fetchOffchainResource.$dbPopulated,
 
   //API
   subscribeToAccounts,
   unsubscribeFromAccounts,
   refetchOffchainOperations,
 
-  populate: populateFx,
+  populate: fetchOffchainResource.populateFromDb,
   updateOperations: updateOperationsFx,
   updateCallData: updateCallDataFx,
   requestOffchainOperations: fetchOffchainResource.start,

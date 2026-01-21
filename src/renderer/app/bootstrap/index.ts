@@ -49,7 +49,7 @@ const populate = async () => {
   accounts.populate();
   walletModel.populate();
   proxyModel.populate();
-  multisigOperation.populate();
+  multisigOperation.populate?.();
   governanceMetaProvider.populate();
   portfolioModel.populate();
   balanceModel.populate();
