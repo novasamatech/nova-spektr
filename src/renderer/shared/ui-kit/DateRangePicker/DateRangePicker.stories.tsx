@@ -29,7 +29,7 @@ export const WithPlaceholder: Story = {
 
 export const WithInitialRange: Story = {
   args: {
-    defaultValue: {
+    value: {
       from: new Date(2026, 0, 15),
       to: new Date(2026, 0, 20),
     },

@@ -1,9 +1,9 @@
 import { format } from 'date-fns';
-import { useState } from 'react';
 import { type DateRange, DayPicker } from 'react-day-picker';
 
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Icon } from '@/shared/ui';
+import { Button, Icon } from '@/shared/ui';
 import { Popover } from '../Popover/Popover';
 import 'react-day-picker/style.css';
 import './styles.css';
@@ -16,26 +16,20 @@ const formatRange = (range: DateRange | undefined): string => {
 };
 
 export interface DateRangePickerProps {
-  defaultValue?: DateRange;
+  value?: DateRange;
   placeholder?: string;
   isDisabled?: boolean;
   onChange?: (range: DateRange | undefined) => void;
 }
 
-export const DateRangePicker = ({
-  defaultValue,
-  placeholder = '',
-  isDisabled = false,
-  onChange,
-}: DateRangePickerProps) => {
-  const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(defaultValue);
+export const DateRangePicker = ({ value, placeholder = '', isDisabled = false, onChange }: DateRangePickerProps) => {
+  const { t } = useI18n();
 
-  const handleChange = (range: DateRange | undefined) => {
-    setSelectedRange(range);
-    onChange?.(range);
+  const handleReset = () => {
+    onChange?.(undefined);
   };
 
-  const formattedRange = formatRange(selectedRange);
+  const formattedRange = formatRange(value);
 
   return (
     <Popover>
@@ -58,17 +52,24 @@ export const DateRangePicker = ({
       </Popover.Trigger>
 
       <Popover.Content>
-        <DayPicker
-          mode="range"
-          navLayout="around"
-          required
-          animate
-          showOutsideDays
-          defaultMonth={selectedRange?.from}
-          selected={selectedRange}
-          disabled={isDisabled}
-          onSelect={handleChange}
-        />
+        <div className="flex flex-col">
+          <DayPicker
+            mode="range"
+            navLayout="around"
+            required
+            animate
+            showOutsideDays
+            defaultMonth={value?.from}
+            selected={value}
+            disabled={isDisabled}
+            onSelect={onChange}
+          />
+          <div className="flex justify-end border-t border-filter-border px-3 py-2">
+            <Button variant="text" size="sm" disabled={isDisabled} onClick={handleReset}>
+              {t('general.button.resetButton')}
+            </Button>
+          </div>
+        </div>
       </Popover.Content>
     </Popover>
   );

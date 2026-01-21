@@ -1180,6 +1180,7 @@
       "networkSettingsLink": "Open network settings",
       "pasteButton": "Paste",
       "refreshButton": "Refresh",
+      "resetButton": "Reset",
       "submitButton": "Submit",
       "uploadButton": "Upload"
     },
