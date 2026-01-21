@@ -287,7 +287,6 @@ export const initialOnChainFetch = createQueryResource<RequestParams>({
     const callHashesByChain: Record<ChainId, Record<AccountId, HexString[]>> = {};
     const onChainData: Record<HexString, MultisigOperation> = {};
 
-    // Level 1: Chain-level error handling with Promise.allSettled
     const chainResults = await Promise.allSettled(
       Object.values(apis).map(async api => {
         const chainId = api.genesisHash.toHex();
@@ -296,13 +295,11 @@ export const initialOnChainFetch = createQueryResource<RequestParams>({
 
         const chainAccountHashes: Record<AccountId, HexString[]> = {};
 
-        // Level 2: Account-level error handling with Promise.allSettled
         const accountResults = await Promise.allSettled(
           accountIds.map(async accountId => {
             const storageEntries = await api.query.multisig.multisigs.entries(accountId);
             const accountHashes: HexString[] = [];
 
-            // Level 3: Operation-level error handling with Promise.allSettled + try-catch
             const operationResults = await Promise.allSettled(
               storageEntries.map(async ([storageKey, optionalMultisig]) => {
                 const [, callHashArg] = storageKey.args;
