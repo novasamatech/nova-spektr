@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { type DateRange } from 'react-day-picker';
 
 import { TransactionType } from '@/shared/core';
@@ -44,7 +44,7 @@ const EmptyOptions: FiltersOptions = {
   type: new Set<DropdownOption>(),
 };
 
-export const OperationsFilter = () => {
+export const OperationsFilter = memo(() => {
   const { t } = useI18n();
 
   const operations = useUnit(selectedWalletMultisigOperations.$list);
@@ -143,7 +143,7 @@ export const OperationsFilter = () => {
       )}
     </div>
   );
-};
+});
 
 const getTransactionOptions = (t: TFunction) => {
   return [

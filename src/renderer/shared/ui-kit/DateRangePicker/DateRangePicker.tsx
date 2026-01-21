@@ -1,4 +1,5 @@
 import { format, startOfDay, subMonths, subWeeks, subYears } from 'date-fns';
+import { memo } from 'react';
 import { type DateRange, DayPicker } from 'react-day-picker';
 
 import { useI18n } from '@/shared/i18n';
@@ -51,69 +52,71 @@ export interface DateRangePickerProps {
   onChange?: (range: DateRange | undefined) => void;
 }
 
-export const DateRangePicker = ({ value, placeholder = '', isDisabled = false, onChange }: DateRangePickerProps) => {
-  const { t } = useI18n();
+export const DateRangePicker = memo(
+  ({ value, placeholder = '', isDisabled = false, onChange }: DateRangePickerProps) => {
+    const { t } = useI18n();
 
-  const handleReset = () => {
-    onChange?.(undefined);
-  };
+    const handleReset = () => {
+      onChange?.(undefined);
+    };
 
-  const formattedRange = formatRange(value);
+    const formattedRange = formatRange(value);
 
-  return (
-    <Popover>
-      <Popover.Trigger>
-        <button
-          className="flex h-full w-full cursor-pointer items-center gap-2 truncate rounded-sm border border-filter-border bg-input-background px-3 py-[7px] text-start outline-none focus:outline-none active:outline-none disabled:bg-input-background-disabled disabled:text-text-tertiary"
-          disabled={isDisabled}
-          type="button"
-        >
-          <Icon name="calendar" size={16} />
-          <span
-            className={cnTw(
-              'w-full truncate text-footnote',
-              formattedRange ? 'text-text-primary' : 'text-text-secondary',
-            )}
-          >
-            {formattedRange || placeholder}
-          </span>
-        </button>
-      </Popover.Trigger>
-
-      <Popover.Content>
-        <div className="flex flex-col">
-          <div className="flex gap-2 border-b border-filter-border px-3 py-2">
-            {presets.map(preset => (
-              <Button
-                key={preset.labelKey}
-                variant="chip"
-                pallet="secondary"
-                size="sm"
-                disabled={isDisabled}
-                onClick={() => onChange?.(preset.getRange())}
-              >
-                {t(preset.labelKey)}
-              </Button>
-            ))}
-          </div>
-          <DayPicker
-            mode="range"
-            navLayout="around"
-            required
-            animate
-            showOutsideDays
-            defaultMonth={value?.from}
-            selected={value}
+    return (
+      <Popover>
+        <Popover.Trigger>
+          <button
+            className="flex h-full w-full cursor-pointer items-center gap-2 truncate rounded-sm border border-filter-border bg-input-background px-3 py-[7px] text-start outline-none focus:outline-none active:outline-none disabled:bg-input-background-disabled disabled:text-text-tertiary"
             disabled={isDisabled}
-            onSelect={onChange}
-          />
-          <div className="flex justify-end border-t border-filter-border px-3 py-2">
-            <Button variant="text" size="sm" disabled={isDisabled} onClick={handleReset}>
-              {t('dateRangePicker.resetButton')}
-            </Button>
+            type="button"
+          >
+            <Icon name="calendar" size={16} />
+            <span
+              className={cnTw(
+                'w-full truncate text-footnote',
+                formattedRange ? 'text-text-primary' : 'text-text-secondary',
+              )}
+            >
+              {formattedRange || placeholder}
+            </span>
+          </button>
+        </Popover.Trigger>
+
+        <Popover.Content>
+          <div className="flex flex-col">
+            <div className="flex gap-2 border-b border-filter-border px-3 py-2">
+              {presets.map(preset => (
+                <Button
+                  key={preset.labelKey}
+                  variant="chip"
+                  pallet="secondary"
+                  size="sm"
+                  disabled={isDisabled}
+                  onClick={() => onChange?.(preset.getRange())}
+                >
+                  {t(preset.labelKey)}
+                </Button>
+              ))}
+            </div>
+            <DayPicker
+              mode="range"
+              navLayout="around"
+              required
+              animate
+              showOutsideDays
+              defaultMonth={value?.from}
+              selected={value}
+              disabled={isDisabled}
+              onSelect={onChange}
+            />
+            <div className="flex justify-end border-t border-filter-border px-3 py-2">
+              <Button variant="text" size="sm" disabled={isDisabled} onClick={handleReset}>
+                {t('dateRangePicker.resetButton')}
+              </Button>
+            </div>
           </div>
-        </div>
-      </Popover.Content>
-    </Popover>
-  );
-};
+        </Popover.Content>
+      </Popover>
+    );
+  },
+);
