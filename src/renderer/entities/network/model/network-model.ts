@@ -157,12 +157,23 @@ type CreateApiParams = {
   provider: ProviderWithMetadata;
   existingApi: ApiPromise | null;
 };
-const createApiFx = createEffect(({ chainId, provider, existingApi }: CreateApiParams): Promise<ApiPromise> => {
+
+const API_READY_TIMEOUT = 30000; // 30 seconds
+
+const createApiFx = createEffect(async ({ chainId, provider, existingApi }: CreateApiParams): Promise<ApiPromise> => {
   if (nonNullable(existingApi)) {
     return Promise.resolve(existingApi);
   }
 
-  return networkService.createApi(chainId, provider).isReady;
+  const api = networkService.createApi(chainId, provider);
+
+  // Create timeout promise to prevent indefinite hanging
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error(`API connection timeout for chain ${chainId}`)), API_READY_TIMEOUT);
+  });
+
+  // Race between API ready and timeout
+  return Promise.race([api.isReady, timeoutPromise]);
 });
 
 type DisconnectParams = {
@@ -176,6 +187,14 @@ const disconnectConnectionFx = createEffect(async ({ api, provider }: Disconnect
   await provider.disconnect();
 
   return chainId;
+});
+
+const cleanupProviderFx = createEffect(async (provider: ProviderWithMetadata): Promise<void> => {
+  try {
+    await provider.disconnect();
+  } catch (error) {
+    console.warn('Failed to disconnect provider during cleanup:', error);
+  }
 });
 
 const startNetworksFx = createEffect(() => {
@@ -364,6 +383,60 @@ sample({
   target: spread({
     newStatuses: $connectionStatuses,
     event: connectionStatusChanged,
+  }),
+});
+
+// Handle API creation failures (timeout or rejection)
+sample({
+  clock: createApiFx.fail,
+  source: $connectionStatuses,
+  fn: (statuses, { params, error }) => {
+    console.error(`Failed to create API for chain ${params.chainId}:`, error);
+
+    return {
+      newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.ERROR },
+      event: { chainId: params.chainId, status: ConnectionStatus.ERROR },
+    };
+  },
+  target: spread({
+    newStatuses: $connectionStatuses,
+    event: connectionStatusChanged,
+  }),
+});
+
+// Cleanup provider when API creation fails
+sample({
+  clock: createApiFx.fail,
+  source: $providers,
+  filter: (providers, { params }) => nonNullable(providers[params.chainId]),
+  fn: (providers, { params }) => providers[params.chainId],
+  target: cleanupProviderFx,
+});
+
+// Remove failed provider from store after cleanup
+sample({
+  clock: cleanupProviderFx.done,
+  source: {
+    providers: $providers,
+    apis: $apis,
+  },
+  fn: ({ providers, apis }, { params: provider }) => {
+    // Find chainId by matching provider instance
+    const chainId = Object.keys(providers).find((id) => providers[id as ChainId] === provider) as ChainId | undefined;
+
+    if (!chainId) return { providers, apis };
+
+    const { [chainId]: _p, ...restProviders } = providers;
+    const { [chainId]: _a, ...restApis } = apis;
+
+    return {
+      newProviders: restProviders,
+      newApis: restApis,
+    };
+  },
+  target: spread({
+    newProviders: $providers,
+    newApis: $apis,
   }),
 });
 
