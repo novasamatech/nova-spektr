@@ -152,6 +152,7 @@
     "qrcode-generator": "2.0.2",
     "raptorq": "1.7.24",
     "react": "19.2.0",
+    "react-day-picker": "9.13.0",
     "react-dom": "19.2.0",
     "react-error-boundary": "6.0.0",
     "react-hook-form": "7.53.0",
