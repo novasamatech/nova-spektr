@@ -281,43 +281,85 @@ export const fetchOffchainResource = createQueryResource<RequestParams>({
   .build();
 
 export const initialOnChainFetch = createQueryResource<RequestParams>({
-  key: ({ accountIds }) => accountIds.join('-'),
+  key: ({ apis, accountIds }) => accountIds.join('-') + Object.keys(apis).join('-'),
 })
   .request(async ({ apis, accountIds, chains }) => {
     const callHashesByChain: Record<ChainId, Record<AccountId, HexString[]>> = {};
     const onChainData: Record<HexString, MultisigOperation> = {};
 
-    for (const api of Object.values(apis)) {
-      const chain = chains[api.genesisHash.toHex()];
-      if (!chain) continue;
+    // Level 1: Chain-level error handling with Promise.allSettled
+    const chainResults = await Promise.allSettled(
+      Object.values(apis).map(async api => {
+        const chainId = api.genesisHash.toHex();
+        const chain = chains[chainId];
+        if (!chain) return { chainId, accounts: {} as Record<AccountId, HexString[]> };
 
-      callHashesByChain[api.genesisHash.toHex()] = {};
+        const chainAccountHashes: Record<AccountId, HexString[]> = {};
 
-      for (const accountId of accountIds) {
-        const storageEntries = await api.query.multisig.multisigs.entries(accountId);
-        const accountHashes: HexString[] = [];
+        // Level 2: Account-level error handling with Promise.allSettled
+        const accountResults = await Promise.allSettled(
+          accountIds.map(async accountId => {
+            const storageEntries = await api.query.multisig.multisigs.entries(accountId);
+            const accountHashes: HexString[] = [];
 
-        for (const [storageKey, optionalMultisig] of storageEntries) {
-          // Extract callHash from the storage key (second argument)
-          const [, callHashArg] = storageKey.args;
-          const callHash = callHashArg.toHex();
+            // Level 3: Operation-level error handling with Promise.allSettled + try-catch
+            const operationResults = await Promise.allSettled(
+              storageEntries.map(async ([storageKey, optionalMultisig]) => {
+                const [, callHashArg] = storageKey.args;
+                const callHash = callHashArg.toHex();
 
-          if (optionalMultisig.isSome) {
-            const multisig = optionalMultisig.unwrap();
+                if (optionalMultisig.isSome) {
+                  const multisig = optionalMultisig.unwrap();
+                  accountHashes.push(callHash);
 
-            accountHashes.push(callHash);
+                  try {
+                    const operation = await createOperationFromMultisig({
+                      api,
+                      chain,
+                      accountId,
+                      callHash,
+                      multisig,
+                    });
+                    return { callHash, operation };
+                  } catch (error) {
+                    console.warn(`Failed to process operation ${callHash}:`, error);
+                    return null;
+                  }
+                }
+                return null;
+              }),
+            );
 
-            onChainData[callHash] = await createOperationFromMultisig({
-              api,
-              chain,
-              accountId,
-              callHash,
-              multisig,
-            });
+            // Collect successful operations
+            for (const result of operationResults) {
+              if (result.status === 'fulfilled' && result.value?.operation) {
+                onChainData[result.value.callHash] = result.value.operation;
+              }
+            }
+
+            return { accountId, hashes: accountHashes };
+          }),
+        );
+
+        // Collect successful account results
+        for (const result of accountResults) {
+          if (result.status === 'fulfilled') {
+            chainAccountHashes[result.value.accountId] = result.value.hashes;
+          } else {
+            console.warn(`Failed to fetch account data on chain ${chainId}:`, result.reason);
           }
         }
 
-        callHashesByChain[api.genesisHash.toHex()]![accountId] = accountHashes;
+        return { chainId, accounts: chainAccountHashes };
+      }),
+    );
+
+    // Collect successful chain results
+    for (const result of chainResults) {
+      if (result.status === 'fulfilled') {
+        callHashesByChain[result.value.chainId] = result.value.accounts;
+      } else {
+        console.warn('Failed to fetch chain data:', result.reason);
       }
     }
 
@@ -326,6 +368,7 @@ export const initialOnChainFetch = createQueryResource<RequestParams>({
       onChainData,
     };
   })
+  .retry({ count: 3, delay: 1000 })
   .cache({
     store: $onChainOperationsByCallhash,
     map: (cache, { onChainData }) => ({ ...cache, ...onChainData }),
