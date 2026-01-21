@@ -343,7 +343,10 @@ export const multisigOperation = {
   unsubscribeFromAccounts,
   refetchOffchainOperations,
 
-  populate: fetchOffchainResource.populateFromDb,
+  populate: createEffect(() => {
+    if (fetchOffchainResource.populateFromDb) fetchOffchainResource.populateFromDb();
+    if (subscribeOnchainResource.populateFromDb) subscribeOnchainResource.populateFromDb();
+  }),
   updateOperations: updateOperationsFx,
   updateCallData: updateCallDataFx,
   requestOffchainOperations: fetchOffchainResource.start,

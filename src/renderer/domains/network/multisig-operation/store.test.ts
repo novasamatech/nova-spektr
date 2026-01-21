@@ -9,6 +9,7 @@ import {
   $onChainOperationsByCallhash,
   fetchOffchainResource,
   initialOnChainFetch,
+  subscribeOnchainResource,
 } from './resource';
 import { multisigOperation } from './store';
 import { type MultisigOperation } from './types';
@@ -93,16 +94,38 @@ describe('multisigOperation store', () => {
       const mockDbOperations = [createMockOperation({ id: 'db-op-1' }), createMockOperation({ id: 'db-op-2' })];
 
       const scope = fork({
-        handlers: new Map<any, any>([[multisigOperation.populate!, async () => mockDbOperations]]),
+        handlers: new Map<any, any>([
+          [fetchOffchainResource.populateFromDb!, async () => mockDbOperations],
+          [subscribeOnchainResource.populateFromDb!, async () => []],
+        ]),
       });
 
-      await allSettled(multisigOperation.populate!, { scope });
+      await allSettled(fetchOffchainResource.populateFromDb!, { scope });
 
       // DB operations should be included in the final list (merged into offChainOperations)
       const list = scope.getState(multisigOperation.$list);
       expect(list).toHaveLength(2);
       expect(list.map(op => op.id)).toContain('db-op-1');
       expect(list.map(op => op.id)).toContain('db-op-2');
+    });
+
+    it('should populate $onChainOperationsByCallhash from subscribeOnchainResource.populateFromDb', async () => {
+      const dbOp = createMockOperation({ id: 'db-onchain-1', callHash: '0x123' });
+
+      const scope = fork({
+        handlers: new Map<any, any>([
+          [subscribeOnchainResource.populateFromDb!, async () => [dbOp]],
+          [fetchOffchainResource.populateFromDb!, async () => []],
+        ]),
+      });
+
+      await allSettled(subscribeOnchainResource.populateFromDb!, { scope });
+
+      const onChainState = scope.getState($onChainOperationsByCallhash);
+      const list = scope.getState(multisigOperation.$list);
+
+      expect(onChainState['0x123']).toMatchObject({ id: 'db-onchain-1' });
+      expect(list.map(op => op.id)).toContain('db-onchain-1');
     });
 
     it('should prioritize on-chain data over DB cache', async () => {
@@ -119,7 +142,10 @@ describe('multisigOperation store', () => {
       });
 
       const scope = fork({
-        handlers: new Map<any, any>([[multisigOperation.populate!, async () => [dbOperation]]]),
+        handlers: new Map<any, any>([
+          [fetchOffchainResource.populateFromDb!, async () => [dbOperation]],
+          [subscribeOnchainResource.populateFromDb!, async () => []],
+        ]),
         values: new Map<any, any>([[$onChainOperationsByCallhash, { [onChainOperation.callHash]: onChainOperation }]]),
       });
 
@@ -146,7 +172,10 @@ describe('multisigOperation store', () => {
 
       // Pre-populate $offChainOperations with indexer data
       const scope = fork({
-        handlers: new Map<any, any>([[multisigOperation.populate!, async () => [dbOperation]]]),
+        handlers: new Map<any, any>([
+          [fetchOffchainResource.populateFromDb!, async () => [dbOperation]],
+          [subscribeOnchainResource.populateFromDb!, async () => []],
+        ]),
         values: new Map<any, any>([[$offChainOperations, [offChainOperation]]]),
       });
 
@@ -164,7 +193,10 @@ describe('multisigOperation store', () => {
       const offChainOnlyOp = createMockOperation({ id: 'offchain-only' });
 
       const scope = fork({
-        handlers: new Map<any, any>([[multisigOperation.populate!, async () => [dbOnlyOp]]]),
+        handlers: new Map<any, any>([
+          [fetchOffchainResource.populateFromDb!, async () => [dbOnlyOp]],
+          [subscribeOnchainResource.populateFromDb!, async () => []],
+        ]),
         values: new Map<any, any>([
           [$onChainOperationsByCallhash, { ['0xabc' as HexString]: onChainOnlyOp }],
           [$offChainOperations, [offChainOnlyOp]],

@@ -9,7 +9,7 @@ import { produce } from 'immer';
 import { z } from 'zod';
 
 import { storageService } from '@/shared/api/storage';
-import { type Chain, type ChainId, type DecodedTransaction, type HexString } from '@/shared/core';
+import { type Chain, type ChainId, type DecodedTransaction, type HexString, type Serializable } from '@/shared/core';
 import {
   entries,
   getCreatedDateFromApi,
@@ -476,6 +476,23 @@ export const subscribeOnchainResource = createSubscriptionResource<{
   .cache({
     store: $onChainOperationsByCallhash,
     map: onChainSubscriptionCacheMapper,
+  })
+  .dbCache<Serializable<MultisigOperation>, MultisigOperation>({
+    storage: storageService.multisigOperations,
+    serialize: serializeOperation,
+    deserialize: deserializeOperation,
+    // Extract: Convert Record<Hex, Op> -> Op[]
+    extractValues: cache => Object.values(cache).filter(nonNullable),
+    // Update: Merge Op[] into Record<Hex, Op>
+    updateCache: (cache, dbOps) => {
+      // Logic to merge dbOps into cache record
+      const dbRecord = dbOps.reduce<Record<HexString, MultisigOperation>>(
+        (acc, op) => ({ ...acc, [op.callHash]: op }),
+        {},
+      );
+      // Conflict resolution: Cache wins
+      return { ...dbRecord, ...cache };
+    },
   })
   .build();
 

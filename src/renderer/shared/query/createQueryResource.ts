@@ -21,23 +21,27 @@ type RequestFn<Params, Response> = (params: Params, signal: AbortSignal) => Resp
 /**
  * Configuration for DB cache integration with query resources.
  */
-type DbCacheParams<Cache, Serialized> = {
+type DbCacheParams<Cache, Serialized, Item = Cache extends (infer T)[] ? T : Serialized> = {
   /** Storage service with readAll and insertAll methods */
   storage: {
     readAll(): Promise<Serialized[]>;
     insertAll(items: Serialized[]): Promise<unknown>;
   };
   /** Transform cache item for database storage */
-  serialize: (item: Cache extends (infer T)[] ? T : never) => Serialized;
+  serialize: (item: Item) => Serialized;
   /** Transform item from database storage */
-  deserialize: (item: Serialized) => Cache extends (infer T)[] ? T : never;
+  deserialize: (item: Serialized) => Item;
   /** Buffer timeframe in ms before syncing to DB (default: 1000) */
   bufferMs?: number;
   /**
    * Custom function to merge DB data into cache. If not provided, DB data
    * replaces cache.
    */
-  updateCache?: (cache: Cache, dbItems: (Cache extends (infer T)[] ? T : never)[]) => Cache;
+  updateCache?: (cache: Cache, dbItems: Item[]) => Cache;
+  /**
+   * Extract items from cache for DB storage. Required if Cache is not an Array.
+   */
+  extractValues?: (cache: Cache) => Item[];
 };
 
 interface QueryResource<Params, Response, Cache> extends Resource<Params, Response, Cache> {
@@ -55,7 +59,7 @@ interface QueryResource<Params, Response, Cache> extends Resource<Params, Respon
   $dbPopulated?: Store<boolean>;
 }
 
-type QueryParams<Params, Response, Cache, Serialized = unknown> = {
+type QueryParams<Params, Response, Cache, Serialized = unknown, Item = Cache extends (infer T)[] ? T : Serialized> = {
   fn: RequestFn<Params, Response>;
   key: KeyFn<Params>;
   cache: {
@@ -67,7 +71,7 @@ type QueryParams<Params, Response, Cache, Serialized = unknown> = {
     count: number;
     delay: number;
   };
-  dbCache?: DbCacheParams<Cache, Serialized>;
+  dbCache?: DbCacheParams<Cache, Serialized, Item>;
   // TODO support batching
   batch?: {
     frame: number;
@@ -77,13 +81,13 @@ type QueryParams<Params, Response, Cache, Serialized = unknown> = {
 
 type CacheOrDefault<Cache, Response> = [Cache] extends [never] ? DefaultCache<Response> : Cache;
 
-function build<Params, Response, Cache, Serialized>({
+function build<Params, Response, Cache, Serialized, Item>({
   key,
   fn,
   retry,
   cache,
   dbCache,
-}: QueryParams<Params, Response, Cache, Serialized>): QueryResource<Params, Response, Cache> {
+}: QueryParams<Params, Response, Cache, Serialized, Item>): QueryResource<Params, Response, Cache> {
   const createKey = wrapKeyFactory(key);
 
   const push = createEvent<{ params: Params; result: Response }>();
@@ -215,7 +219,7 @@ function build<Params, Response, Cache, Serialized>({
     });
 
     // Sync to DB with queuing (prevents race conditions)
-    const syncToDbFx = createQueuedEffect(async (items: Cache) => {
+    const syncToDbFx = createQueuedEffect(async (items: any[]) => {
       if (!Array.isArray(items) || items.length === 0) return;
       await storage.insertAll(items.map(serialize));
     });
@@ -227,10 +231,17 @@ function build<Params, Response, Cache, Serialized>({
     });
 
     // Wire buffered sync to DB
+    // Wire buffered sync to DB
     sample({
       clock: bufferedSync,
       source: cache.store,
-      fn: (items) => items,
+      fn: (items) => {
+        if (dbCache.extractValues) {
+          return dbCache.extractValues(items);
+        }
+
+        return Array.isArray(items) ? items : [];
+      },
       target: syncToDbFx,
     });
 
@@ -242,20 +253,37 @@ function build<Params, Response, Cache, Serialized>({
 }
 
 export const createQueryResource = <Params>({ key }: { key: KeyFn<Params> }) => {
-  const internal = <Response = never, Cache = never>(params: Partial<QueryParams<Params, Response, Cache>> = {}) => {
+  const internal = <
+    Response = never,
+    Cache = never,
+    Serialized = unknown,
+    Item = Cache extends (infer T)[] ? T : Serialized,
+  >(
+    params: Partial<QueryParams<Params, Response, Cache, Serialized, Item>> = {},
+  ) => {
     return {
       request<Response>(fn: RequestFn<Params, Response>) {
-        return internal<Response, Cache>({ ...params, fn, key } as Partial<QueryParams<Params, Response, Cache>>);
+        return internal<Response, Cache, Serialized, Item>({
+          ...params,
+          fn,
+          key,
+        } as Partial<QueryParams<Params, Response, Cache, Serialized, Item>>);
       },
       retry(retry: NonNullable<QueryParams<Params, Response, Cache>>['retry']) {
-        return internal<Response, Cache>({ ...params, retry } as Partial<QueryParams<Params, Response, Cache>>);
+        return internal<Response, Cache, Serialized, Item>({ ...params, retry } as Partial<
+          QueryParams<Params, Response, Cache, Serialized, Item>
+        >);
       },
       cache<Cache>(cache: NonNullable<QueryParams<Params, Response, Cache>['cache']>) {
-        return internal<Response, Cache>({ ...params, cache } as Partial<QueryParams<Params, Response, Cache>>);
+        return internal<Response, Cache, Serialized, Item>({ ...params, cache } as Partial<
+          QueryParams<Params, Response, Cache, Serialized, Item>
+        >);
       },
-      dbCache<Serialized>(config: DbCacheParams<Cache, Serialized>) {
-        return internal<Response, Cache>({ ...params, dbCache: config } as Partial<
-          QueryParams<Params, Response, Cache>
+      dbCache<Serialized, Item = Cache extends (infer T)[] ? T : Serialized>(
+        config: DbCacheParams<Cache, Serialized, Item>,
+      ) {
+        return internal<Response, Cache, Serialized, Item>({ ...params, dbCache: config } as Partial<
+          QueryParams<Params, Response, Cache, Serialized, Item>
         >);
       },
       build(): QueryResource<Params, Response, CacheOrDefault<Cache, Response>> {
@@ -264,7 +292,7 @@ export const createQueryResource = <Params>({ key }: { key: KeyFn<Params> }) => 
         }
 
         if (params.cache) {
-          return build<Params, Response, Cache, unknown>({
+          return build<Params, Response, Cache, Serialized, Item>({
             cache: params.cache,
             key,
             retry: params.retry,
@@ -275,7 +303,7 @@ export const createQueryResource = <Params>({ key }: { key: KeyFn<Params> }) => 
           const cacheStore = createDefaultCacheStore<Response>();
           const cacheMapper = createDefaultCacheMapper<Params, Response>(wrapKeyFactory(key));
 
-          return build<Params, Response, DefaultCache<Response>, unknown>({
+          return build<Params, Response, DefaultCache<Response>, unknown, unknown>({
             cache: {
               store: cacheStore,
               map: cacheMapper,
