@@ -1,11 +1,12 @@
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
+import { type DateRange, DateRangePicker } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
@@ -42,12 +43,11 @@ const EmptyOptions: FiltersOptions = {
   type: new Set<DropdownOption>(),
 };
 
-export const OperationsFilter = () => {
+export const OperationsFilter = memo(() => {
   const { t } = useI18n();
 
   const operations = useUnit(selectedWalletMultisigOperations.$list);
   const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(EmptyOptions);
-
   const selectedOptions = useUnit(operationsContextModel.$filter);
   const chains = useUnit(networkModel.$chains);
 
@@ -96,14 +96,30 @@ export const OperationsFilter = () => {
     operationsContextModel.setFilters(newSelectedOptions);
   };
 
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    const newSelectedOptions = { ...selectedOptions, dateRange: range };
+    operationsContextModel.setFilters(newSelectedOptions);
+  };
+
   const clearFilters = () => {
     operationsContextModel.resetFilters();
   };
 
-  const filtersSelected = selectedOptions.network.length || selectedOptions.type.length;
+  const filtersSelected =
+    selectedOptions.network.length ||
+    selectedOptions.type.length ||
+    selectedOptions.dateRange?.from ||
+    selectedOptions.dateRange?.to;
 
   return (
     <div className="flex h-9 items-center gap-2">
+      <div className="w-[200px]">
+        <DateRangePicker
+          value={selectedOptions.dateRange}
+          placeholder={t('operations.filters.dateRangePlaceholder')}
+          onChange={handleDateRangeChange}
+        />
+      </div>
       <MultiSelect
         className="w-[200px]"
         placeholder={t('operations.filters.networkPlaceholder')}
@@ -126,7 +142,7 @@ export const OperationsFilter = () => {
       )}
     </div>
   );
-};
+});
 
 const getTransactionOptions = (t: TFunction) => {
   return [

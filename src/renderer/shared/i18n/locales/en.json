@@ -393,6 +393,12 @@
     "walletsTab": "Your wallets",
     "yourAccounts": "Your accounts"
   },
+  "dateRangePicker": {
+    "lastMonth": "Last month",
+    "lastWeek": "Last week",
+    "lastYear": "Last year",
+    "resetButton": "Reset"
+  },
   "delegate": {
     "title": "Delegations"
   },
@@ -2088,6 +2094,7 @@
     "createdOperationDescription": "The changes will take effect after the other signatories sign.",
     "filters": {
       "clearAll": "Clear all",
+      "dateRangePlaceholder": "Date range",
       "networkPlaceholder": "Network",
       "networkSummary": "Networks",
       "operationTypePlaceholder": "Operation type",
