@@ -1,16 +1,31 @@
 import { sample } from 'effector';
+import { t } from 'i18next';
 import { spread } from 'patronum';
 
-import { NotificationType } from '@/shared/core';
-import { pairwise } from '@/shared/effector';
 import {
+  type Chain,
+  type ChainId,
+  type CreateMultisigEventParams,
+  type CreateMultisigOperationParams,
+  type NotificationStatus,
+  NotificationType,
+} from '@/shared/core';
+import { pairwise } from '@/shared/effector';
+import { formatBalance, getAssetById, nonNullable } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
+import {
+  type AnyAccount,
   type MultisigEvent,
   type MultisigOperation,
   accounts,
   multisigOperation,
   multisigOperationService,
 } from '@/domains/network';
+import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
+import { findCoreTransaction } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
+import { operationTitleTransformer } from '../components/Operation';
 
 type NewEvent = {
   operation: MultisigOperation;
@@ -20,6 +35,167 @@ type NewEvent = {
 const $accountsMap = accounts.$list.map(
   accountsList => new Map(accountsList.map(account => [account.accountId, account])),
 );
+
+const getNotificationStatus = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
+  switch (operationStatus) {
+    case 'pending':
+      return 'info';
+    case 'executed':
+      return 'success';
+    case 'cancelled':
+    case 'error':
+      return 'error';
+  }
+};
+
+const getFallbackNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): string => {
+  switch (operationStatus) {
+    case 'pending':
+      return 'Multisig operation created';
+    case 'executed':
+      return 'Multisig operation executed';
+    case 'cancelled':
+      return 'Multisig operation rejected';
+    case 'error':
+      return 'Multisig operation error';
+  }
+};
+
+const getStatusSuffix = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): string => {
+  switch (operationStatus) {
+    case 'pending':
+      return 'created';
+    case 'executed':
+      return 'executed';
+    case 'cancelled':
+      return 'rejected';
+    case 'error':
+      return 'error';
+  }
+};
+
+const getOperationNotificationTitle = (
+  operation: MultisigOperation,
+  chains: Record<ChainId, Chain>,
+  account?: AnyAccount,
+): string => {
+  const showCoreTransaction = account ? accountUtils.isFlexibleMultisigAccount(account) : false;
+  const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+
+  const chain = chains[operation.chainId];
+  const assetId = coreTx?.args?.['assetId'];
+  const asset = assetId && chain ? (getAssetById(assetId, chain.assets) ?? null) : null;
+
+  const transformerResult = operationTitleTransformer({
+    operation,
+    showCoreTransaction,
+    chains,
+    asset,
+    t,
+  });
+
+  if (!transformerResult?.title) {
+    return getFallbackNotificationTitle(operation.status);
+  }
+
+  let formattedAmount: string | undefined;
+  if (transformerResult.amount) {
+    const { precision, symbol } = transformerResult.amount.asset;
+    const { formatted } = formatBalance(transformerResult.amount.value, precision);
+    formattedAmount = `${formatted} ${symbol}`;
+  }
+
+  return [transformerResult.title, formattedAmount, getStatusSuffix(operation.status)].filter(nonNullable).join(' ');
+};
+
+const createOperationNotification = (
+  operation: MultisigOperation,
+  chains: Record<ChainId, Chain>,
+  account?: AnyAccount,
+): CreateMultisigOperationParams => {
+  const description = account?.name ? `by ${account.name}` : undefined;
+  const title = getOperationNotificationTitle(operation, chains, account);
+
+  const relativeLink = multisigOperationService.generateMultisigOperationRelativeLink({
+    chainId: operation.chainId,
+    callHash: operation.callHash,
+    accountId: operation.accountId,
+    blockCreated: operation.blockCreated,
+    indexCreated: operation.indexCreated,
+  });
+
+  return {
+    key: `${NotificationType.MULTISIG_OPERATION}-${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.accountId, operation.blockCreated, operation.indexCreated)}-${operation.status}`,
+    type: NotificationType.MULTISIG_OPERATION,
+    status: getNotificationStatus(operation.status),
+    issuer: operation.accountId,
+    title,
+    description,
+    multisigAccountId: operation.accountId,
+    callHash: operation.callHash,
+    callTimepoint: {
+      height: operation.blockCreated,
+      index: operation.indexCreated,
+    },
+    chainId: operation.chainId,
+    link: {
+      title: 'notifications.details.viewOperation',
+      path: relativeLink,
+    },
+    batch: {
+      title: 'notifications.toast.batch.multisigOperationsUpdated',
+      link: {
+        title: 'notifications.toast.viewOperations',
+        path: Paths.OPERATIONS,
+      },
+    },
+  };
+};
+
+const createEventNotification = (
+  operation: MultisigOperation,
+  event: MultisigEvent,
+  signerName?: string,
+): CreateMultisigEventParams => {
+  const relativeLink = multisigOperationService.generateMultisigOperationRelativeLink({
+    chainId: operation.chainId,
+    callHash: operation.callHash,
+    accountId: operation.accountId,
+    blockCreated: operation.blockCreated,
+    indexCreated: operation.indexCreated,
+  });
+
+  const eventId = `${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.accountId, operation.blockCreated, operation.indexCreated)}-${event.id}`;
+
+  return {
+    key: `${NotificationType.MULTISIG_EVENT}-${eventId}`,
+    type: NotificationType.MULTISIG_EVENT,
+    status: event.status === 'approve' ? 'success' : 'error',
+    issuer: operation.accountId,
+    title: event.status === 'approve' ? 'Multisig operation signed' : 'Multisig operation rejected',
+    description: signerName ? `by ${signerName}` : undefined,
+    multisigAccountId: operation.accountId,
+    callHash: operation.callHash,
+    callTimepoint: {
+      height: operation.blockCreated,
+      index: operation.indexCreated,
+    },
+    chainId: operation.chainId,
+    signerAccountId: event.accountId,
+    eventStatus: event.status,
+    link: {
+      title: 'notifications.details.viewOperation',
+      path: relativeLink,
+    },
+    batch: {
+      title: 'notifications.toast.batch.multisigEventsUpdated',
+      link: {
+        title: 'notifications.toast.viewOperations',
+        path: Paths.OPERATIONS,
+      },
+    },
+  };
+};
 
 const getOperationId = (op: MultisigOperation) =>
   multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated);
@@ -67,9 +243,9 @@ const operationChanges = pairwise(multisigOperation.$list)
 
 sample({
   clock: operationChanges,
-  source: { populated: multisigOperation.$populated, accountsMap: $accountsMap },
+  source: { populated: multisigOperation.$populated, accountsMap: $accountsMap, chains: networkModel.$chains },
   filter: ({ populated }) => populated,
-  fn: ({ accountsMap }, { added, removedKeys, newEvents }) => {
+  fn: ({ accountsMap, chains }, { added, removedKeys, newEvents }) => {
     const operationNotifications = added
       .filter(operation => {
         // Don't notify the operation creator
@@ -84,7 +260,7 @@ sample({
       .map(operation => {
         const account = accountsMap.get(operation.accountId);
 
-        return multisigOperationService.createOperationNotification(operation, account?.name);
+        return createOperationNotification(operation, chains, account);
       });
 
     const eventNotifications = newEvents
@@ -99,7 +275,7 @@ sample({
       .map(({ operation, event }) => {
         const signerAccount = accountsMap.get(event.accountId);
 
-        return multisigOperationService.createEventNotification(operation, event, signerAccount?.name);
+        return createEventNotification(operation, event, signerAccount?.name);
       });
 
     return {
