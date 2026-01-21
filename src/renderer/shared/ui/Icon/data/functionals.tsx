@@ -3,6 +3,7 @@
 import AddCircleIcon from '@/shared/assets/images/functionals/add-circle.svg?jsx';
 import AddIcon from '@/shared/assets/images/functionals/add.svg?jsx';
 import ApproveFellowshipVotingIcon from '@/shared/assets/images/functionals/approve-fellowship-voting.svg?jsx';
+import CalendarIcon from '@/shared/assets/images/functionals/calendar.svg?jsx';
 import CheckCutoutIcon from '@/shared/assets/images/functionals/checkmark-cutout.svg?jsx';
 import CheckmarkOutlineIcon from '@/shared/assets/images/functionals/checkmark-outline.svg?jsx';
 import CheckIcon from '@/shared/assets/images/functionals/checkmark.svg?jsx';
@@ -65,6 +66,7 @@ import WithdrawIcon from '@/shared/assets/images/functionals/withdraw.svg?jsx';
 import ChangeSignatoriesIcon from '@/shared/assets/images/functionals/сhangesignatories.svg?jsx';
 
 const FunctionalImages = {
+  calendar: { svg: CalendarIcon },
   copy: { svg: CopyIcon },
   close: { svg: CloseIcon },
   checkmarkCutout: { svg: CheckCutoutIcon },
