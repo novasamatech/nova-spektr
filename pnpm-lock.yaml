@@ -14,6 +14,9 @@ importers:
       '@ariakit/react':
         specifier: 0.4.17
         version: 0.4.17(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@effector-storage/idb-keyval':
+        specifier: 2.0.0
+        version: 2.0.0(effector@23.4.4)
       '@headlessui/react':
         specifier: 1.7.19
         version: 1.7.19(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -825,6 +828,11 @@ packages:
   '@develar/schema-utils@2.6.5':
     resolution: {integrity: sha512-0cp4PsWQ/9avqTVMCtZ+GirikIA36ikvjtHweU4/j8yLtgObI0+JUPhYFScgwlteveGB1rt3Cm8UhN04XayDig==}
     engines: {node: '>= 8.9.0'}
+
+  '@effector-storage/idb-keyval@2.0.0':
+    resolution: {integrity: sha512-kHytrEmkjOEjIX0W+zNf7l2Pi60lJe4ibI7Gl1gOuhrdiHVh076SxoPgbHzr1XWcL1PTCHszXaLDA5LslYbbtQ==}
+    peerDependencies:
+      effector: ^22.4.0 || ^23.0.0
 
   '@effector/swc-plugin@0.8.1':
     resolution: {integrity: sha512-hGoyR73EEdAoL6i8ElWW35KTc9p89xMC4dCW8M4MhCru9mptYgDsq7qKxUFRTJiwCqTVFztIq5j3vP8zdKP1aQ==}
@@ -10816,6 +10824,12 @@ snapshots:
     dependencies:
       ajv: 6.12.6
       ajv-keywords: 3.5.2(ajv@6.12.6)
+
+  '@effector-storage/idb-keyval@2.0.0(effector@23.4.4)':
+    dependencies:
+      effector: 23.4.4
+      effector-storage: 7.1.0(effector@23.4.4)
+      idb-keyval: 6.2.1
 
   '@effector/swc-plugin@0.8.1': {}
 

@@ -1,3 +1,4 @@
+import { persist } from '@effector-storage/idb-keyval';
 import { type ApiPromise } from '@polkadot/api';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { uniqBy } from 'lodash';
@@ -37,6 +38,12 @@ const unsubscribeFromAccounts = createEvent();
 const $subscribedAccounts = createStore<AccountId[]>([]);
 const $subscribedApis = createStore<Record<ChainId, ApiPromise>>({});
 
+// Track expected chains (the complete set we should wait for)
+const $expectedChainIds = createStore<Set<ChainId>>(new Set()).reset(unsubscribeFromAccounts);
+
+// Track which chains have successfully completed their initial fetch
+const $fetchedChainIds = createStore<Set<ChainId>>(new Set()).reset(unsubscribeFromAccounts);
+
 const $onChainOperations = $onChainOperationsByCallhash.map(state =>
   Object.values(state)
     .flatMap(chainOperations =>
@@ -45,9 +52,15 @@ const $onChainOperations = $onChainOperationsByCallhash.map(state =>
     .filter(nonNullable),
 );
 
-const $initialOnChainFetched = createStore(false)
-  .on(initialOnChainFetch.fetch.done, () => true)
-  .reset(unsubscribeFromAccounts);
+// Initial on-chain fetch is complete when ALL expected chains have been fetched
+const $initialOnChainFetched = combine(
+  { expected: $expectedChainIds, fetched: $fetchedChainIds },
+  ({ expected, fetched }) => {
+    if (expected.size === 0) return false;
+    // Check if all expected chains have been fetched
+    return Array.from(expected).every(chainId => fetched.has(chainId));
+  },
+);
 
 const $offChainFetched = createStore(false)
   .on(fetchOffchainResource.fetch.done, () => true)
@@ -185,6 +198,27 @@ sample({
   target: $subscribedApis,
 });
 
+// Track expected chains - the complete set we need to wait for
+// This prevents premature cache invalidation when some APIs haven't connected yet
+// chains parameter is already filtered to multisig-supported chains with user accounts
+sample({
+  clock: subscribeToAccounts,
+  fn: ({ chains }) => new Set(keys(chains)),
+  target: $expectedChainIds,
+});
+
+// Mark chains as fetched when initial on-chain fetch completes
+// Only when ALL expected chains have been fetched will $initialOnChainFetched become true
+sample({
+  clock: initialOnChainFetch.fetch.done,
+  source: $fetchedChainIds,
+  fn: (fetched, { params }) => {
+    const chainIds = keys(params.apis);
+    return new Set([...fetched, ...chainIds]);
+  },
+  target: $fetchedChainIds,
+});
+
 sample({
   clock: subscribeToAccounts,
   fn: ({ apis, accountIds, chains }) => ({ apis, chains, accountIds }),
@@ -314,7 +348,32 @@ const $completedLiveOperations = combine(
   },
 );
 
-const $allOperations = combine(
+/**
+ * Data source architecture:
+ *
+ * LIVE SOURCES (authoritative, used when available):
+ *
+ * 1. $onChainOperations - Pending operations from chain storage (reliable,
+ *    real-time) Limitation: Disappears when operation completes
+ * 2. $completedLiveOperations - Just completed operations (reliable, real-time)
+ *    Source: Event subscriptions catching operations as they execute/reject
+ * 3. $offChainOperations - Completed operations from indexer (reliable, ~30s
+ *    delayed) Limitation: Works with finalized blocks, has delay
+ *
+ * CACHE (for fast initial render):
+ *
+ * - $cachedOperations - IndexedDB cache of all operations Purpose: Show data
+ *   immediately on page load Updated: Synced with live sources after initial
+ *   load completes Replaced: Entirely by live data once $initialLoadingComplete
+ *   is true
+ */
+
+// Cache store for faster initial load - persisted to IndexedDB
+const $cachedOperations = createStore<MultisigOperation[]>([]);
+persist({ store: $cachedOperations, key: 'multisig-operations' });
+
+// Derive the combined operations list from live sources
+const $liveOperations = combine(
   {
     onChain: $onChainOperations,
     completedLiveOperations: $completedLiveOperations,
@@ -324,6 +383,24 @@ const $allOperations = combine(
     return uniqBy(onChain.concat(completedLiveOperations).concat(offChain), o => o.id);
   },
 );
+
+// Show cached data until live sources are ready, then switch to live data
+const $allOperations = combine(
+  { live: $liveOperations, cached: $cachedOperations, initialLoadingComplete: $initialLoadingComplete },
+  ({ live, cached, initialLoadingComplete }) => {
+    // Use cached data only until initial load completes, then always use live
+    return initialLoadingComplete ? live : cached;
+  },
+);
+
+// Update cache with live data once initial loading is complete and on subsequent changes
+sample({
+  clock: $liveOperations,
+  source: $initialLoadingComplete,
+  filter: loadingComplete => loadingComplete,
+  fn: (_, liveOps) => liveOps,
+  target: $cachedOperations,
+});
 
 const $populated = restore(
   once($allOperations.updates).map(() => true),
