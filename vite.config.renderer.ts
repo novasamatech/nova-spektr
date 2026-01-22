@@ -34,6 +34,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
   // @ts-expect-error unresolved import type
   const { default: tailwindcss } = await import('@tailwindcss/vite');
 
+  const isDevServer = command === 'serve';
   const isDev = mode === 'development';
   const isProd = mode === 'production';
   const isStage = mode === 'staging';
@@ -64,7 +65,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
       plugins: () => commonPlugins,
     },
     build: {
-      sourcemap: isStage || undefined,
+      sourcemap: (isDev && !isDevServer) || isStage || undefined,
       minify: !isDev,
       outDir: folders.devBuild,
       emptyOutDir: false,
@@ -93,15 +94,14 @@ const config: UserConfigFn = async ({ mode, command }) => {
     plugins: [
       ...commonPlugins,
 
-      command === 'serve' && mkcert(),
+      isDevServer && mkcert(),
 
       tailwindcss(),
 
       react({
-        plugins:
-          command === 'serve'
-            ? [['@effector/swc-plugin', { hmr: 'es', addNames: true, addLoc: true, factories: ['@/shared/di'] }]]
-            : [],
+        plugins: isDevServer
+          ? [['@effector/swc-plugin', { hmr: 'es', addNames: true, addLoc: true, factories: ['@/shared/di'] }]]
+          : [],
       }),
       svgr({
         include: '**/*.svg?jsx',
