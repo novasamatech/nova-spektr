@@ -422,7 +422,7 @@ export const subscribeOnchainResource = createSubscriptionResource<{
 })
   .subscribe<{ chainId: ChainId; operations: Record<HexString, MultisigOperation | null> }>(
     async ({ chain, api, hashes }, callback) => {
-      const chainId = api.genesisHash.toHex();
+      const chainId = chain.chainId;
       const queries: QueryableStorageMultiArg<'promise'>[] = [];
       const paths: HexString[] = [];
 
@@ -469,8 +469,6 @@ export const subscribeOnchainResource = createSubscriptionResource<{
           }
         }
 
-        console.log('huy oncHaindata', onChainData);
-
         callback({ chainId, operations: onChainData });
       });
 
@@ -480,38 +478,12 @@ export const subscribeOnchainResource = createSubscriptionResource<{
   .cache({
     store: $onChainOperationsByCallhash,
     map: (cache, { chainId, operations }) => {
-      console.log('huy cache', cache);
-      console.log('huy result', { chainId, operations });
-
       return produce(cache, draft => {
         draft[chainId] = { ...draft[chainId], ...operations };
       });
     },
   })
   .build();
-
-// Cache mapper for subscribeNewMultisigEventsResource - adds new hashes to tracked call hashes
-const newMultisigEventsCacheMapper: MapCacheFn<
-  { api: ApiPromise; accountId: AccountId },
-  HexString,
-  TrackedCallHashesState
-> = (cache, newCallHash, { api, accountId }) => {
-  return produce(cache, draft => {
-    const chainId = api.genesisHash.toHex();
-
-    // Ensure the chain entry exists (fixes race condition when NewMultisig arrives before initialOnChainFetch)
-    if (!draft[chainId]) {
-      draft[chainId] = { api, hashes: {} };
-    }
-
-    // Ensure the account hashes array exists
-    if (!draft[chainId].hashes[accountId]) {
-      draft[chainId].hashes[accountId] = [];
-    }
-
-    draft[chainId].hashes[accountId]!.push(newCallHash);
-  });
-};
 
 export const subscribeNewMultisigEventsResource = createSubscriptionResource<{
   api: ApiPromise;
@@ -540,7 +512,23 @@ export const subscribeNewMultisigEventsResource = createSubscriptionResource<{
   })
   .cache({
     store: $trackedCallHashes,
-    map: newMultisigEventsCacheMapper,
+    map: (cache, newCallHash, { api, accountId }) => {
+      return produce(cache, draft => {
+        const chainId = api.genesisHash.toHex();
+
+        // Ensure the chain entry exists (fixes race condition when NewMultisig arrives before initialOnChainFetch)
+        if (!draft[chainId]) {
+          draft[chainId] = { api, hashes: {} };
+        }
+
+        // Ensure the account hashes array exists
+        if (!draft[chainId].hashes[accountId]) {
+          draft[chainId].hashes[accountId] = [];
+        }
+
+        draft[chainId].hashes[accountId]!.push(newCallHash);
+      });
+    },
   })
   .build();
 
@@ -567,8 +555,6 @@ export const subscribeEventsResource = createSubscriptionResource<{
         );
 
         const eventStatus = event.method === 'MultisigCancelled' ? 'reject' : 'approve';
-
-        console.log('huy', event.method, operationId);
 
         callback({
           operationId,
