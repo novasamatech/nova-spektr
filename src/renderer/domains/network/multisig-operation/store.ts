@@ -440,9 +440,14 @@ export const multisigOperation = {
   initialOnChainFetch: initialOnChainFetch.start,
 
   __test: {
-    $list: $offChainOperations,
+    $list: $allOperations,
     $populated,
-    $onChainReady: $initialOnChainFetched,
+    // For tests: expose writable stores instead of computed ones
+    $cachedOperations, // Use this to set operation list in tests
+    $expectedChainIds,
+    $fetchedChainIds,
     $offChainReady: $offChainFetched,
+    // Keep computed store for backward compatibility but tests should use $expectedChainIds/$fetchedChainIds
+    $onChainReady: $initialOnChainFetched,
   },
 };
