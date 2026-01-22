@@ -11,8 +11,14 @@ describe('multisigOperation store', () => {
   const mockChainId2 = '0x456' as ChainId;
 
   const mockApis = {
-    [mockChainId1]: { genesisHash: { toHex: () => mockChainId1 } } as any,
-    [mockChainId2]: { genesisHash: { toHex: () => mockChainId2 } } as any,
+    [mockChainId1]: {
+      genesisHash: { toHex: () => mockChainId1 },
+      query: { system: { events: () => Promise.resolve() } },
+    } as any,
+    [mockChainId2]: {
+      genesisHash: { toHex: () => mockChainId2 },
+      query: { system: { events: () => Promise.resolve() } },
+    } as any,
   };
 
   const mockChains = {
