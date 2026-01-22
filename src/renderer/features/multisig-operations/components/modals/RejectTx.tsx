@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
-import { useUnit } from 'effector-react';
-import { memo, useMemo, useState } from 'react';
+import { useGate, useUnit } from 'effector-react';
+import { memo, useState } from 'react';
 
 import {
   type Asset,
@@ -12,16 +12,15 @@ import {
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getAssetByTypeExtras, getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { getAssetByTypeExtras, getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { operationDetailsUtils } from '@/entities/operations';
-import { OperationResult, getExtrinsic, isXcmTransaction } from '@/entities/transaction';
+import { OperationResult, isXcmTransaction } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
-import { type ExtrinsicSigningPayload } from '@/features/operations/OperationSign';
 import { rejectModel } from '../../model/reject-model';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
@@ -45,6 +44,8 @@ const enum Step {
 const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 export const RejectTxModal = memo(({ api, operation, account, chain, children }: Props) => {
+  useGate(rejectModel.flow, { chain, operation, account });
+
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
@@ -56,6 +57,7 @@ export const RejectTxModal = memo(({ api, operation, account, chain, children }:
   const isFeeLoading = useUnit(rejectModel.$isFeeLoading);
   const multisigDeposit = useUnit(rejectModel.$multisigDeposit);
   const signAccount = useUnit(rejectModel.$signatory);
+  const signingPayloads = useUnit(rejectModel.$signingPayloads);
   const initiator = useUnit(rejectModel.$initiator);
 
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
@@ -80,18 +82,6 @@ export const RejectTxModal = memo(({ api, operation, account, chain, children }:
     }
   }
 
-  const signingPayloads = useMemo<ExtrinsicSigningPayload[]>(() => {
-    if (nullable(rejectTx) || nullable(signAccount)) return [];
-    return [
-      {
-        api,
-        chain: chain,
-        extrinsic: getExtrinsic[rejectTx.type](rejectTx.args, api),
-        signatory: signAccount,
-      },
-    ];
-  }, [chain, signAccount, rejectTx]);
-
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
   };
@@ -103,10 +93,7 @@ export const RejectTxModal = memo(({ api, operation, account, chain, children }:
   };
 
   const toggleModal = (open: boolean) => {
-    if (open) {
-      rejectModel.flow.open({ chain, signer: signAccount, operation, account });
-    } else {
-      rejectModel.flow.close({ chain: null, signer: null, operation: null, account: null });
+    if (!open) {
       setActiveStep(Step.CONFIRMATION);
     }
   };
@@ -157,7 +144,7 @@ export const RejectTxModal = memo(({ api, operation, account, chain, children }:
             onSign={handleConfirm}
           />
         )}
-        {activeStep === Step.SIGNING && rejectTx && api && signAccount && (
+        {activeStep === Step.SIGNING && signingPayloads && signAccount && (
           <SigningSwitch
             signerWallet={wallets.find(w => w.id === signAccount.walletId)}
             signingPayloads={signingPayloads}
