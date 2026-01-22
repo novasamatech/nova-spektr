@@ -1,4 +1,4 @@
-import { persist } from '@effector-storage/idb-keyval';
+import { type Done, persist } from '@effector-storage/idb-keyval';
 import { type ApiPromise } from '@polkadot/api';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { uniqBy } from 'lodash';
@@ -370,7 +370,8 @@ const $completedLiveOperations = combine(
 
 // Cache store for faster initial load - persisted to IndexedDB
 const $cachedOperations = createStore<MultisigOperation[]>([]);
-persist({ store: $cachedOperations, key: 'multisig-operations' });
+const cachedOperationsLoaded = createEvent<Done<MultisigOperation[]>>();
+persist({ store: $cachedOperations, key: 'multisig-operations', done: cachedOperationsLoaded });
 
 // Derive the combined operations list from live sources
 const $liveOperations = combine(
@@ -403,7 +404,7 @@ sample({
 });
 
 const $populated = restore(
-  once($allOperations.updates).map(() => true),
+  once(cachedOperationsLoaded).map(() => true),
   false,
 );
 
