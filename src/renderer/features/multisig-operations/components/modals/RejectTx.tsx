@@ -44,7 +44,7 @@ const enum Step {
 
 const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
-export const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
+export const RejectTxModal = memo(({ api, operation, account, chain, children }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
@@ -104,9 +104,9 @@ export const RejectTxModal = memo(({ api, operation, chain, children }: Props) =
 
   const toggleModal = (open: boolean) => {
     if (open) {
-      rejectModel.flow.open({ chain, signer: signAccount, operation });
+      rejectModel.flow.open({ chain, signer: signAccount, operation, account });
     } else {
-      rejectModel.flow.close({ chain: null, signer: null, operation: null });
+      rejectModel.flow.close({ chain: null, signer: null, operation: null, account: null });
       setActiveStep(Step.CONFIRMATION);
     }
   };

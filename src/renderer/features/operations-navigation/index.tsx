@@ -5,7 +5,7 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
 import { BodyText } from '@/shared/ui';
-import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
+import { multisigOperation } from '@/domains/network';
 import { NavItem, navigationBottomLinksSlot } from '@/features/app-shell';
 
 export const operationsNavigationFeature = createFeature({
@@ -18,7 +18,7 @@ operationsNavigationFeature.inject(navigationBottomLinksSlot, {
   render() {
     const { t } = useI18n();
 
-    const operations = useUnit(selectedWalletMultisigOperations.$list);
+    const operations = useUnit(multisigOperation.$list);
     const pending = operations.filter((t) => t.status === 'pending');
 
     return (

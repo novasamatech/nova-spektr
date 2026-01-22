@@ -3,13 +3,19 @@ import { combine, createEvent, restore, sample } from 'effector';
 import { interval, throttle } from 'patronum';
 import { type DateRange } from 'react-day-picker';
 
-import { TransactionType } from '@/shared/core';
-import { type AnyAccount, type MultisigOperation, accountService, multisigOperation } from '@/domains/network';
+import { type FlexibleMultisigAccount, type MultisigAccount, TransactionType } from '@/shared/core';
+import {
+  type AnyAccount,
+  type MultisigOperation,
+  accountService,
+  accounts,
+  multisigOperation,
+} from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
-import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { multisigService } from '@/features/multisig-wallet';
 
 import { multisigOperationsFeature } from './feature';
 
@@ -101,14 +107,22 @@ const $initiators = combine(
   },
 );
 
-const $multisigAccount = walletSelect.$selectedAccounts.map(
-  accs => accs.find(a => accountUtils.isAnyMultisigAccount(a)) ?? null,
-);
+const $multisigAccountsMap = accounts.$list.map(accs => {
+  const multisigAccounts = accs.filter(accountUtils.isAnyMultisigAccount);
+  const map = new Map<string, MultisigAccount | FlexibleMultisigAccount>();
+
+  for (const account of multisigAccounts) {
+    const multisigAccountId = multisigService.getMultisigAccountId(account);
+    map.set(multisigAccountId, account);
+  }
+
+  return map;
+});
 
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 
 const $filteredOperations = combine(
-  { operations: selectedWalletMultisigOperations.$list, filter: $filter, tab: $tab },
+  { operations: multisigOperation.$list, filter: $filter, tab: $tab },
   ({ operations, filter, tab }) => {
     return operations.filter(op => filterTx(op, filter, tab));
   },
@@ -148,7 +162,7 @@ sample({
 export const operationsContextModel = {
   $filter,
   $filteredOperations,
-  $multisigAccount,
+  $multisigAccountsMap,
   $initiator,
   $tab,
   $isTabDataLoading,
