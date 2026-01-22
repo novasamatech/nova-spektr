@@ -37,7 +37,11 @@ const unsubscribeFromAccounts = createEvent();
 const $subscribedAccounts = createStore<AccountId[]>([]);
 const $subscribedApis = createStore<Record<ChainId, ApiPromise>>({});
 
-const $onChainOperations = $onChainOperationsByCallhash.map(state => Object.values(state).filter(nonNullable));
+const $onChainOperations = $onChainOperationsByCallhash.map(state =>
+  Object.values(state)
+    .flatMap(chainOperations => Object.values(chainOperations))
+    .filter(nonNullable),
+);
 
 const $initialOnChainFetched = createStore(false)
   .on(initialOnChainFetch.fetch.done, () => true)
@@ -118,10 +122,10 @@ sample({
   clock: subscribeOnchainResource.push,
   source: { onChainOperationsByCallhash: $onChainOperationsByCallhash, removedOperations: $removedOperations },
   fn: ({ onChainOperationsByCallhash, removedOperations }, clockData) => {
-    const removedOperationsHashes = keys(clockData.result).filter(key => clockData.result[key] === null);
-    const newRemovedOperations = removedOperationsHashes
-      .map(hash => onChainOperationsByCallhash[hash])
-      .filter(nonNullable);
+    const { chainId, operations } = clockData.result;
+    const removedOperationsHashes = keys(operations).filter(key => operations[key] === null);
+    const chainOperations = onChainOperationsByCallhash[chainId] || {};
+    const newRemovedOperations = removedOperationsHashes.map(hash => chainOperations[hash]).filter(nonNullable);
 
     return removedOperations.concat(newRemovedOperations);
   },
