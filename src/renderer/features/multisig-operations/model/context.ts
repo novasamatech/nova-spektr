@@ -4,6 +4,7 @@ import { interval, throttle } from 'patronum';
 import { type DateRange } from 'react-day-picker';
 
 import { TransactionType } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount, type MultisigOperation, accountService, multisigOperation } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
@@ -11,6 +12,7 @@ import { accountUtils } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
 
+import { deepLinkModel } from './deep-link';
 import { multisigOperationsFeature } from './feature';
 
 interface SelectedFilters {
@@ -143,6 +145,18 @@ const { tick } = interval({
 sample({
   clock: tick,
   target: multisigOperation.refetchOffchainOperations,
+});
+
+// Switch tab based on focused operation status (from deep link)
+sample({
+  clock: deepLinkModel.$focusedOperationId,
+  source: multisigOperation.$list,
+  filter: (_, operationId) => nonNullable(operationId),
+  fn: (operations, operationId): TabFilter => {
+    const operation = operations.find(op => op.id === operationId);
+    return operation?.status === 'pending' ? 'pending' : 'history';
+  },
+  target: setTab,
 });
 
 export const operationsContextModel = {
