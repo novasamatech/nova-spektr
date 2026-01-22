@@ -32,24 +32,26 @@ export const Operations = () => {
         </Box>
       </Header>
 
-      <div className="flex w-full items-center justify-between px-6 py-4">
-        <Tabs value={tab} onChange={handleTabChange}>
-          <Tabs.List>
-            <Tabs.Trigger value="pending">
-              {t('operations.tabs.pending')}
-              {pendingCount > 0 && <span className="ml-1 text-text-tertiary">{pendingCount}</span>}
-            </Tabs.Trigger>
-            <Tabs.Trigger value="history">{t('operations.tabs.history')}</Tabs.Trigger>
-          </Tabs.List>
-        </Tabs>
+      <div className="mx-auto flex h-full w-full max-w-[1084px] flex-col">
+        <div className="flex w-full items-center justify-between py-4">
+          <Tabs value={tab} onChange={handleTabChange}>
+            <Tabs.List>
+              <Tabs.Trigger value="pending">
+                {t('operations.tabs.pending')}
+                {pendingCount > 0 && <span className="ml-1 text-text-tertiary">{pendingCount}</span>}
+              </Tabs.Trigger>
+              <Tabs.Trigger value="history">{t('operations.tabs.history')}</Tabs.Trigger>
+            </Tabs.List>
+          </Tabs>
 
-        <div className="flex gap-2">
-          <OperationsFilter />
+          <div className="flex gap-2">
+            <OperationsFilter />
+          </div>
         </div>
-      </div>
 
-      <div className="flex-1 overflow-hidden">
-        <OperationsList />
+        <div className="flex-1 overflow-hidden">
+          <OperationsList />
+        </div>
       </div>
     </div>
   );
