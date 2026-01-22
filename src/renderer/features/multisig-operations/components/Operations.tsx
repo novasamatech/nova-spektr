@@ -93,9 +93,9 @@ export const Operations = () => {
             )}
 
             {filteredTxs.length > 0 && (
-              <div className="flex h-full w-full flex-col items-center overflow-y-auto px-6">
+              <div className="flex h-full w-full flex-col items-center overflow-y-auto">
                 {sortedTxs.map(([date, txs]) => (
-                  <section className="w-full" key={date}>
+                  <section className="mb-8 w-full" key={date}>
                     <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
                     <ul className="flex w-full flex-col gap-y-1.5">
                       {txs.map(tx => {

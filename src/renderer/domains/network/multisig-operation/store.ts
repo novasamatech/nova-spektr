@@ -6,7 +6,7 @@ import { and, once, readonly } from 'patronum';
 import { storageService } from '@/shared/api/storage';
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { getNativeAssetId, groupBy, keys, nonNullable } from '@/shared/lib/utils';
+import { entries, getNativeAssetId, groupBy, keys, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query/types';
 import { networkModel } from '@/entities/network';
@@ -39,7 +39,9 @@ const $subscribedApis = createStore<Record<ChainId, ApiPromise>>({});
 
 const $onChainOperations = $onChainOperationsByCallhash.map(state =>
   Object.values(state)
-    .flatMap(chainOperations => Object.values(chainOperations))
+    .flatMap(chainOperations =>
+      Object.values(chainOperations).flatMap(accountOperations => Object.values(accountOperations)),
+    )
     .filter(nonNullable),
 );
 
@@ -123,9 +125,19 @@ sample({
   source: { onChainOperationsByCallhash: $onChainOperationsByCallhash, removedOperations: $removedOperations },
   fn: ({ onChainOperationsByCallhash, removedOperations }, clockData) => {
     const { chainId, operations } = clockData.result;
-    const removedOperationsHashes = keys(operations).filter(key => operations[key] === null);
     const chainOperations = onChainOperationsByCallhash[chainId] || {};
-    const newRemovedOperations = removedOperationsHashes.map(hash => chainOperations[hash]).filter(nonNullable);
+
+    const newRemovedOperations: MultisigOperation[] = [];
+    for (const [accountId, accountOperations] of entries(operations)) {
+      const removedHashes = keys(accountOperations).filter(hash => accountOperations[hash] === null);
+      const accountChainOperations = chainOperations[accountId] || {};
+      for (const hash of removedHashes) {
+        const operation = accountChainOperations[hash];
+        if (operation) {
+          newRemovedOperations.push(operation);
+        }
+      }
+    }
 
     return removedOperations.concat(newRemovedOperations);
   },
