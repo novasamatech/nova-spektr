@@ -253,7 +253,10 @@ type RequestParams = {
 export const $offChainOperations = createStore<MultisigOperation[]>([]);
 
 // Shared store for on-chain operations (updated by initialOnChainFetch + subscribeOnchainResource)
-export const $onChainOperationsByCallhash = createStore<Record<HexString, MultisigOperation | null>>({});
+// Keyed by ChainId first, then by callHash
+export const $onChainOperationsByCallhash = createStore<Record<ChainId, Record<HexString, MultisigOperation | null>>>(
+  {},
+);
 
 // Shared store for tracked call hashes (updated by initialOnChainFetch + subscribeNewMultisigEventsResource)
 type TrackedCallHashesState = Record<ChainId, { api: ApiPromise; hashes: Record<AccountId, HexString[]> }>;
@@ -285,7 +288,7 @@ export const initialOnChainFetch = createQueryResource<RequestParams>({
 })
   .request(async ({ apis, accountIds, chains }) => {
     const callHashesByChain: Record<ChainId, Record<AccountId, HexString[]>> = {};
-    const onChainData: Record<HexString, MultisigOperation> = {};
+    const onChainData: Record<ChainId, Record<HexString, MultisigOperation>> = {};
 
     const chainResults = await Promise.allSettled(
       Object.values(apis).map(async api => {
@@ -330,7 +333,10 @@ export const initialOnChainFetch = createQueryResource<RequestParams>({
             // Collect successful operations
             for (const result of operationResults) {
               if (result.status === 'fulfilled' && result.value?.operation) {
-                onChainData[result.value.callHash] = result.value.operation;
+                if (!onChainData[chainId]) {
+                  onChainData[chainId] = {};
+                }
+                onChainData[chainId][result.value.callHash] = result.value.operation;
               }
             }
 
@@ -368,7 +374,13 @@ export const initialOnChainFetch = createQueryResource<RequestParams>({
   .retry({ count: 3, delay: 1000 })
   .cache({
     store: $onChainOperationsByCallhash,
-    map: (cache, { onChainData }) => ({ ...cache, ...onChainData }),
+    map: (cache, { onChainData }) => {
+      return produce(cache, draft => {
+        for (const [chainId, chainOperations] of entries(onChainData)) {
+          draft[chainId] = { ...draft[chainId], ...chainOperations };
+        }
+      });
+    },
   })
   .build();
 
@@ -400,13 +412,6 @@ sample({
   target: $trackedCallHashes,
 });
 
-// Cache mapper for subscribeOnchainResource - merges subscription updates into shared store
-const onChainSubscriptionCacheMapper: MapCacheFn<
-  { api: ApiPromise; hashes: Record<AccountId, HexString[]>; chain: Chain },
-  Record<HexString, MultisigOperation | null>,
-  Record<HexString, MultisigOperation | null>
-> = (cache, result) => ({ ...cache, ...result });
-
 export const subscribeOnchainResource = createSubscriptionResource<{
   api: ApiPromise;
   hashes: Record<AccountId, HexString[]>;
@@ -415,85 +420,70 @@ export const subscribeOnchainResource = createSubscriptionResource<{
   key: ({ api }) => api.genesisHash.toHex(),
   recreateOnSubscribe: true,
 })
-  .subscribe<Record<HexString, MultisigOperation | null>>(async ({ chain, api, hashes }, callback) => {
-    const queries: QueryableStorageMultiArg<'promise'>[] = [];
-    const paths: HexString[] = [];
+  .subscribe<{ chainId: ChainId; operations: Record<HexString, MultisigOperation | null> }>(
+    async ({ chain, api, hashes }, callback) => {
+      const chainId = chain.chainId;
+      const queries: QueryableStorageMultiArg<'promise'>[] = [];
+      const paths: HexString[] = [];
 
-    for (const [accountId, callHashes] of entries(hashes)) {
-      for (const callHash of callHashes) {
-        queries.push([api.query.multisig.multisigs, [accountId, callHash]]);
-        paths.push(callHash);
-      }
-    }
-
-    const unsubscribe = await api.queryMulti(queries, async (results: Option<PalletMultisigMultisig>[]) => {
-      const onChainData: Record<HexString, MultisigOperation | null> = {};
-
-      for (let index = 0; index < results.length; index++) {
-        const optionalMultisig = results[index]!;
-        const callHash = paths[index]!;
-
-        if (optionalMultisig.isNone) {
-          onChainData[callHash] = null;
-        } else {
-          const multisig = optionalMultisig.unwrap();
-
-          let accountId: AccountId | null = null;
-          for (const [localAccountId, callHashes] of entries(hashes)) {
-            if (callHashes.includes(callHash)) {
-              accountId = localAccountId;
-              break;
-            }
-          }
-
-          if (!accountId) {
-            console.error('accountId not found for callHash', callHash);
-            continue;
-          }
-
-          onChainData[callHash] = await createOperationFromMultisig({
-            api,
-            chain,
-            accountId,
-            callHash,
-            multisig,
-          });
+      for (const [accountId, callHashes] of entries(hashes)) {
+        for (const callHash of callHashes) {
+          queries.push([api.query.multisig.multisigs, [accountId, callHash]]);
+          paths.push(callHash);
         }
       }
 
-      callback(onChainData);
-    });
+      const unsubscribe = await api.queryMulti(queries, async (results: Option<PalletMultisigMultisig>[]) => {
+        const onChainData: Record<HexString, MultisigOperation | null> = {};
 
-    return unsubscribe;
-  })
+        for (let index = 0; index < results.length; index++) {
+          const optionalMultisig = results[index]!;
+          const callHash = paths[index]!;
+
+          if (optionalMultisig.isNone) {
+            console.log('huy inside subscription optionalMultisig check', queries, optionalMultisig, callHash, index);
+            onChainData[callHash] = null;
+          } else {
+            const multisig = optionalMultisig.unwrap();
+
+            let accountId: AccountId | null = null;
+            for (const [localAccountId, callHashes] of entries(hashes)) {
+              if (callHashes.includes(callHash)) {
+                accountId = localAccountId;
+                break;
+              }
+            }
+
+            if (!accountId) {
+              console.error('accountId not found for callHash', callHash);
+              continue;
+            }
+
+            onChainData[callHash] = await createOperationFromMultisig({
+              api,
+              chain,
+              accountId,
+              callHash,
+              multisig,
+            });
+          }
+        }
+
+        callback({ chainId, operations: onChainData });
+      });
+
+      return unsubscribe;
+    },
+  )
   .cache({
     store: $onChainOperationsByCallhash,
-    map: onChainSubscriptionCacheMapper,
+    map: (cache, { chainId, operations }) => {
+      return produce(cache, draft => {
+        draft[chainId] = { ...draft[chainId], ...operations };
+      });
+    },
   })
   .build();
-
-// Cache mapper for subscribeNewMultisigEventsResource - adds new hashes to tracked call hashes
-const newMultisigEventsCacheMapper: MapCacheFn<
-  { api: ApiPromise; accountId: AccountId },
-  HexString,
-  TrackedCallHashesState
-> = (cache, newCallHash, { api, accountId }) => {
-  return produce(cache, draft => {
-    const chainId = api.genesisHash.toHex();
-
-    // Ensure the chain entry exists (fixes race condition when NewMultisig arrives before initialOnChainFetch)
-    if (!draft[chainId]) {
-      draft[chainId] = { api, hashes: {} };
-    }
-
-    // Ensure the account hashes array exists
-    if (!draft[chainId].hashes[accountId]) {
-      draft[chainId].hashes[accountId] = [];
-    }
-
-    draft[chainId].hashes[accountId]!.push(newCallHash);
-  });
-};
 
 export const subscribeNewMultisigEventsResource = createSubscriptionResource<{
   api: ApiPromise;
@@ -522,7 +512,23 @@ export const subscribeNewMultisigEventsResource = createSubscriptionResource<{
   })
   .cache({
     store: $trackedCallHashes,
-    map: newMultisigEventsCacheMapper,
+    map: (cache, newCallHash, { api, accountId }) => {
+      return produce(cache, draft => {
+        const chainId = api.genesisHash.toHex();
+
+        // Ensure the chain entry exists (fixes race condition when NewMultisig arrives before initialOnChainFetch)
+        if (!draft[chainId]) {
+          draft[chainId] = { api, hashes: {} };
+        }
+
+        // Ensure the account hashes array exists
+        if (!draft[chainId].hashes[accountId]) {
+          draft[chainId].hashes[accountId] = [];
+        }
+
+        draft[chainId].hashes[accountId]!.push(newCallHash);
+      });
+    },
   })
   .build();
 
