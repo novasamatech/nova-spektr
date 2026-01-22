@@ -1963,6 +1963,7 @@
       "callData": "Call Data",
       "callHash": "Call Hash",
       "controller": "Controller",
+      "dateTime": "Date & Time",
       "delegateTo": "Delegate to",
       "delegationTarget": "Delegate",
       "delegationTracks": "Tracks",
