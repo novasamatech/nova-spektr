@@ -7,10 +7,9 @@ import { useI18n } from '@/shared/i18n';
 import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { type DateRange, DateRangePicker } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
-import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { operationsContextModel } from '../model/context';
 
 type FilterName = 'network' | 'type';
@@ -46,7 +45,7 @@ const EmptyOptions: FiltersOptions = {
 export const OperationsFilter = memo(() => {
   const { t } = useI18n();
 
-  const operations = useUnit(selectedWalletMultisigOperations.$list);
+  const operations = useUnit(multisigOperation.$list);
   const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(EmptyOptions);
   const selectedOptions = useUnit(operationsContextModel.$filter);
   const chains = useUnit(networkModel.$chains);

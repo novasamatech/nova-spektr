@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { Box, Tabs } from '@/shared/ui-kit';
-import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
+import { multisigOperation } from '@/domains/network';
 import {
   OperationsFilter,
   Operations as OperationsList,
@@ -17,7 +17,7 @@ export const Operations = () => {
   const tab = useUnit(operationsContextModel.$tab);
   const setTab = useUnit(operationsContextModel.setTab);
 
-  const operations = useUnit(selectedWalletMultisigOperations.$list);
+  const operations = useUnit(multisigOperation.$list);
   const pendingCount = operations.filter((op) => op.status === 'pending').length;
 
   const handleTabChange = (value: string) => {

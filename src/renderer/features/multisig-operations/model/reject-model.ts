@@ -2,7 +2,7 @@ import { BN_ZERO } from '@polkadot/util';
 import { combine, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type Chain, type Transaction } from '@/shared/core';
+import { type Chain, type FlexibleMultisigAccount, type MultisigAccount, type Transaction } from '@/shared/core';
 import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
@@ -22,22 +22,22 @@ import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 
-import { operationsContextModel } from './context';
-
 type GetMultisigType = {
   signer: AnyAccount | null;
   chain: Chain | null;
   operation: MultisigOperation | null;
+  account: MultisigAccount | FlexibleMultisigAccount | null;
 };
 
 const flow = createGate<GetMultisigType>({
-  defaultState: { chain: null, signer: null, operation: null },
+  defaultState: { chain: null, signer: null, operation: null, account: null },
 });
 
 const $transaction = createStore<Transaction | null>(null).reset(flow.open);
 
 const $chain = flow.state.map(state => state.chain);
 const $operation = flow.state.map(state => state.operation);
+const $multisigAccount = flow.state.map(state => state.account);
 
 const $api = combine(
   {
@@ -78,7 +78,7 @@ const $signatory = $signatories.map(s => s.at(0) ?? null);
 sample({
   clock: flow.open,
   source: {
-    multisigAccount: operationsContextModel.$multisigAccount,
+    multisigAccount: $multisigAccount,
     signatory: $signatory,
     chain: $chain,
     operation: $operation,
@@ -137,6 +137,7 @@ export const rejectModel = {
   $fee,
   $isFeeLoading,
   $multisigDeposit,
+  $multisigAccount,
   $signatory,
   $initiator,
   $errors,
