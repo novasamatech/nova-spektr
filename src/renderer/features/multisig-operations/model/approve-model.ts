@@ -190,23 +190,10 @@ const $extrinsic = combine($api, $tx, (api, tx) => {
 });
 
 const $signingPayloads = combine(
-  {
-    api: $api,
-    chain: $chain,
-    extrinsic: $extrinsic,
-    signatory: $signatory,
-  },
+  { api: $api, chain: $chain, extrinsic: $extrinsic, signatory: $signatory },
   ({ api, chain, extrinsic, signatory }) => {
-    if (nullable(extrinsic) || nullable(signatory) || nullable(api) || nullable(chain)) return null;
-
-    return [
-      {
-        api,
-        chain,
-        extrinsic,
-        signatory,
-      },
-    ];
+    if (nullable(api) || nullable(chain) || nullable(extrinsic) || nullable(signatory)) return null;
+    return [{ api, chain, extrinsic, signatory }];
   },
 );
 
