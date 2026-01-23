@@ -1,13 +1,13 @@
 /**
  * Test fixtures for Nova Spektr integration tests
  *
- * Provides pre-configured test data for common scenarios including:
+ * Organized by feature domain:
  *
- * - Wallets (vault, multisig, watch-only, proxied)
- * - Accounts (sender, recipient, multisig, proxy)
- * - Balances (various amounts and assets)
- * - Chains (Polkadot, Kusama, Asset Hub, Bifrost)
- * - Transactions (native, asset, XCM, multisig)
+ * - **wallet/** - Wallet fixtures (vault, multisig, watch-only, proxied)
+ * - **account/** - Account fixtures (sender, recipient, multisig, proxy)
+ * - **balance/** - Balance fixtures (various amounts and assets)
+ * - **chain/** - Chain fixtures (Polkadot, Kusama, Asset Hub, Bifrost)
+ * - **transaction/** - Transaction templates (native, asset, XCM, multisig)
  *
  * @module tests/integrations/fixtures
  *
@@ -25,4 +25,8 @@
  *     .build();
  */
 
-export * from './transfer-fixtures';
+export * from './account';
+export * from './balance';
+export * from './chain';
+export * from './transaction';
+export * from './wallet';

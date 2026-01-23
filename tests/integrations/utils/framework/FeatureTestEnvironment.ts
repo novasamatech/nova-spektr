@@ -1,5 +1,5 @@
 import type Dexie from 'dexie';
-import { type Event, type Scope, type Store, allSettled } from 'effector';
+import { type EventCallable, type Scope, type Store, allSettled } from 'effector';
 
 import { type Feature } from '@/shared/feature';
 
@@ -67,7 +67,7 @@ export class FeatureTestEnvironment {
    *
    * @returns Promise that resolves when all effects are completed
    */
-  async executeEvent<T>(event: Event<T>, params: T): Promise<void> {
+  async executeEvent<T>(event: EventCallable<T>, params: T): Promise<void> {
     await allSettled(event, { scope: this.scope, params });
   }
 
@@ -78,8 +78,8 @@ export class FeatureTestEnvironment {
    *
    * @returns Promise that resolves when all effects are completed
    */
-  async executeEventVoid(event: Event<void>): Promise<void> {
-    await allSettled(event, { scope: this.scope });
+  async executeEventVoid(event: EventCallable<void>): Promise<void> {
+    await allSettled(event, { scope: this.scope, params: undefined });
   }
 
   /**

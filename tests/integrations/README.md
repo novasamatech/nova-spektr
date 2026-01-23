@@ -1,31 +1,33 @@
 # Integration Testing Framework
 
-A comprehensive testing framework for Nova Spektr feature integration tests with real storage (fake IndexedDB) and Effector state management.
+Test framework for Nova Spektr feature integration tests with real storage (fake IndexedDB) and Effector state management.
 
 ## 🚀 Quick Start
 
 ```typescript
-import { FeatureTestBuilder } from '@tests/integrations/utils';
+import { afterEach, describe, expect, it } from 'vitest';
+
+import { FeatureTestBuilder, type FeatureTestEnvironment } from '@tests/integrations/utils';
 import { vaultWallet, senderAccount, senderBalance } from '@tests/integrations/fixtures';
 
 describe('My Feature Tests', () => {
-  let env;
+  let env: FeatureTestEnvironment;
 
-  beforeEach(async () => {
+  afterEach(async () => {
+    if (env) {
+      await env.cleanup();
+    }
+  });
+
+  it('should work correctly', async () => {
     env = await new FeatureTestBuilder()
       .withWallet(vaultWallet)
       .withAccount(senderAccount)
       .withBalance(senderBalance)
       .build();
-  });
 
-  afterEach(async () => {
-    await env.cleanup();
-  });
-
-  it('should work correctly', async () => {
-    await env.startFeature(myFeature);
     await env.executeEvent(myFeature.events.doSomething, { data: 'test' });
+
     expect(env.getState(myFeature.$status)).toBe('running');
   });
 });
@@ -33,69 +35,49 @@ describe('My Feature Tests', () => {
 
 ## 📖 Documentation
 
-- **[Quick Start Guide](./docs/QUICK_START.md)** - Get started in 5 minutes
-- **[Testing Levels Guide](./docs/TESTING_LEVELS_GUIDE.md)** - **NEW!** When to use integration vs component vs E2E tests
-- **[Integration Testing Guide](./docs/INTEGRATION_TESTING_GUIDE.md)** - Comprehensive documentation
-- **[Cheat Sheet](./docs/CHEAT_SHEET.md)** - Quick reference
-- **[Transfer Tests Example](./tests/transfer-form-logic.integration.test.ts)** - Real-world examples testing actual logic
+- **[README.md](./README.md)** (this file) - Developer quick start guide
+- **[.ai/CONTEXT.md](./.ai/CONTEXT.md)** - Complete AI testing guide
+- **[.ai/ORGANIZATION.md](./.ai/ORGANIZATION.md)** - Feature-based structure guide
 
 ## 📁 Structure
 
 ```
 tests/integrations/
-├── docs/                          # Documentation
-│   ├── QUICK_START.md            # Quick start guide
-│   ├── INTEGRATION_TESTING_GUIDE.md  # Full guide
-│   └── CHEAT_SHEET.md            # Quick reference
+├── .ai/                           # AI context and docs
+│   ├── CONTEXT.md                # Complete testing guide
+│   ├── ORGANIZATION.md           # Structure guide
+│   └── MIGRATION.md              # Migration history
 │
-├── utils/                         # Core testing utilities
-│   ├── index.ts                  # Exports
-│   ├── TestStorageBuilder.ts    # Storage management
-│   ├── FeatureTestEnvironment.ts # Test environment API
-│   └── FeatureTestBuilder.ts    # Fluent builder for setup
+├── fixtures/                      # Test data (by domain)
+│   ├── wallet/                   # Wallet fixtures
+│   ├── account/                  # Account fixtures
+│   ├── balance/                  # Balance fixtures
+│   ├── chain/                    # Chain fixtures
+│   └── transaction/              # Transaction templates
 │
-├── fixtures/                      # Test data fixtures
-│   ├── index.ts                  # Exports
-│   └── transfer-fixtures.ts     # Transfer test fixtures
+├── utils/                         # Testing utilities (by function)
+│   ├── framework/                # Core framework ⭐
+│   ├── builders/                 # Data builders
+│   ├── network/                  # Network utilities
+│   ├── xcm/                      # XCM tools
+│   ├── chain/                    # Chain utilities
+│   └── common/                   # Constants
 │
-├── tests/                         # Integration test examples
-│   └── transfer-feature.integration.test.ts
+├── tests/                         # Test files
+│   ├── transfer-form-logic.integration.test.ts
+│   ├── transfer-max-ed.integration.test.ts
+│   └── xcm-destinations.integration.test.ts
 │
 └── README.md                      # This file
 ```
 
+**See [.ai/ORGANIZATION.md](./.ai/ORGANIZATION.md) for detailed structure guide**
+
 ## 🛠️ Core Utilities
-
-### TestStorageBuilder
-
-Creates and manages fake IndexedDB storage for tests.
-
-```typescript
-const storage = new TestStorageBuilder()
-  .withWallet(mockWallet)
-  .withAccount(mockAccount)
-  .withBalance(mockBalance);
-
-await storage.build();
-await storage.verifyTable('wallets', wallets => wallets.length === 1);
-await storage.cleanup();
-```
-
-### FeatureTestEnvironment
-
-High-level API for interacting with features in tests.
-
-```typescript
-await env.startFeature(myFeature);
-await env.executeEvent(myFeature.events.action, params);
-const state = env.getState(myFeature.$store);
-await env.verifyInStorage('table', condition);
-await env.cleanup();
-```
 
 ### FeatureTestBuilder
 
-Fluent API for building complete test environments.
+Fluent API for setting up test environments:
 
 ```typescript
 const env = await new FeatureTestBuilder()
@@ -106,36 +88,47 @@ const env = await new FeatureTestBuilder()
   .build();
 ```
 
+### FeatureTestEnvironment
+
+High-level API for test execution:
+
+```typescript
+await env.executeEvent(feature.events.action, params);
+const state = env.getState(feature.$store);
+await env.verifyInStorage('tableName', condition);
+await env.cleanup();  // Always cleanup!
+```
+
+### Scenario Helpers
+
+Pre-configured test scenarios:
+
+```typescript
+import { createTransferScenario } from '@tests/integrations/utils';
+
+env = await createTransferScenario();  // Full setup in one line!
+```
+
+Available scenarios:
+- `createTransferScenario()` - Full transfer setup
+- `createLowBalanceScenario()` - Test insufficient funds
+- `createDisconnectedScenario()` - Test offline behavior
+- `createMinimalScenario()` - Just wallet + account
+- `createMultiAccountScenario()` - Multiple accounts
+
 ## 🎯 What to Test
 
-### ✅ Integration Tests (this framework)
-
-Use for testing:
-- Feature logic with real storage
-- Data persistence and retrieval
+### ✅ Use Integration Tests For:
+- Feature logic with state management (Effector stores/events)
+- Data persistence and retrieval (IndexedDB)
 - Multi-step workflows
-- Feature interactions
-- State management with storage
 - Validation rules
+- Transaction building
 
-## 📊 Test Coverage
-
-The framework supports testing:
-
-### Transfer Types
-- ✅ Native transfers (DOT, KSM)
-- ✅ Asset transfers (USDT, custom tokens)
-- ✅ ORML token transfers
-- ✅ XCM/Cross-chain transfers
-- ✅ Multisig transfers
-- ✅ Proxied transfers
-- ✅ Batch transfers
-
-### Wallet Types
-- ✅ Polkadot Vault
-- ✅ Multisig wallets
-- ✅ Watch-only wallets
-- ✅ Proxied wallets
+### ❌ Don't Use Integration Tests For:
+- UI rendering → Use component tests
+- Pure functions → Use unit tests
+- Full user workflows → Use E2E tests (Playwright)
 
 ## 🧪 Running Tests
 
@@ -144,113 +137,137 @@ The framework supports testing:
 pnpm test tests/integrations
 
 # Run specific test file
-pnpm test tests/integrations/tests/transfer-feature.integration.test.ts
+pnpm test tests/integrations/tests/transfer-form-logic.integration.test.ts
 
 # Watch mode
 pnpm test:watch tests/integrations
-
-# With UI
-pnpm test:ui
 
 # With coverage
 pnpm test:coverage
 ```
 
-## 📝 Writing Your First Test
+## 📝 Writing Tests
 
-### 1. Create test file
+### 1. Choose Your Approach
 
-Create a new file in `tests/integrations/tests/`:
+**Option A: Use Scenario Helper**
+```typescript
+env = await createTransferScenario();
+```
+
+**Option B: Use Builder**
+```typescript
+env = await new FeatureTestBuilder()
+  .withWallet(vaultWallet)
+  .withAccount(senderAccount)
+  .build();
+```
+
+### 2. Write Test Logic
 
 ```typescript
-// tests/integrations/tests/my-feature.integration.test.ts
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { FeatureTestBuilder } from '@tests/integrations/utils';
+it('should update state', async () => {
+  env = await createTransferScenario();
 
-describe('My Feature Integration', () => {
-  let env;
+  await env.executeEvent(formModel.events.toggleMaxMode, true);
 
-  beforeEach(async () => {
-    env = await new FeatureTestBuilder()
-      // Setup your test data
-      .build();
-  });
-
-  afterEach(async () => {
-    await env.cleanup();
-  });
-
-  it('should do something', async () => {
-    // Your test here
-  });
+  expect(env.getState(formModel.$isMaxModeEnabled)).toBe(true);
 });
 ```
 
-### 2. Add fixtures (if needed)
-
-Create fixtures in `tests/integrations/fixtures/`:
+### 3. Always Cleanup
 
 ```typescript
-// tests/integrations/fixtures/my-feature-fixtures.ts
-export const myWallet = { /* ... */ };
-export const myAccount = { /* ... */ };
+afterEach(async () => {
+  if (env) {
+    await env.cleanup();
+  }
+});
 ```
-
-### 3. Write tests
-
-Follow the patterns in `tests/integrations/tests/transfer-feature.integration.test.ts`
 
 ## 🎨 Best Practices
 
-### ✅ DO
-
+### ✅ DO:
 - Always call `env.cleanup()` in `afterEach`
-- Use fixtures for reusable test data
+- Use fixtures from `@tests/integrations/fixtures`
 - Test both success and error scenarios
-- Verify storage persistence
+- Verify storage persistence when features save data
 - Wait for async operations
-- Create fresh data per test
+- Use scenario helpers to reduce boilerplate
 
-### ❌ DON'T
-
+### ❌ DON'T:
 - Forget to cleanup
 - Reuse mutable objects between tests
+- Test UI rendering (use component tests)
 - Skip error scenario testing
 - Hardcode test data (use fixtures)
 
-## 🔍 Example Tests
+## 🧹 Code Style
 
-See `tests/integrations/tests/transfer-feature.integration.test.ts` for examples:
+**ESLint Config**: [`/.eslintrc.cjs`](../../.eslintrc.cjs)
 
-1. **Native Transfers** - Simple token transfers
-2. **Asset Transfers** - USDT and custom tokens
-3. **XCM Transfers** - Cross-chain transfers
-4. **Multisig Transfers** - Multi-signature transactions
-5. **Proxied Transfers** - Through proxy accounts
-6. **Validation Rules** - Balance checks, address validation
-7. **Error Scenarios** - Network issues, insufficient funds
-8. **Complex Scenarios** - Batch transactions, combined operations
+Key rules:
+- Imports sorted alphabetically with newlines between groups
+- Stores start with `$`: `const $counter = createStore(0)`
+- Effects end with `Fx`: `const fetchDataFx = createEffect()`
+- Use `array[]` not `Array<>`
+- Inline type imports: `import { type Foo }`
+
+**Auto-fix:**
+```bash
+pnpm lint:fix
+pnpm fmt:fix
+```
+
+## 🔍 Examples
+
+See working examples in [`tests/`](./tests/):
+
+1. **[transfer-form-logic.integration.test.ts](./tests/transfer-form-logic.integration.test.ts)**
+   - Form validation
+   - MAX button logic
+   - ED checkbox behavior
+   - Multi-step workflows
+
+2. **[transfer-max-ed.integration.test.ts](./tests/transfer-max-ed.integration.test.ts)**
+   - Simple MAX + ED scenarios
+   - Balance calculations
+
+3. **[xcm-destinations.integration.test.ts](./tests/xcm-destinations.integration.test.ts)**
+   - Cross-chain transfers
+   - XCM destinations
 
 ## 🐛 Troubleshooting
 
-See the [Troubleshooting section](./docs/INTEGRATION_TESTING_GUIDE.md#troubleshooting) in the full guide.
+**"Database is closed" error**
+→ Accessing storage after cleanup. Move operations before `env.cleanup()`
+
+**State not updating**
+→ Missing `await` on `executeEvent()`. Always await async operations
+
+**Import order errors**
+→ Run `pnpm lint:fix` to auto-sort imports
+
+**Linting errors**
+→ Check [`.eslintrc.cjs`](../../.eslintrc.cjs) or run `pnpm lint:fix`
 
 ## 🤝 Contributing
 
-When adding new features:
+When adding features:
 
 1. Write integration tests using this framework
-2. Add fixtures if needed
-3. Document any special setup requirements
-4. Follow existing test patterns
+2. Use existing patterns and fixtures
+3. Add new fixtures if needed
+4. Follow code style (run `pnpm lint:fix`)
+5. Test both success and error cases
 
 ## 📚 Additional Resources
 
-- [Effector Testing](https://effector.dev/docs/api/effector/fork)
-- [fake-indexeddb](https://github.com/dumbmatter/fakeIndexedDB)
-- [Vitest](https://vitest.dev/)
+- **Feature-Sliced Design**: [Project structure](../../CLAUDE.md)
+- **Effector**: [Testing docs](https://effector.dev/docs/api/effector/fork)
+- **fake-indexeddb**: [GitHub](https://github.com/dumbmatter/fakeIndexedDB)
+- **Vitest**: [Documentation](https://vitest.dev/)
 
 ---
 
-**Need help?** Check the [full documentation](./docs/INTEGRATION_TESTING_GUIDE.md) or ask the team!
-
+**Need help?** Check [`.ai/CONTEXT.md`](./.ai/CONTEXT.md) for complete reference or review example tests in [`tests/`](./tests/)

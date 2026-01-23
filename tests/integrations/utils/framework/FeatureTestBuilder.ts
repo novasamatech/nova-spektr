@@ -272,3 +272,5 @@ export class FeatureTestBuilder {
     return this.storage;
   }
 }
+
+export { FeatureTestEnvironment };

@@ -1,34 +1,41 @@
 /**
  * Integration testing utilities for Nova Spektr
  *
- * This module provides a comprehensive set of tools for writing integration
- * tests with storage, state management, and feature testing.
+ * Organized by feature domain:
+ *
+ * - **framework/** - Core testing framework (builders, environment, scenarios)
+ * - **builders/** - Data builders for dynamic test fixtures
+ * - **network/** - Network utilities (connections, fetch, accounts)
+ * - **xcm/** - XCM-specific testing tools
+ * - **chain/** - Chain data utilities
+ * - **common/** - Shared constants
  *
  * @module tests/integrations/utils
  *
  * @example
- *   import { FeatureTestBuilder } from '@tests/integrations/utils';
+ *   import {
+ *     FeatureTestBuilder,
+ *     createTransferScenario,
+ *   } from '@tests/integrations/utils';
  *
+ *   // Using builder
  *   const env = await new FeatureTestBuilder()
- *     .withWallet(mockWallet)
- *     .withAccount(mockAccount)
+ *     .withWallet(vaultWallet)
+ *     .withAccount(senderAccount)
  *     .build();
  *
- *   await env.startFeature(myFeature);
- *   expect(env.getState(myFeature.status)).toBe('running');
- *   await env.cleanup();
+ *   // Using scenario
+ *   const env = await createTransferScenario();
  */
 
-export { TestStorageBuilder } from './TestStorageBuilder';
-export { FeatureTestEnvironment } from './FeatureTestEnvironment';
-export { FeatureTestBuilder, type FeatureTestBuilderOptions } from './FeatureTestBuilder';
-export {
-  collectXcmDestinations,
-  collectXcmDestinationsWithStats,
-  formatXcmDestinationsMarkdown,
-  getChainBySpellName,
-  saveXcmDestinationsToFile,
-  type XcmDestination,
-  type XcmDestinationStats,
-} from './xcmDestinationsCollector';
-export { createNodeFetchPolyfill, setupFetchPolyfill } from './fetchPolyfill';
+// Core framework (most commonly used)
+export * from './framework';
+
+// Feature-specific utilities
+export * from './builders';
+export * from './chain';
+export * from './network';
+export * from './xcm';
+
+// Common utilities
+export * from './common';
