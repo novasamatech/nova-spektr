@@ -1,20 +1,20 @@
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
-import { memo, useEffect, useState } from 'react';
+import { memo, useMemo } from 'react';
 
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { toAddress } from '@/shared/lib/utils';
 import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
+import { Address } from '@/shared/ui-entities';
 import { type DateRange, DateRangePicker } from '@/shared/ui-kit';
-import { type MultisigOperation, multisigOperation } from '@/domains/network';
+import { type MultisigOperation, multisigOperation, useAccountsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { operationsContextModel } from '../model/context';
 
-type FilterName = 'network' | 'type';
-
-type FiltersOptions = Record<FilterName, Set<DropdownOption>>;
+type FilterName = 'account' | 'network' | 'type';
 
 const getFilterableTxType = (op: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
   if (!op.transaction?.type) {
@@ -37,18 +37,16 @@ const getFilterableTxType = (op: MultisigOperation): TransactionType | 'UNKNOWN_
   return op.transaction.type;
 };
 
-const EmptyOptions: FiltersOptions = {
-  network: new Set<DropdownOption>(),
-  type: new Set<DropdownOption>(),
-};
-
 export const OperationsFilter = memo(() => {
   const { t } = useI18n();
 
   const operations = useUnit(multisigOperation.$list);
-  const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(EmptyOptions);
   const selectedOptions = useUnit(operationsContextModel.$filter);
   const chains = useUnit(networkModel.$chains);
+  const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
+
+  const multisigAccounts = useMemo(() => Array.from(multisigAccountsMap.values()), [multisigAccountsMap]);
+  const resolvedMultisigAccounts = useAccountsNames(multisigAccounts);
 
   const TransactionOptions = getTransactionOptions(t);
   const NetworkOptions = Object.values(chains).map(({ chainId, name }) => ({
@@ -57,19 +55,19 @@ export const OperationsFilter = memo(() => {
     element: name,
   }));
 
-  useEffect(() => {
-    setFiltersOptions(getAvailableFiltersOptions(operations));
-  }, [operations, chains]);
-
-  const getAvailableFiltersOptions = (transactions: MultisigOperation[]) => {
+  const getAvailableNetworkAndTypeFiltersOptions = (
+    transactions: MultisigOperation[],
+    networkOptions: DropdownOption[],
+    transactionOptions: DropdownOption[],
+  ) => {
     return transactions.reduce(
       (acc, tx) => {
         const txType = getFilterableTxType(tx);
         const xcmDestination = tx.transaction?.args.destinationChain;
 
-        const originNetworkOption = NetworkOptions.find(s => s.value === tx.chainId);
-        const destNetworkOption = NetworkOptions.find(s => s.value === xcmDestination);
-        const typeOption = TransactionOptions.find(s => s.value === txType);
+        const originNetworkOption = networkOptions.find(s => s.value === tx.chainId);
+        const destNetworkOption = networkOptions.find(s => s.value === xcmDestination);
+        const typeOption = transactionOptions.find(s => s.value === txType);
 
         if (originNetworkOption) {
           acc.network.add(originNetworkOption);
@@ -90,6 +88,25 @@ export const OperationsFilter = memo(() => {
     );
   };
 
+  const filtersOptions = useMemo(() => {
+    const AccountOptions = resolvedMultisigAccounts.map(account => ({
+      id: account.accountId,
+      value: account.accountId,
+      element: <Address showIcon variant="truncate" address={toAddress(account.accountId)} title={account.name} />,
+    }));
+
+    const networkAndTypeOptions = getAvailableNetworkAndTypeFiltersOptions(
+      operations,
+      NetworkOptions,
+      TransactionOptions,
+    );
+
+    return {
+      account: AccountOptions,
+      ...networkAndTypeOptions,
+    };
+  }, [operations, resolvedMultisigAccounts, NetworkOptions, TransactionOptions]);
+
   const handleFilterChange = (values: DropdownResult[], filterName: FilterName) => {
     const newSelectedOptions = { ...selectedOptions, [filterName]: values.map(v => v.id) };
     operationsContextModel.setFilters(newSelectedOptions);
@@ -105,6 +122,7 @@ export const OperationsFilter = memo(() => {
   };
 
   const filtersSelected =
+    selectedOptions.account.length ||
     selectedOptions.network.length ||
     selectedOptions.type.length ||
     selectedOptions.dateRange?.from ||
@@ -112,7 +130,12 @@ export const OperationsFilter = memo(() => {
 
   return (
     <div className="flex h-9 items-center gap-2">
-      <div className="w-[200px]">
+      {Boolean(filtersSelected) && (
+        <Button variant="text" className="h-8.5 py-0" onClick={clearFilters}>
+          {t('operations.filters.clearAll')}
+        </Button>
+      )}
+      <div className="w-[136px]">
         <DateRangePicker
           value={selectedOptions.dateRange}
           placeholder={t('operations.filters.dateRangePlaceholder')}
@@ -120,25 +143,27 @@ export const OperationsFilter = memo(() => {
         />
       </div>
       <MultiSelect
-        className="w-[200px]"
+        showSelectAll
+        className="w-[136px]"
+        placeholder={t('operations.filters.accountPlaceholder')}
+        selectedIds={selectedOptions.account}
+        options={[...filtersOptions.account]}
+        onChange={value => handleFilterChange(value, 'account')}
+      />
+      <MultiSelect
+        className="w-[136px]"
         placeholder={t('operations.filters.networkPlaceholder')}
         selectedIds={selectedOptions.network}
         options={[...filtersOptions.network]}
         onChange={value => handleFilterChange(value, 'network')}
       />
       <MultiSelect
-        className="w-[200px]"
+        className="w-[136px]"
         placeholder={t('operations.filters.operationTypePlaceholder')}
         selectedIds={selectedOptions.type}
         options={[...filtersOptions.type]}
         onChange={value => handleFilterChange(value, 'type')}
       />
-
-      {Boolean(filtersSelected) && (
-        <Button variant="text" className="h-8.5 py-0" onClick={clearFilters}>
-          {t('operations.filters.clearAll')}
-        </Button>
-      )}
     </div>
   );
 });
