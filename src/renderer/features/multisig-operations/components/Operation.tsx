@@ -170,7 +170,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
             <OperationTitleStatus operation={operation} account={multisigAccount} />
 
-            <div className="flex w-[120px] gap-x-2" onClick={e => e.stopPropagation()}>
+            <div className="flex w-[140px] shrink-0 gap-x-2" onClick={e => e.stopPropagation()}>
               {isRejectAvailable && (
                 <RejectTxModal api={api} operation={operation} account={multisigAccount} chain={chain}>
                   <Button pallet="error" variant="fill" size="sm" className="flex-1">
