@@ -2094,10 +2094,10 @@
     },
     "createdOperationDescription": "The changes will take effect after the other signatories sign.",
     "filters": {
-      "accountPlaceholder": "Account",
+      "accountPlaceholder": "Accounts",
       "clearAll": "Clear all",
       "dateRangePlaceholder": "Date range",
-      "networkPlaceholder": "Network",
+      "networkPlaceholder": "Networks",
       "networkSummary": "Networks",
       "operationTypePlaceholder": "Operation type",
       "operationTypeSummary": "Operation types",
