@@ -1,4 +1,4 @@
-import { allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
 import { accounts } from '@/domains/network';

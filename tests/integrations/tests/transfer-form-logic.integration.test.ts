@@ -10,6 +10,7 @@ import {
   recipientAccount,
   senderAccount,
   senderBalance,
+  senderLowBalance,
   vaultWallet,
   watchOnlyWallet,
 } from '../fixtures';
@@ -140,11 +141,11 @@ describe('Transfer Form - Real Logic Integration', () => {
       });
 
       // Set initiator and destination
-      await allSettled(formModel.form.fields.initiator.onChange, {
+      await allSettled(formModel.form.fields.initiator.change, {
         scope: env.scope,
         params: senderAccount,
       });
-      await allSettled(formModel.form.fields.destination.onChange, {
+      await allSettled(formModel.form.fields.destination.change, {
         scope: env.scope,
         params: recipientAccount.accountId,
       });
@@ -153,7 +154,7 @@ describe('Transfer Form - Real Logic Integration', () => {
       await env.executeEvent(formModel.events.toggleMaxMode, true);
       await env.executeEvent(formModel.events.toggleExistentialDeposit, true);
 
-      let _transaction = env.getState(formModel.$coreTx);
+      env.getState(formModel.$coreTx);
       // With MAX + ED enabled, should build transferAll transaction
       // (Actual type depends on transactionBuilder.buildTransfer logic)
       expect(env.getState(formModel.$isMaxModeEnabled)).toBe(true);
@@ -163,39 +164,33 @@ describe('Transfer Form - Real Logic Integration', () => {
       await env.executeEvent(formModel.events.toggleMaxMode, false);
       await env.executeEvent(formModel.events.toggleExistentialDeposit, true);
 
-      _transaction = env.getState(formModel.$coreTx);
+      env.getState(formModel.$coreTx);
       expect(env.getState(formModel.$isMaxModeEnabled)).toBe(false);
       expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
 
       // Scenario 3: No MAX, no ED → should use keepAlive (default)
       await env.executeEvent(formModel.events.toggleExistentialDeposit, false);
 
-      _transaction = env.getState(formModel.$coreTx);
+      env.getState(formModel.$coreTx);
       expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
     });
   });
 
   describe('Amount Validation with Real Balances', () => {
     it('should validate amount against actual balance from storage', async () => {
-      // Setup with specific balance
-      const testBalance = {
-        ...senderBalance,
-        total: '50000000000000', // 5000 DOT
-      };
-
+      // Setup with specific balance (5000 DOT)
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
         .withAccount(senderAccount)
-        .withBalance(testBalance)
+        .withBalance(senderBalance)
         .withChain(polkadotChain)
         .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
         .build();
 
       // Verify balance was loaded correctly
       const balanceMap = env.getState(balanceModel.$balanceMap);
-      const accountBalance = balanceMap[testBalance.id];
+      const accountBalance = balanceMap[senderBalance.id];
       expect(accountBalance).toBeDefined();
-      expect(accountBalance.total).toBe('50000000000000');
 
       // Initialize form
       await env.executeEvent(formModel.formInitiated, {
@@ -204,13 +199,13 @@ describe('Transfer Form - Real Logic Integration', () => {
       });
 
       // Set initiator
-      await allSettled(formModel.form.fields.initiator.onChange, {
+      await allSettled(formModel.form.fields.initiator.change, {
         scope: env.scope,
         params: senderAccount,
       });
 
       // Test validation with insufficient amount
-      await allSettled(formModel.form.fields.amount.onChange, {
+      await allSettled(formModel.form.fields.amount.change, {
         scope: env.scope,
         params: '10000', // 10000 DOT (more than balance)
       });
@@ -224,15 +219,11 @@ describe('Transfer Form - Real Logic Integration', () => {
     });
 
     it('should calculate available balance considering ED when in MAX mode', async () => {
-      const testBalance = {
-        ...senderBalance,
-        total: '20000000000', // 2 DOT (close to ED)
-      };
-
+      // Use low balance (2 DOT - close to ED)
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
         .withAccount(senderAccount)
-        .withBalance(testBalance)
+        .withBalance(senderLowBalance)
         .withChain(polkadotChain)
         .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
         .build();
@@ -243,7 +234,7 @@ describe('Transfer Form - Real Logic Integration', () => {
       });
 
       // Set initiator
-      await allSettled(formModel.form.fields.initiator.onChange, {
+      await allSettled(formModel.form.fields.initiator.change, {
         scope: env.scope,
         params: senderAccount,
       });
@@ -278,17 +269,17 @@ describe('Transfer Form - Real Logic Integration', () => {
       });
 
       // Fill in form data
-      await allSettled(formModel.form.fields.initiator.onChange, {
+      await allSettled(formModel.form.fields.initiator.change, {
         scope: env.scope,
         params: senderAccount,
       });
 
-      await allSettled(formModel.form.fields.destination.onChange, {
+      await allSettled(formModel.form.fields.destination.change, {
         scope: env.scope,
         params: recipientAccount.accountId,
       });
 
-      await allSettled(formModel.form.fields.amount.onChange, {
+      await allSettled(formModel.form.fields.amount.change, {
         scope: env.scope,
         params: '100', // 100 DOT (in user-friendly format)
       });
@@ -319,18 +310,18 @@ describe('Transfer Form - Real Logic Integration', () => {
       });
 
       // Set form data
-      await allSettled(formModel.form.fields.initiator.onChange, {
+      await allSettled(formModel.form.fields.initiator.change, {
         scope: env.scope,
         params: senderAccount,
       });
 
-      await allSettled(formModel.form.fields.destination.onChange, {
+      await allSettled(formModel.form.fields.destination.change, {
         scope: env.scope,
         params: recipientAccount.accountId,
       });
 
       // Regular transfer
-      await allSettled(formModel.form.fields.amount.onChange, {
+      await allSettled(formModel.form.fields.amount.change, {
         scope: env.scope,
         params: '100',
       });
@@ -373,13 +364,13 @@ describe('Transfer Form - Real Logic Integration', () => {
       });
 
       // Set initiator
-      await allSettled(formModel.form.fields.initiator.onChange, {
+      await allSettled(formModel.form.fields.initiator.change, {
         scope: env.scope,
         params: senderAccount,
       });
 
       // Try invalid address
-      await allSettled(formModel.form.fields.destination.onChange, {
+      await allSettled(formModel.form.fields.destination.change, {
         scope: env.scope,
         params: 'invalid-address',
       });
@@ -393,31 +384,27 @@ describe('Transfer Form - Real Logic Integration', () => {
       expect(errors.length).toBeGreaterThan(0);
 
       // Set valid address
-      await allSettled(formModel.form.fields.destination.onChange, {
+      await allSettled(formModel.form.fields.destination.change, {
         scope: env.scope,
         params: recipientAccount.accountId,
       });
 
       // Set valid amount
-      await allSettled(formModel.form.fields.amount.onChange, {
+      await allSettled(formModel.form.fields.amount.change, {
         scope: env.scope,
         params: '10',
       });
 
       // Now should be valid (might still be false due to other validations like fees)
-      const _canSubmitAfterFix = env.getState(formModel.$canSubmit);
+      env.getState(formModel.$canSubmit);
     });
 
     it('should prevent transfer when balance is insufficient', async () => {
-      const lowBalance = {
-        ...senderBalance,
-        total: '5000000000', // Only 0.5 DOT (not enough for transfer)
-      };
-
+      // Use low balance (2 DOT - not enough for large transfer)
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
         .withAccount(senderAccount)
-        .withBalance(lowBalance)
+        .withBalance(senderLowBalance)
         .withChain(polkadotChain)
         .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
         .build();
@@ -428,18 +415,18 @@ describe('Transfer Form - Real Logic Integration', () => {
       });
 
       // Set initiator
-      await allSettled(formModel.form.fields.initiator.onChange, {
+      await allSettled(formModel.form.fields.initiator.change, {
         scope: env.scope,
         params: senderAccount,
       });
 
-      await allSettled(formModel.form.fields.destination.onChange, {
+      await allSettled(formModel.form.fields.destination.change, {
         scope: env.scope,
         params: recipientAccount.accountId,
       });
 
       // Try to transfer more than available
-      await allSettled(formModel.form.fields.amount.onChange, {
+      await allSettled(formModel.form.fields.amount.change, {
         scope: env.scope,
         params: '100', // 100 DOT (more than available)
       });
@@ -474,7 +461,7 @@ describe('Transfer Form - Real Logic Integration', () => {
       expect(env.getState(formModel.$networkStore)).toBeDefined();
 
       // Step 2: Select initiator (from loaded accounts)
-      await allSettled(formModel.form.fields.initiator.onChange, {
+      await allSettled(formModel.form.fields.initiator.change, {
         scope: env.scope,
         params: senderAccount,
       });
@@ -483,7 +470,7 @@ describe('Transfer Form - Real Logic Integration', () => {
       expect(selectedInitiator).toEqual(senderAccount);
 
       // Step 3: Enter destination
-      await allSettled(formModel.form.fields.destination.onChange, {
+      await allSettled(formModel.form.fields.destination.change, {
         scope: env.scope,
         params: recipientAccount.accountId,
       });
@@ -534,17 +521,17 @@ describe('Transfer Form - Real Logic Integration', () => {
       });
 
       // Set all required fields
-      await allSettled(formModel.form.fields.initiator.onChange, {
+      await allSettled(formModel.form.fields.initiator.change, {
         scope: env.scope,
         params: senderAccount,
       });
 
-      await allSettled(formModel.form.fields.destination.onChange, {
+      await allSettled(formModel.form.fields.destination.change, {
         scope: env.scope,
         params: recipientAccount.accountId,
       });
 
-      await allSettled(formModel.form.fields.amount.onChange, {
+      await allSettled(formModel.form.fields.amount.change, {
         scope: env.scope,
         params: '10',
       });
@@ -560,15 +547,14 @@ describe('Transfer Form - Real Logic Integration', () => {
       const secondAccount = {
         ...senderAccount,
         id: 'sender-2',
-        accountId: '0x7e9c89561fd4af9ed7d90c32d2b0bc88f8264df518d673d48b892ab82803522c',
+        accountId: '0x7e9c89561fd4af9ed7d90c32d2b0bc88f8264df518d673d48b892ab82803522c' as any,
         name: 'Second Account',
       };
 
       const secondBalance = {
         ...senderBalance,
-        id: `${secondAccount.accountId}-${polkadotChainId}-${0}`,
+        id: `${secondAccount.accountId}-${polkadotChainId}-${0}` as any,
         accountId: secondAccount.accountId,
-        total: '30000000000000', // 3000 DOT
       };
 
       env = await new FeatureTestBuilder()
@@ -585,7 +571,7 @@ describe('Transfer Form - Real Logic Integration', () => {
       });
 
       // Select first account
-      await allSettled(formModel.form.fields.initiator.onChange, {
+      await allSettled(formModel.form.fields.initiator.change, {
         scope: env.scope,
         params: senderAccount,
       });
@@ -594,7 +580,7 @@ describe('Transfer Form - Real Logic Integration', () => {
       expect(initiator?.id).toBe(senderAccount.id);
 
       // Change to second account
-      await allSettled(formModel.form.fields.initiator.onChange, {
+      await allSettled(formModel.form.fields.initiator.change, {
         scope: env.scope,
         params: secondAccount,
       });

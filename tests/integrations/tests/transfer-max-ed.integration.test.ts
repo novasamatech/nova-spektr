@@ -46,14 +46,14 @@ describe('Transfer MAX Button and ED Checkbox - REAL Logic', () => {
     it('should show ED switch when MAX mode is enabled', async () => {
       // Use fork directly for simpler test
       const scope = fork({
-        values: [
+        values: new Map<any, any>([
           [walletModel.$wallets, [vaultWallet, watchOnlyWallet]],
           [networkModel.$chains, { [polkadotChainId]: polkadotChain }],
           [networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED }],
           [walletSelect.$selectedWallet, vaultWallet],
           [walletSelect.$selectedAccounts, [senderAccount, recipientAccount]],
           [balanceModel.$balanceMap, { [senderBalance.id]: senderBalance }],
-        ],
+        ]) as any,
       });
 
       // Initialize form with network context
@@ -82,14 +82,14 @@ describe('Transfer MAX Button and ED Checkbox - REAL Logic', () => {
 
     it('should disable MAX mode when user types amount manually', async () => {
       const scope = fork({
-        values: [
+        values: new Map<any, any>([
           [walletModel.$wallets, [vaultWallet]],
           [networkModel.$chains, { [polkadotChainId]: polkadotChain }],
           [networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED }],
           [walletSelect.$selectedWallet, vaultWallet],
           [walletSelect.$selectedAccounts, [senderAccount]],
           [balanceModel.$balanceMap, { [senderBalance.id]: senderBalance }],
-        ],
+        ]) as any,
       });
 
       await allSettled(formModel.formInitiated, {
@@ -125,14 +125,14 @@ describe('Transfer MAX Button and ED Checkbox - REAL Logic', () => {
   describe('ED Checkbox Behavior', () => {
     it('should toggle existential deposit flag', async () => {
       const scope = fork({
-        values: [
+        values: new Map<any, any>([
           [walletModel.$wallets, [vaultWallet]],
           [networkModel.$chains, { [polkadotChainId]: polkadotChain }],
           [networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED }],
           [walletSelect.$selectedWallet, vaultWallet],
           [walletSelect.$selectedAccounts, [senderAccount]],
           [balanceModel.$balanceMap, { [senderBalance.id]: senderBalance }],
-        ],
+        ]) as any,
       });
 
       await allSettled(formModel.formInitiated, {
@@ -167,13 +167,13 @@ describe('Transfer MAX Button and ED Checkbox - REAL Logic', () => {
 
     it('should only show ED switch after MAX is clicked', async () => {
       const scope = fork({
-        values: [
+        values: new Map<any, any>([
           [walletModel.$wallets, [vaultWallet]],
           [networkModel.$chains, { [polkadotChainId]: polkadotChain }],
           [walletSelect.$selectedWallet, vaultWallet],
           [walletSelect.$selectedAccounts, [senderAccount]],
           [balanceModel.$balanceMap, { [senderBalance.id]: senderBalance }],
-        ],
+        ]) as any,
       });
 
       await allSettled(formModel.formInitiated, {
@@ -211,14 +211,14 @@ describe('Transfer MAX Button and ED Checkbox - REAL Logic', () => {
   describe('Complete MAX + ED Workflow', () => {
     it('should execute full MAX + ED interaction workflow', async () => {
       const scope = fork({
-        values: [
+        values: new Map<any, any>([
           [walletModel.$wallets, [vaultWallet, watchOnlyWallet]],
           [networkModel.$chains, { [polkadotChainId]: polkadotChain }],
           [networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED }],
           [walletSelect.$selectedWallet, vaultWallet],
           [walletSelect.$selectedAccounts, [senderAccount, recipientAccount]],
           [balanceModel.$balanceMap, { [senderBalance.id]: senderBalance }],
-        ],
+        ]) as any,
       });
 
       // Step 1: Initialize form
@@ -293,7 +293,7 @@ describe('Transfer MAX Button and ED Checkbox - REAL Logic', () => {
 
       try {
         // Set selected wallet so initiators can be calculated
-        await allSettled(walletSelect.walletSelected, {
+        await allSettled(walletSelect.select, {
           scope: env.scope,
           params: vaultWallet.id,
         });
@@ -310,7 +310,7 @@ describe('Transfer MAX Button and ED Checkbox - REAL Logic', () => {
         // Verify balance was loaded from storage into balanceModel
         const balanceMap = env.getState(balanceModel.$balanceMap);
         expect(balanceMap[senderBalance.id]).toBeDefined();
-        expect(balanceMap[senderBalance.id].total).toBe('10000000000000');
+        expect(balanceMap[senderBalance.id].free.toString()).toBe('10000000000000');
 
         // Verify available balance is calculated
         const available = env.getState(formModel.$available);
