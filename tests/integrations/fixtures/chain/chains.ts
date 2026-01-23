@@ -1,4 +1,4 @@
-import { AssetType, type Chain, ChainOptions, ChainType, StakingType } from '@/shared/core';
+import { type AssetId, AssetType, type Chain, ChainOptions, ChainType, StakingType } from '@/shared/core';
 import { polkadotChain as basePolkadotChain } from '@/shared/mocks';
 
 /**
@@ -24,10 +24,10 @@ export const kusamaChain: Chain = {
   name: 'Kusama',
   specName: 'kusama',
   chainId: kusamaChainId,
-  parentId: null,
+  parentId: undefined,
   assets: [
     {
-      assetId: 0,
+      assetId: 0 as AssetId,
       symbol: 'KSM',
       name: 'Kusama',
       precision: 12,
@@ -42,12 +42,12 @@ export const kusamaChain: Chain = {
   ],
   nodes: [],
   addressPrefix: 2,
-  externalApi: null,
+  externalApi: undefined,
   explorers: [],
   icon: 'https://example.com/kusama.svg',
-  options: [ChainOptions.MULTISIG, ChainOptions.PROXY],
+  options: [ChainOptions.MULTISIG],
   chainType: ChainType.SUBSTRATE,
-};
+} as unknown as Chain;
 
 /**
  * Asset Hub parachain (Polkadot)
@@ -59,7 +59,7 @@ export const assetHubChain: Chain = {
   parentId: polkadotChainId,
   assets: [
     {
-      assetId: 0,
+      assetId: 0 as AssetId,
       symbol: 'DOT',
       name: 'Polkadot',
       precision: 10,
@@ -72,13 +72,13 @@ export const assetHubChain: Chain = {
       },
     },
     {
-      assetId: 1337,
+      assetId: 1337 as AssetId,
       symbol: 'USDT',
       name: 'Tether USD',
       precision: 6,
       type: AssetType.STATEMINE,
       priceId: 'tether',
-      staking: StakingType.NONE,
+      staking: undefined,
       icon: {
         monochrome: 'https://example.com/usdt-mono.svg',
         colored: 'https://example.com/usdt-color.svg',
@@ -90,12 +90,12 @@ export const assetHubChain: Chain = {
   ],
   nodes: [],
   addressPrefix: 0,
-  externalApi: null,
+  externalApi: undefined,
   explorers: [],
   icon: 'https://example.com/assethub.svg',
   options: [ChainOptions.MULTISIG],
   chainType: ChainType.SUBSTRATE,
-};
+} as unknown as Chain;
 
 /**
  * Bifrost parachain (Polkadot)
@@ -107,13 +107,13 @@ export const bifrostChain: Chain = {
   parentId: polkadotChainId,
   assets: [
     {
-      assetId: 0,
+      assetId: 0 as AssetId,
       symbol: 'BNC',
       name: 'Bifrost',
       precision: 12,
       type: AssetType.NATIVE,
       priceId: 'bifrost-native-coin',
-      staking: StakingType.NONE,
+      staking: undefined,
       icon: {
         monochrome: 'https://example.com/bnc-mono.svg',
         colored: 'https://example.com/bnc-color.svg',
@@ -122,9 +122,9 @@ export const bifrostChain: Chain = {
   ],
   nodes: [],
   addressPrefix: 6,
-  externalApi: null,
+  externalApi: undefined,
   explorers: [],
   icon: 'https://example.com/bifrost.svg',
   options: [ChainOptions.MULTISIG],
   chainType: ChainType.SUBSTRATE,
-};
+} as unknown as Chain;

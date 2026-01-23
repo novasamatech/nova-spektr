@@ -12,7 +12,7 @@ export const senderAccount: AnyAccount = {
   accountId: createAccountId(1),
   walletId: vaultWallet.id,
   name: 'Sender Account',
-  type: 'base',
+  type: 'universal',
   cryptoType: CryptoType.SR25519,
   signingType: SigningType.POLKADOT_VAULT,
 };
@@ -25,7 +25,7 @@ export const recipientAccount: AnyAccount = {
   accountId: createAccountId(2),
   walletId: watchOnlyWallet.id,
   name: 'Recipient Account',
-  type: 'base',
+  type: 'universal',
   cryptoType: CryptoType.SR25519,
   signingType: SigningType.WATCH_ONLY,
 };
@@ -38,7 +38,7 @@ export const multisigAccount: AnyAccount = {
   accountId: createAccountId(10),
   walletId: multisigWallet.id,
   name: 'Multisig Account',
-  type: 'multisig',
+  type: 'universal',
   cryptoType: CryptoType.SR25519,
   signingType: SigningType.MULTISIG,
   threshold: 2,
@@ -59,7 +59,7 @@ export const multisigAccount: AnyAccount = {
       name: 'Signatory 3',
     },
   ],
-};
+} as AnyAccount;
 
 /**
  * Signatory account (for multisig operations)
@@ -69,7 +69,7 @@ export const signatoryAccount: AnyAccount = {
   accountId: createAccountId(11),
   walletId: vaultWallet.id,
   name: 'Signatory 1',
-  type: 'base',
+  type: 'universal',
   cryptoType: CryptoType.SR25519,
   signingType: SigningType.POLKADOT_VAULT,
 };
@@ -82,7 +82,7 @@ export const proxiedAccount: AnyAccount = {
   accountId: createAccountId(20),
   walletId: proxiedWallet.id,
   name: 'Proxied Account',
-  type: 'proxied',
+  type: 'chain',
   chainId: polkadotChainId,
   cryptoType: CryptoType.SR25519,
   signingType: SigningType.POLKADOT_VAULT,
@@ -97,7 +97,7 @@ export const proxiedAccount: AnyAccount = {
   deposit: '100000000000',
   blockNumber: 12345,
   extrinsicIndex: 0,
-};
+} as AnyAccount;
 
 /**
  * Proxy account (acts on behalf of proxied account)
@@ -107,7 +107,7 @@ export const proxyAccount: AnyAccount = {
   accountId: createAccountId(21),
   walletId: vaultWallet.id,
   name: 'Proxy Account',
-  type: 'base',
+  type: 'universal',
   cryptoType: CryptoType.SR25519,
   signingType: SigningType.POLKADOT_VAULT,
 };
