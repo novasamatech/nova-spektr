@@ -1,6 +1,7 @@
 .vscode
 .idea
 .github
+.pnpm-store
 
 coverage
 release
