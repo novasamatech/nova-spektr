@@ -361,7 +361,6 @@ const $completedLiveOperations = combine(
     removedOperations: $removedFromChainStorageOperations,
   },
   ({ completionEvents, removedOperations }) => {
-    console.log('completedLiveOperations', completionEvents, removedOperations);
     if (!completionEvents.length || !removedOperations.length) return [];
 
     const eventsByOperationId = groupBy(completionEvents, event => event.operationId);
