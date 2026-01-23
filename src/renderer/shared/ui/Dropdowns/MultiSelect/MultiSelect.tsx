@@ -77,16 +77,6 @@ export const MultiSelect = ({
       );
     }
 
-    if (selectedOptions.length === 1) {
-      return typeof selectedOptions[0].element === 'string' ? (
-        <FootnoteText as="span" className="truncate">
-          {selectedOptions[0].element}
-        </FootnoteText>
-      ) : (
-        selectedOptions[0].element
-      );
-    }
-
     return (
       <span className="flex items-center gap-x-2">
         <FootnoteText as="span">{multiPlaceholder || placeholder}</FootnoteText>
