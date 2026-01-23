@@ -6,41 +6,18 @@ import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { Button, MultiSelect } from '@/shared/ui';
-import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
+import { type DropdownResult } from '@/shared/ui/types';
 import { Address } from '@/shared/ui-entities';
 import { type DateRange, DateRangePicker } from '@/shared/ui-kit';
-import { type MultisigOperation, multisigOperation, useAccountsNames } from '@/domains/network';
+import { useAccountsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { operationsContextModel } from '../model/context';
 
 type FilterName = 'account' | 'network' | 'type';
 
-const getFilterableTxType = (op: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
-  if (!op.transaction?.type) {
-    return 'UNKNOWN_TYPE';
-  }
-
-  if (TransferTypes.includes(op.transaction.type)) {
-    return TransactionType.TRANSFER;
-  }
-  if (XcmTypes.includes(op.transaction.type)) {
-    return TransactionType.XCM_LIMITED_TRANSFER;
-  }
-
-  if (op.transaction.type === TransactionType.BATCH_ALL) {
-    const txMatch = findCoreBatchAll(op.transaction);
-
-    return txMatch?.type || 'UNKNOWN_TYPE';
-  }
-
-  return op.transaction.type;
-};
-
 export const OperationsFilter = memo(() => {
   const { t } = useI18n();
 
-  const operations = useUnit(multisigOperation.$list);
   const selectedOptions = useUnit(operationsContextModel.$filter);
   const chains = useUnit(networkModel.$chains);
   const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
@@ -55,39 +32,6 @@ export const OperationsFilter = memo(() => {
     element: name,
   }));
 
-  const getAvailableNetworkAndTypeFiltersOptions = (
-    transactions: MultisigOperation[],
-    networkOptions: DropdownOption[],
-    transactionOptions: DropdownOption[],
-  ) => {
-    return transactions.reduce(
-      (acc, tx) => {
-        const txType = getFilterableTxType(tx);
-        const xcmDestination = tx.transaction?.args.destinationChain;
-
-        const originNetworkOption = networkOptions.find(s => s.value === tx.chainId);
-        const destNetworkOption = networkOptions.find(s => s.value === xcmDestination);
-        const typeOption = transactionOptions.find(s => s.value === txType);
-
-        if (originNetworkOption) {
-          acc.network.add(originNetworkOption);
-        }
-        if (destNetworkOption) {
-          acc.network.add(destNetworkOption);
-        }
-        if (typeOption) {
-          acc.type.add(typeOption);
-        }
-
-        return acc;
-      },
-      {
-        network: new Set<DropdownOption>(),
-        type: new Set<DropdownOption>(),
-      },
-    );
-  };
-
   const filtersOptions = useMemo(() => {
     const AccountOptions = resolvedMultisigAccounts.map(account => ({
       id: account.accountId,
@@ -95,17 +39,12 @@ export const OperationsFilter = memo(() => {
       element: <Address showIcon variant="truncate" address={toAddress(account.accountId)} title={account.name} />,
     }));
 
-    const networkAndTypeOptions = getAvailableNetworkAndTypeFiltersOptions(
-      operations,
-      NetworkOptions,
-      TransactionOptions,
-    );
-
     return {
       account: AccountOptions,
-      ...networkAndTypeOptions,
+      network: NetworkOptions,
+      type: TransactionOptions,
     };
-  }, [operations, resolvedMultisigAccounts, NetworkOptions, TransactionOptions]);
+  }, [resolvedMultisigAccounts, NetworkOptions, TransactionOptions]);
 
   const handleFilterChange = (values: DropdownResult[], filterName: FilterName) => {
     const newSelectedOptions = { ...selectedOptions, [filterName]: values.map(v => v.id) };
