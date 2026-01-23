@@ -119,7 +119,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$list, [])
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$expectedChainIds, new Set())
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -138,8 +139,9 @@ describe('multisig operations deep link', () => {
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
-          .set(multisigOperation.__test.$list, [])
-          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$cachedOperations, [])
+          .set(multisigOperation.__test.$expectedChainIds, new Set())
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true)
           .set(multisigOperation.__test.$populated, true),
       });
@@ -160,7 +162,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, false)
           .set(multisigOperation.__test.$populated, false)
-          .set(multisigOperation.__test.$onChainReady, false)
+          .set(multisigOperation.__test.$expectedChainIds, new Set([polkadotChainId]))
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, false),
       });
 
@@ -187,7 +190,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$list, [])
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$expectedChainIds, new Set())
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -215,9 +219,10 @@ describe('multisig operations deep link', () => {
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
-          .set(multisigOperation.__test.$list, [mockOperation])
+          .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$expectedChainIds, new Set())
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -238,9 +243,10 @@ describe('multisig operations deep link', () => {
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
-          .set(multisigOperation.__test.$list, [mockOperation])
+          .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$expectedChainIds, new Set())
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -262,9 +268,10 @@ describe('multisig operations deep link', () => {
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
-          .set(multisigOperation.__test.$list, [mockOperation])
+          .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$expectedChainIds, new Set())
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -290,9 +297,10 @@ describe('multisig operations deep link', () => {
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
-          .set(multisigOperation.__test.$list, [])
+          .set(multisigOperation.__test.$cachedOperations, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, false)
+          .set(multisigOperation.__test.$expectedChainIds, new Set([polkadotChainId]))
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, false),
       });
 
@@ -314,9 +322,10 @@ describe('multisig operations deep link', () => {
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
-          .set(multisigOperation.__test.$list, [])
+          .set(multisigOperation.__test.$cachedOperations, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, false)
+          .set(multisigOperation.__test.$expectedChainIds, new Set([polkadotChainId]))
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -328,9 +337,10 @@ describe('multisig operations deep link', () => {
       expect(scope.getState(deepLinkModel.$isOperationNotFoundModalOpen)).toBe(false);
 
       // Simulate initial loading completing without the operation
-      await allSettled(initialOnChainFetch.fetch, {
+      // Need to mark the chain as fetched so loading completes
+      await allSettled(multisigOperation.__test.$fetchedChainIds, {
         scope,
-        params: { apis: {}, chains: {}, accountIds: [] },
+        params: new Set([polkadotChainId]),
       });
 
       expect(scope.getState(deepLinkModel.$isOperationNotFoundModalOpen)).toBe(true);
@@ -346,9 +356,10 @@ describe('multisig operations deep link', () => {
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
-          .set(multisigOperation.__test.$list, [])
+          .set(multisigOperation.__test.$cachedOperations, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, false)
+          .set(multisigOperation.__test.$expectedChainIds, new Set([polkadotChainId]))
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -359,13 +370,13 @@ describe('multisig operations deep link', () => {
 
       expect(scope.getState(deepLinkModel.$focusedOperationId)).toBe(mockOperation.id);
 
-      // Simulate operation appearing
-      await allSettled(multisigOperation.__test.$list, { scope, params: [mockOperation] });
+      // Simulate operation appearing in cache
+      await allSettled(multisigOperation.__test.$cachedOperations, { scope, params: [mockOperation] });
 
-      // Simulate loading completing
-      await allSettled(initialOnChainFetch.fetch, {
+      // Simulate loading completing - mark chain as fetched
+      await allSettled(multisigOperation.__test.$fetchedChainIds, {
         scope,
-        params: { apis: {}, chains: {}, accountIds: [] },
+        params: new Set([polkadotChainId]),
       });
 
       expect(scope.getState(deepLinkModel.$focusedOperationId)).toBe(mockOperation.id);
@@ -380,9 +391,10 @@ describe('multisig operations deep link', () => {
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTING })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
-          .set(multisigOperation.__test.$list, [])
+          .set(multisigOperation.__test.$cachedOperations, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$expectedChainIds, new Set())
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -404,9 +416,10 @@ describe('multisig operations deep link', () => {
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTING })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
-          .set(multisigOperation.__test.$list, [])
+          .set(multisigOperation.__test.$cachedOperations, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$expectedChainIds, new Set())
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -433,9 +446,10 @@ describe('multisig operations deep link', () => {
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
-          .set(multisigOperation.__test.$list, [mockOperation])
+          .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$expectedChainIds, new Set())
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -466,9 +480,10 @@ describe('multisig operations deep link', () => {
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTING })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
-          .set(multisigOperation.__test.$list, [])
+          .set(multisigOperation.__test.$cachedOperations, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$expectedChainIds, new Set())
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -527,9 +542,10 @@ describe('multisig operations deep link', () => {
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
-          .set(multisigOperation.__test.$list, [mockOperation])
+          .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$expectedChainIds, new Set())
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -563,9 +579,10 @@ describe('multisig operations deep link', () => {
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
-          .set(multisigOperation.__test.$list, [mockOperation])
+          .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$onChainReady, true)
+          .set(multisigOperation.__test.$expectedChainIds, new Set())
+          .set(multisigOperation.__test.$fetchedChainIds, new Set())
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
