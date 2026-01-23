@@ -77,16 +77,6 @@ export const MultiSelect = ({
       );
     }
 
-    if (selectedOptions.length === 1) {
-      return typeof selectedOptions[0].element === 'string' ? (
-        <FootnoteText as="span" className="truncate">
-          {selectedOptions[0].element}
-        </FootnoteText>
-      ) : (
-        selectedOptions[0].element
-      );
-    }
-
     return (
       <span className="flex items-center gap-x-2">
         <FootnoteText as="span">{multiPlaceholder || placeholder}</FootnoteText>
@@ -190,7 +180,7 @@ export const MultiSelect = ({
             sideOffset={4}
             className={cnTw(
               'pointer-events-auto z-50 max-h-60 overflow-auto rounded-sm border px-1 py-1 shadow-card-shadow',
-              'w-[var(--radix-popover-trigger-width)]',
+              'w-max min-w-[var(--radix-popover-trigger-width)]',
               OptionsContainerStyleTheme[theme],
             )}
             onOpenAutoFocus={(e) => e.preventDefault()}
