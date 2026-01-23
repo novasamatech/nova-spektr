@@ -479,25 +479,6 @@ export const subscribeOnchainResource = createSubscriptionResource<{
       return unsubscribe;
     },
   )
-  .cache({
-    store: $onChainOperationsByCallhash,
-    map: (cache, { chainId, operations }) => {
-      return produce(cache, draft => {
-        if (!draft[chainId]) {
-          draft[chainId] = {};
-        }
-        for (const [accountId, accountOperations] of entries(operations)) {
-          if (!draft[chainId][accountId]) {
-            draft[chainId][accountId] = {};
-          }
-          // Update each operation individually to avoid losing any existing operations
-          for (const [callHash, operation] of entries(accountOperations)) {
-            draft[chainId][accountId][callHash] = operation;
-          }
-        }
-      });
-    },
-  })
   .build();
 
 export const subscribeNewMultisigEventsResource = createSubscriptionResource<{

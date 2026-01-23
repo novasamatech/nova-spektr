@@ -41,7 +41,7 @@ describe('operations context model', () => {
 
       const scope = fork({
         values: new Map()
-          .set(multisigOperation.__test.$list, [mockOperation])
+          .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(operationsContextModel.$tab, 'history'),
       });
 
@@ -58,7 +58,7 @@ describe('operations context model', () => {
 
       const scope = fork({
         values: new Map()
-          .set(multisigOperation.__test.$list, [mockOperation])
+          .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(operationsContextModel.$tab, 'pending'),
       });
 
@@ -75,7 +75,7 @@ describe('operations context model', () => {
 
       const scope = fork({
         values: new Map()
-          .set(multisigOperation.__test.$list, [mockOperation])
+          .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(operationsContextModel.$tab, 'pending'),
       });
 
@@ -92,7 +92,7 @@ describe('operations context model', () => {
 
       const scope = fork({
         values: new Map()
-          .set(multisigOperation.__test.$list, [mockOperation])
+          .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(operationsContextModel.$tab, 'pending'),
       });
 
@@ -106,7 +106,9 @@ describe('operations context model', () => {
 
     it('should not change tab when focusedOperationId is null', async () => {
       const scope = fork({
-        values: new Map().set(multisigOperation.__test.$list, []).set(operationsContextModel.$tab, 'pending'),
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [])
+          .set(operationsContextModel.$tab, 'pending'),
       });
 
       await allSettled(deepLinkModel.$focusedOperationId, {
@@ -119,7 +121,9 @@ describe('operations context model', () => {
 
     it('should default to history tab when operation is not found', async () => {
       const scope = fork({
-        values: new Map().set(multisigOperation.__test.$list, []).set(operationsContextModel.$tab, 'pending'),
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [])
+          .set(operationsContextModel.$tab, 'pending'),
       });
 
       await allSettled(deepLinkModel.$focusedOperationId, {
