@@ -1,6 +1,7 @@
 import { type Done, persist } from '@effector-storage/idb-keyval';
 import { type ApiPromise } from '@polkadot/api';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
+import { produce } from 'immer';
 import { uniqBy } from 'lodash';
 import { and, once, readonly } from 'patronum';
 
@@ -131,11 +132,14 @@ sample({
   target: series(subscribeOnchainResource.subscribe, { parallel: true }),
 });
 
-const $removedOperations = createStore<MultisigOperation[]>([]);
+const $removedFromChainStorageOperations = createStore<MultisigOperation[]>([]);
 
 sample({
   clock: subscribeOnchainResource.push,
-  source: { onChainOperationsByCallhash: $onChainOperationsByCallhash, removedOperations: $removedOperations },
+  source: {
+    onChainOperationsByCallhash: $onChainOperationsByCallhash,
+    removedOperations: $removedFromChainStorageOperations,
+  },
   fn: ({ onChainOperationsByCallhash, removedOperations }, clockData) => {
     const { chainId, operations } = clockData.result;
     const chainOperations = onChainOperationsByCallhash[chainId] || {};
@@ -154,7 +158,29 @@ sample({
 
     return removedOperations.concat(newRemovedOperations);
   },
-  target: $removedOperations,
+  target: $removedFromChainStorageOperations,
+});
+
+sample({
+  clock: subscribeOnchainResource.push,
+  source: $onChainOperationsByCallhash,
+  fn: (cache, { result: { chainId, operations } }) => {
+    return produce(cache, draft => {
+      if (!draft[chainId]) {
+        draft[chainId] = {};
+      }
+      for (const [accountId, accountOperations] of entries(operations)) {
+        if (!draft[chainId][accountId]) {
+          draft[chainId][accountId] = {};
+        }
+        // Update each operation individually to avoid losing any existing operations
+        for (const [callHash, operation] of entries(accountOperations)) {
+          draft[chainId][accountId][callHash] = operation;
+        }
+      }
+    });
+  },
+  target: $onChainOperationsByCallhash,
 });
 
 // Helper function to generate unsubscribe keys for accounts and apis
@@ -313,7 +339,7 @@ sample({
     $offChainOperations.reinit!,
     $onChainOperationsByCallhash.reinit!,
     $completionEvents.reinit!,
-    $removedOperations.reinit!,
+    $removedFromChainStorageOperations.reinit!,
   ],
 });
 
@@ -332,9 +358,12 @@ sample({
 const $completedLiveOperations = combine(
   {
     completionEvents: $completionEvents,
-    removedOperations: $removedOperations,
+    removedOperations: $removedFromChainStorageOperations,
   },
   ({ completionEvents, removedOperations }) => {
+    console.log('completedLiveOperations', completionEvents, removedOperations);
+    if (!completionEvents.length || !removedOperations.length) return [];
+
     const eventsByOperationId = groupBy(completionEvents, event => event.operationId);
     return removedOperations.map(op => {
       const events = eventsByOperationId[op.id];
@@ -385,12 +414,62 @@ const $liveOperations = combine(
   },
 );
 
-// Show cached data until live sources are ready, then switch to live data
+/**
+ * Hybrid data source strategy:
+ *
+ * Instead of all-or-nothing (show cache until ALL chains load, then switch to
+ * live), we use a per-chain approach:
+ *
+ * - For initialized chains (in $fetchedChainIds): use live data (authoritative)
+ * - For non-initialized chains: use cached data (best available)
+ *
+ * This ensures users see immediate updates when operations change on
+ * initialized chains, without waiting for all chains to load. For example, if a
+ * user rejects an operation on chain A while chain B is still loading, they'll
+ * see the updated state for chain A immediately, while chain B continues to
+ * show cached data.
+ */
 const $allOperations = combine(
-  { live: $liveOperations, cached: $cachedOperations, initialLoadingComplete: $initialLoadingComplete },
-  ({ live, cached, initialLoadingComplete }) => {
-    // Use cached data only until initial load completes, then always use live
-    return initialLoadingComplete ? live : cached;
+  {
+    live: $liveOperations,
+    cached: $cachedOperations,
+    fetchedChainIds: $fetchedChainIds,
+    expectedChainIds: $expectedChainIds,
+  },
+  ({ live, cached, fetchedChainIds, expectedChainIds }) => {
+    // If no chains expected yet (subscription not started), use cached data
+    if (expectedChainIds.size === 0) {
+      return cached;
+    }
+
+    // Optimization: if all chains are fetched, use live data entirely
+    const allFetched = Array.from(expectedChainIds).every(chainId => fetchedChainIds.has(chainId));
+    if (allFetched) {
+      return live;
+    }
+
+    // Hybrid approach: combine live data for initialized chains with cached data for others
+    const liveByChain = groupBy(live, op => op.chainId);
+    const cachedByChain = groupBy(cached, op => op.chainId);
+
+    // Collect all chain IDs from both sources
+    const allChainIds = new Set([...keys(liveByChain), ...keys(cachedByChain)]);
+
+    const result: MultisigOperation[] = [];
+
+    for (const chainId of allChainIds) {
+      if (fetchedChainIds.has(chainId)) {
+        // Chain is initialized - use live data (authoritative, even if empty)
+        const liveOps = liveByChain[chainId] || [];
+        result.push(...liveOps);
+      } else {
+        // Chain not yet initialized - use cached data (best available)
+        const cachedOps = cachedByChain[chainId] || [];
+        result.push(...cachedOps);
+      }
+    }
+
+    return uniqBy(result, o => o.id);
   },
 );
 
