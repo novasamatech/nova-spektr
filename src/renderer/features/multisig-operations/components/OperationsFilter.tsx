@@ -101,7 +101,7 @@ export const OperationsFilter = memo(() => {
     <div className="flex h-9 items-center gap-2">
       {Boolean(filtersSelected) && (
         <Button variant="text" className="h-8.5 py-0" onClick={clearFilters}>
-          {t('operations.filters.clearAll')}
+          {t('operations.filters.clearFilters')}
         </Button>
       )}
       <div className="w-[136px]">
