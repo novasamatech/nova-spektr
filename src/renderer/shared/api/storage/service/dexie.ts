@@ -171,7 +171,7 @@ const dexie = new DexieStorage();
 export const exportDb = async () => {
   const blob = await exportDB(dexie, {
     prettyJson: true,
-    skipTables: ['metadata', 'balances', 'proxies'],
+    skipTables: ['metadata', 'balances', 'proxies', 'multisigOperations'],
   });
 
   return { blob, fileName: 'spektr-database.json' };
@@ -188,6 +188,13 @@ export const importDb = async (blob: Blob) => {
 
 export const deleteDb = async () => {
   await dexie.delete();
+  // Also delete effector-storage cache database
+  await new Promise<void>((resolve, reject) => {
+    const request = indexedDB.deleteDatabase('spektr-cache');
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+    request.onblocked = () => resolve(); // Resolve anyway if blocked
+  });
 };
 
 export const dexieStorage = {
@@ -200,5 +207,4 @@ export const dexieStorage = {
   metadata: dexie.metadata,
   balances2: dexie.balances2,
   basketTransactions: dexie.basketTransactions,
-  multisigOperations: dexie.multisigOperations,
 };

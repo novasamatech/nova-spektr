@@ -1,9 +1,9 @@
-import { type Done, persist } from '@effector-storage/idb-keyval';
 import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { interval, throttle } from 'patronum';
 import { type DateRange } from 'react-day-picker';
 
+import { type Done, persist } from '@/shared/api/storage';
 import { type FlexibleMultisigAccount, type MultisigAccount, TransactionType } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import {

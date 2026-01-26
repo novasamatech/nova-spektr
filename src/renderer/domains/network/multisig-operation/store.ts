@@ -1,18 +1,16 @@
-import { type Done, persist } from '@effector-storage/idb-keyval';
 import { type ApiPromise } from '@polkadot/api';
-import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { produce } from 'immer';
 import { uniqBy } from 'lodash';
 import { and, once, readonly } from 'patronum';
 
-import { storageService } from '@/shared/api/storage';
-import { type Chain, type ChainId, type HexString } from '@/shared/core';
+import { type Done, persist } from '@/shared/api/storage';
+import { type Chain, type ChainId } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { entries, getNativeAssetId, groupBy, keys, nonNullable } from '@/shared/lib/utils';
+import { entries, groupBy, keys, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query/types';
 import { networkModel } from '@/entities/network';
-import { decodeCallData } from '@/entities/transaction';
 
 import {
   $completionEvents,
@@ -25,7 +23,6 @@ import {
   subscribeNewMultisigEventsResource,
   subscribeOnchainResource,
 } from './resource';
-import { deserializeOperation, serializeOperation } from './service';
 import { type MultisigOperation } from './types';
 
 const subscribeToAccounts = createEvent<{
@@ -63,52 +60,6 @@ const $offChainFetched = createStore(false)
   .reset(unsubscribeFromAccounts);
 
 const $initialLoadingComplete = and($initialOnChainFetched, $offChainFetched);
-
-const populateFx = createEffect(() =>
-  storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
-);
-
-const updateOperationsFx = createEffect(async (operations: MultisigOperation[]) => {
-  return storageService.multisigOperations.updateAll(operations.map(serializeOperation)).then(() => operations);
-});
-
-const $callDataUpdated = createStore<MultisigOperation | null>(null);
-
-type UpdateCallDataParams = {
-  operation: MultisigOperation;
-  callData: HexString;
-};
-
-const updateCallDataFx = attach({
-  source: {
-    apis: networkModel.$apis,
-    chains: networkModel.$chains,
-  },
-  async effect({ apis, chains }, { operation, callData }: UpdateCallDataParams) {
-    const update = scopeBind(updateOperationsFx, { safe: true });
-    const api = apis[operation.chainId];
-    const chain = chains[operation.chainId];
-    if (!api || !chain) {
-      throw new Error(`Api from tx not found: ${operation.chainId}`);
-    }
-    try {
-      const decoded = decodeCallData(api, operation.accountId, callData, getNativeAssetId(chain.assets));
-      const newOperation: MultisigOperation = {
-        ...operation,
-        section: decoded.section,
-        method: decoded.method,
-        callData,
-        transaction: decoded,
-      };
-
-      await update([newOperation]);
-      return newOperation;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  },
-});
 
 sample({
   clock: $trackedCallHashes,
@@ -416,21 +367,9 @@ sample({
   target: $cachedOperations,
 });
 
-sample({
-  clock: updateCallDataFx.doneData,
-  target: $callDataUpdated,
-});
-
-sample({
-  clock: updateCallDataFx,
-  fn: () => null,
-  target: $callDataUpdated,
-});
-
 export const multisigOperation = {
   $list: $allOperations,
   $populated: readonly($populated),
-  $callDataUpdated,
   $initialLoadingComplete,
   $onChainReady: readonly($initialOnChainFetched),
   $offChainReady: readonly($offChainFetched),
@@ -439,9 +378,6 @@ export const multisigOperation = {
   unsubscribeFromAccounts,
   refetchOffchainOperations,
 
-  populate: populateFx,
-  updateOperations: updateOperationsFx,
-  updateCallData: updateCallDataFx,
   requestOffchainOperations: fetchOffchainResource.start,
   initialOnChainFetch: initialOnChainFetch.start,
 

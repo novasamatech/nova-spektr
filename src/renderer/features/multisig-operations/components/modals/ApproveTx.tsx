@@ -116,7 +116,6 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
         tx={approveTx}
         api={api}
         operation={operation}
-        account={initiator}
         txPayload={txPayload}
         signature={signature}
         onClose={() => toggleModal(false)}
