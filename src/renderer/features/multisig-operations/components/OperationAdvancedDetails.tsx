@@ -33,8 +33,6 @@ export const OperationAdvancedDetails = ({ operation, account, connection, tab }
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
   const contacts = useUnit(contactModel.$contacts);
-  const hideOperation = useUnit(operationsContextModel.hideOperation);
-  const unhideOperation = useUnit(operationsContextModel.unhideOperation);
 
   const nativeAsset = getNativeAsset(chain?.assets ?? []);
   const explorers = chain?.explorers;
@@ -48,24 +46,24 @@ export const OperationAdvancedDetails = ({ operation, account, connection, tab }
   const isHiddenTab = tab === 'hidden';
 
   const handleHideOperation = () => {
-    hideOperation(operation.id);
+    operationsContextModel.hideOperation(operation.id);
     toast.success(t('operation.hideToast.success'), {
       action: {
         label: t('operation.hideToast.undo'),
         onClick: () => {
-          unhideOperation(operation.id);
+          operationsContextModel.unhideOperation(operation.id);
         },
       },
     });
   };
 
   const handleUnhideOperation = () => {
-    unhideOperation(operation.id);
+    operationsContextModel.unhideOperation(operation.id);
     toast.success(t('operation.unhideToast.success'), {
       action: {
         label: t('operation.unhideToast.undo'),
         onClick: () => {
-          hideOperation(operation.id);
+          operationsContextModel.hideOperation(operation.id);
         },
       },
     });

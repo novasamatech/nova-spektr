@@ -29,7 +29,6 @@ interface SelectedFilters {
 }
 export type TabFilter = 'pending' | 'history' | 'hidden';
 
-// Hidden operations persistence
 const $hiddenOperationIds = createStore<string[]>([]);
 const hiddenOperationsLoaded = createEvent<Done<string[]>>();
 persist({ store: $hiddenOperationIds, key: 'hidden-multisig-operations', done: hiddenOperationsLoaded });
@@ -44,8 +43,6 @@ $hiddenOperationIds
 const filterTx = (tx: MultisigOperation, filters: SelectedFilters, tab: TabFilter, hiddenIds: string[]) => {
   const isHidden = hiddenIds.includes(tx.id);
 
-  // For hidden tab, only show hidden operations
-  // For other tabs, exclude hidden operations
   if (tab === 'hidden') {
     if (!isHidden) return false;
   } else {
