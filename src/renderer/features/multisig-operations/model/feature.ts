@@ -1,19 +1,18 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createStore, sample } from 'effector';
-import { keyBy } from 'lodash';
+import { keyBy, uniqBy } from 'lodash';
 import { debounce } from 'patronum';
 
-import { type ChainId } from '@/shared/core';
+import { type Chain, type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
-import { nullable } from '@/shared/lib/utils';
 import { deepLinkService } from '@/domains/app';
-import { accountService } from '@/domains/network';
+import { accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
-import { accountUtils, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { accountUtils } from '@/entities/wallet';
 import { multisigService } from '@/features/multisig-wallet';
 
 import { deepLinkModel } from './deep-link';
+import './notifications';
 
 const $trigger = createStore<string>('');
 const $debouncedApis = createStore<Record<ChainId, ApiPromise>>({});
@@ -41,37 +40,42 @@ const $input = combine(
   {
     apis: $debouncedApis,
     chains: networkModel.$chains,
-    wallet: walletSelect.$selectedWallet,
+    accounts: accounts.$list,
   },
-  ({ apis, chains, wallet }) => {
-    if (nullable(wallet) || !walletUtils.isMultisig(wallet)) return null;
+  ({ apis, chains, accounts }) => {
+    const multisigs = accounts.filter(accountUtils.isAnyMultisigAccount);
+    if (multisigs.length === 0) return null;
 
-    const account = wallet.accounts.find(accountUtils.isAnyMultisigAccount);
-    if (nullable(account)) return null;
+    const availableChains: Chain[] = [];
 
-    let availableChains;
-    if (accountService.isChainAccount(account)) {
-      const chain = chains[account.chainId];
-      availableChains = chain ? [chain] : [];
-    } else {
-      availableChains = Object.values(chains).filter(chain => accountService.isAccountAvailableOnChain(account, chain));
+    for (const account of multisigs) {
+      if (accountService.isChainAccount(account)) {
+        const chain = chains[account.chainId];
+        if (chain) availableChains.push(chain);
+      } else {
+        const chainAccounts = Object.values(chains).filter(chain =>
+          accountService.isAccountAvailableOnChain(account, chain),
+        );
+        availableChains.push(...chainAccounts);
+      }
     }
 
+    const uniqueChains = uniqBy(availableChains, 'chainId');
     const availableApis: Record<ChainId, ApiPromise> = {};
 
-    for (const chain of availableChains) {
+    for (const chain of uniqueChains) {
       const api = apis[chain.chainId];
       if (api) {
         availableApis[chain.chainId] = api;
       }
     }
 
-    const availableChainsRecord = keyBy(availableChains, c => c.chainId);
+    const availableChainsRecord = keyBy(uniqueChains, c => c.chainId);
 
     return {
       chains: availableChainsRecord,
       apis: availableApis,
-      accountId: multisigService.getMultisigAccountId(account),
+      accountIds: multisigs.map(account => multisigService.getMultisigAccountId(account)),
     };
   },
 );

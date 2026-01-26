@@ -13,6 +13,7 @@
     "config": "node config/bin.js",
     "electron": "electron .",
     "preview": "cross-env RENDERER_SOURCE=localhost pnpm build:staging && concurrently \"pnpm renderer:preview\" \"pnpm electron\"",
+    "local:preview": "npm run renderer:dev && npm run renderer:preview",
     "start": "pnpm r clean:build main:dev preload:dev && concurrently \"pnpm main:dev:watch\" \"pnpm preload:dev:watch\" \"pnpm renderer:dev:watch\" \"pnpm electron\"",
     "start:renderer": "pnpm renderer:dev:watch",
     "renderer:dev": "cross-env CHAINS_FILE=chains_dev TOKENS_FILE=tokens_dev LOGGER=false vite build --mode development -c vite.config.renderer.ts",
@@ -80,6 +81,7 @@
   "dependencies": {
     "@apollo/client": "3.13.9",
     "@ariakit/react": "0.4.17",
+    "@effector-storage/idb-keyval": "2.0.0",
     "@headlessui/react": "1.7.19",
     "@novasamatech/spektr-dapp-host-container": "0.0.12",
     "@paraspell/sdk-pjs": "11.14.6",
@@ -152,6 +154,7 @@
     "qrcode-generator": "2.0.2",
     "raptorq": "1.7.24",
     "react": "19.2.0",
+    "react-day-picker": "9.13.0",
     "react-dom": "19.2.0",
     "react-error-boundary": "6.0.0",
     "react-hook-form": "7.53.0",

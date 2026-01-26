@@ -11,12 +11,11 @@ import {
   type Wallet,
 } from '@/shared/core';
 // TODO don't know what to do here, looks like it's impossible to decouple storage service because of version migration code.
-// eslint-disable-next-line boundaries/element-types
-import { type MultisigOperation } from '@/domains/network';
-// eslint-disable-next-line boundaries/element-types
-import { type AnyAccount } from '@/domains/network';
-// eslint-disable-next-line boundaries/element-types
+/* eslint-disable boundaries/entry-point, boundaries/element-types */
+import { type AnyAccount } from '@/domains/network/account/types';
+import { type MultisigOperation } from '@/domains/network/multisig-operation/types';
 import { type BasketTransaction } from '@/aggregates/basket-operations';
+/* eslint-enable boundaries/entry-point, boundaries/element-types */
 
 // =====================================================
 // ================== Storage Schemes ==================

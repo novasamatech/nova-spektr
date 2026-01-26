@@ -9,7 +9,6 @@ import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText, Loader } from '@/shared/ui';
 import { Box, ScrollArea } from '@/shared/ui-kit';
 import { multisigOperation } from '@/domains/network';
-import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
@@ -24,35 +23,43 @@ import { OperationNotFoundModal } from './modals/OperationNotFoundModal';
 export const Operations = () => {
   const { formatDate } = useI18n();
 
-  const multisigAccount = useUnit(operationsContextModel.$multisigAccount);
-  const operations = useUnit(selectedWalletMultisigOperations.$list);
+  const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
+  const operations = useUnit(multisigOperation.$list);
   const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
   const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
   const isDeepLinkLoading = useUnit(deepLinkModel.$isDeepLinkLoading);
-  const isLoading = useUnit(multisigOperation.requestOperations.pending);
+  const isTabDataLoading = useUnit(operationsContextModel.$isTabDataLoading);
+  const tab = useUnit(operationsContextModel.$tab);
+
+  const hasMultisigAccounts = multisigAccountsMap.size > 0;
 
   const [focusedRef, scrollToFocused] = useScrollTo<HTMLLIElement>(300);
 
-  const groupedTxs = useMemo(
-    () =>
-      groupBy(filteredTxs, tx => {
-        let date: number | undefined = tx.timestamp;
+  const groupedTxs = useMemo(() => {
+    const groupedTxs = groupBy(filteredTxs, tx => {
+      let date: number | undefined = tx.timestamp;
 
-        if (nullable(date)) {
-          date = tx.events.at(0)?.timestamp;
-        }
+      if (nullable(date)) {
+        date = tx.events.at(0)?.timestamp;
+      }
 
-        if (nullable(date)) {
-          date = Date.now();
-        }
+      if (nullable(date)) {
+        date = Date.now();
+      }
 
-        return formatDate(new Date(date), 'PP');
-      }),
-    [filteredTxs, formatDate],
-  );
+      return formatDate(new Date(date), 'PP');
+    });
+
+    // Sort transactions within each group by timestamp
+    for (const date of Object.keys(groupedTxs)) {
+      groupedTxs[date] = groupedTxs[date].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    }
+
+    return groupedTxs;
+  }, [filteredTxs, formatDate]);
 
   const sortedTxs = useMemo(() => {
-    return Object.entries(groupedTxs).sort(sortByDateDesc);
+    return Object.entries(groupedTxs).toSorted(sortByDateDesc);
   }, [groupedTxs]);
 
   useEffect(() => {
@@ -68,42 +75,46 @@ export const Operations = () => {
 
   return (
     <>
-      {!multisigAccount && <EmptyOperations multisigAccount={null} isEmptyFromFilters={false} />}
+      {!hasMultisigAccounts && <EmptyOperations hasMultisigAccounts={false} isEmptyFromFilters={false} />}
 
-      {multisigAccount && (
+      {hasMultisigAccounts && (
         <ScrollArea>
           <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
-            {(isLoading || isDeepLinkLoading) && (
+            {(isTabDataLoading || isDeepLinkLoading) && (
               <div className="mt-4 flex w-full justify-center">
                 <Loader color="primary" size={25} />
               </div>
             )}
 
-            {filteredTxs.length === 0 && (
+            {!isTabDataLoading && filteredTxs.length === 0 && (
               <EmptyOperations
-                multisigAccount={multisigAccount}
+                hasMultisigAccounts={hasMultisigAccounts}
                 isEmptyFromFilters={operations.length !== filteredTxs.length}
               />
             )}
 
             {filteredTxs.length > 0 && (
-              <div className="flex h-full w-full flex-col items-center overflow-y-auto px-6">
+              <div className="flex h-full w-full flex-col items-center overflow-y-auto">
                 {sortedTxs.map(([date, txs]) => (
-                  <section className="w-full" key={date}>
+                  <section className="mb-8 w-full" key={date}>
                     <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
                     <ul className="flex w-full flex-col gap-y-1.5">
-                      {txs
-                        .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
-                        .map(tx => (
+                      {txs.map(tx => {
+                        const multisigAccount = multisigAccountsMap.get(tx.accountId);
+                        if (!multisigAccount) return null;
+
+                        return (
                           <li key={tx.id} ref={tx.id === focusedOperationId ? focusedRef : undefined}>
                             <Operation
                               key={`${tx.id}-${tx.id === focusedOperationId}`}
                               operation={tx}
                               multisigAccount={multisigAccount}
                               isDefaultOpen={tx.id === focusedOperationId}
+                              tab={tab}
                             />
                           </li>
-                        ))}
+                        );
+                      })}
                     </ul>
                   </section>
                 ))}

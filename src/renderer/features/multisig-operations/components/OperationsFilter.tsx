@@ -1,55 +1,33 @@
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
-import { useEffect, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { performSearch, toAddress } from '@/shared/lib/utils';
 import { Button, MultiSelect } from '@/shared/ui';
-import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
-import { type MultisigOperation } from '@/domains/network';
+import { type DropdownResult } from '@/shared/ui/types';
+import { Address } from '@/shared/ui-entities';
+import { type DateRange, DateRangePicker } from '@/shared/ui-kit';
+import { useAccountsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
-import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { operationsContextModel } from '../model/context';
 
-type FilterName = 'network' | 'type';
+type FilterName = 'account' | 'network' | 'type';
 
-type FiltersOptions = Record<FilterName, Set<DropdownOption>>;
-
-const getFilterableTxType = (op: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
-  if (!op.transaction?.type) {
-    return 'UNKNOWN_TYPE';
-  }
-
-  if (TransferTypes.includes(op.transaction.type)) {
-    return TransactionType.TRANSFER;
-  }
-  if (XcmTypes.includes(op.transaction.type)) {
-    return TransactionType.XCM_LIMITED_TRANSFER;
-  }
-
-  if (op.transaction.type === TransactionType.BATCH_ALL) {
-    const txMatch = findCoreBatchAll(op.transaction);
-
-    return txMatch?.type || 'UNKNOWN_TYPE';
-  }
-
-  return op.transaction.type;
-};
-
-const EmptyOptions: FiltersOptions = {
-  network: new Set<DropdownOption>(),
-  type: new Set<DropdownOption>(),
-};
-
-export const OperationsFilter = () => {
+export const OperationsFilter = memo(() => {
   const { t } = useI18n();
-
-  const operations = useUnit(selectedWalletMultisigOperations.$list);
-  const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(EmptyOptions);
 
   const selectedOptions = useUnit(operationsContextModel.$filter);
   const chains = useUnit(networkModel.$chains);
+  const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
+
+  const [accountSearchQuery, setAccountSearchQuery] = useState('');
+  const [networkSearchQuery, setNetworkSearchQuery] = useState('');
+  const [typeSearchQuery, setTypeSearchQuery] = useState('');
+
+  const multisigAccounts = useMemo(() => Array.from(multisigAccountsMap.values()), [multisigAccountsMap]);
+  const resolvedMultisigAccounts = useAccountsNames(multisigAccounts);
 
   const TransactionOptions = getTransactionOptions(t);
   const NetworkOptions = Object.values(chains).map(({ chainId, name }) => ({
@@ -58,41 +36,53 @@ export const OperationsFilter = () => {
     element: name,
   }));
 
-  useEffect(() => {
-    setFiltersOptions(getAvailableFiltersOptions(operations));
-  }, [operations, chains]);
+  const filtersOptions = useMemo(() => {
+    const filteredAccountOptions = performSearch({
+      query: accountSearchQuery,
+      records: resolvedMultisigAccounts,
+      getMeta: account => ({
+        address: toAddress(account.accountId),
+      }),
+      weights: { name: 1, address: 0.8 },
+    }).map(account => ({
+      id: account.accountId,
+      value: account.accountId,
+      element: <Address showIcon variant="truncate" address={toAddress(account.accountId)} title={account.name} />,
+    }));
 
-  const getAvailableFiltersOptions = (transactions: MultisigOperation[]) => {
-    return transactions.reduce(
-      (acc, tx) => {
-        const txType = getFilterableTxType(tx);
-        const xcmDestination = tx.transaction?.args.destinationChain;
+    const filteredNetworkOptions = performSearch({
+      query: networkSearchQuery,
+      records: NetworkOptions,
+      weights: { element: 1 },
+    });
 
-        const originNetworkOption = NetworkOptions.find(s => s.value === tx.chainId);
-        const destNetworkOption = NetworkOptions.find(s => s.value === xcmDestination);
-        const typeOption = TransactionOptions.find(s => s.value === txType);
+    const filteredTypeOptions = performSearch({
+      query: typeSearchQuery,
+      records: TransactionOptions,
+      weights: { element: 1 },
+    });
 
-        if (originNetworkOption) {
-          acc.network.add(originNetworkOption);
-        }
-        if (destNetworkOption) {
-          acc.network.add(destNetworkOption);
-        }
-        if (typeOption) {
-          acc.type.add(typeOption);
-        }
-
-        return acc;
-      },
-      {
-        network: new Set<DropdownOption>(),
-        type: new Set<DropdownOption>(),
-      },
-    );
-  };
+    return {
+      account: filteredAccountOptions,
+      network: filteredNetworkOptions,
+      type: filteredTypeOptions,
+    };
+  }, [
+    resolvedMultisigAccounts,
+    NetworkOptions,
+    TransactionOptions,
+    accountSearchQuery,
+    networkSearchQuery,
+    typeSearchQuery,
+  ]);
 
   const handleFilterChange = (values: DropdownResult[], filterName: FilterName) => {
     const newSelectedOptions = { ...selectedOptions, [filterName]: values.map(v => v.id) };
+    operationsContextModel.setFilters(newSelectedOptions);
+  };
+
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    const newSelectedOptions = { ...selectedOptions, dateRange: range };
     operationsContextModel.setFilters(newSelectedOptions);
   };
 
@@ -100,33 +90,57 @@ export const OperationsFilter = () => {
     operationsContextModel.resetFilters();
   };
 
-  const filtersSelected = selectedOptions.network.length || selectedOptions.type.length;
+  const filtersSelected =
+    selectedOptions.account.length ||
+    selectedOptions.network.length ||
+    selectedOptions.type.length ||
+    selectedOptions.dateRange?.from ||
+    selectedOptions.dateRange?.to;
 
   return (
     <div className="flex h-9 items-center gap-2">
+      {Boolean(filtersSelected) && (
+        <Button variant="text" className="h-8.5 py-0" onClick={clearFilters}>
+          {t('operations.filters.clearFilters')}
+        </Button>
+      )}
+      <div className="w-[136px]">
+        <DateRangePicker
+          value={selectedOptions.dateRange}
+          placeholder={t('operations.filters.dateRangePlaceholder')}
+          onChange={handleDateRangeChange}
+        />
+      </div>
       <MultiSelect
-        className="w-[200px]"
+        showSelectAll
+        className="w-[136px]"
+        placeholder={t('operations.filters.accountPlaceholder')}
+        selectedIds={selectedOptions.account}
+        options={[...filtersOptions.account]}
+        onChange={value => handleFilterChange(value, 'account')}
+        onSearch={setAccountSearchQuery}
+      />
+      <MultiSelect
+        showSelectAll
+        className="w-[136px]"
         placeholder={t('operations.filters.networkPlaceholder')}
         selectedIds={selectedOptions.network}
         options={[...filtersOptions.network]}
         onChange={value => handleFilterChange(value, 'network')}
+        onSearch={setNetworkSearchQuery}
       />
       <MultiSelect
-        className="w-[200px]"
+        showSelectAll
+        className="w-[136px]"
         placeholder={t('operations.filters.operationTypePlaceholder')}
         selectedIds={selectedOptions.type}
         options={[...filtersOptions.type]}
         onChange={value => handleFilterChange(value, 'type')}
+        onSearch={setTypeSearchQuery}
       />
-
-      {Boolean(filtersSelected) && (
-        <Button variant="text" className="h-8.5 py-0" onClick={clearFilters}>
-          {t('operations.filters.clearAll')}
-        </Button>
-      )}
     </div>
   );
-};
+});
 
 const getTransactionOptions = (t: TFunction) => {
   return [

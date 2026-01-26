@@ -3,9 +3,8 @@ import { useMemo } from 'react';
 
 import { type FlexibleMultisigAccount, type MultisigAccount, type Signatory, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Address, WalletIcon } from '@/shared/ui-entities';
 import { type MultisigOperation, accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
@@ -13,8 +12,6 @@ import { type ExtendedChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard } from '@/entities/signatory';
 import { walletModel } from '@/entities/wallet';
-
-import LogModal from './LogModal';
 
 type WalletSignatory = Signatory & { wallet: Wallet };
 
@@ -30,8 +27,6 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
   const wallets = useUnit(walletModel.$wallets);
   const accountsList = useUnit(accounts.$list);
   const contacts = useUnit(contactModel.$contacts);
-
-  const [isLogModalOpen, toggleLogModal] = useToggle();
 
   const approvals = operation.events.filter(e => e.status === 'approve');
   const cancellation = operation.events.filter(e => e.status === 'reject');
@@ -69,33 +64,16 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
   const contactSignatories = account.signatories.filter(s => !walletSignatoriesIds.includes(s.accountId));
 
   return (
-    <div className="flex w-[320px] flex-col px-2 py-4">
-      <div className="mb-3 flex items-center justify-between">
-        <SmallTitleText>{t('operation.signatoriesTitle')}</SmallTitleText>
-
-        <Button
-          pallet="secondary"
-          variant="fill"
-          size="sm"
-          prefixElement={<Icon name="chat" size={16} />}
-          suffixElement={
-            <CaptionText className="rounded-full bg-chip-icon px-1.5 pt-px pb-[2px] text-white!">
-              {operation.events.length}
-            </CaptionText>
-          }
-          onClick={toggleLogModal}
-        >
-          {t('operation.logButton')}
-        </Button>
-      </div>
+    <div className="flex flex-col border-r border-divider p-4">
+      <SmallTitleText className="mb-4">{t('operation.signatoriesTitle')}</SmallTitleText>
 
       <div className="flex flex-col gap-y-2">
         {Boolean(walletSignatories.length) && (
-          <>
-            <FootnoteText className="mb-2 text-text-tertiary" as="h4">
+          <div>
+            <FootnoteText className="text-text-tertiary" as="h4">
               {t('operation.walletSignatoriesTitle')}
             </FootnoteText>
-            <ul className="flex flex-col gap-y-2">
+            <ul className="flex flex-col">
               {walletSignatories.map(signatory => (
                 <SignatoryCard
                   key={signatory.accountId}
@@ -108,15 +86,15 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
                 </SignatoryCard>
               ))}
             </ul>
-          </>
+          </div>
         )}
 
         {Boolean(contactSignatories.length) && (
-          <>
-            <FootnoteText className="mb-2 text-text-tertiary" as="h4">
+          <div>
+            <FootnoteText className="text-text-tertiary" as="h4">
               {t('operation.contactSignatoriesTitle')}
             </FootnoteText>
-            <ul className="flex flex-col gap-y-2">
+            <ul className="flex flex-col">
               {contactSignatories.map(signatory => (
                 <SignatoryCard
                   key={signatory.accountId}
@@ -140,18 +118,9 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
                 </SignatoryCard>
               ))}
             </ul>
-          </>
+          </div>
         )}
       </div>
-
-      <LogModal
-        isOpen={isLogModalOpen}
-        operation={operation}
-        account={account}
-        connection={connection}
-        contacts={contacts}
-        onClose={toggleLogModal}
-      />
     </div>
   );
 };

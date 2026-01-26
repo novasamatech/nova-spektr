@@ -4,8 +4,7 @@ import { type Type } from '@polkadot/types';
 import { type Call } from '@polkadot/types/interfaces';
 import { type HexString } from '@polkadot/util/types';
 
-import { type CallData, type Chain, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
-import { getNativeAsset } from '@/shared/lib/utils';
+import { type CallData, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import {
@@ -61,19 +60,19 @@ export const decodeCallData = (
   api: ApiPromise,
   accountId: AccountId,
   callData: CallData,
-  chains: Record<ChainId, Chain>,
+  nativeAssetId: string,
 ): DecodedTransaction => {
   const { decoded, method, section } = getDataFromCallData(api, callData);
 
   if (isBatchExtrinsic(method, section)) {
-    return parseBatch(method, section, accountId, decoded, api, chains);
+    return parseBatch(method, section, accountId, decoded, api, nativeAssetId);
   }
 
   if (isProxyExtrinsic(method, section)) {
-    return parseProxy(method, section, accountId, decoded, api, chains);
+    return parseProxy(method, section, accountId, decoded, api, nativeAssetId);
   }
 
-  return parseSingle(method, section, accountId, decoded, api.genesisHash.toHex(), chains);
+  return parseSingle(method, section, accountId, decoded, api.genesisHash.toHex(), nativeAssetId);
 };
 
 const parseBatch = (
@@ -82,7 +81,7 @@ const parseBatch = (
   accountId: AccountId,
   decoded: SubmittableExtrinsic<'promise'>,
   api: ApiPromise,
-  chains: Record<ChainId, Chain>,
+  nativeAssetId: string,
 ): DecodedTransaction => {
   let transactionType: TransactionType | undefined;
   if (['batchAll', 'batch', 'forceBatch'].includes(method) && section === 'utility') {
@@ -95,11 +94,11 @@ const parseBatch = (
     method,
     section,
     api.genesisHash.toHex(),
-    chains,
+    nativeAssetId,
     transactionType,
   );
   const calls = api.createType('Vec<Call>', batchTransaction.args.calls);
-  batchTransaction.args.transactions = calls.map((call) => decodeCallData(api, accountId, call.toHex(), chains));
+  batchTransaction.args.transactions = calls.map((call) => decodeCallData(api, accountId, call.toHex(), nativeAssetId));
 
   return batchTransaction;
 };
@@ -110,7 +109,7 @@ const parseProxy = (
   accountId: AccountId,
   decoded: SubmittableExtrinsic<'promise'>,
   api: ApiPromise,
-  chains: Record<ChainId, Chain>,
+  nativeAssetId: string,
 ): DecodedTransaction => {
   const proxyTransaction = getDecodedTransaction(
     accountId,
@@ -118,11 +117,11 @@ const parseProxy = (
     method,
     section,
     api.genesisHash.toHex(),
-    chains,
+    nativeAssetId,
     TransactionType.PROXY,
   );
   const call = api.createType('Call', proxyTransaction.args.call);
-  proxyTransaction.args.transaction = decodeCallData(api, accountId, call.toHex(), chains);
+  proxyTransaction.args.transaction = decodeCallData(api, accountId, call.toHex(), nativeAssetId);
 
   return proxyTransaction;
 };
@@ -133,10 +132,10 @@ const parseSingle = (
   accountId: AccountId,
   decoded: SubmittableExtrinsic<'promise'>,
   genesisHash: HexString,
-  chains: Record<ChainId, Chain>,
+  nativeAssetId: string,
 ): DecodedTransaction => {
   const transactionType = getTransactionType(method, section);
-  return getDecodedTransaction(accountId, decoded, method, section, genesisHash, chains, transactionType);
+  return getDecodedTransaction(accountId, decoded, method, section, genesisHash, nativeAssetId, transactionType);
 };
 
 const getDecodedTransaction = (
@@ -145,7 +144,7 @@ const getDecodedTransaction = (
   method: string,
   section: string,
   genesisHash: HexString,
-  chains: Record<ChainId, Chain>,
+  nativeAssetId: string,
   transactionType?: TransactionType,
 ): DecodedTransaction => {
   if (!transactionType) {
@@ -187,36 +186,29 @@ const getDecodedTransaction = (
     chainId: genesisHash,
     args: {
       ...additionalArgs,
-      ...parser(decoded, genesisHash, chains),
+      ...parser(decoded, genesisHash, nativeAssetId),
     },
     type: transactionType,
   };
 };
 
-const getNativeAssetId = (chains: Record<ChainId, Chain>, chainId: ChainId) => {
-  const chain = chains[chainId];
-  if (!chain) return null;
-
-  return getNativeAsset(chain.assets)?.assetId.toString();
-};
-
 const getCallDataParser: Record<
   TransactionType,
-  (decoded: SubmittableExtrinsic<'promise'>, chainId: ChainId, chains: Record<ChainId, Chain>) => Record<string, any>
+  (decoded: SubmittableExtrinsic<'promise'>, chainId: ChainId, assetId: string) => Record<string, any>
 > = {
-  [TransactionType.TRANSFER]: (decoded, chainId, chains): Record<string, any> => {
+  [TransactionType.TRANSFER]: (decoded, chainId, assetId): Record<string, any> => {
     return {
-      assetId: getNativeAssetId(chains, chainId),
+      assetId,
       dest: decoded.args[0].toString(),
       value: decoded.args[1].toString(),
     };
   },
-  [TransactionType.TRANSFER_ALL]: (decoded, chainId, chains): Record<string, any> => {
-    return { assetId: getNativeAssetId(chains, chainId), dest: decoded.args[0].toString() };
+  [TransactionType.TRANSFER_ALL]: (decoded, chainId, assetId): Record<string, any> => {
+    return { assetId, dest: decoded.args[0].toString() };
   },
-  [TransactionType.TRANSFER_ALLOW_DEATH]: (decoded, chainId, chains): Record<string, any> => {
+  [TransactionType.TRANSFER_ALLOW_DEATH]: (decoded, chainId, assetId): Record<string, any> => {
     return {
-      assetId: getNativeAssetId(chains, chainId),
+      assetId,
       dest: decoded.args[0].toString(),
       value: decoded.args[1].toString(),
     };

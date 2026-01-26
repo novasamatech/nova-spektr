@@ -15,6 +15,10 @@ export const getNativeAsset = (assets: Asset[]): Asset => {
   return nativeAsset;
 };
 
+export const getNativeAssetId = (assets: Asset[]): string => {
+  return getNativeAsset(assets).assetId.toString();
+};
+
 /**
  * Get ID of the asset by type
  *
