@@ -78,9 +78,15 @@ export const MultiSelect = ({
     }
 
     return (
-      <span className="flex items-center gap-x-2">
-        <FootnoteText as="span">{multiPlaceholder || placeholder}</FootnoteText>
-        <CaptionText as="span" className="h-4 rounded-[30px] bg-icon-accent px-1.5 leading-4 text-white" align="center">
+      <span className="flex min-w-0 items-center gap-x-2 overflow-hidden">
+        <FootnoteText as="span" className="min-w-0 flex-shrink truncate">
+          {multiPlaceholder || placeholder}
+        </FootnoteText>
+        <CaptionText
+          as="span"
+          className="h-4 flex-shrink-0 rounded-[30px] bg-icon-accent px-1.5 leading-4 whitespace-nowrap text-white"
+          align="center"
+        >
           {allSelected ? t('general.input.all') : selectedOptions.length}
         </CaptionText>
       </span>
