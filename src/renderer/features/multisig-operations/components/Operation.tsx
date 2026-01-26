@@ -18,7 +18,7 @@ import { Accordion, Button, FootnoteText, HelpText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance, AssetIcon, WalletAccountIcon } from '@/shared/ui-entities';
 import { Copy, Tooltip } from '@/shared/ui-kit';
-import { type MultisigOperation, accounts } from '@/domains/network';
+import { type MultisigOperation, accountService, accounts } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { networkModel, useNetworkData } from '@/entities/network';
 import { OperationTitleStatus } from '@/entities/operations';
@@ -79,14 +79,41 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(multisigAccount);
 
-  // Approve/Reject availability logic
-  const hasAccount = allAccounts.some(a => {
-    return a.accountId === operation.depositor && !accountUtils.isWatchOnlyAccount(a);
-  });
-  const isRejectAvailable = operation.status === 'pending' && hasAccount;
+  const hasRejectAccount = useMemo(() => {
+    if (!chain) return false;
+
+    return allAccounts.some(
+      a =>
+        a.accountId === operation.depositor &&
+        accountService.isAccountAvailableOnChain(a, chain) &&
+        !accountUtils.isWatchOnlyAccount(a),
+    );
+  }, [chain, allAccounts, operation.depositor]);
+
+  const isRejectAvailable = operation.status === 'pending' && hasRejectAccount;
+
+  const hasApproveAccount = useMemo(() => {
+    if (!chain) return false;
+
+    const signatories = allAccounts.filter(a =>
+      multisigAccount.signatories.some(s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
+    );
+
+    const signatoriesOnChain = signatories.filter(
+      s => accountService.isAccountAvailableOnChain(s, chain) && !accountUtils.isWatchOnlyAccount(s),
+    );
+
+    const unsignedSignatories = signatoriesOnChain.filter(
+      a => !operation.events.some(e => e.accountId === a.accountId),
+    );
+
+    return unsignedSignatories.length > 0;
+  }, [chain, allAccounts, multisigAccount.signatories, operation.events]);
+
   const isFinalSigning = multisigAccount && operation.events.length === multisigAccount.threshold - 1;
   const isApproveAvailable =
     operation.status === 'pending' &&
+    hasApproveAccount &&
     (!isFinalSigning || (operation.callData && validateCallData(operation.callData, operation.callHash)));
   const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
   const asset = useTransactionAsset(coreTx, operation.chainId);
