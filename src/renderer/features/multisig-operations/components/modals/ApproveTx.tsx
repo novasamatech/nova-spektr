@@ -14,7 +14,6 @@ import { OperationResult, isXcmTransaction, useTransactionAsset } from '@/entiti
 import { walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
 import { approveModel } from '../../model/approve-model';
-import { operationsContextModel } from '../../model/context';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 import { ApproveForm } from '../ApproveForm';
@@ -39,11 +38,11 @@ const enum Step {
 const AllSteps = [Step.FORM, Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 export const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props) => {
-  useGate(approveModel.flow, { chain, operation });
+  useGate(approveModel.flow, { chain, operation, account });
 
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
-  const multisigAccount = useUnit(operationsContextModel.$multisigAccount);
+  const multisigAccount = useUnit(approveModel.$multisigAccount);
 
   const approveTx = useUnit(approveModel.$transaction);
   const valid = useUnit(approveModel.$valid);

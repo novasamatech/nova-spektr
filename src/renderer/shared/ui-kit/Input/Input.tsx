@@ -68,7 +68,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {prefixElement ? <div className="flex shrink-0">{prefixElement}</div> : prefixElement}
         <input
           className={cnTw(
-            'h-full w-full appearance-none placeholder:text-text-secondary focus:ring-0 focus-visible:outline-none!',
+            'h-full w-full appearance-none truncate placeholder:text-text-secondary focus:ring-0 focus-visible:outline-none!',
             'text-footnote text-text-primary outline-offset-1',
             {
               'bg-transparent text-text-tertiary placeholder:text-text-tertiary': disabled,

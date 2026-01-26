@@ -42,7 +42,7 @@ const Trigger = ({ value, disabled, children }: TriggerProps) => {
     <RadixTabs.Trigger
       value={value}
       className={cnTw(
-        'flex w-full cursor-pointer items-center justify-center gap-1 rounded-sm bg-transparent px-2 py-1.5 text-button-small text-text-secondary',
+        'flex w-full cursor-pointer items-center justify-center gap-1 rounded-sm bg-transparent px-4 py-1.5 text-button-small text-text-secondary',
         'transition-all duration-100',
         'data-[state=active]:bg-white data-[state=active]:text-text-primary data-[state=active]:shadow-card-shadow',
         'disabled:cursor-not-allowed',
