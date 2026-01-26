@@ -30,6 +30,7 @@ import {
   useTransactionAsset,
 } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { type TabFilter } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
 import { OperationFullInfo } from './OperationFullInfo';
@@ -41,6 +42,7 @@ type Props = {
   operation: MultisigOperation;
   multisigAccount: MultisigAccount | FlexibleMultisigAccount;
   isDefaultOpen?: boolean;
+  tab: TabFilter;
 };
 
 export type OperationTitle = {
@@ -64,7 +66,7 @@ export const operationTitleTransformer = createTransformer<
   OperationTitle
 >();
 
-export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false }: Props) => {
+export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false, tab }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
@@ -226,7 +228,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
         </div>
       </Accordion.Button>
       <Accordion.Content className="border-t border-divider">
-        <OperationFullInfo operation={operation} account={multisigAccount} />
+        <OperationFullInfo operation={operation} account={multisigAccount} tab={tab} />
       </Accordion.Content>
     </Accordion>
   );
