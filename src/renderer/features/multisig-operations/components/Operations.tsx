@@ -31,7 +31,7 @@ export const Operations = () => {
   const isTabDataLoading = useUnit(operationsContextModel.$isTabDataLoading);
   const tab = useUnit(operationsContextModel.$tab);
 
-  const hasMultisigAccounts = multisigAccountsMap.size > 0;
+  const hasMultisigAccounts = Object.keys(multisigAccountsMap).length > 0;
 
   const [focusedRef, scrollToFocused] = useScrollTo<HTMLLIElement>(300);
 
@@ -100,7 +100,7 @@ export const Operations = () => {
                     <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
                     <ul className="flex w-full flex-col gap-y-1.5">
                       {txs.map(tx => {
-                        const multisigAccount = multisigAccountsMap.get(tx.accountId);
+                        const multisigAccount = multisigAccountsMap[tx.accountId];
                         if (!multisigAccount) return null;
 
                         return (

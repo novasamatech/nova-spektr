@@ -4,6 +4,7 @@ import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { Box, Tabs } from '@/shared/ui-kit';
 import {
+  ExportButton,
   OperationsFilter,
   Operations as OperationsList,
   Search,
@@ -48,8 +49,9 @@ export const Operations = () => {
             </Tabs.List>
           </Tabs>
 
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <OperationsFilter />
+            <ExportButton />
           </div>
         </div>
 

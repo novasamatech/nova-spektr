@@ -2103,6 +2103,9 @@
       "title": "Enter call data"
     },
     "createdOperationDescription": "The changes will take effect after the other signatories sign.",
+    "export": {
+      "tooltip": "Export operations to CSV"
+    },
     "filters": {
       "accountPlaceholder": "Accounts",
       "clearFilters": "Clear filters",

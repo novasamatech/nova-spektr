@@ -39,8 +39,8 @@ const unsubscribeFromAccounts = createEvent();
 const $subscribedAccounts = createStore<AccountId[]>([]);
 const $subscribedApis = createStore<Record<ChainId, ApiPromise>>({});
 
-const $chainIdsWithMultisigSupport = createStore<Set<ChainId>>(new Set()).reset(unsubscribeFromAccounts);
-const $initializedChainIds = createStore<Set<ChainId>>(new Set()).reset(unsubscribeFromAccounts);
+const $chainIdsWithMultisigSupport = createStore<ChainId[]>([]).reset(unsubscribeFromAccounts);
+const $initializedChainIds = createStore<ChainId[]>([]).reset(unsubscribeFromAccounts);
 
 const $onChainOperations = $onChainOperationsByCallhash.map(state =>
   Object.values(state)
@@ -53,8 +53,8 @@ const $onChainOperations = $onChainOperationsByCallhash.map(state =>
 const $initialOnChainFetched = combine(
   { expected: $chainIdsWithMultisigSupport, fetched: $initializedChainIds },
   ({ expected, fetched }) => {
-    if (expected.size === 0) return false;
-    return Array.from(expected).every(chainId => fetched.has(chainId));
+    if (expected.length === 0) return false;
+    return expected.every(chainId => fetched.includes(chainId));
   },
 );
 
@@ -218,7 +218,7 @@ sample({
 // Prevents premature cache invalidation when some APIs haven't connected yet
 sample({
   clock: subscribeToAccounts,
-  fn: ({ chains }) => new Set(keys(chains)),
+  fn: ({ chains }) => keys(chains),
   target: $chainIdsWithMultisigSupport,
 });
 
@@ -227,7 +227,7 @@ sample({
   source: $initializedChainIds,
   fn: (fetched, { params }) => {
     const chainIds = keys(params.apis);
-    return new Set([...fetched, ...chainIds]);
+    return [...new Set([...fetched, ...chainIds])];
   },
   target: $initializedChainIds,
 });
@@ -384,11 +384,11 @@ const $allOperations = combine(
     expectedChainIds: $chainIdsWithMultisigSupport,
   },
   ({ live, cached, fetchedChainIds, expectedChainIds }) => {
-    if (expectedChainIds.size === 0) {
+    if (expectedChainIds.length === 0) {
       return cached;
     }
 
-    const allFetched = Array.from(expectedChainIds).every(chainId => fetchedChainIds.has(chainId));
+    const allFetched = expectedChainIds.every(chainId => fetchedChainIds.includes(chainId));
     if (allFetched) {
       return live;
     }
@@ -396,11 +396,11 @@ const $allOperations = combine(
     // Hybrid: use live data for fetched chains, cached for others
     const liveByChain = groupBy(live, op => op.chainId);
     const cachedByChain = groupBy(cached, op => op.chainId);
-    const allChainIds = new Set([...keys(liveByChain), ...keys(cachedByChain)]);
+    const allChainIds = [...new Set([...keys(liveByChain), ...keys(cachedByChain)])];
 
     const result: MultisigOperation[] = [];
     for (const chainId of allChainIds) {
-      const ops = fetchedChainIds.has(chainId) ? liveByChain[chainId] || [] : cachedByChain[chainId] || [];
+      const ops = fetchedChainIds.includes(chainId) ? liveByChain[chainId] || [] : cachedByChain[chainId] || [];
       result.push(...ops);
     }
 
