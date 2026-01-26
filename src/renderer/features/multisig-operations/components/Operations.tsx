@@ -29,6 +29,7 @@ export const Operations = () => {
   const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
   const isDeepLinkLoading = useUnit(deepLinkModel.$isDeepLinkLoading);
   const isTabDataLoading = useUnit(operationsContextModel.$isTabDataLoading);
+  const tab = useUnit(operationsContextModel.$tab);
 
   const hasMultisigAccounts = multisigAccountsMap.size > 0;
 
@@ -109,6 +110,7 @@ export const Operations = () => {
                               operation={tx}
                               multisigAccount={multisigAccount}
                               isDefaultOpen={tx.id === focusedOperationId}
+                              tab={tab}
                             />
                           </li>
                         );

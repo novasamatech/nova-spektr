@@ -1,5 +1,6 @@
+import { type Done, persist } from '@effector-storage/idb-keyval';
 import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
-import { combine, createEvent, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { interval, throttle } from 'patronum';
 import { type DateRange } from 'react-day-picker';
 
@@ -27,9 +28,28 @@ interface SelectedFilters {
   type: string[];
   dateRange?: DateRange;
 }
-export type TabFilter = 'pending' | 'history';
+export type TabFilter = 'pending' | 'history' | 'hidden';
 
-const filterTx = (tx: MultisigOperation, filters: SelectedFilters, tab: TabFilter) => {
+const $hiddenOperationIds = createStore<string[]>([]);
+const hiddenOperationsLoaded = createEvent<Done<string[]>>();
+persist({ store: $hiddenOperationIds, key: 'hidden-multisig-operations', done: hiddenOperationsLoaded });
+
+const hideOperation = createEvent<string>();
+const unhideOperation = createEvent<string>();
+
+$hiddenOperationIds
+  .on(hideOperation, (state, id) => (state.includes(id) ? state : [...state, id]))
+  .on(unhideOperation, (state, id) => state.filter(opId => opId !== id));
+
+const filterTx = (tx: MultisigOperation, filters: SelectedFilters, tab: TabFilter, hiddenIds: string[]) => {
+  const isHidden = hiddenIds.includes(tx.id);
+
+  if (tab === 'hidden') {
+    if (!isHidden) return false;
+  } else {
+    if (isHidden) return false;
+  }
+
   const xcmDestination = tx.transaction?.args.destinationChain;
 
   const hasAccount = !filters.account.length || filters.account.includes(tx.accountId);
@@ -52,8 +72,13 @@ const filterTx = (tx: MultisigOperation, filters: SelectedFilters, tab: TabFilte
     }
   }
 
+  // For hidden tab, show all hidden operations regardless of status
   const statusMatchesTab =
-    tab === 'pending' ? tx.status === 'pending' : ['executed', 'cancelled', 'error'].includes(tx.status);
+    tab === 'hidden'
+      ? true
+      : tab === 'pending'
+        ? tx.status === 'pending'
+        : ['executed', 'cancelled', 'error'].includes(tx.status);
 
   return hasAccount && (hasOrigin || hasDestination) && hasTxType && isInDateRange && statusMatchesTab;
 };
@@ -127,10 +152,20 @@ const $multisigAccountsMap = accounts.$list.map(accs => {
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 
 const $filteredOperations = combine(
-  { operations: multisigOperation.$list, filter: $filter, tab: $tab },
-  ({ operations, filter, tab }) => {
-    return operations.filter(op => filterTx(op, filter, tab));
+  { operations: multisigOperation.$list, filter: $filter, tab: $tab, hiddenIds: $hiddenOperationIds },
+  ({ operations, filter, tab, hiddenIds }) => {
+    return operations.filter(op => filterTx(op, filter, tab, hiddenIds));
   },
+);
+
+const $hiddenOperationsCount = combine(
+  { operations: multisigOperation.$list, hiddenIds: $hiddenOperationIds },
+  ({ operations, hiddenIds }) => operations.filter(op => hiddenIds.includes(op.id)).length,
+);
+
+const $pendingOperationsCount = combine(
+  { operations: multisigOperation.$list, hiddenIds: $hiddenOperationIds },
+  ({ operations, hiddenIds }) => operations.filter(op => op.status === 'pending' && !hiddenIds.includes(op.id)).length,
 );
 
 const $isTabDataLoading = combine(
@@ -166,12 +201,25 @@ sample({
 // Switch tab based on focused operation status (from deep link)
 sample({
   clock: deepLinkModel.$focusedOperationId,
-  source: multisigOperation.$list,
+  source: { operations: multisigOperation.$list, hiddenIds: $hiddenOperationIds },
   filter: (_, operationId) => nonNullable(operationId),
-  fn: (operations, operationId): TabFilter => {
+  fn: ({ operations, hiddenIds }, operationId): TabFilter => {
+    if (hiddenIds.includes(operationId!)) return 'hidden';
     const operation = operations.find(op => op.id === operationId);
     return operation?.status === 'pending' ? 'pending' : 'history';
   },
+  target: setTab,
+});
+
+// Auto-switch to pending when all hidden operations are unhidden
+sample({
+  clock: $hiddenOperationIds,
+  source: { tab: $tab, operations: multisigOperation.$list },
+  filter: ({ tab, operations }, hiddenIds) => {
+    const hiddenCount = operations.filter(op => hiddenIds.includes(op.id)).length;
+    return tab === 'hidden' && hiddenCount === 0;
+  },
+  fn: (): TabFilter => 'pending',
   target: setTab,
 });
 
@@ -182,8 +230,13 @@ export const operationsContextModel = {
   $initiator,
   $tab,
   $isTabDataLoading,
+  $hiddenOperationIds,
+  $hiddenOperationsCount,
+  $pendingOperationsCount,
 
   setFilters,
   resetFilters,
   setTab,
+  hideOperation,
+  unhideOperation,
 };

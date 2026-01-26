@@ -3,7 +3,6 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { Box, Tabs } from '@/shared/ui-kit';
-import { multisigOperation } from '@/domains/network';
 import {
   OperationsFilter,
   Operations as OperationsList,
@@ -16,9 +15,8 @@ export const Operations = () => {
   const { t } = useI18n();
   const tab = useUnit(operationsContextModel.$tab);
   const setTab = useUnit(operationsContextModel.setTab);
-
-  const operations = useUnit(multisigOperation.$list);
-  const pendingCount = operations.filter((op) => op.status === 'pending').length;
+  const pendingCount = useUnit(operationsContextModel.$pendingOperationsCount);
+  const hiddenCount = useUnit(operationsContextModel.$hiddenOperationsCount);
 
   const handleTabChange = (value: string) => {
     setTab(value as TabFilter);
@@ -41,6 +39,12 @@ export const Operations = () => {
                 {pendingCount > 0 && <span className="ml-1 text-text-tertiary">{pendingCount}</span>}
               </Tabs.Trigger>
               <Tabs.Trigger value="history">{t('operations.tabs.history')}</Tabs.Trigger>
+              {hiddenCount > 0 && (
+                <Tabs.Trigger value="hidden">
+                  {t('operations.tabs.hidden')}
+                  <span className="ml-1 text-text-tertiary">{hiddenCount}</span>
+                </Tabs.Trigger>
+              )}
             </Tabs.List>
           </Tabs>
 
