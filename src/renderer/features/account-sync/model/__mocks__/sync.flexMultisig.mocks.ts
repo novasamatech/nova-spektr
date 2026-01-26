@@ -96,7 +96,13 @@ export const flexMultisigAccount1 = {
     { accountId: '0x589f4a92b7e88c0ac1172e429f12bde262d34fac77b0931eb94963996a207724' },
     { accountId: '0x74429a03af05da40e630c60e10d9454bae6f69449cb8dc4807e45ae4a14ac477' },
   ],
-  proxyType: 'Any',
+  connections: [
+    {
+      proxyAccountId: '0x651841e4f52831f5ef30c7fc4e0d9b97c53ac59bf58b79bf7b3ceaa44168f251',
+      proxyType: 'Any',
+      delay: 0,
+    },
+  ],
   deposit: '1002050000000',
   entropyBlockNumber: 6146859,
   extrinsicIndex: 2,
@@ -118,7 +124,13 @@ export const flexMultisigAccount2 = {
     { accountId: '0x589f4a92b7e88c0ac1172e429f12bde262d34fac77b0931eb94963996a207724' },
     { accountId: '0x74429a03af05da40e630c60e10d9454bae6f69449cb8dc4807e45ae4a14ac477' },
   ],
-  proxyType: 'Any',
+  connections: [
+    {
+      proxyAccountId: '0x651841e4f52831f5ef30c7fc4e0d9b97c53ac59bf58b79bf7b3ceaa44168f251',
+      proxyType: 'Any',
+      delay: 0,
+    },
+  ],
   deposit: '1002050000000',
   entropyBlockNumber: 6146810,
   extrinsicIndex: 2,
@@ -182,7 +194,13 @@ export const flexMultisigAccount3 = {
     { accountId: '0x589f4a92b7e88c0ac1172e429f12bde262d34fac77b0931eb94963996a207724' },
     { accountId: '0x74429a03af05da40e630c60e10d9454bae6f69449cb8dc4807e45ae4a14ac477' },
   ],
-  proxyType: 'Any',
+  connections: [
+    {
+      proxyAccountId: '0x651841e4f52831f5ef30c7fc4e0d9b97c53ac59bf58b79bf7b3ceaa44168f251',
+      proxyType: 'Any',
+      delay: 0,
+    },
+  ],
   deposit: '1002050000000',
   entropyBlockNumber: 6147631,
   extrinsicIndex: 2,

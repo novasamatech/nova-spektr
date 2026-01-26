@@ -176,12 +176,15 @@ const $reassignTx = combine(
       return null;
     }
 
+    const oldMultisigAccountId = multisigService.getMultisigAccountId(multisigAccount);
+    const connection = multisigAccount.connections.find((c) => c.proxyAccountId === oldMultisigAccountId);
+
     return transactionBuilder.buildProxyReassign({
       chain,
-      oldAccountId: multisigService.getMultisigAccountId(multisigAccount),
+      oldAccountId: oldMultisigAccountId,
       newAccountId: newMultisigAccountId,
       signerAccountId: signer.accountId,
-      proxyType: multisigAccount.proxyType,
+      proxyType: connection?.proxyType ?? 'Any',
     });
   },
 );

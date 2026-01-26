@@ -254,7 +254,13 @@ sample({
       pendingBlockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
 
-      proxyType: 'Any',
+      connections: [
+        {
+          proxyAccountId: multisigAccountId!,
+          proxyType: 'Any',
+          delay: 0,
+        },
+      ],
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       signingType: SigningType.MULTISIG,
       accountType: AccountType.FLEX_MULTISIG,

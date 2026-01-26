@@ -58,11 +58,17 @@ export interface FlexibleMultisigAccount extends ChainAccount {
   threshold: number;
 
   // proxied account part
-  proxyType: ProxyType;
+  connections: FlexibleMultisigConnection[];
   deposit: string;
   entropyBlockNumber: number;
   pendingBlockNumber?: number;
   extrinsicIndex: number;
+}
+
+export interface FlexibleMultisigConnection {
+  proxyAccountId: AccountId;
+  delay: number;
+  proxyType: ProxyType;
 }
 
 export interface MultisigSignatoryAccount extends UniversalAccount {

@@ -174,6 +174,8 @@ transactionSDK(multisigWalletFeature, {
 
       if (accountUtils.isFlexibleMultisigAccount(account)) {
         // FlexibleMultisig path
+        const connection = account.connections.find((c) => c.proxyAccountId === account.multisigAccountId);
+        const proxyType = connection?.proxyType ?? 'Any';
 
         const proxyTransaction: ProxyTransaction = {
           type: 'decoded',
@@ -181,7 +183,7 @@ transactionSDK(multisigWalletFeature, {
           method: 'proxy',
           args: {
             real: account.accountId,
-            forceProxyType: account.proxyType,
+            forceProxyType: proxyType,
             call: encodedTransaction.callData,
           },
         };
@@ -242,6 +244,8 @@ transactionSDK(multisigWalletFeature, {
 
       if (accountUtils.isFlexibleMultisigAccount(account)) {
         // FlexibleMultisig path
+        const connection = account.connections.find((c) => c.proxyAccountId === account.multisigAccountId);
+        const proxyType = connection?.proxyType ?? 'Any';
 
         const proxyTransaction: Transaction = {
           type: TransactionType.PROXY,
@@ -249,7 +253,7 @@ transactionSDK(multisigWalletFeature, {
           chainId: api.genesisHash.toHex(),
           args: {
             real: account.accountId,
-            forceProxyType: account.proxyType,
+            forceProxyType: proxyType,
             call: extrinsic.method.toHex(),
           },
         };

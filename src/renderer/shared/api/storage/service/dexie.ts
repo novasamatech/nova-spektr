@@ -16,7 +16,7 @@ import {
 } from '../lib/types';
 import {
   addAccountNameType,
-  addFlexibleMultisigProxyType,
+  addFlexibleMultisigConnections,
   migrateAccounts,
   migrateBasketTransactionAfterAddressRemoval,
   migrateCASBasket,
@@ -153,7 +153,7 @@ class DexieStorage extends Dexie {
 
     this.version(42).upgrade(migrateNotificationStructure);
 
-    this.version(43).upgrade(addFlexibleMultisigProxyType);
+    this.version(43).upgrade(addFlexibleMultisigConnections);
 
     this.connections = this.table('connections');
     this.balances2 = this.table('balances2');
@@ -186,7 +186,7 @@ export const importDb = async (blob: Blob) => {
   await dexie.transaction('rw', dexie.accounts2, dexie.notifications, async (t) => {
     await addAccountNameType(t);
     await migrateNotificationStructure(t);
-    await addFlexibleMultisigProxyType(t);
+    await addFlexibleMultisigConnections(t);
   });
 };
 

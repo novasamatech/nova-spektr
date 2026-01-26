@@ -4,11 +4,10 @@ import { AccountType, type ProxyType } from '@/shared/core';
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount } from '@/domains/network';
 
-type FlexMultisigAccount = AnyAccount & {
+type OldFlexMultisigAccount = AnyAccount & {
   accountType: AccountType.FLEX_MULTISIG;
   multisigAccountId: string;
   chainId: string;
-  proxyType?: ProxyType;
 };
 
 type ProxiedAccountType = AnyAccount & {
@@ -21,16 +20,24 @@ type ProxiedAccountType = AnyAccount & {
   }[];
 };
 
+type NewFlexMultisigAccount = OldFlexMultisigAccount & {
+  connections: {
+    proxyAccountId: string;
+    proxyType: ProxyType;
+    delay: number;
+  }[];
+};
+
 /**
- * Migration to add proxyType field to FlexibleMultisigAccount by looking up the
- * corresponding ProxiedAccount and getting the proxyType from its connections.
+ * Migration to add connections field to FlexibleMultisigAccount by looking up the
+ * corresponding ProxiedAccount and getting the connection info from its connections.
  */
-export async function addFlexibleMultisigProxyType(t: Transaction): Promise<void> {
+export async function addFlexibleMultisigConnections(t: Transaction): Promise<void> {
   const accounts = await t.table<AnyAccount>('accounts2').toArray();
 
   const flexMultisigAccounts = accounts.filter(
-    (account): account is FlexMultisigAccount =>
-      'accountType' in account && account.accountType === AccountType.FLEX_MULTISIG && !('proxyType' in account),
+    (account): account is OldFlexMultisigAccount =>
+      'accountType' in account && account.accountType === AccountType.FLEX_MULTISIG && !('connections' in account),
   );
 
   if (flexMultisigAccounts.length === 0) {
@@ -41,30 +48,33 @@ export async function addFlexibleMultisigProxyType(t: Transaction): Promise<void
     (account): account is ProxiedAccountType => 'accountType' in account && account.accountType === AccountType.PROXIED,
   );
 
-  const updatedAccounts = flexMultisigAccounts
-    .map((flexAccount) => {
-      // Find the ProxiedAccount with the same accountId and chainId
-      const proxiedAccount = proxiedAccounts.find(
-        (p) => p.accountId === flexAccount.accountId && p.chainId === flexAccount.chainId,
-      );
+  const updatedAccounts = flexMultisigAccounts.map((flexAccount): NewFlexMultisigAccount => {
+    // Find the ProxiedAccount with the same accountId and chainId
+    const proxiedAccount = proxiedAccounts.find(
+      (p) => p.accountId === flexAccount.accountId && p.chainId === flexAccount.chainId,
+    );
 
-      if (!proxiedAccount) {
-        // Fallback to 'Any' if no proxied account found (shouldn't happen)
-        return {
-          ...flexAccount,
-          proxyType: 'Any' as ProxyType,
-        };
-      }
+    // Get the connection from the proxied account that matches our multisig
+    const matchingConnection = proxiedAccount?.connections.find(
+      (c) => c.proxyAccountId === flexAccount.multisigAccountId,
+    );
 
-      // Find the connection where proxyAccountId matches the multisigAccountId
-      const connection = proxiedAccount.connections.find((c) => c.proxyAccountId === flexAccount.multisigAccountId);
+    // Create the connections array
+    const connections = matchingConnection
+      ? [matchingConnection]
+      : [
+          {
+            proxyAccountId: flexAccount.multisigAccountId,
+            proxyType: 'Any' as ProxyType,
+            delay: 0,
+          },
+        ];
 
-      return {
-        ...flexAccount,
-        proxyType: connection?.proxyType ?? ('Any' as ProxyType),
-      };
-    })
-    .filter((account) => account.proxyType !== undefined);
+    return {
+      ...flexAccount,
+      connections,
+    };
+  });
 
   if (updatedAccounts.length > 0) {
     await t.table('accounts2').bulkPut(updatedAccounts);

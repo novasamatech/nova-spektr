@@ -39,7 +39,13 @@ describe('syncFlexibleMultisigs', () => {
               extrinsicIndex: flexMultisigAccount1.extrinsicIndex,
               multisigAccountId: flexMultisigAccount1.multisigAccountId,
               name: '1T6zT...XrN8U',
-              proxyType: 'Any',
+              connections: [
+                {
+                  proxyAccountId: flexMultisigAccount1.multisigAccountId,
+                  proxyType: 'Any',
+                  delay: 0,
+                },
+              ],
               signatories: flexMultisigAccount1.signatories,
               signingType: flexMultisigAccount1.signingType,
               threshold: flexMultisigAccount1.threshold,
@@ -60,7 +66,13 @@ describe('syncFlexibleMultisigs', () => {
               extrinsicIndex: flexMultisigAccount2.extrinsicIndex,
               multisigAccountId: flexMultisigAccount2.multisigAccountId,
               name: flexMultisigAccount2.name,
-              proxyType: 'Any',
+              connections: [
+                {
+                  proxyAccountId: flexMultisigAccount2.multisigAccountId,
+                  proxyType: 'Any',
+                  delay: 0,
+                },
+              ],
               signatories: flexMultisigAccount2.signatories,
               signingType: flexMultisigAccount2.signingType,
               threshold: flexMultisigAccount2.threshold,
@@ -81,7 +93,13 @@ describe('syncFlexibleMultisigs', () => {
               extrinsicIndex: flexMultisigAccount3.extrinsicIndex,
               multisigAccountId: flexMultisigAccount3.multisigAccountId,
               name: flexMultisigAccount3.name,
-              proxyType: 'Any',
+              connections: [
+                {
+                  proxyAccountId: flexMultisigAccount3.multisigAccountId,
+                  proxyType: 'Any',
+                  delay: 0,
+                },
+              ],
               signatories: flexMultisigAccount3.signatories,
               signingType: flexMultisigAccount3.signingType,
               threshold: flexMultisigAccount3.threshold,

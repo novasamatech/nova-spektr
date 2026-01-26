@@ -1,7 +1,7 @@
 import { useGate, useUnit } from 'effector-react';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
-import { type FlexibleMultisigWallet, type MultisigWallet, WalletType } from '@/shared/core';
+import { type FlexibleMultisigWallet, type MultisigWallet, type ProxyType, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
@@ -28,6 +28,18 @@ import { WalletFiatBalance } from '../components';
 import { ProxiesCount } from '../components/ProxiesCount';
 import { ProxiesList } from '../components/ProxiesList';
 import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
+
+const ProxyTypeOperation: Record<ProxyType, string> = {
+  Any: 'proxy.operations.any',
+  NonTransfer: 'proxy.operations.nonTransfer',
+  Staking: 'proxy.operations.staking',
+  Auction: 'proxy.operations.auction',
+  CancelProxy: 'proxy.operations.cancelProxy',
+  Governance: 'proxy.operations.governance',
+  IdentityJudgement: 'proxy.operations.identityJudgement',
+  NominationPools: 'proxy.operations.nominationPools',
+  SudoBalances: 'proxy.operations.sudoBalances',
+};
 
 type Props = {
   wallet: MultisigWallet | FlexibleMultisigWallet;
@@ -243,29 +255,38 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
               </div>
             )}
           </Box>
-          <div className="flex items-center pl-4">
-            <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
-            <div className="flex items-center gap-1 text-footnote">
-              <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
-              <WalletIcon type={WalletType.MULTISIG} size={16} />
-              <NamedAccount
-                accountId={multisigAccount.multisigAccountId}
-                chain={chain}
-                hideIcon
-                hideAddress
-                variant="short"
-              />
-              <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
-              <ChainIcon chain={chain} size={16} />
-              <FootnoteText className="truncate">{chain.name}</FootnoteText>
-              <FootnoteText className="shrink-0">
-                {t('walletDetails.multisig.chainTitle', {
-                  threshold: multisigAccount.threshold,
-                  signatories: multisigAccount.signatories.length,
-                })}
-              </FootnoteText>
+          {multisigAccount.connections.map((connection) => (
+            <div
+              key={`${connection.proxyType}-${connection.proxyAccountId}`}
+              className="flex items-center pl-4"
+            >
+              <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
+              <div className="flex items-center gap-1 text-footnote">
+                <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
+                <WalletIcon type={WalletType.MULTISIG} size={16} />
+                <NamedAccount
+                  accountId={connection.proxyAccountId}
+                  chain={chain}
+                  hideIcon
+                  hideAddress
+                  variant="short"
+                />
+                <FootnoteText className="shrink-0">
+                  {t('walletDetails.multisig.chainTitle', {
+                    threshold: multisigAccount.threshold,
+                    signatories: multisigAccount.signatories.length,
+                  })}
+                </FootnoteText>
+                <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
+                <ChainIcon chain={chain} size={16} />
+                <FootnoteText className="truncate">{chain.name}</FootnoteText>
+                <FootnoteText className="shrink-0">{t('walletDetails.common.proxyToControl')}</FootnoteText>
+                <FootnoteText className="whitespace-nowrap">
+                  {t(ProxyTypeOperation[connection.proxyType])}
+                </FootnoteText>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
 
         <WalletActions actions={actions} />
