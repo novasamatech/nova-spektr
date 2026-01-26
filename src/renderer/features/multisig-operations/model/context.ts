@@ -23,6 +23,7 @@ import { deepLinkModel } from './deep-link';
 import { multisigOperationsFeature } from './feature';
 
 interface SelectedFilters {
+  account: string[];
   network: string[];
   type: string[];
   dateRange?: DateRange;
@@ -51,6 +52,7 @@ const filterTx = (tx: MultisigOperation, filters: SelectedFilters, tab: TabFilte
 
   const xcmDestination = tx.transaction?.args.destinationChain;
 
+  const hasAccount = !filters.account.length || filters.account.includes(tx.accountId);
   const hasOrigin = !filters.network.length || filters.network.includes(tx.chainId);
   const hasDestination = !filters.network.length || filters.network.includes(xcmDestination);
   const hasTxType = !filters.type.length || filters.type.includes(getFilterableTxType(tx));
@@ -78,7 +80,7 @@ const filterTx = (tx: MultisigOperation, filters: SelectedFilters, tab: TabFilte
         ? tx.status === 'pending'
         : ['executed', 'cancelled', 'error'].includes(tx.status);
 
-  return (hasOrigin || hasDestination) && hasTxType && isInDateRange && statusMatchesTab;
+  return hasAccount && (hasOrigin || hasDestination) && hasTxType && isInDateRange && statusMatchesTab;
 };
 
 const getFilterableTxType = (op: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
@@ -107,6 +109,7 @@ const resetFilters = createEvent();
 const setTab = createEvent<TabFilter>();
 
 const $filter = restore(setFilters, {
+  account: [],
   network: [],
   type: [],
   dateRange: undefined,
