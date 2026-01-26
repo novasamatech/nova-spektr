@@ -5,12 +5,14 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, getNativeAsset, truncate } from '@/shared/lib/utils';
 import { Button, CaptionText, DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance } from '@/shared/ui-entities';
-import { Copy } from '@/shared/ui-kit';
+import { Copy, Tooltip, useNotification } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { type ExtendedChain, networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
+import { type TabFilter, operationsContextModel } from '../model/context';
 
 import LogModal from './LogModal';
 
@@ -18,13 +20,15 @@ type Props = {
   operation: MultisigOperation;
   account: MultisigAccount | FlexibleMultisigAccount;
   connection: ExtendedChain;
+  tab: TabFilter;
 };
 
 const InteractionStyle =
   'rounded-sm hover:bg-action-background-hover hover:text-text-primary cursor-pointer py-[3px] px-2 -mr-2';
 
-export const OperationAdvancedDetails = ({ operation, account, connection }: Props) => {
+export const OperationAdvancedDetails = ({ operation, account, connection, tab }: Props) => {
   const { t } = useI18n();
+  const { toast } = useNotification();
 
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
@@ -39,25 +43,64 @@ export const OperationAdvancedDetails = ({ operation, account, connection }: Pro
 
   const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
+  const isHiddenTab = tab === 'hidden';
+
+  const handleHideOperation = () => {
+    operationsContextModel.hideOperation(operation.id);
+    toast.success(t('operation.hideToast.success'), {
+      action: {
+        label: t('operation.hideToast.undo'),
+        onClick: () => {
+          operationsContextModel.unhideOperation(operation.id);
+        },
+      },
+    });
+  };
+
+  const handleUnhideOperation = () => {
+    operationsContextModel.unhideOperation(operation.id);
+    toast.success(t('operation.unhideToast.success'), {
+      action: {
+        label: t('operation.unhideToast.undo'),
+        onClick: () => {
+          operationsContextModel.hideOperation(operation.id);
+        },
+      },
+    });
+  };
+
   return (
     <div className="flex flex-col gap-y-4 p-4">
       <div className="flex items-center justify-between">
         <SmallTitleText>{t('operation.advanced')}</SmallTitleText>
 
-        <Button
-          pallet="secondary"
-          variant="fill"
-          size="sm"
-          prefixElement={<Icon name="chat" size={16} />}
-          suffixElement={
-            <CaptionText className="rounded-full bg-chip-icon px-1.5 pt-px pb-[2px] text-white!">
-              {operation.events.length}
-            </CaptionText>
-          }
-          onClick={toggleLogModal}
-        >
-          {t('operation.logButton')}
-        </Button>
+        <div className="flex items-center gap-x-2">
+          <Tooltip>
+            <Tooltip.Trigger>
+              <IconButton
+                name={isHiddenTab ? 'eye' : 'eyeSlashed'}
+                className="text-icon-default"
+                onClick={isHiddenTab ? handleUnhideOperation : handleHideOperation}
+              />
+            </Tooltip.Trigger>
+            <Tooltip.Content>{isHiddenTab ? t('operation.unhideButton') : t('operation.hideButton')}</Tooltip.Content>
+          </Tooltip>
+
+          <Button
+            pallet="secondary"
+            variant="fill"
+            size="sm"
+            prefixElement={<Icon name="chat" size={16} />}
+            suffixElement={
+              <CaptionText className="rounded-full bg-chip-icon px-1.5 pt-px pb-[2px] text-white!">
+                {operation.events.length}
+              </CaptionText>
+            }
+            onClick={toggleLogModal}
+          >
+            {t('operation.logButton')}
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col gap-y-2">

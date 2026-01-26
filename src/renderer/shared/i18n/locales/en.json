@@ -1996,6 +1996,11 @@
     "feeErrorMessage": "Insufficient funds to pay the network fee",
     "feeErrorTitle": "Insufficient Funds",
     "goBackButton": "Back",
+    "hideButton": "Hide operation",
+    "hideToast": {
+      "success": "Operation hidden",
+      "undo": "Undo"
+    },
     "inProgress": "Submitting approval...",
     "logButton": "Log",
     "multisigExistsDescription": "Due to the blockchain limitations, multisig operations with identical details can't be in a signing status simultaneously. Wait for the current one to be signed or reject it to create a new one.",
@@ -2050,6 +2055,11 @@
     "submitErrorButton": "Close",
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
+    "unhideButton": "Show operation",
+    "unhideToast": {
+      "success": "Operation restored",
+      "undo": "Undo"
+    },
     "viewJSON": {
       "button": "View JSON",
       "label": "Operation details"
@@ -2152,6 +2162,7 @@
     "searchPlaceholder": "Search",
     "shareOperationTooltip": "Share transaction link with signatories",
     "tabs": {
+      "hidden": "Hidden",
       "history": "History",
       "pending": "Pending"
     },
