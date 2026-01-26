@@ -23,7 +23,7 @@ import { OperationNotFoundModal } from './modals/OperationNotFoundModal';
 export const Operations = () => {
   const { formatDate } = useI18n();
 
-  const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
+  const multisigAccounts = useUnit(operationsContextModel.$multisigAccounts);
   const operations = useUnit(multisigOperation.$list);
   const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
   const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
@@ -31,9 +31,13 @@ export const Operations = () => {
   const isTabDataLoading = useUnit(operationsContextModel.$isTabDataLoading);
   const tab = useUnit(operationsContextModel.$tab);
 
-  const hasMultisigAccounts = multisigAccountsMap.size > 0;
-
   const [focusedRef, scrollToFocused] = useScrollTo<HTMLLIElement>(300);
+
+  const multisigAccountsMap = useMemo(() => {
+    return new Map(multisigAccounts.map(account => [account.accountId, account]));
+  }, [multisigAccounts]);
+
+  const hasMultisigAccounts = multisigAccountsMap.size > 0;
 
   const groupedTxs = useMemo(() => {
     const groupedTxs = groupBy(filteredTxs, tx => {

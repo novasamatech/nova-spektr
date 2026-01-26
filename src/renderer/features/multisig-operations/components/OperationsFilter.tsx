@@ -7,10 +7,11 @@ import { useI18n } from '@/shared/i18n';
 import { performSearch, toAddress } from '@/shared/lib/utils';
 import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownResult } from '@/shared/ui/types';
-import { Address } from '@/shared/ui-entities';
+import { Hash, WalletAccountIcon } from '@/shared/ui-entities';
 import { type DateRange, DateRangePicker } from '@/shared/ui-kit';
-import { useAccountsNames } from '@/domains/network';
+import { accountService, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { walletSelectService } from '@/aggregates/wallet-select';
 import { operationsContextModel } from '../model/context';
 
 type FilterName = 'account' | 'network' | 'type';
@@ -20,14 +21,14 @@ export const OperationsFilter = memo(() => {
 
   const selectedOptions = useUnit(operationsContextModel.$filter);
   const chains = useUnit(networkModel.$chains);
-  const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
+  const multisigAccounts = useUnit(operationsContextModel.$multisigAccounts);
+  const multisigWallets = useUnit(operationsContextModel.$multisigWallets);
+
+  const resolvedWallets = useWalletsNames(multisigWallets);
 
   const [accountSearchQuery, setAccountSearchQuery] = useState('');
   const [networkSearchQuery, setNetworkSearchQuery] = useState('');
   const [typeSearchQuery, setTypeSearchQuery] = useState('');
-
-  const multisigAccounts = useMemo(() => Array.from(multisigAccountsMap.values()), [multisigAccountsMap]);
-  const resolvedMultisigAccounts = useAccountsNames(multisigAccounts);
 
   const TransactionOptions = getTransactionOptions(t);
   const NetworkOptions = Object.values(chains).map(({ chainId, name }) => ({
@@ -39,15 +40,42 @@ export const OperationsFilter = memo(() => {
   const filtersOptions = useMemo(() => {
     const filteredAccountOptions = performSearch({
       query: accountSearchQuery,
-      records: resolvedMultisigAccounts,
-      getMeta: account => ({
-        address: toAddress(account.accountId),
+      records: multisigAccounts
+        .map(multisigAccount => {
+          const wallet = resolvedWallets.find(w => w.id === multisigAccount.walletId);
+          return wallet
+            ? {
+                multisigAccount,
+                walletName: wallet.name,
+                accountAddress: toAddress(multisigAccount.accountId),
+                wallet,
+              }
+            : null;
+        })
+        .filter(option => option !== null),
+      getMeta: ({ walletName, wallet }) => ({
+        name: walletName,
+        address: walletSelectService.composeWalletMeta(
+          wallet,
+          accountService.filterAccountsByWallet(multisigAccounts, wallet.id),
+          chains,
+        ),
       }),
       weights: { name: 1, address: 0.8 },
-    }).map(account => ({
-      id: account.accountId,
-      value: account.accountId,
-      element: <Address showIcon variant="truncate" address={toAddress(account.accountId)} title={account.name} />,
+    }).map(({ multisigAccount, walletName, accountAddress, wallet }) => ({
+      id: multisigAccount.accountId,
+      value: multisigAccount.accountId,
+      element: (
+        <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
+          {wallet && <WalletAccountIcon address={accountAddress} type={wallet.type} size={24} iconSize={12} />}
+          <span className="flex w-full flex-col overflow-hidden">
+            {walletName && <span className="w-fit max-w-full truncate">{walletName}</span>}
+            <span className="w-full text-help-text text-text-tertiary">
+              <Hash value={accountAddress} variant="truncate" />
+            </span>
+          </span>
+        </span>
+      ),
     }));
 
     const filteredNetworkOptions = performSearch({
@@ -68,7 +96,9 @@ export const OperationsFilter = memo(() => {
       type: filteredTypeOptions,
     };
   }, [
-    resolvedMultisigAccounts,
+    multisigAccounts,
+    resolvedWallets,
+    chains,
     NetworkOptions,
     TransactionOptions,
     accountSearchQuery,

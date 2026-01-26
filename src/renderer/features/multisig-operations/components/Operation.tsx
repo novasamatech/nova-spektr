@@ -77,7 +77,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
     () => wallets.find(w => w.id === multisigAccount.walletId),
     [wallets, multisigAccount.walletId],
   );
-  const accountAddress = chain ? toAddress(multisigAccount.accountId, { prefix: chain.addressPrefix }) : undefined;
+  const accountAddress = toAddress(multisigAccount.accountId);
 
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(multisigAccount);
 

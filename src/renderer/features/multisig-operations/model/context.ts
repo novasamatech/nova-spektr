@@ -4,7 +4,7 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { interval, throttle } from 'patronum';
 import { type DateRange } from 'react-day-picker';
 
-import { type FlexibleMultisigAccount, type MultisigAccount, TransactionType } from '@/shared/core';
+import { TransactionType } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import {
   type AnyAccount,
@@ -15,9 +15,8 @@ import {
 } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
-import { accountUtils } from '@/entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { multisigService } from '@/features/multisig-wallet';
 
 import { deepLinkModel } from './deep-link';
 import { multisigOperationsFeature } from './feature';
@@ -137,17 +136,9 @@ const $initiators = combine(
   },
 );
 
-const $multisigAccountsMap = accounts.$list.map(accs => {
-  const multisigAccounts = accs.filter(accountUtils.isAnyMultisigAccount);
-  const map = new Map<string, MultisigAccount | FlexibleMultisigAccount>();
+const $multisigAccounts = accounts.$list.map(accs => accs.filter(accountUtils.isAnyMultisigAccount));
 
-  for (const account of multisigAccounts) {
-    const multisigAccountId = multisigService.getMultisigAccountId(account);
-    map.set(multisigAccountId, account);
-  }
-
-  return map;
-});
+const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isMultisig));
 
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 
@@ -226,7 +217,8 @@ sample({
 export const operationsContextModel = {
   $filter,
   $filteredOperations,
-  $multisigAccountsMap,
+  $multisigAccounts,
+  $multisigWallets,
   $initiator,
   $tab,
   $isTabDataLoading,
