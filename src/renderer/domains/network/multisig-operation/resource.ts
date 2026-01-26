@@ -253,8 +253,6 @@ type RequestParams = {
 export const $offChainOperations = createStore<MultisigOperation[]>([]);
 
 // Shared store for on-chain operations (updated by initialOnChainFetch + subscribeOnchainResource)
-// Keyed by ChainId first, then by AccountId, then by callHash
-//
 type OnChainOperationsState = Record<ChainId, Record<AccountId, Record<HexString, MultisigOperation | null>>>;
 export const $onChainOperationsByCallhash = createStore<OnChainOperationsState>({});
 
@@ -528,6 +526,8 @@ export const subscribeNewMultisigEventsResource = createSubscriptionResource<{
   })
   .build();
 
+export const $completionEvents = createStore<{ chainId: ChainId; operationId: string; event: MultisigEvent }[]>([]);
+
 export const subscribeEventsResource = createSubscriptionResource<{
   api: ApiPromise;
   accountId: AccountId;
@@ -567,5 +567,11 @@ export const subscribeEventsResource = createSubscriptionResource<{
     );
 
     return unsubscribeFn;
+  })
+  .cache({
+    store: $completionEvents,
+    map: (state, { event, operationId }, { api }) => {
+      return [...state, { chainId: api.genesisHash.toHex(), operationId, event }];
+    },
   })
   .build();
