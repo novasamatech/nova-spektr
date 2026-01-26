@@ -4,7 +4,7 @@ import { memo, useMemo, useState } from 'react';
 
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { performSearch, toAddress } from '@/shared/lib/utils';
+import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
 import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownResult } from '@/shared/ui/types';
 import { Hash, WalletAccountIcon } from '@/shared/ui-entities';
@@ -52,7 +52,7 @@ export const OperationsFilter = memo(() => {
               }
             : null;
         })
-        .filter(option => option !== null),
+        .filter(nonNullable),
       getMeta: ({ walletName, wallet }) => ({
         name: walletName,
         address: walletSelectService.composeWalletMeta(
