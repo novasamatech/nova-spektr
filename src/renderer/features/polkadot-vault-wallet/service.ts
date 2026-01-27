@@ -1,13 +1,13 @@
 import {
-  AccountType,
   type Chain,
   type ChainId,
-  CryptoType,
   type DraftAccount,
-  KeyType,
-  SigningType,
   type VaultChainAccount,
   type VaultShardAccount,
+  AccountType,
+  CryptoType,
+  KeyType,
+  SigningType,
 } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { networkUtils } from '@/entities/network';

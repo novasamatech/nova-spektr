@@ -1,6 +1,6 @@
 import { BN, BN_TEN } from '@polkadot/util';
 
-import { type AssetId, AssetType, type Balance, type BalanceId, type TransferableMode } from '@/shared/core';
+import { type AssetId, type Balance, type BalanceId, type TransferableMode, AssetType } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 

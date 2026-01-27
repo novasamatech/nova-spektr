@@ -23,7 +23,7 @@ import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { createQueryResource, createSubscriptionResource } from '@/shared/query';
 import { type MapCacheFn } from '@/shared/query/types';
-// eslint-disable-next-line boundaries/element-types, boundaries/entry-point
+// eslint-disable-next-line boundaries/entry-point
 import { decodeCallData } from '@/entities/transaction/lib/callDataDecoder';
 
 import { INDEXER_URL } from './constants';

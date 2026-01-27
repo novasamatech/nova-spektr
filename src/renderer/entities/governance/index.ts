@@ -27,28 +27,28 @@ export {
   getGovernanceTrackDescription,
   getGroupPallet,
   getTrackIds,
-  getTreasuryTrackDescription,
   getTrackTitles,
+  getTreasuryTrackDescription,
 } from './lib/tracksService';
 
 export { createSubscriber } from './utils/createSubscriber';
 
 export type {
-  TransactionVote,
-  VoteTransaction,
   RevoteTransaction,
   TransactionSplitAbstainVote,
   TransactionStandardVote,
+  TransactionVote,
+  VoteTransaction,
 } from './types/voteTransaction';
 export type { Track } from './types/tracks';
 export type { VotesToRemove } from './types/tracks';
 export type { VoteHistoryRecord } from './model/voteHistory';
 
 export {
-  treasurySpendsDescription,
   adminTracks,
-  governanceTracks,
-  treasuryTracks,
-  fellowshipTracks,
   allTracks,
+  fellowshipTracks,
+  governanceTracks,
+  treasurySpendsDescription,
+  treasuryTracks,
 } from './constants/tracks';

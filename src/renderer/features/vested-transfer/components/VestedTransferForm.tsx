@@ -15,9 +15,9 @@ import { networkModel } from '@/entities/network';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import {
+  type ValidationIssue,
   CliffMinVestedTransferError,
   MinVestedTransferError,
-  type ValidationIssue,
   VestingCsvError,
   VestingFieldError,
   VestingSchedulePreview,

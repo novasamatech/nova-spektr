@@ -1,4 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
 import { u8aToHex } from '@polkadot/util';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
@@ -7,12 +6,12 @@ import { Trans } from 'react-i18next';
 
 import { useStatusContext } from '@/app/providers';
 import {
-  AccountType,
   type ChainId,
-  CryptoType,
-  SigningType,
   type VaultChainAccount,
   type VaultShardAccount,
+  AccountType,
+  CryptoType,
+  SigningType,
   WalletType,
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';

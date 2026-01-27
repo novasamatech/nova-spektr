@@ -4,7 +4,7 @@ import { createStore } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
-import { type Chain, ExternalType, type HexString } from '@/shared/core';
+import { type Chain, type HexString, ExternalType } from '@/shared/core';
 import { merge, nonNullable, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { type AccountId, type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { createSubscriptionResource } from '@/shared/query';

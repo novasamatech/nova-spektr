@@ -7,7 +7,7 @@ import Rank6Icon from '@/shared/assets/images/ranks/rank6.svg?jsx';
 import Rank7Icon from '@/shared/assets/images/ranks/rank7.svg?jsx';
 import Rank8Icon from '@/shared/assets/images/ranks/rank8.svg?jsx';
 import Rank9Icon from '@/shared/assets/images/ranks/rank9.svg?jsx';
-import { RANKS_DATA, type RankData } from '../data';
+import { type RankData, RANKS_DATA } from '../data';
 import { PROGRESS_WITH_DIVIDERS_WIDTHS } from '../model/constants';
 
 export const getRankIcon = (rankId: number) => {

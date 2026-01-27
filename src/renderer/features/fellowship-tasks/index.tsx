@@ -6,8 +6,8 @@ import { fellowshipTasksFeature } from './feature';
 export { Tasks } from './components/Tasks';
 export { referendumVotingTaskActionSlot } from './components/tasks/OngoingReferendumVoting';
 export {
-  evidenceVotingTaskActionSlot,
   evidenceDetailsModalSlot,
+  evidenceVotingTaskActionSlot,
 } from './components/tasks/PromotionRetentionEvidenceVoting';
 export { payoutSalaryTaskActionSlot } from './components/tasks/RequestPayout';
 export { requestPromotionTaskActionSlot } from './components/tasks/RequestPromotion';

@@ -10,12 +10,12 @@ import { referendumActivityItemActionSlot } from './ui/ReferendumActivityItem';
 import { SetActiveConfirmation } from './ui/SetActiveConfirmation';
 
 export {
-  fellowshipProfileFeature,
   SetActiveConfirmation,
-  setActive,
+  alertsReferendumSlot,
+  fellowshipProfileFeature,
   profileInfoSlot,
   referendumActivityItemActionSlot,
-  alertsReferendumSlot,
+  setActive,
 };
 
 fellowshipProfileFeature.inject(fellowshipSidebarSlot, {

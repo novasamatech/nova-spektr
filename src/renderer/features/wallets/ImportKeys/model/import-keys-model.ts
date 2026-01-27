@@ -13,14 +13,14 @@ import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { PATH_ERRORS } from '../lib/constants';
-import { DerivationImportError, type ErrorDetails } from '../lib/derivation-import-error';
+import { type ErrorDetails, DerivationImportError } from '../lib/derivation-import-error';
 import { importKeysUtils } from '../lib/import-keys-utils';
 import {
   type DerivationKeyDraft,
-  DerivationValidationError,
   type DerivationWithPath,
   type ParsedImportFile,
   type TypedImportedDerivation,
+  DerivationValidationError,
   ValidationError,
 } from '../lib/types';
 

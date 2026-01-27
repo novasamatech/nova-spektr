@@ -6,7 +6,7 @@ import { t } from 'i18next';
 import { produce } from 'immer';
 import { throttle } from 'patronum';
 
-import { ConnectionStatus, type ID } from '@/shared/core';
+import { type ID, ConnectionStatus } from '@/shared/core';
 import { createAsyncPipeline } from '@/shared/di';
 import { series } from '@/shared/effector';
 import { nullable, transferableAmountBN } from '@/shared/lib/utils';

@@ -1,2 +1,2 @@
 export { balanceValidation } from './balance';
-export { descriptionValidation, DESCRIPTION_LENGTH } from './description';
+export { DESCRIPTION_LENGTH, descriptionValidation } from './description';

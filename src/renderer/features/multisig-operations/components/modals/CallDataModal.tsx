@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
-import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
+import { type SubmitHandler, Controller, useForm } from 'react-hook-form';
 
 import { type CallData } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';

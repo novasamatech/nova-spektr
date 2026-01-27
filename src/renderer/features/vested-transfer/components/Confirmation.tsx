@@ -10,7 +10,7 @@ import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
-import { VestingSchedulePreview, type VestingScheduleRaw } from '@/entities/vesting';
+import { type VestingScheduleRaw, VestingSchedulePreview } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { confirmModel } from '../model/confirm';
 

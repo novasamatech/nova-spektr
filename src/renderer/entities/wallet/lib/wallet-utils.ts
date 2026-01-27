@@ -10,8 +10,8 @@ import {
   type Wallet,
   type WalletConnectGroup,
   type WalletConnectWallet,
-  WalletType,
   type WatchOnlyWallet,
+  WalletType,
 } from '@/shared/core';
 import { type AnyAccount } from '@/domains/network';
 import {

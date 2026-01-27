@@ -1,7 +1,7 @@
 import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { cnTw } from '@/shared/lib/utils';
-import { Icon, type IconNames } from '@/shared/ui';
+import { type IconNames, Icon } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 

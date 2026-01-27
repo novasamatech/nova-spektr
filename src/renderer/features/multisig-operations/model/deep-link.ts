@@ -5,9 +5,9 @@ import { z } from 'zod';
 import {
   type Chain,
   type ChainId,
-  ConnectionStatus,
   type FlexibleMultisigAccount,
   type MultisigAccount,
+  ConnectionStatus,
 } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';

@@ -1,6 +1,6 @@
 import { type Transaction } from 'dexie';
 
-import { ChainType, CryptoType, type Wallet } from '@/shared/core';
+import { type Wallet, ChainType, CryptoType } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types

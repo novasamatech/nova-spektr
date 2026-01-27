@@ -35,7 +35,7 @@ import { walletConnectReconnect } from '../../model/walletConnectReconnect';
 import { WalletFiatBalance } from '../components';
 import { ProxiesCount } from '../components/ProxiesCount';
 import { ProxiesList } from '../components/ProxiesList';
-import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
+import { type WalletAction, Action, WalletActions } from '../components/WalletActions';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();

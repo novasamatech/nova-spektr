@@ -4,21 +4,21 @@ import { keyBy } from 'lodash';
 
 // TODO: resolve cross import
 import {
-  AccountType,
   type Chain,
   type ChainId,
-  CryptoType,
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type MultisigSignatoryAccount,
   type ProxiedAccount,
-  ProxyVariant,
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
   type Wallet,
   type WatchOnlyAccount,
   type WcAccount,
+  AccountType,
+  CryptoType,
+  ProxyVariant,
 } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';

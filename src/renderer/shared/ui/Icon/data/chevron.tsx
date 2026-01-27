@@ -1,5 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
-
 import CheckedIcon from '@/shared/assets/images/chevron/checked.svg?jsx';
 import DownIcon from '@/shared/assets/images/chevron/down.svg?jsx';
 import EmbedIcon from '@/shared/assets/images/chevron/embed.svg?jsx';

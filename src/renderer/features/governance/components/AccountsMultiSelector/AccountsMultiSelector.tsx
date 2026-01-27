@@ -1,5 +1,5 @@
 import { Listbox, Transition } from '@headlessui/react';
-import { Fragment, type ReactNode, useId } from 'react';
+import { type ReactNode, Fragment, useId } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
