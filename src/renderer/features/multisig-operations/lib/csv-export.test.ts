@@ -1,6 +1,13 @@
 import { describe, expect, test } from 'vitest';
 
-import { type AssetId, type Chain, type ChainId } from '@/shared/core';
+import {
+  type AssetId,
+  type Chain,
+  type ChainId,
+  type DecodedTransaction,
+  AssetType,
+  TransactionType,
+} from '@/shared/core';
 import { type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type MultisigEvent, type MultisigOperation } from '@/domains/network';
 
@@ -11,6 +18,16 @@ import {
   generateExportFilename,
   serializeOperationToCsvRow,
 } from './csv-export';
+
+/**
+ * Helper to create a mock decoded transaction for testing.
+ */
+const mockDecodedTransaction = (tx: {
+  type: TransactionType;
+  section: string;
+  method: string;
+  args: Record<string, unknown>;
+}): DecodedTransaction => tx as unknown as DecodedTransaction;
 
 describe('csv-export', () => {
   describe('formatTimestampISO', () => {
@@ -104,6 +121,85 @@ describe('csv-export', () => {
 
       expect(row.chain_name).toBe('');
     });
+
+    test('should include transfer amount columns for transfer transactions', () => {
+      const transferChain: Chain = {
+        chainId: '0x123' as ChainId,
+        name: 'Test Chain',
+        assets: [
+          {
+            assetId: 0 as AssetId,
+            name: 'Test Token',
+            symbol: 'TST',
+            precision: 10,
+            icon: { monochrome: '', colored: '' },
+            type: AssetType.NATIVE,
+          },
+        ],
+        nodes: [],
+        addressPrefix: 0,
+        specName: 'test',
+        icon: '',
+      };
+
+      const transferOperation: MultisigOperation = {
+        id: 'op-transfer',
+        status: 'pending',
+        chainId: '0x123' as ChainId,
+        accountId: '5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY' as never,
+        depositor: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' as never,
+        callHash: '0xabc123' as never,
+        callData: '0xdef456' as never,
+        method: 'transferKeepAlive',
+        section: 'balances',
+        blockCreated: 100 as BlockHeight,
+        indexCreated: 1,
+        timestamp: 1705334400000,
+        events: [],
+        transaction: mockDecodedTransaction({
+          type: TransactionType.TRANSFER,
+          section: 'balances',
+          method: 'transferKeepAlive',
+          args: {
+            dest: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
+            value: '15500000000', // 1.55 TST with 10 decimals
+          },
+        }),
+      };
+
+      const context = { chains: { '0x123': transferChain } as Record<ChainId, Chain> };
+      const row = serializeOperationToCsvRow(transferOperation, context);
+
+      expect(row.transfer_amount).toBe('1.55');
+      expect(row.transfer_amount_raw).toBe('15500000000');
+      expect(row.transfer_asset_symbol).toBe('TST');
+      expect(row.transfer_recipient).toBeDefined();
+      expect(row.transfer_recipient).not.toBe('');
+    });
+
+    test('should leave transfer columns empty for non-transfer transactions', () => {
+      const proxyOperation: MultisigOperation = {
+        ...mockOperation,
+        transaction: mockDecodedTransaction({
+          type: TransactionType.ADD_PROXY,
+          section: 'proxy',
+          method: 'addProxy',
+          args: {
+            delegate: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
+            proxyType: 'Any',
+            delay: 0,
+          },
+        }),
+      };
+
+      const context = { chains: { '0x123': mockChain } as Record<ChainId, Chain> };
+      const row = serializeOperationToCsvRow(proxyOperation, context);
+
+      expect(row.transfer_amount).toBe('');
+      expect(row.transfer_amount_raw).toBe('');
+      expect(row.transfer_asset_symbol).toBe('');
+      expect(row.transfer_recipient).toBe('');
+    });
   });
 
   describe('generateCsv', () => {
@@ -149,6 +245,7 @@ describe('csv-export', () => {
 
       expect(csv.charCodeAt(0)).toBe(0xfeff);
       expect(csv).toContain('timestamp,explorer_url,status,chain_name');
+      expect(csv).toContain('transfer_amount,transfer_amount_raw,transfer_asset_symbol,transfer_recipient');
       expect(csv).toContain('Test Chain');
     });
 

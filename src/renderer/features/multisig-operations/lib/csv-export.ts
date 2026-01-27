@@ -2,6 +2,8 @@ import { type Chain, type ChainId, type DecodedTransaction } from '@/shared/core
 import { type MultisigEvent, type MultisigOperation } from '@/domains/network';
 import { operationDetailsUtils } from '@/entities/operations';
 
+import { extractTransferAmount } from './transfer-amount-extractor';
+
 const CSV_COLUMNS = [
   'timestamp',
   'explorer_url',
@@ -12,6 +14,10 @@ const CSV_COLUMNS = [
   'method',
   'section',
   'transaction_type',
+  'transfer_amount',
+  'transfer_amount_raw',
+  'transfer_asset_symbol',
+  'transfer_recipient',
   'call_hash',
   'call_data',
   'transaction_args_json',
@@ -86,6 +92,9 @@ export const serializeOperationToCsvRow = (operation: MultisigOperation, context
     chain?.explorers,
   );
 
+  // Extract transfer amount information if applicable
+  const transferInfo = extractTransferAmount(operation, chain ?? null);
+
   return {
     timestamp: formatTimestampISO(operation.timestamp),
     explorer_url: explorerUrl ?? '',
@@ -96,6 +105,10 @@ export const serializeOperationToCsvRow = (operation: MultisigOperation, context
     method: operation.method ?? '',
     section: operation.section ?? '',
     transaction_type: operation.transaction?.type ?? '',
+    transfer_amount: transferInfo?.formattedAmount ?? '',
+    transfer_amount_raw: transferInfo?.rawAmount ?? '',
+    transfer_asset_symbol: transferInfo?.assetSymbol ?? '',
+    transfer_recipient: transferInfo?.recipientAddress ?? '',
     call_hash: operation.callHash,
     call_data: operation.callData ?? '',
     transaction_args_json: serializeTransactionArgsToJson(operation.transaction),
