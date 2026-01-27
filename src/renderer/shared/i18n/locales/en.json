@@ -2102,6 +2102,7 @@
       "success": "Call data submitted successfully",
       "title": "Enter call data"
     },
+    "clearSearchAndFilters": "Clear search and filters",
     "createdOperationDescription": "The changes will take effect after the other signatories sign.",
     "filters": {
       "accountPlaceholder": "Accounts",
@@ -2114,6 +2115,8 @@
       "statusPlaceholder": "Operation status",
       "statusSummary": "Operation statuses"
     },
+    "historyEmptyDescription": "Signed operations will appear here once completed.",
+    "historyEmptyTitle": "Operation history list is empty",
     "modalTitles": {
       "addProxy": "Add delegated authority (proxy)",
       "addProxyOn": "Add delegated authority (proxy) on",
@@ -2154,14 +2157,11 @@
       "vestedTransferOn": "Vested transfer on",
       "vote": "Vote { asset } on"
     },
-    "clearSearchAndFilters": "Clear search and filters",
-    "historyEmptyDescription": "Signed operations will appear here once completed.",
-    "historyEmptyTitle": "Operation history list is empty",
     "noOperationsFilters": "Try to use different keywords or adjust filters",
     "noOperationsTitle": "No operations found",
+    "operationCreated": "Operation created",
     "pendingEmptyDescription": "Once you or a multisig signer create an operation, it will appear here.",
     "pendingEmptyTitle": "Pending operations list is empty",
-    "operationCreated": "Operation created",
     "searchPlaceholder": "Search",
     "shareOperationTooltip": "Share transaction link with signatories",
     "tabs": {
