@@ -58,12 +58,10 @@ export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
 
           <div className="flex flex-col gap-2.5">
             <DetailRow label={t('governance.advanced.fields.approveCurve')}>
-              {}
               {approvalCurve && t(`governance.curves.${approvalCurve}`)}
             </DetailRow>
 
             <DetailRow label={t('governance.advanced.fields.supportCurve')}>
-              {}
               {supportCurve && t(`governance.curves.${supportCurve}`)}
             </DetailRow>
 
