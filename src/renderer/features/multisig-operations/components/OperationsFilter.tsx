@@ -43,11 +43,15 @@ export const OperationsFilter = memo(() => {
       records: multisigAccounts
         .map(multisigAccount => {
           const wallet = resolvedWallets.find(w => w.id === multisigAccount.walletId);
+          const addressPrefix =
+            'chainId' in multisigAccount ? chains[multisigAccount.chainId]?.addressPrefix : undefined;
+          const accountAddress = toAddress(multisigAccount.accountId, { prefix: addressPrefix });
+
           return wallet
             ? {
                 multisigAccount,
                 walletName: wallet.name,
-                accountAddress: toAddress(multisigAccount.accountId),
+                accountAddress,
                 wallet,
               }
             : null;

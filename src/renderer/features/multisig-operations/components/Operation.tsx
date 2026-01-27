@@ -77,11 +77,12 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
     () => wallets.find(w => w.id === multisigAccount.walletId),
     [wallets, multisigAccount.walletId],
   );
-  const accountAddress = toAddress(multisigAccount.accountId);
+
+  const addressPrefix = 'chainId' in multisigAccount ? chains[multisigAccount.chainId]?.addressPrefix : undefined;
+  const accountAddress = toAddress(multisigAccount.accountId, { prefix: addressPrefix });
 
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(multisigAccount);
 
-  // Approve/Reject availability logic
   const hasAccount = allAccounts.some(a => {
     return a.accountId === operation.depositor && !accountUtils.isWatchOnlyAccount(a);
   });
