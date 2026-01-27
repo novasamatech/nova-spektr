@@ -5,8 +5,8 @@ import {
   type FlexibleMultisigOperationNotification,
   type MultisigCreated,
   type Notification,
-  NotificationType,
   type ProxyAction,
+  NotificationType,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 

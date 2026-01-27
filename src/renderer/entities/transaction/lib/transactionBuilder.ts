@@ -7,7 +7,6 @@ import { type ClaimAction } from '@/shared/api/governance';
 import {
   type Address,
   type Asset,
-  AssetType,
   type Chain,
   type ChainId,
   type Conviction,
@@ -16,6 +15,7 @@ import {
   type Signatory,
   type TrackId,
   type Transaction,
+  AssetType,
   TransactionType,
 } from '@/shared/core';
 import { formatAmount, getAssetId, nonNullable } from '@/shared/lib/utils';

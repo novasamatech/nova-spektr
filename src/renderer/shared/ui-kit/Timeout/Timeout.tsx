@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Duration, FootnoteText, Icon, type IconNames } from '@/shared/ui';
+import { type IconNames, Duration, FootnoteText, Icon } from '@/shared/ui';
 
 function getTimerColor(variant: Props['variant']) {
   switch (variant) {

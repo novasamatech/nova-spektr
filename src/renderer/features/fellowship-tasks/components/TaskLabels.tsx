@@ -1,7 +1,7 @@
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Label, type LabelVariant } from '@/shared/ui-kit';
+import { type LabelVariant, Label } from '@/shared/ui-kit';
 
 type Props = {
   tags: string[];

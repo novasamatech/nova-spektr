@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 import { keyBy } from 'lodash';
 
-import { ProviderType, type ProviderWithMetadata, chainsService, networkService } from '@/shared/api/network';
+import { type ProviderWithMetadata, ProviderType, chainsService, networkService } from '@/shared/api/network';
 import { storageService } from '@/shared/api/storage';
 import { type Chain, type ChainMetadata, type Connection, ConnectionStatus, ConnectionType } from '@/shared/core';
 import { polkadotChain, polkadotChainId } from '@/shared/mocks';

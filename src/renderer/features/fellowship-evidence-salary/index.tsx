@@ -3,7 +3,7 @@ import { activityFeedRecordDescriptionSlot } from '@/features/fellowship-activit
 import { evidenceSlot, salarySlot } from './components/EvidenceSalaryModal';
 import { fellowshipEvidenceSalaryFeature } from './feature';
 
-export { evidenceSlot, salarySlot, fellowshipEvidenceSalaryFeature };
+export { evidenceSlot, fellowshipEvidenceSalaryFeature, salarySlot };
 
 fellowshipEvidenceSalaryFeature.inject(activityFeedRecordDescriptionSlot, ({ t, record }) => {
   switch (record.type) {

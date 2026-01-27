@@ -8,8 +8,8 @@ import {
   type Chain,
   type ChainId,
   type Connection,
-  TransactionType,
   type Wallet,
+  TransactionType,
 } from '@/shared/core';
 import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';

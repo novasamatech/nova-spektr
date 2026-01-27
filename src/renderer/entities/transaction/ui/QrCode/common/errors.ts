@@ -1,6 +1,6 @@
 import { QR_READER_ERRORS } from '@/shared/ui-kit';
 
-import { DecodeQrError, type ErrorObject } from './types';
+import { type ErrorObject, DecodeQrError } from './types';
 
 export const QR_READER_DECODE_ERRORS: Record<DecodeQrError, ErrorObject> = {
   [DecodeQrError.FRAME_METADATA]: {
