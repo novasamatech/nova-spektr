@@ -24,6 +24,7 @@ import {
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { MAX_WEIGHT, getExtrinsic, transactionBuilder } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 
 import { operationsContextModel } from './context';
 
@@ -69,8 +70,9 @@ const $unsignedAccounts = combine(
   ({ multisigAccount, chain, accountsList, operation }) => {
     if (!multisigAccount || !chain || !operation) return [];
 
+    const multisigSignatories = accountUtils.getMultisigSignatories(multisigAccount, accountsList);
     const signatories = accountsList.filter(a =>
-      multisigAccount.signatories.some(s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
+      multisigSignatories.some(s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
     );
 
     const signatoriesOnChain = signatories.filter(s => accountService.isAccountAvailableOnChain(s, chain));
@@ -151,17 +153,20 @@ const $transaction = combine(
     chain: $chain,
     operation: $operation,
     weight: $weight,
+    accountsList: accounts.$list,
   },
-  ({ multisigAccount, chain, operation, signatory, weight, initiator }) => {
+  ({ multisigAccount, chain, operation, signatory, weight, initiator, accountsList }) => {
     if (!multisigAccount || !operation || !chain || !signatory || !weight || !initiator) return null;
 
-    const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, initiator.accountId);
+    const signatories = accountUtils.getMultisigSignatories(multisigAccount, accountsList);
+    const threshold = accountUtils.getMultisigThreshold(multisigAccount, accountsList);
+    const otherSignatories = multisigOperationService.getOtherSignatories(signatories, initiator.accountId);
     const hasCallData = operation.callData && validateCallData(operation.callData, operation.callHash);
 
     return transactionBuilder.buildApproveMultisigTx({
       chain,
       signerAccountId: signatory.accountId,
-      threshold: multisigAccount.threshold,
+      threshold,
       otherSignatories,
       tx: operation,
       hasCallData: !!hasCallData,

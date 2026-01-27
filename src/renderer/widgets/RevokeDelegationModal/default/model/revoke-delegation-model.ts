@@ -123,11 +123,11 @@ const { $fee, $tx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
-const $multisigThreshold = $route.map((route) => {
+const $multisigThreshold = combine($route, accounts.$list, (route, accountsList) => {
   const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
   if (!multisigAccount) return null;
 
-  return multisigAccount.threshold;
+  return accountUtils.getMultisigThreshold(multisigAccount, accountsList);
 });
 
 const { $multisigDeposit } = createMultisigDeposit({

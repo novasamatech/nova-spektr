@@ -12,7 +12,7 @@ import { contactModel } from '@/entities/contact';
 import { type ExtendedChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard } from '@/entities/signatory';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 
 import LogModal from './LogModal';
 
@@ -33,6 +33,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
 
   const [isLogModalOpen, toggleLogModal] = useToggle();
 
+  const signatories = accountUtils.getMultisigSignatories(account, accountsList);
   const approvals = operation.events.filter(e => e.status === 'approve');
   const cancellation = operation.events.filter(e => e.status === 'reject');
 
@@ -40,7 +41,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
     const tempCancellation = [];
 
     if (cancellation.length) {
-      const cancelSignatories = account.signatories.find(s => s.accountId === cancellation[0].accountId);
+      const cancelSignatories = signatories.find(s => s.accountId === cancellation[0].accountId);
       if (cancelSignatories) {
         tempCancellation.push(cancelSignatories);
       }
@@ -48,11 +49,11 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
 
     const tempApprovals = approvals
       .sort((a, b) => (a.blockCreated || 0) - (b.blockCreated || 0))
-      .map(a => account.signatories.find(s => s.accountId === a.accountId))
+      .map(a => signatories.find(s => s.accountId === a.accountId))
       .filter(nonNullable);
 
-    return [...new Set<Signatory>([...tempCancellation, ...tempApprovals, ...account.signatories])];
-  }, [account.signatories.length, approvals.length, cancellation.length]);
+    return [...new Set<Signatory>([...tempCancellation, ...tempApprovals, ...signatories])];
+  }, [signatories.length, approvals.length, cancellation.length]);
 
   const walletSignatories: WalletSignatory[] = signatoriesList.reduce((acc: WalletSignatory[], signatory) => {
     const signatoryAccounts = accountsList.filter(account => account.accountId === signatory.accountId);
@@ -66,7 +67,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
   }, []);
 
   const walletSignatoriesIds = walletSignatories.map(a => a.accountId);
-  const contactSignatories = account.signatories.filter(s => !walletSignatoriesIds.includes(s.accountId));
+  const contactSignatories = signatories.filter(s => !walletSignatoriesIds.includes(s.accountId));
 
   return (
     <div className="flex w-[320px] flex-col px-2 py-4">
@@ -127,7 +128,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
                   <Address
                     title={operationDetailsUtils.getSignatoryName(
                       signatory.accountId,
-                      account.signatories,
+                      signatories,
                       contacts,
                       wallets,
                       connection.addressPrefix,

@@ -4,9 +4,17 @@ import { type Wallet } from '@/shared/core';
 import { createSDK, createTransformer } from '@/shared/di';
 import { type AnyAccount, accountService } from '@/domains/network';
 
+export type AccountNodeConfig = {
+  title: string;
+  subTitle?: string;
+  color: string;
+  background?: string;
+  disabled?: boolean;
+};
+
 export const accountNodeConfigTransformer = createTransformer<
   { account: AnyAccount; wallet?: Wallet; t: TFunction<'translation'> },
-  { title: string; subTitle?: string; color: string; background?: string; disabled?: boolean }
+  AccountNodeConfig
 >();
 
 export const accountConnectionTransformer = createTransformer<

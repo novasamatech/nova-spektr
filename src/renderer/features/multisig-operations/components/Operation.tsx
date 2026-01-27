@@ -18,7 +18,7 @@ import { Accordion } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box, Copy, Tooltip } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, accounts } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
@@ -64,6 +64,7 @@ export const operationTitleTransformer = createTransformer<
 export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
+  const allAccounts = useUnit(accounts.$list);
 
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(multisigAccount);
   const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
@@ -127,7 +128,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
               ))}
           </div>
 
-          <OperationTitleStatus operation={operation} account={multisigAccount} />
+          <OperationTitleStatus operation={operation} account={multisigAccount} accounts={allAccounts} />
 
           <Tooltip>
             <Tooltip.Trigger>

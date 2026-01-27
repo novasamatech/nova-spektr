@@ -21,6 +21,7 @@ import {
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 
 import { operationsContextModel } from './context';
 
@@ -83,16 +84,19 @@ sample({
     chain: $chain,
     operation: $operation,
     initiator: $initiator,
+    accountsList: accounts.$list,
   },
   filter: ({ multisigAccount }) => nonNullable(multisigAccount),
-  fn: ({ multisigAccount, chain, operation, signatory, initiator }) => {
+  fn: ({ multisigAccount, chain, operation, signatory, initiator, accountsList }) => {
     if (!operation || !chain || !signatory || !multisigAccount || !initiator) return null;
-    const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, initiator.accountId);
+    const signatories = accountUtils.getMultisigSignatories(multisigAccount, accountsList);
+    const threshold = accountUtils.getMultisigThreshold(multisigAccount, accountsList);
+    const otherSignatories = multisigOperationService.getOtherSignatories(signatories, initiator.accountId);
 
     return transactionBuilder.buildRejectMultisigTx({
       chain,
       signerAccountId: signatory.accountId,
-      threshold: multisigAccount.threshold,
+      threshold,
       otherSignatories,
       tx: operation,
     });

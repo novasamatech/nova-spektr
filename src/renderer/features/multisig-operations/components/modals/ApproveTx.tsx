@@ -8,10 +8,10 @@ import { useToggle } from '@/shared/lib/hooks';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, accounts } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult, isXcmTransaction, useTransactionAsset } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
 import { approveModel } from '../../model/approve-model';
 import { operationsContextModel } from '../../model/context';
@@ -43,6 +43,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
 
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
+  const allAccounts = useUnit(accounts.$list);
   const multisigAccount = useUnit(operationsContextModel.$multisigAccount);
 
   const approveTx = useUnit(approveModel.$transaction);
@@ -100,7 +101,8 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
     }
   };
 
-  const thresholdReached = operation.events.filter(e => e.status === 'approve').length === account.threshold - 1;
+  const threshold = accountUtils.getMultisigThreshold(account, allAccounts);
+  const thresholdReached = operation.events.filter(e => e.status === 'approve').length === threshold - 1;
 
   const readyForSign = operation.status === 'pending' && unsignedAccounts.length > 0;
   const readyForNonFinalSign = readyForSign && !thresholdReached;

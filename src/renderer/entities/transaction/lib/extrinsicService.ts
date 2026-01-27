@@ -208,7 +208,7 @@ export const wrapAsMulti = <T extends Transaction = Transaction>({
   }
 
   const otherSignatories = multisigOperationService.getOtherSignatories(
-    txWrapper.multisigAccount,
+    txWrapper.multisigAccount.signatories,
     txWrapper.signer.accountId,
   );
 

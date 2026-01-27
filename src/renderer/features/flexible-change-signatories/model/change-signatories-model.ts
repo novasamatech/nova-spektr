@@ -53,14 +53,15 @@ const $chain = combine($chainId, networkModel.$chains, (chainId, chains) => (cha
 
 // signatories
 
-const $walletSignatories = combine($flexibleMultisigAccount, accounts.$list, (account, accounts) => {
+const $walletSignatories = combine($flexibleMultisigAccount, accounts.$list, (account, accountsList) => {
   if (!account) return null;
 
-  const ownAccounts = accounts.filter((a) =>
-    account.signatories.some((s) => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
+  const signatories = accountUtils.getMultisigSignatories(account, accountsList);
+  const ownAccounts = accountsList.filter((a) =>
+    signatories.some((s) => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
   );
 
-  return account.signatories.sort((a, b) => {
+  return signatories.toSorted((a, b) => {
     const aExists = ownAccounts.some((acc) => acc.accountId === a.accountId);
     const bExists = ownAccounts.some((acc) => acc.accountId === b.accountId);
     return Number(bExists) - Number(aExists);
@@ -157,8 +158,9 @@ sample({
 
 sample({
   clock: flow.open,
-  source: $flexibleMultisigAccount,
-  fn: (acc) => acc?.threshold ?? null,
+  source: { account: $flexibleMultisigAccount, accountsList: accounts.$list },
+  fn: ({ account, accountsList }) =>
+    account ? accountUtils.getMultisigThreshold(account, accountsList) : null,
   target: formModel.thresholdChanged,
 });
 
@@ -176,12 +178,17 @@ const $reassignTx = combine(
       return null;
     }
 
+    const proxyType = accountUtils.getFlexMultisigProxyType(multisigAccount);
+    if (nullable(proxyType)) {
+      return null;
+    }
+
     return transactionBuilder.buildProxyReassign({
       chain,
       oldAccountId: multisigService.getMultisigAccountId(multisigAccount),
       newAccountId: newMultisigAccountId,
       signerAccountId: signer.accountId,
-      proxyType: multisigAccount.proxyType,
+      proxyType,
     });
   },
 );

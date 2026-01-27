@@ -43,7 +43,14 @@ function createSignatoryVirtualAccount(
 }
 
 function getMultisigAccountId(account: MultisigAccount | FlexibleMultisigAccount) {
-  return accountUtils.isFlexibleMultisigAccount(account) ? account.multisigAccountId : account.accountId;
+  if (accountUtils.isFlexibleMultisigAccount(account)) {
+    // For FlexibleMultisigAccount, use the first connection's multisig account ID
+    const firstConnection = account.connections.at(0);
+
+    return firstConnection?.proxyMultisigAccountId ?? account.accountId;
+  }
+
+  return account.accountId;
 }
 
 export const multisigService = {

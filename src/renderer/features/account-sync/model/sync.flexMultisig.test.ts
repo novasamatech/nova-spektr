@@ -37,12 +37,9 @@ describe('syncFlexibleMultisigs', () => {
               cryptoType: flexMultisigAccount1.cryptoType,
               deposit: '12345',
               extrinsicIndex: flexMultisigAccount1.extrinsicIndex,
-              multisigAccountId: flexMultisigAccount1.multisigAccountId,
+              connections: flexMultisigAccount1.connections,
               name: '1T6zT...XrN8U',
-              proxyType: 'Any',
-              signatories: flexMultisigAccount1.signatories,
               signingType: flexMultisigAccount1.signingType,
-              threshold: flexMultisigAccount1.threshold,
               type: flexMultisigAccount1.type,
             },
           ],
@@ -58,12 +55,9 @@ describe('syncFlexibleMultisigs', () => {
               cryptoType: flexMultisigAccount2.cryptoType,
               deposit: '12345',
               extrinsicIndex: flexMultisigAccount2.extrinsicIndex,
-              multisigAccountId: flexMultisigAccount2.multisigAccountId,
+              connections: flexMultisigAccount2.connections,
               name: flexMultisigAccount2.name,
-              proxyType: 'Any',
-              signatories: flexMultisigAccount2.signatories,
               signingType: flexMultisigAccount2.signingType,
-              threshold: flexMultisigAccount2.threshold,
               type: flexMultisigAccount2.type,
             },
           ],
@@ -79,18 +73,16 @@ describe('syncFlexibleMultisigs', () => {
               cryptoType: flexMultisigAccount3.cryptoType,
               deposit: '12345',
               extrinsicIndex: flexMultisigAccount3.extrinsicIndex,
-              multisigAccountId: flexMultisigAccount3.multisigAccountId,
+              connections: flexMultisigAccount3.connections,
               name: flexMultisigAccount3.name,
-              proxyType: 'Any',
-              signatories: flexMultisigAccount3.signatories,
               signingType: flexMultisigAccount3.signingType,
-              threshold: flexMultisigAccount3.threshold,
               type: flexMultisigAccount3.type,
             },
           ],
         },
       ],
       deleteWallets: [],
+      updateAccounts: [],
     });
   });
 
@@ -105,6 +97,7 @@ describe('syncFlexibleMultisigs', () => {
     expect(result).toEqual({
       createWallets: [],
       deleteWallets: [],
+      updateAccounts: [],
     });
   });
 
@@ -133,6 +126,7 @@ describe('syncFlexibleMultisigs', () => {
 
     expect(result.deleteWallets).toEqual([999]);
     expect(result.createWallets).toEqual([]);
+    expect(result.updateAccounts).toEqual([]);
   });
 
   test('should not rename wallet if just signatories have changed for flexible multisig', () => {
@@ -140,11 +134,11 @@ describe('syncFlexibleMultisigs', () => {
       ...syncResult,
       accounts: [
         ...syncResult.accounts.filter(
-          (acc) => acc.type !== 'multisig' || acc.accountId !== flexMultisigAccount1.multisigAccountId,
+          (acc) => acc.type !== 'multisig' || acc.accountId !== flexMultisigAccount1.connections[0].proxyMultisigAccountId,
         ),
         {
           type: 'multisig',
-          accountId: flexMultisigAccount1.multisigAccountId,
+          accountId: flexMultisigAccount1.connections[0].proxyMultisigAccountId,
           signatories: [
             '0x589f4a92b7e88c0ac1172e429f12bde262d34fac77b0931eb94963996a207724',
             '0xdifferentsignatory123456789abcdef0000000000000000000000000000000',
@@ -164,6 +158,7 @@ describe('syncFlexibleMultisigs', () => {
 
     expect(result.createWallets).toEqual([]);
     expect(result.deleteWallets).toEqual([]);
+    expect(result.updateAccounts).toEqual([]);
   });
 
   test('should delete all flexible multisig wallets when sync result accounts is empty', () => {
@@ -182,5 +177,6 @@ describe('syncFlexibleMultisigs', () => {
 
     expect(result.createWallets).toEqual([]);
     expect(result.deleteWallets).toEqual([flexMultisigWallet1.id, flexMultisigWallet2.id, flexMultisigWallet3.id]);
+    expect(result.updateAccounts).toEqual([]);
   });
 });

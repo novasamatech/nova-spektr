@@ -32,7 +32,7 @@ import {
   WalletIcon,
 } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
-import { accountService, accounts, useAccountName, useAccountsNames } from '@/domains/network';
+import { type AnyAccount, accountService, accounts, useAccountName, useAccountsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
@@ -507,6 +507,7 @@ const FeeSection = memo(() => {
   const destinationFee = useUnit(formModel.$destinationFee);
   const isDestinationFeeLoading = useUnit(xcmSpellTransferModel.$isDestinationFeeLoading);
   const shouldShowFees = useUnit(xcmSpellTransferModel.$shouldShowFees);
+  const allAccounts = useUnit(accounts.$list);
 
   if (!network) {
     return null;
@@ -515,13 +516,20 @@ const FeeSection = memo(() => {
   const isMultisig = initiator && accountUtils.isAnyMultisigAccount(initiator);
   const nativeAsset = getNativeAsset(network.chain.assets)!;
 
+  const getThreshold = (account: AnyAccount, accountsList: AnyAccount[]): number => {
+    if (accountUtils.isAnyMultisigAccount(account)) {
+      return accountUtils.getMultisigThreshold(account, accountsList);
+    }
+    return 1;
+  };
+
   return (
     <div className="flex flex-col gap-y-2">
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
           asset={nativeAsset}
-          threshold={initiator.threshold || 1}
+          threshold={getThreshold(initiator, allAccounts)}
           onDepositChange={(deposit) => formModel.multisigDepositChanged(new BN(deposit))}
         />
       )}

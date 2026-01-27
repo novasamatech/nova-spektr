@@ -66,12 +66,16 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
     }
   }, [multisigAccount, closeModal]);
 
+  const multisigSignatories = multisigAccount
+    ? accountUtils.getMultisigSignatories(multisigAccount, accountList)
+    : [];
+
   const getSignatoryName = (accountId: AccountId) => {
     if (nullable(multisigAccount)) {
       return '';
     }
 
-    return walletDetailsUtils.getSignatoryName(accountId, multisigAccount.signatories, contacts, walletsList);
+    return walletDetailsUtils.getSignatoryName(accountId, multisigSignatories, contacts, walletsList);
   };
 
   let chain = null;
@@ -153,7 +157,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
         <div className="mt-6 flex flex-col gap-y-2 px-5">
           <FootnoteText className="text-text-tertiary">
-            {t('walletDetails.multisig.signatoriesGroup', { amount: multisigAccount.signatories.length })}
+            {t('walletDetails.multisig.signatoriesGroup', { amount: multisigSignatories.length })}
           </FootnoteText>
 
           <ul className="flex flex-col gap-y-2">
@@ -243,29 +247,34 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
               </div>
             )}
           </Box>
-          <div className="flex items-center pl-4">
-            <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
-            <div className="flex items-center gap-1 text-footnote">
-              <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
-              <WalletIcon type={WalletType.MULTISIG} size={16} />
-              <NamedAccount
-                accountId={multisigAccount.multisigAccountId}
-                chain={chain}
-                hideIcon
-                hideAddress
-                variant="short"
-              />
-              <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
-              <ChainIcon chain={chain} size={16} />
-              <FootnoteText className="truncate">{chain.name}</FootnoteText>
-              <FootnoteText className="shrink-0">
-                {t('walletDetails.multisig.chainTitle', {
-                  threshold: multisigAccount.threshold,
-                  signatories: multisigAccount.signatories.length,
-                })}
-              </FootnoteText>
+          {multisigAccount.connections.map((connection, index) => (
+            <div
+              className="flex items-center pl-4"
+              key={`${connection.proxyMultisigAccountId}-${connection.proxyType}`}
+            >
+              <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
+              <div className="flex items-center gap-1 text-footnote">
+                <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
+                <WalletIcon type={WalletType.MULTISIG} size={16} />
+                <NamedAccount
+                  accountId={connection.proxyMultisigAccountId}
+                  chain={chain}
+                  hideIcon
+                  hideAddress
+                  variant="short"
+                />
+                <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
+                <ChainIcon chain={chain} size={16} />
+                <FootnoteText className="truncate">{chain.name}</FootnoteText>
+                <FootnoteText className="shrink-0">
+                  {t('walletDetails.multisig.chainTitle', {
+                    threshold: accountUtils.getMultisigThreshold(multisigAccount, accountList, index),
+                    signatories: accountUtils.getMultisigSignatories(multisigAccount, accountList, index).length,
+                  })}
+                </FootnoteText>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
 
         <WalletActions actions={actions} />

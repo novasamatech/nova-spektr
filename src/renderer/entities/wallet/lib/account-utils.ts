@@ -12,7 +12,9 @@ import {
   type MultisigAccount,
   type MultisigSignatoryAccount,
   type ProxiedAccount,
+  type ProxyType,
   ProxyVariant,
+  type Signatory,
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
@@ -64,6 +66,12 @@ export const accountUtils = {
   isNonTransferProxyType,
   isStakingProxyType,
   isGovernanceProxyType,
+
+  // Flexible multisig utilities
+  getRelatedMultisigAccount,
+  getMultisigSignatories,
+  getMultisigThreshold,
+  getFlexMultisigProxyType,
 };
 
 // Account types
@@ -269,4 +277,73 @@ function getAccountsIdsForWallet(wallet: Wallet, chain: Chain) {
 
 function getAddressesForWallet(wallet: Wallet, chain: Chain) {
   return getAccountsIdsForWallet(wallet, chain).map((id) => toAddress(id, { prefix: chain.addressPrefix }));
+}
+
+// Flexible multisig utilities
+
+/**
+ * Get the related MultisigAccount for a FlexibleMultisigAccount
+ * @param flexAccount The FlexibleMultisigAccount to get the related MultisigAccount for
+ * @param allAccounts All accounts to search through
+ * @param connectionIndex Optional index of the connection to use (defaults to 0)
+ * @returns The related MultisigAccount or null if not found
+ */
+function getRelatedMultisigAccount(
+  flexAccount: FlexibleMultisigAccount,
+  allAccounts: AnyAccount[],
+  connectionIndex = 0,
+): MultisigAccount | null {
+  const connection = flexAccount.connections.at(connectionIndex);
+  if (!connection) return null;
+
+  return (
+    allAccounts
+      .filter(isMultisigAccount)
+      .find((acc) => acc.accountId === connection.proxyMultisigAccountId) ?? null
+  );
+}
+
+/**
+ * Get signatories for any multisig account type
+ * For MultisigAccount, returns signatories directly
+ * For FlexibleMultisigAccount, looks up the related MultisigAccount
+ */
+function getMultisigSignatories(
+  account: MultisigAccount | FlexibleMultisigAccount,
+  allAccounts: AnyAccount[],
+  connectionIndex = 0,
+): Signatory[] {
+  if (isMultisigAccount(account)) {
+    return account.signatories;
+  }
+
+  const relatedMultisig = getRelatedMultisigAccount(account, allAccounts, connectionIndex);
+
+  return relatedMultisig?.signatories ?? [];
+}
+
+/**
+ * Get threshold for any multisig account type
+ * For MultisigAccount, returns threshold directly
+ * For FlexibleMultisigAccount, looks up the related MultisigAccount
+ */
+function getMultisigThreshold(
+  account: MultisigAccount | FlexibleMultisigAccount,
+  allAccounts: AnyAccount[],
+  connectionIndex = 0,
+): number {
+  if (isMultisigAccount(account)) {
+    return account.threshold;
+  }
+
+  const relatedMultisig = getRelatedMultisigAccount(account, allAccounts, connectionIndex);
+
+  return relatedMultisig?.threshold ?? 0;
+}
+
+/**
+ * Get proxy type for a FlexibleMultisigAccount connection
+ */
+function getFlexMultisigProxyType(flexAccount: FlexibleMultisigAccount, connectionIndex = 0): ProxyType | null {
+  return flexAccount.connections.at(connectionIndex)?.proxyType ?? null;
 }

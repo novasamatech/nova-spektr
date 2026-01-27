@@ -545,7 +545,7 @@ export const accountService = {
   accountAvailabilityOnChainAnyOf,
   accountActionPermissionAnyOf,
   accountCanSignMultipleAnyOf,
-  accountCollectChildrenPipeline,
+  accountCollectChildrenPipeline: accountCollectChildrenPipeline,
   validateRouteBalancesTransformer,
   validateCallPermissionTransformer,
 

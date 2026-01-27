@@ -67,7 +67,8 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
 
   const isRejectAvailable = operation.status === 'pending' && hasAccount;
 
-  const isFinalSigning = account && operation.events.length === account.threshold - 1;
+  const threshold = account ? accountUtils.getMultisigThreshold(account, allAccounts) : 0;
+  const isFinalSigning = account && operation.events.length === threshold - 1;
   const isApproveAvailable =
     !isFinalSigning || (operation.callData && validateCallData(operation.callData, operation.callHash));
 

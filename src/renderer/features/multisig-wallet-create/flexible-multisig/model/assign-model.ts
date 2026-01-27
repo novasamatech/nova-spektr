@@ -230,13 +230,8 @@ sample({
       nonNullable(successResult)
     );
   },
-  fn: ({ signatories, chain, name, threshold, multisigAccountId, pureCreated, proxyDeposit, successResult }) => {
+  fn: ({ chain, name, multisigAccountId, pureCreated, proxyDeposit, successResult }) => {
     const timepoint = successResult!.params.timepoint;
-    const sortedSignatories = sortBy(
-      signatories.map(a => ({ address: a.address, accountId: toAccountId(a.address), walletId: a.walletId })),
-      'accountId',
-    );
-
     const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
 
     const flexibleMultisigAccount: Omit<NoID<FlexibleMultisigAccount>, 'walletId'> = {
@@ -245,16 +240,19 @@ sample({
       accountId: pureCreated!.accountId,
       name: name.trim(),
 
-      multisigAccountId: multisigAccountId!,
-      signatories: sortedSignatories,
-      threshold: threshold,
+      connections: [
+        {
+          proxyMultisigAccountId: multisigAccountId!,
+          proxyType: 'Any',
+          delay: 0,
+        },
+      ],
 
       deposit: proxyDeposit.toString(),
       entropyBlockNumber: pureCreated!.entropyBlockNumber,
       pendingBlockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
 
-      proxyType: 'Any',
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       signingType: SigningType.MULTISIG,
       accountType: AccountType.FLEX_MULTISIG,

@@ -8,6 +8,7 @@
     "button": "Open overview",
     "modalTitle": "Account Overview",
     "multisigThreshold": "{ threshold } out of { total }",
+    "flexibleMultisigConnection": "{ proxyType }",
     "toolbar": {
       "edgeType": {
         "dashed": "Dashed",

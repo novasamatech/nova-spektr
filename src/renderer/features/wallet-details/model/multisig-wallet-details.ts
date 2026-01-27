@@ -4,6 +4,7 @@ import { createGate } from 'effector-react';
 import { type Contact, type Wallet } from '@/shared/core';
 import { dictionary, keys, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
@@ -24,31 +25,34 @@ const $signatories = combine(
     multisigAccount: $multisigAccount,
     wallets: walletModel.$wallets,
     contacts: contactModel.$contacts,
+    accountsList: accounts.$list,
   },
   ({
     multisigAccount,
     wallets,
     contacts,
+    accountsList,
   }): { wallets: [Wallet, AccountId][]; contacts: Contact[]; people: AccountId[] } => {
     if (!multisigAccount) {
       return { wallets: [], contacts: [], people: [] };
     }
 
-    const signatoriesMap = dictionary(multisigAccount.signatories, 'accountId', true);
+    const signatories = accountUtils.getMultisigSignatories(multisigAccount, accountsList);
+    const signatoriesMap = dictionary(signatories, 'accountId', true);
 
     const walletSignatories: [Wallet, AccountId][] = [];
     for (const wallet of wallets) {
       for (const account of wallet.accounts) {
-        if (!signatoriesMap[multisigAccount.accountId]) continue;
+        if (!signatoriesMap[account.accountId]) continue;
 
-        delete signatoriesMap[multisigAccount.accountId];
+        delete signatoriesMap[account.accountId];
         walletSignatories.push([wallet, account.accountId]);
       }
     }
 
     const contactSignatories: Contact[] = [];
     for (const contact of contacts) {
-      if (!signatoriesMap[multisigAccount.accountId]) continue;
+      if (!signatoriesMap[contact.accountId]) continue;
 
       contactSignatories.push(contact);
       delete signatoriesMap[contact.accountId];

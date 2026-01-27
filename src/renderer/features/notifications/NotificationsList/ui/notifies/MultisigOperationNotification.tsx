@@ -46,6 +46,7 @@ export const MultisigOperationNotificationComponent = ({
   const { t } = useI18n();
   const navigate = useNavigate();
   const chains = useUnit(networkModel.$chains);
+  const allAccounts = useUnit(accounts.$list);
 
   const operationId = multisigOperationService.getOperationId(
     chainId,
@@ -79,7 +80,7 @@ export const MultisigOperationNotificationComponent = ({
 
       const flexibleMultisigAccount = allAccounts
         .filter(accountUtils.isFlexibleMultisigAccount)
-        .filter((acc) => acc.multisigAccountId === issuer)
+        .filter((acc) => acc.connections.some((c) => c.proxyMultisigAccountId === issuer))
         .find((acc) => multisigService.isFlexibleMultisigOperation(operation, acc.accountId));
 
       if (nonNullable(flexibleMultisigAccount)) return flexibleMultisigAccount;
@@ -173,8 +174,8 @@ export const MultisigOperationNotificationComponent = ({
               i18nKey="notifications.details.multisigOperationDetails"
               values={{
                 name: wallet?.name || multisigAccount?.name || issuer,
-                threshold: multisigAccount?.threshold,
-                signatories: multisigAccount?.signatories.length,
+                threshold: multisigAccount ? accountUtils.getMultisigThreshold(multisigAccount, allAccounts) : 0,
+                signatories: multisigAccount ? accountUtils.getMultisigSignatories(multisigAccount, allAccounts).length : 0,
               }}
               components={{
                 chain: (

@@ -16,7 +16,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
-import { type AnyAccount, type MultisigEvent, type MultisigOperation } from '@/domains/network';
+import { type AnyAccount, type MultisigEvent, type MultisigOperation, accounts } from '@/domains/network';
 import { type ExtendedChain } from '@/entities/network';
 import { Status, operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle } from '@/entities/transaction';
@@ -68,6 +68,10 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
   const { t, formatDate } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
+  const accountsList = useUnit(accounts.$list);
+
+  const signatories = accountUtils.getMultisigSignatories(account, accountsList);
+  const threshold = accountUtils.getMultisigThreshold(account, accountsList);
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
 
   const { status, events } = operation;
@@ -102,7 +106,7 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
 
     const signatoryName = operationDetailsUtils.getSignatoryName(
       event.accountId,
-      account?.signatories,
+      signatories,
       contacts,
       wallets,
       connection?.addressPrefix,
@@ -123,7 +127,7 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
             {titleNode}
           </div>
 
-          <Status status={status} signed={approvals.length} threshold={account?.threshold || 0} />
+          <Status status={status} signed={approvals.length} threshold={threshold || 0} />
         </div>
 
         <div className="flex max-h-[600px] min-h-[464px] flex-col gap-y-4 overflow-y-scroll bg-main-app-background p-5">

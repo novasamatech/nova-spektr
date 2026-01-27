@@ -447,6 +447,7 @@ export const syncFlexibleMultisigs = ({
   const syncedChains = new Set(syncResult.chains);
 
   const createWallets: WalletCreateParams<FlexibleMultisigAccount, FlexibleMultisigWallet>[] = [];
+  const updateAccounts: FlexibleMultisigAccount[] = [];
 
   const deleteWallets = new Set<Wallet>();
   const deleteAccounts = new Set(
@@ -464,53 +465,92 @@ export const syncFlexibleMultisigs = ({
     }),
   );
 
-  for (const syncedMultisig of syncedMultisigAccounts) {
-    const matchingProxies = syncedProxyAccounts.filter((proxy) =>
-      accountSyncService.isFlexibleMultisigPair(proxy, syncedMultisig),
+  // Group synced proxy accounts by proxied accountId and chainId (similar to syncProxiedAccounts)
+  const flexPureProxies = syncedProxyAccounts.filter((proxy) =>
+    syncedMultisigAccounts.some((multisig) => accountSyncService.isFlexibleMultisigPair(proxy, multisig)),
+  );
+  const proxiedGroups = groupBy(flexPureProxies, (a) => `${a.accountId}-${a.chainId}`);
+
+  for (const [, chainAccounts] of entries(proxiedGroups)) {
+    if (nullable(chainAccounts)) continue;
+
+    const firstAccount = chainAccounts.at(0);
+    if (nullable(firstAccount)) continue;
+
+    const chain = allChains[firstAccount.chainId];
+    if (nullable(chain)) continue;
+
+    // Build connections from all matching multisig accounts
+    const connections = chainAccounts
+      .map((proxy) => {
+        const matchingMultisig = syncedMultisigAccounts.find((multisig) =>
+          accountSyncService.isFlexibleMultisigPair(proxy, multisig),
+        );
+        if (nullable(matchingMultisig)) return null;
+
+        return {
+          proxyMultisigAccountId: matchingMultisig.accountId,
+          proxyType: proxy.proxyType as ProxyType,
+          delay: proxy.delay,
+        };
+      })
+      .filter(nonNullable)
+      .toSorted((a, b) => a.proxyMultisigAccountId.localeCompare(b.proxyMultisigAccountId));
+
+    if (connections.length === 0) continue;
+
+    const existingFlexibleMultisig = flexibleMultisigAccounts.find(
+      (a) => a.accountId === firstAccount.accountId && a.chainId === firstAccount.chainId,
     );
 
-    for (const matchedSyncedProxy of matchingProxies) {
-      const existingFlexibleMultisig = flexibleMultisigAccounts.find(
-        (flexMulAcc) => flexMulAcc.accountId === matchedSyncedProxy.accountId,
+    if (existingFlexibleMultisig) {
+      // updating
+      deleteAccounts.delete(existingFlexibleMultisig);
+
+      const existingConnections = existingFlexibleMultisig.connections.toSorted((a, b) =>
+        a.proxyMultisigAccountId.localeCompare(b.proxyMultisigAccountId),
       );
 
-      if (existingFlexibleMultisig) {
-        deleteAccounts.delete(existingFlexibleMultisig);
-      } else {
-        const proxiedIdentity = identities[matchedSyncedProxy.accountId];
-        const chain = allChains[matchedSyncedProxy.chainId];
-        const proxiedName = proxiedIdentity
-          ? identityService.getFullName(proxiedIdentity)
-          : toShortAddress(toAddress(matchedSyncedProxy.accountId, { prefix: chain?.addressPrefix }), 5);
-
-        const newFlexibleMultisigAccount: Omit<FlexibleMultisigAccount, 'id' | 'walletId'> = {
-          accountType: AccountType.FLEX_MULTISIG,
-          type: 'chain',
-          chainId: matchedSyncedProxy.chainId,
-          name: proxiedName,
-          accountId: matchedSyncedProxy.accountId,
-
-          multisigAccountId: syncedMultisig.accountId,
-          threshold: syncedMultisig.threshold,
-          signatories: syncedMultisig.signatories.map((accountId) => ({ accountId })),
-
-          proxyType: matchedSyncedProxy.proxyType as ProxyType,
-          deposit: matchedSyncedProxy.deposit.toString(),
-          entropyBlockNumber: matchedSyncedProxy.blockNumber,
-          extrinsicIndex: matchedSyncedProxy.extrinsicIndex,
-
-          cryptoType: isEthereumAccountId(matchedSyncedProxy.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
-          signingType: SigningType.MULTISIG,
-        };
-
-        createWallets.push({
-          wallet: {
-            name: proxiedName,
-            type: WalletType.FLEXIBLE_MULTISIG,
-          },
-          accounts: [newFlexibleMultisigAccount],
-        });
+      if (
+        isEqual(existingConnections, connections) &&
+        isEqual(existingFlexibleMultisig.deposit, firstAccount.deposit.toString())
+      ) {
+        continue;
       }
+
+      updateAccounts.push({
+        ...existingFlexibleMultisig,
+        connections,
+        deposit: firstAccount.deposit.toString(),
+      });
+    } else {
+      // creating new wallet
+      const proxiedIdentity = identities[firstAccount.accountId];
+      const proxiedName = proxiedIdentity
+        ? identityService.getFullName(proxiedIdentity)
+        : toShortAddress(toAddress(firstAccount.accountId, { prefix: chain?.addressPrefix }), 5);
+
+      const newFlexibleMultisigAccount: Omit<FlexibleMultisigAccount, 'id' | 'walletId'> = {
+        accountType: AccountType.FLEX_MULTISIG,
+        type: 'chain',
+        chainId: firstAccount.chainId,
+        name: proxiedName,
+        accountId: firstAccount.accountId,
+        connections,
+        deposit: firstAccount.deposit.toString(),
+        entropyBlockNumber: firstAccount.blockNumber,
+        extrinsicIndex: firstAccount.extrinsicIndex,
+        cryptoType: isEthereumAccountId(firstAccount.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
+        signingType: SigningType.MULTISIG,
+      };
+
+      createWallets.push({
+        wallet: {
+          name: proxiedName,
+          type: WalletType.FLEXIBLE_MULTISIG,
+        },
+        accounts: [newFlexibleMultisigAccount],
+      });
     }
   }
 
@@ -523,6 +563,7 @@ export const syncFlexibleMultisigs = ({
 
   return {
     createWallets,
+    updateAccounts,
     deleteWallets: Array.from(deleteWallets).map((w) => w.id),
   };
 };
@@ -545,6 +586,7 @@ sample({
   },
   target: spread({
     createWallets: createWalletsFx,
+    updateAccounts: accounts.updateAccounts,
     deleteWallets: walletModel.walletsRemoved,
   }),
 });
@@ -554,57 +596,69 @@ sample({
 const createNotificationsFromWallets = (
   wallets: { wallet: { id: number; name: string }; accounts: AnyAccount[] }[],
   chains: Record<ChainId, { addressPrefix?: number }>,
+  allAccounts: AnyAccount[],
 ): CreateNotificationParams[] => {
+  const multisigAccounts = allAccounts.filter(accountUtils.isMultisigAccount);
+
   return wallets
     .flatMap(({ wallet, accounts }) => {
       return accounts.map((account) => {
-        if (accountUtils.isAnyMultisigAccount(account)) {
-          const chainId = accountUtils.isFlexibleMultisigAccount(account) ? account.chainId : account.remarkChainId;
-          const chain = chainId ? chains[chainId] : undefined;
+        if (accountUtils.isFlexibleMultisigAccount(account)) {
+          const chain = chains[account.chainId];
           const address = truncate(toAddress(account.accountId, { prefix: chain?.addressPrefix }));
           const name = wallet.name || address;
 
-          const baseNotification = {
+          // Get signatories and threshold from the related MultisigAccount
+          const firstConnection = account.connections.at(0);
+          const relatedMultisig = firstConnection
+            ? multisigAccounts.find((m) => m.accountId === firstConnection.proxyMultisigAccountId)
+            : null;
+          const signatories = relatedMultisig?.signatories.map((s) => s.accountId) ?? [];
+          const threshold = relatedMultisig?.threshold ?? 0;
+
+          return {
+            key: `${NotificationType.FLEXIBLE_MULTISIG_CREATED}:${account.chainId}:${account.accountId}:${wallet.id}`,
+            status: 'info' as const,
+            issuer: account.accountId,
+            multisigAccountId: account.accountId,
+            signatories,
+            threshold,
+            walletId: wallet.id,
+            type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
+            chainId: account.chainId,
+            title: 'Flexible multisig wallet added',
+            description: `${name} with threshold ${threshold} out of ${signatories.length}`,
+            accountId: account.accountId,
+            accountName: account.name,
+            batch: {
+              title: 'notifications.toast.batch.flexibleMultisigWalletsAdded',
+              description: 'notifications.toast.batch.walletsAddedDescription',
+            },
+          } satisfies CreateFlexibleMultisigOperationParams;
+        }
+
+        if (accountUtils.isMultisigAccount(account)) {
+          const chain = account.remarkChainId ? chains[account.remarkChainId] : undefined;
+          const address = truncate(toAddress(account.accountId, { prefix: chain?.addressPrefix }));
+          const name = wallet.name || address;
+
+          return {
+            key: `${NotificationType.MULTISIG_CREATED}:${account.remarkChainId}:${account.accountId}:${wallet.id}`,
             status: 'info' as const,
             issuer: account.accountId,
             multisigAccountId: account.accountId,
             signatories: account.signatories.map((signatory) => signatory.accountId),
             threshold: account.threshold,
-          };
-
-          if (accountUtils.isFlexibleMultisigAccount(account)) {
-            return {
-              key: `${NotificationType.FLEXIBLE_MULTISIG_CREATED}:${account.chainId}:${account.accountId}:${wallet.id}`,
-              ...baseNotification,
-              walletId: wallet.id,
-              type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
-              chainId: account.chainId,
-              title: 'Flexible multisig wallet added',
-              description: `${name} with threshold ${account.threshold} out of ${account.signatories.length}`,
-              accountId: account.accountId,
-              accountName: account.name,
-              batch: {
-                title: 'notifications.toast.batch.flexibleMultisigWalletsAdded',
-                description: 'notifications.toast.batch.walletsAddedDescription',
-              },
-            } satisfies CreateFlexibleMultisigOperationParams;
-          }
-
-          if (accountUtils.isMultisigAccount(account)) {
-            return {
-              key: `${NotificationType.MULTISIG_CREATED}:${account.remarkChainId}:${account.accountId}:${wallet.id}`,
-              ...baseNotification,
-              type: NotificationType.MULTISIG_CREATED,
-              chainId: account.remarkChainId!,
-              title: 'Multisig wallet added',
-              description: `${name} with threshold ${account.threshold} out of ${account.signatories.length}`,
-              multisigAccountName: account.name,
-              batch: {
-                title: 'notifications.toast.batch.multisigWalletsAdded',
-                description: 'notifications.toast.batch.walletsAddedDescription',
-              },
-            } satisfies CreateMultisigCreatedParams;
-          }
+            type: NotificationType.MULTISIG_CREATED,
+            chainId: account.remarkChainId!,
+            title: 'Multisig wallet added',
+            description: `${name} with threshold ${account.threshold} out of ${account.signatories.length}`,
+            multisigAccountName: account.name,
+            batch: {
+              title: 'notifications.toast.batch.multisigWalletsAdded',
+              description: 'notifications.toast.batch.walletsAddedDescription',
+            },
+          } satisfies CreateMultisigCreatedParams;
         }
 
         if (accountUtils.isProxiedAccount(account)) {
@@ -642,16 +696,16 @@ const createNotificationsFromWallets = (
 
 sample({
   clock: createWalletsFx.doneData,
-  source: networkModel.$chains,
-  fn: (chains, wallets) => createNotificationsFromWallets(wallets, chains),
+  source: { chains: networkModel.$chains, allAccounts: accounts.$list },
+  fn: ({ chains, allAccounts }, wallets) => createNotificationsFromWallets(wallets, chains, allAccounts),
   target: notificationModel.events.notificationsAdded,
 });
 
 sample({
   clock: walletModel.createWallet.doneData,
-  source: networkModel.$chains,
+  source: { chains: networkModel.$chains, allAccounts: accounts.$list },
   filter: (_, result) => nonNullable(result),
-  fn: (chains, result) => createNotificationsFromWallets([result!], chains),
+  fn: ({ chains, allAccounts }, result) => createNotificationsFromWallets([result!], chains, allAccounts),
   target: notificationModel.events.notificationsAdded,
 });
 

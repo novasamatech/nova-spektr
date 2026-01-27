@@ -4,6 +4,7 @@ import { spread } from 'patronum';
 
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
+import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { validatorsService } from '@/entities/staking';
 import { transactionService } from '@/entities/transaction';
@@ -107,13 +108,14 @@ sample({
   source: {
     api: $api,
     route: formModel.$route,
+    accountsList: accounts.$list,
   },
   filter: ({ api, route }) => nonNullable(api) && nonNullable(route),
-  fn: ({ api, route }) => {
+  fn: ({ api, route, accountsList }) => {
     const multisig = route.find(accountUtils.isAnyMultisigAccount);
     return {
       api: api!,
-      threshold: multisig?.threshold ?? 0,
+      threshold: multisig ? accountUtils.getMultisigThreshold(multisig, accountsList) : 0,
     };
   },
   target: getMultisigDepositFx,

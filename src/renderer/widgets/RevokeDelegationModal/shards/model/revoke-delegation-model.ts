@@ -12,7 +12,7 @@ import {
 } from '@/shared/core';
 import { Step, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -80,14 +80,15 @@ const selectSignatory = createEvent<AnyAccount>();
 
 const $signatory = createStore<AnyAccount | null>(null);
 
-const $signatories = combine($walletData, walletModel.$wallets, (wallet, wallets) => {
+const $signatories = combine($walletData, walletModel.$wallets, accounts.$list, (wallet, wallets, accountsList) => {
   const account = wallet.wallet?.accounts[0];
 
   if (!account || !accountUtils.isAnyMultisigAccount(account)) {
     return [];
   }
 
-  const a = account.signatories.map((signatory) =>
+  const signatories = accountUtils.getMultisigSignatories(account, accountsList);
+  const a = signatories.map((signatory) =>
     walletUtils.getAccountBy(wallets, (a) => a.accountId === signatory.accountId),
   );
 

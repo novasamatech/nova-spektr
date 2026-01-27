@@ -45,20 +45,23 @@ export interface MultisigAccount extends UniversalAccount {
   remarkChainId?: ChainId; // Chain ID where the remark was submitted
 }
 
+export interface FlexibleMultisigConnection {
+  proxyMultisigAccountId: AccountId;
+  proxyType: ProxyType;
+  delay: number;
+}
+
 /**
- * Special account type for flexible multisig. It contains 2 accounts from
- * chain, proxied account that works as facade and proxy account that is actual
- * multisig account.
+ * Special account type for flexible multisig. It contains a pure proxied
+ * account connected to one or more multisig accounts that act as proxies.
+ * Signatories and threshold should be read from the related MultisigAccount.
  */
 export interface FlexibleMultisigAccount extends ChainAccount {
   accountType: AccountType.FLEX_MULTISIG;
-  // multisig account part
-  multisigAccountId: AccountId;
-  signatories: Signatory[];
-  threshold: number;
+  // connections to multisig accounts (similar to ProxiedAccount.connections)
+  connections: FlexibleMultisigConnection[];
 
   // proxied account part
-  proxyType: ProxyType;
   deposit: string;
   entropyBlockNumber: number;
   pendingBlockNumber?: number;

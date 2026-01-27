@@ -50,7 +50,9 @@ accountSDK(multisigWalletFeature, {
   },
   collectAccountChildren(children, { account, accounts }) {
     if (accountUtils.isMultisigAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
-      return account.signatories
+      const signatories = accountUtils.getMultisigSignatories(account, accounts);
+
+      return signatories
         .map(signatory => {
           const signatoryAccount = accounts.find(a => a.accountId === signatory.accountId);
 
@@ -78,12 +80,14 @@ accountSDK(multisigWalletFeature, {
     }
 
     if (accountUtils.isFlexibleMultisigAccount(account)) {
+      const connection = account.connections.at(0);
       return {
         title: 'Flexible multisig',
-        subTitle: t('accountsStructure.multisigThreshold', {
-          threshold: account.threshold,
-          total: account.signatories.length,
-        }),
+        subTitle: connection
+          ? t('accountsStructure.flexibleMultisigConnection', {
+              proxyType: connection.proxyType,
+            })
+          : undefined,
         color: '#E85649',
         background: 'linear-gradient(180deg, #E85649 53.45%, #8707D5 80.32%)',
       };
@@ -112,7 +116,10 @@ accountSDK(multisigWalletFeature, {
   },
   validateRouteBalances({ account, api, route, asset, chainId, getBalance }) {
     if (accountUtils.isMultisigAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
-      const deposit = multisigService.getMultisigDeposit(account.threshold, api);
+      // For FlexibleMultisigAccount, we use a default threshold for deposit calculation
+      // since the related MultisigAccount info isn't available in this context
+      const threshold = accountUtils.isMultisigAccount(account) ? account.threshold : 2;
+      const deposit = multisigService.getMultisigDeposit(threshold, api);
       const payer = accountService.findNextAccount(route, account);
 
       if (nullable(payer)) {
@@ -169,11 +176,19 @@ transactionSDK(multisigWalletFeature, {
       const signatory = accountService.findNextAccount(route, account);
       assert(signatory, 'Signatory not found');
 
-      const otherSignatories = multisigOperationService.getOtherSignatories(account, signatory.accountId);
       const encodedTransaction = transactionService.encodeTransaction(transaction, api);
 
       if (accountUtils.isFlexibleMultisigAccount(account)) {
         // FlexibleMultisig path
+        const relatedMultisig = route.find(accountUtils.isMultisigAccount);
+        assert(relatedMultisig, 'Related MultisigAccount not found in route');
+
+        const otherSignatories = multisigOperationService.getOtherSignatories(
+          relatedMultisig.signatories,
+          signatory.accountId,
+        );
+        const proxyType = accountUtils.getFlexMultisigProxyType(account);
+        assert(proxyType, 'Proxy type not found');
 
         const proxyTransaction: ProxyTransaction = {
           type: 'decoded',
@@ -181,20 +196,21 @@ transactionSDK(multisigWalletFeature, {
           method: 'proxy',
           args: {
             real: account.accountId,
-            forceProxyType: account.proxyType,
+            forceProxyType: proxyType,
             call: encodedTransaction.callData,
           },
         };
 
         const encodedProxyTransaction = transactionService.encodeTransaction(proxyTransaction, api);
         const proxyExtrinsic = transactionService.createExtrinsic(encodedProxyTransaction, api);
+
         return transactionService.getExtrinsicWeight(proxyExtrinsic).then(maxWeight => {
           return {
             type: 'decoded',
             section: 'multisig',
             method: 'asMulti',
             args: {
-              threshold: account.threshold,
+              threshold: relatedMultisig.threshold,
               otherSignatories,
               maybeTimepoint: null,
               call: encodedProxyTransaction.callData,
@@ -204,7 +220,7 @@ transactionSDK(multisigWalletFeature, {
         });
       } else {
         // Multisig path
-
+        const otherSignatories = multisigOperationService.getOtherSignatories(account.signatories, signatory.accountId);
         const extrinsic = transactionService.createExtrinsic(transaction, api);
 
         return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
@@ -237,11 +253,19 @@ transactionSDK(multisigWalletFeature, {
       const signatory = accountService.findNextAccount(route, account);
       assert(signatory, 'Signatory not found');
 
-      const otherSignatories = multisigOperationService.getOtherSignatories(account, signatory.accountId);
       const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
       if (accountUtils.isFlexibleMultisigAccount(account)) {
         // FlexibleMultisig path
+        const relatedMultisig = route.find(accountUtils.isMultisigAccount);
+        assert(relatedMultisig, 'Related MultisigAccount not found in route');
+
+        const otherSignatories = multisigOperationService.getOtherSignatories(
+          relatedMultisig.signatories,
+          signatory.accountId,
+        );
+        const proxyType = accountUtils.getFlexMultisigProxyType(account);
+        assert(proxyType, 'Proxy type not found');
 
         const proxyTransaction: Transaction = {
           type: TransactionType.PROXY,
@@ -249,19 +273,20 @@ transactionSDK(multisigWalletFeature, {
           chainId: api.genesisHash.toHex(),
           args: {
             real: account.accountId,
-            forceProxyType: account.proxyType,
+            forceProxyType: proxyType,
             call: extrinsic.method.toHex(),
           },
         };
 
         const proxyExtrinsic = getExtrinsic[proxyTransaction.type](proxyTransaction.args, api);
+
         return transactionService.getExtrinsicWeight(proxyExtrinsic).then(maxWeight => {
           return {
             type: TransactionType.MULTISIG_AS_MULTI,
             accountId: account.accountId,
             chainId: api.genesisHash.toHex(),
             args: {
-              threshold: account.threshold,
+              threshold: relatedMultisig.threshold,
               otherSignatories,
               maybeTimepoint: null,
               call: proxyExtrinsic.method.toHex(),
@@ -272,6 +297,7 @@ transactionSDK(multisigWalletFeature, {
         });
       } else {
         // Multisig path
+        const otherSignatories = multisigOperationService.getOtherSignatories(account.signatories, signatory.accountId);
 
         return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
           return {

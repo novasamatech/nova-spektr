@@ -4,8 +4,10 @@ import { spread } from 'patronum';
 
 import { getRelaychainAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
+import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -54,13 +56,13 @@ const $api = combine(
 
 const requestMultisigDeposit = sample({
   clock: formModel.$multisigAccount,
-  source: $api,
-  fn: (api, account) => {
+  source: { api: $api, accountsList: accounts.$list },
+  fn: ({ api, accountsList }, account) => {
     if (nullable(api) || nullable(account)) return null;
 
     return {
       api,
-      threshold: account.threshold,
+      threshold: accountUtils.getMultisigThreshold(account, accountsList),
     };
   },
 }).updates.filterMap((params) => {

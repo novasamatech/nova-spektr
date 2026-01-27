@@ -10,8 +10,7 @@ import {
   type ChainId,
   ChainOptions,
   CryptoType,
-  type FlexibleMultisigAccount,
-  type MultisigAccount,
+  type Signatory,
 } from '@/shared/core';
 import { groupBy, isEqual, merge, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
@@ -42,11 +41,9 @@ function getMultisigAccountId(signatories: AccountId[], threshold: number, crypt
   return pjsSchema.helpers.toAccountId(u8aToHex(isEthereum ? accountId.subarray(0, 20) : accountId));
 }
 
-function getOtherSignatories(account: MultisigAccount | FlexibleMultisigAccount, signer: AccountId) {
+function getOtherSignatories(signatories: Signatory[], signer: AccountId) {
   return sortSignatories(
-    Array.from(account.signatories)
-      .map(s => s.accountId)
-      .filter(account => account !== signer),
+    signatories.map((s) => s.accountId).filter((accountId) => accountId !== signer),
   );
 }
 
