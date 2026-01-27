@@ -17,6 +17,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { multisigService } from '@/features/multisig-wallet';
 
 import { deepLinkModel } from './deep-link';
 import { multisigOperationsFeature } from './feature';
@@ -136,7 +137,14 @@ const $initiators = combine(
   },
 );
 
-const $multisigAccounts = accounts.$list.map(accs => accs.filter(accountUtils.isAnyMultisigAccount));
+const $multisigAccounts = accounts.$list.map(
+  accs =>
+    new Map(
+      accs
+        .filter(accountUtils.isAnyMultisigAccount)
+        .map(account => [multisigService.getMultisigAccountId(account), account]),
+    ),
+);
 
 const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isMultisig));
 

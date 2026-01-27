@@ -33,11 +33,7 @@ export const Operations = () => {
 
   const [focusedRef, scrollToFocused] = useScrollTo<HTMLLIElement>(300);
 
-  const multisigAccountsMap = useMemo(() => {
-    return new Map(multisigAccounts.map(account => [account.accountId, account]));
-  }, [multisigAccounts]);
-
-  const hasMultisigAccounts = multisigAccountsMap.size > 0;
+  const hasMultisigAccounts = multisigAccounts.size > 0;
 
   const groupedTxs = useMemo(() => {
     const groupedTxs = groupBy(filteredTxs, tx => {
@@ -54,7 +50,6 @@ export const Operations = () => {
       return formatDate(new Date(date), 'PP');
     });
 
-    // Sort transactions within each group by timestamp
     for (const date of Object.keys(groupedTxs)) {
       groupedTxs[date] = groupedTxs[date].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     }
@@ -70,7 +65,6 @@ export const Operations = () => {
     return () => deepLinkModel.operationsPageClosed();
   }, []);
 
-  // Scroll to focused operation
   useEffect(() => {
     if (focusedOperationId && focusedRef.current) {
       scrollToFocused();
@@ -104,7 +98,7 @@ export const Operations = () => {
                     <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
                     <ul className="flex w-full flex-col gap-y-1.5">
                       {txs.map(tx => {
-                        const multisigAccount = multisigAccountsMap.get(tx.accountId);
+                        const multisigAccount = multisigAccounts.get(tx.accountId);
                         if (!multisigAccount) return null;
 
                         return (

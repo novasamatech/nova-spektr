@@ -12,6 +12,7 @@ import { type DateRange, DateRangePicker } from '@/shared/ui-kit';
 import { accountService, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelectService } from '@/aggregates/wallet-select';
+import { multisigService } from '@/features/multisig-wallet';
 import { operationsContextModel } from '../model/context';
 
 type FilterName = 'account' | 'network' | 'type';
@@ -38,9 +39,10 @@ export const OperationsFilter = memo(() => {
   }));
 
   const filtersOptions = useMemo(() => {
+    const multisigAccountsList = Array.from(multisigAccounts.values());
     const filteredAccountOptions = performSearch({
       query: accountSearchQuery,
-      records: multisigAccounts
+      records: multisigAccountsList
         .map(multisigAccount => {
           const wallet = resolvedWallets.find(w => w.id === multisigAccount.walletId);
           const addressPrefix =
@@ -61,14 +63,14 @@ export const OperationsFilter = memo(() => {
         name: walletName,
         address: walletSelectService.composeWalletMeta(
           wallet,
-          accountService.filterAccountsByWallet(multisigAccounts, wallet.id),
+          accountService.filterAccountsByWallet(multisigAccountsList, wallet.id),
           chains,
         ),
       }),
       weights: { name: 1, address: 0.8 },
     }).map(({ multisigAccount, walletName, accountAddress, wallet }) => ({
-      id: multisigAccount.accountId,
-      value: multisigAccount.accountId,
+      id: multisigService.getMultisigAccountId(multisigAccount),
+      value: multisigService.getMultisigAccountId(multisigAccount),
       element: (
         <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
           {wallet && <WalletAccountIcon address={accountAddress} type={wallet.type} size={24} iconSize={12} />}
