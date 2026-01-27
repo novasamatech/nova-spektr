@@ -170,11 +170,11 @@ describe('csv-export', () => {
       const context = { chains: { '0x123': transferChain } as Record<ChainId, Chain> };
       const row = serializeOperationToCsvRow(transferOperation, context);
 
-      expect(row.transfer_amount).toBe('1.55');
-      expect(row.transfer_amount_raw).toBe('15500000000');
-      expect(row.transfer_asset_symbol).toBe('TST');
-      expect(row.transfer_recipient).toBeDefined();
-      expect(row.transfer_recipient).not.toBe('');
+      expect(row.amount).toBe('1.55');
+      expect(row.amount_raw).toBe('15500000000');
+      expect(row.asset_symbol).toBe('TST');
+      expect(row.recipient).toBeDefined();
+      expect(row.recipient).not.toBe('');
     });
 
     test('should leave transfer columns empty for non-transfer transactions', () => {
@@ -195,10 +195,10 @@ describe('csv-export', () => {
       const context = { chains: { '0x123': mockChain } as Record<ChainId, Chain> };
       const row = serializeOperationToCsvRow(proxyOperation, context);
 
-      expect(row.transfer_amount).toBe('');
-      expect(row.transfer_amount_raw).toBe('');
-      expect(row.transfer_asset_symbol).toBe('');
-      expect(row.transfer_recipient).toBe('');
+      expect(row.amount).toBe('');
+      expect(row.amount_raw).toBe('');
+      expect(row.asset_symbol).toBe('');
+      expect(row.recipient).toBe('');
     });
   });
 
@@ -245,7 +245,7 @@ describe('csv-export', () => {
 
       expect(csv.charCodeAt(0)).toBe(0xfeff);
       expect(csv).toContain('timestamp,explorer_url,status,chain_name');
-      expect(csv).toContain('transfer_amount,transfer_amount_raw,transfer_asset_symbol,transfer_recipient');
+      expect(csv).toContain('amount,amount_raw,asset_symbol,recipient');
       expect(csv).toContain('Test Chain');
     });
 
