@@ -208,7 +208,7 @@
     "@vitest/ui": "3.2.4",
     "allure-js-commons": "3.2.0",
     "allure-playwright": "3.0.6",
-    "astro": "5.13.1",
+    "astro": "5.15.9",
     "camelcase": "6.3.0",
     "concurrently": "7.6.0",
     "cross-env": "7.0.3",
