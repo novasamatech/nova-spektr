@@ -63,7 +63,6 @@ export const WebSplashScreen = () => {
               <img className="h-auto w-32" src={nameUrl} />
             </div>
             <div className="flex w-[500px] flex-col gap-7.5 leading-[normal]">
-              {}
               <p className="text-[19.6px] font-bold tracking-[5px] text-text-secondary uppercase">
                 {t('splashscreen.title')}
               </p>
