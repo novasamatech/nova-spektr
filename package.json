@@ -57,7 +57,6 @@
     "knip": "knip",
     "types": "tsc -p tsconfig.json --noEmit",
     "types:go": "tsgo -p tsconfig.tsgo.json --noEmit",
-    "types:bench": "echo '=== tsc ===' && time pnpm types && echo '\n=== tsgo ===' && time pnpm types:go",
     "types:watch": "tsc -p tsconfig.json --noEmit --watch",
     "types:files": "tsc-files --noEmit",
     "fmt:generic": "prettier",
