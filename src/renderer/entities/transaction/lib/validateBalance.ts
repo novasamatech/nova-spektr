@@ -5,7 +5,7 @@ import { type AssetId, type Balance, type ChainId, type PartialBy, type Transact
 import { ValidationErrors, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-import { OperationError, type OperationErrorType } from './common/errors';
+import { type OperationErrorType, OperationError } from './common/errors';
 
 type Props = {
   api: ApiPromise;

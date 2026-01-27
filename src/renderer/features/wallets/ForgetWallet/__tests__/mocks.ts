@@ -1,11 +1,11 @@
 import {
-  AccountType,
-  CryptoType,
   type MultisigAccount,
   type ProxiedAccount,
+  type WcAccount,
+  AccountType,
+  CryptoType,
   ProxyVariant,
   SigningType,
-  type WcAccount,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 

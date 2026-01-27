@@ -3,7 +3,7 @@ import { createStore } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
-import { type Chain, type ChainId, ExternalType, type ReferendumId as GovernanceReferendumId } from '@/shared/core';
+import { type Chain, type ChainId, type ReferendumId as GovernanceReferendumId, ExternalType } from '@/shared/core';
 import { dictionary, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { createQueryResource } from '@/shared/query';

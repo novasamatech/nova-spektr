@@ -4,7 +4,7 @@ import { walletGroupSlot, walletIconSlot, walletSelectActionsSlot } from './comp
 import { GROUP_LABELS } from './constants';
 import { walletSelectFeatureStatus } from './model/feature';
 
-export { walletSelectActionsSlot, walletGroupSlot, walletIconSlot };
+export { walletGroupSlot, walletIconSlot, walletSelectActionsSlot };
 
 // TODO remove this mess
 export const walletSelectFeature = {

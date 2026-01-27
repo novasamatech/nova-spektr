@@ -1,7 +1,6 @@
 import { type Transaction } from 'dexie';
 
-import { AccountType, type ProxyType, type ProxyVariant, type Wallet } from '@/shared/core';
-// eslint-disable-next-line boundaries/element-types
+import { type ProxyType, type ProxyVariant, type Wallet, AccountType } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types

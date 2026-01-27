@@ -97,7 +97,6 @@ describe('createSubscriber', () => {
 
     pushValue('3');
 
-    // eslint-disable-next-line effector/no-getState
     expect(scope.getState($results)).toEqual(['1', '2']);
   });
 });

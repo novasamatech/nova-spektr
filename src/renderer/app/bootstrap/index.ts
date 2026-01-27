@@ -1,5 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
-
 import { kernelModel } from '@/shared/core';
 import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';

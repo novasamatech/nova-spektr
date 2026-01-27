@@ -22,14 +22,14 @@ import {
 import { fellowshipReferendumsDetailsFeature } from './feature';
 
 export {
+  Card,
+  EvidenceDetailsModal,
+  ReferendumDetailsModal,
+  evidenceActionsSlot,
   fellowshipReferendumsDetailsFeature,
+  referendumActionsSlot,
   referendumAdditionalHighPriorityInfoSlot,
   referendumAdditionalInfoSlot,
-  referendumActionsSlot,
-  evidenceActionsSlot,
-  Card,
-  ReferendumDetailsModal,
-  EvidenceDetailsModal,
 };
 
 fellowshipReferendumsDetailsFeature.inject(evidenceDetailsModalSlot, ({ evidence, title, children, transaction }) => {

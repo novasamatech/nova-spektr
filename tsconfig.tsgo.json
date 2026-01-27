@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/renderer/*"],
+      "~config": ["./config/index.js"]
+    }
+  },
+  "include": ["src", ".storybook", "tests", "scripts", "config", "vite-env.d.ts"],
+  "exclude": ["node_modules", "*.config.ts", "tw-config-consts/**/*", "tailwind.config.ts"]
+}

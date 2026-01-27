@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import {
-  AccountNameType,
   type Asset,
   type AssetId,
   type Balance,
@@ -10,6 +9,7 @@ import {
   type ChainId,
   type Contact,
   type Wallet,
+  AccountNameType,
   WalletType,
 } from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';

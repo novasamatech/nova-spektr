@@ -8,4 +8,4 @@ export const proxyPallet = {
   storage,
 };
 
-export type { KitchensinkRuntimeProxyType, ProxyProxyDefinition, ProxyAnnouncement } from './schema';
+export type { KitchensinkRuntimeProxyType, ProxyAnnouncement, ProxyProxyDefinition } from './schema';

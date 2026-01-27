@@ -23,14 +23,14 @@ export { TrackDescription } from './TrackDescription/TrackDescription';
 export { WalletAccountIcon } from './WalletAccountIcon/WalletAccountIcon';
 export { CollectiveReferendumVoteChart } from './CollectiveReferendumVoteChart/CollectiveReferendumVoteChart';
 export { SignatorySelect } from './SignatorySelect/SignatorySelect';
-export { Identicon, type IdenticonIconTheme } from './Identicon/Identicon';
+export { type IdenticonIconTheme, Identicon } from './Identicon/Identicon';
 export { WalletIcon } from './WalletIcon/WalletIcon';
 export { VotingButtonWithTooltip } from './VotingButtonWithTooltip/VotingButtonWithTooltip';
 export {
-  TransactionValidationError,
   type TransactionValidationBalanceError,
   type TransactionValidationDryRunError,
   type TransactionValidationFatalError,
   type TransactionValidationNetworkError,
   type TransactionValidationPermissionError,
+  TransactionValidationError,
 } from './TransactionValidationError/TransactionValidationError';

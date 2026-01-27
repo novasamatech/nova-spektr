@@ -3,7 +3,6 @@ import { type Store, combine, createStore } from 'effector';
 
 import { type Chain, type Transaction, type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
-// eslint-disable-next-line boundaries/element-types
 import { type AnyAccount } from '@/domains/network';
 import { getExtrinsic, transactionService } from '@/entities/transaction';
 import { walletUtils } from '@/entities/wallet';
