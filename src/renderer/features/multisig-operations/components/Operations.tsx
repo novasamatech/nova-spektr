@@ -74,7 +74,11 @@ export const Operations = () => {
 
   return (
     <>
-      {!hasMultisigAccounts && <EmptyOperations isEmptyFromFilters={false} tab={tab} />}
+      {!hasMultisigAccounts && (
+        <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
+          <EmptyOperations isEmptyFromFilters={false} tab={tab} />
+        </Box>
+      )}
 
       {hasMultisigAccounts && (
         <ScrollArea>
