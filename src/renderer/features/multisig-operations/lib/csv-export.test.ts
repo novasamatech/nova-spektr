@@ -270,5 +270,34 @@ describe('csv-export', () => {
 
       expect(csv).toContain('"transfer""special"');
     });
+
+    test('should sort operations by timestamp descending (most recent first)', () => {
+      const oldOperation = {
+        ...mockOperation,
+        id: 'old',
+        timestamp: 1705334400000, // 2024-01-15
+      };
+      const middleOperation = {
+        ...mockOperation,
+        id: 'middle',
+        timestamp: 1705420800000, // 2024-01-16
+      };
+      const recentOperation = {
+        ...mockOperation,
+        id: 'recent',
+        timestamp: 1705507200000, // 2024-01-17
+      };
+
+      // Pass in unsorted order
+      const operations = [middleOperation, oldOperation, recentOperation];
+      const context = { chains: { '0x123': mockChain } as Record<ChainId, Chain> };
+      const csv = generateCsv(operations, context);
+
+      const lines = csv.split('\n');
+      // Line 0 is header, lines 1-3 are data rows
+      expect(lines[1]).toContain('2024-01-17'); // Most recent first
+      expect(lines[2]).toContain('2024-01-16');
+      expect(lines[3]).toContain('2024-01-15'); // Oldest last
+    });
   });
 });

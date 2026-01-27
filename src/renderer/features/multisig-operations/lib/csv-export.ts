@@ -128,7 +128,11 @@ const generateCsvDataRow = (row: CsvRow): string => {
 
 export const generateCsv = (operations: MultisigOperation[], context: CsvExportContext): string => {
   const header = generateCsvHeader();
-  const rows = operations.map(op => generateCsvDataRow(serializeOperationToCsvRow(op, context)));
+
+  // Sort operations by timestamp descending (most recent first)
+  const sortedOperations = [...operations].sort((a, b) => b.timestamp - a.timestamp);
+
+  const rows = sortedOperations.map(op => generateCsvDataRow(serializeOperationToCsvRow(op, context)));
 
   // UTF-8 BOM for Excel compatibility
   const BOM = '\uFEFF';
