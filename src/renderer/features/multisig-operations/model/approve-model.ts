@@ -4,7 +4,7 @@ import { BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type Chain } from '@/shared/core';
+import { type Chain, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { getNativeAsset, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
@@ -25,15 +25,14 @@ import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { MAX_WEIGHT, getExtrinsic, transactionBuilder } from '@/entities/transaction';
 
-import { operationsContextModel } from './context';
-
 type GetMultisigType = {
   chain: Chain | null;
   operation: MultisigOperation | null;
+  account: MultisigAccount | FlexibleMultisigAccount | null;
 };
 
 const flow = createGate<GetMultisigType>({
-  defaultState: { chain: null, operation: null },
+  defaultState: { chain: null, operation: null, account: null },
 });
 
 const selectInitiator = createEvent<AnyAccount | null>();
@@ -46,6 +45,7 @@ const $signatory = restore<AnyAccount | null>(selectSignatory, null).reset(flow.
 
 const $chain = flow.state.map(state => state.chain);
 const $operation = flow.state.map(state => state.operation);
+const $multisigAccount = flow.state.map(state => state.account);
 
 const $api = combine(
   {
@@ -61,7 +61,7 @@ const $api = combine(
 
 const $unsignedAccounts = combine(
   {
-    multisigAccount: operationsContextModel.$multisigAccount,
+    multisigAccount: $multisigAccount,
     chain: $chain,
     accountsList: accounts.$list,
     operation: $operation,
@@ -145,7 +145,7 @@ sample({
 
 const $transaction = combine(
   {
-    multisigAccount: operationsContextModel.$multisigAccount,
+    multisigAccount: $multisigAccount,
     signatory: $signatory,
     initiator: $initiator,
     chain: $chain,
@@ -190,23 +190,10 @@ const $extrinsic = combine($api, $tx, (api, tx) => {
 });
 
 const $signingPayloads = combine(
-  {
-    api: $api,
-    chain: $chain,
-    extrinsic: $extrinsic,
-    signatory: $signatory,
-  },
+  { api: $api, chain: $chain, extrinsic: $extrinsic, signatory: $signatory },
   ({ api, chain, extrinsic, signatory }) => {
-    if (nullable(extrinsic) || nullable(signatory) || nullable(api) || nullable(chain)) return null;
-
-    return [
-      {
-        api,
-        chain,
-        extrinsic,
-        signatory,
-      },
-    ];
+    if (nullable(api) || nullable(chain) || nullable(extrinsic) || nullable(signatory)) return null;
+    return [{ api, chain, extrinsic, signatory }];
   },
 );
 
@@ -252,6 +239,7 @@ export const approveModel = {
   $errors,
   $multisigDeposit,
   $isDepositRequired,
+  $multisigAccount,
   $signatory,
   $signingPayloads,
   $initiator,

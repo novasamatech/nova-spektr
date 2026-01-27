@@ -22,7 +22,8 @@ import {
 } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, accountService } from '@/domains/network';
+import { accountService } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 
 import { walletUtils } from './wallet-utils';
