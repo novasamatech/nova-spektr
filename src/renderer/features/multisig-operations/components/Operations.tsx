@@ -8,7 +8,6 @@ import { sortByDateDesc } from '@/shared/lib/utils';
 import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText, Loader } from '@/shared/ui';
 import { Box, ScrollArea } from '@/shared/ui-kit';
-import { multisigOperation } from '@/domains/network';
 import { operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
@@ -24,7 +23,7 @@ export const Operations = () => {
   const { formatDate } = useI18n();
 
   const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
-  const operations = useUnit(multisigOperation.$list);
+  const isFiltersSelected = useUnit(operationsContextModel.$isFiltersSelected);
   const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
   const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
   const isDeepLinkLoading = useUnit(deepLinkModel.$isDeepLinkLoading);
@@ -75,7 +74,7 @@ export const Operations = () => {
 
   return (
     <>
-      {!hasMultisigAccounts && <EmptyOperations hasMultisigAccounts={false} isEmptyFromFilters={false} />}
+      {!hasMultisigAccounts && <EmptyOperations isEmptyFromFilters={false} tab={tab} />}
 
       {hasMultisigAccounts && (
         <ScrollArea>
@@ -87,10 +86,7 @@ export const Operations = () => {
             )}
 
             {!isTabDataLoading && filteredTxs.length === 0 && (
-              <EmptyOperations
-                hasMultisigAccounts={hasMultisigAccounts}
-                isEmptyFromFilters={operations.length !== filteredTxs.length}
-              />
+              <EmptyOperations isEmptyFromFilters={isFiltersSelected} tab={tab} />
             )}
 
             {filteredTxs.length > 0 && (
