@@ -57,13 +57,14 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
       {
         accountId: notification.proxiedAccountId,
         proxyVariant: notification.proxyVariant,
-        connections: [],
+        connections: [{ proxyAccountId: notification.proxyAccountId, proxyType: notification.proxyType, delay: 0 }],
       },
       chain?.addressPrefix,
     );
 
   const proxyWalletName = proxyWallet?.name ?? toAddress(notification.proxyAccountId, { prefix: chain?.addressPrefix });
   const proxyWalletType = proxyWallet?.type;
+  const proxyAddress = toAddress(notification.proxyAccountId, { prefix: chain?.addressPrefix });
 
   return (
     <div className="flex gap-x-2">
@@ -100,7 +101,13 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
             components={{
               chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,
               walletIcon: (
-                <span className="mx-1">{proxyWalletType && <WalletIcon size={16} type={proxyWalletType} />}</span>
+                <span className="mx-1">
+                  {proxyWalletType ? (
+                    <WalletIcon size={16} type={proxyWalletType} />
+                  ) : (
+                    <Identicon address={proxyAddress} size={16} background={false} />
+                  )}
+                </span>
               ),
               wallet: <p className="inline-flex" />,
             }}
