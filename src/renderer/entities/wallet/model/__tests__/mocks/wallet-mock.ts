@@ -1,12 +1,12 @@
 import {
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type Wallet,
   AccountType,
   ChainType,
   CryptoType,
   KeyType,
   SigningType,
-  type VaultBaseAccount,
-  type VaultChainAccount,
-  type Wallet,
   WalletType,
 } from '@/shared/core';
 import { TEST_CHAIN_ID } from '@/shared/lib/utils';

@@ -1,12 +1,12 @@
 import { allSettled, fork } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-// TODO wallet model should be either in wallets domain or wallets feature
-// eslint-disable-next-line boundaries/element-types
 import { type AnyAccount, accounts } from '@/domains/network';
 import { walletModel } from '../wallet-model';
 
 import { walletMock } from './mocks/wallet-mock';
+
+// TODO wallet model should be either in wallets domain or wallets feature
 
 describe('entities/wallet/model/wallet-model', () => {
   afterEach(() => {

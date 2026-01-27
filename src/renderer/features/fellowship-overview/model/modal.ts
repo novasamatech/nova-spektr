@@ -1,6 +1,6 @@
 import { createEvent, createStore } from 'effector';
 
-import { FELLOWSHIP_TABS, type FellowshipTab } from './constants';
+import { type FellowshipTab, FELLOWSHIP_TABS } from './constants';
 
 const openFellowshipOverviewModal = createEvent();
 const closeFellowshipOverviewModal = createEvent();

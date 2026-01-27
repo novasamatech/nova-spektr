@@ -1,5 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
-
 import CrossChainIcon from '@/shared/assets/images/arrows/cross-chain-arrow.svg?jsx';
 import ArrowCurveLeftRightIcon from '@/shared/assets/images/arrows/curve-left-right.svg?jsx';
 import arrowDoubleDownIcon from '@/shared/assets/images/arrows/double-down.svg?jsx';

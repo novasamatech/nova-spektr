@@ -11,15 +11,15 @@ import { SmallTitleText } from './components/SmallTitleText';
 import { TitleText } from './components/TitleText';
 
 export {
-  TextBase,
-  FootnoteText,
   BodyText,
-  SmallTitleText,
-  TitleText,
   CaptionText,
-  LargeTitleText,
+  FootnoteText,
   HeaderTitleText,
   HeadlineText,
-  LabelText,
   HelpText,
+  LabelText,
+  LargeTitleText,
+  SmallTitleText,
+  TextBase,
+  TitleText,
 };

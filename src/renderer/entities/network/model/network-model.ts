@@ -5,8 +5,8 @@ import { persist } from 'effector-storage/local';
 import { combineEvents, spread } from 'patronum';
 
 import {
-  ProviderType,
   type ProviderWithMetadata,
+  ProviderType,
   chainsService,
   metadataService,
   networkService,
@@ -17,9 +17,9 @@ import {
   type ChainId,
   type ChainMetadata,
   type Connection,
+  type NoID,
   ConnectionStatus,
   ConnectionType,
-  type NoID,
 } from '@/shared/core';
 import { createBuffer, series } from '@/shared/effector';
 import { dictionary, keys, nonNullable } from '@/shared/lib/utils';

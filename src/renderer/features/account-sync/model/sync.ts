@@ -2,26 +2,26 @@ import { attach, createStore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import {
-  AccountType,
   type ChainId,
   type CreateFlexibleMultisigOperationParams,
   type CreateMultisigCreatedParams,
   type CreateNotificationParams,
   type CreateProxyActionParams,
-  CryptoType,
   type FlexibleMultisigAccount,
   type FlexibleMultisigWallet,
   type MultisigAccount,
   type MultisigWallet,
   type NoID,
-  NotificationType,
   type ProxiedAccount,
   type ProxiedConnection,
   type ProxiedWallet,
   type ProxyAccount,
   type ProxyType,
-  SigningType,
   type Wallet,
+  AccountType,
+  CryptoType,
+  NotificationType,
+  SigningType,
   WalletType,
 } from '@/shared/core';
 import { series } from '@/shared/effector';

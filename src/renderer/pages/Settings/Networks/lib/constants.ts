@@ -1,4 +1,4 @@
-import { ConnectionType, type RpcNode } from '@/shared/core';
+import { type RpcNode, ConnectionType } from '@/shared/core';
 
 export const Predicates: Record<
   ConnectionType,

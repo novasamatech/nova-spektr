@@ -1,6 +1,6 @@
 import { GraphQLClient } from 'graphql-request';
 
-import { type Chain, ExternalType, type ReferendumId } from '@/shared/core';
+import { type Chain, type ReferendumId, ExternalType } from '@/shared/core';
 import { type SubQueryVoting } from '../lib/types';
 
 import { GET_VOTINGS_FOR_REFERENDUM, GET_VOTINGS_FOR_VOTER } from './votings/queries';

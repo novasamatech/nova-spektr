@@ -1,7 +1,7 @@
 import {
+  type EdgeProps,
   BaseEdge,
   EdgeLabelRenderer,
-  type EdgeProps,
   Position,
   getBezierPath,
   getSmoothStepPath,

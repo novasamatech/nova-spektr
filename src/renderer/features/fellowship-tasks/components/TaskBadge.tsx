@@ -1,7 +1,7 @@
 import { memo } from 'react';
 
 import { nonNullable } from '@/shared/lib/utils';
-import { Icon, type IconNames } from '@/shared/ui';
+import { type IconNames, Icon } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { type Proposal, referendumService } from '@/domains/collectives';
 

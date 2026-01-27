@@ -2,13 +2,13 @@ import { type Transaction } from 'dexie';
 import { uniqBy } from 'lodash';
 
 import {
-  AccountType,
   type PolkadotVaultWallet,
-  SigningType,
   type SingleShardWallet,
   type VaultBaseAccount,
   type VaultChainAccount,
   type Wallet,
+  AccountType,
+  SigningType,
   WalletType,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';

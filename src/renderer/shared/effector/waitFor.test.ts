@@ -20,6 +20,7 @@ describe('waitFor', () => {
     createWatch({
       unit: waitEvent,
       fn: spy,
+      scope,
     });
 
     await allSettled(event, { params: 'test_event', scope });
@@ -45,6 +46,7 @@ describe('waitFor', () => {
     createWatch({
       unit: waitEvent,
       fn: spy,
+      scope,
     });
 
     await allSettled(event, { params: 'test_event', scope });

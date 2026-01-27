@@ -1,7 +1,7 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { type Address, type Transaction, TransactionType, type Validator } from '@/shared/core';
+import { type Address, type Transaction, type Validator, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, getAssetById, keys, toAccountId } from '@/shared/lib/utils';

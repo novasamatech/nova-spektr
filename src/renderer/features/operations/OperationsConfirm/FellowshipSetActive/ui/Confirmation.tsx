@@ -5,10 +5,8 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';
-// eslint-disable-next-line boundaries/entry-point
 import { SetActiveConfirmation, setActive } from '@/features/fellowship-profile';
 import { confirmModel } from '../model/confirm-model';
-// eslint-disable-next-line boundaries/entry-point
 
 type Props = {
   id?: number;

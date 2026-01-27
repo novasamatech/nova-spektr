@@ -1,6 +1,6 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { AssetType, type Balance, type TransferableMode } from '@/shared/core';
+import { type Balance, type TransferableMode, AssetType } from '@/shared/core';
 import { reservableAmountBN, totalAmountBN, transferableAmountBN } from '@/shared/lib/utils';
 
 import { type BalancePreservation, type BalanceUpdateResult } from './types';

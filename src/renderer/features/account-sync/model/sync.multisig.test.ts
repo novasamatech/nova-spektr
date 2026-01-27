@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck - Test file with mock data that doesn't match strict types
 import { describe, expect, test } from 'vitest';
 

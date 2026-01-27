@@ -19,8 +19,8 @@ import { wallets } from './model/wallets';
 import { polkadotExtensionService } from './service';
 import { type PolkadotExtensionWallet, type SubWalletExtensionWallet, type TalismanExtensionWallet } from './types';
 
-export { extensionWalletFeature, walletActionsSlot, polkadotExtensionService };
-export type { PolkadotExtensionWallet, TalismanExtensionWallet, SubWalletExtensionWallet };
+export { extensionWalletFeature, polkadotExtensionService, walletActionsSlot };
+export type { PolkadotExtensionWallet, SubWalletExtensionWallet, TalismanExtensionWallet };
 
 accountSDK(extensionWalletFeature, {
   availableOnChain: ({ account, chain }) => {

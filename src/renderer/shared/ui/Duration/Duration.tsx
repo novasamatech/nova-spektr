@@ -1,4 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
 import { type Duration as DurationType } from 'date-fns';
 import { formatDuration } from 'date-fns/formatDuration';
 import { intervalToDuration } from 'date-fns/intervalToDuration';
