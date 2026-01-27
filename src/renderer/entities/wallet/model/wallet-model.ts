@@ -3,7 +3,6 @@ import { not, or, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
-  AccountNameType,
   type ID,
   type MultisigAccount,
   type NoID,
@@ -13,12 +12,13 @@ import {
   type Wallet,
   type WatchOnlyAccount,
   type WcAccount,
+  AccountNameType,
 } from '@/shared/core';
 import { groupBy, nonNullable, toKeysRecord } from '@/shared/lib/utils';
-// TODO wallet model should be either in wallets domain or wallets feature
-// eslint-disable-next-line boundaries/element-types
 import { accounts } from '@/domains/network';
 import { type AnyAccount, type AnyAccountDraft } from '@/domains/network';
+
+// TODO wallet model should be either in wallets domain or wallets feature
 
 type DbWallet = Omit<Wallet, 'accounts'>;
 

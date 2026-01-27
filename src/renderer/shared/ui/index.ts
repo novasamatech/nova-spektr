@@ -2,19 +2,19 @@ export { Button, ButtonCard, ButtonLink, ButtonWebLink, IconButton } from './But
 
 export { BaseModal, ConfirmModal, StatusModal } from './Modals';
 
-export { Select, Combobox, MultiSelect, DropdownIconButton } from './Dropdowns';
+export { Combobox, DropdownIconButton, MultiSelect, Select } from './Dropdowns';
 
 export {
-  LargeTitleText,
-  TitleText,
-  SmallTitleText,
-  CaptionText,
-  HeadlineText,
   BodyText,
+  CaptionText,
   FootnoteText,
-  LabelText,
   HeaderTitleText,
+  HeadlineText,
   HelpText,
+  LabelText,
+  LargeTitleText,
+  SmallTitleText,
+  TitleText,
 } from './Typography';
 
 export { Plate } from './Plate/Plate';

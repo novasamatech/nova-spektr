@@ -31,7 +31,7 @@ export const TimelineItem = ({ item }: Props) => {
     <div className="flex items-center justify-between">
       <FootnoteText>{formatDate(item.date, 'd MMM’yy, hh:mm')}</FootnoteText>
       <OperationStatus pallet={getStatusPalette(item.status)}>
-        {/* eslint-disable-next-line i18next/no-literal-string */}
+        {}
         {t(`governance.timeline.status.${item.status}`)}
       </OperationStatus>
     </div>

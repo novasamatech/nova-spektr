@@ -6,12 +6,12 @@ import { z } from 'zod';
 import { downloadFiles, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import {
   type ValidationIssue,
+  type VestingScheduleRaw,
   VestingFieldError,
   VestingFieldWarning,
-  type VestingScheduleRaw,
 } from '@/entities/vesting';
 
-import { Step, type ValidationSchemaOptions } from './types';
+import { type ValidationSchemaOptions, Step } from './types';
 
 export const vestedTransferUtils = {
   isNoneStep,

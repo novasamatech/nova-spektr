@@ -6,9 +6,9 @@ import { spread } from 'patronum';
 import {
   type MultisigTxWrapper,
   type ProxyTxWrapper,
-  RewardsDestination,
   type Transaction,
   type TxWrapper,
+  RewardsDestination,
   WrapperKind,
 } from '@/shared/core';
 import { TEST_ADDRESS, getNativeAsset, getRelaychainAsset, nonNullable, toAddress } from '@/shared/lib/utils';
@@ -28,7 +28,7 @@ import { bondNominateConfirmModel as confirmModel } from '@/features/operations/
 import { type BondNominateConfirm } from '@/features/operations/OperationsConfirm/BondNominate/model/confirm-model';
 import { validatorsModel } from '@/features/staking';
 import { bondUtils } from '../lib/bond-utils';
-import { type BondNominateData, type FeeData, Step, type WalletData } from '../lib/types';
+import { type BondNominateData, type FeeData, type WalletData, Step } from '../lib/types';
 
 import { formModel } from './form-model';
 

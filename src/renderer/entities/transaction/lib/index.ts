@@ -8,4 +8,4 @@ export * from './extrinsicService';
 export { transactionBuilder } from './transactionBuilder';
 export * from './xcmUtils';
 
-export { OperationError, type OperationErrorType } from './common/errors';
+export { type OperationErrorType, OperationError } from './common/errors';

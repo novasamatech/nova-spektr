@@ -1,5 +1,5 @@
 import * as RadixTabs from '@radix-ui/react-tabs';
-import { Children, type PropsWithChildren, cloneElement, isValidElement } from 'react';
+import { type PropsWithChildren, Children, cloneElement, isValidElement } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Carousel } from '../Carousel/Carousel';

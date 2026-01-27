@@ -4,7 +4,7 @@ import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { type Registry } from '@polkadot/types/types';
 import { BN_ZERO, hexToU8a } from '@polkadot/util';
 
-import { type Transaction as DeprecatedTransaction, type HexString } from '@/shared/core';
+import { type HexString, type Transaction as DeprecatedTransaction } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';

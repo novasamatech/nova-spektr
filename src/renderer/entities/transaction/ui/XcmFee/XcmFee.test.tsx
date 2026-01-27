@@ -6,7 +6,7 @@ import { Provider } from 'effector-react';
 import { vi } from 'vitest';
 
 import { spellXcmService } from '@/shared/api/xcm';
-import { type Asset, AssetType, type Chain, type ChainId, type Transaction } from '@/shared/core';
+import { type Asset, type Chain, type ChainId, type Transaction, AssetType } from '@/shared/core';
 import { createAccountId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';

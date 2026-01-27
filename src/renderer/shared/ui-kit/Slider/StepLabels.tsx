@@ -22,7 +22,6 @@ export const StepLabels = memo(({ steps, renderLabel, min, stepSize }: Props) =>
       const value = min + i * stepSize;
 
       return (
-        // eslint-disable-next-line react/no-array-index-key
         <div key={value} className="mx-1 flex h-fit w-2 justify-center">
           {renderLabel(value, i)}
         </div>

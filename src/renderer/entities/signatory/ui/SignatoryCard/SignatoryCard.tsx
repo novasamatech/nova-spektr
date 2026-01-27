@@ -3,7 +3,7 @@ import { type PropsWithChildren } from 'react';
 import { type Chain } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Icon, type IconNames } from '@/shared/ui';
+import { type IconNames, Icon } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
 import { type MultisigEvent } from '@/domains/network';
 

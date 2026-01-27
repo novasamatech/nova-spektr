@@ -51,7 +51,7 @@ export const waitFor = <const E, const R, const F extends R = R>({
 
   sample({
     clock: resetEvents.concat(sourceEvent).filter(nonNullable),
-    resetEvent,
+    target: resetEvent,
   });
 
   return wait;

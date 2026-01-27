@@ -13,7 +13,7 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, HelpText, IconButton, Separator } from '@/shared/ui';
-import { Hash, type IdenticonIconTheme, WalletAccountIcon } from '@/shared/ui-entities';
+import { type IdenticonIconTheme, Hash, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Copy, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts, useWalletName } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -37,7 +37,7 @@ import { WalletFiatBalance } from '../components';
 import { ProxiesCount } from '../components/ProxiesCount';
 import { ProxiesList } from '../components/ProxiesList';
 import { ShardsList } from '../components/ShardsList';
-import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
+import { type WalletAction, Action, WalletActions } from '../components/WalletActions';
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 

@@ -1,10 +1,10 @@
 import {
+  type VaultChainAccount,
+  type VaultShardAccount,
   AccountType,
   CryptoType,
   KeyType,
   SigningType,
-  type VaultChainAccount,
-  type VaultShardAccount,
 } from '@/shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@/shared/lib/utils';
 import { createAccountId } from '@/shared/mocks';

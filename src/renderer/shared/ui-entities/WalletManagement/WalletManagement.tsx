@@ -8,7 +8,7 @@ import { BodyText, FootnoteText, Icon } from '@/shared/ui';
 import { Label } from '@/shared/ui-kit';
 import { useWalletName } from '@/domains/network';
 import { ChainIcon } from '../ChainIcon/ChainIcon';
-import { Identicon, type IdenticonIconTheme } from '../Identicon/Identicon';
+import { type IdenticonIconTheme, Identicon } from '../Identicon/Identicon';
 
 type Props = {
   wallet: Wallet;

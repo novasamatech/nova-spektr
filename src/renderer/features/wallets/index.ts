@@ -1,5 +1,5 @@
 export { type DerivationKeyDraft, KeyConstructor } from './KeyConstructor';
-export { ShardSelectorModal, ShardSelectorButton } from './ShardSelectorModal';
+export { ShardSelectorButton, ShardSelectorModal } from './ShardSelectorModal';
 export { DerivationsAddressModal } from './DerivationsAddressModal/ui/DerivationsAddressModal';
 export { ImportKeysModal } from './ImportKeys/ui/ImportKeysModal';
 export { ExportKeysModal } from './ExportKeys';
