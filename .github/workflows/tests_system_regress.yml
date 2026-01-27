@@ -15,8 +15,8 @@ on:
     branches:
       - 'dev'
   pull_request:
-    paths:
-      - 'tests/**'
+    branches:
+      - 'dev'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
