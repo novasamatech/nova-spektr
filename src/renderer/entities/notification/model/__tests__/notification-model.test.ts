@@ -5,9 +5,9 @@ import { storageService } from '@/shared/api/storage';
 import {
   type CreateNotificationParams,
   type Notification,
+  type Wallet,
   NotificationEvent,
   NotificationType,
-  type Wallet,
   WalletType,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';

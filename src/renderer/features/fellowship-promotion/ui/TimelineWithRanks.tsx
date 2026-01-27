@@ -4,7 +4,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { HelpText, Icon } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
-import { Timeline, type TimelineStep, Tooltip } from '@/shared/ui-kit';
+import { type TimelineStep, Timeline, Tooltip } from '@/shared/ui-kit';
 
 type TimelineWithRanksProps = {
   currentRank: number;

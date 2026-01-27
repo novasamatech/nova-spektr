@@ -1,5 +1,5 @@
 import { type Address, type WalletType } from '@/shared/core';
-import { Identicon, type IdenticonIconTheme } from '../Identicon/Identicon';
+import { type IdenticonIconTheme, Identicon } from '../Identicon/Identicon';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 type Props = {

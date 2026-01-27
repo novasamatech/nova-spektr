@@ -6,7 +6,7 @@ import { Provider } from 'effector-react';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 
-import { type Asset, type Balance, type BalanceId, SigningType, type Wallet, WalletType } from '@/shared/core';
+import { type Asset, type Balance, type BalanceId, type Wallet, SigningType, WalletType } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { polkadotChain } from '@/shared/mocks';
 import { walletModel } from '@/entities/wallet';

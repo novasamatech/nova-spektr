@@ -1,27 +1,27 @@
 import { createTestKeyring } from '@polkadot/keyring';
 
 import {
-  AccountType,
   type Asset,
   type AssetId,
-  AssetType,
   type Chain,
   type ChainId,
-  ChainOptions,
-  CryptoType,
-  KeyType,
   type PolkadotVaultWallet,
   type ProxiedAccount,
   type ProxiedWallet,
-  ProxyVariant,
-  SigningType,
   type SingleShardWallet,
-  StakingType,
   type VaultBaseAccount,
   type VaultChainAccount,
   type WalletConnectWallet,
-  WalletType,
   type WcAccount,
+  AccountType,
+  AssetType,
+  ChainOptions,
+  CryptoType,
+  KeyType,
+  ProxyVariant,
+  SigningType,
+  StakingType,
+  WalletType,
 } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';

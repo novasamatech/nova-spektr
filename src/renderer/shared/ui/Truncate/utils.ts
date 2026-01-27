@@ -47,7 +47,6 @@ const measureHeight = (size: any, lineHeight: any): UnitsParseResult => {
   // to pollute our API with that for the time being.
   const unitBlacklist = ['%', 'ch', 'cm', 'em', 'ex'];
   if (unitBlacklist.indexOf(lineHeight.unit) !== -1) {
-    // eslint-disable-line no-magic-numbers
     throw new Error(
       `We do not currently support the unit ${lineHeight.unit}
       from the provided line-height ${lineHeight.value}.

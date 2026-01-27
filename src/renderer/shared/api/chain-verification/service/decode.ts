@@ -1,4 +1,3 @@
-/* eslint-disable no-bitwise */
 import { u8aToHex } from '@polkadot/util';
 import { blake2AsU8a } from '@polkadot/util-crypto';
 
@@ -24,12 +23,10 @@ const decodeHeaderByte = (header: number) => {
   // running with a locally scoped slice is as fast as having
   // it at global scope.
 
-  // eslint-disable-next-line no-plusplus
   for (let index = VARIANTS.length - 1; index >= 0; index--) {
     const variantBits = header & HEADER_MASK;
 
     if (variantBits !== VARIANTS[index]) {
-      // eslint-disable-next-line no-continue
       continue;
     }
 
@@ -61,7 +58,6 @@ const decodeHeader = (reader: Uint8Array): [number, number] => {
   // partial key length.
   // Specification: https://spec.polkadot.network/#defn-node-header
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const header = reader[currentIndex];
     currentIndex += 1;
@@ -137,12 +133,10 @@ const decodeBranch = (reader: Uint8Array, variant: number, keyLen: number): Node
 
   let currentIndex = length + 2;
 
-  // eslint-disable-next-line no-plusplus
   for (let i = 0; i < 16; i++) {
     const children = i < 8 ? childrenBitmap[0] : childrenBitmap[1];
 
     if (((children >> i % 8) & 1) !== 1) {
-      // eslint-disable-next-line no-continue
       continue;
     }
 
@@ -157,7 +151,6 @@ const decodeBranch = (reader: Uint8Array, variant: number, keyLen: number): Node
     } as Node;
 
     if (hash.length > 0 && hash.length < HASH_LENGTH) {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       childNode = decode(hash);
     }
 

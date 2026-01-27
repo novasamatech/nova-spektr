@@ -19,10 +19,10 @@ import {
 import { type AnyAccount, accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import {
-  MultiTransferCsvError,
   type MultiTransferRow,
   type MultiTransferRowSerialized,
   type ValidationIssue,
+  MultiTransferCsvError,
 } from '@/entities/multi-transfer';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
@@ -31,7 +31,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { Step, type ValidationSchemaOptions } from '../types';
+import { type ValidationSchemaOptions, Step } from '../types';
 import { multiTransferUtils } from '../utils';
 
 import { type MultiTransferConfirm, confirmModel } from './confirm';

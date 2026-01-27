@@ -1,5 +1,5 @@
 import { isNumber, isString } from 'lodash';
-import { Children, type PropsWithChildren, memo } from 'react';
+import { type PropsWithChildren, Children, memo } from 'react';
 
 import { type XOR } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';

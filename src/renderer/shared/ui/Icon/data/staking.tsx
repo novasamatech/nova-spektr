@@ -1,5 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
-
 import ChangeValidatorsIcon from '@/shared/assets/images/staking/change-validators.svg?jsx';
 import RedeemIcon from '@/shared/assets/images/staking/redeem.svg?jsx';
 import ReturnToStakeIcon from '@/shared/assets/images/staking/return-to-stake.svg?jsx';

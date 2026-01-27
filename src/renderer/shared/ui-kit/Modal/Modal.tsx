@@ -1,6 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { isObject } from 'lodash';
-import { Children, type PropsWithChildren, type ReactNode } from 'react';
+import { type PropsWithChildren, type ReactNode, Children } from 'react';
 
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { IconButton } from '@/shared/ui/Buttons/IconButton/IconButton';

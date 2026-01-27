@@ -1,9 +1,9 @@
 import {
+  type NormalizedCacheObject,
   ApolloClient,
   ApolloProvider,
   HttpLink,
   InMemoryCache,
-  type NormalizedCacheObject,
   from,
 } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
