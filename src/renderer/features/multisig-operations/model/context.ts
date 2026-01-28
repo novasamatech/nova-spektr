@@ -115,6 +115,16 @@ const $filter = restore(setFilters, {
   dateRange: undefined,
 }).reset(resetFilters);
 
+const $isFiltersSelected = $filter.map(filter =>
+  Boolean(
+    filter.account.length ||
+      filter.network.length ||
+      filter.type.length ||
+      filter.dateRange?.from ||
+      filter.dateRange?.to,
+  ),
+);
+
 const $tab = restore(setTab, 'pending');
 
 const $initiators = combine(
@@ -225,6 +235,7 @@ sample({
 
 export const operationsContextModel = {
   $filter,
+  $isFiltersSelected,
   $filteredOperations,
   $multisigAccountsMap,
   $initiator,

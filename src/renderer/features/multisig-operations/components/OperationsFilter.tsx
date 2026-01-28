@@ -19,6 +19,7 @@ export const OperationsFilter = memo(() => {
   const { t } = useI18n();
 
   const selectedOptions = useUnit(operationsContextModel.$filter);
+  const isFiltersSelected = useUnit(operationsContextModel.$isFiltersSelected);
   const chains = useUnit(networkModel.$chains);
   const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
 
@@ -90,16 +91,9 @@ export const OperationsFilter = memo(() => {
     operationsContextModel.resetFilters();
   };
 
-  const filtersSelected =
-    selectedOptions.account.length ||
-    selectedOptions.network.length ||
-    selectedOptions.type.length ||
-    selectedOptions.dateRange?.from ||
-    selectedOptions.dateRange?.to;
-
   return (
     <div className="flex h-9 items-center gap-2">
-      {Boolean(filtersSelected) && (
+      {isFiltersSelected && (
         <Button variant="text" className="h-8.5 py-0" onClick={clearFilters}>
           {t('operations.filters.clearFilters')}
         </Button>
