@@ -129,16 +129,16 @@ function findNodesRelatedToAccount(
   accounts: AnyAccount[] | null,
   account: AnyAccount | null,
   chain: Chain,
-): Map<AnyAccount, AccountNode> | null {
+): Map<string, AccountNode> | null {
   if (!accounts || !account || !chain) return null;
   const graph = accountService.createAccountGraphs(accounts, chain);
-  const result: Map<AnyAccount, AccountNode> = new Map();
+  const result: Map<string, AccountNode> = new Map();
 
-  for (const node of graph.values()) {
+  for (const [nodeKey, node] of graph.entries()) {
     accountService.traverseGraph(node, {
       enter(child) {
         if (child.account === account) {
-          result.set(node.account, node);
+          result.set(nodeKey, node);
           return false;
         }
       },

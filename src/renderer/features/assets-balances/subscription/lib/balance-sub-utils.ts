@@ -16,7 +16,7 @@ function getSiblingAccounts(
   chains: Chain[],
 ): RequestedAccount[] {
   const siblings = new Map<SubscriptionKey, RequestedAccount>();
-  const graphs = new Map<Chain, Map<AnyAccount, AccountNode>>();
+  const graphs = new Map<Chain, Map<string, AccountNode>>();
 
   for (const chain of chains) {
     for (const selected of selectedAccounts) {
@@ -28,7 +28,7 @@ function getSiblingAccounts(
         graphs.set(chain, graph);
       }
 
-      const node = graph.get(selected);
+      const node = accountService.findNodeByAccount(graph, selected);
       if (node) {
         accountService.traverseGraph(node, {
           enter(node) {

@@ -51,7 +51,12 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   }, [contacts, identities, chain, data.node.account]);
 
   const wallet = walletUtils.getWalletById(wallets, data.node.account.walletId);
-  const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, wallet: wallet, t });
+  const config = useTransformer(accountNodeConfigTransformer, {
+    account: data.node.account,
+    wallet: wallet,
+    t,
+    connectionIndex: data.node.connectionIndex,
+  });
   const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.id) : false;
 
   const nodeRef = useRef<HTMLDivElement>(null);

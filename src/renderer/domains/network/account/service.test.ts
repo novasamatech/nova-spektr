@@ -54,6 +54,7 @@ describe('account service', () => {
     accountService.accountActionPermissionAnyOf.resetHandlers();
     accountService.accountCanSignMultipleAnyOf.resetHandlers();
     accountService.accountCollectChildrenPipeline.resetHandlers();
+    accountService.accountConnectionCountTransformer.resetHandlers();
   });
 
   it('should check account types', async () => {
@@ -87,7 +88,7 @@ describe('account service', () => {
 
     it('should create graphs', async () => {
       const firstProxyAccount: ProxyAccount = {
-        id: '',
+        id: 'first-proxy',
         type: 'chain',
         name: 'test',
         walletId: 0,
@@ -99,7 +100,7 @@ describe('account service', () => {
       };
 
       const secondProxyAccount: ProxyAccount = {
-        id: '',
+        id: 'second-proxy',
         type: 'chain',
         name: 'test',
         walletId: 1,
@@ -111,7 +112,7 @@ describe('account service', () => {
       };
 
       const leafAccount: ChainAccount = {
-        id: '',
+        id: 'leaf-account',
         type: 'chain',
         name: 'test',
         walletId: 2,
@@ -143,9 +144,9 @@ describe('account service', () => {
 
       const graphs = accountService.createAccountGraphs(accounts, polkadotChain);
 
-      const firstProxyNode = graphs.get(firstProxyAccount);
-      const secondProxyNode = graphs.get(secondProxyAccount);
-      const childNode = graphs.get(leafAccount);
+      const firstProxyNode = graphs.get(firstProxyAccount.id);
+      const secondProxyNode = graphs.get(secondProxyAccount.id);
+      const childNode = graphs.get(leafAccount.id);
 
       assert(firstProxyNode, 'graph should include first proxy account');
       assert(secondProxyNode, 'graph should include second proxy account');
@@ -222,7 +223,7 @@ describe('account service', () => {
 
     it('should find signatories', async () => {
       const proxy: ProxyAccount = {
-        id: '',
+        id: 'proxy-1',
         type: 'chain',
         name: 'test',
         walletId: 1,
@@ -234,7 +235,7 @@ describe('account service', () => {
       };
 
       const extensionAccount: ChainAccount = {
-        id: '',
+        id: 'ext-1',
         type: 'chain',
         name: 'test',
         walletId: 2,
@@ -245,10 +246,10 @@ describe('account service', () => {
       };
 
       const wcAccount: ChainAccount = {
-        id: '',
+        id: 'wc-1',
         type: 'chain',
         name: 'test',
-        walletId: 2,
+        walletId: 3,
         chainId: polkadotChainId,
         accountId: createAccountId('3'),
         cryptoType: CryptoType.SR25519,
@@ -281,7 +282,7 @@ describe('account service', () => {
 
     it('should find initiators', async () => {
       const proxy: ProxyAccount = {
-        id: '',
+        id: 'proxy-2',
         type: 'chain',
         name: 'test',
         walletId: 1,
@@ -293,7 +294,7 @@ describe('account service', () => {
       };
 
       const pvAccount: ChainAccount = {
-        id: '',
+        id: 'pv-1',
         type: 'chain',
         name: 'test',
         walletId: 2,

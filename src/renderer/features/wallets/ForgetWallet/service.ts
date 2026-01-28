@@ -14,7 +14,7 @@ export const forgetService = {
  *
  * @returns - An array accounts.
  */
-function findParentAccounts(graph: Map<AnyAccount, AccountNode>, account: AnyAccount) {
+function findParentAccounts(graph: Map<string, AccountNode>, account: AnyAccount) {
   const result = new Set<AnyAccount>();
 
   for (const node of graph.values()) {

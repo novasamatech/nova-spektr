@@ -52,6 +52,8 @@ export type AnyAccountDraft<T extends UniversalAccount | ChainAccount = Universa
 export type AccountNode = {
   account: AnyAccount;
   children: AccountNode[];
+  /** For FlexibleMultisigAccount with multiple connections, indicates which connection this node represents */
+  connectionIndex?: number;
 };
 
 export type AccountValidationError = { account: AnyAccount; message: string };

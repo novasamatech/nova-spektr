@@ -13,7 +13,7 @@ export type AccountNodeConfig = {
 };
 
 export const accountNodeConfigTransformer = createTransformer<
-  { account: AnyAccount; wallet?: Wallet; t: TFunction<'translation'> },
+  { account: AnyAccount; wallet?: Wallet; t: TFunction<'translation'>; connectionIndex?: number },
   AccountNodeConfig
 >();
 
@@ -31,6 +31,7 @@ export const accountSDK = createSDK({
   },
   optional: {
     collectAccountChildren: accountService.accountCollectChildrenPipeline,
+    connectionCount: accountService.accountConnectionCountTransformer,
     connection: accountConnectionTransformer,
     validateRouteBalances: accountService.validateRouteBalancesTransformer,
     validateCallPermission: accountService.validateCallPermissionTransformer,

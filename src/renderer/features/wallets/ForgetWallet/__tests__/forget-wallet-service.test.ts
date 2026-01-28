@@ -1,10 +1,10 @@
-import { type AccountNode, type AnyAccount } from '@/domains/network';
+import { type AccountNode } from '@/domains/network';
 import { forgetService } from '../service';
 
 import { accounts } from './mocks';
 
 describe('forgetService.findParentAccounts', () => {
-  let testGraph: Map<AnyAccount, AccountNode>;
+  let testGraph: Map<string, AccountNode>;
   beforeEach(() => {
     testGraph = new Map();
   });
@@ -15,7 +15,7 @@ describe('forgetService.findParentAccounts', () => {
       account: accounts.walletConnect,
       children: [],
     };
-    testGraph.set(accounts.walletConnect, node);
+    testGraph.set(accounts.walletConnect.id, node);
 
     const result = forgetService.findParentAccounts(testGraph, accounts.walletConnect);
     expect(result).toEqual([]);
@@ -33,7 +33,7 @@ describe('forgetService.findParentAccounts', () => {
       children: [childNode],
     };
 
-    testGraph.set(accounts.multisig1, parentNode);
+    testGraph.set(accounts.multisig1.id, parentNode);
 
     const result = forgetService.findParentAccounts(testGraph, accounts.walletConnect);
     expect(result).toContain(accounts.multisig1);
@@ -56,7 +56,7 @@ describe('forgetService.findParentAccounts', () => {
       children: [targetChild, otherChild],
     };
 
-    testGraph.set(accounts.multisig1, parentNode);
+    testGraph.set(accounts.multisig1.id, parentNode);
 
     const result = forgetService.findParentAccounts(testGraph, accounts.walletConnect);
     expect(result).toEqual([]);
@@ -79,7 +79,7 @@ describe('forgetService.findParentAccounts', () => {
       children: [parentNode],
     };
 
-    testGraph.set(accounts.proxy1, grandParentNode);
+    testGraph.set(accounts.proxy1.id, grandParentNode);
 
     const result = forgetService.findParentAccounts(testGraph, accounts.walletConnect);
 
@@ -110,7 +110,7 @@ describe('forgetService.findParentAccounts', () => {
       children: [parentNode],
     };
 
-    testGraph.set(accounts.proxy1, grandParentNode);
+    testGraph.set(accounts.proxy1.id, grandParentNode);
 
     const result = forgetService.findParentAccounts(testGraph, accounts.walletConnect);
 
@@ -140,8 +140,8 @@ describe('forgetService.findParentAccounts', () => {
       children: [otherAccountNode],
     };
 
-    testGraph.set(accounts.multisig1, parentInTree1);
-    testGraph.set(accounts.multisig2, parentInTree2);
+    testGraph.set(accounts.multisig1.id, parentInTree1);
+    testGraph.set(accounts.multisig2.id, parentInTree2);
 
     const result = forgetService.findParentAccounts(testGraph, accounts.walletConnect);
 
@@ -156,7 +156,7 @@ describe('forgetService.findParentAccounts', () => {
       children: [],
     };
 
-    testGraph.set(accounts.multisig1, someNode);
+    testGraph.set(accounts.multisig1.id, someNode);
 
     // Search for an account that's not in the graph
     const result = forgetService.findParentAccounts(testGraph, accounts.walletConnect);
@@ -190,7 +190,7 @@ describe('forgetService.findParentAccounts', () => {
       children: [level1Node],
     };
 
-    testGraph.set(accounts.emptyWallet, rootNode);
+    testGraph.set(accounts.emptyWallet.id, rootNode);
 
     const result = forgetService.findParentAccounts(testGraph, accounts.walletConnect);
 
@@ -224,8 +224,8 @@ describe('forgetService.findParentAccounts', () => {
       children: [otherLeafNode],
     };
 
-    testGraph.set(accounts.multisig1, parentNode);
-    testGraph.set(accounts.multisig2, otherParentNode);
+    testGraph.set(accounts.multisig1.id, parentNode);
+    testGraph.set(accounts.multisig2.id, otherParentNode);
 
     const result = forgetService.findParentAccounts(testGraph, accounts.walletConnect);
 
@@ -258,8 +258,8 @@ describe('forgetService.findParentAccounts', () => {
       children: [unrelatedChildNode],
     };
 
-    testGraph.set(accounts.multisig1, relatedParentNode);
-    testGraph.set(accounts.multisig2, unrelatedParentNode);
+    testGraph.set(accounts.multisig1.id, relatedParentNode);
+    testGraph.set(accounts.multisig2.id, unrelatedParentNode);
 
     const result = forgetService.findParentAccounts(testGraph, accounts.walletConnect);
 
@@ -296,8 +296,8 @@ describe('forgetService.findParentAccounts', () => {
       children: [unrelatedNode],
     };
 
-    testGraph.set(accounts.proxy1, grandParentNode);
-    testGraph.set(accounts.multisig2, unrelatedParentNode);
+    testGraph.set(accounts.proxy1.id, grandParentNode);
+    testGraph.set(accounts.multisig2.id, unrelatedParentNode);
     const result = forgetService.findParentAccounts(testGraph, accounts.walletConnect);
 
     // Should only include parents from the path to target

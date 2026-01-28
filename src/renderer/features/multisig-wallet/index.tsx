@@ -48,9 +48,15 @@ accountSDK(multisigWalletFeature, {
   canSignMultipleTransactions() {
     return false;
   },
-  collectAccountChildren(children, { account, accounts }) {
+  connectionCount({ account }) {
+    // FlexibleMultisigAccount with multiple connections should create multiple nodes
+    if (accountUtils.isFlexibleMultisigAccount(account)) {
+      return account.connections.length;
+    }
+  },
+  collectAccountChildren(children, { account, accounts, connectionIndex }) {
     if (accountUtils.isMultisigAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
-      const signatories = accountUtils.getMultisigSignatories(account, accounts);
+      const signatories = accountUtils.getMultisigSignatories(account, accounts, connectionIndex);
 
       return signatories
         .map(signatory => {
@@ -66,7 +72,7 @@ accountSDK(multisigWalletFeature, {
 
     return children;
   },
-  visualGraphNode({ account, t }) {
+  visualGraphNode({ account, t, connectionIndex }) {
     if (accountUtils.isMultisigAccount(account)) {
       return {
         title: 'Multisig',
@@ -80,7 +86,7 @@ accountSDK(multisigWalletFeature, {
     }
 
     if (accountUtils.isFlexibleMultisigAccount(account)) {
-      const connection = account.connections.at(0);
+      const connection = account.connections.at(connectionIndex ?? 0);
       return {
         title: 'Flexible multisig',
         subTitle: connection

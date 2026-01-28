@@ -61,8 +61,19 @@ const elk = new ELK({
   },
 });
 
+/**
+ * Generate unique node ID for React Flow.
+ * For nodes with connection index, includes it in the ID.
+ */
+function getReactFlowNodeId(node: AccountNode): string {
+  if (node.connectionIndex !== undefined && node.connectionIndex > 0) {
+    return `${node.account.id}:conn:${node.connectionIndex}`;
+  }
+  return node.account.id;
+}
+
 function createGraphElements(
-  graph: Map<AnyAccount, AccountNode>,
+  graph: Map<string, AccountNode>,
   selectedAccountId: string,
   t: TFunction<'translation'>,
 ) {
@@ -71,11 +82,12 @@ function createGraphElements(
   const processedNodes = new Set<string>();
 
   function processNode(node: AccountNode) {
-    if (processedNodes.has(node.account.id)) return;
-    processedNodes.add(node.account.id);
+    const nodeId = getReactFlowNodeId(node);
+    if (processedNodes.has(nodeId)) return;
+    processedNodes.add(nodeId);
 
     nodes.push({
-      id: node.account.id,
+      id: nodeId,
       type: 'accountNode',
       data: {
         node,
@@ -87,12 +99,13 @@ function createGraphElements(
     });
 
     for (const child of node.children) {
+      const childId = getReactFlowNodeId(child);
       const connection = accountConnectionTransformer({ source: child.account, target: node.account, t });
 
       edges.push({
-        id: `e${child.account.id}-${node.account.id}`,
-        source: child.account.id,
-        target: node.account.id,
+        id: `e${childId}-${nodeId}`,
+        source: childId,
+        target: nodeId,
         data: {
           source: child.account,
           target: node.account,
@@ -117,7 +130,7 @@ function createGraphElements(
 }
 
 const useGraphLayout = (
-  graph: Map<AnyAccount, AccountNode> | null,
+  graph: Map<string, AccountNode> | null,
   selectedAccount: AnyAccount | null,
   setNodes: (nodes: Node<AccountNodeData>[]) => void,
   setEdges: (edges: Edge[]) => void,

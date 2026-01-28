@@ -37,7 +37,17 @@ import {
 const accountAvailabilityOnChainAnyOf = createAnyOf<{ account: AnyAccount; chain: Chain }>();
 const accountActionPermissionAnyOf = createAnyOf<{ account: AnyAccount }>();
 const accountCanSignMultipleAnyOf = createAnyOf<{ account: AnyAccount }>();
-const accountCollectChildrenPipeline = createPipeline<AnyAccount[], { account: AnyAccount; accounts: AnyAccount[] }>();
+const accountCollectChildrenPipeline = createPipeline<
+  AnyAccount[],
+  { account: AnyAccount; accounts: AnyAccount[]; connectionIndex?: number }
+>();
+
+/**
+ * Pipeline for getting the number of connection indices for an account.
+ * Features can register handlers to return how many nodes should be created for an account.
+ * Default is 1 node per account.
+ */
+const accountConnectionCountTransformer = createTransformer<{ account: AnyAccount }, number>();
 const validateRouteBalancesTransformer = createTransformer<
   {
     api: ApiPromise;
@@ -292,34 +302,75 @@ function canSignMultipleTransactions(account: AnyAccount) {
 }
 
 /**
- * Create accounts graph for given chain. Returns map, where key is account and
- * value is graph node.
+ * Generate unique node key for account graph.
+ * For accounts with multiple connections, includes connection index.
  */
-function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<AnyAccount, AccountNode> {
-  const chainAccounts = accounts.filter(account => isAccountAvailableOnChain(account, chain));
-  const nodes = new Map<AnyAccount, AccountNode>();
+function getNodeKey(account: AnyAccount, connectionIndex?: number): string {
+  // Use account.id if available, otherwise fallback to uniqId
+  const baseKey = account.id || uniqId(account);
+  if (connectionIndex !== undefined && connectionIndex > 0) {
+    return `${baseKey}:conn:${connectionIndex}`;
+  }
+  return baseKey;
+}
 
-  const createNode = (account: AnyAccount): AccountNode => {
-    const existingNode = nodes.get(account);
+/**
+ * Create accounts graph for given chain. Returns map, where key is a unique node ID
+ * and value is graph node. For accounts with multiple connections (e.g., FlexibleMultisig),
+ * multiple nodes are created (one per connection).
+ */
+function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<string, AccountNode> {
+  const chainAccounts = accounts.filter(account => isAccountAvailableOnChain(account, chain));
+  const nodes = new Map<string, AccountNode>();
+
+  const createNode = (account: AnyAccount, connectionIndex?: number): AccountNode => {
+    const nodeKey = getNodeKey(account, connectionIndex);
+    const existingNode = nodes.get(nodeKey);
     if (existingNode) return existingNode;
 
     const node: AccountNode = {
       account,
       children: [],
+      connectionIndex,
     };
-    nodes.set(account, node);
+    nodes.set(nodeKey, node);
 
-    const children = accountCollectChildrenPipeline([], { account, accounts: chainAccounts });
-    node.children = children.map(createNode);
+    const children = accountCollectChildrenPipeline([], { account, accounts: chainAccounts, connectionIndex });
+    node.children = children.map(child => createNode(child));
 
     return node;
   };
 
   for (const account of chainAccounts) {
-    createNode(account);
+    // Check if feature registered a handler for multiple connections
+    const connectionCount = accountConnectionCountTransformer({ account }) ?? 1;
+    if (connectionCount > 1) {
+      for (let i = 0; i < connectionCount; i++) {
+        createNode(account, i);
+      }
+    } else {
+      createNode(account);
+    }
   }
 
   return nodes;
+}
+
+/**
+ * Find node by account in the graph.
+ * For flex accounts with multiple connections, returns the first matching node.
+ */
+function findNodeByAccount(graph: Map<string, AccountNode>, account: AnyAccount): AccountNode | null {
+  // First try direct lookup
+  const directNode = graph.get(account.id);
+  if (directNode) return directNode;
+
+  // For flex accounts, might be stored with connection index
+  for (const node of graph.values()) {
+    if (node.account === account) return node;
+  }
+
+  return null;
 }
 
 /**
@@ -332,13 +383,14 @@ function traverseGraph(
     exit?: (node: AccountNode) => void;
   },
 ) {
-  const visited = new Set<AnyAccount>();
+  const visited = new Set<string>();
   const visitNode = (node: AccountNode) => {
-    if (visited.has(node.account)) return;
+    const nodeKey = getNodeKey(node.account, node.connectionIndex);
+    if (visited.has(nodeKey)) return;
 
     if (visitor.enter(node) === false) return false;
 
-    visited.add(node.account);
+    visited.add(nodeKey);
 
     for (const child of node.children) {
       if (visitNode(child) === false) return false;
@@ -352,7 +404,7 @@ function traverseGraph(
 
 function findLeafs(account: AnyAccount, accounts: AnyAccount[], chain: Chain): AnyAccount[] {
   const graphs = createAccountGraphs(accounts, chain);
-  const node = graphs.get(account);
+  const node = findNodeByAccount(graphs, account);
   if (nullable(node)) {
     return [];
   }
@@ -412,7 +464,7 @@ function findRoute(source: AnyAccount, destination: AnyAccount, accounts: AnyAcc
   }
 
   const graphs = createAccountGraphs(accounts, chain);
-  const entryNode = graphs.get(source);
+  const entryNode = findNodeByAccount(graphs, source);
 
   if (nullable(entryNode)) {
     return [];
@@ -545,7 +597,8 @@ export const accountService = {
   accountAvailabilityOnChainAnyOf,
   accountActionPermissionAnyOf,
   accountCanSignMultipleAnyOf,
-  accountCollectChildrenPipeline: accountCollectChildrenPipeline,
+  accountCollectChildrenPipeline,
+  accountConnectionCountTransformer,
   validateRouteBalancesTransformer,
   validateCallPermissionTransformer,
 
@@ -571,6 +624,8 @@ export const accountService = {
   // graph
 
   createAccountGraphs,
+  getNodeKey,
+  findNodeByAccount,
   findLeafs,
   findSignatories,
   findInitiators,
