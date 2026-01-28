@@ -27,7 +27,7 @@ export const OperationsFilter = memo(() => {
   const [networkSearchQuery, setNetworkSearchQuery] = useState('');
   const [typeSearchQuery, setTypeSearchQuery] = useState('');
 
-  const multisigAccounts = useMemo(() => Array.from(multisigAccountsMap.values()), [multisigAccountsMap]);
+  const multisigAccounts = useMemo(() => Object.values(multisigAccountsMap), [multisigAccountsMap]);
   const resolvedMultisigAccounts = useAccountsNames(multisigAccounts);
 
   const TransactionOptions = getTransactionOptions(t);

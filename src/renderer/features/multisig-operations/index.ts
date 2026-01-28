@@ -7,7 +7,9 @@ export { Operations } from './components/Operations';
 export { Search } from './components/Search';
 export { SignatorySelectModal } from './components/modals/SignatorySelectModal';
 export { OperationsFilter } from './components/OperationsFilter';
+export { ExportButton } from './components/ExportButton';
 
 export { type TabFilter, operationsContextModel } from './model/context';
 export { multisigOperationsFeature } from './model/feature';
 export { deepLinkModel } from './model/deep-link';
+export { exportModel } from './model/export';
