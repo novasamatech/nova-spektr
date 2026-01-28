@@ -49,7 +49,6 @@ export const Operations = () => {
       return formatDate(new Date(date), 'PP');
     });
 
-    // Sort transactions within each group by timestamp
     for (const date of Object.keys(groupedTxs)) {
       groupedTxs[date] = groupedTxs[date].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     }
@@ -65,7 +64,6 @@ export const Operations = () => {
     return () => deepLinkModel.operationsPageClosed();
   }, []);
 
-  // Scroll to focused operation
   useEffect(() => {
     if (focusedOperationId && focusedRef.current) {
       scrollToFocused();
