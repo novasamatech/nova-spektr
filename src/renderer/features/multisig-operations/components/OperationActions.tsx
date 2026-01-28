@@ -5,7 +5,7 @@ import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/cor
 import { useI18n } from '@/shared/i18n';
 import { validateCallData } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { type MultisigOperation, accounts } from '@/domains/network';
+import { type MultisigOperation, accountService, accounts } from '@/domains/network';
 import { useNetworkData } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 
@@ -22,15 +22,26 @@ export const OperationActions = memo(({ operation, account }: Props) => {
   const { api, chain } = useNetworkData(operation.chainId);
   const allAccounts = useUnit(accounts.$list);
 
-  const hasAccount = allAccounts.some(a => {
+  const hasRejectAccount = allAccounts.some(a => {
     return a.accountId === operation.depositor && !accountUtils.isWatchOnlyAccount(a);
   });
 
-  const isRejectAvailable = operation.status === 'pending' && hasAccount;
+  const hasApproveAccount = allAccounts.some(a => {
+    const isSignatory = account.signatories.some(
+      s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true),
+    );
+    const isOnChain = chain ? accountService.isAccountAvailableOnChain(a, chain) : false;
+    const hasNotSigned = !operation.events.some(e => e.accountId === a.accountId);
+
+    return isSignatory && isOnChain && hasNotSigned && !accountUtils.isWatchOnlyAccount(a);
+  });
+
+  const isRejectAvailable = operation.status === 'pending' && hasRejectAccount;
 
   const isFinalSigning = account && operation.events.length === account.threshold - 1;
   const isApproveAvailable =
     operation.status === 'pending' &&
+    hasApproveAccount &&
     (!isFinalSigning || (operation.callData && validateCallData(operation.callData, operation.callHash)));
 
   return (
