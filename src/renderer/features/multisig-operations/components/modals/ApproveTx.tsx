@@ -2,13 +2,19 @@ import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
-import { type Chain, type FlexibleMultisigAccount, type HexString, type MultisigAccount } from '@/shared/core';
+import {
+  type Chain,
+  type FlexibleMultisigAccount,
+  type HexString,
+  type MultisigAccount,
+  type Transaction,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
+import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult, isXcmTransaction, useTransactionAsset } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
@@ -29,8 +35,8 @@ type Props = {
 };
 
 type SubmitData = {
-  tx: NonNullable<ReturnType<typeof approveModel.$transaction.getState>>;
-  initiator: NonNullable<ReturnType<typeof approveModel.$initiator.getState>>;
+  tx: Transaction;
+  initiator: AnyAccount;
   txPayload: Uint8Array;
   signature: HexString;
 };
