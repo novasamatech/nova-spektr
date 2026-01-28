@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { AccountNameType, type Chain, type Contact, CryptoType, SigningType } from '@/shared/core';
+import { type Chain, type Contact, AccountNameType, CryptoType, SigningType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import {
   createAccountId,

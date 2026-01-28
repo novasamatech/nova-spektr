@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { Navigate, Outlet, type RouteObject } from 'react-router-dom';
+import { type RouteObject, Navigate, Outlet } from 'react-router-dom';
 
 import { Paths } from '@/shared/routes';
 import { AppShell } from '@/features/app-shell';
@@ -8,7 +8,7 @@ import { OnboardingRouteGuard, ShellRouteGuard } from '@/features/wallets';
 import { Assets, ReceiveAsset, SendAsset } from './Assets';
 import { Onboarding } from './Onboarding';
 import { PageLoadingState } from './PageLoadingState';
-import { Currency, Networks, ReferendumData, Overview as Settings } from './Settings';
+import { Currency, Networks, Overview as Settings, ReferendumData } from './Settings';
 
 // features with lower priority - can be loaded later
 

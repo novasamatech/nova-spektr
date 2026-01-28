@@ -6,7 +6,7 @@ import { type XOR } from '@/shared/core/types/utility';
 import { combineIdentifiers } from '@/shared/di';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { Icon, IconButton, type IconNames } from '@/shared/ui';
+import { type IconNames, Icon, IconButton } from '@/shared/ui';
 import { Dropdown } from '@/shared/ui-kit';
 import { permissionUtils, walletUtils } from '@/entities/wallet';
 import { walletActionsSlot as extensionActionsSlot } from '@/features/extension-wallet';

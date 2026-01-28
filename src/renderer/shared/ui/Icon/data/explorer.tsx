@@ -1,5 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
-
 import DefaultIcon from '@/shared/assets/images/explorers/default.svg?jsx';
 import MoonscanIcon from '@/shared/assets/images/explorers/moonscan.svg?jsx';
 import PolkascanIcon from '@/shared/assets/images/explorers/polkascan.svg?jsx';

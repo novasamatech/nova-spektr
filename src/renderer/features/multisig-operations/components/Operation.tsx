@@ -13,14 +13,14 @@ import {
 } from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { formatSectionAndMethod, toAddress, toShortAddress, validateCallData } from '@/shared/lib/utils';
-import { Accordion, Button, FootnoteText, HelpText } from '@/shared/ui';
+import { formatSectionAndMethod, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { Accordion, FootnoteText, HelpText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance, AssetIcon, WalletAccountIcon } from '@/shared/ui-entities';
 import { Copy, Tooltip } from '@/shared/ui-kit';
-import { type MultisigOperation, accounts } from '@/domains/network';
+import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
-import { networkModel, useNetworkData } from '@/entities/network';
+import { networkModel } from '@/entities/network';
 import { OperationTitleStatus } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import {
@@ -30,17 +30,18 @@ import {
   useTransactionAsset,
 } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { type TabFilter } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
+import { OperationActions } from './OperationActions';
 import { OperationFullInfo } from './OperationFullInfo';
 import { OperationIcon } from './OperationIcon';
-import { ApproveTxModal } from './modals/ApproveTx';
-import { RejectTxModal } from './modals/RejectTx';
 
 type Props = {
   operation: MultisigOperation;
   multisigAccount: MultisigAccount | FlexibleMultisigAccount;
   isDefaultOpen?: boolean;
+  tab: TabFilter;
 };
 
 export type OperationTitle = {
@@ -64,31 +65,20 @@ export const operationTitleTransformer = createTransformer<
   OperationTitle
 >();
 
-export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false }: Props) => {
+export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false, tab }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
-  const allAccounts = useUnit(accounts.$list);
-  const { api, chain } = useNetworkData(operation.chainId);
 
   const wallet = useMemo(
     () => wallets.find(w => w.id === multisigAccount.walletId),
     [wallets, multisigAccount.walletId],
   );
-  const accountAddress = chain ? toAddress(multisigAccount.accountId, { prefix: chain.addressPrefix }) : undefined;
 
-  const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(multisigAccount);
-
-  // Approve/Reject availability logic
-  const hasAccount = allAccounts.some(a => {
-    return a.accountId === operation.depositor && !accountUtils.isWatchOnlyAccount(a);
-  });
-  const isRejectAvailable = operation.status === 'pending' && hasAccount;
-  const isFinalSigning = multisigAccount && operation.events.length === multisigAccount.threshold - 1;
-  const isApproveAvailable =
-    operation.status === 'pending' &&
-    (!isFinalSigning || (operation.callData && validateCallData(operation.callData, operation.callHash)));
-  const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+  const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(multisigAccount);
+  const coreTx = isFlexibleMultisigAccount ? findCoreTransaction(operation.transaction) : operation.transaction;
+  const addressPrefix = isFlexibleMultisigAccount ? chains[multisigAccount.chainId]?.addressPrefix : undefined;
+  const accountAddress = toAddress(multisigAccount.accountId, { prefix: addressPrefix });
   const asset = useTransactionAsset(coreTx, operation.chainId);
 
   const deepLink = useMemo(
@@ -98,7 +88,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
   const externalTitle = useTransformer(operationTitleTransformer, {
     operation,
-    showCoreTransaction,
+    showCoreTransaction: isFlexibleMultisigAccount,
     chains,
     asset,
     t,
@@ -170,22 +160,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
             <OperationTitleStatus operation={operation} account={multisigAccount} />
 
-            <div className="flex w-[140px] shrink-0 gap-x-2" onClick={e => e.stopPropagation()}>
-              {isRejectAvailable && (
-                <RejectTxModal api={api} operation={operation} account={multisigAccount} chain={chain}>
-                  <Button pallet="error" variant="fill" size="sm" className="flex-1">
-                    {t('operation.rejectButton')}
-                  </Button>
-                </RejectTxModal>
-              )}
-              {isApproveAvailable && (
-                <ApproveTxModal api={api} operation={operation} account={multisigAccount} chain={chain}>
-                  <Button size="sm" className="flex-1">
-                    {t('operation.approveButton')}
-                  </Button>
-                </ApproveTxModal>
-              )}
-            </div>
+            <OperationActions operation={operation} account={multisigAccount} />
           </div>
 
           <Tooltip>
@@ -199,7 +174,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
         </div>
       </Accordion.Button>
       <Accordion.Content className="border-t border-divider">
-        <OperationFullInfo operation={operation} account={multisigAccount} />
+        <OperationFullInfo operation={operation} account={multisigAccount} tab={tab} />
       </Accordion.Content>
     </Accordion>
   );

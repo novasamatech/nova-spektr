@@ -10,13 +10,13 @@ import { camelCase, noop, uniq } from 'lodash';
 
 import {
   type Asset,
-  AssetType,
   type BalanceDraft,
   type BalanceMap,
   type Chain,
   type ChainId,
   type LockTypes,
   type OrmlExtras,
+  AssetType,
 } from '@/shared/core';
 import {
   getAssetId,

@@ -8,10 +8,10 @@ import {
   type ID,
   type NoID,
   type Notification,
-  NotificationEvent,
   type NotificationStatus,
-  NotificationType,
   type Wallet,
+  NotificationEvent,
+  NotificationType,
 } from '@/shared/core';
 import { createBuffer } from '@/shared/effector';
 import { merge } from '@/shared/lib/utils';

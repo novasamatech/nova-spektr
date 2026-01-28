@@ -1,7 +1,7 @@
 import { type MouseEventHandler, type PropsWithChildren, memo } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
-import { Icon, type IconNames } from '@/shared/ui';
+import { type IconNames, Icon } from '@/shared/ui';
 
 type Props = PropsWithChildren<{
   variant: 'positive' | 'negative';

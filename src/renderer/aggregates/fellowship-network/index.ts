@@ -1,12 +1,12 @@
 export { fellowshipNetwork } from './model';
 export {
-  useFellowshipNetwork,
+  useCurrentSalaryPeriod,
   useFellowshipApi,
-  useFellowshipChain,
   useFellowshipAsset,
   useFellowshipBlock,
+  useFellowshipChain,
   useFellowshipChainConnected,
-  useCurrentSalaryPeriod,
   useFellowshipIdentities,
   useFellowshipIdentity,
+  useFellowshipNetwork,
 } from './hooks';

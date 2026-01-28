@@ -8,7 +8,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { lockPeriodsModel } from '@/features/governance';
-import { type NetworkStore, type BalanceMap as TransferBalanceMap } from '@/widgets/Transfer';
+import { type BalanceMap as TransferBalanceMap, type NetworkStore } from '@/widgets/Transfer';
 import { DelegateRules } from '../lib/delegate-rules';
 import { validationUtils } from '../lib/validation-utils';
 import {

@@ -1,7 +1,7 @@
 import { memo } from 'react';
 
 import { WalletType } from '@/shared/core';
-import { Icon, type IconNames } from '@/shared/ui';
+import { type IconNames, Icon } from '@/shared/ui';
 
 const iconNames: Record<WalletType, IconNames> = {
   [WalletType.POLKADOT_VAULT]: 'vaultBackground',

@@ -1,3 +1,3 @@
-export { useCodexSearch, type Section, type SearchResult } from './useCodexSearch';
+export { type SearchResult, type Section, useCodexSearch } from './useCodexSearch';
 export { useScroll } from './useScroll';
-export { useTableOfContents, type TableOfContentsItem } from './useTableOfContents';
+export { type TableOfContentsItem, useTableOfContents } from './useTableOfContents';

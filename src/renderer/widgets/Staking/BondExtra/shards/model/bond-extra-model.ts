@@ -22,7 +22,7 @@ import { signModel } from '@/features/operations/OperationSign/model/sign-model'
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type BondExtraConfirm, bondExtraConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
-import { type BondExtraData, type FeeData, Step, type WalletData } from '../lib/types';
+import { type BondExtraData, type FeeData, type WalletData, Step } from '../lib/types';
 
 import { formModel } from './form-model';
 

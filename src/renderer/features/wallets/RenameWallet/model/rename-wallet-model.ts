@@ -1,7 +1,7 @@
 import { attach, combine, createEffect, createEvent, restore, sample } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { AccountNameType, type Contact, type Wallet } from '@/shared/core';
+import { type Contact, type Wallet, AccountNameType } from '@/shared/core';
 import { createForm } from '@/shared/forms/createForm';
 import { type ValidationError } from '@/shared/forms/types';
 import { toAddress } from '@/shared/lib/utils';

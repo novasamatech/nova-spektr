@@ -1,5 +1,4 @@
 import {
-  AccountType,
   type MultisigWallet,
   type NovaWalletWallet,
   type PolkadotVaultWallet,
@@ -7,8 +6,9 @@ import {
   type ProxiedWallet,
   type SingleShardWallet,
   type WalletConnectWallet,
-  WalletType,
   type WatchOnlyWallet,
+  AccountType,
+  WalletType,
 } from '@/shared/core';
 
 // Wallets

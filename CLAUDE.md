@@ -30,9 +30,12 @@ Nova Spektr is a Polkadot & Kusama ecosystem Enterprise Desktop application buil
 ### Code Quality
 - `pnpm lint` - Run ESLint on source code
 - `pnpm lint:fix` - Run linter and auto-fix issues
-- `pnpm types` - Run TypeScript type checking
+- `pnpm types` - Run TypeScript type checking (tsc)
+- `pnpm types:go` - Run TypeScript type checking with tsgo (~6x faster, preferred)
 - `pnpm fmt:check` - Check code formatting with Prettier
 - `pnpm fmt:fix` - Auto-fix code formatting
+
+**Note:** Prefer `pnpm types:go` for type checking - it uses tsgo (TypeScript's native Go port) and is approximately 6x faster than tsc.
 
 ### Single Test Execution
 To run a single test file:

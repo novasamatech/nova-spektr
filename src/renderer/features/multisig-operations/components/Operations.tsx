@@ -8,7 +8,6 @@ import { sortByDateDesc } from '@/shared/lib/utils';
 import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText, Loader } from '@/shared/ui';
 import { Box, ScrollArea } from '@/shared/ui-kit';
-import { multisigOperation } from '@/domains/network';
 import { operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
@@ -24,13 +23,14 @@ export const Operations = () => {
   const { formatDate } = useI18n();
 
   const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
-  const operations = useUnit(multisigOperation.$list);
+  const isFiltersSelected = useUnit(operationsContextModel.$isFiltersSelected);
   const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
   const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
   const isDeepLinkLoading = useUnit(deepLinkModel.$isDeepLinkLoading);
   const isTabDataLoading = useUnit(operationsContextModel.$isTabDataLoading);
+  const tab = useUnit(operationsContextModel.$tab);
 
-  const hasMultisigAccounts = multisigAccountsMap.size > 0;
+  const hasMultisigAccounts = Object.keys(multisigAccountsMap).length > 0;
 
   const [focusedRef, scrollToFocused] = useScrollTo<HTMLLIElement>(300);
 
@@ -49,7 +49,6 @@ export const Operations = () => {
       return formatDate(new Date(date), 'PP');
     });
 
-    // Sort transactions within each group by timestamp
     for (const date of Object.keys(groupedTxs)) {
       groupedTxs[date] = groupedTxs[date].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     }
@@ -65,7 +64,6 @@ export const Operations = () => {
     return () => deepLinkModel.operationsPageClosed();
   }, []);
 
-  // Scroll to focused operation
   useEffect(() => {
     if (focusedOperationId && focusedRef.current) {
       scrollToFocused();
@@ -74,7 +72,11 @@ export const Operations = () => {
 
   return (
     <>
-      {!hasMultisigAccounts && <EmptyOperations hasMultisigAccounts={false} isEmptyFromFilters={false} />}
+      {!hasMultisigAccounts && (
+        <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
+          <EmptyOperations isEmptyFromFilters={false} tab={tab} />
+        </Box>
+      )}
 
       {hasMultisigAccounts && (
         <ScrollArea>
@@ -86,10 +88,7 @@ export const Operations = () => {
             )}
 
             {!isTabDataLoading && filteredTxs.length === 0 && (
-              <EmptyOperations
-                hasMultisigAccounts={hasMultisigAccounts}
-                isEmptyFromFilters={operations.length !== filteredTxs.length}
-              />
+              <EmptyOperations isEmptyFromFilters={isFiltersSelected} tab={tab} />
             )}
 
             {filteredTxs.length > 0 && (
@@ -99,7 +98,7 @@ export const Operations = () => {
                     <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
                     <ul className="flex w-full flex-col gap-y-1.5">
                       {txs.map(tx => {
-                        const multisigAccount = multisigAccountsMap.get(tx.accountId);
+                        const multisigAccount = multisigAccountsMap[tx.accountId];
                         if (!multisigAccount) return null;
 
                         return (
@@ -109,6 +108,7 @@ export const Operations = () => {
                               operation={tx}
                               multisigAccount={multisigAccount}
                               isDefaultOpen={tx.id === focusedOperationId}
+                              tab={tab}
                             />
                           </li>
                         );

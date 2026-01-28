@@ -1,16 +1,16 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import {
-  AccountType,
   type Chain,
+  type MultisigAccount,
+  type Wallet,
+  type WcAccount,
+  AccountType,
   ChainOptions,
   ChainType,
   CryptoType,
-  type MultisigAccount,
   SigningType,
-  type Wallet,
   WalletType,
-  type WcAccount,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 

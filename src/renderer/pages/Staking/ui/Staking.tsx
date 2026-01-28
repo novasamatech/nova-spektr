@@ -12,9 +12,9 @@ import { Button, EmptyList, Header } from '@/shared/ui';
 import { type AnyAccount, accountService, identity } from '@/domains/network';
 import { InactiveNetwork, networkModel, networkUtils, useNetworkData } from '@/entities/network';
 import {
+  type ValidatorMap,
   DEFAULT_STAKING_CHAIN,
   STAKING_NETWORK,
-  type ValidatorMap,
   ValidatorsModal,
   eraService,
   useStakingRewards,
@@ -46,9 +46,9 @@ import { stakingModel } from '../model/staking-model';
 import { AboutStaking } from './AboutStaking';
 import { Actions } from './Actions';
 import { NetworkInfo } from './NetworkInfo';
-// TODO: will be much simpler when we refactor staking page
-// eslint-disable-next-line import-x/max-dependencies
 import { NominatorsList } from './NominatorsList';
+
+// TODO: will be much simpler when we refactor staking page
 
 // Lazy-loaded components
 const LazyUnstake = lazy(() => import('@/widgets/Staking').then(({ Unstake }) => ({ default: Unstake })));
@@ -190,7 +190,7 @@ export const Staking = () => {
     if (!activeWallet) return;
 
     // TODO remove this check
-    const isMultisig = walletUtils.isMultisig(activeWallet);
+    const isMultisig = walletUtils.isAnyMultisig(activeWallet);
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
     const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
     const isPolkadotVault = walletUtils.isPolkadotVaultGroup(activeWallet);

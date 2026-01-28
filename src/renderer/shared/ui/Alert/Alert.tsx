@@ -1,4 +1,4 @@
-import { Children, type PropsWithChildren } from 'react';
+import { type PropsWithChildren, Children } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { IconButton } from '../Buttons';

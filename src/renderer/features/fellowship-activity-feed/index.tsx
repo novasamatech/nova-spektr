@@ -5,7 +5,7 @@ import { LastActivity } from './components/LastActivity';
 import { referendumEventRecordActionSlot } from './components/ReferendumEventRecord';
 import { fellowshipActivityFeedFeature } from './feature';
 
-export { fellowshipActivityFeedFeature, activityFeedRecordDescriptionSlot, referendumEventRecordActionSlot };
+export { activityFeedRecordDescriptionSlot, fellowshipActivityFeedFeature, referendumEventRecordActionSlot };
 
 fellowshipActivityFeedFeature.inject(fellowshipSidebarSlot, {
   order: 2,

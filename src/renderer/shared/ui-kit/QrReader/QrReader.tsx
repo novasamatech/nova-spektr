@@ -1,4 +1,4 @@
-import { BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
+import { type IScannerControls, BrowserQRCodeReader } from '@zxing/browser';
 import { type Result } from '@zxing/library';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 

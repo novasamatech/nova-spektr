@@ -13,7 +13,7 @@ import { useReferendumVote } from './hooks/useReferendumVote';
 import { fellowshipVotingFeature } from './model/feature';
 import { voting } from './model/voting';
 
-export { fellowshipVotingFeature, VotingConfirmation, voting };
+export { VotingConfirmation, fellowshipVotingFeature, voting };
 
 fellowshipVotingFeature.inject(referendumVotingTaskActionSlot, ({ referendum, transaction, dateThresholds }) => {
   return (

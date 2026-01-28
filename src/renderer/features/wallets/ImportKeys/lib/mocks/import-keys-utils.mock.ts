@@ -1,12 +1,12 @@
 import {
-  AccountType,
   type ChainId,
-  CryptoType,
   type DraftAccount,
-  KeyType,
-  SigningType,
   type VaultChainAccount,
   type VaultShardAccount,
+  AccountType,
+  CryptoType,
+  KeyType,
+  SigningType,
 } from '@/shared/core';
 import { type DerivationWithPath } from '../types';
 
