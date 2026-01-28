@@ -122,7 +122,7 @@ type TxWrappersParams = {
  * @returns {Array}
  */
 function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
-  if (walletUtils.isMultisig(wallet)) {
+  if (walletUtils.isAnyMultisig(wallet)) {
     return getMultisigWrapper(params);
   }
 
