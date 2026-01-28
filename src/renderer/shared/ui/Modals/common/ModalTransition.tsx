@@ -1,5 +1,5 @@
 import { Transition } from '@headlessui/react';
-import { Fragment, type PropsWithChildren } from 'react';
+import { type PropsWithChildren, Fragment } from 'react';
 
 export const ModalTransition = ({ children }: PropsWithChildren) => (
   <Transition.Child

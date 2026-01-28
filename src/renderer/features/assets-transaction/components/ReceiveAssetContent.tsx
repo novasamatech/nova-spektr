@@ -36,7 +36,6 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
   });
   const isUnifiedAddress = address !== legacyAddress;
 
-  //eslint-disable-next-line i18next/no-literal-string
   const qrCodePayload = `substrate:${address}:${selectedAccount.accountId}`;
 
   return (

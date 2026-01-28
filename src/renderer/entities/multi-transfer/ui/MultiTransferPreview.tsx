@@ -10,7 +10,7 @@ import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
 import { useAccountName } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
-import { MultiTransferFieldError, type MultiTransferRow, type ValidationIssue } from '../lib/types';
+import { type MultiTransferRow, type ValidationIssue, MultiTransferFieldError } from '../lib/types';
 
 type RowStatus = 'error' | 'warning' | 'valid';
 

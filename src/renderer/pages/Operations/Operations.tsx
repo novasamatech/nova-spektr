@@ -4,10 +4,10 @@ import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { Box, Tabs } from '@/shared/ui-kit';
 import {
-  OperationsFilter,
-  Operations as OperationsList,
-  Search,
   type TabFilter,
+  Operations as OperationsList,
+  OperationsFilter,
+  Search,
   operationsContextModel,
 } from '@/features/multisig-operations';
 

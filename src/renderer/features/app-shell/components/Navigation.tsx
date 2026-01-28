@@ -2,7 +2,7 @@ import { memo } from 'react';
 
 import { createPipeline, createSlot, usePipeline, useSlot } from '@/shared/di';
 
-import { NavItem, type Props as NavItemProps } from './NavItem';
+import { type Props as NavItemProps, NavItem } from './NavItem';
 
 // TODO refactor to slots
 export const navigationTopLinksPipeline = createPipeline<NavItemProps[]>({

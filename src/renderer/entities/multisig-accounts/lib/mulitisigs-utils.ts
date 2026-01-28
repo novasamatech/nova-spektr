@@ -1,10 +1,10 @@
 import {
-  AccountType,
   type Chain,
-  ChainOptions,
-  CryptoType,
   type MultisigAccount,
   type NoID,
+  AccountType,
+  ChainOptions,
+  CryptoType,
   SigningType,
 } from '@/shared/core';
 import { isEthereumAccountId } from '@/shared/lib/utils';

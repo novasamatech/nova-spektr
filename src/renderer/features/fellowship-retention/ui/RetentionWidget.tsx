@@ -5,7 +5,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText, Icon, TitleText } from '@/shared/ui';
-import { Box, Skeleton, type TimelineStep } from '@/shared/ui-kit';
+import { type TimelineStep, Box, Skeleton } from '@/shared/ui-kit';
 import {
   type Member,
   type Referendum,

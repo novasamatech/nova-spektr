@@ -4,8 +4,8 @@ export type { ButtonDropdownOption } from './Dropdowns/common/types';
 export type { RadioOption, RadioResult } from './RadioGroup/common/types';
 export type {
   ComboboxOption,
+  DropdownIconButtonOption,
   DropdownOption,
   DropdownResult,
-  DropdownIconButtonOption,
   Theme,
 } from './Dropdowns/common/types';

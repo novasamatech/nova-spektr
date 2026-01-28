@@ -5,7 +5,7 @@ import { memo, useMemo } from 'react';
 import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatAsset, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
-import { DetailRow, Icon, type IconNames, Separator } from '@/shared/ui';
+import { type IconNames, DetailRow, Icon, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, type Member, type Track, trackService } from '@/domains/collectives';

@@ -1,5 +1,5 @@
 export { AssetRouteGuard } from './AssetRouteGuard';
 export { AssetsChainView } from './AssetsChainView';
 export { AssetsSettings, assetsSettingsModel } from './AssetsSettings';
-export { assetsSearchModel, AssetsSearch } from './AssetsSearch';
-export { AssetsPortfolioView, portfolioModel, type AssetChain } from './AssetsPortfolioView';
+export { AssetsSearch, assetsSearchModel } from './AssetsSearch';
+export { type AssetChain, AssetsPortfolioView, portfolioModel } from './AssetsPortfolioView';

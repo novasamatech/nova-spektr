@@ -1,5 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
-
 import DelegateIcon from '@/shared/assets/images/functionals/opengov-delegate.svg?jsx';
 import EditDelegationIcon from '@/shared/assets/images/functionals/opengov-edit-delegation.svg?jsx';
 import RetractIcon from '@/shared/assets/images/functionals/opengov-retract.svg?jsx';

@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import { Icon, IconButton } from '@/shared/ui';
-import { Input, type InputProps } from '../Input/Input';
+import { type InputProps, Input } from '../Input/Input';
 
 type Props = Omit<InputProps, 'prefixElement' | 'suffixElement'>;
 

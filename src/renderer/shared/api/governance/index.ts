@@ -1,10 +1,10 @@
 export type {
+  DelegateAccount,
+  DelegateInfo,
+  DelegationApi,
   GovernanceApi,
   ReferendumTimelineRecord,
   ReferendumTimelineRecordStatus,
-  DelegateAccount,
-  DelegationApi,
-  DelegateInfo,
   SubQueryVoting,
 } from './off-chain/lib/types';
 export { polkassemblyService } from './off-chain/service/polkassemblyService';

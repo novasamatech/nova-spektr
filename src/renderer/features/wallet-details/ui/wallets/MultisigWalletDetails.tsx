@@ -26,7 +26,7 @@ import { walletProxiesModel } from '../../model/wallet-proxies-model';
 import { WalletFiatBalance } from '../components';
 import { ProxiesCount } from '../components/ProxiesCount';
 import { ProxiesList } from '../components/ProxiesList';
-import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
+import { type WalletAction, Action, WalletActions } from '../components/WalletActions';
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 

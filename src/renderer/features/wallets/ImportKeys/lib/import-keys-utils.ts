@@ -26,7 +26,6 @@ import { networkUtils } from '@/entities/network';
 import { type ErrorDetails } from './derivation-import-error';
 import {
   type DerivationKeyDraft,
-  DerivationValidationError,
   type DerivationWithPath,
   type ImportFileChain,
   type ImportFileKey,
@@ -34,6 +33,7 @@ import {
   type ParsedData,
   type ParsedImportFile,
   type TypedImportedDerivation,
+  DerivationValidationError,
   ValidationError,
 } from './types';
 
