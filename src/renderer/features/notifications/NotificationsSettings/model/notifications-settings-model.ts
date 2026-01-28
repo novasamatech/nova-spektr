@@ -9,7 +9,7 @@ import { nonNullable } from '@/shared/lib/utils';
 import { notificationModel } from '@/entities/notification';
 import { walletModel, walletUtils } from '@/entities/wallet';
 
-const $multisigWallets = walletModel.$allWallets.map((wallets) => wallets.filter(walletUtils.isMultisig));
+const $multisigWallets = walletModel.$allWallets.map((wallets) => wallets.filter(walletUtils.isAnyMultisig));
 
 const $notificationEvents = notificationModel.$notificationEvents;
 const $disabledWalletIds = notificationModel.$disabledWalletIds;

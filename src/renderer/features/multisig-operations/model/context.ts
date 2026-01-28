@@ -159,7 +159,7 @@ const $multisigAccountsMap = accounts.$list.map(accs => {
   return record;
 });
 
-const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isMultisig));
+const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isAnyMultisig));
 
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 
