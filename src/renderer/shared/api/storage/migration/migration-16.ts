@@ -1,6 +1,6 @@
 import { type Transaction } from 'dexie';
 
-import { AccountType, type ProxyType } from '@/shared/core';
+import { type ProxyType, AccountType } from '@/shared/core';
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount } from '@/domains/network';
 
