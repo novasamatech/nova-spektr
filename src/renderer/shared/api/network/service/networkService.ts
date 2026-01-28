@@ -6,7 +6,7 @@ import * as Sc from '@substrate/connect';
 import { EXTENSIONS } from '@/shared/config/extensions';
 import { type ChainId, type ChainMetadata } from '@/shared/core';
 import { getKnownChain } from '@/shared/lib/utils';
-import { ProviderType, type ProviderWithMetadata } from '../lib/types';
+import { type ProviderWithMetadata, ProviderType } from '../lib/types';
 import { createCachedProvider } from '../provider/CachedProvider';
 
 export const networkService = {

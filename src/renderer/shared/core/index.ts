@@ -7,50 +7,50 @@ export type { Contact } from './types/contact';
 export type { Signatory } from './types/signatory';
 
 export type {
-  Wallet,
-  WalletsMap,
-  PolkadotVaultWallet,
-  SingleShardWallet,
-  MultisigWallet,
   FlexibleMultisigWallet,
-  WatchOnlyWallet,
-  WalletConnectWallet,
+  MultisigWallet,
   NovaWalletWallet,
-  WalletFamily,
   PolkadotVaultGroup,
-  WalletConnectGroup,
+  PolkadotVaultWallet,
   ProxiedWallet,
   SignableWalletFamily,
+  SingleShardWallet,
+  Wallet,
+  WalletConnectGroup,
+  WalletConnectWallet,
+  WalletFamily,
+  WalletsMap,
+  WatchOnlyWallet,
 } from './types/wallet';
-export { WalletType, SigningType } from './types/wallet';
+export { SigningType, WalletType } from './types/wallet';
 
-export { AccountType, AccountNameType, KeyType } from './types/account';
+export { AccountNameType, AccountType, KeyType } from './types/account';
 export type {
-  WatchOnlyAccount,
-  VaultBaseAccount,
-  VaultChainAccount,
-  MultisigAccount,
-  MultisigSignatoryAccount,
-  WcAccount,
-  ProxiedAccount,
-  ProxiedConnection,
-  VaultShardAccount,
   DraftAccount,
   FlexibleMultisigAccount,
+  MultisigAccount,
+  MultisigSignatoryAccount,
+  ProxiedAccount,
+  ProxiedConnection,
+  VaultBaseAccount,
+  VaultChainAccount,
+  VaultShardAccount,
+  WatchOnlyAccount,
+  WcAccount,
 } from './types/account';
 
 export { AssetType, StakingType } from './types/asset';
-export type { AssetId, Asset, OrmlExtras, StatemineExtras, AssetByChains, PortfolioTokenBalance } from './types/asset';
+export type { Asset, AssetByChains, AssetId, OrmlExtras, PortfolioTokenBalance, StatemineExtras } from './types/asset';
 
 export { LockTypes } from './types/balance';
-export type { Balance, BalanceId, BalanceMap, AssetBalance, BalanceDraft, TransferableMode } from './types/balance';
+export type { AssetBalance, Balance, BalanceDraft, BalanceId, BalanceMap, TransferableMode } from './types/balance';
 
 export type { ChainMetadata } from './types/metadata';
 
 export type { Chain, Explorer, RpcNode } from './types/chain';
 export { ChainOptions, ExternalType } from './types/chain';
 
-export { ConnectionType, ConnectionStatus } from './types/connection';
+export { ConnectionStatus, ConnectionType } from './types/connection';
 export type { Connection } from './types/connection';
 
 export type { Identity, SubIdentity } from './types/identity';
@@ -60,90 +60,90 @@ export type { Validator } from './types/validator';
 export { RewardsDestination } from './types/stake';
 export type { Stake, Unlocking } from './types/stake';
 
-export type { ProxyAccount, PartialProxyAccount, PartialProxiedAccount, ProxyType } from './types/proxy';
+export type { PartialProxiedAccount, PartialProxyAccount, ProxyAccount, ProxyType } from './types/proxy';
 export { ProxyVariant } from './types/proxy';
 
 export type {
+  CreateFlexibleMultisigOperationParams,
+  CreateMultisigCreatedParams,
+  CreateMultisigEventParams,
+  CreateMultisigOperationParams,
+  CreateNotificationParams,
+  CreateProxyActionParams,
+  FlexibleMultisigOperationNotification,
+  MultisigCreated,
+  MultisigEventNotification,
+  MultisigOperationNotification,
   Notification,
   NotificationStatus,
-  CreateNotificationParams,
-  CreateMultisigCreatedParams,
-  CreateFlexibleMultisigOperationParams,
-  CreateMultisigOperationParams,
-  CreateMultisigEventParams,
-  CreateProxyActionParams,
-  MultisigCreated,
-  FlexibleMultisigOperationNotification,
-  MultisigOperationNotification,
-  MultisigEventNotification,
   ProxyAction,
 } from './types/notification';
 export { NotificationEvent, NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
 
-export { TransactionType, MultisigTxInitStatus, MultisigTxFinalStatus, WrapperKind } from './types/transaction';
+export { MultisigTxFinalStatus, MultisigTxInitStatus, TransactionType, WrapperKind } from './types/transaction';
 export type {
-  Transaction,
-  SigningStatus,
-  MultisigTxStatus,
   DecodedTransaction,
+  MultisigTxStatus,
+  MultisigTxWrapper,
   ProxyTransaction,
+  ProxyTxWrapper,
+  SigningStatus,
+  Transaction,
   TxWrapper,
   TxWrappers_OLD,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
   WrapAsMulti,
 } from './types/transaction';
 
 export type {
+  LinearDecreasingCurve,
+  ReciprocalCurve,
+  SteppedDecreasingCurve,
   TrackId,
   TrackInfo,
   TrackLocks,
-  VotingThreshold,
   VotingCurve,
-  ReciprocalCurve,
-  SteppedDecreasingCurve,
-  LinearDecreasingCurve,
+  VotingThreshold,
 } from './types/track';
 
 export type {
-  Deposit,
-  Tally,
-  ReferendumId,
-  ReferendumType,
-  ReferendumStatus,
   ApprovedReferendum,
-  RejectedReferendum,
-  OngoingReferendum,
-  TimedOutReferendum,
-  KilledReferendum,
   CancelledReferendum,
   CompletedReferendum,
-  Referendum,
+  Deposit,
+  KilledReferendum,
+  OngoingReferendum,
   Proposal,
+  Referendum,
+  ReferendumId,
+  ReferendumStatus,
+  ReferendumType,
+  RejectedReferendum,
   SpendProposal,
+  Tally,
+  TimedOutReferendum,
 } from './types/referendum';
 
 export type {
-  Voting,
-  Conviction,
-  CastingVoting,
-  DelegatingVoting,
   AccountVote,
-  StandardVote,
-  SplitVote,
-  SplitAbstainVote,
-  VotingMap,
+  CastingVoting,
+  Conviction,
+  DelegatingVoting,
   DelegationBalanceMap,
   DelegationTracksMap,
+  SplitAbstainVote,
+  SplitVote,
+  StandardVote,
+  Voting,
+  VotingMap,
 } from './types/voting';
 
 export type {
-  ToastPosition,
-  ToastVariant,
-  ToastNotificationProps,
+  ModalNotification,
   ModalNotificationProps,
   ToastNotification,
-  ModalNotification,
+  ToastNotificationProps,
+  ToastPosition,
+  ToastVariant,
 } from './types/notificationService';

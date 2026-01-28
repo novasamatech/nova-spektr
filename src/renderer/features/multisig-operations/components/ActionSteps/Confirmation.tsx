@@ -9,9 +9,9 @@ import { getAssetById, getAssetByTypeExtras, getNativeAsset } from '@/shared/lib
 import { Button, Icon } from '@/shared/ui';
 import {
   type TransactionValidationBalanceError,
-  TransactionValidationError,
   type TransactionValidationFatalError,
   type TransactionValidationPermissionError,
+  TransactionValidationError,
 } from '@/shared/ui-entities';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { SignButton } from '@/entities/operations';

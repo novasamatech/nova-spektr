@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, InfoLink, InputHint } from '@/shared/ui';
 import { InputFile } from '@/shared/ui-kit';
-import { MultiTransferCsvError, type ValidationIssue } from '@/entities/multi-transfer';
+import { type ValidationIssue, MultiTransferCsvError } from '@/entities/multi-transfer';
 import { MultiTransferPreview } from '@/entities/multi-transfer';
 import { formModel } from '../model/form';
 import { multiTransferUtils } from '../utils';

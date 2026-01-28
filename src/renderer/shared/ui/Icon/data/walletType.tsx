@@ -1,5 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
-
 import FlexibleMultisigBackgroundIcon from '@/shared/assets/images/walletTypes/flexibleMultisigBackground.svg?jsx';
 import LedgerOnboardingIcon from '@/shared/assets/images/walletTypes/ledgerOnboarding.svg?jsx';
 import MultisigBackgroundIcon from '@/shared/assets/images/walletTypes/multisigBackground.svg?jsx';

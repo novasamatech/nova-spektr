@@ -1,5 +1,5 @@
 import { Menu, Transition } from '@headlessui/react';
-import { type ComponentProps, Fragment, type PropsWithChildren } from 'react';
+import { type ComponentProps, type PropsWithChildren, Fragment } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { IconButton } from '../../Buttons';

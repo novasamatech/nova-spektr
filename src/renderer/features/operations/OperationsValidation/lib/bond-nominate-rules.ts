@@ -2,7 +2,7 @@ import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 import { t } from 'i18next';
 
-import { type Chain, RewardsDestination, type VaultShardAccount } from '@/shared/core';
+import { type Chain, type VaultShardAccount, RewardsDestination } from '@/shared/core';
 import { assert, formatAmount, validateAddress } from '@/shared/lib/utils';
 import { createTxValidator } from '@/shared/transactions';
 import { type AnyAccount, accountService, balanceService } from '@/domains/network';

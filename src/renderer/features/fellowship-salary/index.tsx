@@ -23,7 +23,7 @@ import { salaryInduct } from './model/salaryInduct';
 import { salaryPayout } from './model/salaryPayout';
 import { salaryRequest } from './model/salaryRequest';
 
-export { fellowshipSalaryFeature, SalaryInfo, SalaryPayoutConfirmation, SalaryRegisterConfirmation };
+export { SalaryInfo, SalaryPayoutConfirmation, SalaryRegisterConfirmation, fellowshipSalaryFeature };
 
 fellowshipSalaryFeature.inject(profileInfoSlot, () => {
   return <SalaryInfo />;

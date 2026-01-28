@@ -22,7 +22,7 @@ import { signModel } from '@/features/operations/OperationSign/model/sign-model'
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type PayeeConfirm, payeeConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { payeeUtils } from '../lib/payee-utils';
-import { type FeeData, type PayeeData, Step, type WalletData } from '../lib/types';
+import { type FeeData, type PayeeData, type WalletData, Step } from '../lib/types';
 
 import { formModel } from './form-model';
 

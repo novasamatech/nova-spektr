@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import {
-  AccountType,
-  CryptoType,
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type MultisigSignatoryAccount,
   type Signatory,
+  AccountType,
+  CryptoType,
   SigningType,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';

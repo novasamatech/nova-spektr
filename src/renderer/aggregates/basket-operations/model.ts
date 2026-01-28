@@ -6,7 +6,6 @@ import { storageService } from '@/shared/api/storage';
 import { type ID } from '@/shared/core';
 import { populated } from '@/shared/effector';
 import { walletSelect } from '@/aggregates/wallet-select';
-// eslint-disable-next-line boundaries/element-types
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 
 import { type BasketTransaction, type BasketTransactionDraft } from './types';

@@ -1,1 +1,1 @@
-export { notificationModel, type ToastData } from './model/notification-model';
+export { type ToastData, notificationModel } from './model/notification-model';

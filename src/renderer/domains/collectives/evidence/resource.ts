@@ -4,7 +4,7 @@ import { createStore } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
-import { type Chain, type ChainId, ExternalType, type HexString } from '@/shared/core';
+import { type Chain, type ChainId, type HexString, ExternalType } from '@/shared/core';
 import { merge, nonNullable, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type ReferendumId } from '@/shared/pallet/referenda';
