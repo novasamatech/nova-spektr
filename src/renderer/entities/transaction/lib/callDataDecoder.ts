@@ -117,7 +117,7 @@ const parseProxy = (
   api: ApiPromise,
   nativeAssetId: string,
 ): DecodedTransaction => {
-  const proxiedAccountId = toAccountId(decoded.args[0].toString());
+  const proxiedAccountId = (decoded.args[0] && toAccountId(decoded.args[0].toString())) ?? accountId;
 
   const proxyTransaction = getDecodedTransaction(
     proxiedAccountId,
