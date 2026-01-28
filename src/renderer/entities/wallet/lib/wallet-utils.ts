@@ -23,7 +23,7 @@ import {
 export const walletUtils = {
   isPolkadotVault,
   isSingleShard,
-  isMultisig,
+  isAnyMultisig,
   isFlexibleMultisig,
   isRegularMultisig,
   isWatchOnly,
@@ -62,7 +62,7 @@ function isRegularMultisig(wallet?: Wallet | null): wallet is MultisigWallet {
   return wallet?.type === WalletType.MULTISIG;
 }
 
-function isMultisig(wallet?: Wallet | null): wallet is MultisigWallet | FlexibleMultisigWallet {
+function isAnyMultisig(wallet?: Wallet | null): wallet is MultisigWallet | FlexibleMultisigWallet {
   return isFlexibleMultisig(wallet) || isRegularMultisig(wallet);
 }
 

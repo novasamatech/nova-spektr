@@ -15,7 +15,7 @@ import {
 } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
-import { accountUtils } from '@/entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { multisigService } from '@/features/multisig-wallet';
 
@@ -159,6 +159,8 @@ const $multisigAccountsMap = accounts.$list.map(accs => {
   return record;
 });
 
+const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isAnyMultisig));
+
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 
 const $filteredOperations = combine(
@@ -249,6 +251,7 @@ export const operationsContextModel = {
   $isFiltersSelected,
   $filteredOperations,
   $multisigAccountsMap,
+  $multisigWallets,
   $initiator,
   $tab,
   $isTabDataLoading,

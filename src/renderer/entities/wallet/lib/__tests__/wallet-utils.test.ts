@@ -29,7 +29,7 @@ describe('entities/wallet/lib/wallet-utils', () => {
   test('isMultisig should return true when wallet type is Flexible Multisig', () => {
     const wallet = { type: WalletType.FLEXIBLE_MULTISIG } as Wallet;
 
-    expect(walletUtils.isMultisig(wallet)).toEqual(true);
+    expect(walletUtils.isAnyMultisig(wallet)).toEqual(true);
   });
 
   test('isMultisig should return false when wallet type is not Multisig', () => {
