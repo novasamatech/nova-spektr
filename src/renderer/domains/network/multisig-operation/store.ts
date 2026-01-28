@@ -1,18 +1,16 @@
-import { type Done, persist } from '@effector-storage/idb-keyval';
 import { type ApiPromise } from '@polkadot/api';
-import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { produce } from 'immer';
 import { uniqBy } from 'lodash';
 import { and, once, readonly } from 'patronum';
 
-import { storageService } from '@/shared/api/storage';
-import { type Chain, type ChainId, type HexString } from '@/shared/core';
+import { type Done, persist } from '@/shared/api/storage';
+import { type Chain, type ChainId } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { entries, getNativeAssetId, groupBy, keys, nonNullable } from '@/shared/lib/utils';
+import { entries, groupBy, keys, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query/types';
 import { networkModel } from '@/entities/network';
-import { decodeCallData } from '@/entities/transaction';
 
 import {
   $completionEvents,
@@ -25,7 +23,6 @@ import {
   subscribeNewMultisigEventsResource,
   subscribeOnchainResource,
 } from './resource';
-import { deserializeOperation, serializeOperation } from './service';
 import { type MultisigOperation } from './types';
 
 const subscribeToAccounts = createEvent<{
@@ -39,8 +36,8 @@ const unsubscribeFromAccounts = createEvent();
 const $subscribedAccounts = createStore<AccountId[]>([]);
 const $subscribedApis = createStore<Record<ChainId, ApiPromise>>({});
 
-const $chainIdsWithMultisigSupport = createStore<Set<ChainId>>(new Set()).reset(unsubscribeFromAccounts);
-const $initializedChainIds = createStore<Set<ChainId>>(new Set()).reset(unsubscribeFromAccounts);
+const $chainIdsWithMultisigSupport = createStore<ChainId[]>([]).reset(unsubscribeFromAccounts);
+const $initializedChainIds = createStore<ChainId[]>([]).reset(unsubscribeFromAccounts);
 
 const $onChainOperations = $onChainOperationsByCallhash.map(state =>
   Object.values(state)
@@ -53,8 +50,8 @@ const $onChainOperations = $onChainOperationsByCallhash.map(state =>
 const $initialOnChainFetched = combine(
   { expected: $chainIdsWithMultisigSupport, fetched: $initializedChainIds },
   ({ expected, fetched }) => {
-    if (expected.size === 0) return false;
-    return Array.from(expected).every(chainId => fetched.has(chainId));
+    if (expected.length === 0) return false;
+    return expected.every(chainId => fetched.includes(chainId));
   },
 );
 
@@ -63,52 +60,6 @@ const $offChainFetched = createStore(false)
   .reset(unsubscribeFromAccounts);
 
 const $initialLoadingComplete = and($initialOnChainFetched, $offChainFetched);
-
-const populateFx = createEffect(() =>
-  storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
-);
-
-const updateOperationsFx = createEffect(async (operations: MultisigOperation[]) => {
-  return storageService.multisigOperations.updateAll(operations.map(serializeOperation)).then(() => operations);
-});
-
-const $callDataUpdated = createStore<MultisigOperation | null>(null);
-
-type UpdateCallDataParams = {
-  operation: MultisigOperation;
-  callData: HexString;
-};
-
-const updateCallDataFx = attach({
-  source: {
-    apis: networkModel.$apis,
-    chains: networkModel.$chains,
-  },
-  async effect({ apis, chains }, { operation, callData }: UpdateCallDataParams) {
-    const update = scopeBind(updateOperationsFx, { safe: true });
-    const api = apis[operation.chainId];
-    const chain = chains[operation.chainId];
-    if (!api || !chain) {
-      throw new Error(`Api from tx not found: ${operation.chainId}`);
-    }
-    try {
-      const decoded = decodeCallData(api, operation.accountId, callData, getNativeAssetId(chain.assets));
-      const newOperation: MultisigOperation = {
-        ...operation,
-        section: decoded.section,
-        method: decoded.method,
-        callData,
-        transaction: decoded,
-      };
-
-      await update([newOperation]);
-      return newOperation;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  },
-});
 
 sample({
   clock: $trackedCallHashes,
@@ -218,7 +169,7 @@ sample({
 // Prevents premature cache invalidation when some APIs haven't connected yet
 sample({
   clock: subscribeToAccounts,
-  fn: ({ chains }) => new Set(keys(chains)),
+  fn: ({ chains }) => keys(chains),
   target: $chainIdsWithMultisigSupport,
 });
 
@@ -227,7 +178,7 @@ sample({
   source: $initializedChainIds,
   fn: (fetched, { params }) => {
     const chainIds = keys(params.apis);
-    return new Set([...fetched, ...chainIds]);
+    return [...new Set([...fetched, ...chainIds])];
   },
   target: $initializedChainIds,
 });
@@ -384,11 +335,11 @@ const $allOperations = combine(
     expectedChainIds: $chainIdsWithMultisigSupport,
   },
   ({ live, cached, fetchedChainIds, expectedChainIds }) => {
-    if (expectedChainIds.size === 0) {
+    if (expectedChainIds.length === 0) {
       return cached;
     }
 
-    const allFetched = Array.from(expectedChainIds).every(chainId => fetchedChainIds.has(chainId));
+    const allFetched = expectedChainIds.every(chainId => fetchedChainIds.includes(chainId));
     if (allFetched) {
       return live;
     }
@@ -396,11 +347,11 @@ const $allOperations = combine(
     // Hybrid: use live data for fetched chains, cached for others
     const liveByChain = groupBy(live, op => op.chainId);
     const cachedByChain = groupBy(cached, op => op.chainId);
-    const allChainIds = new Set([...keys(liveByChain), ...keys(cachedByChain)]);
+    const allChainIds = [...new Set([...keys(liveByChain), ...keys(cachedByChain)])];
 
     const result: MultisigOperation[] = [];
     for (const chainId of allChainIds) {
-      const ops = fetchedChainIds.has(chainId) ? liveByChain[chainId] || [] : cachedByChain[chainId] || [];
+      const ops = fetchedChainIds.includes(chainId) ? liveByChain[chainId] || [] : cachedByChain[chainId] || [];
       result.push(...ops);
     }
 
@@ -416,21 +367,9 @@ sample({
   target: $cachedOperations,
 });
 
-sample({
-  clock: updateCallDataFx.doneData,
-  target: $callDataUpdated,
-});
-
-sample({
-  clock: updateCallDataFx,
-  fn: () => null,
-  target: $callDataUpdated,
-});
-
 export const multisigOperation = {
   $list: $allOperations,
   $populated: readonly($populated),
-  $callDataUpdated,
   $initialLoadingComplete,
   $onChainReady: readonly($initialOnChainFetched),
   $offChainReady: readonly($offChainFetched),
@@ -439,9 +378,6 @@ export const multisigOperation = {
   unsubscribeFromAccounts,
   refetchOffchainOperations,
 
-  populate: populateFx,
-  updateOperations: updateOperationsFx,
-  updateCallData: updateCallDataFx,
   requestOffchainOperations: fetchOffchainResource.start,
   initialOnChainFetch: initialOnChainFetch.start,
 
