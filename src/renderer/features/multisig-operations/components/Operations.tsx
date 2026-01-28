@@ -11,6 +11,7 @@ import { Box, ScrollArea } from '@/shared/ui-kit';
 import { operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
+import { ChainSyncStatus } from './ChainSyncStatus';
 import { EmptyOperations } from './EmptyOperations';
 import { Operation } from './Operation';
 import { AccountNotFoundModal } from './modals/AccountNotFoundModal';
@@ -84,8 +85,9 @@ export const Operations = () => {
         <ScrollArea>
           <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
             {(isTabDataLoading || isDeepLinkLoading) && (
-              <div className="mt-4 flex w-full justify-center">
+              <div className="mt-4 flex w-full items-center justify-center gap-x-3">
                 <Loader color="primary" size={25} />
+                <ChainSyncStatus />
               </div>
             )}
 
