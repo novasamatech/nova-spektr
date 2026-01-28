@@ -75,9 +75,9 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
     [wallets, multisigAccount.walletId],
   );
 
-  const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(multisigAccount);
-  const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-  const addressPrefix = 'chainId' in multisigAccount ? chains[multisigAccount.chainId]?.addressPrefix : undefined;
+  const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(multisigAccount);
+  const coreTx = isFlexibleMultisigAccount ? findCoreTransaction(operation.transaction) : operation.transaction;
+  const addressPrefix = isFlexibleMultisigAccount ? chains[multisigAccount.chainId]?.addressPrefix : undefined;
   const accountAddress = toAddress(multisigAccount.accountId, { prefix: addressPrefix });
   const asset = useTransactionAsset(coreTx, operation.chainId);
 
@@ -88,7 +88,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
   const externalTitle = useTransformer(operationTitleTransformer, {
     operation,
-    showCoreTransaction,
+    showCoreTransaction: isFlexibleMultisigAccount,
     chains,
     asset,
     t,
