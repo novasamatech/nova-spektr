@@ -188,6 +188,8 @@ export const importDb = async (blob: Blob) => {
 
 export const deleteDb = async () => {
   await dexie.delete();
+  // Also delete effector-storage cache database
+  await Dexie.delete('spektr-cache');
 };
 
 export const dexieStorage = {
@@ -200,5 +202,4 @@ export const dexieStorage = {
   metadata: dexie.metadata,
   balances2: dexie.balances2,
   basketTransactions: dexie.basketTransactions,
-  multisigOperations: dexie.multisigOperations,
 };

@@ -1,9 +1,9 @@
-import { type Done, persist } from '@effector-storage/idb-keyval';
 import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { interval, throttle } from 'patronum';
 import { type DateRange } from 'react-day-picker';
 
+import { type Done, persist } from '@/shared/api/storage';
 import { type FlexibleMultisigAccount, type MultisigAccount, TransactionType } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import {
@@ -149,14 +149,14 @@ const $initiators = combine(
 
 const $multisigAccountsMap = accounts.$list.map(accs => {
   const multisigAccounts = accs.filter(accountUtils.isAnyMultisigAccount);
-  const map = new Map<string, MultisigAccount | FlexibleMultisigAccount>();
+  const record: Record<string, MultisigAccount | FlexibleMultisigAccount> = {};
 
   for (const account of multisigAccounts) {
     const multisigAccountId = multisigService.getMultisigAccountId(account);
-    map.set(multisigAccountId, account);
+    record[multisigAccountId] = account;
   }
 
-  return map;
+  return record;
 });
 
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
