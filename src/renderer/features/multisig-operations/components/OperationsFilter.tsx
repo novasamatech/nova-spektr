@@ -42,10 +42,9 @@ export const OperationsFilter = memo(() => {
   }));
 
   const filtersOptions = useMemo(() => {
-    const multisigAccountsList = Array.from(multisigAccounts.values());
     const filteredAccountOptions = performSearch({
       query: accountSearchQuery,
-      records: multisigAccountsList
+      records: multisigAccounts
         .map(multisigAccount => {
           const wallet = resolvedWallets.find(w => w.id === multisigAccount.walletId);
           const addressPrefix =
@@ -66,7 +65,7 @@ export const OperationsFilter = memo(() => {
         name: walletName,
         address: walletSelectService.composeWalletMeta(
           wallet,
-          accountService.filterAccountsByWallet(multisigAccountsList, wallet.id),
+          accountService.filterAccountsByWallet(multisigAccounts, wallet.id),
           chains,
         ),
       }),
