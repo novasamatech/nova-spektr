@@ -5,6 +5,7 @@ import { Header } from '@/shared/ui';
 import { Box, Tabs } from '@/shared/ui-kit';
 import {
   type TabFilter,
+  ExportButton,
   Operations as OperationsList,
   OperationsFilter,
   Search,
@@ -48,8 +49,9 @@ export const Operations = () => {
             </Tabs.List>
           </Tabs>
 
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <OperationsFilter />
+            <ExportButton />
           </div>
         </div>
 
