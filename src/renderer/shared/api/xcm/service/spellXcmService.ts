@@ -3,11 +3,11 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN } from '@polkadot/util';
 
-import { type Asset, AssetType, type Chain, type ChainId } from '@/shared/core';
+import { type Asset, type Chain, type ChainId, AssetType } from '@/shared/core';
 import { CHAIN_ID_TO_SPELL_NAME_MAP, isEthereumAccountId, nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-import { XCM_DESTINATION_BLACKLIST, XCM_DESTINATION_WHITELIST, type XcmDestinationBlacklistEntry } from './constants';
+import { type XcmDestinationBlacklistEntry, XCM_DESTINATION_BLACKLIST, XCM_DESTINATION_WHITELIST } from './constants';
 import { normalizeXcmError } from './xcm-error-utils';
 
 type XcmTransferParams = {
@@ -323,7 +323,6 @@ async function detectHopChains(params: DetectHopChainsParams): Promise<DetectHop
   const { builder, fromChainName: builderFromName, toChainName: builderToName } = builderResult;
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rawDryRunResult = await builder.dryRun();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dryRunResult = rawDryRunResult as any as DryRunResult;
@@ -429,7 +428,6 @@ async function buildTransfer(params: XcmTransferParams): Promise<XcmTransferResu
   let dryRunResult: DryRunResult | undefined;
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rawDryRunResult = await builder.dryRun();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     dryRunResult = rawDryRunResult as any as DryRunResult;

@@ -4,13 +4,13 @@ import { sortBy } from 'lodash';
 import { spread } from 'patronum';
 
 import {
-  AccountType,
-  CryptoType,
   type FlexibleMultisigWallet,
   type MultisigWallet,
   type NoID,
   type ProxiedAccount,
   type ProxiedWallet,
+  AccountType,
+  CryptoType,
   ProxyVariant,
   SigningType,
   WalletType,

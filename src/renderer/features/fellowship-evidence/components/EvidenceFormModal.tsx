@@ -1,4 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
 import { useForm } from 'effector-forms';
 import { useGate, useUnit } from 'effector-react';
 import { type FormEventHandler, type PropsWithChildren, memo } from 'react';

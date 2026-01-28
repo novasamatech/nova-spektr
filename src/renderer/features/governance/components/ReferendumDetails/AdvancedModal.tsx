@@ -58,12 +58,10 @@ export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
 
           <div className="flex flex-col gap-2.5">
             <DetailRow label={t('governance.advanced.fields.approveCurve')}>
-              {/* eslint-disable-next-line i18next/no-literal-string */}
               {approvalCurve && t(`governance.curves.${approvalCurve}`)}
             </DetailRow>
 
             <DetailRow label={t('governance.advanced.fields.supportCurve')}>
-              {/* eslint-disable-next-line i18next/no-literal-string */}
               {supportCurve && t(`governance.curves.${supportCurve}`)}
             </DetailRow>
 

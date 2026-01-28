@@ -1,2 +1,2 @@
 export { createLink } from './utils';
-export { Paths, type PathType } from './paths';
+export { type PathType, Paths } from './paths';

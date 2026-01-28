@@ -1,7 +1,7 @@
 import { type Event, type Store, type Unit, createEvent, is, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable } from '@/shared/lib/utils/functions';
 
 type Params<T, R, F extends R> = {
   source: Store<T> | Event<T>;
@@ -50,8 +50,8 @@ export const waitFor = <const E, const R, const F extends R = R>({
   const resetEvents = Array.isArray(reset) ? reset : [reset];
 
   sample({
-    clock: resetEvents.concat(sourceEvent).filter(nonNullable),
-    resetEvent,
+    clock: resetEvents.concat(wait).filter(nonNullable),
+    target: resetEvent,
   });
 
   return wait;

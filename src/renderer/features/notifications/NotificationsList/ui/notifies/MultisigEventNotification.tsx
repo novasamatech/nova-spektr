@@ -8,7 +8,7 @@ import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod, nonNullable, toAddress } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
-import { BodyText, Button, Icon, type IconNames } from '@/shared/ui';
+import { type IconNames, BodyText, Button, Icon } from '@/shared/ui';
 import { AssetBalance, Identicon, WalletIcon } from '@/shared/ui-entities';
 import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';

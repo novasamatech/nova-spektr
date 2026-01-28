@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { BodyText, Icon, type IconNames } from '@/shared/ui';
+import { type IconNames, BodyText, Icon } from '@/shared/ui';
 
 export type Props = {
   order?: number;

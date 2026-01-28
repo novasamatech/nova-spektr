@@ -13,7 +13,7 @@ import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
 import { useBlockTimestamp, useIdentity } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
-import { type ValidationIssue, VestingFieldError, type VestingScheduleRaw } from '../lib/types';
+import { type ValidationIssue, type VestingScheduleRaw, VestingFieldError } from '../lib/types';
 
 import { CliffMinVestedTransferError } from './CliffMinVestedTransferError';
 import { MinVestedTransferError } from './MinVestedTransferError';

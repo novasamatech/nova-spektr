@@ -1,5 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
-
 import DocumentIcon from '@/shared/assets/images/misc/document.svg?jsx';
 import EthereumIcon from '@/shared/assets/images/misc/ethereum.svg?jsx';
 import LogoTitleIcon from '@/shared/assets/images/misc/logo-title.svg?jsx';

@@ -2,7 +2,7 @@ import { allSettled, fork } from 'effector';
 import { vi } from 'vitest';
 
 import { storageService } from '@/shared/api/storage';
-import { ConnectionStatus, type Transaction } from '@/shared/core';
+import { type Transaction, ConnectionStatus } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { createVaultBaseAccount } from '@/shared/mocks';
 import { networkModel } from '@/entities/network';

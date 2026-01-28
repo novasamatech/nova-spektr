@@ -21,10 +21,10 @@ export { unlockModel } from './model/unlock/unlock';
 
 export { Locks } from './components/Locks';
 export { AccountsMultiSelector } from './components/AccountsMultiSelector/AccountsMultiSelector';
-export { TotalDelegation, DelegateBadge, DelegateIcon, DelegateTitle, DelegateName } from './components/Delegations';
+export { DelegateBadge, DelegateIcon, DelegateName, DelegateTitle, TotalDelegation } from './components/Delegations';
 export { NetworkSelector } from './components/NetworkSelector';
 export { ReferendumDetailsModal } from './components/ReferendumDetails/ReferendumDetailsModal';
-export { Search, Filters } from './components/ReferendumFilter';
+export { Filters, Search } from './components/ReferendumFilter';
 export { OffChainDataSource } from './components/OffChainDataSource';
 export { CompletedReferendums, OngoingReferendums } from './components/ReferendumList';
 export { VotingHistoryDialog } from './components/VotingHistory/VotingHistoryDialog';

@@ -24,7 +24,7 @@ import { submitModel, submitUtils } from '@/features/operations/OperationSubmit'
 import { nominateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { validatorsModel } from '@/features/staking';
 import { nominateUtils } from '../lib/nominate-utils';
-import { type FeeData, type NominateData, Step, type WalletData } from '../lib/types';
+import { type FeeData, type NominateData, type WalletData, Step } from '../lib/types';
 
 import { formModel } from './form-model';
 
