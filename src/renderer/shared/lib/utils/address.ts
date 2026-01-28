@@ -1,7 +1,7 @@
 import { hexToU8a, isHex, isU8a, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base58Decode, checkAddressChecksum, decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
-import { type Address, type Chain, ChainOptions, type HexString } from '@/shared/core';
+import { type Address, type Chain, type HexString, ChainOptions } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import {

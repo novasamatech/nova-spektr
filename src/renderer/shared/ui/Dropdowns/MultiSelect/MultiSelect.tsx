@@ -77,20 +77,16 @@ export const MultiSelect = ({
       );
     }
 
-    if (selectedOptions.length === 1) {
-      return typeof selectedOptions[0].element === 'string' ? (
-        <FootnoteText as="span" className="truncate">
-          {selectedOptions[0].element}
-        </FootnoteText>
-      ) : (
-        selectedOptions[0].element
-      );
-    }
-
     return (
-      <span className="flex items-center gap-x-2">
-        <FootnoteText as="span">{multiPlaceholder || placeholder}</FootnoteText>
-        <CaptionText as="span" className="h-4 rounded-[30px] bg-icon-accent px-1.5 leading-4 text-white" align="center">
+      <span className="flex min-w-0 items-center gap-x-2 overflow-hidden">
+        <FootnoteText as="span" className="min-w-0 flex-shrink truncate">
+          {multiPlaceholder || placeholder}
+        </FootnoteText>
+        <CaptionText
+          as="span"
+          className="h-4 flex-shrink-0 rounded-[30px] bg-icon-accent px-1.5 leading-4 whitespace-nowrap text-white"
+          align="center"
+        >
           {allSelected ? t('general.input.all') : selectedOptions.length}
         </CaptionText>
       </span>
@@ -190,7 +186,7 @@ export const MultiSelect = ({
             sideOffset={4}
             className={cnTw(
               'pointer-events-auto z-50 max-h-60 overflow-auto rounded-sm border px-1 py-1 shadow-card-shadow',
-              'w-[var(--radix-popover-trigger-width)]',
+              'w-max min-w-[var(--radix-popover-trigger-width)]',
               OptionsContainerStyleTheme[theme],
             )}
             onOpenAutoFocus={(e) => e.preventDefault()}

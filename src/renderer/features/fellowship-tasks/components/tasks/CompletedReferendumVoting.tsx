@@ -4,7 +4,7 @@ import React, { memo, useMemo } from 'react';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { FootnoteText, Icon, type IconNames, SmallTitleText } from '@/shared/ui';
+import { type IconNames, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type CompletedReferendum } from '@/domains/collectives';
 import { useMetadata } from '../../hooks/useMetadata';

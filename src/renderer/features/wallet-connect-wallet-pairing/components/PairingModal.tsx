@@ -6,7 +6,7 @@ import { type PropsWithChildren, memo, useEffect } from 'react';
 import { type StatusModalProps, useStatusContext } from '@/app/providers';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Button, HeaderTitleText, Icon, type IconNames, SmallTitleText, StatusModal } from '@/shared/ui';
+import { type IconNames, Button, HeaderTitleText, Icon, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Carousel, Modal } from '@/shared/ui-kit';
 import { EXPIRE_TIMEOUT, Step } from '../lib/constants';

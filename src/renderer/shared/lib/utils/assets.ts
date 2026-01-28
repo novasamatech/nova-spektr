@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Asset, AssetType, type OrmlExtras, StakingType, type StatemineExtras } from '@/shared/core/types/asset';
+import { type Asset, type OrmlExtras, type StatemineExtras, AssetType, StakingType } from '@/shared/core/types/asset';
 import { assert } from '@/shared/lib/utils';
 
 export const getNativeAsset = (assets: Asset[]): Asset => {
@@ -13,6 +13,10 @@ export const getNativeAsset = (assets: Asset[]): Asset => {
   }
 
   return nativeAsset;
+};
+
+export const getNativeAssetId = (assets: Asset[]): string => {
+  return getNativeAsset(assets).assetId.toString();
 };
 
 /**

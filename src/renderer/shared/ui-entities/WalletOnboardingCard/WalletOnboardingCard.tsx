@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { BodyText, FootnoteText, Icon, type IconNames } from '@/shared/ui';
+import { type IconNames, BodyText, FootnoteText, Icon } from '@/shared/ui';
 import { Label } from '@/shared/ui-kit';
 
 type Props = {

@@ -1,16 +1,16 @@
 import { attach, createEffect, createEvent, sample } from 'effector';
 
 import {
-  AccountType,
   type Chain,
   type ChainId,
-  CryptoType,
   type NoID,
   type PartialProxiedAccount,
   type ProxiedAccount,
   type ProxiedWallet,
-  SigningType,
   type Wallet,
+  AccountType,
+  CryptoType,
+  SigningType,
   WalletType,
 } from '@/shared/core';
 import { series } from '@/shared/effector';

@@ -1,4 +1,3 @@
-/* eslint-disable no-bitwise */
 import { u8aToHex } from '@polkadot/util';
 
 import { NodeType } from '../lib/constants';
@@ -14,7 +13,7 @@ const lenCommonPrefix = (a: Uint8Array, b: Uint8Array): number => {
   }
 
   let index;
-  // eslint-disable-next-line no-plusplus
+
   for (index = 0; index < min; index++) {
     if (a[index] !== b[index]) {
       break;
@@ -46,7 +45,6 @@ const retrieveFromBranch = (branch: Node, key: Uint8Array) => {
   const childKey = key.subarray(commonPrefixLength + 1);
   const child = branch.children[childIndex];
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   return retrieve(child, childKey);
 };
 

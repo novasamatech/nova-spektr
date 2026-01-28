@@ -22,7 +22,7 @@ import { type ProxyTransaction } from './types';
 
 export { proxiedWalletService };
 
-export { walletActionsSlot, type ProxyTransaction, walletsModel };
+export { type ProxyTransaction, walletActionsSlot, walletsModel };
 
 export const proxiedWalletFeature = createFeature({
   name: 'wallet/proxied',

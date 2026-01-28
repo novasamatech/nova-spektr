@@ -9,14 +9,14 @@ import { merge } from '@/shared/lib/utils/arrays';
 import { totalAmountBN } from '@/shared/lib/utils/balance';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
+  type MultiTransferRowSerialized,
+  type ValidationIssue,
   MultiTransferCsvError,
   MultiTransferFieldError,
   MultiTransferFieldWarning,
-  type MultiTransferRowSerialized,
-  type ValidationIssue,
 } from '@/entities/multi-transfer';
 
-import { Step, type ValidationSchemaOptions } from './types';
+import { type ValidationSchemaOptions, Step } from './types';
 
 const MAX_U128 = new BN(2).pow(new BN(128));
 const CSV_HEADERS = ['recipient', 'amount'];

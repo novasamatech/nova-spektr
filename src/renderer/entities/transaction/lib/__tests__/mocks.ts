@@ -1,4 +1,4 @@
-import { type Asset, AssetType, type Chain, type ChainId } from '@/shared/core';
+import { type Asset, type Chain, type ChainId, AssetType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const TEST_ACCOUNT_ID = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' as AccountId;

@@ -1,0 +1,30 @@
+.rdp-root {
+  --rdp-accent-color: var(--color-primary); /* The accent color used for selected days and UI elements. */
+
+  --rdp-day_button-border-radius: 6px; /* The border radius of the day cells. */
+
+  --rdp-day_button-height: 38px; /* The height of the day cells. */
+  --rdp-day_button-width: 38px; /* The width of the day cells. */
+
+  --rdp-day-height: 38px; /* The height of the day cells. */
+  --rdp-day-width: 38px; /* The width of the day cells. */
+
+  --rdp-outside-opacity: 0.25; /* The opacity of the days outside the current month. */
+
+  --rdp-animation_duration: 0.1s;
+
+  padding: 0 16px 8px;
+
+  .rdp-selected {
+    font-weight: inherit;
+    font-size: inherit;
+  }
+
+  .rdp-chevron {
+    fill: var(--text-primary);
+  }
+
+  .rdp-caption_label {
+    color: var(--text-primary);
+  }
+}

@@ -2,8 +2,8 @@ import { default as Dexie } from 'dexie';
 import { exportDB, importInto } from 'dexie-export-import';
 
 import {
-  type TAccount,
   type TAccount2,
+  type TAccount,
   type TBalance,
   type TBasketTransaction,
   type TConnection,

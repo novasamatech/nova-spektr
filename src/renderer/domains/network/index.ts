@@ -1,7 +1,7 @@
 export { transactionService } from './transaction/service';
 export type {
-  AnyTransaction,
   AnyDecodedTransaction,
+  AnyTransaction,
   DecodedTransaction,
   EncodedTransaction,
   Extrinsic,
@@ -10,23 +10,23 @@ export type {
 export { accounts } from './account/store';
 export { accountService } from './account/service';
 export type {
+  AccountNode,
+  AccountValidationError,
   AnyAccount,
   AnyAccountDraft,
   ChainAccount,
   UniversalAccount,
-  AccountNode,
-  AccountValidationError,
 } from './account/types';
 
 export { accountSync } from './account-sync/store';
 export { accountSyncService } from './account-sync/service';
-export type { SyncedMultisigAccount, SyncedProxyAccount, SyncedAccount } from './account-sync/types';
+export type { SyncedAccount, SyncedMultisigAccount, SyncedProxyAccount } from './account-sync/types';
 
 export { useAccountName, useAccountsNames, useWalletName, useWalletsNames } from './account/hooks';
-export { $accountNameCache, createAccountNameCacheKey, accountsNameResource } from './account/resource';
+export { $accountNameCache, accountsNameResource, createAccountNameCacheKey } from './account/resource';
 
 export { balanceService } from './balance/service';
-export type { BalanceUpdateResult, BalancePreservation } from './balance/types';
+export type { BalancePreservation, BalanceUpdateResult } from './balance/types';
 
 export { identity } from './identity/store';
 export { identityService } from './identity/service';
@@ -37,6 +37,7 @@ export { block } from './block/store';
 export { useBlock, useBlockTime, useBlockTimestamp } from './block/hooks';
 
 export { multisigOperation } from './multisig-operation/store';
+export { initialOnChainFetch } from './multisig-operation/resource';
 export { multisigOperationService } from './multisig-operation/service';
 export type { MultisigOperationDeepLinkParams } from './multisig-operation/service';
 export type { MultisigEvent, MultisigOperation } from './multisig-operation/types';

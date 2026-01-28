@@ -7,6 +7,6 @@ export { createSlot, isSlotIdentifier, normalizeSlotHandler } from './createSlot
 export { createCombine, isCombineIdentifier } from './createCombine';
 export { skipAction } from './constants';
 export { combineIdentifiers, isIdentifier } from './helpers';
-export { usePipeline, useSlot, useAnyOf, useTransformer, Slot } from './reactIntegration';
+export { Slot, useAnyOf, usePipeline, useSlot, useTransformer } from './reactIntegration';
 
-export type { AnyIdentifier, InferHandlerBody, InferInput, InferOutput, HandlerInput, Handler } from './types';
+export type { AnyIdentifier, Handler, HandlerInput, InferHandlerBody, InferInput, InferOutput } from './types';

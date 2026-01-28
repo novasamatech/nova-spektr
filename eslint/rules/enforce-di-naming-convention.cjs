@@ -82,7 +82,7 @@ module.exports = {
           return;
         }
 
-        if (!isImportedFrom(callExpression, importSources, context.getScope())) {
+        if (!isImportedFrom(callExpression, importSources, context.sourceCode.getScope(node))) {
           return;
         }
 

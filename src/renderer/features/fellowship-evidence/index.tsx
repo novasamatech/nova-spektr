@@ -27,12 +27,12 @@ import { fellowshipEvidenceFeature } from './model/feature';
 import { profile } from './model/profile';
 
 export {
-  fellowshipEvidenceFeature,
+  EvidencePostFlowTrigger,
+  EvidenceVotingConfirmation,
   RetentionInfo,
   SubmitEvidenceConfirmation,
-  EvidenceVotingConfirmation,
   SubmitEvidencePopover,
-  EvidencePostFlowTrigger,
+  fellowshipEvidenceFeature,
 };
 
 fellowshipEvidenceFeature.inject(evidenceSlot, () => {

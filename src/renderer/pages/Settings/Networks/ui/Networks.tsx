@@ -12,6 +12,7 @@ import { InfoLink } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { type ExtendedChain, networkModel, networkUtils } from '@/entities/network';
 import {
+  type SelectorPayload,
   ActiveNetwork,
   AddCustomRpcModal,
   EditCustomRpcModal,
@@ -20,7 +21,6 @@ import {
   NetworkList,
   NetworkSelector,
   NetworksFilter,
-  type SelectorPayload,
   activeNetworksModel,
   addCustomRpcModel,
   editCustomRpcModel,

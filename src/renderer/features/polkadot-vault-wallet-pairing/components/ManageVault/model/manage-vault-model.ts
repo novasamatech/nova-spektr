@@ -7,10 +7,10 @@ import {
   type DraftAccount,
   type NoID,
   type PolkadotVaultGroup,
-  SigningType,
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
+  SigningType,
 } from '@/shared/core';
 import { AccountType, CryptoType, KeyType } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
