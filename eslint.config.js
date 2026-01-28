@@ -80,6 +80,7 @@ export default tseslint.config(
       '.vscode/**',
       '.idea/**',
       '.github/**',
+      '.pnpm-store/**',
       'coverage.txt',
       'junit.xml',
       'jest-unit-results.json',

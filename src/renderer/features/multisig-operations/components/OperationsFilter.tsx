@@ -21,8 +21,9 @@ export const OperationsFilter = memo(() => {
   const { t } = useI18n();
 
   const selectedOptions = useUnit(operationsContextModel.$filter);
+  const isFiltersSelected = useUnit(operationsContextModel.$isFiltersSelected);
   const chains = useUnit(networkModel.$chains);
-  const multisigAccounts = useUnit(operationsContextModel.$multisigAccounts);
+  const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
   const multisigWallets = useUnit(operationsContextModel.$multisigWallets);
 
   const resolvedWallets = useWalletsNames(multisigWallets);
@@ -30,6 +31,8 @@ export const OperationsFilter = memo(() => {
   const [accountSearchQuery, setAccountSearchQuery] = useState('');
   const [networkSearchQuery, setNetworkSearchQuery] = useState('');
   const [typeSearchQuery, setTypeSearchQuery] = useState('');
+
+  const multisigAccounts = useMemo(() => Object.values(multisigAccountsMap), [multisigAccountsMap]);
 
   const TransactionOptions = getTransactionOptions(t);
   const NetworkOptions = Object.values(chains).map(({ chainId, name }) => ({
@@ -126,16 +129,9 @@ export const OperationsFilter = memo(() => {
     operationsContextModel.resetFilters();
   };
 
-  const filtersSelected =
-    selectedOptions.account.length ||
-    selectedOptions.network.length ||
-    selectedOptions.type.length ||
-    selectedOptions.dateRange?.from ||
-    selectedOptions.dateRange?.to;
-
   return (
     <div className="flex h-9 items-center gap-2">
-      {Boolean(filtersSelected) && (
+      {isFiltersSelected && (
         <Button variant="text" className="h-8.5 py-0" onClick={clearFilters}>
           {t('operations.filters.clearFilters')}
         </Button>

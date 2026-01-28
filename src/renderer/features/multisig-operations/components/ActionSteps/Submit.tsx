@@ -4,25 +4,15 @@ import { type ComponentProps, useEffect, useState } from 'react';
 import { type HexString, type Transaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Button, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
-import {
-  type AnyAccount,
-  type MultisigEvent,
-  type MultisigOperation,
-  accountSync,
-  multisigOperation,
-  transactionService,
-} from '@/domains/network';
-import { multisigOperationService } from '@/domains/network';
+import { type MultisigOperation, accountSync, transactionService } from '@/domains/network';
 import { getExtrinsic, isProxyTypeTransaction } from '@/entities/transaction';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 
 type Props = {
   api: ApiPromise;
-  account?: AnyAccount;
   tx: Transaction;
   operation?: MultisigOperation;
   txPayload: Uint8Array;
@@ -31,7 +21,7 @@ type Props = {
   onClose: () => void;
 };
 
-export const Submit = ({ api, tx, operation, account, txPayload, signature, isReject, onClose }: Props) => {
+export const Submit = ({ api, tx, operation, txPayload, signature, isReject, onClose }: Props) => {
   const { t } = useI18n();
 
   const [inProgress, toggleInProgress] = useToggle(true);
@@ -49,35 +39,14 @@ export const Submit = ({ api, tx, operation, account, txPayload, signature, isRe
     if (result.executed) {
       const { params } = result;
 
-      if (operation && tx && account?.accountId) {
-        const updatedTx: MultisigOperation = { ...operation };
-
-        if (params.isFinalApprove) {
-          updatedTx.status = params.multisigError ? 'error' : 'executed';
-        }
-
-        if (
-          params.isFinalApprove &&
-          !params.multisigError &&
-          isProxyTypeTransaction(operation.transaction ?? undefined)
-        ) {
-          accountSync.syncAccounts();
-        }
-
-        const eventStatus = isReject ? 'reject' : 'approve';
-        const event: MultisigEvent = {
-          id: multisigOperationService.getEventId(updatedTx.id, account.accountId, eventStatus),
-          status: eventStatus,
-          accountId: account.accountId,
-          extrinsicHash: params.extrinsicHash,
-          blockCreated: pjsSchema.helpers.toBlockHeight(params.timepoint.height),
-          indexCreated: params.timepoint.index,
-          timestamp: Date.now(),
-        };
-
-        updatedTx.events.push(event);
-
-        await multisigOperation.updateOperations([updatedTx]);
+      // Sync accounts if proxy was added/removed
+      if (
+        operation &&
+        params.isFinalApprove &&
+        !params.multisigError &&
+        isProxyTypeTransaction(operation.transaction ?? undefined)
+      ) {
+        accountSync.syncAccounts();
       }
 
       toggleSuccessMessage();

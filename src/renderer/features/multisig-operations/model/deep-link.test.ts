@@ -119,8 +119,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$list, [])
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set())
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -140,8 +140,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$cachedOperations, [])
-          .set(multisigOperation.__test.$expectedChainIds, new Set())
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true)
           .set(multisigOperation.__test.$populated, true),
       });
@@ -162,8 +162,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, false)
           .set(multisigOperation.__test.$populated, false)
-          .set(multisigOperation.__test.$expectedChainIds, new Set([polkadotChainId]))
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [polkadotChainId])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, false),
       });
 
@@ -190,8 +190,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$list, [])
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set())
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -221,8 +221,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set())
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -245,8 +245,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set())
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -270,8 +270,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set())
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -299,8 +299,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$cachedOperations, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set([polkadotChainId]))
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [polkadotChainId])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, false),
       });
 
@@ -324,8 +324,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$cachedOperations, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set([polkadotChainId]))
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [polkadotChainId])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -340,7 +340,7 @@ describe('multisig operations deep link', () => {
       // Need to mark the chain as fetched so loading completes
       await allSettled(multisigOperation.__test.$fetchedChainIds, {
         scope,
-        params: new Set([polkadotChainId]),
+        params: [polkadotChainId],
       });
 
       expect(scope.getState(deepLinkModel.$isOperationNotFoundModalOpen)).toBe(true);
@@ -358,8 +358,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$cachedOperations, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set([polkadotChainId]))
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [polkadotChainId])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -376,7 +376,7 @@ describe('multisig operations deep link', () => {
       // Simulate loading completing - mark chain as fetched
       await allSettled(multisigOperation.__test.$fetchedChainIds, {
         scope,
-        params: new Set([polkadotChainId]),
+        params: [polkadotChainId],
       });
 
       expect(scope.getState(deepLinkModel.$focusedOperationId)).toBe(mockOperation.id);
@@ -393,8 +393,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$cachedOperations, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set())
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -418,8 +418,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$cachedOperations, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set())
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -448,8 +448,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set())
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -482,8 +482,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$cachedOperations, [])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set())
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -544,8 +544,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set())
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true),
       });
 
@@ -581,8 +581,8 @@ describe('multisig operations deep link', () => {
           .set(accounts.__test.$populated, true)
           .set(multisigOperation.__test.$cachedOperations, [mockOperation])
           .set(multisigOperation.__test.$populated, true)
-          .set(multisigOperation.__test.$expectedChainIds, new Set())
-          .set(multisigOperation.__test.$fetchedChainIds, new Set())
+          .set(multisigOperation.__test.$expectedChainIds, [])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
           .set(multisigOperation.__test.$offChainReady, true),
       });
 

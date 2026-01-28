@@ -1,10 +1,10 @@
-import { type Done, persist } from '@effector-storage/idb-keyval';
 import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { interval, throttle } from 'patronum';
 import { type DateRange } from 'react-day-picker';
 
-import { TransactionType } from '@/shared/core';
+import { type Done, persist } from '@/shared/api/storage';
+import { type FlexibleMultisigAccount, type MultisigAccount, TransactionType } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import {
   type AnyAccount,
@@ -115,6 +115,16 @@ const $filter = restore(setFilters, {
   dateRange: undefined,
 }).reset(resetFilters);
 
+const $isFiltersSelected = $filter.map(filter =>
+  Boolean(
+    filter.account.length ||
+      filter.network.length ||
+      filter.type.length ||
+      filter.dateRange?.from ||
+      filter.dateRange?.to,
+  ),
+);
+
 const $tab = restore(setTab, 'pending');
 
 const $initiators = combine(
@@ -137,14 +147,17 @@ const $initiators = combine(
   },
 );
 
-const $multisigAccounts = accounts.$list.map(
-  accs =>
-    new Map(
-      accs
-        .filter(accountUtils.isAnyMultisigAccount)
-        .map(account => [multisigService.getMultisigAccountId(account), account]),
-    ),
-);
+const $multisigAccountsMap = accounts.$list.map(accs => {
+  const multisigAccounts = accs.filter(accountUtils.isAnyMultisigAccount);
+  const record: Record<string, MultisigAccount | FlexibleMultisigAccount> = {};
+
+  for (const account of multisigAccounts) {
+    const multisigAccountId = multisigService.getMultisigAccountId(account);
+    record[multisigAccountId] = account;
+  }
+
+  return record;
+});
 
 const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isMultisig));
 
@@ -224,8 +237,9 @@ sample({
 
 export const operationsContextModel = {
   $filter,
+  $isFiltersSelected,
   $filteredOperations,
-  $multisigAccounts,
+  $multisigAccountsMap,
   $multisigWallets,
   $initiator,
   $tab,
