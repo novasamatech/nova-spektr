@@ -1,6 +1,7 @@
 # Integration Testing Framework
 
-Test framework for Nova Spektr feature integration tests with real storage (fake IndexedDB) and Effector state management.
+Test framework for Nova Spektr feature integration tests with real storage (fake IndexedDB) and Effector state
+management.
 
 ## 🚀 Quick Start
 
@@ -63,7 +64,7 @@ tests/integrations/
 │   ├── chain/                    # Chain utilities
 │   └── common/                   # Constants
 │
-├── tests/                         # Test files
+├── Cases/                         # Test-cases files
 │   ├── transfer-form-logic.integration.test.ts
 │   ├── transfer-max-ed.integration.test.ts
 │   └── xcm-destinations.integration.test.ts
@@ -96,7 +97,7 @@ High-level API for test execution:
 await env.executeEvent(feature.events.action, params);
 const state = env.getState(feature.$store);
 await env.verifyInStorage('tableName', condition);
-await env.cleanup();  // Always cleanup!
+await env.cleanup(); // Always cleanup!
 ```
 
 ### Scenario Helpers
@@ -106,10 +107,11 @@ Pre-configured test scenarios:
 ```typescript
 import { createTransferScenario } from '@tests/integrations/utils';
 
-env = await createTransferScenario();  // Full setup in one line!
+env = await createTransferScenario(); // Full setup in one line!
 ```
 
 Available scenarios:
+
 - `createTransferScenario()` - Full transfer setup
 - `createLowBalanceScenario()` - Test insufficient funds
 - `createDisconnectedScenario()` - Test offline behavior
@@ -119,6 +121,7 @@ Available scenarios:
 ## 🎯 What to Test
 
 ### ✅ Use Integration Tests For:
+
 - Feature logic with state management (Effector stores/events)
 - Data persistence and retrieval (IndexedDB)
 - Multi-step workflows
@@ -126,6 +129,7 @@ Available scenarios:
 - Transaction building
 
 ### ❌ Don't Use Integration Tests For:
+
 - UI rendering → Use component tests
 - Pure functions → Use unit tests
 - Full user workflows → Use E2E tests (Playwright)
@@ -151,16 +155,15 @@ pnpm test:coverage
 ### 1. Choose Your Approach
 
 **Option A: Use Scenario Helper**
+
 ```typescript
 env = await createTransferScenario();
 ```
 
 **Option B: Use Builder**
+
 ```typescript
-env = await new FeatureTestBuilder()
-  .withWallet(vaultWallet)
-  .withAccount(senderAccount)
-  .build();
+env = await new FeatureTestBuilder().withWallet(vaultWallet).withAccount(senderAccount).build();
 ```
 
 ### 2. Write Test Logic
@@ -188,6 +191,7 @@ afterEach(async () => {
 ## 🎨 Best Practices
 
 ### ✅ DO:
+
 - Always call `env.cleanup()` in `afterEach`
 - Use fixtures from `@tests/integrations/fixtures`
 - Test both success and error scenarios
@@ -196,6 +200,7 @@ afterEach(async () => {
 - Use scenario helpers to reduce boilerplate
 
 ### ❌ DON'T:
+
 - Forget to cleanup
 - Reuse mutable objects between tests
 - Test UI rendering (use component tests)
@@ -207,6 +212,7 @@ afterEach(async () => {
 **ESLint Config**: [`/.eslintrc.cjs`](../../.eslintrc.cjs)
 
 Key rules:
+
 - Imports sorted alphabetically with newlines between groups
 - Stores start with `$`: `const $counter = createStore(0)`
 - Effects end with `Fx`: `const fetchDataFx = createEffect()`
@@ -214,6 +220,7 @@ Key rules:
 - Inline type imports: `import { type Foo }`
 
 **Auto-fix:**
+
 ```bash
 pnpm lint:fix
 pnpm fmt:fix
@@ -239,17 +246,13 @@ See working examples in [`tests/`](./tests/):
 
 ## 🐛 Troubleshooting
 
-**"Database is closed" error**
-→ Accessing storage after cleanup. Move operations before `env.cleanup()`
+**"Database is closed" error** → Accessing storage after cleanup. Move operations before `env.cleanup()`
 
-**State not updating**
-→ Missing `await` on `executeEvent()`. Always await async operations
+**State not updating** → Missing `await` on `executeEvent()`. Always await async operations
 
-**Import order errors**
-→ Run `pnpm lint:fix` to auto-sort imports
+**Import order errors** → Run `pnpm lint:fix` to auto-sort imports
 
-**Linting errors**
-→ Check [`.eslintrc.cjs`](../../.eslintrc.cjs) or run `pnpm lint:fix`
+**Linting errors** → Check [`.eslintrc.cjs`](../../.eslintrc.cjs) or run `pnpm lint:fix`
 
 ## 🤝 Contributing
 
@@ -270,4 +273,5 @@ When adding features:
 
 ---
 
-**Need help?** Check [`.ai/CONTEXT.md`](./.ai/CONTEXT.md) for complete reference or review example tests in [`tests/`](./tests/)
+**Need help?** Check [`.ai/CONTEXT.md`](./.ai/CONTEXT.md) for complete reference or review example tests in
+[`tests/`](./tests/)

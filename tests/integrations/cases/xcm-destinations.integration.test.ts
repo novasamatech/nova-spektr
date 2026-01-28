@@ -3,8 +3,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { chainsService } from '@/shared/api/network';
 import { type Chain } from '@/shared/core';
 import {
-  FeatureTestBuilder,
   type FeatureTestEnvironment,
+  FeatureTestBuilder,
   collectXcmDestinationsWithStats,
   saveXcmDestinationsToFile,
   setupFetchPolyfill,

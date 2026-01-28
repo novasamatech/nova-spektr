@@ -14,7 +14,7 @@ import {
   vaultWallet,
   watchOnlyWallet,
 } from '../fixtures';
-import { FeatureTestBuilder, type FeatureTestEnvironment } from '../utils';
+import { type FeatureTestEnvironment, FeatureTestBuilder } from '../utils';
 
 /**
  * Real integration tests for Transfer Form Logic
