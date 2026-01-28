@@ -31,7 +31,6 @@ class UniversalProvider {
     console.log(`MSG OUT: ${message}`);
   }
 
-  // eslint-disable-next-line unused-imports/no-unused-vars
   disconnect() {
     console.log('Disconnect to UniversalProvider ', this.#chainId);
   }

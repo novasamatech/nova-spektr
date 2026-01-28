@@ -13,8 +13,8 @@ import {
   type ProxyType,
   type Signatory,
   type Transaction,
-  TransactionType,
   type Wallet,
+  TransactionType,
 } from '@/shared/core';
 import { toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';

@@ -1,8 +1,8 @@
 import { type ReactElement, useCallback, useRef, useState } from 'react';
 
 import {
-  PromotionEvidenceExistsWarningAlert,
   type PromotionEvidenceExistsWarningAlertRef,
+  PromotionEvidenceExistsWarningAlert,
 } from './PromotionEvidenceExistsWarningAlert';
 import { SubmitPeriodWarningAlert } from './SubmitPeriodWarningAlert';
 

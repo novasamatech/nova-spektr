@@ -7,16 +7,16 @@ import { CryptoTypeString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, getPlatformType, validateSignerFormat } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
-import { QrReader, type QrReaderCamera, QrReaderErrorCode, Select } from '@/shared/ui-kit';
+import { type QrReaderCamera, QrReader, QrReaderErrorCode, Select } from '@/shared/ui-kit';
 import {
+  type VaultFeature,
   DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE,
   EXPORT_ADDRESS,
   ErrorFields,
   FRAME_KEY,
-  type VaultFeature,
 } from '../common/constants';
 import { QR_READER_DECODE_ERRORS } from '../common/errors';
-import { type DdSeedInfo, DecodeQrError, type ErrorObject, type SeedInfo } from '../common/types';
+import { type DdSeedInfo, type ErrorObject, type SeedInfo, DecodeQrError } from '../common/types';
 
 import { RaptorFrame } from './RaptorFrame';
 

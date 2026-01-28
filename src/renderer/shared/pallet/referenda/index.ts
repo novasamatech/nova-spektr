@@ -13,7 +13,11 @@ export const referendaPallet = {
 };
 
 export {
+  type CollectiveRawOrigin,
+  type FrameSupportDispatchRawOrigin,
+  type FrameSupportPreimagesBounded,
   type FrameSupportScheduleDispatchTime,
+  type KitchensinkRuntimeOriginCaller,
   type ReferendaCurve,
   type ReferendaDecidingStatus,
   type ReferendaDeposit,
@@ -26,8 +30,4 @@ export {
   type ReferendaTrackInfo,
   type ReferendumId,
   type TrackId,
-  type FrameSupportPreimagesBounded,
-  type FrameSupportDispatchRawOrigin,
-  type KitchensinkRuntimeOriginCaller,
-  type CollectiveRawOrigin,
 } from './schema';

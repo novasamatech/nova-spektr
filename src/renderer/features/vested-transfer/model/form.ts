@@ -23,9 +23,9 @@ import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import {
   type ValidationIssue,
-  VestingCsvError,
   type VestingSchedule,
   type VestingScheduleRaw,
+  VestingCsvError,
   vestingService,
 } from '@/entities/vesting';
 import { accountUtils, walletModel } from '@/entities/wallet';
@@ -34,7 +34,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { Step, type ValidationSchemaOptions } from '../types';
+import { type ValidationSchemaOptions, Step } from '../types';
 import { vestedTransferUtils } from '../utils';
 
 import { type VestedTransferConfirm, confirmModel } from './confirm';

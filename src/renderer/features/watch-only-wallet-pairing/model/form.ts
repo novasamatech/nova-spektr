@@ -5,12 +5,12 @@ import { t } from 'i18next';
 
 import { chainsService } from '@/shared/api/network';
 import {
+  type WatchOnlyAccount,
+  type WatchOnlyWallet,
   AccountType,
   CryptoType,
   SigningType,
   WalletType,
-  type WatchOnlyAccount,
-  type WatchOnlyWallet,
 } from '@/shared/core';
 import { isEthereumAccountId, nonNullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';

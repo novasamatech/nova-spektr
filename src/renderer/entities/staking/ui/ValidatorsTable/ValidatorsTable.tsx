@@ -5,7 +5,6 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { AccountExplorers, Address, AssetBalance, Hash, Identicon } from '@/shared/ui-entities';
-// eslint-disable-next-line boundaries/element-types
 import { type AccountIdentity } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
 

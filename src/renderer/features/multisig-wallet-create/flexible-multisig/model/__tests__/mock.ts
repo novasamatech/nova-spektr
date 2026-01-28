@@ -1,14 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import {
-  AccountType,
   type Chain,
+  type MultisigAccount,
+  type Wallet,
+  AccountType,
   ChainOptions,
   ChainType,
   CryptoType,
-  type MultisigAccount,
   SigningType,
-  type Wallet,
   WalletType,
 } from '@/shared/core';
 import { createAccountId, polkadotChainId } from '@/shared/mocks';

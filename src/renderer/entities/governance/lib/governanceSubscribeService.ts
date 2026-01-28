@@ -8,8 +8,8 @@ import {
   type ReferendumId,
   type TrackId,
   type TrackLocks,
-  TransactionType,
   type VotingMap,
+  TransactionType,
 } from '@/shared/core';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { referendaPallet } from '@/shared/pallet/referenda';

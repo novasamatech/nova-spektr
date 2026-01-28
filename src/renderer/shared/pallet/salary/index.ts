@@ -8,4 +8,4 @@ export const salaryPallet = {
   storage,
 };
 
-export type { SalaryClaimantStatus, SalaryClaimState, SalaryStatusType } from './schema';
+export type { SalaryClaimState, SalaryClaimantStatus, SalaryStatusType } from './schema';

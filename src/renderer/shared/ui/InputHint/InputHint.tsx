@@ -2,7 +2,7 @@ import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '../Typography';
 import { type TypographyProps } from '../Typography/common/types';
 
-import { HintStyles, type HintVariant } from './contants';
+import { type HintVariant, HintStyles } from './contants';
 
 type Props = TypographyProps & {
   active: boolean;

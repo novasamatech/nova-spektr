@@ -7,12 +7,12 @@ import { createKeyMulti } from '@polkadot/util-crypto';
 import {
   type CallHash,
   type Chain,
-  ChainOptions,
-  CryptoType,
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type NoID,
   type Serializable,
+  ChainOptions,
+  CryptoType,
 } from '@/shared/core';
 import { isEqual, merge, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';

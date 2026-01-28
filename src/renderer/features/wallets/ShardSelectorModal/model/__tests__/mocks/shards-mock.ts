@@ -1,11 +1,11 @@
 import {
+  type PolkadotVaultWallet,
+  type VaultChainAccount,
+  type VaultShardAccount,
   AccountType,
   CryptoType,
   KeyType,
-  type PolkadotVaultWallet,
   SigningType,
-  type VaultChainAccount,
-  type VaultShardAccount,
   WalletType,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';

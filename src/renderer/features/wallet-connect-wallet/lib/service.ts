@@ -2,16 +2,16 @@ import { type SessionTypes } from '@walletconnect/types';
 
 import { chainsService } from '@/shared/api/network';
 import {
-  AccountType,
   type Chain,
   type ChainId,
-  CryptoType,
   type NovaWalletWallet,
-  SigningType,
   type Wallet,
   type WalletConnectWallet,
-  WalletType,
   type WcAccount,
+  AccountType,
+  CryptoType,
+  SigningType,
+  WalletType,
 } from '@/shared/core';
 import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';

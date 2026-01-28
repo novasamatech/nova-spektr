@@ -17,4 +17,4 @@ export type { SearchWithDropdownProps } from './SearchWithDropdown';
 export type { MiniSearchDocument, MiniSearchResult, SearchResult, Section } from './hooks/useCodexSearch';
 export type { TableOfContentsItem } from './hooks/useTableOfContents';
 
-export { highlightText, highlightChildren } from '../../utils/highlightUtils';
+export { highlightChildren, highlightText } from '../../utils/highlightUtils';

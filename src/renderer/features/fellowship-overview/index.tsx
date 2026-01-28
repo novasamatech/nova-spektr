@@ -4,7 +4,7 @@ import { FellowshipOverview } from './components/FellowshipOverview';
 import { FellowshipOverviewModal } from './components/FellowshipOverviewModal';
 import { fellowshipOverviewFeature } from './model/feature';
 
-export { fellowshipOverviewFeature, FellowshipOverview, FellowshipOverviewModal };
+export { FellowshipOverview, FellowshipOverviewModal, fellowshipOverviewFeature };
 
 fellowshipOverviewFeature.inject(fellowshipSidebarSlot, {
   order: 1,
