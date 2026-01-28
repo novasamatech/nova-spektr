@@ -32,8 +32,8 @@ type NewEvent = {
   event: MultisigEvent;
 };
 
-const $accountsMap = accounts.$list.map(
-  accountsList => new Map(accountsList.map(account => [account.accountId, account])),
+const $accountsMap = accounts.$list.map(accountsList =>
+  Object.fromEntries(accountsList.map(account => [account.accountId, account])),
 );
 
 const getNotificationStatus = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
@@ -249,16 +249,16 @@ sample({
     const operationNotifications = added
       .filter(operation => {
         // Don't notify the operation creator
-        if (operation.status === 'pending' && accountsMap.has(operation.depositor)) {
+        if (operation.status === 'pending' && operation.depositor in accountsMap) {
           return false;
         }
 
-        const account = accountsMap.get(operation.accountId);
+        const account = accountsMap[operation.accountId];
         // Show only new operations
         return !account?.createdAt || operation.timestamp >= account.createdAt;
       })
       .map(operation => {
-        const account = accountsMap.get(operation.accountId);
+        const account = accountsMap[operation.accountId];
 
         return createOperationNotification(operation, chains, account);
       });
@@ -266,14 +266,14 @@ sample({
     const eventNotifications = newEvents
       .filter(({ event }) => {
         // Don't notify if the current user caused the event
-        if (accountsMap.has(event.accountId)) {
+        if (event.accountId in accountsMap) {
           return false;
         }
 
         return true;
       })
       .map(({ operation, event }) => {
-        const signerAccount = accountsMap.get(event.accountId);
+        const signerAccount = accountsMap[event.accountId];
 
         return createEventNotification(operation, event, signerAccount?.name);
       });

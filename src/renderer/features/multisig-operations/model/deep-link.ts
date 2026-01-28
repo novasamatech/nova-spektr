@@ -15,7 +15,6 @@ import { deepLinkService } from '@/domains/app';
 import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { multisigService } from '@/features/multisig-wallet';
 
 import { CONNECTION_TIMEOUT } from './constants';
@@ -139,16 +138,12 @@ const operationExistsCheck = sample({
     const account = accounts.find(acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId);
     return nonNullable(account);
   },
-  fn: ({ operations, accounts }, data) => {
+  fn: ({ operations }, data) => {
     const operationId = getOperationIdFromDeepLink(data);
     const operation = operations.find(op => op.id === operationId);
-    const account = accounts.find(acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId);
     return {
-      data,
       operationId,
       exists: nonNullable(operation),
-      isExecuted: operation?.status === 'executed',
-      walletId: account!.walletId,
     };
   },
 });
@@ -158,13 +153,6 @@ sample({
   filter: ({ exists }) => exists,
   fn: ({ operationId }) => operationId,
   target: setFocusedOperationId,
-});
-
-sample({
-  clock: operationExistsCheck,
-  filter: ({ exists, walletId }) => exists && nonNullable(walletId),
-  fn: ({ walletId }) => walletId!,
-  target: walletSelect.select,
 });
 
 const $isDeepLinkLoading = createStore(false)
@@ -284,16 +272,9 @@ const accountChecked = sample({
     const multisigAccountId = account ? multisigService.getMultisigAccountId(account) : null;
     return {
       data,
-      account: account!,
       multisigAccountId,
     };
   },
-});
-
-sample({
-  clock: accountChecked,
-  fn: ({ account }) => account.walletId,
-  target: walletSelect.select,
 });
 
 sample({
@@ -350,7 +331,6 @@ sample({
   source: {
     pendingOperationId: $pendingOperationId,
     operations: multisigOperation.$list,
-    walletId: walletSelect.$selectedWalletId,
   },
   filter: ({ pendingOperationId, operations }, isComplete) => {
     if (!isComplete || nullable(pendingOperationId)) return false;
