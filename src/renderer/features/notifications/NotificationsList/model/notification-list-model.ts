@@ -42,7 +42,7 @@ const $filteredNotifications = combine(
         const chain = chains[notification.chainId];
         const chainName = chain?.name ?? '';
 
-        const wallet = wallets.find((w) => w.accounts?.some((a) => a.accountId === notification.issuer));
+        const wallet = wallets.find((w) => w.accounts.some((a) => a.accountId === notification.issuer));
         const walletName = wallet?.name ?? '';
 
         const issuerAddress = toAddress(notification.issuer, { prefix: chain?.addressPrefix });
