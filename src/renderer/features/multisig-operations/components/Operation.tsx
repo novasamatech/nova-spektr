@@ -111,9 +111,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   }
 
   return (
-    <div
-      className={`rounded bg-block-background-default transition-shadow hover:shadow-card-shadow ${isDefaultOpen ? 'checked:shadow-card-shadow' : ''}`}
-    >
+    <div className="focus-active:shadow-card-shadow rounded bg-block-background-default transition-shadow hover:shadow-card-shadow">
       <Accordion initialOpen={isDefaultOpen}>
         <Accordion.Trigger>
           <div className="flex h-[52px] w-full items-center gap-x-2 overflow-hidden">
