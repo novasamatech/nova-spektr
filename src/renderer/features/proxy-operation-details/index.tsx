@@ -108,7 +108,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isManageProxyTransaction(transaction) && proxyType) {
       result.push(
         <DetailRow label={t('operation.details.accessType')} className="text-text-secondary">
-          <FootnoteText className="text-text-secondary">{t(proxyUtils.getProxyTypeName(proxyType))}</FootnoteText>
+          <FootnoteText className="text-text-secondary">{t(proxyUtils.getProxyTypeOperation(proxyType))}</FootnoteText>
         </DetailRow>,
       );
     }

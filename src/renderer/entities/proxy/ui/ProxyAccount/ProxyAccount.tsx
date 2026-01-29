@@ -48,7 +48,7 @@ export const ProxyAccount = ({
         {name && <HelpText className="truncate text-text-tertiary">{addressContent}</HelpText>}
         <div className="mt-0.5 flex items-center gap-x-1">
           <span className="h-1 w-1 rounded-full bg-tab-text-accent" />
-          <HelpText className="text-tab-text-accent">{t(proxyUtils.getProxyTypeName(proxyType))}</HelpText>
+          <HelpText className="text-tab-text-accent">{t(proxyUtils.getProxyTypeOperation(proxyType))}</HelpText>
         </div>
       </div>
       <div className="ml-auto">{suffix}</div>
