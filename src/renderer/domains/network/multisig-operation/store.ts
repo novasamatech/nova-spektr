@@ -392,12 +392,12 @@ sample({
 });
 
 // Cleanup operations when accounts are deleted
-const deletedAccountIds = accounts.deleteAccounts.doneData.map(deleted => new Set(deleted.map(a => a.accountId)));
+const deleteAccountIds = accounts.deleteAccounts.doneData.map(deleted => new Set(deleted.map(a => a.accountId)));
 
-$cachedOperations.on(deletedAccountIds, (ops, ids) => ops.filter(op => !ids.has(op.accountId)));
-$offChainOperations.on(deletedAccountIds, (ops, ids) => ops.filter(op => !ids.has(op.accountId)));
+$cachedOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.has(op.accountId)));
+$offChainOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.has(op.accountId)));
 
-$onChainOperationsByCallhash.on(deletedAccountIds, (state, ids) =>
+$onChainOperationsByCallhash.on(deleteAccountIds, (state, ids) =>
   produce(state, draft => {
     for (const chainData of Object.values(draft)) {
       if (!chainData) continue;
@@ -408,7 +408,7 @@ $onChainOperationsByCallhash.on(deletedAccountIds, (state, ids) =>
   }),
 );
 
-$trackedCallHashes.on(deletedAccountIds, (state, ids) =>
+$trackedCallHashes.on(deleteAccountIds, (state, ids) =>
   produce(state, draft => {
     for (const chainData of Object.values(draft)) {
       if (!chainData) continue;
