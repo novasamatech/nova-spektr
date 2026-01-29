@@ -1,5 +1,6 @@
 import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { produce } from 'immer';
 import { interval, throttle } from 'patronum';
 import { type DateRange } from 'react-day-picker';
 
@@ -126,17 +127,25 @@ const getFilterableTxType = (op: MultisigOperation): TransactionType | 'UNKNOWN_
   return op.transaction.type;
 };
 
-const setFilters = createEvent<SelectedFilters>();
-const resetFilters = createEvent();
-const setTab = createEvent<TabFilter>();
-
-const $filter = restore(setFilters, {
+const initialFilter: SelectedFilters = {
   account: [],
   network: [],
   type: [],
   proxyType: [],
   dateRange: undefined,
-}).reset(resetFilters);
+};
+
+const setFilter = createEvent<Partial<SelectedFilters>>();
+const resetFilters = createEvent();
+const setTab = createEvent<TabFilter>();
+
+const $filter = createStore(initialFilter)
+  .on(setFilter, (state, partial) =>
+    produce(state, draft => {
+      Object.assign(draft, partial);
+    }),
+  )
+  .reset(resetFilters);
 
 const $isFiltersSelected = $filter.map(filter =>
   Boolean(
@@ -290,7 +299,7 @@ export const operationsContextModel = {
   $pendingOperationsCount,
   $chainSyncState,
 
-  setFilters,
+  setFilter,
   resetFilters,
   setTab,
   hideOperation,

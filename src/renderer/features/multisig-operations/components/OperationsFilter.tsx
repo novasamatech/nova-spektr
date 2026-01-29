@@ -6,9 +6,8 @@ import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
 import { Button, MultiSelect } from '@/shared/ui';
-import { type DropdownResult } from '@/shared/ui/types';
 import { Hash, WalletAccountIcon } from '@/shared/ui-entities';
-import { type DateRange, DateRangePicker } from '@/shared/ui-kit';
+import { DateRangePicker } from '@/shared/ui-kit';
 import { accountService, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { ProxyTypeName } from '@/entities/proxy';
@@ -16,8 +15,6 @@ import { accountUtils } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
 import { multisigService } from '@/features/multisig-wallet';
 import { operationsContextModel } from '../model/context';
-
-type FilterName = 'account' | 'network' | 'type' | 'proxyType';
 
 export const OperationsFilter = memo(() => {
   const { t } = useI18n();
@@ -132,16 +129,6 @@ export const OperationsFilter = memo(() => {
     proxyTypeSearchQuery,
   ]);
 
-  const handleFilterChange = (values: DropdownResult[], filterName: FilterName) => {
-    const newSelectedOptions = { ...selectedOptions, [filterName]: values.map(v => v.id) };
-    operationsContextModel.setFilters(newSelectedOptions);
-  };
-
-  const handleDateRangeChange = (range: DateRange | undefined) => {
-    const newSelectedOptions = { ...selectedOptions, dateRange: range };
-    operationsContextModel.setFilters(newSelectedOptions);
-  };
-
   const clearFilters = () => {
     operationsContextModel.resetFilters();
   };
@@ -157,7 +144,7 @@ export const OperationsFilter = memo(() => {
         <DateRangePicker
           value={selectedOptions.dateRange}
           placeholder={t('operations.filters.dateRangePlaceholder')}
-          onChange={handleDateRangeChange}
+          onChange={range => operationsContextModel.setFilter({ dateRange: range })}
         />
       </div>
       <MultiSelect
@@ -166,7 +153,7 @@ export const OperationsFilter = memo(() => {
         placeholder={t('operations.filters.accountPlaceholder')}
         selectedIds={selectedOptions.account}
         options={[...filtersOptions.account]}
-        onChange={value => handleFilterChange(value, 'account')}
+        onChange={value => operationsContextModel.setFilter({ account: value.map(v => v.id) })}
         onSearch={setAccountSearchQuery}
       />
       <MultiSelect
@@ -175,7 +162,7 @@ export const OperationsFilter = memo(() => {
         placeholder={t('operations.filters.proxyTypePlaceholder')}
         selectedIds={selectedOptions.proxyType}
         options={[...filtersOptions.proxyType]}
-        onChange={value => handleFilterChange(value, 'proxyType')}
+        onChange={value => operationsContextModel.setFilter({ proxyType: value.map(v => v.id) })}
         onSearch={setProxyTypeSearchQuery}
       />
       <MultiSelect
@@ -184,7 +171,7 @@ export const OperationsFilter = memo(() => {
         placeholder={t('operations.filters.networkPlaceholder')}
         selectedIds={selectedOptions.network}
         options={[...filtersOptions.network]}
-        onChange={value => handleFilterChange(value, 'network')}
+        onChange={value => operationsContextModel.setFilter({ network: value.map(v => v.id) })}
         onSearch={setNetworkSearchQuery}
       />
       <MultiSelect
@@ -193,7 +180,7 @@ export const OperationsFilter = memo(() => {
         placeholder={t('operations.filters.operationTypePlaceholder')}
         selectedIds={selectedOptions.type}
         options={[...filtersOptions.type]}
-        onChange={value => handleFilterChange(value, 'type')}
+        onChange={value => operationsContextModel.setFilter({ type: value.map(v => v.id) })}
         onSearch={setTypeSearchQuery}
       />
     </div>
