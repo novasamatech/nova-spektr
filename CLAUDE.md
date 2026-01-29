@@ -105,3 +105,5 @@ The renderer follows Feature-Sliced Design methodology:
 - Use the custom DI system for dependency injection
 - Follow Feature-Sliced Design import rules (no upward imports between layers)
 - Use absolute imports via TypeScript path mapping
+- Prioritize code correctness and clarity. Speed and efficiency are secondary priorities unless otherwise specified.
+- Do not write organizational or comments that summarize the code. Comments should only be written in order to explain "why" the code is written in some way in the case there is a reason that is tricky / non-obvious.
