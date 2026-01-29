@@ -301,24 +301,24 @@ describe('operations-filter', () => {
   describe('matchesSearch', () => {
     test('returns true when searchQuery is empty or undefined', () => {
       const op = createMockOperation();
-      expect(matchesSearch(op, undefined, {}, {})).toBe(true);
-      expect(matchesSearch(op, '', {}, {})).toBe(true);
-      expect(matchesSearch(op, '   ', {}, {})).toBe(true);
+      expect(matchesSearch(op, undefined, {}, {}, {})).toBe(true);
+      expect(matchesSearch(op, '', {}, {}, {})).toBe(true);
+      expect(matchesSearch(op, '   ', {}, {}, {})).toBe(true);
     });
 
     test('returns true when wallet name contains query', () => {
       const op = createMockOperation();
-      expect(matchesSearch(op, 'MyWallet', { [MOCK_ACCOUNT_ID]: 'MyWallet Name' }, {})).toBe(true);
+      expect(matchesSearch(op, 'MyWallet', { [MOCK_ACCOUNT_ID]: 'MyWallet Name' }, {}, {})).toBe(true);
     });
 
     test('returns true when callHash contains query', () => {
       const op = createMockOperation({ callHash: '0xabc123def' });
-      expect(matchesSearch(op, 'abc123', {}, {})).toBe(true);
+      expect(matchesSearch(op, 'abc123', {}, {}, {})).toBe(true);
     });
 
     test('returns false when no field matches query', () => {
       const op = createMockOperation({ callHash: '0xaaa' });
-      expect(matchesSearch(op, 'nomatch', { [MOCK_ACCOUNT_ID]: 'Wallet' }, {})).toBe(false);
+      expect(matchesSearch(op, 'nomatch', { [MOCK_ACCOUNT_ID]: 'Wallet' }, {}, {})).toBe(false);
     });
   });
 
