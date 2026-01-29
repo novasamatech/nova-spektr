@@ -1,30 +1,17 @@
-import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { produce } from 'immer';
 import { interval, throttle } from 'patronum';
-import { type DateRange } from 'react-day-picker';
 
 import { type Done, persist } from '@/shared/api/storage';
-import {
-  type ChainId,
-  type FlexibleMultisigAccount,
-  type MultisigAccount,
-  type ProxyType,
-  TransactionType,
-} from '@/shared/core';
-import { nonNullable, toAddress } from '@/shared/lib/utils';
-import {
-  type AnyAccount,
-  type MultisigOperation,
-  accountService,
-  accounts,
-  multisigOperation,
-} from '@/domains/network';
+import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
+import { type DateRange } from '@/shared/ui-kit';
+import { type AnyAccount, accountService, accounts, multisigOperation } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
-import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { multisigService } from '@/features/multisig-wallet';
+import { filterOperation } from '../lib/operations-filter';
 
 import { deepLinkModel } from './deep-link';
 import { multisigOperationsFeature } from './feature';
@@ -49,103 +36,6 @@ const unhideOperation = createEvent<string>();
 $hiddenOperationIds
   .on(hideOperation, (state, id) => (state.includes(id) ? state : [...state, id]))
   .on(unhideOperation, (state, id) => state.filter(opId => opId !== id));
-
-const filterTx = (
-  tx: MultisigOperation,
-  filters: SelectedFilters,
-  tab: TabFilter,
-  hiddenIds: string[],
-  multisigAccountsMap: Record<string, MultisigAccount | FlexibleMultisigAccount>,
-  walletNameByAccountId: Record<string, string>,
-  chains: Record<string, { addressPrefix?: number }>,
-) => {
-  const isHidden = hiddenIds.includes(tx.id);
-
-  if (tab === 'hidden') {
-    if (!isHidden) return false;
-  } else {
-    if (isHidden) return false;
-  }
-
-  const xcmDestination = tx.transaction?.args.destinationChain;
-
-  const hasAccount = !filters.account.length || filters.account.includes(tx.accountId);
-  const hasOrigin = !filters.network.length || filters.network.includes(tx.chainId);
-  const hasDestination = !filters.network.length || filters.network.includes(xcmDestination);
-  const hasTxType = !filters.type.length || filters.type.includes(getFilterableTxType(tx));
-
-  const multisigAccount = multisigAccountsMap[tx.accountId];
-  let operationProxyType: ProxyType | null = null;
-
-  if (multisigAccount && accountUtils.isFlexibleMultisigAccount(multisigAccount)) {
-    operationProxyType = multisigAccount.proxyType;
-  }
-
-  const hasProxyType =
-    !filters.proxyType.length || (nonNullable(operationProxyType) && filters.proxyType.includes(operationProxyType));
-
-  let isInDateRange = true;
-  if (filters.dateRange) {
-    const { from, to } = filters.dateRange;
-
-    if (from || to) {
-      const txDate = new Date(tx.timestamp);
-
-      if (from && to) {
-        isInDateRange = isWithinInterval(txDate, { start: startOfDay(from), end: endOfDay(to) });
-      } else if (from) {
-        isInDateRange = isAfter(txDate, startOfDay(from)) || txDate.getTime() === startOfDay(from).getTime();
-      }
-    }
-  }
-
-  const statusMatchesTab =
-    tab === 'hidden'
-      ? true
-      : tab === 'pending'
-        ? tx.status === 'pending'
-        : ['executed', 'cancelled', 'error'].includes(tx.status);
-
-  const searchQuery = filters.searchQuery?.trim().toLowerCase();
-  const walletName = (walletNameByAccountId[tx.accountId] ?? '').toLowerCase();
-  const accountAddress = toAddress(tx.accountId, { prefix: chains[tx.chainId]?.addressPrefix }).toLowerCase();
-  const matchesSearch =
-    !searchQuery ||
-    walletName.includes(searchQuery) ||
-    accountAddress.includes(searchQuery) ||
-    tx.callHash.toLowerCase().includes(searchQuery);
-
-  return (
-    hasAccount &&
-    (hasOrigin || hasDestination) &&
-    hasTxType &&
-    hasProxyType &&
-    isInDateRange &&
-    statusMatchesTab &&
-    matchesSearch
-  );
-};
-
-const getFilterableTxType = (op: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
-  if (!op.transaction?.type) {
-    return 'UNKNOWN_TYPE';
-  }
-
-  if (TransferTypes.includes(op.transaction.type)) {
-    return TransactionType.TRANSFER;
-  }
-  if (XcmTypes.includes(op.transaction.type)) {
-    return TransactionType.XCM_LIMITED_TRANSFER;
-  }
-
-  if (op.transaction.type === TransactionType.BATCH_ALL) {
-    const txMatch = findCoreBatchAll(op.transaction);
-
-    return txMatch?.type || 'UNKNOWN_TYPE';
-  }
-
-  return op.transaction.type;
-};
 
 const initialFilter: SelectedFilters = {
   account: [],
@@ -242,7 +132,14 @@ const $filteredOperations = combine(
   },
   ({ operations, filter, tab, hiddenIds, multisigAccountsMap, walletNameByAccountId, chains }) => {
     return operations.filter(op =>
-      filterTx(op, filter, tab, hiddenIds, multisigAccountsMap, walletNameByAccountId, chains),
+      filterOperation(op, {
+        filters: filter,
+        tab,
+        hiddenIds,
+        multisigAccountsMap,
+        walletNameByAccountId,
+        chains,
+      }),
     );
   },
 );
