@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type GraphQLClient } from 'graphql-request';
 
-import { type Chain, type ChainId, type DecodedTransaction } from '@/shared/core';
+import { type Chain, type ChainId, type DecodedTransaction, type ProxyType } from '@/shared/core';
 import { dictionary, toAccountId } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -26,7 +26,7 @@ export type MultisigResult = {
   proxied?: {
     accountId: AccountId;
     proxyAccountId: AccountId;
-    proxyType: 'Any';
+    proxyType: ProxyType;
     delay: number;
   };
 };
@@ -101,7 +101,7 @@ async function findFlexibleMultisigs(
 
       if (!multisigAccountId || !multisigMap[multisigAccountId]) continue;
 
-      if (flexMultisigs.get(id) || value.proxies.length !== 1 || proxyMultisigAccount.proxyType !== 'Any') {
+      if (flexMultisigs.get(id) || value.proxies.length !== 1) {
         flexMultisigs.delete(id);
         continue;
       }
