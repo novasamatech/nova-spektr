@@ -2118,6 +2118,12 @@
       "statusPlaceholder": "Operation status",
       "statusSummary": "Operation statuses"
     },
+    "sync": {
+      "connecting": "Connecting to networks...",
+      "syncing": "Syncing networks... {synced}/{total}",
+      "synced": "Synced",
+      "loading": "Syncing..."
+    },
     "historyEmptyDescription": "Signed operations will appear here once completed.",
     "historyEmptyTitle": "Operation history list is empty",
     "modalTitles": {

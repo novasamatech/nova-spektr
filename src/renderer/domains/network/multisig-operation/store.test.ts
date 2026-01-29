@@ -34,7 +34,10 @@ describe('multisigOperation store', () => {
   it('should set initialLoadingComplete to true only when both resources are fetched for all expected chains', async () => {
     const scope = fork({
       handlers: new Map<any, any>([
-        [initialOnChainFetch.fetch, async () => ({ callHashesByChain: {}, onChainData: {} })],
+        [
+          initialOnChainFetch.fetch,
+          async ({ api }: any) => ({ chainId: api.genesisHash.toHex(), callHashesByAccount: {}, onChainData: {} }),
+        ],
         [fetchOffchainResource.fetch, async () => []],
       ]),
     });
@@ -61,7 +64,10 @@ describe('multisigOperation store', () => {
   it('should NOT mark initialLoadingComplete as true if not all expected chains have fetched', async () => {
     const scope = fork({
       handlers: new Map<any, any>([
-        [initialOnChainFetch.fetch, async () => ({ callHashesByChain: {}, onChainData: {} })],
+        [
+          initialOnChainFetch.fetch,
+          async ({ api }: any) => ({ chainId: api.genesisHash.toHex(), callHashesByAccount: {}, onChainData: {} }),
+        ],
         [fetchOffchainResource.fetch, async () => []],
       ]),
     });
@@ -86,10 +92,9 @@ describe('multisigOperation store', () => {
     expect(scope.getState(multisigOperation.$initialLoadingComplete)).toBe(false);
 
     // Now simulate the second chain's API connecting - trigger its fetch manually
-    const secondChainApis = { [mockChainId2]: mockApis[mockChainId2] };
     await allSettled(initialOnChainFetch.fetch, {
       scope,
-      params: { apis: secondChainApis, chains: mockChains, accountIds: ['account1'] } as any,
+      params: { api: mockApis[mockChainId2], chain: mockChains[mockChainId2], accountIds: ['account1'] } as any,
     });
 
     // Now all expected chains have fetched, should be true
@@ -99,7 +104,10 @@ describe('multisigOperation store', () => {
   it('should reset initialLoadingComplete when unsubscribing', async () => {
     const scope = fork({
       handlers: new Map<any, any>([
-        [initialOnChainFetch.fetch, async () => ({ callHashesByChain: {}, onChainData: {} })],
+        [
+          initialOnChainFetch.fetch,
+          async ({ api }: any) => ({ chainId: api.genesisHash.toHex(), callHashesByAccount: {}, onChainData: {} }),
+        ],
         [fetchOffchainResource.fetch, async () => []],
       ]),
     });
