@@ -37,7 +37,7 @@ export const OperationFullInfo = memo(({ operation, account, tab }: Props) => {
 
       {account && <OperationSignatories operation={operation} connection={extendedChain} account={account} />}
 
-      <OperationAdvancedDetails operation={operation} account={account} connection={extendedChain} tab={tab} />
+      <OperationAdvancedDetails operation={operation} tab={tab} />
     </div>
   );
 });

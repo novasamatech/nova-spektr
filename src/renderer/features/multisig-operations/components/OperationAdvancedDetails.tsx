@@ -1,43 +1,33 @@
 import { useUnit } from 'effector-react';
 
-import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, getNativeAsset, truncate } from '@/shared/lib/utils';
-import { Button, CaptionText, DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Copy, Tooltip, useNotification } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
-import { contactModel } from '@/entities/contact';
-import { type ExtendedChain, networkModel } from '@/entities/network';
+import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { type TabFilter, operationsContextModel } from '../model/context';
 
-import LogModal from './LogModal';
-
 type Props = {
   operation: MultisigOperation;
-  account: MultisigAccount | FlexibleMultisigAccount;
-  connection: ExtendedChain;
   tab: TabFilter;
 };
 
 const InteractionStyle =
   'rounded-sm hover:bg-action-background-hover hover:text-text-primary cursor-pointer py-[3px] px-2 -mr-2';
 
-export const OperationAdvancedDetails = ({ operation, account, connection, tab }: Props) => {
+export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
   const { t } = useI18n();
   const { toast } = useNotification();
 
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
-  const contacts = useUnit(contactModel.$contacts);
 
   const nativeAsset = getNativeAsset(chain?.assets ?? []);
   const explorers = chain?.explorers;
-
-  const [isLogModalOpen, toggleLogModal] = useToggle();
 
   const { indexCreated, blockCreated, deposit, callHash, callData } = operation;
 
@@ -74,33 +64,16 @@ export const OperationAdvancedDetails = ({ operation, account, connection, tab }
       <div className="flex items-center justify-between">
         <SmallTitleText>{t('operation.advanced')}</SmallTitleText>
 
-        <div className="flex items-center gap-x-2">
-          <Tooltip>
-            <Tooltip.Trigger>
-              <IconButton
-                name={isHiddenTab ? 'eye' : 'eyeSlashed'}
-                className="text-icon-default"
-                onClick={isHiddenTab ? handleUnhideOperation : handleHideOperation}
-              />
-            </Tooltip.Trigger>
-            <Tooltip.Content>{isHiddenTab ? t('operation.unhideButton') : t('operation.hideButton')}</Tooltip.Content>
-          </Tooltip>
-
-          <Button
-            pallet="secondary"
-            variant="fill"
-            size="sm"
-            prefixElement={<Icon name="chat" size={16} />}
-            suffixElement={
-              <CaptionText className="rounded-full bg-chip-icon px-1.5 pt-px pb-[2px] text-white!">
-                {operation.events.length}
-              </CaptionText>
-            }
-            onClick={toggleLogModal}
-          >
-            {t('operation.logButton')}
-          </Button>
-        </div>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <IconButton
+              name={isHiddenTab ? 'eye' : 'eyeSlashed'}
+              className="text-icon-default"
+              onClick={isHiddenTab ? handleUnhideOperation : handleHideOperation}
+            />
+          </Tooltip.Trigger>
+          <Tooltip.Content>{isHiddenTab ? t('operation.unhideButton') : t('operation.hideButton')}</Tooltip.Content>
+        </Tooltip>
       </div>
 
       <div className="flex flex-col gap-y-2">
@@ -152,15 +125,6 @@ export const OperationAdvancedDetails = ({ operation, account, connection, tab }
           </DetailRow>
         )}
       </div>
-
-      <LogModal
-        isOpen={isLogModalOpen}
-        operation={operation}
-        account={account}
-        connection={connection}
-        contacts={contacts}
-        onClose={toggleLogModal}
-      />
     </div>
   );
 };
