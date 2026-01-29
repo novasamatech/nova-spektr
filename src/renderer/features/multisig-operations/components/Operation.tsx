@@ -14,10 +14,10 @@ import {
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod, toAddress, toShortAddress } from '@/shared/lib/utils';
-import { FootnoteText, HelpText } from '@/shared/ui';
+import { Accordion, FootnoteText, HelpText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance, AssetIcon, WalletAccountIcon } from '@/shared/ui-entities';
-import { Accordion, Copy, Tooltip } from '@/shared/ui-kit';
+import { Copy, Tooltip } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
@@ -112,8 +112,8 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
   return (
     <div className="focus-active:shadow-card-shadow rounded bg-block-background-default transition-shadow hover:shadow-card-shadow">
-      <Accordion initialOpen={isDefaultOpen}>
-        <Accordion.Trigger>
+      <Accordion isDefaultOpen={isDefaultOpen}>
+        <Accordion.Button buttonClass="px-4 py-2">
           <div className="flex h-[52px] w-full items-center gap-x-2 overflow-hidden">
             <div className="flex w-[500px] min-w-0 items-center gap-x-2">
               <OperationIcon operation={operation} account={multisigAccount} />
@@ -170,7 +170,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
               <Tooltip.Content>{t('operations.shareOperationTooltip')}</Tooltip.Content>
             </Tooltip>
           </div>
-        </Accordion.Trigger>
+        </Accordion.Button>
         <Accordion.Content>
           <div className="border-t border-divider">
             <OperationFullInfo operation={operation} account={multisigAccount} tab={tab} />
