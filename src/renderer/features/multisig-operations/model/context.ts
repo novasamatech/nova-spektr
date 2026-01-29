@@ -71,14 +71,14 @@ const filterTx = (
   const hasTxType = !filters.type.length || filters.type.includes(getFilterableTxType(tx));
 
   const multisigAccount = multisigAccountsMap[tx.accountId];
-  let opProxyType: ProxyType | undefined = undefined;
+  let operationProxyType: ProxyType | null = null;
 
   if (multisigAccount && accountUtils.isFlexibleMultisigAccount(multisigAccount)) {
-    opProxyType = multisigAccount.proxyType;
+    operationProxyType = multisigAccount.proxyType;
   }
 
   const hasProxyType =
-    !filters.proxyType.length || (nonNullable(opProxyType) && filters.proxyType.includes(opProxyType));
+    !filters.proxyType.length || (nonNullable(operationProxyType) && filters.proxyType.includes(operationProxyType));
 
   let isInDateRange = true;
   if (filters.dateRange) {

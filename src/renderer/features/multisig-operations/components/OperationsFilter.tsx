@@ -11,7 +11,7 @@ import { Hash, WalletAccountIcon } from '@/shared/ui-entities';
 import { type DateRange, DateRangePicker } from '@/shared/ui-kit';
 import { accountService, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { ProxyTypeName, proxyUtils } from '@/entities/proxy';
+import { ProxyTypeName } from '@/entities/proxy';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
 import { multisigService } from '@/features/multisig-wallet';
@@ -43,10 +43,10 @@ export const OperationsFilter = memo(() => {
     value: chainId,
     element: name,
   }));
-  const ProxyTypeOptions = (Object.keys(ProxyTypeName) as (keyof typeof ProxyTypeName)[]).map(type => ({
+  const ProxyTypeOptions = Object.entries(ProxyTypeName).map(([type, name]) => ({
     id: type,
     value: type,
-    element: t(proxyUtils.getProxyTypeName(type)),
+    element: t(name),
   }));
 
   const filtersOptions = useMemo(() => {

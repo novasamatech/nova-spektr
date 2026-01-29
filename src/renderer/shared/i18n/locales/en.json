@@ -2256,16 +2256,16 @@
       "sender": "Sender"
     },
     "names": {
-      "any": "All operations",
-      "auction": "Auction operations",
-      "cancelProxy": "Cancel operations",
-      "governance": "Governance operations",
-      "identityJudgement": "Judgement operations",
-      "nominationPools": "Nominations operations",
-      "nonTransfer": "All, except transfer operations",
-      "staking": "Staking operations",
+      "any": "All",
+      "auction": "Auction",
+      "cancelProxy": "Cancel",
+      "governance": "Governance",
+      "identityJudgement": "Judgement",
+      "nominationPools": "Nominations",
+      "nonTransfer": "All, except transfer",
+      "staking": "Staking",
       "sudoBalances": "Sudo balances",
-      "unknown": "Unknown operations"
+      "unknown": "Unknown"
     },
     "operations": {
       "any": "all operations",
