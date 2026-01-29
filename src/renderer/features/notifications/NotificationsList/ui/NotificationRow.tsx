@@ -55,9 +55,7 @@ export const NotificationRow = ({ notification }: Props) => {
   return (
     <li className="flex justify-between rounded-sm bg-block-background-default p-4">
       {renderNotification(notification)}
-      <FootnoteText className="text-text-tertiary">
-        {formatDate(new Date(notification.dateCreated), 'p')}
-      </FootnoteText>
+      <FootnoteText className="text-text-tertiary">{formatDate(new Date(notification.dateCreated), 'p')}</FootnoteText>
     </li>
   );
 };
