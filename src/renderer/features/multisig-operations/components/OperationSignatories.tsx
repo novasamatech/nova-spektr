@@ -98,8 +98,6 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
               {walletSignatories.map(signatory => (
                 <SignatoryCard
                   key={signatory.accountId}
-                  accountId={signatory.accountId}
-                  chain={connection}
                   status={operationDetailsUtils.getSignatoryStatus(operation.events, signatory.accountId)}
                 >
                   <WalletIcon type={signatory.wallet.type} size={20} />
@@ -119,8 +117,6 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
               {contactSignatories.map(signatory => (
                 <SignatoryCard
                   key={signatory.accountId}
-                  accountId={signatory.accountId}
-                  chain={connection}
                   status={operationDetailsUtils.getSignatoryStatus(operation.events, signatory.accountId)}
                 >
                   <Address
