@@ -10,6 +10,7 @@ import { decodeCallData } from '../callDataDecoder';
 import { metadata } from './metadata';
 
 const TEST_ACCOUNT_ID = toAccountId(TEST_ADDRESS);
+const PROXIED_ACCOUNT_ID = toAccountId('0xe4485f31d7848a3f4540dac93d8c056e7cb18b534fbab0c8367a81e1b85e464a');
 
 /**
  * ATTENTION! This tests may fail on node version >= 22 because of
@@ -71,13 +72,13 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     );
 
     expect(transaction).toEqual({
-      accountId: TEST_ACCOUNT_ID,
+      accountId: PROXIED_ACCOUNT_ID,
       args: {
         call: '0x1f0102000468161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a2420004030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e802e8030000',
         forceProxyType: '',
         real: 'Hjdw9g44uAL4XKucHTdxRmXQJBx7t8j4Anox9NitS7z7HAL',
         transaction: {
-          accountId: TEST_ACCOUNT_ID,
+          accountId: PROXIED_ACCOUNT_ID,
           args: {
             call: '0x04030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8',
             maxWeight: {
