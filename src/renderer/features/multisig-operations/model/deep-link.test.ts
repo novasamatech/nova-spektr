@@ -61,6 +61,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, {})
+          .set(networkModel.$populated, true)
           .set(accounts.__test.$list, [])
           .set(accounts.__test.$populated, true),
       });
@@ -85,6 +86,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, {})
+          .set(networkModel.$populated, true)
           .set(accounts.__test.$list, [])
           .set(accounts.__test.$populated, true),
       });
@@ -115,6 +117,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [])
           .set(accounts.__test.$populated, true)
@@ -136,6 +139,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
@@ -158,6 +162,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, false)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, false)
@@ -186,6 +191,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [])
           .set(accounts.__test.$populated, true)
@@ -216,6 +222,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
@@ -240,6 +247,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
@@ -265,6 +273,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
@@ -294,6 +303,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
@@ -319,6 +329,7 @@ describe('multisig operations deep link', () => {
         handlers: [[initialOnChainFetch.fetch, () => ({ onChainData: {}, callHashesByChain: {} })]],
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
@@ -353,6 +364,7 @@ describe('multisig operations deep link', () => {
         handlers: [[initialOnChainFetch.fetch, () => ({ onChainData: {}, callHashesByChain: {} })]],
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
@@ -388,6 +400,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTING })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
@@ -413,6 +426,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTING })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
@@ -443,6 +457,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
@@ -477,6 +492,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTING })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
@@ -508,6 +524,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, {})
+          .set(networkModel.$populated, true)
           .set(accounts.__test.$list, [])
           .set(accounts.__test.$populated, true),
       });
@@ -539,6 +556,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
@@ -576,6 +594,7 @@ describe('multisig operations deep link', () => {
       const scope = fork({
         values: new Map()
           .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
           .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
           .set(accounts.__test.$list, [mockAccount])
           .set(accounts.__test.$populated, true)
