@@ -181,7 +181,7 @@ transactionSDK(multisigWalletFeature, {
           method: 'proxy',
           args: {
             real: account.accountId,
-            forceProxyType: 'Any',
+            forceProxyType: account.proxyType,
             call: encodedTransaction.callData,
           },
         };
@@ -249,7 +249,7 @@ transactionSDK(multisigWalletFeature, {
           chainId: api.genesisHash.toHex(),
           args: {
             real: account.accountId,
-            forceProxyType: 'Any',
+            forceProxyType: account.proxyType,
             call: extrinsic.method.toHex(),
           },
         };
