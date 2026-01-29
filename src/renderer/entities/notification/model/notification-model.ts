@@ -54,7 +54,7 @@ const $disabledAccountIds = combine($wallets, $disabledWalletIds, (wallets, disa
   const accountIds = new Set<AccountId>();
 
   for (const wallet of wallets) {
-    if (disabledWalletIds.has(wallet.id) && wallet.accounts) {
+    if (disabledWalletIds.has(wallet.id)) {
       for (const account of wallet.accounts) {
         accountIds.add(account.accountId);
       }
