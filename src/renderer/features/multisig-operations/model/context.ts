@@ -12,7 +12,7 @@ import {
   type ProxyType,
   TransactionType,
 } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable, toAddress } from '@/shared/lib/utils';
 import {
   type AnyAccount,
   type MultisigOperation,
@@ -35,6 +35,7 @@ interface SelectedFilters {
   type: string[];
   proxyType: string[];
   dateRange?: DateRange;
+  searchQuery: string;
 }
 export type TabFilter = 'pending' | 'history' | 'hidden';
 
@@ -55,6 +56,8 @@ const filterTx = (
   tab: TabFilter,
   hiddenIds: string[],
   multisigAccountsMap: Record<string, MultisigAccount | FlexibleMultisigAccount>,
+  walletNameByAccountId: Record<string, string>,
+  chains: Record<string, { addressPrefix?: number }>,
 ) => {
   const isHidden = hiddenIds.includes(tx.id);
 
@@ -103,7 +106,24 @@ const filterTx = (
         ? tx.status === 'pending'
         : ['executed', 'cancelled', 'error'].includes(tx.status);
 
-  return hasAccount && (hasOrigin || hasDestination) && hasTxType && hasProxyType && isInDateRange && statusMatchesTab;
+  const searchQuery = filters.searchQuery?.trim().toLowerCase();
+  const walletName = (walletNameByAccountId[tx.accountId] ?? '').toLowerCase();
+  const accountAddress = toAddress(tx.accountId, { prefix: chains[tx.chainId]?.addressPrefix }).toLowerCase();
+  const matchesSearch =
+    !searchQuery ||
+    walletName.includes(searchQuery) ||
+    accountAddress.includes(searchQuery) ||
+    tx.callHash.toLowerCase().includes(searchQuery);
+
+  return (
+    hasAccount &&
+    (hasOrigin || hasDestination) &&
+    hasTxType &&
+    hasProxyType &&
+    isInDateRange &&
+    statusMatchesTab &&
+    matchesSearch
+  );
 };
 
 const getFilterableTxType = (op: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
@@ -133,6 +153,7 @@ const initialFilter: SelectedFilters = {
   type: [],
   proxyType: [],
   dateRange: undefined,
+  searchQuery: '',
 };
 
 const setFilter = createEvent<Partial<SelectedFilters>>();
@@ -154,7 +175,8 @@ const $isFiltersSelected = $filter.map(filter =>
       filter.type.length ||
       filter.proxyType.length ||
       filter.dateRange?.from ||
-      filter.dateRange?.to,
+      filter.dateRange?.to ||
+      filter.searchQuery,
   ),
 );
 
@@ -194,6 +216,18 @@ const $multisigAccountsMap = accounts.$list.map(accs => {
 
 const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isAnyMultisig));
 
+const $walletNameByAccountId = combine(
+  { multisigAccountsMap: $multisigAccountsMap, multisigWallets: $multisigWallets },
+  ({ multisigAccountsMap, multisigWallets }) => {
+    const result: Record<string, string> = {};
+    for (const [accountId, account] of Object.entries(multisigAccountsMap)) {
+      const wallet = multisigWallets.find(w => w.id === account.walletId);
+      if (wallet) result[accountId] = wallet.name;
+    }
+    return result;
+  },
+);
+
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 
 const $filteredOperations = combine(
@@ -203,9 +237,13 @@ const $filteredOperations = combine(
     tab: $tab,
     hiddenIds: $hiddenOperationIds,
     multisigAccountsMap: $multisigAccountsMap,
+    walletNameByAccountId: $walletNameByAccountId,
+    chains: networkModel.$chains,
   },
-  ({ operations, filter, tab, hiddenIds, multisigAccountsMap }) => {
-    return operations.filter(op => filterTx(op, filter, tab, hiddenIds, multisigAccountsMap));
+  ({ operations, filter, tab, hiddenIds, multisigAccountsMap, walletNameByAccountId, chains }) => {
+    return operations.filter(op =>
+      filterTx(op, filter, tab, hiddenIds, multisigAccountsMap, walletNameByAccountId, chains),
+    );
   },
 );
 
