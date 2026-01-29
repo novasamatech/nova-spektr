@@ -47,11 +47,16 @@ type Props = {
 export const NotificationRow = ({ notification }: Props) => {
   const { formatDate } = useI18n();
 
+  const renderNotification = Notifications[notification.type];
+  if (!renderNotification) {
+    return null;
+  }
+
   return (
     <li className="flex justify-between rounded-sm bg-block-background-default p-4">
-      {Notifications[notification.type](notification)}
+      {renderNotification(notification)}
       <FootnoteText className="text-text-tertiary">
-        {formatDate(new Date(notification.dateCreated || 0), 'p')}
+        {formatDate(new Date(notification.dateCreated), 'p')}
       </FootnoteText>
     </li>
   );

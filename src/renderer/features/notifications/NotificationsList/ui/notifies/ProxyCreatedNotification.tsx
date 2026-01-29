@@ -18,7 +18,6 @@ type Props = {
 
 export const ProxyCreatedNotification = ({ notification }: Props) => {
   const { t } = useI18n();
-
   const chains = useUnit(networkModel.$chains);
 
   // Get proxy wallet from proxyAccountId
@@ -66,6 +65,8 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
   const proxyWalletType = proxyWallet?.type;
   const proxyAddress = toAddress(notification.proxyAccountId, { prefix: chain?.addressPrefix });
 
+  const proxyTypeTranslation = ProxyTypeOperation[notification.proxyType];
+
   return (
     <div className="flex gap-x-2">
       <div className="relative">
@@ -96,7 +97,7 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
             i18nKey="notifications.details.proxyCreatedDetails"
             values={{
               name: proxyWalletName,
-              operations: t(ProxyTypeOperation[notification.proxyType]),
+              operations: proxyTypeTranslation ? t(proxyTypeTranslation) : notification.proxyType,
             }}
             components={{
               chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,
