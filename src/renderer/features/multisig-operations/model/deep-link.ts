@@ -36,6 +36,13 @@ const multisigOperationDeepLinkHandler = deepLinkService.createDeepLinkHandler({
 const setFocusedOperationId = createEvent<string | null>();
 const operationsPageClosed = createEvent();
 
+// Deep links can arrive before accounts/chains are populated from storage,
+// so we must wait before showing validation errors.
+const $dataReadyForValidation = combine({
+  accountsPopulated: accounts.$populated,
+  chainsPopulated: networkModel.$populated,
+}).map(({ accountsPopulated, chainsPopulated }) => accountsPopulated && chainsPopulated);
+
 const $operationId = createStore<string | null>(null)
   .on(setFocusedOperationId, (_, v) => v)
   .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
@@ -128,6 +135,17 @@ sample({
   target: processDeepLink,
 });
 
+const validateDeepLink = sample({
+  clock: [processDeepLink, $dataReadyForValidation],
+  source: {
+    deepLinkData: $deepLinkData,
+    isReady: $dataReadyForValidation,
+    operationId: $operationId,
+  },
+  filter: ({ deepLinkData, isReady, operationId }) => nonNullable(deepLinkData) && isReady && nullable(operationId),
+  fn: ({ deepLinkData }) => deepLinkData!,
+});
+
 const operationExistsCheck = sample({
   clock: processDeepLink,
   source: { operations: multisigOperation.$list, accounts: accounts.$list, chains: networkModel.$chains },
@@ -155,8 +173,15 @@ sample({
   target: setFocusedOperationId,
 });
 
+const $isWaitingForInitialization = combine({
+  deepLinkData: $deepLinkData,
+  isReady: $dataReadyForValidation,
+  operationId: $operationId,
+}).map(({ deepLinkData, isReady, operationId }) => nonNullable(deepLinkData) && !isReady && nullable(operationId));
+
 const $isDeepLinkLoading = createStore(false)
   .on(operationExistsCheck, (_, { exists }) => !exists)
+  .on($isWaitingForInitialization, (_, isWaiting) => isWaiting)
   .on($focusedOperation.updates, (state, operation) => (nonNullable(operation) ? false : state))
   .on(operationNotFoundModalOpened, () => false)
   .on(alreadySignedModalOpened, () => false)
@@ -166,7 +191,7 @@ const $isDeepLinkLoading = createStore(false)
   .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
 sample({
-  clock: processDeepLink,
+  clock: validateDeepLink,
   source: { chains: networkModel.$chains },
   filter: ({ chains }, data) => {
     const chain = chains[data.chainId];
@@ -176,7 +201,7 @@ sample({
 });
 
 sample({
-  clock: processDeepLink,
+  clock: validateDeepLink,
   source: {
     chains: networkModel.$chains,
     accounts: accounts.$list,
@@ -190,6 +215,39 @@ sample({
   },
   target: accountNotFoundModalOpened,
 });
+
+const validatedOperationCheck = sample({
+  clock: validateDeepLink,
+  source: {
+    chains: networkModel.$chains,
+    accounts: accounts.$list,
+    operations: multisigOperation.$list,
+  },
+  filter: ({ chains, accounts }, data) => {
+    const chain = chains[data.chainId];
+    if (nullable(chain)) return false;
+
+    const account = accounts.find(acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId);
+    return nonNullable(account);
+  },
+  fn: ({ operations }, data) => {
+    const operationId = getOperationIdFromDeepLink(data);
+    const operation = operations.find(op => op.id === operationId);
+    return {
+      operationId,
+      exists: nonNullable(operation),
+    };
+  },
+});
+
+sample({
+  clock: validatedOperationCheck,
+  filter: ({ exists }) => exists,
+  fn: ({ operationId }) => operationId,
+  target: setFocusedOperationId,
+});
+
+$isDeepLinkLoading.on(validatedOperationCheck, (_, { exists }) => !exists);
 
 const networkReady = sample({
   clock: [processDeepLink, networkModel.$populated, networkModel.output.connectionStatusChanged],
