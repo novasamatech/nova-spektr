@@ -265,6 +265,11 @@ sample({
 
     const eventNotifications = newEvents
       .filter(({ event }) => {
+        // Don't notify for reject events - the operation status change notification will cover it
+        if (event.status === 'reject') {
+          return false;
+        }
+
         // Don't notify if the current user caused the event
         if (event.accountId in accountsMap) {
           return false;
