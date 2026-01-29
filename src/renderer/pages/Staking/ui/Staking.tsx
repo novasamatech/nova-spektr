@@ -190,7 +190,7 @@ export const Staking = () => {
     if (!activeWallet) return;
 
     // TODO remove this check
-    const isMultisig = walletUtils.isMultisig(activeWallet);
+    const isMultisig = walletUtils.isAnyMultisig(activeWallet);
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
     const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
     const isPolkadotVault = walletUtils.isPolkadotVaultGroup(activeWallet);

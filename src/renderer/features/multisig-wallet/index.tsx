@@ -294,7 +294,7 @@ transactionSDK(multisigWalletFeature, {
 });
 
 multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
-  if (walletUtils.isMultisig(wallet)) {
+  if (walletUtils.isAnyMultisig(wallet)) {
     const accountId = wallet.accounts.at(0)?.accountId;
     if (accountId) {
       return <WalletAccountIcon address={toAddress(accountId)} type={wallet.type} size={size} />;

@@ -14,7 +14,7 @@ const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: nul
 const $wallet = flow.state.map(({ wallet }) => wallet);
 
 const $multisigAccount = $wallet.map(wallet => {
-  if (nullable(wallet) || !walletUtils.isMultisig(wallet)) return null;
+  if (nullable(wallet) || !walletUtils.isAnyMultisig(wallet)) return null;
 
   return wallet.accounts.filter(account => accountUtils.isAnyMultisigAccount(account)).at(0);
 });
