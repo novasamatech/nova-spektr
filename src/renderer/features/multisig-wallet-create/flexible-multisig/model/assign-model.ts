@@ -113,6 +113,7 @@ const $coreTx = combine(
       multisigAccountId: toAccountId(multisigAccountId),
       threshold,
       proxyAccountId: pureCreated.accountId,
+      proxyType: 'Any',
       pureTopUpAmount,
       isMultisigExists,
     });
@@ -253,6 +254,7 @@ sample({
       pendingBlockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
 
+      proxyType: 'Any',
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       signingType: SigningType.MULTISIG,
       accountType: AccountType.FLEX_MULTISIG,

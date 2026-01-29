@@ -58,6 +58,7 @@ export interface FlexibleMultisigAccount extends ChainAccount {
   threshold: number;
 
   // proxied account part
+  proxyType: ProxyType;
   deposit: string;
   entropyBlockNumber: number;
   pendingBlockNumber?: number;
