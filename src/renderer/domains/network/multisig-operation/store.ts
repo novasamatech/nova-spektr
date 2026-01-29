@@ -177,16 +177,23 @@ sample({
   clock: initialOnChainFetch.fetch.done,
   source: $initializedChainIds,
   fn: (fetched, { params }) => {
-    const chainIds = keys(params.apis);
-    return [...new Set([...fetched, ...chainIds])];
+    const chainId = params.api.genesisHash.toHex();
+    return [...new Set([...fetched, chainId])];
   },
   target: $initializedChainIds,
 });
 
 sample({
   clock: subscribeToAccounts,
+  fn: ({ apis, accountIds, chains }) =>
+    entries(apis).map(([chainId, api]) => ({ api, chain: chains[chainId]!, accountIds })),
+  target: series(initialOnChainFetch.fetch, { parallel: true }),
+});
+
+sample({
+  clock: subscribeToAccounts,
   fn: ({ apis, accountIds, chains }) => ({ apis, chains, accountIds }),
-  target: [initialOnChainFetch.fetch, fetchOffchainResource.fetch],
+  target: fetchOffchainResource.fetch,
 });
 
 const refetchOffchainOperations = createEvent();
@@ -361,9 +368,25 @@ const $allOperations = combine(
 
 sample({
   clock: $liveOperations,
-  source: $initialLoadingComplete,
-  filter: loadingComplete => loadingComplete,
-  fn: (_, liveOps) => liveOps,
+  source: {
+    offChainFetched: $offChainFetched,
+    fetchedChainIds: $initializedChainIds,
+    cachedOperations: $cachedOperations,
+  },
+  filter: ({ offChainFetched, fetchedChainIds }) => offChainFetched && fetchedChainIds.length > 0,
+  fn: ({ fetchedChainIds, cachedOperations }, liveOps) => {
+    const liveByChain = groupBy(liveOps, op => op.chainId);
+    const cachedByChain = groupBy(cachedOperations, op => op.chainId);
+    const allChainIds = [...new Set([...keys(liveByChain), ...keys(cachedByChain)])];
+
+    const result: MultisigOperation[] = [];
+    for (const chainId of allChainIds) {
+      const ops = fetchedChainIds.includes(chainId) ? liveByChain[chainId] || [] : cachedByChain[chainId] || [];
+      result.push(...ops);
+    }
+
+    return uniqBy(result, o => o.id);
+  },
   target: $cachedOperations,
 });
 
@@ -373,6 +396,8 @@ export const multisigOperation = {
   $initialLoadingComplete,
   $onChainReady: readonly($initialOnChainFetched),
   $offChainReady: readonly($offChainFetched),
+  $expectedChainIds: readonly($chainIdsWithMultisigSupport),
+  $fetchedChainIds: readonly($initializedChainIds),
 
   subscribeToAccounts,
   unsubscribeFromAccounts,
