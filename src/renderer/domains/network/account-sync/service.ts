@@ -91,9 +91,7 @@ function isSyncedMultisigAccount(a: SyncedAccount): a is SyncedMultisigAccount {
 }
 
 function isFlexibleMultisigPair(proxy: SyncedProxyAccount, multisig: SyncedMultisigAccount) {
-  return (
-    proxy.proxyType === 'Any' && proxy.proxyVariant === ProxyVariant.PURE && proxy.proxyAccountId === multisig.accountId
-  );
+  return proxy.proxyVariant === ProxyVariant.PURE && proxy.proxyAccountId === multisig.accountId;
 }
 
 export const accountSyncService = {

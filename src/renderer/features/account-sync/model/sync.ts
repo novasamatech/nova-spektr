@@ -494,6 +494,7 @@ export const syncFlexibleMultisigs = ({
           threshold: syncedMultisig.threshold,
           signatories: syncedMultisig.signatories.map((accountId) => ({ accountId })),
 
+          proxyType: matchedSyncedProxy.proxyType as ProxyType,
           deposit: matchedSyncedProxy.deposit.toString(),
           entropyBlockNumber: matchedSyncedProxy.blockNumber,
           extrinsicIndex: matchedSyncedProxy.extrinsicIndex,
