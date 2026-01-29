@@ -34,54 +34,41 @@ type ValidationResult =
   | { type: 'accountNotFound' }
   | { type: 'valid'; operationId: string; operationInCache: boolean };
 
+type ModalType =
+  | 'alreadySigned'
+  | 'accountNotFound'
+  | 'networkNotAvailable'
+  | 'operationNotFound'
+  | 'connectionTimeout';
+
 const multisigOperationDeepLinkHandler = deepLinkService.createDeepLinkHandler({
   schema: multisigOperationSchema,
 });
 
+// === Events ===
 const setFocusedOperationId = createEvent<string | null>();
 const operationsPageClosed = createEvent();
-const closeAlreadySignedModal = createEvent();
+const openModal = createEvent<ModalType>();
+const closeModal = createEvent();
 const viewAlreadySignedOperation = createEvent();
-const closeNotFoundModal = createEvent();
-const closeNetworkNotAvailableModal = createEvent();
-const closeOperationNotFoundModal = createEvent();
-const closeConnectionTimeoutModal = createEvent();
 const retryConnectionTimeout = createEvent();
-
 const startDeepLinkFlow = createEvent<MultisigOperationDeepLinkData>();
-const openAlreadySignedModal = createEvent();
-const openAccountNotFoundModal = createEvent();
-const openChainNotFoundModal = createEvent();
-const openOperationNotFoundModal = createEvent();
-const openConnectionTimeoutModal = createEvent();
 
-const $isAlreadySignedModalOpen = createStore(false)
-  .on(openAlreadySignedModal, () => true)
-  .on(closeAlreadySignedModal, () => false)
-  .on(viewAlreadySignedOperation, () => false)
+// === Modal State (single source of truth) ===
+const $activeModal = createStore<ModalType | null>(null)
+  .on(openModal, (_, type) => type)
+  .on(closeModal, () => null)
+  .on(viewAlreadySignedOperation, () => null)
+  .on(retryConnectionTimeout, () => null)
   .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
-const $isAccountNotFoundModalOpen = createStore(false)
-  .on(openAccountNotFoundModal, () => true)
-  .on(closeNotFoundModal, () => false)
-  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
+const $isAlreadySignedModalOpen = $activeModal.map(m => m === 'alreadySigned');
+const $isAccountNotFoundModalOpen = $activeModal.map(m => m === 'accountNotFound');
+const $isNetworkNotAvailableModalOpen = $activeModal.map(m => m === 'networkNotAvailable');
+const $isOperationNotFoundModalOpen = $activeModal.map(m => m === 'operationNotFound');
+const $isConnectionTimeoutModalOpen = $activeModal.map(m => m === 'connectionTimeout');
 
-const $isNetworkNotAvailableModalOpen = createStore(false)
-  .on(openChainNotFoundModal, () => true)
-  .on(closeNetworkNotAvailableModal, () => false)
-  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
-
-const $isOperationNotFoundModalOpen = createStore(false)
-  .on(openOperationNotFoundModal, () => true)
-  .on(closeOperationNotFoundModal, () => false)
-  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
-
-const $isConnectionTimeoutModalOpen = createStore(false)
-  .on(openConnectionTimeoutModal, () => true)
-  .on(closeConnectionTimeoutModal, () => false)
-  .on(retryConnectionTimeout, () => false)
-  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
-
+// === Core State ===
 const $deepLinkData = createStore<MultisigOperationDeepLinkData | null>(null)
   .on(multisigOperationDeepLinkHandler.triggered, (_, data) => data)
   .reset(operationsPageClosed);
@@ -102,24 +89,18 @@ const $connectedChainInfo = createStore<{ data: MultisigOperationDeepLinkData; c
   multisigOperationDeepLinkHandler.triggered,
 );
 
-const $isDeepLinkLoading = createStore(false).reset(
-  operationsPageClosed,
-  multisigOperationDeepLinkHandler.triggered,
-  openOperationNotFoundModal,
-  openAlreadySignedModal,
-  openConnectionTimeoutModal,
-  openAccountNotFoundModal,
-  openChainNotFoundModal,
-);
-
 const $targetOperation = combine(
   $targetOperationId,
   multisigOperation.$list,
   (id, list) => list.find(op => op.id === id) ?? null,
 );
 
-$isDeepLinkLoading.on($targetOperation.updates, (isLoading, op) => (nonNullable(op) ? false : isLoading));
+const $isDeepLinkLoading = createStore(false)
+  .on(openModal, () => false)
+  .on($targetOperation.updates, (isLoading, op) => (nonNullable(op) ? false : isLoading))
+  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
+// === Flow Triggers ===
 sample({
   clock: multisigOperationDeepLinkHandler.triggered,
   target: startDeepLinkFlow,
@@ -172,13 +153,15 @@ const validationResult = sample({
 sample({
   clock: validationResult,
   filter: (r): r is { type: 'chainNotFound' } => r.type === 'chainNotFound',
-  target: openChainNotFoundModal,
+  fn: (): ModalType => 'networkNotAvailable',
+  target: openModal,
 });
 
 sample({
   clock: validationResult,
   filter: (r): r is { type: 'accountNotFound' } => r.type === 'accountNotFound',
-  target: openAccountNotFoundModal,
+  fn: (): ModalType => 'accountNotFound',
+  target: openModal,
 });
 
 sample({
@@ -231,7 +214,8 @@ sample({
   clock: delay({ source: startedWaitingForConnection, timeout: CONNECTION_TIMEOUT }),
   source: $targetOperationId,
   filter: nullable,
-  target: openConnectionTimeoutModal,
+  fn: (): ModalType => 'connectionTimeout',
+  target: openModal,
 });
 
 sample({
@@ -239,7 +223,8 @@ sample({
   source: $deepLinkData,
   filter: (data, { chainId, status }) =>
     nonNullable(data) && data.chainId === chainId && status === ConnectionStatus.ERROR,
-  target: openConnectionTimeoutModal,
+  fn: (): ModalType => 'connectionTimeout',
+  target: openModal,
 });
 
 const multisigAccountResolved = sample({
@@ -302,7 +287,8 @@ sample({
   },
   filter: ({ awaitingId, operationsList }, fetchComplete) =>
     fetchComplete && nonNullable(awaitingId) && !operationsList.some(op => op.id === awaitingId),
-  target: openOperationNotFoundModal,
+  fn: (): ModalType => 'operationNotFound',
+  target: openModal,
 });
 
 sample({
@@ -321,7 +307,8 @@ sample({
   clock: setFocusedOperationId,
   source: $targetOperation,
   filter: op => nonNullable(op) && op.status === 'executed',
-  target: openAlreadySignedModal,
+  fn: (): ModalType => 'alreadySigned',
+  target: openModal,
 });
 
 sample({
@@ -369,20 +356,20 @@ export const deepLinkModel = {
   operationsPageClosed,
 
   $isAccountNotFoundModalOpen,
-  closeNotFoundModal,
+  closeNotFoundModal: closeModal,
 
   $isNetworkNotAvailableModalOpen,
-  closeNetworkNotAvailableModal,
+  closeNetworkNotAvailableModal: closeModal,
 
   $isOperationNotFoundModalOpen,
-  closeOperationNotFoundModal,
+  closeOperationNotFoundModal: closeModal,
 
   $isConnectionTimeoutModalOpen,
-  closeConnectionTimeoutModal,
+  closeConnectionTimeoutModal: closeModal,
   retryConnectionTimeout,
 
   $isAlreadySignedModalOpen,
-  closeAlreadySignedModal,
+  closeAlreadySignedModal: closeModal,
   viewAlreadySignedOperation,
 
   generateMultisigOperationDeepLink,
