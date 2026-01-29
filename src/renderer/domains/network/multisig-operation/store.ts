@@ -392,17 +392,17 @@ sample({
 });
 
 // Cleanup operations when accounts are deleted
-const deleteAccountIds = accounts.deleteAccounts.doneData.map(deleted => new Set(deleted.map(a => a.accountId)));
+const deleteAccountIds = accounts.deleteAccounts.doneData.map(deleted => deleted.map(a => a.accountId));
 
-$cachedOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.has(op.accountId)));
-$offChainOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.has(op.accountId)));
+$cachedOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.accountId)));
+$offChainOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.accountId)));
 
 $onChainOperationsByCallhash.on(deleteAccountIds, (state, ids) =>
   produce(state, draft => {
     for (const chainData of Object.values(draft)) {
       if (!chainData) continue;
       for (const accountId of keys(chainData)) {
-        if (ids.has(accountId)) delete chainData[accountId];
+        if (ids.includes(accountId)) delete chainData[accountId];
       }
     }
   }),
@@ -413,7 +413,7 @@ $trackedCallHashes.on(deleteAccountIds, (state, ids) =>
     for (const chainData of Object.values(draft)) {
       if (!chainData) continue;
       for (const accountId of keys(chainData.hashes)) {
-        if (ids.has(accountId)) delete chainData.hashes[accountId];
+        if (ids.includes(accountId)) delete chainData.hashes[accountId];
       }
     }
   }),
