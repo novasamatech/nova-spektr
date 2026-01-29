@@ -113,11 +113,17 @@ const populateNotificationsFx = createEffect((): Promise<Notification[]> => {
 });
 
 const addNotificationsFx = createEffect(async (notifications: CreateNotificationParams[]): Promise<Notification[]> => {
-  const notificationsWithMetadata: NoID<Notification>[] = notifications.map((notification) => ({
-    ...notification,
-    read: false,
-    dateCreated: Date.now(),
-  }));
+  // Check for existing keys in the database to avoid duplicates across tabs
+  const existingNotifications = await storageService.notifications.readAll();
+  const existingKeys = new Set(existingNotifications.map((n) => n.key));
+
+  const notificationsWithMetadata: NoID<Notification>[] = notifications
+    .filter((n) => !existingKeys.has(n.key))
+    .map((notification) => ({
+      ...notification,
+      read: false,
+      dateCreated: Date.now(),
+    }));
 
   return storageService.notifications.createAll(notificationsWithMetadata).then((r) => r ?? []);
 });
