@@ -4,7 +4,7 @@ import { interval, throttle } from 'patronum';
 import { type DateRange } from 'react-day-picker';
 
 import { type Done, persist } from '@/shared/api/storage';
-import { type FlexibleMultisigAccount, type MultisigAccount, TransactionType } from '@/shared/core';
+import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount, TransactionType } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import {
   type AnyAccount,
@@ -233,6 +233,17 @@ sample({
   target: setTab,
 });
 
+const $chainSyncState = combine(
+  {
+    expected: multisigOperation.$expectedChainIds,
+    fetched: multisigOperation.$fetchedChainIds,
+  },
+  ({ expected, fetched }): { expected: ChainId[]; fetched: ChainId[] } => ({
+    expected,
+    fetched,
+  }),
+);
+
 export const operationsContextModel = {
   $filter,
   $isFiltersSelected,
@@ -245,6 +256,7 @@ export const operationsContextModel = {
   $hiddenOperationIds,
   $hiddenOperationsCount,
   $pendingOperationsCount,
+  $chainSyncState,
 
   setFilters,
   resetFilters,
