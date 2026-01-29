@@ -1,5 +1,5 @@
 import { combine, createEvent, createStore, sample } from 'effector';
-import { delay } from 'patronum';
+import { and, delay } from 'patronum';
 import { z } from 'zod';
 
 import {
@@ -98,7 +98,7 @@ const $focusedOperationId = createStore<string | null>(null).reset(
   multisigOperationDeepLinkHandler.triggered,
 );
 
-const $dataReady = combine(accounts.$populated, networkModel.$populated, (a, b) => a && b);
+const $dataReady = and(accounts.$populated, networkModel.$populated, multisigOperation.$populated);
 
 const $focusedOperation = combine(
   $operationId,
