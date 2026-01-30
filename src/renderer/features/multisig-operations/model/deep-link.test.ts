@@ -393,6 +393,76 @@ describe('multisig operations deep link', () => {
 
       expect(scope.getState(deepLinkModel.$focusedOperationId)).toBe(mockOperation.id);
     });
+
+    it('should correctly handle FlexibleMultisigAccount with different accountId and multisigAccountId', async () => {
+      const proxiedAccountId = createAccountId(10);
+      const multisigAccountId = createAccountId(11);
+
+      const mockFlexibleAccount = {
+        id: 2,
+        accountId: proxiedAccountId,
+        multisigAccountId: multisigAccountId,
+        walletId: 1,
+        name: 'Flexible Multisig',
+        accountType: AccountType.FLEX_MULTISIG,
+        chainId: polkadotChainId,
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.WATCH_ONLY,
+        signatories: [],
+        threshold: 2,
+        proxyType: 'Any',
+        deposit: '0',
+        entropyBlockNumber: 1,
+        extrinsicIndex: 0,
+      };
+
+      const operationId = `${polkadotChainId}-0xabc123-${multisigAccountId}-100-1`;
+      const mockOperation = {
+        id: operationId,
+        status: 'pending' as const,
+        transaction: null,
+        method: null,
+        section: null,
+        callHash: '0xabc123' as any,
+        callData: null,
+        chainId: polkadotChainId,
+        accountId: multisigAccountId,
+        depositor: multisigAccountId,
+        blockCreated: 100 as any,
+        indexCreated: 1,
+        events: [],
+        timestamp: Date.now(),
+      };
+
+      const flexDeepLinkData: MultisigOperationDeepLinkData = {
+        chainId: polkadotChainId,
+        callHash: '0xabc123',
+        accountId: proxiedAccountId,
+        blockCreated: 100,
+        indexCreated: 1,
+      };
+
+      const scope = fork({
+        values: new Map()
+          .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+          .set(networkModel.$populated, true)
+          .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
+          .set(accounts.__test.$list, [mockFlexibleAccount])
+          .set(accounts.__test.$populated, true)
+          .set(multisigOperation.__test.$cachedOperations, [mockOperation])
+          .set(multisigOperation.__test.$populated, true)
+          .set(multisigOperation.__test.$expectedChainIds, [])
+          .set(multisigOperation.__test.$fetchedChainIds, [])
+          .set(multisigOperation.__test.$offChainReady, true),
+      });
+
+      await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
+        scope,
+        params: flexDeepLinkData,
+      });
+
+      expect(scope.getState(deepLinkModel.$focusedOperationId)).toBe(operationId);
+    });
   });
 
   describe('Connection handling', () => {

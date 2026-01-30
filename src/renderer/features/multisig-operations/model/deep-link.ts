@@ -12,7 +12,13 @@ import {
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { deepLinkService } from '@/domains/app';
-import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
+import {
+  type AnyAccount,
+  type MultisigOperation,
+  accounts,
+  multisigOperation,
+  multisigOperationService,
+} from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { multisigService } from '@/features/multisig-wallet';
@@ -82,7 +88,10 @@ const $focusedOperationId = createStore<string | null>(null).reset(
   multisigOperationDeepLinkHandler.triggered,
 );
 
-const $operationIdAwaitingFetch = createStore<string | null>(null).reset(operationsPageClosed);
+const $operationIdAwaitingFetch = createStore<string | null>(null).reset(
+  operationsPageClosed,
+  multisigOperationDeepLinkHandler.triggered,
+);
 
 const $connectedChainInfo = createStore<{ data: MultisigOperationDeepLinkData; chain: Chain } | null>(null).reset(
   operationsPageClosed,
@@ -118,8 +127,8 @@ const $canRunValidation = and(accounts.$populated, networkModel.$populated);
 function validateDeepLink(
   data: MultisigOperationDeepLinkData,
   chains: Record<ChainId, Chain>,
-  accountsList: ReturnType<typeof accounts.$list.getState>,
-  operations: ReturnType<typeof multisigOperation.$list.getState>,
+  accountsList: AnyAccount[],
+  operations: MultisigOperation[],
 ): ValidationResult {
   if (nullable(chains[data.chainId])) {
     return { type: 'chainNotFound' };
@@ -130,7 +139,7 @@ function validateDeepLink(
     return { type: 'accountNotFound' };
   }
 
-  const operationId = getOperationIdFromDeepLink(data);
+  const operationId = getOperationIdFromDeepLink({ ...data, accountId: account.accountId });
   const operationInCache = operations.some(op => op.id === operationId);
 
   return { type: 'valid', operationId, operationInCache };
