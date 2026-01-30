@@ -154,9 +154,11 @@ export const MultisigOperationNotificationComponent = ({
 
   return (
     <div className="flex gap-x-2">
-      <div className="pt-0.75">
-        <Icon name={icon.name} size={14} className={icon.className} />
-      </div>
+      {icon && (
+        <div className="pt-0.75">
+          <Icon name={icon.name} size={14} className={icon.className} />
+        </div>
+      )}
 
       <div className="flex flex-col gap-y-4">
         <div className="flex flex-col gap-y-2">

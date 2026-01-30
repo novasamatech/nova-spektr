@@ -10,7 +10,6 @@ import { type AnyAccount, accountService, accounts, multisigOperation } from '@/
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { multisigService } from '@/features/multisig-wallet';
 import { filterOperation } from '../lib/operations-filter';
 
 import { deepLinkModel } from './deep-link';
@@ -97,8 +96,7 @@ const $multisigAccountsMap = accounts.$list.map(accs => {
   const record: Record<string, MultisigAccount | FlexibleMultisigAccount> = {};
 
   for (const account of multisigAccounts) {
-    const multisigAccountId = multisigService.getMultisigAccountId(account);
-    record[multisigAccountId] = account;
+    record[account.accountId] = account;
   }
 
   return record;
@@ -150,7 +148,7 @@ const $hiddenOperationsCount = combine(
 );
 
 const $pendingOperationsCount = combine(
-  { operations: multisigOperation.$list, hiddenIds: $hiddenOperationIds },
+  { operations: $filteredOperations, hiddenIds: $hiddenOperationIds },
   ({ operations, hiddenIds }) => operations.filter(op => op.status === 'pending' && !hiddenIds.includes(op.id)).length,
 );
 
