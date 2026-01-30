@@ -117,6 +117,11 @@ const addNotificationsFx = createEffect(async (notifications: CreateNotification
   const existingNotifications = await storageService.notifications.readAll();
   const existingKeys = new Set(existingNotifications.map((n) => n.key));
 
+  const dbDuplicates = notifications.filter((n) => existingKeys.has(n.key));
+  if (dbDuplicates.length) {
+    console.log('NotificationModel: filtered out duplicates (key exists in database)', dbDuplicates);
+  }
+
   const notificationsWithMetadata: NoID<Notification>[] = notifications
     .filter((n) => !existingKeys.has(n.key))
     .map((notification) => ({
@@ -124,6 +129,10 @@ const addNotificationsFx = createEffect(async (notifications: CreateNotification
       read: false,
       dateCreated: Date.now(),
     }));
+
+  if (notificationsWithMetadata.length) {
+    console.log('NotificationModel: saving notifications to database', notificationsWithMetadata);
+  }
 
   return storageService.notifications.createAll(notificationsWithMetadata).then((r) => r ?? []);
 });
@@ -239,22 +248,40 @@ sample({
   fn: ({ notifications, disabledAccountIds, enabledEventMatchers }, incomingNotifications) => {
     const existingKeys = new Set(notifications.map((n) => n.key));
     const newNotifications: CreateNotificationParams[] = [];
+    const duplicates: CreateNotificationParams[] = [];
+    const disabledAccounts: CreateNotificationParams[] = [];
+    const disabledEvents: CreateNotificationParams[] = [];
+
+    console.log('NotificationModel: incoming notifications', incomingNotifications);
 
     for (const notification of incomingNotifications) {
       if (existingKeys.has(notification.key)) {
-        // filter out duplicates
+        duplicates.push(notification);
         continue;
       }
       if (disabledAccountIds.has(notification.issuer)) {
-        // filter out disabled accounts
+        disabledAccounts.push(notification);
         continue;
       }
       if (!enabledEventMatchers.some((matcher) => matcher(notification))) {
-        // filter out disabled events
+        disabledEvents.push(notification);
         continue;
       }
 
       newNotifications.push(notification);
+    }
+
+    if (duplicates.length) {
+      console.log('NotificationModel: filtered out duplicates (key exists in store)', duplicates);
+    }
+    if (disabledAccounts.length) {
+      console.log('NotificationModel: filtered out disabled accounts', disabledAccounts);
+    }
+    if (disabledEvents.length) {
+      console.log('NotificationModel: filtered out disabled events', disabledEvents);
+    }
+    if (newNotifications.length) {
+      console.log('NotificationModel: notifications passed filtering', newNotifications);
     }
 
     return newNotifications;
