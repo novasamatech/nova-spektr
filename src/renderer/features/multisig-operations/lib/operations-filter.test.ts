@@ -296,6 +296,30 @@ describe('operations-filter', () => {
       });
       expect(matchesDateRange(op, { from: new Date('2024-01-14') })).toBe(true);
     });
+
+    test('interprets UTC-midnight range as local calendar day (Jan 25 includes same-day UTC noon)', () => {
+      const opOnJan25 = createMockOperation({
+        timestamp: new Date('2025-01-25T12:00:00Z').getTime(),
+      });
+      expect(
+        matchesDateRange(opOnJan25, {
+          from: new Date('2025-01-25'),
+          to: new Date('2025-01-25'),
+        }),
+      ).toBe(true);
+    });
+
+    test('interprets UTC-midnight range as local calendar day (Jan 25 excludes previous day UTC)', () => {
+      const opOnJan24 = createMockOperation({
+        timestamp: new Date('2025-01-24T23:00:00Z').getTime(),
+      });
+      expect(
+        matchesDateRange(opOnJan24, {
+          from: new Date('2025-01-25'),
+          to: new Date('2025-01-25'),
+        }),
+      ).toBe(false);
+    });
   });
 
   describe('matchesSearch', () => {

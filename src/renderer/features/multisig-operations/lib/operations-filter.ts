@@ -1,4 +1,4 @@
-import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
+import { endOfDay, isAfter, isWithinInterval } from 'date-fns';
 
 import {
   type Chain,
@@ -94,16 +94,21 @@ export const matchesProxyType = (
   return nonNullable(operationProxyType) && proxyTypeIds.includes(operationProxyType);
 };
 
+const toLocalDate = (d: Date) => new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+
 export const matchesDateRange = (operation: MultisigOperation, dateRange: OperationsFilterCriteria['dateRange']) => {
   if (!dateRange?.from && !dateRange?.to) return true;
   const { from, to } = dateRange;
   const txDate = new Date(operation.timestamp);
 
   if (from && to) {
-    return isWithinInterval(txDate, { start: startOfDay(from), end: endOfDay(to) });
+    const fromLocal = toLocalDate(from);
+    const toLocal = toLocalDate(to);
+    return isWithinInterval(txDate, { start: fromLocal, end: endOfDay(toLocal) });
   }
   if (from) {
-    return isAfter(txDate, startOfDay(from)) || txDate.getTime() === startOfDay(from).getTime();
+    const fromLocal = toLocalDate(from);
+    return isAfter(txDate, fromLocal) || txDate.getTime() === fromLocal.getTime();
   }
   return true;
 };
