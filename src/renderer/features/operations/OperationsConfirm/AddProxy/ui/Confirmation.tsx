@@ -53,7 +53,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
       <TransactionDetails chain={chain} wallets={wallets} initiators={initiators} signatory={signatory}>
         <DetailRow label={t('proxy.details.grantAccessType')} className="pr-2">
-          <FootnoteText>{t(proxyUtils.getProxyTypeName(proxyType))}</FootnoteText>
+          <FootnoteText>{t(proxyUtils.getProxyTypeOperation(proxyType))}</FootnoteText>
         </DetailRow>
 
         <DetailRow label={t('proxy.details.delegateTo')} className="text-text-secondary">

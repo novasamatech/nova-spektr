@@ -1,10 +1,9 @@
 import { useUnit } from 'effector-react';
-import { groupBy } from 'lodash';
 import { useEffect, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useScrollTo } from '@/shared/lib/hooks';
-import { sortByDateDesc } from '@/shared/lib/utils';
+import { groupBy } from '@/shared/lib/utils';
 import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText, Loader } from '@/shared/ui';
 import { Box, ScrollArea } from '@/shared/ui-kit';
@@ -35,8 +34,8 @@ export const Operations = () => {
 
   const [focusedRef, scrollToFocused] = useScrollTo<HTMLLIElement>(300);
 
-  const groupedTxs = useMemo(() => {
-    const groupedTxs = groupBy(filteredTxs, tx => {
+  const sortedTxs = useMemo(() => {
+    const getDateKey = (tx: (typeof filteredTxs)[number]): string => {
       let date: number | undefined = tx.timestamp;
 
       if (nullable(date)) {
@@ -47,19 +46,23 @@ export const Operations = () => {
         date = Date.now();
       }
 
-      return formatDate(new Date(date), 'PP');
-    });
+      const d = new Date(date);
 
-    for (const date of Object.keys(groupedTxs)) {
-      groupedTxs[date] = groupedTxs[date].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-    }
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
 
-    return groupedTxs;
-  }, [filteredTxs, formatDate]);
+    const txsWithAccounts = filteredTxs.filter(tx => multisigAccountsMap[tx.accountId]);
+    const grouped = groupBy(txsWithAccounts, getDateKey);
 
-  const sortedTxs = useMemo(() => {
-    return Object.entries(groupedTxs).toSorted(sortByDateDesc);
-  }, [groupedTxs]);
+    return Object.entries(grouped)
+      .toSorted(([dateA], [dateB]) => dateB.localeCompare(dateA))
+      .map(([isoDate, txs]) => {
+        const sortedTxs = txs!.toSorted((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        const displayDate = formatDate(new Date(isoDate), 'PP');
+
+        return [displayDate, sortedTxs] as const;
+      });
+  }, [filteredTxs, formatDate, multisigAccountsMap]);
 
   useEffect(() => {
     return () => deepLinkModel.operationsPageClosed();

@@ -54,7 +54,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
       <TransactionDetails chain={chain} wallets={wallets} initiators={initiators} signatory={signatory}>
         <DetailRow label={t('proxy.details.accessType')} className="pr-2">
-          <FootnoteText>{t(proxyUtils.getProxyTypeName(proxyType))}</FootnoteText>
+          <FootnoteText>{t(proxyUtils.getProxyTypeOperation(proxyType))}</FootnoteText>
         </DetailRow>
 
         <DetailRow label={t('proxy.details.revokeFor')} className="text-text-secondary">
