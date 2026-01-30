@@ -322,7 +322,7 @@ sample({
     const eventNotifications = newEvents
       .filter(({ event }) => {
         // Don't notify if the current user caused the event
-        if (event.accountId in accountsMap) {
+        if (event.accountId in accountsMap && event.status !== 'reject') {
           return false;
         }
 
