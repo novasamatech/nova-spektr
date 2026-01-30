@@ -8,9 +8,8 @@ import { BodyText } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
-import { proxyUtils } from '@/entities/proxy';
+import { ProxyTypeOperation, proxyUtils } from '@/entities/proxy';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { ProxyTypeOperation } from '../../lib/constants';
 
 type Props = {
   notification: ProxyAction;

@@ -5,13 +5,13 @@ import { splitCamelCaseString, toAddress, toShortAddress } from '@/shared/lib/ut
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 
-import { ProxyTypeName } from './constants';
+import { ProxyTypeOperation } from './constants';
 
 export const proxyUtils = {
   isSameProxy,
   sortAccountsByProxyType,
   getProxiedName,
-  getProxyTypeName,
+  getProxyTypeOperation,
   getProxyAccountsOnChain,
 };
 
@@ -56,8 +56,8 @@ function getProxiedName(
   }
 }
 
-function getProxyTypeName(proxyType: ProxyType | string): string {
-  return ProxyTypeName[proxyType as ProxyType] || splitCamelCaseString(proxyType);
+function getProxyTypeOperation(proxyType: ProxyType | string): string {
+  return ProxyTypeOperation[proxyType as ProxyType] || splitCamelCaseString(proxyType);
 }
 
 function getProxyAccountsOnChain(
