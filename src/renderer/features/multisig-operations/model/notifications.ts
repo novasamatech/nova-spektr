@@ -245,7 +245,8 @@ const operationChanges = pairwise(multisigOperation.$list)
     const previousOpsMap = new Map(prevState.map((op: MultisigOperation) => [getOperationId(op), op]));
     const currentOpsMap = new Map(update.map((op: MultisigOperation) => [getOperationId(op), op]));
 
-    const added: MultisigOperation[] = [];
+    const newOperations: MultisigOperation[] = [];
+    const statusChanges: MultisigOperation[] = [];
     const removedKeys: string[] = [];
     const newEvents: NewEvent[] = [];
 
@@ -253,9 +254,9 @@ const operationChanges = pairwise(multisigOperation.$list)
       const previousOp = previousOpsMap.get(getOperationId(item));
 
       if (!previousOp) {
-        added.push(item);
+        newOperations.push(item);
       } else if (previousOp.status !== item.status && item.status !== 'pending') {
-        added.push(item);
+        statusChanges.push(item);
       } else if (previousOp.events.length !== item.events.length) {
         const previousEventIds = new Set(previousOp.events.map(e => e.id));
         for (const event of item.events) {
@@ -272,24 +273,27 @@ const operationChanges = pairwise(multisigOperation.$list)
       }
     }
 
-    if (added.length || removedKeys.length || newEvents.length) {
-      console.log('Notifications: changes output', { added, removedKeys, newEvents });
+    if (newOperations.length || statusChanges.length || removedKeys.length || newEvents.length) {
+      console.log('Notifications: changes output', { newOperations, statusChanges, removedKeys, newEvents });
     }
 
-    return { added, removedKeys, newEvents };
+    return { newOperations, statusChanges, removedKeys, newEvents };
   })
   .filter({
-    fn: ({ added, removedKeys, newEvents }) => added.length > 0 || removedKeys.length > 0 || newEvents.length > 0,
+    fn: ({ newOperations, statusChanges, removedKeys, newEvents }) =>
+      newOperations.length > 0 || statusChanges.length > 0 || removedKeys.length > 0 || newEvents.length > 0,
   });
 
 sample({
   clock: operationChanges,
   source: { populated: multisigOperation.$populated, accountsMap: $accountsMap, chains: networkModel.$chains },
   filter: ({ populated }) => populated,
-  fn: ({ accountsMap, chains }, { added, removedKeys, newEvents }) => {
+  fn: ({ accountsMap, chains }, { newOperations, statusChanges, removedKeys, newEvents }) => {
     const userOperations: MultisigOperation[] = [];
     const oldOperations: MultisigOperation[] = [];
-    const operationNotifications = added
+
+    // Filter new operations - apply timestamp filter to exclude operations created before account was connected
+    const newOperationNotifications = newOperations
       .filter(operation => {
         // Don't notify the operation creator
         if (operation.status === 'pending' && nonNullable(accountsMap[operation.depositor])) {
@@ -298,7 +302,7 @@ sample({
         }
 
         const account = accountsMap[operation.accountId];
-        // Show only new operations
+        // Show only operations created after account was connected
         const isNew = !account?.createdAt || operation.timestamp >= account.createdAt;
         if (!isNew) {
           oldOperations.push(operation);
@@ -310,6 +314,13 @@ sample({
 
         return createOperationNotification(operation, chains, account);
       });
+
+    // Status changes should always create notifications regardless of when the operation was created
+    const statusChangeNotifications = statusChanges.map(operation => {
+      const account = accountsMap[operation.accountId];
+
+      return createOperationNotification(operation, chains, account);
+    });
 
     if (userOperations.length) {
       console.log('Notifications: filtered out user operation', userOperations);
@@ -335,7 +346,7 @@ sample({
       });
 
     return {
-      added: [...operationNotifications, ...eventNotifications],
+      added: [...newOperationNotifications, ...statusChangeNotifications, ...eventNotifications],
       removed: { keys: removedKeys },
     };
   },
