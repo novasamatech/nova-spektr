@@ -24,6 +24,7 @@ interface QueryResource<Params, Response, Cache> extends Resource<Params, Respon
 }
 
 type QueryParams<Params, Response, Cache> = {
+  name?: string;
   fn: RequestFn<Params, Response>;
   key: KeyFn<Params>;
   cache: {
@@ -45,6 +46,7 @@ type QueryParams<Params, Response, Cache> = {
 type CacheOrDefault<Cache, Response> = [Cache] extends [never] ? DefaultCache<Response> : Cache;
 
 function build<Params, Response, Cache>({
+  name,
   key,
   fn,
   retry,
@@ -69,7 +71,7 @@ function build<Params, Response, Cache>({
   const $pending = createStore<Record<ResourceRequestKey, boolean>>({});
 
   const logFailFx = createEffect((error: Error) => {
-    console.error('Failed to fetch', error);
+    console.error(`Failed to fetch resource ${name ?? ''}`, error);
   });
 
   const requestFx = createQueuedEffect<Params, { cached: boolean; response: Response }>(
@@ -152,6 +154,9 @@ function build<Params, Response, Cache>({
 export const createQueryResource = <Params>({ key }: { key: KeyFn<Params> }) => {
   const internal = <Response = never, Cache = never>(params: Partial<QueryParams<Params, Response, Cache>> = {}) => {
     return {
+      name(name: string) {
+        return internal<Response, Cache>({ ...params, name } as Partial<QueryParams<Params, Response, Cache>>);
+      },
       request<Response>(fn: RequestFn<Params, Response>) {
         return internal<Response, Cache>({ ...params, fn, key } as Partial<QueryParams<Params, Response, Cache>>);
       },
@@ -168,6 +173,7 @@ export const createQueryResource = <Params>({ key }: { key: KeyFn<Params> }) => 
 
         if (params.cache) {
           return build<Params, Response, Cache>({
+            name: params.name,
             cache: params.cache,
             key,
             retry: params.retry,
@@ -178,6 +184,7 @@ export const createQueryResource = <Params>({ key }: { key: KeyFn<Params> }) => 
           const cacheMapper = createDefaultCacheMapper<Params, Response>(wrapKeyFactory(key));
 
           return build<Params, Response, DefaultCache<Response>>({
+            name: params.name,
             cache: {
               store: cacheStore,
               map: cacheMapper,
