@@ -165,10 +165,22 @@ const createEventNotification = (
     indexCreated: operation.indexCreated,
   });
 
-  const eventId = `${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.accountId, operation.blockCreated, operation.indexCreated)}-${event.id}`;
+  const operationId = multisigOperationService.getOperationId(
+    operation.chainId,
+    operation.callHash,
+    operation.accountId,
+    operation.blockCreated,
+    operation.indexCreated,
+  );
+
+  // For reject events, use the same key as the cancelled operation notification to deduplicate
+  const key =
+    event.status === 'reject'
+      ? `${NotificationType.MULTISIG_OPERATION}-${operationId}-cancelled`
+      : `${NotificationType.MULTISIG_EVENT}-${operationId}-${event.id}`;
 
   return {
-    key: `${NotificationType.MULTISIG_EVENT}-${eventId}`,
+    key,
     type: NotificationType.MULTISIG_EVENT,
     status: event.status === 'approve' ? 'success' : 'error',
     issuer: operation.accountId,
@@ -205,6 +217,31 @@ const getNotificationKey = (op: MultisigOperation) =>
 
 const operationChanges = pairwise(multisigOperation.$list)
   .map(({ prev: prevState, current: update }) => {
+    if (prevState.length < update.length) {
+      const existingIds = new Set(prevState.map(o => o.id));
+      console.log(
+        'Notifications: new operations',
+        update.filter(i => !existingIds.has(i.id)),
+      );
+    }
+    if (prevState.length > update.length) {
+      const newIds = new Set(update.map(o => o.id));
+      console.log(
+        'Notifications: removed operations',
+        prevState.filter(i => !newIds.has(i.id)),
+      );
+    }
+
+    const prevMap = new Map(update.map(o => [o.id, o]));
+    const changedOperations = update.filter(newOperation => {
+      const oldOperation = prevMap.get(newOperation.id);
+      if (!oldOperation) return false;
+      return newOperation.status !== oldOperation.status || newOperation.events !== oldOperation.events;
+    });
+    if (changedOperations.length) {
+      console.log('Notifications: operations changed', changedOperations);
+    }
+
     const previousOpsMap = new Map(prevState.map((op: MultisigOperation) => [getOperationId(op), op]));
     const currentOpsMap = new Map(update.map((op: MultisigOperation) => [getOperationId(op), op]));
 
@@ -235,6 +272,10 @@ const operationChanges = pairwise(multisigOperation.$list)
       }
     }
 
+    if (added.length || removedKeys.length || newEvents.length) {
+      console.log('Notifications: changes output', { added, removedKeys, newEvents });
+    }
+
     return { added, removedKeys, newEvents };
   })
   .filter({
@@ -246,16 +287,23 @@ sample({
   source: { populated: multisigOperation.$populated, accountsMap: $accountsMap, chains: networkModel.$chains },
   filter: ({ populated }) => populated,
   fn: ({ accountsMap, chains }, { added, removedKeys, newEvents }) => {
+    const userOperations: MultisigOperation[] = [];
+    const oldOperations: MultisigOperation[] = [];
     const operationNotifications = added
       .filter(operation => {
         // Don't notify the operation creator
-        if (operation.status === 'pending' && operation.depositor in accountsMap) {
+        if (operation.status === 'pending' && nonNullable(accountsMap[operation.depositor])) {
+          userOperations.push(operation);
           return false;
         }
 
         const account = accountsMap[operation.accountId];
         // Show only new operations
-        return !account?.createdAt || operation.timestamp >= account.createdAt;
+        const isNew = !account?.createdAt || operation.timestamp >= account.createdAt;
+        if (!isNew) {
+          oldOperations.push(operation);
+        }
+        return isNew;
       })
       .map(operation => {
         const account = accountsMap[operation.accountId];
@@ -263,13 +311,16 @@ sample({
         return createOperationNotification(operation, chains, account);
       });
 
+    if (userOperations.length) {
+      console.log('Notifications: filtered out user operation', userOperations);
+    }
+
+    if (oldOperations.length) {
+      console.log('Notifications: filtered out old operation', oldOperations);
+    }
+
     const eventNotifications = newEvents
       .filter(({ event }) => {
-        // Don't notify for reject events - the operation status change notification will cover it
-        if (event.status === 'reject') {
-          return false;
-        }
-
         // Don't notify if the current user caused the event
         if (event.accountId in accountsMap) {
           return false;
