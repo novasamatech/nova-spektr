@@ -64,6 +64,8 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
   const proxyWalletType = proxyWallet?.type;
   const proxyAddress = toAddress(notification.proxyAccountId, { prefix: chain?.addressPrefix });
 
+  const proxyTypeTranslation = ProxyTypeOperation[notification.proxyType];
+
   return (
     <div className="flex gap-x-2">
       <div className="relative">
@@ -94,7 +96,7 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
             i18nKey="notifications.details.proxyRemovedDetails"
             values={{
               name: proxyWalletName,
-              operations: t(ProxyTypeOperation[notification.proxyType]),
+              operations: proxyTypeTranslation ? t(proxyTypeTranslation) : notification.proxyType,
             }}
             components={{
               chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,
