@@ -23,7 +23,6 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { multisigService } from '@/features/multisig-wallet';
 
 import { deepLinkModel } from './deep-link';
 import { multisigOperationsFeature } from './feature';
@@ -176,8 +175,7 @@ const $multisigAccountsMap = accounts.$list.map(accs => {
   const record: Record<string, MultisigAccount | FlexibleMultisigAccount> = {};
 
   for (const account of multisigAccounts) {
-    const multisigAccountId = multisigService.getMultisigAccountId(account);
-    record[multisigAccountId] = account;
+    record[account.accountId] = account;
   }
 
   return record;
