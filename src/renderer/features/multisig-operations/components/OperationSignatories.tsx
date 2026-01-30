@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { type FlexibleMultisigAccount, type MultisigAccount, type Signatory, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -31,6 +31,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
   const contacts = useUnit(contactModel.$contacts);
 
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+  const closeLogModal = useCallback(() => setIsLogModalOpen(false), []);
 
   const approvals = operation.events.filter(e => e.status === 'approve');
   const cancellation = operation.events.filter(e => e.status === 'reject');
@@ -144,7 +145,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
         account={account}
         connection={connection}
         contacts={contacts}
-        onClose={() => setIsLogModalOpen(false)}
+        onClose={closeLogModal}
       />
     </div>
   );
