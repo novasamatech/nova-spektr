@@ -11,11 +11,12 @@ import { Hash, WalletAccountIcon } from '@/shared/ui-entities';
 import { type DateRange, DateRangePicker } from '@/shared/ui-kit';
 import { accountService, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { ProxyTypeName } from '@/entities/proxy';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
 import { operationsContextModel } from '../model/context';
 
-type FilterName = 'account' | 'network' | 'type';
+type FilterName = 'account' | 'network' | 'type' | 'proxyType';
 
 export const OperationsFilter = memo(() => {
   const { t } = useI18n();
@@ -31,6 +32,7 @@ export const OperationsFilter = memo(() => {
   const [accountSearchQuery, setAccountSearchQuery] = useState('');
   const [networkSearchQuery, setNetworkSearchQuery] = useState('');
   const [typeSearchQuery, setTypeSearchQuery] = useState('');
+  const [proxyTypeSearchQuery, setProxyTypeSearchQuery] = useState('');
 
   const multisigAccounts = useMemo(() => Object.values(multisigAccountsMap), [multisigAccountsMap]);
 
@@ -39,6 +41,11 @@ export const OperationsFilter = memo(() => {
     id: chainId,
     value: chainId,
     element: name,
+  }));
+  const ProxyTypeOptions = Object.entries(ProxyTypeName).map(([type, name]) => ({
+    id: type,
+    value: type,
+    element: t(name),
   }));
 
   const filtersOptions = useMemo(() => {
@@ -99,10 +106,17 @@ export const OperationsFilter = memo(() => {
       weights: { element: 1 },
     });
 
+    const filteredProxyTypeOptions = performSearch({
+      query: proxyTypeSearchQuery,
+      records: ProxyTypeOptions,
+      weights: { element: 1 },
+    });
+
     return {
       account: filteredAccountOptions,
       network: filteredNetworkOptions,
       type: filteredTypeOptions,
+      proxyType: filteredProxyTypeOptions,
     };
   }, [
     multisigAccounts,
@@ -110,9 +124,11 @@ export const OperationsFilter = memo(() => {
     chains,
     NetworkOptions,
     TransactionOptions,
+    ProxyTypeOptions,
     accountSearchQuery,
     networkSearchQuery,
     typeSearchQuery,
+    proxyTypeSearchQuery,
   ]);
 
   const handleFilterChange = (values: DropdownResult[], filterName: FilterName) => {
@@ -151,6 +167,15 @@ export const OperationsFilter = memo(() => {
         options={[...filtersOptions.account]}
         onChange={value => handleFilterChange(value, 'account')}
         onSearch={setAccountSearchQuery}
+      />
+      <MultiSelect
+        showSelectAll
+        className="w-[136px]"
+        placeholder={t('operations.filters.proxyTypePlaceholder')}
+        selectedIds={selectedOptions.proxyType}
+        options={[...filtersOptions.proxyType]}
+        onChange={value => handleFilterChange(value, 'proxyType')}
+        onSearch={setProxyTypeSearchQuery}
       />
       <MultiSelect
         showSelectAll

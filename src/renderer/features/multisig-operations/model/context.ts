@@ -4,7 +4,13 @@ import { interval, throttle } from 'patronum';
 import { type DateRange } from 'react-day-picker';
 
 import { type Done, persist } from '@/shared/api/storage';
-import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount, TransactionType } from '@/shared/core';
+import {
+  type ChainId,
+  type FlexibleMultisigAccount,
+  type MultisigAccount,
+  type ProxyType,
+  TransactionType,
+} from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import {
   type AnyAccount,
@@ -25,6 +31,7 @@ interface SelectedFilters {
   account: string[];
   network: string[];
   type: string[];
+  proxyType: string[];
   dateRange?: DateRange;
 }
 export type TabFilter = 'pending' | 'history' | 'hidden';
@@ -40,7 +47,13 @@ $hiddenOperationIds
   .on(hideOperation, (state, id) => (state.includes(id) ? state : [...state, id]))
   .on(unhideOperation, (state, id) => state.filter(opId => opId !== id));
 
-const filterTx = (tx: MultisigOperation, filters: SelectedFilters, tab: TabFilter, hiddenIds: string[]) => {
+const filterTx = (
+  tx: MultisigOperation,
+  filters: SelectedFilters,
+  tab: TabFilter,
+  hiddenIds: string[],
+  multisigAccountsMap: Record<string, MultisigAccount | FlexibleMultisigAccount>,
+) => {
   const isHidden = hiddenIds.includes(tx.id);
 
   if (tab === 'hidden') {
@@ -55,6 +68,16 @@ const filterTx = (tx: MultisigOperation, filters: SelectedFilters, tab: TabFilte
   const hasOrigin = !filters.network.length || filters.network.includes(tx.chainId);
   const hasDestination = !filters.network.length || filters.network.includes(xcmDestination);
   const hasTxType = !filters.type.length || filters.type.includes(getFilterableTxType(tx));
+
+  const multisigAccount = multisigAccountsMap[tx.accountId];
+  let operationProxyType: ProxyType | null = null;
+
+  if (multisigAccount && accountUtils.isFlexibleMultisigAccount(multisigAccount)) {
+    operationProxyType = multisigAccount.proxyType;
+  }
+
+  const hasProxyType =
+    !filters.proxyType.length || (nonNullable(operationProxyType) && filters.proxyType.includes(operationProxyType));
 
   let isInDateRange = true;
   if (filters.dateRange) {
@@ -71,7 +94,6 @@ const filterTx = (tx: MultisigOperation, filters: SelectedFilters, tab: TabFilte
     }
   }
 
-  // For hidden tab, show all hidden operations regardless of status
   const statusMatchesTab =
     tab === 'hidden'
       ? true
@@ -79,7 +101,7 @@ const filterTx = (tx: MultisigOperation, filters: SelectedFilters, tab: TabFilte
         ? tx.status === 'pending'
         : ['executed', 'cancelled', 'error'].includes(tx.status);
 
-  return hasAccount && (hasOrigin || hasDestination) && hasTxType && isInDateRange && statusMatchesTab;
+  return hasAccount && (hasOrigin || hasDestination) && hasTxType && hasProxyType && isInDateRange && statusMatchesTab;
 };
 
 const getFilterableTxType = (op: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
@@ -111,6 +133,7 @@ const $filter = restore(setFilters, {
   account: [],
   network: [],
   type: [],
+  proxyType: [],
   dateRange: undefined,
 }).reset(resetFilters);
 
@@ -119,6 +142,7 @@ const $isFiltersSelected = $filter.map(filter =>
     filter.account.length ||
       filter.network.length ||
       filter.type.length ||
+      filter.proxyType.length ||
       filter.dateRange?.from ||
       filter.dateRange?.to,
   ),
@@ -162,9 +186,15 @@ const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(wall
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 
 const $filteredOperations = combine(
-  { operations: multisigOperation.$list, filter: $filter, tab: $tab, hiddenIds: $hiddenOperationIds },
-  ({ operations, filter, tab, hiddenIds }) => {
-    return operations.filter(op => filterTx(op, filter, tab, hiddenIds));
+  {
+    operations: multisigOperation.$list,
+    filter: $filter,
+    tab: $tab,
+    hiddenIds: $hiddenOperationIds,
+    multisigAccountsMap: $multisigAccountsMap,
+  },
+  ({ operations, filter, tab, hiddenIds, multisigAccountsMap }) => {
+    return operations.filter(op => filterTx(op, filter, tab, hiddenIds, multisigAccountsMap));
   },
 );
 
@@ -174,7 +204,7 @@ const $hiddenOperationsCount = combine(
 );
 
 const $pendingOperationsCount = combine(
-  { operations: multisigOperation.$list, hiddenIds: $hiddenOperationIds },
+  { operations: $filteredOperations, hiddenIds: $hiddenOperationIds },
   ({ operations, hiddenIds }) => operations.filter(op => op.status === 'pending' && !hiddenIds.includes(op.id)).length,
 );
 
