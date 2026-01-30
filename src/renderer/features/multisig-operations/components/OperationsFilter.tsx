@@ -24,6 +24,7 @@ export const OperationsFilter = memo(() => {
   const selectedOptions = useUnit(operationsContextModel.$filter);
   const isFiltersSelected = useUnit(operationsContextModel.$isFiltersSelected);
   const chains = useUnit(networkModel.$chains);
+  const chainsList = useUnit(networkModel.$chainsList);
   const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
   const multisigWallets = useUnit(operationsContextModel.$multisigWallets);
 
@@ -37,7 +38,7 @@ export const OperationsFilter = memo(() => {
   const multisigAccounts = useMemo(() => Object.values(multisigAccountsMap), [multisigAccountsMap]);
 
   const TransactionOptions = getTransactionOptions(t);
-  const NetworkOptions = Object.values(chains).map(({ chainId, name }) => ({
+  const NetworkOptions = chainsList.map(({ chainId, name }) => ({
     id: chainId,
     value: chainId,
     element: name,
