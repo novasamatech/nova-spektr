@@ -14,7 +14,6 @@ import { networkModel } from '@/entities/network';
 import { ProxyTypeName } from '@/entities/proxy';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
-import { multisigService } from '@/features/multisig-wallet';
 import { operationsContextModel } from '../model/context';
 
 type FilterName = 'account' | 'network' | 'type' | 'proxyType';
@@ -80,8 +79,8 @@ export const OperationsFilter = memo(() => {
       }),
       weights: { name: 1, address: 0.8 },
     }).map(({ multisigAccount, walletName, accountAddress, wallet }) => ({
-      id: multisigService.getMultisigAccountId(multisigAccount),
-      value: multisigService.getMultisigAccountId(multisigAccount),
+      id: multisigAccount.accountId,
+      value: multisigAccount.accountId,
       element: (
         <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
           {wallet && <WalletAccountIcon address={accountAddress} type={wallet.type} size={24} iconSize={12} />}
