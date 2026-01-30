@@ -11,13 +11,13 @@ import { Alert, FootnoteText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type AnyAccount, type BalanceUpdateResult } from '@/domains/network';
 import { useWalletName } from '@/domains/network';
-import { ProxyTypeName } from '@/entities/proxy';
+import { ProxyTypeOperation } from '@/entities/proxy';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 const PermissionErrorItem = memo(({ wallet, permission }: { wallet: Wallet; permission: string }) => {
   const { t } = useI18n();
   const walletName = useWalletName(wallet);
-  const permissionTranslationKey = ProxyTypeName[permission as ProxyType] ?? permission;
+  const permissionTranslationKey = ProxyTypeOperation[permission as ProxyType] ?? permission;
 
   return (
     <Box as="span" direction="row" gap={1} verticalAlign="center">

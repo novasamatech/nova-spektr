@@ -11,6 +11,7 @@ import { entries, groupBy, keys, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query/types';
 import { networkModel } from '@/entities/network';
+import { accounts } from '../account/store';
 
 import {
   $completionEvents,
@@ -389,6 +390,34 @@ sample({
   },
   target: $cachedOperations,
 });
+
+// Cleanup operations when accounts are deleted
+const deleteAccountIds = accounts.deleteAccounts.doneData.map(deleted => deleted.map(a => a.accountId));
+
+$cachedOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.accountId)));
+$offChainOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.accountId)));
+
+$onChainOperationsByCallhash.on(deleteAccountIds, (state, ids) =>
+  produce(state, draft => {
+    for (const chainData of Object.values(draft)) {
+      if (!chainData) continue;
+      for (const accountId of keys(chainData)) {
+        if (ids.includes(accountId)) delete chainData[accountId];
+      }
+    }
+  }),
+);
+
+$trackedCallHashes.on(deleteAccountIds, (state, ids) =>
+  produce(state, draft => {
+    for (const chainData of Object.values(draft)) {
+      if (!chainData) continue;
+      for (const accountId of keys(chainData.hashes)) {
+        if (ids.includes(accountId)) delete chainData.hashes[accountId];
+      }
+    }
+  }),
+);
 
 export const multisigOperation = {
   $list: $allOperations,
