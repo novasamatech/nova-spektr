@@ -1,9 +1,8 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { type FlexibleMultisigAccount, type MultisigAccount, type Signatory, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Address, WalletIcon } from '@/shared/ui-entities';
@@ -31,7 +30,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
   const accountsList = useUnit(accounts.$list);
   const contacts = useUnit(contactModel.$contacts);
 
-  const [isLogModalOpen, toggleLogModal] = useToggle();
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
   const approvals = operation.events.filter(e => e.status === 'approve');
   const cancellation = operation.events.filter(e => e.status === 'reject');
@@ -82,7 +81,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
               {operation.events.length}
             </CaptionText>
           }
-          onClick={toggleLogModal}
+          onClick={() => setIsLogModalOpen(true)}
         >
           {t('operation.logButton')}
         </Button>
@@ -145,7 +144,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
         account={account}
         connection={connection}
         contacts={contacts}
-        onClose={toggleLogModal}
+        onClose={() => setIsLogModalOpen(false)}
       />
     </div>
   );
