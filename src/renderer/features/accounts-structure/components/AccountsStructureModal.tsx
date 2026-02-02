@@ -29,11 +29,15 @@ export const AccountsStructureModal = ({ walletAccounts, trigger, onClose }: Pro
   const edgeType = useUnit(accountsStructureModel.$edgeType);
 
   useEffect(() => {
-    accountsStructureModel.setAccounts(walletAccounts);
+    if (isOpen) {
+      accountsStructureModel.setAccounts(walletAccounts);
+    }
     return () => {
-      accountsStructureModel.setAccounts(null);
+      if (isOpen) {
+        accountsStructureModel.setAccounts(null);
+      }
     };
-  }, [walletAccounts]);
+  }, [walletAccounts, isOpen]);
 
   const onToggle = useCallback(
     (value: boolean) => {
