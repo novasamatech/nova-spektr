@@ -10,8 +10,8 @@ import { AssetFiatBalance } from '@/entities/price';
 import { useStakingData } from '@/entities/staking';
 
 type Props = {
-  api?: ApiPromise;
-  timelineApi?: ApiPromise;
+  api: ApiPromise | null;
+  timelineApi: ApiPromise | null;
   era?: EraIndex;
   asset?: Asset;
   validators: Validator[];
