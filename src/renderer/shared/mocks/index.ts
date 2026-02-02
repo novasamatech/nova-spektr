@@ -246,6 +246,7 @@ export const createVaultBaseAccount = (
     accountType: AccountType.BASE,
     walletId: params.walletId,
     type: 'universal',
+    createdAt: Date.now(),
   };
 };
 

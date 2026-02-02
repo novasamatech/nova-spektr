@@ -32,8 +32,10 @@ type NewEvent = {
   event: MultisigEvent;
 };
 
-const $accountsMap = accounts.$list.map(accountsList =>
-  Object.fromEntries(accountsList.map(account => [account.accountId, account])),
+const $anyMultisigAccountsMap = accounts.$list.map(accountsList =>
+  Object.fromEntries(
+    accountsList.filter(accountUtils.isAnyMultisigAccount).map(account => [account.accountId, account]),
+  ),
 );
 
 const getNotificationStatus = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
@@ -257,30 +259,34 @@ const operationChanges = pairwise(multisigOperation.$list)
 
 sample({
   clock: operationChanges,
-  source: { populated: multisigOperation.$populated, accountsMap: $accountsMap, chains: networkModel.$chains },
+  source: {
+    populated: multisigOperation.$populated,
+    anyMultisigAccountsMap: $anyMultisigAccountsMap,
+    chains: networkModel.$chains,
+  },
   filter: ({ populated }) => populated,
-  fn: ({ accountsMap, chains }, { newOperations, statusChanges, removedKeys, newEvents }) => {
+  fn: ({ anyMultisigAccountsMap, chains }, { newOperations, statusChanges, removedKeys, newEvents }) => {
     // Filter new operations - apply timestamp filter to exclude operations created before account was connected
     const newOperationNotifications = newOperations
       .filter(operation => {
         // Don't notify the operation creator
-        if (operation.status === 'pending' && nonNullable(accountsMap[operation.depositor])) {
+        if (operation.status === 'pending' && nonNullable(anyMultisigAccountsMap[operation.depositor])) {
           return false;
         }
 
-        const account = accountsMap[operation.accountId];
+        const account = anyMultisigAccountsMap[operation.accountId];
         // Show only operations created after account was connected
         return nonNullable(account) && operation.timestamp >= account.createdAt;
       })
       .map(operation => {
-        const account = accountsMap[operation.accountId];
+        const account = anyMultisigAccountsMap[operation.accountId];
 
         return createOperationNotification(operation, chains, account);
       });
 
     // Status changes should always create notifications regardless of when the operation was created
     const statusChangeNotifications = statusChanges.map(operation => {
-      const account = accountsMap[operation.accountId];
+      const account = anyMultisigAccountsMap[operation.accountId];
 
       return createOperationNotification(operation, chains, account);
     });
@@ -288,14 +294,14 @@ sample({
     const eventNotifications = newEvents
       .filter(({ event }) => {
         // Don't notify if the current user caused the event
-        if (event.accountId in accountsMap && event.status !== 'reject') {
+        if (event.accountId in anyMultisigAccountsMap && event.status !== 'reject') {
           return false;
         }
 
         return true;
       })
       .map(({ operation, event }) => {
-        const signerAccount = accountsMap[event.accountId];
+        const signerAccount = anyMultisigAccountsMap[event.accountId];
 
         return createEventNotification(operation, event, signerAccount?.name);
       });

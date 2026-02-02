@@ -371,6 +371,7 @@ sample({
       type: 'universal',
       blockNumber: timepoint.height,
       remarkChainId: chain?.chainId,
+      createdAt: Date.now(),
     };
 
     const wallet: Omit<NoID<MultisigWallet>, 'accounts'> = {

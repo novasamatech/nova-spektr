@@ -159,6 +159,7 @@ async function getWalletsAndAccounts(t: Transaction) {
         type: 'universal',
         accountType: AccountType.BASE,
         signingType: SigningType.POLKADOT_VAULT,
+        createdAt: Date.now(),
       } satisfies AccountDraft<VaultBaseAccount>);
     }
   }
