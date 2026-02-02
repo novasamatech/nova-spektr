@@ -217,31 +217,6 @@ const getNotificationKey = (op: MultisigOperation) =>
 
 const operationChanges = pairwise(multisigOperation.$list)
   .map(({ prev: prevState, current: update }) => {
-    if (prevState.length < update.length) {
-      const existingIds = new Set(prevState.map(o => o.id));
-      console.log(
-        'Notifications: new operations',
-        update.filter(i => !existingIds.has(i.id)),
-      );
-    }
-    if (prevState.length > update.length) {
-      const newIds = new Set(update.map(o => o.id));
-      console.log(
-        'Notifications: removed operations',
-        prevState.filter(i => !newIds.has(i.id)),
-      );
-    }
-
-    const prevMap = new Map(update.map(o => [o.id, o]));
-    const changedOperations = update.filter(newOperation => {
-      const oldOperation = prevMap.get(newOperation.id);
-      if (!oldOperation) return false;
-      return newOperation.status !== oldOperation.status || newOperation.events !== oldOperation.events;
-    });
-    if (changedOperations.length) {
-      console.log('Notifications: operations changed', changedOperations);
-    }
-
     const previousOpsMap = new Map(prevState.map((op: MultisigOperation) => [getOperationId(op), op]));
     const currentOpsMap = new Map(update.map((op: MultisigOperation) => [getOperationId(op), op]));
 
