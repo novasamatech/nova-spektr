@@ -58,7 +58,8 @@ export const Operations = () => {
       .toSorted(([dateA], [dateB]) => dateB.localeCompare(dateA))
       .map(([isoDate, txs]) => {
         const sortedTxs = txs!.toSorted((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-        const displayDate = formatDate(new Date(isoDate), 'PP');
+        const [y, m, d] = isoDate.split('-').map(Number);
+        const displayDate = formatDate(new Date(y, m - 1, d), 'PP');
 
         return [displayDate, sortedTxs] as const;
       });

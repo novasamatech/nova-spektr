@@ -5,6 +5,7 @@ import { type Call } from '@polkadot/types/interfaces';
 import { type HexString } from '@polkadot/util/types';
 
 import { type CallData, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
+import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import {
@@ -88,8 +89,14 @@ const parseBatch = (
     transactionType = TransactionType.BATCH_ALL;
   }
 
+  const calls = api.createType('Vec<Call>', decoded.args[0]);
+  const innerTransactions = calls.map((call) => decodeCallData(api, accountId, call.toHex(), nativeAssetId));
+  const firstTx = innerTransactions[0];
+  const isProxy = firstTx.section === 'proxy' && firstTx.method === 'proxy';
+  const proxiedAccountId = isProxy && firstTx?.accountId ? firstTx?.accountId : accountId;
+
   const batchTransaction = getDecodedTransaction(
-    accountId,
+    proxiedAccountId,
     decoded,
     method,
     section,
@@ -97,8 +104,7 @@ const parseBatch = (
     nativeAssetId,
     transactionType,
   );
-  const calls = api.createType('Vec<Call>', batchTransaction.args.calls);
-  batchTransaction.args.transactions = calls.map((call) => decodeCallData(api, accountId, call.toHex(), nativeAssetId));
+  batchTransaction.args.transactions = innerTransactions;
 
   return batchTransaction;
 };
@@ -111,8 +117,10 @@ const parseProxy = (
   api: ApiPromise,
   nativeAssetId: string,
 ): DecodedTransaction => {
+  const proxiedAccountId = (decoded.args[0] && toAccountId(decoded.args[0].toString())) ?? accountId;
+
   const proxyTransaction = getDecodedTransaction(
-    accountId,
+    proxiedAccountId,
     decoded,
     method,
     section,
@@ -121,7 +129,7 @@ const parseProxy = (
     TransactionType.PROXY,
   );
   const call = api.createType('Call', proxyTransaction.args.call);
-  proxyTransaction.args.transaction = decodeCallData(api, accountId, call.toHex(), nativeAssetId);
+  proxyTransaction.args.transaction = decodeCallData(api, proxiedAccountId, call.toHex(), nativeAssetId);
 
   return proxyTransaction;
 };

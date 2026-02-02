@@ -163,7 +163,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
             onSubmit={onFormSubmit}
           />
         )}
-        {activeStep === Step.CONFIRMATION && fee && (
+        {activeStep === Step.CONFIRMATION && (
           <Confirmation
             operation={operation}
             api={api}
