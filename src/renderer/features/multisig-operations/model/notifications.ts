@@ -1,4 +1,4 @@
-import { sample } from 'effector';
+import { createStore, sample } from 'effector';
 import { t } from 'i18next';
 import { spread } from 'patronum';
 
@@ -293,3 +293,5 @@ sample({
     removed: notificationModel.events.notificationsRemoved,
   }),
 });
+
+export const $notificationsReady = createStore(false).on(operationChanges, () => true);
