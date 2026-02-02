@@ -2,11 +2,12 @@ import { useUnit } from 'effector-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { type FlexibleMultisigAccount, type MultisigAccount, type Signatory, type Wallet } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Address, WalletIcon } from '@/shared/ui-entities';
-import { type MultisigOperation, accounts } from '@/domains/network';
+import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { type ExtendedChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
@@ -14,6 +15,11 @@ import { SignatoryCard } from '@/entities/signatory';
 import { walletModel } from '@/entities/wallet';
 
 import LogModal from './LogModal';
+
+export const operationOverviewSlot = createSlot<{
+  walletAccounts: AnyAccount[];
+  trigger?: React.ReactNode;
+}>();
 
 type WalletSignatory = Signatory & { wallet: Wallet };
 
@@ -71,21 +77,34 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
   return (
     <div className="flex flex-col border-r border-divider p-4">
       <div className="mb-4 flex items-center justify-between">
-        <SmallTitleText>{t('operation.signatoriesTitle')}</SmallTitleText>
-        <Button
-          pallet="secondary"
-          variant="fill"
-          size="sm"
-          prefixElement={<Icon name="chat" size={16} />}
-          suffixElement={
-            <CaptionText className="rounded-full bg-chip-icon px-1.5 pt-px pb-[2px] text-white!">
-              {operation.events.length}
-            </CaptionText>
-          }
-          onClick={() => setIsLogModalOpen(true)}
-        >
-          {t('operation.logButton')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <SmallTitleText>{t('operation.signatoriesTitle')}</SmallTitleText>
+          <Button
+            pallet="secondary"
+            variant="fill"
+            size="sm"
+            prefixElement={<Icon name="chat" size={16} />}
+            suffixElement={
+              <CaptionText className="rounded-full bg-chip-icon px-1.5 pt-px pb-[2px] text-white!">
+                {operation.events.length}
+              </CaptionText>
+            }
+            onClick={() => setIsLogModalOpen(true)}
+          >
+            {t('operation.logButton')}
+          </Button>
+        </div>
+        <Slot
+          id={operationOverviewSlot}
+          props={{
+            walletAccounts: [account],
+            trigger: (
+              <Button pallet="primary" variant="text" size="sm">
+                {t('operation.openOverviewButton')}
+              </Button>
+            ),
+          }}
+        />
       </div>
 
       <div className="flex flex-col gap-y-2">
