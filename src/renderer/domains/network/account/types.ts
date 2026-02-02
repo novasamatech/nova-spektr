@@ -18,7 +18,7 @@ export interface UniversalAccount {
   accountId: AccountId;
   cryptoType: CryptoType;
   signingType: SigningType;
-  createdAt?: number;
+  createdAt: number;
 }
 
 /**

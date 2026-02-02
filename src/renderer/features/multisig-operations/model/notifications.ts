@@ -270,7 +270,7 @@ sample({
 
         const account = accountsMap[operation.accountId];
         // Show only operations created after account was connected
-        return !account?.createdAt || operation.timestamp >= account.createdAt;
+        return nonNullable(account) && operation.timestamp >= account.createdAt;
       })
       .map(operation => {
         const account = accountsMap[operation.accountId];
