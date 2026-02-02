@@ -1,10 +1,10 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { type FlexibleMultisigAccount, type MultisigAccount, type Signatory, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
+import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Address, WalletIcon } from '@/shared/ui-entities';
 import { type MultisigOperation, accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
@@ -12,6 +12,8 @@ import { type ExtendedChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard } from '@/entities/signatory';
 import { walletModel } from '@/entities/wallet';
+
+import LogModal from './LogModal';
 
 type WalletSignatory = Signatory & { wallet: Wallet };
 
@@ -27,6 +29,9 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
   const wallets = useUnit(walletModel.$wallets);
   const accountsList = useUnit(accounts.$list);
   const contacts = useUnit(contactModel.$contacts);
+
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+  const closeLogModal = useCallback(() => setIsLogModalOpen(false), []);
 
   const approvals = operation.events.filter(e => e.status === 'approve');
   const cancellation = operation.events.filter(e => e.status === 'reject');
@@ -65,7 +70,23 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
 
   return (
     <div className="flex flex-col border-r border-divider p-4">
-      <SmallTitleText className="mb-4">{t('operation.signatoriesTitle')}</SmallTitleText>
+      <div className="mb-4 flex items-center justify-between">
+        <SmallTitleText>{t('operation.signatoriesTitle')}</SmallTitleText>
+        <Button
+          pallet="secondary"
+          variant="fill"
+          size="sm"
+          prefixElement={<Icon name="chat" size={16} />}
+          suffixElement={
+            <CaptionText className="rounded-full bg-chip-icon px-1.5 pt-px pb-[2px] text-white!">
+              {operation.events.length}
+            </CaptionText>
+          }
+          onClick={() => setIsLogModalOpen(true)}
+        >
+          {t('operation.logButton')}
+        </Button>
+      </div>
 
       <div className="flex flex-col gap-y-2">
         {Boolean(walletSignatories.length) && (
@@ -77,8 +98,6 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
               {walletSignatories.map(signatory => (
                 <SignatoryCard
                   key={signatory.accountId}
-                  accountId={signatory.accountId}
-                  chain={connection}
                   status={operationDetailsUtils.getSignatoryStatus(operation.events, signatory.accountId)}
                 >
                   <WalletIcon type={signatory.wallet.type} size={20} />
@@ -98,8 +117,6 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
               {contactSignatories.map(signatory => (
                 <SignatoryCard
                   key={signatory.accountId}
-                  accountId={signatory.accountId}
-                  chain={connection}
                   status={operationDetailsUtils.getSignatoryStatus(operation.events, signatory.accountId)}
                 >
                   <Address
@@ -121,6 +138,15 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
           </div>
         )}
       </div>
+
+      <LogModal
+        isOpen={isLogModalOpen}
+        operation={operation}
+        account={account}
+        connection={connection}
+        contacts={contacts}
+        onClose={closeLogModal}
+      />
     </div>
   );
 };
