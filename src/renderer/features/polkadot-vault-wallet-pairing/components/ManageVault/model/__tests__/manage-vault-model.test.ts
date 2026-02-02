@@ -64,6 +64,7 @@ describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
       name: 'Main',
       accountType: 'chain',
       type: 'chain',
+      createdAt: expect.any(Number),
     };
 
     expect(scope.getState(manageVaultModel.$walletForm.$values)).toEqual({ name: 'test' });
