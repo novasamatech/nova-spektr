@@ -3,7 +3,6 @@ import { memo } from 'react';
 import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { type MultisigOperation } from '@/domains/network';
-import { useNetworkData } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { type TabFilter } from '../model/context';
 
@@ -25,8 +24,6 @@ type SlotProps = {
 export const operationDetailsSlot = createSlot<SlotProps>();
 
 export const OperationFullInfo = memo(({ operation, account, tab }: Props) => {
-  const { extendedChain } = useNetworkData(operation.chainId);
-
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
 
   return (
@@ -35,7 +32,7 @@ export const OperationFullInfo = memo(({ operation, account, tab }: Props) => {
         <Slot id={operationDetailsSlot} props={{ operation, showCoreTransaction }} />
       </OperationDetails>
 
-      {account && <OperationSignatories operation={operation} connection={extendedChain} account={account} />}
+      {account && <OperationSignatories operation={operation} account={account} />}
 
       <OperationAdvancedDetails operation={operation} tab={tab} />
     </div>

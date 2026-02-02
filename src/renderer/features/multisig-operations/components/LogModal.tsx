@@ -3,6 +3,7 @@ import { groupBy } from 'lodash';
 import { type ReactNode, useMemo } from 'react';
 
 import {
+  type Chain,
   type Contact,
   type FlexibleMultisigAccount,
   type MultisigAccount,
@@ -17,7 +18,6 @@ import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton } from '@
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigEvent, type MultisigOperation } from '@/domains/network';
-import { type ExtendedChain } from '@/entities/network';
 import { Status, operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -27,7 +27,7 @@ import { OperationIcon } from './OperationIcon';
 type Props = {
   operation: MultisigOperation;
   account: MultisigAccount | FlexibleMultisigAccount;
-  connection?: ExtendedChain;
+  chain: Chain | null;
   contacts: Contact[];
   isOpen: boolean;
   onClose: () => void;
@@ -64,7 +64,7 @@ export const operationLogTitleTransformer = createTransformer<
   ReactNode
 >();
 
-const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }: Props) => {
+const LogModal = ({ isOpen, onClose, operation, account, chain, contacts }: Props) => {
   const { t, formatDate } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
@@ -105,7 +105,7 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
       account?.signatories,
       contacts,
       wallets,
-      connection?.addressPrefix,
+      chain?.addressPrefix,
     );
     const eventType = isCreatedEvent ? 'initiated' : event.status;
     const eventMessage = EventMessage[eventType] || 'log.unknownMessage';
@@ -141,8 +141,8 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
                     const wallet = filteredWalletsMap[account?.walletId];
 
                     const explorerLinks =
-                      event.blockCreated && Number.isInteger(event.blockCreated) && connection?.explorers
-                        ? connection.explorers
+                      event.blockCreated && Number.isInteger(event.blockCreated) && chain?.explorers
+                        ? chain.explorers
                             .map(explorer => ({
                               name: explorer.name,
                               href: operationDetailsUtils.getMultisigEventLink(

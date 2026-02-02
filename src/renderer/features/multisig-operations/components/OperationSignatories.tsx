@@ -9,7 +9,7 @@ import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } fro
 import { Address, WalletIcon } from '@/shared/ui-entities';
 import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
-import { type ExtendedChain } from '@/entities/network';
+import { useChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard } from '@/entities/signatory';
 import { walletModel } from '@/entities/wallet';
@@ -25,12 +25,12 @@ type WalletSignatory = Signatory & { wallet: Wallet };
 
 type Props = {
   operation: MultisigOperation;
-  connection: ExtendedChain;
   account: MultisigAccount | FlexibleMultisigAccount;
 };
 
-export const OperationSignatories = ({ operation, connection, account }: Props) => {
+export const OperationSignatories = ({ operation, account }: Props) => {
   const { t } = useI18n();
+  const chain = useChain(operation.chainId);
 
   const wallets = useUnit(walletModel.$wallets);
   const accountsList = useUnit(accounts.$list);
@@ -144,9 +144,9 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
                       account.signatories,
                       contacts,
                       wallets,
-                      connection.addressPrefix,
+                      chain?.addressPrefix,
                     )}
-                    address={toAddress(signatory.accountId, { prefix: connection.addressPrefix })}
+                    address={toAddress(signatory.accountId, { prefix: chain?.addressPrefix })}
                     variant="short"
                     canCopy={false}
                     showIcon
@@ -162,7 +162,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
         isOpen={isLogModalOpen}
         operation={operation}
         account={account}
-        connection={connection}
+        chain={chain}
         contacts={contacts}
         onClose={closeLogModal}
       />
