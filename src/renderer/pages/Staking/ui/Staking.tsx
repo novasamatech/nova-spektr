@@ -6,7 +6,7 @@ import { localStorageService } from '@/shared/api/local-storage';
 import { type ChainId, type Stake, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getRelaychainAsset, keys, nonNullable, toAccountId } from '@/shared/lib/utils';
+import { getRelaychainAsset, keys, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
 import { type AnyAccount, accountService, identity } from '@/domains/network';
@@ -154,7 +154,7 @@ export const Staking = () => {
   }, []);
 
   useEffect(() => {
-    if (!connection) return;
+    if (nullable(connection) || nullable(connectionStatus)) return;
 
     const isDisabled = networkUtils.isDisabledConnection(connection);
     const isError = networkUtils.isErrorStatus(connectionStatus);

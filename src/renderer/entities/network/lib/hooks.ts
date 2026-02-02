@@ -1,36 +1,53 @@
 import { type ApiPromise } from '@polkadot/api';
-import { useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 
 import { type Chain, type ChainId, type Connection, type ConnectionStatus } from '@/shared/core';
 import { networkModel } from '../model/network-model';
 
-import { type ExtendedChain } from './types';
+const DEFAULT_CHAIN_ID: ChainId = '0x00';
 
 type NetworkData = {
-  api: ApiPromise;
-  chain: Chain;
-  connectionStatus: ConnectionStatus;
-  connection: Connection;
-  extendedChain: ExtendedChain;
+  api: ApiPromise | null;
+  chain: Chain | null;
+  connectionStatus: ConnectionStatus | null;
+  connection: Connection | null;
 };
 
-export const useNetworkData = (chainId = '0x00' as ChainId): NetworkData => {
-  const apis = useUnit(networkModel.$apis);
-  const chains = useUnit(networkModel.$chains);
-  const connectionStatuses = useUnit(networkModel.$connectionStatuses);
-  const connections = useUnit(networkModel.$connections);
-
-  return {
-    api: apis[chainId],
-    chain: chains[chainId],
-    connectionStatus: connectionStatuses[chainId],
-    connection: connections[chainId],
-    // TODO: Try to remove all extendedChain usage in future
-    extendedChain: {
-      ...chains[chainId],
-      connection: connections[chainId],
-      connectionStatus: connectionStatuses[chainId],
-      api: apis[chainId],
-    } as ExtendedChain,
-  };
+export const useApi = (chainId: ChainId): ApiPromise | null => {
+  return useStoreMap({
+    store: networkModel.$apis,
+    keys: [chainId],
+    fn: (apis, [id]) => apis[id] ?? null,
+  });
 };
+
+export const useChain = (chainId: ChainId): Chain | null => {
+  return useStoreMap({
+    store: networkModel.$chains,
+    keys: [chainId],
+    fn: (chains, [id]) => chains[id] ?? null,
+  });
+};
+
+export const useConnectionStatus = (chainId: ChainId): ConnectionStatus | null => {
+  return useStoreMap({
+    store: networkModel.$connectionStatuses,
+    keys: [chainId],
+    fn: (statuses, [id]) => statuses[id] ?? null,
+  });
+};
+
+export const useConnection = (chainId: ChainId): Connection | null => {
+  return useStoreMap({
+    store: networkModel.$connections,
+    keys: [chainId],
+    fn: (connections, [id]) => connections[id] ?? null,
+  });
+};
+
+export const useNetworkData = (chainId: ChainId = DEFAULT_CHAIN_ID): NetworkData => ({
+  api: useApi(chainId),
+  chain: useChain(chainId),
+  connectionStatus: useConnectionStatus(chainId),
+  connection: useConnection(chainId),
+});
