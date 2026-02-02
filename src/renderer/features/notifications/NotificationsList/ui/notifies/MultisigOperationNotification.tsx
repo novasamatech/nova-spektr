@@ -73,18 +73,11 @@ export const MultisigOperationNotificationComponent = ({
 
   const multisigAccount = useStoreMap({
     store: accounts.$list,
-    keys: [issuer, operation],
+    keys: [operation],
     fn: (allAccounts) => {
       if (!operation) return null;
 
-      const flexibleMultisigAccount = allAccounts
-        .filter(accountUtils.isFlexibleMultisigAccount)
-        .filter((acc) => acc.multisigAccountId === issuer)
-        .find((acc) => multisigService.isFlexibleMultisigOperation(operation, acc.accountId));
-
-      if (nonNullable(flexibleMultisigAccount)) return flexibleMultisigAccount;
-
-      return allAccounts.filter(accountUtils.isMultisigAccount).find((acc) => acc.accountId === issuer);
+      return allAccounts.filter(accountUtils.isAnyMultisigAccount).find((acc) => acc.accountId === operation.accountId);
     },
   });
 
@@ -159,7 +152,6 @@ export const MultisigOperationNotificationComponent = ({
           <Icon name={icon.name} size={14} className={icon.className} />
         </div>
       )}
-
       <div className="flex flex-col gap-y-4">
         <div className="flex flex-col gap-y-2">
           <BodyText>
