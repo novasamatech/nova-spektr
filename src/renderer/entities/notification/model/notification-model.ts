@@ -242,15 +242,12 @@ sample({
 
     for (const notification of incomingNotifications) {
       if (existingKeys.has(notification.key)) {
-        // filter out duplicates
         continue;
       }
       if (disabledAccountIds.has(notification.issuer)) {
-        // filter out disabled accounts
         continue;
       }
       if (!enabledEventMatchers.some((matcher) => matcher(notification))) {
-        // filter out disabled events
         continue;
       }
 

@@ -272,6 +272,6 @@
     "vitest": "3.2.4"
   },
   "sideEffects": [
-    "*.css"
+    "*.css", "*.ts"
   ]
 }

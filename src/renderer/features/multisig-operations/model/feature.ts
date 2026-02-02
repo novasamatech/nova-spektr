@@ -12,7 +12,7 @@ import { accountUtils } from '@/entities/wallet';
 import { multisigService } from '@/features/multisig-wallet';
 
 import { deepLinkModel } from './deep-link';
-import './notifications';
+import { $notificationsReady } from './notifications';
 
 const $trigger = createStore<string>('');
 const $debouncedApis = createStore<Record<ChainId, ApiPromise>>({});
@@ -41,6 +41,7 @@ const $input = combine(
     apis: $debouncedApis,
     chains: networkModel.$chains,
     accounts: accounts.$list,
+    notificationsReady: $notificationsReady, // initialize notifications binding
   },
   ({ apis, chains, accounts }) => {
     const multisigs = accounts.filter(accountUtils.isAnyMultisigAccount);
