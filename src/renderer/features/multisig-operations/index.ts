@@ -1,6 +1,7 @@
 export { operationLogTitleTransformer } from './components/LogModal';
 export { type OperationTitle, operationTitleTransformer } from './components/Operation';
 export { operationDetailsSlot } from './components/OperationFullInfo';
+export { operationOverviewSlot } from './components/OperationSignatories';
 export { operationIconTransformer } from './components/OperationIcon';
 export { confirmTransactionInfoSlot } from './components/ActionSteps/Confirmation';
 export { Operations } from './components/Operations';
