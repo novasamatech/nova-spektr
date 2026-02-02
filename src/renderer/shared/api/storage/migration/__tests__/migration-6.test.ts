@@ -17,9 +17,6 @@ import { type AnyAccount } from '@/domains/network';
 
 type OldChainAccount = VaultChainAccount & { baseAccountId?: AccountId };
 
-const stripCreatedAt = <T extends { createdAt?: number }>(items: T[]): Omit<T, 'createdAt'>[] =>
-  items.map(({ createdAt, ...rest }) => rest);
-
 describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or SingleShard wallets', () => {
   const WALLET_NAME = 'Old wallet';
 
@@ -102,7 +99,7 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
     await migrateMultishardAccounts(transactionMock);
 
     expect(db.wallets).toEqual(newWallets);
-    expect(stripCreatedAt(db.accounts2)).toEqual(stripCreatedAt(newAccounts));
+    expect(db.accounts2).toEqual(newAccounts.map((acc) => ({ ...acc, createdAt: expect.any(Number) })));
   });
 
   it('should convert Pure Multishard to Polkadot Vault', async () => {
@@ -146,7 +143,7 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
     await migrateMultishardAccounts(transactionMock);
 
     expect(db.wallets).toEqual(newWallets);
-    expect(stripCreatedAt(db.accounts2)).toEqual(stripCreatedAt(newAccounts));
+    expect(db.accounts2).toEqual(newAccounts.map((acc) => ({ ...acc, createdAt: expect.any(Number) })));
   });
 
   it('should convert Pure Multishard to Polkadot Vault (same derivation path)', async () => {
@@ -183,7 +180,7 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
     await migrateMultishardAccounts(transactionMock);
 
     expect(db.wallets).toEqual(newWallets);
-    expect(stripCreatedAt(db.accounts2)).toEqual(stripCreatedAt(newAccounts));
+    expect(db.accounts2).toEqual(newAccounts.map((acc) => ({ ...acc, createdAt: expect.any(Number) })));
   });
 
   it('should convert 2 Pure Multishards to Polkadot Vault (duplicated accounts)', async () => {
@@ -231,7 +228,7 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
     await migrateMultishardAccounts(transactionMock);
 
     expect(db.wallets).toEqual(newWallets);
-    expect(stripCreatedAt(db.accounts2)).toEqual(stripCreatedAt(newAccounts));
+    expect(db.accounts2).toEqual(newAccounts.map((acc) => ({ ...acc, createdAt: expect.any(Number) })));
   });
 
   it('should convert Migrated Multishard to Polkadot Vault + SingleShard', async () => {
@@ -282,7 +279,7 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
     await migrateMultishardAccounts(transactionMock);
 
     expect(db.wallets).toEqual(newWallets);
-    expect(stripCreatedAt(db.accounts2)).toEqual(stripCreatedAt(newAccounts));
+    expect(db.accounts2).toEqual(newAccounts.map((acc) => ({ ...acc, createdAt: expect.any(Number) })));
   });
 
   it('should convert Migrated Multishard to 2 Polkadot Vault', async () => {
@@ -333,7 +330,7 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
     await migrateMultishardAccounts(transactionMock);
 
     expect(db.wallets).toEqual(newWallets);
-    expect(stripCreatedAt(db.accounts2)).toEqual(stripCreatedAt(newAccounts));
+    expect(db.accounts2).toEqual(newAccounts.map((acc) => ({ ...acc, createdAt: expect.any(Number) })));
   });
 
   it('should skip non-MultiShard wallets', async () => {
@@ -346,6 +343,6 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
     await migrateMultishardAccounts(transactionMock);
 
     expect(db.wallets).toEqual(newWallets);
-    expect(stripCreatedAt(db.accounts2)).toEqual(stripCreatedAt(newAccounts));
+    expect(db.accounts2).toEqual(newAccounts.map((acc) => ({ ...acc, createdAt: expect.any(Number) })));
   });
 });
