@@ -248,10 +248,6 @@ const operationChanges = pairwise(multisigOperation.$list)
       }
     }
 
-    if (newOperations.length || statusChanges.length || removedKeys.length || newEvents.length) {
-      console.log('Notifications: changes output', { newOperations, statusChanges, removedKeys, newEvents });
-    }
-
     return { newOperations, statusChanges, removedKeys, newEvents };
   })
   .filter({
@@ -264,25 +260,17 @@ sample({
   source: { populated: multisigOperation.$populated, accountsMap: $accountsMap, chains: networkModel.$chains },
   filter: ({ populated }) => populated,
   fn: ({ accountsMap, chains }, { newOperations, statusChanges, removedKeys, newEvents }) => {
-    const userOperations: MultisigOperation[] = [];
-    const oldOperations: MultisigOperation[] = [];
-
     // Filter new operations - apply timestamp filter to exclude operations created before account was connected
     const newOperationNotifications = newOperations
       .filter(operation => {
         // Don't notify the operation creator
         if (operation.status === 'pending' && nonNullable(accountsMap[operation.depositor])) {
-          userOperations.push(operation);
           return false;
         }
 
         const account = accountsMap[operation.accountId];
         // Show only operations created after account was connected
-        const isNew = !account?.createdAt || operation.timestamp >= account.createdAt;
-        if (!isNew) {
-          oldOperations.push(operation);
-        }
-        return isNew;
+        return !account?.createdAt || operation.timestamp >= account.createdAt;
       })
       .map(operation => {
         const account = accountsMap[operation.accountId];
@@ -296,14 +284,6 @@ sample({
 
       return createOperationNotification(operation, chains, account);
     });
-
-    if (userOperations.length) {
-      console.log('Notifications: filtered out user operation', userOperations);
-    }
-
-    if (oldOperations.length) {
-      console.log('Notifications: filtered out old operation', oldOperations);
-    }
 
     const eventNotifications = newEvents
       .filter(({ event }) => {
