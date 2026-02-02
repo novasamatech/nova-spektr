@@ -165,10 +165,22 @@ const createEventNotification = (
     indexCreated: operation.indexCreated,
   });
 
-  const eventId = `${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.accountId, operation.blockCreated, operation.indexCreated)}-${event.id}`;
+  const operationId = multisigOperationService.getOperationId(
+    operation.chainId,
+    operation.callHash,
+    operation.accountId,
+    operation.blockCreated,
+    operation.indexCreated,
+  );
+
+  // For reject events, use the same key as the cancelled operation notification to deduplicate
+  const key =
+    event.status === 'reject'
+      ? `${NotificationType.MULTISIG_OPERATION}-${operationId}-cancelled`
+      : `${NotificationType.MULTISIG_EVENT}-${operationId}-${event.id}`;
 
   return {
-    key: `${NotificationType.MULTISIG_EVENT}-${eventId}`,
+    key,
     type: NotificationType.MULTISIG_EVENT,
     status: event.status === 'approve' ? 'success' : 'error',
     issuer: operation.accountId,
@@ -208,7 +220,8 @@ const operationChanges = pairwise(multisigOperation.$list)
     const previousOpsMap = new Map(prevState.map((op: MultisigOperation) => [getOperationId(op), op]));
     const currentOpsMap = new Map(update.map((op: MultisigOperation) => [getOperationId(op), op]));
 
-    const added: MultisigOperation[] = [];
+    const newOperations: MultisigOperation[] = [];
+    const statusChanges: MultisigOperation[] = [];
     const removedKeys: string[] = [];
     const newEvents: NewEvent[] = [];
 
@@ -216,9 +229,9 @@ const operationChanges = pairwise(multisigOperation.$list)
       const previousOp = previousOpsMap.get(getOperationId(item));
 
       if (!previousOp) {
-        added.push(item);
+        newOperations.push(item);
       } else if (previousOp.status !== item.status && item.status !== 'pending') {
-        added.push(item);
+        statusChanges.push(item);
       } else if (previousOp.events.length !== item.events.length) {
         const previousEventIds = new Set(previousOp.events.map(e => e.id));
         for (const event of item.events) {
@@ -235,26 +248,28 @@ const operationChanges = pairwise(multisigOperation.$list)
       }
     }
 
-    return { added, removedKeys, newEvents };
+    return { newOperations, statusChanges, removedKeys, newEvents };
   })
   .filter({
-    fn: ({ added, removedKeys, newEvents }) => added.length > 0 || removedKeys.length > 0 || newEvents.length > 0,
+    fn: ({ newOperations, statusChanges, removedKeys, newEvents }) =>
+      newOperations.length > 0 || statusChanges.length > 0 || removedKeys.length > 0 || newEvents.length > 0,
   });
 
 sample({
   clock: operationChanges,
   source: { populated: multisigOperation.$populated, accountsMap: $accountsMap, chains: networkModel.$chains },
   filter: ({ populated }) => populated,
-  fn: ({ accountsMap, chains }, { added, removedKeys, newEvents }) => {
-    const operationNotifications = added
+  fn: ({ accountsMap, chains }, { newOperations, statusChanges, removedKeys, newEvents }) => {
+    // Filter new operations - apply timestamp filter to exclude operations created before account was connected
+    const newOperationNotifications = newOperations
       .filter(operation => {
         // Don't notify the operation creator
-        if (operation.status === 'pending' && operation.depositor in accountsMap) {
+        if (operation.status === 'pending' && nonNullable(accountsMap[operation.depositor])) {
           return false;
         }
 
         const account = accountsMap[operation.accountId];
-        // Show only new operations
+        // Show only operations created after account was connected
         return !account?.createdAt || operation.timestamp >= account.createdAt;
       })
       .map(operation => {
@@ -263,15 +278,17 @@ sample({
         return createOperationNotification(operation, chains, account);
       });
 
+    // Status changes should always create notifications regardless of when the operation was created
+    const statusChangeNotifications = statusChanges.map(operation => {
+      const account = accountsMap[operation.accountId];
+
+      return createOperationNotification(operation, chains, account);
+    });
+
     const eventNotifications = newEvents
       .filter(({ event }) => {
-        // Don't notify for reject events - the operation status change notification will cover it
-        if (event.status === 'reject') {
-          return false;
-        }
-
         // Don't notify if the current user caused the event
-        if (event.accountId in accountsMap) {
+        if (event.accountId in accountsMap && event.status !== 'reject') {
           return false;
         }
 
@@ -284,7 +301,7 @@ sample({
       });
 
     return {
-      added: [...operationNotifications, ...eventNotifications],
+      added: [...newOperationNotifications, ...statusChangeNotifications, ...eventNotifications],
       removed: { keys: removedKeys },
     };
   },
