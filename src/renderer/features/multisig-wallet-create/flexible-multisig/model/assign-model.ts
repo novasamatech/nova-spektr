@@ -258,6 +258,7 @@ sample({
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       signingType: SigningType.MULTISIG,
       accountType: AccountType.FLEX_MULTISIG,
+      createdAt: Date.now(),
     };
 
     const wallet: Omit<NoID<FlexibleMultisigWallet>, 'accounts'> = {
@@ -320,6 +321,7 @@ sample({
       pendingBlockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
       spawner: initiator!.accountId,
+      createdAt: Date.now(),
     };
 
     const wallet: Omit<NoID<ProxiedWallet>, 'accounts'> = {

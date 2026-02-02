@@ -36,7 +36,7 @@ export interface ChainAccount {
   accountId: AccountId;
   cryptoType: CryptoType;
   signingType: SigningType;
-  createdAt?: number;
+  createdAt: number;
 }
 
 export type AnyAccount = UniversalAccount | ChainAccount;

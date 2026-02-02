@@ -269,6 +269,7 @@ export const createVaultChainAccount = (
     chainId,
     derivationPath: params.derivationPath,
     keyType: KeyType.CUSTOM,
+    createdAt: Date.now(),
   };
 };
 
@@ -283,6 +284,7 @@ export const createWcAccount = (id: string | number = createRandomId(), walletId
   walletId,
   type: 'chain',
   signingExtras: {},
+  createdAt: Date.now(),
 });
 
 export const createProxiedAccount = (id: string | number = createRandomId(), walletId = 0): ProxiedAccount => ({
@@ -306,6 +308,7 @@ export const createProxiedAccount = (id: string | number = createRandomId(), wal
   type: 'chain',
   entropyBlockNumber: 0,
   extrinsicIndex: 0,
+  createdAt: Date.now(),
 });
 
 export const createSingleShardWallet = (

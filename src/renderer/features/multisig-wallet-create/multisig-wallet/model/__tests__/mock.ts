@@ -38,6 +38,7 @@ export const accounts: (WcAccount | MultisigAccount)[] = [
     signingType: SigningType.WALLET_CONNECT,
     chainId: '0x00',
     signingExtras: {},
+    createdAt: Date.now(),
   },
   {
     id: '2',
@@ -50,6 +51,7 @@ export const accounts: (WcAccount | MultisigAccount)[] = [
     chainId: '0x00',
     type: 'chain',
     signingExtras: {},
+    createdAt: Date.now(),
   },
   {
     id: '4',
@@ -62,6 +64,7 @@ export const accounts: (WcAccount | MultisigAccount)[] = [
     signingType: SigningType.WALLET_CONNECT,
     chainId: '0x01',
     signingExtras: {},
+    createdAt: Date.now(),
   },
   {
     id: '5',
@@ -74,6 +77,7 @@ export const accounts: (WcAccount | MultisigAccount)[] = [
     signingType: SigningType.WALLET_CONNECT,
     chainId: '0x00',
     signingExtras: {},
+    createdAt: Date.now(),
   },
   {
     id: '0',
@@ -86,6 +90,7 @@ export const accounts: (WcAccount | MultisigAccount)[] = [
     accountId: '0x7f7cc72b17ac5d762869e97af14ebcc561590b6cc9eeeac7a3cdadde646c95c3' as AccountId,
     accountType: AccountType.MULTISIG,
     type: 'universal',
+    createdAt: Date.now(),
   },
 ];
 
