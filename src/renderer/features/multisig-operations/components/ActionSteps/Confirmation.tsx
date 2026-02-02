@@ -31,7 +31,7 @@ type Props = {
   signAccount?: AnyAccount | null;
   chain: Chain;
   api: ApiPromise;
-  fee: BN;
+  fee: BN | null;
   multisigDeposit: BN;
   valid: boolean;
   isFeeLoading: boolean;
@@ -85,7 +85,7 @@ export const Confirmation = ({
       <div className="mb-6 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={getIconName(transaction)} size={60} />
 
-        {transaction && <Slot id={confirmTransactionInfoSlot} props={{ operation }} />}
+        <Slot id={confirmTransactionInfoSlot} props={{ operation }} />
       </div>
       {initiator && signAccount && (
         <Details api={api} operation={operation} account={initiator} chain={chain} signatory={signAccount} />
