@@ -148,7 +148,7 @@ const $hiddenOperationsCount = combine(
 );
 
 const $pendingOperationsCount = combine(
-  { operations: $filteredOperations, hiddenIds: $hiddenOperationIds },
+  { operations: multisigOperation.$list, hiddenIds: $hiddenOperationIds },
   ({ operations, hiddenIds }) => operations.filter(op => op.status === 'pending' && !hiddenIds.includes(op.id)).length,
 );
 
