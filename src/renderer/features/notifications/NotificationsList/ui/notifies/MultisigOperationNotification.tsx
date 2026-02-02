@@ -12,7 +12,6 @@ import { type IconNames, BodyText, Button, Icon } from '@/shared/ui';
 import { AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
-import { multisigService } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
