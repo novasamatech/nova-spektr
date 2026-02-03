@@ -60,6 +60,7 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
       accountType: AccountType.PROXIED,
       signingType: SigningType.WATCH_ONLY,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
+      createdAt: Date.now(),
     },
   ];
 

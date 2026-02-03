@@ -78,6 +78,7 @@ const $accountDraft = form.$values.map(({ address, walletName }): Omit<WatchOnly
     type: 'universal',
     signingType: SigningType.WATCH_ONLY,
     accountType: AccountType.WATCH_ONLY,
+    createdAt: Date.now(),
   };
 });
 

@@ -388,6 +388,7 @@ sample({
       type: 'universal',
       blockNumber,
       remarkChainId: chain!.chainId,
+      createdAt: Date.now(),
     };
 
     return {

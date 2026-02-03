@@ -36,6 +36,7 @@ const wallets: Wallet[] = [
         accountId: TEST_ACCOUNTS[0],
         signingType: SigningType.MULTISIG,
         cryptoType: CryptoType.SR25519,
+        createdAt: Date.now(),
       } satisfies VaultBaseAccount,
     ],
   },
@@ -55,6 +56,7 @@ const wallets: Wallet[] = [
         cryptoType: CryptoType.SR25519,
         chainId: '0x001',
         signingExtras: {},
+        createdAt: Date.now(),
       } satisfies WcAccount,
       {
         id: '3',
@@ -67,6 +69,7 @@ const wallets: Wallet[] = [
         cryptoType: CryptoType.SR25519,
         chainId: '0x002',
         signingExtras: {},
+        createdAt: Date.now(),
       } satisfies WcAccount,
     ],
   },
