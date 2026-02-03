@@ -106,6 +106,7 @@ sample({
         accountType: AccountType.CHAIN,
         keyType: KeyType.MAIN,
         type: 'chain',
+        createdAt: Date.now(),
       });
     }
 
@@ -122,6 +123,7 @@ sample({
         accountType: AccountType.CHAIN,
         keyType: KeyType.CUSTOM,
         type: 'chain',
+        createdAt: Date.now(),
       });
     }
 

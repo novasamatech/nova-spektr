@@ -42,6 +42,7 @@ export const multisigWallet: Wallet = {
       threshold: 1,
       name: '',
       signatories: [],
+      createdAt: Date.now(),
     } satisfies MultisigAccount,
   ],
 };
@@ -62,6 +63,7 @@ export const signerWallet: Wallet = {
       signingType: SigningType.WALLET_CONNECT,
       accountType: AccountType.WALLET_CONNECT,
       signingExtras: {},
+      createdAt: Date.now(),
     },
   ],
 };
@@ -82,6 +84,7 @@ export const signatoryWallet: Wallet = {
       accountType: AccountType.WALLET_CONNECT,
       type: 'chain',
       signingExtras: {},
+      createdAt: Date.now(),
     },
   ],
 };
@@ -102,6 +105,7 @@ export const initiatorWallet: Wallet = {
       accountType: AccountType.WALLET_CONNECT,
       type: 'chain',
       signingExtras: {},
+      createdAt: Date.now(),
     },
   ],
 };
@@ -122,6 +126,7 @@ export const wrongChainWallet: Wallet = {
       accountType: AccountType.WALLET_CONNECT,
       type: 'chain',
       signingExtras: {},
+      createdAt: Date.now(),
     },
   ],
 };

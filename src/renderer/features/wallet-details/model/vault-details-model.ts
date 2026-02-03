@@ -1,6 +1,7 @@
 import { attach, createEvent, createStore, sample } from 'effector';
 
 import { type Chain, type DraftAccount, type ID, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { accountSync, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { polkadotVaultService } from '@/features/polkadot-vault-wallet';
@@ -35,7 +36,8 @@ sample({
     shards: $shards,
     chains: networkModel.$chains,
   },
-  filter: ({ shards, chains }) => shards.length > 0 && Object.keys(chains).length > 0,
+  filter: ({ shards, chains }) =>
+    shards.length > 0 && Object.keys(chains).length > 0 && nonNullable(chains[shards[0].chainId]),
   fn: ({ shards, chains }) => chains[shards[0].chainId],
   target: $chain,
 });

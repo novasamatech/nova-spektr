@@ -4,14 +4,18 @@ import { type Chain, type ChainId } from '@/shared/core';
 import { Skeleton } from '@/shared/ui-kit';
 
 type Props = {
-  chain: Chain;
+  chain: Chain | null | undefined;
   size?: number;
 };
 
 const loaded = new Set<ChainId>();
 
 export const ChainIcon = memo(({ chain, size = 16 }: Props) => {
-  const [isImgLoaded, toggleImgLoaded] = useState(loaded.has(chain.chainId));
+  const [isImgLoaded, toggleImgLoaded] = useState(chain ? loaded.has(chain.chainId) : false);
+
+  if (!chain) {
+    return null;
+  }
 
   return (
     <Skeleton active={!isImgLoaded}>

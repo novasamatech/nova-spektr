@@ -121,6 +121,7 @@ function createAccount({
     cryptoType: CryptoType.SR25519,
     chainId: chainId,
     signingExtras: { pairingTopic: session?.pairingTopic, sessionTopic: session?.topic },
+    createdAt: Date.now(),
   };
 }
 

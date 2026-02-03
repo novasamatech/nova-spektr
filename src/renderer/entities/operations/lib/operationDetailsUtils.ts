@@ -98,10 +98,10 @@ export const getDestination = (
   const chain = destinationChain ? chains[destinationChain] : chains[tx.transaction.chainId];
 
   if (isProxyTransaction(tx.transaction)) {
-    return toAddress(tx.transaction.args.transaction.args.dest, { prefix: chain.addressPrefix });
+    return toAddress(tx.transaction.args.transaction.args.dest, { prefix: chain?.addressPrefix });
   }
 
-  return toAddress(tx.transaction.args.dest, { prefix: chain.addressPrefix });
+  return toAddress(tx.transaction.args.dest, { prefix: chain?.addressPrefix });
 };
 
 export const getDestinationAccountId = (tx: MultisigOperation): AccountId | undefined => {

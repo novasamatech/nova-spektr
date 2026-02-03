@@ -44,6 +44,7 @@ function buildMultisigAccount({ threshold, accountId, signatories, name }: Build
     signingType: SigningType.MULTISIG,
     accountType: AccountType.MULTISIG,
     type: 'universal',
+    createdAt: Date.now(),
   };
 
   return account;

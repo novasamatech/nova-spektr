@@ -96,7 +96,7 @@ sample({
   },
   fn: ({ chains }, { chainId }) => ({
     chainId,
-    node: chains[chainId].nodes[0],
+    node: chains[chainId]?.nodes[0],
   }),
   target: networkSelectorModel.events.rpcNodeSelected,
 });

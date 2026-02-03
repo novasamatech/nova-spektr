@@ -75,6 +75,7 @@ const createProxiedAccount = (
   entropyBlockNumber: 0,
   extrinsicIndex: 0,
   spawner: createAccountId('spawner'),
+  createdAt: Date.now(),
 });
 
 const createApi = () => {

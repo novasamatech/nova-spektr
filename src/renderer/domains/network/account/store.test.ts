@@ -16,6 +16,7 @@ const testAccounts: AnyAccount[] = [
     walletId: 0,
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
+    createdAt: Date.now(),
   },
   {
     id: 'test 2',
@@ -25,6 +26,7 @@ const testAccounts: AnyAccount[] = [
     walletId: 0,
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
+    createdAt: Date.now(),
   },
 ];
 
@@ -66,6 +68,7 @@ describe('accounts store', () => {
       name: 'test',
       cryptoType: CryptoType.SR25519,
       signingType: SigningType.WATCH_ONLY,
+      createdAt: Date.now(),
     };
 
     await allSettled(accounts.updateAccount, {
@@ -90,6 +93,7 @@ describe('accounts store', () => {
       name: 'test',
       cryptoType: CryptoType.SR25519,
       signingType: SigningType.WATCH_ONLY,
+      createdAt: Date.now(),
     };
 
     await allSettled(accounts.updateAccount, {

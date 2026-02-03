@@ -14,3 +14,4 @@ export { renameBlockNumberToEntropyBlockNumber } from './migration-13';
 export { addAccountNameType } from './migration-14';
 export { migrateNotificationStructure } from './migration-15';
 export { addFlexibleMultisigProxyType } from './migration-16';
+export { addAccountCreatedAt } from './migration-17';

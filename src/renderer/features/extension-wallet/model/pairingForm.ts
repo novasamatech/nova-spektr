@@ -74,6 +74,7 @@ const $accounts = combine($rawAccounts, $extensionType, (accounts, extensionType
         name: name ?? toShortAddress(address),
         type: isChainAccount ? 'chain' : 'universal',
         signingType: SigningType.EXTENSION,
+        createdAt: Date.now(),
       };
 
       if (isChainAccount) {

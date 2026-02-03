@@ -225,6 +225,7 @@ export const syncProxiedAccounts = ({
               entropyBlockNumber: firstAccount.blockNumber,
               extrinsicIndex: firstAccount.extrinsicIndex,
               spawner: firstAccount.spawner,
+              createdAt: Date.now(),
             },
           ],
         });
@@ -381,6 +382,7 @@ export const syncMultisigAccounts = ({ allAccounts, allWallets, syncResult, iden
             cryptoType: isEthereumAccountId(syncedAccount.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
             signingType: SigningType.MULTISIG,
             signatories: syncedAccount.signatories.map((accountId) => ({ accountId })),
+            createdAt: Date.now(),
           },
         ],
       });
@@ -501,6 +503,7 @@ export const syncFlexibleMultisigs = ({
 
           cryptoType: isEthereumAccountId(matchedSyncedProxy.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
           signingType: SigningType.MULTISIG,
+          createdAt: Date.now(),
         };
 
         createWallets.push({

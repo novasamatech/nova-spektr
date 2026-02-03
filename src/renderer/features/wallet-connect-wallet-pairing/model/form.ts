@@ -102,6 +102,7 @@ sample({
         cryptoType: isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
         chainId: chain.chainId,
         signingExtras: { pairingTopic: session?.pairingTopic, sessionTopic: session?.topic },
+        createdAt: Date.now(),
       };
     });
 
