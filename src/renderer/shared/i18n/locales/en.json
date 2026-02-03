@@ -2003,6 +2003,7 @@
     },
     "inProgress": "Submitting approval...",
     "logButton": "Log",
+    "openOverviewButton": "Open overview",
     "multisigExistsDescription": "Due to the blockchain limitations, multisig operations with identical details can't be in a signing status simultaneously. Wait for the current one to be signed or reject it to create a new one.",
     "multisigExistsTitle": "Same transaction already exist",
     "networkFee": "Network fee",

@@ -20,8 +20,8 @@ import { TimeToEra } from './TimeToEra';
 type Props = {
   nominators: (NominatorInfo<VaultBaseAccount> | NominatorInfo<VaultShardAccount>[])[];
   isStakingLoading: boolean;
-  api: ApiPromise;
-  timelineApi: ApiPromise;
+  api: ApiPromise | null;
+  timelineApi: ApiPromise | null;
   era?: number;
   asset?: Asset;
   chain: Chain;

@@ -1,7 +1,7 @@
 import '@xyflow/react/dist/style.css';
 
 import { useUnit } from 'effector-react';
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import { type ReactNode, Suspense, lazy, useCallback, useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
@@ -18,21 +18,26 @@ const AccountsStructure = lazy(() =>
 
 type Props = {
   walletAccounts: AnyAccount[];
+  trigger?: ReactNode;
   onClose?: () => void;
 };
 
-export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
+export const AccountsStructureModal = ({ walletAccounts, trigger, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const pathType = useUnit(accountsStructureModel.$pathType);
   const edgeType = useUnit(accountsStructureModel.$edgeType);
 
   useEffect(() => {
-    accountsStructureModel.setAccounts(walletAccounts);
+    if (isOpen) {
+      accountsStructureModel.setAccounts(walletAccounts);
+    }
     return () => {
-      accountsStructureModel.setAccounts(null);
+      if (isOpen) {
+        accountsStructureModel.setAccounts(null);
+      }
     };
-  }, [walletAccounts]);
+  }, [walletAccounts, isOpen]);
 
   const onToggle = useCallback(
     (value: boolean) => {
@@ -47,9 +52,11 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
   return (
     <Modal height="full" size="full" isOpen={isOpen} onToggle={onToggle}>
       <Modal.Trigger>
-        <Button pallet="secondary" size="sm" variant="fill">
-          {t('accountsStructure.button')}
-        </Button>
+        {trigger ?? (
+          <Button pallet="secondary" size="sm" variant="fill">
+            {t('accountsStructure.button')}
+          </Button>
+        )}
       </Modal.Trigger>
 
       <Modal.Title close>{t('accountsStructure.modalTitle')}</Modal.Title>
