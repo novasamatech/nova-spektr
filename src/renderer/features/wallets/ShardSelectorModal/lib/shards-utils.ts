@@ -87,9 +87,9 @@ function getStructForVault(
 
   for (const account of accounts) {
     const chain = chains[account.chainId];
-    const groupId = getConsensusChainId(chain);
+    const groupId = chain && getConsensusChainId(chain);
 
-    const group = chainMap.get(groupId);
+    const group = groupId && chainMap.get(groupId);
     if (group) {
       group.push(account);
     } else {
