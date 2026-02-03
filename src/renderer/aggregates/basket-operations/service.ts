@@ -24,7 +24,7 @@ async function getTransactionData(
   const chainId = transaction.coreTx.chainId as ChainId;
   const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
-  const chain = chains[chainId]!;
+  const chain = chains[chainId];
   const account = accounts.find(
     a => a.accountId === transaction.initiatorAccountId && a.accountId === transaction.coreTx.accountId,
   );
