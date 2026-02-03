@@ -68,13 +68,12 @@ sample({
     chains: networkModel.$chains,
   },
   fn: ({ chains }, state) => {
-    const values = Object.values(state).map(el => ({
-      api: el.api,
-      hashes: el.hashes,
-      chain: chains[el.api.genesisHash.toHex()]!,
-    }));
+    return Object.values(state).flatMap(el => {
+      const chain = chains[el.api.genesisHash.toHex()];
+      if (!chain) return [];
 
-    return values;
+      return [{ api: el.api, hashes: el.hashes, chain }];
+    });
   },
   target: series(subscribeOnchainResource.subscribe, { parallel: true }),
 });
@@ -187,7 +186,12 @@ sample({
 sample({
   clock: subscribeToAccounts,
   fn: ({ apis, accountIds, chains }) =>
-    entries(apis).map(([chainId, api]) => ({ api, chain: chains[chainId]!, accountIds })),
+    entries(apis).flatMap(([chainId, api]) => {
+      const chain = chains[chainId];
+      if (!chain) return [];
+
+      return [{ api, chain, accountIds }];
+    }),
   target: series(initialOnChainFetch.fetch, { parallel: true }),
 });
 
