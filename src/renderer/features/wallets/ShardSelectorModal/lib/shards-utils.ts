@@ -50,6 +50,8 @@ function getVaultChainsCounter(
 
   for (const shard of shards) {
     const chain = chains[shard.chainId];
+    if (!chain) continue;
+
     const chainId = getConsensusChainId(chain);
     root[rootAccountId][chainId].checked += 1;
     root[rootAccountId][chainId].total += 1;
@@ -87,9 +89,9 @@ function getStructForVault(
 
   for (const account of accounts) {
     const chain = chains[account.chainId];
-    const groupId = getConsensusChainId(chain);
+    const groupId = chain && getConsensusChainId(chain);
 
-    const group = chainMap.get(groupId);
+    const group = groupId && chainMap.get(groupId);
     if (group) {
       group.push(account);
     } else {

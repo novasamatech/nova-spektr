@@ -35,7 +35,7 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
   const chain = chains[proxiedAccount.chainId];
 
   const walletIdentity = chain ? identity[chain.chainId]?.[proxiedAccount.accountId] : null;
-  const proxyBasedName = proxyUtils.getProxiedName(proxiedAccount, chain.addressPrefix);
+  const proxyBasedName = proxyUtils.getProxiedName(proxiedAccount, chain?.addressPrefix);
 
   const flexibleProxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
     walletFn: (w) => walletUtils.isFlexibleMultisig(w),
@@ -50,7 +50,7 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
     isHidden: !!flexibleProxyWallet,
   };
 
-  const isEthereumChain = networkUtils.isEthereumBased(chains[proxiedAccount.chainId].options);
+  const isEthereumChain = chain ? networkUtils.isEthereumBased(chain.options) : false;
 
   const accounts: Omit<NoID<ProxiedAccount>, 'walletId'>[] = [
     {
