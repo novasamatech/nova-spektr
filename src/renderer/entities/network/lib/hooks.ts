@@ -8,7 +8,7 @@ import { type ExtendedChain } from './types';
 
 type NetworkData = {
   api: ApiPromise;
-  chain: Chain;
+  chain: Chain | undefined;
   connectionStatus: ConnectionStatus;
   connection: Connection;
   extendedChain: ExtendedChain;

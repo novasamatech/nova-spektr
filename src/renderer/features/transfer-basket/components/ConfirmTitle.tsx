@@ -16,7 +16,7 @@ export const ConfirmTitle = ({ transaction }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const tx = basketOperationsService.getCoreTx(transaction);
   const chain = chains[tx.chainId];
-  const asset = getAssetById(tx.args.assetId, chain.assets);
+  const asset = getAssetById(tx.args.assetId, chain?.assets);
 
   if (isTransferTransaction(tx)) {
     return (

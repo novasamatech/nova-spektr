@@ -24,10 +24,12 @@ export const TransferOperationDetails = ({ operation }: Props) => {
   const sender = operationDetailsUtils.getSender(operation);
   const destinationChain = operationDetailsUtils.getDestinationChain(operation);
 
+  const chain = chains[operation.chainId];
+
   if (destination) {
     result.push(
       <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
-        <NamedAccount accountId={destination} variant="short" chain={chains[operation.chainId]} />
+        <NamedAccount accountId={destination} variant="short" chain={chain} />
       </DetailRow>,
     );
   }
@@ -35,7 +37,7 @@ export const TransferOperationDetails = ({ operation }: Props) => {
   if (isXcmTransaction(transaction) && sender) {
     result.push(
       <DetailRow label={t('operation.details.sender')} className="text-text-secondary">
-        <NamedAccount accountId={sender} variant="short" chain={chains[operation.chainId]} />
+        <NamedAccount accountId={sender} variant="short" chain={chain} />
       </DetailRow>,
     );
   }

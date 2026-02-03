@@ -50,6 +50,8 @@ function getVaultChainsCounter(
 
   for (const shard of shards) {
     const chain = chains[shard.chainId];
+    if (!chain) continue;
+
     const chainId = getConsensusChainId(chain);
     root[rootAccountId][chainId].checked += 1;
     root[rootAccountId][chainId].total += 1;

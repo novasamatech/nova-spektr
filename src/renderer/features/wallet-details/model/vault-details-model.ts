@@ -5,6 +5,7 @@ import { accountSync, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { polkadotVaultService } from '@/features/polkadot-vault-wallet';
 import { type DerivationKeyDraft } from '@/features/wallets';
+import { nonNullable } from '@/shared/lib/utils';
 
 type AccountsCreatedParams = {
   walletId: ID;
@@ -35,7 +36,8 @@ sample({
     shards: $shards,
     chains: networkModel.$chains,
   },
-  filter: ({ shards, chains }) => shards.length > 0 && Object.keys(chains).length > 0,
+  filter: ({ shards, chains }) =>
+    shards.length > 0 && Object.keys(chains).length > 0 && nonNullable(chains[shards[0].chainId]),
   fn: ({ shards, chains }) => chains[shards[0].chainId],
   target: $chain,
 });
