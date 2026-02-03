@@ -93,6 +93,7 @@ const accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[] = [
     accountId: TEST_ACCOUNTS[0],
     cryptoType: CryptoType.SR25519,
     signingType: SigningType.POLKADOT_VAULT,
+    createdAt: Date.now(),
   },
 ];
 

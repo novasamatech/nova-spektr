@@ -100,6 +100,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
           signingType: SigningType.PARITY_SIGNER,
           accountType: AccountType.BASE,
           type: 'universal',
+          createdAt: Date.now(),
         },
       ],
     });

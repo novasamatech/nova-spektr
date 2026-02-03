@@ -21,6 +21,7 @@ export const accounts = {
     cryptoType: CryptoType.SR25519,
     walletId: 1,
     signingExtras: {},
+    createdAt: Date.now(),
   } satisfies WcAccount,
   multisig1: {
     id: '3 0x9cec42dccebe2488202950a710609eb50fe8637ddf3ffd908d6aea74eb260ebf universal',
@@ -40,6 +41,7 @@ export const accounts = {
     ],
     type: 'universal',
     walletId: 3,
+    createdAt: Date.now(),
   } satisfies MultisigAccount,
   multisig2: {
     id: '4 0xf9e94d71f4e3695e07e21b574e1ce2e56b228a020a34824884ed9987e6a4e4ad universal',
@@ -59,6 +61,7 @@ export const accounts = {
         accountId: '0x11' as AccountId,
       },
     ],
+    createdAt: Date.now(),
   } satisfies MultisigAccount,
   proxy1: {
     id: '9 0x468cb8efc1544cd5000a14ad97e7750585f3378fe786046f11725c2acd5123a0 0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9',
@@ -81,6 +84,7 @@ export const accounts = {
     signingType: SigningType.WATCH_ONLY,
     type: 'chain',
     walletId: 9,
+    createdAt: Date.now(),
   } satisfies ProxiedAccount,
   emptyWallet: {
     id: '8 0xe41def6480474253c2aa26e138da902771875ca8a979926e691a8bae41fcd218 0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9',
@@ -93,5 +97,6 @@ export const accounts = {
     type: 'chain',
     walletId: 8,
     signingExtras: {},
+    createdAt: Date.now(),
   } as WcAccount,
 };
