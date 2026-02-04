@@ -10,11 +10,12 @@ export const Favicon = () => {
   const hasBadge = useUnit(faviconModel.$hasBadge);
 
   useEffect(() => {
-    const link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
-    if (!link) return;
+    const links = document.querySelectorAll<HTMLLinkElement>("link[rel='icon']");
 
-    link.href = hasBadge ? faviconBadge : favicon;
-    link.type = 'image/png';
+    for (const link of Array.from(links)) {
+      link.href = hasBadge ? faviconBadge : favicon;
+      link.type = 'image/png';
+    }
   }, [hasBadge]);
 
   return null;
