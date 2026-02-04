@@ -50,7 +50,7 @@ const parseMarkdownToTableOfContents = (markdownContent: string): TableOfContent
 
       if (stack.length > 0) {
         const currentCategory = stack[stack.length - 1];
-        if (currentCategory.children) {
+        if (currentCategory?.children) {
           currentCategory.children.push(subcategory);
         }
       }

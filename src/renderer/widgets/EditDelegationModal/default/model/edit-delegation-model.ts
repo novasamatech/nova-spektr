@@ -1,3 +1,4 @@
+import { BN_ZERO } from '@polkadot/util';
 import { createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
@@ -171,7 +172,7 @@ const formSubmitted = sample({
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),
-          locks: delegateData.locks[initiator.accountId],
+          locks: delegateData.locks[initiator.accountId] ?? BN_ZERO,
           coreTx,
           route: [initiator],
           tx,

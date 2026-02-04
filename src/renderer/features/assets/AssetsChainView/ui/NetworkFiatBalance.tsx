@@ -28,7 +28,7 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
         return acc;
       }
 
-      const price = prices[asset.priceId][currency.coingeckoId];
+      const price = prices[asset.priceId]?.[currency.coingeckoId];
 
       const balance = balances[asset.assetId.toString()];
 

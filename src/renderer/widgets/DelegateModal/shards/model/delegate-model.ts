@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
@@ -346,7 +346,7 @@ sample({
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
           signatory: delegateData!.signatory!,
-          locks: delegateData!.locks[shard.accountId],
+          locks: delegateData!.locks[shard.accountId] ?? BN_ZERO,
           coreTx,
           initiator: shard,
           route: txWrappers.map((wrapper) =>

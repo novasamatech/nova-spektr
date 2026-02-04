@@ -130,8 +130,10 @@ export const CodexTab = () => {
   useEffect(() => {
     if (matches.length > 0 && currentMatchIndex >= 0 && currentMatchIndex < matches.length) {
       const currentMatch = matches[currentMatchIndex];
-      setActiveSection(currentMatch.sectionId);
-      scrollToMatch(currentMatch.sectionId, currentMatchIndex);
+      if (currentMatch) {
+        setActiveSection(currentMatch.sectionId);
+        scrollToMatch(currentMatch.sectionId, currentMatchIndex);
+      }
     }
   }, [currentMatchIndex, matches, scrollToMatch]);
 
