@@ -21,7 +21,7 @@ import { walletsModel } from './model/wallets';
 import { multisigService } from './services/multisig';
 import { type MultisigTransaction } from './types';
 
-export { walletActionsSlot, multisigService, WalletGroup };
+export { WalletGroup, multisigService, walletActionsSlot };
 
 export const multisigWalletFeature = createFeature({
   name: 'wallet/multisig',
@@ -181,7 +181,7 @@ transactionSDK(multisigWalletFeature, {
           method: 'proxy',
           args: {
             real: account.accountId,
-            forceProxyType: 'Any',
+            forceProxyType: account.proxyType,
             call: encodedTransaction.callData,
           },
         };
@@ -249,7 +249,7 @@ transactionSDK(multisigWalletFeature, {
           chainId: api.genesisHash.toHex(),
           args: {
             real: account.accountId,
-            forceProxyType: 'Any',
+            forceProxyType: account.proxyType,
             call: extrinsic.method.toHex(),
           },
         };
@@ -294,7 +294,7 @@ transactionSDK(multisigWalletFeature, {
 });
 
 multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
-  if (walletUtils.isMultisig(wallet)) {
+  if (walletUtils.isAnyMultisig(wallet)) {
     const accountId = wallet.accounts.at(0)?.accountId;
     if (accountId) {
       return <WalletAccountIcon address={toAddress(accountId)} type={wallet.type} size={size} />;

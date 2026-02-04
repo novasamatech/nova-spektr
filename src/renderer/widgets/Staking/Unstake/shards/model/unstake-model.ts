@@ -10,7 +10,7 @@ import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { unstakeConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
-import { type NetworkStore, Step, type UnstakeStore } from '../lib/types';
+import { type NetworkStore, type UnstakeStore, Step } from '../lib/types';
 
 import { formModel } from './form-model';
 

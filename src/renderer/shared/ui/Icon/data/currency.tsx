@@ -1,5 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
-
 import BtcIcon from '@/shared/assets/images/currency/btc.svg?jsx';
 import EthIcon from '@/shared/assets/images/currency/eth.svg?jsx';
 import EurIcon from '@/shared/assets/images/currency/eur.svg?jsx';

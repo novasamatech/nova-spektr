@@ -1,12 +1,12 @@
 import {
-  AccountType,
   type ChainId,
-  CryptoType,
   type DraftAccount,
-  KeyType,
-  SigningType,
   type VaultChainAccount,
   type VaultShardAccount,
+  AccountType,
+  CryptoType,
+  KeyType,
+  SigningType,
 } from '@/shared/core';
 import { type DerivationWithPath } from '../types';
 
@@ -80,6 +80,7 @@ const existingShards: DraftAccount<VaultShardAccount>[] = [...Array(10).keys()].
   keyType: KeyType.HOT,
   chainId: chainId,
   type: 'chain',
+  createdAt: Date.now(),
 }));
 
 const existingChainDerivations: (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[] = [
@@ -92,6 +93,7 @@ const existingChainDerivations: (DraftAccount<VaultShardAccount> | DraftAccount<
     keyType: KeyType.MAIN,
     chainId: chainId,
     type: 'chain',
+  createdAt: Date.now(),
   },
   {
     name: '',
@@ -102,6 +104,7 @@ const existingChainDerivations: (DraftAccount<VaultShardAccount> | DraftAccount<
     keyType: KeyType.HOT,
     chainId: chainId,
     type: 'chain',
+  createdAt: Date.now(),
   },
   ...existingShards,
 ];

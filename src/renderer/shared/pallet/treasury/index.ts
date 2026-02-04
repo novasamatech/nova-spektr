@@ -8,4 +8,4 @@ export const treasury = {
   schema,
 };
 
-export type { TreasuryProposal, TreasuryPaymentState, TreasurySpendStatus } from './schema';
+export type { TreasuryPaymentState, TreasuryProposal, TreasurySpendStatus } from './schema';

@@ -5,7 +5,7 @@ import { createGate } from 'effector-react';
 import { and, delay, not, or, spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
-import { type CreateFlexibleMultisigOperationParams, NotificationType, type Wallet } from '@/shared/core';
+import { type CreateFlexibleMultisigOperationParams, type Wallet, NotificationType } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { Step, assert, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -181,6 +181,7 @@ const $reassignTx = combine(
       oldAccountId: multisigService.getMultisigAccountId(multisigAccount),
       newAccountId: newMultisigAccountId,
       signerAccountId: signer.accountId,
+      proxyType: multisigAccount.proxyType,
     });
   },
 );

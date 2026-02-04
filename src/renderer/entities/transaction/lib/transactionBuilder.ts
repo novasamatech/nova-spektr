@@ -7,7 +7,6 @@ import { type ClaimAction } from '@/shared/api/governance';
 import {
   type Address,
   type Asset,
-  AssetType,
   type Chain,
   type ChainId,
   type Conviction,
@@ -16,9 +15,10 @@ import {
   type Signatory,
   type TrackId,
   type Transaction,
+  AssetType,
   TransactionType,
 } from '@/shared/core';
-import { formatAmount, getAssetId } from '@/shared/lib/utils';
+import { formatAmount, getAssetId, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type BalancePreservation, type MultisigOperation } from '@/domains/network';
 import { type TransactionVote, type VoteTransaction } from '@/entities/governance';
@@ -601,6 +601,7 @@ type CreateFlexibleMultisigParams = {
   signatoryAccountId: AccountId;
   multisigAccountId: AccountId;
   proxyAccountId: AccountId;
+  proxyType: ProxyType;
   threshold: number;
   pureTopUpAmount: BN;
   signatories: Signatory[];
@@ -611,6 +612,7 @@ function buildCreateFlexibleMultisig({
   chain,
   multisigAccountId,
   proxyAccountId,
+  proxyType,
   threshold,
   signatories,
   signatoryAccountId,
@@ -633,14 +635,14 @@ function buildCreateFlexibleMultisig({
     chain,
     accountId: signatoryAccountId,
     delegateAccountId: multisigAccountId,
-    type: 'Any',
+    type: proxyType,
   });
 
   const removeProxyTx = transactionBuilder.buildRemoveProxy({
     chain,
     accountId: signatoryAccountId,
     delegate: signatoryAccountId,
-    proxyType: 'Any',
+    proxyType,
     delay: 0,
   });
 
@@ -658,7 +660,7 @@ function buildCreateFlexibleMultisig({
     type: TransactionType.PROXY,
     args: {
       real: proxyAccountId,
-      forceProxyType: 'Any',
+      forceProxyType: proxyType,
       transaction: innerBatch,
     },
   };
@@ -685,21 +687,28 @@ type ProxyReassignParams = {
   signerAccountId: AccountId;
   newAccountId: AccountId;
   oldAccountId: AccountId;
+  proxyType: ProxyType;
 };
 
-function buildProxyReassign({ chain, newAccountId, oldAccountId, signerAccountId }: ProxyReassignParams): Transaction {
+function buildProxyReassign({
+  chain,
+  newAccountId,
+  oldAccountId,
+  signerAccountId,
+  proxyType,
+}: ProxyReassignParams): Transaction {
   const addProxyTx = transactionBuilder.buildAddProxy({
     chain,
     accountId: oldAccountId,
     delegateAccountId: newAccountId,
-    type: 'Any',
+    type: proxyType,
   });
 
   const removeProxyTx = transactionBuilder.buildRemoveProxy({
     chain,
     accountId: oldAccountId,
     delegate: oldAccountId,
-    proxyType: 'Any',
+    proxyType,
     delay: 0,
   });
 
@@ -790,6 +799,7 @@ type VestingSchedule = {
   locked: BN;
   startingBlock: BN;
   perBlock: BN;
+  unlockedAtStartBlock?: BN;
 };
 
 type VestedTransferParams = {
@@ -799,17 +809,48 @@ type VestedTransferParams = {
 };
 
 function buildVestedTransfer({ chain, accountId, vestingSchedule }: VestedTransferParams): Transaction {
-  const vestingTxs = vestingSchedule.map((v) => ({
-    chainId: chain.chainId,
-    accountId,
-    type: TransactionType.VESTED_TRANSFER,
-    args: {
-      target: v.target,
-      locked: v.locked.toString(),
-      startingBlock: v.startingBlock.toString(),
-      perBlock: v.perBlock.toString(),
-    },
-  }));
+  const vestingTxs: Transaction[] = [];
+
+  for (const v of vestingSchedule) {
+    if (nonNullable(v.unlockedAtStartBlock)) {
+      vestingTxs.push({
+        chainId: chain.chainId,
+        accountId,
+        type: TransactionType.VESTED_TRANSFER,
+        args: {
+          target: v.target,
+          locked: v.unlockedAtStartBlock.toString(),
+          startingBlock: v.startingBlock.toString(),
+          perBlock: v.unlockedAtStartBlock.toString(),
+        },
+      });
+
+      const remainingLocked = v.locked.sub(v.unlockedAtStartBlock);
+      vestingTxs.push({
+        chainId: chain.chainId,
+        accountId,
+        type: TransactionType.VESTED_TRANSFER,
+        args: {
+          target: v.target,
+          locked: remainingLocked.toString(),
+          startingBlock: v.startingBlock.toString(),
+          perBlock: v.perBlock.toString(),
+        },
+      });
+    } else {
+      vestingTxs.push({
+        chainId: chain.chainId,
+        accountId,
+        type: TransactionType.VESTED_TRANSFER,
+        args: {
+          target: v.target,
+          locked: v.locked.toString(),
+          startingBlock: v.startingBlock.toString(),
+          perBlock: v.perBlock.toString(),
+        },
+      });
+    }
+  }
 
   if (vestingTxs.length === 1) return vestingTxs[0]!;
 

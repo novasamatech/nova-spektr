@@ -1,6 +1,6 @@
 import { type PropsWithChildren, useContext, useMemo, useState } from 'react';
 
-import { ThemeContext, type ThemeContextTheme } from './ThemeContext';
+import { type ThemeContextTheme, ThemeContext } from './ThemeContext';
 
 type Props = PropsWithChildren<
   Partial<Pick<ThemeContextTheme, 'iconStyle' | 'theme' | 'preferStaticContent'>> & {

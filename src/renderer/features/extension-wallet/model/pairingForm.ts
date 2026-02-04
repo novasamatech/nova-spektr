@@ -2,14 +2,12 @@ import { type Wallet as ConnectWallet, type WalletAccount } from '@talismn/conne
 import { attach, combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { CryptoType, type HexString, SigningType, WalletType } from '@/shared/core';
+import { type HexString, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { waitFor } from '@/shared/effector';
 import { nonNullable, nullable, toAccountId, toShortAddress } from '@/shared/lib/utils';
-import { Paths } from '@/shared/routes';
 import { type AnyAccountDraft, accountSync } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { navigationModel } from '@/features/navigation';
 import {
   type ExtensionAccount,
   type ExtensionChainAccount,
@@ -76,6 +74,7 @@ const $accounts = combine($rawAccounts, $extensionType, (accounts, extensionType
         name: name ?? toShortAddress(address),
         type: isChainAccount ? 'chain' : 'universal',
         signingType: SigningType.EXTENSION,
+        createdAt: Date.now(),
       };
 
       if (isChainAccount) {
@@ -132,13 +131,19 @@ sample({
 sample({
   clock: create,
   fn: ({ account, name }) => {
+    const trimmedName = name.trim();
     return {
       wallet: {
-        name: name.trim(),
+        name: trimmedName,
         type: WalletTypeFromExtension(account.extension),
         signingType: SigningType.EXTENSION,
       },
-      accounts: [account],
+      accounts: [
+        {
+          ...account,
+          name: trimmedName,
+        },
+      ],
     };
   },
   target: createWalletFx,
@@ -150,12 +155,6 @@ sample({
   clock: walletCreated,
   fn: () => ({ extension: null }),
   target: flow.close,
-});
-
-sample({
-  clock: walletCreated,
-  fn: () => Paths.ASSETS,
-  target: navigationModel.events.navigateTo,
 });
 
 sample({

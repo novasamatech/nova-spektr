@@ -393,6 +393,12 @@
     "walletsTab": "Your wallets",
     "yourAccounts": "Your accounts"
   },
+  "dateRangePicker": {
+    "lastMonth": "Last month",
+    "lastWeek": "Last week",
+    "lastYear": "Last year",
+    "resetButton": "Reset"
+  },
   "delegate": {
     "title": "Delegations"
   },
@@ -1632,6 +1638,7 @@
         "errorTitle_one": "Found {count} error",
         "errorTitle_other": "Found {count} errors",
         "fieldErrors": {
+          "DUPLICATE_RECIPIENT": "Duplicate recipient",
           "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
           "INVALID_VALUE": "Invalid value",
           "OUT_OF_RANGE": "Value out of range",
@@ -1644,7 +1651,9 @@
         "issueLine": "Row {row} — {path}: {message}",
         "issuesTitle": "Found {count} errors",
         "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
-        "title": "CSV error"
+        "title": "CSV error",
+        "warningTitle_one": "Found {count} warning",
+        "warningTitle_other": "Found {count} warnings"
       },
       "form": {
         "chainRequired": "Chain is required",
@@ -1689,7 +1698,9 @@
         "footer": {
           "downloadDescription": "You can download parsed file to review them.",
           "errorsCount_one": "Found {count} error.",
-          "errorsCount_other": "Found {count} errors."
+          "errorsCount_other": "Found {count} errors.",
+          "warningsCount_one": "Found {count} warning.",
+          "warningsCount_other": "Found {count} warnings."
         },
         "hints": {
           "planks": "{amount} planks"
@@ -1711,7 +1722,7 @@
     "fellowship": "Fellowship",
     "governance": "Governance",
     "historyLabel": "History",
-    "mstOperationLabel": "Operations",
+    "mstOperationLabel": "Multisig Operations",
     "multiTransferLabel": "Multi-transfer",
     "multipleWalletsLabel": "Multiple wallets",
     "notificationsLabel": "Notifications",
@@ -1724,11 +1735,16 @@
   },
   "notifications": {
     "details": {
+      "eventStatus": {
+        "rejected": "rejected",
+        "signed": "signed"
+      },
       "flexibleMultisigCreatedTitle": "New flexible multisig wallet added",
       "flexibleMultisigDescription": "<strong>{name}</strong> on <chain /> with threshold { threshold } out of { signatoriesLength } signatories.",
       "flexibleMultisigEditedTitle": "Flexible multisig has been edited",
       "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength }",
       "multisigCreatedTitle": "New multisig wallet added",
+      "multisigEventDetails": "by <wallet><walletIcon /><name>{name}</name></wallet>  on  <chain />",
       "multisigOperationDetails": "in <wallet><walletIcon /><name>{name}</name></wallet>  on  <chain />",
       "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
@@ -1752,6 +1768,7 @@
         "delegatedAuthorityWalletsAdded": "{count} delegated authority wallets added",
         "flexibleMultisigWalletsAdded": "{count} flexible multisig wallets added",
         "flexibleMultisigWalletsEdited": "{count} flexible multisig wallets edited",
+        "multisigEventsUpdated": "{count} multisig events",
         "multisigOperationsUpdated": "{count} multisig operations updated",
         "multisigWalletsAdded": "{count} multisig wallets added",
         "walletsAddedDescription": "Open the wallet selector to see the full list"
@@ -1946,6 +1963,7 @@
       "callData": "Call Data",
       "callHash": "Call Hash",
       "controller": "Controller",
+      "dateTime": "Date & Time",
       "delegateTo": "Delegate to",
       "delegationTarget": "Delegate",
       "delegationTracks": "Tracks",
@@ -1978,8 +1996,14 @@
     "feeErrorMessage": "Insufficient funds to pay the network fee",
     "feeErrorTitle": "Insufficient Funds",
     "goBackButton": "Back",
+    "hideButton": "Hide operation",
+    "hideToast": {
+      "success": "Operation hidden",
+      "undo": "Undo"
+    },
     "inProgress": "Submitting approval...",
     "logButton": "Log",
+    "openOverviewButton": "Open overview",
     "multisigExistsDescription": "Due to the blockchain limitations, multisig operations with identical details can't be in a signing status simultaneously. Wait for the current one to be signed or reject it to create a new one.",
     "multisigExistsTitle": "Same transaction already exist",
     "networkFee": "Network fee",
@@ -2032,6 +2056,11 @@
     "submitErrorButton": "Close",
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
+    "unhideButton": "Show operation",
+    "unhideToast": {
+      "success": "Operation restored",
+      "undo": "Undo"
+    },
     "viewJSON": {
       "button": "View JSON",
       "label": "Operation details"
@@ -2074,16 +2103,31 @@
       "success": "Call data submitted successfully",
       "title": "Enter call data"
     },
+    "clearSearchAndFilters": "Clear search and filters",
     "createdOperationDescription": "The changes will take effect after the other signatories sign.",
+    "export": {
+      "tooltip": "Export operations to CSV"
+    },
     "filters": {
-      "clearAll": "Clear all",
-      "networkPlaceholder": "Network",
+      "accountPlaceholder": "Accounts",
+      "clearFilters": "Clear filters",
+      "dateRangePlaceholder": "Date range",
+      "networkPlaceholder": "Networks",
       "networkSummary": "Networks",
       "operationTypePlaceholder": "Operation type",
       "operationTypeSummary": "Operation types",
+      "proxyTypePlaceholder": "Proxy type",
       "statusPlaceholder": "Operation status",
       "statusSummary": "Operation statuses"
     },
+    "sync": {
+      "connecting": "Connecting to networks...",
+      "syncing": "Syncing networks... {synced}/{total}",
+      "synced": "Synced",
+      "loading": "Syncing..."
+    },
+    "historyEmptyDescription": "Signed operations will appear here once completed.",
+    "historyEmptyTitle": "Operation history list is empty",
     "modalTitles": {
       "addProxy": "Add delegated authority (proxy)",
       "addProxyOn": "Add delegated authority (proxy) on",
@@ -2124,13 +2168,19 @@
       "vestedTransferOn": "Vested transfer on",
       "vote": "Vote { asset } on"
     },
-    "noOperationsDescription": "You haven't made any operations yet. <br /> If you updated your Flexible Multisig, previous operations are available on the old multisig.",
-    "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
-    "noOperationsTitle": "Operation list is empty",
-    "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. <br /> Transaction history for other types of wallets will be available later. Stay tuned.",
+    "noOperationsFilters": "Try to use different keywords or adjust filters",
+    "noOperationsTitle": "No operations found",
     "operationCreated": "Operation created",
+    "pendingEmptyDescription": "Once you or a multisig signer create an operation, it will appear here.",
+    "pendingEmptyTitle": "Pending operations list is empty",
+    "searchPlaceholder": "Search",
     "shareOperationTooltip": "Share transaction link with signatories",
-    "title": "Operations",
+    "tabs": {
+      "hidden": "Hidden",
+      "history": "History",
+      "pending": "Pending"
+    },
+    "title": "Multisig Operations",
     "titles": {
       "addProxy": "Add delegated authority (proxy)",
       "approveMultisig": "Approve multisig operation",
@@ -2207,16 +2257,16 @@
       "sender": "Sender"
     },
     "names": {
-      "any": "All operations",
-      "auction": "Auction operations",
-      "cancelProxy": "Cancel operations",
-      "governance": "Governance operations",
-      "identityJudgement": "Judgement operations",
-      "nominationPools": "Nominations operations",
-      "nonTransfer": "All, except transfer operations",
-      "staking": "Staking operations",
+      "any": "All",
+      "auction": "Auction",
+      "cancelProxy": "Cancel",
+      "governance": "Governance",
+      "identityJudgement": "Judgement",
+      "nominationPools": "Nominations",
+      "nonTransfer": "All, except transfer",
+      "staking": "Staking",
       "sudoBalances": "Sudo balances",
-      "unknown": "Unknown operations"
+      "unknown": "Unknown"
     },
     "operations": {
       "any": "all operations",
@@ -2379,9 +2429,11 @@
       "plateTitle": "Notifications",
       "preferences": "Preferences",
       "preferencesDescription": "Select wallets and events to be notified about their activity by displaying popup",
-      "saveButton": "Save",
+      "settingsRestored": "Settings restored",
+      "settingsSaved": "Settings saved",
       "soundEnabled": "Sound notification",
       "soundRestricted": "Sound is restricted by your browser. Please allow audio in site settings.",
+      "undoButton": "Undo",
       "walletsMultiPlaceholder": "Wallets",
       "walletsPlaceholder": "Select wallets"
     },
@@ -2422,6 +2474,8 @@
     "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Polkadot Vault",
     "signatureExpiredLabel": "QR Code has expired",
     "signer": "Signing wallet:",
+    "signingInProgress": "Signing...",
+    "signingMultipleInProgress": "Signing {current} of {total}...",
     "title": "Signing",
     "troubleshootingLink": "I have an error in Polkadot Vault"
   },
@@ -2790,10 +2844,12 @@
         "errorTitle_one": "Found {count} error",
         "errorTitle_other": "Found {count} errors",
         "fieldErrors": {
+          "CLIFF_MIN_VESTED_TRANSFER": "Amount that remains locked after start block must be greater than <minVestedTransfer />. Current: <remainingLockedAmount />",
+          "DUPLICATE_TARGET": "Duplicate recipient",
           "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
           "INVALID_VALUE": "Invalid value",
           "MAX_VESTING_SCHEDULES_REACHED": "Max vesting schedules reached",
-          "MIN_VESTED_TRANSFER": "Min vested transfer is <asset />",
+          "MIN_VESTED_TRANSFER": "Min vested transfer is <minVestedTransfer />",
           "OUT_OF_RANGE": "Value out of range",
           "START_BLOCK_IN_PAST": "Block in the past. Make sure you are using relaychain block number",
           "UNKNOWN_ERROR": "Unknown error"
@@ -2848,13 +2904,16 @@
           "locked": "Locked",
           "perBlock": "Per block",
           "recipient": "Recipient",
-          "startBlock": "Start block"
+          "startBlock": "Start block",
+          "unlockedAtStartBlock": "Unlocked at start"
         },
         "hints": {
+          "locked": "Total locked amount",
           "perBlock": "Tokens released per block during vesting",
           "planks": "{amount} planks",
           "startBlock": "Block number when vesting starts",
-          "startBlockTime": "Starts on {date} at {time}"
+          "startBlockTime": "Starts on {date} at {time}",
+          "unlockedAtStartBlock": "Amount unlocked at starting block"
         }
       },
       "title": "Parsed file"

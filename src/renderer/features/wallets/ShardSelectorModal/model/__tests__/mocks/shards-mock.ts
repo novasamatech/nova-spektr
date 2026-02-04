@@ -1,11 +1,11 @@
 import {
+  type PolkadotVaultWallet,
+  type VaultChainAccount,
+  type VaultShardAccount,
   AccountType,
   CryptoType,
   KeyType,
-  type PolkadotVaultWallet,
   SigningType,
-  type VaultChainAccount,
-  type VaultShardAccount,
   WalletType,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -24,6 +24,7 @@ const vaultAccounts = [
     accountId: '0x18164fa6f9ce28792fb781185e8de4e6eaae34c0f545e5864952fe23c183df0c' as AccountId,
     chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
     derivationPath: '//westend//hot//0',
+    createdAt: Date.now(),
   },
   {
     id: '2',
@@ -38,6 +39,7 @@ const vaultAccounts = [
     accountId: '0xa8ceab88b82d857d3e64a8d67db0d3e476054a42572522ae359b962b2818305f' as AccountId,
     chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
     derivationPath: '//westend//hot//1',
+    createdAt: Date.now(),
   },
   {
     id: '3',
@@ -51,6 +53,7 @@ const vaultAccounts = [
     accountId: '0x04b42c45250880695e6cec68c5adce35a0e2ec60ed46b77b734ad6020b991658' as AccountId,
     chainId: '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
     derivationPath: '//kusama//pub',
+    createdAt: Date.now(),
   },
   {
     id: '4',
@@ -64,6 +67,7 @@ const vaultAccounts = [
     accountId: '0x661127faa225949b1c1a48f834f43fa626c9f58fa0c7e522551d4b9616e18c37' as AccountId,
     chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
     derivationPath: '//polkadot//main',
+    createdAt: Date.now(),
   },
 ] satisfies (VaultChainAccount | VaultShardAccount)[];
 

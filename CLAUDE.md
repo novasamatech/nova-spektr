@@ -30,9 +30,12 @@ Nova Spektr is a Polkadot & Kusama ecosystem Enterprise Desktop application buil
 ### Code Quality
 - `pnpm lint` - Run ESLint on source code
 - `pnpm lint:fix` - Run linter and auto-fix issues
-- `pnpm types` - Run TypeScript type checking
+- `pnpm types` - Run TypeScript type checking (tsc)
+- `pnpm types:go` - Run TypeScript type checking with tsgo (~6x faster, preferred)
 - `pnpm fmt:check` - Check code formatting with Prettier
 - `pnpm fmt:fix` - Auto-fix code formatting
+
+**Note:** Prefer `pnpm types:go` for type checking - it uses tsgo (TypeScript's native Go port) and is approximately 6x faster than tsc.
 
 ### Single Test Execution
 To run a single test file:
@@ -102,3 +105,5 @@ The renderer follows Feature-Sliced Design methodology:
 - Use the custom DI system for dependency injection
 - Follow Feature-Sliced Design import rules (no upward imports between layers)
 - Use absolute imports via TypeScript path mapping
+- Prioritize code correctness and clarity. Speed and efficiency are secondary priorities unless otherwise specified.
+- Do not write organizational or comments that summarize the code. Comments should only be written in order to explain "why" the code is written in some way in the case there is a reason that is tricky / non-obvious.

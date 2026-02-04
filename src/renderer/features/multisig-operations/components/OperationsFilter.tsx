@@ -1,174 +1,191 @@
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
-import { useEffect, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
 import { Button, MultiSelect } from '@/shared/ui';
-import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
-import { type MultisigOperation } from '@/domains/network';
+import { Hash, WalletAccountIcon } from '@/shared/ui-entities';
+import { DateRangePicker } from '@/shared/ui-kit';
+import { accountService, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
+import { ProxyTypeName } from '@/entities/proxy';
+import { accountUtils } from '@/entities/wallet';
+import { walletSelectService } from '@/aggregates/wallet-select';
 import { operationsContextModel } from '../model/context';
 
-type FilterName = 'status' | 'network' | 'type';
-
-type FiltersOptions = Record<FilterName, Set<DropdownOption>>;
-
-const getFilterableTxType = (op: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
-  if (!op.transaction?.type) {
-    return 'UNKNOWN_TYPE';
-  }
-
-  if (TransferTypes.includes(op.transaction.type)) {
-    return TransactionType.TRANSFER;
-  }
-  if (XcmTypes.includes(op.transaction.type)) {
-    return TransactionType.XCM_LIMITED_TRANSFER;
-  }
-
-  if (op.transaction.type === TransactionType.BATCH_ALL) {
-    const txMatch = findCoreBatchAll(op.transaction);
-
-    return txMatch?.type || 'UNKNOWN_TYPE';
-  }
-
-  return op.transaction.type;
-};
-
-const EmptyOptions: FiltersOptions = {
-  status: new Set<DropdownOption>(),
-  network: new Set<DropdownOption>(),
-  type: new Set<DropdownOption>(),
-};
-
-type Props = {
-  operations: MultisigOperation[];
-};
-
-export const OperationsFilter = ({ operations }: Props) => {
+export const OperationsFilter = memo(() => {
   const { t } = useI18n();
 
-  const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(EmptyOptions);
-
   const selectedOptions = useUnit(operationsContextModel.$filter);
+  const isFiltersSelected = useUnit(operationsContextModel.$isFiltersSelected);
   const chains = useUnit(networkModel.$chains);
+  const chainsList = useUnit(networkModel.$chainsList);
+  const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
+  const multisigWallets = useUnit(operationsContextModel.$multisigWallets);
 
-  const StatusOptions = getStatusOptions(t);
+  const resolvedWallets = useWalletsNames(multisigWallets);
+
+  const [accountSearchQuery, setAccountSearchQuery] = useState('');
+  const [networkSearchQuery, setNetworkSearchQuery] = useState('');
+  const [typeSearchQuery, setTypeSearchQuery] = useState('');
+  const [proxyTypeSearchQuery, setProxyTypeSearchQuery] = useState('');
+
+  const multisigAccounts = useMemo(() => Object.values(multisigAccountsMap), [multisigAccountsMap]);
+
   const TransactionOptions = getTransactionOptions(t);
-  const NetworkOptions = Object.values(chains).map(({ chainId, name }) => ({
+  const NetworkOptions = chainsList.map(({ chainId, name }) => ({
     id: chainId,
     value: chainId,
     element: name,
   }));
+  const ProxyTypeOptions = Object.entries(ProxyTypeName).map(([type, name]) => ({
+    id: type,
+    value: type,
+    element: t(name),
+  }));
 
-  useEffect(() => {
-    setFiltersOptions(getAvailableFiltersOptions(operations));
-  }, [operations, chains]);
+  const filtersOptions = useMemo(() => {
+    const filteredAccountOptions = performSearch({
+      query: accountSearchQuery,
+      records: multisigAccounts
+        .map(multisigAccount => {
+          const wallet = resolvedWallets.find(w => w.id === multisigAccount.walletId);
+          const addressPrefix = accountUtils.isFlexibleMultisigAccount(multisigAccount)
+            ? chains[multisigAccount.chainId]?.addressPrefix
+            : undefined;
+          const accountAddress = toAddress(multisigAccount.accountId, { prefix: addressPrefix });
 
-  const getAvailableFiltersOptions = (transactions: MultisigOperation[]) => {
-    return transactions.reduce(
-      (acc, tx) => {
-        const txType = getFilterableTxType(tx);
-        const xcmDestination = tx.transaction?.args.destinationChain;
+          return wallet
+            ? {
+                multisigAccount,
+                walletName: wallet.name,
+                accountAddress,
+                wallet,
+              }
+            : null;
+        })
+        .filter(nonNullable),
+      getMeta: ({ walletName, wallet }) => ({
+        name: walletName,
+        address: walletSelectService.composeWalletMeta(
+          wallet,
+          accountService.filterAccountsByWallet(multisigAccounts, wallet.id),
+          chains,
+        ),
+      }),
+      weights: { name: 1, address: 0.8 },
+    }).map(({ multisigAccount, walletName, accountAddress, wallet }) => ({
+      id: multisigAccount.accountId,
+      value: multisigAccount.accountId,
+      element: (
+        <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
+          {wallet && <WalletAccountIcon address={accountAddress} type={wallet.type} size={24} iconSize={12} />}
+          <span className="flex w-full flex-col overflow-hidden">
+            {walletName && <span className="w-fit max-w-full truncate">{walletName}</span>}
+            <span className="w-full text-help-text text-text-tertiary">
+              <Hash value={accountAddress} variant="truncate" />
+            </span>
+          </span>
+        </span>
+      ),
+    }));
 
-        const statusOption = StatusOptions.find(s => s.value === tx.status);
-        const originNetworkOption = NetworkOptions.find(s => s.value === tx.chainId);
-        const destNetworkOption = NetworkOptions.find(s => s.value === xcmDestination);
-        const typeOption = TransactionOptions.find(s => s.value === txType);
+    const filteredNetworkOptions = performSearch({
+      query: networkSearchQuery,
+      records: NetworkOptions,
+      weights: { element: 1 },
+    });
 
-        if (statusOption) {
-          acc.status.add(statusOption);
-        }
-        if (originNetworkOption) {
-          acc.network.add(originNetworkOption);
-        }
-        if (destNetworkOption) {
-          acc.network.add(destNetworkOption);
-        }
-        if (typeOption) {
-          acc.type.add(typeOption);
-        }
+    const filteredTypeOptions = performSearch({
+      query: typeSearchQuery,
+      records: TransactionOptions,
+      weights: { element: 1 },
+    });
 
-        return acc;
-      },
-      {
-        status: new Set<DropdownOption>(),
-        network: new Set<DropdownOption>(),
-        type: new Set<DropdownOption>(),
-      },
-    );
-  };
+    const filteredProxyTypeOptions = performSearch({
+      query: proxyTypeSearchQuery,
+      records: ProxyTypeOptions,
+      weights: { element: 1 },
+    });
 
-  const handleFilterChange = (values: DropdownResult[], filterName: FilterName) => {
-    const newSelectedOptions = { ...selectedOptions, [filterName]: values.map(v => v.id) };
-    operationsContextModel.setFilters(newSelectedOptions);
-  };
+    return {
+      account: filteredAccountOptions,
+      network: filteredNetworkOptions,
+      type: filteredTypeOptions,
+      proxyType: filteredProxyTypeOptions,
+    };
+  }, [
+    multisigAccounts,
+    resolvedWallets,
+    chains,
+    NetworkOptions,
+    TransactionOptions,
+    ProxyTypeOptions,
+    accountSearchQuery,
+    networkSearchQuery,
+    typeSearchQuery,
+    proxyTypeSearchQuery,
+  ]);
 
   const clearFilters = () => {
     operationsContextModel.resetFilters();
   };
 
-  const filtersSelected =
-    selectedOptions.network.length || selectedOptions.status.length || selectedOptions.type.length;
-
   return (
-    <div className="my-4 ml-6 flex h-9 w-[736px] items-center gap-2">
+    <div className="flex h-9 items-center gap-2">
+      {isFiltersSelected && (
+        <Button variant="text" className="h-8.5 py-0" onClick={clearFilters}>
+          {t('operations.filters.clearFilters')}
+        </Button>
+      )}
+      <div className="w-[136px]">
+        <DateRangePicker
+          value={selectedOptions.dateRange}
+          placeholder={t('operations.filters.dateRangePlaceholder')}
+          onChange={range => operationsContextModel.setFilter({ dateRange: range })}
+        />
+      </div>
       <MultiSelect
-        className="w-[200px]"
-        placeholder={t('operations.filters.statusPlaceholder')}
-        selectedIds={selectedOptions.status}
-        options={[...filtersOptions.status]}
-        onChange={value => handleFilterChange(value, 'status')}
+        showSelectAll
+        className="w-[136px]"
+        placeholder={t('operations.filters.accountPlaceholder')}
+        selectedIds={selectedOptions.account}
+        options={[...filtersOptions.account]}
+        onChange={value => operationsContextModel.setFilter({ account: value.map(v => v.id) })}
+        onSearch={setAccountSearchQuery}
       />
       <MultiSelect
-        className="w-[200px]"
+        showSelectAll
+        className="w-[136px]"
+        placeholder={t('operations.filters.proxyTypePlaceholder')}
+        selectedIds={selectedOptions.proxyType}
+        options={[...filtersOptions.proxyType]}
+        onChange={value => operationsContextModel.setFilter({ proxyType: value.map(v => v.id) })}
+        onSearch={setProxyTypeSearchQuery}
+      />
+      <MultiSelect
+        showSelectAll
+        className="w-[136px]"
         placeholder={t('operations.filters.networkPlaceholder')}
         selectedIds={selectedOptions.network}
         options={[...filtersOptions.network]}
-        onChange={value => handleFilterChange(value, 'network')}
+        onChange={value => operationsContextModel.setFilter({ network: value.map(v => v.id) })}
+        onSearch={setNetworkSearchQuery}
       />
       <MultiSelect
-        className="w-[200px]"
+        showSelectAll
+        className="w-[136px]"
         placeholder={t('operations.filters.operationTypePlaceholder')}
         selectedIds={selectedOptions.type}
         options={[...filtersOptions.type]}
-        onChange={value => handleFilterChange(value, 'type')}
+        onChange={value => operationsContextModel.setFilter({ type: value.map(v => v.id) })}
+        onSearch={setTypeSearchQuery}
       />
-
-      {Boolean(filtersSelected) && (
-        <Button variant="text" className="ml-auto h-8.5 py-0" onClick={clearFilters}>
-          {t('operations.filters.clearAll')}
-        </Button>
-      )}
     </div>
   );
-};
-
-const getStatusOptions = (t: TFunction): DropdownOption<MultisigOperation['status']>[] => {
-  return [
-    {
-      id: 'pending',
-      value: 'pending',
-      element: t('operation.status.signing'),
-    },
-    {
-      id: 'cancelled',
-      value: 'cancelled',
-      element: t('operation.status.cancelled'),
-    },
-    {
-      id: 'error',
-      value: 'error',
-      element: t('operation.status.error'),
-    },
-    {
-      id: 'executed',
-      value: 'executed',
-      element: t('operation.status.executed'),
-    },
-  ];
-};
+});
 
 const getTransactionOptions = (t: TFunction) => {
   return [

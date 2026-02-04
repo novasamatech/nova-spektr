@@ -1,6 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { isObject } from 'lodash';
-import { Children, type PropsWithChildren, type ReactNode } from 'react';
+import { type PropsWithChildren, type ReactNode, Children } from 'react';
 
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { IconButton } from '@/shared/ui/Buttons/IconButton/IconButton';
@@ -65,6 +65,7 @@ const Root = ({
                 'w-148': size === 'mdlg',
                 'w-modal-lg': size === 'lg',
                 'w-modal-xl': size === 'xl',
+                'w-modal-xxl': size === 'xxl',
                 'w-full': size === 'full',
                 'w-fit': size === 'fit',
                 'h-fit': height === 'fit',

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { AccountNameType, type Chain, type Contact, CryptoType, SigningType } from '@/shared/core';
+import { type Chain, type Contact, AccountNameType, CryptoType, SigningType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import {
   createAccountId,
@@ -25,6 +25,7 @@ const chainAccount: ChainAccount = {
   walletId: 0,
   signingType: SigningType.POLKADOT_VAULT,
   cryptoType: CryptoType.SR25519,
+  createdAt: Date.now(),
 };
 
 const kusamaChainAccount: ChainAccount = {
@@ -36,6 +37,7 @@ const kusamaChainAccount: ChainAccount = {
   walletId: 0,
   signingType: SigningType.POLKADOT_VAULT,
   cryptoType: CryptoType.SR25519,
+  createdAt: Date.now(),
 };
 
 const universalAccount: UniversalAccount = {
@@ -46,6 +48,7 @@ const universalAccount: UniversalAccount = {
   walletId: 0,
   signingType: SigningType.POLKADOT_VAULT,
   cryptoType: CryptoType.SR25519,
+  createdAt: Date.now(),
 };
 
 describe('account service', () => {
@@ -95,6 +98,7 @@ describe('account service', () => {
         accountId: createAccountId('1'),
         cryptoType: CryptoType.SR25519,
         signingType: SigningType.WALLET_CONNECT,
+        createdAt: Date.now(),
         proxiedAccountId: createAccountId('2'),
       };
 
@@ -107,6 +111,7 @@ describe('account service', () => {
         accountId: createAccountId('2'),
         cryptoType: CryptoType.SR25519,
         signingType: SigningType.WALLET_CONNECT,
+        createdAt: Date.now(),
         proxiedAccountId: createAccountId('3'),
       };
 
@@ -119,6 +124,7 @@ describe('account service', () => {
         accountId: createAccountId('3'),
         cryptoType: CryptoType.SR25519,
         signingType: SigningType.POLKADOT_VAULT,
+        createdAt: Date.now(),
       };
 
       const accounts = [leafAccount, secondProxyAccount, firstProxyAccount];
@@ -166,6 +172,7 @@ describe('account service', () => {
         accountId: createAccountId('1'),
         cryptoType: CryptoType.SR25519,
         signingType: SigningType.WATCH_ONLY,
+        createdAt: Date.now(),
         proxiedAccountId: createAccountId('2'),
       };
 
@@ -178,6 +185,7 @@ describe('account service', () => {
         accountId: createAccountId('2'),
         cryptoType: CryptoType.SR25519,
         signingType: SigningType.WATCH_ONLY,
+        createdAt: Date.now(),
         proxiedAccountId: createAccountId('3'),
       };
 
@@ -190,6 +198,7 @@ describe('account service', () => {
         accountId: createAccountId('3'),
         cryptoType: CryptoType.SR25519,
         signingType: SigningType.POLKADOT_VAULT,
+        createdAt: Date.now(),
       };
 
       const accounts = [leafAccount, secondProxyAccount, firstProxyAccount];
@@ -230,6 +239,7 @@ describe('account service', () => {
         accountId: createAccountId('2'),
         cryptoType: CryptoType.SR25519,
         signingType: SigningType.WALLET_CONNECT,
+        createdAt: Date.now(),
         proxiedAccountId: createAccountId('3'),
       };
 
@@ -242,6 +252,7 @@ describe('account service', () => {
         accountId: createAccountId('3'),
         cryptoType: CryptoType.SR25519,
         signingType: SigningType.EXTENSION,
+        createdAt: Date.now(),
       };
 
       const wcAccount: ChainAccount = {
@@ -253,6 +264,7 @@ describe('account service', () => {
         accountId: createAccountId('3'),
         cryptoType: CryptoType.SR25519,
         signingType: SigningType.WALLET_CONNECT,
+        createdAt: Date.now(),
       };
 
       const accounts = [proxy, extensionAccount, wcAccount];
@@ -289,6 +301,7 @@ describe('account service', () => {
         accountId: createAccountId('2'),
         cryptoType: CryptoType.SR25519,
         signingType: SigningType.WALLET_CONNECT,
+        createdAt: Date.now(),
         proxiedAccountId: createAccountId('3'),
       };
 
@@ -301,6 +314,7 @@ describe('account service', () => {
         accountId: createAccountId('3'),
         cryptoType: CryptoType.SR25519,
         signingType: SigningType.POLKADOT_VAULT,
+        createdAt: Date.now(),
       };
 
       const accounts = [proxy, pvAccount];

@@ -1,12 +1,12 @@
 import {
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type Wallet,
   AccountType,
   ChainType,
   CryptoType,
   KeyType,
   SigningType,
-  type VaultBaseAccount,
-  type VaultChainAccount,
-  type Wallet,
   WalletType,
 } from '@/shared/core';
 import { TEST_CHAIN_ID } from '@/shared/lib/utils';
@@ -22,6 +22,7 @@ const accounts: (VaultChainAccount | VaultBaseAccount)[] = [
     accountId: createAccountId('1'),
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
+    createdAt: Date.now(),
   } satisfies VaultBaseAccount,
   {
     id: '2',
@@ -35,6 +36,7 @@ const accounts: (VaultChainAccount | VaultBaseAccount)[] = [
     cryptoType: CryptoType.SR25519,
     keyType: KeyType.HOT,
     derivationPath: '//test/path_1',
+    createdAt: Date.now(),
   } satisfies VaultChainAccount,
   {
     id: '3',
@@ -45,6 +47,7 @@ const accounts: (VaultChainAccount | VaultBaseAccount)[] = [
     accountId: createAccountId('3'),
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
+    createdAt: Date.now(),
   } satisfies VaultBaseAccount,
   {
     type: 'chain',
@@ -58,6 +61,7 @@ const accounts: (VaultChainAccount | VaultBaseAccount)[] = [
     cryptoType: CryptoType.SR25519,
     keyType: KeyType.PUBLIC,
     derivationPath: '//test/path_2',
+    createdAt: Date.now(),
   } satisfies VaultChainAccount,
   {
     id: '5',
@@ -68,6 +72,7 @@ const accounts: (VaultChainAccount | VaultBaseAccount)[] = [
     accountId: createAccountId('5'),
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
+    createdAt: Date.now(),
   } satisfies VaultBaseAccount,
 ];
 
@@ -111,6 +116,7 @@ const newAccounts: (VaultBaseAccount | VaultChainAccount)[] = [
     accountId: createAccountId('4'),
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
+    createdAt: Date.now(),
   } satisfies VaultBaseAccount,
   {
     id: '5',
@@ -124,6 +130,7 @@ const newAccounts: (VaultBaseAccount | VaultChainAccount)[] = [
     cryptoType: CryptoType.SR25519,
     keyType: KeyType.PUBLIC,
     derivationPath: '//test/path_2',
+    createdAt: Date.now(),
   } satisfies VaultChainAccount,
 ];
 

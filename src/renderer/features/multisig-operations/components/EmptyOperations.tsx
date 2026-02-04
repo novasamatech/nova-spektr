@@ -1,34 +1,42 @@
-import { Trans } from 'react-i18next';
-
-import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { BodyText, TitleText } from '@/shared/ui';
+import { BodyText, Button, TitleText } from '@/shared/ui';
 import { Graphics } from '@/shared/ui-kit';
+import { type TabFilter, operationsContextModel } from '../model/context';
 
 type Props = {
-  multisigAccount: MultisigAccount | FlexibleMultisigAccount | null;
   isEmptyFromFilters: boolean;
+  tab: TabFilter;
 };
 
-export const EmptyOperations = ({ multisigAccount, isEmptyFromFilters }: Props) => {
+export const EmptyOperations = ({ isEmptyFromFilters, tab }: Props) => {
   const { t } = useI18n();
 
-  const emptyText = multisigAccount
-    ? isEmptyFromFilters
-      ? 'operations.noOperationsFilters'
-      : 'operations.noOperationsDescription'
-    : 'operations.noOperationsWalletNotMulti';
+  let titleKey = 'operations.noOperationsTitle';
+  let descriptionKey = 'operations.noOperationsFilters';
+  if (!isEmptyFromFilters && tab === 'pending') {
+    titleKey = 'operations.pendingEmptyTitle';
+    descriptionKey = 'operations.pendingEmptyDescription';
+  } else if (!isEmptyFromFilters && tab === 'history') {
+    titleKey = 'operations.historyEmptyTitle';
+    descriptionKey = 'operations.historyEmptyDescription';
+  }
 
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center gap-y-6">
-      <Graphics name="emptyList" alt={t('operations.noOperationsDescription')} size={178} />
+      <Graphics name="emptyList" alt={t(titleKey)} size={178} />
 
       <div className="flex flex-col items-center gap-y-4">
-        {multisigAccount && <TitleText>{t('operations.noOperationsTitle')}</TitleText>}
+        <TitleText>{t(titleKey)}</TitleText>
 
         <BodyText align="center" className="max-w-[560px] text-text-tertiary">
-          <Trans t={t} i18nKey={emptyText} />
+          {t(descriptionKey)}
         </BodyText>
+
+        {isEmptyFromFilters && (
+          <Button variant="text" pallet="primary" onClick={() => operationsContextModel.resetFilters()}>
+            {t('operations.clearSearchAndFilters')}
+          </Button>
+        )}
       </div>
     </div>
   );

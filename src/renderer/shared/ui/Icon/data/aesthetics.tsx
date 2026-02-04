@@ -1,5 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
-
 import ChatIcon from '@/shared/assets/images/aesthetics/chat.svg?jsx';
 import ClockIcon from '@/shared/assets/images/aesthetics/clock.svg?jsx';
 import FellowshipIcon from '@/shared/assets/images/aesthetics/fellowship.svg?jsx';

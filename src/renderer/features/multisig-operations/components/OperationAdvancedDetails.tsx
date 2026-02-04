@@ -1,134 +1,130 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
-import { cnTw, getNativeAsset, nonNullable, truncate } from '@/shared/lib/utils';
-import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
-import { Copy } from '@/shared/ui-kit';
-import { type MultisigOperation, accounts } from '@/domains/network';
+import { cnTw, getNativeAsset, truncate } from '@/shared/lib/utils';
+import { DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { IconButton } from '@/shared/ui/Buttons';
+import { AssetBalance } from '@/shared/ui-entities';
+import { Copy, Tooltip, useNotification } from '@/shared/ui-kit';
+import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { walletModel } from '@/entities/wallet';
-import { NamedAccount } from '@/widgets/NameResolver';
+import { type TabFilter, operationsContextModel } from '../model/context';
 
 type Props = {
   operation: MultisigOperation;
+  tab: TabFilter;
 };
 
 const InteractionStyle =
   'rounded-sm hover:bg-action-background-hover hover:text-text-primary cursor-pointer py-[3px] px-2 -mr-2';
 
-export const OperationAdvancedDetails = ({ operation }: Props) => {
+export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
   const { t } = useI18n();
+  const { toast } = useNotification();
 
-  const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
-  const allAccounts = useUnit(accounts.$list);
 
   const nativeAsset = getNativeAsset(chain?.assets ?? []);
   const explorers = chain?.explorers;
 
-  const [isAdvancedShown, toggleAdvanced] = useToggle();
+  const { indexCreated, blockCreated, deposit, callHash, callData } = operation;
 
-  const { indexCreated, blockCreated, deposit, depositor, callHash, callData } = operation;
-
-  const depositorSignatory = allAccounts.find(a => a.accountId === depositor);
   const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
-  const depositorWallet = depositorSignatory && wallets.find(w => w.id === depositorSignatory.walletId);
+  const isHiddenTab = tab === 'hidden';
+
+  const handleHideOperation = () => {
+    operationsContextModel.hideOperation(operation.id);
+    toast.success(t('operation.hideToast.success'), {
+      action: {
+        label: t('operation.hideToast.undo'),
+        onClick: () => {
+          operationsContextModel.unhideOperation(operation.id);
+        },
+      },
+    });
+  };
+
+  const handleUnhideOperation = () => {
+    operationsContextModel.unhideOperation(operation.id);
+    toast.success(t('operation.unhideToast.success'), {
+      action: {
+        label: t('operation.unhideToast.undo'),
+        onClick: () => {
+          operationsContextModel.hideOperation(operation.id);
+        },
+      },
+    });
+  };
 
   return (
-    <>
-      <Button
-        variant="text"
-        pallet="primary"
-        size="sm"
-        suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} />}
-        className="-ml-2 w-fit text-action-text-default hover:text-action-text-default"
-        onClick={toggleAdvanced}
-      >
-        {t('operation.advanced')}
-      </Button>
+    <div className="flex flex-col gap-y-4 p-4">
+      <div className="flex items-center justify-between">
+        <SmallTitleText>{t('operation.advanced')}</SmallTitleText>
 
-      {isAdvancedShown && (
-        <>
-          {callHash && (
-            <DetailRow label={t('operation.details.callHash')} className="text-text-secondary">
-              <Copy value={callHash}>
-                <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
-                  <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
-                  <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
-                </button>
-              </Copy>
-            </DetailRow>
-          )}
+        <Tooltip>
+          <Tooltip.Trigger>
+            <IconButton
+              name={isHiddenTab ? 'eye' : 'eyeSlashed'}
+              className="text-icon-default"
+              onClick={isHiddenTab ? handleUnhideOperation : handleHideOperation}
+            />
+          </Tooltip.Trigger>
+          <Tooltip.Content>{isHiddenTab ? t('operation.unhideButton') : t('operation.hideButton')}</Tooltip.Content>
+        </Tooltip>
+      </div>
 
-          {callData && (
-            <DetailRow label={t('operation.details.callData')} className="text-text-secondary">
-              <Copy value={callData}>
-                <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
-                  <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
-                  <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
-                </button>
-              </Copy>
-            </DetailRow>
-          )}
+      <div className="flex flex-col gap-y-2">
+        {callHash && (
+          <DetailRow label={t('operation.details.callHash')} className="text-text-secondary">
+            <Copy value={callHash}>
+              <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
+                <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
+                <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
+              </button>
+            </Copy>
+          </DetailRow>
+        )}
 
-          {deposit && nativeAsset && depositorSignatory && <hr className="border-divider" />}
+        {callData && (
+          <DetailRow label={t('operation.details.callData')} className="text-text-secondary">
+            <Copy value={callData}>
+              <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
+                <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
+                <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
+              </button>
+            </Copy>
+          </DetailRow>
+        )}
 
-          {depositorSignatory && nonNullable(chain) && (
-            <DetailRow label={t('operation.details.depositor')} className="text-text-secondary">
-              {depositorWallet ? (
-                <div className="flex items-center gap-2">
-                  <WalletIcon size={16} type={depositorWallet.type} />
-                  <span>{depositorWallet.name}</span>
-                  <AccountExplorers accountId={depositorSignatory.accountId} chain={chain} />
-                </div>
-              ) : (
-                <div className="flex min-w-min">
-                  <FootnoteText className="text-text-secondary">
-                    <NamedAccount accountId={depositorSignatory.accountId} chain={chain} variant="short" />
-                  </FootnoteText>
-                </div>
-              )}
-            </DetailRow>
-          )}
+        {deposit && nativeAsset && (
+          <DetailRow label={t('operation.details.deposit')} className="text-text-secondary">
+            <AssetBalance value={deposit} asset={nativeAsset} className="py-[3px] text-footnote text-text-secondary" />
+          </DetailRow>
+        )}
 
-          {deposit && nativeAsset && (
-            <DetailRow label={t('operation.details.deposit')} className="text-text-secondary">
-              <AssetBalance
-                value={deposit}
-                asset={nativeAsset}
-                className="py-[3px] text-footnote text-text-secondary"
-              />
-            </DetailRow>
-          )}
-
-          {deposit && nativeAsset && depositorSignatory && <hr className="border-divider" />}
-
-          {indexCreated && blockCreated && (
-            <DetailRow label={t('operation.details.timePoint')} className="text-text-secondary">
-              {extrinsicLink ? (
-                <a
-                  className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
-                  href={extrinsicLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <FootnoteText className="text-text-secondary">
-                    {blockCreated}-{indexCreated}
-                  </FootnoteText>
-                  <Icon name="globe" size={16} className="group-hover:text-icon-hover" />
-                </a>
-              ) : (
-                `${blockCreated}-${indexCreated}`
-              )}
-            </DetailRow>
-          )}
-        </>
-      )}
-    </>
+        {indexCreated && blockCreated && (
+          <DetailRow label={t('operation.details.timePoint')} className="text-text-secondary">
+            {extrinsicLink ? (
+              <a
+                className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
+                href={extrinsicLink}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FootnoteText className="text-text-secondary">
+                  {blockCreated}-{indexCreated}
+                </FootnoteText>
+                <Icon name="globe" size={16} className="group-hover:text-icon-hover" />
+              </a>
+            ) : (
+              `${blockCreated}-${indexCreated}`
+            )}
+          </DetailRow>
+        )}
+      </div>
+    </div>
   );
 };

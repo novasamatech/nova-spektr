@@ -4,7 +4,7 @@ import { createForm } from 'effector-forms';
 import { t } from 'i18next';
 import { noop } from 'lodash';
 
-import { AccountType, CryptoType, SigningType, WalletType, type WcAccount } from '@/shared/core';
+import { type WcAccount, AccountType, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { createFlow, waitFor } from '@/shared/effector';
 import { isEthereumAccountId, nonNullable, nullable } from '@/shared/lib/utils';
 import { accountSync, identity } from '@/domains/network';
@@ -102,6 +102,7 @@ sample({
         cryptoType: isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
         chainId: chain.chainId,
         signingExtras: { pairingTopic: session?.pairingTopic, sessionTopic: session?.topic },
+        createdAt: Date.now(),
       };
     });
 

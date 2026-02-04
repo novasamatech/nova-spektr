@@ -7,10 +7,10 @@ import {
   type DraftAccount,
   type NoID,
   type PolkadotVaultGroup,
-  SigningType,
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
+  SigningType,
 } from '@/shared/core';
 import { AccountType, CryptoType, KeyType } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
@@ -106,6 +106,7 @@ sample({
         accountType: AccountType.CHAIN,
         keyType: KeyType.MAIN,
         type: 'chain',
+        createdAt: Date.now(),
       });
     }
 
@@ -122,6 +123,7 @@ sample({
         accountType: AccountType.CHAIN,
         keyType: KeyType.CUSTOM,
         type: 'chain',
+        createdAt: Date.now(),
       });
     }
 

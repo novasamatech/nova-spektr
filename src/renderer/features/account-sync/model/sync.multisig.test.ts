@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck - Test file with mock data that doesn't match strict types
 import { describe, expect, test } from 'vitest';
 
@@ -39,6 +38,7 @@ describe('syncMultisigAccounts', () => {
               signingType: multisigAccount1.signingType,
               threshold: multisigAccount1.threshold,
               type: multisigAccount1.type,
+              createdAt: expect.any(Number),
             },
           ],
         },
@@ -54,6 +54,7 @@ describe('syncMultisigAccounts', () => {
               signingType: multisigAccount2.signingType,
               threshold: multisigAccount2.threshold,
               type: multisigAccount2.type,
+              createdAt: expect.any(Number),
             },
           ],
         },
@@ -69,6 +70,7 @@ describe('syncMultisigAccounts', () => {
               signingType: multisigAccount3.signingType,
               threshold: multisigAccount3.threshold,
               type: multisigAccount3.type,
+              createdAt: expect.any(Number),
             },
           ],
         },

@@ -19,6 +19,15 @@ export const transferTestCases = [
   },
 ];
 
+export const proxyTransferTestCase = [
+  {
+    chainName: 'Polkadot Asset Hub',
+    assetId: 0,
+    amount: '0.01',
+    recipient: '7LMj1kc8TYvTQkWy6Am8EZEka1zqbTqmL8iBPrUVC6nDcoo6',
+  },
+];
+
 export const xcmTransferTestCases = [
   {
     chainName: 'Polkadot Asset Hub',
@@ -29,15 +38,12 @@ export const xcmTransferTestCases = [
   },
 ];
 
-export const proxyTransferTestCases = [
-  {
-    chainName: 'Novasama Testnet - Governance',
-    amount: '0.1',
-    recipient: '5Gy5tdSg9KLxZMkHRTkFTEHz3QGYrmKbFzBGoyZjkg45JFNP',
-  },
-];
-
 export const transferConstants = {
   multisig_name: 'multisig_transfer',
-  proxy_name: 'Proxy_transfer',
+  nova_name: 'nova_transfer',
+  proxy_name: 'proxy_transfer',
+  vault_name: 'vault_transfer',
+  watch_only_name: 'watch_only_transfer',
+  watch_only_chain: 'Polkadot Asset Hub',
+  watch_only_asset_id: 0,
 };

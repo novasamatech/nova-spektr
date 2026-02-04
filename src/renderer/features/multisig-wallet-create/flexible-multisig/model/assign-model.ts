@@ -4,13 +4,13 @@ import { sortBy } from 'lodash';
 import { spread } from 'patronum';
 
 import {
-  AccountType,
-  CryptoType,
   type FlexibleMultisigWallet,
   type MultisigWallet,
   type NoID,
   type ProxiedAccount,
   type ProxiedWallet,
+  AccountType,
+  CryptoType,
   ProxyVariant,
   SigningType,
   WalletType,
@@ -113,6 +113,7 @@ const $coreTx = combine(
       multisigAccountId: toAccountId(multisigAccountId),
       threshold,
       proxyAccountId: pureCreated.accountId,
+      proxyType: 'Any',
       pureTopUpAmount,
       isMultisigExists,
     });
@@ -253,9 +254,11 @@ sample({
       pendingBlockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
 
+      proxyType: 'Any',
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       signingType: SigningType.MULTISIG,
       accountType: AccountType.FLEX_MULTISIG,
+      createdAt: Date.now(),
     };
 
     const wallet: Omit<NoID<FlexibleMultisigWallet>, 'accounts'> = {
@@ -318,6 +321,7 @@ sample({
       pendingBlockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
       spawner: initiator!.accountId,
+      createdAt: Date.now(),
     };
 
     const wallet: Omit<NoID<ProxiedWallet>, 'accounts'> = {
@@ -367,6 +371,7 @@ sample({
       type: 'universal',
       blockNumber: timepoint.height,
       remarkChainId: chain?.chainId,
+      createdAt: Date.now(),
     };
 
     const wallet: Omit<NoID<MultisigWallet>, 'accounts'> = {

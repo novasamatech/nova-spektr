@@ -1,8 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type BN } from '@polkadot/util';
+import { BN } from '@polkadot/util';
 import { format } from 'date-fns';
 import { type PropsWithChildren, memo, useCallback, useMemo, useState } from 'react';
-import { Trans } from 'react-i18next';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -14,7 +13,10 @@ import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
 import { useBlockTimestamp, useIdentity } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
-import { type ValidationIssue, VestingFieldError, type VestingScheduleRaw } from '../lib/types';
+import { type ValidationIssue, type VestingScheduleRaw, VestingFieldError } from '../lib/types';
+
+import { CliffMinVestedTransferError } from './CliffMinVestedTransferError';
+import { MinVestedTransferError } from './MinVestedTransferError';
 
 type TableData = VestingScheduleRaw & {
   index: number;
@@ -75,6 +77,10 @@ export const VestingSchedulePreview = memo(
         const hasInvalidValue = fieldIssues.some(
           (i) => i.severity === 'error' && i.message === VestingFieldError.INVALID_VALUE,
         );
+        const remainingLockedAmount =
+          row.locked && row.unlockedAtStartBlock
+            ? new BN(row.locked).sub(new BN(row.unlockedAtStartBlock)).toString()
+            : null;
 
         return (
           <div className={cnTw('flex flex-col items-end overflow-hidden', STATUS_TEXT_COLORS[status])}>
@@ -85,7 +91,12 @@ export const VestingSchedulePreview = memo(
             )}
 
             {fieldIssues.length > 0 && (
-              <FieldIssues issue={fieldIssues[0]!} asset={asset} minVestedTransfer={minVestedTransfer} />
+              <FieldIssues
+                issue={fieldIssues[0]}
+                asset={asset}
+                minVestedTransfer={minVestedTransfer}
+                remainingLockedAmount={remainingLockedAmount}
+              />
             )}
           </div>
         );
@@ -99,9 +110,10 @@ export const VestingSchedulePreview = memo(
     );
     const tableData = useMemo(() => allData.slice(0, visibleCount), [allData, visibleCount]);
     const hasMore = visibleCount < allData.length;
+    const hasUnlockedAtStartBlock = vestingSchedule.some((schedule) => nonNullable(schedule.unlockedAtStartBlock));
 
-    const columns: Column<TableData>[] = useMemo(
-      () => [
+    const columns: Column<TableData>[] = useMemo(() => {
+      const baseColumns: Column<TableData>[] = [
         {
           key: 'index',
           title: '',
@@ -117,7 +129,7 @@ export const VestingSchedulePreview = memo(
         {
           key: 'target',
           title: t('vestedTransfer.parsedFile.table.headers.recipient'),
-          width: '460px',
+          width: '465px',
           render: (_, row) => {
             if (nullable(row.target) || nullable(chain)) return null;
             const rowIssues = getRowIssues(row.index);
@@ -142,8 +154,16 @@ export const VestingSchedulePreview = memo(
         {
           key: 'locked',
           title: (
-            <div className="flex w-full justify-end">
+            <div className="flex w-full justify-end gap-x-1">
               <span>{t('vestedTransfer.parsedFile.table.headers.locked')}</span>
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div>
+                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('vestedTransfer.parsedFile.table.hints.locked')}</Tooltip.Content>
+              </Tooltip>
             </div>
           ),
           width: '120px',
@@ -236,12 +256,58 @@ export const VestingSchedulePreview = memo(
               ),
             ),
         },
-      ],
-      [t, chain, asset, getRowIssues, getFieldIssues, timelineApi],
-    );
+      ];
+
+      if (hasUnlockedAtStartBlock) {
+        baseColumns.push({
+          key: 'unlockedAtStartBlock',
+          title: (
+            <div className="flex w-full justify-end gap-x-1">
+              <span>{t('vestedTransfer.parsedFile.table.headers.unlockedAtStartBlock')}</span>
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div>
+                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('vestedTransfer.parsedFile.table.hints.unlockedAtStartBlock')}</Tooltip.Content>
+              </Tooltip>
+            </div>
+          ),
+          width: '140px',
+          render: (_, row) =>
+            renderCell(row, 'unlockedAtStartBlock', ({ row }) =>
+              row.unlockedAtStartBlock && asset ? (
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <div className="flex flex-col items-end">
+                      <AssetBalance
+                        value={row.unlockedAtStartBlock}
+                        asset={asset}
+                        showSymbol
+                        className="border-b border-filter-border text-inherit"
+                      />
+                      <AssetFiatBalance asset={asset} amount={row.unlockedAtStartBlock} className="text-inherit" />
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    {t('vestedTransfer.parsedFile.table.hints.planks', {
+                      amount: NUM_FORMATTER.format(BigInt(row.unlockedAtStartBlock)),
+                    })}
+                  </Tooltip.Content>
+                </Tooltip>
+              ) : (
+                <span className="shrink-0 text-body">{row.unlockedAtStartBlock}</span>
+              ),
+            ),
+        });
+      }
+
+      return baseColumns;
+    }, [t, chain, asset, getRowIssues, getFieldIssues, timelineApi, vestingSchedule]);
 
     return (
-      <Modal size="xl" height="fit">
+      <Modal size={hasUnlockedAtStartBlock ? 'xxl' : 'xl'} height="fit">
         <Modal.Trigger>{children}</Modal.Trigger>
         <Modal.Title close>
           <div className="flex gap-x-2">
@@ -275,44 +341,39 @@ const FieldIssues = memo(
     className,
     minVestedTransfer,
     asset,
+    remainingLockedAmount,
   }: {
     issue: ValidationIssue;
-    minVestedTransfer?: BN | null;
     asset: Asset | null;
+    minVestedTransfer?: BN | null;
+    remainingLockedAmount?: string | null;
     className?: string;
   }) => {
     const { t } = useI18n();
 
     const isMinVestedTransferError =
-      issue.message === VestingFieldError.MIN_VESTED_TRANSFER && nonNullable(minVestedTransfer);
+      issue.message === VestingFieldError.MIN_VESTED_TRANSFER && nonNullable(minVestedTransfer) && nonNullable(asset);
 
-    if (isMinVestedTransferError && nonNullable(asset)) {
-      return (
-        <div className="flex flex-col">
-          <CaptionText className={cnTw('text-right text-inherit', className)}>
-            <Trans
-              t={t}
-              i18nKey="vestedTransfer.errors.csv.fieldErrors.MIN_VESTED_TRANSFER"
-              components={{
-                asset: (
-                  <AssetBalance
-                    className="text-caption text-inherit"
-                    value={minVestedTransfer}
-                    asset={asset}
-                    showSymbol
-                  />
-                ),
-              }}
-            />
-          </CaptionText>
-        </div>
-      );
-    }
+    const isCliffMinVestedTransferError =
+      issue.message === VestingFieldError.CLIFF_MIN_VESTED_TRANSFER &&
+      nonNullable(minVestedTransfer) &&
+      nonNullable(asset) &&
+      nonNullable(remainingLockedAmount);
 
     return (
       <div className="flex flex-col">
         <CaptionText className={cnTw('text-right text-inherit', className)}>
-          {t(`vestedTransfer.errors.csv.fieldErrors.${issue.message}`)}
+          {isMinVestedTransferError ? (
+            <MinVestedTransferError minVestedTransfer={minVestedTransfer} asset={asset} />
+          ) : isCliffMinVestedTransferError ? (
+            <CliffMinVestedTransferError
+              minVestedTransfer={minVestedTransfer}
+              remainingLockedAmount={remainingLockedAmount}
+              asset={asset}
+            />
+          ) : (
+            t(`vestedTransfer.errors.csv.fieldErrors.${issue.message}`)
+          )}
         </CaptionText>
       </div>
     );

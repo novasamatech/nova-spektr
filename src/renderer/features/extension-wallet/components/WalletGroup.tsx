@@ -5,7 +5,7 @@ import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
-import { Icon, type IconNames } from '@/shared/ui';
+import { type IconNames, Icon } from '@/shared/ui';
 import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Label } from '@/shared/ui-kit';
 import { accounts, useWalletsNames } from '@/domains/network';

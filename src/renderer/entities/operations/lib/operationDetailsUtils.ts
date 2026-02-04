@@ -13,8 +13,8 @@ import {
   type ProxyType,
   type Signatory,
   type Transaction,
-  TransactionType,
   type Wallet,
+  TransactionType,
 } from '@/shared/core';
 import { toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
@@ -99,10 +99,10 @@ export const getDestination = (
   if (!chain) return undefined;
 
   if (isProxyTransaction(tx.transaction)) {
-    return toAddress(tx.transaction.args.transaction.args.dest, { prefix: chain.addressPrefix });
+    return toAddress(tx.transaction.args.transaction.args.dest, { prefix: chain?.addressPrefix });
   }
 
-  return toAddress(tx.transaction.args.dest, { prefix: chain.addressPrefix });
+  return toAddress(tx.transaction.args.dest, { prefix: chain?.addressPrefix });
 };
 
 export const getDestinationAccountId = (tx: MultisigOperation): AccountId | undefined => {

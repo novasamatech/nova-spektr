@@ -4,7 +4,7 @@ import init from 'raptorq/raptorq';
 import { useRef } from 'react';
 
 import { type HexString } from '@/shared/core';
-import { QR_READER_ERRORS, QrReader, type QrReaderCamera, QrReaderErrorCode } from '@/shared/ui-kit';
+import { type QrReaderCamera, QR_READER_ERRORS, QrReader, QrReaderErrorCode } from '@/shared/ui-kit';
 import { type ErrorObject } from '../common/types';
 
 import { isQrErrorObject } from './scannerUtils';

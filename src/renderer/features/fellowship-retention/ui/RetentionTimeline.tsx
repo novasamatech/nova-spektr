@@ -2,7 +2,7 @@ import { memo } from 'react';
 
 import { nonNullable } from '@/shared/lib/utils';
 import { HelpText, Icon } from '@/shared/ui';
-import { Timeline, type TimelineStep, Tooltip } from '@/shared/ui-kit';
+import { type TimelineStep, Timeline, Tooltip } from '@/shared/ui-kit';
 
 type Props = {
   steps: TimelineStep[];

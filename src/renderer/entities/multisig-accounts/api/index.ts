@@ -1,1 +1,1 @@
-export { multisigService, type MultisigResult } from './multisigsService';
+export { type MultisigResult, multisigService } from './multisigsService';

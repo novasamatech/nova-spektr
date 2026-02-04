@@ -12,4 +12,5 @@ export const enum Step {
 export type ValidationSchemaOptions = {
   chain: Chain;
   recipientBalances?: Map<AccountId, Balance>;
+  recipientOccurrences?: Record<AccountId, number>;
 };

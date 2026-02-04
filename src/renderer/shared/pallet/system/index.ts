@@ -9,10 +9,10 @@ export const systemPallet = {
 };
 
 export type {
-  SystemLimitsBlockLength,
-  SupportDispatchPerDispatchClassU32,
   SpWeightsWeightV2Weight,
+  SupportDispatchPerDispatchClassU32,
   SupportDispatchPerDispatchClassWeightsPerClass,
+  SystemLimitsBlockLength,
   SystemLimitsBlockWeights,
   SystemLimitsWeightsPerClass,
 } from './schema';

@@ -105,7 +105,7 @@ const DestinationBalanceAlert = memo(() => {
 
   return (
     <Alert title={t('transfer.destinationBalanceAlertTitle')} variant="error" active={hasDestinationBalanceError}>
-      <span>
+      <span data-testid={TEST_IDS.VALIDATIONS.INACTIVE_ACCOUNT}>
         <Trans
           t={t}
           i18nKey="transfer.destinationBalanceAlertDescription"

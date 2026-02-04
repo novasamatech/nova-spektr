@@ -1,11 +1,11 @@
 import { u8aToHex } from '@polkadot/util';
 import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
-import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
+import { type SubmitHandler, Controller, useForm } from 'react-hook-form';
 
 import {
-  AccountType,
   type Chain,
+  AccountType,
   CryptoType,
   CryptoTypeString,
   ErrorType,
@@ -100,6 +100,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
           signingType: SigningType.PARITY_SIGNER,
           accountType: AccountType.BASE,
           type: 'universal',
+          createdAt: Date.now(),
         },
       ],
     });

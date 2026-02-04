@@ -1,6 +1,6 @@
+import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type FormEvent, memo, useEffect, useMemo, useState } from 'react';
-import { Trans } from 'react-i18next';
 
 import vested_transfer_template_url from '@/shared/assets/templates/vested-transfer-template.csv?url';
 import { useForm } from '@/shared/forms';
@@ -14,7 +14,14 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
-import { type ValidationIssue, VestingCsvError, VestingFieldError, VestingSchedulePreview } from '@/entities/vesting';
+import {
+  type ValidationIssue,
+  CliffMinVestedTransferError,
+  MinVestedTransferError,
+  VestingCsvError,
+  VestingFieldError,
+  VestingSchedulePreview,
+} from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 import { vestedTransferUtils } from '../utils';
@@ -269,28 +276,35 @@ const ValidationsAlert = () => {
   };
 
   const renderErrorItem = (issue: ValidationIssue) => {
+    const row = parsedCsv?.[issue.row - 1];
+    const remainingLockedAmount =
+      row?.locked && row?.unlockedAtStartBlock
+        ? new BN(row.locked).sub(new BN(row.unlockedAtStartBlock)).toString()
+        : null;
+
     const isMinVestedTransferError =
       issue.message === VestingFieldError.MIN_VESTED_TRANSFER && nonNullable(minVestedTransfer) && nonNullable(asset);
 
-    if (isMinVestedTransferError) {
+    const isCliffMinVestedTransferError =
+      issue.message === VestingFieldError.CLIFF_MIN_VESTED_TRANSFER &&
+      nonNullable(minVestedTransfer) &&
+      nonNullable(asset) &&
+      nonNullable(remainingLockedAmount);
+
+    if (isMinVestedTransferError || isCliffMinVestedTransferError) {
       const rowPrefix = t('vestedTransfer.errors.csv.invalidDataRow', { row: issue.row });
       return (
         <Alert.Item key={issue.row}>
           {rowPrefix}:&nbsp;
-          <Trans
-            t={t}
-            i18nKey="vestedTransfer.errors.csv.fieldErrors.MIN_VESTED_TRANSFER"
-            components={{
-              asset: (
-                <AssetBalance
-                  className="text-caption text-inherit"
-                  value={minVestedTransfer}
-                  asset={asset}
-                  showSymbol
-                />
-              ),
-            }}
-          />
+          {isMinVestedTransferError ? (
+            <MinVestedTransferError minVestedTransfer={minVestedTransfer} asset={asset} />
+          ) : (
+            <CliffMinVestedTransferError
+              minVestedTransfer={minVestedTransfer}
+              remainingLockedAmount={remainingLockedAmount!}
+              asset={asset}
+            />
+          )}
         </Alert.Item>
       );
     }

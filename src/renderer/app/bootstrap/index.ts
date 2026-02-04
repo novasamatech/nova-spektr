@@ -1,10 +1,8 @@
-/* eslint-disable import-x/max-dependencies */
-
 import { kernelModel } from '@/shared/core';
 import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';
 import { config as collectivesConfig, trackService } from '@/domains/collectives';
-import { accounts, multisigOperation } from '@/domains/network';
+import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
@@ -49,7 +47,6 @@ const populate = async () => {
   accounts.populate();
   walletModel.populate();
   proxyModel.populate();
-  multisigOperation.populate();
   governanceMetaProvider.populate();
   portfolioModel.populate();
   balanceModel.populate();

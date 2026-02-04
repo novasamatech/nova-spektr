@@ -1,44 +1,42 @@
 import { type PropsWithChildren } from 'react';
 
-import { type Chain } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Icon, type IconNames } from '@/shared/ui';
-import { AccountExplorers } from '@/shared/ui-entities';
+import { CaptionText } from '@/shared/ui';
 import { type MultisigEvent } from '@/domains/network';
 
-const IconProps: Record<MultisigEvent['status'], { className: string; name: IconNames }> = {
-  approve: { className: 'text-text-positive', name: 'checkmarkOutline' },
-  reject: { className: 'text-text-negative', name: 'closeOutline' },
+type StatusConfig = {
+  className: string;
+  label: string;
+};
+
+const StatusProps: Record<MultisigEvent['status'] | 'unsigned', StatusConfig> = {
+  approve: { className: 'text-text-positive', label: 'Signed' },
+  reject: { className: 'text-text-negative', label: 'Rejected' },
+  unsigned: { className: 'text-text-secondary', label: 'Unsigned' },
 };
 
 type Props = {
   className?: string;
-  accountId: AccountId;
-  chain?: Chain;
   status: MultisigEvent['status'] | null;
 };
 
-export const SignatoryCard = ({ className, accountId, chain, status, children }: PropsWithChildren<Props>) => {
-  const statusProps = status ? IconProps[status] : null;
+export const SignatoryCard = ({ className, status, children }: PropsWithChildren<Props>) => {
+  const statusKey = status ?? 'unsigned';
+  const statusConfig = StatusProps[statusKey];
 
   return (
     <div
       className={cnTw(
-        'group flex flex-1 cursor-pointer items-center justify-between gap-x-2 rounded-sm px-2 py-1.5 text-text-secondary',
-        'transition-colors hover:bg-action-background-hover hover:text-text-primary',
+        'flex flex-1 items-center justify-between gap-x-2 rounded-sm px-2 py-1.5 text-text-secondary',
         className,
       )}
     >
       {children}
-      {chain && (
-        <div className={cnTw(statusProps && 'opacity-0 transition-opacity group-hover:opacity-100')}>
-          <AccountExplorers accountId={accountId} chain={chain} />
-        </div>
-      )}
-      {statusProps && (
-        <Icon size={16} className={cnTw('group-hover:hidden', statusProps.className)} name={statusProps.name} />
-      )}
+      <div className="flex shrink-0 items-center rounded-[20px] border border-shade-8 px-2.5 py-1">
+        <CaptionText align="center" className={cnTw('uppercase', statusConfig.className)}>
+          {statusConfig.label}
+        </CaptionText>
+      </div>
     </div>
   );
 };

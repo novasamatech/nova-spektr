@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { MockProvider } from '@polkadot/rpc-provider/mock';
 import { TypeRegistry } from '@polkadot/types';
 
-import { AccountType, CryptoType, type ProxiedAccount, type ProxyType, ProxyVariant, SigningType } from '@/shared/core';
+import { type ProxiedAccount, type ProxyType, AccountType, CryptoType, ProxyVariant, SigningType } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { createAccountId, createWcAccount } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -75,6 +75,7 @@ const createProxiedAccount = (
   entropyBlockNumber: 0,
   extrinsicIndex: 0,
   spawner: createAccountId('spawner'),
+  createdAt: Date.now(),
 });
 
 const createApi = () => {

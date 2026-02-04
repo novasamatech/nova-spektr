@@ -1,7 +1,7 @@
 import { hexToU8a } from '@polkadot/util';
 import { allSettled, fork } from 'effector';
 
-import { CryptoType, SigningType, type VaultChainAccount } from '@/shared/core';
+import { type VaultChainAccount, CryptoType, SigningType } from '@/shared/core';
 import { TEST_HASH } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
@@ -64,6 +64,7 @@ describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
       name: 'Main',
       accountType: 'chain',
       type: 'chain',
+      createdAt: expect.any(Number),
     };
 
     expect(scope.getState(manageVaultModel.$walletForm.$values)).toEqual({ name: 'test' });

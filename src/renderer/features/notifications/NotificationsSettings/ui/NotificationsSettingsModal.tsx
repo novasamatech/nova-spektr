@@ -2,11 +2,11 @@ import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { NotificationEvent } from '@/shared/core';
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
 import {
   BodyText,
-  Button,
   FootnoteText,
   HelpText,
   Icon,
@@ -42,13 +42,12 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
   const wallets = useUnit(notificationsSettingsModel.$wallets);
   const allAccounts = useUnit(accounts.$list);
   const chains = useUnit(networkModel.$chains);
-  const savedDisabledWalletIds = useUnit(notificationsSettingsModel.$disabledWalletIds);
-  const savedNotificationEvents = useUnit(notificationsSettingsModel.$notificationEvents);
-  const savedSoundEnabled = useUnit(notificationsSettingsModel.$soundEnabled);
+  const isTouched = useUnit(notificationsSettingsModel.$isTouched);
 
-  const [disabledWalletIds, setDisabledWalletIds] = useState(() => savedDisabledWalletIds);
-  const [enabledEvents, setEnabledEvents] = useState(() => savedNotificationEvents);
-  const [soundEnabled, setSoundEnabled] = useState(() => savedSoundEnabled);
+  const {
+    fields: { disabledWalletIds, notificationEvents, soundEnabled },
+  } = useForm(notificationsSettingsModel.form);
+
   const [internalIsOpen, setInternalIsOpen] = useState(false);
 
   const isControlled = controlledIsOpen !== undefined;
@@ -61,17 +60,15 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
 
   // Selected wallet IDs for MultiSelect (enabled = not disabled)
   const selectedWalletIds = useMemo(
-    () => new Set(resolvedWallets.filter((w) => !disabledWalletIds.has(w.id)).map((w) => w.id)),
-    [resolvedWallets, disabledWalletIds],
+    () => new Set(resolvedWallets.filter((w) => !disabledWalletIds.value.has(w.id)).map((w) => w.id)),
+    [resolvedWallets, disabledWalletIds.value],
   );
 
   useEffect(() => {
     if (isOpen) {
-      setDisabledWalletIds(savedDisabledWalletIds);
-      setEnabledEvents(savedNotificationEvents);
-      setSoundEnabled(savedSoundEnabled);
+      notificationsSettingsModel.events.formOpened();
     }
-  }, [isOpen, savedDisabledWalletIds, savedNotificationEvents, savedSoundEnabled]);
+  }, [isOpen]);
 
   const walletOptions = useMemo(() => {
     const filteredWallets = performSearch({
@@ -96,26 +93,22 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
   }, [resolvedWallets, walletSearchQuery, allAccounts, chains]);
 
   const toggleEvent = (event: NotificationEvent) => {
-    setEnabledEvents((prev) => {
-      const next = new Set(prev);
-      next.has(event) ? next.delete(event) : next.add(event);
-
-      return next;
-    });
+    const next = new Set(notificationEvents.value);
+    next.has(event) ? next.delete(event) : next.add(event);
+    notificationEvents.onChange(next);
+    notificationEvents.markAsTouched();
   };
 
   const handleWalletChange = (options: { id: string }[]) => {
     const enabledIds = new Set(options.map((opt) => Number(opt.id)));
-    setDisabledWalletIds(new Set(resolvedWallets.filter((w) => !enabledIds.has(w.id)).map((w) => w.id)));
+    const newDisabledIds = new Set(resolvedWallets.filter((w) => !enabledIds.has(w.id)).map((w) => w.id));
+    disabledWalletIds.onChange(newDisabledIds);
+    disabledWalletIds.markAsTouched();
   };
 
-  const handleSave = () => {
-    notificationsSettingsModel.events.settingsSaved({
-      disabledWalletIds: [...disabledWalletIds],
-      notificationEvents: [...enabledEvents],
-      soundEnabled,
-    });
-    setIsOpen(false);
+  const handleSoundChange = () => {
+    soundEnabled.onChange(!soundEnabled.value);
+    soundEnabled.markAsTouched();
   };
 
   const handlePlaySound = (e: React.MouseEvent) => {
@@ -124,8 +117,24 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
     notificationsSettingsModel.events.soundPlayed();
   };
 
+  const handleToggle = (open: boolean) => {
+    if (open) {
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+
+      if (isTouched) {
+        notificationsSettingsModel.events.modalClosed({
+          disabledWalletIds: [...disabledWalletIds.value],
+          notificationEvents: [...notificationEvents.value],
+          soundEnabled: soundEnabled.value,
+        });
+      }
+    }
+  };
+
   return (
-    <Modal size="md" isOpen={isOpen} onToggle={setIsOpen}>
+    <Modal size="md" isOpen={isOpen} onToggle={handleToggle}>
       {showTrigger && (
         <Modal.Trigger>
           <Plate className="p-0">
@@ -145,11 +154,11 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
           <div className="flex flex-col gap-y-2">
             <SmallTitleText className="text-text-primary">{t('settings.notificationsSettings.general')}</SmallTitleText>
             <Switch
-              checked={soundEnabled}
+              checked={soundEnabled.value}
               labelPosition="left"
               variant="accent"
               className="gap-x-2"
-              onChange={() => setSoundEnabled(!soundEnabled)}
+              onChange={handleSoundChange}
             >
               <div className="flex items-center gap-x-1">
                 <FootnoteText className="text-text-primary">
@@ -188,7 +197,7 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
             {EVENT_OPTIONS.map(({ event, labelKey }) => (
               <Switch
                 key={event}
-                checked={enabledEvents.has(event)}
+                checked={notificationEvents.value.has(event)}
                 labelPosition="left"
                 variant="accent"
                 className="gap-x-2"
@@ -202,12 +211,6 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
           </div>
         </div>
       </Modal.Content>
-
-      <Modal.Footer>
-        <Button className="ml-auto" onClick={handleSave}>
-          {t('settings.notificationsSettings.saveButton')}
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 };

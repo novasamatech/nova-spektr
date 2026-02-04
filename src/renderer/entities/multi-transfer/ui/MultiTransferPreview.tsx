@@ -10,18 +10,19 @@ import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
 import { useAccountName } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
-import { MultiTransferFieldError, type MultiTransferRow, type ValidationIssue } from '../lib/types';
+import { type MultiTransferRow, type ValidationIssue, MultiTransferFieldError } from '../lib/types';
+
+type RowStatus = 'error' | 'warning' | 'valid';
 
 type TableData = MultiTransferRow & {
   index: number;
 };
 
-type RowStatus = 'error' | 'valid';
-
 const NUM_FORMATTER = new Intl.NumberFormat('en-US');
 
 const STATUS_TEXT_COLORS: Record<RowStatus, string> = {
   error: 'text-text-negative',
+  warning: 'text-text-warning',
   valid: 'text-text-primary',
 };
 
@@ -57,7 +58,8 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
   );
 
   const getRowStatus = useCallback((rowIssues: ValidationIssue[]): RowStatus => {
-    if (rowIssues.length > 0) return 'error';
+    if (rowIssues.some((i) => i.severity === 'error')) return 'error';
+    if (rowIssues.some((i) => i.severity === 'warning')) return 'warning';
     return 'valid';
   }, []);
 
@@ -167,7 +169,8 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
     [t, chain, asset, getRowIssues, getFieldIssues, getRowStatus],
   );
 
-  const errorsCount = issues?.filter((issue) => issue.severity === 'error').length ?? 0;
+  const errorCount = issues?.filter((issue) => issue.severity === 'error').length ?? 0;
+  const warningCount = issues?.filter((issue) => issue.severity === 'warning').length ?? 0;
 
   return (
     <Modal size="lg" height="fit">
@@ -196,10 +199,17 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
         <Modal.Footer>
           <div className="flex w-full flex-row items-center justify-between">
             <div className="flex flex-col">
-              {errorsCount > 0 && (
+              {errorCount > 0 && (
                 <FootnoteText className="text-text-negative">
                   {t('multiTransfer.parsedFile.table.footer.errorsCount', {
-                    count: errorsCount,
+                    count: errorCount,
+                  })}
+                </FootnoteText>
+              )}
+              {warningCount > 0 && (
+                <FootnoteText className="text-text-warning">
+                  {t('multiTransfer.parsedFile.table.footer.warningsCount', {
+                    count: warningCount,
                   })}
                 </FootnoteText>
               )}

@@ -5,8 +5,8 @@ import { persist } from 'effector-storage/local';
 import { combineEvents, spread } from 'patronum';
 
 import {
-  ProviderType,
   type ProviderWithMetadata,
+  ProviderType,
   chainsService,
   metadataService,
   networkService,
@@ -17,9 +17,9 @@ import {
   type ChainId,
   type ChainMetadata,
   type Connection,
+  type NoID,
   ConnectionStatus,
   ConnectionType,
-  type NoID,
 } from '@/shared/core';
 import { createBuffer, series } from '@/shared/effector';
 import { dictionary, keys, nonNullable } from '@/shared/lib/utils';
@@ -288,17 +288,18 @@ sample({
     connections: $connections,
     metadata: $metadata,
   },
-  filter: ({ connections }, chainId) => {
-    return !connections[chainId] || networkUtils.isEnabledConnection(connections[chainId]);
+  filter: ({ connections, chains }, chainId) => {
+    return !chains[chainId] || !connections[chainId] || networkUtils.isEnabledConnection(connections[chainId]);
   },
   fn: (store, chainId) => {
     const connection = store.connections[chainId];
+    const chain = store.chains[chainId];
 
     const providerType = networkUtils.isLightClientConnection(connection)
       ? ProviderType.LIGHT_CLIENT
       : ProviderType.WEB_SOCKET;
 
-    const nodes = networkUtils.getChainNodes(store.chains[chainId], connection);
+    const nodes = networkUtils.getChainNodes(chain, connection);
     const metadata = networkUtils.getNewestMetadata(store.metadata)[chainId];
 
     return {

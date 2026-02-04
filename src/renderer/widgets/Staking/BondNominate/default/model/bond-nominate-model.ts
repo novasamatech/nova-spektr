@@ -16,7 +16,7 @@ import { bondNominateConfirmModel as confirmModel } from '@/features/operations/
 import { type BondNominateConfirm } from '@/features/operations/OperationsConfirm/BondNominate/model/confirm-model';
 import { validatorsModel } from '@/features/staking';
 import { bondUtils } from '../lib/bond-utils';
-import { type BondNominateData, Step, type WalletData } from '../lib/types';
+import { type BondNominateData, type WalletData, Step } from '../lib/types';
 
 import { formModel } from './form-model';
 

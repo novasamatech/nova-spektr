@@ -127,11 +127,7 @@ export const isEditFlexibleTransaction = (
   const addProxyTransaction = batchTransaction.args.transactions.at(0);
   const removeProxyTransaction = batchTransaction.args.transactions.at(1);
 
-  return (
-    isRemoveProxyTransaction(removeProxyTransaction) &&
-    isAddProxyTransaction(addProxyTransaction) &&
-    addProxyTransaction.args.proxyType === 'Any'
-  );
+  return isRemoveProxyTransaction(removeProxyTransaction) && isAddProxyTransaction(addProxyTransaction);
 };
 
 export const isMultiTransferTransaction = (transaction?: Transaction | DecodedTransaction | null) => {

@@ -1,10 +1,10 @@
 import {
+  type Edge,
+  type Node,
   Background,
   BackgroundVariant,
   Controls,
-  type Edge,
   MarkerType,
-  type Node,
   Position,
   ReactFlow,
   ReactFlowProvider,

@@ -1,10 +1,10 @@
 import {
-  AccountType,
   type Chain,
-  ChainOptions,
-  CryptoType,
   type MultisigAccount,
   type NoID,
+  AccountType,
+  ChainOptions,
+  CryptoType,
   SigningType,
 } from '@/shared/core';
 import { isEthereumAccountId } from '@/shared/lib/utils';
@@ -44,6 +44,7 @@ function buildMultisigAccount({ threshold, accountId, signatories, name }: Build
     signingType: SigningType.MULTISIG,
     accountType: AccountType.MULTISIG,
     type: 'universal',
+    createdAt: Date.now(),
   };
 
   return account;

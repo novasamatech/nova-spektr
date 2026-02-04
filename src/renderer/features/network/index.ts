@@ -1,10 +1,10 @@
 export { NetworksFilter, networksFilterModel } from './NetworksFilter';
 export {
+  type ConnectionItem,
+  type SelectorPayload,
   NetworkSelector,
   networkSelectorModel,
   networkSelectorUtils,
-  type ConnectionItem,
-  type SelectorPayload,
 } from './NetworkSelector';
 export {
   AddCustomRpcModal,
@@ -14,10 +14,10 @@ export {
   removeCustomRpcModel,
 } from './ManageCustomRpcNode';
 export {
-  NetworkList,
   ActiveNetwork,
-  InactiveNetwork,
   EmptyNetworks,
-  inactiveNetworksModel,
+  InactiveNetwork,
+  NetworkList,
   activeNetworksModel,
+  inactiveNetworksModel,
 } from './NetworkList';

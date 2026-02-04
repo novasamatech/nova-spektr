@@ -5,16 +5,16 @@ import { Provider } from 'effector-react';
 import { vi } from 'vitest';
 
 import {
-  AccountType,
   type Balance,
   type BalanceId,
   type BalanceMap,
-  CryptoType,
-  SigningType,
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
   type Wallet,
+  AccountType,
+  CryptoType,
+  SigningType,
   WalletType,
 } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
@@ -93,6 +93,7 @@ const accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[] = [
     accountId: TEST_ACCOUNTS[0],
     cryptoType: CryptoType.SR25519,
     signingType: SigningType.POLKADOT_VAULT,
+    createdAt: Date.now(),
   },
 ];
 

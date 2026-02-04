@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
-import { memo, useMemo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 import {
   type Asset,
@@ -12,16 +12,15 @@ import {
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getAssetByTypeExtras, getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { getAssetByTypeExtras, getNativeAsset } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { operationDetailsUtils } from '@/entities/operations';
-import { OperationResult, getExtrinsic, isXcmTransaction } from '@/entities/transaction';
+import { OperationResult, isXcmTransaction } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
-import { type ExtrinsicSigningPayload } from '@/features/operations/OperationSign';
 import { rejectModel } from '../../model/reject-model';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
@@ -36,16 +35,36 @@ type Props = {
   children: React.ReactNode;
 };
 
+type SubmitData = {
+  tx: NonNullable<ReturnType<typeof rejectModel.$transaction.getState>>;
+  initiator: NonNullable<ReturnType<typeof rejectModel.$initiator.getState>>;
+  txPayload: Uint8Array;
+  signature: HexString;
+};
+
 const enum Step {
   CONFIRMATION,
   SIGNING,
-  SUBMIT,
 }
 
-const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
+const AllSteps = [Step.CONFIRMATION, Step.SIGNING];
 
-export const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
+export const RejectTxModal = memo(({ api, operation, account, chain, children }: Props) => {
   const { t } = useI18n();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [submitData, setSubmitData] = useState<SubmitData | null>(null);
+  const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
+  const [isFeeModalOpen, toggleFeeModal] = useToggle();
+
+  useEffect(() => {
+    if (isOpen) {
+      rejectModel.flow.open({ chain, operation, account });
+      return () => {
+        rejectModel.flow.close({ chain, operation, account });
+      };
+    }
+  }, [isOpen, chain, operation, account]);
 
   const wallets = useUnit(walletModel.$wallets);
 
@@ -56,13 +75,8 @@ export const RejectTxModal = memo(({ api, operation, chain, children }: Props) =
   const isFeeLoading = useUnit(rejectModel.$isFeeLoading);
   const multisigDeposit = useUnit(rejectModel.$multisigDeposit);
   const signAccount = useUnit(rejectModel.$signatory);
+  const signingPayloads = useUnit(rejectModel.$signingPayloads);
   const initiator = useUnit(rejectModel.$initiator);
-
-  const [isFeeModalOpen, toggleFeeModal] = useToggle();
-
-  const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
-  const [txPayload, setTxPayload] = useState<Uint8Array>();
-  const [signature, setSignature] = useState<HexString>();
 
   const transaction = operation.transaction;
   const transactionTitle = getMultisigSignOperationTitle(
@@ -80,34 +94,32 @@ export const RejectTxModal = memo(({ api, operation, chain, children }: Props) =
     }
   }
 
-  const signingPayloads = useMemo<ExtrinsicSigningPayload[]>(() => {
-    if (nullable(rejectTx) || nullable(signAccount)) return [];
-    return [
-      {
-        api,
-        chain: chain,
-        extrinsic: getExtrinsic[rejectTx.type](rejectTx.args, api),
-        signatory: signAccount,
-      },
-    ];
-  }, [chain, signAccount, rejectTx]);
+  const handleToggle = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setSubmitData(null);
+      setActiveStep(Step.CONFIRMATION);
+    }
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+    setSubmitData(null);
+    setActiveStep(Step.CONFIRMATION);
+  };
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
   };
 
   const onSignResult = (signature: HexString[], payload: Uint8Array[]) => {
-    setTxPayload(payload[0]);
-    setSignature(signature[0]);
-    setActiveStep(Step.SUBMIT);
-  };
-
-  const toggleModal = (open: boolean) => {
-    if (open) {
-      rejectModel.flow.open({ chain, signer: signAccount, operation });
-    } else {
-      rejectModel.flow.close({ chain: null, signer: null, operation: null });
-      setActiveStep(Step.CONFIRMATION);
+    if (rejectTx && initiator) {
+      setSubmitData({
+        tx: rejectTx,
+        initiator,
+        txPayload: payload[0],
+        signature: signature[0],
+      });
     }
   };
 
@@ -119,31 +131,28 @@ export const RejectTxModal = memo(({ api, operation, chain, children }: Props) =
     }
   };
 
-  const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && initiator && signature && txPayload;
-
-  if (isSubmitStep && api) {
+  if (submitData && api) {
     return (
       <Submit
         isReject
-        tx={rejectTx}
+        tx={submitData.tx}
         api={api}
         operation={operation}
-        account={initiator}
-        txPayload={txPayload}
-        signature={signature}
-        onClose={() => toggleModal(false)}
+        txPayload={submitData.txPayload}
+        signature={submitData.signature}
+        onClose={handleClose}
       />
     );
   }
 
   return (
-    <Modal size="md" onToggle={toggleModal}>
+    <Modal size="md" onToggle={handleToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>
         <OperationTitle title={t(transactionTitle || '', { asset: asset?.symbol })} chainId={operation.chainId} />
       </Modal.Title>
       <Modal.Content>
-        {activeStep === Step.CONFIRMATION && nonNullable(fee) && (
+        {activeStep === Step.CONFIRMATION && (
           <Confirmation
             operation={operation}
             api={api}
@@ -157,7 +166,7 @@ export const RejectTxModal = memo(({ api, operation, chain, children }: Props) =
             onSign={handleConfirm}
           />
         )}
-        {activeStep === Step.SIGNING && rejectTx && api && signAccount && (
+        {activeStep === Step.SIGNING && signingPayloads && signAccount && (
           <SigningSwitch
             signerWallet={wallets.find(w => w.id === signAccount.walletId)}
             signingPayloads={signingPayloads}

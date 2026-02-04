@@ -1,12 +1,5 @@
-import { generalActionsSlot } from '@/pages/Settings/Overview/components';
-
-import { notificationsSettingsFeature } from './model/feature';
+import { notificationsSettingsFeature } from './feature';
 import { notificationsSettingsModel } from './model/notifications-settings-model';
 import { NotificationsSettingsModal } from './ui/NotificationsSettingsModal';
 
-export { notificationsSettingsModel, notificationsSettingsFeature, NotificationsSettingsModal };
-
-notificationsSettingsFeature.inject(generalActionsSlot, {
-  order: 1,
-  render: () => <NotificationsSettingsModal />,
-});
+export { NotificationsSettingsModal, notificationsSettingsFeature, notificationsSettingsModel };

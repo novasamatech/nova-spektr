@@ -2,7 +2,7 @@ import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 
 import { chainsService } from '@/shared/api/network';
-import { type Chain, type ProxiedAccount, type Transaction, TransactionType, type Wallet } from '@/shared/core';
+import { type Chain, type ProxiedAccount, type Transaction, type Wallet, TransactionType } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,

@@ -11,7 +11,7 @@ import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SubmitInputDeprecated, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type BondExtraConfirm, bondExtraConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
-import { Step, type WalletDataShards } from '../lib/types';
+import { type WalletDataShards, Step } from '../lib/types';
 
 import { formModel } from './form-model';
 

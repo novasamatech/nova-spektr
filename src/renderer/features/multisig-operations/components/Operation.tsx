@@ -13,24 +13,27 @@ import {
 } from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { formatSectionAndMethod } from '@/shared/lib/utils';
-import { Accordion } from '@/shared/ui';
+import { formatSectionAndMethod, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { Accordion, FootnoteText, HelpText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
-import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
-import { Box, Copy, Tooltip } from '@/shared/ui-kit';
+import { AssetBalance, AssetIcon, WalletAccountIcon } from '@/shared/ui-entities';
+import { Copy, Tooltip } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
-import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
+import { OperationTitleStatus } from '@/entities/operations';
+import { AssetFiatBalance } from '@/entities/price';
 import {
   TransactionTitle,
   findCoreTransaction,
   getTransactionAmount,
   useTransactionAsset,
 } from '@/entities/transaction';
-import { accountUtils } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
+import { type TabFilter } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
+import { OperationActions } from './OperationActions';
 import { OperationFullInfo } from './OperationFullInfo';
 import { OperationIcon } from './OperationIcon';
 
@@ -38,6 +41,7 @@ type Props = {
   operation: MultisigOperation;
   multisigAccount: MultisigAccount | FlexibleMultisigAccount;
   isDefaultOpen?: boolean;
+  tab: TabFilter;
 };
 
 export type OperationTitle = {
@@ -61,12 +65,20 @@ export const operationTitleTransformer = createTransformer<
   OperationTitle
 >();
 
-export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false }: Props) => {
+export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false, tab }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
+  const wallets = useUnit(walletModel.$wallets);
 
-  const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(multisigAccount);
-  const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+  const wallet = useMemo(
+    () => wallets.find(w => w.id === multisigAccount.walletId),
+    [wallets, multisigAccount.walletId],
+  );
+
+  const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(multisigAccount);
+  const coreTx = isFlexibleMultisigAccount ? findCoreTransaction(operation.transaction) : operation.transaction;
+  const addressPrefix = isFlexibleMultisigAccount ? chains[multisigAccount.chainId]?.addressPrefix : undefined;
+  const accountAddress = toAddress(multisigAccount.accountId, { prefix: addressPrefix });
   const asset = useTransactionAsset(coreTx, operation.chainId);
 
   const deepLink = useMemo(
@@ -76,7 +88,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
   const externalTitle = useTransformer(operationTitleTransformer, {
     operation,
-    showCoreTransaction,
+    showCoreTransaction: isFlexibleMultisigAccount,
     chains,
     asset,
     t,
@@ -99,49 +111,72 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   }
 
   return (
-    <Accordion
-      isDefaultOpen={isDefaultOpen}
-      className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow"
-    >
-      <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
-        <div className="flex h-[52px] w-full items-center overflow-hidden">
-          <div className="flex w-full items-center gap-x-2 overflow-hidden">
-            <OperationTitleDate operation={operation} />
-            <OperationIcon operation={operation} account={multisigAccount} />
-            {titleData.title && <TransactionTitle className="flex-1" title={titleData.title} />}
-            {titleData.amount && (
-              <Box width="160px" direction="row" gap={2} verticalAlign="center">
-                <AssetIcon asset={titleData.amount.asset} size={32} />
-                <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />
-              </Box>
-            )}
-            {titleData.sourceChainId &&
-              (titleData.destinationChainId ? (
-                <XcmChains
-                  chainIdFrom={titleData.sourceChainId}
-                  chainIdTo={titleData.destinationChainId}
-                  className="w-[114px]"
-                />
+    <div className="focus-active:shadow-card-shadow rounded bg-block-background-default transition-shadow hover:shadow-card-shadow">
+      <Accordion isDefaultOpen={isDefaultOpen}>
+        <Accordion.Button buttonClass="px-4 py-2">
+          <div className="flex h-[52px] w-full items-center gap-x-2 overflow-hidden">
+            <div className="flex w-[500px] min-w-0 items-center gap-x-2">
+              <OperationIcon operation={operation} account={multisigAccount} />
+
+              <div className="flex flex-1 flex-col justify-center gap-y-0.5 overflow-hidden">
+                {titleData.title && <TransactionTitle title={titleData.title} />}
+                {titleData.sourceChainId &&
+                  (titleData.destinationChainId ? (
+                    <XcmChains chainIdFrom={titleData.sourceChainId} chainIdTo={titleData.destinationChainId} />
+                  ) : (
+                    <ChainTitle chainId={titleData.sourceChainId} fontClass="text-help-text text-text-tertiary" />
+                  ))}
+              </div>
+
+              {titleData.amount && (
+                <div className="flex w-[240px] shrink-0 items-center gap-x-2">
+                  <AssetIcon asset={titleData.amount.asset} size={32} />
+                  <div className="flex flex-col items-start gap-y-0.5">
+                    <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />
+                    <AssetFiatBalance
+                      asset={titleData.amount.asset}
+                      amount={titleData.amount.value}
+                      className="text-help-text text-text-tertiary"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex min-w-0 flex-1 items-center justify-between">
+              {wallet && accountAddress ? (
+                <div className="flex w-[240px] items-center gap-x-2">
+                  <WalletAccountIcon address={accountAddress} type={wallet.type} size={32} iconSize={14} />
+                  <div className="flex min-w-0 flex-col items-start gap-y-0.5">
+                    <FootnoteText className="truncate text-text-primary">{wallet.name}</FootnoteText>
+                    <HelpText className="text-text-tertiary">{toShortAddress(accountAddress, 6)}</HelpText>
+                  </div>
+                </div>
               ) : (
-                <ChainTitle chainId={titleData.sourceChainId} className="w-[114px]" />
-              ))}
+                <div className="w-[240px]" />
+              )}
+
+              <OperationTitleStatus operation={operation} account={multisigAccount} />
+
+              <OperationActions operation={operation} account={multisigAccount} />
+            </div>
+
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Copy value={deepLink} notification={t('general.notifications.operationLinkCopied')}>
+                  <IconButton className="shrink-0 self-center text-icon-default" name="share" />
+                </Copy>
+              </Tooltip.Trigger>
+              <Tooltip.Content>{t('operations.shareOperationTooltip')}</Tooltip.Content>
+            </Tooltip>
           </div>
-
-          <OperationTitleStatus operation={operation} account={multisigAccount} />
-
-          <Tooltip>
-            <Tooltip.Trigger>
-              <Copy value={deepLink} notification={t('general.notifications.operationLinkCopied')}>
-                <IconButton className="shrink-0 self-center text-icon-default" name="share" />
-              </Copy>
-            </Tooltip.Trigger>
-            <Tooltip.Content>{t('operations.shareOperationTooltip')}</Tooltip.Content>
-          </Tooltip>
-        </div>
-      </Accordion.Button>
-      <Accordion.Content className="border-t border-divider">
-        <OperationFullInfo operation={operation} account={multisigAccount} />
-      </Accordion.Content>
-    </Accordion>
+        </Accordion.Button>
+        <Accordion.Content>
+          <div className="border-t border-divider">
+            <OperationFullInfo operation={operation} account={multisigAccount} tab={tab} />
+          </div>
+        </Accordion.Content>
+      </Accordion>
+    </div>
   );
 });

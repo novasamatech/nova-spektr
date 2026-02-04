@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, InfoLink, InputHint } from '@/shared/ui';
 import { InputFile } from '@/shared/ui-kit';
-import { MultiTransferCsvError, type ValidationIssue } from '@/entities/multi-transfer';
+import { type ValidationIssue, MultiTransferCsvError } from '@/entities/multi-transfer';
 import { MultiTransferPreview } from '@/entities/multi-transfer';
 import { formModel } from '../model/form';
 import { multiTransferUtils } from '../utils';
@@ -112,10 +112,12 @@ const ValidationsAlert = () => {
   const csvIssues = useUnit(formModel.$csvIssues);
 
   const [isErrorAlertOpen, toggleErrorAlert] = useState(true);
+  const [isWarningAlertOpen, toggleWarningAlert] = useState(true);
 
   useEffect(() => {
     if (csvError || csvIssues?.length) {
       toggleErrorAlert(true);
+      toggleWarningAlert(true);
     }
   }, [csvError, csvIssues]);
 
@@ -128,7 +130,9 @@ const ValidationsAlert = () => {
   }
 
   const errors = csvIssues.filter((issue) => issue.severity === 'error');
+  const warnings = csvIssues.filter((issue) => issue.severity === 'warning');
   const hasErrors = errors.length > 0;
+  const hasWarnings = warnings.length > 0;
 
   const downloadCSVWithIssues = () => {
     if (parsedCsvRaw && csvIssues) {
@@ -151,7 +155,7 @@ const ValidationsAlert = () => {
     </div>
   );
 
-  const renderErrorItem = (issue: ValidationIssue) => {
+  const renderIssueItem = (issue: ValidationIssue) => {
     const rowPrefix = t('multiTransfer.errors.csv.invalidDataRow', { row: issue.row });
 
     return (
@@ -163,16 +167,29 @@ const ValidationsAlert = () => {
   };
 
   return (
-    hasErrors && (
-      <Alert
-        active={isErrorAlertOpen}
-        title={t('multiTransfer.errors.csv.errorTitle', { count: errors.length })}
-        variant="error"
-        onClose={() => toggleErrorAlert(false)}
-      >
-        {errors.map(renderErrorItem)}
-        <DownloadSection />
-      </Alert>
-    )
+    <>
+      {hasErrors && (
+        <Alert
+          active={isErrorAlertOpen}
+          title={t('multiTransfer.errors.csv.errorTitle', { count: errors.length })}
+          variant="error"
+          onClose={() => toggleErrorAlert(false)}
+        >
+          {errors.map(renderIssueItem)}
+          <DownloadSection />
+        </Alert>
+      )}
+      {hasWarnings && (
+        <Alert
+          active={isWarningAlertOpen}
+          title={t('multiTransfer.errors.csv.warningTitle', { count: warnings.length })}
+          variant="warn"
+          onClose={() => toggleWarningAlert(false)}
+        >
+          {warnings.map(renderIssueItem)}
+          <DownloadSection />
+        </Alert>
+      )}
+    </>
   );
 };

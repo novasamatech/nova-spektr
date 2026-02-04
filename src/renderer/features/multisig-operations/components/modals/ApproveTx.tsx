@@ -1,20 +1,25 @@
 import { type ApiPromise } from '@polkadot/api';
-import { useGate, useUnit } from 'effector-react';
-import { memo, useState } from 'react';
+import { useUnit } from 'effector-react';
+import { memo, useEffect, useState } from 'react';
 
-import { type Chain, type FlexibleMultisigAccount, type HexString, type MultisigAccount } from '@/shared/core';
+import {
+  type Chain,
+  type FlexibleMultisigAccount,
+  type HexString,
+  type MultisigAccount,
+  type Transaction,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
+import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult, isXcmTransaction, useTransactionAsset } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
 import { approveModel } from '../../model/approve-model';
-import { operationsContextModel } from '../../model/context';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 import { ApproveForm } from '../ApproveForm';
@@ -29,21 +34,41 @@ type Props = {
   children: React.ReactNode;
 };
 
+type SubmitData = {
+  tx: Transaction;
+  initiator: AnyAccount;
+  txPayload: Uint8Array;
+  signature: HexString;
+};
+
 const enum Step {
   FORM,
   CONFIRMATION,
   SIGNING,
-  SUBMIT,
 }
 
-const AllSteps = [Step.FORM, Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
+const AllSteps = [Step.FORM, Step.CONFIRMATION, Step.SIGNING];
 
 export const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props) => {
-  useGate(approveModel.flow, { chain, operation });
-
   const { t } = useI18n();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [submitData, setSubmitData] = useState<SubmitData | null>(null);
+  const [activeStep, setActiveStep] = useState(Step.FORM);
+  const [isFeeModalOpen, toggleFeeModal] = useToggle();
+
+  // Control gate based on modal open state
+  useEffect(() => {
+    if (isOpen) {
+      approveModel.flow.open({ chain, operation, account });
+      return () => {
+        approveModel.flow.close({ chain, operation, account });
+      };
+    }
+  }, [isOpen, chain, operation, account]);
+
   const wallets = useUnit(walletModel.$wallets);
-  const multisigAccount = useUnit(operationsContextModel.$multisigAccount);
+  const multisigAccount = useUnit(approveModel.$multisigAccount);
 
   const approveTx = useUnit(approveModel.$transaction);
   const valid = useUnit(approveModel.$valid);
@@ -57,26 +82,39 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const signingPayloads = useUnit(approveModel.$signingPayloads);
   const unsignedAccounts = useUnit(approveModel.$unsignedAccounts);
 
-  const [isFeeModalOpen, toggleFeeModal] = useToggle();
-
-  const [activeStep, setActiveStep] = useState(Step.FORM);
-  const [txPayload, setTxPayload] = useState<Uint8Array>();
-  const [signature, setSignature] = useState<HexString>();
-
   const transaction = operation.transaction;
   const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(transaction), t, approveTx?.type, operation);
 
   const nativeAsset = getNativeAsset(chain.assets);
   const asset = useTransactionAsset(transaction, operation.chainId);
 
+  const handleToggle = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setSubmitData(null);
+      setActiveStep(Step.FORM);
+    }
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+    setSubmitData(null);
+    setActiveStep(Step.FORM);
+  };
+
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
   };
 
   const onSignResult = (signature: HexString[], payload: Uint8Array[]) => {
-    setSignature(signature[0]);
-    setTxPayload(payload[0]);
-    setActiveStep(Step.SUBMIT);
+    if (approveTx && initiator) {
+      setSubmitData({
+        tx: approveTx,
+        initiator,
+        txPayload: payload[0],
+        signature: signature[0],
+      });
+    }
   };
 
   const onFormSubmit = () => {
@@ -85,13 +123,6 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
     }
   };
 
-  const toggleModal = (open: boolean) => {
-    if (!open) {
-      setActiveStep(Step.FORM);
-    }
-  };
-
-  // wtf do we need it?
   const handleConfirm = () => {
     if (valid) {
       setActiveStep(Step.SIGNING);
@@ -100,33 +131,21 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
     }
   };
 
-  const thresholdReached = operation.events.filter(e => e.status === 'approve').length === account.threshold - 1;
-
-  const readyForSign = operation.status === 'pending' && unsignedAccounts.length > 0;
-  const readyForNonFinalSign = readyForSign && !thresholdReached;
-  const readyForFinalSign = readyForSign && thresholdReached && !!operation.transaction;
-
-  if (!readyForFinalSign && !readyForNonFinalSign) {
-    return null;
-  }
-
-  const isSubmitStep = activeStep === Step.SUBMIT && approveTx && initiator && signature && txPayload;
-  if (isSubmitStep && api) {
+  if (submitData && api) {
     return (
       <Submit
-        tx={approveTx}
+        tx={submitData.tx}
         api={api}
         operation={operation}
-        account={initiator}
-        txPayload={txPayload}
-        signature={signature}
-        onClose={() => toggleModal(false)}
+        txPayload={submitData.txPayload}
+        signature={submitData.signature}
+        onClose={handleClose}
       />
     );
   }
 
   return (
-    <Modal size="md" onToggle={toggleModal}>
+    <Modal size="md" onToggle={handleToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>
         <OperationTitle
@@ -144,7 +163,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
             onSubmit={onFormSubmit}
           />
         )}
-        {activeStep === Step.CONFIRMATION && fee && (
+        {activeStep === Step.CONFIRMATION && (
           <Confirmation
             operation={operation}
             api={api}

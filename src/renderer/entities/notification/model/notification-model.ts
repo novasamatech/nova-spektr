@@ -8,10 +8,10 @@ import {
   type ID,
   type NoID,
   type Notification,
-  NotificationEvent,
   type NotificationStatus,
-  NotificationType,
   type Wallet,
+  NotificationEvent,
+  NotificationType,
 } from '@/shared/core';
 import { createBuffer } from '@/shared/effector';
 import { merge } from '@/shared/lib/utils';
@@ -73,8 +73,11 @@ const EVENT_MATCHERS: Record<NotificationEvent, (n: CreateNotificationParams) =>
     ].includes(n.type),
   [NotificationEvent.OPERATION_CREATED]: (n) => n.type === NotificationType.MULTISIG_OPERATION && n.status === 'info',
   [NotificationEvent.OPERATION_EXECUTED]: (n) =>
-    n.type === NotificationType.MULTISIG_OPERATION && n.status === 'success',
-  [NotificationEvent.OPERATION_REJECTED]: (n) => n.type === NotificationType.MULTISIG_OPERATION && n.status === 'error',
+    (n.type === NotificationType.MULTISIG_OPERATION || n.type === NotificationType.MULTISIG_EVENT) &&
+    n.status === 'success',
+  [NotificationEvent.OPERATION_REJECTED]: (n) =>
+    (n.type === NotificationType.MULTISIG_OPERATION || n.type === NotificationType.MULTISIG_EVENT) &&
+    n.status === 'error',
 };
 
 type EventMatcher = (n: CreateNotificationParams) => boolean;
@@ -110,11 +113,17 @@ const populateNotificationsFx = createEffect((): Promise<Notification[]> => {
 });
 
 const addNotificationsFx = createEffect(async (notifications: CreateNotificationParams[]): Promise<Notification[]> => {
-  const notificationsWithMetadata: NoID<Notification>[] = notifications.map((notification) => ({
-    ...notification,
-    read: false,
-    dateCreated: Date.now(),
-  }));
+  // Check for existing keys in the database to avoid duplicates across tabs
+  const existingNotifications = await storageService.notifications.readAll();
+  const existingKeys = new Set(existingNotifications.map((n) => n.key));
+
+  const notificationsWithMetadata: NoID<Notification>[] = notifications
+    .filter((n) => !existingKeys.has(n.key))
+    .map((notification) => ({
+      ...notification,
+      read: false,
+      dateCreated: Date.now(),
+    }));
 
   return storageService.notifications.createAll(notificationsWithMetadata).then((r) => r ?? []);
 });
@@ -233,15 +242,12 @@ sample({
 
     for (const notification of incomingNotifications) {
       if (existingKeys.has(notification.key)) {
-        // filter out duplicates
         continue;
       }
       if (disabledAccountIds.has(notification.issuer)) {
-        // filter out disabled accounts
         continue;
       }
       if (!enabledEventMatchers.some((matcher) => matcher(notification))) {
-        // filter out disabled events
         continue;
       }
 

@@ -1,4 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { t } from 'i18next';

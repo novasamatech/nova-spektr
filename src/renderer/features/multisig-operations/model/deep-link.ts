@@ -1,13 +1,13 @@
 import { combine, createEvent, createStore, sample } from 'effector';
-import { delay } from 'patronum';
+import { and, delay } from 'patronum';
 import { z } from 'zod';
 
 import {
   type Chain,
   type ChainId,
-  ConnectionStatus,
   type FlexibleMultisigAccount,
   type MultisigAccount,
+  ConnectionStatus,
 } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
@@ -15,7 +15,6 @@ import { deepLinkService } from '@/domains/app';
 import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { multisigService } from '@/features/multisig-wallet';
 
 import { CONNECTION_TIMEOUT } from './constants';
@@ -30,320 +29,300 @@ export const multisigOperationSchema = z.object({
 
 export type MultisigOperationDeepLinkData = z.infer<typeof multisigOperationSchema>;
 
+type ValidationResult =
+  | { type: 'chainNotFound' }
+  | { type: 'accountNotFound' }
+  | { type: 'valid'; operationId: string; operationInCache: boolean };
+
+type ModalType =
+  | 'alreadySigned'
+  | 'accountNotFound'
+  | 'networkNotAvailable'
+  | 'operationNotFound'
+  | 'connectionTimeout';
+
 const multisigOperationDeepLinkHandler = deepLinkService.createDeepLinkHandler({
   schema: multisigOperationSchema,
 });
 
+// === Events ===
 const setFocusedOperationId = createEvent<string | null>();
 const operationsPageClosed = createEvent();
+const openModal = createEvent<ModalType>();
+const closeModal = createEvent();
+const viewAlreadySignedOperation = createEvent();
+const retryConnectionTimeout = createEvent();
+const startDeepLinkFlow = createEvent<MultisigOperationDeepLinkData>();
 
-const $operationId = createStore<string | null>(null)
-  .on(setFocusedOperationId, (_, v) => v)
+// === Modal State (single source of truth) ===
+const $activeModal = createStore<ModalType | null>(null)
+  .on(openModal, (_, type) => type)
+  .on(closeModal, () => null)
+  .on(viewAlreadySignedOperation, () => null)
+  .on(retryConnectionTimeout, () => null)
   .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
-const $focusedOperation = combine({
-  operationId: $operationId,
-  list: multisigOperation.$list,
-}).map(({ operationId, list }) => list.find(item => item.id === operationId) ?? null);
+const $isAlreadySignedModalOpen = $activeModal.map(m => m === 'alreadySigned');
+const $isAccountNotFoundModalOpen = $activeModal.map(m => m === 'accountNotFound');
+const $isNetworkNotAvailableModalOpen = $activeModal.map(m => m === 'networkNotAvailable');
+const $isOperationNotFoundModalOpen = $activeModal.map(m => m === 'operationNotFound');
+const $isConnectionTimeoutModalOpen = $activeModal.map(m => m === 'connectionTimeout');
+
+// === Core State ===
+const $deepLinkData = createStore<MultisigOperationDeepLinkData | null>(null)
+  .on(multisigOperationDeepLinkHandler.triggered, (_, data) => data)
+  .reset(operationsPageClosed);
+
+const $targetOperationId = createStore<string | null>(null)
+  .on(setFocusedOperationId, (_, id) => id)
+  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
 const $focusedOperationId = createStore<string | null>(null).reset(
   operationsPageClosed,
   multisigOperationDeepLinkHandler.triggered,
 );
 
-const alreadySignedModalOpened = createEvent();
-const closeAlreadySignedModal = createEvent();
-const viewAlreadySignedOperation = createEvent();
-const $isAlreadySignedModalOpen = createStore(false)
-  .on(alreadySignedModalOpened, () => true)
-  .on(closeAlreadySignedModal, () => false)
-  .on(viewAlreadySignedOperation, () => false)
+const $operationIdAwaitingFetch = createStore<string | null>(null).reset(operationsPageClosed);
+
+const $connectedChainInfo = createStore<{ data: MultisigOperationDeepLinkData; chain: Chain } | null>(null).reset(
+  operationsPageClosed,
+  multisigOperationDeepLinkHandler.triggered,
+);
+
+const $targetOperation = combine(
+  $targetOperationId,
+  multisigOperation.$list,
+  (id, list) => list.find(op => op.id === id) ?? null,
+);
+
+const $isDeepLinkLoading = createStore(false)
+  .on(openModal, () => false)
+  .on($targetOperation.updates, (isLoading, op) => (nonNullable(op) ? false : isLoading))
   .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
-const accountNotFoundModalOpened = createEvent();
-const closeNotFoundModal = createEvent();
-const $isAccountNotFoundModalOpen = createStore(false)
-  .on(accountNotFoundModalOpened, () => true)
-  .on(closeNotFoundModal, () => false)
-  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
-
-const networkNotAvailableModalOpened = createEvent();
-const closeNetworkNotAvailableModal = createEvent();
-const $isNetworkNotAvailableModalOpen = createStore(false)
-  .on(networkNotAvailableModalOpened, () => true)
-  .on(closeNetworkNotAvailableModal, () => false)
-  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
-
-const operationNotFoundModalOpened = createEvent();
-const closeOperationNotFoundModal = createEvent();
-const $isOperationNotFoundModalOpen = createStore(false)
-  .on(operationNotFoundModalOpened, () => true)
-  .on(closeOperationNotFoundModal, () => false)
-  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
-
-const connectionTimeoutModalOpened = createEvent();
-const closeConnectionTimeoutModal = createEvent();
-const retryConnectionTimeout = createEvent();
-const $isConnectionTimeoutModalOpen = createStore(false)
-  .on(connectionTimeoutModalOpened, () => true)
-  .on(closeConnectionTimeoutModal, () => false)
-  .on(retryConnectionTimeout, () => false)
-  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
-
-sample({
-  clock: setFocusedOperationId,
-  source: $focusedOperation,
-  filter: operation => nonNullable(operation) && operation.status === 'executed',
-  target: alreadySignedModalOpened,
-});
-
-sample({
-  clock: setFocusedOperationId,
-  source: { operation: $focusedOperation, id: $operationId },
-  filter: ({ operation }) => !nonNullable(operation) || operation.status !== 'executed',
-  fn: ({ id }) => id,
-  target: $focusedOperationId,
-});
-
-sample({
-  clock: viewAlreadySignedOperation,
-  source: $operationId,
-  target: $focusedOperationId,
-});
-
-const processDeepLink = createEvent<MultisigOperationDeepLinkData>();
-
-const $deepLinkData = createStore<MultisigOperationDeepLinkData | null>(null)
-  .on(multisigOperationDeepLinkHandler.triggered, (_, data) => data)
-  .reset(operationsPageClosed);
-
+// === Flow Triggers ===
 sample({
   clock: multisigOperationDeepLinkHandler.triggered,
-  target: processDeepLink,
+  target: startDeepLinkFlow,
 });
 
 sample({
   clock: retryConnectionTimeout,
   source: $deepLinkData,
   filter: nonNullable,
-  target: processDeepLink,
+  target: startDeepLinkFlow,
 });
 
-const operationExistsCheck = sample({
-  clock: processDeepLink,
-  source: { operations: multisigOperation.$list, accounts: accounts.$list, chains: networkModel.$chains },
-  filter: ({ chains, accounts }, data) => {
-    const chain = chains[data.chainId];
-    if (nullable(chain)) return false;
+const $canRunValidation = and(accounts.$populated, networkModel.$populated);
 
-    const account = accounts.find(acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId);
-    return nonNullable(account);
+function validateDeepLink(
+  data: MultisigOperationDeepLinkData,
+  chains: Record<ChainId, Chain>,
+  accountsList: ReturnType<typeof accounts.$list.getState>,
+  operations: ReturnType<typeof multisigOperation.$list.getState>,
+): ValidationResult {
+  if (nullable(chains[data.chainId])) {
+    return { type: 'chainNotFound' };
+  }
+
+  const account = accountsList.find(acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId);
+  if (nullable(account)) {
+    return { type: 'accountNotFound' };
+  }
+
+  const operationId = getOperationIdFromDeepLink(data);
+  const operationInCache = operations.some(op => op.id === operationId);
+
+  return { type: 'valid', operationId, operationInCache };
+}
+
+const validationResult = sample({
+  clock: [startDeepLinkFlow, $canRunValidation],
+  source: {
+    data: $deepLinkData,
+    canValidate: $canRunValidation,
+    alreadyResolved: $targetOperationId,
+    chains: networkModel.$chains,
+    accountsList: accounts.$list,
+    operationsList: multisigOperation.$list,
   },
-  fn: ({ operations, accounts }, data) => {
-    const operationId = getOperationIdFromDeepLink(data);
-    const operation = operations.find(op => op.id === operationId);
-    const account = accounts.find(acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId);
-    return {
-      data,
-      operationId,
-      exists: nonNullable(operation),
-      isExecuted: operation?.status === 'executed',
-      walletId: account!.walletId,
-    };
-  },
+  filter: ({ data, canValidate, alreadyResolved }) => nonNullable(data) && canValidate && nullable(alreadyResolved),
+  fn: ({ data, chains, accountsList, operationsList }) => validateDeepLink(data!, chains, accountsList, operationsList),
 });
 
 sample({
-  clock: operationExistsCheck,
-  filter: ({ exists }) => exists,
-  fn: ({ operationId }) => operationId,
+  clock: validationResult,
+  filter: (r): r is { type: 'chainNotFound' } => r.type === 'chainNotFound',
+  fn: (): ModalType => 'networkNotAvailable',
+  target: openModal,
+});
+
+sample({
+  clock: validationResult,
+  filter: (r): r is { type: 'accountNotFound' } => r.type === 'accountNotFound',
+  fn: (): ModalType => 'accountNotFound',
+  target: openModal,
+});
+
+sample({
+  clock: validationResult,
+  filter: (r): r is Extract<ValidationResult, { type: 'valid' }> => r.type === 'valid' && r.operationInCache,
+  fn: (r: Extract<ValidationResult, { type: 'valid' }>) => r.operationId,
   target: setFocusedOperationId,
 });
 
-sample({
-  clock: operationExistsCheck,
-  filter: ({ exists, walletId }) => exists && nonNullable(walletId),
-  fn: ({ walletId }) => walletId!,
-  target: walletSelect.select,
-});
+$isDeepLinkLoading.on(validationResult, (_, r) => r.type === 'valid' && !r.operationInCache);
 
-const $isDeepLinkLoading = createStore(false)
-  .on(operationExistsCheck, (_, { exists }) => !exists)
-  .on($focusedOperationId.updates, () => false)
-  .reset(operationsPageClosed);
-
-sample({
-  clock: processDeepLink,
-  source: { chains: networkModel.$chains },
-  filter: ({ chains }, data) => {
-    const chain = chains[data.chainId];
-    return nullable(chain);
-  },
-  target: networkNotAvailableModalOpened,
-});
-
-sample({
-  clock: processDeepLink,
-  source: {
-    chains: networkModel.$chains,
-    accounts: accounts.$list,
-  },
-  filter: ({ chains, accounts }, data) => {
-    const chain = chains[data.chainId];
-    if (nullable(chain)) return false;
-
-    const account = accounts.find(acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId);
-    return nullable(account);
-  },
-  target: accountNotFoundModalOpened,
-});
-
-const networkReady = sample({
-  clock: [processDeepLink, networkModel.$populated, networkModel.output.connectionStatusChanged],
+const chainConnected = sample({
+  clock: [startDeepLinkFlow, networkModel.$populated, networkModel.output.connectionStatusChanged],
   source: {
     chains: networkModel.$chains,
     connectionStatuses: networkModel.$connectionStatuses,
     data: $deepLinkData,
-    operationId: $operationId,
+    alreadyResolved: $targetOperationId,
   },
-  filter: ({ data, chains, connectionStatuses, operationId }) => {
-    if (nullable(data)) return false;
-    if (nonNullable(operationId)) return false;
+  filter: ({ data, chains, connectionStatuses, alreadyResolved }) => {
+    if (nullable(data) || nonNullable(alreadyResolved)) return false;
 
-    const network = chains[data.chainId];
-    if (nullable(network)) return false;
+    const chainExists = nonNullable(chains[data.chainId]);
+    const isChainConnected = connectionStatuses[data.chainId] === ConnectionStatus.CONNECTED;
 
-    return connectionStatuses[data.chainId] === ConnectionStatus.CONNECTED;
+    return chainExists && isChainConnected;
   },
-  fn: ({ chains, data }) => ({
-    data: data!,
-    network: chains[data!.chainId],
-  }),
+  fn: ({ chains, data }) => ({ data: data!, chain: chains[data!.chainId] }),
 });
 
-const $networkData = createStore<{ data: MultisigOperationDeepLinkData; network: Chain } | null>(null)
-  .on(networkReady, (_, data) => data)
-  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
+$connectedChainInfo.on(chainConnected, (_, info) => info);
 
-const connectionWaitingStarted = sample({
-  clock: processDeepLink,
-  source: { chains: networkModel.$chains, connectionStatuses: networkModel.$connectionStatuses },
+const startedWaitingForConnection = sample({
+  clock: startDeepLinkFlow,
+  source: {
+    chains: networkModel.$chains,
+    connectionStatuses: networkModel.$connectionStatuses,
+  },
   filter: ({ chains, connectionStatuses }, data) => {
     const chain = chains[data.chainId];
     if (nullable(chain)) return false;
+
     const status = connectionStatuses[data.chainId];
+
     return status !== ConnectionStatus.CONNECTED && status !== ConnectionStatus.ERROR;
   },
 });
 
-const connectionTimeoutTriggered = delay({
-  source: connectionWaitingStarted,
-  timeout: CONNECTION_TIMEOUT,
-});
-
 sample({
-  clock: connectionTimeoutTriggered,
-  source: $operationId,
-  filter: operationId => nullable(operationId),
-  target: connectionTimeoutModalOpened,
+  clock: delay({ source: startedWaitingForConnection, timeout: CONNECTION_TIMEOUT }),
+  source: $targetOperationId,
+  filter: nullable,
+  fn: (): ModalType => 'connectionTimeout',
+  target: openModal,
 });
 
 sample({
   clock: networkModel.output.connectionStatusChanged,
   source: $deepLinkData,
-  filter: (deepLinkData, { chainId, status }) =>
-    nonNullable(deepLinkData) && deepLinkData.chainId === chainId && status === ConnectionStatus.ERROR,
-  target: connectionTimeoutModalOpened,
+  filter: (data, { chainId, status }) =>
+    nonNullable(data) && data.chainId === chainId && status === ConnectionStatus.ERROR,
+  fn: (): ModalType => 'connectionTimeout',
+  target: openModal,
 });
 
-const accountChecked = sample({
-  clock: [networkReady, accounts.$populated, multisigOperation.$populated],
+const multisigAccountResolved = sample({
+  clock: [chainConnected, accounts.$populated, multisigOperation.$populated],
   source: {
-    networkData: $networkData,
+    chainInfo: $connectedChainInfo,
     accountsList: accounts.$list,
-    accountsPopulated: accounts.$populated,
-    operationsPopulated: multisigOperation.$populated,
+    accountsReady: accounts.$populated,
+    operationsReady: multisigOperation.$populated,
   },
-  filter: ({ networkData, accountsList, accountsPopulated, operationsPopulated }) => {
-    if (nullable(networkData) || nullable(networkData.network)) return false;
-    if (!accountsPopulated || !operationsPopulated) return false;
-
-    const account = accountsList.find(acc => acc.accountId === networkData.data.accountId);
-    return nonNullable(account);
-  },
-  fn: ({ accountsList, networkData }) => {
-    const { data } = networkData!;
+  filter: ({ chainInfo, accountsList, accountsReady, operationsReady }) =>
+    nonNullable(chainInfo?.chain) &&
+    accountsReady &&
+    operationsReady &&
+    accountsList.some(a => a.accountId === chainInfo!.data.accountId),
+  fn: ({ accountsList, chainInfo }) => {
     const account = accountsList
       .filter(accountUtils.isAnyMultisigAccount)
-      .find(acc => acc.accountId === data.accountId);
-    const multisigAccountId = account ? multisigService.getMultisigAccountId(account) : null;
+      .find(a => a.accountId === chainInfo!.data.accountId);
+
     return {
-      data,
-      account: account!,
-      multisigAccountId,
+      data: chainInfo!.data,
+      multisigAccountId: account ? multisigService.getMultisigAccountId(account) : null,
     };
   },
 });
 
 sample({
-  clock: accountChecked,
-  fn: ({ account }) => account.walletId,
-  target: walletSelect.select,
-});
-
-sample({
-  clock: accountChecked,
-  source: $operationId,
-  filter: (operationId, { multisigAccountId }) => nonNullable(multisigAccountId) && nullable(operationId),
+  clock: multisigAccountResolved,
+  source: $targetOperationId,
+  filter: (alreadyResolved, { multisigAccountId }) => nonNullable(multisigAccountId) && nullable(alreadyResolved),
   fn: (_, { data, multisigAccountId }) => getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId! }),
   target: setFocusedOperationId,
 });
 
-const operationFetchRequested = sample({
-  clock: accountChecked,
+sample({
+  clock: multisigAccountResolved,
   source: {
-    apis: networkModel.$apis,
-    chains: networkModel.$chains,
-    operations: multisigOperation.$list,
-    operationsPopulated: multisigOperation.$populated,
+    operationsList: multisigOperation.$list,
+    operationsReady: multisigOperation.$populated,
+    fetchComplete: multisigOperation.$initialLoadingComplete,
   },
-  filter: ({ operations, operationsPopulated }, { multisigAccountId, data }) => {
-    if (!operationsPopulated) return false;
-    if (nullable(multisigAccountId)) return false;
+  filter: ({ operationsReady, fetchComplete, operationsList }, { multisigAccountId, data }) => {
+    if (!operationsReady || nullable(multisigAccountId)) return false;
+
     const operationId = getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId });
-    const operationExists = operations.some(op => op.id === operationId);
-    return !operationExists;
+    const operationExists = operationsList.some(op => op.id === operationId);
+
+    return !operationExists && !fetchComplete;
   },
-  fn: ({ apis, chains }, { data, multisigAccountId }) => ({
-    apis,
-    chains,
-    accountId: multisigAccountId!,
-    operationId: getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId! }),
-  }),
+  fn: (_, { data, multisigAccountId }) => getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId! }),
+  target: $operationIdAwaitingFetch,
 });
 
 sample({
-  clock: operationFetchRequested,
-  fn: ({ apis, chains, accountId }) => ({ apis, chains, accountId }),
-  target: multisigOperation.requestOperations,
-});
-
-const $pendingOperationId = createStore<string | null>(null)
-  .on(operationFetchRequested, (_, req) => req.operationId)
-  .reset(operationsPageClosed);
-
-sample({
-  clock: multisigOperation.requestOperations.finally,
+  clock: multisigOperation.$initialLoadingComplete,
   source: {
-    pendingOperationId: $pendingOperationId,
-    operations: multisigOperation.$list,
+    awaitingId: $operationIdAwaitingFetch,
+    operationsList: multisigOperation.$list,
   },
-  filter: ({ pendingOperationId, operations }) => {
-    if (nullable(pendingOperationId)) return false;
-    const operationExists = operations.some(op => op.id === pendingOperationId);
-    return !operationExists;
+  filter: ({ awaitingId, operationsList }, fetchComplete) =>
+    fetchComplete && nonNullable(awaitingId) && !operationsList.some(op => op.id === awaitingId),
+  fn: (): ModalType => 'operationNotFound',
+  target: openModal,
+});
+
+sample({
+  clock: multisigOperation.$initialLoadingComplete,
+  source: {
+    awaitingId: $operationIdAwaitingFetch,
+    operationsList: multisigOperation.$list,
   },
-  target: operationNotFoundModalOpened,
+  filter: ({ awaitingId, operationsList }, fetchComplete) =>
+    fetchComplete && nonNullable(awaitingId) && operationsList.some(op => op.id === awaitingId),
+  fn: ({ awaitingId }) => awaitingId,
+  target: setFocusedOperationId,
+});
+
+sample({
+  clock: setFocusedOperationId,
+  source: $targetOperation,
+  filter: op => nonNullable(op) && op.status === 'executed',
+  fn: (): ModalType => 'alreadySigned',
+  target: openModal,
+});
+
+sample({
+  clock: setFocusedOperationId,
+  source: { operation: $targetOperation, targetId: $targetOperationId },
+  filter: ({ operation }) => nullable(operation) || operation.status !== 'executed',
+  fn: ({ targetId }) => targetId,
+  target: $focusedOperationId,
+});
+
+sample({
+  clock: viewAlreadySignedOperation,
+  source: $targetOperationId,
+  target: $focusedOperationId,
 });
 
 function generateMultisigOperationDeepLink(
@@ -360,30 +339,37 @@ function generateMultisigOperationDeepLink(
 }
 
 export function getOperationIdFromDeepLink(data: MultisigOperationDeepLinkData): string {
-  return `${data.chainId}-${data.callHash}-${data.accountId}-${data.blockCreated}-${data.indexCreated}`;
+  return multisigOperationService.getOperationId(
+    data.chainId,
+    data.callHash,
+    data.accountId,
+    data.blockCreated,
+    data.indexCreated,
+  );
 }
 
 export const deepLinkModel = {
   $focusedOperationId,
   $isDeepLinkLoading,
+
   setFocusedOperationId,
   operationsPageClosed,
 
   $isAccountNotFoundModalOpen,
-  closeNotFoundModal: closeNotFoundModal,
+  closeNotFoundModal: closeModal,
 
   $isNetworkNotAvailableModalOpen,
-  closeNetworkNotAvailableModal,
+  closeNetworkNotAvailableModal: closeModal,
 
   $isOperationNotFoundModalOpen,
-  closeOperationNotFoundModal,
+  closeOperationNotFoundModal: closeModal,
 
   $isConnectionTimeoutModalOpen,
-  closeConnectionTimeoutModal,
+  closeConnectionTimeoutModal: closeModal,
   retryConnectionTimeout,
 
   $isAlreadySignedModalOpen,
-  closeAlreadySignedModal,
+  closeAlreadySignedModal: closeModal,
   viewAlreadySignedOperation,
 
   generateMultisigOperationDeepLink,

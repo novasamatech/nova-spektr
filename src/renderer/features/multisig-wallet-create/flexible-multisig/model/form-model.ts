@@ -141,7 +141,7 @@ const $hiddenMultisig = combine(
   },
   ({ multisigAccountId, hiddenWallets }) => {
     return walletUtils.getWalletFilteredAccounts(hiddenWallets, {
-      walletFn: walletUtils.isMultisig,
+      walletFn: walletUtils.isAnyMultisig,
       accountFn: multisigAccount => {
         if (!accountUtils.isMultisigAccount(multisigAccount)) return false;
         return multisigAccount.accountId === multisigAccountId;
@@ -159,7 +159,7 @@ const $availableAccounts = combine(
     if (!chain) return [];
 
     const filteredAccounts = walletUtils.getAccountsBy(wallets, (a, w) => {
-      const isValidWallet = !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w) && !walletUtils.isMultisig(w);
+      const isValidWallet = !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w) && !walletUtils.isAnyMultisig(w);
       const isChainMatch = accountService.isAccountAvailableOnChain(a, chain);
 
       return isValidWallet && isChainMatch;

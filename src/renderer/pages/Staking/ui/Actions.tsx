@@ -9,7 +9,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BaseModal, Button, Icon, SmallTitleText } from '@/shared/ui';
 import { Dropdown } from '@/shared/ui-kit';
 import { ControllerOperations, OperationOptions, StashOperations } from '../lib/constants';
-import { ControllerTypes, type Operations } from '../lib/types';
+import { type Operations, ControllerTypes } from '../lib/types';
 
 type Props = {
   canInteract: boolean;

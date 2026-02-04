@@ -1,5 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
-
 import DDCustomIcon from '@/shared/assets/images/keyTypes/dd-custom.svg?jsx';
 import DDGovernanceIcon from '@/shared/assets/images/keyTypes/dd-governance.svg?jsx';
 import DDHotIcon from '@/shared/assets/images/keyTypes/dd-hot.svg?jsx';

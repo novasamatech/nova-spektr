@@ -1,0 +1,35 @@
+{
+  "ts-node": {
+    "swc": true,
+    "esm": true,
+    "compilerOptions": {
+      "module": "commonjs",
+      "moduleResolution": "NodeNext"
+    }
+  },
+  "compilerOptions": {
+    "strict": true,
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "node",
+    "lib": ["es2023", "dom"],
+    "jsx": "preserve",
+    "pretty": true,
+    "importHelpers": true,
+    "noUnusedLocals": true,
+    // TODO turn on
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "isolatedModules": true,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "noUncheckedIndexedAccess": true,
+    "types": ["@polkadot/api-augment", "@testing-library/jest-dom", "vitest/globals"]
+  }
+}

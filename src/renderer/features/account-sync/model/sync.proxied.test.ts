@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck - Test file with mock data that doesn't match strict types
 import { describe, expect, test } from 'vitest';
 
@@ -46,6 +45,7 @@ describe('syncProxiedAccounts', () => {
               signingType: proxiedAccount1.signingType,
               spawner: undefined,
               type: proxiedAccount1.type,
+              createdAt: expect.any(Number),
             },
           ],
         },
@@ -66,6 +66,7 @@ describe('syncProxiedAccounts', () => {
               signingType: proxiedAccount2.signingType,
               spawner: undefined,
               type: proxiedAccount2.type,
+              createdAt: expect.any(Number),
             },
           ],
         },
@@ -86,6 +87,7 @@ describe('syncProxiedAccounts', () => {
               signingType: proxiedAccount3.signingType,
               spawner: undefined,
               type: proxiedAccount3.type,
+              createdAt: expect.any(Number),
             },
           ],
         },

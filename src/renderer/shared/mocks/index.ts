@@ -1,27 +1,27 @@
 import { createTestKeyring } from '@polkadot/keyring';
 
 import {
-  AccountType,
   type Asset,
   type AssetId,
-  AssetType,
   type Chain,
   type ChainId,
-  ChainOptions,
-  CryptoType,
-  KeyType,
   type PolkadotVaultWallet,
   type ProxiedAccount,
   type ProxiedWallet,
-  ProxyVariant,
-  SigningType,
   type SingleShardWallet,
-  StakingType,
   type VaultBaseAccount,
   type VaultChainAccount,
   type WalletConnectWallet,
-  WalletType,
   type WcAccount,
+  AccountType,
+  AssetType,
+  ChainOptions,
+  CryptoType,
+  KeyType,
+  ProxyVariant,
+  SigningType,
+  StakingType,
+  WalletType,
 } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
@@ -246,6 +246,7 @@ export const createVaultBaseAccount = (
     accountType: AccountType.BASE,
     walletId: params.walletId,
     type: 'universal',
+    createdAt: Date.now(),
   };
 };
 
@@ -269,6 +270,7 @@ export const createVaultChainAccount = (
     chainId,
     derivationPath: params.derivationPath,
     keyType: KeyType.CUSTOM,
+    createdAt: Date.now(),
   };
 };
 
@@ -283,6 +285,7 @@ export const createWcAccount = (id: string | number = createRandomId(), walletId
   walletId,
   type: 'chain',
   signingExtras: {},
+  createdAt: Date.now(),
 });
 
 export const createProxiedAccount = (id: string | number = createRandomId(), walletId = 0): ProxiedAccount => ({
@@ -306,6 +309,7 @@ export const createProxiedAccount = (id: string | number = createRandomId(), wal
   type: 'chain',
   entropyBlockNumber: 0,
   extrinsicIndex: 0,
+  createdAt: Date.now(),
 });
 
 export const createSingleShardWallet = (

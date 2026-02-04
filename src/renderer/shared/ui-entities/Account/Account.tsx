@@ -9,7 +9,7 @@ import { Address } from '../Address/Address';
 type Props = {
   accountId: AccountId | AddresssType;
   title?: string;
-  chain: Chain;
+  chain: Chain | null;
   iconSize?: number;
   hideIcon?: boolean;
   hideAddress?: boolean;
@@ -38,7 +38,7 @@ export const Account = memo(
           iconSize={iconSize}
           hideAddress={hideAddress}
           title={title}
-          address={toAddress(accountId, { prefix: chain.addressPrefix })}
+          address={toAddress(accountId, { prefix: chain?.addressPrefix })}
           testId={addressTestId}
         />
         <AccountExplorers accountId={accountId} chain={chain} testId={explorersTestId} />

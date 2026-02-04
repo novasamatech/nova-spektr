@@ -29,7 +29,7 @@ sample({
 });
 
 notificationsNavigationFeature.inject(navigationBottomLinksSlot, {
-  order: 1,
+  order: 2,
   render() {
     const [hasUnread, unreadCount] = useUnit([notificationModel.$hasUnread, notificationModel.$unreadCount]);
 

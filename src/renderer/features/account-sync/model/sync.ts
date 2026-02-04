@@ -2,26 +2,26 @@ import { attach, createStore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import {
-  AccountType,
   type ChainId,
   type CreateFlexibleMultisigOperationParams,
   type CreateMultisigCreatedParams,
   type CreateNotificationParams,
   type CreateProxyActionParams,
-  CryptoType,
   type FlexibleMultisigAccount,
   type FlexibleMultisigWallet,
   type MultisigAccount,
   type MultisigWallet,
   type NoID,
-  NotificationType,
   type ProxiedAccount,
   type ProxiedConnection,
   type ProxiedWallet,
   type ProxyAccount,
   type ProxyType,
-  SigningType,
   type Wallet,
+  AccountType,
+  CryptoType,
+  NotificationType,
+  SigningType,
   WalletType,
 } from '@/shared/core';
 import { series } from '@/shared/effector';
@@ -225,6 +225,7 @@ export const syncProxiedAccounts = ({
               entropyBlockNumber: firstAccount.blockNumber,
               extrinsicIndex: firstAccount.extrinsicIndex,
               spawner: firstAccount.spawner,
+              createdAt: Date.now(),
             },
           ],
         });
@@ -381,6 +382,7 @@ export const syncMultisigAccounts = ({ allAccounts, allWallets, syncResult, iden
             cryptoType: isEthereumAccountId(syncedAccount.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
             signingType: SigningType.MULTISIG,
             signatories: syncedAccount.signatories.map((accountId) => ({ accountId })),
+            createdAt: Date.now(),
           },
         ],
       });
@@ -494,12 +496,14 @@ export const syncFlexibleMultisigs = ({
           threshold: syncedMultisig.threshold,
           signatories: syncedMultisig.signatories.map((accountId) => ({ accountId })),
 
+          proxyType: matchedSyncedProxy.proxyType as ProxyType,
           deposit: matchedSyncedProxy.deposit.toString(),
           entropyBlockNumber: matchedSyncedProxy.blockNumber,
           extrinsicIndex: matchedSyncedProxy.extrinsicIndex,
 
           cryptoType: isEthereumAccountId(matchedSyncedProxy.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
           signingType: SigningType.MULTISIG,
+          createdAt: Date.now(),
         };
 
         createWallets.push({

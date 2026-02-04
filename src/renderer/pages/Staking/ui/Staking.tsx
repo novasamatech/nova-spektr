@@ -6,15 +6,15 @@ import { localStorageService } from '@/shared/api/local-storage';
 import { type ChainId, type Stake, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getRelaychainAsset, keys, nonNullable, toAccountId } from '@/shared/lib/utils';
+import { getRelaychainAsset, keys, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
 import { type AnyAccount, accountService, identity } from '@/domains/network';
 import { InactiveNetwork, networkModel, networkUtils, useNetworkData } from '@/entities/network';
 import {
+  type ValidatorMap,
   DEFAULT_STAKING_CHAIN,
   STAKING_NETWORK,
-  type ValidatorMap,
   ValidatorsModal,
   eraService,
   useStakingRewards,
@@ -46,9 +46,9 @@ import { stakingModel } from '../model/staking-model';
 import { AboutStaking } from './AboutStaking';
 import { Actions } from './Actions';
 import { NetworkInfo } from './NetworkInfo';
-// TODO: will be much simpler when we refactor staking page
-// eslint-disable-next-line import-x/max-dependencies
 import { NominatorsList } from './NominatorsList';
+
+// TODO: will be much simpler when we refactor staking page
 
 // Lazy-loaded components
 const LazyUnstake = lazy(() => import('@/widgets/Staking').then(({ Unstake }) => ({ default: Unstake })));
@@ -154,7 +154,7 @@ export const Staking = () => {
   }, []);
 
   useEffect(() => {
-    if (!connection) return;
+    if (nullable(connection) || nullable(connectionStatus)) return;
 
     const isDisabled = networkUtils.isDisabledConnection(connection);
     const isError = networkUtils.isErrorStatus(connectionStatus);
@@ -190,7 +190,7 @@ export const Staking = () => {
     if (!activeWallet) return;
 
     // TODO remove this check
-    const isMultisig = walletUtils.isMultisig(activeWallet);
+    const isMultisig = walletUtils.isAnyMultisig(activeWallet);
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
     const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
     const isPolkadotVault = walletUtils.isPolkadotVaultGroup(activeWallet);

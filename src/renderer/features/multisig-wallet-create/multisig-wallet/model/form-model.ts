@@ -100,7 +100,7 @@ const $hiddenMultisig = combine(
   },
   ({ multisigAccountId, hiddenWallets }) => {
     return walletUtils.getWalletFilteredAccounts(hiddenWallets, {
-      walletFn: walletUtils.isMultisig,
+      walletFn: walletUtils.isAnyMultisig,
       accountFn: multisigAccount => {
         if (!accountUtils.isMultisigAccount(multisigAccount)) return false;
         return multisigAccount.accountId === multisigAccountId;

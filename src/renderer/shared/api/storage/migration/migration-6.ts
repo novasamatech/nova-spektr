@@ -2,13 +2,13 @@ import { type Transaction } from 'dexie';
 import { uniqBy } from 'lodash';
 
 import {
-  AccountType,
   type PolkadotVaultWallet,
-  SigningType,
   type SingleShardWallet,
   type VaultBaseAccount,
   type VaultChainAccount,
   type Wallet,
+  AccountType,
+  SigningType,
   WalletType,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -159,6 +159,7 @@ async function getWalletsAndAccounts(t: Transaction) {
         type: 'universal',
         accountType: AccountType.BASE,
         signingType: SigningType.POLKADOT_VAULT,
+        createdAt: Date.now(),
       } satisfies AccountDraft<VaultBaseAccount>);
     }
   }

@@ -23,9 +23,9 @@ import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import {
   type ValidationIssue,
-  VestingCsvError,
   type VestingSchedule,
   type VestingScheduleRaw,
+  VestingCsvError,
   vestingService,
 } from '@/entities/vesting';
 import { accountUtils, walletModel } from '@/entities/wallet';
@@ -34,7 +34,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { Step, type ValidationSchemaOptions } from '../types';
+import { type ValidationSchemaOptions, Step } from '../types';
 import { vestedTransferUtils } from '../utils';
 
 import { type VestedTransferConfirm, confirmModel } from './confirm';
@@ -432,9 +432,13 @@ sample({
 
 sample({
   clock: [flowStarted, $availableChains],
-  source: $availableChains,
-  filter: (chains) => chains.length > 0,
-  fn: (chains) => chains.at(0)!,
+  source: {
+    chains: $availableChains,
+    selectedChain: form.fields.chain.$value,
+  },
+  filter: ({ chains, selectedChain }) =>
+    chains.length > 0 && (nullable(selectedChain) || !chains.some((chain) => chain.chainId === selectedChain.chainId)),
+  fn: ({ chains }) => chains[0],
   target: form.fields.chain.change,
 });
 
@@ -468,8 +472,13 @@ const $canSubmit = combine(
     isFormValid: form.$isValid,
     isTxValid: $isTxValid,
     fee: $fee,
+    csvIssues: $csvIssues,
+    csvError: $csvError,
   },
-  ({ isFormValid, isTxValid, fee }) => isFormValid && isTxValid && nonNullable(fee),
+  ({ isFormValid, isTxValid, fee, csvIssues, csvError }) => {
+    const hasCsvErrors = nonNullable(csvError) || csvIssues?.some((issue) => issue.severity === 'error');
+    return isFormValid && isTxValid && nonNullable(fee) && !hasCsvErrors;
+  },
 );
 
 // submit flow

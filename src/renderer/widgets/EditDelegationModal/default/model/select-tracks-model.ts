@@ -84,7 +84,7 @@ const checkMaxWeightReachedFx = createEffect(
   async ({ tracks, chain, api, wallet }: CheckWeightParams): Promise<boolean> => {
     if (!wallet || !chain || !api) return true;
 
-    if (walletUtils.isMultisig(wallet)) {
+    if (walletUtils.isAnyMultisig(wallet)) {
       const mockTx = transactionBuilder.buildDelegate({
         tracks,
         chain,

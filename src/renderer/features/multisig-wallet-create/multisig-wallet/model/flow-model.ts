@@ -4,15 +4,15 @@ import { sortBy } from 'lodash';
 import { delay, spread } from 'patronum';
 
 import {
-  AccountType,
   type Chain,
   type ChainId,
   type Contact,
-  CryptoType,
   type MultisigAccount,
   type NoID,
-  SigningType,
   type Wallet,
+  AccountType,
+  CryptoType,
+  SigningType,
   WalletType,
 } from '@/shared/core';
 import { Step, TEST_ACCOUNTS, getNativeAsset, isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
@@ -388,6 +388,7 @@ sample({
       type: 'universal',
       blockNumber,
       remarkChainId: chain!.chainId,
+      createdAt: Date.now(),
     };
 
     return {
