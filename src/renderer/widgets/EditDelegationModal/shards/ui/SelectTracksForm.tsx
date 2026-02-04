@@ -297,9 +297,7 @@ const AccountsSelector = () => {
                     showIcon
                   />
                 ),
-                additionalElement: balance && (
-                  <AccountInfo account={account} chain={chain} balance={balance} />
-                ),
+                additionalElement: balance && <AccountInfo account={account} chain={chain} balance={balance} />,
               };
             }),
           },

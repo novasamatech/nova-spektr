@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, delay, spread } from 'patronum';
-import { assert } from '@/shared/lib/utils';
 
 import {
   type MultisigTxWrapper,
@@ -11,6 +10,7 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@/shared/core';
+import { assert } from '@/shared/lib/utils';
 import { Step, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';

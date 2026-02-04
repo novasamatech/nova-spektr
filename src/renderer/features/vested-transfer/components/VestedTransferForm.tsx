@@ -146,7 +146,9 @@ const UploadCSV = () => {
   const minVestedTransfer = useUnit(formModel.$minVestedTransfer);
 
   const timelineChainId = chain?.additional?.timelineChain;
-  const timelineApi = nonNullable(timelineChainId) ? (apis[timelineChainId] ?? null) : ((chain && apis[chain.chainId]) ?? null);
+  const timelineApi = nonNullable(timelineChainId)
+    ? (apis[timelineChainId] ?? null)
+    : ((chain && apis[chain.chainId]) ?? null);
 
   const hasError = nonNullable(csvError);
   const hasParsedCsv = parsedCsv && parsedCsv.length > 0;
