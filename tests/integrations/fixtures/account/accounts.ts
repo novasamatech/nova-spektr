@@ -15,6 +15,7 @@ export const senderAccount: AnyAccount = {
   type: 'universal',
   cryptoType: CryptoType.SR25519,
   signingType: SigningType.POLKADOT_VAULT,
+  createdAt: 0,
 };
 
 /**
@@ -28,6 +29,7 @@ export const recipientAccount: AnyAccount = {
   type: 'universal',
   cryptoType: CryptoType.SR25519,
   signingType: SigningType.WATCH_ONLY,
+  createdAt: 0,
 };
 
 /**
@@ -59,6 +61,7 @@ export const multisigAccount: AnyAccount = {
       name: 'Signatory 3',
     },
   ],
+  createdAt: 0,
 } as AnyAccount;
 
 /**
@@ -72,6 +75,7 @@ export const signatoryAccount: AnyAccount = {
   type: 'universal',
   cryptoType: CryptoType.SR25519,
   signingType: SigningType.POLKADOT_VAULT,
+  createdAt: 0,
 };
 
 /**
@@ -97,6 +101,7 @@ export const proxiedAccount: AnyAccount = {
   deposit: '100000000000',
   blockNumber: 12345,
   extrinsicIndex: 0,
+  createdAt: 0,
 } as AnyAccount;
 
 /**
@@ -110,4 +115,5 @@ export const proxyAccount: AnyAccount = {
   type: 'universal',
   cryptoType: CryptoType.SR25519,
   signingType: SigningType.POLKADOT_VAULT,
+  createdAt: 0,
 };
