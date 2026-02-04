@@ -60,7 +60,7 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, op
       <div className="mb-6 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={getIconName(operation.transaction)} size={60} />
 
-        {operation.transaction && <Slot id={confirmTransactionInfoSlot} props={{ operation }} />}
+        <Slot id={confirmTransactionInfoSlot} props={{ operation }} />
       </div>
 
       <Field text={t('operation.selectAccountLabel')}>

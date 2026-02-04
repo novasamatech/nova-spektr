@@ -44,16 +44,18 @@ export const OperationActions = memo(({ operation, account }: Props) => {
     hasApproveAccount &&
     (!isFinalSigning || (operation.callData && validateCallData(operation.callData, operation.callHash)));
 
+  if (!chain) return null;
+
   return (
     <div className="flex w-[140px] shrink-0 gap-x-2" onClick={e => e.stopPropagation()}>
-      {isRejectAvailable && (
+      {api && chain && isRejectAvailable && (
         <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
           <Button pallet="error" variant="fill" size="sm" className="flex-1">
             {t('operation.rejectButton')}
           </Button>
         </RejectTxModal>
       )}
-      {isApproveAvailable && (
+      {api && chain && isApproveAvailable && (
         <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
           <Button size="sm" className="flex-1">
             {t('operation.approveButton')}

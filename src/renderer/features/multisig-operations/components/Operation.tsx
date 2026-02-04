@@ -111,71 +111,72 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   }
 
   return (
-    <Accordion
-      isDefaultOpen={isDefaultOpen}
-      className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow"
-    >
-      <Accordion.Button buttonClass="px-4 py-2" iconWrapper="px-1.5">
-        <div className="flex h-[52px] w-full items-center gap-x-2 overflow-hidden">
-          <div className="flex w-[500px] min-w-0 items-center gap-x-2">
-            <OperationIcon operation={operation} account={multisigAccount} />
+    <div className="focus-active:shadow-card-shadow rounded bg-block-background-default transition-shadow hover:shadow-card-shadow">
+      <Accordion isDefaultOpen={isDefaultOpen}>
+        <Accordion.Button buttonClass="px-4 py-2">
+          <div className="flex h-[52px] w-full items-center gap-x-2 overflow-hidden">
+            <div className="flex w-[500px] min-w-0 items-center gap-x-2">
+              <OperationIcon operation={operation} account={multisigAccount} />
 
-            <div className="flex flex-1 flex-col justify-center gap-y-0.5 overflow-hidden">
-              {titleData.title && <TransactionTitle title={titleData.title} />}
-              {titleData.sourceChainId &&
-                (titleData.destinationChainId ? (
-                  <XcmChains chainIdFrom={titleData.sourceChainId} chainIdTo={titleData.destinationChainId} />
-                ) : (
-                  <ChainTitle chainId={titleData.sourceChainId} fontClass="text-help-text text-text-tertiary" />
-                ))}
+              <div className="flex flex-1 flex-col justify-center gap-y-0.5 overflow-hidden">
+                {titleData.title && <TransactionTitle title={titleData.title} />}
+                {titleData.sourceChainId &&
+                  (titleData.destinationChainId ? (
+                    <XcmChains chainIdFrom={titleData.sourceChainId} chainIdTo={titleData.destinationChainId} />
+                  ) : (
+                    <ChainTitle chainId={titleData.sourceChainId} fontClass="text-help-text text-text-tertiary" />
+                  ))}
+              </div>
+
+              {titleData.amount && (
+                <div className="flex w-[240px] shrink-0 items-center gap-x-2">
+                  <AssetIcon asset={titleData.amount.asset} size={32} />
+                  <div className="flex flex-col items-start gap-y-0.5">
+                    <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />
+                    <AssetFiatBalance
+                      asset={titleData.amount.asset}
+                      amount={titleData.amount.value}
+                      className="text-help-text text-text-tertiary"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
-            {titleData.amount && (
-              <div className="flex w-[240px] shrink-0 items-center gap-x-2">
-                <AssetIcon asset={titleData.amount.asset} size={32} />
-                <div className="flex flex-col items-start gap-y-0.5">
-                  <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />
-                  <AssetFiatBalance
-                    asset={titleData.amount.asset}
-                    amount={titleData.amount.value}
-                    className="text-help-text text-text-tertiary"
-                  />
+            <div className="flex min-w-0 flex-1 items-center justify-between">
+              {wallet && accountAddress ? (
+                <div className="flex w-[240px] items-center gap-x-2">
+                  <WalletAccountIcon address={accountAddress} type={wallet.type} size={32} iconSize={14} />
+                  <div className="flex min-w-0 flex-col items-start gap-y-0.5">
+                    <FootnoteText className="truncate text-text-primary">{wallet.name}</FootnoteText>
+                    <HelpText className="text-text-tertiary">{toShortAddress(accountAddress, 6)}</HelpText>
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="w-[240px]" />
+              )}
+
+              <OperationTitleStatus operation={operation} account={multisigAccount} />
+
+              <OperationActions operation={operation} account={multisigAccount} />
+            </div>
+
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Copy value={deepLink} notification={t('general.notifications.operationLinkCopied')}>
+                  <IconButton className="shrink-0 self-center text-icon-default" name="share" />
+                </Copy>
+              </Tooltip.Trigger>
+              <Tooltip.Content>{t('operations.shareOperationTooltip')}</Tooltip.Content>
+            </Tooltip>
           </div>
-
-          <div className="flex min-w-0 flex-1 items-center justify-between">
-            {wallet && accountAddress ? (
-              <div className="flex w-[240px] items-center gap-x-2">
-                <WalletAccountIcon address={accountAddress} type={wallet.type} size={32} iconSize={14} />
-                <div className="flex min-w-0 flex-col items-start gap-y-0.5">
-                  <FootnoteText className="truncate text-text-primary">{wallet.name}</FootnoteText>
-                  <HelpText className="text-text-tertiary">{toShortAddress(accountAddress, 6)}</HelpText>
-                </div>
-              </div>
-            ) : (
-              <div className="w-[240px]" />
-            )}
-
-            <OperationTitleStatus operation={operation} account={multisigAccount} />
-
-            <OperationActions operation={operation} account={multisigAccount} />
+        </Accordion.Button>
+        <Accordion.Content>
+          <div className="border-t border-divider">
+            <OperationFullInfo operation={operation} account={multisigAccount} tab={tab} />
           </div>
-
-          <Tooltip>
-            <Tooltip.Trigger>
-              <Copy value={deepLink} notification={t('general.notifications.operationLinkCopied')}>
-                <IconButton className="shrink-0 self-center text-icon-default" name="share" />
-              </Copy>
-            </Tooltip.Trigger>
-            <Tooltip.Content>{t('operations.shareOperationTooltip')}</Tooltip.Content>
-          </Tooltip>
-        </div>
-      </Accordion.Button>
-      <Accordion.Content className="border-t border-divider">
-        <OperationFullInfo operation={operation} account={multisigAccount} tab={tab} />
-      </Accordion.Content>
-    </Accordion>
+        </Accordion.Content>
+      </Accordion>
+    </div>
   );
 });

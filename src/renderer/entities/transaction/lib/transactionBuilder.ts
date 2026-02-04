@@ -601,6 +601,7 @@ type CreateFlexibleMultisigParams = {
   signatoryAccountId: AccountId;
   multisigAccountId: AccountId;
   proxyAccountId: AccountId;
+  proxyType: ProxyType;
   threshold: number;
   pureTopUpAmount: BN;
   signatories: Signatory[];
@@ -611,6 +612,7 @@ function buildCreateFlexibleMultisig({
   chain,
   multisigAccountId,
   proxyAccountId,
+  proxyType,
   threshold,
   signatories,
   signatoryAccountId,
@@ -633,14 +635,14 @@ function buildCreateFlexibleMultisig({
     chain,
     accountId: signatoryAccountId,
     delegateAccountId: multisigAccountId,
-    type: 'Any',
+    type: proxyType,
   });
 
   const removeProxyTx = transactionBuilder.buildRemoveProxy({
     chain,
     accountId: signatoryAccountId,
     delegate: signatoryAccountId,
-    proxyType: 'Any',
+    proxyType,
     delay: 0,
   });
 
@@ -658,7 +660,7 @@ function buildCreateFlexibleMultisig({
     type: TransactionType.PROXY,
     args: {
       real: proxyAccountId,
-      forceProxyType: 'Any',
+      forceProxyType: proxyType,
       transaction: innerBatch,
     },
   };
@@ -685,21 +687,28 @@ type ProxyReassignParams = {
   signerAccountId: AccountId;
   newAccountId: AccountId;
   oldAccountId: AccountId;
+  proxyType: ProxyType;
 };
 
-function buildProxyReassign({ chain, newAccountId, oldAccountId, signerAccountId }: ProxyReassignParams): Transaction {
+function buildProxyReassign({
+  chain,
+  newAccountId,
+  oldAccountId,
+  signerAccountId,
+  proxyType,
+}: ProxyReassignParams): Transaction {
   const addProxyTx = transactionBuilder.buildAddProxy({
     chain,
     accountId: oldAccountId,
     delegateAccountId: newAccountId,
-    type: 'Any',
+    type: proxyType,
   });
 
   const removeProxyTx = transactionBuilder.buildRemoveProxy({
     chain,
     accountId: oldAccountId,
     delegate: oldAccountId,
-    proxyType: 'Any',
+    proxyType,
     delay: 0,
   });
 

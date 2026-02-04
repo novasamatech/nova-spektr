@@ -27,6 +27,10 @@ export const ChainTitle = memo(
       [chains, chainProps],
     );
 
+    if (!chainObj) {
+      return null;
+    }
+
     if (!showChainName) {
       return <ChainIcon chain={chainObj} size={iconSize} />;
     }
@@ -35,7 +39,7 @@ export const ChainTitle = memo(
       <Tag className={cnTw('flex items-center gap-x-2', className)}>
         <ChainIcon chain={chainObj} size={iconSize} />
         <TextBase as="span" className={cnTw('text-footnote text-text-tertiary', fontClass)}>
-          {chainObj?.name}
+          {chainObj.name}
         </TextBase>
       </Tag>
     );

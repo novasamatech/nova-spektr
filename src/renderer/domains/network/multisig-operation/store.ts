@@ -11,6 +11,7 @@ import { entries, groupBy, keys, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query/types';
 import { networkModel } from '@/entities/network';
+import { accounts } from '../account/store';
 
 import {
   $completionEvents,
@@ -67,13 +68,12 @@ sample({
     chains: networkModel.$chains,
   },
   fn: ({ chains }, state) => {
-    const values = Object.values(state).map(el => ({
-      api: el.api,
-      hashes: el.hashes,
-      chain: chains[el.api.genesisHash.toHex()]!,
-    }));
+    return Object.values(state).flatMap(el => {
+      const chain = chains[el.api.genesisHash.toHex()];
+      if (!chain) return [];
 
-    return values;
+      return [{ api: el.api, hashes: el.hashes, chain }];
+    });
   },
   target: series(subscribeOnchainResource.subscribe, { parallel: true }),
 });
@@ -177,16 +177,28 @@ sample({
   clock: initialOnChainFetch.fetch.done,
   source: $initializedChainIds,
   fn: (fetched, { params }) => {
-    const chainIds = keys(params.apis);
-    return [...new Set([...fetched, ...chainIds])];
+    const chainId = params.api.genesisHash.toHex();
+    return [...new Set([...fetched, chainId])];
   },
   target: $initializedChainIds,
 });
 
 sample({
   clock: subscribeToAccounts,
+  fn: ({ apis, accountIds, chains }) =>
+    entries(apis).flatMap(([chainId, api]) => {
+      const chain = chains[chainId];
+      if (!chain) return [];
+
+      return [{ api, chain, accountIds }];
+    }),
+  target: series(initialOnChainFetch.fetch, { parallel: true }),
+});
+
+sample({
+  clock: subscribeToAccounts,
   fn: ({ apis, accountIds, chains }) => ({ apis, chains, accountIds }),
-  target: [initialOnChainFetch.fetch, fetchOffchainResource.fetch],
+  target: fetchOffchainResource.fetch,
 });
 
 const refetchOffchainOperations = createEvent();
@@ -361,11 +373,55 @@ const $allOperations = combine(
 
 sample({
   clock: $liveOperations,
-  source: $initialLoadingComplete,
-  filter: loadingComplete => loadingComplete,
-  fn: (_, liveOps) => liveOps,
+  source: {
+    offChainFetched: $offChainFetched,
+    fetchedChainIds: $initializedChainIds,
+    cachedOperations: $cachedOperations,
+  },
+  filter: ({ offChainFetched, fetchedChainIds }) => offChainFetched && fetchedChainIds.length > 0,
+  fn: ({ fetchedChainIds, cachedOperations }, liveOps) => {
+    const liveByChain = groupBy(liveOps, op => op.chainId);
+    const cachedByChain = groupBy(cachedOperations, op => op.chainId);
+    const allChainIds = [...new Set([...keys(liveByChain), ...keys(cachedByChain)])];
+
+    const result: MultisigOperation[] = [];
+    for (const chainId of allChainIds) {
+      const ops = fetchedChainIds.includes(chainId) ? liveByChain[chainId] || [] : cachedByChain[chainId] || [];
+      result.push(...ops);
+    }
+
+    return uniqBy(result, o => o.id);
+  },
   target: $cachedOperations,
 });
+
+// Cleanup operations when accounts are deleted
+const deleteAccountIds = accounts.deleteAccounts.doneData.map(deleted => deleted.map(a => a.accountId));
+
+$cachedOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.accountId)));
+$offChainOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.accountId)));
+
+$onChainOperationsByCallhash.on(deleteAccountIds, (state, ids) =>
+  produce(state, draft => {
+    for (const chainData of Object.values(draft)) {
+      if (!chainData) continue;
+      for (const accountId of keys(chainData)) {
+        if (ids.includes(accountId)) delete chainData[accountId];
+      }
+    }
+  }),
+);
+
+$trackedCallHashes.on(deleteAccountIds, (state, ids) =>
+  produce(state, draft => {
+    for (const chainData of Object.values(draft)) {
+      if (!chainData) continue;
+      for (const accountId of keys(chainData.hashes)) {
+        if (ids.includes(accountId)) delete chainData.hashes[accountId];
+      }
+    }
+  }),
+);
 
 export const multisigOperation = {
   $list: $allOperations,
@@ -373,6 +429,8 @@ export const multisigOperation = {
   $initialLoadingComplete,
   $onChainReady: readonly($initialOnChainFetched),
   $offChainReady: readonly($offChainFetched),
+  $expectedChainIds: readonly($chainIdsWithMultisigSupport),
+  $fetchedChainIds: readonly($initializedChainIds),
 
   subscribeToAccounts,
   unsubscribeFromAccounts,

@@ -10,15 +10,14 @@ import { Hash } from '../Hash/Hash';
 
 type Props = PropsWithChildren<{
   accountId: AccountId | Address;
-  chain: Chain;
+  chain: Chain | null;
   testId?: string;
 }>;
 
 export const AccountExplorers = memo(({ accountId, chain, children, testId }: Props) => {
   const { t } = useI18n();
 
-  const { explorers, addressPrefix } = chain;
-  const address = toAddress(accountId, { prefix: addressPrefix });
+  const address = toAddress(accountId, { prefix: chain?.addressPrefix });
 
   return (
     <Popover align="end" dialog testId="AddressExplorer">
@@ -51,11 +50,11 @@ export const AccountExplorers = memo(({ accountId, chain, children, testId }: Pr
             </>
           ) : null}
 
-          {explorers && explorers.length > 0 ? (
+          {chain?.explorers && chain.explorers.length > 0 ? (
             <>
               <Separator />
               <div className="relative -mx-1.5 flex flex-col gap-2">
-                {explorers.map(explorer => (
+                {chain.explorers.map(explorer => (
                   <ExplorerLink
                     key={explorer.name}
                     name={explorer.name}

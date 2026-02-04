@@ -2003,6 +2003,7 @@
     },
     "inProgress": "Submitting approval...",
     "logButton": "Log",
+    "openOverviewButton": "Open overview",
     "multisigExistsDescription": "Due to the blockchain limitations, multisig operations with identical details can't be in a signing status simultaneously. Wait for the current one to be signed or reject it to create a new one.",
     "multisigExistsTitle": "Same transaction already exist",
     "networkFee": "Network fee",
@@ -2115,8 +2116,15 @@
       "networkSummary": "Networks",
       "operationTypePlaceholder": "Operation type",
       "operationTypeSummary": "Operation types",
+      "proxyTypePlaceholder": "Proxy type",
       "statusPlaceholder": "Operation status",
       "statusSummary": "Operation statuses"
+    },
+    "sync": {
+      "connecting": "Connecting to networks...",
+      "syncing": "Syncing networks... {synced}/{total}",
+      "synced": "Synced",
+      "loading": "Syncing..."
     },
     "historyEmptyDescription": "Signed operations will appear here once completed.",
     "historyEmptyTitle": "Operation history list is empty",
@@ -2249,16 +2257,16 @@
       "sender": "Sender"
     },
     "names": {
-      "any": "All operations",
-      "auction": "Auction operations",
-      "cancelProxy": "Cancel operations",
-      "governance": "Governance operations",
-      "identityJudgement": "Judgement operations",
-      "nominationPools": "Nominations operations",
-      "nonTransfer": "All, except transfer operations",
-      "staking": "Staking operations",
+      "any": "All",
+      "auction": "Auction",
+      "cancelProxy": "Cancel",
+      "governance": "Governance",
+      "identityJudgement": "Judgement",
+      "nominationPools": "Nominations",
+      "nonTransfer": "All, except transfer",
+      "staking": "Staking",
       "sudoBalances": "Sudo balances",
-      "unknown": "Unknown operations"
+      "unknown": "Unknown"
     },
     "operations": {
       "any": "all operations",

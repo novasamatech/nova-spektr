@@ -1,23 +1,16 @@
-import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { produce } from 'immer';
 import { interval, throttle } from 'patronum';
-import { type DateRange } from 'react-day-picker';
 
 import { type Done, persist } from '@/shared/api/storage';
-import { type FlexibleMultisigAccount, type MultisigAccount, TransactionType } from '@/shared/core';
+import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
-import {
-  type AnyAccount,
-  type MultisigOperation,
-  accountService,
-  accounts,
-  multisigOperation,
-} from '@/domains/network';
+import { type DateRange } from '@/shared/ui-kit';
+import { type AnyAccount, accountService, accounts, multisigOperation } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
-import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { multisigService } from '@/features/multisig-wallet';
+import { filterOperation } from '../lib/operations-filter';
 
 import { deepLinkModel } from './deep-link';
 import { multisigOperationsFeature } from './feature';
@@ -26,7 +19,9 @@ interface SelectedFilters {
   account: string[];
   network: string[];
   type: string[];
+  proxyType: string[];
   dateRange?: DateRange;
+  searchQuery: string;
 }
 export type TabFilter = 'pending' | 'history' | 'hidden';
 
@@ -41,87 +36,36 @@ $hiddenOperationIds
   .on(hideOperation, (state, id) => (state.includes(id) ? state : [...state, id]))
   .on(unhideOperation, (state, id) => state.filter(opId => opId !== id));
 
-const filterTx = (tx: MultisigOperation, filters: SelectedFilters, tab: TabFilter, hiddenIds: string[]) => {
-  const isHidden = hiddenIds.includes(tx.id);
-
-  if (tab === 'hidden') {
-    if (!isHidden) return false;
-  } else {
-    if (isHidden) return false;
-  }
-
-  const xcmDestination = tx.transaction?.args.destinationChain;
-
-  const hasAccount = !filters.account.length || filters.account.includes(tx.accountId);
-  const hasOrigin = !filters.network.length || filters.network.includes(tx.chainId);
-  const hasDestination = !filters.network.length || filters.network.includes(xcmDestination);
-  const hasTxType = !filters.type.length || filters.type.includes(getFilterableTxType(tx));
-
-  let isInDateRange = true;
-  if (filters.dateRange) {
-    const { from, to } = filters.dateRange;
-
-    if (from || to) {
-      const txDate = new Date(tx.timestamp);
-
-      if (from && to) {
-        isInDateRange = isWithinInterval(txDate, { start: startOfDay(from), end: endOfDay(to) });
-      } else if (from) {
-        isInDateRange = isAfter(txDate, startOfDay(from)) || txDate.getTime() === startOfDay(from).getTime();
-      }
-    }
-  }
-
-  // For hidden tab, show all hidden operations regardless of status
-  const statusMatchesTab =
-    tab === 'hidden'
-      ? true
-      : tab === 'pending'
-        ? tx.status === 'pending'
-        : ['executed', 'cancelled', 'error'].includes(tx.status);
-
-  return hasAccount && (hasOrigin || hasDestination) && hasTxType && isInDateRange && statusMatchesTab;
-};
-
-const getFilterableTxType = (op: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
-  if (!op.transaction?.type) {
-    return 'UNKNOWN_TYPE';
-  }
-
-  if (TransferTypes.includes(op.transaction.type)) {
-    return TransactionType.TRANSFER;
-  }
-  if (XcmTypes.includes(op.transaction.type)) {
-    return TransactionType.XCM_LIMITED_TRANSFER;
-  }
-
-  if (op.transaction.type === TransactionType.BATCH_ALL) {
-    const txMatch = findCoreBatchAll(op.transaction);
-
-    return txMatch?.type || 'UNKNOWN_TYPE';
-  }
-
-  return op.transaction.type;
-};
-
-const setFilters = createEvent<SelectedFilters>();
-const resetFilters = createEvent();
-const setTab = createEvent<TabFilter>();
-
-const $filter = restore(setFilters, {
+const initialFilter: SelectedFilters = {
   account: [],
   network: [],
   type: [],
+  proxyType: [],
   dateRange: undefined,
-}).reset(resetFilters);
+  searchQuery: '',
+};
+
+const setFilter = createEvent<Partial<SelectedFilters>>();
+const resetFilters = createEvent();
+const setTab = createEvent<TabFilter>();
+
+const $filter = createStore(initialFilter)
+  .on(setFilter, (state, partial) =>
+    produce(state, draft => {
+      Object.assign(draft, partial);
+    }),
+  )
+  .reset(resetFilters);
 
 const $isFiltersSelected = $filter.map(filter =>
   Boolean(
     filter.account.length ||
       filter.network.length ||
       filter.type.length ||
+      filter.proxyType.length ||
       filter.dateRange?.from ||
-      filter.dateRange?.to,
+      filter.dateRange?.to ||
+      filter.searchQuery,
   ),
 );
 
@@ -152,8 +96,7 @@ const $multisigAccountsMap = accounts.$list.map(accs => {
   const record: Record<string, MultisigAccount | FlexibleMultisigAccount> = {};
 
   for (const account of multisigAccounts) {
-    const multisigAccountId = multisigService.getMultisigAccountId(account);
-    record[multisigAccountId] = account;
+    record[account.accountId] = account;
   }
 
   return record;
@@ -161,12 +104,41 @@ const $multisigAccountsMap = accounts.$list.map(accs => {
 
 const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isAnyMultisig));
 
+const $walletNameByAccountId = combine(
+  { multisigAccountsMap: $multisigAccountsMap, multisigWallets: $multisigWallets },
+  ({ multisigAccountsMap, multisigWallets }) => {
+    const result: Record<string, string> = {};
+    for (const [accountId, account] of Object.entries(multisigAccountsMap)) {
+      const wallet = multisigWallets.find(w => w.id === account.walletId);
+      if (wallet) result[accountId] = wallet.name;
+    }
+    return result;
+  },
+);
+
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 
 const $filteredOperations = combine(
-  { operations: multisigOperation.$list, filter: $filter, tab: $tab, hiddenIds: $hiddenOperationIds },
-  ({ operations, filter, tab, hiddenIds }) => {
-    return operations.filter(op => filterTx(op, filter, tab, hiddenIds));
+  {
+    operations: multisigOperation.$list,
+    filter: $filter,
+    tab: $tab,
+    hiddenIds: $hiddenOperationIds,
+    multisigAccountsMap: $multisigAccountsMap,
+    walletNameByAccountId: $walletNameByAccountId,
+    chains: networkModel.$chains,
+  },
+  ({ operations, filter, tab, hiddenIds, multisigAccountsMap, walletNameByAccountId, chains }) => {
+    return operations.filter(op =>
+      filterOperation(op, {
+        filters: filter,
+        tab,
+        hiddenIds,
+        multisigAccountsMap,
+        walletNameByAccountId,
+        chains,
+      }),
+    );
   },
 );
 
@@ -235,6 +207,17 @@ sample({
   target: setTab,
 });
 
+const $chainSyncState = combine(
+  {
+    expected: multisigOperation.$expectedChainIds,
+    fetched: multisigOperation.$fetchedChainIds,
+  },
+  ({ expected, fetched }): { expected: ChainId[]; fetched: ChainId[] } => ({
+    expected,
+    fetched,
+  }),
+);
+
 export const operationsContextModel = {
   $filter,
   $isFiltersSelected,
@@ -247,8 +230,9 @@ export const operationsContextModel = {
   $hiddenOperationIds,
   $hiddenOperationsCount,
   $pendingOperationsCount,
+  $chainSyncState,
 
-  setFilters,
+  setFilter,
   resetFilters,
   setTab,
   hideOperation,
