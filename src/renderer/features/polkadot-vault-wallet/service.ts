@@ -18,7 +18,8 @@ function createDraftAccount(
   },
   chains: Record<ChainId, Chain>,
 ): DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount> {
-  const isEthereumBased = networkUtils.isEthereumBased(chains[draft.chainId].options);
+  const chain = chains[draft.chainId];
+  const isEthereumBased = chain ? networkUtils.isEthereumBased(chain.options) : false;
   const isSharded = nonNullable(draft.groupId);
 
   return {

@@ -5,11 +5,9 @@ import { createGate } from 'effector-react';
 import { type HexString, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { waitFor } from '@/shared/effector';
 import { nonNullable, nullable, toAccountId, toShortAddress } from '@/shared/lib/utils';
-import { Paths } from '@/shared/routes';
 import { type AnyAccountDraft, accountSync } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { navigationModel } from '@/features/navigation';
 import {
   type ExtensionAccount,
   type ExtensionChainAccount,
@@ -76,6 +74,7 @@ const $accounts = combine($rawAccounts, $extensionType, (accounts, extensionType
         name: name ?? toShortAddress(address),
         type: isChainAccount ? 'chain' : 'universal',
         signingType: SigningType.EXTENSION,
+        createdAt: Date.now(),
       };
 
       if (isChainAccount) {
@@ -156,12 +155,6 @@ sample({
   clock: walletCreated,
   fn: () => ({ extension: null }),
   target: flow.close,
-});
-
-sample({
-  clock: walletCreated,
-  fn: () => Paths.ASSETS,
-  target: navigationModel.events.navigateTo,
 });
 
 sample({

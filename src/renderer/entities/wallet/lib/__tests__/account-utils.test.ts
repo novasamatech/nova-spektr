@@ -24,6 +24,7 @@ const accounts: (VaultChainAccount | VaultShardAccount)[] = [
     signingType: SigningType.POLKADOT_VAULT,
     keyType: KeyType.HOT,
     derivationPath: '//test/path_1',
+    createdAt: Date.now(),
   },
   {
     id: '2',
@@ -37,6 +38,7 @@ const accounts: (VaultChainAccount | VaultShardAccount)[] = [
     signingType: SigningType.POLKADOT_VAULT,
     keyType: KeyType.PUBLIC,
     derivationPath: '//test/path_2',
+    createdAt: Date.now(),
   },
   {
     id: '3',
@@ -51,6 +53,7 @@ const accounts: (VaultChainAccount | VaultShardAccount)[] = [
     keyType: KeyType.HOT,
     cryptoType: CryptoType.SR25519,
     derivationPath: '//westend//staking//0',
+    createdAt: Date.now(),
   },
   {
     id: '4',
@@ -65,6 +68,7 @@ const accounts: (VaultChainAccount | VaultShardAccount)[] = [
     keyType: KeyType.HOT,
     cryptoType: CryptoType.SR25519,
     derivationPath: '//westend//staking//1',
+    createdAt: Date.now(),
   },
   {
     id: '5',
@@ -79,6 +83,7 @@ const accounts: (VaultChainAccount | VaultShardAccount)[] = [
     keyType: KeyType.MAIN,
     cryptoType: CryptoType.SR25519,
     derivationPath: '//westend//0',
+    createdAt: Date.now(),
   },
   {
     id: '6',
@@ -93,6 +98,7 @@ const accounts: (VaultChainAccount | VaultShardAccount)[] = [
     keyType: KeyType.HOT,
     cryptoType: CryptoType.SR25519,
     derivationPath: '//westend//1',
+    createdAt: Date.now(),
   },
   {
     id: '7',
@@ -107,6 +113,7 @@ const accounts: (VaultChainAccount | VaultShardAccount)[] = [
     keyType: KeyType.HOT,
     cryptoType: CryptoType.SR25519,
     derivationPath: '//westend//2',
+    createdAt: Date.now(),
   },
 ];
 

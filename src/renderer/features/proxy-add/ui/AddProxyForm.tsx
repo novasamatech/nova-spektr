@@ -275,7 +275,7 @@ const ProxyTypeSelector = () => {
   const options = proxyTypes.map((type) => ({
     id: type,
     value: type,
-    element: t(proxyUtils.getProxyTypeName(type)),
+    element: t(proxyUtils.getProxyTypeOperation(type)),
   }));
 
   return (

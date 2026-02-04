@@ -219,6 +219,7 @@ const $reassignFakeTx = combine(
       multisigAccountId: TEST_ACCOUNTS[0],
       threshold: threshold || 2,
       proxyAccountId: TEST_ACCOUNTS[1],
+      proxyType: 'Any',
       pureTopUpAmount,
     });
   },

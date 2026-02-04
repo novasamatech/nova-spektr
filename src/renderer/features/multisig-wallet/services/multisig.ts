@@ -39,6 +39,7 @@ function createSignatoryVirtualAccount(
     cryptoType: CryptoType.SR25519,
     type: 'universal',
     signingType: SigningType.WATCH_ONLY,
+    createdAt: Date.now(),
   };
 }
 

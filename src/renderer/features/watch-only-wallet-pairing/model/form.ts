@@ -13,12 +13,10 @@ import {
   WalletType,
 } from '@/shared/core';
 import { isEthereumAccountId, nonNullable, toAccountId, validateAddress } from '@/shared/lib/utils';
-import { Paths } from '@/shared/routes';
 import { identity } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { navigationModel } from '@/features/navigation';
 import { IDENTITY_CHAIN } from '../lib/constants';
 
 const flow = createGate();
@@ -80,6 +78,7 @@ const $accountDraft = form.$values.map(({ address, walletName }): Omit<WatchOnly
     type: 'universal',
     signingType: SigningType.WATCH_ONLY,
     accountType: AccountType.WATCH_ONLY,
+    createdAt: Date.now(),
   };
 });
 
@@ -122,8 +121,7 @@ sample({
 
 sample({
   clock: createWalletFx.done,
-  fn: () => Paths.ASSETS,
-  target: [flow.close, navigationModel.events.navigateTo],
+  target: flow.close,
 });
 
 sample({

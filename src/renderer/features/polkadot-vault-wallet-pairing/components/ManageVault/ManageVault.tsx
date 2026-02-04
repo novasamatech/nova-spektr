@@ -123,6 +123,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
               signingType: SigningType.POLKADOT_VAULT,
               accountType: AccountType.BASE,
               type: 'universal',
+              createdAt: Date.now(),
             },
           ],
     });

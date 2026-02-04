@@ -12,7 +12,6 @@ import { type IconNames, BodyText, Button, Icon } from '@/shared/ui';
 import { AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
-import { multisigService } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
@@ -73,18 +72,11 @@ export const MultisigOperationNotificationComponent = ({
 
   const multisigAccount = useStoreMap({
     store: accounts.$list,
-    keys: [issuer, operation],
+    keys: [operation],
     fn: (allAccounts) => {
       if (!operation) return null;
 
-      const flexibleMultisigAccount = allAccounts
-        .filter(accountUtils.isFlexibleMultisigAccount)
-        .filter((acc) => acc.multisigAccountId === issuer)
-        .find((acc) => multisigService.isFlexibleMultisigOperation(operation, acc.accountId));
-
-      if (nonNullable(flexibleMultisigAccount)) return flexibleMultisigAccount;
-
-      return allAccounts.filter(accountUtils.isMultisigAccount).find((acc) => acc.accountId === issuer);
+      return allAccounts.filter(accountUtils.isAnyMultisigAccount).find((acc) => acc.accountId === operation.accountId);
     },
   });
 
@@ -154,10 +146,11 @@ export const MultisigOperationNotificationComponent = ({
 
   return (
     <div className="flex gap-x-2">
-      <div className="pt-0.75">
-        <Icon name={icon.name} size={14} className={icon.className} />
-      </div>
-
+      {icon && (
+        <div className="pt-0.75">
+          <Icon name={icon.name} size={14} className={icon.className} />
+        </div>
+      )}
       <div className="flex flex-col gap-y-4">
         <div className="flex flex-col gap-y-2">
           <BodyText>

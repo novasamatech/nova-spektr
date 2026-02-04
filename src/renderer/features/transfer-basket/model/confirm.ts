@@ -25,9 +25,9 @@ const prepareDataFx = createEffect(async ({ transaction, accounts, chains, apis 
   const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
   const destinationChain = chains[transaction.coreTx.args.destinationChain] || chain;
-  const asset = getAssetById(transaction.coreTx.args.asset, chain.assets);
+  const asset = getAssetById(transaction.coreTx.args.asset, chain?.assets);
 
-  if (nullable(account) || nullable(asset)) return null;
+  if (nullable(chain) || nullable(account) || nullable(asset)) return null;
 
   return {
     id: transaction.id,

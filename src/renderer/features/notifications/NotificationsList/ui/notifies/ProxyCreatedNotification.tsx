@@ -8,9 +8,8 @@ import { BodyText } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
-import { proxyUtils } from '@/entities/proxy';
+import { ProxyTypeOperation, proxyUtils } from '@/entities/proxy';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { ProxyTypeOperation } from '../../lib/constants';
 
 type Props = {
   notification: ProxyAction;
@@ -18,7 +17,6 @@ type Props = {
 
 export const ProxyCreatedNotification = ({ notification }: Props) => {
   const { t } = useI18n();
-
   const chains = useUnit(networkModel.$chains);
 
   // Get proxy wallet from proxyAccountId
@@ -66,6 +64,8 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
   const proxyWalletType = proxyWallet?.type;
   const proxyAddress = toAddress(notification.proxyAccountId, { prefix: chain?.addressPrefix });
 
+  const proxyTypeTranslation = ProxyTypeOperation[notification.proxyType];
+
   return (
     <div className="flex gap-x-2">
       <div className="relative">
@@ -96,7 +96,7 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
             i18nKey="notifications.details.proxyCreatedDetails"
             values={{
               name: proxyWalletName,
-              operations: t(ProxyTypeOperation[notification.proxyType]),
+              operations: proxyTypeTranslation ? t(proxyTypeTranslation) : notification.proxyType,
             }}
             components={{
               chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,
