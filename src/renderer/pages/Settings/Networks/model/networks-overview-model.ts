@@ -71,7 +71,7 @@ sample({
   filter: (connections, { chainId, node }) => {
     const isEnabled = networkUtils.isEnabledConnection(connections[chainId]);
     const isRpc = networkUtils.isRpcConnection(connections[chainId]);
-    const activeNode = connections[chainId].activeNode;
+    const activeNode = connections[chainId]?.activeNode;
     const isEdited = activeNode?.name === node.name && activeNode?.url === node.url;
 
     return isEnabled && isRpc && isEdited;
@@ -89,7 +89,7 @@ sample({
   filter: ({ connections }, { chainId, node }) => {
     const isEnabled = networkUtils.isEnabledConnection(connections[chainId]);
     const isRpc = networkUtils.isRpcConnection(connections[chainId]);
-    const activeNode = connections[chainId].activeNode;
+    const activeNode = connections[chainId]?.activeNode;
     const isDeleted = activeNode?.name === node.name && activeNode?.url === node.url;
 
     return isEnabled && isRpc && isDeleted;

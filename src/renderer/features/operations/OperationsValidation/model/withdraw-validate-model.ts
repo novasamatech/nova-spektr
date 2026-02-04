@@ -101,7 +101,7 @@ sample({
   fn: ({ apis, chains, balances, staking }, { validation: { id, transaction, signerOptions }, era }) => {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = chain.assets[0]!;
+    const asset = chain?.assets[0]!;
 
     return {
       id,
@@ -127,7 +127,7 @@ const validateFx = attach({
   async effect({ chains, balances, apis }, { id, transaction }: ValidationStartedParams) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = chain.assets[0]!;
+    const asset = chain?.assets[0]!;
     const era = await getEraFx({ api });
     const staking = await fetchStakingFx({
       api,

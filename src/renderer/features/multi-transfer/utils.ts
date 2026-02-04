@@ -198,6 +198,7 @@ function validateCSV(records: MultiTransferRowSerialized[], options: ValidationS
 
   for (let i = 0; i < records.length; i++) {
     const record = records[i];
+    if (!record) continue;
     const rowIndex = i + 1;
 
     // Build recipient occurrences map

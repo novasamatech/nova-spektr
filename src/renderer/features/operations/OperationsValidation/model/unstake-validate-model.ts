@@ -75,7 +75,7 @@ const validateFx = attach({
   mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis, stakingData }) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = getAssetById(transaction.args.asset, chain.assets) || chain.assets[0]!;
+    const asset = getAssetById(transaction.args.asset, chain?.assets) || chain?.assets[0]!;
 
     return {
       id,

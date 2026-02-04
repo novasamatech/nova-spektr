@@ -29,16 +29,16 @@ const subscribePureEventFx = createEffect(async ({ api, timepoint, initiator }: 
     const unsubscribe = polkadotjsHelpers.subscribeSystemEvents(
       { api, section: `proxy`, methods: ['PureCreated'] },
       event => {
-        const who = pjsSchema.helpers.toAccountId(event?.data[1].toHex());
+        const who = pjsSchema.helpers.toAccountId(event.data[1]?.toHex());
 
         if (initiator.accountId !== who) return;
 
         unsubscribe.then(fn => fn());
 
         resolve({
-          pure: pjsSchema.helpers.toAccountId(event.data[0].toHex()),
+          pure: pjsSchema.helpers.toAccountId(event.data[0]?.toHex()),
           proxyType: event.data[2],
-          disambiguationIndex: parseInt(event.data[3].toHuman() as string),
+          disambiguationIndex: parseInt(event.data[3]?.toHuman() as string),
           extrinsicIndex: timepoint.index,
         });
       },

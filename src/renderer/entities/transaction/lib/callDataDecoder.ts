@@ -95,7 +95,7 @@ const parseBatch = (
   const calls = api.createType('Vec<Call>', decoded.args[0]);
   const innerTransactions = calls.map((call) => decodeCallData(api, accountId, call.toHex(), nativeAssetId));
   const firstTx = innerTransactions[0];
-  const isProxy = firstTx.section === 'proxy' && firstTx.method === 'proxy';
+  const isProxy = firstTx?.section === 'proxy' && firstTx?.method === 'proxy';
   const proxiedAccountId = isProxy && firstTx?.accountId ? firstTx?.accountId : accountId;
 
   const batchTransaction = getDecodedTransaction(
@@ -210,18 +210,18 @@ const getCallDataParser: Record<
   [TransactionType.TRANSFER]: (decoded, chainId, assetId): Record<string, any> => {
     return {
       assetId,
-      dest: decoded.args[0].toString(),
-      value: decoded.args[1].toString(),
+      dest: decoded.args[0]?.toString(),
+      value: decoded.args[1]?.toString(),
     };
   },
   [TransactionType.TRANSFER_ALL]: (decoded, chainId, assetId): Record<string, any> => {
-    return { assetId, dest: decoded.args[0].toString() };
+    return { assetId, dest: decoded.args[0]?.toString() };
   },
   [TransactionType.TRANSFER_ALLOW_DEATH]: (decoded, chainId, assetId): Record<string, any> => {
     return {
       assetId,
-      dest: decoded.args[0].toString(),
-      value: decoded.args[1].toString(),
+      dest: decoded.args[0]?.toString(),
+      value: decoded.args[1]?.toString(),
     };
   },
   [TransactionType.VESTED_TRANSFER]: (decoded): Record<string, any> => {

@@ -124,7 +124,7 @@ const { $: $existingVestingSchedules } = createStoreFromEffect({
       if (nullable(existingVestingSchedules[accountId as AccountId])) {
         existingVestingSchedules[accountId as AccountId] = 1;
       } else {
-        existingVestingSchedules[accountId as AccountId] += 1;
+        existingVestingSchedules[accountId as AccountId]! += 1;
       }
     }
 

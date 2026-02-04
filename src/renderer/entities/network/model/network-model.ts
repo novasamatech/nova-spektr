@@ -218,7 +218,7 @@ sample({
         customNodes: [],
         connectionType: ConnectionType.AUTO_BALANCE,
       };
-      acc[chainId].canUseLightClient = lightClientChains.includes(chainId);
+      acc[chainId]!.canUseLightClient = lightClientChains.includes(chainId);
 
       return acc;
     }, {});

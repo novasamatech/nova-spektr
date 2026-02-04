@@ -165,10 +165,10 @@ const formSubmitted = sample({
           ...delegateData,
           signatory: delegateData.signatory,
           ...(isUnchanged && {
-            balance: getBalanceBn(activeDelegation.balance.toString(), asset.precision).toString(),
-            conviction: activeDelegation.conviction,
+            balance: getBalanceBn(activeDelegation?.balance.toString() ?? '0', asset.precision).toString(),
+            conviction: activeDelegation?.conviction ?? 'None',
           }),
-          previousConviction: activeDelegation.conviction,
+          previousConviction: activeDelegation?.conviction ?? 'None',
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),

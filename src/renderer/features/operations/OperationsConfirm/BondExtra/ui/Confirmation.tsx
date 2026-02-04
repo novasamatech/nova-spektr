@@ -41,13 +41,13 @@ export const Confirmation = ({
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  const { amount, asset, chain, fee, totalFee, signatory, route, multisigDeposit } = confirm.meta;
-
-  const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
-
   if (!confirm || !confirm.wallets.initiator) {
     return null;
   }
+
+  const { amount, asset, chain, fee, totalFee, signatory, route, multisigDeposit } = confirm.meta;
+
+  const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
 
   const amountValue = config.withFormatAmount ? formatAmount(amount, asset.precision) : amount;
 

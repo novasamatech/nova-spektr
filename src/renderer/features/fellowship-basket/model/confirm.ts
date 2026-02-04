@@ -68,7 +68,7 @@ const prepareVoteFx = createEffect(async ({ transaction, wallets, accounts, chai
     chain,
     wallets,
     id: transaction.id,
-    asset: getNativeAsset(chain.assets),
+    asset: getNativeAsset(chain?.assets),
     initiator: account!,
     signatory: account!,
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
@@ -133,7 +133,7 @@ const prepareSalaryInductFx = createEffect(async ({ transaction, wallets, accoun
     chain,
     wallets,
     id: transaction.id,
-    asset: getNativeAsset(chain.assets),
+    asset: getNativeAsset(chain?.assets),
     initiator: account!,
     signatory: account!,
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
@@ -195,7 +195,7 @@ const prepareSalaryRequestFx = createEffect(async ({ transaction, wallets, accou
     chain,
     wallets,
     id: transaction.id,
-    asset: getNativeAsset(chain.assets),
+    asset: getNativeAsset(chain?.assets),
     initiator: account!,
     signatory: account!,
     coreTx: transaction.coreTx,
@@ -257,7 +257,7 @@ const prepareSalaryPayoutFx = createEffect(async ({ transaction, wallets, accoun
     chain,
     wallets,
     id: transaction.id,
-    asset: getNativeAsset(chain.assets),
+    asset: getNativeAsset(chain?.assets),
     initiator: account!,
     signatory: account!,
     coreTx: transaction.coreTx,
@@ -320,7 +320,7 @@ const prepareEvidencePayoutFx = createEffect(async ({ transaction, wallets, acco
     chain,
     wallets,
     id: transaction.id,
-    asset: getNativeAsset(chain.assets),
+    asset: getNativeAsset(chain?.assets),
     initiator: account!,
     signatory: account!,
     coreTx: transaction.coreTx,
@@ -402,10 +402,10 @@ const prepareEvidenceVoteFx = createEffect<
     const votingMember = members.find(m => m.accountId === account?.accountId);
 
     const proposalHex = coreTx.args.proposal;
-    const struct = api.registry.createType('Proposal', proposalHex);
+    const struct = api?.registry.createType('Proposal', proposalHex);
     const parsed =
-      struct.method === 'promote' || struct.method === 'promoteFast' || struct.method === 'approve'
-        ? pjsSchema.accountId.safeParse(struct.args.at(0))
+      struct?.method === 'promote' || struct?.method === 'promoteFast' || struct?.method === 'approve'
+        ? pjsSchema.accountId.safeParse(struct?.args.at(0))
         : null;
     const proposerAccountId = parsed?.success ? parsed.data : null;
 
@@ -419,7 +419,7 @@ const prepareEvidenceVoteFx = createEffect<
 
     const evidence: CollectiveEvidenceVoteConfirm['evidence'] = {
       pallet: 'fellowship',
-      chainId: chain.chainId,
+      chainId: chain?.chainId,
       wish,
       accountId: proposerMember.accountId,
       hash: coreTx.args.proposal,
@@ -433,7 +433,7 @@ const prepareEvidenceVoteFx = createEffect<
       tx: transaction.coreTx,
       coreTx: transaction.coreTx,
       route: [],
-      asset: getNativeAsset(chain.assets),
+      asset: getNativeAsset(chain?.assets),
       wallets,
       fee: new BN(fee),
       aye: coreTx.args.aye,

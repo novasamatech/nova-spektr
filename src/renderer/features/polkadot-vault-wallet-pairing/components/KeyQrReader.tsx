@@ -19,19 +19,19 @@ export const KeyQrReader = ({ size = 300, onComplete, onBack }: Props) => {
   const onScanResult = (qrPayload: SeedInfo[]) => {
     const qr = qrPayload[0];
 
-    if (qr.multiSigner && qr.multiSigner.MultiSigner !== CryptoTypeString.ECDSA) {
+    if (qr?.multiSigner && qr.multiSigner.MultiSigner !== CryptoTypeString.ECDSA) {
       encodeAddress(qr.multiSigner.public);
     }
 
     // Validate each derived key, decodeAddress & encodeAddress can throw
-    for (const { address } of qr.derivedKeys) {
+    for (const { address } of qr?.derivedKeys ?? []) {
       const accountId = isHex(address) ? hexToU8a(address) : decodeAddress(address);
       if (accountId.length === 20) continue;
       encodeAddress(accountId);
     }
 
     setIsScanComplete(true);
-    setTimeout(() => onComplete(qr), RESULT_DELAY);
+    setTimeout(() => onComplete(qr!), RESULT_DELAY);
   };
 
   return <VaultQrReader size={size} isScanComplete={isScanComplete} onResult={onScanResult} onBack={onBack} />;

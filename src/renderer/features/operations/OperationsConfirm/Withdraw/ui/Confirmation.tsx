@@ -31,17 +31,17 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     fn: (value, [id]) => value?.[id] ?? null,
   });
 
-  const { asset, amount, chain, initiator, signatory, multisigDeposit, fee } = confirmStore.meta;
-
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
-
-  const hasMultisigAccount = confirmStore.meta.route.some(accountUtils.isAnyMultisigAccount) ?? null;
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
   if (!confirmStore) {
     return null;
   }
+
+  const { asset, amount, chain, initiator, signatory, multisigDeposit, fee } = confirmStore.meta;
+
+  const hasMultisigAccount = confirmStore.meta.route.some(accountUtils.isAnyMultisigAccount) ?? null;
 
   return (
     <>

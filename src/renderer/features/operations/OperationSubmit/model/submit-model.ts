@@ -228,7 +228,7 @@ sample({
     }
 
     if (results.every(({ result }) => result === ExtrinsicResult.ERROR)) {
-      return { step: SubmitStep.ERROR, message: results[0].params as string };
+      return { step: SubmitStep.ERROR, message: results[0]?.params as string };
     }
 
     return { step: SubmitStep.WARNING, message: '' };

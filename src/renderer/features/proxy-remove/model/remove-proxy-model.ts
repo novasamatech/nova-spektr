@@ -453,7 +453,7 @@ sample({
     );
   },
   fn: ({ chainProxies, proxied, proxy, chain }) => {
-    const proxyToRemove = chainProxies[chain!.chainId].find(
+    const proxyToRemove = chainProxies?.[chain?.chainId]?.find(
       (currentProxy) =>
         proxy!.accountId === currentProxy.accountId &&
         proxy!.proxyType === currentProxy.proxyType &&

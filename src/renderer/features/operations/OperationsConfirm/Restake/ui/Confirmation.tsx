@@ -32,11 +32,11 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
     fn: (value, [id]) => value[id],
   });
 
-  const initiatorWallet = confirm.wallets.initiator;
-  const signerWallet = confirm.wallets.signatory;
+  const initiatorWallet = confirm?.wallets.initiator;
+  const signerWallet = confirm?.wallets.signatory;
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
-  const hasMultisigAccount = confirm.meta.route.some(accountUtils.isAnyMultisigAccount);
-  const nativeAsset = getNativeAsset(confirm.meta.chain.assets);
+  const hasMultisigAccount = confirm?.meta.route.some(accountUtils.isAnyMultisigAccount);
+  const nativeAsset = getNativeAsset(confirm?.meta.chain.assets);
 
   if (!confirm || !initiatorWallet) {
     return null;

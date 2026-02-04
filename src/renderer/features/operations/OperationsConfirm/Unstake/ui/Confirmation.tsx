@@ -33,19 +33,19 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  const { amount, asset, chain, totalFee, fee, signatory, route, multisigDeposit, api } = confirmStore.meta;
-
   const timelineApi = useStoreMap({
     store: confirmModel.$apis,
     keys: [confirmStore?.meta.chain.additional?.timelineChain ?? confirmStore?.meta.chain.chainId],
     fn: (value, [chainId]) => value?.[chainId],
   });
 
-  const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
-
   if (!confirmStore) {
     return null;
   }
+
+  const { amount, asset, chain, totalFee, fee, signatory, route, multisigDeposit, api } = confirmStore.meta;
+
+  const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
 
   return (
     <div className="flex flex-col items-center gap-y-4 px-5 pt-4 pb-4">

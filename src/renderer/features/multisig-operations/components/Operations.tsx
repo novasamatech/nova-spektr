@@ -59,7 +59,7 @@ export const Operations = () => {
       .map(([isoDate, txs]) => {
         const sortedTxs = txs!.toSorted((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         const [y, m, d] = isoDate.split('-').map(Number);
-        const displayDate = formatDate(new Date(y, m - 1, d), 'PP');
+        const displayDate = formatDate(new Date(y ?? 0, (m ?? 1) - 1, d), 'PP');
 
         return [displayDate, sortedTxs] as const;
       });

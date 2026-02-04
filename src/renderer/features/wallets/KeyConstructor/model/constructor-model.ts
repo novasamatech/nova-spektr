@@ -53,11 +53,11 @@ function getOtherDerivationPaths(
       const otherChain = chains[otherKey.chainId];
 
       if (isEthereumBased) {
-        const isOtherKeyEthereumBased = networkUtils.isEthereumBased(otherChain.options);
+        const isOtherKeyEthereumBased = networkUtils.isEthereumBased(otherChain?.options);
         return isOtherKeyEthereumBased;
       }
 
-      const isOtherKeyOnTheSameRelayChain = (otherChain.parentId ?? otherChain.chainId) === relayChainId;
+      const isOtherKeyOnTheSameRelayChain = (otherChain?.parentId ?? otherChain?.chainId) === relayChainId;
       return isOtherKeyOnTheSameRelayChain;
     })
     .map(([, otherKey]) => otherKey.derivationPath);
@@ -68,8 +68,13 @@ function getKeyValidationErrors(
   keys: Record<string, DerivationKeyDraft>,
   chains: Record<ChainId, Chain>,
 ) {
-  const { derivationPath, chainId } = keys[keyId];
+  const key = keys[keyId];
+  if (!key) return [];
+
+  const { derivationPath, chainId } = key;
   const chain = chains[chainId];
+  if (!chain) return [];
+
   const relayChainId = chain.parentId ?? chain.chainId;
   const isEthereumBased = networkUtils.isEthereumBased(chain.options);
 
@@ -83,11 +88,13 @@ function mergeShardedAccounts(
   accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[],
 ): DerivationKeyDraft[] {
   const accountGroups = accountUtils.getAccountsAndShardGroups(accounts as (VaultChainAccount | VaultShardAccount)[]);
-  return accountGroups.map((a) => {
+  return accountGroups.flatMap((a) => {
     if (Array.isArray(a)) {
-      return { chainId: a[0].chainId, derivationPath: accountUtils.getDerivationPath(a), groupId: a[0].groupId };
+      const first = a[0];
+      if (!first) return [];
+      return [{ chainId: first.chainId, derivationPath: accountUtils.getDerivationPath(a), groupId: first.groupId }];
     }
-    return { chainId: a.chainId, derivationPath: a.derivationPath };
+    return [{ chainId: a.chainId, derivationPath: a.derivationPath }];
   });
 }
 
@@ -183,7 +190,8 @@ sample({
   source: { keys: $keys },
   fn: ({ keys }, [id, patch]) => {
     return produce(keys, (draft) => {
-      Object.assign(draft[id], patch);
+      const target = draft[id];
+      if (target) Object.assign(target, patch);
     });
   },
   target: $keys,

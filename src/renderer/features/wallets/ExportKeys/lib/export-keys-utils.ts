@@ -11,7 +11,8 @@ function getExportStructure(rootAccountId: AccountId, accounts: (VaultChainAccou
   output += `public address: ${rootAccountId}\n`;
 
   for (const account of accounts) {
-    const chainId = Array.isArray(account) ? account[0].chainId : account.chainId;
+    const chainId = Array.isArray(account) ? account[0]?.chainId : account.chainId;
+    if (!chainId) continue;
     if (!set.has(chainId)) {
       set.add(chainId);
       output += `genesis: ${chainId}\n`;

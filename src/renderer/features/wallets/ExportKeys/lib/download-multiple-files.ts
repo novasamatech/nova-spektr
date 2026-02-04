@@ -7,6 +7,8 @@ export const downloadFiles = (files: FileForDownload[]) => {
     if (index >= files.length) return;
 
     const file = files[index];
+    if (!file) return;
+
     const url = window.URL.createObjectURL(file.blob);
 
     document.body.appendChild(a);

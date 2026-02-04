@@ -80,8 +80,8 @@ export const ConnectedGovernanceReferendum = ({ referendum: fellowshipReferendum
 
   const chain = chains[governanceReferendumConnection.chainId];
   const connectedGovernanceReferendumSummaryText =
-    connectedGovernanceReferendumSummary?.[governanceReferendumConnection?.referendumId].summary;
-  const timelineApi = chain.additional?.timelineChain ? apis[chain.additional.timelineChain] : null;
+    connectedGovernanceReferendumSummary?.[governanceReferendumConnection?.referendumId]?.summary;
+  const timelineApi = chain?.additional?.timelineChain ? apis[chain.additional.timelineChain] : null;
 
   return (
     <Card>

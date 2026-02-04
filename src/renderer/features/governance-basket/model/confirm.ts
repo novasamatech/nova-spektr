@@ -68,7 +68,7 @@ const prepareUnlockDataFx = createEffect(async ({ transaction, accounts, chains,
     chain,
     id: transaction.id,
     amount: coreTx.args.value,
-    asset: chain.assets[0]!,
+    asset: chain?.assets[0],
     initiator: account!,
     signatory: account!,
     route: [account!],
@@ -89,7 +89,7 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
     chains,
     accounts,
   );
-  const asset = chain.assets[0]!;
+  const asset = chain?.assets[0];
 
   const transferable = transferableAmount(
     balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
@@ -134,7 +134,7 @@ const prepareEditDelegationDataFx = createEffect(
       chains,
       accounts,
     );
-    const asset = chain.assets[0]!;
+    const asset = chain?.assets[0];
 
     const transferable = transferableAmount(
       balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
@@ -187,7 +187,7 @@ const prepareRevokeDelegationDataFx = createEffect(
 
     assert(account, 'Signing account not found');
 
-    const asset = chain.assets[0]!;
+    const asset = chain?.assets[0]!;
 
     const transferable = transferableAmount(
       balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
@@ -248,7 +248,7 @@ const prepareVoteDataFx = createEffect(async ({ transaction, accounts, chains, a
     id: transaction.id,
     api,
     chain,
-    asset: chain.assets[0]!,
+    asset: chain?.assets[0],
     initiator: account!,
     existingVote: coreTx.args.vote,
     signatory: account!,
@@ -275,7 +275,7 @@ const prepareRemoveVoteDataFx = createEffect(async ({ transaction, accounts, cha
     chain,
     id: transaction.id,
     initiator: account!,
-    asset: chain.assets[0]!,
+    asset: chain?.assets[0],
     votes: coreTxs.map((t: Transaction) => t.args),
     signatory: account!,
     route: [account!],

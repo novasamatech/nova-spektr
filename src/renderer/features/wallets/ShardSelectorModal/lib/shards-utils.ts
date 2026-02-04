@@ -30,7 +30,7 @@ function getFilteredAccounts(
     .filter((account) => {
       if (!chains[account.chainId]) return false;
 
-      const address = toAddress(account.accountId, { prefix: chains[account.chainId].addressPrefix });
+      const address = toAddress(account.accountId, { prefix: chains[account.chainId]?.addressPrefix });
 
       return isStringsMatchQuery(query, [account.derivationPath, address]);
     });
@@ -45,17 +45,23 @@ function getVaultChainsCounter(
     [rootAccountId]: getChainCounter(chains),
   };
 
-  root[rootAccountId].checked = shards.length;
-  root[rootAccountId].total = shards.length;
+  const rootEntry = root[rootAccountId];
+  if (!rootEntry) return root;
+
+  rootEntry.checked = shards.length;
+  rootEntry.total = shards.length;
 
   for (const shard of shards) {
     const chain = chains[shard.chainId];
     if (!chain) continue;
 
     const chainId = getConsensusChainId(chain);
-    root[rootAccountId][chainId].checked += 1;
-    root[rootAccountId][chainId].total += 1;
-    root[rootAccountId][chainId].accounts[shard.accountId] = true;
+    const chainEntry = rootEntry[chainId];
+    if (!chainEntry) continue;
+
+    chainEntry.checked += 1;
+    chainEntry.total += 1;
+    chainEntry.accounts[shard.accountId] = true;
   }
 
   return root;
@@ -91,7 +97,9 @@ function getStructForVault(
     const chain = chains[account.chainId];
     const groupId = chain && getConsensusChainId(chain);
 
-    const group = groupId && chainMap.get(groupId);
+    if (!groupId) continue;
+
+    const group = chainMap.get(groupId);
     if (group) {
       group.push(account);
     } else {

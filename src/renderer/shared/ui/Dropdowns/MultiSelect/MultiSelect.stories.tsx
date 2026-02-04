@@ -53,7 +53,7 @@ Primary.args = {
 export const Selected = Template.bind({});
 Selected.args = {
   placeholder: 'Select an option',
-  selectedIds: [options[0].id, options[1].id],
+  selectedIds: [options[0]?.id ?? '', options[1]?.id ?? ''],
   options,
   onChange: () => {},
 };
@@ -70,7 +70,7 @@ export const Custom = Template.bind({});
 Custom.args = {
   placeholder: 'Select an option',
   label: 'Payout account',
-  selectedIds: [customOptions[2].id],
+  selectedIds: [customOptions[2]?.id ?? ''],
   options: customOptions,
   onChange: () => {},
 };
@@ -78,7 +78,7 @@ Custom.args = {
 export const WithSelectAll = Template.bind({});
 WithSelectAll.args = {
   placeholder: 'Select an option',
-  selectedIds: [options[0].id],
+  selectedIds: [options[0]?.id ?? ''],
   options,
   showSelectAll: true,
   onChange: () => {},

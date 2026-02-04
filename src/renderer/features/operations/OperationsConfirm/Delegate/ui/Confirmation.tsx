@@ -47,11 +47,11 @@ export const Confirmation = ({
 
   const lockPeriods = useStoreMap({
     store: lockPeriodsModel.$lockPeriods,
-    keys: [confirm.meta?.chain],
+    keys: [confirm?.meta?.chain],
     fn: (locks, [chain]) => (chain ? (locks[chain.chainId] ?? null) : null),
   });
 
-  useGate(locksPeriodsAggregate.gates.flow, { chain: confirm.meta?.chain });
+  useGate(locksPeriodsAggregate.gates.flow, { chain: confirm?.meta?.chain });
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
@@ -65,7 +65,7 @@ export const Confirmation = ({
     if (nullable(confirm)) return null;
 
     return confirm.meta.route.some(accountUtils.isAnyMultisigAccount);
-  }, [confirm.meta.route]);
+  }, [confirm?.meta?.route]);
 
   if (!confirm || !confirm.wallets?.initiator) {
     return (

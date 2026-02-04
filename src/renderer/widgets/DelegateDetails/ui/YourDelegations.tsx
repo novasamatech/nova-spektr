@@ -119,13 +119,13 @@ export const YourDelegations = () => {
                   <Tooltip side="bottom">
                     <Tooltip.Trigger>
                       <div className="flex items-center gap-1">
-                        <FootnoteText>{activeTracks[account.accountId].size || 0}</FootnoteText>
+                        <FootnoteText>{activeTracks[account.accountId]?.size || 0}</FootnoteText>
 
                         <Icon className="group-hover:text-icon-hover" name="info" size={16} />
                       </div>
                     </Tooltip.Trigger>
                     <Tooltip.Content>
-                      {[...activeTracks[account.accountId]]
+                      {[...(activeTracks[account.accountId] ?? [])]
                         .map((trackId) => t(allTracks.find((track) => track.id === trackId)?.value || ''))
                         .join(', ')}
                     </Tooltip.Content>

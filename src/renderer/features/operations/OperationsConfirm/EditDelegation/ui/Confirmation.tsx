@@ -68,7 +68,7 @@ export const Confirmation = ({
     if (nullable(confirm)) return null;
 
     return confirm.meta.route.some(accountUtils.isAnyMultisigAccount);
-  }, [confirm.meta.route]);
+  }, [confirm?.meta?.route]);
 
   if (!confirm || !meta || !initiatorWallet) {
     return (

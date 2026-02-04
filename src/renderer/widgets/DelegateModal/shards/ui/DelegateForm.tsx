@@ -113,7 +113,7 @@ const Signatories = () => {
       return [];
     }
 
-    return signatories[0].map((signatory) => {
+    return signatories[0]?.map((signatory) => {
       const balance = balanceUtils.getBalance(
         balances,
         signatory.accountId,

@@ -199,7 +199,7 @@ function subscribeStatemineAssetsChange(
     throw new Error(`Pallet ${pallet} not found.`);
   }
 
-  const type = api.tx[pallet]?.transfer.meta.args[0].type;
+  const type = api.tx[pallet]?.transfer?.meta.args[0]?.type;
   if (nullable(type)) {
     return Promise.resolve(noop);
   }
@@ -216,7 +216,8 @@ function subscribeStatemineAssetsChange(
     return acc;
   }, []);
 
-  return api.query[pallet].account.multi(assetsTuples, async (data) => {
+  // pallet existence is checked above
+  return api.query[pallet]?.account?.multi(assetsTuples, async (data) => {
     const newBalances: BalanceDraft[] = [];
 
     for (const [index, accountInfo] of data.entries()) {
@@ -282,7 +283,8 @@ function subscribeOrmlAssetsChange(
 ): UnsubscribePromise {
   if (!api || !assets.length) return Promise.resolve(noop);
 
-  const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies.accounts;
+  const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies?.accounts;
+  if (!method) return Promise.resolve(noop);
 
   const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
 
@@ -359,7 +361,9 @@ function subscribeLockOrmlAssetChange(
 ): UnsubscribePromise {
   if (!api || !assets.length) return Promise.resolve(noop);
 
-  const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies.locks;
+  const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies?.locks;
+  if (!method) return Promise.resolve(noop);
+
   const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
 
   return method.multi(assetsTuples, (data: Vec<PalletBalancesBalanceLock>[]) => {
@@ -377,8 +381,8 @@ function subscribeLockOrmlAssetChange(
       newLocks.push({
         accountId: accountIds[accountIndex],
         chainId: chain.chainId,
-        assetId: assets[assetIndex].assetId,
-        assetType: assets[assetIndex].type,
+        assetId: assets[assetIndex]?.assetId,
+        assetType: assets[assetIndex]?.type,
         locked,
       });
     }
@@ -513,7 +517,7 @@ async function fetchStatemineAssets(
     throw new Error(`Pallet ${pallet} not found.`);
   }
 
-  const type = api.tx[pallet]?.transfer.meta.args[0].type;
+  const type = api.tx[pallet]?.transfer?.meta.args[0]?.type;
   if (nullable(type)) {
     return [];
   }
@@ -530,10 +534,11 @@ async function fetchStatemineAssets(
     return acc;
   }, []);
 
-  const data = await api.query[pallet].account.multi(assetsTuples);
+  // pallet existence is checked above
+  const data = await api.query[pallet]?.account?.multi(assetsTuples);
   const result: BalanceDraft[] = [];
 
-  for (const [index, accountInfo] of data.entries()) {
+  for (const [index, accountInfo] of data?.entries() ?? []) {
     // @ts-expect-error it's hard to type such cases
     const free = accountInfo.isNone ? BN_ZERO : accountInfo.unwrap().balance.toBn();
 
@@ -574,7 +579,8 @@ async function fetchOrmlAssets(
 ): Promise<BalanceDraft[]> {
   if (!api || !assets.length) return [];
 
-  const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies.accounts;
+  const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies?.accounts;
+  if (!method) return [];
 
   const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
 
@@ -646,7 +652,9 @@ async function fetchLockOrmlAsset(
 ): Promise<BalanceDraft[]> {
   if (!assets.length) return [];
 
-  const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies.locks;
+  const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies?.locks;
+  if (!method) return [];
+
   const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
   const data: Vec<PalletBalancesBalanceLock>[] = await method.multi(assetsTuples);
 
@@ -664,8 +672,8 @@ async function fetchLockOrmlAsset(
     result.push({
       accountId: accountIds[accountIndex],
       chainId: chain.chainId,
-      assetId: assets[assetIndex].assetId,
-      assetType: assets[assetIndex].type,
+      assetId: assets[assetIndex]?.assetId,
+      assetType: assets[assetIndex]?.type,
       locked,
     });
   }
@@ -688,7 +696,7 @@ async function getExistentialDeposit(api: ApiPromise, asset: Asset): Promise<BN>
 
       const assetId = getAssetId(asset);
 
-      return await api.query[pallet].asset(assetId).then((balance) => {
+      return await api.query[pallet]?.asset?.(assetId).then((balance) => {
         if ((balance as Option<PalletAssetsAssetDetails>).isNone) {
           return BN_ZERO;
         }

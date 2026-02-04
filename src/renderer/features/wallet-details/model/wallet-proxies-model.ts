@@ -58,7 +58,7 @@ const walletProxiesSubscription = createSubscriptionResource<WalletProxiesSubscr
         try {
           const [proxies, depositBalance] = data;
 
-          const mappedProxies = proxies.map(proxy => ({
+          const mappedProxies = proxies?.map(proxy => ({
             accountId: pjsSchema.helpers.toAccountId(proxy.delegate.toHex()),
             proxiedAccountId: account,
             chainId: chain.chainId,
@@ -67,7 +67,7 @@ const walletProxiesSubscription = createSubscriptionResource<WalletProxiesSubscr
 
           allProxies.push(...mappedProxies);
 
-          totalDeposit = totalDeposit.add(depositBalance.toBn());
+          totalDeposit = totalDeposit.add(depositBalance?.toBn());
         } catch (error) {
           console.error(`Failed to fetch proxies for account ${account} on chain ${chain.chainId}:`, error);
         }
@@ -185,7 +185,7 @@ const $walletProxyGroups = combine(
 
         groups.push({
           chainId,
-          proxiedAccountId: chainProxies.proxies[0].proxiedAccountId,
+          proxiedAccountId: chainProxies.proxies[0]?.proxiedAccountId,
           walletId: wallet.id,
           totalDeposit: totalDeposit ? totalDeposit.toString() : null,
         });

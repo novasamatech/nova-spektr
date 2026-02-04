@@ -193,18 +193,22 @@ export const Networks = () => {
             title={t('settings.networks.disabledNetworksLabel')}
             networkList={inactiveNetworks}
           >
-            {(network) => (
-              <InactiveNetwork networkItem={network}>
-                <NetworkSelector
-                  connectionList={inactiveConnectionsMap[network.chainId].connections}
-                  activeConnection={inactiveConnectionsMap[network.chainId].activeConnection}
-                  onChange={changeConnection(network)}
-                  onRemoveCustomNode={(node) => removeCustomNode(network.chainId, node)}
-                  onAddCustomNode={() => addCustomNode(network)}
-                  onEditCustomNode={(node) => editCustomNode(network, node)}
-                />
-              </InactiveNetwork>
-            )}
+            {(network) => {
+              const connectionData = inactiveConnectionsMap[network.chainId];
+              if (!connectionData) return null;
+              return (
+                <InactiveNetwork networkItem={network}>
+                  <NetworkSelector
+                    connectionList={connectionData.connections}
+                    activeConnection={connectionData.activeConnection}
+                    onChange={changeConnection(network)}
+                    onRemoveCustomNode={(node) => removeCustomNode(network.chainId, node)}
+                    onAddCustomNode={() => addCustomNode(network)}
+                    onEditCustomNode={(node) => editCustomNode(network, node)}
+                  />
+                </InactiveNetwork>
+              );
+            }}
           </NetworkList>
 
           <NetworkList
@@ -212,18 +216,22 @@ export const Networks = () => {
             title={t('settings.networks.activeNetworksLabel')}
             networkList={activeNetworks}
           >
-            {(network) => (
-              <ActiveNetwork networkItem={network}>
-                <NetworkSelector
-                  connectionList={activeConnectionsMap[network.chainId].connections}
-                  activeConnection={activeConnectionsMap[network.chainId].activeConnection}
-                  onChange={changeConnection(network)}
-                  onRemoveCustomNode={(node) => removeCustomNode(network.chainId, node)}
-                  onAddCustomNode={() => addCustomNode(network)}
-                  onEditCustomNode={(node) => editCustomNode(network, node)}
-                />
-              </ActiveNetwork>
-            )}
+            {(network) => {
+              const connectionData = activeConnectionsMap[network.chainId];
+              if (!connectionData) return null;
+              return (
+                <ActiveNetwork networkItem={network}>
+                  <NetworkSelector
+                    connectionList={connectionData.connections}
+                    activeConnection={connectionData.activeConnection}
+                    onChange={changeConnection(network)}
+                    onRemoveCustomNode={(node) => removeCustomNode(network.chainId, node)}
+                    onAddCustomNode={() => addCustomNode(network)}
+                    onEditCustomNode={(node) => editCustomNode(network, node)}
+                  />
+                </ActiveNetwork>
+              );
+            }}
           </NetworkList>
 
           <EmptyNetworks />

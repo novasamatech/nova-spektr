@@ -66,7 +66,7 @@ const validateFeeFx = attach({
   async effect({ chains, apis, balances }, { transaction }: ValidationParams) {
     const chain = chains[transaction.coreTx.chainId];
     const api = apis[transaction.coreTx.chainId];
-    const asset = chain.assets.at(0);
+    const asset = chain?.assets.at(0);
 
     if (nullable(api) || nullable(chain) || nullable(asset)) throw new Error('Data for validation no found');
 

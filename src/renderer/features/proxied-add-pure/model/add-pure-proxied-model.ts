@@ -180,7 +180,7 @@ sample({
     nonNullable(chain) &&
     nonNullable(chain.chainId),
   fn: ({ apis, initiator, chain }, submitData) => {
-    const timepoint = (submitData[0].params as ExtrinsicResultParams).timepoint;
+    const timepoint = (submitData[0]?.params as ExtrinsicResultParams).timepoint;
 
     return {
       api: apis[chain!.chainId],

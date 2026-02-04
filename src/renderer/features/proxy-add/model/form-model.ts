@@ -505,7 +505,7 @@ sample({
     apis: networkModel.$apis,
   },
   filter: ({ chain, apis }, { params }) => {
-    return nonNullable(chain) && apis[chain.chainId].genesisHash === params.genesisHash;
+    return nonNullable(chain) && apis[chain?.chainId]?.genesisHash === params.genesisHash;
   },
   fn: (_, { result }) => result,
   target: $maxProxies,

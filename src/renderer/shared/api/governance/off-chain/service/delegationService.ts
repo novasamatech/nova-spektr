@@ -96,7 +96,7 @@ async function getDelegatedVotesFromExternalSource(chain: Chain, voters: Account
         };
 
         if (result[parent.referendumId]) {
-          result[parent.referendumId].push(info);
+          result[parent.referendumId]?.push(info);
         } else {
           result[parent.referendumId] = [info];
         }
@@ -111,7 +111,8 @@ function aggregateDelegateAccounts(accounts: DelegateDetails[], stats: DelegateS
   const accountsMap = dictionary(stats, 'accountId');
 
   for (const account of accounts) {
-    accountsMap[account.accountId] = { ...accountsMap[account.accountId], ...account };
+    const existing = accountsMap[account.accountId];
+    accountsMap[account.accountId] = { ...existing, ...account } as DelegateStat;
   }
 
   return Object.values(accountsMap);

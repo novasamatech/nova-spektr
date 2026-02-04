@@ -42,9 +42,9 @@ export const Confirmation = ({
     fn: (value, [id]) => value[id],
   });
 
-  const initiatorWallet = confirm.wallets.initiator;
+  const initiatorWallet = confirm?.wallets.initiator;
 
-  const signerWallet = confirm.wallets.signatory;
+  const signerWallet = confirm?.wallets.signatory;
 
   const api = useStoreMap({
     store: confirmModel.$apis,

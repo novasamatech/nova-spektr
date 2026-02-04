@@ -104,6 +104,7 @@ sample({
       if (!(ref.referendumId in result)) continue;
 
       const votedReferendum = result[ref.referendumId];
+      if (!votedReferendum) continue;
       const amount = new BN(
         votedReferendum.splitAbstainVote?.abstainAmount ?? votedReferendum.standardVote?.vote.amount ?? '0',
       );
