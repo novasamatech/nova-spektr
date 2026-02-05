@@ -90,9 +90,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
         <FeeWithLabel fee={fee} asset={nativeAsset} label={t('staking.networkFee', { count: 1 })} />
 
-        {totalFee !== fee && (
-          <FeeWithLabel fee={totalFee} asset={nativeAsset} label={t('staking.networkFeeTotal')} />
-        )}
+        {totalFee !== fee && <FeeWithLabel fee={totalFee} asset={nativeAsset} label={t('staking.networkFeeTotal')} />}
       </TransactionDetails>
 
       <div className="mt-3 flex w-full justify-between">

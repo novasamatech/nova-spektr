@@ -113,7 +113,7 @@ export const Staking = () => {
   const identities = useStoreMap({
     store: identity.$list,
     keys: [chainId],
-    fn: (list, [chainId]) => (chainId ? list[chainId] ?? {} : {}),
+    fn: (list, [chainId]) => (chainId ? (list[chainId] ?? {}) : {}),
   });
 
   const { api, connection, connectionStatus } = useNetworkData(chainId || undefined);
