@@ -6,6 +6,7 @@ import { type ChainId, type RpcNode } from '@/shared/core';
 import { ConnectionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
+import { nullable } from '@/shared/lib/utils';
 import { useConfirmContext } from '@/shared/providers';
 import { Paths } from '@/shared/routes';
 import { InfoLink } from '@/shared/ui';
@@ -195,7 +196,7 @@ export const Networks = () => {
           >
             {(network) => {
               const connectionData = inactiveConnectionsMap[network.chainId];
-              if (!connectionData) return null;
+              if (nullable(connectionData)) return null;
               return (
                 <InactiveNetwork networkItem={network}>
                   <NetworkSelector
@@ -218,7 +219,7 @@ export const Networks = () => {
           >
             {(network) => {
               const connectionData = activeConnectionsMap[network.chainId];
-              if (!connectionData) return null;
+              if (nullable(connectionData)) return null;
               return (
                 <ActiveNetwork networkItem={network}>
                   <NetworkSelector

@@ -16,6 +16,7 @@ import {
   DerivationError,
   derivationTokensToString,
   entries,
+  nullable,
   parseDerivation,
   toAccountId,
   validateDerivation,
@@ -181,7 +182,7 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
   if (!rootAccountId) return;
 
   const chains = fileContent[rootAccountId as AccountId];
-  if (!chains) return;
+  if (nullable(chains)) return;
 
   const derivations: ImportedDerivation[] = [];
 

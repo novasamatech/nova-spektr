@@ -73,7 +73,7 @@ export const YourDelegation = () => {
           {(() => {
             const singleActiveAccount = activeAccounts.length === 1 ? activeAccounts[0] : undefined;
             const singleDelegation = singleActiveAccount ? activeDelegations[singleActiveAccount] : undefined;
-            if (!singleDelegation) return null;
+            if (nullable(singleDelegation)) return null;
             return (
               <DetailRow wrapperClassName="items-start" label={t('governance.addDelegation.lockedLabel')}>
                 <FootnoteText>

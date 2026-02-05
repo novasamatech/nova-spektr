@@ -6,7 +6,7 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { entries, isStringsMatchQuery, toAddress } from '@/shared/lib/utils';
+import { entries, isStringsMatchQuery, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
@@ -46,7 +46,7 @@ function getVaultChainsCounter(
   };
 
   const rootEntry = root[rootAccountId];
-  if (!rootEntry) return root;
+  if (nullable(rootEntry)) return root;
 
   rootEntry.checked = shards.length;
   rootEntry.total = shards.length;
@@ -57,7 +57,7 @@ function getVaultChainsCounter(
 
     const chainId = getConsensusChainId(chain);
     const chainEntry = rootEntry[chainId];
-    if (!chainEntry) continue;
+    if (nullable(chainEntry)) continue;
 
     chainEntry.checked += 1;
     chainEntry.total += 1;
@@ -97,7 +97,7 @@ function getStructForVault(
     const chain = chains[account.chainId];
     const groupId = chain && getConsensusChainId(chain);
 
-    if (!groupId) continue;
+    if (nullable(groupId)) continue;
 
     const group = chainMap.get(groupId);
     if (group) {

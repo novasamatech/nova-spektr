@@ -9,7 +9,7 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { type DerivationError, TokenType, parseDerivation, validateDerivation } from '@/shared/lib/utils';
+import { type DerivationError, TokenType, nullable, parseDerivation, validateDerivation } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 
@@ -69,11 +69,11 @@ function getKeyValidationErrors(
   chains: Record<ChainId, Chain>,
 ) {
   const key = keys[keyId];
-  if (!key) return [];
+  if (nullable(key)) return [];
 
   const { derivationPath, chainId } = key;
   const chain = chains[chainId];
-  if (!chain) return [];
+  if (nullable(chain)) return [];
 
   const relayChainId = chain.parentId ?? chain.chainId;
   const isEthereumBased = networkUtils.isEthereumBased(chain.options);
@@ -91,7 +91,7 @@ function mergeShardedAccounts(
   return accountGroups.flatMap((a) => {
     if (Array.isArray(a)) {
       const first = a[0];
-      if (!first) return [];
+      if (nullable(first)) return [];
       return [{ chainId: first.chainId, derivationPath: accountUtils.getDerivationPath(a), groupId: first.groupId }];
     }
     return [{ chainId: a.chainId, derivationPath: a.derivationPath }];
@@ -191,7 +191,7 @@ sample({
   fn: ({ keys }, [id, patch]) => {
     return produce(keys, (draft) => {
       const target = draft[id];
-      if (target) Object.assign(target, patch);
+      if (!nullable(target)) Object.assign(target, patch);
     });
   },
   target: $keys,

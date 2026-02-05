@@ -114,7 +114,7 @@ const rootValidateFileFx = createEffect<ValidateFileParams, ValidateFileResults,
 
   for (let i = 0; i < params.parsedFile.length; i++) {
     const record = params.parsedFile[i];
-    if (!record) continue;
+    if (nullable(record)) continue;
 
     const parsedRecipient = multiTransferUtils.parseRecipientField(
       record.recipient.raw,

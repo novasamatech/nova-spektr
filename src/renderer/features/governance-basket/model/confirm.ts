@@ -89,10 +89,13 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
     chains,
     accounts,
   );
-  const asset = chain?.assets[0];
+  const asset = chain?.assets?.[0];
+
+  assert(account, 'Signing account not found');
+  assert(asset, 'Native asset not found');
 
   const transferable = transferableAmount(
-    balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
+    balanceUtils.getBalance(balances, account.accountId, chainId, asset.assetId),
   );
 
   const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.accountId]).then((data) => {
@@ -114,9 +117,9 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
     target: coreTxs[0].args.target,
     tracks: coreTxs.map((t: Transaction) => t.args.track),
     locks,
-    signatory: account!,
-    initiator: account!,
-    route: [account!],
+    signatory: account,
+    initiator: account,
+    route: [account],
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
 
@@ -134,10 +137,13 @@ const prepareEditDelegationDataFx = createEffect(
       chains,
       accounts,
     );
-    const asset = chain?.assets[0];
+    const asset = chain?.assets?.[0];
+
+    assert(account, 'Signing account not found');
+    assert(asset, 'Native asset not found');
 
     const transferable = transferableAmount(
-      balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
+      balanceUtils.getBalance(balances, account.accountId, chainId, asset.assetId),
     );
 
     const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.accountId]).then((data) => {
@@ -187,10 +193,11 @@ const prepareRevokeDelegationDataFx = createEffect(
 
     assert(account, 'Signing account not found');
 
-    const asset = chain?.assets[0]!;
+    const asset = chain?.assets?.[0];
+    assert(asset, 'Native asset not found');
 
     const transferable = transferableAmount(
-      balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
+      balanceUtils.getBalance(balances, account.accountId, chainId, asset.assetId),
     );
     const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.accountId]).then((data) => {
       const lock = data[transaction.coreTx.accountId];

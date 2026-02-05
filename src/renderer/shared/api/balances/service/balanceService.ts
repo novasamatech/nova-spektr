@@ -284,7 +284,7 @@ function subscribeOrmlAssetsChange(
   if (!api || !assets.length) return Promise.resolve(noop);
 
   const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies?.accounts;
-  if (!method) return Promise.resolve(noop);
+  if (nullable(method)) return Promise.resolve(noop);
 
   const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
 
@@ -362,7 +362,7 @@ function subscribeLockOrmlAssetChange(
   if (!api || !assets.length) return Promise.resolve(noop);
 
   const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies?.locks;
-  if (!method) return Promise.resolve(noop);
+  if (nullable(method)) return Promise.resolve(noop);
 
   const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
 
@@ -580,7 +580,7 @@ async function fetchOrmlAssets(
   if (!api || !assets.length) return [];
 
   const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies?.accounts;
-  if (!method) return [];
+  if (nullable(method)) return [];
 
   const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
 
@@ -653,7 +653,7 @@ async function fetchLockOrmlAsset(
   if (!assets.length) return [];
 
   const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies?.locks;
-  if (!method) return [];
+  if (nullable(method)) return [];
 
   const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
   const data: Vec<PalletBalancesBalanceLock>[] = await method.multi(assetsTuples);

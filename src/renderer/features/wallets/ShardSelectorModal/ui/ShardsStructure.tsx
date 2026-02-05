@@ -98,7 +98,7 @@ export const ShardsStructure = () => {
                   <div className="ml-6">
                     {accounts.map((account) => {
                       const accountChain = chains[account.chainId];
-                      if (!accountChain) return null;
+                      if (nullable(accountChain)) return null;
                       return (
                         <div key={account.id} className="mt-2">
                           <SelectableShard
