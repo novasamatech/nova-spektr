@@ -108,14 +108,15 @@ const validateFx = attach({
     apis: networkModel.$apis,
     balances: balanceModel.$balanceMap,
   },
-  mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
+  async effect({ chains, balances, apis }, { id, transaction, feeMap }: ValidationStartedParams) {
     const chain = chains[transaction.chainId];
-    assert(chain, 'Chain not found');
     const api = apis[transaction.chainId];
-    assert(api, 'API not found');
+    if (!chain || !api) {
+      return { id, result: undefined };
+    }
     const asset = getAssetById(transaction.args.asset, chain.assets) || getNativeAsset(chain.assets);
 
-    return {
+    return rootValidateFx({
       id,
       api,
       transaction,
@@ -123,9 +124,8 @@ const validateFx = attach({
       asset,
       balances,
       feeMap,
-    };
+    });
   },
-  effect: rootValidateFx,
 });
 
 sample({

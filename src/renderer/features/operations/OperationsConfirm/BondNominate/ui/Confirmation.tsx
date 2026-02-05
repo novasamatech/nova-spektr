@@ -191,7 +191,7 @@ export const Confirmation = ({
             <StakingPopover.Item>
               {t('staking.confirmation.hintRewards')}
               {' ('}
-              <Duration seconds={eraDurationSeconds} />
+              <Duration seconds={eraDurationSeconds ?? 0} />
               {')'}
             </StakingPopover.Item>
             <StakingPopover.Item>

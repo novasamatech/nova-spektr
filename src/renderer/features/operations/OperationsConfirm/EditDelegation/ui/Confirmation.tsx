@@ -3,7 +3,7 @@ import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import { formatAmount, getNativeAsset, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
@@ -78,6 +78,7 @@ export const Confirmation = ({
     );
   }
 
+  const nativeAsset = getNativeAsset(meta.chain.assets);
   const amountValue = config.withFormatAmount ? formatAmount(meta.balance, meta.asset.precision) : meta.balance;
 
   return (
@@ -141,20 +142,20 @@ export const Confirmation = ({
             }
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={meta.multisigDeposit} asset={meta.chain.assets[0]!} />
-              <AssetFiatBalance asset={meta.chain.assets[0]!} amount={meta.multisigDeposit} />
+              <AssetBalance value={meta.multisigDeposit} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={meta.multisigDeposit} />
             </div>
           </DetailRow>
         )}
 
         <FeeWithLabel
           fee={meta.fee}
-          asset={meta.chain.assets[0]!}
+          asset={nativeAsset}
           label={t('staking.networkFee', { count: confirms.length || 1 })}
         />
 
         {confirms.length > 1 && (
-          <FeeWithLabel fee={meta.totalFee} asset={meta.chain.assets[0]!} label={t('staking.networkFeeTotal')} />
+          <FeeWithLabel fee={meta.totalFee} asset={nativeAsset} label={t('staking.networkFeeTotal')} />
         )}
       </TransactionDetails>
 

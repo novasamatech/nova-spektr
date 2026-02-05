@@ -5,7 +5,7 @@ import { attach, createEffect } from 'effector';
 import { t } from 'i18next';
 
 import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
-import { assert, getAssetById, getNativeAsset, transferableAmount } from '@/shared/lib/utils';
+import { getAssetById, getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { governanceService, referendumService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -80,23 +80,23 @@ const validateFx = attach({
     apis: networkModel.$apis,
     balances: balanceModel.$balanceMap,
   },
-  mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }): ValidateParams {
+  async effect({ chains, balances, apis }, { id, transaction }: ValidationStartedParams) {
     const chain = chains[transaction.chainId];
-    assert(chain, 'Chain not found');
     const api = apis[transaction.chainId];
-    assert(api, 'API not found');
+    if (!chain || !api) {
+      return { id, result: undefined };
+    }
     const asset = getAssetById(transaction.args.asset, chain.assets) ?? getNativeAsset(chain.assets);
 
-    return {
+    return rootValidateFx({
       id,
       api,
       transaction,
       chain,
       asset,
       balances,
-    };
+    });
   },
-  effect: rootValidateFx,
 });
 
 export const voteValidateModel = {

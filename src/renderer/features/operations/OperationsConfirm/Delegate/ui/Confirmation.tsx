@@ -3,7 +3,7 @@ import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, nullable, toAccountId } from '@/shared/lib/utils';
+import { formatAmount, getNativeAsset, nullable, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
@@ -76,6 +76,7 @@ export const Confirmation = ({
   }
 
   const { meta, wallets: confirmWallets } = confirm;
+  const nativeAsset = getNativeAsset(meta.chain.assets);
 
   const amountValue = config.withFormatAmount ? formatAmount(meta.balance, meta.asset.precision) : meta.balance;
 
@@ -140,8 +141,8 @@ export const Confirmation = ({
             }
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={meta.multisigDeposit} asset={meta.chain.assets[0]!} />
-              <AssetFiatBalance asset={meta.chain.assets[0]!} amount={meta.multisigDeposit} />
+              <AssetBalance value={meta.multisigDeposit} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={meta.multisigDeposit} />
             </div>
           </DetailRow>
         )}

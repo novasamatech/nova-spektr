@@ -3,6 +3,7 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
+import { getNativeAsset } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
@@ -40,6 +41,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   }
 
   const { asset, amount, chain, initiator, signatory, multisigDeposit, fee } = confirmStore.meta;
+  const nativeAsset = getNativeAsset(chain.assets);
 
   const hasMultisigAccount = confirmStore.meta.route.some(accountUtils.isAnyMultisigAccount) ?? null;
 
@@ -81,13 +83,13 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
               }
             >
               <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={multisigDeposit} asset={chain.assets[0]!} />
-                <AssetFiatBalance asset={chain.assets[0]!} amount={multisigDeposit} />
+                <AssetBalance value={multisigDeposit} asset={nativeAsset} />
+                <AssetFiatBalance asset={nativeAsset} amount={multisigDeposit} />
               </div>
             </DetailRow>
           )}
 
-          <FeeWithLabel fee={fee} asset={chain.assets[0]!} label={t('staking.networkFee', { count: 1 })} />
+          <FeeWithLabel fee={fee} asset={nativeAsset} label={t('staking.networkFee', { count: 1 })} />
         </TransactionDetails>
 
         <div className="mt-3 flex w-full justify-between">

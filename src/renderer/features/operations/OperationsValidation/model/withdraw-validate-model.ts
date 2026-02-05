@@ -131,9 +131,9 @@ const validateFx = attach({
   async effect({ chains, balances, apis }, { id, transaction }: ValidationStartedParams) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-
-    assert(chain, 'Chain not found');
-    assert(api, 'API not found');
+    if (!chain || !api) {
+      return { id, result: undefined };
+    }
 
     const asset = getNativeAsset(chain.assets);
     const era = await getEraFx({ api });

@@ -2,7 +2,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatAmount } from '@/shared/lib/utils';
+import { formatAmount, getNativeAsset } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
@@ -46,6 +46,7 @@ export const Confirmation = ({
   }
 
   const { amount, asset, chain, fee, totalFee, signatory, route, multisigDeposit } = confirm.meta;
+  const nativeAsset = getNativeAsset(chain.assets);
 
   const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
 
@@ -90,8 +91,8 @@ export const Confirmation = ({
             }
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={multisigDeposit} asset={chain.assets[0]!} />
-              <AssetFiatBalance asset={chain.assets[0]!} amount={multisigDeposit} />
+              <AssetBalance value={multisigDeposit} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={multisigDeposit} />
             </div>
           </DetailRow>
         )}
@@ -101,8 +102,8 @@ export const Confirmation = ({
           label={<FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: 1 })}</FootnoteText>}
         >
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={fee} asset={chain.assets[0]!} />
-            <AssetFiatBalance asset={chain.assets[0]!} amount={fee} />
+            <AssetBalance value={fee} asset={nativeAsset} />
+            <AssetFiatBalance asset={nativeAsset} amount={fee} />
           </div>
         </DetailRow>
 
@@ -112,8 +113,8 @@ export const Confirmation = ({
             label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={totalFee} asset={chain.assets[0]!} />
-              <AssetFiatBalance asset={chain.assets[0]!} amount={totalFee} />
+              <AssetBalance value={totalFee} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={totalFee} />
             </div>
           </DetailRow>
         )}
