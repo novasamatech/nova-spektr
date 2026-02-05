@@ -303,11 +303,12 @@ const batchedNotifications = createBuffer({
   timeframe: 1000,
 }).map((batches): ToastData[] => {
   const notifications = batches.flat();
-  const grouped = new Map<NotificationType, CreateNotificationParams[]>();
+  const grouped = new Map<string, CreateNotificationParams[]>();
 
   for (const notification of notifications) {
-    const existing = grouped.get(notification.type) ?? [];
-    grouped.set(notification.type, [...existing, notification]);
+    const key = notification.type + notification.batch.title;
+    const existing = grouped.get(key) ?? [];
+    grouped.set(key, [...existing, notification]);
   }
 
   const toasts: ToastData[] = [];
