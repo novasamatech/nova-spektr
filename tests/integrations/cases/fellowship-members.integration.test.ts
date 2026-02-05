@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import * as allure from 'allure-js-commons';
 import { allSettled } from 'effector';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -100,6 +101,11 @@ describe('Fellowship Members - Integration', () => {
   };
 
   it('should expose chain members from cache sorted by rank desc (using testMembers)', async () => {
+    await allure.epic('Fellowship');
+    await allure.feature('Fellowship Members');
+    await allure.story('Member List');
+    await allure.severity('critical');
+
     setupAccountHandlers();
 
     env = await new FeatureTestBuilder()
@@ -125,6 +131,11 @@ describe('Fellowship Members - Integration', () => {
   });
 
   it('should resolve current member from allMembers and available account', async () => {
+    await allure.epic('Fellowship');
+    await allure.feature('Fellowship Members');
+    await allure.story('Current Member Resolution');
+    await allure.severity('critical');
+
     setupAccountHandlers();
 
     // Mock storage read to return our test data
@@ -157,6 +168,11 @@ describe('Fellowship Members - Integration', () => {
   });
 
   it('should pick matching account/wallet by selected wallet id', async () => {
+    await allure.epic('Fellowship');
+    await allure.feature('Fellowship Members');
+    await allure.story('Wallet Selection');
+    await allure.severity('normal');
+
     setupAccountHandlers();
 
     const sameAddressWatchOnly = {
@@ -209,6 +225,11 @@ describe('Fellowship Members - Integration', () => {
   });
 
   it('should return null when user account is not a fellowship member', async () => {
+    await allure.epic('Fellowship');
+    await allure.feature('Fellowship Members');
+    await allure.story('Non-Member Handling');
+    await allure.severity('normal');
+
     setupAccountHandlers();
 
     // Mock storage read to return our test data
@@ -250,6 +271,11 @@ describe('Fellowship Members - Integration', () => {
   });
 
   it('should correctly load CoreMember properties (isActive, lastPromotion, lastProof)', async () => {
+    await allure.epic('Fellowship');
+    await allure.feature('Fellowship Members');
+    await allure.story('CoreMember Properties');
+    await allure.severity('normal');
+
     setupAccountHandlers();
 
     env = await new FeatureTestBuilder()

@@ -1,0 +1,35 @@
+name: Integration tests
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  pull-requests: write
+  checks: write
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⚙️Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: 🧪 Run integration tests
+        run: pnpm test tests/integrations/cases/*.integration.test.ts
+
+      - name: 📄 Post results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: ./junit.xml
+          check_name: 'Integration Test Results'
+          comment_mode: 'changes'
+          github_token: ${{ secrets.GITHUB_TOKEN }}

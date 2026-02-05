@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 
 import { type UserConfigFnPromise, type ViteUserConfig, mergeConfig } from 'vitest/config';
-import { BaseSequencer, type TestSpecification } from 'vitest/node';
+import { type TestSpecification, BaseSequencer } from 'vitest/node';
 
 import { folders } from './config/index.js';
 import rendererConfig from './vite.config.renderer';
@@ -16,7 +16,7 @@ const testsPriority = [
 ];
 
 class Seqencer extends BaseSequencer {
-  sort(files: TestSpecification[]) {
+  async sort(files: TestSpecification[]): Promise<TestSpecification[]> {
     return files.sort((a, b) => {
       const ac = testsPriority.findIndex((dir) => a.moduleId.startsWith(dir));
       const bc = testsPriority.findIndex((dir) => b.moduleId.startsWith(dir));
@@ -62,7 +62,21 @@ const config: UserConfigFnPromise = async (options) => {
         ['**/*.ts', 'node'],
       ],
       setupFiles: resolve(folders.root, './vitest.setup.js'),
-      reporters: ['default', 'junit'],
+      reporters: [
+        'default',
+        'junit',
+        [
+          'allure-vitest/reporter',
+          {
+            resultsDir: resolve(folders.root, './allure-results'),
+            links: {
+              issue: {
+                urlTemplate: 'https://github.com/novasamatech/nova-spektr/issues/%s',
+              },
+            },
+          },
+        ],
+      ],
       outputFile: {
         junit: resolve(folders.root, './junit.xml'),
       },
