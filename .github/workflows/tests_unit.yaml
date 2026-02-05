@@ -23,7 +23,7 @@ jobs:
         uses: ./.github/workflows/install-pnpm
 
       - name: 🧪 Run tests
-        run: pnpm test --exclude 'tests/integrations/**'
+        run: pnpm test -- --exclude 'tests/integrations/**'
 
       - name: 📄 Post results
         if: always()
