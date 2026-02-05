@@ -245,7 +245,7 @@
     "noDecodedTxDescription": "Operation details will appear here after call data parsed",
     "noDecodedTxTitle": "No data available",
     "placeholder": "Paste the call data here",
-    "title": "Submit call data"
+    "title": "Add call data"
   },
   "common": {
     "continue": "Continue",
@@ -1717,7 +1717,7 @@
     "addressBookLabel": "Address Book",
     "balancesLabel": "Portfolio",
     "basketLabel": "Basket",
-    "callDataLabel": "Submit call data",
+    "callDataLabel": "Add call data",
     "customOperationLabel": "Custom operation",
     "fellowship": "Fellowship",
     "governance": "Governance",
@@ -2061,6 +2061,20 @@
       "success": "Operation restored",
       "undo": "Undo"
     },
+    "callData": {
+      "title": "Add call data",
+      "inputPlaceholder": "0x00...",
+      "inputHint": "Visible only for you and signers",
+      "preview": "Call preview",
+      "decoding": "Decoding call data...",
+      "addButton": "Add",
+      "addSuccess": "Call data added successfully",
+      "addCallDataButton": "Add call data",
+      "errorRequired": "Call data is required",
+      "errorInvalidHex": "Call data must start with 0x",
+      "errorHashMismatch": "Call data doesn't match operation hash",
+      "errorDecodeFailed": "Failed to decode call data"
+    },
     "viewJSON": {
       "button": "View JSON",
       "label": "Operation details"
@@ -2099,8 +2113,8 @@
       "errorTitle": "Call Data Error",
       "inputHint": "Visible only for you and signers",
       "inputPlaceholder": "0x00...",
-      "submitting": "Submitting call data...",
-      "success": "Call data submitted successfully",
+      "adding": "Adding call data...",
+      "success": "Call data added successfully",
       "title": "Enter call data"
     },
     "clearSearchAndFilters": "Clear search and filters",
