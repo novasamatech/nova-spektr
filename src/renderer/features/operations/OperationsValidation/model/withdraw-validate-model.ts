@@ -95,13 +95,15 @@ sample({
     balances: balanceModel.$balanceMap,
     staking: $staking,
   },
-  filter: ({ apis, staking }, { validation: { transaction }, era }) => {
-    return Boolean(apis[transaction.chainId]) && Boolean(era) && Boolean(staking);
+  filter: ({ apis, chains, staking }, { validation: { transaction }, era }) => {
+    const chain = chains[transaction.chainId];
+
+    return Boolean(apis[transaction.chainId]) && Boolean(era) && Boolean(staking) && Boolean(chain?.assets?.[0]);
   },
   fn: ({ apis, chains, balances, staking }, { validation: { id, transaction, signerOptions }, era }) => {
-    const chain = chains[transaction.chainId];
-    const api = apis[transaction.chainId];
-    const asset = chain?.assets?.[0];
+    const chain = chains[transaction.chainId]!;
+    const api = apis[transaction.chainId]!;
+    const asset = chain.assets[0]!;
 
     return {
       id,

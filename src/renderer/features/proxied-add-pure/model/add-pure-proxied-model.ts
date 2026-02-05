@@ -174,16 +174,17 @@ sample({
     initiator: formModel.form.fields.initiator.$value,
     chain: formModel.form.fields.chain.$value,
   },
-  filter: ({ step, initiator, chain }) =>
+  filter: ({ step, initiator, chain, apis }) =>
     addPureProxiedUtils.isSubmitStep(step) &&
     nonNullable(initiator) &&
     nonNullable(chain) &&
-    nonNullable(chain.chainId),
+    nonNullable(chain.chainId) &&
+    nonNullable(apis[chain.chainId]),
   fn: ({ apis, initiator, chain }, submitData) => {
     const timepoint = (submitData[0]?.params as ExtrinsicResultParams).timepoint;
 
     return {
-      api: apis[chain!.chainId],
+      api: apis[chain!.chainId]!,
       initiator: initiator!,
       timepoint,
     };

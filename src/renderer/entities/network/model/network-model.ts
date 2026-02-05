@@ -404,8 +404,8 @@ sample({
     return nonNullable(apis[chainId]) && nonNullable(providers[chainId]);
   },
   fn: ({ apis, providers }, chainId) => ({
-    api: apis[chainId],
-    provider: providers[chainId],
+    api: apis[chainId]!,
+    provider: providers[chainId]!,
   }),
   target: disconnectConnectionFx,
 });
@@ -446,7 +446,7 @@ sample({
   clock: disconnectConnectionFx.doneData,
   source: $metadataSubscriptions,
   filter: (subscriptions, chainId) => nonNullable(subscriptions[chainId]),
-  fn: (subscriptions, chainId) => subscriptions[chainId],
+  fn: (subscriptions, chainId) => subscriptions[chainId]!,
   target: unsubscribeMetadataFx,
 });
 

@@ -279,11 +279,12 @@ sample({
   },
   fn: ({ chains, apis }, { proxy, proxied }) => {
     const chain = chains[proxy.chainId];
+    const api = chain ? apis[chain.chainId] : undefined;
 
-    if (!chain) return null;
+    if (!chain || !api) return null;
 
     return {
-      api: apis[chain.chainId],
+      api,
       chain,
       proxyAccount: proxy,
       proxiedAccount: proxied,

@@ -119,14 +119,18 @@ sample({
     isLoading: $isLoading,
     referendums: referendumModel.$referendums,
   },
-  filter: ({ network, referendums, totalLock, isLoading }) =>
-    nonNullable(network) && nonNullable(referendums[network.chain.chainId]) && !isLoading && !totalLock.isZero(),
+  filter: ({ network, referendums, trackLocks, totalLock, isLoading }) =>
+    nonNullable(network) &&
+    nonNullable(referendums[network.chain.chainId]) &&
+    nonNullable(trackLocks[network.chain.chainId]) &&
+    !isLoading &&
+    !totalLock.isZero(),
   fn: ({ network, tracks, trackLocks, voting, referendums }) => ({
     api: network!.api,
     tracks,
     voting,
-    trackLocks: trackLocks[network!.chain.chainId],
-    referendums: referendums[network!.chain.chainId],
+    trackLocks: trackLocks[network!.chain.chainId]!,
+    referendums: referendums[network!.chain.chainId]!,
   }),
   target: getClaimScheduleFx,
 });

@@ -156,7 +156,7 @@ const $allChainsSignatories = combine(
 sample({
   clock: $signatories,
   fn: signatories => {
-    return signatories.length >= 1 ? signatories[0] : null;
+    return signatories.length >= 1 ? signatories[0]! : null;
   },
   target: $signer,
 });

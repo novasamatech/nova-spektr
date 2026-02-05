@@ -387,7 +387,7 @@ sample({
         signingPayloads:
           transactions?.map((tx, index) => ({
             chain: walletData.chain!,
-            account: wrapper ? wrapper.proxyAccount : accounts[index],
+            account: wrapper ? wrapper.proxyAccount : accounts[index]!,
             signatory: delegateData!.signatory,
             transaction: tx.wrappedTx,
           })) || [],
@@ -410,14 +410,20 @@ sample({
     accounts: $accounts,
     step: $step,
   },
-  filter: ({ delegateData, walletData, transactions, step }) => {
-    return nonNullable(delegateData) && nonNullable(walletData) && nonNullable(transactions) && isStep(step, Step.SIGN);
+  filter: ({ delegateData, walletData, transactions, accounts, step }) => {
+    return (
+      nonNullable(delegateData) &&
+      nonNullable(walletData) &&
+      nonNullable(transactions) &&
+      accounts.length > 0 &&
+      isStep(step, Step.SIGN)
+    );
   },
   fn: (delegateFlowData, signParams) => ({
     event: {
       ...signParams,
       chain: delegateFlowData.walletData.chain!,
-      account: delegateFlowData.accounts[0],
+      account: delegateFlowData.accounts[0]!,
       signatory: delegateFlowData.delegateData!.signatory,
       coreTxs: delegateFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: delegateFlowData.transactions!.map((tx) => tx.wrappedTx),

@@ -157,7 +157,7 @@ sample({
   filter: ({ apisFromChainsListConnected, list }) => apisFromChainsListConnected && list.length > 0,
   fn({ list, apis }) {
     return list.map(transaction => {
-      const api = apis[transaction.coreTx.chainId];
+      const api = apis[transaction.coreTx.chainId]!;
       // TODO pass signerOptions
       return { transaction, api, signerOptions: undefined };
     });
@@ -169,7 +169,7 @@ const validateAllFx = attach({
   source: { list: list.$all, apis: networkModel.$apis },
   mapParams(_: void, { list, apis }) {
     return list.map(transaction => {
-      const api = apis[transaction.coreTx.chainId];
+      const api = apis[transaction.coreTx.chainId]!;
       return { transaction, api, signerOptions: undefined };
     });
   },

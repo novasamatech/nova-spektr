@@ -444,7 +444,7 @@ sample({
 sample({
   clock: formInitiated,
   source: $availableChains,
-  fn: (chains) => chains[0],
+  fn: (chains) => chains[0] ?? null,
   target: form.fields.chain.change,
 });
 
@@ -486,7 +486,8 @@ sample({
 sample({
   clock: form.fields.chain.change,
   source: $proxyTypes,
-  fn: (types) => types[0],
+  filter: (types) => types.length > 0,
+  fn: (types) => types[0]!,
   target: form.fields.proxyType.change,
 });
 
@@ -494,7 +495,7 @@ sample({
   clock: form.fields.chain.change,
   source: networkModel.$apis,
   filter: (_, chain) => nonNullable(chain),
-  fn: (apis, chain) => apis[chain!.chainId],
+  fn: (apis, chain) => apis[chain!.chainId]!,
   target: getMaxProxiesFx,
 });
 

@@ -1,6 +1,7 @@
 import { combine, sample } from 'effector';
 
 import { type ChainId } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import {
   type ConnectionItem,
@@ -86,17 +87,18 @@ sample({
     chains: networkModel.$chains,
     connections: networkModel.$connections,
   },
-  filter: ({ connections }, { chainId, node }) => {
+  filter: ({ connections, chains }, { chainId, node }) => {
     const isEnabled = networkUtils.isEnabledConnection(connections[chainId]);
     const isRpc = networkUtils.isRpcConnection(connections[chainId]);
     const activeNode = connections[chainId]?.activeNode;
     const isDeleted = activeNode?.name === node.name && activeNode?.url === node.url;
+    const hasNodes = nonNullable(chains[chainId]?.nodes[0]);
 
-    return isEnabled && isRpc && isDeleted;
+    return isEnabled && isRpc && isDeleted && hasNodes;
   },
   fn: ({ chains }, { chainId }) => ({
     chainId,
-    node: chains[chainId]?.nodes[0],
+    node: chains[chainId]!.nodes[0]!,
   }),
   target: networkSelectorModel.events.rpcNodeSelected,
 });
