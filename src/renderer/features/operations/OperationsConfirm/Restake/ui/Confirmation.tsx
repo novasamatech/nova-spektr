@@ -36,11 +36,12 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   const signerWallet = confirm?.wallets.signatory;
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
   const hasMultisigAccount = confirm?.meta.route.some(accountUtils.isAnyMultisigAccount);
-  const nativeAsset = getNativeAsset(confirm?.meta.chain.assets);
 
   if (!confirm || !initiatorWallet) {
     return null;
   }
+
+  const nativeAsset = getNativeAsset(confirm.meta.chain.assets);
 
   return (
     <div className="flex flex-col items-center gap-y-4 px-5 pt-4 pb-4">

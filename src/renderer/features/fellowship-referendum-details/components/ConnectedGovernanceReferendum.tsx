@@ -45,7 +45,7 @@ export const ConnectedGovernanceReferendum = ({ referendum: fellowshipReferendum
 
   const { data: governanceReferendumConnection } = useConnectedReferendum(fellowshipReferendum.id);
 
-  const governanceApi = apis[governanceReferendumConnection?.chainId];
+  const governanceApi = governanceReferendumConnection ? apis[governanceReferendumConnection.chainId] : undefined;
 
   const { data: governanceReferendums, pending: isGovernanceReferendumsLoading } = useReferendums({
     api: governanceApi,
@@ -94,12 +94,12 @@ export const ConnectedGovernanceReferendum = ({ referendum: fellowshipReferendum
 
         <Separator className="mt-4 mb-2" />
 
-        {connectedGovernanceReferendum ? (
+        {connectedGovernanceReferendum && chain ? (
           <GovernanceReferendumCard
             timelineApi={timelineApi!}
             chain={chain}
             governanceReferendum={connectedGovernanceReferendum}
-            api={governanceApi}
+            api={governanceApi!}
             onViewClick={onViewClick}
           />
         ) : (
@@ -148,7 +148,7 @@ export const GovernanceReferendumCard = memo(
     let status: ReferendumStatus | null = null;
     if (governanceReferendumService.isOngoing(governanceReferendum)) {
       track = tracks[governanceReferendum.track] ?? null;
-      endBlock = governanceReferendumService.getReferendumEndTime(governanceReferendum, track, undecidingTimeout);
+      endBlock = governanceReferendumService.getReferendumEndTime(governanceReferendum, track!, undecidingTimeout);
       status = governanceReferendumService.getReferendumStatus(governanceReferendum);
     }
 

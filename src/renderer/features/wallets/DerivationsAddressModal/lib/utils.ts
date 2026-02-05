@@ -32,7 +32,7 @@ function createDerivedAccounts<T extends DraftAccount<VaultShardAccount> | Draft
 
     return {
       ...account,
-      accountId: toAccountId(derivedKey?.publicKey.public),
+      accountId: toAccountId(derivedKey?.publicKey.public ?? ''),
       publicKey: derivedKey?.publicKey.publicHex,
     };
   });

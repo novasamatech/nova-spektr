@@ -26,7 +26,7 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
   const payload = signingPayloads[0];
   const signatory = payload?.signatory;
 
-  useGate(polkadotExtensionSign.flow, { payloads: signingPayloads, signatory });
+  useGate(polkadotExtensionSign.flow, { payloads: signingPayloads, signatory: signatory ?? null });
 
   const { t } = useI18n();
 
@@ -52,7 +52,7 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
     let balanceValidationError;
 
     for (const { signature, txPayload } of response) {
-      isVerified = transactionService.verifySignature(txPayload.payload, signature, signatory?.accountId);
+      isVerified = transactionService.verifySignature(txPayload.payload, signature, signatory!.accountId);
       balanceValidationError = validateBalance && (await validateBalance());
     }
 

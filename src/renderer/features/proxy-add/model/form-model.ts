@@ -292,7 +292,7 @@ const $proxyTypes = combine(
 
     const status = statuses[chain.chainId];
     if (status && networkUtils.isConnectedStatus(status)) {
-      return getProxyTypes(apis[chain.chainId]);
+      return getProxyTypes(apis[chain.chainId]!);
     }
 
     return ['Any'] as const;

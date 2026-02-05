@@ -5,7 +5,7 @@ import { attach, createEffect } from 'effector';
 import { t } from 'i18next';
 
 import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, transferableAmount } from '@/shared/lib/utils';
+import { assert, getAssetById, getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { governanceService, referendumService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -32,7 +32,7 @@ const rootValidateFx = createEffect(
     const accountId = transaction.accountId;
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
     const referendum = await governanceService.getReferendums(api, [transaction.args.referendum]);
-    const isOngoing = referendumService.isOngoing(referendum[0]);
+    const isOngoing = referendumService.isOngoing(referendum[0]!);
 
     const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
 
@@ -54,7 +54,7 @@ const rootValidateFx = createEffect(
           const feeBN = new BN(feeData.fee);
 
           return form.shards.every((_, index: number) => {
-            return feeBN.lte(new BN(accountsBalances[index]));
+            return feeBN.lte(new BN(accountsBalances[index]!));
           });
         },
       },
@@ -80,10 +80,12 @@ const validateFx = attach({
     apis: networkModel.$apis,
     balances: balanceModel.$balanceMap,
   },
-  mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
+  mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }): ValidateParams {
     const chain = chains[transaction.chainId];
+    assert(chain, 'Chain not found');
     const api = apis[transaction.chainId];
-    const asset = getAssetById(transaction.args.asset, chain?.assets) ?? chain?.assets?.[0];
+    assert(api, 'API not found');
+    const asset = getAssetById(transaction.args.asset, chain.assets) ?? getNativeAsset(chain.assets);
 
     return {
       id,
@@ -92,7 +94,6 @@ const validateFx = attach({
       chain,
       asset,
       balances,
-      feeMap,
     };
   },
   effect: rootValidateFx,

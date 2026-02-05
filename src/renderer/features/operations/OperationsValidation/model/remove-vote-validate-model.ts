@@ -5,7 +5,7 @@ import { attach, createEffect } from 'effector';
 import { t } from 'i18next';
 
 import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, transferableAmount } from '@/shared/lib/utils';
+import { assert, getAssetById, getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -52,7 +52,7 @@ const rootValidateFx = createEffect(
           const feeBN = new BN(feeData.fee);
 
           return form.shards.every((_, index: number) => {
-            return feeBN.lte(new BN(accountsBalances[index]));
+            return feeBN.lte(new BN(accountsBalances[index]!));
           });
         },
       },
@@ -80,8 +80,10 @@ const validateFx = attach({
   },
   mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
     const chain = chains[transaction.chainId];
+    assert(chain, 'Chain not found');
     const api = apis[transaction.chainId];
-    const asset = getAssetById(transaction.args.asset, chain?.assets) ?? chain?.assets?.[0];
+    assert(api, 'API not found');
+    const asset = getAssetById(transaction.args.asset, chain.assets) ?? getNativeAsset(chain.assets);
 
     return {
       id,

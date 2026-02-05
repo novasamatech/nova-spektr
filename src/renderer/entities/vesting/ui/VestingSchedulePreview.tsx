@@ -92,7 +92,7 @@ export const VestingSchedulePreview = memo(
 
             {fieldIssues.length > 0 && (
               <FieldIssues
-                issue={fieldIssues[0]}
+                issue={fieldIssues[0]!}
                 asset={asset}
                 minVestedTransfer={minVestedTransfer}
                 remainingLockedAmount={remainingLockedAmount}

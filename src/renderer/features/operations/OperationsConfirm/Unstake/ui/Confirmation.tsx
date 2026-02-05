@@ -36,7 +36,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const timelineApi = useStoreMap({
     store: confirmModel.$apis,
     keys: [confirmStore?.meta.chain.additional?.timelineChain ?? confirmStore?.meta.chain.chainId],
-    fn: (value, [chainId]) => value?.[chainId],
+    fn: (value, [chainId]) => (chainId ? value?.[chainId] : undefined),
   });
 
   if (!confirmStore) {

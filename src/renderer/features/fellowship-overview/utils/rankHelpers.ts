@@ -70,6 +70,6 @@ export const createRankSegmentsRankTab = () => {
     title: rank.name,
     topLabel: rank.time,
     color: rank.color,
-    width: PROGRESS_WITH_DIVIDERS_WIDTHS[rank.rank],
+    width: PROGRESS_WITH_DIVIDERS_WIDTHS[rank.rank]!,
   }));
 };

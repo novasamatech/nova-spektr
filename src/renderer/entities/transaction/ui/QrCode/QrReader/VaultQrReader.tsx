@@ -136,7 +136,7 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, isScanComplete
           name: '',
           derivedKeys: [],
           multiSigner: {
-            MultiSigner: CryptoTypes[cryptoType],
+            MultiSigner: CryptoTypes[cryptoType as keyof typeof CryptoTypes]!,
             public: decodeAddress(address),
           },
         },

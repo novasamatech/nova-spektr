@@ -173,7 +173,7 @@ sample({
       addedSignatory.index === 0 &&
       nonNullable(initiators) &&
       initiators.length === 1 &&
-      accountService.isChainAccount(initiators[0])
+      accountService.isChainAccount(initiators[0]!)
     );
   },
   fn: ({ multisigChains, initiators }) => {

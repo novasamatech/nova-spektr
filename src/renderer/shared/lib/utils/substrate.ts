@@ -156,7 +156,7 @@ export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
 };
 
 export const getProxyTypes = (api: ApiPromise): ProxyType[] => {
-  const type = api.tx.proxy.addProxy.meta.args[1]?.type.toString();
+  const type = api.tx.proxy.addProxy.meta.args[1]?.type.toString() ?? '';
 
   return getTypeEnumValues<ProxyType>(api, type).filter((value) => {
     const isUnused = value.toLowerCase().includes(UNUSED_LABEL);

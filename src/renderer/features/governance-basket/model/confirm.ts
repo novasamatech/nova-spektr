@@ -61,7 +61,7 @@ const prepareUnlockDataFx = createEffect(async ({ transaction, accounts, chains,
   const totalLock = await governanceService
     .getTrackLocks(apis[chain.chainId]!, [transaction.coreTx.accountId])
     .then((data) => {
-      const lock = data[transaction.coreTx.accountId];
+      const lock = data[transaction.coreTx.accountId]!;
 
       return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
     });
@@ -104,7 +104,7 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
   );
 
   const locks = await governanceService.getTrackLocks(apis[chain.chainId]!, [transaction.coreTx.accountId]).then((data) => {
-    const lock = data[transaction.coreTx.accountId];
+    const lock = data[transaction.coreTx.accountId]!;
 
     return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
   });
@@ -155,7 +155,7 @@ const prepareEditDelegationDataFx = createEffect(
     );
 
     const locks = await governanceService.getTrackLocks(apis[chain.chainId]!, [transaction.coreTx.accountId]).then((data) => {
-      const lock = data[transaction.coreTx.accountId];
+      const lock = data[transaction.coreTx.accountId]!;
 
       return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
     });
@@ -210,7 +210,7 @@ const prepareRevokeDelegationDataFx = createEffect(
       balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId),
     );
     const locks = await governanceService.getTrackLocks(api, [transaction.coreTx.accountId]).then((data) => {
-      const lock = data[transaction.coreTx.accountId];
+      const lock = data[transaction.coreTx.accountId]!;
 
       return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
     });

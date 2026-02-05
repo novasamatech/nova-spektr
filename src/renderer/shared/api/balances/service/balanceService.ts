@@ -166,7 +166,7 @@ async function subscribeNativeAssetsChange(
       }
 
       newBalances.push({
-        accountId: accountIds[index],
+        accountId: accountIds[index]!,
         chainId: chain.chainId,
         assetId: asset.assetId,
         assetType: asset.type,
@@ -217,7 +217,7 @@ function subscribeStatemineAssetsChange(
   }, []);
 
   // pallet existence is checked above
-  return api.query[pallet]?.account?.multi(assetsTuples, async (data) => {
+  return api.query[pallet]!.account!.multi(assetsTuples, async (data) => {
     const newBalances: BalanceDraft[] = [];
 
     for (const [index, accountInfo] of data.entries()) {
@@ -340,7 +340,7 @@ function subscribeLockNativeAssetChange(
       }));
 
       newLocks.push({
-        accountId: accountIds[index],
+        accountId: accountIds[index]!,
         chainId: chain.chainId,
         assetId: asset.assetId,
         assetType: asset.type,
@@ -379,10 +379,10 @@ function subscribeLockOrmlAssetChange(
       }));
 
       newLocks.push({
-        accountId: accountIds[accountIndex],
+        accountId: accountIds[accountIndex]!,
         chainId: chain.chainId,
-        assetId: assets[assetIndex]?.assetId,
-        assetType: assets[assetIndex]?.type,
+        assetId: assets[assetIndex]!.assetId,
+        assetType: assets[assetIndex]!.type,
         locked,
       });
     }
@@ -486,7 +486,7 @@ async function fetchNativeAssets(
     if (nullable(accountId)) continue;
 
     result.push({
-      accountId: accountIds[index],
+      accountId,
       chainId: chain.chainId,
       assetId: asset.assetId,
       assetType: asset.type,
@@ -599,7 +599,7 @@ async function fetchOrmlAssets(
     const ed = await getExistentialDeposit(api, asset);
 
     result.push({
-      accountId: accountIds[accountIndex],
+      accountId,
       chainId: chain.chainId,
       assetId: asset.assetId,
       assetType: asset.type,
@@ -633,7 +633,7 @@ async function fetchLockNativeAsset(
     }));
 
     result.push({
-      accountId: accountIds[index],
+      accountId: accountIds[index]!,
       chainId: chain.chainId,
       assetId: asset.assetId,
       assetType: asset.type,
@@ -670,10 +670,10 @@ async function fetchLockOrmlAsset(
     }));
 
     result.push({
-      accountId: accountIds[accountIndex],
+      accountId: accountIds[accountIndex]!,
       chainId: chain.chainId,
-      assetId: assets[assetIndex]?.assetId,
-      assetType: assets[assetIndex]?.type,
+      assetId: assets[assetIndex]!.assetId,
+      assetType: assets[assetIndex]!.type,
       locked,
     });
   }
@@ -696,7 +696,7 @@ async function getExistentialDeposit(api: ApiPromise, asset: Asset): Promise<BN>
 
       const assetId = getAssetId(asset);
 
-      return await api.query[pallet]?.asset?.(assetId).then((balance) => {
+      return await api.query[pallet]!.asset!(assetId).then((balance) => {
         if ((balance as Option<PalletAssetsAssetDetails>).isNone) {
           return BN_ZERO;
         }

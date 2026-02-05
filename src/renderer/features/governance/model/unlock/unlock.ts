@@ -68,7 +68,7 @@ const getClaimScheduleFx = createEffect(
         referendums,
         tracks,
         trackLocks: trackLock,
-        votingByTrack: voting[accountId],
+        votingByTrack: voting[accountId]!,
         voteLockingPeriod,
         undecidingTimeout,
       });

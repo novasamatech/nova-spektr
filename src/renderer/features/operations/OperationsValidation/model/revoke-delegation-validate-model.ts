@@ -3,7 +3,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, transferableAmount } from '@/shared/lib/utils';
+import { assert, getAssetById, getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
@@ -71,7 +71,7 @@ const rootValidateFx = createEffect(
           network: { chain: chain, asset: asset },
           balance: {
             native: transferableAmount(
-              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0]!.assetId),
+              balanceUtils.getBalance(balances, accountId, chain.chainId, getNativeAsset(chain.assets).assetId),
             ),
             balance: transferableAmount(balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId)),
           },
@@ -90,7 +90,7 @@ const rootValidateFx = createEffect(
           // TODO: Add support proxy
           balance: {
             native: transferableAmount(
-              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0]!.assetId),
+              balanceUtils.getBalance(balances, accountId, chain.chainId, getNativeAsset(chain.assets).assetId),
             ),
           },
         } as DelegateFeeStore,
@@ -109,8 +109,10 @@ const validateFx = attach({
   },
   mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
     const chain = chains[transaction.chainId];
+    assert(chain, 'Chain not found');
     const api = apis[transaction.chainId];
-    const asset = getAssetById(transaction.args.asset, chain?.assets) ?? chain?.assets?.[0];
+    assert(api, 'API not found');
+    const asset = getAssetById(transaction.args.asset, chain.assets) ?? getNativeAsset(chain.assets);
 
     return {
       id,

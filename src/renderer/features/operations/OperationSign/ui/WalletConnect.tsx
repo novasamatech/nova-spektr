@@ -32,9 +32,9 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
 
   const account = payload?.signatory;
 
-  useGate(operationSignModel.SignerGate, account);
+  useGate(operationSignModel.SignerGate, account!);
 
-  if (!accountUtils.isWcAccount(account)) {
+  if (!account || !accountUtils.isWcAccount(account)) {
     throw new Error(`Account is not Wallet Connect account, got ${JSON.stringify(account, null, 2)}`);
   }
 
@@ -54,7 +54,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
 
       isVerified =
         transaction &&
-        transactionService.verifySignature(transaction.payload, signature as HexString, payload?.signatory.accountId);
+        transactionService.verifySignature(transaction.payload, signature as HexString, payload!.signatory.accountId);
       balanceValidationError = validateBalance && (await validateBalance());
     }
 

@@ -81,7 +81,7 @@ sample({
     const chainId = connection!.chainId;
     const update = { ...connections, [chainId]: connection };
 
-    const isOldEnabled = networkUtils.isEnabledConnection(connections[chainId]);
+    const isOldEnabled = networkUtils.isEnabledConnection(connections[chainId]!);
     const isNewEnabled = networkUtils.isEnabledConnection(connection!);
     if (isOldEnabled && isNewEnabled) {
       return { update, reconnectMap: { ...reconnectMap, [chainId]: true } };

@@ -49,22 +49,22 @@ export const Confirmation = ({
   const api = useStoreMap({
     store: confirmModel.$apis,
     keys: [confirm?.meta.chain?.chainId],
-    fn: (value, [chainId]) => value?.[chainId],
+    fn: (value, [chainId]) => (chainId ? value?.[chainId] : undefined),
   });
 
   const timelineApi = useStoreMap({
     store: confirmModel.$apis,
-    keys: [confirm?.meta.chain.additional?.timelineChain ?? confirm?.meta.chain?.chainId],
-    fn: (value, [chainId]) => value?.[chainId],
+    keys: [confirm?.meta.chain?.additional?.timelineChain ?? confirm?.meta.chain?.chainId],
+    fn: (value, [chainId]) => (chainId ? value?.[chainId] : undefined),
   });
 
   const { getEraDurationSeconds } = useStakingData();
-  const eraDurationSeconds = getEraDurationSeconds(api, timelineApi);
+  const eraDurationSeconds = api && timelineApi ? getEraDurationSeconds(api, timelineApi) : undefined;
 
   const identities = useStoreMap({
     store: identity.$list,
     keys: [confirm?.meta.chain?.chainId],
-    fn: (value, [chainId]) => value[chainId] ?? {},
+    fn: (value, [chainId]) => (chainId ? (value[chainId] ?? {}) : {}),
   });
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);

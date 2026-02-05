@@ -115,8 +115,8 @@ const splitTransactionsFx = createEffect(
     return splittedBatch.map(({ extrinsic, signatory }, index) => ({
       api,
       extrinsic,
-      payload: txPayloads[index],
-      signature: signatures[index],
+      payload: txPayloads[index]!,
+      signature: signatures[index]!,
       signatory,
     }));
   },

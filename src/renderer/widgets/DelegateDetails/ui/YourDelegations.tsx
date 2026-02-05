@@ -140,7 +140,7 @@ export const YourDelegations = () => {
                         delegate &&
                         editDelegationModel.events.flowStarted({
                           delegate,
-                          accounts: [accounts[index]],
+                          accounts: [accounts[index]!],
                         })
                       }
                     />
@@ -155,7 +155,7 @@ export const YourDelegations = () => {
                         delegate &&
                         revokeDelegationModel.flowStarted({
                           delegate: delegate.accountId,
-                          accounts: [accounts[index]],
+                          accounts: [accounts[index]!],
                         })
                       }
                     />

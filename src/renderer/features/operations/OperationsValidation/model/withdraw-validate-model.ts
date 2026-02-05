@@ -4,7 +4,7 @@ import { type Store, attach, createEffect, createEvent, restore, sample } from '
 import { combineEvents } from 'patronum';
 
 import { type Asset, type BalanceMap, type Chain, type ChainId, type ID, type Transaction } from '@/shared/core';
-import { getNativeAsset, redeemableAmount, transferableAmount } from '@/shared/lib/utils';
+import { assert, getNativeAsset, redeemableAmount, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -101,8 +101,10 @@ sample({
     return Boolean(apis[transaction.chainId]) && Boolean(era) && Boolean(staking) && Boolean(chain?.assets?.[0]);
   },
   fn: ({ apis, chains, balances, staking }, { validation: { id, transaction, signerOptions }, era }) => {
-    const chain = chains[transaction.chainId]!;
-    const api = apis[transaction.chainId]!;
+    const chain = chains[transaction.chainId];
+    assert(chain, 'Chain not found');
+    const api = apis[transaction.chainId];
+    assert(api, 'API not found');
     const asset = getNativeAsset(chain.assets);
 
     return {
@@ -129,7 +131,11 @@ const validateFx = attach({
   async effect({ chains, balances, apis }, { id, transaction }: ValidationStartedParams) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = chain?.assets?.[0];
+
+    assert(chain, 'Chain not found');
+    assert(api, 'API not found');
+
+    const asset = getNativeAsset(chain.assets);
     const era = await getEraFx({ api });
     const staking = await fetchStakingFx({
       api,

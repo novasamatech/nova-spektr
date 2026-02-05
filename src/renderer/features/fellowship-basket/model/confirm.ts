@@ -53,22 +53,24 @@ const $fellowshipStore = $collectiveStore.map(store => store['fellowship'] || nu
 // vote
 
 const prepareVoteFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
+  assert(chain, 'Chain not found');
+
   const coreTx = basketOperationsService.getCoreTx(transaction);
-  const api = apis[chainId];
+  const api = apis[chain.chainId]!;
 
   return {
     api,
     chain,
     wallets,
     id: transaction.id,
-    asset: getNativeAsset(chain?.assets),
+    asset: getNativeAsset(chain.assets),
     initiator: account!,
     signatory: account!,
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
@@ -118,22 +120,24 @@ sample({
 // salary induct
 
 const prepareSalaryInductFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
+  assert(chain, 'Chain not found');
+
   const coreTx = basketOperationsService.getCoreTx(transaction);
-  const api = apis[chainId];
+  const api = apis[chain.chainId]!;
 
   return {
     api,
     chain,
     wallets,
     id: transaction.id,
-    asset: getNativeAsset(chain?.assets),
+    asset: getNativeAsset(chain.assets),
     initiator: account!,
     signatory: account!,
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
@@ -180,22 +184,24 @@ sample({
 // salary request
 
 const prepareSalaryRequestFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
+  assert(chain, 'Chain not found');
+
   const coreTx = basketOperationsService.getCoreTx(transaction);
-  const api = apis[chainId];
+  const api = apis[chain.chainId]!;
 
   return {
     api,
     chain,
     wallets,
     id: transaction.id,
-    asset: getNativeAsset(chain?.assets),
+    asset: getNativeAsset(chain.assets),
     initiator: account!,
     signatory: account!,
     coreTx: transaction.coreTx,
@@ -242,22 +248,24 @@ sample({
 // salary payout
 
 const prepareSalaryPayoutFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
+  assert(chain, 'Chain not found');
+
   const coreTx = basketOperationsService.getCoreTx(transaction);
-  const api = apis[chainId];
+  const api = apis[chain.chainId]!;
 
   return {
     api,
     chain,
     wallets,
     id: transaction.id,
-    asset: getNativeAsset(chain?.assets),
+    asset: getNativeAsset(chain.assets),
     initiator: account!,
     signatory: account!,
     coreTx: transaction.coreTx,
@@ -305,22 +313,24 @@ sample({
 // evidence
 
 const prepareEvidencePayoutFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
+  assert(chain, 'Chain not found');
+
   const coreTx = basketOperationsService.getCoreTx(transaction);
-  const api = apis[chainId];
+  const api = apis[chain.chainId]!;
 
   return {
     api,
     chain,
     wallets,
     id: transaction.id,
-    asset: getNativeAsset(chain?.assets),
+    asset: getNativeAsset(chain.assets),
     initiator: account!,
     signatory: account!,
     coreTx: transaction.coreTx,
@@ -384,17 +394,19 @@ const prepareEvidenceVoteFx = createEffect<
   }: DataParams & {
     collectiveStore: Record<string, Record<string, { tracks?: Track[]; members?: Member[]; maxRank?: number }>>;
   }) => {
-    const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+    const { chain, account, fee } = await basketOperationsService.getTransactionData(
       transaction,
       apis,
       chains,
       accounts,
     );
 
-    const coreTx = basketOperationsService.getCoreTx(transaction);
-    const api = apis[chainId];
+    assert(chain, 'Chain not found');
 
-    const fellowshipStore = collectiveStore?.['fellowship']?.[chainId];
+    const coreTx = basketOperationsService.getCoreTx(transaction);
+    const api = apis[chain.chainId]!;
+
+    const fellowshipStore = collectiveStore?.['fellowship']?.[chain.chainId];
     const tracks = fellowshipStore?.tracks ?? [];
     const members = fellowshipStore?.members ?? [];
     const maxRank = fellowshipStore?.maxRank ?? 0;
@@ -419,7 +431,7 @@ const prepareEvidenceVoteFx = createEffect<
 
     const evidence: CollectiveEvidenceVoteConfirm['evidence'] = {
       pallet: 'fellowship',
-      chainId: chain?.chainId,
+      chainId: chain.chainId,
       wish,
       accountId: proposerMember.accountId,
       hash: coreTx.args.proposal,
@@ -433,7 +445,7 @@ const prepareEvidenceVoteFx = createEffect<
       tx: transaction.coreTx,
       coreTx: transaction.coreTx,
       route: [],
-      asset: getNativeAsset(chain?.assets),
+      asset: getNativeAsset(chain.assets),
       wallets,
       fee: new BN(fee),
       aye: coreTx.args.aye,

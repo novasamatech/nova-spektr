@@ -125,7 +125,7 @@ function getLightClientChains(): ChainId[] {
 function getMainRelaychains(chains: Chain[]): Chain[] {
   const MainRelaychains = [RelayChains.POLKADOT, RelayChains.KUSAMA, RelayChains.WESTEND];
 
-  return chains.filter(({ chainId }) => MainRelaychains.includes(chainId));
+  return chains.filter(({ chainId }) => (MainRelaychains as readonly string[]).includes(chainId));
 }
 
 function getChainNodes(chain: Chain, connection: Connection | null) {

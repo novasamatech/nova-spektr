@@ -81,9 +81,9 @@ export const VaultAccountsList = memo(({ chains, accountsMap, className, onShard
               <span className="normal-case">
                 {group.chain === EVM_GROUP_ID ? (
                   <EvmChainTitle />
-                ) : (
+                ) : group.chain ? (
                   <ChainTitle fontClass="text-text-secondary uppercase" chain={group.chain} />
-                )}
+                ) : null}
               </span>
               <FootnoteText className="text-text-tertiary">{group.accounts.length}</FootnoteText>
             </Accordion.Trigger>

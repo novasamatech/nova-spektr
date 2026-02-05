@@ -60,7 +60,7 @@ sample({
   clock: addCustomRpcModel.output.flowFinished,
   source: networkModel.$connections,
   filter: (connections, { chainId }) => {
-    return networkUtils.isEnabledConnection(connections[chainId]);
+    return networkUtils.isEnabledConnection(connections[chainId]!);
   },
   fn: (_, data) => data,
   target: networkSelectorModel.events.rpcNodeSelected,
@@ -70,8 +70,8 @@ sample({
   clock: editCustomRpcModel.output.flowFinished,
   source: networkModel.$connections,
   filter: (connections, { chainId, node }) => {
-    const isEnabled = networkUtils.isEnabledConnection(connections[chainId]);
-    const isRpc = networkUtils.isRpcConnection(connections[chainId]);
+    const isEnabled = networkUtils.isEnabledConnection(connections[chainId]!);
+    const isRpc = networkUtils.isRpcConnection(connections[chainId]!);
     const activeNode = connections[chainId]?.activeNode;
     const isEdited = activeNode?.name === node.name && activeNode?.url === node.url;
 
@@ -88,8 +88,8 @@ sample({
     connections: networkModel.$connections,
   },
   filter: ({ connections, chains }, { chainId, node }) => {
-    const isEnabled = networkUtils.isEnabledConnection(connections[chainId]);
-    const isRpc = networkUtils.isRpcConnection(connections[chainId]);
+    const isEnabled = networkUtils.isEnabledConnection(connections[chainId]!);
+    const isRpc = networkUtils.isRpcConnection(connections[chainId]!);
     const activeNode = connections[chainId]?.activeNode;
     const isDeleted = activeNode?.name === node.name && activeNode?.url === node.url;
     const hasNodes = nonNullable(chains[chainId]?.nodes[0]);
