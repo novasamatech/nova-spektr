@@ -68,4 +68,4 @@ jobs:
           api-token: ${{ secrets.METICULOUS_API_TOKEN }}
           # TODO: Update the directory path below to match your app's build output directory
           # For example, if you're using Vite, this is typically "dist"
-          app-directory: "dist"
+          app-directory: "release/build"
