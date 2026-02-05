@@ -3,7 +3,7 @@ import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain, type ChainId, type Connection, type Transaction, TransactionType } from '@/shared/core';
-import { redeemableAmount, toAccountId } from '@/shared/lib/utils';
+import { getNativeAsset, redeemableAmount, toAccountId } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { type StakingMap, eraService, stakingUtils, validatorsService } from '@/entities/staking';
@@ -60,7 +60,7 @@ const prepareBondNominateDataFx = createEffect(async ({ transaction, accounts, c
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0]!,
+    asset: getNativeAsset(chain.assets),
     amount: bondTx.args.value,
     validators,
     destination: bondTx.args.dest,
@@ -83,7 +83,7 @@ const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chai
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0]!,
+    asset: getNativeAsset(chain.assets),
     amount: transaction.coreTx.args.maxAdditional,
     signatory: account!,
     fee: fee.toString(),
@@ -115,7 +115,7 @@ const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chain
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0]!,
+    asset: getNativeAsset(chain.assets),
     initiator: account!,
     signatory: account!,
     validators,
@@ -137,7 +137,7 @@ const preparePayeeDataFx = createEffect(async ({ transaction, accounts, chains, 
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0]!,
+    asset: getNativeAsset(chain.assets),
     destination: transaction.coreTx.args.dest,
     initiator: account!,
     signatory: account!,
@@ -162,7 +162,7 @@ const prepareUnstakeDataFx = createEffect(async ({ transaction, accounts, chains
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0]!,
+    asset: getNativeAsset(chain.assets),
     amount: coreTx.args.value,
     api: apis[chain.chainId]!,
     signatory: account!,
@@ -185,7 +185,7 @@ const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0]!,
+    asset: getNativeAsset(chain.assets),
     amount: transaction.coreTx.args.value,
     signatory: account!,
     initiator: account!,
@@ -220,7 +220,7 @@ const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chain
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0]!,
+    asset: getNativeAsset(chain.assets),
     signatory: account!,
     initiator: account!,
     amount,

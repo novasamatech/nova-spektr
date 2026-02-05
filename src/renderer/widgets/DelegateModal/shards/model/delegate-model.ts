@@ -191,7 +191,8 @@ sample({
       return transactionBuilder.buildDelegate({
         chain: walletData.chain!,
         accountId: shard.accountId,
-        balance: (walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0]?.precision)) || '0',
+        balance:
+          (walletData.chain && formatAmount(delegateData!.amount, walletData.chain!.assets[0]!.precision)) || '0',
         conviction: delegateData!.conviction || 'None',
         target: target.accountId,
         tracks,

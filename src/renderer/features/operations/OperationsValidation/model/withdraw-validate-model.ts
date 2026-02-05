@@ -4,7 +4,7 @@ import { type Store, attach, createEffect, createEvent, restore, sample } from '
 import { combineEvents } from 'patronum';
 
 import { type Asset, type BalanceMap, type Chain, type ChainId, type ID, type Transaction } from '@/shared/core';
-import { redeemableAmount, transferableAmount } from '@/shared/lib/utils';
+import { getNativeAsset, redeemableAmount, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -103,7 +103,7 @@ sample({
   fn: ({ apis, chains, balances, staking }, { validation: { id, transaction, signerOptions }, era }) => {
     const chain = chains[transaction.chainId]!;
     const api = apis[transaction.chainId]!;
-    const asset = chain.assets[0]!;
+    const asset = getNativeAsset(chain.assets);
 
     return {
       id,

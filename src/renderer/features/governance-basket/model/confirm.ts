@@ -11,7 +11,7 @@ import {
   type Transaction,
   TransactionType,
 } from '@/shared/core';
-import { toAccountId, transferableAmount } from '@/shared/lib/utils';
+import { getNativeAsset, toAccountId, transferableAmount } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -70,7 +70,7 @@ const prepareUnlockDataFx = createEffect(async ({ transaction, accounts, chains,
     chain,
     id: transaction.id,
     amount: coreTx.args.value,
-    asset: chain.assets[0]!,
+    asset: getNativeAsset(chain.assets),
     initiator: account!,
     signatory: account!,
     route: [account!],
@@ -267,7 +267,7 @@ const prepareVoteDataFx = createEffect(async ({ transaction, accounts, chains, a
     id: transaction.id,
     api,
     chain,
-    asset: chain.assets[0]!,
+    asset: getNativeAsset(chain.assets),
     initiator: account!,
     existingVote: coreTx.args.vote,
     signatory: account!,
@@ -296,7 +296,7 @@ const prepareRemoveVoteDataFx = createEffect(async ({ transaction, accounts, cha
     chain,
     id: transaction.id,
     initiator: account!,
-    asset: chain.assets[0]!,
+    asset: getNativeAsset(chain.assets),
     votes: coreTxs.map((t: Transaction) => t.args),
     signatory: account!,
     route: [account!],
