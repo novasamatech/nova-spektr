@@ -94,6 +94,19 @@ const config: UserConfigFn = async ({ mode, command }) => {
     plugins: [
       ...commonPlugins,
 
+      {
+        name: 'meticulous-inject',
+        transformIndexHtml(html) {
+          if (mode === 'production') return html;
+          const meticulousScript = `<script
+              data-recording-token="U1Xu2qhkhe2b1KhMylFzPLal0xivknOqwGIx90Gu"
+              data-is-production-environment="false"
+              src="https://snippet.meticulous.ai/v1/meticulous.js"
+            ></script>`;
+          return html.replace('<%- meticulousScript %>', meticulousScript);
+        },
+      },
+
       isDevServer && mkcert(),
 
       tailwindcss(),
