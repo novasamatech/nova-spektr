@@ -1,14 +1,16 @@
 import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, getNativeAsset, truncate } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance } from '@/shared/ui-entities';
-import { Copy, Tooltip, useNotification } from '@/shared/ui-kit';
+import { Box, Copy, Json, Modal, Tooltip, useNotification } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
-import { networkModel } from '@/entities/network';
+import { networkModel, useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
+import { transactionService } from '@/entities/transaction';
 import { type TabFilter, operationsContextModel } from '../model/context';
 
 type Props = {
@@ -25,11 +27,27 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
 
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
+  const { api } = useNetworkData(operation.chainId);
 
   const nativeAsset = getNativeAsset(chain?.assets ?? []);
   const explorers = chain?.explorers;
 
   const { indexCreated, blockCreated, deposit, callHash, callData } = operation;
+
+  const jsonArgs = useMemo(() => {
+    if (!callData || !api || !chain) {
+      return null;
+    }
+
+    try {
+      const call = transactionService.createCallFromCallData(callData, api);
+      if (!call) return null;
+
+      return transactionService.formatCall(call, chain);
+    } catch {
+      return null;
+    }
+  }, [api, chain, callData]);
 
   const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
@@ -90,12 +108,29 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
 
         {callData && (
           <DetailRow label={t('operation.details.callData')} className="text-text-secondary">
-            <Copy value={callData}>
-              <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
-                <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
-                <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
-              </button>
-            </Copy>
+            <div className="flex items-center gap-1">
+              <Copy value={callData}>
+                <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
+                  <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
+                  <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
+                </button>
+              </Copy>
+              {jsonArgs && (
+                <Modal size="lg" height="fit">
+                  <Modal.Trigger>
+                    <button type="button" className={cnTw('group', InteractionStyle)}>
+                      <Icon name="details" size={16} className="group-hover:text-icon-hover" />
+                    </button>
+                  </Modal.Trigger>
+                  <Modal.Title close>{t('operation.viewJSON.label')}</Modal.Title>
+                  <Modal.Content>
+                    <Box padding={5}>
+                      <Json value={jsonArgs} name="operation" />
+                    </Box>
+                  </Modal.Content>
+                </Modal>
+              )}
+            </div>
           </DetailRow>
         )}
 
