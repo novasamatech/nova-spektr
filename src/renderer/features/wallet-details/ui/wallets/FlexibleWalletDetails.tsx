@@ -1,7 +1,7 @@
 import { useGate, useUnit } from 'effector-react';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
-import { type FlexibleMultisigWallet, type MultisigWallet, WalletType } from '@/shared/core';
+import { type Chain, type FlexibleMultisigWallet, type MultisigWallet, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
@@ -10,17 +10,15 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
 import { AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
-import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts, useAccountName } from '@/domains/network';
 import { useWalletName } from '@/domains/network';
-import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
-import { ContactItem, WalletCardMd, accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
+import { ContactItem, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
 import { ChangeSignatories } from '@/features/flexible-change-signatories';
 import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy } from '@/features/proxy-add';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { NamedAccount } from '@/widgets/NameResolver';
-import { walletDetailsUtils } from '../../lib/utils';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { walletProxiesModel } from '../../model/wallet-proxies-model';
@@ -28,6 +26,22 @@ import { WalletFiatBalance } from '../components';
 import { ProxiesCount } from '../components/ProxiesCount';
 import { ProxiesList } from '../components/ProxiesList';
 import { type WalletAction, Action, WalletActions } from '../components/WalletActions';
+
+type SignatoryContactItemProps = {
+  accountId: AccountId;
+  chain: Chain | null;
+  children?: React.ReactNode;
+};
+
+const SignatoryContactItem = ({ accountId, chain, children }: SignatoryContactItemProps) => {
+  const name = useAccountName({ accountId, chain });
+
+  return (
+    <ContactItem address={accountId} addressPrefix={chain?.addressPrefix} name={name}>
+      {children}
+    </ContactItem>
+  );
+};
 
 type Props = {
   wallet: MultisigWallet | FlexibleMultisigWallet;
@@ -49,8 +63,6 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
   const accountList = useUnit(accounts.$list);
   const proxiesCount = useUnit(walletProxiesModel.$walletProxiesCount);
-  const contacts = useUnit(contactModel.$contacts);
-  const walletsList = useUnit(walletModel.$wallets);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
@@ -65,14 +77,6 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
       closeModal();
     }
   }, [multisigAccount, closeModal]);
-
-  const getSignatoryName = (accountId: AccountId) => {
-    if (nullable(multisigAccount)) {
-      return '';
-    }
-
-    return walletDetailsUtils.getSignatoryName(accountId, multisigAccount.signatories, contacts, walletsList);
-  };
 
   let chain = null;
   if (nonNullable(multisigAccount)) {
@@ -180,9 +184,9 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
             ))}
             {signatories.people.map(accountId => (
               <li key={accountId} className="-mx-2">
-                <ContactItem address={accountId} addressPrefix={chain.addressPrefix} name={getSignatoryName(accountId)}>
+                <SignatoryContactItem accountId={accountId} chain={chain}>
                   <AccountExplorers accountId={accountId} chain={chain} />
-                </ContactItem>
+                </SignatoryContactItem>
               </li>
             ))}
           </ul>

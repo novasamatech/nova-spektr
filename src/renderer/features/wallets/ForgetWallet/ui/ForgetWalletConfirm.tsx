@@ -5,6 +5,7 @@ import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Animation, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Checkbox, ConfirmModal, useNotification } from '@/shared/ui-kit';
+import { useWalletName } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { forgetWalletModel } from '../model/forget-wallet-model';
@@ -134,6 +135,7 @@ type ForgetWalletProps = Props & {
 
 const ForgetWallet = ({ wallet, onClose, onForget, children, isModalOpen, setIsModalOpen }: ForgetWalletProps) => {
   const { t } = useI18n();
+  const walletName = useWalletName(wallet);
 
   const notification = useNotification();
 
@@ -196,9 +198,7 @@ const ForgetWallet = ({ wallet, onClose, onForget, children, isModalOpen, setIsM
       confirmText={t('walletDetails.common.forgetButton')}
       type="warning"
       title={t('walletDetails.common.removeWalletTitle')}
-      description={
-        <span className="break-all">{t('walletDetails.common.removeWalletDesc', { walletName: wallet.name })}</span>
-      }
+      description={<span className="break-all">{t('walletDetails.common.removeWalletDesc', { walletName })}</span>}
       onCancel={onClose}
       onConfirm={forgetWallet}
     >
