@@ -1768,10 +1768,8 @@
         "delegatedAuthorityWalletsAdded": "{count} delegated authority wallets added",
         "flexibleMultisigWalletsAdded": "{count} flexible multisig wallets added",
         "flexibleMultisigWalletsEdited": "{count} flexible multisig wallets edited",
-        "multisigOperationsAdded": "{count} operations added",
-        "multisigOperationsApproved": "{count} operations approved",
-        "multisigOperationsError": "{count} operations error",
-        "multisigOperationsRejected": "{count} operations rejected",
+        "multisigEventsUpdated": "{count} multisig events",
+        "multisigOperationsUpdated": "{count} multisig operations updated",
         "multisigWalletsAdded": "{count} multisig wallets added",
         "walletsAddedDescription": "Open the wallet selector to see the full list"
       },
