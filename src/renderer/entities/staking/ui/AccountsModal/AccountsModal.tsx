@@ -1,5 +1,4 @@
 import { BN_ZERO } from '@polkadot/util';
-import { useUnit } from 'effector-react';
 
 import { type Asset, type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -10,7 +9,7 @@ import { AssetBalance, Hash, Identicon } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
 import { type AnyAccount, useAccountsNames } from '@/domains/network';
 import { useAssetBalances } from '@/entities/balance';
-import { networkModel } from '@/entities/network';
+import { useChain } from '@/entities/network';
 
 type Props = {
   isOpen: boolean;
@@ -24,8 +23,7 @@ type Props = {
 
 export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix, onClose }: Props) => {
   const { t } = useI18n();
-  const chains = useUnit(networkModel.$chains);
-  const chain = chains[chainId] ?? null;
+  const chain = useChain(chainId);
   const resolvedAccounts = useAccountsNames(accounts, chain);
 
   const accountIds = accounts.map((account) => account.accountId);
