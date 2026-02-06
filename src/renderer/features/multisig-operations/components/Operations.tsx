@@ -6,7 +6,7 @@ import { useScrollTo } from '@/shared/lib/hooks';
 import { groupBy } from '@/shared/lib/utils';
 import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText, Loader } from '@/shared/ui';
-import { Box, ScrollArea } from '@/shared/ui-kit';
+import { AsyncItem, Box, ScrollArea } from '@/shared/ui-kit';
 import { operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
@@ -99,29 +99,35 @@ export const Operations = () => {
 
             {filteredTxs.length > 0 && (
               <div className="flex h-full w-full flex-col items-center overflow-y-auto">
-                {sortedTxs.map(([date, txs]) => (
-                  <section className="mb-8 w-full" key={date}>
-                    <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
-                    <ul className="flex w-full flex-col gap-y-1.5">
-                      {txs.map(tx => {
-                        const multisigAccount = multisigAccountsMap[tx.accountId];
-                        if (!multisigAccount) return null;
+                {sortedTxs.map(([date, txs], index) => {
+                  const strategy = index === 0 ? ('sync' as const) : ('idle' as const);
 
-                        return (
-                          <li key={tx.id} ref={tx.id === focusedOperationId ? focusedRef : undefined}>
-                            <Operation
-                              key={`${tx.id}-${tx.id === focusedOperationId}`}
-                              operation={tx}
-                              multisigAccount={multisigAccount}
-                              isDefaultOpen={tx.id === focusedOperationId}
-                              tab={tab}
-                            />
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </section>
-                ))}
+                  return (
+                    <AsyncItem strategy={strategy} key={date}>
+                      <section className="mb-8 w-full">
+                        <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
+                        <ul className="flex w-full flex-col gap-y-1.5">
+                          {txs.map(tx => {
+                            const multisigAccount = multisigAccountsMap[tx.accountId];
+                            if (!multisigAccount) return null;
+
+                            return (
+                              <li key={tx.id} ref={tx.id === focusedOperationId ? focusedRef : undefined}>
+                                <Operation
+                                  key={`${tx.id}-${tx.id === focusedOperationId}`}
+                                  operation={tx}
+                                  multisigAccount={multisigAccount}
+                                  isDefaultOpen={tx.id === focusedOperationId}
+                                  tab={tab}
+                                />
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </section>
+                    </AsyncItem>
+                  );
+                })}
               </div>
             )}
           </Box>
