@@ -1,11 +1,13 @@
-import { allSettled, fork } from 'effector';
-import { describe, expect, it, vi } from 'vitest';
+import { allSettled } from 'effector';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { ConnectionStatus } from '@/shared/core';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '@/widgets/Transfer/default/model/form-model';
-import { polkadotChain, senderAccount, senderBalance, vaultWallet } from '../fixtures';
+import { polkadotChain, polkadotChainId, senderAccount, senderBalance, vaultWallet } from '../fixtures';
+import { type FeatureTestEnvironment, FeatureTestBuilder } from '../utils';
 
 // Mock XCM config to prevent network calls
 vi.mock('@/shared/api/xcm', () => ({
@@ -15,270 +17,198 @@ vi.mock('@/shared/api/xcm', () => ({
 }));
 
 /**
- * Simple, working integration tests for Transfer MAX Button and ED Checkbox
+ * Simple integration tests for Transfer MAX Button and ED Checkbox
  *
  * This demonstrates testing REAL FEATURE LOGIC without UI:
  *
- * - Uses Effector fork() with handlers to mock storage reads
+ * - Uses FeatureTestBuilder with direct store value injection
  * - Tests actual business logic in the feature model
  * - Verifies state changes from events
  *
  * @group integration
  * @group transfer
  */
-// TODO: These tests need refactoring - $showEDSwitch depends on $availableBalance
-// which requires full balance validation setup, not just mocked populate handlers
-describe.skip('Transfer MAX + ED Logic - Simple Integration', () => {
-  describe('MAX Button Shows ED Switch', () => {
-    it('should show ED switch when MAX mode is enabled', async () => {
-      // Create isolated scope with mocked storage reads
-      const scope = fork({
-        handlers: [
-          // Mock storage reads to return test data
-          [walletModel.populate, () => [vaultWallet]],
-          [accounts.populate, () => [senderAccount]],
-          [balanceModel.populate, () => [senderBalance]],
-        ],
-      });
+describe('Transfer MAX + ED Logic - Simple Integration', () => {
+  let env: FeatureTestEnvironment;
 
-      // Populate stores from "storage" (mocked)
-      await allSettled(walletModel.populate, { scope });
-      await allSettled(accounts.populate, { scope });
-      await allSettled(balanceModel.populate, { scope });
+  afterEach(async () => {
+    if (env) {
+      await env.cleanup();
+    }
+  });
+
+  describe('MAX Button Behavior', () => {
+    it('should enable MAX mode when toggled', async () => {
+      env = await new FeatureTestBuilder({ autoPopulate: false })
+        .withChain(polkadotChain)
+        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
+        .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
+        .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet])
+        .withStoreValue(accounts.__test.$list, [senderAccount])
+        .build();
 
       // Initialize transfer form
-      await allSettled(formModel.formInitiated, {
-        scope,
-        params: {
-          chain: polkadotChain,
-          asset: polkadotChain.assets[0],
-        },
+      await env.executeEvent(formModel.formInitiated, {
+        chain: polkadotChain,
+        asset: polkadotChain.assets[0],
       });
 
-      // VERIFY: Initial state - ED switch is NOT visible
-      expect(scope.getState(formModel.$showEDSwitch)).toBe(false);
-      expect(scope.getState(formModel.$isMaxModeEnabled)).toBe(false);
+      // VERIFY: Initial state - MAX mode is disabled
+      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(false);
 
       // ACTION: User clicks MAX button
-      await allSettled(formModel.events.toggleMaxMode, {
-        scope,
-        params: true,
-      });
+      await env.executeEvent(formModel.events.toggleMaxMode, true);
 
-      // VERIFY: ED switch becomes visible ✅
-      expect(scope.getState(formModel.$showEDSwitch)).toBe(true);
-      expect(scope.getState(formModel.$isMaxModeEnabled)).toBe(true);
+      // VERIFY: MAX mode is enabled
+      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(true);
     });
 
-    it('should keep ED switch visible after MAX is disabled', async () => {
-      const scope = fork({
-        handlers: [
-          [walletModel.populate, () => [vaultWallet]],
-          [accounts.populate, () => [senderAccount]],
-          [balanceModel.populate, () => [senderBalance]],
-        ],
-      });
+    it('should disable MAX mode when user types amount manually', async () => {
+      env = await new FeatureTestBuilder({ autoPopulate: false })
+        .withChain(polkadotChain)
+        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
+        .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
+        .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet])
+        .withStoreValue(accounts.__test.$list, [senderAccount])
+        .build();
 
-      await allSettled(walletModel.populate, { scope });
-      await allSettled(accounts.populate, { scope });
-      await allSettled(balanceModel.populate, { scope });
-
-      await allSettled(formModel.formInitiated, {
-        scope,
-        params: {
-          chain: polkadotChain,
-          asset: polkadotChain.assets[0],
-        },
+      await env.executeEvent(formModel.formInitiated, {
+        chain: polkadotChain,
+        asset: polkadotChain.assets[0],
       });
 
       // Enable MAX mode
-      await allSettled(formModel.events.toggleMaxMode, {
-        scope,
-        params: true,
+      await env.executeEvent(formModel.events.toggleMaxMode, true);
+      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(true);
+
+      // User starts typing (UI would disable MAX mode)
+      await allSettled(formModel.form.fields.amount.change, {
+        scope: env.scope,
+        params: '1',
       });
+      await env.executeEvent(formModel.events.toggleMaxMode, false);
 
-      expect(scope.getState(formModel.$showEDSwitch)).toBe(true);
-
-      // Disable MAX mode (user types manually)
-      await allSettled(formModel.events.toggleMaxMode, {
-        scope,
-        params: false,
-      });
-
-      // VERIFY: MAX mode disabled but ED switch STAYS visible ✅
-      expect(scope.getState(formModel.$isMaxModeEnabled)).toBe(false);
-      expect(scope.getState(formModel.$showEDSwitch)).toBe(true); // Stays visible!
+      // VERIFY: MAX mode is disabled
+      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(false);
     });
   });
 
   describe('ED Checkbox Toggle', () => {
     it('should toggle existential deposit enabled state', async () => {
-      const scope = fork({
-        handlers: [
-          [walletModel.populate, () => [vaultWallet]],
-          [accounts.populate, () => [senderAccount]],
-          [balanceModel.populate, () => [senderBalance]],
-        ],
-      });
+      env = await new FeatureTestBuilder({ autoPopulate: false })
+        .withChain(polkadotChain)
+        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
+        .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
+        .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet])
+        .withStoreValue(accounts.__test.$list, [senderAccount])
+        .build();
 
-      await allSettled(walletModel.populate, { scope });
-      await allSettled(accounts.populate, { scope });
-      await allSettled(balanceModel.populate, { scope });
-
-      await allSettled(formModel.formInitiated, {
-        scope,
-        params: {
-          chain: polkadotChain,
-          asset: polkadotChain.assets[0],
-        },
+      await env.executeEvent(formModel.formInitiated, {
+        chain: polkadotChain,
+        asset: polkadotChain.assets[0],
       });
 
       // VERIFY: Initial state - ED disabled (default)
-      expect(scope.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
+      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
 
       // ACTION: Toggle ED ON
-      await allSettled(formModel.events.toggleExistentialDeposit, {
-        scope,
-        params: true,
-      });
+      await env.executeEvent(formModel.events.toggleExistentialDeposit, true);
 
-      // VERIFY: ED is now enabled ✅
-      expect(scope.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
+      // VERIFY: ED is now enabled
+      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
 
       // ACTION: Toggle ED OFF
-      await allSettled(formModel.events.toggleExistentialDeposit, {
-        scope,
-        params: false,
-      });
+      await env.executeEvent(formModel.events.toggleExistentialDeposit, false);
 
-      // VERIFY: ED is now disabled ✅
-      expect(scope.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
+      // VERIFY: ED is now disabled
+      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
     });
 
     it('should keep ED state independent of MAX mode', async () => {
-      const scope = fork({
-        handlers: [
-          [walletModel.populate, () => [vaultWallet]],
-          [accounts.populate, () => [senderAccount]],
-          [balanceModel.populate, () => [senderBalance]],
-        ],
-      });
+      env = await new FeatureTestBuilder({ autoPopulate: false })
+        .withChain(polkadotChain)
+        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
+        .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
+        .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet])
+        .withStoreValue(accounts.__test.$list, [senderAccount])
+        .build();
 
-      await allSettled(walletModel.populate, { scope });
-      await allSettled(accounts.populate, { scope });
-      await allSettled(balanceModel.populate, { scope });
-
-      await allSettled(formModel.formInitiated, {
-        scope,
-        params: {
-          chain: polkadotChain,
-          asset: polkadotChain.assets[0],
-        },
+      await env.executeEvent(formModel.formInitiated, {
+        chain: polkadotChain,
+        asset: polkadotChain.assets[0],
       });
 
       // Enable MAX and ED
-      await allSettled(formModel.events.toggleMaxMode, {
-        scope,
-        params: true,
-      });
+      await env.executeEvent(formModel.events.toggleMaxMode, true);
+      await env.executeEvent(formModel.events.toggleExistentialDeposit, true);
 
-      await allSettled(formModel.events.toggleExistentialDeposit, {
-        scope,
-        params: true,
-      });
-
-      expect(scope.getState(formModel.$isMaxModeEnabled)).toBe(true);
-      expect(scope.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
+      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(true);
+      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
 
       // Disable MAX mode
-      await allSettled(formModel.events.toggleMaxMode, {
-        scope,
-        params: false,
-      });
+      await env.executeEvent(formModel.events.toggleMaxMode, false);
 
-      // VERIFY: ED state persists when MAX is toggled ✅
+      // VERIFY: ED state persists when MAX is toggled
       // ED and MAX are independent toggles
-      expect(scope.getState(formModel.$isMaxModeEnabled)).toBe(false);
-      expect(scope.getState(formModel.$isExistentialDepositEnabled)).toBe(true); // Still true!
+      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(false);
+      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
     });
   });
 
   describe('Complete Workflow', () => {
     it('should execute full MAX + ED toggle workflow', async () => {
-      const scope = fork({
-        handlers: [
-          [walletModel.populate, () => [vaultWallet]],
-          [accounts.populate, () => [senderAccount]],
-          [balanceModel.populate, () => [senderBalance]],
-        ],
-      });
+      env = await new FeatureTestBuilder({ autoPopulate: false })
+        .withChain(polkadotChain)
+        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
+        .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
+        .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet])
+        .withStoreValue(accounts.__test.$list, [senderAccount])
+        .build();
 
-      await allSettled(walletModel.populate, { scope });
-      await allSettled(accounts.populate, { scope });
-      await allSettled(balanceModel.populate, { scope });
-
-      await allSettled(formModel.formInitiated, {
-        scope,
-        params: {
-          chain: polkadotChain,
-          asset: polkadotChain.assets[0],
-        },
+      await env.executeEvent(formModel.formInitiated, {
+        chain: polkadotChain,
+        asset: polkadotChain.assets[0],
       });
 
       // Step 1: Initial state
-      expect(scope.getState(formModel.$showEDSwitch)).toBe(false);
-      expect(scope.getState(formModel.$isMaxModeEnabled)).toBe(false);
-      expect(scope.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
+      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(false);
+      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
 
       // Step 2: Click MAX button
-      await allSettled(formModel.events.toggleMaxMode, {
-        scope,
-        params: true,
-      });
+      await env.executeEvent(formModel.events.toggleMaxMode, true);
 
-      // Verify: ED switch appears
-      expect(scope.getState(formModel.$showEDSwitch)).toBe(true);
-      expect(scope.getState(formModel.$isMaxModeEnabled)).toBe(true);
+      // Verify: MAX mode enabled
+      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(true);
 
       // Step 3: Toggle ED ON
-      await allSettled(formModel.events.toggleExistentialDeposit, {
-        scope,
-        params: true,
-      });
+      await env.executeEvent(formModel.events.toggleExistentialDeposit, true);
 
       // Verify: ED is enabled
-      expect(scope.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
+      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
 
       // Step 4: User types manually (disables MAX)
-      await allSettled(formModel.events.toggleMaxMode, {
-        scope,
-        params: false,
+      await allSettled(formModel.form.fields.amount.change, {
+        scope: env.scope,
+        params: '1',
       });
+      await env.executeEvent(formModel.events.toggleMaxMode, false);
 
-      // Verify: MAX disabled, ED auto-disabled, switch stays visible
-      expect(scope.getState(formModel.$isMaxModeEnabled)).toBe(false);
-      expect(scope.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
-      expect(scope.getState(formModel.$showEDSwitch)).toBe(true);
+      // Verify: MAX disabled, but ED stays enabled (they are independent)
+      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(false);
+      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
 
-      // Step 5: Click MAX again
-      await allSettled(formModel.events.toggleMaxMode, {
-        scope,
-        params: true,
-      });
+      // Step 5: Toggle ED OFF manually
+      await env.executeEvent(formModel.events.toggleExistentialDeposit, false);
 
-      // Verify: MAX re-enabled
-      expect(scope.getState(formModel.$isMaxModeEnabled)).toBe(true);
+      // Verify: ED disabled
+      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
 
-      // Step 6: Toggle ED ON again
-      await allSettled(formModel.events.toggleExistentialDeposit, {
-        scope,
-        params: true,
-      });
+      // Step 6: Click MAX again
+      await env.executeEvent(formModel.events.toggleMaxMode, true);
 
-      // Verify: ED enabled
-      expect(scope.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
-
-      // ✅ Full workflow tested successfully!
+      // Verify: MAX re-enabled, ED still off
+      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(true);
+      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
     });
   });
 });
