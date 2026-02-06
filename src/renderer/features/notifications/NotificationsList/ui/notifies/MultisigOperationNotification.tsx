@@ -1,24 +1,32 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import { type MultisigOperationNotification, type NotificationStatus } from '@/shared/core';
+import {
+  type Chain,
+  type ChainId,
+  type MultisigOperationNotification,
+  type NotificationStatus,
+  type Wallet,
+} from '@/shared/core';
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod, nonNullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { type IconNames, BodyText, Button, Icon } from '@/shared/ui';
 import { AssetBalance, WalletIcon } from '@/shared/ui-entities';
-import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
+import { multisigOperationService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
-import { networkModel } from '@/entities/network';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 import { operationTitleTransformer } from '@/features/multisig-operations';
+import { $multisigAccountsById, $operationsByKey } from '../../model/notification-data-model';
 
 type Props = {
   notification: MultisigOperationNotification;
+  chains: Record<ChainId, Chain>;
+  wallets: Wallet[];
 };
 
 function getOperationStatus(status: NotificationStatus) {
@@ -41,10 +49,11 @@ const iconConfig: Record<NotificationStatus, { name: IconNames; className: strin
 
 export const MultisigOperationNotificationComponent = ({
   notification: { callHash, callTimepoint, chainId, issuer, status },
+  chains,
+  wallets,
 }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const chains = useUnit(networkModel.$chains);
 
   const operationId = multisigOperationService.getOperationId(
     chainId,
@@ -55,48 +64,32 @@ export const MultisigOperationNotificationComponent = ({
   );
 
   const operation = useStoreMap({
-    store: multisigOperation.$list,
+    store: $operationsByKey,
     keys: [operationId],
-    fn: (operations) =>
-      operations.find(
-        (op) =>
-          multisigOperationService.getOperationId(
-            op.chainId,
-            op.callHash,
-            op.accountId,
-            op.blockCreated,
-            op.indexCreated,
-          ) === operationId,
-      ),
+    fn: (map, [id]) => map[id] ?? null,
   });
 
   const multisigAccount = useStoreMap({
-    store: accounts.$list,
-    keys: [operation],
-    fn: (allAccounts) => {
-      if (!operation) return null;
-
-      return allAccounts.filter(accountUtils.isAnyMultisigAccount).find((acc) => acc.accountId === operation.accountId);
-    },
+    store: $multisigAccountsById,
+    keys: [operation?.accountId],
+    fn: (map, [id]) => (id ? (map[id] ?? null) : null),
   });
 
-  const wallet = useStoreMap({
-    store: walletModel.$wallets,
-    keys: [multisigAccount],
-    fn: (wallets) => {
-      if (!multisigAccount) return null;
+  const wallet = useMemo(() => {
+    if (!multisigAccount) return null;
 
-      if (accountUtils.isFlexibleMultisigAccount(multisigAccount)) {
-        return wallets.find((w) =>
+    if (accountUtils.isFlexibleMultisigAccount(multisigAccount)) {
+      return (
+        wallets.find((w) =>
           w.accounts.some(
             (acc) => acc.accountId === multisigAccount.accountId && accountUtils.isFlexibleMultisigAccount(acc),
           ),
-        );
-      }
+        ) ?? null
+      );
+    }
 
-      return wallets.find((w) => w.accounts.some((acc) => acc.accountId === multisigAccount.accountId));
-    },
-  });
+    return wallets.find((w) => w.accounts.some((acc) => acc.accountId === multisigAccount.accountId)) ?? null;
+  }, [wallets, multisigAccount]);
 
   const showCoreTransaction = nonNullable(multisigAccount) && accountUtils.isFlexibleMultisigAccount(multisigAccount);
   const coreTx = showCoreTransaction
