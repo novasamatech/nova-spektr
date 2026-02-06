@@ -37,6 +37,8 @@ const flow = createGate<{ wallet: Wallet | null }>();
 
 const stepChanged = createEvent<Step>();
 const selectSignatory = createEvent<AnyAccount | null>();
+const signerConfirmed = createEvent();
+const confirmGoBack = createEvent();
 
 const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.close);
 
@@ -314,8 +316,7 @@ const $isEditOperationAlreadyExists = combine(
 
 const $isLoading = or($pendingFee, $pendingMultisigDeposit);
 
-const $canSubmit = and(
-  $valid,
+const $canProceedFromForm = and(
   formModel.$threshold.map((threshold) => nonNullable(threshold) && threshold > 0),
   not($isLoading),
   not($isTheSameMultisig),
@@ -324,16 +325,29 @@ const $canSubmit = and(
   not(signatoryModel.$hasDuplicateSignatories),
 );
 
+const $canSubmit = and($valid, $canProceedFromForm);
+
 // submit
+
+const $shouldShowSignerSelection = $signatories.map((s) => s.length > 1);
 
 sample({
   clock: formModel.formSubmit,
-  fn: () => Step.CONFIRM,
+  source: $shouldShowSignerSelection,
+  filter: Boolean,
+  fn: () => Step.SIGNER_SELECTION,
   target: stepChanged,
 });
 
-const formSubmitted = sample({
+sample({
   clock: formModel.formSubmit,
+  source: $shouldShowSignerSelection,
+  filter: (show) => !show,
+  target: signerConfirmed,
+});
+
+const formSubmitted = sample({
+  clock: signerConfirmed,
   source: {
     tx: $tx,
     coreTx: $coreTx,
@@ -375,6 +389,13 @@ sample({
     event: confirmModel.init,
     step: stepChanged,
   }),
+});
+
+sample({
+  clock: confirmGoBack,
+  source: $shouldShowSignerSelection,
+  fn: (show) => (show ? Step.SIGNER_SELECTION : Step.SIGNATORIES_THRESHOLD),
+  target: stepChanged,
 });
 
 sample({
@@ -498,12 +519,15 @@ export const changeSignatoriesModel = {
   $isEditOperationAlreadyExists,
   $chain,
   $canSubmit,
+  $canProceedFromForm,
   $route,
   $errors,
   $fee,
   $isLoading,
   stepChanged,
   selectSignatory,
+  signerConfirmed,
+  confirmGoBack,
   viewOperation,
   flow,
 };

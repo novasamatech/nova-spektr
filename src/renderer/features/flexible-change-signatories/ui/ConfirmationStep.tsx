@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { Step, getNativeAsset } from '@/shared/lib/utils';
+import { getNativeAsset } from '@/shared/lib/utils';
 import { BodyText, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
@@ -101,7 +101,7 @@ export const ConfirmationStep = () => {
           <Button
             variant="text"
             onClick={() => {
-              changeSignatoriesModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
+              changeSignatoriesModel.confirmGoBack();
             }}
           >
             {t('createMultisigAccount.backButton')}

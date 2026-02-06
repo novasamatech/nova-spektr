@@ -24,6 +24,7 @@ import { Signatory } from './components/Signatory';
 
 const MODAL_SIZE: Record<string, Pick<ComponentProps<typeof Modal>, 'size' | 'height'>> = {
   [Step.SIGNATORIES_THRESHOLD]: { size: 'mdlg', height: 'full' },
+  [Step.SIGNER_SELECTION]: { size: 'md', height: 'fit' },
   [Step.SIGN]: { size: 'md', height: 'fit' },
   [Step.CONFIRM]: { size: 'md', height: 'fit' },
   [Step.SUBMIT]: { size: 'md', height: 'fit' },
@@ -41,6 +42,7 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
 
   const step = useUnit(changeSignatoriesModel.$step);
   const canSubmit = useUnit(changeSignatoriesModel.$canSubmit);
+  const canProceedFromForm = useUnit(changeSignatoriesModel.$canProceedFromForm);
   const chain = useUnit(changeSignatoriesModel.$chain);
   const errors = useUnit(changeSignatoriesModel.$errors);
   const threshold = useUnit(formModel.$threshold);
@@ -140,18 +142,6 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
                 {t('createMultisigAccount.addNewSignatory')}
               </Button>
 
-              <SignatorySelect
-                signatory={selectedSignatory}
-                signatories={signatoriesWithBalance}
-                allAccounts={allAccounts}
-                allWallets={wallets}
-                initiator={signatoriesForSelect[0] ?? null}
-                hasError={false}
-                errorText=""
-                network={network}
-                onChange={changeSignatoriesModel.selectSignatory}
-              />
-
               <hr className="-ml-5 w-[110%] border-divider" />
 
               <div className="flex gap-x-6">
@@ -211,11 +201,43 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
               <div className="flex items-center justify-end gap-x-6">
                 <MultisigFees />
 
-                <Button key="create" type="submit" disabled={!canSubmit} onClick={() => formModel.formSubmit()}>
+                <Button
+                  key="create"
+                  type="submit"
+                  disabled={!canProceedFromForm}
+                  onClick={() => formModel.formSubmit()}
+                >
                   {t('createMultisigAccount.continueButton')}
                 </Button>
               </div>
             </Box>
+          </Modal.Footer>
+        </>
+      )}
+      {isStep(step, Step.SIGNER_SELECTION) && (
+        <>
+          <Modal.Content>
+            <div className="flex flex-col gap-y-6 px-5 pt-4 pb-6">
+              <SignatorySelect
+                signatory={selectedSignatory}
+                signatories={signatoriesWithBalance}
+                allAccounts={allAccounts}
+                allWallets={wallets}
+                initiator={signatoriesForSelect[0] ?? null}
+                hasError={false}
+                errorText=""
+                network={network}
+                onChange={changeSignatoriesModel.selectSignatory}
+              />
+            </div>
+          </Modal.Content>
+          <Modal.Footer>
+            <Button variant="text" onClick={() => changeSignatoriesModel.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
+              {t('operation.goBackButton')}
+            </Button>
+            <Button disabled={!canSubmit} onClick={() => changeSignatoriesModel.signerConfirmed()}>
+              {t('createMultisigAccount.continueButton')}
+            </Button>
           </Modal.Footer>
         </>
       )}
