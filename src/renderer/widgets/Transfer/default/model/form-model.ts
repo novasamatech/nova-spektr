@@ -41,7 +41,7 @@ import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { transferValidator } from '@/features/operations/OperationsValidation';
-import { type NetworkStore } from '../lib/types';
+import { type NetworkStore, type NetworkStoreParams } from '../lib/types';
 
 import { xcmSpellTransferModel } from './xcm-spell-transfer-model';
 
@@ -92,7 +92,7 @@ type FormSubmitEvent = FormParams & {
   balancePreservation: BalancePreservation;
 };
 
-const formInitiated = createEvent<NetworkStore>();
+const formInitiated = createEvent<NetworkStoreParams>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 
 const multisigDepositChanged = createEvent<BN>();
@@ -126,8 +126,31 @@ const $isEdSwitchVisible = createStore(false)
   .on(setMaxMode.filter({ fn: (value) => value }), () => true)
   .reset(formInitiated);
 
-const $networkStore = restore(formInitiated, null);
-const $isNative = createStore<boolean>(false);
+const $networkStore = createStore<NetworkStore | null>(null).on(formInitiated, (_, params) => {
+  const asset = params.asset ?? getNativeAsset(params.chain.assets);
+  return {
+    chain: params.chain,
+    asset,
+    destination: params.destination,
+  };
+});
+const $isNative = $networkStore.map((network) => {
+  if (!network) return false;
+  const nativeAsset = getNativeAsset(network.chain.assets);
+  return nativeAsset ? getAssetId(nativeAsset) === getAssetId(network.asset) : false;
+});
+
+const $isAssetPredefined = createStore(false).on(formInitiated, (_, params) => params.asset !== undefined);
+
+const showTokenSelector = createEvent();
+const hideTokenSelector = createEvent();
+const assetChanged = createEvent<Asset>();
+const chainChanged = createEvent<Chain>();
+
+const $isTokenSelectorOpen = createStore(false)
+  .on(showTokenSelector, () => true)
+  .on(hideTokenSelector, () => false)
+  .reset(formInitiated);
 
 const $isMyselfXcmOpened = createStore<boolean>(false).reset(xcmDestinationCancelled);
 
@@ -662,6 +685,8 @@ const $destinationChains = combine(
   },
 );
 
+const $availableChains = networkModel.$chainsList;
+
 const $destinationAccounts = combine(
   {
     isXcm: $isXcm,
@@ -711,18 +736,54 @@ const $canSubmit = and(
 
 sample({
   clock: formInitiated,
-  target: [form.reset, xcmSpellTransferModel.events.xcmStarted, xcmSpellTransferModel.events.xcmStopped],
+  target: form.reset,
 });
 
 sample({
   clock: formInitiated,
-  fn: ({ chain, asset }) => getAssetId(getNativeAsset(chain.assets)!) === getAssetId(asset),
-  target: $isNative,
+  fn: ({ chain, asset }) => ({ chain, asset: asset ?? getNativeAsset(chain.assets)! }),
+  target: [xcmSpellTransferModel.events.xcmStarted, xcmSpellTransferModel.events.xcmStopped],
+});
+
+$networkStore.on(assetChanged, (store, asset) => {
+  if (!store) return store;
+
+  return {
+    chain: store.chain,
+    asset,
+    destination: store.destination,
+  };
+});
+
+sample({
+  clock: assetChanged,
+  fn: () => false,
+  target: $isTokenSelectorOpen,
+});
+
+$networkStore.on(chainChanged, (store, chain) => {
+  if (!store) return store;
+
+  const currentAsset = store.asset;
+  const assetOnChain = chain.assets.find((a) => a.symbol === currentAsset.symbol);
+  const newAsset = assetOnChain ?? getNativeAsset(chain.assets)!;
+
+  return {
+    chain,
+    asset: newAsset,
+    destination: store.destination,
+  };
+});
+
+sample({
+  clock: chainChanged,
+  fn: (chain) => chain,
+  target: form.fields.destinationChain.change,
 });
 
 sample({
   clock: formInitiated,
-  filter: ({ chain, asset }) => Boolean(chain) && Boolean(asset),
+  filter: ({ chain }) => Boolean(chain),
   fn: ({ chain }) => chain,
   target: form.fields.destinationChain.change,
 });
@@ -741,9 +802,25 @@ sample({
   target: form.fields.signatory.change,
 });
 
+const $initialDestination = createStore<string | null>(null).on(
+  formInitiated,
+  (_, { destination }) => destination ?? null,
+);
+
+const $isDestinationReadonly = $initialDestination.map(nonNullable);
+
 sample({
   clock: form.fields.destinationChain.change,
+  source: $initialDestination,
+  filter: (initialDestination) => !initialDestination,
   target: form.fields.destination.reset,
+});
+
+sample({
+  clock: formInitiated,
+  filter: ({ destination }) => Boolean(destination),
+  fn: ({ destination }) => destination!,
+  target: form.fields.destination.change,
 });
 
 sample({
@@ -1131,11 +1208,13 @@ export const formModel = {
   $isMyselfXcmEnabled,
   $isMyselfXcmOpened,
 
+  $availableChains,
   $destinationAccounts,
   $destinationChains,
   $destinationAsset,
   $destinationBalanceEd,
   $hasDestinationBalanceError,
+  $isDestinationReadonly,
 
   $fee: $networkFee,
   $pendingFee: $networkFeePending,
@@ -1165,12 +1244,20 @@ export const formModel = {
 
   $isPreparingTransaction,
 
+  $isAssetPredefined,
+  $isTokenSelectorOpen,
+
   formInitiated,
   formCleared: form.reset,
 
   myselfClicked,
   xcmDestinationSelected,
   xcmDestinationCancelled,
+
+  showTokenSelector,
+  hideTokenSelector,
+  assetChanged,
+  chainChanged,
 
   multisigDepositChanged,
 

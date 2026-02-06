@@ -1,22 +1,21 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { once, spread } from 'patronum';
+import { combine, createEvent, createStore, sample } from 'effector';
+import { spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
-import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type TransferConfirmStore, transferConfirmModel } from '@/features/operations/OperationsConfirm';
-import { type NetworkStore, type TransferStore, Step } from '../lib/types';
+import { type NetworkStoreParams, type TransferStore, Step } from '../lib/types';
 
 import { formModel } from './form-model';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent<NetworkStore>();
+const flowStarted = createEvent<NetworkStoreParams>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
@@ -24,7 +23,6 @@ const $step = createStore<Step>(Step.NONE);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $transferStore = createStore<TransferStore | null>(null);
-const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
 const $tx = createStore<Transaction | null>(null);
 const $coreTx = createStore<Transaction | null>(null);
@@ -32,7 +30,7 @@ const $coreTx = createStore<Transaction | null>(null);
 const $xcmChain = combine(
   {
     transferStore: $transferStore,
-    network: $networkStore,
+    network: formModel.$networkStore,
   },
   ({ transferStore, network }) => {
     if (!network || !transferStore) return null;
@@ -108,7 +106,7 @@ sample({
 const readyToConfirm = sample({
   clock: formModel.formSubmitted,
   source: {
-    networkStore: $networkStore,
+    networkStore: formModel.$networkStore,
   },
   fn: ({ networkStore }, form) => {
     if (nullable(networkStore) || !validateAddress(form.destination)) return null;
@@ -153,7 +151,7 @@ sample({
   clock: transferConfirmModel.confirmed,
   source: {
     transferStore: $transferStore,
-    networkStore: $networkStore,
+    networkStore: formModel.$networkStore,
     wrappedTx: $tx,
   },
   filter: ({ transferStore, networkStore, wrappedTx }) => {
@@ -183,7 +181,7 @@ sample({
   source: {
     step: $step,
     transferStore: $transferStore,
-    networkStore: $networkStore,
+    networkStore: formModel.$networkStore,
     coreTx: $coreTx,
     wrappedTx: $tx,
   },
@@ -221,13 +219,6 @@ sample({
 });
 
 sample({
-  clock: once({ source: flowFinished, reset: flowStarted }),
-  source: $redirectAfterSubmitPath,
-  fn: (path) => path || Paths.ASSETS,
-  target: navigationModel.events.navigateTo,
-});
-
-sample({
   clock: txSaved,
   source: {
     coreTx: $coreTx,
@@ -256,6 +247,7 @@ export const transferModel = {
   $step,
   $xcmChain,
   $initiatorWallet,
+  $redirectAfterSubmitPath,
 
   events: {
     flowStarted,

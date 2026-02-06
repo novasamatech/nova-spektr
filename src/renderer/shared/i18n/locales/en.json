@@ -2812,6 +2812,8 @@
     "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
+    "networkLabel": "Network",
+    "networkPlaceholder": "Select network",
     "noAmount": "Please provide amount",
     "noInitiatorError": "Please select operation initiator",
     "noSignatoryError": "Please select operation signatory",
@@ -2825,6 +2827,14 @@
     "pasteButton": "Paste",
     "recipientLabel": "Recipient",
     "recipientPlaceholder": "Address",
+    "tokenSelector": {
+      "title": "Select token to transfer",
+      "searchPlaceholder": "Search tokens",
+      "noSearchResults": "No tokens found",
+      "noSearchResultsDescription": "Try adjusting your search query",
+      "noTokens": "No tokens available",
+      "noTokensDescription": "You don't have any tokens with balance on this network"
+    },
     "requiredAmountError": "Please enter amount",
     "requiredDestinationError": "transfer.requiredDestinationError",
     "senderAccount": "Sender account",
