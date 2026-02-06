@@ -76,19 +76,6 @@ const getStatusSuffix = (operationStatus: 'pending' | 'executed' | 'cancelled' |
   }
 };
 
-const getBatchTitle = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): string => {
-  switch (operationStatus) {
-    case 'pending':
-      return 'notifications.toast.batch.multisigOperationsAdded';
-    case 'executed':
-      return 'notifications.toast.batch.multisigOperationsApproved';
-    case 'cancelled':
-      return 'notifications.toast.batch.multisigOperationsRejected';
-    case 'error':
-      return 'notifications.toast.batch.multisigOperationsError';
-  }
-};
-
 const getOperationNotificationTitle = (
   operation: MultisigOperation,
   chains: Record<ChainId, Chain>,
@@ -158,7 +145,7 @@ const createOperationNotification = (
       path: relativeLink,
     },
     batch: {
-      title: getBatchTitle(operation.status),
+      title: 'notifications.toast.batch.multisigOperationsUpdated',
       link: {
         title: 'notifications.toast.viewOperations',
         path: Paths.OPERATIONS,
@@ -215,9 +202,7 @@ const createEventNotification = (
       path: relativeLink,
     },
     batch: {
-      title: event.status === 'approve'
-        ? 'notifications.toast.batch.multisigOperationsApproved'
-        : 'notifications.toast.batch.multisigOperationsRejected',
+      title: 'notifications.toast.batch.multisigEventsUpdated',
       link: {
         title: 'notifications.toast.viewOperations',
         path: Paths.OPERATIONS,

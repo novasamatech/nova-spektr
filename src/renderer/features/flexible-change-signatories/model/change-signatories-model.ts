@@ -17,7 +17,7 @@ import {
   createTxValidationStore,
   createTxValidator,
 } from '@/shared/transactions';
-import { accountService, accounts, balanceService, multisigOperation } from '@/domains/network';
+import { type AnyAccount, accountService, accounts, balanceService, multisigOperation } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
@@ -36,6 +36,7 @@ import { signatoryModel } from './signatory-model';
 const flow = createGate<{ wallet: Wallet | null }>();
 
 const stepChanged = createEvent<Step>();
+const selectSignatory = createEvent<AnyAccount | null>();
 
 const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.close);
 
@@ -95,8 +96,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-// in the current implementation, the first signatory is always the signer
-const $signatory = $signatories.map((signatories) => signatories.at(0) ?? null);
+const $signatory = restore<AnyAccount | null>(selectSignatory, null).reset(flow.close);
+
+sample({
+  clock: $signatories,
+  filter: (signatories) => signatories.length === 1,
+  fn: (signatories) => signatories.at(0) ?? null,
+  target: $signatory,
+});
 
 const $signatoryBalance = combine(
   { balances: balanceModel.$balanceMap, signatory: $signatory, chain: formModel.$chain, asset: formModel.$asset },
@@ -483,6 +490,7 @@ sample({
 export const changeSignatoriesModel = {
   $step,
   $signer: $signatory,
+  $signatories,
   $initiatorWallet,
   $proxyDeposit,
   $multisigDeposit,
@@ -495,6 +503,7 @@ export const changeSignatoriesModel = {
   $fee,
   $isLoading,
   stepChanged,
+  selectSignatory,
   viewOperation,
   flow,
 };

@@ -30,29 +30,24 @@ export const NotificationsList = () => {
 
   return (
     <div className="mt-4 flex h-full w-full flex-1 flex-col items-center overflow-y-auto pl-6">
-      {notificationGroups.map(([date, notifications], index) => {
-        const strategy = index === 0 ? ('sync' as const) : ('idle' as const);
-        return (
-          <AsyncItem strategy={strategy} key={date}>
-            <section className="flex w-[736px] flex-col">
-              <Accordion initialOpen>
-                <Accordion.Trigger>
-                  <FootnoteText className="text-text-tertiary">{date}</FootnoteText>
-                </Accordion.Trigger>
-                <Accordion.Content>
-                  <ul className="mt-1 flex flex-col gap-y-1.5">
-                    {notifications.map((notification) => (
-                      <AsyncItem key={notification.id} strategy={strategy}>
-                        <NotificationRow notification={notification} />
-                      </AsyncItem>
-                    ))}
-                  </ul>
-                </Accordion.Content>
-              </Accordion>
-            </section>
-          </AsyncItem>
-        );
-      })}
+      {notificationGroups.map(([date, notifications]) => (
+        <section className="flex w-[736px] flex-col" key={date}>
+          <Accordion initialOpen>
+            <Accordion.Trigger>
+              <FootnoteText className="text-text-tertiary">{date}</FootnoteText>
+            </Accordion.Trigger>
+            <Accordion.Content>
+              <ul className="mt-1 flex flex-col gap-y-1.5">
+                {notifications.map((notification) => (
+                  <AsyncItem key={notification.id}>
+                    <NotificationRow notification={notification} />
+                  </AsyncItem>
+                ))}
+              </ul>
+            </Accordion.Content>
+          </Accordion>
+        </section>
+      ))}
     </div>
   );
 };
