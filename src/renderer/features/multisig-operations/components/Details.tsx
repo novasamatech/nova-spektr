@@ -30,7 +30,7 @@ import {
 } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { NamedAccount } from '@/widgets/NameResolver';
+import { NamedAccount, WalletName } from '@/widgets/NameResolver';
 
 type Props = {
   operation: MultisigOperation;
@@ -158,7 +158,9 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
           <DetailRow label={t('operation.details.senderProxiedWallet')}>
             <div className="flex max-w-none items-center gap-x-2">
               <WalletIcon type={proxied.wallet.type} size={16} />
-              <FootnoteText>{proxied.wallet.name}</FootnoteText>
+              <FootnoteText>
+                <WalletName wallet={proxied.wallet} />
+              </FootnoteText>
             </div>
           </DetailRow>
 
@@ -174,7 +176,9 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
         <DetailRow label={t('operation.details.multisigWallet')}>
           <div className="flex max-w-none items-center gap-x-2">
             <WalletIcon type={activeWallet.type} size={16} />
-            <FootnoteText>{activeWallet.name}</FootnoteText>
+            <FootnoteText>
+              <WalletName wallet={activeWallet} />
+            </FootnoteText>
           </div>
         </DetailRow>
       )}
@@ -183,7 +187,9 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
         <DetailRow label={t('transfer.signatoryLabel')} className="text-text-secondary">
           <Box direction="row" gap={2}>
             <WalletIcon type={signatoryWallet.type} size={16} />
-            <span>{signatoryWallet.name}</span>
+            <span>
+              <WalletName wallet={signatoryWallet} />
+            </span>
             {chain ? <AccountExplorers accountId={signatory.accountId} chain={chain} /> : null}
           </Box>
         </DetailRow>

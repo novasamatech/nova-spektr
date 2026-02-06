@@ -18,7 +18,7 @@ import { Accordion, FootnoteText, HelpText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance, AssetIcon, WalletAccountIcon } from '@/shared/ui-entities';
 import { Copy, Tooltip } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, useWalletName } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { OperationTitleStatus } from '@/entities/operations';
@@ -74,6 +74,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
     () => wallets.find(w => w.id === multisigAccount.walletId),
     [wallets, multisigAccount.walletId],
   );
+  const walletName = useWalletName(wallet);
 
   const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(multisigAccount);
   const coreTx = isFlexibleMultisigAccount ? findCoreTransaction(operation.transaction) : operation.transaction;
@@ -148,7 +149,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                 <div className="flex w-[240px] items-center gap-x-2">
                   <WalletAccountIcon address={accountAddress} type={wallet.type} size={32} iconSize={14} />
                   <div className="flex min-w-0 flex-col items-start gap-y-0.5">
-                    <FootnoteText className="truncate text-text-primary">{wallet.name}</FootnoteText>
+                    <FootnoteText className="truncate text-text-primary">{walletName}</FootnoteText>
                     <HelpText className="text-text-tertiary">{toShortAddress(accountAddress, 6)}</HelpText>
                   </div>
                 </div>
