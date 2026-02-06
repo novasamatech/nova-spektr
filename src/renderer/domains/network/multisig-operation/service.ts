@@ -199,4 +199,6 @@ export const multisigOperationService = {
 
   generateMultisigOperationDeepLink,
   generateMultisigOperationRelativeLink,
+
+  findInnerExtrinsicCall,
 };
