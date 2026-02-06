@@ -10,6 +10,7 @@ import { useNetworkData } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 
 import { ApproveTxModal } from './modals/ApproveTx';
+import { CallDataModal } from './modals/CallDataModal';
 import { RejectTxModal } from './modals/RejectTx';
 
 type Props = {
@@ -39,15 +40,16 @@ export const OperationActions = memo(({ operation, account }: Props) => {
   const isRejectAvailable = operation.status === 'pending' && hasRejectAccount;
 
   const isFinalSigning = account && operation.events.length === account.threshold - 1;
+  const hasValidCallData = operation.callData && validateCallData(operation.callData, operation.callHash);
   const isApproveAvailable =
-    operation.status === 'pending' &&
-    hasApproveAccount &&
-    (!isFinalSigning || (operation.callData && validateCallData(operation.callData, operation.callHash)));
+    operation.status === 'pending' && hasApproveAccount && (!isFinalSigning || hasValidCallData);
+
+  const needsCallData = operation.status === 'pending' && hasApproveAccount && isFinalSigning && !hasValidCallData;
 
   if (!chain) return null;
 
   return (
-    <div className="flex w-[140px] shrink-0 gap-x-2" onClick={e => e.stopPropagation()}>
+    <div className="flex shrink-0 gap-x-2" onClick={e => e.stopPropagation()}>
       {api && chain && isRejectAvailable && (
         <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
           <Button pallet="error" variant="fill" size="sm" className="flex-1">
@@ -61,6 +63,13 @@ export const OperationActions = memo(({ operation, account }: Props) => {
             {t('operation.approveButton')}
           </Button>
         </ApproveTxModal>
+      )}
+      {api && chain && needsCallData && (
+        <CallDataModal api={api} operation={operation} chain={chain}>
+          <Button size="sm" variant="chip" className="shrink-0 whitespace-nowrap">
+            {t('operation.callData.addCallDataButton')}
+          </Button>
+        </CallDataModal>
       )}
     </div>
   );
