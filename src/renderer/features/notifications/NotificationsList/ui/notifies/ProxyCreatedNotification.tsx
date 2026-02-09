@@ -1,45 +1,35 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type ProxyAction, ProxyVariant, WalletType } from '@/shared/core';
+import { type Chain, type ChainId, type ProxyAction, type Wallet, ProxyVariant, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { BodyText } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
-import { networkModel } from '@/entities/network';
 import { ProxyTypeOperation, proxyUtils } from '@/entities/proxy';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
 
 type Props = {
   notification: ProxyAction;
+  chains: Record<ChainId, Chain>;
+  wallets: Wallet[];
 };
 
-export const ProxyCreatedNotification = ({ notification }: Props) => {
+export const ProxyCreatedNotification = ({ notification, chains, wallets }: Props) => {
   const { t } = useI18n();
-  const chains = useUnit(networkModel.$chains);
 
-  // Get proxy wallet from proxyAccountId
-  const proxyWallet = useStoreMap({
-    store: walletModel.$wallets,
-    keys: [notification.proxyAccountId],
-    fn: (wallets, [accountId]) => {
-      return walletUtils.getWalletFilteredAccounts(wallets, {
-        accountFn: (account) => account.accountId === accountId,
-      });
-    },
-  });
+  const proxyWallet = useMemo(() => {
+    return walletUtils.getWalletFilteredAccounts(wallets, {
+      accountFn: (account) => account.accountId === notification.proxyAccountId,
+    });
+  }, [wallets, notification.proxyAccountId]);
 
-  // Get proxied wallet from proxiedAccountId
-  const proxiedWallet = useStoreMap({
-    store: walletModel.$wallets,
-    keys: [notification.proxiedAccountId],
-    fn: (wallets, [accountId]) => {
-      return walletUtils.getWalletFilteredAccounts(wallets, {
-        accountFn: (account) => account.accountId === accountId,
-      });
-    },
-  });
+  const proxiedWallet = useMemo(() => {
+    return walletUtils.getWalletFilteredAccounts(wallets, {
+      accountFn: (account) => account.accountId === notification.proxiedAccountId,
+    });
+  }, [wallets, notification.proxiedAccountId]);
 
   const accountId =
     notification.proxyVariant === ProxyVariant.PURE ? notification.proxiedAccountId : notification.proxyAccountId;

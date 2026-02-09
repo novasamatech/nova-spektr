@@ -113,6 +113,9 @@ importers:
       '@talismn/connect-wallets':
         specifier: 1.2.8
         version: 1.2.8(@polkadot/api@16.4.8)(@polkadot/extension-inject@0.58.1(@polkadot/api@16.4.8)(@polkadot/util@13.5.6))
+      '@tanstack/react-virtual':
+        specifier: 3.13.18
+        version: 3.13.18(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@uiw/react-json-view':
         specifier: 2.0.0-alpha.39
         version: 2.0.0-alpha.39(@babel/runtime@7.28.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -3573,14 +3576,14 @@ packages:
       '@polkadot/api': '>=9.3.3'
       '@polkadot/extension-inject': '>=0.44.6'
 
-  '@tanstack/react-virtual@3.11.2':
-    resolution: {integrity: sha512-OuFzMXPF4+xZgx8UzJha0AieuMihhhaWG0tCqpp6tDzlFwOmNBPYMuLOtMJ1Tr4pXLHmgjcWhG6RlknY2oNTdQ==}
+  '@tanstack/react-virtual@3.13.18':
+    resolution: {integrity: sha512-dZkhyfahpvlaV0rIKnvQiVoWPyURppl6w4m9IwMDpuIjcJ1sD9YGWrt0wISvgU7ewACXx2Ct46WPgI6qAD4v6A==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@tanstack/virtual-core@3.11.2':
-    resolution: {integrity: sha512-vTtpNt7mKCiZ1pwU9hfKPhpdVO2sVzFQsxoVBGtOSHxlrRRzYr8iQ2TlwbAcRYCcEiZ9ECAM8kBzH0v2+VzfKw==}
+  '@tanstack/virtual-core@3.13.18':
+    resolution: {integrity: sha512-Mx86Hqu1k39icq2Zusq+Ey2J6dDWTjDvEv43PJtRCoEYTLyfaPnxIQ6iy7YAOK0NV/qOEmZQ/uCufrppZxTgcg==}
 
   '@testing-library/dom@10.4.0':
     resolution: {integrity: sha512-pemlzrSESWbdAloYml3bAJMEfNh1Z7EduzqPKprCH5S341frlpYnUEW0H72dLxa6IsYr+mPno20GiSm+h9dEdQ==}
@@ -6296,7 +6299,7 @@ packages:
   glob@8.1.0:
     resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
     engines: {node: '>=12'}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   global-agent@3.0.0:
     resolution: {integrity: sha512-PT6XReJ+D07JvGoxQMkT6qji/jVNfX/h364XHZOWeRzy64sSFr+xJ5OX7LI3b4MPQzdL4H8Y8M0xzPpsVMwA8Q==}
@@ -11494,7 +11497,7 @@ snapshots:
 
   '@headlessui/react@1.7.19(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
-      '@tanstack/react-virtual': 3.11.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@tanstack/react-virtual': 3.13.18(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       client-only: 0.0.1
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
@@ -13787,13 +13790,13 @@ snapshots:
       '@polkadot/api': 16.4.8
       '@polkadot/extension-inject': 0.58.1(@polkadot/api@16.4.8)(@polkadot/util@13.5.6)
 
-  '@tanstack/react-virtual@3.11.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@tanstack/react-virtual@3.13.18(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
-      '@tanstack/virtual-core': 3.11.2
+      '@tanstack/virtual-core': 3.13.18
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
-  '@tanstack/virtual-core@3.11.2': {}
+  '@tanstack/virtual-core@3.13.18': {}
 
   '@testing-library/dom@10.4.0':
     dependencies:

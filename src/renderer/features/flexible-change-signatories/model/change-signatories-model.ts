@@ -17,7 +17,7 @@ import {
   createTxValidationStore,
   createTxValidator,
 } from '@/shared/transactions';
-import { accountService, accounts, balanceService, multisigOperation } from '@/domains/network';
+import { type AnyAccount, accountService, accounts, balanceService, multisigOperation } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
@@ -36,6 +36,9 @@ import { signatoryModel } from './signatory-model';
 const flow = createGate<{ wallet: Wallet | null }>();
 
 const stepChanged = createEvent<Step>();
+const selectSignatory = createEvent<AnyAccount | null>();
+const signerConfirmed = createEvent();
+const confirmGoBack = createEvent();
 
 const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.close);
 
@@ -95,8 +98,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-// in the current implementation, the first signatory is always the signer
-const $signatory = $signatories.map((signatories) => signatories.at(0) ?? null);
+const $signatory = restore<AnyAccount | null>(selectSignatory, null).reset(flow.close);
+
+sample({
+  clock: $signatories,
+  filter: (signatories) => signatories.length === 1,
+  fn: (signatories) => signatories.at(0) ?? null,
+  target: $signatory,
+});
 
 const $signatoryBalance = combine(
   { balances: balanceModel.$balanceMap, signatory: $signatory, chain: formModel.$chain, asset: formModel.$asset },
@@ -307,8 +316,7 @@ const $isEditOperationAlreadyExists = combine(
 
 const $isLoading = or($pendingFee, $pendingMultisigDeposit);
 
-const $canSubmit = and(
-  $valid,
+const $canProceedFromForm = and(
   formModel.$threshold.map((threshold) => nonNullable(threshold) && threshold > 0),
   not($isLoading),
   not($isTheSameMultisig),
@@ -317,16 +325,29 @@ const $canSubmit = and(
   not(signatoryModel.$hasDuplicateSignatories),
 );
 
+const $canSubmit = and($valid, $canProceedFromForm);
+
 // submit
+
+const $shouldShowSignerSelection = $signatories.map((s) => s.length > 1);
 
 sample({
   clock: formModel.formSubmit,
-  fn: () => Step.CONFIRM,
+  source: $shouldShowSignerSelection,
+  filter: Boolean,
+  fn: () => Step.SIGNER_SELECTION,
   target: stepChanged,
 });
 
-const formSubmitted = sample({
+sample({
   clock: formModel.formSubmit,
+  source: $shouldShowSignerSelection,
+  filter: (show) => !show,
+  target: signerConfirmed,
+});
+
+const formSubmitted = sample({
+  clock: signerConfirmed,
   source: {
     tx: $tx,
     coreTx: $coreTx,
@@ -368,6 +389,13 @@ sample({
     event: confirmModel.init,
     step: stepChanged,
   }),
+});
+
+sample({
+  clock: confirmGoBack,
+  source: $shouldShowSignerSelection,
+  fn: (show) => (show ? Step.SIGNER_SELECTION : Step.SIGNATORIES_THRESHOLD),
+  target: stepChanged,
 });
 
 sample({
@@ -483,6 +511,7 @@ sample({
 export const changeSignatoriesModel = {
   $step,
   $signer: $signatory,
+  $signatories,
   $initiatorWallet,
   $proxyDeposit,
   $multisigDeposit,
@@ -490,11 +519,15 @@ export const changeSignatoriesModel = {
   $isEditOperationAlreadyExists,
   $chain,
   $canSubmit,
+  $canProceedFromForm,
   $route,
   $errors,
   $fee,
   $isLoading,
   stepChanged,
+  selectSignatory,
+  signerConfirmed,
+  confirmGoBack,
   viewOperation,
   flow,
 };

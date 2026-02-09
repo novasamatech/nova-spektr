@@ -4,6 +4,7 @@ import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Alert, FootnoteText } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
+import { useWalletName } from '@/domains/network';
 
 type Props = {
   wallet: Wallet;
@@ -15,12 +16,13 @@ type Props = {
 
 export const ProxyWalletAlert = ({ wallet, fee, balance, symbol, onClose }: Props) => {
   const { t } = useI18n();
+  const walletName = useWalletName(wallet);
 
   const component = (
     <span className="mx-1 inline-flex max-w-[200px] items-center gap-x-1 align-bottom">
       <WalletIcon type={wallet.type} size={16} />
       <FootnoteText as="span" className="truncate text-text-secondary transition-colors">
-        {wallet.name}
+        {walletName}
       </FootnoteText>
     </span>
   );
