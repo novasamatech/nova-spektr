@@ -114,6 +114,7 @@ const rootValidateFileFx = createEffect<ValidateFileParams, ValidateFileResults,
 
   for (let i = 0; i < params.parsedFile.length; i++) {
     const record = params.parsedFile[i];
+    if (nullable(record)) continue;
 
     const parsedRecipient = multiTransferUtils.parseRecipientField(
       record.recipient.raw,
@@ -567,7 +568,7 @@ sample({
   },
   filter: ({ chains, selectedChain }) =>
     chains.length > 0 && (nullable(selectedChain) || !chains.some((chain) => chain.chainId === selectedChain.chainId)),
-  fn: ({ chains }) => chains[0],
+  fn: ({ chains }) => chains[0] ?? null,
   target: form.fields.chain.change,
 });
 

@@ -273,6 +273,8 @@ function maxOngoingConvictionEnd(
   undecidingTimeout: BlockHeight,
 ): BlockHeight {
   const trackInfo = tracks[trackId];
+  if (!trackInfo) return 0;
+
   const decisionPeriod = trackInfo.decisionPeriod;
   const blocksAfterCompleted = voteMaxLockDuration(vote, voteLockingPeriod);
 
@@ -332,7 +334,7 @@ function combineSameUnlockAt(claimableLocks: ClaimableLock[]): [ClaimTime, Claim
       { claimAt: { type: 'until' }, amount: BN_ZERO, affected: [] },
     );
 
-    acc.push([locks[0].claimAt, combinedLock]);
+    acc.push([locks[0]!.claimAt, combinedLock]);
 
     return acc;
   }, []);
@@ -441,7 +443,7 @@ function toClaimActions(claimAffects: ClaimAffect[]): ClaimAction[] {
         });
       }
 
-      acc.push({ type: 'unlock', trackId: trackAffects.votes[0].trackId });
+      acc.push({ type: 'unlock', trackId: trackAffects.votes[0]!.trackId });
     }
 
     return acc;

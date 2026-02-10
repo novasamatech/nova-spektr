@@ -1,5 +1,5 @@
 import { type ChainId, type VaultChainAccount, type VaultShardAccount, type Wallet } from '@/shared/core';
-import { downloadFiles } from '@/shared/lib/utils';
+import { downloadFiles, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountUtils } from '@/entities/wallet';
 
@@ -11,7 +11,8 @@ function getExportStructure(rootAccountId: AccountId, accounts: (VaultChainAccou
   output += `public address: ${rootAccountId}\n`;
 
   for (const account of accounts) {
-    const chainId = Array.isArray(account) ? account[0].chainId : account.chainId;
+    const chainId = Array.isArray(account) ? account[0]?.chainId : account.chainId;
+    if (nullable(chainId)) continue;
     if (!set.has(chainId)) {
       set.add(chainId);
       output += `genesis: ${chainId}\n`;

@@ -100,8 +100,8 @@ export const DappContainer = ({ id }: Props) => {
     });
 
     const polkadotChain = allChains[RelayChains.POLKADOT];
-    const provider = polkadotChain ? getWsProvider(polkadotChain.nodes.map((n) => n.url)) : null;
-    if (provider) {
+    const provider = polkadotChain ? getWsProvider(polkadotChain.nodes.map((n: { url: string }) => n.url)) : null;
+    if (provider && polkadotChain) {
       container.connectToPapiProvider(RelayChains.POLKADOT, provider);
     }
 

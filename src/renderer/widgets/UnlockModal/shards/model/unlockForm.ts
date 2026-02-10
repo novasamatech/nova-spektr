@@ -5,7 +5,7 @@ import { t } from 'i18next';
 
 import { type ClaimChunkWithAccountId } from '@/shared/api/governance';
 import { type Asset, type Chain, type ProxiedAccount, type Transaction } from '@/shared/core';
-import { ZERO_BALANCE, dictionary, nonNullable, transferableAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, dictionary, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -155,7 +155,7 @@ const $unlockForm = createForm<FormParams>({
             }, []);
 
             return form.shards.every((_: AccountWithClaim, index: number) => {
-              return new BN(fee).lte(new BN(accountsBalances[index]));
+              return new BN(fee).lte(new BN(accountsBalances[index] ?? 0));
             });
           },
         },
@@ -213,7 +213,7 @@ const $txWrappers = combine(
     return transactionService.getTxWrappers({
       wallet,
       wallets: filteredWallets || [],
-      account: shards[0],
+      account: shards[0]!,
       signatories,
     });
   },
@@ -226,9 +226,9 @@ const $realAccounts = combine(
   },
   ({ txWrappers, shards }) => {
     if (shards.length === 0) return [];
-    if (txWrappers.length === 0) return shards;
 
     const firstWrapper = txWrappers[0];
+    if (nullable(firstWrapper)) return shards;
 
     if (transactionService.isMultisig(firstWrapper)) {
       return [firstWrapper.multisigAccount];
@@ -247,7 +247,7 @@ const $proxyWallet = combine(
   ({ isProxy, accounts, wallets }) => {
     if (!isProxy || accounts.length === 0) return undefined;
 
-    return walletUtils.getWalletById(wallets, accounts[0].walletId);
+    return walletUtils.getWalletById(wallets, accounts[0]!.walletId);
   },
   { skipVoid: false },
 );
@@ -276,9 +276,12 @@ const $isChainConnected = combine(
     statuses: networkModel.$connectionStatuses,
   },
   ({ chainId, statuses }) => {
-    if (!chainId) return false;
+    if (nullable(chainId)) return false;
 
-    return networkUtils.isConnectedStatus(statuses[chainId]);
+    const status = statuses[chainId];
+    if (nullable(status)) return false;
+
+    return networkUtils.isConnectedStatus(status);
   },
 );
 
@@ -316,7 +319,7 @@ const $transactions = combine(
 
     return pureTxs.map((tx) =>
       transactionService.getWrappedTransaction({
-        api: apis[chain.chainId],
+        api: apis[chain.chainId]!,
         transaction: tx,
         txWrappers,
       }),
@@ -471,7 +474,7 @@ sample({
   fn: ({ balances, network, proxyAccounts }) => {
     const balance = balanceUtils.getBalance(
       balances,
-      proxyAccounts[0].accountId,
+      proxyAccounts[0]!.accountId,
       network!.chain.chainId,
       network!.asset.assetId,
     );
@@ -507,7 +510,7 @@ sample({
       formData: {
         ...fee,
         ...rest,
-        initiator: realAccounts[0],
+        initiator: realAccounts[0] ?? null,
         shards: realAccounts,
         amount: formData.amount,
         chain: network!.chain,

@@ -139,7 +139,7 @@ const LogModal = ({ isOpen, onClose, operation, account, chain }: Props) => {
                   .sort((a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0))
                   .map(event => {
                     const account = filteredAccountMap[event.accountId];
-                    const wallet = filteredWalletsMap[account?.walletId];
+                    const wallet = account ? filteredWalletsMap[account.walletId] : undefined;
 
                     const explorerLinks =
                       event.blockCreated && Number.isInteger(event.blockCreated) && chain?.explorers

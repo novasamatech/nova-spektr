@@ -24,7 +24,7 @@ export const getExtrinsic: Record<
   [TransactionType.TRANSFER]: ({ dest, value }, api) => {
     return api.tx.balances.transferKeepAlive
       ? api.tx.balances.transferKeepAlive(dest, value)
-      : api.tx.balances.transfer(dest, value);
+      : api.tx.balances.transfer!(dest, value);
   },
   [TransactionType.TRANSFER_ALL]: ({ dest, keepAlive = false }, api) => {
     return api.tx.balances.transferAll(dest, keepAlive);
@@ -36,26 +36,26 @@ export const getExtrinsic: Record<
     return api.tx.vesting.vestedTransfer(target, { locked, startingBlock, perBlock });
   },
   [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset, palletName = 'assets' }, api) => {
-    const type = api.tx[palletName].transfer.meta.args[0].type;
+    const type = api.tx[palletName]!.transfer!.meta.args[0]!.type;
     // @ts-expect-error Incorrect polkadot-js/api types
     const location = api.createType(type, prepareAssetForType(asset));
 
-    return api.tx[palletName].transfer(location, dest, value);
+    return api.tx[palletName]!.transfer!(location, dest, value);
   },
   [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => {
     if (api.tx.currencies) {
-      const type = api.tx.currencies.transfer.meta.args[1].type;
+      const type = api.tx.currencies!.transfer!.meta.args[1]!.type;
       // @ts-expect-error Incorrect polkadot-js/api types
       const location = api.createType(type, prepareAssetForType(asset));
 
-      return api.tx.currencies.transfer(dest, location, value);
+      return api.tx.currencies!.transfer!(dest, location, value);
     }
 
-    const type = api.tx.tokens.transfer.meta.args[1].type;
+    const type = api.tx.tokens!.transfer!.meta.args[1]!.type;
     // @ts-expect-error Incorrect polkadot-js/api types
     const location = api.createType(type, prepareAssetForType(asset));
 
-    return api.tx.tokens.transfer(dest, location, value);
+    return api.tx.tokens!.transfer!(dest, location, value);
   },
   [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) => {
     return isOldMultisigPallet(api)
@@ -145,13 +145,13 @@ export const getExtrinsic: Record<
   },
   [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: ({ pallet, proposal, track, poll, aye, after }, api) => {
     const transactions: SubmittableExtrinsic<'promise'>[] = [
-      api.tx[`${pallet}Referenda`].submit(
+      api.tx[`${pallet}Referenda`]!.submit!(
         { FellowshipOrigins: { [track]: null } },
         { Inline: proposal },
         { After: after },
       ),
-      api.tx[`${pallet}Referenda`].placeDecisionDeposit(poll),
-      api.tx[`${pallet}Collective`].vote(poll, aye),
+      api.tx[`${pallet}Referenda`]!.placeDecisionDeposit!(poll),
+      api.tx[`${pallet}Collective`]!.vote!(poll, aye),
     ];
     return api.tx.utility.batchAll(transactions.map((call) => call.method));
   },
@@ -173,13 +173,13 @@ export const getExtrinsic: Record<
     return collectiveCorePallet.extrinsic.submitEvidence(pallet, api, wish, evidence);
   },
   [TransactionType.COLLECTIVE_SALARY_INDUCT]: ({ pallet }, api) => {
-    return api.tx[`${pallet}Salary`].induct();
+    return api.tx[`${pallet}Salary`]!.induct!();
   },
   [TransactionType.COLLECTIVE_SALARY_REQUEST]: ({ pallet }, api) => {
-    return api.tx[`${pallet}Salary`].register();
+    return api.tx[`${pallet}Salary`]!.register!();
   },
   [TransactionType.COLLECTIVE_SALARY_PAYOUT]: ({ pallet, beneficiary }, api) => {
-    return beneficiary ? api.tx[`${pallet}Salary`].payoutOther(beneficiary) : api.tx[`${pallet}Salary`].payout();
+    return beneficiary ? api.tx[`${pallet}Salary`]!.payoutOther!(beneficiary) : api.tx[`${pallet}Salary`]!.payout!();
   },
 };
 

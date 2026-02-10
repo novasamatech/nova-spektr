@@ -292,7 +292,7 @@ export const validatePrecision = (amount: string, precision: number) => {
   const [integer, decimal] = amount.split('.');
   if (decimal && decimal.length > precision) return false;
 
-  return integer.length <= MAX_INTEGER;
+  return (integer?.length ?? 0) <= MAX_INTEGER;
 };
 
 export const formatGroups = (amount: string): string => {
@@ -305,10 +305,10 @@ export const formatGroups = (amount: string): string => {
 
   const [integer, decimal] = amount.split('.');
   const groups = [];
-  let index = integer.length;
+  let index = integer?.length ?? 0;
 
   while (index > 0) {
-    groups.push(integer.slice(Math.max(0, index - 3), index));
+    groups.push(integer?.slice(Math.max(0, index - 3), index));
     index -= 3;
   }
 

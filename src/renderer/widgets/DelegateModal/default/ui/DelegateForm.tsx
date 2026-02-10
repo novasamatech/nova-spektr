@@ -237,14 +237,14 @@ const FeeSection = () => {
             </>
           }
         >
-          <Fee fee={multisigDeposit} asset={network.chain.assets[0]} />
+          <Fee fee={multisigDeposit} asset={network.chain.assets[0]!} />
         </DetailRow>
       )}
 
       <FeeWithLabel
         fee={fee}
         isLoading={pendingFee}
-        asset={network.chain.assets[0]}
+        asset={network.chain.assets[0]!}
         label={t('staking.networkFee', { count: 1 })}
       />
     </div>

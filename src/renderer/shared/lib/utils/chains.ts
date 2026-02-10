@@ -54,12 +54,14 @@ export const getExtrinsicExplorer = (explorer: Explorer, hash: HexString): strin
  * @returns {WellKnownChain | undefined}
  */
 export function getKnownChain(chainId: ChainId): WellKnownChain | undefined {
-  return {
-    [RelayChains.POLKADOT]: WellKnownChain.polkadot,
-    [RelayChains.KUSAMA]: WellKnownChain.ksmcc3,
-    [RelayChains.WESTEND]: WellKnownChain.westend2,
-    [RelayChains.ROCOCO]: WellKnownChain.rococo_v2_2,
-  }[chainId];
+  return (
+    {
+      [RelayChains.POLKADOT]: WellKnownChain.polkadot,
+      [RelayChains.KUSAMA]: WellKnownChain.ksmcc3,
+      [RelayChains.WESTEND]: WellKnownChain.westend2,
+      [RelayChains.ROCOCO]: WellKnownChain.rococo_v2_2,
+    } as Record<string, WellKnownChain>
+  )[chainId];
 }
 
 /**

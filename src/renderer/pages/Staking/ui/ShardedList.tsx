@@ -83,7 +83,7 @@ export const ShardedList = ({
                 {shardsStake.length}
               </FootnoteText>
               <FootnoteText className="truncate text-text-secondary first-letter:uppercase">
-                {shardsStake[0].account.name}
+                {shardsStake[0]?.account.name}
               </FootnoteText>
               <Tooltip>
                 <Tooltip.Trigger>

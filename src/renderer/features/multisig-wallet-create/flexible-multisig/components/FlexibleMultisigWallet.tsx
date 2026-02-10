@@ -76,8 +76,8 @@ export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }:
     <>
       <Modal
         isOpen={isOpen}
-        size={MODAL_SIZE[activeStep].size}
-        height={MODAL_SIZE[activeStep].height}
+        size={MODAL_SIZE[activeStep]!.size}
+        height={MODAL_SIZE[activeStep]!.height}
         onToggle={handleClose}
       >
         <Modal.Trigger>{children}</Modal.Trigger>

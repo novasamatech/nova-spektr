@@ -20,10 +20,11 @@ async function getSubIdentities(api: ApiPromise, accounts: AccountId[]): Promise
   const subIdentities = await api.query.identity.superOf.multi(accounts);
 
   return subIdentities.map<SubIdentity>((identity, index) => {
+    const account = accounts[index]!;
     if (identity.isNone) {
       return {
-        sub: accounts[index],
-        parent: accounts[index],
+        sub: account,
+        parent: account,
         subName: '',
       };
     }
@@ -31,7 +32,7 @@ async function getSubIdentities(api: ApiPromise, accounts: AccountId[]): Promise
     const [address, rawData] = identity.unwrap();
 
     return {
-      sub: accounts[index],
+      sub: account,
       parent: toAccountId(address.toHuman()),
       subName: rawData.isRaw ? u8aToString(rawData.asRaw) : rawData.value.toString(),
     };
@@ -50,6 +51,8 @@ async function getParentIdentities(api: ApiPromise, subIdentities: SubIdentity[]
     }
 
     const subIdentity = subIdentities[index];
+    if (!subIdentity) continue;
+
     const identity = identityOption.unwrap();
     // HINT: in runtime 1_4_0 unwrappedIdentity returns Option<(identity, rest)>
     const data = ('info' in identity ? identity : identity[0]) as PalletIdentityRegistration;

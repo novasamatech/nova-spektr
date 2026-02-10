@@ -3,6 +3,7 @@ import { spread } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type ChainId, type Connection, type RpcNode, ConnectionType } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 
 const lightClientSelected = createEvent<ChainId>();
@@ -19,8 +20,9 @@ const updateConnectionFx = createEffect((connection: Connection): Promise<Connec
 sample({
   clock: autoBalanceSelected,
   source: networkModel.$connections,
+  filter: (connections, chainId) => nonNullable(connections[chainId]),
   fn: (connections, chainId) => ({
-    ...connections[chainId],
+    ...connections[chainId]!,
     connectionType: ConnectionType.AUTO_BALANCE,
     activeNode: undefined,
   }),
@@ -30,8 +32,9 @@ sample({
 sample({
   clock: lightClientSelected,
   source: networkModel.$connections,
+  filter: (connections, chainId) => nonNullable(connections[chainId]),
   fn: (connections, chainId) => ({
-    ...connections[chainId],
+    ...connections[chainId]!,
     connectionType: ConnectionType.LIGHT_CLIENT,
     activeNode: undefined,
   }),
@@ -41,8 +44,9 @@ sample({
 sample({
   clock: rpcNodeSelected,
   source: networkModel.$connections,
+  filter: (connections, { chainId }) => nonNullable(connections[chainId]),
   fn: (connections, { chainId, node }) => ({
-    ...connections[chainId],
+    ...connections[chainId]!,
     connectionType: ConnectionType.RPC_NODE,
     activeNode: node,
   }),
@@ -52,8 +56,9 @@ sample({
 sample({
   clock: networkDisabled,
   source: networkModel.$connections,
+  filter: (connections, chainId) => nonNullable(connections[chainId]),
   fn: (connections, chainId) => ({
-    ...connections[chainId],
+    ...connections[chainId]!,
     connectionType: ConnectionType.DISABLED,
     activeNode: undefined,
   }),
@@ -76,7 +81,7 @@ sample({
     const chainId = connection!.chainId;
     const update = { ...connections, [chainId]: connection };
 
-    const isOldEnabled = networkUtils.isEnabledConnection(connections[chainId]);
+    const isOldEnabled = networkUtils.isEnabledConnection(connections[chainId]!);
     const isNewEnabled = networkUtils.isEnabledConnection(connection!);
     if (isOldEnabled && isNewEnabled) {
       return { update, reconnectMap: { ...reconnectMap, [chainId]: true } };
@@ -109,7 +114,7 @@ sample({
   clock: networkModel.output.connectionStatusChanged,
   source: $reconnectMap,
   filter: (reconnectMap, { status, chainId }) => {
-    return reconnectMap[chainId] && networkUtils.isDisconnectedStatus(status);
+    return (reconnectMap[chainId] && networkUtils.isDisconnectedStatus(status)) ?? false;
   },
   fn: (reconnectMap, { chainId }) => {
     const { [chainId]: _, ...rest } = reconnectMap;

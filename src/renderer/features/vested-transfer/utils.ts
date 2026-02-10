@@ -229,13 +229,13 @@ function validateCSV(records: VestingScheduleRaw[], options: ValidationSchemaOpt
     const record = records[i];
     const rowIndex = i + 1;
 
-    const targetAccountId = toAccountId(record.target);
+    const targetAccountId = toAccountId(record?.target ?? '');
 
     // Build target occurrences map
     targetOccurrences[targetAccountId] = (targetOccurrences[targetAccountId] ?? 0) + 1;
     validationOptions.targetOccurrences = targetOccurrences;
 
-    const schedulesToAdd = nonNullable(record.unlockedAtStartBlock) ? 2 : 1;
+    const schedulesToAdd = nonNullable(record?.unlockedAtStartBlock) ? 2 : 1;
     if (nullable(validationOptions.existingVestingSchedules[targetAccountId])) {
       validationOptions.existingVestingSchedules[targetAccountId] = schedulesToAdd;
     } else {

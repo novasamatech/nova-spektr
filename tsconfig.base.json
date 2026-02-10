@@ -29,6 +29,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
+    "noUncheckedIndexedAccess": true,
     "types": ["@polkadot/api-augment", "@testing-library/jest-dom", "vitest/globals"]
   }
 }

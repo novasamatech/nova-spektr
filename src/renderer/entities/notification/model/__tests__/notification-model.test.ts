@@ -227,7 +227,7 @@ describe('entities/notification/model/notification-model', () => {
       // Try to add notification with same key
       const duplicateNotification: CreateNotificationParams[] = [
         {
-          ...newNotificationParams[0],
+          ...newNotificationParams[0]!,
           key: 'test-key-1', // Same key as existing
         },
       ];
@@ -596,7 +596,7 @@ describe('entities/notification/model/notification-model', () => {
       await allSettled(notificationModel.events.notificationEdited, { scope, params: editedNotification });
 
       const result = scope.getState(notificationModel.$notifications);
-      expect(result[0].title).toBe('Updated title');
+      expect(result[0]!.title).toBe('Updated title');
     });
   });
 
@@ -727,7 +727,7 @@ describe('entities/notification/model/notification-model', () => {
         title: 'Operation op-1',
         status: 'info',
       });
-      expect(toasts[0].count).toBeUndefined();
+      expect(toasts[0]?.count).toBeUndefined();
     });
 
     test('should keep different notification types in separate groups even with the same batch title', async () => {

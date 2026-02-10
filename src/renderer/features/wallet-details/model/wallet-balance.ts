@@ -57,7 +57,7 @@ const $walletBalance = combine(
 
       if (!asset?.priceId || !prices[asset.priceId]) return acc;
 
-      const price = prices[asset.priceId][currency.coingeckoId];
+      const price = prices[asset.priceId]![currency.coingeckoId];
       if (price) {
         const fiatBalance = getRoundedValue(totalAmount(balance), price.price, asset.precision);
         acc = acc.plus(new BigNumber(fiatBalance));

@@ -30,7 +30,7 @@ export const PayeeRules = {
 
         const amountBN = new BN(formatAmount(form.amount, network.asset.precision));
 
-        return shards.every((_, index) => balanceValidation.isLteThanBalance(amountBN, accountsBalances[index]));
+        return shards.every((_, index) => balanceValidation.isLteThanBalance(amountBN, accountsBalances[index]!));
       },
     }),
   },

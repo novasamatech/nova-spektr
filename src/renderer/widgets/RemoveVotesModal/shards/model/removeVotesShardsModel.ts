@@ -163,18 +163,22 @@ sample({
       return [];
     }
 
-    return accounts.map<RemoveVoteConfirm>((account, index) => ({
-      id: index,
-      api,
-      asset,
-      chain,
-      initiator: account,
-      votes: votes.filter((vote) => vote.voter === account.accountId),
-      signatory: account,
-      route: [account],
-      tx: wrappedTxs[index].wrappedTx,
-      coreTx: wrappedTxs[index].coreTx!,
-    }));
+    return accounts.map<RemoveVoteConfirm>((account, index) => {
+      const wrappedTx = wrappedTxs[index]!;
+
+      return {
+        id: index,
+        api,
+        asset,
+        chain,
+        initiator: account,
+        votes: votes.filter((vote) => vote.voter === account.accountId),
+        signatory: account,
+        route: [account],
+        tx: wrappedTx.wrappedTx,
+        coreTx: wrappedTx.coreTx!,
+      };
+    });
   },
   target: removeVoteConfirmModel.init,
 });

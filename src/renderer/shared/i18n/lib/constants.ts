@@ -46,4 +46,4 @@ export const Locales: Record<string, SupportedLocale> = {
   en: 'en',
 };
 
-export const DEFAULT_LOCALE = Locales.en;
+export const DEFAULT_LOCALE: SupportedLocale = 'en';

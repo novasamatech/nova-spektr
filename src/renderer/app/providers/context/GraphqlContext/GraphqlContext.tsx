@@ -79,7 +79,7 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   useEffect(() => {
-    changeClient(localStorageService.getFromStorage(STAKING_NETWORK, DEFAULT_STAKING_CHAIN));
+    changeClient(localStorageService.getFromStorage(STAKING_NETWORK, DEFAULT_STAKING_CHAIN)!);
   }, []);
 
   const value = useMemo(() => ({ changeClient }), []);

@@ -68,8 +68,9 @@ function getProxyAccountsOnChain(
   if (accounts.length === 0) return {};
 
   const proxiesForAccounts = uniqBy(accounts, 'accountId').reduce<ProxyAccount[]>((acc, account) => {
-    if (proxies[account.accountId]) {
-      acc.push(...proxies[account.accountId]);
+    const accountProxies = proxies[account.accountId];
+    if (accountProxies) {
+      acc.push(...accountProxies);
     }
 
     return acc;
@@ -80,8 +81,9 @@ function getProxyAccountsOnChain(
 
   return sortedProxiesAccount.reduce((acc, proxy) => {
     if (chains.includes(proxy.chainId)) {
-      if (proxy.chainId in acc) {
-        acc[proxy.chainId].push(proxy);
+      const existing = acc[proxy.chainId];
+      if (existing) {
+        existing.push(proxy);
       } else {
         acc[proxy.chainId] = [proxy];
       }

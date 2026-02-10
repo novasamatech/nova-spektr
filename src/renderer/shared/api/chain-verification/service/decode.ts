@@ -40,9 +40,9 @@ const decodeHeaderByte = (header: number) => {
 
 const decodeHeader = (reader: Uint8Array): [number, number] => {
   let currentIndex = 0;
-  const headerByte = reader[currentIndex];
+  const headerByte = reader[currentIndex]!;
   currentIndex = 1;
-  const [variant, partialKeyLengthHeader] = decodeHeaderByte(headerByte);
+  const [variant = 0, partialKeyLengthHeader = 0] = decodeHeaderByte(headerByte);
 
   let partialKeyLength = partialKeyLengthHeader;
 
@@ -90,7 +90,7 @@ const decodeKey = (reader: Uint8Array, keyLength: number): [Uint8Array, number] 
 };
 
 const decodeLength = (value: Uint8Array): [number, number] => {
-  const firstByte = value[0];
+  const firstByte = value[0]!;
 
   const mode = firstByte & 3;
 
@@ -99,10 +99,10 @@ const decodeLength = (value: Uint8Array): [number, number] => {
   }
 
   if (mode === 1) {
-    return [(firstByte + value[1]) >> 2, mode];
+    return [(firstByte + value[1]!) >> 2, mode];
   }
 
-  return [value[0], 0];
+  return [value[0]!, 0];
 };
 
 const decodeLeaf = (reader: Uint8Array, keyLen: number): Node => {
@@ -134,7 +134,7 @@ const decodeBranch = (reader: Uint8Array, variant: number, keyLen: number): Node
   let currentIndex = length + 2;
 
   for (let i = 0; i < 16; i++) {
-    const children = i < 8 ? childrenBitmap[0] : childrenBitmap[1];
+    const children = i < 8 ? childrenBitmap[0]! : childrenBitmap[1]!;
 
     if (((children >> i % 8) & 1) !== 1) {
       continue;

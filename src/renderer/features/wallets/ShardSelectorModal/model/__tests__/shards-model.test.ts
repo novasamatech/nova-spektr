@@ -22,9 +22,9 @@ describe('features/wallet/model/shards-model', () => {
 
     await allSettled(shardsModel.events.structureRequested, { scope, params: true });
 
-    const shards = [vaultAccounts[0].chainId, [vaultAccounts[0], vaultAccounts[1]]];
-    const accounts_1 = [vaultAccounts[2].chainId, [vaultAccounts[2]]];
-    const accounts_2 = [vaultAccounts[3].chainId, [vaultAccounts[3]]];
+    const shards = [vaultAccounts[0]!.chainId, [vaultAccounts[0]!, vaultAccounts[1]!]];
+    const accounts_1 = [vaultAccounts[2]!.chainId, [vaultAccounts[2]!]];
+    const accounts_2 = [vaultAccounts[3]!.chainId, [vaultAccounts[3]!]];
 
     const expectedStruct = {
       rootAccountId: vaultWallet.rootAccountId,
