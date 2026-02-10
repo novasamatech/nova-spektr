@@ -727,7 +727,7 @@ describe('entities/notification/model/notification-model', () => {
         title: 'Operation op-1',
         status: 'info',
       });
-      expect(toasts[0].count).toBeUndefined();
+      expect(toasts[0]?.count).toBeUndefined();
     });
 
     test('should keep different notification types in separate groups even with the same batch title', async () => {

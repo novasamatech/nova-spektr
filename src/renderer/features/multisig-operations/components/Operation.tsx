@@ -58,9 +58,9 @@ export type OperationTitle = {
 
 export const operationTitleTransformer = createTransformer<
   {
-    operation?: MultisigOperation;
+    operation: MultisigOperation | null;
     showCoreTransaction?: boolean;
-    chains?: Record<ChainId, Chain>;
+    chains: Record<ChainId, Chain> | null;
     asset?: Asset | null;
     t?: TFunction;
   },
