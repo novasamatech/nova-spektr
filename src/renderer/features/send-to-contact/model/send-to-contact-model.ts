@@ -1,7 +1,7 @@
 import { createEvent, createStore, sample } from 'effector';
 
 import { type Contact } from '@/shared/core';
-import { defaultTransferModel } from '@/widgets/Transfer';
+import { defaultTransferModel } from '@/features/transfer';
 
 const sendToContactStarted = createEvent<Contact>();
 const flowClosed = createEvent();

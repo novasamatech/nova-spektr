@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { networkModel } from '@/entities/network';
-import { DefaultTransfer } from '@/widgets/Transfer';
+import { DefaultTransfer } from '@/features/transfer';
 import { sendToContactModel } from '../model/send-to-contact-model';
 
 export const SendToContactModal = () => {

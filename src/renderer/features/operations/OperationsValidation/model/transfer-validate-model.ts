@@ -7,7 +7,7 @@ import { getAssetById, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
-import { type BalanceMap as TransferBalanceMap, type NetworkStore } from '@/widgets/Transfer';
+import { type BalanceMap as TransferBalanceMap, type NetworkStore } from '@/features/transfer';
 import { TransferRules } from '../lib/transfer-rules';
 import { validationUtils } from '../lib/validation-utils';
 import {

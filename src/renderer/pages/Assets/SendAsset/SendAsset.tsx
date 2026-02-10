@@ -6,7 +6,7 @@ import { CheckPermission, OperationType } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AssetRouteGuard } from '@/features/assets';
 import { navigationModel } from '@/features/navigation';
-import { DefaultTransfer, defaultTransferModel } from '@/widgets/Transfer';
+import { DefaultTransfer, defaultTransferModel } from '@/features/transfer';
 
 export const SendAsset = () => {
   const wallet = useUnit(walletSelect.$selectedWallet);
