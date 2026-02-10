@@ -1,13 +1,15 @@
 import { useUnit } from 'effector-react';
-import { type ComponentProps, type PropsWithChildren, useState } from 'react';
+import { type ComponentProps, type PropsWithChildren, useMemo, useState } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Step, isStep, toAccountId } from '@/shared/lib/utils';
+import { Step, getNativeAsset, isStep, toAccountId, transferableAmount } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { Alert, Button, ButtonLink, Icon, InputHint, SmallTitleText } from '@/shared/ui';
-import { TransactionValidationError } from '@/shared/ui-entities';
+import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, Modal, Select } from '@/shared/ui-kit';
+import { accounts } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { walletModel } from '@/entities/wallet';
 import { OperationSign } from '@/features/operations';
@@ -22,6 +24,7 @@ import { Signatory } from './components/Signatory';
 
 const MODAL_SIZE: Record<string, Pick<ComponentProps<typeof Modal>, 'size' | 'height'>> = {
   [Step.SIGNATORIES_THRESHOLD]: { size: 'mdlg', height: 'full' },
+  [Step.SIGNER_SELECTION]: { size: 'md', height: 'fit' },
   [Step.SIGN]: { size: 'md', height: 'fit' },
   [Step.CONFIRM]: { size: 'md', height: 'fit' },
   [Step.SUBMIT]: { size: 'md', height: 'fit' },
@@ -39,6 +42,7 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
 
   const step = useUnit(changeSignatoriesModel.$step);
   const canSubmit = useUnit(changeSignatoriesModel.$canSubmit);
+  const canProceedFromForm = useUnit(changeSignatoriesModel.$canProceedFromForm);
   const chain = useUnit(changeSignatoriesModel.$chain);
   const errors = useUnit(changeSignatoriesModel.$errors);
   const threshold = useUnit(formModel.$threshold);
@@ -48,8 +52,27 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
   const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
   const signatories = useUnit(signatoryModel.$signatories);
   const wallets = useUnit(walletModel.$wallets);
+  const balances = useUnit(balanceModel.$balanceMap);
+  const allAccounts = useUnit(accounts.$list);
+  const signatoriesForSelect = useUnit(changeSignatoriesModel.$signatories);
+  const selectedSignatory = useUnit(changeSignatoriesModel.$signer);
 
   const thresholdDisabled = signatories.length < 2 || signatories.some((s) => s.address === '');
+
+  const asset = chain ? getNativeAsset(chain.assets) : null;
+
+  const signatoriesWithBalance = useMemo(() => {
+    if (!chain || !asset) return [];
+    return signatoriesForSelect.map((s) => {
+      const balance = balanceUtils.getBalance(balances, s.accountId, chain.chainId, asset.assetId);
+      return { account: s, balance: transferableAmount(balance) };
+    });
+  }, [signatoriesForSelect, balances, chain, asset]);
+
+  const network = useMemo(() => {
+    if (!chain || !asset) return null;
+    return { chain, asset };
+  }, [chain, asset]);
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -99,7 +122,7 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
 
               {signatories.map((signatory, index) => (
                 <Signatory
-                  key={index}
+                  key={signatory.address}
                   isOwnAccount={index === 0}
                   isDuplicate={duplicateSignatories[toAccountId(signatory.address)]?.includes(index)}
                   isInvalidAddress={invalidAddresses.includes(signatory.address)}
@@ -178,11 +201,43 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
               <div className="flex items-center justify-end gap-x-6">
                 <MultisigFees />
 
-                <Button key="create" type="submit" disabled={!canSubmit} onClick={() => formModel.formSubmit()}>
+                <Button
+                  key="create"
+                  type="submit"
+                  disabled={!canProceedFromForm}
+                  onClick={() => formModel.formSubmit()}
+                >
                   {t('createMultisigAccount.continueButton')}
                 </Button>
               </div>
             </Box>
+          </Modal.Footer>
+        </>
+      )}
+      {isStep(step, Step.SIGNER_SELECTION) && (
+        <>
+          <Modal.Content>
+            <div className="flex flex-col gap-y-6 px-5 pt-4 pb-6">
+              <SignatorySelect
+                signatory={selectedSignatory}
+                signatories={signatoriesWithBalance}
+                allAccounts={allAccounts}
+                allWallets={wallets}
+                initiator={signatoriesForSelect[0] ?? null}
+                hasError={false}
+                errorText=""
+                network={network}
+                onChange={changeSignatoriesModel.selectSignatory}
+              />
+            </div>
+          </Modal.Content>
+          <Modal.Footer>
+            <Button variant="text" onClick={() => changeSignatoriesModel.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
+              {t('operation.goBackButton')}
+            </Button>
+            <Button disabled={!canSubmit} onClick={() => changeSignatoriesModel.signerConfirmed()}>
+              {t('createMultisigAccount.continueButton')}
+            </Button>
           </Modal.Footer>
         </>
       )}

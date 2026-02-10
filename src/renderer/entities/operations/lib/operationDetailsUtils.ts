@@ -6,17 +6,14 @@ import {
   type Address,
   type Chain,
   type ChainId,
-  type Contact,
   type DecodedTransaction,
   type Explorer,
   type HexString,
   type ProxyType,
-  type Signatory,
   type Transaction,
-  type Wallet,
   TransactionType,
 } from '@/shared/core';
-import { toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type MultisigEvent, type MultisigOperation } from '@/domains/network';
@@ -56,31 +53,6 @@ export const getMultisigEventLink = (
   if (!multisigLink) return;
 
   return multisigLink.replace('{hash}', `${blockCreated}-${indexCreated}`);
-};
-
-export const getSignatoryName = (
-  signatoryId: AccountId,
-  txSignatories: Signatory[],
-  contacts: Contact[],
-  wallets: Wallet[],
-  addressPrefix?: number,
-): string => {
-  const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
-    return collection.find((c) => c.accountId === signatoryId);
-  };
-
-  // signatory data source priority: transaction -> contacts -> wallets -> address
-  const fromTx = finderFn(txSignatories)?.name;
-  if (fromTx) return fromTx;
-
-  const fromContact = finderFn(contacts)?.name;
-  if (fromContact) return fromContact;
-
-  const accounts = wallets.map((wallet) => wallet.accounts).flat();
-  const fromAccount = finderFn(accounts)?.name;
-  if (fromAccount) return fromAccount;
-
-  return toShortAddress(toAddress(signatoryId, { prefix: addressPrefix }), 5);
 };
 
 export const getAssetId = (operation: MultisigOperation) => {

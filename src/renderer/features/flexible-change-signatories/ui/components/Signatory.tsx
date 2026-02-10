@@ -9,7 +9,7 @@ import { includesMultiple, performSearch, toAccountId, toAddress, validateAddres
 import { FootnoteText, IconButton, InputHint } from '@/shared/ui';
 import { Address, Identicon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select } from '@/shared/ui-kit';
-import { accountService } from '@/domains/network';
+import { accountService, useAccountsNames, useWalletsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { changeSignatoriesModel } from '../../model/change-signatories-model';
@@ -52,9 +52,11 @@ export const Signatory = ({
 
   const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
+  const resolvedWallets = useWalletsNames(wallets);
   const chain = useUnit(changeSignatoriesModel.$chain);
   const selectedSignatories = useUnit(signatoryModel.$signatories);
   const accountsList = useUnit(walletModel.$availableAccounts);
+  const resolvedAccounts = useAccountsNames(accountsList, chain);
 
   const filteredContacts = useMemo(() => {
     if (isOwnAccount) return [];
@@ -94,9 +96,11 @@ export const Signatory = ({
 
       if (!isOwnAccount && selectedSignatories.some((s) => toAccountId(s.address) === account.accountId)) continue;
       if (accountOptions.has(address)) continue;
-      const wallet = wallets.find((w) => w.id === account.walletId);
+      const wallet = resolvedWallets.find((w) => w.id === account.walletId);
+      const resolvedAccount = resolvedAccounts.find((a) => a.accountId === account.accountId);
+      const accountName = resolvedAccount?.name ?? account.name;
 
-      const title = !wallet || wallet.name === account.name ? account.name : `${wallet.name} (${account.name})`;
+      const title = !wallet || wallet.name === accountName ? accountName : `${wallet.name} (${accountName})`;
 
       accountOptions.set(address, {
         id: address,
@@ -114,7 +118,7 @@ export const Signatory = ({
         items: Array.from(accountOptions.values()),
       },
     ];
-  }, [query, chain, wallets, isOwnAccount, selectedSignatories]);
+  }, [query, chain, resolvedWallets, resolvedAccounts, isOwnAccount, selectedSignatories]);
 
   // Contacts
   const contactOptions = useMemo<ComboboxGroup[]>(() => {

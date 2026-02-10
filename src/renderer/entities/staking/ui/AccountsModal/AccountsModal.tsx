@@ -7,8 +7,9 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, HelpText } from '@/shared/ui';
 import { AssetBalance, Hash, Identicon } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, useAccountsNames } from '@/domains/network';
 import { useAssetBalances } from '@/entities/balance';
+import { useChain } from '@/entities/network';
 
 type Props = {
   isOpen: boolean;
@@ -22,6 +23,8 @@ type Props = {
 
 export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix, onClose }: Props) => {
   const { t } = useI18n();
+  const chain = useChain(chainId);
+  const resolvedAccounts = useAccountsNames(accounts, chain);
 
   const accountIds = accounts.map((account) => account.accountId);
   const balances = useAssetBalances({
@@ -39,8 +42,13 @@ export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix,
     <Modal isOpen={isOpen} size="sm" onToggle={onClose}>
       <Modal.Title close>{t('staking.confirmation.accountsTitle')}</Modal.Title>
       <Modal.Content>
-        <ul className={cnTw('flex flex-col gap-y-3 px-3 pb-3', accounts.length > 7 && 'max-h-[388px] overflow-y-auto')}>
-          {accounts.map((account) => {
+        <ul
+          className={cnTw(
+            'flex flex-col gap-y-3 px-3 pb-3',
+            resolvedAccounts.length > 7 && 'max-h-[388px] overflow-y-auto',
+          )}
+        >
+          {resolvedAccounts.map((account) => {
             const address = toAddress(account.accountId, { prefix: addressPrefix });
             return (
               <li key={account.accountId} className="flex items-center justify-between" data-testid="account">
