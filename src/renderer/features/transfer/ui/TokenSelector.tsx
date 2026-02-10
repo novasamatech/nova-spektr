@@ -78,7 +78,7 @@ export const TokenSelectorModal = memo(({ isOpen, chain, onSelect, onClose }: Pr
     return chain.assets.reduce<BigNumber>((acc, asset) => {
       if (!asset.priceId || !prices[asset.priceId]) return acc;
 
-      const price = prices[asset.priceId][currency.coingeckoId];
+      const price = prices[asset.priceId]?.[currency.coingeckoId];
       const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
 
       if (price && balance) {
