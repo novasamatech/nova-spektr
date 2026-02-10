@@ -144,7 +144,7 @@
     "i18next": "25.6.0",
     "immer": "10.1.3",
     "lodash": "4.17.21",
-    "lodash-es": "4.17.21",
+    "lodash-es": "4.17.23",
     "lottie-react": "2.4.1",
     "minisearch": "7.2.0",
     "mitt": "3.0.1",
