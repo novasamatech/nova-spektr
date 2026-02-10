@@ -1,20 +1,46 @@
 import { useUnit } from 'effector-react';
 import { useCallback, useMemo, useState } from 'react';
 
-import { type FlexibleMultisigAccount, type MultisigAccount, type Signatory, type Wallet } from '@/shared/core';
+import {
+  type Chain,
+  type FlexibleMultisigAccount,
+  type MultisigAccount,
+  type Signatory,
+  type Wallet,
+} from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Address, WalletIcon } from '@/shared/ui-entities';
-import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
-import { contactModel } from '@/entities/contact';
+import { type AnyAccount, type MultisigOperation, accounts, useAccountName } from '@/domains/network';
 import { useChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard } from '@/entities/signatory';
 import { walletModel } from '@/entities/wallet';
+import { WalletName } from '@/widgets/NameResolver';
 
 import LogModal from './LogModal';
+
+type SignatoryAddressProps = {
+  accountId: AccountId;
+  chain: Chain | null;
+};
+
+const SignatoryAddress = ({ accountId, chain }: SignatoryAddressProps) => {
+  const name = useAccountName({ accountId, chain });
+
+  return (
+    <Address
+      title={name}
+      address={toAddress(accountId, { prefix: chain?.addressPrefix })}
+      variant="short"
+      canCopy={false}
+      showIcon
+    />
+  );
+};
 
 export const operationOverviewSlot = createSlot<{
   walletAccounts: AnyAccount[];
@@ -34,7 +60,6 @@ export const OperationSignatories = ({ operation, account }: Props) => {
 
   const wallets = useUnit(walletModel.$wallets);
   const accountsList = useUnit(accounts.$list);
-  const contacts = useUnit(contactModel.$contacts);
 
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const closeLogModal = useCallback(() => setIsLogModalOpen(false), []);
@@ -120,7 +145,9 @@ export const OperationSignatories = ({ operation, account }: Props) => {
                   status={operationDetailsUtils.getSignatoryStatus(operation.events, signatory.accountId)}
                 >
                   <WalletIcon type={signatory.wallet.type} size={20} />
-                  <BodyText className="mr-auto truncate text-inherit">{signatory.wallet.name}</BodyText>
+                  <BodyText className="mr-auto truncate text-inherit">
+                    <WalletName wallet={signatory.wallet} />
+                  </BodyText>
                 </SignatoryCard>
               ))}
             </ul>
@@ -138,19 +165,7 @@ export const OperationSignatories = ({ operation, account }: Props) => {
                   key={signatory.accountId}
                   status={operationDetailsUtils.getSignatoryStatus(operation.events, signatory.accountId)}
                 >
-                  <Address
-                    title={operationDetailsUtils.getSignatoryName(
-                      signatory.accountId,
-                      account.signatories,
-                      contacts,
-                      wallets,
-                      chain?.addressPrefix,
-                    )}
-                    address={toAddress(signatory.accountId, { prefix: chain?.addressPrefix })}
-                    variant="short"
-                    canCopy={false}
-                    showIcon
-                  />
+                  <SignatoryAddress accountId={signatory.accountId} chain={chain} />
                 </SignatoryCard>
               ))}
             </ul>
@@ -158,14 +173,7 @@ export const OperationSignatories = ({ operation, account }: Props) => {
         )}
       </div>
 
-      <LogModal
-        isOpen={isLogModalOpen}
-        operation={operation}
-        account={account}
-        chain={chain}
-        contacts={contacts}
-        onClose={closeLogModal}
-      />
+      <LogModal isOpen={isLogModalOpen} operation={operation} account={account} chain={chain} onClose={closeLogModal} />
     </div>
   );
 };
