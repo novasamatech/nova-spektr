@@ -94,7 +94,7 @@ function checkPermission(
   for (const [index, account] of inversedRoute.entries()) {
     if (accountUtils.isProxiedAccount(account)) {
       if (isProxyExtrinsic(extrinsic)) {
-        extrinsic = transactionService.createExtrinsicFromCallData(extrinsic.args[2].toHex(), api);
+        extrinsic = transactionService.createExtrinsicFromCallData(extrinsic.args[2]!.toHex(), api);
       }
 
       const proxyAccount = inversedRoute.at(index - 1);
@@ -109,7 +109,7 @@ function checkPermission(
       }
     } else {
       if (extrinsic.method.section === 'multisig' && extrinsic.method.method === 'asMulti') {
-        extrinsic = transactionService.createExtrinsicFromCallData(extrinsic.args[3].toHex(), api);
+        extrinsic = transactionService.createExtrinsicFromCallData(extrinsic.args[3]!.toHex(), api);
       }
     }
   }

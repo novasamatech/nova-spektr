@@ -42,29 +42,29 @@ export const Confirmation = ({
     fn: (value, [id]) => value[id],
   });
 
-  const initiatorWallet = confirm.wallets.initiator;
+  const initiatorWallet = confirm?.wallets.initiator;
 
-  const signerWallet = confirm.wallets.signatory;
+  const signerWallet = confirm?.wallets.signatory;
 
   const api = useStoreMap({
     store: confirmModel.$apis,
     keys: [confirm?.meta.chain?.chainId],
-    fn: (value, [chainId]) => value?.[chainId],
+    fn: (value, [chainId]) => (chainId ? value?.[chainId] : undefined),
   });
 
   const timelineApi = useStoreMap({
     store: confirmModel.$apis,
-    keys: [confirm?.meta.chain.additional?.timelineChain ?? confirm?.meta.chain?.chainId],
-    fn: (value, [chainId]) => value?.[chainId],
+    keys: [confirm?.meta.chain?.additional?.timelineChain ?? confirm?.meta.chain?.chainId],
+    fn: (value, [chainId]) => (chainId ? value?.[chainId] : undefined),
   });
 
   const { getEraDurationSeconds } = useStakingData();
-  const eraDurationSeconds = getEraDurationSeconds(api, timelineApi);
+  const eraDurationSeconds = api && timelineApi ? getEraDurationSeconds(api, timelineApi) : undefined;
 
   const identities = useStoreMap({
     store: identity.$list,
     keys: [confirm?.meta.chain?.chainId],
-    fn: (value, [chainId]) => value[chainId] ?? {},
+    fn: (value, [chainId]) => (chainId ? (value[chainId] ?? {}) : {}),
   });
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
@@ -191,7 +191,7 @@ export const Confirmation = ({
             <StakingPopover.Item>
               {t('staking.confirmation.hintRewards')}
               {' ('}
-              <Duration seconds={eraDurationSeconds} />
+              <Duration seconds={eraDurationSeconds ?? 0} />
               {')'}
             </StakingPopover.Item>
             <StakingPopover.Item>

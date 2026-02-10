@@ -21,12 +21,12 @@ describe('Create flexible multisig wallet signatory-model', () => {
 
     await allSettled(signatoryModel.events.addSignatory, {
       scope,
-      params: { name: 'Alice', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
+      params: { name: 'Alice', address: toAddress(signerWallet.accounts[0]!.accountId), walletId: '1' },
     });
 
     await allSettled(signatoryModel.events.addSignatory, {
       scope,
-      params: { name: 'test', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
+      params: { name: 'test', address: toAddress(signerWallet.accounts[0]!.accountId), walletId: '1' },
     });
 
     expect(scope.getState(signatoryModel.$signatories).length).toEqual(2);
@@ -41,7 +41,7 @@ describe('Create flexible multisig wallet signatory-model', () => {
 
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
+      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0]!.accountId), walletId: '1' },
     });
 
     expect(scope.getState(signatoryModel.$signatories).length).toEqual(1);
@@ -63,14 +63,14 @@ describe('Create flexible multisig wallet signatory-model', () => {
 
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId), walletId: '1' },
+      params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0]!.accountId), walletId: '1' },
     });
 
     expect(scope.getState(signatoryModel.$ownedSignatoriesWallets)?.length).toEqual(0);
 
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
+      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0]!.accountId), walletId: '1' },
     });
     expect(scope.getState(signatoryModel.$ownedSignatoriesWallets)?.length).toEqual(1);
   });

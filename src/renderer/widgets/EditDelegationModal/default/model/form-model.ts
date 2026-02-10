@@ -202,7 +202,7 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : null;
+    return network ? (apis[network.chain.chainId] ?? null) : null;
   },
 );
 
@@ -254,7 +254,7 @@ const $coreTx = combine(
     const finalConviction = isUnchanged ? signatoryDelegation?.conviction : conviction;
     const finalAmount = isUnchanged
       ? signatoryDelegation?.balance.toString()
-      : walletData.chain && formatAmount(amount, walletData.chain.assets[0].precision);
+      : walletData.chain && formatAmount(amount, walletData.chain.assets[0]!.precision);
 
     return transactionBuilder.buildEditDelegation({
       chain: walletData.chain!,
@@ -412,14 +412,14 @@ sample({
   source: $networkStore,
   filter: (network, { shards, activeDelegations }) => {
     const balances = shards.map((shard) => {
-      return activeDelegations[shard.accountId].balance;
+      return activeDelegations[shard.accountId]?.balance ?? BN_ZERO;
     });
 
-    return !!network && allEqual(balances, (a, b) => a.eq(b));
+    return !!network && allEqual(balances, (a, b) => a?.eq(b!));
   },
   fn: (network, { shards, activeDelegations }) => {
-    const accountId = shards[0].accountId;
-    const balance = activeDelegations[accountId].balance.toString();
+    const accountId = shards[0]!.accountId;
+    const balance = (activeDelegations[accountId]?.balance ?? BN_ZERO).toString();
     const precision = network!.asset.precision;
 
     return getBalanceBn(balance, precision).toString();
@@ -430,16 +430,16 @@ sample({
 sample({
   clock: formInitiated,
   filter: ({ activeDelegations, shards }) => {
-    const convictions = shards.map((shard) => {
-      return activeDelegations[shard.accountId].conviction;
+    const convictions: Conviction[] = shards.map((shard) => {
+      return activeDelegations[shard.accountId]?.conviction ?? 'None';
     });
 
     return allEqual(convictions);
   },
   fn: ({ activeDelegations, shards }) => {
-    const accountId = shards[0].accountId;
+    const accountId = shards[0]!.accountId;
 
-    return { conviction: activeDelegations[accountId].conviction, isUnchanged: shards.length > 1 };
+    return { conviction: activeDelegations[accountId]?.conviction ?? 'None', isUnchanged: shards.length > 1 };
   },
   target: spread({
     conviction: form.fields.conviction.change,
@@ -450,9 +450,9 @@ sample({
 sample({
   clock: formInitiated,
   fn: ({ activeDelegations, shards }) => {
-    const accountId = shards[0].accountId;
+    const accountId = shards[0]!.accountId;
 
-    return activeDelegations[accountId].conviction;
+    return activeDelegations[accountId]!.conviction;
   },
   target: $previousConviction,
 });

@@ -279,11 +279,12 @@ sample({
   },
   fn: ({ chains, apis }, { proxy, proxied }) => {
     const chain = chains[proxy.chainId];
+    const api = chain ? apis[chain.chainId] : undefined;
 
-    if (!chain) return null;
+    if (!chain || !api) return null;
 
     return {
-      api: apis[chain.chainId],
+      api,
       chain,
       proxyAccount: proxy,
       proxiedAccount: proxied,
@@ -453,8 +454,8 @@ sample({
     );
   },
   fn: ({ chainProxies, proxied, proxy, chain }) => {
-    const proxyToRemove = chainProxies[chain!.chainId].find(
-      (currentProxy) =>
+    const proxyToRemove = chainProxies?.[chain!.chainId]?.find(
+      (currentProxy: { accountId: string; proxyType: string; proxiedAccountId: string }) =>
         proxy!.accountId === currentProxy.accountId &&
         proxy!.proxyType === currentProxy.proxyType &&
         proxy!.proxiedAccountId === proxied!.accountId,
@@ -514,7 +515,7 @@ sample({
 sample({
   clock: submitModel.done,
   source: $isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });
@@ -523,7 +524,7 @@ sample({
   clock: submitModel.done,
   source: $removeProxyStore,
   filter: (removeProxyStore, results) =>
-    nonNullable(removeProxyStore) && submitUtils.isSuccessResult(results[0].result),
+    nonNullable(removeProxyStore) && submitUtils.isSuccessResult(results[0]!.result),
   target: flowFinished,
 });
 

@@ -113,7 +113,7 @@ export const Staking = () => {
   const identities = useStoreMap({
     store: identity.$list,
     keys: [chainId],
-    fn: (list, [chainId]) => (chainId ? list[chainId] : {}),
+    fn: (list, [chainId]) => (chainId ? (list[chainId] ?? {}) : {}),
   });
 
   const { api, connection, connectionStatus } = useNetworkData(chainId || undefined);
@@ -150,7 +150,7 @@ export const Staking = () => {
   const { rewards, isRewardsLoading } = useStakingRewards(accountIds, activeChain);
 
   useEffect(() => {
-    setChainId(localStorageService.getFromStorage(STAKING_NETWORK, DEFAULT_STAKING_CHAIN));
+    setChainId(localStorageService.getFromStorage(STAKING_NETWORK, DEFAULT_STAKING_CHAIN) ?? null);
   }, []);
 
   useEffect(() => {
@@ -209,7 +209,7 @@ export const Staking = () => {
       isSubWalletExtension ||
       (isPolkadotVault && accountIds.length === 1)
     ) {
-      setSelectedNominators([accountIds[0]]);
+      setSelectedNominators([accountIds[0]!]);
     } else {
       setSelectedNominators([]);
     }

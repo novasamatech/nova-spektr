@@ -55,15 +55,15 @@ export const ShardsStructure = () => {
       <SelectableRoot
         accountId={rootAccountId}
         accountName={rootAccountName}
-        checked={selectorUtils.isChecked(selectedStructure[rootAccountId])}
-        semiChecked={selectorUtils.isSemiChecked(selectedStructure[rootAccountId])}
+        checked={selectorUtils.isChecked(selectedStructure[rootAccountId]!)}
+        semiChecked={selectorUtils.isSemiChecked(selectedStructure[rootAccountId]!)}
         onChange={(value) => shardsModel.events.rootToggled({ root: rootAccountId, value })}
       />
 
       <ul className="ml-6">
         {chainTuples.map(([chainId, accounts]) => {
-          const isChecked = selectorUtils.isChecked(selectedStructure[rootAccountId][chainId]);
-          const isSemiChecked = selectorUtils.isSemiChecked(selectedStructure[rootAccountId][chainId]);
+          const isChecked = selectorUtils.isChecked(selectedStructure[rootAccountId]![chainId]!);
+          const isSemiChecked = selectorUtils.isSemiChecked(selectedStructure[rootAccountId]![chainId]!);
 
           return (
             <li key={chainId} className="mt-2">
@@ -80,15 +80,15 @@ export const ShardsStructure = () => {
                           <EvmChainTitle
                             fontClass={cnTw(isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
                           />
-                        ) : (
+                        ) : chains[chainId] ? (
                           <ChainTitle
                             chain={chains[chainId]}
                             fontClass={cnTw(isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
                           />
-                        )}
+                        ) : null}
                         <HelpText className="text-text-tertiary">
-                          {selectedStructure[rootAccountId][chainId].checked} /{' '}
-                          {selectedStructure[rootAccountId][chainId].total}
+                          {selectedStructure[rootAccountId]?.[chainId]?.checked} /{' '}
+                          {selectedStructure[rootAccountId]?.[chainId]?.total}
                         </HelpText>
                       </div>
                     </Checkbox>
@@ -96,16 +96,20 @@ export const ShardsStructure = () => {
                 </Accordion.Trigger>
                 <Accordion.Content>
                   <div className="ml-6">
-                    {accounts.map((account) => (
-                      <div key={account.id} className="mt-2">
-                        <SelectableShard
-                          account={account}
-                          chain={chains[account.chainId]}
-                          checked={selectedStructure[rootAccountId][chainId].accounts[account.accountId]}
-                          onChange={(value) => toggleAccount(rootAccountId, chainId, account.accountId, value)}
-                        />
-                      </div>
-                    ))}
+                    {accounts.map((account) => {
+                      const accountChain = chains[account.chainId];
+                      if (nullable(accountChain)) return null;
+                      return (
+                        <div key={account.id} className="mt-2">
+                          <SelectableShard
+                            account={account}
+                            chain={accountChain}
+                            checked={selectedStructure[rootAccountId]?.[chainId]?.accounts[account.accountId] ?? false}
+                            onChange={(value) => toggleAccount(rootAccountId, chainId, account.accountId, value)}
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
                 </Accordion.Content>
               </Accordion>

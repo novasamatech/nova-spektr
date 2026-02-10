@@ -65,7 +65,7 @@ export const SelectSignatoriesThreshold = () => {
             <Signatory
               key={index}
               isOwnAccount={index === 0}
-              isDuplicate={duplicateSignatories[toAccountId(signatory.address)]?.includes(index)}
+              isDuplicate={duplicateSignatories[toAccountId(signatory.address)]?.includes(index) ?? false}
               isInvalidAddress={invalidAddresses.includes(signatory.address)}
               signatoryIndex={index}
               signatory={signatory}

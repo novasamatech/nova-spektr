@@ -66,7 +66,7 @@ const getMedianCommission = (validators: ApyValidator[]): number => {
     return 0;
   }
 
-  return (profitable[(profitable.length - 1) >> 1] + profitable[profitable.length >> 1]) / 2;
+  return (profitable[(profitable.length - 1) >> 1]! + profitable[profitable.length >> 1]!) / 2;
 };
 
 /**

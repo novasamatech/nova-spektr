@@ -30,9 +30,9 @@ describe('ui/Dropdowns/Select', () => {
     const button = screen.getByRole('button');
     await act(() => button.click());
 
-    const option = screen.getByRole('option', { name: options[0].element });
+    const option = screen.getByRole('option', { name: options[0]!.element });
     await act(() => option.click());
 
-    expect(spySelected).toBeCalledWith({ id: options[0].id, value: options[0].value });
+    expect(spySelected).toBeCalledWith({ id: options[0]!.id, value: options[0]!.value });
   });
 });

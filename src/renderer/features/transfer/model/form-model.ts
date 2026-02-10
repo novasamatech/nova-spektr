@@ -245,7 +245,10 @@ const $isChainConnected = combine(
   ({ network, statuses }) => {
     if (!network) return false;
 
-    return networkUtils.isConnectedStatus(statuses[network.chain.chainId]);
+    const status = statuses[network.chain.chainId];
+    if (!status) return false;
+
+    return networkUtils.isConnectedStatus(status);
   },
 );
 
@@ -677,8 +680,10 @@ const $destinationChains = combine(
         if (!chain) return false;
         const spellName = spellXcmService.getSpellChainName(chain);
         if (!spellName) return false;
-        const chainId = chain.chainId;
-        return statuses[chainId] && networkUtils.isConnectedStatus(statuses[chainId]);
+        const status = statuses[chain.chainId];
+        if (!status) return false;
+
+        return networkUtils.isConnectedStatus(status);
       });
 
     return [network.chain].concat(xcmChains);

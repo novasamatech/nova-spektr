@@ -151,7 +151,7 @@ async function getWalletsAndAccounts(t: Transaction) {
 
     if (chainAccounts.length) {
       toRegroup.set(accountId, chainAccounts);
-    } else {
+    } else if (baseAccounts[0]) {
       toRegroup.set(accountId, {
         name: baseAccounts[0].name ?? 'Base Account',
         accountId: baseAccounts[0].accountId,

@@ -198,8 +198,8 @@ const Destination = () => {
         formModel.events.destinationTypeChanged(option.value.type);
       }}
     >
-      <RadioGroup.Option option={options[0]} />
-      <RadioGroup.Option option={options[1]}>
+      <RadioGroup.Option option={options[0]!} />
+      <RadioGroup.Option option={options[1]!}>
         <div className="flex flex-col gap-y-2">
           <Combobox
             placeholder={t('staking.bond.payoutAccountPlaceholder')}

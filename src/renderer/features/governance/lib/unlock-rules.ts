@@ -69,7 +69,7 @@ export const UnlockRules = {
         const feeBN = new BN(feeData.fee);
 
         return form.shards.every((_: AnyAccount, index: number) => {
-          return feeBN.lte(new BN(accountsBalances[index]));
+          return feeBN.lte(new BN(accountsBalances[index]!));
         });
       },
     }),

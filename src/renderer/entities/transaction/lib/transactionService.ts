@@ -189,14 +189,14 @@ function getProxyWrapper({ wallets, account, signatories = [] }: Omit<TxWrappers
 
   const wrapper: ProxyTxWrapper = {
     kind: WrapperKind.PROXY,
-    proxyAccount: proxiesMap[0].account,
+    proxyAccount: proxiesMap[0]!.account,
     proxiedAccount: account as ProxiedAccount,
   };
 
   const nextWrappers = getTxWrappers({
     wallets,
-    wallet: proxiesMap[0].wallet,
-    account: proxiesMap[0].account,
+    wallet: proxiesMap[0]!.wallet,
+    account: proxiesMap[0]!.account,
     signatories,
   });
 
@@ -264,8 +264,8 @@ async function createPayloadWithProof(
   const metadataHex = api.runtimeMetadata.toHex();
 
   const merkleizedMetadata = merkleizeMetadata(metadataHex, {
-    decimals: api.registry.chainDecimals[0],
-    tokenSymbol: api.registry.chainTokens[0],
+    decimals: api.registry.chainDecimals[0]!,
+    tokenSymbol: api.registry.chainTokens[0]!,
     base58Prefix: api.registry.chainSS58,
     specName: api.runtimeVersion.specName.toString(),
     specVersion: api.runtimeVersion.specVersion.toNumber(),

@@ -22,8 +22,8 @@ function getSelectedAll(struct: SelectedStruct, value: boolean): SelectedStruct 
 }
 
 function getSelectedRoot(struct: SelectedStruct, { root, value }: RootToggleParams): SelectedStruct {
-  const { checked: _checked, total, ...chainsMap } = struct[root];
-  struct[root].checked = value ? total : 0;
+  const { checked: _checked, total, ...chainsMap } = struct[root]!;
+  struct[root]!.checked = value ? total : 0;
 
   for (const chains of Object.values(chainsMap)) {
     const { accounts } = chains;
@@ -38,12 +38,12 @@ function getSelectedRoot(struct: SelectedStruct, { root, value }: RootTogglePara
 }
 
 function getSelectedChain(struct: SelectedStruct, { root, chainId, value }: ChainToggleParams): SelectedStruct {
-  const chain = struct[root][chainId];
+  const chain = struct[root]![chainId]!;
   for (const accountId of keys(chain.accounts)) {
     chain.accounts[accountId] = value;
   }
 
-  struct[root].checked += value ? chain.total - chain.checked : -1 * chain.checked;
+  struct[root]!.checked += value ? chain.total - chain.checked : -1 * chain.checked;
   chain.checked = value ? chain.total : 0;
 
   return { ...struct };
@@ -53,9 +53,9 @@ function getSelectedAccount(
   struct: SelectedStruct,
   { root, chainId, accountId, value }: AccountToggleParams,
 ): SelectedStruct {
-  struct[root][chainId].accounts[accountId] = value;
-  struct[root][chainId].checked += value ? 1 : -1;
-  struct[root].checked += value ? 1 : -1;
+  struct[root]![chainId]!.accounts[accountId] = value;
+  struct[root]![chainId]!.checked += value ? 1 : -1;
+  struct[root]!.checked += value ? 1 : -1;
 
   return { ...struct };
 }

@@ -299,11 +299,13 @@ const XcmChainSelector = memo(() => {
         testId={TEST_IDS.OPERATIONS.XCM_SELECTOR}
         onChange={selectChain}
       >
-        <Select.Group title={t('transfer.onChainPlaceholder')}>
-          <Select.Item value={nativeChain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
-            <ChainTitle chainId={nativeChain.chainId} fontClass="text-text-primary" />
-          </Select.Item>
-        </Select.Group>
+        {nativeChain && (
+          <Select.Group title={t('transfer.onChainPlaceholder')}>
+            <Select.Item value={nativeChain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
+              <ChainTitle chainId={nativeChain.chainId} fontClass="text-text-primary" />
+            </Select.Item>
+          </Select.Group>
+        )}
         <Select.Group title={t('transfer.crossChainPlaceholder')}>
           {xcmChains.map((chain) => (
             <Select.Item key={chain.chainId} value={chain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>

@@ -76,7 +76,7 @@ const $signatories = createSignatoriesStore({
 // in the current implementation, the first signatory is always the signatory
 sample({
   clock: $signatories,
-  fn: signatories => (signatories.length >= 1 ? signatories[0] : null),
+  fn: signatories => (signatories.length >= 1 ? signatories[0]! : null),
   target: $signatory,
 });
 

@@ -93,7 +93,7 @@ basketSDK(stakingBasketFeature, {
 
     if (title && icon) {
       const amount = tx.args.value;
-      const nativeAsset = getNativeAsset(chain.assets);
+      const nativeAsset = chain ? getNativeAsset(chain.assets) : null;
 
       return (
         <>
@@ -125,11 +125,11 @@ basketSDK(stakingBasketFeature, {
     const title = getModalTitle(tx);
 
     if (title) {
-      const nativeAsset = getNativeAsset(chain.assets);
+      const nativeAsset = chain ? getNativeAsset(chain.assets) : null;
       return (
         <OperationTitle
           className="justify-center"
-          title={t(title, { asset: nativeAsset.symbol })}
+          title={t(title, { asset: nativeAsset?.symbol })}
           chainId={tx.chainId}
         />
       );

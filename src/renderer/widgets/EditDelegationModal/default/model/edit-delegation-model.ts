@@ -1,3 +1,4 @@
+import { BN_ZERO } from '@polkadot/util';
 import { createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
@@ -164,14 +165,14 @@ const formSubmitted = sample({
           ...delegateData,
           signatory: delegateData.signatory,
           ...(isUnchanged && {
-            balance: getBalanceBn(activeDelegation.balance.toString(), asset.precision).toString(),
-            conviction: activeDelegation.conviction,
+            balance: getBalanceBn(activeDelegation?.balance.toString() ?? '0', asset.precision).toString(),
+            conviction: activeDelegation?.conviction ?? 'None',
           }),
-          previousConviction: activeDelegation.conviction,
+          previousConviction: activeDelegation?.conviction ?? 'None',
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),
-          locks: delegateData.locks[initiator.accountId],
+          locks: delegateData.locks[initiator.accountId] ?? BN_ZERO,
           coreTx,
           route: [initiator],
           tx,
@@ -333,7 +334,7 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: formModel.$hasAnyMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

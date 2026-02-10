@@ -81,9 +81,9 @@ export const VaultAccountsList = memo(({ chains, accountsMap, className, onShard
               <span className="normal-case">
                 {group.chain === EVM_GROUP_ID ? (
                   <EvmChainTitle />
-                ) : (
+                ) : group.chain ? (
                   <ChainTitle fontClass="text-text-secondary uppercase" chain={group.chain} />
-                )}
+                ) : null}
               </span>
               <FootnoteText className="text-text-tertiary">{group.accounts.length}</FootnoteText>
             </Accordion.Trigger>
@@ -91,8 +91,8 @@ export const VaultAccountsList = memo(({ chains, accountsMap, className, onShard
               <ul>
                 {group.accounts.map((account) => {
                   const isSharded = accountUtils.isAccountWithShards(account);
-                  const accountId = isSharded ? account[0].accountId : account.accountId;
-                  const chain = allChains[isSharded ? account[0].chainId : account.chainId];
+                  const accountId = isSharded ? account[0]!.accountId : account.accountId;
+                  const chain = allChains[isSharded ? account[0]!.chainId : account.chainId]!;
                   const derivationPath = accountUtils.getDerivationPath(account);
 
                   return (

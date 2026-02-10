@@ -50,7 +50,7 @@ const $route = $currentConfirm.map((confirm) => confirm?.route ?? []);
 const $transaction = $currentConfirm.map((confirm) => confirm?.tx ?? null);
 const $originFeeFromConfirm = $currentConfirm.map((confirm) => confirm?.originFee ?? new BN(0));
 const $destinationFeeFromConfirm = $currentConfirm.map((confirm) => confirm?.destinationFee ?? new BN(0));
-const $balancePreservation = $currentConfirm.map((confirm) => confirm?.balancePreservation ?? false);
+const $balancePreservation = $currentConfirm.map((confirm) => confirm?.balancePreservation ?? null);
 
 const $isXcm = combine(
   {

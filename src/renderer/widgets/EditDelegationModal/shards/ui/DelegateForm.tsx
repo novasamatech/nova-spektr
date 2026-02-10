@@ -4,7 +4,7 @@ import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type FormEvent, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, formatBalance, transferableAmount } from '@/shared/lib/utils';
+import { formatAmount, formatBalance, nullable, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
 import { Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
@@ -111,10 +111,12 @@ const Signatories = () => {
   const allWallets = useUnit(walletModel.$wallets);
 
   const signatoriesWithBalance = useMemo(() => {
-    if (!network) {
+    const signatory = signatories[0];
+    if (nullable(network) || nullable(signatory)) {
       return [];
     }
-    return signatories[0].map((signatory) => {
+
+    return signatory.map((signatory) => {
       const balance = balanceUtils.getBalance(
         balances,
         signatory.accountId,
@@ -135,7 +137,7 @@ const Signatories = () => {
       signatories={signatoriesWithBalance}
       allAccounts={allAccounts}
       allWallets={allWallets}
-      initiator={shards.value[0]}
+      initiator={shards.value[0] ?? null}
       hasError={signatory.hasError()}
       errorText={t(signatory.errorText())}
       network={network}
@@ -238,6 +240,7 @@ const FeeSection = () => {
   }
 
   const amountValue = new BN(formatAmount(amount.value, network.asset.precision));
+  const firstAccount = accounts[0]!;
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -245,15 +248,15 @@ const FeeSection = () => {
         <>
           <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
             <BalanceDiff
-              from={accounts[0].balance}
-              to={new BN(accounts[0].balance).sub(amountValue)}
+              from={firstAccount.balance}
+              to={new BN(firstAccount.balance).sub(amountValue)}
               asset={network.asset}
-              lock={accounts[0].lock}
+              lock={firstAccount.lock}
             />
           </DetailRow>
 
           <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-            <LockValueDiff asset={network.asset} from={accounts[0].lock} to={amountValue} />
+            <LockValueDiff asset={network.asset} from={firstAccount.lock} to={amountValue} />
           </DetailRow>
 
           <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
@@ -281,8 +284,8 @@ const FeeSection = () => {
           }
         >
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={feeData.multisigDeposit} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.multisigDeposit} />
+            <AssetBalance value={feeData.multisigDeposit} asset={network.chain.assets[0]!} />
+            <AssetFiatBalance asset={network.chain.assets[0]!} amount={feeData.multisigDeposit} />
           </div>
         </DetailRow>
       )}
@@ -299,8 +302,8 @@ const FeeSection = () => {
           <FeeLoader fiatFlag={Boolean(fiatFlag)} />
         ) : (
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={feeData.fee} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.fee} />
+            <AssetBalance value={feeData.fee} asset={network.chain.assets[0]!} />
+            <AssetFiatBalance asset={network.chain.assets[0]!} amount={feeData.fee} />
           </div>
         )}
       </DetailRow>
@@ -314,8 +317,8 @@ const FeeSection = () => {
             <FeeLoader fiatFlag={Boolean(fiatFlag)} />
           ) : (
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={feeData.totalFee} asset={network.chain.assets[0]} />
-              <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.totalFee} />
+              <AssetBalance value={feeData.totalFee} asset={network.chain.assets[0]!} />
+              <AssetFiatBalance asset={network.chain.assets[0]!} amount={feeData.totalFee} />
             </div>
           )}
         </DetailRow>

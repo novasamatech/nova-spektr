@@ -59,7 +59,7 @@ type ConvertParams = {
 const convertOldFormatToNewFx = createEffect(({ input, apis }: ConvertParams) => {
   const { signingPayloads } = input;
   const converted = signingPayloads.map<TransactionSigningPayload>(({ transaction, account, signatory, chain }) => {
-    const api = apis[chain.chainId];
+    const api = apis[chain.chainId]!;
     const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
     return {
       api,

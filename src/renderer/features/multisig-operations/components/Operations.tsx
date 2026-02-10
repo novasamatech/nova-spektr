@@ -28,6 +28,8 @@ type FlatItem =
   | { type: 'header'; date: string }
   | { type: 'operation'; tx: MultisigOperation; account: MultisigAccount | FlexibleMultisigAccount };
 
+const isHeaderItem = (item: FlatItem): item is FlatItem & { type: 'header' } => item.type === 'header';
+
 export const Operations = () => {
   const { formatDate } = useI18n();
 
@@ -73,7 +75,7 @@ export const Operations = () => {
       .map(([isoDate, txs]) => {
         const sortedTxs = txs!.toSorted((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         const [y, m, d] = isoDate.split('-').map(Number);
-        const displayDate = formatDate(new Date(y, m - 1, d), 'PP');
+        const displayDate = formatDate(new Date(y ?? 0, (m ?? 1) - 1, d), 'PP');
 
         return [displayDate, sortedTxs] as const;
       });
@@ -103,8 +105,9 @@ export const Operations = () => {
     overscan: 5,
     getItemKey: index => {
       const item = flatItems[index];
+      if (!item) return `unknown-${index}`;
 
-      return item.type === 'header' ? `header-${item.date}` : item.tx.id;
+      return isHeaderItem(item) ? `header-${item.date}` : item.tx.id;
     },
   });
 
@@ -157,6 +160,7 @@ export const Operations = () => {
             >
               {virtualizer.getVirtualItems().map(virtualRow => {
                 const item = flatItems[virtualRow.index];
+                if (!item) return null;
 
                 return (
                   <div
@@ -171,7 +175,7 @@ export const Operations = () => {
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
                   >
-                    {item.type === 'header' ? (
+                    {isHeaderItem(item) ? (
                       <div className={virtualRow.index > 0 ? 'pt-8 pb-3 pl-2' : 'pb-3 pl-2'}>
                         <FootnoteText className="text-text-tertiary">{item.date}</FootnoteText>
                       </div>
