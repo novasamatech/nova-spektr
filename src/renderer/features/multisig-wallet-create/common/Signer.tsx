@@ -7,6 +7,7 @@ import { BodyText, Icon } from '@/shared/ui';
 import { AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { type AnyAccount } from '@/domains/network';
 import { useBalance } from '@/entities/balance';
+import { WalletName } from '@/widgets/NameResolver';
 
 interface Props {
   onSubmit: (event: FormEvent, account: AnyAccount) => void;
@@ -31,7 +32,9 @@ export const Signer = ({ account, wallet, onSubmit, chain }: Props) => {
     >
       <div className="flex items-center gap-x-2 truncate">
         <WalletIcon type={wallet.type} />
-        {wallet.name && <BodyText className="truncate text-inherit">{wallet.name}</BodyText>}
+        <BodyText className="truncate text-inherit">
+          <WalletName wallet={wallet} />
+        </BodyText>
         <AccountExplorers accountId={account.accountId} chain={chain} />
       </div>
       <AssetBalance

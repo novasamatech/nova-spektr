@@ -1,24 +1,26 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import { type MultisigEventNotification } from '@/shared/core';
+import { type Chain, type ChainId, type MultisigEventNotification, type Wallet } from '@/shared/core';
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod, nonNullable, toAddress } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { type IconNames, BodyText, Button, Icon } from '@/shared/ui';
 import { AssetBalance, Identicon, WalletIcon } from '@/shared/ui-entities';
-import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
+import { multisigOperationService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
-import { networkModel } from '@/entities/network';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 import { operationTitleTransformer } from '@/features/multisig-operations';
+import { $multisigAccountsById, $operationsByKey } from '../../model/notification-data-model';
 
 type Props = {
   notification: MultisigEventNotification;
+  chains: Record<ChainId, Chain>;
+  wallets: Wallet[];
 };
 
 const iconConfig: Record<'approve' | 'reject', { name: IconNames; className: string }> = {
@@ -28,10 +30,11 @@ const iconConfig: Record<'approve' | 'reject', { name: IconNames; className: str
 
 export const MultisigEventNotificationComponent = ({
   notification: { callHash, callTimepoint, chainId, issuer, signerAccountId, eventStatus },
+  chains,
+  wallets,
 }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const chains = useUnit(networkModel.$chains);
 
   const operationId = multisigOperationService.getOperationId(
     chainId,
@@ -42,38 +45,22 @@ export const MultisigEventNotificationComponent = ({
   );
 
   const operation = useStoreMap({
-    store: multisigOperation.$list,
+    store: $operationsByKey,
     keys: [operationId],
-    fn: (operations) =>
-      operations.find(
-        (op) =>
-          multisigOperationService.getOperationId(
-            op.chainId,
-            op.callHash,
-            op.accountId,
-            op.blockCreated,
-            op.indexCreated,
-          ) === operationId,
-      ),
+    fn: (map, [id]) => map[id] ?? null,
   });
 
   const multisigAccount = useStoreMap({
-    store: accounts.$list,
+    store: $multisigAccountsById,
     keys: [issuer],
-    fn: (allAccounts) => {
-      return allAccounts.filter(accountUtils.isMultisigAccount).find((acc) => acc.accountId === issuer);
-    },
+    fn: (map, [id]) => (id ? (map[id] ?? null) : null),
   });
 
-  const signerWallet = useStoreMap({
-    store: walletModel.$wallets,
-    keys: [signerAccountId],
-    fn: (wallets, [accountId]) => {
-      return walletUtils.getWalletFilteredAccounts(wallets, {
-        accountFn: (account) => account.accountId === accountId,
-      });
-    },
-  });
+  const signerWallet = useMemo(() => {
+    return walletUtils.getWalletFilteredAccounts(wallets, {
+      accountFn: (account) => account.accountId === signerAccountId,
+    });
+  }, [wallets, signerAccountId]);
 
   const showCoreTransaction = nonNullable(multisigAccount) && accountUtils.isFlexibleMultisigAccount(multisigAccount);
   const coreTx = showCoreTransaction

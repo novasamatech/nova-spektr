@@ -5,6 +5,7 @@ import {
   type CSSProperties,
   type ComponentProps,
   type PropsWithChildren,
+  type RefObject,
   type UIEventHandler,
   memo,
   useCallback,
@@ -19,10 +20,11 @@ type NativeProps = Pick<ComponentProps<'div'>, 'onScroll'>;
 type Props = PropsWithChildren<
   NativeProps & {
     orientation?: 'vertical' | 'horizontal';
+    viewportRef?: RefObject<HTMLDivElement | null>;
   }
 >;
 
-export const ScrollArea = memo(({ orientation = 'vertical', children, onScroll }: Props) => {
+export const ScrollArea = memo(({ orientation = 'vertical', children, onScroll, viewportRef }: Props) => {
   const [showTopFade, setShowTopFade] = useState(false);
   const [showBottomFade, setShowBottomFade] = useState(false);
 
@@ -45,6 +47,7 @@ export const ScrollArea = memo(({ orientation = 'vertical', children, onScroll }
   return (
     <RadixScrollArea.Root type="scroll" scrollHideDelay={500} className="flex h-full w-full flex-col overflow-hidden">
       <RadixScrollArea.Viewport
+        ref={viewportRef}
         className="scrollArea h-full w-full contain-strict"
         style={style as CSSProperties}
         onScroll={handlerScroll}
