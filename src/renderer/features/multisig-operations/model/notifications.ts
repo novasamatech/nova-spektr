@@ -215,9 +215,10 @@ const createEventNotification = (
       path: relativeLink,
     },
     batch: {
-      title: event.status === 'approve'
-        ? 'notifications.toast.batch.multisigOperationsApproved'
-        : 'notifications.toast.batch.multisigOperationsRejected',
+      title:
+        event.status === 'approve'
+          ? 'notifications.toast.batch.multisigOperationsApproved'
+          : 'notifications.toast.batch.multisigOperationsRejected',
       link: {
         title: 'notifications.toast.viewOperations',
         path: Paths.OPERATIONS,

@@ -1,16 +1,9 @@
-import { type ReactNode } from 'react';
+import { memo } from 'react';
 
-import {
-  type FlexibleMultisigOperationNotification,
-  type MultisigCreated,
-  type MultisigEventNotification as MultisigEventNotificationType,
-  type MultisigOperationNotification as MultisigOperationNotificationType,
-  type Notification,
-  type ProxyAction,
-} from '@/shared/core';
-import { NotificationType } from '@/shared/core';
+import { type Chain, type ChainId, type Notification, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
+import { notificationUtils } from '@/entities/notification';
 
 import { FlexibleMultisigNotification } from './notifies/FlexibleMultisigNotification';
 import { MultisigCreatedNotification } from './notifies/MultisigCreatedNotification';
@@ -19,43 +12,42 @@ import { MultisigOperationNotificationComponent } from './notifies/MultisigOpera
 import { ProxyCreatedNotification } from './notifies/ProxyCreatedNotification';
 import { ProxyRemovedNotification } from './notifies/ProxyRemovedNotification';
 
-const Notifications: Record<NotificationType, (n: Notification) => ReactNode> = {
-  [NotificationType.MULTISIG_CREATED]: (n) => <MultisigCreatedNotification notification={n as MultisigCreated} />,
-  [NotificationType.FLEXIBLE_MULTISIG_CREATED]: (n) => (
-    <FlexibleMultisigNotification notification={n as FlexibleMultisigOperationNotification} />
-  ),
-  [NotificationType.FLEXIBLE_MULTISIG_EDITED]: (n) => (
-    <FlexibleMultisigNotification notification={n as FlexibleMultisigOperationNotification} />
-  ),
-  [NotificationType.MULTISIG_APPROVED]: () => null,
-  [NotificationType.MULTISIG_CANCELLED]: () => null,
-  [NotificationType.MULTISIG_EXECUTED]: () => null,
-  [NotificationType.MULTISIG_OPERATION]: (n) => (
-    <MultisigOperationNotificationComponent notification={n as MultisigOperationNotificationType} />
-  ),
-  [NotificationType.MULTISIG_EVENT]: (n) => (
-    <MultisigEventNotificationComponent notification={n as MultisigEventNotificationType} />
-  ),
-  [NotificationType.PROXY_CREATED]: (n) => <ProxyCreatedNotification notification={n as ProxyAction} />,
-  [NotificationType.PROXY_REMOVED]: (n) => <ProxyRemovedNotification notification={n as ProxyAction} />,
-};
-
 type Props = {
   notification: Notification;
+  chains: Record<ChainId, Chain>;
+  wallets: Wallet[];
 };
 
-export const NotificationRow = ({ notification }: Props) => {
-  const { formatDate } = useI18n();
-
-  const renderNotification = Notifications[notification.type];
-  if (!renderNotification) {
-    return null;
+const NotificationContent = ({ notification, chains, wallets }: Props) => {
+  if (notificationUtils.isMultisigInvite(notification)) {
+    return <MultisigCreatedNotification notification={notification} />;
   }
+  if (notificationUtils.isFlexibleMultisigNotification(notification)) {
+    return <FlexibleMultisigNotification notification={notification} />;
+  }
+  if (notificationUtils.isMultisigOperationNotification(notification)) {
+    return <MultisigOperationNotificationComponent notification={notification} chains={chains} wallets={wallets} />;
+  }
+  if (notificationUtils.isMultisigEventNotification(notification)) {
+    return <MultisigEventNotificationComponent notification={notification} chains={chains} wallets={wallets} />;
+  }
+  if (notificationUtils.isProxyCreation(notification)) {
+    return <ProxyCreatedNotification notification={notification} chains={chains} wallets={wallets} />;
+  }
+  if (notificationUtils.isProxyRemoval(notification)) {
+    return <ProxyRemovedNotification notification={notification} chains={chains} wallets={wallets} />;
+  }
+
+  return null;
+};
+
+export const NotificationRow = memo(({ notification, chains, wallets }: Props) => {
+  const { formatDate } = useI18n();
 
   return (
     <li className="flex justify-between rounded-sm bg-block-background-default p-4">
-      {renderNotification(notification)}
+      <NotificationContent notification={notification} chains={chains} wallets={wallets} />
       <FootnoteText className="text-text-tertiary">{formatDate(new Date(notification.dateCreated), 'p')}</FootnoteText>
     </li>
   );
-};
+});
