@@ -228,7 +228,7 @@ sample({
   source: voteConfirmModel.$confirmMap,
   filter: (stores) => nonNullable(stores[0]),
   fn: (stores, signParams) => {
-    const store = stores[0];
+    const store = stores[0]!;
     const { meta } = store;
 
     return {

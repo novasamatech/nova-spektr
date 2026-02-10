@@ -98,7 +98,7 @@ async function createPreimageMap(
   const preimageMap = new Map<string, HexString>();
   for (const [index, lookupData] of proposals.entries()) {
     const preimageOption = preimages[index];
-    if (preimageOption.isSome) {
+    if (preimageOption?.isSome) {
       preimageMap.set(lookupData.data.hash_, u8aToHex(preimageOption.value));
     }
   }
@@ -200,7 +200,10 @@ async function getTrackLocks(api: ApiPromise, accounts: AccountId[]): Promise<Re
       return acc;
     }, {});
 
-    result[accounts[index]] = lockData;
+    const account = accounts[index];
+    if (account) {
+      result[account] = lockData;
+    }
   }
 
   return result;

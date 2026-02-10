@@ -2,7 +2,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { toAccountId } from '@/shared/lib/utils';
+import { getNativeAsset, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
@@ -39,6 +39,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   }
 
   const { destination, chain, signatory, multisigDeposit, fee, totalFee } = confirm.meta;
+  const nativeAsset = getNativeAsset(chain.assets);
   const hasMultisigAccount = confirm.meta.route.some(accountUtils.isAnyMultisigAccount);
 
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
@@ -81,17 +82,15 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
             }
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={multisigDeposit} asset={chain.assets[0]} />
-              <AssetFiatBalance asset={chain.assets[0]} amount={multisigDeposit} />
+              <AssetBalance value={multisigDeposit} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={multisigDeposit} />
             </div>
           </DetailRow>
         )}
 
-        <FeeWithLabel fee={fee} asset={chain.assets[0]} label={t('staking.networkFee', { count: 1 })} />
+        <FeeWithLabel fee={fee} asset={nativeAsset} label={t('staking.networkFee', { count: 1 })} />
 
-        {totalFee !== fee && (
-          <FeeWithLabel fee={totalFee} asset={chain.assets[0]} label={t('staking.networkFeeTotal')} />
-        )}
+        {totalFee !== fee && <FeeWithLabel fee={totalFee} asset={nativeAsset} label={t('staking.networkFeeTotal')} />}
       </TransactionDetails>
 
       <div className="mt-3 flex w-full justify-between">

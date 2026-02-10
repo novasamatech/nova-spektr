@@ -77,7 +77,7 @@ const Voted = ({ asset, type, votes, multiplier }: VotedProps) => {
   };
 
   const conviction = useMemo(() => {
-    if (!showMultiplier || !votingService.isStandardVote(votes[0])) return undefined;
+    if (!showMultiplier || !votes[0] || !votingService.isStandardVote(votes[0])) return undefined;
 
     return locksService.getLockPeriodsMultiplier(votes[0].vote.conviction);
   }, [showMultiplier, votes.length]);

@@ -42,7 +42,7 @@ sample({
     const uniqDelegates = new Set<AccountId>();
 
     for (const referendumId of Object.keys(result)) {
-      for (const delegate of result[referendumId]) {
+      for (const delegate of result[referendumId]!) {
         uniqDelegates.add(delegate.delegateAccount);
       }
     }

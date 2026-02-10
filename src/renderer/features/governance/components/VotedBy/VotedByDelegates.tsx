@@ -23,10 +23,10 @@ export const VotedByDelegates = ({ asset, chain, identity, delegates, multiplier
   const { t } = useI18n();
 
   if (delegates.length === 1) {
-    const delegate = delegates[0];
+    const delegate = delegates[0]!;
 
     const delegateName = nonNullable(identity[delegate.delegateAccount]) ? (
-      <span className="truncate">{identity[delegate.delegateAccount].parent.name}</span>
+      <span className="truncate">{identity[delegate.delegateAccount]!.parent.name}</span>
     ) : (
       <AccountAddress
         showIcon={false}

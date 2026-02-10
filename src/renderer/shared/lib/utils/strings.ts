@@ -96,7 +96,7 @@ export const truncate = (text: string, start = 5, end = start): string => {
  * @returns {String}
  */
 export const formatSectionAndMethod = (section: string, method: string): string => {
-  const splitFn = (value: string) => `${value[0].toUpperCase()}${value.slice(1)}`;
+  const splitFn = (value: string) => `${value[0]?.toUpperCase()}${value.slice(1)}`;
 
   const sectionSplit = section.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
   const methodSplit = method.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();

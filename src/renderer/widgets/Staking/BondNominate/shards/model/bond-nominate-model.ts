@@ -77,7 +77,7 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData ? apis[walletData.chain.chainId] : null;
+    return walletData ? (apis[walletData.chain.chainId] ?? null) : null;
   },
 );
 
@@ -140,7 +140,7 @@ sample({
       chain: walletData!.chain,
       wallet: walletData!.wallet,
       wallets,
-      account: walletData!.shards[0],
+      account: walletData!.shards[0]!,
       signatories,
     });
   },
@@ -221,7 +221,7 @@ sample({
   filter: (api, transactions) => Boolean(api) && Boolean(transactions?.length),
   fn: (api, transactions) => ({
     api: api!,
-    transaction: transactions![0].wrappedTx,
+    transaction: transactions![0]!.wrappedTx,
   }),
   target: getTransactionFeeFx,
 });
@@ -317,11 +317,11 @@ sample({
           asset: getRelaychainAsset(walletData!.chain.assets)!,
           ...bondData!,
           ...feeData,
-          initiator: bondData!.shards[0],
+          initiator: bondData!.shards[0]!,
           signatory: bondData!.signatory!,
-          route: [bondData!.shards[0]],
-          coreTx: coreTxs[0],
-          tx: coreTxs[0],
+          route: [bondData!.shards[0]!],
+          coreTx: coreTxs[0]!,
+          tx: coreTxs[0]!,
         } satisfies BondNominateConfirm,
       ],
       step: Step.CONFIRM,
@@ -352,7 +352,7 @@ sample({
         signingPayloads:
           transactions?.map((tx, index) => ({
             chain: walletData!.chain,
-            account: wrapper ? wrapper.proxyAccount : bondData!.shards[index],
+            account: wrapper ? wrapper.proxyAccount : bondData!.shards[index]!,
             signatory: bondData!.signatory,
             transaction: tx.wrappedTx,
           })) || [],
@@ -380,7 +380,7 @@ sample({
     event: {
       ...signParams,
       chain: bondFlowData.walletData!.chain,
-      account: bondFlowData.bondData!.shards[0],
+      account: bondFlowData.bondData!.shards[0]!,
       signatory: bondFlowData.bondData!.signatory,
       coreTxs: bondFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: bondFlowData.transactions!.map((tx) => tx.wrappedTx),
@@ -402,7 +402,7 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

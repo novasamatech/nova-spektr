@@ -47,7 +47,7 @@ const SignatoryItem = ({ signatory, network }: SignatoryProps) => {
 
 type Props = {
   signatory: AnyAccount | null;
-  signatories: { account: AnyAccount; balance: BN | string }[] | AnyAccount[];
+  signatories: { account: AnyAccount; balance: BN | string }[] | AnyAccount[] | undefined;
   hasError: boolean;
   errorText: string;
   onChange: (signatory: AnyAccount) => void;
@@ -72,7 +72,7 @@ export const SignatorySelect = ({
 
   const selectSigner = useCallback(
     (signerId: string) => {
-      const selectedSigner = signatories.find(v => getAccount(v).id === signerId);
+      const selectedSigner = signatories?.find(v => getAccount(v).id === signerId);
       if (!selectedSigner) return;
 
       onChange(getAccount(selectedSigner));
@@ -80,7 +80,7 @@ export const SignatorySelect = ({
     [onChange, signatories],
   );
 
-  if (nullable(network) || nullable(initiator)) {
+  if (nullable(network) || nullable(initiator) || nullable(signatories)) {
     return null;
   }
 

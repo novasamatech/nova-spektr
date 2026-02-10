@@ -209,7 +209,7 @@ sample({
 sample({
   clock: submitModel.done,
   source: formModel.$multisigAccount,
-  filter: (multisigAccount, results) => nonNullable(multisigAccount) && submitUtils.isSuccessResult(results[0].result),
+  filter: (multisigAccount, results) => nonNullable(multisigAccount) && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

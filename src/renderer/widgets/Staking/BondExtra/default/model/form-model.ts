@@ -104,7 +104,7 @@ const $api = combine(
     apis: networkModel.$apis,
     network: $networkStore,
   },
-  ({ apis, network }) => (network ? apis[network.chain.chainId] : null),
+  ({ apis, network }) => (network ? (apis[network.chain.chainId] ?? null) : null),
 );
 
 const $coreTx = combine(

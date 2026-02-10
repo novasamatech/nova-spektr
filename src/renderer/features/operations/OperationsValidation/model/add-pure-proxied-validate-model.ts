@@ -3,7 +3,7 @@ import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById } from '@/shared/lib/utils';
+import { getAssetById, getNativeAsset } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
@@ -52,22 +52,23 @@ const validateFx = attach({
     apis: networkModel.$apis,
     balances: balanceModel.$balanceMap,
   },
-  mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
+  async effect({ chains, balances, apis }, { id, transaction }: ValidationStartedParams) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = getAssetById(transaction.args.asset, chain.assets) || chain.assets[0];
+    if (!chain || !api) {
+      return { id, result: undefined };
+    }
+    const asset = getAssetById(transaction.args.asset, chain.assets) || getNativeAsset(chain.assets);
 
-    return {
+    return rootValidateFx({
       id,
       api,
       transaction,
       chain,
       asset,
       balances,
-      feeMap,
-    };
+    });
   },
-  effect: rootValidateFx,
 });
 
 export const addPureProxiedValidateModel = {

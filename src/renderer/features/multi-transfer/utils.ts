@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash';
 import { z } from 'zod';
 
 import { type Chain } from '@/shared/core';
-import { downloadFiles, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { downloadFiles, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { merge } from '@/shared/lib/utils/arrays';
 import { totalAmountBN } from '@/shared/lib/utils/balance';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -198,6 +198,7 @@ function validateCSV(records: MultiTransferRowSerialized[], options: ValidationS
 
   for (let i = 0; i < records.length; i++) {
     const record = records[i];
+    if (nullable(record)) continue;
     const rowIndex = i + 1;
 
     // Build recipient occurrences map

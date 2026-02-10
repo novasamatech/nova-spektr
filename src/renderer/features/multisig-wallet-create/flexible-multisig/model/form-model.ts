@@ -43,9 +43,12 @@ const form = createForm<FormParams>({
 const $multisigChains = combine(
   { chains: networkModel.$chains, statuses: networkModel.$connectionStatuses },
   ({ chains, statuses }) => {
-    const filteredChains = Object.values(chains).filter(
-      c => networkUtils.isMultisigSupported(c.options) && networkUtils.isConnectedStatus(statuses[c.chainId]),
-    );
+    const filteredChains = Object.values(chains).filter(c => {
+      const status = statuses[c.chainId];
+      if (!status) return false;
+
+      return networkUtils.isMultisigSupported(c.options) && networkUtils.isConnectedStatus(status);
+    });
     return chainsService.sortChains(filteredChains);
   },
 );
@@ -66,7 +69,10 @@ const $isChainConnected = combine(
     statuses: networkModel.$connectionStatuses,
   },
   ({ chainId, statuses }) => {
-    return networkUtils.isConnectedStatus(statuses[chainId]);
+    const status = statuses[chainId];
+    if (!status) return false;
+
+    return networkUtils.isConnectedStatus(status);
   },
 );
 

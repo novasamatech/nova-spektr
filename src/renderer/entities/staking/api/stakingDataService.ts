@@ -27,6 +27,7 @@ export const useStakingData = (): IStakingDataService => {
     try {
       const staking = data.reduce<StakingMap>((acc, ledger, index) => {
         const account = accounts[index];
+        if (!account) return acc;
 
         if (ledger.isNone) {
           acc[account] = undefined;

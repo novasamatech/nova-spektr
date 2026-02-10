@@ -65,7 +65,7 @@ Primary.args = {
 export const Selected = Template.bind({});
 Selected.args = {
   placeholder: 'Select an option',
-  selectedId: options[1].id,
+  selectedId: options[1]?.id ?? '',
   options,
   onChange: () => {},
 };
@@ -82,7 +82,7 @@ export const Custom = Template.bind({});
 Custom.args = {
   placeholder: 'Select an option',
   label: 'Payout account',
-  selectedId: customOptions[2].id,
+  selectedId: customOptions[2]?.id ?? '',
   options: customOptions,
   onChange: () => {},
 };

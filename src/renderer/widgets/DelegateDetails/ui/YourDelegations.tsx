@@ -109,7 +109,7 @@ export const YourDelegations = () => {
                       i18nKey="general.actions.duration"
                       values={{ duration: locksService.getLockPeriodsMultiplier(activeDelegation.conviction) }}
                       components={{
-                        balance: <AssetBalance value={activeDelegation.balance} asset={chain.assets[0]} />,
+                        balance: <AssetBalance value={activeDelegation.balance} asset={chain.assets[0]!} />,
                       }}
                     />
                   </BodyText>
@@ -119,13 +119,13 @@ export const YourDelegations = () => {
                   <Tooltip side="bottom">
                     <Tooltip.Trigger>
                       <div className="flex items-center gap-1">
-                        <FootnoteText>{activeTracks[account.accountId].size || 0}</FootnoteText>
+                        <FootnoteText>{activeTracks[account.accountId]?.size || 0}</FootnoteText>
 
                         <Icon className="group-hover:text-icon-hover" name="info" size={16} />
                       </div>
                     </Tooltip.Trigger>
                     <Tooltip.Content>
-                      {[...activeTracks[account.accountId]]
+                      {[...(activeTracks[account.accountId] ?? [])]
                         .map((trackId) => t(allTracks.find((track) => track.id === trackId)?.value || ''))
                         .join(', ')}
                     </Tooltip.Content>
@@ -140,7 +140,7 @@ export const YourDelegations = () => {
                         delegate &&
                         editDelegationModel.events.flowStarted({
                           delegate,
-                          accounts: [accounts[index]],
+                          accounts: [accounts[index]!],
                         })
                       }
                     />
@@ -155,7 +155,7 @@ export const YourDelegations = () => {
                         delegate &&
                         revokeDelegationModel.flowStarted({
                           delegate: delegate.accountId,
-                          accounts: [accounts[index]],
+                          accounts: [accounts[index]!],
                         })
                       }
                     />

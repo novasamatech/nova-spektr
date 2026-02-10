@@ -34,8 +34,8 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
       api,
       extrinsic,
       signatory: signatory.accountId,
-      signature: signatures[index],
-      payload: payloads[index],
+      signature: signatures[index]!,
+      payload: payloads[index]!,
     }));
 
     signModel.signed(payload);

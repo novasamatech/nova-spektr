@@ -55,7 +55,7 @@ describe.skip('Create multisig wallet flow-model', () => {
       params: {
         index: 0,
         name: signerWallet.name,
-        address: toAddress(signerWallet.accounts[0].accountId),
+        address: toAddress(signerWallet.accounts[0]!.accountId),
         walletId: '1',
       },
     });

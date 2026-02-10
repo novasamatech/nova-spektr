@@ -30,7 +30,7 @@ export const createComplexFlag = <const Reasons extends string[]>({ reasons }: P
       }
 
       if (value[1]) {
-        if (flags[index][1] === value[1]) {
+        if (flags[index]?.[1] === value[1]) {
           return flags;
         }
 
