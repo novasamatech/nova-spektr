@@ -18,7 +18,7 @@ import {
   validatePrecision,
   validateSymbols,
 } from '@/shared/lib/utils';
-import { FootnoteText, HelpText, IconButton, TitleText } from '@/shared/ui';
+import { FootnoteText, HelpText, Icon, IconButton, TitleText } from '@/shared/ui';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
 import { currencyModel, useCurrencyRate } from '@/entities/price';
@@ -38,6 +38,7 @@ type Props = {
   onKeyDown?: () => void;
   onBlur?: () => void;
   onChange?: (value: string) => void;
+  onAssetClick?: () => void;
 };
 
 export const AmountInput = ({
@@ -55,6 +56,7 @@ export const AmountInput = ({
   onKeyDown,
   onBlur,
   suffixElement,
+  onAssetClick,
 }: Props) => {
   const { t } = useI18n();
 
@@ -159,7 +161,17 @@ export const AmountInput = ({
     </div>
   );
 
-  const prefixElement = (
+  const prefixElement = onAssetClick ? (
+    <button
+      type="button"
+      className="-m-1 flex min-w-fit cursor-pointer items-center gap-x-1 rounded-sm p-1 transition-colors hover:bg-action-background-hover focus:bg-action-background-hover"
+      onClick={onAssetClick}
+    >
+      <AssetIcon asset={asset} size={32} />
+      <TitleText>{asset.symbol}</TitleText>
+      <Icon name="right" size={16} className="ml-0.5" />
+    </button>
+  ) : (
     <div className="flex min-w-fit items-center gap-x-1">
       <AssetIcon asset={asset} size={32} />
       <TitleText>{asset.symbol}</TitleText>

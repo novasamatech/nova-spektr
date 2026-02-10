@@ -2,9 +2,10 @@ import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type Asset, type Chain } from '@/shared/core';
+import { type Address, type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
+import { getNativeAsset } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
@@ -14,21 +15,25 @@ import { OperationSign, OperationSubmit } from '@/features/operations';
 import { TransferConfirm } from '@/features/operations/OperationsConfirm';
 import { transferUtils } from '../lib/transfer-utils';
 import { Step } from '../lib/types';
+import { formModel } from '../model/form-model';
 import { transferModel } from '../model/transfer-model';
 
 import { TransferForm } from './TransferForm';
 
 type Props = {
   chain: Chain;
-  asset: Asset;
+  asset?: Asset;
+  destination?: Address;
+  onClose?: () => void;
 };
 
-export const Transfer = ({ chain, asset }: Props) => {
+export const Transfer = ({ chain, asset, destination, onClose }: Props) => {
   const { t } = useI18n();
 
   const step = useUnit(transferModel.$step);
   const xcmChain = useUnit(transferModel.$xcmChain);
   const initiatorWallet = useUnit(transferModel.$initiatorWallet);
+  const currentNetwork = useUnit(formModel.$networkStore);
 
   const [isModalOpen, closeModal] = useModalClose(!transferUtils.isNoneStep(step), transferModel.output.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
@@ -37,8 +42,15 @@ export const Transfer = ({ chain, asset }: Props) => {
   );
 
   useEffect(() => {
-    transferModel.events.flowStarted({ chain, asset });
+    transferModel.events.flowStarted({ chain, asset, destination });
   }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line effector/no-watch
+    return transferModel.output.flowFinished.watch(() => {
+      onClose?.();
+    });
+  }, [onClose]);
 
   if (transferUtils.isSubmitStep(step)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
@@ -56,15 +68,20 @@ export const Transfer = ({ chain, asset }: Props) => {
     );
   }
 
-  const getModalTitle = (chain: Chain, asset: Asset, xcmChain: Chain | null): string | ReactNode => {
+  const displayChain = currentNetwork?.chain ?? chain;
+  const displayAsset = currentNetwork?.asset ?? asset ?? getNativeAsset(chain.assets)!;
+
+  const getModalTitle = (): string | ReactNode => {
     const operationTitle = xcmChain ? 'transfer.xcmTitle' : 'transfer.title';
 
-    return <OperationTitle title={`${t(operationTitle, { asset: asset.symbol })}`} chainId={chain.chainId} />;
+    return (
+      <OperationTitle title={`${t(operationTitle, { asset: displayAsset.symbol })}`} chainId={displayChain.chainId} />
+    );
   };
 
   return (
     <Modal size="md" isOpen={isModalOpen} testId={TEST_IDS.TRANSFER.MODAL} onToggle={closeModal}>
-      <Modal.Title close>{getModalTitle(chain, asset, xcmChain)}</Modal.Title>
+      <Modal.Title close>{getModalTitle()}</Modal.Title>
       <Modal.Content>
         {transferUtils.isInitStep(step) && <TransferForm onGoBack={closeModal} />}
         {transferUtils.isConfirmStep(step) && (
