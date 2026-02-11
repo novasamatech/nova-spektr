@@ -220,7 +220,7 @@ describe('operations context model', () => {
 
       const filtered = scope.getState(operationsContextModel.$filteredOperations);
       expect(filtered).toHaveLength(1);
-      expect(filtered[0].id).toBe(pendingOp2.id);
+      expect(filtered?.[0]?.id).toBe(pendingOp2.id);
     });
 
     it('should show only hidden operations in hidden tab', async () => {
@@ -236,7 +236,7 @@ describe('operations context model', () => {
 
       const filtered = scope.getState(operationsContextModel.$filteredOperations);
       expect(filtered).toHaveLength(1);
-      expect(filtered[0].id).toBe(hiddenOp.id);
+      expect(filtered?.[0]?.id).toBe(hiddenOp.id);
     });
 
     it('should calculate hidden operations count correctly', async () => {

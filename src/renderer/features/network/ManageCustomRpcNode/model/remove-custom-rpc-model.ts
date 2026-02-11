@@ -26,9 +26,9 @@ sample({
   clock: rpcNodeRemoved,
   source: networkModel.$connections,
   fn: (connections, { chainId, node }) => {
-    const { customNodes, ...rest } = connections[chainId];
+    const { customNodes, ...rest } = connections[chainId]!;
 
-    const filteredNodes = customNodes.filter((custom) => custom.url !== node.url);
+    const filteredNodes = customNodes.filter((custom: { url: string }) => custom.url !== node.url);
 
     return { ...rest, customNodes: filteredNodes };
   },

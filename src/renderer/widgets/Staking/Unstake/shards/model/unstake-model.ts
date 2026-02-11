@@ -37,7 +37,7 @@ const $initiatorWallet = combine(
   ({ store, wallets }) => {
     if (!store) return undefined;
 
-    return walletUtils.getWalletById(wallets, store.shards[0].walletId);
+    return walletUtils.getWalletById(wallets, store.shards[0]!.walletId);
   },
   { skipVoid: false },
 );
@@ -88,12 +88,12 @@ sample({
         ...formData,
         chain: networkStore!.chain,
         asset: getRelaychainAsset(networkStore!.chain.assets)!,
-        coreTx: coreTxs![0],
-        tx: coreTxs![0],
+        coreTx: coreTxs![0]!,
+        tx: coreTxs![0]!,
         api: api!,
-        initiator: formData.shards[0],
+        initiator: formData.shards[0]!,
         signatory: formData.signatory!,
-        route: [formData.shards[0]],
+        route: [formData.shards[0]!],
       },
     ],
     step: Step.CONFIRM,
@@ -118,7 +118,7 @@ sample({
     event: {
       signingPayloads: wrappedTxs!.map((tx, index) => ({
         chain: networkStore!.chain,
-        account: unstakeStore!.shards[index],
+        account: unstakeStore!.shards[index]!,
         signatory: unstakeStore!.signatory,
         transaction: tx!,
       })),
@@ -151,7 +151,7 @@ sample({
     event: {
       ...signParams,
       chain: transferData.networkStore!.chain,
-      account: transferData.unstakeStore!.shards[0],
+      account: transferData.unstakeStore!.shards[0]!,
       signatory: transferData.unstakeStore!.signatory,
       wrappedTxs: transferData.wrappedTxs!,
       coreTxs: transferData.coreTxs!,
@@ -173,7 +173,7 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

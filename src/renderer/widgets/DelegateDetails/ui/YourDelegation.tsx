@@ -44,9 +44,9 @@ export const YourDelegation = () => {
       {activeAccounts.length > 0 && (
         <div className="flex flex-col gap-4">
           <DetailRow label={t('governance.addDelegation.accountsLabel', { count: activeAccounts.length })}>
-            {accounts.length === 1 ? (
+            {accounts.length === 1 && accounts[0] ? (
               <div className="overflow-hidden text-text-secondary">
-                <NamedAccount accountId={accounts?.[0].accountId} chain={chain} variant="short" />
+                <NamedAccount accountId={accounts[0].accountId} chain={chain} variant="short" />
               </div>
             ) : (
               <FootnoteText className="text-text-secondary">{accounts.length}</FootnoteText>
@@ -70,28 +70,33 @@ export const YourDelegation = () => {
             </Tooltip>
           </DetailRow>
 
-          {activeAccounts.length === 1 && (
-            <DetailRow wrapperClassName="items-start" label={t('governance.addDelegation.lockedLabel')}>
-              <FootnoteText>
-                <Trans
-                  t={t}
-                  i18nKey="general.actions.duration"
-                  values={{
-                    duration: locksService.getLockPeriodsMultiplier(activeDelegations[activeAccounts[0]]?.conviction),
-                  }}
-                  components={{
-                    balance: (
-                      <AssetBalance
-                        className="text-footnote"
-                        value={activeDelegations[activeAccounts[0]]?.balance}
-                        asset={chain?.assets[0]}
-                      />
-                    ),
-                  }}
-                />
-              </FootnoteText>
-            </DetailRow>
-          )}
+          {(() => {
+            const singleActiveAccount = activeAccounts.length === 1 ? activeAccounts[0] : undefined;
+            const singleDelegation = singleActiveAccount ? activeDelegations[singleActiveAccount] : undefined;
+            if (nullable(singleDelegation)) return null;
+            return (
+              <DetailRow wrapperClassName="items-start" label={t('governance.addDelegation.lockedLabel')}>
+                <FootnoteText>
+                  <Trans
+                    t={t}
+                    i18nKey="general.actions.duration"
+                    values={{
+                      duration: locksService.getLockPeriodsMultiplier(singleDelegation.conviction),
+                    }}
+                    components={{
+                      balance: (
+                        <AssetBalance
+                          className="text-footnote"
+                          value={singleDelegation.balance}
+                          asset={chain?.assets[0]}
+                        />
+                      ),
+                    }}
+                  />
+                </FootnoteText>
+              </DetailRow>
+            );
+          })()}
         </div>
       )}
 
@@ -102,11 +107,12 @@ export const YourDelegation = () => {
           </Button>
         )}
 
-        {isEditAvailable && accounts.length === 1 && (
+        {isEditAvailable && accounts.length === 1 && accounts[0] && (
           <Button
             onClick={() => {
-              if (delegate) {
-                editDelegationModel.events.flowStarted({ delegate, accounts: [accounts[0]] });
+              const account = accounts[0];
+              if (delegate && account) {
+                editDelegationModel.events.flowStarted({ delegate, accounts: [account] });
               }
             }}
           >
@@ -114,12 +120,13 @@ export const YourDelegation = () => {
           </Button>
         )}
 
-        {isRevokeAvailable && accounts.length === 1 && (
+        {isRevokeAvailable && accounts.length === 1 && accounts[0] && (
           <Button
             pallet="secondary"
             onClick={() => {
-              if (delegate) {
-                revokeDelegationModel.flowStarted({ delegate: delegate.accountId, accounts: [accounts[0]] });
+              const account = accounts[0];
+              if (delegate && account) {
+                revokeDelegationModel.flowStarted({ delegate: delegate.accountId, accounts: [account] });
               }
             }}
           >

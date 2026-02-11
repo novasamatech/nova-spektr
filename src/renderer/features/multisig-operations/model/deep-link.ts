@@ -189,7 +189,7 @@ const chainConnected = sample({
 
     return chainExists && isChainConnected;
   },
-  fn: ({ chains, data }) => ({ data: data!, chain: chains[data!.chainId] }),
+  fn: ({ chains, data }) => ({ data: data!, chain: chains[data!.chainId] as Chain }),
 });
 
 $connectedChainInfo.on(chainConnected, (_, info) => info);

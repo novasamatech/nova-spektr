@@ -53,15 +53,17 @@ const $fellowshipStore = $collectiveStore.map(store => store['fellowship'] || nu
 // vote
 
 const prepareVoteFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
+  assert(chain, 'Chain not found');
+
   const coreTx = basketOperationsService.getCoreTx(transaction);
-  const api = apis[chainId];
+  const api = apis[chain.chainId]!;
 
   return {
     api,
@@ -118,15 +120,17 @@ sample({
 // salary induct
 
 const prepareSalaryInductFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
+  assert(chain, 'Chain not found');
+
   const coreTx = basketOperationsService.getCoreTx(transaction);
-  const api = apis[chainId];
+  const api = apis[chain.chainId]!;
 
   return {
     api,
@@ -180,15 +184,17 @@ sample({
 // salary request
 
 const prepareSalaryRequestFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
+  assert(chain, 'Chain not found');
+
   const coreTx = basketOperationsService.getCoreTx(transaction);
-  const api = apis[chainId];
+  const api = apis[chain.chainId]!;
 
   return {
     api,
@@ -242,15 +248,17 @@ sample({
 // salary payout
 
 const prepareSalaryPayoutFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
+  assert(chain, 'Chain not found');
+
   const coreTx = basketOperationsService.getCoreTx(transaction);
-  const api = apis[chainId];
+  const api = apis[chain.chainId]!;
 
   return {
     api,
@@ -305,15 +313,17 @@ sample({
 // evidence
 
 const prepareEvidencePayoutFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
+  assert(chain, 'Chain not found');
+
   const coreTx = basketOperationsService.getCoreTx(transaction);
-  const api = apis[chainId];
+  const api = apis[chain.chainId]!;
 
   return {
     api,
@@ -384,17 +394,19 @@ const prepareEvidenceVoteFx = createEffect<
   }: DataParams & {
     collectiveStore: Record<string, Record<string, { tracks?: Track[]; members?: Member[]; maxRank?: number }>>;
   }) => {
-    const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+    const { chain, account, fee } = await basketOperationsService.getTransactionData(
       transaction,
       apis,
       chains,
       accounts,
     );
 
-    const coreTx = basketOperationsService.getCoreTx(transaction);
-    const api = apis[chainId];
+    assert(chain, 'Chain not found');
 
-    const fellowshipStore = collectiveStore?.['fellowship']?.[chainId];
+    const coreTx = basketOperationsService.getCoreTx(transaction);
+    const api = apis[chain.chainId]!;
+
+    const fellowshipStore = collectiveStore?.['fellowship']?.[chain.chainId];
     const tracks = fellowshipStore?.tracks ?? [];
     const members = fellowshipStore?.members ?? [];
     const maxRank = fellowshipStore?.maxRank ?? 0;
@@ -402,10 +414,10 @@ const prepareEvidenceVoteFx = createEffect<
     const votingMember = members.find(m => m.accountId === account?.accountId);
 
     const proposalHex = coreTx.args.proposal;
-    const struct = api.registry.createType('Proposal', proposalHex);
+    const struct = api?.registry.createType('Proposal', proposalHex);
     const parsed =
-      struct.method === 'promote' || struct.method === 'promoteFast' || struct.method === 'approve'
-        ? pjsSchema.accountId.safeParse(struct.args.at(0))
+      struct?.method === 'promote' || struct?.method === 'promoteFast' || struct?.method === 'approve'
+        ? pjsSchema.accountId.safeParse(struct?.args.at(0))
         : null;
     const proposerAccountId = parsed?.success ? parsed.data : null;
 

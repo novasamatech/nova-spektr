@@ -85,7 +85,7 @@ async function findFlexibleMultisigs(
   // check flexible multisigs for proxies
   const proxyEntries = await Promise.all(
     multisigChains.map(async (chainId) => {
-      const entries = await proxyPallet.storage.proxies(apis[chainId]);
+      const entries = await proxyPallet.storage.proxies(apis[chainId]!);
 
       return { chainId, entries };
     }),

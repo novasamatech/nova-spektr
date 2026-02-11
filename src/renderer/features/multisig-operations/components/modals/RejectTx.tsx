@@ -117,8 +117,8 @@ export const RejectTxModal = memo(({ api, operation, account, chain, children }:
       setSubmitData({
         tx: rejectTx,
         initiator,
-        txPayload: payload[0],
-        signature: signature[0],
+        txPayload: payload[0]!,
+        signature: signature[0]!,
       });
     }
   };

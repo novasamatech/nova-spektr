@@ -20,7 +20,7 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
 
   const isScanStep = !txPayloads.length;
   const isMultiTx = signingPayloads.length > 1;
-  const chain = signingPayloads[0].chain;
+  const chain = signingPayloads[0]!.chain;
   const rootAccountId = (signerWallet as PolkadotVaultWallet | SingleShardWallet)?.rootAccountId;
 
   useEffect(() => {
@@ -99,11 +99,11 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
           ) : (
             <ScanSingleframeQr
               chain={chain}
-              api={signingPayloads[0].api}
+              api={signingPayloads[0]!.api}
               countdown={countdown}
               rootAccountId={rootAccountId}
-              account={signingPayloads[0].signatory}
-              extrinsic={signingPayloads[0].extrinsic}
+              account={signingPayloads[0]!.signatory}
+              extrinsic={signingPayloads[0]!.extrinsic}
               onGoBack={onGoBack}
               onResetCountdown={resetCountdown}
               onResult={(payload) => setTxPayloads([payload])}

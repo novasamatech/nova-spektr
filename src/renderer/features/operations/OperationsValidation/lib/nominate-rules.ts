@@ -29,7 +29,7 @@ export const NominateRules = {
 
         const amountBN = new BN(formatAmount(form.amount, network.asset.precision));
 
-        return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index])));
+        return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index]!)));
       },
     }),
   },

@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 import { type FormEvent, useMemo } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
+import { type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, toAddress, toShortAddress, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
@@ -178,7 +179,12 @@ const Signatories = () => {
 
   const signatoriesWithBalance = useMemo(() => {
     return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.value!.chainId, nativeAsset.assetId);
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        chain.value?.chainId ?? ('' as ChainId),
+        nativeAsset.assetId,
+      );
       return { account: signatory, balance: withdrawableAmount(balance) };
     });
   }, [signatories, balances]);
@@ -216,7 +222,7 @@ const ProxyInput = () => {
 
   const options = proxyAccounts.map((proxyAccount) => {
     const isShard = accountUtils.isVaultShardAccount(proxyAccount);
-    const address = toAddress(proxyAccount.accountId, { prefix: chain.value!.addressPrefix });
+    const address = toAddress(proxyAccount.accountId, { prefix: chain.value?.addressPrefix });
     const id = accountService.uniqId(proxyAccount);
 
     return {

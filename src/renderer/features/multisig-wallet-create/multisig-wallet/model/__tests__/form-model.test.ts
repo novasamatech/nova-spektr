@@ -32,16 +32,16 @@ describe('Create multisig wallet form-model', () => {
     await allSettled(formModel.form.fields.chainId.change, { scope, params: testChain.chainId });
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
+      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0]!.accountId), walletId: '1' },
     });
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId), walletId: '1' },
+      params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0]!.accountId), walletId: '1' },
     });
 
     await allSettled(formModel.form.fields.threshold.change, { scope, params: 2 });
 
-    expect(scope.getState(formModel.$multisigAccountId)).toEqual(multisigWallet.accounts[0].accountId);
+    expect(scope.getState(formModel.$multisigAccountId)).toEqual(multisigWallet.accounts[0]!.accountId);
   });
 
   test('should have correct value for $multisigAlreadyExists', async () => {
@@ -58,11 +58,11 @@ describe('Create multisig wallet form-model', () => {
     await allSettled(formModel.form.fields.chainId.change, { scope, params: testChain.chainId });
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
+      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0]!.accountId), walletId: '1' },
     });
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId), walletId: '1' },
+      params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0]!.accountId), walletId: '1' },
     });
     await allSettled(formModel.form.fields.threshold.change, { scope, params: 2 });
 
@@ -81,7 +81,7 @@ describe('Create multisig wallet form-model', () => {
     });
     await allSettled(formModel.form.fields.chainId.change, { scope, params: testChain.chainId });
 
-    await allSettled(signatoryModel.events.changeSignatory, { scope, params: { index: 1, ...signatories[1] } });
+    await allSettled(signatoryModel.events.changeSignatory, { scope, params: { index: 1, ...signatories[1]! } });
 
     expect(scope.getState(formModel.$invalidAddresses)).toEqual([badAddress]);
   });

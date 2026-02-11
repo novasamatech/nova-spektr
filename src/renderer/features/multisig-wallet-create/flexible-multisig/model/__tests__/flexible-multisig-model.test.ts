@@ -49,7 +49,7 @@ describe.skip('Create flexible multisig wallet flexible-multisig', () => {
       params: {
         index: 0,
         name: signerWallet.name,
-        address: toAddress(signerWallet.accounts[0].accountId),
+        address: toAddress(signerWallet.accounts[0]!.accountId),
         walletId: '1',
       },
     });

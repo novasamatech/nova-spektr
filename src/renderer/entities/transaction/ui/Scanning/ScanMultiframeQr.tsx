@@ -48,8 +48,8 @@ export const ScanMultiframeQr = ({
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
   const [qrPayload, setQrPayload] = useState<Uint8Array>();
 
-  const signingType = signingPayloads[0].signatory.signingType;
-  const isMetadataProofsSupported = signingPayloads[0].chain.additional?.supportsGenericLedgerApp ?? false;
+  const signingType = signingPayloads[0]!.signatory.signingType;
+  const isMetadataProofsSupported = signingPayloads[0]!.chain.additional?.supportsGenericLedgerApp ?? false;
 
   useEffect(() => {
     if (txPayloads.length && qrPayload && tab === prevTab.current) return;
@@ -123,10 +123,10 @@ export const ScanMultiframeQr = ({
         const info = transactionService.createPayloadWithMetadata(
           signingPayload.extrinsic,
           signingPayload.api,
-          metadataMap[signatory.accountId][chainId],
+          metadataMap[signatory.accountId]![chainId]!,
         );
 
-        metadataMap[signatory.accountId][chainId] = upgradeNonce(metadataMap[signatory.accountId][chainId], 1);
+        metadataMap[signatory.accountId]![chainId] = upgradeNonce(metadataMap[signatory.accountId]![chainId]!, 1);
 
         let signPayload: Uint8Array;
         if (signingType === SigningType.POLKADOT_VAULT) {
@@ -170,7 +170,7 @@ export const ScanMultiframeQr = ({
     <>
       <QrGeneratorContainer
         countdown={countdown}
-        chainId={signingPayloads[0].chain.chainId}
+        chainId={signingPayloads[0]!.chain.chainId}
         isLegacyQR={tab === 'legacy'}
         testId={TEST_IDS.OPERATIONS.QR_CODE_CONTAINER}
         onQrReset={setupTransactions}

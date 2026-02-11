@@ -66,7 +66,7 @@ function createNamespaces(chains: ChainId[]) {
 function getAccountsFromSession(session: SessionTypes.Struct, chains: Chain[]) {
   if (nullable(session)) return [];
 
-  const accounts = session.namespaces.polkadot.accounts
+  const accounts = (session.namespaces.polkadot?.accounts ?? [])
     .map(meta => {
       const [_, chainId, address] = meta.split(':') || [];
       if (nullable(chainId) || nullable(address)) return null;

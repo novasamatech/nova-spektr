@@ -32,15 +32,16 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
     fn: (value, [id]) => value[id],
   });
 
-  const initiatorWallet = confirm.wallets.initiator;
-  const signerWallet = confirm.wallets.signatory;
+  const initiatorWallet = confirm?.wallets.initiator;
+  const signerWallet = confirm?.wallets.signatory;
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
-  const hasMultisigAccount = confirm.meta.route.some(accountUtils.isAnyMultisigAccount);
-  const nativeAsset = getNativeAsset(confirm.meta.chain.assets);
+  const hasMultisigAccount = confirm?.meta.route.some(accountUtils.isAnyMultisigAccount);
 
   if (!confirm || !initiatorWallet) {
     return null;
   }
+
+  const nativeAsset = getNativeAsset(confirm.meta.chain.assets);
 
   return (
     <div className="flex flex-col items-center gap-y-4 px-5 pt-4 pb-4">

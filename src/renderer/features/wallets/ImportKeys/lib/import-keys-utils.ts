@@ -16,6 +16,7 @@ import {
   DerivationError,
   derivationTokensToString,
   entries,
+  nullable,
   parseDerivation,
   toAccountId,
   validateDerivation,
@@ -96,12 +97,12 @@ function parseTextFile(fileContent: string): ParsedData | null {
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
 
-  const versionMatch = lines[0].match(/^version: (\d+)$/);
+  const versionMatch = lines[0]?.match(/^version: (\d+)$/);
   if (!versionMatch || versionMatch[1] !== IMPORT_FILE_VERSION) {
     return null;
   }
 
-  const publicAddressMatch = lines[1].match(/^public address: (0x[a-fA-F0-9]{64})$/);
+  const publicAddressMatch = lines[1]?.match(/^public address: (0x[a-fA-F0-9]{64})$/);
   if (!publicAddressMatch) return null;
   const key = publicAddressMatch[1];
   // @ts-expect-error 0x00 is not account id
@@ -112,19 +113,19 @@ function parseTextFile(fileContent: string): ParsedData | null {
   const derivationPaths = [];
   for (let i = 2; i < lines.length; i++) {
     const line = lines[i];
-    const chainIdMatch = line.match(/^genesis: (0x[a-fA-F0-9]{64})$/);
+    const chainIdMatch = line?.match(/^genesis: (0x[a-fA-F0-9]{64})$/);
     if (chainIdMatch) {
       const chainId = chainIdMatch[1];
-      if (!chainId.startsWith('0x')) {
+      if (!chainId?.startsWith('0x')) {
         return null;
       }
-      currentChainId = chainIdMatch[1];
+      currentChainId = chainIdMatch[1] as string;
     }
 
-    const derivationPathMatch = line.match(/^(\/{1,2}[^\s:]*)/);
+    const derivationPathMatch = line?.match(/^(\/{1,2}[^\s:]*)/);
 
     if (derivationPathMatch) {
-      const { tokens, raw, shardCount } = parseDerivation(derivationPathMatch[1]);
+      const { tokens, raw, shardCount } = parseDerivation(derivationPathMatch[1] as string);
       const path = shardCount ? derivationTokensToString(tokens.toSpliced(-2)) : raw;
 
       const derivationPathParams = {
@@ -181,6 +182,8 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
   if (!rootAccountId) return;
 
   const chains = fileContent[rootAccountId as AccountId];
+  if (nullable(chains)) return;
+
   const derivations: ImportedDerivation[] = [];
 
   for (const [key, value] of entries(chains)) {

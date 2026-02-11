@@ -25,7 +25,7 @@ function filteredByQuery<T extends AggregatedReferendum>({
 }: FilteredByQueryParams<T>): T[] {
   const res = performSearch<AggregatedReferendum, { title: string }>({
     records: referendums,
-    getMeta: (ref) => ({ title: titles[ref.referendumId], referendumId: ref.referendumId }),
+    getMeta: (ref) => ({ title: titles[ref.referendumId] ?? '', referendumId: ref.referendumId }),
     query,
     weights: {
       title: 1,
