@@ -107,7 +107,7 @@ describe('Governance Delegation - Integration', () => {
         .build();
 
       const delegateAccount = {
-        accountId: multiTrackDelegations[0].target,
+        accountId: multiTrackDelegations[0]!.target,
         delegators: 20,
         delegatorVotes: '2000000000000000',
         delegateVotes: 75,
@@ -209,7 +209,7 @@ describe('Governance Delegation - Integration', () => {
         .build();
 
       const delegateAccount = {
-        accountId: multiTrackDelegations[0].target,
+        accountId: multiTrackDelegations[0]!.target,
         delegators: 25,
         delegatorVotes: '2500000000000000',
         delegateVotes: 80,
@@ -730,7 +730,7 @@ describe('Governance Delegation - Integration', () => {
         .build();
 
       const delegateAccount = {
-        accountId: multiTrackDelegations[0].target,
+        accountId: multiTrackDelegations[0]!.target,
         delegators: 25,
         delegatorVotes: '2500000000000000',
         delegateVotes: 80,

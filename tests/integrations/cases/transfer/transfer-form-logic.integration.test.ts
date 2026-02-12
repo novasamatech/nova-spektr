@@ -5,7 +5,7 @@ import { ConnectionStatus, TransactionType } from '@/shared/core';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
-import { formModel } from '@/widgets/Transfer/default/model/form-model';
+import { formModel } from '@/features/transfer/model/form-model';
 import {
   polkadotChain,
   polkadotChainId,

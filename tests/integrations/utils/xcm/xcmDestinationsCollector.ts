@@ -4,14 +4,14 @@ import { join } from 'path';
 import { Native, getSupportedDestinations } from '@paraspell/sdk-pjs';
 
 import {
-  XCM_DESTINATION_BLACKLIST,
-  XCM_DESTINATION_WHITELIST_LEGACY,
   type XcmDestinationBlacklistEntry,
   type XcmDestinationWhitelistEntry,
+  XCM_DESTINATION_BLACKLIST,
+  XCM_DESTINATION_WHITELIST_LEGACY,
   getXcmWhitelist,
 } from '@/shared/api/xcm/service/constants';
 import { spellXcmService } from '@/shared/api/xcm/service/spellXcmService';
-import { type Asset, AssetType, type Chain, type ChainId } from '@/shared/core';
+import { type Asset, type Chain, type ChainId, AssetType } from '@/shared/core';
 import { CHAIN_ID_TO_SPELL_NAME_MAP, nonNullable } from '@/shared/lib/utils';
 
 /**
@@ -310,7 +310,7 @@ export function formatXcmDestinationsMarkdown(destinations: XcmDestination[], st
       if (!acc[dest.sourceNetwork]) {
         acc[dest.sourceNetwork] = new Set();
       }
-      acc[dest.sourceNetwork].add(dest.destinationNetwork);
+      acc[dest.sourceNetwork]!.add(dest.destinationNetwork);
       return acc;
     },
     {} as Record<string, Set<string>>,
@@ -336,7 +336,7 @@ export function formatXcmDestinationsMarkdown(destinations: XcmDestination[], st
 
   // Sort destinations within each source network by token, then destination
   for (const source of Object.keys(groupedBySource)) {
-    groupedBySource[source].sort((a, b) => {
+    groupedBySource[source]!.sort((a, b) => {
       if (a.token !== b.token) {
         return a.token.localeCompare(b.token);
       }
@@ -409,7 +409,7 @@ export function formatXcmDestinationsMarkdown(destinations: XcmDestination[], st
     markdown += `*${routeCount} transfer route${routeCount !== 1 ? 's' : ''} available*\n\n`;
 
     // Group by token within source network
-    const byToken = groupedBySource[sourceNetwork].reduce(
+    const byToken = groupedBySource[sourceNetwork]!.reduce(
       (acc, dest) => {
         const key = dest.token;
         if (!acc[key]) {
@@ -429,6 +429,7 @@ export function formatXcmDestinationsMarkdown(destinations: XcmDestination[], st
       markdown += '|---------------------|\n';
 
       const tokenDestinations = byToken[token];
+      if (!tokenDestinations) continue;
       for (const destination of tokenDestinations) {
         markdown += `| ${destination.destinationNetwork} |\n`;
       }

@@ -6,7 +6,7 @@ import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { formModel } from '@/widgets/Transfer/default/model/form-model';
+import { formModel } from '@/features/transfer/model/form-model';
 import {
   polkadotChain,
   polkadotChainId,
@@ -264,8 +264,9 @@ describe('Transfer MAX + ED', () => {
       env = await createTransferEnvBuilder(true).build();
 
       const balanceMap = env.getState(balanceModel.__test.$balanceMap);
-      expect(balanceMap[senderBalance.id]).toBeDefined();
-      expect(balanceMap[senderBalance.id].free.toString()).toBe(FULL_BALANCE_PLANCK);
+      const senderBalanceEntry = balanceMap[senderBalance.id];
+      expect(senderBalanceEntry).toBeDefined();
+      expect(senderBalanceEntry!.free.toString()).toBe(FULL_BALANCE_PLANCK);
 
       await fillTransferForm(env, '100');
 
