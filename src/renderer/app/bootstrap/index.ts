@@ -12,6 +12,7 @@ import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 import { appCustomOperationsFeature } from '@/features/app-custom-operations';
 import { assetsSettingsModel, portfolioModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
+import { backendConfigFeature, backendConfigModel } from '@/features/backend-config';
 import { basketNavigationFeature } from '@/features/basket-navigation';
 import { callDataExecuteFeature } from '@/features/call-data-execute';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
@@ -55,6 +56,7 @@ const populate = async () => {
   kernelModel.events.appStarted();
   assetsSettingsModel.events.assetsStarted();
   notificationModel.events.notificationsStarted();
+  backendConfigModel.events.configStarted();
 };
 
 export const bootstrap = () => {
@@ -70,6 +72,7 @@ export const bootstrap = () => {
     callDataExecuteFeature,
     notificationsNavigationFeature,
     settingsNavigationFeature,
+    backendConfigFeature,
     basketNavigationFeature,
     stakingNavigationFeature,
     governanceNavigationFeature,

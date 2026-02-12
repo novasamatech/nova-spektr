@@ -140,6 +140,22 @@
       "polkadotMigration": "DOT Migration to"
     }
   },
+  "backendConfig": {
+    "connectionFailedAlert": "Could not connect to the backend server",
+    "lastSync": "Last synced: {time}",
+    "modalTitle": "Backend Configuration",
+    "navButton": "Backend",
+    "statusConnected": "Connected",
+    "statusFailed": "Connection failed",
+    "statusNotTested": "Not tested",
+    "statusTesting": "Testing...",
+    "testConnection": "Test Connection",
+    "urlInvalid": "Invalid URL format",
+    "urlInvalidProtocol": "URL must use HTTP or HTTPS",
+    "urlLabel": "Backend URL",
+    "urlPlaceholder": "https://api.example.com",
+    "urlRequired": "URL is required"
+  },
   "balances": {
     "accountsModalTitle": "Your accounts",
     "allAccounts": "All accounts",
