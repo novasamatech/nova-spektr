@@ -1,7 +1,7 @@
 import { allSettled } from 'effector';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { ConnectionStatus } from '@/shared/core';
+import { ConnectionStatus, TransactionType } from '@/shared/core';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
@@ -18,30 +18,75 @@ import {
 } from '../fixtures';
 import { type FeatureTestEnvironment, FeatureTestBuilder } from '../utils';
 
+vi.mock('@/shared/api/xcm', async (importOriginal) => {
+  const actual = (await importOriginal()) as object;
+  return {
+    ...actual,
+    xcmConfigService: {
+      getXcmConfig: vi.fn().mockResolvedValue({ xcm: [] }),
+    },
+    spellXcmService: {
+      getSpellChainName: vi.fn((chain: { name: string }) => chain?.name ?? 'Polkadot'),
+    },
+  };
+});
+
+const FULL_BALANCE_PLANCK = '10000000000000';
+
+function createTransferEnvBuilder(withRecipient: boolean) {
+  return new FeatureTestBuilder({ autoPopulate: false })
+    .withChain(polkadotChain)
+    .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
+    .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
+    .withStoreValue(walletModel.__test.$rawWallets, withRecipient ? [vaultWallet, watchOnlyWallet] : [vaultWallet])
+    .withStoreValue(accounts.__test.$list, withRecipient ? [senderAccount, recipientAccount] : [senderAccount]);
+}
+
+async function initTransferForm(env: FeatureTestEnvironment): Promise<void> {
+  await env.executeEvent(formModel.formInitiated, {
+    chain: polkadotChain,
+    asset: polkadotChain.assets[0],
+  });
+}
+
+async function fillTransferForm(
+  env: FeatureTestEnvironment,
+  amount: string,
+  options?: { selectWallet?: boolean },
+): Promise<void> {
+  if (options?.selectWallet !== false) {
+    await allSettled(walletSelect.select, { scope: env.scope, params: vaultWallet.id });
+  }
+  await initTransferForm(env);
+  await allSettled(formModel.form.fields.initiator.change, {
+    scope: env.scope,
+    params: senderAccount,
+  });
+  await allSettled(formModel.form.fields.destination.change, {
+    scope: env.scope,
+    params: recipientAccount.accountId,
+  });
+  await allSettled(formModel.form.fields.amount.change, {
+    scope: env.scope,
+    params: amount,
+  });
+}
+
 /**
- * REAL Integration Tests for Transfer Form MAX Button and ED Checkbox
+ * Integration tests for Transfer MAX Button and ED (Existential Deposit)
+ * Checkbox
  *
- * This demonstrates how to test ACTUAL FEATURE LOGIC:
+ * Verifies business logic:
  *
- * - State management (Effector stores)
- * - Event handling
- * - Storage integration
- * - Business rules
- *
- * These tests verify the BEHAVIOR of the feature, not just mock data.
+ * - MAX mode toggle and user-typing interaction
+ * - ED checkbox toggle and independence from MAX mode
+ * - Balance integration for MAX calculation
  *
  * @group integration
  * @group transfer
  * @group max-button
  */
-// Mock XCM config to prevent network calls
-vi.mock('@/shared/api/xcm', () => ({
-  xcmConfigService: {
-    getXcmConfig: vi.fn().mockResolvedValue({ xcm: [] }),
-  },
-}));
-
-describe('Transfer MAX Button and ED Checkbox - REAL Logic', () => {
+describe('Transfer MAX + ED', () => {
   let env: FeatureTestEnvironment;
 
   afterEach(async () => {
@@ -50,199 +95,155 @@ describe('Transfer MAX Button and ED Checkbox - REAL Logic', () => {
     }
   });
 
-  describe('MAX Button Behavior', () => {
-    it('should enable MAX mode when toggled', async () => {
-      env = await new FeatureTestBuilder({ autoPopulate: false })
-        .withChain(polkadotChain)
-        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
-        .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
-        .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet, watchOnlyWallet])
-        .withStoreValue(accounts.__test.$list, [senderAccount, recipientAccount])
-        .build();
+  describe('MAX Button', () => {
+    it('should enable MAX mode when toggled on', async () => {
+      env = await createTransferEnvBuilder(false).build();
 
-      // Initialize form with network context
-      await env.executeEvent(formModel.formInitiated, {
-        chain: polkadotChain,
-        asset: polkadotChain.assets[0],
-      });
+      await initTransferForm(env);
 
-      // VERIFY: Initial state - MAX mode should be disabled
       expect(env.getState(formModel.$isMaxModeEnabled)).toBe(false);
 
-      // ACTION: User clicks MAX button
       await env.executeEvent(formModel.events.toggleMaxMode, true);
 
-      // VERIFY: MAX mode is enabled
       expect(env.getState(formModel.$isMaxModeEnabled)).toBe(true);
     });
 
-    it('should disable MAX mode when user types amount manually', async () => {
-      env = await new FeatureTestBuilder({ autoPopulate: false })
-        .withChain(polkadotChain)
-        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
-        .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
-        .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet])
-        .withStoreValue(accounts.__test.$list, [senderAccount])
-        .build();
+    it('should switch from transfer-all to regular transfer when user types amount manually', async () => {
+      env = await createTransferEnvBuilder(true).build();
 
-      await env.executeEvent(formModel.formInitiated, {
-        chain: polkadotChain,
-        asset: polkadotChain.assets[0],
-      });
+      await fillTransferForm(env, '100');
 
-      // Enable MAX mode
-      await env.executeEvent(formModel.events.toggleMaxMode, true);
-      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(true);
+      const coreTxBeforeMax = env.getState(formModel.$coreTx);
+      expect(coreTxBeforeMax).not.toBeNull();
+      expect(coreTxBeforeMax?.type).toBe(TransactionType.TRANSFER);
 
-      // User starts typing (disables MAX mode)
-      await env.executeEvent(formModel.events.toggleMaxMode, false);
-
-      // VERIFY: MAX mode is disabled
-      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(false);
-    });
-  });
-
-  describe('ED Checkbox Behavior', () => {
-    it('should toggle existential deposit flag', async () => {
-      env = await new FeatureTestBuilder({ autoPopulate: false })
-        .withChain(polkadotChain)
-        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
-        .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
-        .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet])
-        .withStoreValue(accounts.__test.$list, [senderAccount])
-        .build();
-
-      await env.executeEvent(formModel.formInitiated, {
-        chain: polkadotChain,
-        asset: polkadotChain.assets[0],
-      });
-
-      // VERIFY: Initial state - ED disabled
-      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
-
-      // ACTION: Toggle ED ON
-      await env.executeEvent(formModel.events.toggleExistentialDeposit, true);
-
-      // VERIFY: ED is now enabled
-      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
-
-      // ACTION: Toggle ED OFF
-      await env.executeEvent(formModel.events.toggleExistentialDeposit, false);
-
-      // VERIFY: ED is now disabled
-      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
-    });
-
-    it('should allow ED toggle independent of MAX mode', async () => {
-      env = await new FeatureTestBuilder({ autoPopulate: false })
-        .withChain(polkadotChain)
-        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
-        .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
-        .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet])
-        .withStoreValue(accounts.__test.$list, [senderAccount])
-        .build();
-
-      await env.executeEvent(formModel.formInitiated, {
-        chain: polkadotChain,
-        asset: polkadotChain.assets[0],
-      });
-
-      // Try to toggle ED without clicking MAX first
-      await env.executeEvent(formModel.events.toggleExistentialDeposit, true);
-
-      // ED can be toggled regardless of MAX state
-      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
-
-      // Now click MAX
       await env.executeEvent(formModel.events.toggleMaxMode, true);
 
-      // Both should be enabled
-      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(true);
-      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
-    });
-  });
+      const coreTxWithMax = env.getState(formModel.$coreTx);
+      const amountWithMax = env.getState(formModel.form.fields.amount.$value);
+      expect(coreTxWithMax?.type).toBe(TransactionType.TRANSFER_ALL);
+      expect(amountWithMax).not.toBe('1');
 
-  describe('Complete MAX + ED Workflow', () => {
-    it('should execute full MAX + ED interaction workflow', async () => {
-      env = await new FeatureTestBuilder({ autoPopulate: false })
-        .withChain(polkadotChain)
-        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
-        .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
-        .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet, watchOnlyWallet])
-        .withStoreValue(accounts.__test.$list, [senderAccount, recipientAccount])
-        .build();
-
-      // Step 1: Initialize form
-      await env.executeEvent(formModel.formInitiated, {
-        chain: polkadotChain,
-        asset: polkadotChain.assets[0],
-      });
-
-      // Step 2: Verify initial state
-      expect(env.getState(formModel.$networkStore)).toBeDefined();
-      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(false);
-      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
-
-      // Step 3: User clicks MAX button
-      await env.executeEvent(formModel.events.toggleMaxMode, true);
-
-      // Step 4: Verify MAX mode is enabled
-      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(true);
-
-      // Step 5: User toggles ED checkbox ON
-      await env.executeEvent(formModel.events.toggleExistentialDeposit, true);
-
-      // Step 6: Verify ED is enabled
-      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
-
-      // Step 7: User toggles ED checkbox OFF
-      await env.executeEvent(formModel.events.toggleExistentialDeposit, false);
-
-      // Step 8: Verify ED is disabled
-      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(false);
-
-      // Step 9: User disables MAX mode (types manually)
-      await env.executeEvent(formModel.events.toggleMaxMode, false);
-
-      // Step 10: Verify MAX mode is off
-      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(false);
-    });
-  });
-
-  describe('Real Balance Integration', () => {
-    it('should use actual balance from storage for MAX calculation', async () => {
-      env = await new FeatureTestBuilder({ autoPopulate: false })
-        .withChain(polkadotChain)
-        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
-        .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
-        .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet, watchOnlyWallet])
-        .withStoreValue(accounts.__test.$list, [senderAccount, recipientAccount])
-        .build();
-
-      // Set selected wallet so initiators can be calculated
-      await allSettled(walletSelect.select, {
+      await allSettled(formModel.form.fields.amount.change, {
         scope: env.scope,
-        params: vaultWallet.id,
+        params: '1',
       });
+      await env.executeEvent(formModel.events.toggleMaxMode, false);
 
-      // Initialize form
-      await env.executeEvent(formModel.formInitiated, {
-        chain: polkadotChain,
-        asset: polkadotChain.assets[0],
+      const coreTxAfterTyping = env.getState(formModel.$coreTx);
+      expect(coreTxAfterTyping?.type).toBe(TransactionType.TRANSFER);
+      expect(coreTxAfterTyping?.args.value).toBe('10000000000');
+    });
+  });
+
+  describe('ED Checkbox', () => {
+    it('should switch extrinsic from keepAlive to allowDeath when ED enabled', async () => {
+      env = await createTransferEnvBuilder(true).build();
+
+      await fillTransferForm(env, '10');
+
+      const coreTxKeepAlive = env.getState(formModel.$coreTx);
+      expect(coreTxKeepAlive?.type).toBe(TransactionType.TRANSFER);
+      expect(coreTxKeepAlive?.args.keepAlive).toBe(true);
+
+      await env.executeEvent(formModel.events.toggleExistentialDeposit, true);
+
+      const coreTxAllowDeath = env.getState(formModel.$coreTx);
+      expect(coreTxAllowDeath?.type).toBe(TransactionType.TRANSFER_ALLOW_DEATH);
+      expect(coreTxAllowDeath?.args.keepAlive).toBe(false);
+
+      await env.executeEvent(formModel.events.toggleExistentialDeposit, false);
+
+      const coreTxBackToKeepAlive = env.getState(formModel.$coreTx);
+      expect(coreTxBackToKeepAlive?.type).toBe(TransactionType.TRANSFER);
+      expect(coreTxBackToKeepAlive?.args.keepAlive).toBe(true);
+    });
+
+    it('should revert amount to regular MAX (keepAlive) when ED is toggled off after being on', async () => {
+      env = await createTransferEnvBuilder(true).build();
+
+      await fillTransferForm(env, '1');
+
+      await env.executeEvent(formModel.events.toggleMaxMode, true);
+      const amountMaxOnly = env.getState(formModel.form.fields.amount.$value);
+
+      await env.executeEvent(formModel.events.toggleExistentialDeposit, true);
+      const amountMaxWithEd = env.getState(formModel.form.fields.amount.$value);
+      expect(amountMaxWithEd).not.toBe(amountMaxOnly);
+
+      await env.executeEvent(formModel.events.toggleExistentialDeposit, false);
+      const amountAfterEdOff = env.getState(formModel.form.fields.amount.$value);
+      expect(amountAfterEdOff).toBe(amountMaxOnly);
+    });
+
+    it('should persist allowDeath extrinsic when MAX is toggled off', async () => {
+      env = await createTransferEnvBuilder(true).build();
+
+      await fillTransferForm(env, '50');
+
+      await env.executeEvent(formModel.events.toggleMaxMode, true);
+      await env.executeEvent(formModel.events.toggleExistentialDeposit, true);
+
+      const coreTxMaxWithEd = env.getState(formModel.$coreTx);
+      expect(coreTxMaxWithEd?.type).toBe(TransactionType.TRANSFER_ALL);
+      expect(coreTxMaxWithEd?.args.keepAlive).toBe(false);
+
+      await allSettled(formModel.form.fields.amount.change, {
+        scope: env.scope,
+        params: '25',
       });
+      await env.executeEvent(formModel.events.toggleMaxMode, false);
 
-      // Verify balance was set correctly
+      const coreTxAfterMaxOff = env.getState(formModel.$coreTx);
+      expect(coreTxAfterMaxOff?.type).toBe(TransactionType.TRANSFER_ALLOW_DEATH);
+      expect(coreTxAfterMaxOff?.args.keepAlive).toBe(false);
+      expect(coreTxAfterMaxOff?.args.value).toBe('250000000000');
+    });
+  });
+
+  describe('Full Workflow', () => {
+    it('should build correct extrinsic type through MAX + ED toggle sequence', async () => {
+      env = await createTransferEnvBuilder(true).build();
+
+      await fillTransferForm(env, '1');
+
+      expect(env.getState(formModel.$coreTx)?.type).toBe(TransactionType.TRANSFER);
+
+      await env.executeEvent(formModel.events.toggleMaxMode, true);
+      expect(env.getState(formModel.$coreTx)?.type).toBe(TransactionType.TRANSFER_ALL);
+
+      await env.executeEvent(formModel.events.toggleExistentialDeposit, true);
+      expect(env.getState(formModel.$coreTx)?.type).toBe(TransactionType.TRANSFER_ALL);
+      expect(env.getState(formModel.$coreTx)?.args.keepAlive).toBe(false);
+
+      await env.executeEvent(formModel.events.toggleMaxMode, false);
+      expect(env.getState(formModel.$coreTx)?.type).toBe(TransactionType.TRANSFER_ALLOW_DEATH);
+
+      await env.executeEvent(formModel.events.toggleExistentialDeposit, false);
+      expect(env.getState(formModel.$coreTx)?.type).toBe(TransactionType.TRANSFER);
+
+      await env.executeEvent(formModel.events.toggleMaxMode, true);
+      expect(env.getState(formModel.$coreTx)?.type).toBe(TransactionType.TRANSFER_ALL);
+    });
+  });
+
+  describe('Balance Integration', () => {
+    it('should build transfer-all extrinsic with balance from storage when MAX + ED enabled', async () => {
+      env = await createTransferEnvBuilder(true).build();
+
       const balanceMap = env.getState(balanceModel.__test.$balanceMap);
       expect(balanceMap[senderBalance.id]).toBeDefined();
-      expect(balanceMap[senderBalance.id].free.toString()).toBe('10000000000000');
+      expect(balanceMap[senderBalance.id].free.toString()).toBe(FULL_BALANCE_PLANCK);
 
-      // Enable MAX mode
+      await fillTransferForm(env, '100');
+
       await env.executeEvent(formModel.events.toggleMaxMode, true);
-      expect(env.getState(formModel.$isMaxModeEnabled)).toBe(true);
-
-      // Enable ED
       await env.executeEvent(formModel.events.toggleExistentialDeposit, true);
-      expect(env.getState(formModel.$isExistentialDepositEnabled)).toBe(true);
+
+      const coreTx = env.getState(formModel.$coreTx);
+      expect(coreTx?.type).toBe(TransactionType.TRANSFER_ALL);
+      expect(coreTx?.args.keepAlive).toBe(false);
+      expect(coreTx?.args.dest).toBe(recipientAccount.accountId);
     });
   });
 });

@@ -141,7 +141,7 @@ Available scenarios:
 pnpm test tests/integrations
 
 # Run specific test file
-pnpm test tests/integrations/tests/transfer-form-logic.integration.test.ts
+pnpm test tests/integrations/cases/transfer-form-logic.integration.test.ts
 
 # Watch mode
 pnpm test:watch tests/integrations
@@ -228,19 +228,19 @@ pnpm fmt:fix
 
 ## 🔍 Examples
 
-See working examples in [`tests/`](./tests/):
+See working examples in [`cases/`](./cases/):
 
-1. **[transfer-form-logic.integration.test.ts](./tests/transfer-form-logic.integration.test.ts)**
+1. **[transfer-form-logic.integration.test.ts](./cases/transfer-form-logic.integration.test.ts)**
    - Form validation
    - MAX button logic
    - ED checkbox behavior
    - Multi-step workflows
 
-2. **[transfer-max-ed.integration.test.ts](./tests/transfer-max-ed.integration.test.ts)**
-   - Simple MAX + ED scenarios
-   - Balance calculations
+2. **[transfer-max-ed.integration.test.ts](./cases/transfer-max-ed.integration.test.ts)**
+   - MAX button and ED checkbox toggle behavior
+   - Balance integration for MAX calculation
 
-3. **[xcm-destinations.integration.test.ts](./tests/xcm-destinations.integration.test.ts)**
+3. **[xcm-destinations.integration.test.ts](./cases/xcm-destinations.integration.test.ts)**
    - Cross-chain transfers
    - XCM destinations
 
