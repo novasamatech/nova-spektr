@@ -15,8 +15,8 @@ import {
   senderBalance,
   vaultWallet,
   watchOnlyWallet,
-} from '../fixtures';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../utils';
+} from '../../fixtures/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder } from '../../utils/index';
 
 vi.mock('@/shared/api/xcm', async (importOriginal) => {
   const actual = (await importOriginal()) as object;

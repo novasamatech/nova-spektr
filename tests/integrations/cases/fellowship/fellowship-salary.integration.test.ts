@@ -13,8 +13,8 @@ import {
   senderAccount,
   senderBalance,
   vaultWallet,
-} from '../fixtures';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../utils';
+} from '../../fixtures/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder } from '../../utils/index';
 
 /**
  * Integration tests for Fellowship Salary Management

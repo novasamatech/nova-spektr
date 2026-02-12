@@ -5,8 +5,8 @@ import { ConnectionStatus } from '@/shared/core';
 import { evidenceForm } from '@/features/fellowship-evidence/model/evidenceForm';
 import { evidenceIPFS } from '@/features/fellowship-evidence/model/evidenceIPFS';
 import { evidencePost } from '@/features/fellowship-evidence/model/evidencePost';
-import { polkadotChain, polkadotChainId, senderAccount, senderBalance, vaultWallet } from '../fixtures';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../utils';
+import { polkadotChain, polkadotChainId, senderAccount, senderBalance, vaultWallet } from '../../fixtures/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder } from '../../utils/index';
 
 /**
  * Integration tests for Fellowship Evidence Submission

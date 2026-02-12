@@ -8,7 +8,7 @@ import {
   collectXcmDestinationsWithStats,
   saveXcmDestinationsToFile,
   setupFetchPolyfill,
-} from '../utils';
+} from '../../utils/index';
 
 /**
  * Integration test for collecting and documenting all available XCM transfer

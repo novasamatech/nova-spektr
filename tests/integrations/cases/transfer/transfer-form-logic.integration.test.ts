@@ -15,8 +15,8 @@ import {
   senderLowBalance,
   vaultWallet,
   watchOnlyWallet,
-} from '../fixtures';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../utils';
+} from '../../fixtures/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder } from '../../utils/index';
 
 /**
  * Real integration tests for Transfer Form Logic

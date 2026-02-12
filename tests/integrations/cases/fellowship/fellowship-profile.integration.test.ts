@@ -5,8 +5,8 @@ import { ConnectionStatus } from '@/shared/core';
 import { alertsModel } from '@/features/fellowship-profile/model/alerts';
 import { setActive } from '@/features/fellowship-profile/model/setActive';
 import { type Alert } from '@/features/fellowship-profile/types';
-import { polkadotChain, polkadotChainId, senderAccount, senderBalance, vaultWallet } from '../fixtures';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../utils';
+import { polkadotChain, polkadotChainId, senderAccount, senderBalance, vaultWallet } from '../../fixtures/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder } from '../../utils/index';
 
 /**
  * Integration tests for Fellowship Profile Management

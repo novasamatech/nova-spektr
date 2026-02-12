@@ -22,8 +22,8 @@ import {
   testMembers,
   vaultWallet,
   watchOnlyWallet,
-} from '../fixtures';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../utils';
+} from '../../fixtures/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder } from '../../utils/index';
 
 /**
  * Integration tests for Fellowship Members aggregate.
@@ -251,7 +251,9 @@ describe('Fellowship Members - Integration', () => {
     });
 
     // Load members that do NOT include senderAccount
-    const { otherMember1, otherMember2, otherMember3 } = await import('../fixtures/fellowship/members');
+    const { otherMember1, otherMember2, otherMember3 } = await import(
+      '@tests/integrations/fixtures/fellowship/members'
+    );
     await loadMembers([otherMember1, otherMember2, otherMember3]);
 
     const chainMembers = env.scope.getState(fellowshipMember.$chainMembers);
