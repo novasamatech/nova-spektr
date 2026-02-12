@@ -3,12 +3,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { chainsService } from '@/shared/api/network';
 import { type Chain } from '@/shared/core';
 import {
-  FeatureTestBuilder,
   type FeatureTestEnvironment,
+  FeatureTestBuilder,
   collectXcmDestinationsWithStats,
   saveXcmDestinationsToFile,
   setupFetchPolyfill,
-} from '../utils';
+} from '../../utils/index';
 
 /**
  * Integration test for collecting and documenting all available XCM transfer
@@ -74,7 +74,9 @@ import {
  * @group xcm-destinations
  * @group documentation
  */
-describe('XCM Destinations Collection', () => {
+
+// TODO: run this test manually to generate the xcm destinations
+describe.skip('XCM Destinations Collection', () => {
   let env: FeatureTestEnvironment;
   let allChains: Chain[] = [];
   let restoreFetch: (() => void) | undefined;

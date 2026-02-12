@@ -8,10 +8,10 @@ import { CHAIN_ID_TO_SPELL_NAME_MAP, isEthereumAccountId, nonNullable, toAddress
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import {
-  XCM_DESTINATION_BLACKLIST,
-  XCM_DESTINATION_WHITELIST_LEGACY,
   type XcmDestinationBlacklistEntry,
   type XcmDestinationWhitelistEntry,
+  XCM_DESTINATION_BLACKLIST,
+  XCM_DESTINATION_WHITELIST_LEGACY,
   getXcmWhitelist,
 } from './constants';
 import { normalizeXcmError } from './xcm-error-utils';

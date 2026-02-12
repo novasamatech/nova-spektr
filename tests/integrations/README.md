@@ -1,6 +1,7 @@
 # Integration Testing Framework
 
-Test framework for Nova Spektr feature integration tests with real storage (fake IndexedDB) and Effector state management.
+Test framework for Nova Spektr feature integration tests with real storage (fake IndexedDB) and Effector state
+management.
 
 ## 🚀 Quick Start
 
@@ -63,10 +64,21 @@ tests/integrations/
 │   ├── chain/                    # Chain utilities
 │   └── common/                   # Constants
 │
-├── tests/                         # Test files
-│   ├── transfer-form-logic.integration.test.ts
-│   ├── transfer-max-ed.integration.test.ts
-│   └── xcm-destinations.integration.test.ts
+├── cases/                         # Test cases (by feature)
+│   ├── fellowship/               # Fellowship features
+│   │   ├── fellowship-evidence.integration.test.ts
+│   │   ├── fellowship-members.integration.test.ts
+│   │   ├── fellowship-profile.integration.test.ts
+│   │   ├── fellowship-salary.integration.test.ts
+│   │   └── fellowship-voting.integration.test.ts
+│   ├── governance/               # Governance features
+│   │   ├── governance-delegate.integration.test.ts
+│   │   └── governance-vote.integration.test.ts
+│   ├── transfer/                 # Transfer features
+│   │   ├── transfer-form-logic.integration.test.ts
+│   │   └── transfer-max-ed.integration.test.ts
+│   └── xcm/                      # XCM (cross-chain) features
+│       └── xcm-destinations.integration.test.ts
 │
 └── README.md                      # This file
 ```
@@ -96,7 +108,7 @@ High-level API for test execution:
 await env.executeEvent(feature.events.action, params);
 const state = env.getState(feature.$store);
 await env.verifyInStorage('tableName', condition);
-await env.cleanup();  // Always cleanup!
+await env.cleanup(); // Always cleanup!
 ```
 
 ### Scenario Helpers
@@ -106,10 +118,11 @@ Pre-configured test scenarios:
 ```typescript
 import { createTransferScenario } from '@tests/integrations/utils';
 
-env = await createTransferScenario();  // Full setup in one line!
+env = await createTransferScenario(); // Full setup in one line!
 ```
 
 Available scenarios:
+
 - `createTransferScenario()` - Full transfer setup
 - `createLowBalanceScenario()` - Test insufficient funds
 - `createDisconnectedScenario()` - Test offline behavior
@@ -119,6 +132,7 @@ Available scenarios:
 ## 🎯 What to Test
 
 ### ✅ Use Integration Tests For:
+
 - Feature logic with state management (Effector stores/events)
 - Data persistence and retrieval (IndexedDB)
 - Multi-step workflows
@@ -126,6 +140,7 @@ Available scenarios:
 - Transaction building
 
 ### ❌ Don't Use Integration Tests For:
+
 - UI rendering → Use component tests
 - Pure functions → Use unit tests
 - Full user workflows → Use E2E tests (Playwright)
@@ -137,7 +152,13 @@ Available scenarios:
 pnpm test tests/integrations
 
 # Run specific test file
-pnpm test tests/integrations/tests/transfer-form-logic.integration.test.ts
+pnpm test tests/integrations/cases/transfer/transfer-form-logic.integration.test.ts
+
+# Run tests by feature
+pnpm test tests/integrations/cases/transfer
+pnpm test tests/integrations/cases/fellowship
+pnpm test tests/integrations/cases/governance
+pnpm test tests/integrations/cases/xcm
 
 # Watch mode
 pnpm test:watch tests/integrations
@@ -151,16 +172,15 @@ pnpm test:coverage
 ### 1. Choose Your Approach
 
 **Option A: Use Scenario Helper**
+
 ```typescript
 env = await createTransferScenario();
 ```
 
 **Option B: Use Builder**
+
 ```typescript
-env = await new FeatureTestBuilder()
-  .withWallet(vaultWallet)
-  .withAccount(senderAccount)
-  .build();
+env = await new FeatureTestBuilder().withWallet(vaultWallet).withAccount(senderAccount).build();
 ```
 
 ### 2. Write Test Logic
@@ -188,6 +208,7 @@ afterEach(async () => {
 ## 🎨 Best Practices
 
 ### ✅ DO:
+
 - Always call `env.cleanup()` in `afterEach`
 - Use fixtures from `@tests/integrations/fixtures`
 - Test both success and error scenarios
@@ -196,6 +217,7 @@ afterEach(async () => {
 - Use scenario helpers to reduce boilerplate
 
 ### ❌ DON'T:
+
 - Forget to cleanup
 - Reuse mutable objects between tests
 - Test UI rendering (use component tests)
@@ -207,6 +229,7 @@ afterEach(async () => {
 **ESLint Config**: [`/.eslintrc.cjs`](../../.eslintrc.cjs)
 
 Key rules:
+
 - Imports sorted alphabetically with newlines between groups
 - Stores start with `$`: `const $counter = createStore(0)`
 - Effects end with `Fx`: `const fetchDataFx = createEffect()`
@@ -214,6 +237,7 @@ Key rules:
 - Inline type imports: `import { type Foo }`
 
 **Auto-fix:**
+
 ```bash
 pnpm lint:fix
 pnpm fmt:fix
@@ -221,35 +245,30 @@ pnpm fmt:fix
 
 ## 🔍 Examples
 
-See working examples in [`tests/`](./tests/):
+See working examples in [`cases/`](./cases/):
 
-1. **[transfer-form-logic.integration.test.ts](./tests/transfer-form-logic.integration.test.ts)**
-   - Form validation
-   - MAX button logic
-   - ED checkbox behavior
-   - Multi-step workflows
+**Transfer** (`cases/transfer/`):
+- [transfer-form-logic.integration.test.ts](./cases/transfer/transfer-form-logic.integration.test.ts) - Form validation, MAX button logic, ED checkbox behavior, multi-step workflows
+- [transfer-max-ed.integration.test.ts](./cases/transfer/transfer-max-ed.integration.test.ts) - MAX button and ED checkbox toggle behavior, balance integration
 
-2. **[transfer-max-ed.integration.test.ts](./tests/transfer-max-ed.integration.test.ts)**
-   - Simple MAX + ED scenarios
-   - Balance calculations
+**XCM** (`cases/xcm/`):
+- [xcm-destinations.integration.test.ts](./cases/xcm/xcm-destinations.integration.test.ts) - Cross-chain transfers, XCM destinations documentation
 
-3. **[xcm-destinations.integration.test.ts](./tests/xcm-destinations.integration.test.ts)**
-   - Cross-chain transfers
-   - XCM destinations
+**Fellowship** (`cases/fellowship/`):
+- Fellowship evidence, members, profile, salary, voting
+
+**Governance** (`cases/governance/`):
+- Delegate modal, voting
 
 ## 🐛 Troubleshooting
 
-**"Database is closed" error**
-→ Accessing storage after cleanup. Move operations before `env.cleanup()`
+**"Database is closed" error** → Accessing storage after cleanup. Move operations before `env.cleanup()`
 
-**State not updating**
-→ Missing `await` on `executeEvent()`. Always await async operations
+**State not updating** → Missing `await` on `executeEvent()`. Always await async operations
 
-**Import order errors**
-→ Run `pnpm lint:fix` to auto-sort imports
+**Import order errors** → Run `pnpm lint:fix` to auto-sort imports
 
-**Linting errors**
-→ Check [`.eslintrc.cjs`](../../.eslintrc.cjs) or run `pnpm lint:fix`
+**Linting errors** → Check [`.eslintrc.cjs`](../../.eslintrc.cjs) or run `pnpm lint:fix`
 
 ## 🤝 Contributing
 
@@ -270,4 +289,5 @@ When adding features:
 
 ---
 
-**Need help?** Check [`.ai/CONTEXT.md`](./.ai/CONTEXT.md) for complete reference or review example tests in [`tests/`](./tests/)
+**Need help?** Check [`.ai/CONTEXT.md`](./.ai/CONTEXT.md) for complete reference or review example tests in
+[`tests/`](./tests/)

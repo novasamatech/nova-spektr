@@ -8,6 +8,8 @@
  * - **balance/** - Balance fixtures (various amounts and assets)
  * - **chain/** - Chain fixtures (Polkadot, Kusama, Asset Hub, Bifrost)
  * - **transaction/** - Transaction templates (native, asset, XCM, multisig)
+ * - **governance/** - Governance fixtures (referendums, delegations, votes)
+ * - **fellowship/** - Fellowship fixtures (members, referendums, salary)
  *
  * @module tests/integrations/fixtures
  *
@@ -28,5 +30,7 @@
 export * from './account';
 export * from './balance';
 export * from './chain';
+export * from './fellowship';
+export * from './governance';
 export * from './transaction';
 export * from './wallet';
