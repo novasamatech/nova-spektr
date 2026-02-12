@@ -6,7 +6,6 @@
  * - **framework/** - Core testing framework (builders, environment, scenarios)
  * - **builders/** - Data builders for dynamic test fixtures
  * - **network/** - Network utilities (connections, fetch, accounts)
- * - **xcm/** - XCM-specific testing tools
  * - **chain/** - Chain data utilities
  * - **common/** - Shared constants
  *
@@ -35,7 +34,6 @@ export * from './framework';
 export * from './builders';
 export * from './chain';
 export * from './network';
-export * from './xcm';
 
 // Common utilities
 export * from './common';
