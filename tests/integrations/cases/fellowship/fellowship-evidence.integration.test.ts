@@ -1,12 +1,12 @@
 import { allSettled } from 'effector';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { ConnectionStatus } from '@/shared/core';
 import { evidenceForm } from '@/features/fellowship-evidence/model/evidenceForm';
 import { evidenceIPFS } from '@/features/fellowship-evidence/model/evidenceIPFS';
 import { evidencePost } from '@/features/fellowship-evidence/model/evidencePost';
-import { polkadotChain, polkadotChainId, senderAccount, senderBalance, vaultWallet } from '../fixtures';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../utils';
+import { polkadotChain, polkadotChainId, senderAccount, senderBalance, vaultWallet } from '../../fixtures/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
 
 /**
  * Integration tests for Fellowship Evidence Submission
@@ -33,6 +33,14 @@ describe('Fellowship Evidence - Integration', () => {
   });
 
   describe('Evidence Flow Setup', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Evidence',
+        story: 'Evidence Flow Setup',
+      });
+    });
+
     it('should open evidence flow for Promotion', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -127,6 +135,14 @@ describe('Fellowship Evidence - Integration', () => {
   });
 
   describe('Evidence Form Validation', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Evidence',
+        story: 'Evidence Form Validation',
+      });
+    });
+
     it('should validate required areas field', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -281,6 +297,14 @@ describe('Fellowship Evidence - Integration', () => {
   });
 
   describe('Evidence Post Flow', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Evidence',
+        story: 'Evidence Post Flow',
+      });
+    });
+
     it('should set step to form when opening post flow', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -365,6 +389,14 @@ describe('Fellowship Evidence - Integration', () => {
   });
 
   describe('IPFS Flow', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Evidence',
+        story: 'IPFS Flow',
+      });
+    });
+
     it('should set IPFS step to upload', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -462,6 +494,14 @@ describe('Fellowship Evidence - Integration', () => {
   });
 
   describe('Evidence Model Structure', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Evidence',
+        story: 'Evidence Model Structure',
+      });
+    });
+
     it('should have evidenceUploaded event defined', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -513,6 +553,14 @@ describe('Fellowship Evidence - Integration', () => {
   });
 
   describe('Form Reset', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Evidence',
+        story: 'Form Reset',
+      });
+    });
+
     it('should reset form fields', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)

@@ -21,8 +21,8 @@ import {
   testMembers,
   vaultWallet,
   watchOnlyWallet,
-} from '../fixtures';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../utils';
+} from '../../fixtures/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
 
 /**
  * Integration tests for Fellowship Members aggregate.
@@ -100,6 +100,13 @@ describe('Fellowship Members - Integration', () => {
   };
 
   it('should expose chain members from cache sorted by rank desc (using testMembers)', async () => {
+    await allureMetadata({
+      epic: 'Fellowship',
+      feature: 'Fellowship Members',
+      story: 'Member List',
+      severity: 'critical',
+    });
+
     setupAccountHandlers();
 
     env = await new FeatureTestBuilder()
@@ -125,6 +132,13 @@ describe('Fellowship Members - Integration', () => {
   });
 
   it('should resolve current member from allMembers and available account', async () => {
+    await allureMetadata({
+      epic: 'Fellowship',
+      feature: 'Fellowship Members',
+      story: 'Current Member Resolution',
+      severity: 'critical',
+    });
+
     setupAccountHandlers();
 
     // Mock storage read to return our test data
@@ -157,6 +171,12 @@ describe('Fellowship Members - Integration', () => {
   });
 
   it('should pick matching account/wallet by selected wallet id', async () => {
+    await allureMetadata({
+      epic: 'Fellowship',
+      feature: 'Fellowship Members',
+      story: 'Wallet Selection',
+    });
+
     setupAccountHandlers();
 
     const sameAddressWatchOnly = {
@@ -209,6 +229,12 @@ describe('Fellowship Members - Integration', () => {
   });
 
   it('should return null when user account is not a fellowship member', async () => {
+    await allureMetadata({
+      epic: 'Fellowship',
+      feature: 'Fellowship Members',
+      story: 'Non-Member Handling',
+    });
+
     setupAccountHandlers();
 
     // Mock storage read to return our test data
@@ -230,7 +256,9 @@ describe('Fellowship Members - Integration', () => {
     });
 
     // Load members that do NOT include senderAccount
-    const { otherMember1, otherMember2, otherMember3 } = await import('../fixtures/fellowship/members');
+    const { otherMember1, otherMember2, otherMember3 } = await import(
+      '@tests/integrations/fixtures/fellowship/members'
+    );
     await loadMembers([otherMember1, otherMember2, otherMember3]);
 
     const chainMembers = env.scope.getState(fellowshipMember.$chainMembers);
@@ -250,6 +278,12 @@ describe('Fellowship Members - Integration', () => {
   });
 
   it('should correctly load CoreMember properties (isActive, lastPromotion, lastProof)', async () => {
+    await allureMetadata({
+      epic: 'Fellowship',
+      feature: 'Fellowship Members',
+      story: 'CoreMember Properties',
+    });
+
     setupAccountHandlers();
 
     env = await new FeatureTestBuilder()

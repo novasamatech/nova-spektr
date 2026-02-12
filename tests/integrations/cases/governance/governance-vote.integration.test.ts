@@ -1,6 +1,6 @@
 import { BN } from '@polkadot/util';
 import { allSettled } from 'effector';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { type Conviction, ConnectionStatus } from '@/shared/core';
 import { voteForm } from '@/widgets/VoteModal/model/voteForm';
@@ -13,8 +13,8 @@ import {
   senderBalance,
   treasurerReferendum,
   vaultWallet,
-} from '../fixtures';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../utils';
+} from '../../fixtures/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
 
 /**
  * Integration tests for Governance Voting
@@ -41,6 +41,14 @@ describe('Governance Vote - Integration', () => {
   });
 
   describe('Vote Submission - Aye/Nay/Abstain', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Governance',
+        feature: 'Governance Vote',
+        story: 'Vote Submission - Aye/Nay/Abstain',
+      });
+    });
+
     it('should submit Aye vote with standard conviction', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -213,6 +221,14 @@ describe('Governance Vote - Integration', () => {
   });
 
   describe('Vote Conviction Selection', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Governance',
+        feature: 'Governance Vote',
+        story: 'Vote Conviction Selection',
+      });
+    });
+
     it('should allow voting with None conviction (no lock)', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -383,6 +399,14 @@ describe('Governance Vote - Integration', () => {
   });
 
   describe('Vote Amount Validation', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Governance',
+        feature: 'Governance Vote',
+        story: 'Vote Amount Validation',
+      });
+    });
+
     it('should reject vote with zero amount', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -553,6 +577,14 @@ describe('Governance Vote - Integration', () => {
   });
 
   describe('Form Validation', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Governance',
+        feature: 'Governance Vote',
+        story: 'Form Validation',
+      });
+    });
+
     it('should require referendum to be set', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -688,6 +720,14 @@ describe('Governance Vote - Integration', () => {
   });
 
   describe('Transaction Building', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Governance',
+        feature: 'Governance Vote',
+        story: 'Transaction Building',
+      });
+    });
+
     it('should build transaction with correct referendum and track', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)

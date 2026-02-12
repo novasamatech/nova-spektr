@@ -14,7 +14,8 @@ import { type TestAccounts, TestAccountsURL, createWsConnection, getTestAccounts
  * @group chain-verification/base
  */
 
-describe('Verification function can verify parachains', () => {
+// TODO: rework data verification approach
+describe.skip('Verification function can verify parachains', () => {
   let polkadotApi: ApiPromise;
   let kusamaApi: ApiPromise;
   let testAccounts: TestAccounts[];

@@ -64,10 +64,21 @@ tests/integrations/
 │   ├── chain/                    # Chain utilities
 │   └── common/                   # Constants
 │
-├── Cases/                         # Test-cases files
-│   ├── transfer-form-logic.integration.test.ts
-│   ├── transfer-max-ed.integration.test.ts
-│   └── xcm-destinations.integration.test.ts
+├── cases/                         # Test cases (by feature)
+│   ├── fellowship/               # Fellowship features
+│   │   ├── fellowship-evidence.integration.test.ts
+│   │   ├── fellowship-members.integration.test.ts
+│   │   ├── fellowship-profile.integration.test.ts
+│   │   ├── fellowship-salary.integration.test.ts
+│   │   └── fellowship-voting.integration.test.ts
+│   ├── governance/               # Governance features
+│   │   ├── governance-delegate.integration.test.ts
+│   │   └── governance-vote.integration.test.ts
+│   ├── transfer/                 # Transfer features
+│   │   ├── transfer-form-logic.integration.test.ts
+│   │   └── transfer-max-ed.integration.test.ts
+│   └── xcm/                      # XCM (cross-chain) features
+│       └── xcm-destinations.integration.test.ts
 │
 └── README.md                      # This file
 ```
@@ -141,7 +152,13 @@ Available scenarios:
 pnpm test tests/integrations
 
 # Run specific test file
-pnpm test tests/integrations/tests/transfer-form-logic.integration.test.ts
+pnpm test tests/integrations/cases/transfer/transfer-form-logic.integration.test.ts
+
+# Run tests by feature
+pnpm test tests/integrations/cases/transfer
+pnpm test tests/integrations/cases/fellowship
+pnpm test tests/integrations/cases/governance
+pnpm test tests/integrations/cases/xcm
 
 # Watch mode
 pnpm test:watch tests/integrations
@@ -228,21 +245,20 @@ pnpm fmt:fix
 
 ## 🔍 Examples
 
-See working examples in [`tests/`](./tests/):
+See working examples in [`cases/`](./cases/):
 
-1. **[transfer-form-logic.integration.test.ts](./tests/transfer-form-logic.integration.test.ts)**
-   - Form validation
-   - MAX button logic
-   - ED checkbox behavior
-   - Multi-step workflows
+**Transfer** (`cases/transfer/`):
+- [transfer-form-logic.integration.test.ts](./cases/transfer/transfer-form-logic.integration.test.ts) - Form validation, MAX button logic, ED checkbox behavior, multi-step workflows
+- [transfer-max-ed.integration.test.ts](./cases/transfer/transfer-max-ed.integration.test.ts) - MAX button and ED checkbox toggle behavior, balance integration
 
-2. **[transfer-max-ed.integration.test.ts](./tests/transfer-max-ed.integration.test.ts)**
-   - Simple MAX + ED scenarios
-   - Balance calculations
+**XCM** (`cases/xcm/`):
+- [xcm-destinations.integration.test.ts](./cases/xcm/xcm-destinations.integration.test.ts) - Cross-chain transfers, XCM destinations documentation
 
-3. **[xcm-destinations.integration.test.ts](./tests/xcm-destinations.integration.test.ts)**
-   - Cross-chain transfers
-   - XCM destinations
+**Fellowship** (`cases/fellowship/`):
+- Fellowship evidence, members, profile, salary, voting
+
+**Governance** (`cases/governance/`):
+- Delegate modal, voting
 
 ## 🐛 Troubleshooting
 
