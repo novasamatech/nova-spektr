@@ -74,7 +74,9 @@ import {
  * @group xcm-destinations
  * @group documentation
  */
-describe('XCM Destinations Collection', () => {
+
+// TODO: run this test manually to generate the xcm destinations
+describe.skip('XCM Destinations Collection', () => {
   let env: FeatureTestEnvironment;
   let allChains: Chain[] = [];
   let restoreFetch: (() => void) | undefined;
