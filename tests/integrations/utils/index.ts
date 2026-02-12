@@ -39,3 +39,6 @@ export * from './xcm';
 
 // Common utilities
 export * from './common';
+
+// Allure metadata for integration tests
+export * from './allure';

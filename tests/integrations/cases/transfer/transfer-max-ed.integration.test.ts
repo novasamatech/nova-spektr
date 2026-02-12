@@ -1,5 +1,5 @@
 import { allSettled } from 'effector';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ConnectionStatus, TransactionType } from '@/shared/core';
 import { accounts } from '@/domains/network';
@@ -16,7 +16,7 @@ import {
   vaultWallet,
   watchOnlyWallet,
 } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../../utils/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
 
 vi.mock('@/shared/api/xcm', async (importOriginal) => {
   const actual = (await importOriginal()) as object;
@@ -96,6 +96,14 @@ describe('Transfer MAX + ED', () => {
   });
 
   describe('MAX Button', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Transfer',
+        feature: 'Transfer MAX + ED',
+        story: 'MAX Button',
+      });
+    });
+
     it('should enable MAX mode when toggled on', async () => {
       env = await createTransferEnvBuilder(false).build();
 
@@ -137,6 +145,14 @@ describe('Transfer MAX + ED', () => {
   });
 
   describe('ED Checkbox', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Transfer',
+        feature: 'Transfer MAX + ED',
+        story: 'ED Checkbox',
+      });
+    });
+
     it('should switch extrinsic from keepAlive to allowDeath when ED enabled', async () => {
       env = await createTransferEnvBuilder(true).build();
 
@@ -202,6 +218,14 @@ describe('Transfer MAX + ED', () => {
   });
 
   describe('Full Workflow', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Transfer',
+        feature: 'Transfer MAX + ED',
+        story: 'Full Workflow',
+      });
+    });
+
     it('should build correct extrinsic type through MAX + ED toggle sequence', async () => {
       env = await createTransferEnvBuilder(true).build();
 
@@ -228,6 +252,14 @@ describe('Transfer MAX + ED', () => {
   });
 
   describe('Balance Integration', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Transfer',
+        feature: 'Transfer MAX + ED',
+        story: 'Balance Integration',
+      });
+    });
+
     it('should build transfer-all extrinsic with balance from storage when MAX + ED enabled', async () => {
       env = await createTransferEnvBuilder(true).build();
 

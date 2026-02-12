@@ -1,12 +1,12 @@
 import { allSettled } from 'effector';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { ConnectionStatus } from '@/shared/core';
 import { alertsModel } from '@/features/fellowship-profile/model/alerts';
 import { setActive } from '@/features/fellowship-profile/model/setActive';
 import { type Alert } from '@/features/fellowship-profile/types';
 import { polkadotChain, polkadotChainId, senderAccount, senderBalance, vaultWallet } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../../utils/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
 
 /**
  * Integration tests for Fellowship Profile Management
@@ -32,6 +32,14 @@ describe('Fellowship Profile - Integration', () => {
   });
 
   describe('Active/Inactive Status Toggle', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Profile',
+        story: 'Active/Inactive Status Toggle',
+      });
+    });
+
     it('should open setActive flow with isActive true', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -181,6 +189,14 @@ describe('Fellowship Profile - Integration', () => {
   });
 
   describe('Profile Alerts', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Profile',
+        story: 'Profile Alerts',
+      });
+    });
+
     it('should open alerts gate with alerts array', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -291,6 +307,14 @@ describe('Fellowship Profile - Integration', () => {
   });
 
   describe('Flow Close/Reset', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Profile',
+        story: 'Flow Close/Reset',
+      });
+    });
+
     it('should close setActive flow', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -344,6 +368,14 @@ describe('Fellowship Profile - Integration', () => {
   });
 
   describe('Transaction Building', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Profile',
+        story: 'Transaction Building',
+      });
+    });
+
     it('should prepare transaction for activating member', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)

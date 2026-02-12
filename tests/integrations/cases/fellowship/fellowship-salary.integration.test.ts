@@ -1,5 +1,5 @@
 import { allSettled } from 'effector';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { ConnectionStatus } from '@/shared/core';
 import { beneficiary } from '@/features/fellowship-salary/model/beneficiary';
@@ -14,7 +14,7 @@ import {
   senderBalance,
   vaultWallet,
 } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../../utils/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
 
 /**
  * Integration tests for Fellowship Salary Management
@@ -41,6 +41,14 @@ describe('Fellowship Salary - Integration', () => {
   });
 
   describe('Salary Induction', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Salary',
+        story: 'Salary Induction',
+      });
+    });
+
     it('should open salary induction gate', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -151,6 +159,14 @@ describe('Fellowship Salary - Integration', () => {
   });
 
   describe('Salary Request', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Salary',
+        story: 'Salary Request',
+      });
+    });
+
     it('should open salary request gate', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -219,6 +235,14 @@ describe('Fellowship Salary - Integration', () => {
   });
 
   describe('Salary Payout', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Salary',
+        story: 'Salary Payout',
+      });
+    });
+
     it('should open salary payout gate', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -287,6 +311,14 @@ describe('Fellowship Salary - Integration', () => {
   });
 
   describe('Beneficiary Management', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Salary',
+        story: 'Beneficiary Management',
+      });
+    });
+
     it('should have beneficiary store defined', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -385,6 +417,14 @@ describe('Fellowship Salary - Integration', () => {
   });
 
   describe('All Salary Models Structure', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Salary',
+        story: 'All Salary Models Structure',
+      });
+    });
+
     it('should have wallet and account stores in induction', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)

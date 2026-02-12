@@ -1,5 +1,5 @@
 import { allSettled } from 'effector';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { ConnectionStatus } from '@/shared/core';
 import { voting } from '@/features/fellowship-voting/model/voting';
@@ -13,7 +13,7 @@ import {
   senderBalance,
   vaultWallet,
 } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../../utils/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
 
 /**
  * Integration tests for Fellowship Voting
@@ -39,6 +39,14 @@ describe('Fellowship Voting - Integration', () => {
   });
 
   describe('Vote Submission - Aye/Nay', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Voting',
+        story: 'Vote Submission - Aye/Nay',
+      });
+    });
+
     it('should open voting flow with referendum and vote Aye', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -111,6 +119,14 @@ describe('Fellowship Voting - Integration', () => {
   });
 
   describe('Flow State Management', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Voting',
+        story: 'Flow State Management',
+      });
+    });
+
     it('should track flow status', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -186,6 +202,14 @@ describe('Fellowship Voting - Integration', () => {
   });
 
   describe('Transaction Building', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Voting',
+        story: 'Transaction Building',
+      });
+    });
+
     it('should build wrapped transaction for vote', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -230,6 +254,14 @@ describe('Fellowship Voting - Integration', () => {
   });
 
   describe('Multiple Referendum Voting', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Voting',
+        story: 'Multiple Referendum Voting',
+      });
+    });
+
     it('should handle voting on different referendums sequentially', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -275,6 +307,14 @@ describe('Fellowship Voting - Integration', () => {
   });
 
   describe('Sign Event', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Voting',
+        story: 'Sign Event',
+      });
+    });
+
     it('should have sign event defined', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -289,6 +329,14 @@ describe('Fellowship Voting - Integration', () => {
   });
 
   describe('Basket Operations', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Fellowship',
+        feature: 'Fellowship Voting',
+        story: 'Basket Operations',
+      });
+    });
+
     it('should have saveToBasket event defined', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)

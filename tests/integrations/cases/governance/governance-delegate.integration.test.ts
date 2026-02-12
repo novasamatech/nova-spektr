@@ -1,5 +1,5 @@
 import { allSettled } from 'effector';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { ConnectionStatus } from '@/shared/core';
 import { delegateModel } from '@/widgets/DelegateModal/shards/model/delegate-model';
@@ -17,7 +17,7 @@ import {
   senderBalance,
   vaultWallet,
 } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../../utils/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
 
 /**
  * Integration tests for Governance Delegation
@@ -45,6 +45,14 @@ describe('Governance Delegation - Integration', () => {
   });
 
   describe('Delegation Setup', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Governance',
+        feature: 'Governance Delegation',
+        story: 'Delegation Setup',
+      });
+    });
+
     it('should set up delegation with target and single track', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -152,6 +160,14 @@ describe('Governance Delegation - Integration', () => {
   });
 
   describe('Track Selection', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Governance',
+        feature: 'Governance Delegation',
+        story: 'Track Selection',
+      });
+    });
+
     it('should allow selecting single track', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -253,6 +269,14 @@ describe('Governance Delegation - Integration', () => {
   });
 
   describe('Conviction Selection for Delegations', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Governance',
+        feature: 'Governance Delegation',
+        story: 'Conviction Selection for Delegations',
+      });
+    });
+
     it('should delegate with None conviction (0.1x voting power)', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -471,6 +495,14 @@ describe('Governance Delegation - Integration', () => {
   });
 
   describe('Delegation Amount Validation', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Governance',
+        feature: 'Governance Delegation',
+        story: 'Delegation Amount Validation',
+      });
+    });
+
     it('should reject delegation with zero amount', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -625,6 +657,14 @@ describe('Governance Delegation - Integration', () => {
   });
 
   describe('Transaction Building for Delegation', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Governance',
+        feature: 'Governance Delegation',
+        story: 'Transaction Building for Delegation',
+      });
+    });
+
     it('should build delegation transaction with correct parameters', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -735,6 +775,14 @@ describe('Governance Delegation - Integration', () => {
   });
 
   describe('Complete Delegation Workflow', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Governance',
+        feature: 'Governance Delegation',
+        story: 'Complete Delegation Workflow',
+      });
+    });
+
     it('should complete full delegation setup workflow', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)

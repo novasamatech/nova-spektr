@@ -1,5 +1,5 @@
 import { allSettled } from 'effector';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { ConnectionStatus, TransactionType } from '@/shared/core';
 import { accounts } from '@/domains/network';
@@ -16,7 +16,7 @@ import {
   vaultWallet,
   watchOnlyWallet,
 } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../../utils/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
 
 /**
  * Real integration tests for Transfer Form Logic
@@ -42,6 +42,14 @@ describe('Transfer Form - Real Logic Integration', () => {
   });
 
   describe('MAX Button and ED Checkbox Logic', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Transfer',
+        feature: 'Transfer Form',
+        story: 'MAX Button and ED Checkbox Logic',
+      });
+    });
+
     it('should show ED checkbox when MAX button is clicked', async () => {
       // Setup: Create environment with wallet, account, and balance
       // Use autoPopulate: false to prevent storage reads from overwriting fork values
@@ -195,6 +203,14 @@ describe('Transfer Form - Real Logic Integration', () => {
   });
 
   describe('Amount Validation with Real Balances', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Transfer',
+        feature: 'Transfer Form',
+        story: 'Amount Validation with Real Balances',
+      });
+    });
+
     it('should validate amount against actual balance from storage', async () => {
       // Setup with specific balance - set directly in fork, disable autoPopulate to prevent overwrite
       env = await new FeatureTestBuilder({ autoPopulate: false })
@@ -270,6 +286,14 @@ describe('Transfer Form - Real Logic Integration', () => {
   });
 
   describe('Transaction Building Integration', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Transfer',
+        feature: 'Transfer Form',
+        story: 'Transaction Building Integration',
+      });
+    });
+
     it('should build transfer transaction with data from storage', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -367,6 +391,14 @@ describe('Transfer Form - Real Logic Integration', () => {
   });
 
   describe('Form Validation with Storage Data', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Transfer',
+        feature: 'Transfer Form',
+        story: 'Form Validation with Storage Data',
+      });
+    });
+
     it('should validate destination address format', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -459,6 +491,14 @@ describe('Transfer Form - Real Logic Integration', () => {
   });
 
   describe('Real Workflow: Complete Transfer Setup', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Transfer',
+        feature: 'Transfer Form',
+        story: 'Real Workflow: Complete Transfer Setup',
+      });
+    });
+
     it('should complete full transfer form workflow', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -526,6 +566,14 @@ describe('Transfer Form - Real Logic Integration', () => {
   });
 
   describe('Network and API Integration', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Transfer',
+        feature: 'Transfer Form',
+        story: 'Network and API Integration',
+      });
+    });
+
     it('should not build transaction when chain is disconnected', async () => {
       env = await new FeatureTestBuilder()
         .withWallet(vaultWallet)
@@ -563,6 +611,14 @@ describe('Transfer Form - Real Logic Integration', () => {
   });
 
   describe('Multi-Account Scenarios', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Transfer',
+        feature: 'Transfer Form',
+        story: 'Multi-Account Scenarios',
+      });
+    });
+
     it('should handle account selection from multiple accounts in storage', async () => {
       const secondAccount = {
         ...senderAccount,

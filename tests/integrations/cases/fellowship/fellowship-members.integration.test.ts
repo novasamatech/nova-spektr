@@ -1,5 +1,4 @@
 import { type ApiPromise } from '@polkadot/api';
-import * as allure from 'allure-js-commons';
 import { allSettled } from 'effector';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -23,7 +22,7 @@ import {
   vaultWallet,
   watchOnlyWallet,
 } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder } from '../../utils/index';
+import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
 
 /**
  * Integration tests for Fellowship Members aggregate.
@@ -101,10 +100,12 @@ describe('Fellowship Members - Integration', () => {
   };
 
   it('should expose chain members from cache sorted by rank desc (using testMembers)', async () => {
-    await allure.epic('Fellowship');
-    await allure.feature('Fellowship Members');
-    await allure.story('Member List');
-    await allure.severity('critical');
+    await allureMetadata({
+      epic: 'Fellowship',
+      feature: 'Fellowship Members',
+      story: 'Member List',
+      severity: 'critical',
+    });
 
     setupAccountHandlers();
 
@@ -131,10 +132,12 @@ describe('Fellowship Members - Integration', () => {
   });
 
   it('should resolve current member from allMembers and available account', async () => {
-    await allure.epic('Fellowship');
-    await allure.feature('Fellowship Members');
-    await allure.story('Current Member Resolution');
-    await allure.severity('critical');
+    await allureMetadata({
+      epic: 'Fellowship',
+      feature: 'Fellowship Members',
+      story: 'Current Member Resolution',
+      severity: 'critical',
+    });
 
     setupAccountHandlers();
 
@@ -168,10 +171,11 @@ describe('Fellowship Members - Integration', () => {
   });
 
   it('should pick matching account/wallet by selected wallet id', async () => {
-    await allure.epic('Fellowship');
-    await allure.feature('Fellowship Members');
-    await allure.story('Wallet Selection');
-    await allure.severity('normal');
+    await allureMetadata({
+      epic: 'Fellowship',
+      feature: 'Fellowship Members',
+      story: 'Wallet Selection',
+    });
 
     setupAccountHandlers();
 
@@ -225,10 +229,11 @@ describe('Fellowship Members - Integration', () => {
   });
 
   it('should return null when user account is not a fellowship member', async () => {
-    await allure.epic('Fellowship');
-    await allure.feature('Fellowship Members');
-    await allure.story('Non-Member Handling');
-    await allure.severity('normal');
+    await allureMetadata({
+      epic: 'Fellowship',
+      feature: 'Fellowship Members',
+      story: 'Non-Member Handling',
+    });
 
     setupAccountHandlers();
 
@@ -273,10 +278,11 @@ describe('Fellowship Members - Integration', () => {
   });
 
   it('should correctly load CoreMember properties (isActive, lastPromotion, lastProof)', async () => {
-    await allure.epic('Fellowship');
-    await allure.feature('Fellowship Members');
-    await allure.story('CoreMember Properties');
-    await allure.severity('normal');
+    await allureMetadata({
+      epic: 'Fellowship',
+      feature: 'Fellowship Members',
+      story: 'CoreMember Properties',
+    });
 
     setupAccountHandlers();
 
