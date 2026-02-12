@@ -7,8 +7,8 @@ export const useLocaleStorage = (): ILocaleStorage => ({
   },
 
   getLocale: (): SupportedLocale => {
-    const locale = localStorage.getItem(LOCALE_KEY) || Locales[navigator.language.split('-')[0]];
+    const locale = localStorage.getItem(LOCALE_KEY) || Locales[navigator.language.split('-')[0]!];
 
-    return Locales[locale] || DEFAULT_LOCALE;
+    return (locale ? Locales[locale] : undefined) ?? DEFAULT_LOCALE;
   },
 });

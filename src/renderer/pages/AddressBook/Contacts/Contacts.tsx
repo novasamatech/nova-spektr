@@ -1,10 +1,12 @@
 import { useUnit } from 'effector-react';
 import { Outlet } from 'react-router-dom';
 
+import { type Contact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { ContactList, ContactRow, EmptyContactList, EmptyFilteredContacts, contactModel } from '@/entities/contact';
 import { ContactFilter, CreateContactNavigation, ImportContactsButton, filterModel } from '@/features/contacts';
+import { SendToContactModal, sendToContactModel } from '@/features/send-to-contact';
 
 export const Contacts = () => {
   const { t } = useI18n();
@@ -13,6 +15,10 @@ export const Contacts = () => {
 
   const hasContacts = contacts.length > 0;
   const hasContactsFiltered = contactsFiltered.length > 0;
+
+  const handleSendTo = (contact: Contact) => {
+    sendToContactModel.events.sendToContactStarted(contact);
+  };
 
   return (
     <>
@@ -36,7 +42,7 @@ export const Contacts = () => {
             {hasContacts && hasContactsFiltered && (
               <ContactList>
                 {contactsFiltered.map((contact) => (
-                  <ContactRow key={contact.id} contact={contact} />
+                  <ContactRow key={contact.id} contact={contact} onSendTo={handleSendTo} />
                 ))}
               </ContactList>
             )}
@@ -45,6 +51,8 @@ export const Contacts = () => {
       </div>
 
       <Outlet />
+
+      <SendToContactModal />
     </>
   );
 };

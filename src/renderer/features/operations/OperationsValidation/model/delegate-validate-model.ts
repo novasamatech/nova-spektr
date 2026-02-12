@@ -7,8 +7,8 @@ import { getAssetById, getNativeAsset, transferableAmount } from '@/shared/lib/u
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
-import { lockPeriodsModel } from '@/features/governance/model/lockPeriods';
-import { type BalanceMap as TransferBalanceMap, type NetworkStore } from '@/widgets/Transfer';
+import { lockPeriodsModel } from '@/features/governance';
+import { type BalanceMap as TransferBalanceMap, type NetworkStore } from '@/features/transfer';
 import { DelegateRules } from '../lib/delegate-rules';
 import { validationUtils } from '../lib/validation-utils';
 import {
@@ -108,12 +108,15 @@ const validateFx = attach({
     apis: networkModel.$apis,
     balances: balanceModel.$balanceMap,
   },
-  mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
+  async effect({ chains, balances, apis }, { id, transaction, feeMap }: ValidationStartedParams) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = getAssetById(transaction.args.asset, chain.assets) || chain.assets[0];
+    if (!chain || !api) {
+      return { id, result: undefined };
+    }
+    const asset = getAssetById(transaction.args.asset, chain.assets) || getNativeAsset(chain.assets);
 
-    return {
+    return rootValidateFx({
       id,
       api,
       transaction,
@@ -121,9 +124,8 @@ const validateFx = attach({
       asset,
       balances,
       feeMap,
-    };
+    });
   },
-  effect: rootValidateFx,
 });
 
 sample({

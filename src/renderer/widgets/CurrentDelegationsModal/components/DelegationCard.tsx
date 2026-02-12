@@ -46,7 +46,7 @@ export const DelegationCard = ({ asset, delegate, votes = [], onClick }: Props) 
         <DetailRow label={t('governance.addDelegation.card.lockedAmount')}>
           {votes.length > 1 && <AssetBalance value={totalVotes} asset={asset} />}
 
-          {votes.length === 1 && (
+          {votes.length === 1 && votes[0] && (
             <BodyText>
               <Trans
                 t={t}

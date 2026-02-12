@@ -29,16 +29,19 @@ type DataParams = {
 const flow = createGate<BasketTransaction>();
 
 const prepareAddProxyDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
-  const proxy = await proxyService.getProxiesForAccount(apis[chainId], transaction.coreTx.accountId);
+  assert(chain, 'Chain not found');
+
+  const api = apis[chain.chainId]!;
+  const proxy = await proxyService.getProxiesForAccount(api, transaction.coreTx.accountId);
   const proxyDeposit = proxyService
-    .getProxyDepositDelta(apis[chainId], proxy.deposit, proxy.accounts.length + 1)
+    .getProxyDepositDelta(api, proxy.deposit, proxy.accounts.length + 1)
     .toString();
 
   return {
@@ -60,14 +63,16 @@ const prepareAddProxyDataFx = createEffect(async ({ transaction, accounts, chain
 });
 
 const prepareAddPureProxiedDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
-  const proxyDeposit = proxyService.getProxyDepositDelta(apis[chainId], '0', 1).toString();
+  assert(chain, 'Chain not found');
+
+  const proxyDeposit = proxyService.getProxyDepositDelta(apis[chain.chainId]!, '0', 1).toString();
 
   return {
     id: transaction.id,
@@ -85,6 +90,8 @@ const prepareAddPureProxiedDataFx = createEffect(async ({ transaction, accounts,
 
 const prepareRemoveProxyDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
+
+  assert(chain, 'Chain not found');
 
   return {
     id: transaction.id,
@@ -104,6 +111,8 @@ const prepareRemoveProxyDataFx = createEffect(async ({ transaction, accounts, ch
 
 const prepareRemovePureProxiedDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
+
+  assert(chain, 'Chain not found');
 
   return {
     id: transaction.id,

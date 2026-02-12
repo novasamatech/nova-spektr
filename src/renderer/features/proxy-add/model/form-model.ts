@@ -289,8 +289,10 @@ const $proxyTypes = combine(
   },
   ({ apis, statuses, chain }) => {
     if (!chain?.chainId) return [];
-    if (networkUtils.isConnectedStatus(statuses[chain.chainId])) {
-      return getProxyTypes(apis[chain.chainId]);
+
+    const status = statuses[chain.chainId];
+    if (status && networkUtils.isConnectedStatus(status)) {
+      return getProxyTypes(apis[chain.chainId]!);
     }
 
     return ['Any'] as const;
@@ -307,7 +309,10 @@ const $isChainConnected = combine(
   ({ chain, statuses }) => {
     if (!chain?.chainId) return false;
 
-    return networkUtils.isConnectedStatus(statuses[chain.chainId]);
+    const status = statuses[chain.chainId];
+    if (!status) return false;
+
+    return networkUtils.isConnectedStatus(status);
   },
 );
 
@@ -439,7 +444,7 @@ sample({
 sample({
   clock: formInitiated,
   source: $availableChains,
-  fn: (chains) => chains[0],
+  fn: (chains) => chains[0] ?? null,
   target: form.fields.chain.change,
 });
 
@@ -474,14 +479,15 @@ sample({
 sample({
   source: $availableAccounts,
   filter: (avilableAccounts) => avilableAccounts.length > 0,
-  fn: (avilableAccounts) => avilableAccounts[0],
+  fn: (avilableAccounts) => avilableAccounts[0]!,
   target: form.fields.initiator.change,
 });
 
 sample({
   clock: form.fields.chain.change,
   source: $proxyTypes,
-  fn: (types) => types[0],
+  filter: (types) => types.length > 0,
+  fn: (types) => types[0]!,
   target: form.fields.proxyType.change,
 });
 
@@ -489,7 +495,7 @@ sample({
   clock: form.fields.chain.change,
   source: networkModel.$apis,
   filter: (_, chain) => nonNullable(chain),
-  fn: (apis, chain) => apis[chain!.chainId],
+  fn: (apis, chain) => apis[chain!.chainId]!,
   target: getMaxProxiesFx,
 });
 
@@ -500,7 +506,7 @@ sample({
     apis: networkModel.$apis,
   },
   filter: ({ chain, apis }, { params }) => {
-    return nonNullable(chain) && apis[chain.chainId].genesisHash === params.genesisHash;
+    return nonNullable(chain) && apis[chain?.chainId]?.genesisHash === params.genesisHash;
   },
   fn: (_, { result }) => result,
   target: $maxProxies,

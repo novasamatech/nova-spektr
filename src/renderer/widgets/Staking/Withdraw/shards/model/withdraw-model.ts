@@ -38,7 +38,7 @@ const $initiatorWallet = combine(
   ({ store, wallets }) => {
     if (!store) return undefined;
 
-    return walletUtils.getWalletById(wallets, store.shards[0].walletId);
+    return walletUtils.getWalletById(wallets, store.shards[0]!.walletId);
   },
   { skipVoid: false },
 );
@@ -84,10 +84,10 @@ sample({
         signatory: shard,
         initiator: shard,
         route: [shard],
-        tx: coreTxs![index],
+        tx: coreTxs![index]!,
         chain: networkStore!.chain,
         asset: getRelaychainAsset(networkStore!.chain.assets)!,
-        coreTx: coreTxs![index],
+        coreTx: coreTxs![index]!,
       } satisfies WithdrawConfirm;
     }),
     step: Step.CONFIRM,
@@ -112,7 +112,7 @@ sample({
     event: {
       signingPayloads: wrappedTxs!.map((tx, index) => ({
         chain: networkStore!.chain,
-        account: withdrawData!.shards[index],
+        account: withdrawData!.shards[index]!,
         signatory: withdrawData!.signatory,
         transaction: tx!,
       })),
@@ -145,7 +145,7 @@ sample({
     event: {
       ...signParams,
       chain: withdrawData.networkStore!.chain,
-      account: withdrawData.withdrawData!.shards[0],
+      account: withdrawData.withdrawData!.shards[0]!,
       signatory: withdrawData.withdrawData!.signatory,
       coreTxs: withdrawData.coreTxs!,
       wrappedTxs: withdrawData.wrappedTxs!,
@@ -167,7 +167,7 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });
@@ -190,7 +190,7 @@ sample({
   },
   fn: ({ store, coreTxs }) =>
     coreTxs!.map((coreTx) => ({
-      initiatorAccountId: store!.shards[0].accountId,
+      initiatorAccountId: store!.shards[0]!.accountId,
       coreTx,
       route: [],
       createdAt: Date.now(),

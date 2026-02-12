@@ -265,7 +265,7 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : null;
+    return network ? (apis[network.chain.chainId] ?? null) : null;
   },
 );
 
@@ -311,15 +311,15 @@ sample({
   clock: formInitiated,
   filter: ({ activeDelegations, shards }) => {
     const convictions = shards.map((shard) => {
-      return activeDelegations[shard.accountId].conviction;
+      return activeDelegations[shard.accountId]?.conviction;
     });
 
     return allEqual(convictions);
   },
   fn: ({ activeDelegations, shards }) => {
-    const accountId = shards[0].accountId;
+    const accountId = shards[0]!.accountId;
 
-    return { conviction: activeDelegations[accountId].conviction, isUnchanged: shards.length > 1 };
+    return { conviction: activeDelegations[accountId]?.conviction, isUnchanged: shards.length > 1 };
   },
   target: spread({
     conviction: $delegateForm.fields.conviction.onChange,
@@ -332,14 +332,14 @@ sample({
   source: $networkStore,
   filter: (network, { shards, activeDelegations }) => {
     const balances = shards.map((shard) => {
-      return activeDelegations[shard.accountId].balance;
+      return activeDelegations[shard.accountId]?.balance ?? BN_ZERO;
     });
 
     return !!network && allEqual(balances, (a, b) => a.eq(b));
   },
   fn: (network, { shards, activeDelegations }) => {
-    const accountId = shards[0].accountId;
-    const balance = activeDelegations[accountId].balance.toString();
+    const accountId = shards[0]!.accountId;
+    const balance = activeDelegations[accountId]?.balance.toString() ?? '0';
     const precision = network!.asset.precision;
 
     return getBalanceBn(balance, precision).toString();
@@ -350,9 +350,9 @@ sample({
 sample({
   clock: formInitiated,
   fn: ({ activeDelegations, shards }) => {
-    const accountId = shards[0].accountId;
+    const accountId = shards[0]!.accountId;
 
-    return activeDelegations[accountId].conviction;
+    return activeDelegations[accountId]?.conviction ?? 'None';
   },
   target: $previousConviction,
 });
@@ -376,7 +376,7 @@ sample({
       if (!balance) return acc;
 
       return new BN(balance).lt(new BN(acc)) ? balance : acc;
-    }, accountsBalances[0]);
+    }, accountsBalances[0]!);
 
     return minBondBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance];
   },

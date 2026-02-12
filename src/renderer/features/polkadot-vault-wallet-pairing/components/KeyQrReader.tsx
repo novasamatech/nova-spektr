@@ -3,6 +3,7 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
 import { CryptoTypeString } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
 import { type SeedInfo, VaultQrReader } from '@/entities/transaction';
 
 const RESULT_DELAY = 250;
@@ -18,13 +19,14 @@ export const KeyQrReader = ({ size = 300, onComplete, onBack }: Props) => {
 
   const onScanResult = (qrPayload: SeedInfo[]) => {
     const qr = qrPayload[0];
+    if (nullable(qr)) return;
 
     if (qr.multiSigner && qr.multiSigner.MultiSigner !== CryptoTypeString.ECDSA) {
       encodeAddress(qr.multiSigner.public);
     }
 
     // Validate each derived key, decodeAddress & encodeAddress can throw
-    for (const { address } of qr.derivedKeys) {
+    for (const { address } of qr.derivedKeys ?? []) {
       const accountId = isHex(address) ? hexToU8a(address) : decodeAddress(address);
       if (accountId.length === 20) continue;
       encodeAddress(accountId);

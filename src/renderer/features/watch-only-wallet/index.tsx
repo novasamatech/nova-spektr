@@ -42,7 +42,7 @@ watchOnlyWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
 
   const accountId = wallet.accounts[0]?.accountId;
 
-  return <WalletAccountIcon address={toAddress(accountId)} type={wallet.type} size={size} />;
+  return <WalletAccountIcon address={toAddress(accountId ?? '')} type={wallet.type} size={size} />;
 });
 
 watchOnlyWalletFeature.inject(walletGroupSlot, {

@@ -4,7 +4,6 @@ import { type ReactNode, useMemo } from 'react';
 
 import {
   type Chain,
-  type Contact,
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type Wallet,
@@ -17,7 +16,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
-import { type AnyAccount, type MultisigEvent, type MultisigOperation } from '@/domains/network';
+import { type AnyAccount, type MultisigEvent, type MultisigOperation, useAccountName } from '@/domains/network';
 import { Status, operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -28,16 +27,36 @@ type Props = {
   operation: MultisigOperation;
   account: MultisigAccount | FlexibleMultisigAccount;
   chain: Chain | null;
-  contacts: Contact[];
   isOpen: boolean;
   onClose: () => void;
 };
 
-const EventMessage = {
+const EventMessageKeys = {
   initiated: 'log.initiatedMessage',
   approve: 'log.signedMessage',
   reject: 'log.cancelledMessage',
 } as const;
+
+type EventMessageProps = {
+  event: MultisigEvent;
+  operation: MultisigOperation;
+  chain: Chain | null;
+};
+
+const EventMessage = ({ event, operation, chain }: EventMessageProps) => {
+  const { t } = useI18n();
+  const signatoryName = useAccountName({ accountId: event.accountId, chain });
+
+  const isCreatedEvent = event.accountId === operation.depositor && event.status === 'approve';
+  const eventType = isCreatedEvent ? 'initiated' : event.status;
+  const eventMessage = EventMessageKeys[eventType] || 'log.unknownMessage';
+
+  return (
+    <>
+      {signatoryName} {t(eventMessage)}
+    </>
+  );
+};
 
 const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
   return wallets.reduce<WalletsMap>((acc, wallet) => {
@@ -64,7 +83,7 @@ export const operationLogTitleTransformer = createTransformer<
   ReactNode
 >();
 
-const LogModal = ({ isOpen, onClose, operation, account, chain, contacts }: Props) => {
+const LogModal = ({ isOpen, onClose, operation, account, chain }: Props) => {
   const { t, formatDate } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
@@ -95,24 +114,6 @@ const LogModal = ({ isOpen, onClose, operation, account, chain, contacts }: Prop
     titleNode = <TransactionTitle className="flex-1" title={title} />;
   }
 
-  const getEventMessage = (event: MultisigEvent): string => {
-    const isCreatedEvent = event.accountId === operation.depositor && event.status === 'approve';
-
-    if (!account) return '';
-
-    const signatoryName = operationDetailsUtils.getSignatoryName(
-      event.accountId,
-      account?.signatories,
-      contacts,
-      wallets,
-      chain?.addressPrefix,
-    );
-    const eventType = isCreatedEvent ? 'initiated' : event.status;
-    const eventMessage = EventMessage[eventType] || 'log.unknownMessage';
-
-    return `${signatoryName} ${t(eventMessage)}`;
-  };
-
   return (
     <Modal size="md" isOpen={isOpen} onToggle={onClose}>
       <Modal.Title close>{t('log.title')}</Modal.Title>
@@ -138,7 +139,7 @@ const LogModal = ({ isOpen, onClose, operation, account, chain, contacts }: Prop
                   .sort((a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0))
                   .map(event => {
                     const account = filteredAccountMap[event.accountId];
-                    const wallet = filteredWalletsMap[account?.walletId];
+                    const wallet = account ? filteredWalletsMap[account.walletId] : undefined;
 
                     const explorerLinks =
                       event.blockCreated && Number.isInteger(event.blockCreated) && chain?.explorers
@@ -162,7 +163,9 @@ const LogModal = ({ isOpen, onClose, operation, account, chain, contacts }: Prop
                           ) : (
                             <Identicon size={16} address={toAddress(event.accountId)} background={false} />
                           )}
-                          <BodyText className="flex-1 text-text-secondary">{getEventMessage(event)}</BodyText>
+                          <BodyText className="flex-1 text-text-secondary">
+                            <EventMessage event={event} operation={operation} chain={chain} />
+                          </BodyText>
                           <BodyText className="text-text-tertiary">{formatDate(Number(event.timestamp), 'p')}</BodyText>
 
                           {explorerLinks.length > 0 && (

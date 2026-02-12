@@ -31,7 +31,7 @@ sample({
     const identityChainId = chain?.additional?.identityChain;
 
     return {
-      api: identityChainId ? apis[identityChainId] : api!,
+      api: identityChainId ? apis[identityChainId]! : api!,
       chain,
       accounts:
         referendumService.isOngoing(referendum) && referendum.submissionDeposit

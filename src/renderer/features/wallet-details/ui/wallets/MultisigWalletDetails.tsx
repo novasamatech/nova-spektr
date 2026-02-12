@@ -10,16 +10,14 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HeadlineText, IconButton, Separator } from '@/shared/ui';
 import { Address, ChainAccountsList, RootExplorers, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
-import { accountService, accounts, useWalletName } from '@/domains/network';
+import { accountService, accounts, useAccountName, useWalletName } from '@/domains/network';
 import { type AnyAccount } from '@/domains/network';
-import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
-import { ContactItem, WalletCardMd, accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
+import { ContactItem, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy } from '@/features/proxy-add';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
-import { walletDetailsUtils } from '../../lib/utils';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { walletProxiesModel } from '../../model/wallet-proxies-model';
@@ -29,6 +27,21 @@ import { ProxiesList } from '../components/ProxiesList';
 import { type WalletAction, Action, WalletActions } from '../components/WalletActions';
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
+
+type SignatoryContactItemProps = {
+  accountId: AccountId;
+  children?: React.ReactNode;
+};
+
+const SignatoryContactItem = ({ accountId, children }: SignatoryContactItemProps) => {
+  const name = useAccountName({ accountId, chain: null });
+
+  return (
+    <ContactItem address={accountId} name={name}>
+      {children}
+    </ContactItem>
+  );
+};
 
 type Props = {
   wallet: MultisigWallet | FlexibleMultisigWallet;
@@ -45,8 +58,6 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
-  const contacts = useUnit(contactModel.$contacts);
-  const walletsList = useUnit(walletModel.$wallets);
 
   const accountList = useUnit(accounts.$list);
   const proxiesCount = useUnit(walletProxiesModel.$walletProxiesCount);
@@ -57,10 +68,6 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
   const multisigAccount = walletAccounts.find(accountUtils.isMultisigAccount);
   assert(multisigAccount, 'Multisig account not found.');
-
-  const getSignatoryName = (accountId: AccountId) => {
-    return walletDetailsUtils.getSignatoryName(accountId, multisigAccount.signatories, contacts, walletsList);
-  };
 
   // Check for deprecated multichain multisig accounts
   const multisigChains = useMemo(() => {
@@ -199,9 +206,9 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
                 <ul className="flex flex-col gap-y-2 text-footnote text-text-secondary">
                   {signatories.people.map(accountId => (
                     <li key={accountId} className="px-3">
-                      <ContactItem address={accountId} name={getSignatoryName(toAccountId(accountId))}>
+                      <SignatoryContactItem accountId={toAccountId(accountId)}>
                         <RootExplorers accountId={accountId} />
-                      </ContactItem>
+                      </SignatoryContactItem>
                     </li>
                   ))}
                 </ul>

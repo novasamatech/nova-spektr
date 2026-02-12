@@ -28,7 +28,7 @@ export const getMaxWeight = (api: ApiPromise, transaction: Transaction) => {
 };
 
 export const hasDestWeight = (api: ApiPromise): boolean => {
-  return !!api.tx.xTokens.transferMultiasset.meta.args.find((n) => n.name.toString() === DEST_WEIGHT_ARG_NAME);
+  return !!api.tx.xTokens?.transferMultiasset?.meta.args.find((n) => n.name.toString() === DEST_WEIGHT_ARG_NAME);
 };
 
 export const isXcmTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {

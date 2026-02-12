@@ -1,8 +1,11 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
+import { useDeferredList } from '@/shared/lib/hooks';
 import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Accordion, AsyncItem, Graphics } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
 import { notificationListModel } from '../model/notification-list-model';
 
 import { NotificationRow } from './NotificationRow';
@@ -11,6 +14,9 @@ export const NotificationsList = () => {
   const { t } = useI18n();
   const notificationGroups = useUnit(notificationListModel.$notificationGroups);
   const isSearchEmpty = useUnit(notificationListModel.$isSearchEmpty);
+  const chains = useUnit(networkModel.$chains);
+  const wallets = useUnit(walletModel.$wallets);
+  const { list: deferredGroups } = useDeferredList({ list: notificationGroups, forceFirstRender: true });
 
   if (isSearchEmpty) {
     return (
@@ -24,35 +30,30 @@ export const NotificationsList = () => {
     );
   }
 
-  if (notificationGroups.length === 0) {
+  if (deferredGroups.length === 0) {
     return null;
   }
 
   return (
     <div className="mt-4 flex h-full w-full flex-1 flex-col items-center overflow-y-auto pl-6">
-      {notificationGroups.map(([date, notifications], index) => {
-        const strategy = index === 0 ? ('sync' as const) : ('idle' as const);
-        return (
-          <AsyncItem strategy={strategy} key={date}>
-            <section className="flex w-[736px] flex-col">
-              <Accordion initialOpen>
-                <Accordion.Trigger>
-                  <FootnoteText className="text-text-tertiary">{date}</FootnoteText>
-                </Accordion.Trigger>
-                <Accordion.Content>
-                  <ul className="mt-1 flex flex-col gap-y-1.5">
-                    {notifications.map((notification) => (
-                      <AsyncItem key={notification.id} strategy={strategy}>
-                        <NotificationRow notification={notification} />
-                      </AsyncItem>
-                    ))}
-                  </ul>
-                </Accordion.Content>
-              </Accordion>
-            </section>
-          </AsyncItem>
-        );
-      })}
+      {deferredGroups.map(([date, notifications]) => (
+        <section className="flex w-[736px] flex-col" key={date}>
+          <Accordion initialOpen>
+            <Accordion.Trigger>
+              <FootnoteText className="text-text-tertiary">{date}</FootnoteText>
+            </Accordion.Trigger>
+            <Accordion.Content>
+              <ul className="mt-1 flex flex-col gap-y-1.5">
+                {notifications.map((notification) => (
+                  <AsyncItem key={notification.id}>
+                    <NotificationRow notification={notification} chains={chains} wallets={wallets} />
+                  </AsyncItem>
+                ))}
+              </ul>
+            </Accordion.Content>
+          </Accordion>
+        </section>
+      ))}
     </div>
   );
 };

@@ -43,7 +43,7 @@ export const AssetHubMigrationModal = () => {
   const chains = useUnit(networkModel.$chains);
 
   const currentContent = getContent(t, chainId);
-  const assetHubChainId = RELAY_TO_ASSET_HUB_CHAIN_IDS[chainId];
+  const assetHubChainId = RELAY_TO_ASSET_HUB_CHAIN_IDS[chainId as keyof typeof RELAY_TO_ASSET_HUB_CHAIN_IDS];
   const assetHubChain = chains[assetHubChainId];
 
   return (

@@ -164,7 +164,7 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : undefined;
+    return network ? (apis[network.chain.chainId] ?? null) : null;
   },
   { skipVoid: false },
 );

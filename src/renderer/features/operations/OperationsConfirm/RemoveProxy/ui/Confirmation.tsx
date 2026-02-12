@@ -38,6 +38,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   }
 
   const { chain, signatory, spawner, delegate, proxyType, route, fee, multisigDeposit } = confirmStore.meta;
+  const proxyAccount = spawner || delegate;
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
   const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
@@ -58,7 +59,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         </DetailRow>
 
         <DetailRow label={t('proxy.details.revokeFor')} className="text-text-secondary">
-          <NamedAccount accountId={(spawner || delegate)!} chain={chain} variant="short" />
+          {proxyAccount && <NamedAccount accountId={proxyAccount} chain={chain} variant="short" />}
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />

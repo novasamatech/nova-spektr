@@ -9,7 +9,7 @@ import { type Proxy } from '../../model/wallet-proxies-model';
 import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 
 type Props = {
-  chain: Chain;
+  chain: Chain | undefined;
   proxies: Proxy[];
   totalDeposit: string | null;
   canCreateProxy?: boolean;
@@ -18,6 +18,10 @@ type Props = {
 
 export const ChainProxyGroup = ({ chain, proxies, totalDeposit, canCreateProxy, onRemoveProxy }: Props) => {
   const { t } = useI18n();
+
+  if (!chain) {
+    return null;
+  }
 
   return (
     <li className="flex items-center py-2">
@@ -31,7 +35,7 @@ export const ChainProxyGroup = ({ chain, proxies, totalDeposit, canCreateProxy, 
               {totalDeposit ? (
                 <AssetBalance
                   value={totalDeposit.replaceAll(',', '')}
-                  asset={chain.assets[0]}
+                  asset={chain.assets[0]!}
                   className="text-help-text"
                 />
               ) : (

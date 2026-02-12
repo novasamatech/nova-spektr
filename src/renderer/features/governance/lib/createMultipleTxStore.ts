@@ -68,7 +68,7 @@ export const createMultipleTxStore = ({
         transactionService.getWrappedTransaction({
           api,
           transaction: coreTx,
-          txWrappers: txWrappers[index],
+          txWrappers: txWrappers[index]!,
         }),
       );
     },

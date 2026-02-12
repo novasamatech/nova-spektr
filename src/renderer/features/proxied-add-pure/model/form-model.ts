@@ -189,7 +189,10 @@ const $isChainConnected = combine(
   ({ chain, statuses }) => {
     if (!chain || !chain.chainId) return false;
 
-    return networkUtils.isConnectedStatus(statuses[chain.chainId]);
+    const status = statuses[chain.chainId];
+    if (!status) return false;
+
+    return networkUtils.isConnectedStatus(status);
   },
 );
 

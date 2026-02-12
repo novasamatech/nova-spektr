@@ -1,3 +1,5 @@
+import { nullable } from './functions';
+
 type FileForDownload = { blob: Blob; fileName: string };
 
 export const downloadFiles = (files: FileForDownload[]) => {
@@ -7,6 +9,7 @@ export const downloadFiles = (files: FileForDownload[]) => {
     if (index >= files.length) return;
 
     const file = files[index];
+    if (nullable(file)) return;
     const url = window.URL.createObjectURL(file.blob);
 
     document.body.appendChild(a);

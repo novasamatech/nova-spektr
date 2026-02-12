@@ -15,7 +15,7 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
       [polkadotChainId]: polkadotChain,
     };
     test.each(importKeysMocks.shouldIgnoreDerivationTestData)('$testName', ({ derivation, shouldIgnore }) => {
-      expect(importKeysUtils.shouldIgnoreDerivation(derivation, mockChains)).toEqual(shouldIgnore);
+      expect(importKeysUtils.shouldIgnoreDerivation(derivation!, mockChains)).toEqual(shouldIgnore);
     });
   });
 

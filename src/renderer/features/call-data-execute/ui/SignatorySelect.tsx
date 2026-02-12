@@ -8,7 +8,7 @@ import { getNativeAsset, nonNullable, nullable, toAddress, transferableAmountBN 
 import { FootnoteText, InputHint } from '@/shared/ui';
 import { Address, AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { Box, Field, Select } from '@/shared/ui-kit';
-import { accountService } from '@/domains/network';
+import { accountService, useWalletsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
@@ -19,6 +19,7 @@ export const SignatorySelect = memo(() => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
+  const resolvedWallets = useWalletsNames(wallets);
   const signatories = useUnit(formModel.$signatories);
   const balancesMap = useUnit(balanceModel.$balanceMap);
   const chain = useUnit(formModel.form.fields.chain.$value);
@@ -45,7 +46,7 @@ export const SignatorySelect = memo(() => {
     const options: ReactNode[] = [];
     if (nullable(chain) || nullable(asset)) return options;
 
-    const walletsByType = wallets.reduce(
+    const walletsByType = resolvedWallets.reduce(
       (groups, wallet) => {
         const walletSignatories = accountService.filterAccountsByWallet(signatories, wallet.id);
         const hasMatchingSignatories = walletSignatories.some((account) =>
@@ -56,7 +57,7 @@ export const SignatorySelect = memo(() => {
         if (!groups[wallet.type]) {
           groups[wallet.type] = { walletType: wallet.type, wallets: [] };
         }
-        groups[wallet.type].wallets.push(wallet);
+        groups[wallet.type]!.wallets.push(wallet);
         return groups;
       },
       {} as Record<string, { walletType: WalletType; wallets: Wallet[] }>,
@@ -119,7 +120,7 @@ export const SignatorySelect = memo(() => {
     }
 
     return options;
-  }, [wallets, balancesMap, chain, asset, signatories, t]);
+  }, [resolvedWallets, balancesMap, chain, asset, signatories, t]);
 
   const selectedSignatoryWallet = useMemo(() => {
     if (signatory.value) {

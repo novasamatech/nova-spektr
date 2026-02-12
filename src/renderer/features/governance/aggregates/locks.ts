@@ -34,7 +34,7 @@ sample({
   },
   fn: (apis, { chain }) => ({
     chain: chain!,
-    api: apis[chain!.chainId],
+    api: apis[chain!.chainId]!,
   }),
   target: $network,
 });
@@ -46,7 +46,7 @@ sample({
     return nonNullable(chain) && chain.chainId in apis && nonNullable(wallet);
   },
   fn: ({ apis, wallet }, { chain }) => ({
-    api: apis[chain!.chainId],
+    api: apis[chain!.chainId]!,
     chain: chain!,
     accounts: accountUtils.getAccountsIdsForWallet(wallet!, chain!),
   }),

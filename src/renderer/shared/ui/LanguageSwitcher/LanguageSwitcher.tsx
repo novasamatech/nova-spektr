@@ -16,11 +16,13 @@ type Props = {
 export const LanguageSwitcher = ({ className, languages, selected, short, onChange, top }: Props) => {
   const selectedLanguage = languages.find(({ value }) => value === selected) || languages[0];
   const availableLanguages = languages.filter((l) => l !== selectedLanguage);
-  const languagesList = top ? [...availableLanguages, selectedLanguage] : [selectedLanguage, ...availableLanguages];
+  const languagesList = (
+    top ? [...availableLanguages, selectedLanguage] : [selectedLanguage, ...availableLanguages]
+  ).filter((l): l is LanguageItem => l != null);
 
   return (
     <div className={cnTw('relative', className)}>
-      <Listbox value={selectedLanguage.value} onChange={onChange}>
+      <Listbox value={selectedLanguage?.value} onChange={onChange}>
         <Listbox.Button
           className={cnTw(
             'h-7.5 pr-1 pl-2.5 select-none',
@@ -30,8 +32,8 @@ export const LanguageSwitcher = ({ className, languages, selected, short, onChan
           )}
           data-testid="language-switcher-button"
         >
-          {short ? selectedLanguage.shortLabel : selectedLanguage.label}
-          <Icon className="rounded-full border border-white" name={selectedLanguage.value} />
+          {selectedLanguage && (short ? selectedLanguage.shortLabel : selectedLanguage.label)}
+          {selectedLanguage && <Icon className="rounded-full border border-white" name={selectedLanguage.value} />}
         </Listbox.Button>
         <Listbox.Options
           className={cnTw('absolute flex flex-col gap-1', top ? 'top-auto bottom-0' : 'top-0 bottom-auto')}

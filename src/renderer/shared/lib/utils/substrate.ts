@@ -72,7 +72,7 @@ export const getCurrentBlockHash = async (api: ApiPromise): Promise<HexString> =
 };
 
 export async function getParachainId(api: ApiPromise): Promise<number> {
-  const parachainId = await api.query.parachainInfo.parachainId();
+  const parachainId = await api.query.parachainInfo?.parachainId?.();
 
   return (parachainId as u32).toNumber();
 }
@@ -156,7 +156,7 @@ export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
 };
 
 export const getProxyTypes = (api: ApiPromise): ProxyType[] => {
-  const type = api.tx.proxy.addProxy.meta.args[1].type.toString();
+  const type = api.tx.proxy.addProxy.meta.args[1]?.type.toString() ?? '';
 
   return getTypeEnumValues<ProxyType>(api, type).filter((value) => {
     const isUnused = value.toLowerCase().includes(UNUSED_LABEL);

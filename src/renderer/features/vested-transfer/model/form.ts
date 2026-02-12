@@ -124,7 +124,7 @@ const { $: $existingVestingSchedules } = createStoreFromEffect({
       if (nullable(existingVestingSchedules[accountId as AccountId])) {
         existingVestingSchedules[accountId as AccountId] = 1;
       } else {
-        existingVestingSchedules[accountId as AccountId] += 1;
+        existingVestingSchedules[accountId as AccountId]! += 1;
       }
     }
 
@@ -438,7 +438,7 @@ sample({
   },
   filter: ({ chains, selectedChain }) =>
     chains.length > 0 && (nullable(selectedChain) || !chains.some((chain) => chain.chainId === selectedChain.chainId)),
-  fn: ({ chains }) => chains[0],
+  fn: ({ chains }) => chains[0] ?? null,
   target: form.fields.chain.change,
 });
 

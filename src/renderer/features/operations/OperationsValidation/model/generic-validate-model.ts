@@ -47,7 +47,7 @@ const rootValidateFx = createEffect(
           const feeBN = new BN(feeData.fee);
 
           return form.shards.every((_, index: number) => {
-            return feeBN.lte(new BN(accountsBalances[index]));
+            return feeBN.lte(new BN(accountsBalances[index]!));
           });
         },
       },
@@ -66,14 +66,21 @@ const validateFx = attach({
   effect({ chains, apis, balances }, { id, transaction, signerOptions }: ValidationStartedParams) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
+    if (!chain || !api) {
+      return { id, result: undefined };
+    }
+
     const asset = votingService.getVotingAsset(chain);
+    if (!asset) {
+      return { id, result: undefined };
+    }
 
     return rootValidateFx({
       id,
       api,
       transaction,
       chain,
-      asset: asset!,
+      asset,
       balances,
       signerOptions,
     });
