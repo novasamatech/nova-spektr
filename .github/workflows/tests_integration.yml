@@ -49,7 +49,7 @@ jobs:
 
       - name: 🧪 Run integration tests
         id: vitest_tests
-        run: allurectl watch -- pnpm test tests/integrations/cases/*.integration.test.ts
+        run: allurectl watch -- pnpm test:integration
 
       - name: Create Allure testplan if missing
         if: always()
