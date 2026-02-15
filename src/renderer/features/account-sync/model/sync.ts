@@ -448,7 +448,7 @@ export const syncFlexibleMultisigs = ({
   const flexibleMultisigAccounts = allAccounts.filter(accountUtils.isFlexibleMultisigAccount);
   const syncedChains = new Set(syncResult.chains);
 
-  const createWallets: WalletCreateParams<FlexibleMultisigAccount, FlexibleMultisigWallet>[] = [];
+  const newAccounts: Omit<FlexibleMultisigAccount, 'id' | 'walletId'>[] = [];
 
   const deleteWallets = new Set<Wallet>();
   const deleteAccounts = new Set(
@@ -554,13 +554,7 @@ export const syncFlexibleMultisigs = ({
       }
     }
 
-    createWallets.push({
-      wallet: {
-        name: proxiedName,
-        type: WalletType.FLEXIBLE_MULTISIG,
-      },
-      accounts: newFlexAccounts,
-    });
+    newAccounts.push(...newFlexAccounts);
   }
 
   for (const account of deleteAccounts) {
@@ -570,8 +564,23 @@ export const syncFlexibleMultisigs = ({
     }
   }
 
+  const createWallets = new Map<AccountId, WalletCreateParams<FlexibleMultisigAccount, FlexibleMultisigWallet>>();
+  for (const account of newAccounts) {
+    if (!createWallets.has(account.accountId)) {
+      createWallets.set(account.accountId, {
+        wallet: {
+          name: account.name,
+          type: WalletType.FLEXIBLE_MULTISIG,
+        },
+        accounts: [],
+      });
+    }
+
+    createWallets.get(account.accountId)?.accounts.push(account);
+  }
+
   return {
-    createWallets,
+    createWallets: Array.from(createWallets.values()),
     deleteWallets: Array.from(deleteWallets).map((w) => w.id),
   };
 };

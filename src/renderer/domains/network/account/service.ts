@@ -69,6 +69,11 @@ function uniqId(account: AnyAccountDraft) {
     return `${account.walletId} ${account.accountId} universal`;
   }
   if (isChainAccount(account)) {
+    // ToDo: handle flex properly
+    if ('multisigAccountId' in account) {
+      return `${account.walletId} ${account.accountId} ${account.multisigAccountId} ${account.chainId}`;
+    }
+
     return `${account.walletId} ${account.accountId} ${account.chainId}`;
   }
 
@@ -549,7 +554,7 @@ export const accountService = {
   validateRouteBalancesTransformer,
   validateCallPermissionTransformer,
 
-  uniqId,
+  uniqId: uniqId,
 
   isChainAccount,
   isUniversalAccount,
