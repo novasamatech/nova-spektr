@@ -19,52 +19,84 @@ const $multisigAccount = $wallet.map(wallet => {
   return wallet.accounts.filter(account => accountUtils.isAnyMultisigAccount(account)).at(0);
 });
 
+type SignatoriesData = { wallets: [Wallet, AccountId][]; contacts: Contact[]; people: AccountId[] };
+
+const emptySignatories: SignatoriesData = { wallets: [], contacts: [], people: [] };
+
+function computeSignatories(
+  multisigAccount: { signatories: { accountId: AccountId }[] },
+  wallets: Wallet[],
+  contacts: Contact[],
+): SignatoriesData {
+  const signatoriesMap = dictionary(multisigAccount.signatories, 'accountId', true);
+
+  const walletSignatories: [Wallet, AccountId][] = [];
+  for (const wallet of wallets) {
+    for (const account of wallet.accounts) {
+      if (!signatoriesMap[account.accountId]) continue;
+
+      delete signatoriesMap[account.accountId];
+      walletSignatories.push([wallet, account.accountId]);
+    }
+  }
+
+  const contactSignatories: Contact[] = [];
+  for (const contact of contacts) {
+    if (!signatoriesMap[contact.accountId]) continue;
+
+    contactSignatories.push(contact);
+    delete signatoriesMap[contact.accountId];
+  }
+
+  return {
+    wallets: walletSignatories,
+    contacts: contactSignatories,
+    people: keys(signatoriesMap),
+  };
+}
+
 const $signatories = combine(
   {
     multisigAccount: $multisigAccount,
     wallets: walletModel.$wallets,
     contacts: contactModel.$contacts,
   },
-  ({
-    multisigAccount,
-    wallets,
-    contacts,
-  }): { wallets: [Wallet, AccountId][]; contacts: Contact[]; people: AccountId[] } => {
+  ({ multisigAccount, wallets, contacts }): SignatoriesData => {
     if (!multisigAccount) {
-      return { wallets: [], contacts: [], people: [] };
+      return emptySignatories;
     }
 
-    const signatoriesMap = dictionary(multisigAccount.signatories, 'accountId', true);
+    return computeSignatories(multisigAccount, wallets, contacts);
+  },
+);
 
-    const walletSignatories: [Wallet, AccountId][] = [];
-    for (const wallet of wallets) {
-      for (const account of wallet.accounts) {
-        if (!signatoriesMap[multisigAccount.accountId]) continue;
+const $multisigAccounts = $wallet.map(wallet => {
+  if (nullable(wallet) || !walletUtils.isAnyMultisig(wallet)) return [];
 
-        delete signatoriesMap[multisigAccount.accountId];
-        walletSignatories.push([wallet, account.accountId]);
-      }
+  return wallet.accounts.filter(account => accountUtils.isAnyMultisigAccount(account));
+});
+
+const $signatoriesMap = combine(
+  {
+    multisigAccounts: $multisigAccounts,
+    wallets: walletModel.$wallets,
+    contacts: contactModel.$contacts,
+  },
+  ({ multisigAccounts, wallets, contacts }): Record<string, SignatoriesData> => {
+    const result: Record<string, SignatoriesData> = {};
+
+    for (const multisigAccount of multisigAccounts) {
+      result[multisigAccount.id] = computeSignatories(multisigAccount, wallets, contacts);
     }
 
-    const contactSignatories: Contact[] = [];
-    for (const contact of contacts) {
-      if (!signatoriesMap[multisigAccount.accountId]) continue;
-
-      contactSignatories.push(contact);
-      delete signatoriesMap[contact.accountId];
-    }
-
-    return {
-      wallets: walletSignatories,
-      contacts: contactSignatories,
-      people: keys(signatoriesMap),
-    };
+    return result;
   },
 );
 
 export const multisigWalletDetailsModel = {
   flow,
   $signatories,
+  $signatoriesMap,
 
   $chainsProxies: walletProxiesModel.$walletProxies,
   $hasProxies: walletProxiesModel.$hasWalletProxies,

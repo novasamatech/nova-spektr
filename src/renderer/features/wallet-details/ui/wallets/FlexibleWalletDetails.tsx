@@ -62,7 +62,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProxiesModel.$hasWalletProxies);
-  const signatories = useUnit(multisigWalletDetailsModel.$signatories);
+  const signatoriesMap = useUnit(multisigWalletDetailsModel.$signatoriesMap);
   const accountList = useUnit(accounts.$list);
   const proxiesCount = useUnit(walletProxiesModel.$walletProxiesCount);
 
@@ -143,6 +143,8 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
     panel: (
       <>
         {walletAccounts.map((multisigAccount, index) => {
+          const signatories = signatoriesMap[multisigAccount.id] ?? { wallets: [], contacts: [], people: [] };
+
           return (
             <div key={multisigAccount.id}>
               {index !== 0 && <Separator className="my-2" />}
