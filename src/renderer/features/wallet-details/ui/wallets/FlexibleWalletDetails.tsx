@@ -1,5 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 
 import { type Chain, type FlexibleMultisigWallet, type MultisigWallet, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
@@ -70,19 +70,14 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
   const [tab, setTab] = useState('1');
 
-  const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
-
-  const multisigAccount = walletAccounts.find(accountUtils.isFlexibleMultisigAccount);
-
-  useEffect(() => {
-    if (nullable(multisigAccount)) {
-      closeModal();
-    }
-  }, [multisigAccount, closeModal]);
+  const walletAccounts = accountService
+    .filterAccountsByWallet(accountList, wallet.id)
+    .filter(accountUtils.isFlexibleMultisigAccount);
 
   let chain = null;
-  if (nonNullable(multisigAccount)) {
-    chain = chains[multisigAccount.chainId];
+  const firstAccount = walletAccounts[0];
+  if (nonNullable(firstAccount)) {
+    chain = chains[firstAccount.chainId];
   }
 
   const canCreateProxy = useMemo(() => {
@@ -97,7 +92,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
     return anyProxy && networkUtils.isPureProxySupported(chain?.options);
   }, [chain]);
 
-  if (nullable(multisigAccount) || nullable(chain)) {
+  if (nullable(chain)) {
     return null;
   }
 
@@ -146,54 +141,65 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
     id: '1',
     title: t('walletDetails.multisig.accountTab'),
     panel: (
-      <div>
-        <div className="flex flex-col gap-y-3 px-5">
-          <FootnoteText className="text-text-tertiary"></FootnoteText>
+      <>
+        {walletAccounts.map((multisigAccount, index) => {
+          return (
+            <div key={multisigAccount.id}>
+              {index !== 0 && <Separator className="my-2" />}
+              <div className="flex flex-col gap-y-3 px-5">
+                <FootnoteText className="text-text-tertiary"></FootnoteText>
 
-          <div className="-mx-2">
-            <ContactItem address={multisigAccount.accountId} addressPrefix={chain.addressPrefix}>
-              <AccountExplorers accountId={multisigAccount.accountId} chain={chain} />
-            </ContactItem>
-          </div>
-        </div>
+                <div className="-mx-2">
+                  <ContactItem address={multisigAccount.accountId} addressPrefix={chain.addressPrefix}>
+                    <AccountExplorers accountId={multisigAccount.accountId} chain={chain} />
+                  </ContactItem>
+                </div>
+              </div>
 
-        <div className="mt-6 flex flex-col gap-y-2 px-5">
-          <FootnoteText className="text-text-tertiary">
-            {t('walletDetails.multisig.signatoriesGroup', { amount: multisigAccount.signatories.length })}
-          </FootnoteText>
+              <div className="mt-6 flex flex-col gap-y-2 px-5">
+                <FootnoteText className="text-text-tertiary">
+                  {t('walletDetails.multisig.signatoriesGroup', { amount: multisigAccount.signatories.length })}
+                </FootnoteText>
 
-          <ul className="flex flex-col gap-y-2">
-            {signatories.wallets.map(([wallet, accountId]) => (
-              <li key={accountId} className="-mx-2">
-                <WalletCardMd
-                  wallet={wallet}
-                  description={
-                    <div className="text-help-text text-text-tertiary">
-                      <Address address={toAddress(accountId, { prefix: chain.addressPrefix })} />
-                    </div>
-                  }
-                >
-                  <AccountExplorers accountId={accountId} chain={chain} />
-                </WalletCardMd>
-              </li>
-            ))}
-            {signatories.contacts.map(signatory => (
-              <li key={signatory.accountId} className="-mx-2">
-                <ContactItem name={signatory.name} address={signatory.accountId} addressPrefix={chain.addressPrefix}>
-                  <AccountExplorers accountId={signatory.accountId} chain={chain} />
-                </ContactItem>
-              </li>
-            ))}
-            {signatories.people.map(accountId => (
-              <li key={accountId} className="-mx-2">
-                <SignatoryContactItem accountId={accountId} chain={chain}>
-                  <AccountExplorers accountId={accountId} chain={chain} />
-                </SignatoryContactItem>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+                <ul className="flex flex-col gap-y-2">
+                  {signatories.wallets.map(([wallet, accountId]) => (
+                    <li key={accountId} className="-mx-2">
+                      <WalletCardMd
+                        wallet={wallet}
+                        description={
+                          <div className="text-help-text text-text-tertiary">
+                            <Address address={toAddress(accountId, { prefix: chain.addressPrefix })} />
+                          </div>
+                        }
+                      >
+                        <AccountExplorers accountId={accountId} chain={chain} />
+                      </WalletCardMd>
+                    </li>
+                  ))}
+                  {signatories.contacts.map(signatory => (
+                    <li key={signatory.accountId} className="-mx-2">
+                      <ContactItem
+                        name={signatory.name}
+                        address={signatory.accountId}
+                        addressPrefix={chain.addressPrefix}
+                      >
+                        <AccountExplorers accountId={signatory.accountId} chain={chain} />
+                      </ContactItem>
+                    </li>
+                  ))}
+                  {signatories.people.map(accountId => (
+                    <li key={accountId} className="-mx-2">
+                      <SignatoryContactItem accountId={accountId} chain={chain}>
+                        <AccountExplorers accountId={accountId} chain={chain} />
+                      </SignatoryContactItem>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          );
+        })}
+      </>
     ),
   };
   TabItems.push(TabAccount);
@@ -221,12 +227,14 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
           <Box direction="row">
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
-                <WalletAccountIcon
-                  address={toAddress(multisigAccount?.accountId, { prefix: chain?.addressPrefix })}
-                  type={wallet.type}
-                  size={42}
-                  theme={isEthereumAccountId(multisigAccount?.accountId) ? 'ethereum' : 'polkadot'}
-                />
+                {firstAccount && (
+                  <WalletAccountIcon
+                    address={toAddress(firstAccount.accountId, { prefix: chain?.addressPrefix })}
+                    type={wallet.type}
+                    size={42}
+                    theme={isEthereumAccountId(firstAccount.accountId) ? 'ethereum' : 'polkadot'}
+                  />
+                )}
               </div>
               {!isRenameInputOpen && (
                 <>
@@ -243,35 +251,39 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
             <RenameWallet wallet={wallet} isOpen={isRenameInputOpen} onClose={toggleIsRenameInputOpen} />
 
-            {multisigAccount && !isRenameInputOpen && (
+            {!isRenameInputOpen && (
               <div className="ml-auto shrink-0 duration-300 animate-in fade-in-0">
-                <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
+                <Slot id={overviewSlot} props={{ walletAccounts: walletAccounts }} />
               </div>
             )}
           </Box>
-          <div className="flex items-center pl-4">
-            <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
-            <div className="flex items-center gap-1 text-footnote">
-              <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
-              <WalletIcon type={WalletType.MULTISIG} size={16} />
-              <NamedAccount
-                accountId={multisigAccount.multisigAccountId}
-                chain={chain}
-                hideIcon
-                hideAddress
-                variant="short"
-              />
-              <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
-              <ChainIcon chain={chain} size={16} />
-              <FootnoteText className="truncate">{chain.name}</FootnoteText>
-              <FootnoteText className="shrink-0">
-                {t('walletDetails.multisig.chainTitle', {
-                  threshold: multisigAccount.threshold,
-                  signatories: multisigAccount.signatories.length,
-                })}
-              </FootnoteText>
-            </div>
-          </div>
+          {walletAccounts.map(multisigAccount => {
+            return (
+              <div className="flex items-center pl-4" key={multisigAccount.id}>
+                <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
+                <div className="flex items-center gap-1 text-footnote">
+                  <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
+                  <WalletIcon type={WalletType.MULTISIG} size={16} />
+                  <NamedAccount
+                    accountId={multisigAccount.multisigAccountId}
+                    chain={chain}
+                    hideIcon
+                    hideAddress
+                    variant="short"
+                  />
+                  <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
+                  <ChainIcon chain={chain} size={16} />
+                  <FootnoteText className="truncate">{chain.name}</FootnoteText>
+                  <FootnoteText className="shrink-0">
+                    {t('walletDetails.multisig.chainTitle', {
+                      threshold: multisigAccount.threshold,
+                      signatories: multisigAccount.signatories.length,
+                    })}
+                  </FootnoteText>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         <WalletActions actions={actions} />
