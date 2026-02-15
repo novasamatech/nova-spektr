@@ -10,7 +10,7 @@ import {
   type IndexedBlocksProvider,
   type SyncedAccount,
   type SyncedMultisigAccount,
-  type SyncedProxyAccount,
+  type SyncedProxiedAccount,
 } from './types';
 
 type InferProviderAccount<Provider extends AccountProvider<any>> =
@@ -82,7 +82,7 @@ async function syncAccounts<const Providers extends AccountProvider<any>[]>({
   };
 }
 
-function isSyncedProxyAccount(a: SyncedAccount): a is SyncedProxyAccount {
+function isSyncedProxiedAccount(a: SyncedAccount): a is SyncedProxiedAccount {
   return 'type' in a && a.type === 'proxy';
 }
 
@@ -90,12 +90,12 @@ function isSyncedMultisigAccount(a: SyncedAccount): a is SyncedMultisigAccount {
   return 'type' in a && a.type === 'multisig';
 }
 
-function isFlexibleMultisigPair(proxy: SyncedProxyAccount, multisig: SyncedMultisigAccount) {
+function isFlexibleMultisigPair(proxy: SyncedProxiedAccount, multisig: SyncedMultisigAccount) {
   return proxy.proxyVariant === ProxyVariant.PURE && proxy.proxyAccountId === multisig.accountId;
 }
 
 export const accountSyncService = {
-  isSyncedProxyAccount,
+  isSyncedProxiedAccount,
   isSyncedMultisigAccount,
   isFlexibleMultisigPair,
 

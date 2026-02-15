@@ -55,6 +55,8 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
   useGate(walletProxiesModel.flow, { wallet });
 
+  console.log({ wallet });
+
   const { t } = useI18n();
   const walletName = useWalletName(wallet);
 

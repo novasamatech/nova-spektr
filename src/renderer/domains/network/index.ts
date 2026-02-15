@@ -20,7 +20,7 @@ export type {
 
 export { accountSync } from './account-sync/store';
 export { accountSyncService } from './account-sync/service';
-export type { SyncedAccount, SyncedMultisigAccount, SyncedProxyAccount } from './account-sync/types';
+export type { SyncedAccount, SyncedMultisigAccount, SyncedProxiedAccount } from './account-sync/types';
 
 export { useAccountName, useAccountsNames, useWalletName, useWalletsNames } from './account/hooks';
 export { $accountNameCache, accountsNameResource, createAccountNameCacheKey } from './account/resource';

@@ -50,7 +50,7 @@ import {
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
-import { type WalletCreateParams, accountUtils, walletModel } from '@/entities/wallet';
+import { type WalletCreateParams, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
 const createWalletsFx = attach({ effect: walletModel.createWallets });
 const requestIdentitiesFx = attach({ effect: identity.request });
@@ -117,7 +117,7 @@ export const syncProxiedAccounts = ({
   syncResult,
   identities,
 }: SyncProxiedParams) => {
-  const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
+  const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxiedAccount);
   const proxiedAccounts = allAccounts.filter(accountUtils.isProxiedAccount);
   const syncedChains = new Set(syncResult.chains);
 
@@ -277,7 +277,7 @@ sample({
     chains: networkModel.$chains,
   },
   fn({ chains, existingProxies }, [syncResult]) {
-    const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
+    const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxiedAccount);
     const syncedChains = new Set(syncResult.chains);
     const proxiesToAdd: NoID<ProxyAccount>[] = [];
 
@@ -444,7 +444,7 @@ export const syncFlexibleMultisigs = ({
   identities,
 }: SyncFlexibleMultisigParams) => {
   const syncedMultisigAccounts = syncResult.accounts.filter(accountSyncService.isSyncedMultisigAccount);
-  const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
+  const syncedProxiedAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxiedAccount);
   const flexibleMultisigAccounts = allAccounts.filter(accountUtils.isFlexibleMultisigAccount);
   const syncedChains = new Set(syncResult.chains);
 
@@ -466,55 +466,101 @@ export const syncFlexibleMultisigs = ({
     }),
   );
 
-  for (const syncedMultisig of syncedMultisigAccounts) {
-    const matchingProxies = syncedProxyAccounts.filter((proxy) =>
-      accountSyncService.isFlexibleMultisigPair(proxy, syncedMultisig),
+  const same = syncedProxiedAccounts.filter(
+    (a) => a.accountId === ('0xc47257e00f24b43d54a85e8c24a8e883f6c1f99a64d10ec746df2d8d0507d5cf' as AccountId),
+  );
+
+  console.log({ same });
+
+  for (const syncedProxiedAccount of syncedProxiedAccounts) {
+    const proxiedIdentity = identities[syncedProxiedAccount.accountId];
+    const chain = allChains[syncedProxiedAccount.chainId];
+    const proxiedName = proxiedIdentity
+      ? identityService.getFullName(proxiedIdentity)
+      : toShortAddress(toAddress(syncedProxiedAccount.accountId, { prefix: chain?.addressPrefix }), 5);
+
+    const matchingMultisigs = syncedMultisigAccounts.filter((syncedMultisig) =>
+      accountSyncService.isFlexibleMultisigPair(syncedProxiedAccount, syncedMultisig),
     );
 
-    for (const matchedSyncedProxy of matchingProxies) {
+    // if (
+    //   syncedProxiedAccount.accountId ===
+    //   ('0xc47257e00f24b43d54a85e8c24a8e883f6c1f99a64d10ec746df2d8d0507d5cf' as AccountId)
+    // ) {
+    //   console.log({ syncedProxiedAccount, matchingMultisigs });
+    // }
+
+    const newFlexAccounts: Omit<FlexibleMultisigAccount, 'id' | 'walletId'>[] = [];
+
+    for (const matchingMultisig of matchingMultisigs) {
       const existingFlexibleMultisig = flexibleMultisigAccounts.find(
-        (flexMulAcc) => flexMulAcc.accountId === matchedSyncedProxy.accountId,
+        (flexMulAcc) =>
+          flexMulAcc.accountId === syncedProxiedAccount.accountId &&
+          flexMulAcc.proxyType === syncedProxiedAccount.proxyType &&
+          flexMulAcc.multisigAccountId === matchingMultisig.accountId,
       );
 
       if (existingFlexibleMultisig) {
         deleteAccounts.delete(existingFlexibleMultisig);
       } else {
-        const proxiedIdentity = identities[matchedSyncedProxy.accountId];
-        const chain = allChains[matchedSyncedProxy.chainId];
-        const proxiedName = proxiedIdentity
-          ? identityService.getFullName(proxiedIdentity)
-          : toShortAddress(toAddress(matchedSyncedProxy.accountId, { prefix: chain?.addressPrefix }), 5);
-
         const newFlexibleMultisigAccount: Omit<FlexibleMultisigAccount, 'id' | 'walletId'> = {
           accountType: AccountType.FLEX_MULTISIG,
           type: 'chain',
-          chainId: matchedSyncedProxy.chainId,
+          chainId: syncedProxiedAccount.chainId,
           name: proxiedName,
-          accountId: matchedSyncedProxy.accountId,
+          accountId: syncedProxiedAccount.accountId,
 
-          multisigAccountId: syncedMultisig.accountId,
-          threshold: syncedMultisig.threshold,
-          signatories: syncedMultisig.signatories.map((accountId) => ({ accountId })),
+          multisigAccountId: matchingMultisig.accountId,
+          threshold: matchingMultisig.threshold,
+          signatories: matchingMultisig.signatories.map((accountId) => ({ accountId })),
 
-          proxyType: matchedSyncedProxy.proxyType as ProxyType,
-          deposit: matchedSyncedProxy.deposit.toString(),
-          entropyBlockNumber: matchedSyncedProxy.blockNumber,
-          extrinsicIndex: matchedSyncedProxy.extrinsicIndex,
+          proxyType: syncedProxiedAccount.proxyType as ProxyType,
+          deposit: syncedProxiedAccount.deposit.toString(),
+          entropyBlockNumber: syncedProxiedAccount.blockNumber,
+          extrinsicIndex: syncedProxiedAccount.extrinsicIndex,
 
-          cryptoType: isEthereumAccountId(matchedSyncedProxy.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
+          cryptoType: isEthereumAccountId(syncedProxiedAccount.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
           signingType: SigningType.MULTISIG,
           createdAt: Date.now(),
         };
 
-        createWallets.push({
-          wallet: {
-            name: proxiedName,
-            type: WalletType.FLEXIBLE_MULTISIG,
-          },
-          accounts: [newFlexibleMultisigAccount],
-        });
+        newFlexAccounts.push(newFlexibleMultisigAccount);
       }
     }
+
+    if (newFlexAccounts.length === 0) continue;
+
+    const existingWallet = allWallets
+      .filter(walletUtils.isFlexibleMultisig)
+      .find((w) => w.accounts.some((a) => a.accountId === syncedProxiedAccount.accountId));
+
+    if (existingWallet) {
+      const isUpToDate =
+        nonNullable(existingWallet) &&
+        existingWallet.accounts.length === newFlexAccounts.length &&
+        existingWallet.accounts.every((acc) =>
+          newFlexAccounts.some(
+            (newAcc) =>
+              newAcc.accountId === acc.accountId &&
+              newAcc.multisigAccountId === acc.multisigAccountId &&
+              newAcc.proxyType === acc.proxyType,
+          ),
+        );
+
+      if (isUpToDate) {
+        continue;
+      } else {
+        deleteWallets.add(existingWallet);
+      }
+    }
+
+    createWallets.push({
+      wallet: {
+        name: proxiedName,
+        type: WalletType.FLEXIBLE_MULTISIG,
+      },
+      accounts: newFlexAccounts,
+    });
   }
 
   for (const account of deleteAccounts) {

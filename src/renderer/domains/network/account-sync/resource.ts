@@ -10,7 +10,7 @@ import { networkUtils } from '@/entities/network';
 import { multisigOperationService } from '../multisig-operation/service';
 
 import { INDEXER_URL } from './constants';
-import { type AccountProvider, type SyncedMultisigAccount, type SyncedProxyAccount } from './types';
+import { type AccountProvider, type SyncedMultisigAccount, type SyncedProxiedAccount } from './types';
 
 // generic helpers
 
@@ -54,14 +54,14 @@ const proxySchema = z.object({
   spawner: accountIdSchema.nullable().transform(val => val ?? undefined),
 });
 
-export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
+export const proxyAccountsProvider: AccountProvider<SyncedProxiedAccount> = {
   getSupportedChains: (chains: Chain[]) => {
     return chains.filter(chain => networkUtils.isProxySupported(chain.options));
   },
 
   async fn(accounts, chains) {
     const accountsSet = new Set(accounts);
-    const result: SyncedProxyAccount[] = [];
+    const result: SyncedProxiedAccount[] = [];
 
     const client = new GraphQLClient(INDEXER_URL);
     const response = await client.request<{ proxieds: { nodes: unknown[] } }, { accounts: AccountId[] }>(
