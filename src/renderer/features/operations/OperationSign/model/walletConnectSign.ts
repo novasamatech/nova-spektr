@@ -100,9 +100,15 @@ const signFx = attach({
 
 const signAllFx = series(signFx);
 
-const signRejectedMessage = {
-  title: t('operation.walletConnect.errors.rejected'),
-  description: t('operation.walletConnect.errors.userRejected'),
+const signErrorMessages = {
+  rejected: {
+    title: t('operation.walletConnect.errors.rejected'),
+    description: t('operation.walletConnect.errors.userRejected'),
+  },
+  unknown: {
+    title: t('operation.walletConnect.errors.connectionFailed'),
+    description: t('operation.walletConnect.errors.connectionFailedDescription'),
+  },
 };
 
 // Storing transaction data
@@ -129,7 +135,7 @@ sample({
   clock: getSessionFx.fail,
   fn: ({ error }) => ({
     step: 'rejected' as const,
-    error: walletConnectService.buildErrorDisplay(error, signRejectedMessage),
+    error: walletConnectService.buildErrorDisplay(error, signErrorMessages),
   }),
   target: spread({
     step: $step,
@@ -145,7 +151,7 @@ sample({
   filter: (id, { params }) => params.id === id,
   fn: (_, { error }) => ({
     step: 'failed' as const,
-    error: walletConnectService.buildErrorDisplay(error, signRejectedMessage),
+    error: walletConnectService.buildErrorDisplay(error, signErrorMessages),
   }),
   target: spread({
     step: $step,

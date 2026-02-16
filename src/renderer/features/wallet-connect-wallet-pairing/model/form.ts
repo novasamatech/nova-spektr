@@ -205,7 +205,11 @@ sample({
 
 sample({
   clock: createSessionFx.fail,
-  fn: ({ error }) => walletConnectService.buildErrorDisplay(error, { title: t('onboarding.walletConnect.rejected') }),
+  fn: ({ error }) =>
+    walletConnectService.buildErrorDisplay(error, {
+      rejected: { title: t('onboarding.walletConnect.rejected') },
+      unknown: { title: t('onboarding.walletConnect.connectionFailed') },
+    }),
   target: $error,
 });
 

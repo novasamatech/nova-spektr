@@ -1882,6 +1882,7 @@
       "addressColumn": "Address",
       "manageTitle": "Set up your wallet",
       "nameColumn": "Account name",
+      "connectionFailed": "Connection failed",
       "pairedDescription": "Paired",
       "rejected": "Pairing rejected",
       "scanTitle": "Scan with your mobile wallet",
@@ -2084,6 +2085,8 @@
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
       "errors": {
+        "connectionFailed": "Connection failed",
+        "connectionFailedDescription": "Could not connect to WalletConnect. Check your internet connection and try again.",
         "rejected": "Operation rejected",
         "userRejected": "You rejected the request in WalletConnect."
       },
@@ -3052,6 +3055,8 @@
       "refreshButton": "Refresh",
       "rejectDescription": "The operation was successfully canceled",
       "rejectTitle": "Rejected",
+      "connectionFailedTitle": "Connection failed",
+      "connectionFailedDescription": "Could not connect to WalletConnect. Check your internet connection and try again.",
       "signTitle": "Scan with {walletName} to reconnect your wallet"
     }
   },

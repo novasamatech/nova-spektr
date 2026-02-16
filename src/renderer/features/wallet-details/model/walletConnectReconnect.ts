@@ -122,8 +122,14 @@ sample({
   clock: updateSessionFx.fail,
   fn: ({ error }) =>
     walletConnectService.buildErrorDisplay(error, {
-      title: t('walletDetails.walletConnect.rejectTitle'),
-      description: t('walletDetails.walletConnect.rejectDescription'),
+      rejected: {
+        title: t('walletDetails.walletConnect.rejectTitle'),
+        description: t('walletDetails.walletConnect.rejectDescription'),
+      },
+      unknown: {
+        title: t('walletDetails.walletConnect.connectionFailedTitle'),
+        description: t('walletDetails.walletConnect.connectionFailedDescription'),
+      },
     }),
   target: $error,
 });

@@ -161,16 +161,53 @@ function areAccountsConnected(sessions: Record<string, SessionTypes.Struct>, acc
 
 type WcErrorDisplay = { title: string; description?: string };
 
-function buildErrorDisplay(error: unknown, rejected: WcErrorDisplay): WcErrorDisplay {
-  if (isObject(error) && 'code' in error && error.code === SDK_ERRORS.USER_REJECTED.code) {
-    return rejected;
+function isUserRejection(error: unknown): boolean {
+  if (!isObject(error)) return false;
+  if ('code' in error && error.code === SDK_ERRORS.USER_REJECTED.code) return true;
+  if ('message' in error && typeof error.message === 'string' && error.message.toLowerCase().includes('rejected')) {
+    return true;
   }
 
-  if (isObject(error) && 'message' in error && typeof error.message === 'string') {
+  return false;
+}
+
+function hasReadableMessage(error: unknown): error is { message: string } {
+  return isObject(error) && 'message' in error && typeof error.message === 'string';
+}
+
+function isConnectionError(error: unknown): boolean {
+  if (!hasReadableMessage(error)) return false;
+
+  const msg = error.message.toLowerCase();
+
+  return (
+    msg.includes('socket') ||
+    msg.includes('network') ||
+    msg.includes('connection') ||
+    msg.includes('timeout') ||
+    msg.includes('relay') ||
+    msg.includes('internet') ||
+    msg.includes('publish')
+  );
+}
+
+function buildErrorDisplay(
+  error: unknown,
+  messages: { rejected: WcErrorDisplay; unknown: WcErrorDisplay },
+): WcErrorDisplay {
+  if (isUserRejection(error)) {
+    return messages.rejected;
+  }
+
+  if (isConnectionError(error)) {
+    return messages.unknown;
+  }
+
+  if (hasReadableMessage(error)) {
     return { title: error.message };
   }
 
-  return rejected;
+  return messages.unknown;
 }
 
 export const walletConnectService = {
@@ -179,7 +216,7 @@ export const walletConnectService = {
   isWalletConnectGroup,
   isWalletConnectAccount,
 
-  buildErrorDisplay,
+  buildErrorDisplay: buildErrorDisplay,
   isConnected,
   isAccountConnected,
   areAccountsConnected,

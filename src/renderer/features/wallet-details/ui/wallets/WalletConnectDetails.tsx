@@ -232,8 +232,8 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
 
       <StatusModal
         isOpen={wcDetailsUtils.isRejected(reconnectStep)}
-        title={reconnectError?.title ?? ''}
-        description={reconnectError?.description}
+        title={reconnectError?.title ?? t('walletDetails.walletConnect.rejectTitle')}
+        description={reconnectError?.description ?? t('walletDetails.walletConnect.rejectDescription')}
         content={<Animation variant="error" />}
         onClose={walletConnectReconnect.abort}
       >
