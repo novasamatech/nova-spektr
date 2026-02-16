@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
+import { IPC } from './shared/constants/ipc';
 import { AUTO_UPDATE_ENABLED } from './shared/constants/store';
 import { checkAutoUpdateSupported } from './shared/lib/utils';
 
@@ -26,6 +27,9 @@ const API = {
   },
   onProtocolOpen: (callback: (value: string) => void) => {
     return ipcRenderer.on('protocol-open', (_, value) => callback(value));
+  },
+  proxyFetch: (url: string, init?: { method?: string; headers?: Record<string, string>; body?: string }) => {
+    return ipcRenderer.invoke(IPC.PROXY.FETCH, url, init);
   },
 };
 
