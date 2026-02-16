@@ -142,6 +142,13 @@ const $isNative = $networkStore.map((network) => {
 
 const $isAssetPredefined = createStore(false).on(formInitiated, (_, params) => params.asset !== undefined);
 
+const $initialDestination = createStore<string | null>(null).on(
+  formInitiated,
+  (_, { destination }) => destination ?? null,
+);
+
+const $isDestinationReadonly = $initialDestination.map(nonNullable);
+
 const showTokenSelector = createEvent();
 const hideTokenSelector = createEvent();
 const assetChanged = createEvent<Asset>();
@@ -690,7 +697,20 @@ const $destinationChains = combine(
   },
 );
 
-const $availableChains = networkModel.$chainsList;
+const $availableChains = combine(
+  {
+    chains: networkModel.$chainsList,
+    initialDestination: $initialDestination,
+  },
+  ({ chains, initialDestination }) => {
+    if (nullable(initialDestination) || !validateAddress(initialDestination)) {
+      return chains;
+    }
+
+    const destinationAccountId = toAccountId(initialDestination);
+    return chains.filter((chain) => accountService.isAccountSchemeMatchChain(destinationAccountId, chain));
+  },
+);
 
 const $destinationAccounts = combine(
   {
@@ -806,13 +826,6 @@ sample({
   fn: (signatories) => signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
-
-const $initialDestination = createStore<string | null>(null).on(
-  formInitiated,
-  (_, { destination }) => destination ?? null,
-);
-
-const $isDestinationReadonly = $initialDestination.map(nonNullable);
 
 sample({
   clock: form.fields.destinationChain.change,
