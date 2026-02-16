@@ -1,4 +1,6 @@
 import { type SessionTypes } from '@walletconnect/types';
+import { SDK_ERRORS } from '@walletconnect/utils';
+import { isObject } from 'lodash';
 
 import { chainsService } from '@/shared/api/network';
 import {
@@ -157,12 +159,27 @@ function areAccountsConnected(sessions: Record<string, SessionTypes.Struct>, acc
   return accounts.every(a => isAccountConnected(sessions, a));
 }
 
+type WcErrorDisplay = { title: string; description?: string };
+
+function buildErrorDisplay(error: unknown, rejected: WcErrorDisplay): WcErrorDisplay {
+  if (isObject(error) && 'code' in error && error.code === SDK_ERRORS.USER_REJECTED.code) {
+    return rejected;
+  }
+
+  if (isObject(error) && 'message' in error && typeof error.message === 'string') {
+    return { title: error.message };
+  }
+
+  return rejected;
+}
+
 export const walletConnectService = {
   isNovaWallet,
   isWalletConnect,
   isWalletConnectGroup,
   isWalletConnectAccount,
 
+  buildErrorDisplay,
   isConnected,
   isAccountConnected,
   areAccountsConnected,

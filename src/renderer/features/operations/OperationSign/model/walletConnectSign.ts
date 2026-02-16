@@ -2,6 +2,7 @@ import { type SignerPayloadJSON } from '@polkadot/types/types';
 import { type SessionTypes } from '@walletconnect/types';
 import { attach, createEffect, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
+import { t } from 'i18next';
 import { nanoid } from 'nanoid';
 import { combineEvents, spread } from 'patronum';
 
@@ -20,16 +21,11 @@ type SignResponse = {
   signature: HexString;
 };
 
-type WalletConnectError = {
-  code?: number;
-  message?: string;
-};
-
 const flow = createGate<{ payloads: ExtrinsicSigningPayload[]; accounts: AnyAccount[] }>({
   defaultState: { payloads: [], accounts: [] },
 });
 const $step = createStore<Step>('idle');
-const $error = createStore<WalletConnectError | null>(null);
+const $error = createStore<{ title: string; description?: string } | null>(null);
 
 const $signingPayloads = flow.state.map(({ payloads }) => payloads);
 const $accounts = flow.state.map(({ accounts }) => accounts);
@@ -104,6 +100,11 @@ const signFx = attach({
 
 const signAllFx = series(signFx);
 
+const signRejectedMessage = {
+  title: t('operation.walletConnect.errors.rejected'),
+  description: t('operation.walletConnect.errors.userRejected'),
+};
+
 // Storing transaction data
 
 sample({
@@ -126,12 +127,10 @@ sample({
 
 sample({
   clock: getSessionFx.fail,
-  fn: ({ error }) => {
-    return {
-      step: 'rejected' as const,
-      error,
-    };
-  },
+  fn: ({ error }) => ({
+    step: 'rejected' as const,
+    error: walletConnectService.buildErrorDisplay(error, signRejectedMessage),
+  }),
   target: spread({
     step: $step,
     error: $error,
@@ -144,12 +143,10 @@ sample({
   clock: signFx.fail,
   source: $pending,
   filter: (id, { params }) => params.id === id,
-  fn: (_, { error }) => {
-    return {
-      step: 'failed' as const,
-      error,
-    };
-  },
+  fn: (_, { error }) => ({
+    step: 'failed' as const,
+    error: walletConnectService.buildErrorDisplay(error, signRejectedMessage),
+  }),
   target: spread({
     step: $step,
     error: $error,

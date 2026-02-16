@@ -57,6 +57,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   const connected = useUnit(walletConnectReconnect.$connected);
   const forgetStep = useUnit(walletConnectForget.$forgetStep);
   const reconnectStep = useUnit(walletConnectReconnect.$reconnectStep);
+  const reconnectError = useUnit(walletConnectReconnect.$error);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
   const proxiesCount = useUnit(walletProxiesModel.$walletProxiesCount);
   const accountList = useUnit(accounts.$list);
@@ -231,8 +232,8 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
 
       <StatusModal
         isOpen={wcDetailsUtils.isRejected(reconnectStep)}
-        title={t('walletDetails.walletConnect.rejectTitle')}
-        description={t('walletDetails.walletConnect.rejectDescription')}
+        title={reconnectError?.title ?? ''}
+        description={reconnectError?.description}
         content={<Animation variant="error" />}
         onClose={walletConnectReconnect.abort}
       >

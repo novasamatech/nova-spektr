@@ -53,6 +53,7 @@ export const PairingModal = memo(({ variant, children }: Props) => {
   const session = useUnit(pairingFormModel.$session);
   const uri = useUnit(pairingFormModel.$uri);
   const step = useUnit(pairingFormModel.$step);
+  const error = useUnit(pairingFormModel.$error);
   const state = useUnit(pairingFormModel.flow.state);
 
   const open = state.type === variant;
@@ -88,13 +89,14 @@ export const PairingModal = memo(({ variant, children }: Props) => {
   const header = t(`onboarding.${variant === 'novawallet' ? 'novaWallet' : 'walletConnect'}.title`);
   const scanTitle = t(`onboarding.${variant === 'novawallet' ? 'novaWallet' : 'walletConnect'}.scanTitle`);
 
-  if (step === Step.REJECT) {
+  if (step === Step.REJECT && error) {
     return (
       <>
         <StatusModal
           isOpen={open}
           content={<Animation variant="error" />}
-          title={t('onboarding.walletConnect.rejected')}
+          title={error.title}
+          description={error.description}
           onClose={closeStatusModal}
         />
         {children}
