@@ -473,7 +473,10 @@ export const syncFlexibleMultisigs = ({
 
     for (const matchedSyncedProxy of matchingProxies) {
       const existingFlexibleMultisig = flexibleMultisigAccounts.find(
-        (flexMulAcc) => flexMulAcc.accountId === matchedSyncedProxy.accountId,
+        (flexMulAcc) =>
+          flexMulAcc.accountId === matchedSyncedProxy.accountId &&
+          flexMulAcc.proxyType === matchedSyncedProxy.proxyType &&
+          flexMulAcc.multisigAccountId === syncedMultisig.accountId,
       );
 
       if (existingFlexibleMultisig) {
