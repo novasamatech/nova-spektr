@@ -2,19 +2,12 @@ import { ipcMain, session } from 'electron';
 
 import { IPC } from '../shared/constants/ipc';
 
-interface FetchInit {
-  method?: string;
-  headers?: Record<string, string>;
-  body?: string;
-}
+type FetchInit = Pick<RequestInit, 'method' | 'headers' | 'body'>;
 
-interface FetchResult {
-  ok: boolean;
-  status: number;
-  statusText: string;
+type FetchResult = Pick<Response, 'ok' | 'status' | 'statusText'> & {
   headers: Record<string, string>;
   body: string;
-}
+};
 
 export function setupProxy() {
   const authSession = session.fromPartition('persist:auth');

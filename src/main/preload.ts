@@ -28,7 +28,7 @@ const API = {
   onProtocolOpen: (callback: (value: string) => void) => {
     return ipcRenderer.on('protocol-open', (_, value) => callback(value));
   },
-  proxyFetch: (url: string, init?: { method?: string; headers?: Record<string, string>; body?: string }) => {
+  proxyFetch: (url: string, init?: Pick<RequestInit, 'method' | 'headers' | 'body'>) => {
     return ipcRenderer.invoke(IPC.PROXY.FETCH, url, init);
   },
 };
