@@ -95,6 +95,22 @@
       "description": "Are you sure you want to remove {name} from contacts?",
       "title": "Delete contact"
     },
+    "auth": {
+      "closeButton": "Close",
+      "connectedAccountLabel": "Connected account",
+      "disconnectButton": "Disconnect",
+      "errorTitle": "Authentication failed",
+      "modalTitle": "Sign in to Address Book",
+      "noExtensionAccounts": "No extension wallet accounts available",
+      "notConnected": "Not signed in",
+      "selectAccountLabel": "Select account",
+      "selectAccountPlaceholder": "Choose an account",
+      "signButton": "Sign",
+      "signInButton": "Sign in",
+      "signOutButton": "Sign out",
+      "signingMessage": "Waiting for signature...",
+      "tryAgainButton": "Try again"
+    },
     "backendConfiguration": {
       "addTitle": "Add Backend",
       "buttonLabel": "External source",
