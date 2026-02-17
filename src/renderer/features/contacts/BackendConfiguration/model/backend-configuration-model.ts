@@ -9,7 +9,7 @@ const editStarted = createEvent();
 const modalOpened = createEvent();
 const modalClosed = createEvent();
 
-const $backendUrl = createStore('');
+const $backendUrl = createStore<string | null>(null);
 persist({ store: $backendUrl, key: 'address-book-backend-url' });
 
 const $draftUrl = createStore('');
@@ -27,7 +27,7 @@ const $isUrlValid = $draftUrl.map((url) => {
   }
 });
 
-const $hasBackend = $backendUrl.map((url) => url.length > 0);
+const $hasBackend = $backendUrl.map((url) => url !== null);
 
 $draftUrl.on(urlChanged, (_, url) => url);
 
@@ -40,6 +40,7 @@ sample({
 sample({
   clock: editStarted,
   source: $backendUrl,
+  fn: (url) => url ?? '',
   target: $draftUrl,
 });
 
@@ -51,7 +52,7 @@ $isModalOpen
 sample({
   clock: urlSaved,
   source: $draftUrl,
-  fn: (url) => url.trim(),
+  fn: (url) => url?.trim() ?? null,
   target: $backendUrl,
 });
 
@@ -61,7 +62,7 @@ sample({
   target: $isModalOpen,
 });
 
-$backendUrl.on(urlCleared, () => '');
+$backendUrl.on(urlCleared, () => null);
 
 export const backendConfigurationModel = {
   $backendUrl,
