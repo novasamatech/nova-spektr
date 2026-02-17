@@ -95,6 +95,17 @@
       "description": "Are you sure you want to remove {name} from contacts?",
       "title": "Delete contact"
     },
+    "backendConfiguration": {
+      "addTitle": "Add Backend",
+      "buttonLabel": "External source",
+      "editTitle": "Edit Backend",
+      "urlLabel": "Backend URL",
+      "urlPlaceholder": "https://example.com/api",
+      "urlInvalidError": "Please enter a valid URL",
+      "saveButton": "Save",
+      "connectionLabel": "Backend connection",
+      "tooltip": "Configure address book backend"
+    },
     "searchPlaceholder": "Search",
     "title": "Address Book",
     "undo": "Undo"
