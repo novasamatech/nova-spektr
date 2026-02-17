@@ -2,7 +2,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Call, type DispatchError, type Weight } from '@polkadot/types/interfaces';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { type Registry } from '@polkadot/types/types';
-import { BN_ZERO, hexToU8a } from '@polkadot/util';
+import { BN_ZERO, hexToU8a, u8aToHex } from '@polkadot/util';
+import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 
 import { type HexString, type Transaction as DeprecatedTransaction } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
@@ -347,7 +348,108 @@ async function submitExtrinsic(
 ): Promise<SubmitResult> {
   return new Promise<SubmitResult>(resolve => {
     try {
+      console.log('[submitExtrinsic] === REGISTRY DEBUG ===');
+      console.log('[submitExtrinsic] signedExtensions:', api.registry.signedExtensions);
+      console.log('[submitExtrinsic] getSignedExtensionTypes:', api.registry.getSignedExtensionTypes());
+      console.log('[submitExtrinsic] getSignedExtensionExtra:', api.registry.getSignedExtensionExtra());
+
+      // Decode the payload to see what polkadot.js thinks each field is
+      const decodedPayload = api.registry.createType('ExtrinsicPayload', payload, { version: extrinsic.version });
+      console.log('[submitExtrinsic] === DECODED PAYLOAD FIELDS ===');
+      console.log('[submitExtrinsic] decoded method:', decodedPayload.method.toHex());
+      console.log('[submitExtrinsic] decoded era:', decodedPayload.era.toHuman());
+      console.log('[submitExtrinsic] decoded nonce:', decodedPayload.nonce.toString());
+      console.log('[submitExtrinsic] decoded tip:', decodedPayload.tip.toString());
+      console.log('[submitExtrinsic] decoded assetId:', (decodedPayload as any).assetId?.toHuman());
+      console.log('[submitExtrinsic] decoded mode:', (decodedPayload as any).mode?.toString());
+      console.log('[submitExtrinsic] decoded blockHash:', decodedPayload.blockHash.toHex());
+      console.log('[submitExtrinsic] decoded genesisHash:', decodedPayload.genesisHash.toHex());
+      console.log('[submitExtrinsic] decoded specVersion:', decodedPayload.specVersion.toString());
+      console.log('[submitExtrinsic] decoded transactionVersion:', decodedPayload.transactionVersion.toString());
+      console.log('[submitExtrinsic] decoded metadataHash:', (decodedPayload as any).metadataHash?.toHex());
+
+      console.log('[submitExtrinsic] === PRE-SUBMIT DEBUG ===');
+      console.log('[submitExtrinsic] signatory:', signatory);
+      console.log('[submitExtrinsic] signature (hex):', signature);
+      console.log('[submitExtrinsic] signature length (bytes):', hexToU8a(signature).length);
+      console.log('[submitExtrinsic] payload (hex) [extrinsicPayload.toU8a(false)]:', u8aToHex(payload));
+      console.log('[submitExtrinsic] payload length:', payload.length);
+
+      // Reconstruct what Vault signed: strip compact prefix to get [method | extensions]
+      const payloadSlice1 = payload.slice(1);
+      const payloadSlice2 = payload.slice(2);
+      console.log('[submitExtrinsic] payload.slice(1) (method+ext if compact=1byte):', u8aToHex(payloadSlice1));
+      console.log('[submitExtrinsic] payload.slice(1) length:', payloadSlice1.length);
+      console.log('[submitExtrinsic] payload.slice(2) (method+ext if compact=2byte):', u8aToHex(payloadSlice2));
+      console.log('[submitExtrinsic] payload.slice(2) length:', payloadSlice2.length);
+
+      // What ExtrinsicPayload.sign() would sign: toU8a({ method: true })
+      // Reconstruct ExtrinsicPayload from the raw bytes to get the "signing" form
+      const reconstructedPayload = api.registry.createType('ExtrinsicPayload', payload, { version: extrinsic.version });
+      const signingBytes = reconstructedPayload.toU8a({ method: true });
+      const signingBytesHashed = signingBytes.length > 256 ? blake2AsU8a(signingBytes) : signingBytes;
+      console.log('[submitExtrinsic] reconstructed ExtrinsicPayload.toU8a({method:true}):', u8aToHex(signingBytes));
+      console.log('[submitExtrinsic] signingBytes length:', signingBytes.length);
+      console.log('[submitExtrinsic] signingBytes would be hashed:', signingBytes.length > 256);
+      console.log('[submitExtrinsic] signingBytes (after hash if needed):', u8aToHex(signingBytesHashed));
+
+      // Vault hashing: > 257 threshold
+      const vaultHash1 = payloadSlice1.length > 257 ? blake2AsU8a(payloadSlice1) : payloadSlice1;
+      const vaultHash2 = payloadSlice2.length > 257 ? blake2AsU8a(payloadSlice2) : payloadSlice2;
+      console.log('[submitExtrinsic] vaultHash1:', u8aToHex(vaultHash1));
+      console.log('[submitExtrinsic] vaultHash2:', u8aToHex(vaultHash2));
+
+      // Verify signature against all candidates
+      try {
+        const verify1Raw = signatureVerify(payloadSlice1, signature, signatory);
+        console.log('[submitExtrinsic] verify(slice1 raw):', verify1Raw.isValid);
+      } catch (e) {
+        console.log('[submitExtrinsic] verify(slice1 raw) error:', e);
+      }
+      try {
+        const verify1Hashed = signatureVerify(
+          payloadSlice1.length > 256 ? blake2AsU8a(payloadSlice1) : payloadSlice1,
+          signature,
+          signatory,
+        );
+        console.log('[submitExtrinsic] verify(slice1, chain threshold >256):', verify1Hashed.isValid);
+      } catch (e) {
+        console.log('[submitExtrinsic] verify(slice1, chain threshold) error:', e);
+      }
+      try {
+        const verify2Raw = signatureVerify(payloadSlice2, signature, signatory);
+        console.log('[submitExtrinsic] verify(slice2 raw):', verify2Raw.isValid);
+      } catch (e) {
+        console.log('[submitExtrinsic] verify(slice2 raw) error:', e);
+      }
+      try {
+        const verify2Hashed = signatureVerify(
+          payloadSlice2.length > 256 ? blake2AsU8a(payloadSlice2) : payloadSlice2,
+          signature,
+          signatory,
+        );
+        console.log('[submitExtrinsic] verify(slice2, chain threshold >256):', verify2Hashed.isValid);
+      } catch (e) {
+        console.log('[submitExtrinsic] verify(slice2, chain threshold) error:', e);
+      }
+      try {
+        const verifySigningBytes = signatureVerify(signingBytesHashed, signature, signatory);
+        console.log('[submitExtrinsic] verify(reconstructed signingBytes):', verifySigningBytes.isValid);
+      } catch (e) {
+        console.log('[submitExtrinsic] verify(reconstructed signingBytes) error:', e);
+      }
+
+      // Compare bytes to find mismatch
+      console.log('[submitExtrinsic] === BYTE COMPARISON ===');
+      console.log('[submitExtrinsic] slice1 === signingBytes:', u8aToHex(payloadSlice1) === u8aToHex(signingBytes));
+      console.log('[submitExtrinsic] slice2 === signingBytes:', u8aToHex(payloadSlice2) === u8aToHex(signingBytes));
+
       extrinsic.addSignature(signatory, hexToU8a(signature), payload);
+
+      console.log('[submitExtrinsic] === POST-addSignature ===');
+      console.log('[submitExtrinsic] signed extrinsic hex:', extrinsic.toHex());
+      console.log('[submitExtrinsic] signed extrinsic human:', extrinsic.toHuman());
+
       extrinsic
         .send(result => {
           const { status, events, txHash, txIndex, blockNumber, dispatchError, internalError } = result as any;

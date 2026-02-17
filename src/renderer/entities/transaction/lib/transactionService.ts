@@ -248,30 +248,63 @@ async function createPayloadWithProof(
   api: ApiPromise,
   nonceIncrement?: number,
 ) {
+  console.log('[createPayloadWithProof] entry', {
+    signatory: signatory.toString(),
+    nonceIncrement,
+    extrinsicVersion: extrinsic.version,
+    apiExtrinsicVersion: api.extrinsicVersion,
+  });
+
   let metadata = await createTxMetadata(signatory, api);
+  console.log('[createPayloadWithProof] createTxMetadata done', {
+    blockNumber: metadata.signerPayloadBase.blockNumber,
+    blockHash: metadata.signerPayloadBase.blockHash,
+    nonce: metadata.signerPayloadBase.nonce,
+  });
+
   if (nonceIncrement) {
     metadata = upgradeNonce(metadata, nonceIncrement);
+    console.log('[createPayloadWithProof] upgradeNonce applied', {
+      nonceIncrement,
+      nonce: metadata.signerPayloadBase.nonce,
+    });
   }
   const { signerPayloadBase, mortalLength } = metadata;
+  console.log('[createPayloadWithProof] metadata extracted', { mortalLength });
 
   if (api.registry.signedExtensions?.includes('ChargeAssetTxPayment')) {
     signerPayloadBase.assetId = undefined;
+    console.log('[createPayloadWithProof] ChargeAssetTxPayment: assetId cleared');
   }
 
   // Set era explicitly for security reason - immortal transactions can be used in replay attacks.
   const era = createEra(api, signerPayloadBase.blockNumber, mortalLength);
+  console.log('[createPayloadWithProof] era created', { eraHex: era.toHex(), eraNumber: era.toNumber() });
 
   const metadataHex = api.runtimeMetadata.toHex();
+  console.log('[createPayloadWithProof] metadataHex length', metadataHex.length);
 
-  const merkleizedMetadata = merkleizeMetadata(metadataHex, {
+  const merkleizeParams = {
     decimals: api.registry.chainDecimals[0]!,
     tokenSymbol: api.registry.chainTokens[0]!,
     base58Prefix: api.registry.chainSS58,
     specName: api.runtimeVersion.specName.toString(),
     specVersion: api.runtimeVersion.specVersion.toNumber(),
-  });
+  };
+  console.log('[createPayloadWithProof] === MERKLEIZE PARAMS ===');
+  console.log('[createPayloadWithProof] decimals:', merkleizeParams.decimals);
+  console.log('[createPayloadWithProof] tokenSymbol:', merkleizeParams.tokenSymbol);
+  console.log('[createPayloadWithProof] base58Prefix:', merkleizeParams.base58Prefix);
+  console.log('[createPayloadWithProof] specName:', merkleizeParams.specName);
+  console.log('[createPayloadWithProof] specVersion:', merkleizeParams.specVersion);
+  console.log('[createPayloadWithProof] ALL chainDecimals:', api.registry.chainDecimals);
+  console.log('[createPayloadWithProof] ALL chainTokens:', api.registry.chainTokens);
+
+  const merkleizedMetadata = merkleizeMetadata(metadataHex, merkleizeParams);
+  console.log('[createPayloadWithProof] merkleizedMetadata created');
 
   const metadataHash = u8aToHex(merkleizedMetadata.digest());
+  console.log('[createPayloadWithProof] metadataHash', metadataHash);
 
   const signingPayload = new GenericSignerPayload(api.registry, {
     ...signerPayloadBase,
@@ -279,7 +312,7 @@ async function createPayloadWithProof(
     metadataHash,
     withSignedTransaction: true,
     method: extrinsic.method.toHex(),
-    version: extrinsic.version,
+    version: api.extrinsicVersion,
     era: era.toHex(),
     // Immortal transaction requires genesisHash instead of blockHash
     blockHash: era.toNumber() === 0 ? signerPayloadBase.genesisHash : signerPayloadBase.blockHash,
@@ -288,21 +321,28 @@ async function createPayloadWithProof(
       transactionVersion: signerPayloadBase.transactionVersion,
     },
   }).toPayload();
+  console.log('[createPayloadWithProof] signingPayload created', { version: signingPayload.version });
 
   const extrinsicPayload = api.registry.createType('ExtrinsicPayload', signingPayload, {
     version: signingPayload.version,
   });
+  console.log('[createPayloadWithProof] extrinsicPayload created');
+
   const metadataProof = merkleizedMetadata.getProofForExtrinsicPayload(extrinsicPayload.toU8a(true));
+  console.log('[createPayloadWithProof] metadataProof obtained', { proofLength: metadataProof.length });
 
   const payload = extrinsicPayload.toU8a(false);
+  console.log('[createPayloadWithProof] payload prepared', { payloadLength: payload.length });
 
-  return {
+  const result = {
     extrinsic,
     metadataProof,
     unsigned: signingPayload,
     hexPayload: extrinsicPayload.toHex(),
     payload,
   };
+  console.log('[createPayloadWithProof] return', { hexPayloadLength: result.hexPayload.length });
+  return result;
 }
 
 function createEra(api: ApiPromise, blockNumber: HexString, mortalLength: number) {
