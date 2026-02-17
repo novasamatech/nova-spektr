@@ -4,10 +4,11 @@ import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { Compact, Enum, GenericCall, GenericMultiAddress, GenericSignerPayload } from '@polkadot/types';
 import { type ExtrinsicEra, type Weight } from '@polkadot/types/interfaces';
 import { type CallBase, type Codec } from '@polkadot/types/types';
-import { compactStripLength, hexToU8a, u8aToHex } from '@polkadot/util';
+import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { merkleizeMetadata } from '@polkadot-api/merkleize-metadata';
 
+import { metadataV15Service } from '@/shared/api/network';
 import {
   type Address,
   type CallData,
@@ -261,18 +262,7 @@ async function createPayloadWithProof(
   // Set era explicitly for security reason - immortal transactions can be used in replay attacks.
   const era = createEra(api, signerPayloadBase.blockNumber, mortalLength);
 
-  // Fetch v15 metadata via Metadata_metadata_at_version runtime call
-  // Version 15 as SCALE-encoded u32 little-endian = 0x0f000000
-  const v15Response = await api.rpc.state.call('Metadata_metadata_at_version', '0x0f000000');
-  const v15ResponseU8a = v15Response.toU8a(true);
-
-  // Response is Option<OpaqueMetadata>: first byte 0x01 = Some, then compact-length-prefixed metadata bytes
-  if (v15ResponseU8a[0] !== 0x01) {
-    throw new Error('[metadataHash] Chain does not support metadata v15');
-  }
-
-  const [, metadataV15Bytes] = compactStripLength(v15ResponseU8a.slice(1));
-  const metadataHex = u8aToHex(metadataV15Bytes);
+  const metadataHex = await metadataV15Service.getDecodedMetadataV15(api);
 
   const merkleizeParams = {
     decimals: api.registry.chainDecimals[0]!,
