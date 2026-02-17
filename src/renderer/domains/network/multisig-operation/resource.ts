@@ -36,6 +36,7 @@ type CreateOperationParams = {
   accountId: AccountId;
   callHash: HexString;
   multisig: PalletMultisigMultisig;
+  proxiedAccountIdMap?: Record<AccountId, AccountId>;
 };
 
 async function createOperationFromMultisig({
@@ -44,17 +45,19 @@ async function createOperationFromMultisig({
   accountId,
   callHash,
   multisig,
+  proxiedAccountIdMap,
 }: CreateOperationParams): Promise<MultisigOperation> {
   const chainId = chain.chainId;
   const nativeAssetId = getNativeAssetId(chain.assets);
   const blockHeight = multisig.when.height.toNumber();
   const extrinsicIndex = multisig.when.index.toNumber();
+  const multisigAccountId = toAccountId(accountId.toString());
 
   const timestamp = await getCreatedDateFromApi(blockHeight, api);
   const operationId = multisigOperationService.getOperationId(
     chainId,
     callHash,
-    accountId,
+    multisigAccountId,
     blockHeight,
     extrinsicIndex,
   );
@@ -82,17 +85,20 @@ async function createOperationFromMultisig({
   let decodedTransaction: DecodedTransaction | null = null;
   try {
     if (callData && validateCallData(callData, callHash)) {
-      decodedTransaction = decodeCallData(api, accountId, callData, nativeAssetId);
+      decodedTransaction = decodeCallData(api, multisigAccountId, callData, nativeAssetId);
     }
   } catch (error) {
     console.warn('Failed to decode call data', { callHash, error });
   }
 
+  const proxiedAccountId = proxiedAccountIdMap?.[multisigAccountId];
+
   return {
     id: operationId,
     chainId,
     status: 'pending',
-    accountId: decodedTransaction?.accountId ?? toAccountId(accountId.toString()),
+    multisigAccountId,
+    ...(proxiedAccountId ? { proxiedAccountId } : {}),
     callHash,
     callData,
     depositor: toAccountId(multisig.depositor.toString()),
@@ -184,12 +190,14 @@ function mapSubqueryOperationRecord(
   node: unknown,
   apis: Record<ChainId, ApiPromise>,
   chains: Record<ChainId, Chain>,
+  proxiedAccountIdMap?: Record<AccountId, AccountId>,
 ): MultisigOperation | null {
   const response = operationsGqlSchema.parse(node);
+  const multisigAccountId = response.accountId;
   const operationId = multisigOperationService.getOperationId(
     response.chainId,
     response.callHash,
-    response.accountId,
+    multisigAccountId,
     response.blockCreated,
     response.indexCreated,
   );
@@ -202,11 +210,13 @@ function mapSubqueryOperationRecord(
 
   try {
     if (response.callData && validateCallData(response.callData, response.callHash)) {
-      transaction = decodeCallData(api, response.accountId, response.callData, getNativeAssetId(chain.assets));
+      transaction = decodeCallData(api, multisigAccountId, response.callData, getNativeAssetId(chain.assets));
     }
   } catch (error) {
     console.warn('Failed to decode call data from indexer response', { callHash: response.callHash, error });
   }
+
+  const proxiedAccountId = proxiedAccountIdMap?.[multisigAccountId];
 
   return {
     id: operationId,
@@ -214,7 +224,8 @@ function mapSubqueryOperationRecord(
     section: response.section,
     method: response.method,
     timestamp: response.timestamp,
-    accountId: transaction?.accountId ?? response.accountId,
+    multisigAccountId,
+    ...(proxiedAccountId ? { proxiedAccountId } : {}),
     callHash: response.callHash,
     callData: response.callData ?? null,
     blockCreated: response.blockCreated,
@@ -235,12 +246,13 @@ async function fetchOperationsHistory(
   accountIds: AccountId[],
   apis: Record<ChainId, ApiPromise>,
   chains: Record<ChainId, Chain>,
+  proxiedAccountIdMap?: Record<AccountId, AccountId>,
 ): Promise<MultisigOperation[]> {
   const client = new GraphQLClient(INDEXER_URL);
   const result = await client.request<any, { accountIds: AccountId[] }>(operationsQuery, { accountIds });
 
   return result.multisigOperations.nodes
-    .map((node: unknown) => mapSubqueryOperationRecord(node, apis, chains))
+    .map((node: unknown) => mapSubqueryOperationRecord(node, apis, chains, proxiedAccountIdMap))
     .filter(nonNullable);
 }
 
@@ -248,12 +260,14 @@ type OffChainRequestParams = {
   apis: Record<ChainId, ApiPromise>;
   chains: Record<ChainId, Chain>;
   accountIds: AccountId[];
+  proxiedAccountIdMap?: Record<AccountId, AccountId>;
 };
 
 type OnChainRequestParams = {
   api: ApiPromise;
   chain: Chain;
   accountIds: AccountId[];
+  proxiedAccountIdMap?: Record<AccountId, AccountId>;
 };
 
 export const $offChainOperations = createStore<MultisigOperation[]>([]);
@@ -271,15 +285,15 @@ const offChainCacheMapper: MapCacheFn<OffChainRequestParams, MultisigOperation[]
   operations,
   { accountIds },
 ) => {
-  const operationsWithoutGivenAccounts = cache.filter(o => !accountIds.includes(o.accountId));
+  const operationsWithoutGivenAccounts = cache.filter(o => !accountIds.includes(o.multisigAccountId));
   return multisigOperationService.mergeMultisigOperations(operationsWithoutGivenAccounts, operations);
 };
 
 export const fetchOffchainResource = createQueryResource<OffChainRequestParams>({
   key: ({ accountIds }) => accountIds.join('-'),
 })
-  .request(async ({ apis, accountIds, chains }) => {
-    return fetchOperationsHistory(accountIds, apis, chains);
+  .request(async ({ apis, accountIds, chains, proxiedAccountIdMap }) => {
+    return fetchOperationsHistory(accountIds, apis, chains, proxiedAccountIdMap);
   })
   .cache({
     store: $offChainOperations,
@@ -290,7 +304,7 @@ export const fetchOffchainResource = createQueryResource<OffChainRequestParams>(
 export const initialOnChainFetch = createQueryResource<OnChainRequestParams>({
   key: ({ api, accountIds }) => accountIds.join('-') + api.genesisHash.toHex(),
 })
-  .request(async ({ api, accountIds, chain }) => {
+  .request(async ({ api, accountIds, chain, proxiedAccountIdMap }) => {
     const chainId = api.genesisHash.toHex();
     const callHashesByAccount: Record<AccountId, HexString[]> = {};
     const onChainData: Record<AccountId, Record<HexString, MultisigOperation>> = {};
@@ -351,6 +365,7 @@ export const initialOnChainFetch = createQueryResource<OnChainRequestParams>({
               accountId,
               callHash,
               multisig,
+              proxiedAccountIdMap,
             });
             return { accountId, callHash, operation };
           } catch (error) {
@@ -428,12 +443,13 @@ export const subscribeOnchainResource = createSubscriptionResource<{
   api: ApiPromise;
   hashes: Record<AccountId, HexString[]>;
   chain: Chain;
+  proxiedAccountIdMap?: Record<AccountId, AccountId>;
 }>({
   key: ({ api }) => api.genesisHash.toHex(),
   recreateOnSubscribe: true,
 })
   .subscribe<{ chainId: ChainId; operations: Record<AccountId, Record<HexString, MultisigOperation | null>> }>(
-    async ({ chain, api, hashes }, callback) => {
+    async ({ chain, api, hashes, proxiedAccountIdMap }, callback) => {
       const chainId = chain.chainId;
       const queries: QueryableStorageMultiArg<'promise'>[] = [];
       const paths: { accountId: AccountId; callHash: HexString }[] = [];
@@ -467,6 +483,7 @@ export const subscribeOnchainResource = createSubscriptionResource<{
               accountId,
               callHash,
               multisig,
+              proxiedAccountIdMap,
             });
           }
         }

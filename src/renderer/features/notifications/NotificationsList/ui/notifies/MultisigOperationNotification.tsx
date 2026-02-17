@@ -21,6 +21,7 @@ import { ChainTitle } from '@/entities/chain';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { operationTitleTransformer } from '@/features/multisig-operations';
+import { multisigService } from '@/features/multisig-wallet';
 import { $multisigAccountsById, $operationsByKey } from '../../model/notification-data-model';
 
 type Props = {
@@ -71,9 +72,11 @@ export const MultisigOperationNotificationComponent = ({
 
   const multisigAccount = useStoreMap({
     store: $multisigAccountsById,
-    keys: [operation?.accountId],
+    keys: [operation?.multisigAccountId],
     fn: (map, [id]) => (id ? (map[id] ?? null) : null),
   });
+
+  console.log({ multisigAccount, operation });
 
   const wallet = useMemo(() => {
     if (!multisigAccount) return null;
@@ -127,7 +130,7 @@ export const MultisigOperationNotificationComponent = ({
     const params = new URLSearchParams({
       chainId,
       callHash,
-      accountId: multisigAccount.accountId,
+      accountId: multisigService.getMultisigAccountId(multisigAccount),
       blockCreated: callTimepoint.height.toString(),
       indexCreated: callTimepoint.index.toString(),
     });

@@ -30,12 +30,14 @@ const subscribeToAccounts = createEvent<{
   apis: Record<ChainId, ApiPromise>;
   accountIds: AccountId[];
   chains: Record<ChainId, Chain>;
+  proxiedAccountIdMap?: Record<AccountId, AccountId>;
 }>();
 
 const unsubscribeFromAccounts = createEvent();
 
 const $subscribedAccounts = createStore<AccountId[]>([]);
 const $subscribedApis = createStore<Record<ChainId, ApiPromise>>({});
+const $proxiedAccountIdMap = createStore<Record<AccountId, AccountId>>({});
 
 const $chainIdsWithMultisigSupport = createStore<ChainId[]>([]).reset(unsubscribeFromAccounts);
 const $initializedChainIds = createStore<ChainId[]>([]).reset(unsubscribeFromAccounts);
@@ -57,7 +59,7 @@ const $onChainOperations = combine(
       )
       .filter(nonNullable)
       .map(op => {
-        const userData = userCallData[op.chainId]?.[op.accountId]?.[op.callHash];
+        const userData = userCallData[op.chainId]?.[op.multisigAccountId]?.[op.callHash];
         if (userData) {
           return {
             ...op,
@@ -89,13 +91,14 @@ sample({
   clock: $trackedCallHashes,
   source: {
     chains: networkModel.$chains,
+    proxiedAccountIdMap: $proxiedAccountIdMap,
   },
-  fn: ({ chains }, state) => {
+  fn: ({ chains, proxiedAccountIdMap }, state) => {
     return Object.values(state).flatMap(el => {
       const chain = chains[el.api.genesisHash.toHex()];
       if (!chain) return [];
 
-      return [{ api: el.api, hashes: el.hashes, chain }];
+      return [{ api: el.api, hashes: el.hashes, chain, proxiedAccountIdMap }];
     });
   },
   target: series(subscribeOnchainResource.subscribe, { parallel: true }),
@@ -189,6 +192,12 @@ sample({
   target: $subscribedApis,
 });
 
+sample({
+  clock: subscribeToAccounts,
+  fn: ({ proxiedAccountIdMap }) => proxiedAccountIdMap ?? {},
+  target: $proxiedAccountIdMap,
+});
+
 // Prevents premature cache invalidation when some APIs haven't connected yet
 sample({
   clock: subscribeToAccounts,
@@ -208,19 +217,19 @@ sample({
 
 sample({
   clock: subscribeToAccounts,
-  fn: ({ apis, accountIds, chains }) =>
+  fn: ({ apis, accountIds, chains, proxiedAccountIdMap }) =>
     entries(apis).flatMap(([chainId, api]) => {
       const chain = chains[chainId];
       if (!chain) return [];
 
-      return [{ api, chain, accountIds }];
+      return [{ api, chain, accountIds, proxiedAccountIdMap }];
     }),
   target: series(initialOnChainFetch.fetch, { parallel: true }),
 });
 
 sample({
   clock: subscribeToAccounts,
-  fn: ({ apis, accountIds, chains }) => ({ apis, chains, accountIds }),
+  fn: ({ apis, accountIds, chains, proxiedAccountIdMap }) => ({ apis, chains, accountIds, proxiedAccountIdMap }),
   target: fetchOffchainResource.fetch,
 });
 
@@ -232,6 +241,7 @@ sample({
     apis: $subscribedApis,
     accountIds: $subscribedAccounts,
     chains: networkModel.$chains,
+    proxiedAccountIdMap: $proxiedAccountIdMap,
   },
   filter: ({ accountIds }) => accountIds.length > 0,
   target: fetchOffchainResource.start,
@@ -255,6 +265,7 @@ sample({
     apis: $subscribedApis,
     accountIds: $subscribedAccounts,
     chains: networkModel.$chains,
+    proxiedAccountIdMap: $proxiedAccountIdMap,
   },
   filter: ({ accountIds }) => accountIds.length > 0,
   target: fetchOffchainResource.start,
@@ -297,6 +308,12 @@ sample({
   clock: unsubscribeFromAccounts,
   fn: () => ({}),
   target: $subscribedApis,
+});
+
+sample({
+  clock: unsubscribeFromAccounts,
+  fn: () => ({}),
+  target: $proxiedAccountIdMap,
 });
 
 sample({
@@ -354,17 +371,17 @@ persist({ store: $cachedOperations, key: 'multisig-operations', done: cachedOper
 
 const updateCallData = createEvent<{
   chainId: ChainId;
-  accountId: AccountId;
+  multisigAccountId: AccountId;
   callHash: HexString;
   callData: CallData;
   transaction: DecodedTransaction;
 }>();
 
-$userAddedCallData.on(updateCallData, (state, { chainId, accountId, callHash, callData, transaction }) =>
+$userAddedCallData.on(updateCallData, (state, { chainId, multisigAccountId, callHash, callData, transaction }) =>
   produce(state, draft => {
     if (!draft[chainId]) draft[chainId] = {};
-    if (!draft[chainId][accountId]) draft[chainId][accountId] = {};
-    draft[chainId][accountId][callHash] = { callData, transaction };
+    if (!draft[chainId][multisigAccountId]) draft[chainId][multisigAccountId] = {};
+    draft[chainId][multisigAccountId][callHash] = { callData, transaction };
   }),
 );
 
@@ -438,8 +455,8 @@ sample({
 // Cleanup operations when accounts are deleted
 const deleteAccountIds = accounts.deleteAccounts.doneData.map(deleted => deleted.map(a => a.accountId));
 
-$cachedOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.accountId)));
-$offChainOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.accountId)));
+$cachedOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.multisigAccountId)));
+$offChainOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.multisigAccountId)));
 
 $onChainOperationsByCallhash.on(deleteAccountIds, (state, ids) =>
   produce(state, draft => {

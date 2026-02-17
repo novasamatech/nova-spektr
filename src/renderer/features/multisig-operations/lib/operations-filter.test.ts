@@ -24,7 +24,7 @@ const createMockOperation = (overrides?: Partial<MultisigOperation>): MultisigOp
     id: 'op-1',
     status: 'pending',
     chainId: MOCK_CHAIN_ID,
-    accountId: MOCK_ACCOUNT_ID,
+    multisigAccountId: MOCK_ACCOUNT_ID,
     depositor: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' as never,
     callHash: '0xabc123',
     callData: '0xdef',
@@ -174,7 +174,7 @@ describe('operations-filter', () => {
     });
 
     test('returns false when operation accountId is not in list', () => {
-      const op = createMockOperation({ accountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never });
+      const op = createMockOperation({ multisigAccountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never });
       expect(matchesAccount(op, [MOCK_ACCOUNT_ID])).toBe(false);
     });
   });
@@ -367,7 +367,7 @@ describe('operations-filter', () => {
     });
 
     test('returns false when account filter excludes operation', () => {
-      const op = createMockOperation({ accountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never });
+      const op = createMockOperation({ multisigAccountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never });
       const ctx: OperationsFilterContext = {
         ...emptyContext,
         filters: { ...emptyContext.filters, account: [MOCK_ACCOUNT_ID] },

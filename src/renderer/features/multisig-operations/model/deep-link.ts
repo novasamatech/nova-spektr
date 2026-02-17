@@ -125,7 +125,9 @@ function validateDeepLink(
     return { type: 'chainNotFound' };
   }
 
-  const account = accountsList.find(acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId);
+  const account = accountsList.find(
+    acc => accountUtils.isAnyMultisigAccount(acc) && multisigService.getMultisigAccountId(acc) === data.accountId,
+  );
   if (nullable(account)) {
     return { type: 'accountNotFound' };
   }
@@ -239,11 +241,13 @@ const multisigAccountResolved = sample({
     nonNullable(chainInfo?.chain) &&
     accountsReady &&
     operationsReady &&
-    accountsList.some(a => a.accountId === chainInfo!.data.accountId),
+    accountsList
+      .filter(accountUtils.isAnyMultisigAccount)
+      .some(a => multisigService.getMultisigAccountId(a) === chainInfo!.data.accountId),
   fn: ({ accountsList, chainInfo }) => {
     const account = accountsList
       .filter(accountUtils.isAnyMultisigAccount)
-      .find(a => a.accountId === chainInfo!.data.accountId);
+      .find(a => multisigService.getMultisigAccountId(a) === chainInfo!.data.accountId);
 
     return {
       data: chainInfo!.data,
@@ -326,13 +330,13 @@ sample({
 });
 
 function generateMultisigOperationDeepLink(
-  operation: MultisigOperationDeepLinkData,
+  operation: Pick<MultisigOperationDeepLinkData, 'chainId' | 'callHash' | 'blockCreated' | 'indexCreated'>,
   account: MultisigAccount | FlexibleMultisigAccount,
 ): string {
   return multisigOperationService.generateMultisigOperationDeepLink({
     chainId: operation.chainId,
     callHash: operation.callHash,
-    accountId: account.accountId,
+    multisigAccountId: multisigService.getMultisigAccountId(account),
     blockCreated: operation.blockCreated,
     indexCreated: operation.indexCreated,
   });

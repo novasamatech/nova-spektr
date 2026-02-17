@@ -61,8 +61,19 @@ export const serializeOperation = <T extends NoID<MultisigOperation>>(tx: T) => 
 };
 
 export const deserializeOperation = (tx: Serializable<MultisigOperation>): MultisigOperation => {
+  // Backward compatibility: cached operations may have old `accountId` field
+  const raw = tx as Serializable<MultisigOperation> & { accountId?: AccountId };
+  const multisigAccountId = tx.multisigAccountId ?? raw.accountId;
+
+  if (!multisigAccountId) {
+    throw new Error('MultisigOperation missing multisigAccountId');
+  }
+
+  const { accountId: _, ...rest } = raw;
+
   return {
-    ...tx,
+    ...rest,
+    multisigAccountId,
     deposit: tx.deposit ? new BN(tx.deposit) : undefined,
   };
 };
@@ -157,7 +168,7 @@ const mergeMultisigOperations = (
 export type MultisigOperationDeepLinkParams = {
   chainId: string;
   callHash: string;
-  accountId: AccountId;
+  multisigAccountId: AccountId;
   blockCreated: number;
   indexCreated: number;
 };
@@ -166,7 +177,7 @@ function generateMultisigOperationDeepLink(params: MultisigOperationDeepLinkPara
   const searchParams = new URLSearchParams({
     chainId: params.chainId,
     callHash: params.callHash,
-    accountId: params.accountId,
+    accountId: params.multisigAccountId,
     blockCreated: params.blockCreated.toString(),
     indexCreated: params.indexCreated.toString(),
   });
@@ -178,7 +189,7 @@ function generateMultisigOperationRelativeLink(params: MultisigOperationDeepLink
   const searchParams = new URLSearchParams({
     chainId: params.chainId,
     callHash: params.callHash,
-    accountId: params.accountId,
+    accountId: params.multisigAccountId,
     blockCreated: params.blockCreated.toString(),
     indexCreated: params.indexCreated.toString(),
   });

@@ -6,6 +6,7 @@ import { debounce } from 'patronum';
 import { type Chain, type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { deepLinkService } from '@/domains/app';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
@@ -73,10 +74,18 @@ const $input = combine(
 
     const availableChainsRecord = keyBy(uniqueChains, c => c.chainId);
 
+    const proxiedAccountIdMap: Record<AccountId, AccountId> = {};
+    for (const account of multisigs) {
+      if (accountUtils.isFlexibleMultisigAccount(account)) {
+        proxiedAccountIdMap[account.multisigAccountId] = account.accountId;
+      }
+    }
+
     return {
       chains: availableChainsRecord,
       apis: availableApis,
       accountIds: multisigs.map(account => multisigService.getMultisigAccountId(account)),
+      proxiedAccountIdMap,
     };
   },
 );
