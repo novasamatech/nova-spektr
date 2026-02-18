@@ -22,9 +22,7 @@ import { ConnectionTimeoutModal } from './modals/ConnectionTimeoutModal';
 import { NetworkNotAvailableModal } from './modals/NetworkNotAvailableModal';
 import { OperationNotFoundModal } from './modals/OperationNotFoundModal';
 
-type FlatItem =
-  | { type: 'header'; date: string }
-  | { type: 'operation'; item: OperationWithAccount };
+type FlatItem = { type: 'header'; date: string } | { type: 'operation'; item: OperationWithAccount };
 
 const isHeaderItem = (item: FlatItem): item is FlatItem & { type: 'header' } => item.type === 'header';
 
