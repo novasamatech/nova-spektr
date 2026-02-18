@@ -15,6 +15,13 @@ export const enum Step {
 export type NetworkStore = {
   chain: Chain;
   asset: Asset;
+  destination?: Address;
+};
+
+export type NetworkStoreParams = {
+  chain: Chain;
+  asset?: Asset;
+  destination?: Address;
 };
 
 export type TransferStore = {

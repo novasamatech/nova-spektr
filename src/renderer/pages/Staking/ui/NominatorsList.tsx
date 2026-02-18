@@ -116,7 +116,7 @@ export const NominatorsList = ({
         {nominators.map((stake) => {
           if (Array.isArray(stake)) {
             return (
-              <li key={stake[0].account.groupId}>
+              <li key={stake[0]?.account.groupId}>
                 <ShardedList
                   isStakingLoading={isStakingLoading}
                   shardsStake={stake}

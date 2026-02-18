@@ -14,7 +14,7 @@ export function useTaskQueue(): TaskQueue {
     if (tasks.length === 0) return;
     if (isProcessing) return;
 
-    const task = tasks[0];
+    const task = tasks[0]!;
     setTasks((prev) => prev.slice(1));
     setIsProcessing(true);
 

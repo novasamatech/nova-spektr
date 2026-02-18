@@ -143,12 +143,12 @@ const validationTestData: ValidationTestData[] = [
   },
   {
     testName: 'Derivation should be valid (1)',
-    derivation: validDerivations[0],
+    derivation: validDerivations[0]!,
     isValid: true,
   },
   {
     testName: 'Derivation should be valid (2)',
-    derivation: validDerivations[0],
+    derivation: validDerivations[0]!,
     isValid: true,
   },
 ];
@@ -166,7 +166,7 @@ const shouldIgnoreDerivationTestData = [
   },
   {
     testName: 'Should not ignore valid derivation',
-    derivation: validDerivations[0],
+    derivation: validDerivations[0]!,
     shouldIgnore: false,
   },
 ];

@@ -19,5 +19,5 @@ export const useCurrencyRate = (assetId?: string, showCurrency?: boolean): numbe
   )
     return null;
 
-  return assetsPrices[assetId][activeCurrency.coingeckoId].price;
+  return assetsPrices[assetId]![activeCurrency.coingeckoId]!.price;
 };

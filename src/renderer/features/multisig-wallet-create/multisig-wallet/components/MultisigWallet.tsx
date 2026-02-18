@@ -41,8 +41,8 @@ export const MultisigWallet = ({ isOpen, onToggle, onGoBack, children }: Props) 
   return (
     <Modal
       isOpen={isOpen}
-      size={MODAL_SIZE[activeStep].size}
-      height={MODAL_SIZE[activeStep].height}
+      size={MODAL_SIZE[activeStep]!.size}
+      height={MODAL_SIZE[activeStep]!.height}
       onToggle={onToggle}
     >
       <Modal.Trigger>{children}</Modal.Trigger>

@@ -11,7 +11,7 @@ import {
   type Transaction,
   TransactionType,
 } from '@/shared/core';
-import { toAccountId, transferableAmount } from '@/shared/lib/utils';
+import { getNativeAsset, toAccountId, transferableAmount } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -47,19 +47,21 @@ type DataParams = {
 const flow = createGate<BasketTransaction>();
 
 const prepareUnlockDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
+  assert(chain, 'Chain not found');
+
   const coreTx = basketOperationsService.getCoreTx(transaction);
 
   const totalLock = await governanceService
-    .getTrackLocks(apis[chainId], [transaction.coreTx.accountId])
+    .getTrackLocks(apis[chain.chainId]!, [transaction.coreTx.accountId])
     .then((data) => {
-      const lock = data[transaction.coreTx.accountId];
+      const lock = data[transaction.coreTx.accountId]!;
 
       return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
     });
@@ -68,7 +70,7 @@ const prepareUnlockDataFx = createEffect(async ({ transaction, accounts, chains,
     chain,
     id: transaction.id,
     amount: coreTx.args.value,
-    asset: chain.assets[0],
+    asset: getNativeAsset(chain.assets),
     initiator: account!,
     signatory: account!,
     route: [account!],
@@ -83,20 +85,26 @@ const prepareUnlockDataFx = createEffect(async ({ transaction, accounts, chains,
 });
 
 const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chains, apis, balances }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
-  const asset = chain.assets[0];
+
+  assert(chain, 'Chain not found');
+
+  const asset = chain.assets?.[0];
+
+  assert(account, 'Signing account not found');
+  assert(asset, 'Native asset not found');
 
   const transferable = transferableAmount(
-    balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
+    balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId),
   );
 
-  const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.accountId]).then((data) => {
-    const lock = data[transaction.coreTx.accountId];
+  const locks = await governanceService.getTrackLocks(apis[chain.chainId]!, [transaction.coreTx.accountId]).then((data) => {
+    const lock = data[transaction.coreTx.accountId]!;
 
     return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
   });
@@ -114,9 +122,9 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
     target: coreTxs[0].args.target,
     tracks: coreTxs.map((t: Transaction) => t.args.track),
     locks,
-    signatory: account!,
-    initiator: account!,
-    route: [account!],
+    signatory: account,
+    initiator: account,
+    route: [account],
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
 
@@ -128,20 +136,26 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
 
 const prepareEditDelegationDataFx = createEffect(
   async ({ transaction, accounts, chains, apis, balances }: DataParams) => {
-    const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+    const { chain, account, fee } = await basketOperationsService.getTransactionData(
       transaction,
       apis,
       chains,
       accounts,
     );
-    const asset = chain.assets[0];
+
+    assert(chain, 'Chain not found');
+
+    const asset = chain.assets?.[0];
+
+    assert(account, 'Signing account not found');
+    assert(asset, 'Native asset not found');
 
     const transferable = transferableAmount(
-      balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
+      balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId),
     );
 
-    const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.accountId]).then((data) => {
-      const lock = data[transaction.coreTx.accountId];
+    const locks = await governanceService.getTrackLocks(apis[chain.chainId]!, [transaction.coreTx.accountId]).then((data) => {
+      const lock = data[transaction.coreTx.accountId]!;
 
       return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
     });
@@ -178,29 +192,32 @@ const prepareEditDelegationDataFx = createEffect(
 
 const prepareRevokeDelegationDataFx = createEffect(
   async ({ transaction, accounts, chains, apis, balances }: DataParams) => {
-    const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+    const { chain, account, fee } = await basketOperationsService.getTransactionData(
       transaction,
       apis,
       chains,
       accounts,
     );
 
+    assert(chain, 'Chain not found');
     assert(account, 'Signing account not found');
 
-    const asset = chain.assets[0];
+    const asset = chain.assets?.[0];
+    assert(asset, 'Native asset not found');
 
+    const api = apis[chain.chainId]!;
     const transferable = transferableAmount(
-      balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
+      balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId),
     );
-    const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.accountId]).then((data) => {
-      const lock = data[transaction.coreTx.accountId];
+    const locks = await governanceService.getTrackLocks(api, [transaction.coreTx.accountId]).then((data) => {
+      const lock = data[transaction.coreTx.accountId]!;
 
       return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
     });
 
     const coreTxs = transaction.coreTx.args.transactions || [transaction.coreTx];
 
-    const votes = await convictionVotingPallet.storage.votingFor(apis[chainId], [
+    const votes = await convictionVotingPallet.storage.votingFor(api, [
       [transaction.coreTx.accountId, coreTxs[0].args.track],
     ]);
 
@@ -235,20 +252,22 @@ const prepareRevokeDelegationDataFx = createEffect(
 const prepareVoteDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const coreTx = basketOperationsService.getCoreTx(transaction);
 
-  const { chainId, chain, account } = await basketOperationsService.getTransactionData(
+  const { chain, account } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
-  const api = apis[chainId];
+  assert(chain, 'Chain not found');
+
+  const api = apis[chain.chainId]!;
 
   return {
     id: transaction.id,
     api,
     chain,
-    asset: chain.assets[0],
+    asset: getNativeAsset(chain.assets),
     initiator: account!,
     existingVote: coreTx.args.vote,
     signatory: account!,
@@ -261,21 +280,23 @@ const prepareVoteDataFx = createEffect(async ({ transaction, accounts, chains, a
 const prepareRemoveVoteDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const coreTxs = transaction.coreTx.args.transactions || [transaction.coreTx];
 
-  const { chainId, chain, account } = await basketOperationsService.getTransactionData(
+  const { chain, account } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
-  const api = apis[chainId];
+  assert(chain, 'Chain not found');
+
+  const api = apis[chain.chainId]!;
 
   return {
     api,
     chain,
     id: transaction.id,
     initiator: account!,
-    asset: chain.assets[0],
+    asset: getNativeAsset(chain.assets),
     votes: coreTxs.map((t: Transaction) => t.args),
     signatory: account!,
     route: [account!],

@@ -317,7 +317,7 @@ function buildDelegate({ chain, accountId, tracks, target, conviction, balance }
     },
   }));
 
-  if (delegateTxs.length === 1) return delegateTxs[0];
+  if (delegateTxs.length === 1) return delegateTxs[0]!;
 
   return buildBatchAll({ chain, accountId, transactions: delegateTxs });
 }
@@ -338,7 +338,7 @@ function buildUndelegate({ chain, accountId, tracks }: UndelegateParams): Transa
     },
   }));
 
-  if (undelegateTxs.length === 1) return undelegateTxs[0];
+  if (undelegateTxs.length === 1) return undelegateTxs[0]!;
 
   return buildBatchAll({ chain, accountId, transactions: undelegateTxs });
 }
@@ -427,7 +427,7 @@ function buildUnlock({ chain, accountId, actions, amount: value, target }: Unloc
     };
   });
 
-  if (unlockTxs.length === 1) return unlockTxs[0];
+  if (unlockTxs.length === 1) return unlockTxs[0]!;
 
   return buildBatchAll({ chain, accountId, transactions: unlockTxs });
 }
@@ -489,7 +489,7 @@ function buildRemoveVotes({ chain, accountId, votes }: RemoveVotesParams): Trans
   );
 
   if (transactions.length === 1) {
-    return transactions[0];
+    return transactions[0]!;
   }
 
   return buildBatchAll({ chain, accountId, transactions });
@@ -852,7 +852,7 @@ function buildVestedTransfer({ chain, accountId, vestingSchedule }: VestedTransf
     }
   }
 
-  if (vestingTxs.length === 1) return vestingTxs[0];
+  if (vestingTxs.length === 1) return vestingTxs[0]!;
 
   return buildBatchAll({ chain, accountId, transactions: vestingTxs });
 }

@@ -16,9 +16,11 @@ type Params = {
 
 function isMultisigAlreadyExists({ coreTxs, transactions, apis }: Params) {
   const coreTx = coreTxs[0];
-  const api = apis[coreTx?.chainId];
+  if (!coreTx) return false;
 
-  if (!api || !coreTx) return false;
+  const api = apis[coreTx.chainId];
+
+  if (!api) return false;
 
   if (!transactions || !api || !coreTx) return false;
 

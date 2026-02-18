@@ -1,11 +1,11 @@
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { uniqBy } from 'lodash';
-import { type FormEvent, memo, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type Address as AddressType, type Chain, type ChainId } from '@/shared/core';
+import { type Address as AddressType, type Asset, type Chain, type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import {
@@ -43,6 +43,8 @@ import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '../model/form-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
+import { TokenSelectorModal } from './TokenSelector';
+
 type Props = {
   onGoBack: () => void;
 };
@@ -64,6 +66,8 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
   const errors = useUnit(formModel.$errors);
   const canSubmit = useUnit(formModel.$canSubmit);
   const wallets = useUnit(walletModel.$wallets);
+  const isTokenSelectorOpen = useUnit(formModel.$isTokenSelectorOpen);
+  const network = useUnit(formModel.$networkStore);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -71,6 +75,10 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
       submit();
     }
   };
+
+  const handleAssetSelect = useCallback((asset: Asset) => {
+    formModel.assetChanged(asset);
+  }, []);
 
   return (
     <div className="flex flex-col gap-4 px-5 py-4">
@@ -92,6 +100,15 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
       <ActionsSection onGoBack={onGoBack} />
 
       <MyselfAccountModal />
+
+      {network && (
+        <TokenSelectorModal
+          isOpen={isTokenSelectorOpen}
+          chain={network.chain}
+          onSelect={handleAssetSelect}
+          onClose={() => formModel.hideTokenSelector()}
+        />
+      )}
     </div>
   );
 });
@@ -210,25 +227,69 @@ const SignatorySelector = memo(() => {
 
 const XcmChainSelector = memo(() => {
   const { t } = useI18n();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const {
     fields: { destinationChain },
   } = useForm(formModel.form);
 
-  const chains = useUnit(formModel.$destinationChains);
+  const network = useUnit(formModel.$networkStore);
+  const destinationChains = useUnit(formModel.$destinationChains);
+  const availableChains = useUnit(formModel.$availableChains);
+  const isAssetPredefined = useUnit(formModel.$isAssetPredefined);
 
-  if (chains.length <= 1) {
+  const chains = isAssetPredefined ? destinationChains : availableChains;
+
+  const filteredChains = useMemo(() => {
+    if (!searchQuery) return chains;
+
+    return performSearch({
+      query: searchQuery,
+      records: chains,
+      weights: { name: 1 },
+    });
+  }, [chains, searchQuery]);
+
+  if (chains.length <= 1 && isAssetPredefined) {
     return null;
   }
 
-  const [nativeChain, ...xcmChains] = chains;
+  if (!network) {
+    return null;
+  }
 
   const selectChain = (chainId: ChainId) => {
     const chainMatch = chains.find((chain) => chain.chainId === chainId);
     if (!chainMatch) return;
 
-    destinationChain.onChange(chainMatch);
+    if (!isAssetPredefined && chainMatch.chainId !== network.chain.chainId) {
+      formModel.chainChanged(chainMatch);
+    } else {
+      destinationChain.onChange(chainMatch);
+    }
   };
+
+  if (!isAssetPredefined) {
+    return (
+      <Field text={t('transfer.networkLabel')}>
+        <Select
+          placeholder={t('transfer.networkPlaceholder')}
+          value={network.chain.chainId}
+          testId={TEST_IDS.OPERATIONS.XCM_SELECTOR}
+          onChange={selectChain}
+          onSearch={setSearchQuery}
+        >
+          {filteredChains.map((chain) => (
+            <Select.Item key={chain.chainId} value={chain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
+              <ChainTitle chainId={chain.chainId} fontClass="text-text-primary" />
+            </Select.Item>
+          ))}
+        </Select>
+      </Field>
+    );
+  }
+
+  const [nativeChain, ...xcmChains] = chains;
 
   return (
     <Field text={t('transfer.destinationChainLabel')}>
@@ -238,11 +299,13 @@ const XcmChainSelector = memo(() => {
         testId={TEST_IDS.OPERATIONS.XCM_SELECTOR}
         onChange={selectChain}
       >
-        <Select.Group title={t('transfer.onChainPlaceholder')}>
-          <Select.Item value={nativeChain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
-            <ChainTitle chainId={nativeChain.chainId} fontClass="text-text-primary" />
-          </Select.Item>
-        </Select.Group>
+        {nativeChain && (
+          <Select.Group title={t('transfer.onChainPlaceholder')}>
+            <Select.Item value={nativeChain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
+              <ChainTitle chainId={nativeChain.chainId} fontClass="text-text-primary" />
+            </Select.Item>
+          </Select.Group>
+        )}
         <Select.Group title={t('transfer.crossChainPlaceholder')}>
           {xcmChains.map((chain) => (
             <Select.Item key={chain.chainId} value={chain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
@@ -275,6 +338,7 @@ const Destination = memo(() => {
   const wallets = useUnit(walletModel.$wallets);
   const accountsList = useUnit(walletModel.$availableAccounts);
   const network = useUnit(formModel.$networkStore);
+  const isDestinationReadonly = useUnit(formModel.$isDestinationReadonly);
 
   const [query, setQuery] = useState('');
 
@@ -395,6 +459,7 @@ const Destination = memo(() => {
           data-testid={TEST_IDS.OPERATIONS.RECIPIENT_INPUT}
           placeholder={t('transfer.recipientPlaceholder')}
           invalid={destination.touched && destination.hasError}
+          disabled={isDestinationReadonly}
           value={destination.value.trim()}
           prefixElement={prefixElement}
           height="md"
@@ -412,7 +477,7 @@ const Destination = memo(() => {
             </Combobox.Group>
           ))}
         </Combobox>
-        {isMyselfXcmEnabled && (
+        {isMyselfXcmEnabled && !isDestinationReadonly && (
           <Button pallet="secondary" testId={TEST_IDS.OPERATIONS.MYSELF_BUTTON} onClick={handleChange}>
             {t('transfer.myselfButton')}
           </Button>
@@ -437,6 +502,7 @@ const Amount = memo(() => {
   const network = useUnit(formModel.$networkStore);
   const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
   const isXcm = useUnit(formModel.$isXcm);
+  const isAssetPredefined = useUnit(formModel.$isAssetPredefined);
 
   const showMaxButton = !isXcm && (accountAvailableBalance?.gtn(0) ?? false);
   const showEDSwitch = useUnit(formModel.$showEDSwitch);
@@ -444,6 +510,8 @@ const Amount = memo(() => {
   if (!network) {
     return null;
   }
+
+  const handleAssetClick = isAssetPredefined ? undefined : () => formModel.showTokenSelector();
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -462,8 +530,9 @@ const Amount = memo(() => {
           )
         }
         testId={TEST_IDS.OPERATIONS.AMOUNT_INPUT}
-        onChange={(value: string) => amount.onChange(value)}
+        onAssetClick={handleAssetClick}
         onBlur={amount.markAsTouched}
+        onChange={(value: string) => amount.onChange(value)}
         onKeyDown={() => formModel.events.toggleMaxMode(false)}
       />
       <InputHint active={amount.touched && amount.hasError} variant="error">

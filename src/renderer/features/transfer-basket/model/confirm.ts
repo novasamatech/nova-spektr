@@ -24,10 +24,11 @@ const flow = createGate<BasketTransaction>();
 const prepareDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
-  const destinationChain = chains[transaction.coreTx.args.destinationChain] || chain;
   const asset = getAssetById(transaction.coreTx.args.asset, chain?.assets);
 
   if (nullable(chain) || nullable(account) || nullable(asset)) return null;
+
+  const destinationChain = chains[transaction.coreTx.args.destinationChain] ?? chain;
 
   return {
     id: transaction.id,

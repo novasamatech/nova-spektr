@@ -11,8 +11,8 @@ export const balanceSorter = (
   assetPrices: PriceObject | null,
   currency?: string,
 ) => {
-  const firstTotal = totalAmount(balancesObject[first.assetId.toString()]);
-  const secondTotal = totalAmount(balancesObject[second.assetId.toString()]);
+  const firstTotal = totalAmount(balancesObject[first.assetId.toString()] ?? null);
+  const secondTotal = totalAmount(balancesObject[second.assetId.toString()] ?? null);
 
   const firstBalance = getBalanceBn(firstTotal, first.precision);
   const secondBalance = getBalanceBn(secondTotal, second.precision);

@@ -8,7 +8,7 @@ describe('ui/RadioGroup', () => {
     { id: '2', value: 2, title: 'Test 2' },
   ];
   const defaultProps = {
-    activeId: options[0].id,
+    activeId: options[0]!.id,
     options,
     onChange: () => {},
   };
@@ -16,8 +16,8 @@ describe('ui/RadioGroup', () => {
   test('should render component', () => {
     render(
       <RadioGroup {...defaultProps}>
-        <RadioGroup.Option option={options[0]} />
-        <RadioGroup.Option option={options[1]} />
+        <RadioGroup.Option option={options[0]!} />
+        <RadioGroup.Option option={options[1]!} />
       </RadioGroup>,
     );
 
@@ -29,38 +29,38 @@ describe('ui/RadioGroup', () => {
     const spyChange = jest.fn();
     render(
       <RadioGroup {...defaultProps} onChange={spyChange}>
-        <RadioGroup.Option option={options[0]} />
-        <RadioGroup.Option option={options[1]} />
+        <RadioGroup.Option option={options[0]!} />
+        <RadioGroup.Option option={options[1]!} />
       </RadioGroup>,
     );
 
     const item = screen.getByRole('radio', { checked: false });
     await act(async () => item.click());
 
-    expect(spyChange).toBeCalledWith({ id: options[1].id, value: options[1].value });
+    expect(spyChange).toBeCalledWith({ id: options[1]!.id, value: options[1]!.value });
   });
 
   test('should change active value', async () => {
     const { rerender } = render(
       <RadioGroup {...defaultProps}>
-        <RadioGroup.Option option={options[0]} />
-        <RadioGroup.Option option={options[1]} />
+        <RadioGroup.Option option={options[0]!} />
+        <RadioGroup.Option option={options[1]!} />
       </RadioGroup>,
     );
 
     let items = screen.getAllByRole('radio');
-    expect(items[0]).toBeChecked();
-    expect(items[1]).not.toBeChecked();
+    expect(items[0]!).toBeChecked();
+    expect(items[1]!).not.toBeChecked();
 
     rerender(
-      <RadioGroup {...defaultProps} activeId={options[1].id}>
-        <RadioGroup.Option option={options[0]} />
-        <RadioGroup.Option option={options[1]} />
+      <RadioGroup {...defaultProps} activeId={options[1]!.id}>
+        <RadioGroup.Option option={options[0]!} />
+        <RadioGroup.Option option={options[1]!} />
       </RadioGroup>,
     );
 
     items = screen.getAllByRole('radio');
-    expect(items[0]).not.toBeChecked();
-    expect(items[1]).toBeChecked();
+    expect(items[0]!).not.toBeChecked();
+    expect(items[1]!).toBeChecked();
   });
 });

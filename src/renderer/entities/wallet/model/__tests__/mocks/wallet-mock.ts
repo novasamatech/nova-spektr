@@ -82,20 +82,20 @@ function getWallets(): Wallet[] {
       id: 1,
       name: 'My first wallet',
       type: WalletType.MULTISIG,
-      accounts: [accounts[0], accounts[1]],
+      accounts: [accounts[0]!, accounts[1]!],
     },
     {
       id: 2,
       name: 'My second wallet',
       type: WalletType.WATCH_ONLY,
-      accounts: [accounts[2], accounts[3]],
+      accounts: [accounts[2]!, accounts[3]!],
     },
     {
       id: 3,
       name: 'My third wallet',
       isHidden: true,
       type: WalletType.MULTISIG,
-      accounts: [accounts[4]],
+      accounts: [accounts[4]!],
     },
   ];
 }

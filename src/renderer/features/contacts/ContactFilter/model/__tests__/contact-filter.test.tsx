@@ -42,7 +42,7 @@ describe('features/contacts/model/contact-filter-model', () => {
       values: new Map().set(contactModel.$contacts, contacts),
     });
 
-    await allSettled(filterModel.events.queryChanged, { scope, params: contacts[0].name });
+    await allSettled(filterModel.events.queryChanged, { scope, params: contacts[0]!.name });
 
     expect(scope.getState(filterModel.$contactsFiltered)).toEqual([contacts[0]]);
   });
@@ -52,7 +52,7 @@ describe('features/contacts/model/contact-filter-model', () => {
       values: new Map().set(contactModel.$contacts, contacts),
     });
 
-    await allSettled(filterModel.events.queryChanged, { scope, params: contacts[0].address });
+    await allSettled(filterModel.events.queryChanged, { scope, params: contacts[0]!.address });
 
     expect(scope.getState(filterModel.$contactsFiltered)).toEqual([contacts[0]]);
   });

@@ -121,7 +121,7 @@ function sortChainsByBalance(
 
   for (const chain of chains) {
     const fiatBalance = chain.assets.reduce((acc, a) => {
-      const amount = totalAmount(balancesMap[`${chain.chainId}_${a.assetId}`]);
+      const amount = totalAmount(balancesMap[`${chain.chainId}_${a.assetId}`] ?? null);
       const assetPrice = a.priceId && currency && assetPrices?.[a.priceId]?.[currency]?.price;
 
       const BNWithConfig = BigNumber.clone();
@@ -147,7 +147,7 @@ function sortChainsByBalance(
     }
 
     const hasBalance = chain.assets.some((a) => {
-      return totalAmount(balancesMap[`${chain.chainId}_${a.assetId}`]) !== ZERO_BALANCE;
+      return totalAmount(balancesMap[`${chain.chainId}_${a.assetId}`] ?? null) !== ZERO_BALANCE;
     });
 
     let collection: Chain[] = hasBalance ? parachains.withBalance : parachains.noBalance;

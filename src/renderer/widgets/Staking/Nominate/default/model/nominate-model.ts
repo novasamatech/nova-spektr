@@ -50,7 +50,7 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData ? apis[walletData.chain.chainId] : null;
+    return walletData ? (apis[walletData.chain.chainId] ?? null) : null;
   },
 );
 
@@ -65,7 +65,7 @@ sample({
   fn: (walletData) => {
     return {
       wallet: walletData.wallet,
-      initiator: walletData.shards[0],
+      initiator: walletData.shards[0]!,
       chain: walletData.chain,
     };
   },
@@ -283,7 +283,7 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

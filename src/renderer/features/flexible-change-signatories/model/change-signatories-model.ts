@@ -52,7 +52,7 @@ const $walletAccounts = combine($initiatorWallet, accounts.$list, (wallet, accou
 const $flexibleMultisigAccount = $walletAccounts.map((acc) => acc.find(accountUtils.isFlexibleMultisigAccount) ?? null);
 
 const $chainId = $flexibleMultisigAccount.map((acc) => acc?.chainId ?? null);
-const $chain = combine($chainId, networkModel.$chains, (chainId, chains) => (chainId ? chains[chainId] : null));
+const $chain = combine($chainId, networkModel.$chains, (chainId, chains) => (chainId ? chains[chainId] ?? null : null));
 
 // signatories
 

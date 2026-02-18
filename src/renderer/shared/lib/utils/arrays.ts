@@ -57,7 +57,7 @@ export function addUnique<T>(collection: T[], item: T, compareKeyFn: (x: T) => u
   const valueToCompare = compareKeyFn(item);
 
   for (let i = 0; i < collection.length; i++) {
-    if (compareKeyFn(collection[i]) === valueToCompare) {
+    if (compareKeyFn(collection[i]!) === valueToCompare) {
       return splice(collection, item, i);
     }
   }
@@ -150,9 +150,9 @@ export const merge = <T>({ a, b, mergeBy, merge, sort, filter }: MergeParams<T>)
 
     if (key in map) {
       const prev = map[key];
-      if (!filter || filter(prev, item)) {
+      if (!filter || filter(prev!, item)) {
         hadAnyChanges = true;
-        map[key] = merge ? merge(prev, item) : item;
+        map[key] = merge ? merge(prev!, item) : item;
       }
     } else {
       hadAnyChanges = true;
@@ -204,5 +204,5 @@ export const fromEntries = <Key extends PropertyKey, Value>(values: [key: Key, v
 };
 
 export function allEqual<T>(array: T[], compareFn?: (a: T, b: T) => boolean): boolean {
-  return array.every((item: T) => (compareFn ? compareFn(item, array[0]) : item === array[0]));
+  return array.every((item: T) => (compareFn ? compareFn(item, array[0]!) : item === array[0]));
 }

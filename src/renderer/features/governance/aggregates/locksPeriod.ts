@@ -26,7 +26,7 @@ sample({
     return nonNullable(chain) && chain.chainId in apis;
   },
   fn: (apis, { chain }) => ({
-    api: apis[chain!.chainId],
+    api: apis[chain!.chainId]!,
     chain: chain!,
   }),
   target: $network,

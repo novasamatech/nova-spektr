@@ -8,6 +8,7 @@ import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { merkleizeMetadata } from '@polkadot-api/merkleize-metadata';
 
+import { metadataV15Service } from '@/shared/api/network';
 import {
   type Address,
   type CallData,
@@ -189,14 +190,14 @@ function getProxyWrapper({ wallets, account, signatories = [] }: Omit<TxWrappers
 
   const wrapper: ProxyTxWrapper = {
     kind: WrapperKind.PROXY,
-    proxyAccount: proxiesMap[0].account,
+    proxyAccount: proxiesMap[0]!.account,
     proxiedAccount: account as ProxiedAccount,
   };
 
   const nextWrappers = getTxWrappers({
     wallets,
-    wallet: proxiesMap[0].wallet,
-    account: proxiesMap[0].account,
+    wallet: proxiesMap[0]!.wallet,
+    account: proxiesMap[0]!.account,
     signatories,
   });
 
@@ -261,15 +262,17 @@ async function createPayloadWithProof(
   // Set era explicitly for security reason - immortal transactions can be used in replay attacks.
   const era = createEra(api, signerPayloadBase.blockNumber, mortalLength);
 
-  const metadataHex = api.runtimeMetadata.toHex();
+  const metadataHex = await metadataV15Service.getDecodedMetadataV15(api);
 
-  const merkleizedMetadata = merkleizeMetadata(metadataHex, {
-    decimals: api.registry.chainDecimals[0],
-    tokenSymbol: api.registry.chainTokens[0],
+  const merkleizeParams = {
+    decimals: api.registry.chainDecimals[0]!,
+    tokenSymbol: api.registry.chainTokens[0]!,
     base58Prefix: api.registry.chainSS58,
     specName: api.runtimeVersion.specName.toString(),
     specVersion: api.runtimeVersion.specVersion.toNumber(),
-  });
+  };
+
+  const merkleizedMetadata = merkleizeMetadata(metadataHex, merkleizeParams);
 
   const metadataHash = u8aToHex(merkleizedMetadata.digest());
 

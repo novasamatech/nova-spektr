@@ -82,7 +82,7 @@ export const InitiatorSelect = memo(() => {
         if (!groups[wallet.type]) {
           groups[wallet.type] = { walletType: wallet.type, wallets: [] };
         }
-        groups[wallet.type].wallets.push(wallet);
+        groups[wallet.type]!.wallets.push(wallet);
         return groups;
       },
       {} as Record<string, { walletType: WalletType; wallets: Wallet[] }>,

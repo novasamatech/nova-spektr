@@ -15,7 +15,7 @@ import { type ChainAccountPair } from './types';
 
 const isConsensusChain = (chain: Chain): boolean => {
   const chainId = chain.parentId ?? chain.chainId;
-  return Object.values(RelayChains).includes(chainId);
+  return (Object.values(RelayChains) as string[]).includes(chainId);
 };
 
 type ConsensusGroup = {

@@ -111,8 +111,8 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
       setSubmitData({
         tx: approveTx,
         initiator,
-        txPayload: payload[0],
-        signature: signature[0],
+        txPayload: payload[0]!,
+        signature: signature[0]!,
       });
     }
   };

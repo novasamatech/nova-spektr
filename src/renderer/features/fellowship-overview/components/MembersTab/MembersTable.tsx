@@ -118,7 +118,7 @@ export const MembersTable = memo(({ members }: MembersTableProps) => {
         }
 
         const name = identities[member.accountId]
-          ? identityService.getFullName(identities[member.accountId])
+          ? identityService.getFullName(identities[member.accountId]!)
           : undefined;
 
         return {

@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
@@ -134,7 +134,7 @@ const formSubmitted = sample({
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),
-          locks: delegateData.locks[initiator.accountId],
+          locks: delegateData.locks[initiator.accountId] ?? BN_ZERO,
           coreTx,
           initiator,
           route,
@@ -311,7 +311,7 @@ sample({
   clock: submitModel.output.formSubmitted,
   source: formModel.$hasAnyMultisig,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  filter: (isMultisig: boolean, results: any) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig: boolean, results: any) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });
