@@ -25,7 +25,6 @@ import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { findCoreTransaction } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
-import { multisigService } from '@/features/multisig-wallet';
 import { operationTitleTransformer } from '../components/Operation';
 
 type NewEvent = {
@@ -33,13 +32,27 @@ type NewEvent = {
   event: MultisigEvent;
 };
 
-const $anyMultisigAccountsMap = accounts.$list.map(accountsList =>
-  Object.fromEntries(
-    accountsList
-      .filter(accountUtils.isAnyMultisigAccount)
-      .map(account => [multisigService.getMultisigAccountId(account), account]),
-  ),
+const $anyMultisigAccounts = accounts.$list.map(accountsList =>
+  accountsList.filter(accountUtils.isAnyMultisigAccount),
 );
+
+function findAccountForOperation(
+  operation: MultisigOperation,
+  anyMultisigAccounts: AnyAccount[],
+): AnyAccount | undefined {
+  if (operation.proxiedAccountId) {
+    return anyMultisigAccounts.find(
+      a =>
+        accountUtils.isFlexibleMultisigAccount(a) &&
+        a.accountId === operation.proxiedAccountId &&
+        a.multisigAccountId === operation.multisigAccountId,
+    );
+  }
+
+  return anyMultisigAccounts.find(
+    a => accountUtils.isMultisigAccount(a) && a.accountId === operation.multisigAccountId,
+  );
+}
 
 const getNotificationStatus = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
   switch (operationStatus) {
@@ -280,32 +293,32 @@ sample({
   clock: operationChanges,
   source: {
     populated: multisigOperation.$populated,
-    anyMultisigAccountsMap: $anyMultisigAccountsMap,
+    anyMultisigAccounts: $anyMultisigAccounts,
     chains: networkModel.$chains,
   },
   filter: ({ populated }) => populated,
-  fn: ({ anyMultisigAccountsMap, chains }, { newOperations, statusChanges, removedKeys, newEvents }) => {
+  fn: ({ anyMultisigAccounts, chains }, { newOperations, statusChanges, removedKeys, newEvents }) => {
     // Filter new operations - apply timestamp filter to exclude operations created before account was connected
     const newOperationNotifications = newOperations
       .filter(operation => {
         // Don't notify the operation creator
-        if (operation.status === 'pending' && nonNullable(anyMultisigAccountsMap[operation.depositor])) {
+        if (operation.status === 'pending' && anyMultisigAccounts.some(a => a.accountId === operation.depositor)) {
           return false;
         }
 
-        const account = anyMultisigAccountsMap[operation.multisigAccountId];
+        const account = findAccountForOperation(operation, anyMultisigAccounts);
         // Show only operations created after account was connected
         return nonNullable(account) && operation.timestamp >= account.createdAt;
       })
       .map(operation => {
-        const account = anyMultisigAccountsMap[operation.multisigAccountId];
+        const account = findAccountForOperation(operation, anyMultisigAccounts);
 
         return createOperationNotification(operation, chains, account);
       });
 
     // Status changes should always create notifications regardless of when the operation was created
     const statusChangeNotifications = statusChanges.map(operation => {
-      const account = anyMultisigAccountsMap[operation.multisigAccountId];
+      const account = findAccountForOperation(operation, anyMultisigAccounts);
 
       return createOperationNotification(operation, chains, account);
     });
@@ -313,14 +326,14 @@ sample({
     const eventNotifications = newEvents
       .filter(({ event }) => {
         // Don't notify if the current user caused the event
-        if (event.accountId in anyMultisigAccountsMap && event.status !== 'reject') {
+        if (anyMultisigAccounts.some(a => a.accountId === event.accountId) && event.status !== 'reject') {
           return false;
         }
 
         return true;
       })
       .map(({ operation, event }) => {
-        const signerAccount = anyMultisigAccountsMap[event.accountId];
+        const signerAccount = anyMultisigAccounts.find(a => a.accountId === event.accountId);
 
         return createEventNotification(operation, event, signerAccount?.name);
       });

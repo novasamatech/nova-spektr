@@ -22,7 +22,7 @@ import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '
 import { accountUtils } from '@/entities/wallet';
 import { operationTitleTransformer } from '@/features/multisig-operations';
 import { multisigService } from '@/features/multisig-wallet';
-import { $multisigAccountsById, $operationsByKey } from '../../model/notification-data-model';
+import { $multisigAccounts, $operationsByKey } from '../../model/notification-data-model';
 
 type Props = {
   notification: MultisigOperationNotification;
@@ -71,12 +71,25 @@ export const MultisigOperationNotificationComponent = ({
   });
 
   const multisigAccount = useStoreMap({
-    store: $multisigAccountsById,
-    keys: [operation?.multisigAccountId],
-    fn: (map, [id]) => (id ? (map[id] ?? null) : null),
-  });
+    store: $multisigAccounts,
+    keys: [operation?.multisigAccountId, operation?.proxiedAccountId],
+    fn: (list, [multisigAccountId, proxiedAccountId]) => {
+      if (!multisigAccountId) return null;
 
-  console.log({ multisigAccount, operation });
+      if (proxiedAccountId) {
+        return (
+          list.find(
+            a =>
+              accountUtils.isFlexibleMultisigAccount(a) &&
+              a.accountId === proxiedAccountId &&
+              a.multisigAccountId === multisigAccountId,
+          ) ?? null
+        );
+      }
+
+      return list.find(a => accountUtils.isMultisigAccount(a) && a.accountId === multisigAccountId) ?? null;
+    },
+  });
 
   const wallet = useMemo(() => {
     if (!multisigAccount) return null;

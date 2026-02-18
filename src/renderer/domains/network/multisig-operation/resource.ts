@@ -91,7 +91,8 @@ async function createOperationFromMultisig({
     console.warn('Failed to decode call data', { callHash, error });
   }
 
-  const proxiedAccountId = proxiedAccountIdMap?.[multisigAccountId];
+  const isProxyCall = decodedTransaction?.section === 'proxy' && decodedTransaction?.method === 'proxy';
+  const proxiedAccountId = isProxyCall ? proxiedAccountIdMap?.[multisigAccountId] : undefined;
 
   return {
     id: operationId,
@@ -216,7 +217,8 @@ function mapSubqueryOperationRecord(
     console.warn('Failed to decode call data from indexer response', { callHash: response.callHash, error });
   }
 
-  const proxiedAccountId = proxiedAccountIdMap?.[multisigAccountId];
+  const isProxyCall = transaction?.section === 'proxy' && transaction?.method === 'proxy';
+  const proxiedAccountId = isProxyCall ? proxiedAccountIdMap?.[multisigAccountId] : undefined;
 
   return {
     id: operationId,

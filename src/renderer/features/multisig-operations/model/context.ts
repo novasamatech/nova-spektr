@@ -16,8 +16,7 @@ import {
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { multisigService } from '@/features/multisig-wallet';
-import { filterOperation } from '../lib/operations-filter';
+import { filterOperation, findAccountForOperation } from '../lib/operations-filter';
 
 export type OperationWithAccount = {
   operation: MultisigOperation;
@@ -103,50 +102,11 @@ const $initiators = combine(
   },
 );
 
-const $multisigAccountsMap = accounts.$list.map(accs => {
-  const multisigAccounts = accs.filter(accountUtils.isAnyMultisigAccount);
-  const record: Record<string, MultisigAccount | FlexibleMultisigAccount> = {};
-
-  for (const account of multisigAccounts) {
-    record[multisigService.getMultisigAccountId(account)] = account;
-  }
-
-  return record;
-});
+const $multisigAccounts = accounts.$list.map(accs => accs.filter(accountUtils.isAnyMultisigAccount));
 
 const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isAnyMultisig));
 
-const $walletNameByAccountId = combine(
-  { multisigAccountsMap: $multisigAccountsMap, multisigWallets: $multisigWallets },
-  ({ multisigAccountsMap, multisigWallets }) => {
-    const result: Record<string, string> = {};
-    for (const [multisigAccountId, account] of Object.entries(multisigAccountsMap)) {
-      const wallet = multisigWallets.find(w => w.id === account.walletId);
-      if (wallet) result[multisigAccountId] = wallet.name;
-    }
-    return result;
-  },
-);
-
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
-
-const $multisigAccounts = accounts.$list.map(accs => accs.filter(accountUtils.isAnyMultisigAccount));
-
-function findAccountForOperation(
-  operation: MultisigOperation,
-  multisigAccounts: (MultisigAccount | FlexibleMultisigAccount)[],
-): MultisigAccount | FlexibleMultisigAccount | undefined {
-  if (operation.proxiedAccountId) {
-    return multisigAccounts.find(
-      a =>
-        accountUtils.isFlexibleMultisigAccount(a) &&
-        a.accountId === operation.proxiedAccountId &&
-        a.multisigAccountId === operation.multisigAccountId,
-    );
-  }
-
-  return multisigAccounts.find(a => accountUtils.isMultisigAccount(a) && a.accountId === operation.multisigAccountId);
-}
 
 const $operationsWithAccounts = combine(
   {
@@ -173,8 +133,8 @@ const $filteredOperations = combine(
     filter: $filter,
     tab: $tab,
     hiddenIds: $hiddenOperationIds,
-    multisigAccountsMap: $multisigAccountsMap,
-    walletNameByAccountId: $walletNameByAccountId,
+    multisigAccounts: $multisigAccounts,
+    multisigWallets: $multisigWallets,
     chains: networkModel.$chains,
   },
   ({
@@ -182,8 +142,8 @@ const $filteredOperations = combine(
     filter,
     tab,
     hiddenIds,
-    multisigAccountsMap,
-    walletNameByAccountId,
+    multisigAccounts,
+    multisigWallets,
     chains,
   }): OperationWithAccount[] => {
     return operationsWithAccounts.filter(({ operation }) =>
@@ -191,8 +151,8 @@ const $filteredOperations = combine(
         filters: filter,
         tab,
         hiddenIds,
-        multisigAccountsMap,
-        walletNameByAccountId,
+        multisigAccounts,
+        multisigWallets,
         chains,
       }),
     );
@@ -298,7 +258,7 @@ export const operationsContextModel = {
   $filter,
   $isFiltersSelected,
   $filteredOperations,
-  $multisigAccountsMap,
+  $multisigAccounts,
   $multisigWallets,
   $initiator,
   $tab,
