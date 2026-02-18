@@ -5,4 +5,7 @@ export const IPC = {
       WHEN_CLOSE: 'windows: when-about-window-close',
     },
   },
+  PROXY: {
+    FETCH: 'proxy: fetch',
+  },
 };
