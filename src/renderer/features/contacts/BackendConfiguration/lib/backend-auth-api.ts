@@ -1,21 +1,27 @@
+import { z } from 'zod';
+
 import { isElectron } from '@/shared/lib/utils';
 
 type FetchResult = { ok: boolean; status: number; headers: Record<string, string>; body: string };
 
-type ChallengeResponse = {
-  challengeId: string;
-  nonce: string;
-  expiresAt: string;
-};
+const challengeResponseSchema = z.object({
+  challengeId: z.string(),
+  nonce: z.string(),
+  expiresAt: z.string(),
+});
 
-type VerifyResponse = {
-  permissions: string[];
-};
+const verifyResponseSchema = z.object({
+  permissions: z.array(z.string()),
+});
 
-type SessionResponse = {
-  accountId: string;
-  permissions: string[];
-};
+const sessionResponseSchema = z.object({
+  accountId: z.string(),
+  permissions: z.array(z.string()),
+});
+
+type ChallengeResponse = z.infer<typeof challengeResponseSchema>;
+type VerifyResponse = z.infer<typeof verifyResponseSchema>;
+type SessionResponse = z.infer<typeof sessionResponseSchema>;
 
 async function authFetch(url: string, init?: RequestInit): Promise<FetchResult> {
   if (isElectron()) {
@@ -33,13 +39,17 @@ async function authFetch(url: string, init?: RequestInit): Promise<FetchResult> 
   };
 }
 
-function parseResponse<T>(result: FetchResult): T {
+const errorResponseSchema = z.object({
+  message: z.string().optional(),
+});
+
+function parseResponse<T>(result: FetchResult, schema: z.ZodType<T>): T {
   if (!result.ok) {
-    const parsed = JSON.parse(result.body) as { message?: string };
+    const parsed = errorResponseSchema.parse(JSON.parse(result.body));
     throw new Error(parsed.message ?? `Request failed with status ${result.status}`);
   }
 
-  return JSON.parse(result.body) as T;
+  return schema.parse(JSON.parse(result.body));
 }
 
 export async function requestChallenge(baseUrl: string, accountId: string): Promise<ChallengeResponse> {
@@ -49,7 +59,7 @@ export async function requestChallenge(baseUrl: string, accountId: string): Prom
     body: JSON.stringify({ accountId }),
   });
 
-  return parseResponse<ChallengeResponse>(result);
+  return parseResponse(result, challengeResponseSchema);
 }
 
 export async function verifySignature(
@@ -62,7 +72,7 @@ export async function verifySignature(
     body: JSON.stringify(params),
   });
 
-  return parseResponse<VerifyResponse>(result);
+  return parseResponse(result, verifyResponseSchema);
 }
 
 export async function checkSession(baseUrl: string): Promise<SessionResponse> {
@@ -71,7 +81,7 @@ export async function checkSession(baseUrl: string): Promise<SessionResponse> {
     headers: { 'Content-Type': 'application/json' },
   });
 
-  return parseResponse<SessionResponse>(result);
+  return parseResponse(result, sessionResponseSchema);
 }
 
 export async function logout(baseUrl: string): Promise<void> {
