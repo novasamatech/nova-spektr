@@ -6,6 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { ContactList, ContactRow, EmptyContactList, EmptyFilteredContacts, contactModel } from '@/entities/contact';
 import {
+  AuthModal,
   BackendConfigurationButton,
   BackendConfigurationModal,
   BackendConnectionCard,
@@ -70,6 +71,7 @@ export const Contacts = () => {
 
       <SendToContactModal />
       <BackendConfigurationModal />
+      <AuthModal />
     </>
   );
 };

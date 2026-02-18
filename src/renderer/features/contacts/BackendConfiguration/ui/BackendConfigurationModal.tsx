@@ -2,18 +2,23 @@ import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Button, InputHint } from '@/shared/ui';
+import { toAddress } from '@/shared/lib/utils';
+import { Button, FootnoteText, InputHint } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
+import { authModel } from '../model/auth-model';
 import { backendConfigurationModel } from '../model/backend-configuration-model';
 
 export const BackendConfigurationModal = () => {
   const { t } = useI18n();
 
-  const [isOpen, draftUrl, isValid, hasBackend] = useUnit([
+  const [isOpen, draftUrl, isValid, hasBackend, isAuthenticated, authState] = useUnit([
     backendConfigurationModel.$isModalOpen,
     backendConfigurationModel.$draftUrl,
     backendConfigurationModel.$isUrlValid,
     backendConfigurationModel.$hasBackend,
+    authModel.$isAuthenticated,
+    authModel.$authState,
   ]);
 
   const title = hasBackend
@@ -47,10 +52,38 @@ export const BackendConfigurationModal = () => {
                 {t('addressBook.backendConfiguration.urlInvalidError')}
               </InputHint>
             </Field>
+
+            {isAuthenticated && authState ? (
+              <Field text={t('addressBook.auth.connectedAccountLabel')}>
+                <div className="flex items-center justify-between rounded-md border border-filter-border bg-input-background px-3 py-2">
+                  <div className="flex items-center gap-x-2">
+                    <Identicon address={toAddress(authState.accountId)} size={20} background={false} />
+                    <FootnoteText>{authState.accountName}</FootnoteText>
+                  </div>
+                  <Button variant="text" size="sm" onClick={() => authModel.events.signOutClicked()}>
+                    {t('addressBook.auth.disconnectButton')}
+                  </Button>
+                </div>
+              </Field>
+            ) : hasBackend ? (
+              <Field text={t('addressBook.auth.connectedAccountLabel')}>
+                <div className="flex items-center justify-between rounded-md border border-filter-border bg-input-background px-3 py-2">
+                  <FootnoteText className="text-text-tertiary">{t('addressBook.auth.notConnected')}</FootnoteText>
+                  <Button variant="text" size="sm" onClick={() => authModel.events.signInClicked()}>
+                    {t('addressBook.auth.signInButton')}
+                  </Button>
+                </div>
+              </Field>
+            ) : null}
           </Box>
         </form>
       </Modal.Content>
       <Modal.Footer>
+        {hasBackend && (
+          <Button variant="text" onClick={() => backendConfigurationModel.events.urlCleared()}>
+            {t('addressBook.actions.delete')}
+          </Button>
+        )}
         <Button className="ml-auto" type="submit" form="backend-configuration-form" disabled={!isValid}>
           {t('addressBook.backendConfiguration.saveButton')}
         </Button>
