@@ -28,6 +28,10 @@ const createClientFx = createEffect(() => {
     changeConnectionStatus(true);
   });
 
+  core.relayer.on(RELAYER_EVENTS.connection_stalled, () => {
+    changeConnectionStatus(false);
+  });
+
   core.relayer.on(RELAYER_EVENTS.disconnect, () => {
     changeConnectionStatus(false);
   });
