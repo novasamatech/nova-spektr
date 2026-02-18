@@ -79,7 +79,7 @@ export const MultisigOperationNotificationComponent = ({
       if (proxiedAccountId) {
         return (
           list.find(
-            a =>
+            (a) =>
               accountUtils.isFlexibleMultisigAccount(a) &&
               a.accountId === proxiedAccountId &&
               a.multisigAccountId === multisigAccountId,
@@ -87,7 +87,7 @@ export const MultisigOperationNotificationComponent = ({
         );
       }
 
-      return list.find(a => accountUtils.isMultisigAccount(a) && a.accountId === multisigAccountId) ?? null;
+      return list.find((a) => accountUtils.isMultisigAccount(a) && a.accountId === multisigAccountId) ?? null;
     },
   });
 

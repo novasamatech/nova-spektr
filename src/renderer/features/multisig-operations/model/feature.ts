@@ -5,8 +5,8 @@ import { debounce } from 'patronum';
 
 import { type Chain, type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
-import { deepLinkService } from '@/domains/app';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { deepLinkService } from '@/domains/app';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';

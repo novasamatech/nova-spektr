@@ -14,8 +14,8 @@ import { multisigOperationService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
-import { multisigService } from '@/features/multisig-wallet';
 import { operationTitleTransformer } from '@/features/multisig-operations';
+import { multisigService } from '@/features/multisig-wallet';
 import { $multisigAccounts, $operationsByKey } from '../../model/notification-data-model';
 
 type Props = {
@@ -60,7 +60,7 @@ export const MultisigEventNotificationComponent = ({
       if (proxiedAccountId) {
         return (
           list.find(
-            a =>
+            (a) =>
               accountUtils.isFlexibleMultisigAccount(a) &&
               a.accountId === proxiedAccountId &&
               a.multisigAccountId === multisigAccountId,
@@ -68,7 +68,7 @@ export const MultisigEventNotificationComponent = ({
         );
       }
 
-      return list.find(a => accountUtils.isMultisigAccount(a) && a.accountId === multisigAccountId) ?? null;
+      return list.find((a) => accountUtils.isMultisigAccount(a) && a.accountId === multisigAccountId) ?? null;
     },
   });
 
