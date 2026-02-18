@@ -17,7 +17,7 @@ import {
 } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type PathType, Paths } from '@/shared/routes';
+import { multisigOperationService } from '@/domains/network';
 import {
   createComplexTxStore,
   createMultisigDeposit,
@@ -35,7 +35,7 @@ import { type BasketTransactionDraft, basketOperations } from '@/aggregates/bask
 import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import {
   type RemoveProxyConfirm,
   removeProxyConfirmModel as confirmModel,
@@ -64,7 +64,7 @@ const $step = restore(stepChanged, Step.NONE);
 
 const $removeProxyStore = createStore<RemoveProxyStore | null>(null).reset(flowFinished);
 
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $redirectAfterSubmitPath = createStore<string | null>(null).reset(flowStarted);
 
 const $chain = $removeProxyStore.map((store) => store?.chain ?? null);
 
@@ -514,9 +514,19 @@ sample({
 
 sample({
   clock: submitModel.done,
-  source: $isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: () => Paths.OPERATIONS,
+  source: { isMultisig: $isMultisig, coreTx: $coreTx, wrappedTx: $tx },
+  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ coreTx, wrappedTx }, results) => {
+    const { timepoint } = (results[0] as SuccessResult).params;
+
+    return multisigOperationService.generateMultisigOperationRelativeLink({
+      chainId: coreTx!.chainId,
+      callHash: wrappedTx!.args.callHash,
+      accountId: coreTx!.accountId,
+      blockCreated: timepoint.height,
+      indexCreated: timepoint.index,
+    });
+  },
   target: $redirectAfterSubmitPath,
 });
 

@@ -119,11 +119,11 @@ describe('operations context model', () => {
       expect(scope.getState(operationsContextModel.$tab)).toBe('pending');
     });
 
-    it('should default to history tab when operation is not found', async () => {
+    it('should default to pending tab when operation is not found', async () => {
       const scope = fork({
         values: new Map()
           .set(multisigOperation.__test.$cachedOperations, [])
-          .set(operationsContextModel.$tab, 'pending'),
+          .set(operationsContextModel.$tab, 'history'),
       });
 
       await allSettled(deepLinkModel.$focusedOperationId, {
@@ -131,8 +131,8 @@ describe('operations context model', () => {
         params: 'non-existent-operation-id',
       });
 
-      // When operation is not found, defaults to 'history' (since status !== 'pending')
-      expect(scope.getState(operationsContextModel.$tab)).toBe('history');
+      // When operation is not found, defaults to 'pending' (operation may not be fetched yet)
+      expect(scope.getState(operationsContextModel.$tab)).toBe('pending');
     });
 
     it('should switch to hidden tab when focused operation is hidden', async () => {

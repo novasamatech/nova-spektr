@@ -20,8 +20,7 @@ import {
   nullable,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { type PathType, Paths } from '@/shared/routes';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, multisigOperationService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -37,7 +36,7 @@ import {
 } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import {
   type DelegateConfirm,
   delegateConfirmModel as confirmModel,
@@ -70,7 +69,7 @@ const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit
 
 const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
 const $coreTxs = createStore<Transaction[]>([]).reset(flowFinished);
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $redirectAfterSubmitPath = createStore<string | null>(null).reset(flowStarted);
 
 type FeeParams = {
   api: ApiPromise;
@@ -489,9 +488,19 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: () => Paths.OPERATIONS,
+  source: { isMultisig: formModel.$isMultisig, coreTx: $coreTxs, wrappedTx: $transactions },
+  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ coreTx, wrappedTx }, results) => {
+    const { timepoint } = (results[0] as SuccessResult).params;
+
+    return multisigOperationService.generateMultisigOperationRelativeLink({
+      chainId: coreTx[0]!.chainId,
+      callHash: wrappedTx![0]!.wrappedTx.args.callHash,
+      accountId: coreTx[0]!.accountId,
+      blockCreated: timepoint.height,
+      indexCreated: timepoint.index,
+    });
+  },
   target: $redirectAfterSubmitPath,
 });
 

@@ -3,7 +3,7 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { spread } from 'patronum';
 
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { type PathType, Paths } from '@/shared/routes';
+import { multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { validatorsService } from '@/entities/staking';
 import { transactionService } from '@/entities/transaction';
@@ -11,7 +11,7 @@ import { accountUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { bondNominateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { type BondNominateConfirm } from '@/features/operations/OperationsConfirm/BondNominate/model/confirm-model';
 import { validatorsModel } from '@/features/staking';
@@ -31,7 +31,7 @@ const $step = restore(stepChanged, Step.NONE);
 const $walletData = restore<WalletData | null>(flowStarted, null).reset(flowFinished);
 const $bondNominateData = createStore<BondNominateData | null>(null).reset(flowFinished);
 const $multisigDeposit = createStore<string | null>(null).reset(flowFinished);
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $redirectAfterSubmitPath = createStore<string | null>(null).reset(flowStarted);
 
 const $maxValidators = createStore<number>(0);
 
@@ -282,9 +282,19 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: () => Paths.OPERATIONS,
+  source: { isMultisig: formModel.$isMultisig, coreTx: formModel.$coreTx, wrappedTx: formModel.$tx },
+  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ coreTx, wrappedTx }, results) => {
+    const { timepoint } = (results[0] as SuccessResult).params;
+
+    return multisigOperationService.generateMultisigOperationRelativeLink({
+      chainId: coreTx!.chainId,
+      callHash: wrappedTx!.args.callHash,
+      accountId: coreTx!.accountId,
+      blockCreated: timepoint.height,
+      indexCreated: timepoint.index,
+    });
+  },
   target: $redirectAfterSubmitPath,
 });
 

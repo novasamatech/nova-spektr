@@ -3,14 +3,14 @@ import { spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
-import { type PathType, Paths } from '@/shared/routes';
+import { multisigOperationService } from '@/domains/network';
 import { accountSync } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import {
   type AddProxyConfirm,
   addProxyConfirmModel as confirmModel,
@@ -30,7 +30,7 @@ const $step = restore(stepChanged, Step.NONE);
 const $addProxyStore = createStore<AddProxyStore | null>(null).reset(flowFinished);
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(formModel.flowStarted);
+const $redirectAfterSubmitPath = createStore<string | null>(null).reset(formModel.flowStarted);
 const $chain = $addProxyStore.map((store) => store?.chain ?? null);
 
 const $initiatorWallet = combine(
@@ -180,9 +180,19 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: () => Paths.OPERATIONS,
+  source: { isMultisig: formModel.$isMultisig, coreTx: $coreTx, wrappedTx: $wrappedTx },
+  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ coreTx, wrappedTx }, results) => {
+    const { timepoint } = (results[0] as SuccessResult).params;
+
+    return multisigOperationService.generateMultisigOperationRelativeLink({
+      chainId: coreTx!.chainId,
+      callHash: wrappedTx!.args.callHash,
+      accountId: coreTx!.accountId,
+      blockCreated: timepoint.height,
+      indexCreated: timepoint.index,
+    });
+  },
   target: $redirectAfterSubmitPath,
 });
 
