@@ -41,9 +41,9 @@ const retrieveFromBranch = (branch: Node, key: Uint8Array) => {
   }
 
   const commonPrefixLength = lenCommonPrefix(branch.key, key);
-  const childIndex = key[commonPrefixLength];
+  const childIndex = key[commonPrefixLength]!;
   const childKey = key.subarray(commonPrefixLength + 1);
-  const child = branch.children[childIndex];
+  const child = branch.children[childIndex]!;
 
   return retrieve(child, childKey);
 };

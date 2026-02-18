@@ -14,7 +14,7 @@ export const vestingService = {
 };
 
 function getMinStartingBlock(currentBlock: Record<ChainId, BlockHeight>, timelineChainId: ChainId): BN {
-  const minStartingBlock = currentBlock[timelineChainId];
+  const minStartingBlock = currentBlock[timelineChainId]!;
   return new BN(minStartingBlock);
 }
 

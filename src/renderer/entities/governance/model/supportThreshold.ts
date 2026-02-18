@@ -46,7 +46,7 @@ const requestSupportThresholdsFx = createEffect(
       }
 
       result[referendum.referendumId] = opengovThresholdService.supportThreshold({
-        supportCurve: tracks[referendum.track].minSupport,
+        supportCurve: track.minSupport,
         tally: referendum.tally,
         totalIssuance: totalIssuance.toBn().sub(inactiveIssuance.toBn()),
         blockDifference: referendum.deciding?.since ? blockNumber - referendum.deciding.since : 0,

@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
@@ -132,7 +132,7 @@ sample({
     return transactionService.getTxWrappers({
       wallet: walletData.wallet!,
       wallets,
-      account: walletData.wallet!.accounts[0],
+      account: walletData.wallet!.accounts[0]!,
       signatories,
     });
   },
@@ -191,7 +191,8 @@ sample({
       return transactionBuilder.buildDelegate({
         chain: walletData.chain!,
         accountId: shard.accountId,
-        balance: (walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision)) || '0',
+        balance:
+          (walletData.chain && formatAmount(delegateData!.amount, walletData.chain!.assets[0]!.precision)) || '0',
         conviction: delegateData!.conviction || 'None',
         target: target.accountId,
         tracks,
@@ -207,7 +208,7 @@ sample({
   filter: (api, transactions) => nonNullable(api) && (transactions?.length ?? 0) > 0,
   fn: (api, transactions) => ({
     api: api!,
-    transaction: transactions![0].wrappedTx,
+    transaction: transactions![0]!.wrappedTx,
   }),
   target: getTransactionFeeFx,
 });
@@ -330,6 +331,7 @@ sample({
 
     return {
       events: shards.map((shard, index) => {
+        const coreTx = coreTxs[index]!;
         const transferable = transferableAmount(
           balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId),
         );
@@ -345,13 +347,13 @@ sample({
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
           signatory: delegateData!.signatory!,
-          locks: delegateData!.locks[shard.accountId],
-          coreTx: coreTxs[index],
+          locks: delegateData!.locks[shard.accountId] ?? BN_ZERO,
+          coreTx,
           initiator: shard,
           route: txWrappers.map((wrapper) =>
             wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
           ),
-          tx: coreTxs[index],
+          tx: coreTx,
         } satisfies DelegateConfirm;
       }),
       step: Step.CONFIRM,
@@ -386,7 +388,7 @@ sample({
         signingPayloads:
           transactions?.map((tx, index) => ({
             chain: walletData.chain!,
-            account: wrapper ? wrapper.proxyAccount : accounts[index],
+            account: wrapper ? wrapper.proxyAccount : accounts[index]!,
             signatory: delegateData!.signatory,
             transaction: tx.wrappedTx,
           })) || [],
@@ -409,14 +411,20 @@ sample({
     accounts: $accounts,
     step: $step,
   },
-  filter: ({ delegateData, walletData, transactions, step }) => {
-    return nonNullable(delegateData) && nonNullable(walletData) && nonNullable(transactions) && isStep(step, Step.SIGN);
+  filter: ({ delegateData, walletData, transactions, accounts, step }) => {
+    return (
+      nonNullable(delegateData) &&
+      nonNullable(walletData) &&
+      nonNullable(transactions) &&
+      accounts.length > 0 &&
+      isStep(step, Step.SIGN)
+    );
   },
   fn: (delegateFlowData, signParams) => ({
     event: {
       ...signParams,
       chain: delegateFlowData.walletData.chain!,
-      account: delegateFlowData.accounts[0],
+      account: delegateFlowData.accounts[0]!,
       signatory: delegateFlowData.delegateData!.signatory,
       coreTxs: delegateFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: delegateFlowData.transactions!.map((tx) => tx.wrappedTx),
@@ -482,7 +490,7 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

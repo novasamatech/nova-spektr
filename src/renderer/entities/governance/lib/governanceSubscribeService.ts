@@ -37,7 +37,10 @@ function subscribeTrackLocks(api: ApiPromise, accounts: AccountId[], callback: (
         return acc;
       }, {});
 
-      result[accounts[index]] = lockData;
+      const account = accounts[index];
+      if (account) {
+        result[account] = lockData;
+      }
     }
     callback(result);
   });
@@ -71,7 +74,7 @@ function subscribeVotingFor(
 
       switch (convictionVoting.type) {
         case 'Delegating': {
-          result[accountId][trackId] = {
+          result[accountId]![trackId] = {
             type: 'Delegating',
             accountId,
             track: trackId,
@@ -116,7 +119,7 @@ function subscribeVotingFor(
             }
           }
 
-          result[accountId][trackId] = {
+          result[accountId]![trackId] = {
             type: 'Casting',
             track: trackId,
             accountId,

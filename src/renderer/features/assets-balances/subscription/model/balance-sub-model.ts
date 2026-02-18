@@ -99,7 +99,6 @@ sample({
     return produce(subscriptions, (draft) => {
       for (const [key, unsubscribe] of entries(result)) {
         const chainSubscription = draft[key];
-        // @ts-expect-error weird type error
         if (chainSubscription) {
           console.error('subscription already exists:', key);
         }

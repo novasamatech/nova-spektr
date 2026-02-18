@@ -64,7 +64,7 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData ? apis[walletData.chain.chainId] : undefined;
+    return walletData ? (apis[walletData.chain.chainId] ?? null) : null;
   },
   { skipVoid: false },
 );
@@ -105,7 +105,7 @@ sample({
       chain: walletData!.chain,
       wallet: walletData!.wallet,
       wallets,
-      account: walletData!.shards[0],
+      account: walletData!.shards[0]!,
       signatories,
     });
   },
@@ -166,7 +166,7 @@ sample({
   filter: (api, transactions) => Boolean(api) && Boolean(transactions?.length),
   fn: (api, transactions) => ({
     api: api!,
-    transaction: transactions![0].wrappedTx,
+    transaction: transactions![0]!.wrappedTx,
   }),
   target: getTransactionFeeFx,
 });
@@ -254,8 +254,8 @@ sample({
           ...(wrapper && { shards: [wrapper.proxyAccount] }),
           initiator: shard,
           signatory: bondData!.signatory!,
-          coreTx: coreTxs[0],
-          tx: coreTxs[0],
+          coreTx: coreTxs[0]!,
+          tx: coreTxs[0]!,
           route: [shard],
         } satisfies BondExtraConfirm;
       }),
@@ -287,7 +287,7 @@ sample({
         signingPayloads:
           transactions?.map((tx, index) => ({
             chain: walletData!.chain,
-            account: wrapper ? wrapper.proxyAccount : bondData!.shards[index],
+            account: wrapper ? wrapper.proxyAccount : bondData!.shards[index]!,
             signatory: bondData!.signatory,
             transaction: tx.wrappedTx,
           })) || [],
@@ -315,7 +315,7 @@ sample({
     event: {
       ...signParams,
       chain: bondFlowData.walletData!.chain,
-      account: bondFlowData.bondData!.shards[0],
+      account: bondFlowData.bondData!.shards[0]!,
       signatory: bondFlowData.bondData!.signatory,
       coreTxs: bondFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: bondFlowData.transactions!.map((tx) => tx.wrappedTx),
@@ -337,7 +337,7 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });
@@ -360,7 +360,7 @@ sample({
   },
   fn: ({ store, coreTxs }) =>
     coreTxs!.map((coreTx) => ({
-      initiatorAccountId: store!.shards[0].accountId,
+      initiatorAccountId: store!.shards[0]!.accountId,
       coreTx,
       route: [],
       createdAt: Date.now(),

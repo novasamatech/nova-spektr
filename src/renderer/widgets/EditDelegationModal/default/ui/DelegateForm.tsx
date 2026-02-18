@@ -240,8 +240,8 @@ const FeeSection = () => {
           }
         >
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={multisigDeposit.toString()} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={multisigDeposit.toString()} />
+            <AssetBalance value={multisigDeposit.toString()} asset={network.chain.assets[0]!} />
+            <AssetFiatBalance asset={network.chain.assets[0]!} amount={multisigDeposit.toString()} />
           </div>
         </DetailRow>
       )}
@@ -249,7 +249,7 @@ const FeeSection = () => {
       <FeeWithLabel
         fee={fee}
         isLoading={pendingFee}
-        asset={network.chain.assets[0]}
+        asset={network.chain.assets[0]!}
         label={t('staking.networkFee', { count: 1 })}
       />
     </div>

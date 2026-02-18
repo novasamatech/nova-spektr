@@ -2,7 +2,15 @@ import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, delay, spread } from 'patronum';
 
-import { Step, getRelaychainAsset, isStep, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
+import {
+  Step,
+  assert,
+  getRelaychainAsset,
+  isStep,
+  nonNullable,
+  nullable,
+  transferableAmount,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
@@ -191,6 +199,8 @@ const dataSubmitted = sample({
         balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId),
       );
 
+      assert(delegationData, 'Delegation data is not found');
+
       return [
         {
           chain,
@@ -202,7 +212,7 @@ const dataSubmitted = sample({
           signatory,
           delegate,
           tracks: revokeDelegationData.tracks,
-          locks: revokeDelegationData.locks[initiator.accountId],
+          locks: revokeDelegationData.locks[initiator.accountId]!,
           coreTx,
           route,
           tx,
@@ -217,14 +227,7 @@ const dataSubmitted = sample({
 
 sample({
   clock: dataSubmitted,
-  fn: (event) => {
-    return {
-      event,
-    };
-  },
-  target: spread({
-    event: confirmModel.init,
-  }),
+  target: confirmModel.init,
 });
 
 const startSigning = sample({

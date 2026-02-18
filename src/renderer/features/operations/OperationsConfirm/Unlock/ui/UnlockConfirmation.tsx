@@ -36,14 +36,14 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
     fn: (value, [id]) => value?.[id],
   });
 
-  const initiatorWallet = confirmStore.wallets.initiator;
-  const signerWallet = confirmStore.wallets.signatory;
+  const initiatorWallet = confirmStore?.wallets.initiator;
+  const signerWallet = confirmStore?.wallets.signatory;
 
   const balance = balanceUtils.getBalance(
     balances,
-    confirmStore.meta.initiator.accountId,
-    confirmStore.meta.chain.chainId,
-    confirmStore.meta.asset.assetId,
+    confirmStore?.meta.initiator.accountId!,
+    confirmStore?.meta.chain.chainId!,
+    confirmStore?.meta.asset.assetId!,
   );
 
   const transferableBalance = new BN(transferableAmount(balance));
@@ -143,7 +143,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={basketUtils.isBasketAvailable(initiatorWallet) && Boolean(secondaryActionButton)}
-              type={signerWallet.type}
+              type={signerWallet?.type}
               onClick={unlockConfirmModel.startSigning}
             />
           )}

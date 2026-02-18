@@ -47,9 +47,9 @@ function getVaultAccountsMap(accounts: PolkadotVaultWallet['accounts']): VaultMa
   return accountGroups.reduce<VaultMap>((acc, account) => {
     const accountToInsert = accountUtils.isAccountWithShards(account) ? account[0] : account;
 
-    const chainId = accountToInsert.chainId;
+    const chainId = accountToInsert?.chainId!;
     if (acc[chainId]) {
-      acc[chainId].push(account);
+      acc[chainId]!.push(account);
     } else {
       acc[chainId] = [account];
     }

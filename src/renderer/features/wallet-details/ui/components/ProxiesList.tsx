@@ -63,7 +63,7 @@ export const ProxiesList = memo(({ className, wallet, hasProxies, canCreateProxy
 
     return walletProxyGroups
       .filter(({ chainId }) => {
-        return chainsProxies[chainId]?.proxies.length > 0;
+        return (chainsProxies[chainId]?.proxies.length ?? 0) > 0;
       })
       .map(({ chainId, totalDeposit }) => {
         const chain = chains[chainId];

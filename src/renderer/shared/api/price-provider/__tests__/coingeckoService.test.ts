@@ -24,8 +24,8 @@ describe('shared/api/price-provider/services/coingekoService', () => {
 
     const result = await coingekoService.getPrice(['kusama', 'polkadot'], ['usd', 'rub'], true);
 
-    expect(result['kusama']['usd'].price).toBeDefined();
-    expect(result['polkadot']['rub'].change).toBeDefined();
+    expect(result['kusama']!['usd']!.price).toBeDefined();
+    expect(result['polkadot']!['rub']!.change).toBeDefined();
   });
 
   test('get history data from coingecko', async () => {

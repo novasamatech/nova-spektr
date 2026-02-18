@@ -22,6 +22,8 @@ export const TokenBalance = memo(({ asset }: Props) => {
 
   const chain = asset.chains[0];
 
+  if (!chain) return null;
+
   return (
     <Plate className="z-10 flex h-[52px] w-full items-center p-0 pr-2 pl-[36px]">
       <div className="flex flex-1 gap-x-2" data-testid={TEST_IDS.ASSETS.TOKEN_PLATE}>
@@ -43,7 +45,7 @@ export const TokenBalance = memo(({ asset }: Props) => {
         className="text-text-primar text-right"
       />
       <AssembledAssetAmount asset={asset} balance={chain.balance} />
-      <AssetLinks assetId={asset.chains[0].assetId} chainId={chain.chainId} wallet={wallet} />
+      <AssetLinks assetId={asset.chains[0]!.assetId} chainId={chain.chainId} wallet={wallet} />
     </Plate>
   );
 });

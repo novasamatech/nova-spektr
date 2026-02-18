@@ -56,10 +56,10 @@ describe('importContactsModel', () => {
       const hasError = scope.getState(importContactsModel.$hasError);
 
       expect(parsedContacts).toHaveLength(3);
-      expect(parsedContacts?.[0].name).toBe('Alice');
-      expect(parsedContacts?.[0].address).toBe('15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5');
-      expect(parsedContacts?.[1].name).toBe('Bob');
-      expect(parsedContacts?.[2].name).toBe('Charlie');
+      expect(parsedContacts?.[0]!.name).toBe('Alice');
+      expect(parsedContacts?.[0]!.address).toBe('15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5');
+      expect(parsedContacts?.[1]!.name).toBe('Bob');
+      expect(parsedContacts?.[2]!.name).toBe('Charlie');
       expect(hasError).toBe(false);
     });
 
@@ -74,7 +74,7 @@ describe('importContactsModel', () => {
       const hasError = scope.getState(importContactsModel.$hasError);
 
       expect(parsedContacts).toHaveLength(1);
-      expect(parsedContacts?.[0].name).toBe('gav');
+      expect(parsedContacts?.[0]!.name).toBe('gav');
       expect(hasError).toBe(false);
     });
 
@@ -89,7 +89,7 @@ describe('importContactsModel', () => {
       const hasError = scope.getState(importContactsModel.$hasError);
 
       expect(parsedContacts).toHaveLength(1);
-      expect(parsedContacts?.[0].name).toBe('gav');
+      expect(parsedContacts?.[0]!.name).toBe('gav');
       expect(hasError).toBe(false);
     });
 
@@ -152,7 +152,7 @@ describe('importContactsModel', () => {
 
   describe('conflict detection', () => {
     it('should detect accountId conflicts and show conflicts modal', async () => {
-      const aliceAddress = mockData.VALID_CONTACTS[0].address;
+      const aliceAddress = mockData.VALID_CONTACTS[0]!.address;
       const file = createMockFile([mockData.VALID_CONTACTS[0]]);
 
       const existingContacts = [
@@ -175,13 +175,13 @@ describe('importContactsModel', () => {
 
       expect(showConflicts).toBe(true);
       expect(conflicts).toHaveLength(1);
-      expect(conflicts[0].imported.name).toBe('Alice');
-      expect(conflicts[0].existing.name).toBe('OldAlice');
+      expect(conflicts[0]!.imported.name).toBe('Alice');
+      expect(conflicts[0]!.existing.name).toBe('OldAlice');
     });
 
     it('should not show conflicts when no accountId conflicts', async () => {
-      const aliceAddress = mockData.VALID_CONTACTS[0].address;
-      const bobAddress = mockData.VALID_CONTACTS[1].address;
+      const aliceAddress = mockData.VALID_CONTACTS[0]!.address;
+      const bobAddress = mockData.VALID_CONTACTS[1]!.address;
       const file = createMockFile([mockData.VALID_CONTACTS[0]]);
 
       const existingContacts = [
@@ -219,7 +219,7 @@ describe('importContactsModel', () => {
 
   describe('replaceConflicts', () => {
     it('should replace existing contacts with imported ones', async () => {
-      const aliceAddress = mockData.VALID_CONTACTS[0].address;
+      const aliceAddress = mockData.VALID_CONTACTS[0]!.address;
       const file = createMockFile([{ name: 'NewAlice', address: aliceAddress }]);
 
       const existingContacts = [
@@ -256,8 +256,8 @@ describe('importContactsModel', () => {
 
   describe('keepCurrent', () => {
     it('should only import non-conflicting contacts', async () => {
-      const aliceAddress = mockData.VALID_CONTACTS[0].address;
-      const bobAddress = mockData.VALID_CONTACTS[1].address;
+      const aliceAddress = mockData.VALID_CONTACTS[0]!.address;
+      const bobAddress = mockData.VALID_CONTACTS[1]!.address;
       const file = createMockFile([
         { name: 'Alice', address: aliceAddress },
         { name: 'Bob', address: bobAddress },
@@ -316,18 +316,18 @@ describe('importContactsModel', () => {
       expect(mockCreate).toHaveBeenCalledWith([
         {
           name: 'first',
-          address: toAddress(mockData.SIMILAR_NAMES[0].address),
-          accountId: toAccountId(mockData.SIMILAR_NAMES[0].address),
+          address: toAddress(mockData.SIMILAR_NAMES[0]!.address),
+          accountId: toAccountId(mockData.SIMILAR_NAMES[0]!.address),
         },
         {
           name: 'first (1)',
-          address: toAddress(mockData.SIMILAR_NAMES[1].address),
-          accountId: toAccountId(mockData.SIMILAR_NAMES[1].address),
+          address: toAddress(mockData.SIMILAR_NAMES[1]!.address),
+          accountId: toAccountId(mockData.SIMILAR_NAMES[1]!.address),
         },
         {
           name: 'first (2)',
-          address: toAddress(mockData.SIMILAR_NAMES[2].address),
-          accountId: toAccountId(mockData.SIMILAR_NAMES[2].address),
+          address: toAddress(mockData.SIMILAR_NAMES[2]!.address),
+          accountId: toAccountId(mockData.SIMILAR_NAMES[2]!.address),
         },
       ]);
 

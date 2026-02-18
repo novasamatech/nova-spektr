@@ -207,7 +207,7 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : null;
+    return network ? (apis[network.chain.chainId] ?? null) : null;
   },
 );
 
@@ -283,7 +283,7 @@ sample({
       if (!balance) return acc;
 
       return new BN(balance).lt(new BN(acc)) ? balance : acc;
-    }, accountsBalances[0]);
+    }, '0');
 
     return minBondBalance === '0' ? '0' : ['0', minBondBalance];
   },

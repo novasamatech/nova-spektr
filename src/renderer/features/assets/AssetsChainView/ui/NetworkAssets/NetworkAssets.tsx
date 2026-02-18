@@ -78,7 +78,7 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, w
 
       const balance = balancesObject[asset.assetId];
 
-      return !hideZeroBalances || totalAmount(balance) !== ZERO_BALANCE;
+      return !hideZeroBalances || totalAmount(balance ?? null) !== ZERO_BALANCE;
     });
 
     filteredAssets.sort((a, b) =>
@@ -110,7 +110,7 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, w
                 key={asset.assetId}
                 chainId={chain.chainId}
                 asset={asset}
-                balance={balancesObject[asset.assetId.toString()]}
+                balance={balancesObject[asset.assetId.toString()] ?? null}
                 wallet={wallet}
               />
             ))}

@@ -42,7 +42,7 @@ describe('shared/api/price-provider/lib/onChainUtils', () => {
       { assetId: 'polkadot', currency: 'rub', price: 413.87, change: -1.9592075880855542 },
     ]);
 
-    expect(result['kusama']['usd'].price).toEqual(19.06);
-    expect(result['polkadot']['rub'].change).toEqual(-1.9592075880855542);
+    expect(result['kusama']!['usd']!.price).toEqual(19.06);
+    expect(result['polkadot']!['rub']!.change).toEqual(-1.9592075880855542);
   });
 });

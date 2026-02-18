@@ -47,8 +47,9 @@ sample({
   filter: (_, proxiesToAdd) => Boolean(proxiesToAdd),
   fn: (proxies, proxiesToAdd) => {
     return proxiesToAdd!.reduce<ProxyStore>((acc, proxyAccount) => {
-      if (acc[proxyAccount.proxiedAccountId]) {
-        acc[proxyAccount.proxiedAccountId].push(proxyAccount);
+      const existing = acc[proxyAccount.proxiedAccountId];
+      if (existing) {
+        existing.push(proxyAccount);
       } else {
         acc[proxyAccount.proxiedAccountId] = [proxyAccount];
       }

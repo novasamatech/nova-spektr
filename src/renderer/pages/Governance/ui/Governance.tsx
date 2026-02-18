@@ -77,10 +77,13 @@ export const Governance = () => {
       networkSelectorModel.events.selectNetwork(chain.chainId);
     } else {
       // navigate to default chain
-      const path = generatePath(Paths.GOVERNANCE_LIST, {
-        chainId: networkUtils.chainNameToUrl(networks[DEFAULT_GOVERNANCE_CHAIN].name),
-      });
-      navigationModel.events.navigateTo(path);
+      const defaultNetwork = networks[DEFAULT_GOVERNANCE_CHAIN];
+      if (defaultNetwork?.name) {
+        const path = generatePath(Paths.GOVERNANCE_LIST, {
+          chainId: networkUtils.chainNameToUrl(defaultNetwork.name),
+        });
+        navigationModel.events.navigateTo(path);
+      }
     }
   }, [chainId]);
 

@@ -98,10 +98,10 @@ transactionSDK(proxiedWalletFeature, {
         section: 'proxy',
         method: 'proxy',
         args: {
-          real: pjsSchema.helpers.toAccountId(extrinsic.args[0].toHex()),
+          real: pjsSchema.helpers.toAccountId(extrinsic.args[0]!.toHex()),
           // @ts-expect-error TODO use zod schemas
-          forceProxyType: extrinsic.args[1].toString(),
-          call: extrinsic.args[2].toHex(),
+          forceProxyType: extrinsic.args[1]?.toString(),
+          call: extrinsic.args[2]!.toHex(),
         },
       };
 

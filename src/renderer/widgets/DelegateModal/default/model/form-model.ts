@@ -168,7 +168,7 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : null;
+    return network ? (apis[network.chain.chainId] ?? null) : null;
   },
 );
 
@@ -221,7 +221,7 @@ const $coreTx = combine(
     return transactionBuilder.buildDelegate({
       chain: walletData.chain,
       accountId: signatory.accountId,
-      balance: (walletData.chain && formatAmount(delegateData.balance, walletData.chain.assets[0].precision)) || '0',
+      balance: (walletData.chain && formatAmount(delegateData.balance, walletData.chain.assets[0]!.precision)) || '0',
       conviction: delegateData.conviction || 'None',
       target: target.accountId,
       tracks,

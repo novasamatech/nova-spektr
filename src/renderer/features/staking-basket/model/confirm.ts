@@ -3,7 +3,7 @@ import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain, type ChainId, type Connection, type Transaction, TransactionType } from '@/shared/core';
-import { redeemableAmount, toAccountId } from '@/shared/lib/utils';
+import { getNativeAsset, redeemableAmount, toAccountId } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { type StakingMap, eraService, stakingUtils, validatorsService } from '@/entities/staking';
@@ -42,22 +42,25 @@ const prepareBondNominateDataFx = createEffect(async ({ transaction, accounts, c
     (t: Transaction) => t.type === TransactionType.NOMINATE,
   )!;
 
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
-  const era = await eraService.getActiveEra(apis[chainId]);
-  const validatorsMap = await validatorsService.getValidatorsWithInfo(apis[chainId], era || 0);
+  assert(chain, 'Chain not found');
+
+  const api = apis[chain.chainId]!;
+  const era = await eraService.getActiveEra(api);
+  const validatorsMap = await validatorsService.getValidatorsWithInfo(api, era || 0);
 
   const validators = nominateTx.args.targets.map((address: string) => validatorsMap[toAccountId(address)]);
 
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: getNativeAsset(chain.assets),
     amount: bondTx.args.value,
     validators,
     destination: bondTx.args.dest,
@@ -75,10 +78,12 @@ const prepareBondNominateDataFx = createEffect(async ({ transaction, accounts, c
 const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
+  assert(chain, 'Chain not found');
+
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: getNativeAsset(chain.assets),
     amount: transaction.coreTx.args.maxAdditional,
     signatory: account!,
     fee: fee.toString(),
@@ -92,22 +97,25 @@ const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chai
 });
 
 const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
 
-  const era = await eraService.getActiveEra(apis[chainId]);
-  const validatorsMap = await validatorsService.getValidatorsWithInfo(apis[chainId], era || 0);
+  assert(chain, 'Chain not found');
+
+  const api = apis[chain.chainId]!;
+  const era = await eraService.getActiveEra(api);
+  const validatorsMap = await validatorsService.getValidatorsWithInfo(api, era || 0);
 
   const validators = transaction.coreTx.args.targets.map((address: string) => validatorsMap[toAccountId(address)]);
 
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: getNativeAsset(chain.assets),
     initiator: account!,
     signatory: account!,
     validators,
@@ -124,10 +132,12 @@ const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chain
 const preparePayeeDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
+  assert(chain, 'Chain not found');
+
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: getNativeAsset(chain.assets),
     destination: transaction.coreTx.args.dest,
     initiator: account!,
     signatory: account!,
@@ -145,14 +155,16 @@ const preparePayeeDataFx = createEffect(async ({ transaction, accounts, chains, 
 const prepareUnstakeDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
+  assert(chain, 'Chain not found');
+
   const coreTx = basketOperationsService.getCoreTx(transaction);
 
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: getNativeAsset(chain.assets),
     amount: coreTx.args.value,
-    api: apis[chain.chainId],
+    api: apis[chain.chainId]!,
     signatory: account!,
     initiator: account!,
     route: transaction.route,
@@ -168,10 +180,12 @@ const prepareUnstakeDataFx = createEffect(async ({ transaction, accounts, chains
 const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
+  assert(chain, 'Chain not found');
+
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: getNativeAsset(chain.assets),
     amount: transaction.coreTx.args.value,
     signatory: account!,
     initiator: account!,
@@ -185,16 +199,20 @@ const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains
 });
 
 const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
-  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
     chains,
     accounts,
   );
-  const era = await eraService.getActiveEra(apis[chainId]);
+
+  assert(chain, 'Chain not found');
+
+  const api = apis[chain.chainId]!;
+  const era = await eraService.getActiveEra(api);
 
   const staking = await new Promise<StakingMap>((resolve) => {
-    stakingUtils.subscribeStaking(chainId, apis[chainId], [transaction.coreTx.accountId], resolve);
+    stakingUtils.subscribeStaking(chain.chainId, api, [transaction.coreTx.accountId], resolve);
   });
 
   const amount = redeemableAmount(staking?.[transaction.coreTx.accountId]?.unlocking, era || 0);
@@ -202,7 +220,7 @@ const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chain
   return {
     id: transaction.id,
     chain,
-    asset: chain.assets[0],
+    asset: getNativeAsset(chain.assets),
     signatory: account!,
     initiator: account!,
     amount,

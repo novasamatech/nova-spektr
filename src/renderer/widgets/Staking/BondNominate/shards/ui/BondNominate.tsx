@@ -55,7 +55,7 @@ export const BondNominate = () => {
       isOpen={isModalOpen}
       title={
         <OperationTitle
-          title={t('staking.bond.title', { asset: walletData.chain.assets[0].symbol })}
+          title={t('staking.bond.title', { asset: walletData.chain.assets[0]!.symbol })}
           chainId={walletData.chain.chainId}
         />
       }

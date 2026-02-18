@@ -10,15 +10,20 @@ import { contactModel } from '../model/contact-model';
 
 type Props = {
   contact: Contact;
+  onSendTo?: (contact: Contact) => void;
 };
 
-export const ContactRow = ({ contact }: Props) => {
+export const ContactRow = ({ contact, onSendTo }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { toast } = useNotification();
 
   const handleEdit = () => {
     navigate(createLink(Paths.EDIT_CONTACT, {}, { id: [contact.id] }));
+  };
+
+  const handleSendTo = () => {
+    onSendTo?.(contact);
   };
 
   const handleDelete = () => {
@@ -37,6 +42,8 @@ export const ContactRow = ({ contact }: Props) => {
         <Address address={contact.address} showIcon iconSize={20} variant="truncate" title={contact.name} />
       </div>
       <div className="ml-auto flex items-center gap-x-2 p-3">
+        <IconButton className="shrink-0 self-center text-icon-default" name="sendArrow" onClick={handleSendTo} />
+
         <Copy value={contact.address} notification={t('general.notifications.addressCopied')}>
           <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
         </Copy>

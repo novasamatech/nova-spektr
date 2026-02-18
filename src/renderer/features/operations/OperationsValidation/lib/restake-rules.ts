@@ -37,7 +37,7 @@ export const RestakeRules = {
 
         const amountBN = new BN(formatAmount(form.amount, network.asset.precision));
 
-        return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index])));
+        return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index]!)));
       },
     }),
   },
@@ -97,7 +97,7 @@ export const RestakeRules = {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
         const amountBN = new BN(value);
 
-        const restakeBalance = Array.isArray(restakeBalanceRange) ? restakeBalanceRange[0] : restakeBalanceRange;
+        const restakeBalance = Array.isArray(restakeBalanceRange) ? restakeBalanceRange[0]! : restakeBalanceRange;
 
         return amountBN.lte(new BN(restakeBalance));
       },
@@ -114,7 +114,7 @@ export const RestakeRules = {
         const amountBN = new BN(value);
 
         return form.shards.every((_: AnyAccount, index: number) => {
-          return amountBN.add(feeBN).lte(new BN(accountsBalances[index]));
+          return amountBN.add(feeBN).lte(new BN(accountsBalances[index]!));
         });
       },
     }),

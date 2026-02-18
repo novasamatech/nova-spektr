@@ -68,6 +68,7 @@ export const getDestination = (
   if (!tx.transaction) return undefined;
 
   const chain = destinationChain ? chains[destinationChain] : chains[tx.transaction.chainId];
+  if (!chain) return undefined;
 
   if (isProxyTransaction(tx.transaction)) {
     return toAddress(tx.transaction.args.transaction.args.dest, { prefix: chain?.addressPrefix });

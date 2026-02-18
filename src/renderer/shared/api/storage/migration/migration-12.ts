@@ -20,7 +20,7 @@ export async function migrateDuplicateVaultDerivations(t: Transaction): Promise<
     const existing = seen.get(uniqKey);
 
     if (existing) {
-      if (RELAY_CHAINS.includes(account.chainId)) {
+      if ((RELAY_CHAINS as readonly string[]).includes(account.chainId)) {
         accountIdsToRemove.push(existing.id);
         seen.set(uniqKey, account);
       } else {
