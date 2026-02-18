@@ -17,13 +17,13 @@ import {
 } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { multisigOperationService } from '@/domains/network';
 import {
   createComplexTxStore,
   createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
+import { multisigOperationService } from '@/domains/network';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { accountSync } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
