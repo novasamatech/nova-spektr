@@ -7,6 +7,17 @@ import { importContactsModel } from '../import-contacts-model';
 
 import * as mockData from './mocks/import-data';
 
+const LOCAL_DEFAULTS = {
+  source: 'local' as const,
+  entityName: null,
+  chainId: null,
+  chainName: null,
+  categoryName: null,
+  contactTypeName: null,
+  derivationPath: null,
+  ownerPublicKey: null,
+};
+
 const createMockFile = (data: unknown): File => {
   const content = typeof data === 'string' ? data : JSON.stringify(data);
   return new File([content], 'contacts.json', { type: 'application/json' });
@@ -157,10 +168,11 @@ describe('importContactsModel', () => {
 
       const existingContacts = [
         {
-          id: 1,
+          id: 'test-uuid-1',
           name: 'OldAlice',
           address: toAddress(aliceAddress),
           accountId: toAccountId(aliceAddress),
+          ...LOCAL_DEFAULTS,
         },
       ];
 
@@ -186,20 +198,22 @@ describe('importContactsModel', () => {
 
       const existingContacts = [
         {
-          id: 1,
+          id: 'test-uuid-1',
           name: 'Bob',
           address: toAddress(bobAddress),
           accountId: toAccountId(bobAddress),
+          ...LOCAL_DEFAULTS,
         },
       ];
 
       // Mock the effects to prevent actual DB operations
       vi.spyOn(contactModel.effects, 'createContactsFx').mockResolvedValue([
         {
-          id: 2,
+          id: 'test-uuid-2',
           name: 'Alice',
           address: toAddress(aliceAddress),
           accountId: toAccountId(aliceAddress),
+          ...LOCAL_DEFAULTS,
         },
       ]);
 
@@ -224,10 +238,11 @@ describe('importContactsModel', () => {
 
       const existingContacts = [
         {
-          id: 1,
+          id: 'test-uuid-1',
           name: 'OldAlice',
           address: toAddress(aliceAddress),
           accountId: toAccountId(aliceAddress),
+          ...LOCAL_DEFAULTS,
         },
       ];
 
@@ -242,10 +257,11 @@ describe('importContactsModel', () => {
 
       expect(mockUpdate).toHaveBeenCalledWith([
         {
-          id: 1,
+          id: 'test-uuid-1',
           name: 'NewAlice',
           address: toAddress(aliceAddress),
           accountId: toAccountId(aliceAddress),
+          ...LOCAL_DEFAULTS,
         },
       ]);
 
@@ -265,19 +281,21 @@ describe('importContactsModel', () => {
 
       const existingContacts = [
         {
-          id: 1,
+          id: 'test-uuid-1',
           name: 'OldAlice',
           address: toAddress(aliceAddress),
           accountId: toAccountId(aliceAddress),
+          ...LOCAL_DEFAULTS,
         },
       ];
 
       const mockCreate = vi.spyOn(contactModel.effects, 'createContactsFx').mockResolvedValue([
         {
-          id: 2,
+          id: 'test-uuid-2',
           name: 'Bob',
           address: toAddress(bobAddress),
           accountId: toAccountId(bobAddress),
+          ...LOCAL_DEFAULTS,
         },
       ]);
 
@@ -293,6 +311,7 @@ describe('importContactsModel', () => {
           name: 'Bob',
           address: toAddress(bobAddress),
           accountId: toAccountId(bobAddress),
+          ...LOCAL_DEFAULTS,
         },
       ]);
 
@@ -318,16 +337,19 @@ describe('importContactsModel', () => {
           name: 'first',
           address: toAddress(mockData.SIMILAR_NAMES[0]!.address),
           accountId: toAccountId(mockData.SIMILAR_NAMES[0]!.address),
+          ...LOCAL_DEFAULTS,
         },
         {
           name: 'first (1)',
           address: toAddress(mockData.SIMILAR_NAMES[1]!.address),
           accountId: toAccountId(mockData.SIMILAR_NAMES[1]!.address),
+          ...LOCAL_DEFAULTS,
         },
         {
           name: 'first (2)',
           address: toAddress(mockData.SIMILAR_NAMES[2]!.address),
           accountId: toAccountId(mockData.SIMILAR_NAMES[2]!.address),
+          ...LOCAL_DEFAULTS,
         },
       ]);
 

@@ -37,21 +37,23 @@ export const ContactRow = ({ contact, onSendTo }: Props) => {
   };
 
   return (
-    <Plate className="flex p-0">
-      <div className="flex min-w-0 gap-x-1 p-3">
-        <Address address={contact.address} showIcon iconSize={20} variant="truncate" title={contact.name} />
-      </div>
-      <div className="ml-auto flex items-center gap-x-2 p-3">
-        <IconButton className="shrink-0 self-center text-icon-default" name="sendArrow" onClick={handleSendTo} />
+    <li>
+      <Plate className="flex items-center border border-transparent p-3 transition-colors duration-150 hover:border-filter-border">
+        <div className="flex min-w-0 gap-x-1">
+          <Address address={contact.address} showIcon iconSize={20} variant="truncate" title={contact.name} />
+        </div>
+        <div className="ml-auto flex items-center gap-x-1">
+          <IconButton className="shrink-0 text-icon-default" name="sendArrow" onClick={handleSendTo} />
 
-        <Copy value={contact.address} notification={t('general.notifications.addressCopied')}>
-          <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
-        </Copy>
+          <Copy value={contact.address} notification={t('general.notifications.addressCopied')}>
+            <IconButton className="shrink-0 text-icon-default" name="copy" />
+          </Copy>
 
-        <IconButton className="shrink-0 self-center text-icon-default" name="edit" onClick={handleEdit} />
+          <IconButton className="shrink-0 text-icon-default" name="edit" onClick={handleEdit} />
 
-        <IconButton className="shrink-0 self-center text-icon-default" name="delete" onClick={handleDelete} />
-      </div>
-    </Plate>
+          <IconButton className="shrink-0 text-icon-default" name="delete" onClick={handleDelete} />
+        </div>
+      </Plate>
+    </li>
   );
 };

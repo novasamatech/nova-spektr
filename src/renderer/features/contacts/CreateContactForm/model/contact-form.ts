@@ -73,7 +73,20 @@ const createContactFx = attach({
   source: $contactForm.$values,
   mapParams: (_, data) => {
     const address = toAddress(data.address);
-    return { ...data, address, accountId: toAccountId(address) };
+
+    return {
+      name: data.name,
+      address,
+      accountId: toAccountId(address),
+      source: 'local' as const,
+      entityName: null,
+      chainId: null,
+      chainName: null,
+      categoryName: null,
+      contactTypeName: null,
+      derivationPath: null,
+      ownerPublicKey: null,
+    };
   },
 });
 

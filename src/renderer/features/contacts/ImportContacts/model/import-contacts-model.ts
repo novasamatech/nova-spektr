@@ -70,7 +70,7 @@ const replaceContactsFx = attach({
         if (existing) {
           // Update existing contact (accountId conflict - replace)
           toUpdate.push({
-            id: existing.id,
+            ...existing,
             name: contact.name,
             address: toAddress(contact.address),
             accountId,
@@ -81,6 +81,14 @@ const replaceContactsFx = attach({
             name: contact.name,
             address: toAddress(contact.address),
             accountId,
+            source: 'local',
+            entityName: null,
+            chainId: null,
+            chainName: null,
+            categoryName: null,
+            contactTypeName: null,
+            derivationPath: null,
+            ownerPublicKey: null,
           });
         }
       }
@@ -118,6 +126,14 @@ const importNonConflictingFx = attach({
         name: contact.name,
         address: toAddress(contact.address),
         accountId: toAccountId(contact.address),
+        source: 'local' as const,
+        entityName: null,
+        chainId: null,
+        chainName: null,
+        categoryName: null,
+        contactTypeName: null,
+        derivationPath: null,
+        ownerPublicKey: null,
       }));
 
       if (toCreate.length > 0) {

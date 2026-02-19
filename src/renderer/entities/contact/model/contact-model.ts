@@ -5,14 +5,39 @@ import { kernelModel } from '@/shared/core/model/kernel-model';
 import { type Contact } from '@/shared/core/types/contact';
 import { merge, splice } from '@/shared/lib/utils';
 
+const LOCAL_CONTACT_DEFAULTS: Pick<
+  Contact,
+  | 'source'
+  | 'entityName'
+  | 'chainId'
+  | 'chainName'
+  | 'categoryName'
+  | 'contactTypeName'
+  | 'derivationPath'
+  | 'ownerPublicKey'
+> = {
+  source: 'local',
+  entityName: null,
+  chainId: null,
+  chainName: null,
+  categoryName: null,
+  contactTypeName: null,
+  derivationPath: null,
+  ownerPublicKey: null,
+};
+
 const $contacts = createStore<Contact[]>([]);
+const $localContacts = $contacts.map((cs) => cs.filter((c) => c.source === 'local'));
+const $backendContacts = $contacts.map((cs) => cs.filter((c) => c.source === 'backend'));
 
 const populateContactsFx = createEffect((): Promise<Contact[]> => {
   return storageService.contacts.readAll();
 });
 
 const createContactFx = createEffect(async (contact: Omit<Contact, 'id'>): Promise<Contact | undefined> => {
-  return storageService.contacts.create(contact);
+  const full: Contact = { ...LOCAL_CONTACT_DEFAULTS, ...contact, id: crypto.randomUUID() };
+
+  return storageService.contacts.put(full);
 });
 
 const undoDeleteContactFx = attach({
@@ -33,13 +58,18 @@ const undoDeleteContactFx = attach({
       if (hasDuplicate) {
         return undefined;
       }
-      return storageService.contacts.create(contact);
+      const full: Contact = { ...LOCAL_CONTACT_DEFAULTS, ...contact, id: crypto.randomUUID() };
+
+      return storageService.contacts.put(full);
     },
   ),
 });
 
-const createContactsFx = createEffect((contacts: Omit<Contact, 'id'>[]): Promise<Contact[] | undefined> => {
-  return storageService.contacts.createAll(contacts);
+const createContactsFx = createEffect(async (contacts: Omit<Contact, 'id'>[]): Promise<Contact[] | undefined> => {
+  const fullContacts: Contact[] = contacts.map((c) => ({ ...LOCAL_CONTACT_DEFAULTS, ...c, id: crypto.randomUUID() }));
+  await storageService.contacts.insertAll(fullContacts);
+
+  return fullContacts;
 });
 
 const updateContactFx = createEffect(async ({ id, ...rest }: Contact): Promise<Contact> => {
@@ -56,10 +86,26 @@ const updateContactsFx = createEffect(async (contacts: Contact[]): Promise<Conta
   return contacts;
 });
 
-const deleteContactFx = createEffect(async (contactId: number): Promise<number> => {
+const deleteContactFx = createEffect(async (contactId: string): Promise<string> => {
   await storageService.contacts.delete(contactId);
 
   return contactId;
+});
+
+const syncBackendContactsFx = createEffect(async (contacts: Contact[]): Promise<Contact[]> => {
+  await storageService.contacts.insertAll(contacts);
+
+  return contacts;
+});
+
+const clearBackendContactsFx = createEffect(async (): Promise<string[]> => {
+  const all = await storageService.contacts.readAll();
+  const backendIds = all.filter((c) => c.source === 'backend').map((c) => c.id);
+  if (backendIds.length > 0) {
+    await storageService.contacts.deleteAll(backendIds);
+  }
+
+  return backendIds;
 });
 
 $contacts
@@ -83,6 +129,16 @@ $contacts
       b: contacts,
       mergeBy: (c) => c.id,
     });
+  })
+  .on(syncBackendContactsFx.doneData, (state, backendContacts) => {
+    const withoutOldBackend = state.filter((c) => c.source !== 'backend');
+
+    return withoutOldBackend.concat(backendContacts);
+  })
+  .on(clearBackendContactsFx.doneData, (state, deletedIds) => {
+    const idSet = new Set(deletedIds);
+
+    return state.filter((c) => !idSet.has(c.id));
   });
 
 sample({
@@ -92,6 +148,8 @@ sample({
 
 export const contactModel = {
   $contacts,
+  $localContacts,
+  $backendContacts,
   effects: {
     createContactFx,
     createContactsFx,
@@ -99,5 +157,7 @@ export const contactModel = {
     deleteContactFx,
     updateContactFx,
     updateContactsFx,
+    syncBackendContactsFx,
+    clearBackendContactsFx,
   },
 };

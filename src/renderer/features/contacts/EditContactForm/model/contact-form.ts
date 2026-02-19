@@ -105,7 +105,8 @@ sample({
   filter: (contactToEdit) => contactToEdit !== null,
   fn: (contactToEdit, form) => {
     const address = toAddress(form.address);
-    return { ...form, id: contactToEdit!.id, address, accountId: toAccountId(address) };
+
+    return { ...contactToEdit!, name: form.name, address, accountId: toAccountId(address) };
   },
   target: contactModel.effects.updateContactFx,
 });

@@ -123,6 +123,20 @@
       "tooltip": "Configure address book backend"
     },
     "searchPlaceholder": "Search",
+    "sources": {
+      "myContacts": "My Contacts",
+      "syncButton": "Sync",
+      "loading": "Loading contacts...",
+      "loadError": "Failed to load contacts from server",
+      "emptyBackend": "No contacts found on the server",
+      "retry": "Retry"
+    },
+    "backendContact": {
+      "category": "Category",
+      "contactType": "Type",
+      "chain": "Chain",
+      "entity": "Entity"
+    },
     "title": "Address Book",
     "undo": "Undo"
   },

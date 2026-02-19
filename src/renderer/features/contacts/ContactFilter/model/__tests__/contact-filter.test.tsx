@@ -5,16 +5,32 @@ import { filterModel } from '../contact-filter';
 
 const contacts = [
   {
-    id: 1,
+    id: 'test-uuid-1',
     name: 'name 1',
     address: '222',
     accountId: '0x333',
+    source: 'local' as const,
+    entityName: null,
+    chainId: null,
+    chainName: null,
+    categoryName: null,
+    contactTypeName: null,
+    derivationPath: null,
+    ownerPublicKey: null,
   },
   {
-    id: 5,
+    id: 'test-uuid-2',
     name: 'name 6',
     address: '777',
     accountId: '0x888',
+    source: 'local' as const,
+    entityName: null,
+    chainId: null,
+    chainName: null,
+    categoryName: null,
+    contactTypeName: null,
+    derivationPath: null,
+    ownerPublicKey: null,
   },
 ];
 
