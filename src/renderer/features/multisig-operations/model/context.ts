@@ -6,11 +6,22 @@ import { type Done, persist } from '@/shared/api/storage';
 import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type DateRange } from '@/shared/ui-kit';
-import { type AnyAccount, accountService, accounts, multisigOperation } from '@/domains/network';
+import {
+  type AnyAccount,
+  type MultisigOperation,
+  accountService,
+  accounts,
+  multisigOperation,
+} from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { filterOperation } from '../lib/operations-filter';
+
+export type OperationWithAccount = {
+  operation: MultisigOperation;
+  account: MultisigAccount | FlexibleMultisigAccount;
+};
 
 import { deepLinkModel } from './deep-link';
 import { multisigOperationsFeature } from './feature';
@@ -118,9 +129,28 @@ const $walletNameByAccountId = combine(
 
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 
-const $filteredOperations = combine(
+const $operationsWithAccounts = combine(
   {
     operations: multisigOperation.$list,
+    multisigAccountsMap: $multisigAccountsMap,
+    accountsPopulated: accounts.$populated,
+  },
+  ({ operations, multisigAccountsMap, accountsPopulated }): OperationWithAccount[] => {
+    if (!accountsPopulated) return [];
+
+    const result: OperationWithAccount[] = [];
+    for (const op of operations) {
+      const account = multisigAccountsMap[op.accountId];
+      if (account) result.push({ operation: op, account });
+    }
+
+    return result;
+  },
+);
+
+const $filteredOperations = combine(
+  {
+    operationsWithAccounts: $operationsWithAccounts,
     filter: $filter,
     tab: $tab,
     hiddenIds: $hiddenOperationIds,
@@ -128,9 +158,17 @@ const $filteredOperations = combine(
     walletNameByAccountId: $walletNameByAccountId,
     chains: networkModel.$chains,
   },
-  ({ operations, filter, tab, hiddenIds, multisigAccountsMap, walletNameByAccountId, chains }) => {
-    return operations.filter(op =>
-      filterOperation(op, {
+  ({
+    operationsWithAccounts,
+    filter,
+    tab,
+    hiddenIds,
+    multisigAccountsMap,
+    walletNameByAccountId,
+    chains,
+  }): OperationWithAccount[] => {
+    return operationsWithAccounts.filter(({ operation }) =>
+      filterOperation(operation, {
         filters: filter,
         tab,
         hiddenIds,
@@ -143,18 +181,29 @@ const $filteredOperations = combine(
 );
 
 const $hiddenOperationsCount = combine(
-  { operations: multisigOperation.$list, hiddenIds: $hiddenOperationIds },
-  ({ operations, hiddenIds }) => operations.filter(op => hiddenIds.includes(op.id)).length,
+  { operationsWithAccounts: $operationsWithAccounts, hiddenIds: $hiddenOperationIds },
+  ({ operationsWithAccounts, hiddenIds }) =>
+    operationsWithAccounts.filter(({ operation }) => hiddenIds.includes(operation.id)).length,
 );
 
 const $pendingOperationsCount = combine(
-  { operations: multisigOperation.$list, hiddenIds: $hiddenOperationIds },
-  ({ operations, hiddenIds }) => operations.filter(op => op.status === 'pending' && !hiddenIds.includes(op.id)).length,
+  { operationsWithAccounts: $operationsWithAccounts, hiddenIds: $hiddenOperationIds },
+  ({ operationsWithAccounts, hiddenIds }) =>
+    operationsWithAccounts.filter(
+      ({ operation }) => operation.status === 'pending' && !hiddenIds.includes(operation.id),
+    ).length,
 );
 
 const $isTabDataLoading = combine(
-  { tab: $tab, onChainReady: multisigOperation.$onChainReady, offChainReady: multisigOperation.$offChainReady },
-  ({ tab, onChainReady, offChainReady }) => {
+  {
+    tab: $tab,
+    onChainReady: multisigOperation.$onChainReady,
+    offChainReady: multisigOperation.$offChainReady,
+    accountsPopulated: accounts.$populated,
+  },
+  ({ tab, onChainReady, offChainReady, accountsPopulated }) => {
+    if (!accountsPopulated) return true;
+
     return tab === 'pending' ? !onChainReady : !offChainReady;
   },
 );

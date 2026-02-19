@@ -2,17 +2,15 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useRef } from 'react';
 
-import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { groupBy } from '@/shared/lib/utils';
 import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText, Loader } from '@/shared/ui';
 import { Box, ScrollArea } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
-import { operationsContextModel } from '../model/context';
+import { type OperationWithAccount, operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
 import { ChainSyncStatus } from './ChainSyncStatus';
@@ -24,9 +22,7 @@ import { ConnectionTimeoutModal } from './modals/ConnectionTimeoutModal';
 import { NetworkNotAvailableModal } from './modals/NetworkNotAvailableModal';
 import { OperationNotFoundModal } from './modals/OperationNotFoundModal';
 
-type FlatItem =
-  | { type: 'header'; date: string }
-  | { type: 'operation'; tx: MultisigOperation; account: MultisigAccount | FlexibleMultisigAccount };
+type FlatItem = { type: 'header'; date: string } | { type: 'operation'; item: OperationWithAccount };
 
 const isHeaderItem = (item: FlatItem): item is FlatItem & { type: 'header' } => item.type === 'header';
 
@@ -37,7 +33,7 @@ export const Operations = () => {
   const wallets = useUnit(walletModel.$wallets);
   const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
   const isFiltersSelected = useUnit(operationsContextModel.$isFiltersSelected);
-  const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
+  const filteredOps = useUnit(operationsContextModel.$filteredOperations);
   const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
   const isDeepLinkLoading = useUnit(deepLinkModel.$isDeepLinkLoading);
   const isTabDataLoading = useUnit(operationsContextModel.$isTabDataLoading);
@@ -45,17 +41,17 @@ export const Operations = () => {
 
   const hasMultisigAccounts = Object.keys(multisigAccountsMap).length > 0;
 
-  const { list: deferredTxs, isLoading: isDeferredLoading } = useDeferredList({
-    list: filteredTxs,
+  const { list: deferredOps, isLoading: isDeferredLoading } = useDeferredList({
+    list: filteredOps,
     isLoading: isTabDataLoading,
   });
 
-  const sortedTxs = useMemo(() => {
-    const getDateKey = (tx: (typeof deferredTxs)[number]): string => {
-      let date: number | undefined = tx.timestamp;
+  const sortedOps = useMemo(() => {
+    const getDateKey = ({ operation }: OperationWithAccount): string => {
+      let date: number | undefined = operation.timestamp;
 
       if (nullable(date)) {
-        date = tx.events.at(0)?.timestamp;
+        date = operation.events.at(0)?.timestamp;
       }
 
       if (nullable(date)) {
@@ -67,34 +63,30 @@ export const Operations = () => {
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     };
 
-    const txsWithAccounts = deferredTxs.filter(tx => multisigAccountsMap[tx.accountId]);
-    const grouped = groupBy(txsWithAccounts, getDateKey);
+    const grouped = groupBy(deferredOps, getDateKey);
 
     return Object.entries(grouped)
       .toSorted(([dateA], [dateB]) => dateB.localeCompare(dateA))
-      .map(([isoDate, txs]) => {
-        const sortedTxs = txs!.toSorted((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      .map(([isoDate, items]) => {
+        const sorted = items!.toSorted((a, b) => (b.operation.timestamp || 0) - (a.operation.timestamp || 0));
         const [y, m, d] = isoDate.split('-').map(Number);
         const displayDate = formatDate(new Date(y ?? 0, (m ?? 1) - 1, d), 'PP');
 
-        return [displayDate, sortedTxs] as const;
+        return [displayDate, sorted] as const;
       });
-  }, [deferredTxs, formatDate, multisigAccountsMap]);
+  }, [deferredOps, formatDate]);
 
   const flatItems = useMemo(() => {
     const items: FlatItem[] = [];
-    for (const [date, txs] of sortedTxs) {
+    for (const [date, ops] of sortedOps) {
       items.push({ type: 'header', date });
-      for (const tx of txs) {
-        const account = multisigAccountsMap[tx.accountId];
-        if (account) {
-          items.push({ type: 'operation', tx, account });
-        }
+      for (const item of ops) {
+        items.push({ type: 'operation', item });
       }
     }
 
     return items;
-  }, [sortedTxs, multisigAccountsMap]);
+  }, [sortedOps]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -107,14 +99,14 @@ export const Operations = () => {
       const item = flatItems[index];
       if (!item) return `unknown-${index}`;
 
-      return isHeaderItem(item) ? `header-${item.date}` : item.tx.id;
+      return isHeaderItem(item) ? `header-${item.date}` : item.item.operation.id;
     },
   });
 
   const focusedIndex = useMemo(() => {
     if (!focusedOperationId) return -1;
 
-    return flatItems.findIndex(item => item.type === 'operation' && item.tx.id === focusedOperationId);
+    return flatItems.findIndex(item => item.type === 'operation' && item.item.operation.id === focusedOperationId);
   }, [flatItems, focusedOperationId]);
 
   useEffect(() => {
@@ -144,13 +136,13 @@ export const Operations = () => {
             </div>
           )}
 
-          {!isDeferredLoading && deferredTxs.length === 0 && (
+          {!isDeferredLoading && deferredOps.length === 0 && (
             <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
               <EmptyOperations isEmptyFromFilters={isFiltersSelected} tab={tab} />
             </Box>
           )}
 
-          {deferredTxs.length > 0 && (
+          {deferredOps.length > 0 && (
             <div
               style={{
                 height: `${virtualizer.getTotalSize()}px`,
@@ -182,9 +174,9 @@ export const Operations = () => {
                     ) : (
                       <div className="pb-1.5">
                         <Operation
-                          operation={item.tx}
-                          multisigAccount={item.account}
-                          isDefaultOpen={item.tx.id === focusedOperationId}
+                          operation={item.item.operation}
+                          multisigAccount={item.item.account}
+                          isDefaultOpen={item.item.operation.id === focusedOperationId}
                           tab={tab}
                           chains={chains}
                           wallets={wallets}
