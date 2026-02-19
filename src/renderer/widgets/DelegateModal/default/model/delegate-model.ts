@@ -310,7 +310,8 @@ sample({
   clock: submitModel.output.formSubmitted,
   source: { hasMultisig: formModel.$hasAnyMultisig, coreTx: formModel.$coreTx, wrappedTx: formModel.$tx },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  filter: ({ hasMultisig }: { hasMultisig: boolean }, results: any) => hasMultisig && submitUtils.isSuccessResult(results[0]!.result),
+  filter: ({ hasMultisig }: { hasMultisig: boolean }, results: any) =>
+    hasMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: ({ coreTx, wrappedTx }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
 

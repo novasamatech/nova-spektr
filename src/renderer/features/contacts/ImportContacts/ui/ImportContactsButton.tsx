@@ -19,13 +19,9 @@ export const ImportContactsButton = () => {
   const [loadingToastId, setLoadingToastId] = useState<string | number | undefined>();
   const [hasShownSuccess, setHasShownSuccess] = useState(false);
 
-  const isLoading = useUnit(importContactsModel.$isLoading);
-  const hasError = useUnit(importContactsModel.$hasError);
-  const hasSuccess = useUnit(importContactsModel.$hasSuccess);
-  const showConflicts = useUnit(importContactsModel.$showConflicts);
-  const isEmptyList = useUnit(importContactsModel.$isEmptyList);
-  const isFileTooLarge = useUnit(importContactsModel.$isFileTooLarge);
-  const importedCount = useUnit(importContactsModel.$importedCount);
+  const importState = useUnit(importContactsModel.$importState);
+
+  const isLoading = importState.status === 'loading' || importState.status === 'importing';
 
   useEffect(() => {
     if (isLoading) {
@@ -46,37 +42,38 @@ export const ImportContactsButton = () => {
   }, [isLoading, toast, t, loadingToastId]);
 
   useEffect(() => {
-    if (!hasError) return;
+    if (importState.status !== 'error') return;
 
-    const description = isFileTooLarge ? (
-      t('addressBook.importContacts.errors.fileTooLarge')
-    ) : isEmptyList ? (
-      t('addressBook.importContacts.errors.emptyList')
-    ) : (
-      <div className="flex flex-col gap-2">
-        <span>{t('addressBook.importContacts.errors.description')}</span>
+    const description =
+      importState.reason === 'fileTooLarge' ? (
+        t('addressBook.importContacts.errors.fileTooLarge')
+      ) : importState.reason === 'emptyList' ? (
+        t('addressBook.importContacts.errors.emptyList')
+      ) : (
+        <div className="flex flex-col gap-2">
+          <span>{t('addressBook.importContacts.errors.description')}</span>
 
-        <InfoLink withLinkIcon url="https://docs.novaspektr.io/address-book/import">
-          {t('addressBook.importContacts.wikiLink')}
-        </InfoLink>
-      </div>
-    );
+          <InfoLink withLinkIcon url="https://docs.novaspektr.io/address-book/import">
+            {t('addressBook.importContacts.wikiLink')}
+          </InfoLink>
+        </div>
+      );
 
     toast.error(t('addressBook.importContacts.errors.title'), { description });
     importContactsModel.events.resetState();
-  }, [hasError, isFileTooLarge, isEmptyList, toast, t]);
+  }, [importState.status, toast, t]);
 
   useEffect(() => {
-    if (hasSuccess && !hasShownSuccess) {
+    if (importState.status === 'success' && !hasShownSuccess) {
       setHasShownSuccess(true);
 
-      if (importedCount > 0) {
+      if (importState.importedCount > 0) {
         toast.success(t('addressBook.importContacts.success'));
       }
 
       importContactsModel.events.resetState();
     }
-  }, [hasSuccess, hasShownSuccess, importedCount, toast, t]);
+  }, [importState, hasShownSuccess, toast, t]);
 
   const handleButtonClick = () => {
     fileInputRef.current?.click();
@@ -134,7 +131,7 @@ export const ImportContactsButton = () => {
         onChange={handleFileChange}
       />
 
-      {showConflicts && <ImportConflictsModal onClose={handleCloseDialog} />}
+      {importState.status === 'conflicts' && <ImportConflictsModal onClose={handleCloseDialog} />}
     </>
   );
 };

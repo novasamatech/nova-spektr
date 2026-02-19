@@ -207,7 +207,8 @@ sample({
 sample({
   clock: submitModel.done,
   source: { coreTx: $coreTx, wrappedTx: $tx, multisigAccount: formModel.$multisigAccount },
-  filter: ({ multisigAccount }, results) => nonNullable(multisigAccount) && submitUtils.isSuccessResult(results[0]!.result),
+  filter: ({ multisigAccount }, results) =>
+    nonNullable(multisigAccount) && submitUtils.isSuccessResult(results[0]!.result),
   fn: ({ coreTx, wrappedTx }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
 

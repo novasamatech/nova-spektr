@@ -1,15 +1,25 @@
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText, Loader, SmallTitleText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
-import { Box, Field, Modal, Select } from '@/shared/ui-kit';
+import { Box, Field, Modal, Select, useNotification } from '@/shared/ui-kit';
 import { authModel } from '../model/auth-model';
 
 export const AuthModal = () => {
+  const { t } = useI18n();
+  const { toast } = useNotification();
   const [isOpen, step, error] = useUnit([authModel.$isAuthModalOpen, authModel.$authStep, authModel.$error]);
+
+  useEffect(() => {
+    // eslint-disable-next-line effector/no-watch
+    return authModel.events.signInSucceeded.watch(() => {
+      toast.success(t('addressBook.auth.signInSuccess'));
+    });
+  }, [toast, t]);
 
   return (
     <Modal isOpen={isOpen} size="sm" onToggle={(open) => !open && authModel.events.modalClosed()}>
