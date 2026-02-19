@@ -4,10 +4,16 @@ import { isElectron } from '@/shared/lib/utils';
 
 type FetchResult = { ok: boolean; status: number; headers: Record<string, string>; body: string };
 
+let csrfToken: string | null = null;
+
+export function getCsrfToken(): string | null {
+  return csrfToken;
+}
+
 const challengeResponseSchema = z.object({
   challengeId: z.string(),
   nonce: z.string(),
-  expiresAt: z.string(),
+  expiresAt: z.number(),
 });
 
 const verifyResponseSchema = z.object({
@@ -24,19 +30,52 @@ type VerifyResponse = z.infer<typeof verifyResponseSchema>;
 type SessionResponse = z.infer<typeof sessionResponseSchema>;
 
 async function authFetch(url: string, init?: RequestInit): Promise<FetchResult> {
-  if (isElectron()) {
-    return window.App.proxyFetch(url, init);
+  const initHeaders = init?.headers;
+  const headers: Record<string, string> = {};
+
+  if (
+    initHeaders &&
+    typeof initHeaders === 'object' &&
+    !Array.isArray(initHeaders) &&
+    !(initHeaders instanceof Headers)
+  ) {
+    Object.assign(headers, initHeaders);
   }
 
-  const response = await fetch(url, { ...init, credentials: 'include' });
-  const body = await response.text();
+  if (csrfToken) {
+    headers['X-CSRF-Token'] = csrfToken;
+  }
 
-  return {
-    ok: response.ok,
-    status: response.status,
-    headers: {},
-    body,
-  };
+  const mergedInit: RequestInit = { ...init, headers };
+
+  let result: FetchResult;
+
+  if (isElectron()) {
+    result = await window.App.proxyFetch(url, mergedInit);
+  } else {
+    const response = await fetch(url, { ...mergedInit, credentials: 'include' });
+    const body = await response.text();
+
+    const responseHeaders: Record<string, string> = {};
+    // eslint-disable-next-line no-restricted-syntax
+    response.headers.forEach((value, key) => {
+      responseHeaders[key.toLowerCase()] = value;
+    });
+
+    result = {
+      ok: response.ok,
+      status: response.status,
+      headers: responseHeaders,
+      body,
+    };
+  }
+
+  const newToken = result.headers['x-csrf-token'];
+  if (newToken) {
+    csrfToken = newToken;
+  }
+
+  return result;
 }
 
 const errorResponseSchema = z.object({
@@ -89,6 +128,8 @@ export async function logout(baseUrl: string): Promise<void> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   });
+
+  csrfToken = null;
 
   if (!result.ok) {
     throw new Error(`Logout failed with status ${result.status}`);
