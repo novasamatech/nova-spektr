@@ -1,3 +1,4 @@
+export { BackendContactRow } from './BackendContactRow';
 export { ContactRow } from './ContactRow';
 export { ContactList } from './ContactList';
 export { EmptyContactList } from './EmptyContactList';

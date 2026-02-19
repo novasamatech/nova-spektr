@@ -211,7 +211,11 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: { isMultisig: unlockFormAggregate.$isMultisig, coreTx: unlockFormAggregate.$coreTx, wrappedTx: unlockFormAggregate.$tx },
+  source: {
+    isMultisig: unlockFormAggregate.$isMultisig,
+    coreTx: unlockFormAggregate.$coreTx,
+    wrappedTx: unlockFormAggregate.$tx,
+  },
   filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
   fn: ({ coreTx, wrappedTx }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;

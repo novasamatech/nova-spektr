@@ -86,7 +86,9 @@ export const getDestinationAccountId = (tx: MultisigOperation): AccountId | unde
     return getXcmTransactionBeneficiary(coreTx);
   }
 
-  return coreTx.args.dest;
+  if (!coreTx.args.dest) return undefined;
+
+  return toAccountId(coreTx.args.dest);
 };
 
 export const getPayee = (tx: MultisigOperation): { Account: Address } | string | undefined => {
