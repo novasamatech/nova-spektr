@@ -126,7 +126,9 @@ function validateDeepLink(
   }
 
   const account = accountsList.find(
-    acc => accountUtils.isAnyMultisigAccount(acc) && multisigService.getMultisigAccountId(acc) === data.accountId,
+    acc =>
+      accountUtils.isAnyMultisigAccount(acc) &&
+      (acc.accountId === data.accountId || multisigService.getMultisigAccountId(acc) === data.accountId),
   );
   if (nullable(account)) {
     return { type: 'accountNotFound' };

@@ -48,7 +48,15 @@ export function findAccountForOperation(
     );
   }
 
-  return multisigAccounts.find(a => accountUtils.isMultisigAccount(a) && a.accountId === operation.multisigAccountId);
+  return multisigAccounts.find(a => {
+    if (accountUtils.isMultisigAccount(a)) {
+      return a.accountId === operation.multisigAccountId;
+    }
+    if (accountUtils.isFlexibleMultisigAccount(a)) {
+      return a.multisigAccountId === operation.multisigAccountId;
+    }
+    return false;
+  });
 }
 
 export const getFilterableTxType = (operation: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
