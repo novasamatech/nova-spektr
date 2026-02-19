@@ -48,7 +48,7 @@ export const NotificationsList = () => {
                 </Accordion.Trigger>
                 <Accordion.Content>
                   <ul className="mt-1 flex flex-col gap-y-1.5">
-                    {notifications.slice(0, 3).map((notification) => (
+                    {notifications.map((notification) => (
                       <NotificationRow
                         key={notification.id}
                         notification={notification}
