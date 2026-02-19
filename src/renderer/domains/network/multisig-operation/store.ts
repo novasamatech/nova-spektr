@@ -30,14 +30,12 @@ const subscribeToAccounts = createEvent<{
   apis: Record<ChainId, ApiPromise>;
   accountIds: AccountId[];
   chains: Record<ChainId, Chain>;
-  proxiedAccountIdMap?: Record<AccountId, AccountId>;
 }>();
 
 const unsubscribeFromAccounts = createEvent();
 
 const $subscribedAccounts = createStore<AccountId[]>([]);
 const $subscribedApis = createStore<Record<ChainId, ApiPromise>>({});
-const $proxiedAccountIdMap = createStore<Record<AccountId, AccountId>>({});
 
 const $chainIdsWithMultisigSupport = createStore<ChainId[]>([]).reset(unsubscribeFromAccounts);
 const $initializedChainIds = createStore<ChainId[]>([]).reset(unsubscribeFromAccounts);
@@ -91,14 +89,19 @@ sample({
   clock: $trackedCallHashes,
   source: {
     chains: networkModel.$chains,
-    proxiedAccountIdMap: $proxiedAccountIdMap,
   },
-  fn: ({ chains, proxiedAccountIdMap }, state) => {
+  fn: ({ chains }, state) => {
     return Object.values(state).flatMap(el => {
       const chain = chains[el.api.genesisHash.toHex()];
       if (!chain) return [];
 
-      return [{ api: el.api, hashes: el.hashes, chain, proxiedAccountIdMap }];
+      return [
+        {
+          api: el.api,
+          hashes: el.hashes,
+          chain,
+        },
+      ];
     });
   },
   target: series(subscribeOnchainResource.subscribe, { parallel: true }),
@@ -192,12 +195,6 @@ sample({
   target: $subscribedApis,
 });
 
-sample({
-  clock: subscribeToAccounts,
-  fn: ({ proxiedAccountIdMap }) => proxiedAccountIdMap ?? {},
-  target: $proxiedAccountIdMap,
-});
-
 // Prevents premature cache invalidation when some APIs haven't connected yet
 sample({
   clock: subscribeToAccounts,
@@ -217,19 +214,24 @@ sample({
 
 sample({
   clock: subscribeToAccounts,
-  fn: ({ apis, accountIds, chains, proxiedAccountIdMap }) =>
+  fn: ({ apis, accountIds, chains }) =>
     entries(apis).flatMap(([chainId, api]) => {
       const chain = chains[chainId];
       if (!chain) return [];
 
-      return [{ api, chain, accountIds, proxiedAccountIdMap }];
+      return [
+        {
+          api,
+          chain,
+          accountIds,
+        },
+      ];
     }),
   target: series(initialOnChainFetch.fetch, { parallel: true }),
 });
 
 sample({
   clock: subscribeToAccounts,
-  fn: ({ apis, accountIds, chains, proxiedAccountIdMap }) => ({ apis, chains, accountIds, proxiedAccountIdMap }),
   target: fetchOffchainResource.fetch,
 });
 
@@ -241,7 +243,6 @@ sample({
     apis: $subscribedApis,
     accountIds: $subscribedAccounts,
     chains: networkModel.$chains,
-    proxiedAccountIdMap: $proxiedAccountIdMap,
   },
   filter: ({ accountIds }) => accountIds.length > 0,
   target: fetchOffchainResource.start,
@@ -265,7 +266,6 @@ sample({
     apis: $subscribedApis,
     accountIds: $subscribedAccounts,
     chains: networkModel.$chains,
-    proxiedAccountIdMap: $proxiedAccountIdMap,
   },
   filter: ({ accountIds }) => accountIds.length > 0,
   target: fetchOffchainResource.start,
@@ -308,12 +308,6 @@ sample({
   clock: unsubscribeFromAccounts,
   fn: () => ({}),
   target: $subscribedApis,
-});
-
-sample({
-  clock: unsubscribeFromAccounts,
-  fn: () => ({}),
-  target: $proxiedAccountIdMap,
 });
 
 sample({

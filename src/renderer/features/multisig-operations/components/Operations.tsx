@@ -85,6 +85,8 @@ export const Operations = () => {
       }
     }
 
+    console.log({ items });
+
     return items;
   }, [sortedOps]);
 

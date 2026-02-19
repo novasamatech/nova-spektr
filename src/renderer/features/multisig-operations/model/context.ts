@@ -190,7 +190,6 @@ const $isTabDataLoading = combine(
 sample({
   clock: multisigOperationsFeature.running,
   filter: ({ accountIds, apis }) => accountIds.length > 0 && Object.keys(apis).length > 0,
-  fn: ({ accountIds, apis, chains, proxiedAccountIdMap }) => ({ accountIds, apis, chains, proxiedAccountIdMap }),
   target: multisigOperation.subscribeToAccounts,
 });
 
