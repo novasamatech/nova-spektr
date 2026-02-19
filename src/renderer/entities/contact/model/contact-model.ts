@@ -55,7 +55,7 @@ const createContactsFx = createEffect(async (contacts: Omit<LocalContact, 'id'>[
 const updateContactFx = createEffect(async ({ id, ...rest }: Contact): Promise<Contact> => {
   await storageService.contacts.update(id, rest);
 
-  return { id, ...rest } as Contact;
+  return { id, ...rest } satisfies Contact;
 });
 
 const updateContactsFx = createEffect(async (contacts: Contact[]): Promise<Contact[]> => {
