@@ -3,14 +3,14 @@ import { spread } from 'patronum';
 
 import { type ClaimChunkWithAccountId, UnlockChunkType } from '@/shared/api/governance';
 import { Step, isStep, nonNullable } from '@/shared/lib/utils';
-import { type PathType, Paths } from '@/shared/routes';
+import { multisigOperationService } from '@/domains/network';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { networkSelectorModel } from '@/features/governance';
 import { locksModel } from '@/features/governance/model/locks';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type UnlockConfirm, unlockConfirmModel } from '@/features/operations/OperationsConfirm';
 import { type UnlockFormData } from '../lib/types';
 
@@ -24,7 +24,7 @@ const unlockFormStarted = createEvent();
 const txSaved = createEvent();
 
 const $unlockData = createStore<UnlockFormData | null>(null).reset(flowFinished);
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $redirectAfterSubmitPath = createStore<string | null>(null).reset(flowStarted);
 
 const $step = restore<Step>(stepChanged, Step.NONE);
 
@@ -211,9 +211,19 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: unlockFormAggregate.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: () => Paths.OPERATIONS,
+  source: { isMultisig: unlockFormAggregate.$isMultisig, coreTx: unlockFormAggregate.$coreTx, wrappedTx: unlockFormAggregate.$tx },
+  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ coreTx, wrappedTx }, results) => {
+    const { timepoint } = (results[0] as SuccessResult).params;
+
+    return multisigOperationService.generateMultisigOperationRelativeLink({
+      chainId: coreTx!.chainId,
+      callHash: wrappedTx!.args.callHash,
+      accountId: coreTx!.accountId,
+      blockCreated: timepoint.height,
+      indexCreated: timepoint.index,
+    });
+  },
   target: $redirectAfterSubmitPath,
 });
 

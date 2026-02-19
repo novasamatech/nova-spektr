@@ -3,11 +3,11 @@ import { spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
-import { type PathType, Paths } from '@/shared/routes';
+import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type TransferConfirmStore, transferConfirmModel } from '@/features/operations/OperationsConfirm';
 import { type NetworkStoreParams, type TransferStore, Step } from '../lib/types';
 
@@ -20,7 +20,7 @@ const flowFinished = createEvent();
 const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $redirectAfterSubmitPath = createStore<string | null>(null).reset(flowStarted);
 
 const $transferStore = createStore<TransferStore | null>(null);
 
@@ -206,9 +206,19 @@ sample({
 
 sample({
   clock: submitModel.done,
-  source: formModel.$multisigAccount,
-  filter: (multisigAccount, results) => nonNullable(multisigAccount) && submitUtils.isSuccessResult(results[0]!.result),
-  fn: () => Paths.OPERATIONS,
+  source: { coreTx: $coreTx, wrappedTx: $tx, multisigAccount: formModel.$multisigAccount },
+  filter: ({ multisigAccount }, results) => nonNullable(multisigAccount) && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ coreTx, wrappedTx }, results) => {
+    const { timepoint } = (results[0] as SuccessResult).params;
+
+    return multisigOperationService.generateMultisigOperationRelativeLink({
+      chainId: coreTx!.chainId,
+      callHash: wrappedTx!.args.callHash,
+      accountId: coreTx!.accountId,
+      blockCreated: timepoint.height,
+      indexCreated: timepoint.index,
+    });
+  },
   target: $redirectAfterSubmitPath,
 });
 
