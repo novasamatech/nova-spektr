@@ -5,13 +5,27 @@ import { type Contact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { ContactList, ContactRow, EmptyContactList, EmptyFilteredContacts, contactModel } from '@/entities/contact';
-import { ContactFilter, CreateContactNavigation, ImportContactsButton, filterModel } from '@/features/contacts';
+import {
+  AuthModal,
+  BackendConfigurationButton,
+  BackendConfigurationModal,
+  BackendConnectionCard,
+  ContactFilter,
+  CreateContactNavigation,
+  ImportContactsButton,
+  backendConfigurationModel,
+  filterModel,
+} from '@/features/contacts';
 import { SendToContactModal, sendToContactModel } from '@/features/send-to-contact';
 
 export const Contacts = () => {
   const { t } = useI18n();
 
-  const [contacts, contactsFiltered] = useUnit([contactModel.$contacts, filterModel.$contactsFiltered]);
+  const [contacts, contactsFiltered, hasBackend] = useUnit([
+    contactModel.$contacts,
+    filterModel.$contactsFiltered,
+    backendConfigurationModel.$hasBackend,
+  ]);
 
   const hasContacts = contacts.length > 0;
   const hasContactsFiltered = contactsFiltered.length > 0;
@@ -24,9 +38,12 @@ export const Contacts = () => {
     <>
       <div className="flex h-full flex-col">
         <Header title={t('addressBook.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-          <div className="grid grid-cols-[230px_1fr] items-center gap-x-4">
-            <ContactFilter />
-            <div className="flex justify-end gap-x-4">
+          <div className="flex items-center gap-x-4">
+            {hasBackend ? <BackendConnectionCard /> : <BackendConfigurationButton />}
+            <div className="w-[230px]">
+              <ContactFilter />
+            </div>
+            <div className="ml-auto flex items-center justify-end gap-x-4">
               <CreateContactNavigation />
               <ImportContactsButton />
             </div>
@@ -53,6 +70,8 @@ export const Contacts = () => {
       <Outlet />
 
       <SendToContactModal />
+      <BackendConfigurationModal />
+      <AuthModal />
     </>
   );
 };
