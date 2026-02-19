@@ -388,7 +388,10 @@ sample({
           ...delegateData!,
           signatory: delegateData!.signatory!,
           ...(isUnchanged && {
-            balance: getBalanceBn(activeDelegations[shard.accountId]?.balance.toString() ?? '0', asset.precision).toString(),
+            balance: getBalanceBn(
+              activeDelegations[shard.accountId]?.balance.toString() ?? '0',
+              asset.precision,
+            ).toString(),
             conviction: activeDelegations[shard.accountId]?.conviction,
           }),
           previousConviction: activeDelegations[shard.accountId]?.conviction ?? 'None',
@@ -460,7 +463,13 @@ sample({
     step: $step,
   },
   filter: ({ delegateData, walletData, transactions, accounts, step }) => {
-    return Boolean(delegateData) && Boolean(walletData) && Boolean(transactions) && accounts.length > 0 && isStep(step, Step.SIGN);
+    return (
+      Boolean(delegateData) &&
+      Boolean(walletData) &&
+      Boolean(transactions) &&
+      accounts.length > 0 &&
+      isStep(step, Step.SIGN)
+    );
   },
   fn: (delegateFlowData, signParams) => ({
     event: {

@@ -153,10 +153,12 @@ sample({
   target: $authState,
 });
 
+const signInSucceeded = createEvent();
+
 sample({
   clock: signAndVerifyFx.done,
   fn: () => false,
-  target: $isAuthModalOpen,
+  target: [$isAuthModalOpen, signInSucceeded],
 });
 
 // Wiring: effect failures → error step
@@ -231,6 +233,7 @@ export const authModel = {
 
   events: {
     signInClicked,
+    signInSucceeded,
     signOutClicked,
     accountSelected,
     signConfirmed,

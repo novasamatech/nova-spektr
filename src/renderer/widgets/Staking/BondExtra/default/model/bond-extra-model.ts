@@ -9,7 +9,12 @@ import { transactionService } from '@/entities/transaction';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { type SubmitInputDeprecated, type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import {
+  type SubmitInputDeprecated,
+  type SuccessResult,
+  submitModel,
+  submitUtils,
+} from '@/features/operations/OperationSubmit';
 import { type BondExtraConfirm, bondExtraConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { type WalletDataShards, Step } from '../lib/types';
 

@@ -17,9 +17,11 @@ import {
   addAccountCreatedAt,
   addAccountNameType,
   addFlexibleMultisigProxyType,
+  backupContactsBeforePKChange,
   migrateAccounts,
   migrateBasketTransactionAfterAddressRemoval,
   migrateCASBasket,
+  migrateContactsToStringIds,
   migrateDuplicateVaultDerivations,
   migrateEVMAccountsCryptoType,
   migrateEvents,
@@ -31,6 +33,7 @@ import {
   migrateWallets,
   removeDeprecatedProxiedAccounts,
   renameBlockNumberToEntropyBlockNumber,
+  restoreContactsAfterPKChange,
 } from '../migration';
 
 class DexieStorage extends Dexie {
@@ -156,6 +159,12 @@ class DexieStorage extends Dexie {
 
     this.version(44).upgrade(addAccountCreatedAt);
 
+    // Primary key change (++id → id) requires backup → delete → recreate → restore
+    this.version(45).stores({ _contactsBackup: '++id' }).upgrade(backupContactsBeforePKChange);
+    this.version(46).stores({ contacts: null });
+    this.version(47).stores({ contacts: 'id,source' }).upgrade(restoreContactsAfterPKChange);
+    this.version(48).stores({ _contactsBackup: null });
+
     this.connections = this.table('connections');
     this.balances2 = this.table('balances2');
     this.wallets = this.table('wallets');
@@ -183,11 +192,12 @@ export const exportDb = async () => {
 export const importDb = async (blob: Blob) => {
   await importInto(dexie, blob, { acceptVersionDiff: true });
 
-  await dexie.transaction('rw', dexie.accounts2, dexie.notifications, async (t) => {
+  await dexie.transaction('rw', dexie.accounts2, dexie.notifications, dexie.contacts, async (t) => {
     await addAccountNameType(t);
     await migrateNotificationStructure(t);
     await addFlexibleMultisigProxyType(t);
     await addAccountCreatedAt(t);
+    await migrateContactsToStringIds(t);
   });
 };
 
