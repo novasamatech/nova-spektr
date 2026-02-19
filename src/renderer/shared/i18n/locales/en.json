@@ -95,6 +95,22 @@
       "description": "Are you sure you want to remove {name} from contacts?",
       "title": "Delete contact"
     },
+    "auth": {
+      "closeButton": "Close",
+      "connectedAccountLabel": "Connected account",
+      "disconnectButton": "Disconnect",
+      "errorTitle": "Authentication failed",
+      "modalTitle": "Sign in to Address Book",
+      "noExtensionAccounts": "No extension wallet accounts available",
+      "notConnected": "Not signed in",
+      "selectAccountLabel": "Select account",
+      "selectAccountPlaceholder": "Choose an account",
+      "signButton": "Sign",
+      "signInButton": "Sign in",
+      "signOutButton": "Sign out",
+      "signingMessage": "Waiting for signature...",
+      "tryAgainButton": "Try again"
+    },
     "backendConfiguration": {
       "addTitle": "Add Backend",
       "buttonLabel": "External source",
@@ -1893,6 +1909,7 @@
       "addressColumn": "Address",
       "manageTitle": "Set up your wallet",
       "nameColumn": "Account name",
+      "connectionFailed": "Connection failed",
       "pairedDescription": "Paired",
       "rejected": "Pairing rejected",
       "scanTitle": "Scan with your mobile wallet",
@@ -2095,7 +2112,8 @@
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
       "errors": {
-        "otherError": "The request was rejected due to a technical issue. Check your internet connection or try to reconnect your wallet.",
+        "connectionFailed": "Connection failed",
+        "connectionFailedDescription": "Could not connect to WalletConnect. Check your internet connection and try again.",
         "rejected": "Operation rejected",
         "userRejected": "You rejected the request in WalletConnect."
       },
@@ -3064,6 +3082,8 @@
       "refreshButton": "Refresh",
       "rejectDescription": "The operation was successfully canceled",
       "rejectTitle": "Rejected",
+      "connectionFailedTitle": "Connection failed",
+      "connectionFailedDescription": "Could not connect to WalletConnect. Check your internet connection and try again.",
       "signTitle": "Scan with {walletName} to reconnect your wallet"
     }
   },
