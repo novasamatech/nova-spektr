@@ -369,6 +369,14 @@ const $populated = restore(
 
 persist({ store: $cachedOperations, key: 'multisig-operations', done: cachedOperationsLoaded });
 
+// Clear stale cached operations that lack required fields (old format before multisigAccountId was added)
+sample({
+  clock: cachedOperationsLoaded,
+  filter: ({ value }) => value.some(op => !op.multisigAccountId),
+  fn: () => [],
+  target: $cachedOperations,
+});
+
 const updateCallData = createEvent<{
   chainId: ChainId;
   multisigAccountId: AccountId;

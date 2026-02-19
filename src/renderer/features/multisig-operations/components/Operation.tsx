@@ -170,9 +170,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
               <OperationTitleStatus operation={operation} account={multisigAccount} />
 
-              <AsyncItem strategy="idle" fallback={<div />}>
-                <OperationActions operation={operation} account={multisigAccount} />
-              </AsyncItem>
+              <OperationActions operation={operation} account={multisigAccount} />
             </div>
 
             <Tooltip>

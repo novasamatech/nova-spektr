@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type GenericExtrinsic } from '@polkadot/types';
 import { type AnyTuple } from '@polkadot/types/types';
-import { BN, u8aToHex } from '@polkadot/util';
+import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 
 import {
@@ -58,24 +58,6 @@ export const serializeOperation = <T extends NoID<MultisigOperation>>(tx: T) => 
     ...tx,
     deposit: tx.deposit?.toString(),
   } as Serializable<T>;
-};
-
-export const deserializeOperation = (tx: Serializable<MultisigOperation>): MultisigOperation => {
-  // Backward compatibility: cached operations may have old `accountId` field
-  const raw = tx as Serializable<MultisigOperation> & { accountId?: AccountId };
-  const multisigAccountId = tx.multisigAccountId ?? raw.accountId;
-
-  if (!multisigAccountId) {
-    throw new Error('MultisigOperation missing multisigAccountId');
-  }
-
-  const { accountId: _, ...rest } = raw;
-
-  return {
-    ...rest,
-    multisigAccountId,
-    deposit: tx.deposit ? new BN(tx.deposit) : undefined,
-  };
 };
 
 function findInnerExtrinsicCall(extrinsic: GenericExtrinsic<AnyTuple>) {
