@@ -90,7 +90,9 @@ async function createOperationFromMultisig({
   }
 
   const isProxyCall = decodedTransaction?.section === 'proxy' && decodedTransaction?.method === 'proxy';
-  const proxiedAccountId = isProxyCall && decodedTransaction ? toAccountId(decodedTransaction.args['real']) : undefined;
+  const realProxiedAddress: string | null =
+    isProxyCall && decodedTransaction ? (decodedTransaction.args['real'] satisfies string) : null;
+  const proxiedAccountId = isProxyCall && realProxiedAddress ? toAccountId(realProxiedAddress) : undefined;
 
   return {
     id: operationId,
