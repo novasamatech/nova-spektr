@@ -41,11 +41,6 @@ sample({
   target: fetchBackendContactsFx,
 });
 
-// Clear backend contacts from DB on sign out
-sample({
-  clock: authModel.events.signOutClicked,
-  target: contactModel.effects.clearBackendContactsFx,
-});
 $error.on(authModel.events.signOutClicked, () => null);
 
 // Clear backend contacts from DB on URL cleared

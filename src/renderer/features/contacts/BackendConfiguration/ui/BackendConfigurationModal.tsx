@@ -5,12 +5,13 @@ import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { Button, FootnoteText, InputHint } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
-import { Box, Field, Input, Modal } from '@/shared/ui-kit';
+import { Box, Field, Input, Modal, useNotification } from '@/shared/ui-kit';
 import { authModel } from '../model/auth-model';
 import { backendConfigurationModel } from '../model/backend-configuration-model';
 
 export const BackendConfigurationModal = () => {
   const { t } = useI18n();
+  const { toast } = useNotification();
 
   const [isOpen, draftUrl, isValid, hasBackend, isAuthenticated, authState] = useUnit([
     backendConfigurationModel.$isModalOpen,
@@ -80,7 +81,13 @@ export const BackendConfigurationModal = () => {
       </Modal.Content>
       <Modal.Footer>
         {hasBackend && (
-          <Button variant="text" onClick={() => backendConfigurationModel.events.urlCleared()}>
+          <Button
+            variant="text"
+            onClick={() => {
+              backendConfigurationModel.events.urlCleared();
+              toast.success(t('addressBook.backendConfiguration.backendRemoved'));
+            }}
+          >
             {t('addressBook.actions.delete')}
           </Button>
         )}

@@ -109,7 +109,8 @@
       "signInButton": "Sign in",
       "signOutButton": "Sign out",
       "signingMessage": "Waiting for signature...",
-      "tryAgainButton": "Try again"
+      "tryAgainButton": "Try again",
+      "signInSuccess": "Successfully signed in"
     },
     "backendConfiguration": {
       "addTitle": "Add Backend",
@@ -120,7 +121,8 @@
       "urlInvalidError": "Please enter a valid URL",
       "saveButton": "Save",
       "connectionLabel": "Backend connection",
-      "tooltip": "Configure address book backend"
+      "tooltip": "Configure address book backend",
+      "backendRemoved": "Backend removed"
     },
     "searchPlaceholder": "Search",
     "sources": {
