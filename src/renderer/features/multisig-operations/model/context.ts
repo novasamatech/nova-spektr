@@ -239,8 +239,16 @@ sample({
   fn: ({ operations, hiddenIds }, operationId): TabFilter => {
     if (hiddenIds.includes(operationId!)) return 'hidden';
     const operation = operations.find(op => op.id === operationId);
-    return operation?.status === 'pending' ? 'pending' : 'history';
+    if (!operation) return 'pending';
+    return operation.status === 'pending' ? 'pending' : 'history';
   },
+  target: setTab,
+});
+
+// Reset to pending tab every time the Operations page is opened
+sample({
+  clock: multisigOperationsFeature.gate.open,
+  fn: (): TabFilter => 'pending',
   target: setTab,
 });
 
