@@ -174,7 +174,7 @@ sample({
     return multisigOperationService.generateMultisigOperationRelativeLink({
       chainId: coreTx![0]!.chainId,
       callHash: wrappedTx![0]!.args.callHash,
-      accountId: coreTx![0]!.accountId,
+      multisigAccountId: coreTx![0]!.accountId,
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });
