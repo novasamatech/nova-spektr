@@ -2,27 +2,34 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { type Address } from './general';
 
-export type Contact = {
+type BaseContact = {
   id: string;
   name: string;
   address: Address;
   accountId: AccountId;
-  source: 'local' | 'backend';
+};
 
-  // Backend-only fields (null for local contacts)
-  entityName: string | null;
-  chainId: string | null;
-  chainName: string | null;
-  categoryName: string | null;
+export type LocalContact = BaseContact & {
+  source: 'local';
+};
+
+export type BackendContact = BaseContact & {
+  source: 'backend';
+  entityName: string;
+  chainId: string;
+  chainName: string;
+  categoryName: string;
   contactTypeName: string | null;
   derivationPath: string | null;
   ownerPublicKey: string | null;
 };
 
-export type ContactSource = { type: 'local' } | { type: 'backend'; backendUrl: string };
+export type Contact = LocalContact | BackendContact;
 
-export type SourcedContact = { source: ContactSource; contact: Contact };
-
-export function isBackendContact(contact: Contact): boolean {
+export function isBackendContact(contact: Contact): contact is BackendContact {
   return contact.source === 'backend';
+}
+
+export function isLocalContact(contact: Contact): contact is LocalContact {
+  return contact.source === 'local';
 }

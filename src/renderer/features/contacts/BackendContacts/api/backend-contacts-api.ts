@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { type Contact } from '@/shared/core';
+import { type BackendContact, type Contact } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { authFetch } from '../../BackendConfiguration/lib/backend-fetch';
 
@@ -19,7 +19,7 @@ type RawBackendContact = z.infer<typeof backendContactSchema>;
 
 const PAGE_SIZE = 100;
 
-function mapToContact(raw: RawBackendContact): Contact {
+function mapToContact(raw: RawBackendContact): BackendContact {
   const address = toAddress(raw.publicKey);
   const accountId = toAccountId(address);
 

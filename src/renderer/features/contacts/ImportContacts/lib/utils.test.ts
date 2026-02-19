@@ -10,16 +10,9 @@ const ALICE_ADDRESS = '15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5' as Addr
 const BOB_ADDRESS = '14E5nqKAp3oAJcmzgZhUD2RcptBeUBScxKHgJKU4HPNcKVf3' as Address;
 const CHARLIE_ADDRESS = '1zugcavYA9yCuYwiEYeMHNJm9gXznYjNfXQjZsZukF1Mpow' as Address;
 
-const LOCAL_DEFAULTS = {
-  source: 'local' as const,
-  entityName: null,
-  chainId: null,
-  chainName: null,
-  categoryName: null,
-  contactTypeName: null,
-  derivationPath: null,
-  ownerPublicKey: null,
-};
+function localContact(overrides: { id: string; name: string; address: Address; accountId: string }): Contact {
+  return { ...overrides, source: 'local' as const } as Contact;
+}
 
 describe('contactImportUtils', () => {
   describe('parseJSON', () => {
@@ -117,13 +110,12 @@ describe('contactImportUtils', () => {
         { name: 'Bob', address: BOB_ADDRESS },
       ];
       const existing: Contact[] = [
-        {
+        localContact({
           id: 'test-uuid-1',
           name: 'Charlie',
           address: toAddress(CHARLIE_ADDRESS),
           accountId: toAccountId(CHARLIE_ADDRESS),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ];
 
       const conflicts = contactImportUtils.detectAccountIdConflicts(imported, existing);
@@ -134,13 +126,12 @@ describe('contactImportUtils', () => {
     it('should detect conflicts when accountIds match', () => {
       const imported = [{ name: 'Alice', address: ALICE_ADDRESS }];
       const existing: Contact[] = [
-        {
+        localContact({
           id: 'test-uuid-1',
           name: 'OldAlice',
           address: toAddress(ALICE_ADDRESS),
           accountId: toAccountId(ALICE_ADDRESS),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ];
 
       const conflicts = contactImportUtils.detectAccountIdConflicts(imported, existing);
@@ -157,20 +148,18 @@ describe('contactImportUtils', () => {
         { name: 'Bob', address: BOB_ADDRESS },
       ];
       const existing: Contact[] = [
-        {
+        localContact({
           id: 'test-uuid-1',
           name: 'OldAlice',
           address: ALICE_ADDRESS,
           accountId: toAccountId(ALICE_ADDRESS),
-          ...LOCAL_DEFAULTS,
-        },
-        {
+        }),
+        localContact({
           id: 'test-uuid-2',
           name: 'OldBob',
           address: BOB_ADDRESS,
           accountId: toAccountId(BOB_ADDRESS),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ];
 
       const conflicts = contactImportUtils.detectAccountIdConflicts(imported, existing);
@@ -186,13 +175,12 @@ describe('contactImportUtils', () => {
         { name: 'Bob', address: BOB_ADDRESS },
       ];
       const existing: Contact[] = [
-        {
+        localContact({
           id: 'test-uuid-1',
           name: 'Charlie',
           address: toAddress(CHARLIE_ADDRESS),
           accountId: toAccountId(CHARLIE_ADDRESS),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ];
 
       const resolved = contactImportUtils.resolveNameConflicts(imported, existing);
@@ -204,13 +192,12 @@ describe('contactImportUtils', () => {
     it('should add (1) suffix for duplicate name with different accountId', () => {
       const imported = [{ name: 'Alice', address: ALICE_ADDRESS }];
       const existing: Contact[] = [
-        {
+        localContact({
           id: 'test-uuid-1',
           name: 'Alice',
           address: toAddress(BOB_ADDRESS),
           accountId: toAccountId(BOB_ADDRESS),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ];
 
       const resolved = contactImportUtils.resolveNameConflicts(imported, existing);
@@ -221,13 +208,12 @@ describe('contactImportUtils', () => {
     it('should not add suffix for same accountId (accountId conflict, not name conflict)', () => {
       const imported = [{ name: 'Alice', address: ALICE_ADDRESS }];
       const existing: Contact[] = [
-        {
+        localContact({
           id: 'test-uuid-1',
           name: 'Alice',
           address: toAddress(ALICE_ADDRESS),
           accountId: toAccountId(ALICE_ADDRESS),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ];
 
       const resolved = contactImportUtils.resolveNameConflicts(imported, existing);
@@ -238,20 +224,18 @@ describe('contactImportUtils', () => {
     it('should increment suffix when (1) already exists', () => {
       const imported = [{ name: 'Alice', address: ALICE_ADDRESS }];
       const existing: Contact[] = [
-        {
+        localContact({
           id: 'test-uuid-1',
           name: 'Alice',
           address: toAddress(BOB_ADDRESS),
           accountId: toAccountId(BOB_ADDRESS),
-          ...LOCAL_DEFAULTS,
-        },
-        {
+        }),
+        localContact({
           id: 'test-uuid-2',
           name: 'Alice (1)',
           address: toAddress(CHARLIE_ADDRESS),
           accountId: toAccountId(CHARLIE_ADDRESS),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ];
 
       const resolved = contactImportUtils.resolveNameConflicts(imported, existing);
@@ -277,13 +261,12 @@ describe('contactImportUtils', () => {
     it('should handle case-insensitive name matching', () => {
       const imported = [{ name: 'alice', address: ALICE_ADDRESS }];
       const existing: Contact[] = [
-        {
+        localContact({
           id: 'test-uuid-1',
           name: 'ALICE',
           address: toAddress(BOB_ADDRESS),
           accountId: toAccountId(BOB_ADDRESS),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ];
 
       const resolved = contactImportUtils.resolveNameConflicts(imported, existing);

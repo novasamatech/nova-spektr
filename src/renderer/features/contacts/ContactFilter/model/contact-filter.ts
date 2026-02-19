@@ -1,6 +1,6 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
-import { type SourcedContact } from '@/shared/core';
+import { type Contact } from '@/shared/core';
 import { includes } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 import { backendConfigurationModel } from '../../BackendConfiguration';
@@ -22,24 +22,7 @@ sample({
   target: $query,
 });
 
-const $contactsFiltered = combine(
-  {
-    contacts: contactModel.$localContacts,
-    query: $query,
-  },
-  ({ contacts, query }) => {
-    return contacts
-      .filter((c) => {
-        const hasName = includes(c.name, query);
-        const hasAddress = includes(c.address, query);
-
-        return hasName || hasAddress;
-      })
-      .sort((a, b) => a.name.localeCompare(b.name));
-  },
-);
-
-const $sourcedContactsFiltered = combine(
+const $filteredContacts = combine(
   {
     localContacts: contactModel.$localContacts,
     backendContacts: contactModel.$backendContacts,
@@ -48,28 +31,27 @@ const $sourcedContactsFiltered = combine(
     backendUrl: backendConfigurationModel.$backendUrl,
   },
   ({ localContacts, backendContacts, query, sourceTab, backendUrl }) => {
-    const result: SourcedContact[] = [];
+    const result: Contact[] = [];
 
     if (sourceTab === 'local') {
       for (const contact of localContacts) {
         if (query && !includes(contact.name, query) && !includes(contact.address, query)) continue;
-        result.push({ source: { type: 'local' }, contact });
+        result.push(contact);
       }
     } else if (backendUrl) {
       for (const contact of backendContacts) {
         if (query && !includes(contact.name, query) && !includes(contact.address, query)) continue;
-        result.push({ source: { type: 'backend', backendUrl }, contact });
+        result.push(contact);
       }
     }
 
-    return result.sort((a, b) => a.contact.name.localeCompare(b.contact.name));
+    return result.sort((a, b) => a.name.localeCompare(b.name));
   },
 );
 
 export const filterModel = {
   $query,
-  $contactsFiltered,
-  $sourcedContactsFiltered,
+  $filteredContacts,
 
   events: {
     formInitiated,

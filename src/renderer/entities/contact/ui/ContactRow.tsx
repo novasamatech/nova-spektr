@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import { type Contact } from '@/shared/core';
+import { type Contact, type LocalContact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Paths, createLink } from '@/shared/routes';
 import { IconButton, Plate } from '@/shared/ui';
@@ -9,7 +9,7 @@ import { Copy, useNotification } from '@/shared/ui-kit';
 import { contactModel } from '../model/contact-model';
 
 type Props = {
-  contact: Contact;
+  contact: LocalContact;
   onSendTo?: (contact: Contact) => void;
 };
 

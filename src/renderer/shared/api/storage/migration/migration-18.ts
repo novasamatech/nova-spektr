@@ -23,13 +23,6 @@ export async function restoreContactsAfterPKChange(t: Transaction): Promise<void
     ...c,
     id: crypto.randomUUID(),
     source: 'local' as const,
-    entityName: null,
-    chainId: null,
-    chainName: null,
-    categoryName: null,
-    contactTypeName: null,
-    derivationPath: null,
-    ownerPublicKey: null,
   }));
 
   await t.table('contacts').bulkPut(migrated);
@@ -51,13 +44,6 @@ export async function migrateContactsToStringIds(t: Transaction): Promise<void> 
     ...c,
     id: typeof c.id === 'string' ? c.id : crypto.randomUUID(),
     source: c.source ?? 'local',
-    entityName: c.entityName ?? null,
-    chainId: c.chainId ?? null,
-    chainName: c.chainName ?? null,
-    categoryName: c.categoryName ?? null,
-    contactTypeName: c.contactTypeName ?? null,
-    derivationPath: c.derivationPath ?? null,
-    ownerPublicKey: c.ownerPublicKey ?? null,
   }));
 
   await t.table('contacts').bulkPut(migrated);

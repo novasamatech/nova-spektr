@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { type ChainId } from '@/shared/core';
+import { type ChainId, isBackendContact } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { accountService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -18,7 +18,7 @@ export const SendToContactModal = () => {
 
   const compatibleChains = chains.filter((chain) => accountService.isAccountSchemeMatchChain(contact.accountId, chain));
 
-  const contactChain = contact.chainId ? chainsMap[contact.chainId as ChainId] : null;
+  const contactChain = isBackendContact(contact) && contact.chainId ? chainsMap[contact.chainId as ChainId] : null;
   const defaultChain = contactChain ?? compatibleChains[0];
 
   if (nullable(defaultChain)) {

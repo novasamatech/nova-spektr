@@ -374,13 +374,6 @@ describe('account service', () => {
           name: 'Contact Name',
           address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
           source: 'local',
-          entityName: null,
-          chainId: null,
-          chainName: null,
-          categoryName: null,
-          contactTypeName: null,
-          derivationPath: null,
-          ownerPublicKey: null,
         },
       ];
 
@@ -404,13 +397,6 @@ describe('account service', () => {
           name: 'Contact Name',
           address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
           source: 'local',
-          entityName: null,
-          chainId: null,
-          chainName: null,
-          categoryName: null,
-          contactTypeName: null,
-          derivationPath: null,
-          ownerPublicKey: null,
         },
       ];
 
@@ -526,13 +512,6 @@ describe('account service', () => {
           name: 'Contact Name',
           address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
           source: 'local',
-          entityName: null,
-          chainId: null,
-          chainName: null,
-          categoryName: null,
-          contactTypeName: null,
-          derivationPath: null,
-          ownerPublicKey: null,
         },
       ];
 

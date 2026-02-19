@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { Outlet } from 'react-router-dom';
 
-import { type Contact } from '@/shared/core';
+import { type Contact, isBackendContact, isLocalContact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { BodyText, Button, Header, Icon, IconButton } from '@/shared/ui';
@@ -28,6 +28,32 @@ import {
 } from '@/features/contacts';
 import { SendToContactModal, sendToContactModel } from '@/features/send-to-contact';
 
+type ViewState =
+  | { view: 'loading' }
+  | { view: 'error'; message: string }
+  | { view: 'emptyLocal' }
+  | { view: 'emptyBackend' }
+  | { view: 'noResults' }
+  | { view: 'contacts'; items: Contact[] };
+
+function computeViewState(params: {
+  isBackendTab: boolean;
+  isLoading: boolean;
+  backendError: string | null;
+  localContacts: Contact[];
+  filteredContacts: Contact[];
+}): ViewState {
+  const { isBackendTab, isLoading, backendError, localContacts, filteredContacts } = params;
+
+  if (isBackendTab && isLoading) return { view: 'loading' };
+  if (isBackendTab && backendError) return { view: 'error', message: backendError };
+  if (isBackendTab && filteredContacts.length === 0) return { view: 'emptyBackend' };
+  if (!isBackendTab && localContacts.length === 0) return { view: 'emptyLocal' };
+  if (!isBackendTab && filteredContacts.length === 0) return { view: 'noResults' };
+
+  return { view: 'contacts', items: filteredContacts };
+}
+
 const ContactSkeleton = () => (
   <div className="flex animate-pulse flex-col gap-y-2.5 rounded-md bg-white p-3">
     <div className="flex items-center gap-x-2">
@@ -45,9 +71,8 @@ const ContactSkeleton = () => (
   </div>
 );
 
-const LoadingState = () => (
+const LoadingView = () => (
   <ul className="flex flex-col gap-y-2">
-    {}
     {Array.from({ length: 5 }).map((_, i) => (
       <li key={i}>
         <ContactSkeleton />
@@ -56,7 +81,7 @@ const LoadingState = () => (
   </ul>
 );
 
-const ErrorState = ({ error, onRetry }: { error: string; onRetry: () => void }) => {
+const ErrorView = ({ error, onRetry }: { error: string; onRetry: () => void }) => {
   const { t } = useI18n();
 
   return (
@@ -73,7 +98,7 @@ const ErrorState = ({ error, onRetry }: { error: string; onRetry: () => void }) 
   );
 };
 
-const EmptyBackendState = () => {
+const EmptyBackendView = () => {
   const { t } = useI18n();
 
   return (
@@ -86,13 +111,40 @@ const EmptyBackendState = () => {
   );
 };
 
+function renderViewState(viewState: ViewState, onSendTo: (contact: Contact) => void, onRetry: () => void) {
+  switch (viewState.view) {
+    case 'loading':
+      return <LoadingView />;
+    case 'error':
+      return <ErrorView error={viewState.message} onRetry={onRetry} />;
+    case 'emptyBackend':
+      return <EmptyBackendView />;
+    case 'emptyLocal':
+      return <EmptyContactList />;
+    case 'noResults':
+      return <EmptyFilteredContacts />;
+    case 'contacts':
+      return (
+        <ul className="flex flex-col gap-y-2">
+          {viewState.items.map((contact) =>
+            isBackendContact(contact) ? (
+              <BackendContactRow key={contact.id} contact={contact} onSendTo={onSendTo} />
+            ) : isLocalContact(contact) ? (
+              <ContactRow key={contact.id} contact={contact} onSendTo={onSendTo} />
+            ) : null,
+          )}
+        </ul>
+      );
+  }
+}
+
 export const Contacts = () => {
   const { t } = useI18n();
 
   const [
     localContacts,
     backendContacts,
-    sourcedContactsFiltered,
+    filteredContacts,
     availableSources,
     sourceTab,
     hasBackend,
@@ -101,7 +153,7 @@ export const Contacts = () => {
   ] = useUnit([
     contactModel.$localContacts,
     contactModel.$backendContacts,
-    filterModel.$sourcedContactsFiltered,
+    filterModel.$filteredContacts,
     contactSourceModel.$availableSources,
     contactSourceModel.$sourceTab,
     backendConfigurationModel.$hasBackend,
@@ -119,8 +171,14 @@ export const Contacts = () => {
 
   const showTabs = availableSources.length > 0;
   const isBackendTab = sourceTab !== 'local';
-  const hasContacts = isBackendTab ? sourcedContactsFiltered.length > 0 : localContacts.length > 0;
-  const hasFilteredContacts = sourcedContactsFiltered.length > 0;
+
+  const viewState = computeViewState({
+    isBackendTab,
+    isLoading,
+    backendError,
+    localContacts,
+    filteredContacts,
+  });
 
   return (
     <>
@@ -154,31 +212,7 @@ export const Contacts = () => {
               </div>
             )}
 
-            {isBackendTab && isLoading && <LoadingState />}
-
-            {isBackendTab && !isLoading && backendError && <ErrorState error={backendError} onRetry={handleSync} />}
-
-            {isBackendTab && !isLoading && !backendError && !hasFilteredContacts && <EmptyBackendState />}
-
-            {!isBackendTab && !hasContacts && <EmptyContactList />}
-
-            {!isBackendTab && hasContacts && !hasFilteredContacts && <EmptyFilteredContacts />}
-
-            {hasFilteredContacts && !isBackendTab && (
-              <ul className="flex flex-col gap-y-2">
-                {sourcedContactsFiltered.map((sourced) => (
-                  <ContactRow key={sourced.contact.id} contact={sourced.contact} onSendTo={handleSendTo} />
-                ))}
-              </ul>
-            )}
-
-            {hasFilteredContacts && isBackendTab && (
-              <ul className="flex flex-col gap-y-2">
-                {sourcedContactsFiltered.map((sourced) => (
-                  <BackendContactRow key={sourced.contact.id} contact={sourced.contact} onSendTo={handleSendTo} />
-                ))}
-              </ul>
-            )}
+            {renderViewState(viewState, handleSendTo, handleSync)}
           </div>
         </section>
       </div>

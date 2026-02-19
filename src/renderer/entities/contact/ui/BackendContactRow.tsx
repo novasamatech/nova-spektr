@@ -1,11 +1,11 @@
-import { type Contact } from '@/shared/core';
+import { type BackendContact, type Contact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, IconButton, Plate } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Copy, Label } from '@/shared/ui-kit';
 
 type Props = {
-  contact: Contact;
+  contact: BackendContact;
   onSendTo?: (contact: Contact) => void;
 };
 

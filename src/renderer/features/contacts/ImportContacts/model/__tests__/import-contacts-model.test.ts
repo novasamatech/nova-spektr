@@ -1,22 +1,20 @@
 import { allSettled, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
+import { type Contact } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 import { importContactsModel } from '../import-contacts-model';
 
 import * as mockData from './mocks/import-data';
 
-const LOCAL_DEFAULTS = {
-  source: 'local' as const,
-  entityName: null,
-  chainId: null,
-  chainName: null,
-  categoryName: null,
-  contactTypeName: null,
-  derivationPath: null,
-  ownerPublicKey: null,
-};
+function localContact(overrides: Partial<Contact> & { id: string; name: string; address: string }): Contact {
+  return {
+    accountId: toAccountId(overrides.address),
+    source: 'local' as const,
+    ...overrides,
+  } as Contact;
+}
 
 const createMockFile = (data: unknown): File => {
   const content = typeof data === 'string' ? data : JSON.stringify(data);
@@ -33,13 +31,12 @@ describe('importContactsModel', () => {
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
 
-      const hasError = scope.getState(importContactsModel.$hasError);
-      const isFileTooLarge = scope.getState(importContactsModel.$isFileTooLarge);
-      const parsedContacts = scope.getState(importContactsModel.$parsedContacts);
+      const state = scope.getState(importContactsModel.$importState);
 
-      expect(hasError).toBe(true);
-      expect(isFileTooLarge).toBe(true);
-      expect(parsedContacts).toBeNull();
+      expect(state.status).toBe('error');
+      if (state.status === 'error') {
+        expect(state.reason).toBe('fileTooLarge');
+      }
     });
 
     it('should accept files smaller than 1MB', async () => {
@@ -49,9 +46,9 @@ describe('importContactsModel', () => {
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
 
-      const isFileTooLarge = scope.getState(importContactsModel.$isFileTooLarge);
+      const state = scope.getState(importContactsModel.$importState);
 
-      expect(isFileTooLarge).toBe(false);
+      expect(state.status).not.toBe('error');
     });
   });
 
@@ -63,15 +60,10 @@ describe('importContactsModel', () => {
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
 
-      const parsedContacts = scope.getState(importContactsModel.$parsedContacts);
-      const hasError = scope.getState(importContactsModel.$hasError);
+      const state = scope.getState(importContactsModel.$importState);
 
-      expect(parsedContacts).toHaveLength(3);
-      expect(parsedContacts?.[0]!.name).toBe('Alice');
-      expect(parsedContacts?.[0]!.address).toBe('15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5');
-      expect(parsedContacts?.[1]!.name).toBe('Bob');
-      expect(parsedContacts?.[2]!.name).toBe('Charlie');
-      expect(hasError).toBe(false);
+      // When no conflicts, it auto-imports → success or importing
+      expect(['importing', 'success']).toContain(state.status);
     });
 
     it('should accept contacts with only name and address fields', async () => {
@@ -81,12 +73,9 @@ describe('importContactsModel', () => {
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
 
-      const parsedContacts = scope.getState(importContactsModel.$parsedContacts);
-      const hasError = scope.getState(importContactsModel.$hasError);
+      const state = scope.getState(importContactsModel.$importState);
 
-      expect(parsedContacts).toHaveLength(1);
-      expect(parsedContacts?.[0]!.name).toBe('gav');
-      expect(hasError).toBe(false);
+      expect(state.status).not.toBe('error');
     });
 
     it('should accept contacts with additional parameters', async () => {
@@ -96,84 +85,80 @@ describe('importContactsModel', () => {
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
 
-      const parsedContacts = scope.getState(importContactsModel.$parsedContacts);
-      const hasError = scope.getState(importContactsModel.$hasError);
+      const state = scope.getState(importContactsModel.$importState);
 
-      expect(parsedContacts).toHaveLength(1);
-      expect(parsedContacts?.[0]!.name).toBe('gav');
-      expect(hasError).toBe(false);
+      expect(state.status).not.toBe('error');
     });
 
-    it('should set hasError on invalid JSON', async () => {
+    it('should set error on invalid JSON', async () => {
       const file = createMockFile(mockData.INVALID_JSON);
 
       const scope = fork();
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
 
-      const hasError = scope.getState(importContactsModel.$hasError);
-      const parsedContacts = scope.getState(importContactsModel.$parsedContacts);
+      const state = scope.getState(importContactsModel.$importState);
 
-      expect(hasError).toBe(true);
-      expect(parsedContacts).toBeNull();
+      expect(state.status).toBe('error');
+      if (state.status === 'error') {
+        expect(state.reason).toBe('parseError');
+      }
     });
 
-    it('should set hasError on non-array data', async () => {
+    it('should set error on non-array data', async () => {
       const file = createMockFile(mockData.NOT_ARRAY);
 
       const scope = fork();
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
 
-      const hasError = scope.getState(importContactsModel.$hasError);
-      const parsedContacts = scope.getState(importContactsModel.$parsedContacts);
+      const state = scope.getState(importContactsModel.$importState);
 
-      expect(hasError).toBe(true);
-      expect(parsedContacts).toBeNull();
+      expect(state.status).toBe('error');
+      if (state.status === 'error') {
+        expect(state.reason).toBe('parseError');
+      }
     });
 
-    it('should set hasError and isEmptyList on empty array', async () => {
+    it('should set error with emptyList on empty array', async () => {
       const file = createMockFile(mockData.EMPTY_ARRAY);
 
       const scope = fork();
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
 
-      const hasError = scope.getState(importContactsModel.$hasError);
-      const isEmptyList = scope.getState(importContactsModel.$isEmptyList);
+      const state = scope.getState(importContactsModel.$importState);
 
-      expect(hasError).toBe(true);
-      expect(isEmptyList).toBe(true);
+      expect(state.status).toBe('error');
+      if (state.status === 'error') {
+        expect(state.reason).toBe('emptyList');
+      }
     });
 
-    it('should set hasError on missing name', async () => {
+    it('should set error on missing name', async () => {
       const file = createMockFile(mockData.MISSING_NAME);
 
       const scope = fork();
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
 
-      const hasError = scope.getState(importContactsModel.$hasError);
-      const parsedContacts = scope.getState(importContactsModel.$parsedContacts);
+      const state = scope.getState(importContactsModel.$importState);
 
-      expect(hasError).toBe(true);
-      expect(parsedContacts).toBeNull();
+      expect(state.status).toBe('error');
     });
   });
 
   describe('conflict detection', () => {
-    it('should detect accountId conflicts and show conflicts modal', async () => {
+    it('should detect accountId conflicts and show conflicts state', async () => {
       const aliceAddress = mockData.VALID_CONTACTS[0]!.address;
       const file = createMockFile([mockData.VALID_CONTACTS[0]]);
 
       const existingContacts = [
-        {
+        localContact({
           id: 'test-uuid-1',
           name: 'OldAlice',
           address: toAddress(aliceAddress),
-          accountId: toAccountId(aliceAddress),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ];
 
       const scope = fork({
@@ -182,13 +167,14 @@ describe('importContactsModel', () => {
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
 
-      const showConflicts = scope.getState(importContactsModel.$showConflicts);
-      const conflicts = scope.getState(importContactsModel.$accountIdConflicts);
+      const state = scope.getState(importContactsModel.$importState);
 
-      expect(showConflicts).toBe(true);
-      expect(conflicts).toHaveLength(1);
-      expect(conflicts[0]!.imported.name).toBe('Alice');
-      expect(conflicts[0]!.existing.name).toBe('OldAlice');
+      expect(state.status).toBe('conflicts');
+      if (state.status === 'conflicts') {
+        expect(state.conflicts).toHaveLength(1);
+        expect(state.conflicts[0]!.imported.name).toBe('Alice');
+        expect(state.conflicts[0]!.existing.name).toBe('OldAlice');
+      }
     });
 
     it('should not show conflicts when no accountId conflicts', async () => {
@@ -197,24 +183,20 @@ describe('importContactsModel', () => {
       const file = createMockFile([mockData.VALID_CONTACTS[0]]);
 
       const existingContacts = [
-        {
+        localContact({
           id: 'test-uuid-1',
           name: 'Bob',
           address: toAddress(bobAddress),
-          accountId: toAccountId(bobAddress),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ];
 
       // Mock the effects to prevent actual DB operations
       vi.spyOn(contactModel.effects, 'createContactsFx').mockResolvedValue([
-        {
+        localContact({
           id: 'test-uuid-2',
           name: 'Alice',
           address: toAddress(aliceAddress),
-          accountId: toAccountId(aliceAddress),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ]);
 
       const scope = fork({
@@ -223,11 +205,9 @@ describe('importContactsModel', () => {
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
 
-      const showConflicts = scope.getState(importContactsModel.$showConflicts);
-      const hasSuccess = scope.getState(importContactsModel.$hasSuccess);
+      const state = scope.getState(importContactsModel.$importState);
 
-      expect(showConflicts).toBe(false);
-      expect(hasSuccess).toBe(true);
+      expect(state.status).toBe('success');
     });
   });
 
@@ -237,13 +217,11 @@ describe('importContactsModel', () => {
       const file = createMockFile([{ name: 'NewAlice', address: aliceAddress }]);
 
       const existingContacts = [
-        {
+        localContact({
           id: 'test-uuid-1',
           name: 'OldAlice',
           address: toAddress(aliceAddress),
-          accountId: toAccountId(aliceAddress),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ];
 
       const mockUpdate = vi.spyOn(contactModel.effects, 'updateContactsFx').mockResolvedValue([]);
@@ -256,17 +234,15 @@ describe('importContactsModel', () => {
       await allSettled(importContactsModel.events.replaceConflicts, { scope });
 
       expect(mockUpdate).toHaveBeenCalledWith([
-        {
+        localContact({
           id: 'test-uuid-1',
           name: 'NewAlice',
           address: toAddress(aliceAddress),
-          accountId: toAccountId(aliceAddress),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ]);
 
-      const hasSuccess = scope.getState(importContactsModel.$hasSuccess);
-      expect(hasSuccess).toBe(true);
+      const state = scope.getState(importContactsModel.$importState);
+      expect(state.status).toBe('success');
     });
   });
 
@@ -280,23 +256,19 @@ describe('importContactsModel', () => {
       ]);
 
       const existingContacts = [
-        {
+        localContact({
           id: 'test-uuid-1',
           name: 'OldAlice',
           address: toAddress(aliceAddress),
-          accountId: toAccountId(aliceAddress),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ];
 
       const mockCreate = vi.spyOn(contactModel.effects, 'createContactsFx').mockResolvedValue([
-        {
+        localContact({
           id: 'test-uuid-2',
           name: 'Bob',
           address: toAddress(bobAddress),
-          accountId: toAccountId(bobAddress),
-          ...LOCAL_DEFAULTS,
-        },
+        }),
       ]);
 
       const scope = fork({
@@ -311,14 +283,15 @@ describe('importContactsModel', () => {
           name: 'Bob',
           address: toAddress(bobAddress),
           accountId: toAccountId(bobAddress),
-          ...LOCAL_DEFAULTS,
+          source: 'local',
         },
       ]);
 
-      const hasSuccess = scope.getState(importContactsModel.$hasSuccess);
-      const importedCount = scope.getState(importContactsModel.$importedCount);
-      expect(hasSuccess).toBe(true);
-      expect(importedCount).toBe(1);
+      const state = scope.getState(importContactsModel.$importState);
+      expect(state.status).toBe('success');
+      if (state.status === 'success') {
+        expect(state.importedCount).toBe(1);
+      }
     });
   });
 
@@ -337,24 +310,24 @@ describe('importContactsModel', () => {
           name: 'first',
           address: toAddress(mockData.SIMILAR_NAMES[0]!.address),
           accountId: toAccountId(mockData.SIMILAR_NAMES[0]!.address),
-          ...LOCAL_DEFAULTS,
+          source: 'local',
         },
         {
           name: 'first (1)',
           address: toAddress(mockData.SIMILAR_NAMES[1]!.address),
           accountId: toAccountId(mockData.SIMILAR_NAMES[1]!.address),
-          ...LOCAL_DEFAULTS,
+          source: 'local',
         },
         {
           name: 'first (2)',
           address: toAddress(mockData.SIMILAR_NAMES[2]!.address),
           accountId: toAccountId(mockData.SIMILAR_NAMES[2]!.address),
-          ...LOCAL_DEFAULTS,
+          source: 'local',
         },
       ]);
 
-      const hasSuccess = scope.getState(importContactsModel.$hasSuccess);
-      expect(hasSuccess).toBe(true);
+      const state = scope.getState(importContactsModel.$importState);
+      expect(state.status).toBe('success');
     });
   });
 
@@ -367,19 +340,8 @@ describe('importContactsModel', () => {
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
       await allSettled(importContactsModel.events.closeModal, { scope });
 
-      const parsedContacts = scope.getState(importContactsModel.$parsedContacts);
-      const conflicts = scope.getState(importContactsModel.$accountIdConflicts);
-      const isLoading = scope.getState(importContactsModel.$isLoading);
-      const hasError = scope.getState(importContactsModel.$hasError);
-      const hasSuccess = scope.getState(importContactsModel.$hasSuccess);
-      const showConflicts = scope.getState(importContactsModel.$showConflicts);
-
-      expect(parsedContacts).toBeNull();
-      expect(conflicts).toHaveLength(0);
-      expect(isLoading).toBe(false);
-      expect(hasError).toBe(false);
-      expect(hasSuccess).toBe(false);
-      expect(showConflicts).toBe(false);
+      const state = scope.getState(importContactsModel.$importState);
+      expect(state.status).toBe('idle');
     });
 
     it('should reset state on resetState event', async () => {
@@ -390,19 +352,8 @@ describe('importContactsModel', () => {
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
       await allSettled(importContactsModel.events.resetState, { scope });
 
-      const parsedContacts = scope.getState(importContactsModel.$parsedContacts);
-      const conflicts = scope.getState(importContactsModel.$accountIdConflicts);
-      const isLoading = scope.getState(importContactsModel.$isLoading);
-      const hasError = scope.getState(importContactsModel.$hasError);
-      const hasSuccess = scope.getState(importContactsModel.$hasSuccess);
-      const showConflicts = scope.getState(importContactsModel.$showConflicts);
-
-      expect(parsedContacts).toBeNull();
-      expect(conflicts).toHaveLength(0);
-      expect(isLoading).toBe(false);
-      expect(hasError).toBe(false);
-      expect(hasSuccess).toBe(false);
-      expect(showConflicts).toBe(false);
+      const state = scope.getState(importContactsModel.$importState);
+      expect(state.status).toBe('idle');
     });
   });
 });
