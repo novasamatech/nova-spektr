@@ -22,6 +22,12 @@ sample({
   target: $query,
 });
 
+function performSearch(contacts: Contact[], query: string): Contact[] {
+  if (!query) return contacts;
+
+  return contacts.filter((contact) => includes(contact.name, query) || includes(contact.address, query));
+}
+
 const $filteredContacts = combine(
   {
     localContacts: contactModel.$localContacts,
@@ -31,21 +37,9 @@ const $filteredContacts = combine(
     backendUrl: backendConfigurationModel.$backendUrl,
   },
   ({ localContacts, backendContacts, query, sourceTab, backendUrl }) => {
-    const result: Contact[] = [];
+    const contacts = sourceTab === 'local' ? localContacts : backendUrl ? backendContacts : [];
 
-    if (sourceTab === 'local') {
-      for (const contact of localContacts) {
-        if (query && !includes(contact.name, query) && !includes(contact.address, query)) continue;
-        result.push(contact);
-      }
-    } else if (backendUrl) {
-      for (const contact of backendContacts) {
-        if (query && !includes(contact.name, query) && !includes(contact.address, query)) continue;
-        result.push(contact);
-      }
-    }
-
-    return result.sort((a, b) => a.name.localeCompare(b.name));
+    return performSearch(contacts, query).sort((a, b) => a.name.localeCompare(b.name));
   },
 );
 

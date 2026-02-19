@@ -12,13 +12,13 @@ type ContactFormFields = {
   address: string;
 };
 
-function validateNameExist(value: string, _: unknown, contacts: Contact[]): boolean {
+function validateNameUnique(value: string, _: unknown, contacts: Contact[]): boolean {
   if (!value) return true;
 
   return contacts.every((contact) => contact.name.toLowerCase() !== value.toLowerCase());
 }
 
-function validateAddressExist(value: string, _: unknown, contacts: Contact[]): boolean {
+function validateAddressUnique(value: string, _: unknown, contacts: Contact[]): boolean {
   if (!value) return true;
 
   const accountId = toAccountId(value);
@@ -26,7 +26,7 @@ function validateAddressExist(value: string, _: unknown, contacts: Contact[]): b
   return contacts.every((contact) => contact.accountId !== accountId);
 }
 
-function validateNameExistEdit(
+function validateNameUniqueEdit(
   value: string,
   _: unknown,
   params: { contactToEdit: Contact; contacts: Contact[] },
@@ -39,7 +39,7 @@ function validateNameExistEdit(
   return isSameName || isUnique;
 }
 
-function validateAddressExistEdit(
+function validateAddressUniqueEdit(
   value: string,
   _: unknown,
   params: { contactToEdit: Contact; contacts: Contact[] },
@@ -67,7 +67,7 @@ export function createCreateFormModel() {
             name: 'exist',
             errorText: t('addressBook.createContact.nameExistsError'),
             source: contactModel.$contacts,
-            validator: validateNameExist,
+            validator: validateNameUnique,
           },
         ],
       },
@@ -88,7 +88,7 @@ export function createCreateFormModel() {
             name: 'exist',
             errorText: t('addressBook.createContact.accountIdExistsError'),
             source: contactModel.$contacts,
-            validator: validateAddressExist,
+            validator: validateAddressUnique,
           },
         ],
       },
@@ -151,7 +151,7 @@ export function createEditFormModel() {
               contactToEdit: $contactToEdit,
               contacts: contactModel.$contacts,
             }),
-            validator: validateNameExistEdit,
+            validator: validateNameUniqueEdit,
           },
         ],
       },
@@ -171,7 +171,7 @@ export function createEditFormModel() {
               contactToEdit: $contactToEdit,
               contacts: contactModel.$contacts,
             }),
-            validator: validateAddressExistEdit,
+            validator: validateAddressUniqueEdit,
           },
         ],
       },
