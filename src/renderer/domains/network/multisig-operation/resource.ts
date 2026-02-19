@@ -89,7 +89,6 @@ async function createOperationFromMultisig({
   }
 
   const isProxyCall = decodedTransaction?.section === 'proxy' && decodedTransaction?.method === 'proxy';
-  console.log({ isProxyCall, decodedTransaction });
   const proxiedAccountId = isProxyCall && decodedTransaction ? toAccountId(decodedTransaction.args['real']) : undefined;
 
   return {
