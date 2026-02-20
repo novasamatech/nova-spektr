@@ -9,7 +9,6 @@ import {
   type TConnection,
   type TContact,
   type TMetadata,
-  type TMultisigOperations,
   type TNotification,
   type TProxy,
   type TWallet,
@@ -48,7 +47,6 @@ class DexieStorage extends Dexie {
   accounts: TAccount;
   accounts2: TAccount2;
   contacts: TContact;
-  multisigOperations: TMultisigOperations;
   notifications: TNotification;
   metadata: TMetadata;
   proxies: TProxy;
@@ -173,7 +171,6 @@ class DexieStorage extends Dexie {
     this.accounts = this.table('accounts');
     this.accounts2 = this.table('accounts2');
     this.contacts = this.table('contacts');
-    this.multisigOperations = this.table('multisigOperations');
     this.notifications = this.table('notifications');
     this.metadata = this.table('metadata');
     this.proxies = this.table('proxies');

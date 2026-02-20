@@ -49,7 +49,7 @@ describe('transfer-amount-extractor', () => {
     id: 'op-1',
     status: 'pending',
     chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' as ChainId,
-    accountId: '5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY' as never,
+    multisigAccountId: '5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY' as never,
     depositor: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' as never,
     callHash: '0xabc123' as never,
     callData: '0xdef456' as never,

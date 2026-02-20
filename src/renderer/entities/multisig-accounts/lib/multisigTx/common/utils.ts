@@ -55,7 +55,7 @@ export const buildMultisigTx = (
     status: 'pending',
     section: tx.section,
     method: tx.method,
-    accountId: multisigTx.accountId,
+    multisigAccountId: multisigTx.accountId,
     chainId: multisigTx.chainId,
     depositor: signatoryAccountId,
     transaction: tx,

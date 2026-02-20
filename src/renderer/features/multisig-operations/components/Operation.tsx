@@ -147,7 +147,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                   <AssetIcon asset={titleData.amount.asset} size={32} />
                   <div className="flex flex-col items-start gap-y-0.5">
                     <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />
-                    <AsyncItem strategy="async" fallback={<div className="h-[18px]" />}>
+                    <AsyncItem strategy="idle" fallback={<div className="h-[18px]" />}>
                       <AssetFiatBalance
                         asset={titleData.amount.asset}
                         amount={titleData.amount.value}
@@ -160,7 +160,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
             </div>
 
             <div className="flex min-w-0 flex-1 items-center justify-between">
-              <AsyncItem strategy="async" fallback={<div className="w-[240px]" />}>
+              <AsyncItem strategy="idle" fallback={<div className="w-[240px]" />}>
                 {wallet && accountAddress ? (
                   <OperationWalletInfo wallet={wallet} accountAddress={accountAddress} />
                 ) : (
@@ -170,9 +170,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
               <OperationTitleStatus operation={operation} account={multisigAccount} />
 
-              <AsyncItem strategy="async" fallback={<div />}>
-                <OperationActions operation={operation} account={multisigAccount} />
-              </AsyncItem>
+              <OperationActions operation={operation} account={multisigAccount} />
             </div>
 
             <Tooltip>

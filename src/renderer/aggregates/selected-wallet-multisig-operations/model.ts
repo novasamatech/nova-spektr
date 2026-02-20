@@ -19,12 +19,16 @@ const $list = combine(
     if (nullable(account)) return [];
 
     const multisigAccountId = multisigService.getMultisigAccountId(account);
-    const accountOperations = operations.filter(tx => multisigAccountId === tx.accountId && tx.chainId in chains);
+    const accountOperations = operations.filter(tx => multisigAccountId === tx.multisigAccountId && tx.chainId in chains);
 
     if (accounts.some(accountUtils.isFlexibleMultisigAccount)) {
       const proxiedAccountId = account.accountId;
 
       return accountOperations.filter(tx => {
+        if (tx.proxiedAccountId) {
+          return tx.proxiedAccountId === proxiedAccountId;
+        }
+
         return multisigAccountsService.isFlexibleMultisigOperation(tx, proxiedAccountId);
       });
     }

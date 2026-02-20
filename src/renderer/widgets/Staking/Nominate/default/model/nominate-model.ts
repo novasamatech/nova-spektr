@@ -289,7 +289,7 @@ sample({
     return multisigOperationService.generateMultisigOperationRelativeLink({
       chainId: coreTx!.chainId,
       callHash: wrappedTx!.args.callHash,
-      accountId: coreTx!.accountId,
+      multisigAccountId: coreTx!.accountId,
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });

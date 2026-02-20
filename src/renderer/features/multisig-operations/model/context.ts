@@ -16,7 +16,7 @@ import {
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { filterOperation } from '../lib/operations-filter';
+import { filterOperation, findAccountForOperation } from '../lib/operations-filter';
 
 export type OperationWithAccount = {
   operation: MultisigOperation;
@@ -102,45 +102,24 @@ const $initiators = combine(
   },
 );
 
-const $multisigAccountsMap = accounts.$list.map(accs => {
-  const multisigAccounts = accs.filter(accountUtils.isAnyMultisigAccount);
-  const record: Record<string, MultisigAccount | FlexibleMultisigAccount> = {};
-
-  for (const account of multisigAccounts) {
-    record[account.accountId] = account;
-  }
-
-  return record;
-});
+const $multisigAccounts = accounts.$list.map(accs => accs.filter(accountUtils.isAnyMultisigAccount));
 
 const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isAnyMultisig));
-
-const $walletNameByAccountId = combine(
-  { multisigAccountsMap: $multisigAccountsMap, multisigWallets: $multisigWallets },
-  ({ multisigAccountsMap, multisigWallets }) => {
-    const result: Record<string, string> = {};
-    for (const [accountId, account] of Object.entries(multisigAccountsMap)) {
-      const wallet = multisigWallets.find(w => w.id === account.walletId);
-      if (wallet) result[accountId] = wallet.name;
-    }
-    return result;
-  },
-);
 
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 
 const $operationsWithAccounts = combine(
   {
     operations: multisigOperation.$list,
-    multisigAccountsMap: $multisigAccountsMap,
+    multisigAccounts: $multisigAccounts,
     accountsPopulated: accounts.$populated,
   },
-  ({ operations, multisigAccountsMap, accountsPopulated }): OperationWithAccount[] => {
+  ({ operations, multisigAccounts, accountsPopulated }): OperationWithAccount[] => {
     if (!accountsPopulated) return [];
 
     const result: OperationWithAccount[] = [];
     for (const op of operations) {
-      const account = multisigAccountsMap[op.accountId];
+      const account = findAccountForOperation(op, multisigAccounts);
       if (account) result.push({ operation: op, account });
     }
 
@@ -154,8 +133,8 @@ const $filteredOperations = combine(
     filter: $filter,
     tab: $tab,
     hiddenIds: $hiddenOperationIds,
-    multisigAccountsMap: $multisigAccountsMap,
-    walletNameByAccountId: $walletNameByAccountId,
+    multisigAccounts: $multisigAccounts,
+    multisigWallets: $multisigWallets,
     chains: networkModel.$chains,
   },
   ({
@@ -163,8 +142,8 @@ const $filteredOperations = combine(
     filter,
     tab,
     hiddenIds,
-    multisigAccountsMap,
-    walletNameByAccountId,
+    multisigAccounts,
+    multisigWallets,
     chains,
   }): OperationWithAccount[] => {
     return operationsWithAccounts.filter(({ operation }) =>
@@ -172,8 +151,8 @@ const $filteredOperations = combine(
         filters: filter,
         tab,
         hiddenIds,
-        multisigAccountsMap,
-        walletNameByAccountId,
+        multisigAccounts,
+        multisigWallets,
         chains,
       }),
     );
@@ -211,7 +190,6 @@ const $isTabDataLoading = combine(
 sample({
   clock: multisigOperationsFeature.running,
   filter: ({ accountIds, apis }) => accountIds.length > 0 && Object.keys(apis).length > 0,
-  fn: ({ accountIds, apis, chains }) => ({ accountIds, apis, chains }),
   target: multisigOperation.subscribeToAccounts,
 });
 
@@ -279,7 +257,7 @@ export const operationsContextModel = {
   $filter,
   $isFiltersSelected,
   $filteredOperations,
-  $multisigAccountsMap,
+  $multisigAccounts,
   $multisigWallets,
   $initiator,
   $tab,

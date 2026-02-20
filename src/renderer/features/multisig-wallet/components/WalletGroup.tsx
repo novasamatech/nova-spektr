@@ -69,9 +69,15 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
             let label: string | null = null;
 
             if (walletUtils.isFlexibleMultisig(wallet)) {
-              const chainId = wallet.accounts.find(accountUtils.isFlexibleMultisigAccount)?.chainId;
-              chain = chainId ? (chains[chainId] ?? null) : null;
-              label = t('wallets.flexibleMultisigFlexLabel');
+              const flexAccount = wallet.accounts.find(accountUtils.isFlexibleMultisigAccount);
+              chain = flexAccount?.chainId ? (chains[flexAccount.chainId] ?? null) : null;
+
+              const flexLabel = t('wallets.flexibleMultisigFlexLabel');
+              if (flexAccount && flexAccount.proxyType !== 'Any') {
+                label = `${flexLabel} · ${flexAccount.proxyType}`;
+              } else {
+                label = flexLabel;
+              }
             }
 
             return (
