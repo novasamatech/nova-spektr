@@ -235,8 +235,8 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, isScanComplete
         result = EXPORT_ADDRESS.decode(fountainResult.slice(3)).payload;
       }
 
-      onScanResult(makeResultPayload(result));
       isComplete.current = true;
+      onScanResult(makeResultPayload(result));
       break;
     }
   };
