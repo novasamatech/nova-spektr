@@ -5,7 +5,7 @@ import { and, debounce, not, or, spread } from 'patronum';
 
 import { spellXcmService } from '@/shared/api/xcm';
 import { categorizeXcmError } from '@/shared/api/xcm/service/xcm-error-utils';
-import { type Address, type Asset, type Chain, type Transaction } from '@/shared/core';
+import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { createSubscription } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import {
@@ -314,6 +314,40 @@ const $destinationAccountId = combine($destination, $destinationChain, (destinat
   if (nullable(chain)) return null;
   return validateAddress(destination, chain) ? toAccountId(destination) : null;
 });
+
+// pure proxy chain restriction
+
+const $destinationPureProxyChainIds = combine(
+  {
+    destinationAccountId: $destinationAccountId,
+    allAccounts: accounts.$list,
+  },
+  ({ destinationAccountId, allAccounts }): ChainId[] | null => {
+    if (nullable(destinationAccountId)) return null;
+
+    const matchingChainIds: ChainId[] = [];
+    for (const account of allAccounts) {
+      if (account.accountId !== destinationAccountId) continue;
+      if (accountUtils.isPureProxiedAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
+        matchingChainIds.push(account.chainId);
+      }
+    }
+
+    return matchingChainIds.length > 0 ? matchingChainIds : null;
+  },
+);
+
+const $isPureProxyChainMismatch = combine(
+  {
+    pureProxyChainIds: $destinationPureProxyChainIds,
+    destinationChain: $destinationChain,
+  },
+  ({ pureProxyChainIds, destinationChain }) => {
+    if (nullable(pureProxyChainIds) || nullable(destinationChain)) return false;
+
+    return !pureProxyChainIds.includes(destinationChain.chainId);
+  },
+);
 
 const $destinationAsset = combine(
   {
@@ -701,14 +735,31 @@ const $availableChains = combine(
   {
     chains: networkModel.$chainsList,
     initialDestination: $initialDestination,
+    allAccounts: accounts.$list,
   },
-  ({ chains, initialDestination }) => {
+  ({ chains, initialDestination, allAccounts }) => {
     if (nullable(initialDestination) || !validateAddress(initialDestination)) {
       return chains;
     }
 
     const destinationAccountId = toAccountId(initialDestination);
-    return chains.filter((chain) => accountService.isAccountSchemeMatchChain(destinationAccountId, chain));
+    const schemeCompatibleChains = chains.filter((chain) =>
+      accountService.isAccountSchemeMatchChain(destinationAccountId, chain),
+    );
+
+    const pureProxyChainIds: ChainId[] = [];
+    for (const account of allAccounts) {
+      if (account.accountId !== destinationAccountId) continue;
+      if (accountUtils.isPureProxiedAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
+        pureProxyChainIds.push(account.chainId);
+      }
+    }
+
+    if (pureProxyChainIds.length > 0) {
+      return schemeCompatibleChains.filter((chain) => pureProxyChainIds.includes(chain.chainId));
+    }
+
+    return schemeCompatibleChains;
   },
 );
 
@@ -752,6 +803,7 @@ const $canSubmit = and(
   form.$isValid,
   $valid,
   not($hasDestinationBalanceError),
+  not($isPureProxyChainMismatch),
   or(not($isXcm), not(xcmSpellTransferModel.$isDestinationFeeLoading)),
   or(not($isXcm), $areTransactionsReady),
   or(not($isXcm), not($hasDryRunError)),
@@ -1232,6 +1284,7 @@ export const formModel = {
   $destinationAsset,
   $destinationBalanceEd,
   $hasDestinationBalanceError,
+  $isPureProxyChainMismatch,
   $isDestinationReadonly,
 
   $fee: $networkFee,
