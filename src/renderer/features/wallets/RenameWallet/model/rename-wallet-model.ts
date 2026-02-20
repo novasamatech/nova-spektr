@@ -98,6 +98,7 @@ const syncContactsOnWalletRenameFx = createEffect(
           name: wallet.name,
           address: toAddress(mainAccountId),
           accountId: mainAccountId,
+          source: 'local',
         },
       ]);
     }

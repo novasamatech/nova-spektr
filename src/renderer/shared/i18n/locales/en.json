@@ -109,7 +109,8 @@
       "signInButton": "Sign in",
       "signOutButton": "Sign out",
       "signingMessage": "Waiting for signature...",
-      "tryAgainButton": "Try again"
+      "tryAgainButton": "Try again",
+      "signInSuccess": "Successfully signed in"
     },
     "backendConfiguration": {
       "addTitle": "Add Backend",
@@ -120,9 +121,24 @@
       "urlInvalidError": "Please enter a valid URL",
       "saveButton": "Save",
       "connectionLabel": "Backend connection",
-      "tooltip": "Configure address book backend"
+      "tooltip": "Configure address book backend",
+      "backendRemoved": "Backend removed"
     },
     "searchPlaceholder": "Search",
+    "sources": {
+      "myContacts": "My Contacts",
+      "syncButton": "Sync",
+      "loading": "Loading contacts...",
+      "loadError": "Failed to load contacts from server",
+      "emptyBackend": "No contacts found on the server",
+      "retry": "Retry"
+    },
+    "backendContact": {
+      "category": "Category",
+      "contactType": "Type",
+      "chain": "Chain",
+      "entity": "Entity"
+    },
     "title": "Address Book",
     "undo": "Undo"
   },

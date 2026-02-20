@@ -14,7 +14,8 @@ type Props = {
 export const ImportConflictsModal = ({ onClose }: Props) => {
   const { t } = useI18n();
 
-  const accountIdConflicts = useUnit(importContactsModel.$accountIdConflicts);
+  const importState = useUnit(importContactsModel.$importState);
+  const conflicts = importState.status === 'conflicts' ? importState.conflicts : [];
 
   const handleReplace = () => {
     importContactsModel.events.replaceConflicts();
@@ -34,7 +35,7 @@ export const ImportConflictsModal = ({ onClose }: Props) => {
           </SmallTitleText>
 
           <div className="max-h-96 w-full overflow-y-auto">
-            {accountIdConflicts.map((conflict, index) => (
+            {conflicts.map((conflict, index) => (
               <div key={index} className="py-2">
                 <Address
                   address={toAddress(conflict.existing.address)}
