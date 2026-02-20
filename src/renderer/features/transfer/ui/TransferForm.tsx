@@ -140,11 +140,14 @@ const DestinationBalanceAlert = memo(() => {
 const PureProxyChainMismatchAlert = memo(() => {
   const { t } = useI18n();
   const isPureProxyChainMismatch = useUnit(formModel.$isPureProxyChainMismatch);
+  const proxyChainNames = useUnit(formModel.$pureProxyChainNames);
+
+  const chainNamesList = proxyChainNames.join(', ');
 
   return (
     <Alert title={t('transfer.pureProxyChainMismatch.title')} variant="error" active={isPureProxyChainMismatch}>
       <FootnoteText className="text-text-primary">
-        {t('transfer.pureProxyChainMismatch.description')}
+        {t('transfer.pureProxyChainMismatch.description', { chains: chainNamesList })}
       </FootnoteText>
     </Alert>
   );

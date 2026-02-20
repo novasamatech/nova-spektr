@@ -419,6 +419,18 @@ const $destinationPureProxyChainIds = combine(
   ({ local, external }): ChainId[] | null => local ?? external ?? null,
 );
 
+const $pureProxyChainNames = combine(
+  {
+    pureProxyChainIds: $destinationPureProxyChainIds,
+    chains: networkModel.$chains,
+  },
+  ({ pureProxyChainIds, chains }): string[] => {
+    if (nullable(pureProxyChainIds)) return [];
+
+    return pureProxyChainIds.map((chainId) => chains[chainId]?.name ?? chainId).sort();
+  },
+);
+
 const $isPureProxyChainMismatch = combine(
   {
     pureProxyChainIds: $destinationPureProxyChainIds,
@@ -1350,6 +1362,7 @@ export const formModel = {
   $destinationBalanceEd,
   $hasDestinationBalanceError,
   $isPureProxyChainMismatch,
+  $pureProxyChainNames,
   $isDestinationReadonly,
 
   $fee: $networkFee,
