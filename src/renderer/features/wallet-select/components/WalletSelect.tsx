@@ -80,7 +80,7 @@ const WalletSelectDropdown = memo(() => {
   }, []);
 
   return (
-    <section className="flex h-full max-h-[87vh] min-h-0 w-[300px] flex-col overflow-hidden">
+    <section className="flex h-full max-h-[87vh] min-h-0 w-[325px] flex-col overflow-hidden">
       <header className="flex items-center justify-between border-b border-divider px-5 py-3">
         <SmallTitleText>{t('wallets.title')}</SmallTitleText>
         <div className="flex items-center gap-2">

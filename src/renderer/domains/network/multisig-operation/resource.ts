@@ -49,12 +49,13 @@ async function createOperationFromMultisig({
   const nativeAssetId = getNativeAssetId(chain.assets);
   const blockHeight = multisig.when.height.toNumber();
   const extrinsicIndex = multisig.when.index.toNumber();
+  const multisigAccountId = toAccountId(accountId.toString());
 
   const timestamp = await getCreatedDateFromApi(blockHeight, api);
   const operationId = multisigOperationService.getOperationId(
     chainId,
     callHash,
-    accountId,
+    multisigAccountId,
     blockHeight,
     extrinsicIndex,
   );
@@ -82,17 +83,23 @@ async function createOperationFromMultisig({
   let decodedTransaction: DecodedTransaction | null = null;
   try {
     if (callData && validateCallData(callData, callHash)) {
-      decodedTransaction = decodeCallData(api, accountId, callData, nativeAssetId);
+      decodedTransaction = decodeCallData(api, multisigAccountId, callData, nativeAssetId);
     }
   } catch (error) {
     console.warn('Failed to decode call data', { callHash, error });
   }
 
+  const isProxyCall = decodedTransaction?.section === 'proxy' && decodedTransaction?.method === 'proxy';
+  const realProxiedAddress: string | null =
+    isProxyCall && decodedTransaction ? (decodedTransaction.args['real'] satisfies string) : null;
+  const proxiedAccountId = isProxyCall && realProxiedAddress ? toAccountId(realProxiedAddress) : undefined;
+
   return {
     id: operationId,
     chainId,
     status: 'pending',
-    accountId: decodedTransaction?.accountId ?? toAccountId(accountId.toString()),
+    multisigAccountId,
+    ...(proxiedAccountId ? { proxiedAccountId } : {}),
     callHash,
     callData,
     depositor: toAccountId(multisig.depositor.toString()),
@@ -186,10 +193,11 @@ function mapSubqueryOperationRecord(
   chains: Record<ChainId, Chain>,
 ): MultisigOperation | null {
   const response = operationsGqlSchema.parse(node);
+  const multisigAccountId = response.accountId;
   const operationId = multisigOperationService.getOperationId(
     response.chainId,
     response.callHash,
-    response.accountId,
+    multisigAccountId,
     response.blockCreated,
     response.indexCreated,
   );
@@ -202,11 +210,14 @@ function mapSubqueryOperationRecord(
 
   try {
     if (response.callData && validateCallData(response.callData, response.callHash)) {
-      transaction = decodeCallData(api, response.accountId, response.callData, getNativeAssetId(chain.assets));
+      transaction = decodeCallData(api, multisigAccountId, response.callData, getNativeAssetId(chain.assets));
     }
   } catch (error) {
     console.warn('Failed to decode call data from indexer response', { callHash: response.callHash, error });
   }
+
+  const isProxyCall = transaction?.section === 'proxy' && transaction?.method === 'proxy';
+  const proxiedAccountId = isProxyCall && transaction ? toAccountId(transaction.args['real']) : undefined;
 
   return {
     id: operationId,
@@ -214,7 +225,8 @@ function mapSubqueryOperationRecord(
     section: response.section,
     method: response.method,
     timestamp: response.timestamp,
-    accountId: transaction?.accountId ?? response.accountId,
+    multisigAccountId,
+    ...(proxiedAccountId ? { proxiedAccountId } : {}),
     callHash: response.callHash,
     callData: response.callData ?? null,
     blockCreated: response.blockCreated,
@@ -271,7 +283,7 @@ const offChainCacheMapper: MapCacheFn<OffChainRequestParams, MultisigOperation[]
   operations,
   { accountIds },
 ) => {
-  const operationsWithoutGivenAccounts = cache.filter(o => !accountIds.includes(o.accountId));
+  const operationsWithoutGivenAccounts = cache.filter(o => !accountIds.includes(o.multisigAccountId));
   return multisigOperationService.mergeMultisigOperations(operationsWithoutGivenAccounts, operations);
 };
 

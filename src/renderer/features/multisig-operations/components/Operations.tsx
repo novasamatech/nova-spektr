@@ -31,7 +31,7 @@ export const Operations = () => {
 
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
-  const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
+  const multisigAccounts = useUnit(operationsContextModel.$multisigAccounts);
   const isFiltersSelected = useUnit(operationsContextModel.$isFiltersSelected);
   const filteredOps = useUnit(operationsContextModel.$filteredOperations);
   const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
@@ -39,7 +39,7 @@ export const Operations = () => {
   const isTabDataLoading = useUnit(operationsContextModel.$isTabDataLoading);
   const tab = useUnit(operationsContextModel.$tab);
 
-  const hasMultisigAccounts = Object.keys(multisigAccountsMap).length > 0;
+  const hasMultisigAccounts = multisigAccounts.length > 0;
 
   const { list: deferredOps, isLoading: isDeferredLoading } = useDeferredList({
     list: filteredOps,

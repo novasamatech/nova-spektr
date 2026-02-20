@@ -41,7 +41,7 @@ describe('operations context model', () => {
       callHash: callHash as any,
       callData: null,
       chainId: polkadotChainId,
-      accountId: mockAccountId,
+      multisigAccountId: mockAccountId,
       depositor: mockAccountId,
       blockCreated: 100 as any,
       indexCreated: 1,

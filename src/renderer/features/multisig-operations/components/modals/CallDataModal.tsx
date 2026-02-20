@@ -93,12 +93,12 @@ export const CallDataModal = memo(({ operation, api, chain, children }: Props) =
 
     multisigOperation.updateCallData({
       chainId: operation.chainId,
-      accountId: operation.accountId,
+      multisigAccountId: operation.multisigAccountId,
       callHash: operation.callHash,
       callData,
       transaction: {
         chainId: operation.chainId,
-        accountId: operation.accountId,
+        accountId: operation.multisigAccountId,
         section: decodedCall.section,
         method: decodedCall.method,
         args: {},

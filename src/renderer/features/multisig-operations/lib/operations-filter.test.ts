@@ -24,7 +24,7 @@ const createMockOperation = (overrides?: Partial<MultisigOperation>): MultisigOp
     id: 'op-1',
     status: 'pending',
     chainId: MOCK_CHAIN_ID,
-    accountId: MOCK_ACCOUNT_ID,
+    multisigAccountId: MOCK_ACCOUNT_ID,
     depositor: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' as never,
     callHash: '0xabc123',
     callData: '0xdef',
@@ -48,8 +48,8 @@ const emptyContext: OperationsFilterContext = {
   },
   tab: 'pending',
   hiddenIds: [],
-  multisigAccountsMap: {},
-  walletNameByAccountId: {},
+  multisigAccounts: [],
+  multisigWallets: [],
   chains: {},
 };
 
@@ -174,7 +174,7 @@ describe('operations-filter', () => {
     });
 
     test('returns false when operation accountId is not in list', () => {
-      const op = createMockOperation({ accountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never });
+      const op = createMockOperation({ multisigAccountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never });
       expect(matchesAccount(op, [MOCK_ACCOUNT_ID])).toBe(false);
     });
   });
@@ -246,12 +246,12 @@ describe('operations-filter', () => {
   describe('matchesProxyType', () => {
     test('returns true when proxyType list is empty', () => {
       const op = createMockOperation();
-      expect(matchesProxyType(op, [], {})).toBe(true);
+      expect(matchesProxyType(op, [], [])).toBe(true);
     });
 
-    test('returns false when account not in map and proxyType filter is set', () => {
+    test('returns false when account not in list and proxyType filter is set', () => {
       const op = createMockOperation();
-      expect(matchesProxyType(op, ['Any'], {})).toBe(false);
+      expect(matchesProxyType(op, ['Any'], [])).toBe(false);
     });
   });
 
@@ -325,24 +325,28 @@ describe('operations-filter', () => {
   describe('matchesSearch', () => {
     test('returns true when searchQuery is empty or undefined', () => {
       const op = createMockOperation();
-      expect(matchesSearch(op, undefined, {}, {}, {})).toBe(true);
-      expect(matchesSearch(op, '', {}, {}, {})).toBe(true);
-      expect(matchesSearch(op, '   ', {}, {}, {})).toBe(true);
+      expect(matchesSearch(op, undefined, {}, [], [])).toBe(true);
+      expect(matchesSearch(op, '', {}, [], [])).toBe(true);
+      expect(matchesSearch(op, '   ', {}, [], [])).toBe(true);
     });
 
     test('returns true when wallet name contains query', () => {
       const op = createMockOperation();
-      expect(matchesSearch(op, 'MyWallet', { [MOCK_ACCOUNT_ID]: 'MyWallet Name' }, {}, {})).toBe(true);
+      const mockAccount = { accountId: MOCK_ACCOUNT_ID, accountType: 'multisig', walletId: 1 } as never;
+      const mockWallet = { id: 1, name: 'MyWallet Name' } as never;
+      expect(matchesSearch(op, 'MyWallet', {}, [mockAccount], [mockWallet])).toBe(true);
     });
 
     test('returns true when callHash contains query', () => {
       const op = createMockOperation({ callHash: '0xabc123def' });
-      expect(matchesSearch(op, 'abc123', {}, {}, {})).toBe(true);
+      expect(matchesSearch(op, 'abc123', {}, [], [])).toBe(true);
     });
 
     test('returns false when no field matches query', () => {
       const op = createMockOperation({ callHash: '0xaaa' });
-      expect(matchesSearch(op, 'nomatch', { [MOCK_ACCOUNT_ID]: 'Wallet' }, {}, {})).toBe(false);
+      const mockAccount = { accountId: MOCK_ACCOUNT_ID, accountType: 'multisig', walletId: 1 } as never;
+      const mockWallet = { id: 1, name: 'Wallet' } as never;
+      expect(matchesSearch(op, 'nomatch', {}, [mockAccount], [mockWallet])).toBe(false);
     });
   });
 
@@ -367,7 +371,7 @@ describe('operations-filter', () => {
     });
 
     test('returns false when account filter excludes operation', () => {
-      const op = createMockOperation({ accountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never });
+      const op = createMockOperation({ multisigAccountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never });
       const ctx: OperationsFilterContext = {
         ...emptyContext,
         filters: { ...emptyContext.filters, account: [MOCK_ACCOUNT_ID] },

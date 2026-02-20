@@ -100,7 +100,7 @@ export const serializeOperationToCsvRow = (operation: MultisigOperation, context
     explorer_url: explorerUrl ?? '',
     status: operation.status,
     chain_name: chain?.name ?? '',
-    multisig_account: operation.accountId,
+    multisig_account: operation.multisigAccountId,
     depositor: operation.depositor,
     method: operation.method ?? '',
     section: operation.section ?? '',
