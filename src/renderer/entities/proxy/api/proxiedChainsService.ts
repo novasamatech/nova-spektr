@@ -1,24 +1,25 @@
 import { type ApiPromise } from '@polkadot/api';
-import { GraphQLClient } from 'graphql-request';
+import { type GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
 import { type ChainId } from '@/shared/core';
 import { isHex } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { INDEXER_URL } from '@/domains/network/account-sync/constants';
 
 import { PROXIED_CHAINS_BY_ACCOUNT_ID } from './graphql/queries/proxiedChains';
 
-const chainIdSchema = z.string().refine(isHex).transform((id) => id as ChainId);
+const chainIdSchema = z
+  .string()
+  .refine(isHex)
+  .transform((id) => id as ChainId);
 
 const proxiedChainSchema = z.object({
   accountId: z.string(),
   chainId: chainIdSchema,
 });
 
-async function getProxiedChainIds(accountId: AccountId): Promise<ChainId[]> {
-  const client = new GraphQLClient(INDEXER_URL);
+async function getProxiedChainIds(client: GraphQLClient, accountId: AccountId): Promise<ChainId[]> {
   const response = await client.request<{ proxieds: { nodes: unknown[] } }, { accountIds: AccountId[] }>(
     PROXIED_CHAINS_BY_ACCOUNT_ID,
     { accountIds: [accountId] },

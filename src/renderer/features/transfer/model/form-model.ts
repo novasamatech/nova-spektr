@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { GraphQLClient } from 'graphql-request';
 import { t } from 'i18next';
 import { and, debounce, not, or, spread } from 'patronum';
 
@@ -34,7 +35,7 @@ import {
   createTxValidationStore,
 } from '@/shared/transactions';
 import { type TransactionValidationDryRunError, type TransactionValidationNetworkError } from '@/shared/ui-entities';
-import { type AnyAccount, type BalancePreservation, accountService, accounts, balanceService } from '@/domains/network';
+import { type AnyAccount, type BalancePreservation, INDEXER_URL, accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { proxiedChainsService } from '@/entities/proxy';
@@ -355,8 +356,9 @@ const checkExternalProxyFx = takeLast({
     accountId: AccountId;
     apis: Partial<Record<ChainId, ApiPromise>>;
   }): Promise<{ accountId: AccountId; chainIds: ChainId[] }> => {
+    const client = new GraphQLClient(INDEXER_URL);
     console.log(`[ProxyCheck] Querying indexer for account ${accountId}`);
-    const indexerChainIds = await proxiedChainsService.getProxiedChainIds(accountId);
+    const indexerChainIds = await proxiedChainsService.getProxiedChainIds(client, accountId);
 
     if (indexerChainIds.length === 0) {
       console.log(`[ProxyCheck] Source: indexer. No pure proxy found`);
