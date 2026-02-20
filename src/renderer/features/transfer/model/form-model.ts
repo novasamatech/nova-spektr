@@ -419,15 +419,18 @@ const $destinationPureProxyChainIds = combine(
   ({ local, external }): ChainId[] | null => local ?? external ?? null,
 );
 
-const $pureProxyChainNames = combine(
+const $proxyChains = combine(
   {
     pureProxyChainIds: $destinationPureProxyChainIds,
     chains: networkModel.$chains,
   },
-  ({ pureProxyChainIds, chains }): string[] => {
+  ({ pureProxyChainIds, chains }): Chain[] => {
     if (nullable(pureProxyChainIds)) return [];
 
-    return pureProxyChainIds.map((chainId) => chains[chainId]?.name ?? chainId).sort();
+    return pureProxyChainIds
+      .map((chainId) => chains[chainId])
+      .filter((chain): chain is Chain => nonNullable(chain))
+      .sort((a, b) => a.name.localeCompare(b.name));
   },
 );
 
@@ -1362,7 +1365,7 @@ export const formModel = {
   $destinationBalanceEd,
   $hasDestinationBalanceError,
   $isPureProxyChainMismatch,
-  $pureProxyChainNames,
+  $proxyChains,
   $isDestinationReadonly,
 
   $fee: $networkFee,
