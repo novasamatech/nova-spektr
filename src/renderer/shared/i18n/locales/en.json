@@ -2820,7 +2820,7 @@
     "destinationCryptoError": "Unsupported address format for {network}",
     "destinationFormatError": "Address has incorrect format",
     "pureProxyChainMismatch": {
-      "description": "This address belongs to a proxy account that only controls funds on a specific network. Sending tokens here on the selected network will make them inaccessible.",
+      "description": "This address belongs to a proxy account on <chains />. Sending tokens on different networks will make them inaccessible.",
       "title": "Recipient is a proxy account on a different network"
     },
     "dryRunError": {
