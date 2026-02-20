@@ -157,7 +157,11 @@ const PureProxyChainMismatchAlert = memo(() => {
   return (
     <Alert title={t('transfer.pureProxyChainMismatch.title')} variant="error" active={isPureProxyChainMismatch}>
       <FootnoteText className="text-text-primary">
-        <Trans t={t} i18nKey="transfer.pureProxyChainMismatch.description" components={{ chains: chainBadge }} />
+        <Trans
+          t={t}
+          i18nKey="transfer.pureProxyChainMismatch.description"
+          components={{ chains: chainBadge, br: <br /> }}
+        />
       </FootnoteText>
     </Alert>
   );
