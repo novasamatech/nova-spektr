@@ -1,14 +1,12 @@
-import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { GraphQLClient } from 'graphql-request';
 import { t } from 'i18next';
 import { and, debounce, not, or, spread } from 'patronum';
 
 import { spellXcmService } from '@/shared/api/xcm';
 import { categorizeXcmError } from '@/shared/api/xcm/service/xcm-error-utils';
 import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
-import { createSubscription, takeLast } from '@/shared/effector';
+import { createSubscription } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import {
   TEST_ADDRESS,
@@ -38,7 +36,7 @@ import { type TransactionValidationDryRunError, type TransactionValidationNetwor
 import { type AnyAccount, type BalancePreservation, INDEXER_URL, accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { proxiedChainsService } from '@/entities/proxy';
+import { proxiedChainResource } from '@/entities/proxy';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -320,131 +318,86 @@ const $destinationAccountId = combine($destination, $destinationChain, (destinat
 
 // pure proxy chain restriction
 
-// Layer 1: Local accounts check (synchronous)
-const $localPureProxyChainIds = combine(
+// Local accounts check (synchronous)
+const $localProxyChainId = combine(
   {
     destinationAccountId: $destinationAccountId,
     allAccounts: accounts.$list,
   },
-  ({ destinationAccountId, allAccounts }): ChainId[] | null => {
+  ({ destinationAccountId, allAccounts }): ChainId | null => {
     if (nullable(destinationAccountId)) return null;
 
-    const matchingChainIds: ChainId[] = [];
     for (const account of allAccounts) {
       if (account.accountId !== destinationAccountId) continue;
       if (accountUtils.isPureProxiedAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
-        const type = accountUtils.isPureProxiedAccount(account) ? 'pure proxy' : 'flexible multisig';
-        console.log(`[ProxyCheck] Local account detected: ${type} on chain ${account.chainId}`);
-        matchingChainIds.push(account.chainId);
+        return account.chainId;
       }
     }
 
-    if (matchingChainIds.length > 0) {
-      console.log(`[ProxyCheck] Source: local accounts. Restricted chains:`, matchingChainIds);
-    }
-
-    return matchingChainIds.length > 0 ? matchingChainIds : null;
+    return null;
   },
 );
 
-// Layers 2+3: Indexer query + on-chain verification (async, for external addresses)
-const checkExternalProxyFx = takeLast({
-  fn: async ({
-    accountId,
-    apis,
-  }: {
-    accountId: AccountId;
-    apis: Partial<Record<ChainId, ApiPromise>>;
-  }): Promise<{ accountId: AccountId; chainIds: ChainId[] }> => {
-    const client = new GraphQLClient(INDEXER_URL);
-    console.log(`[ProxyCheck] Querying indexer for account ${accountId}`);
-    const indexerChainIds = await proxiedChainsService.getProxiedChainIds(client, accountId);
-
-    if (indexerChainIds.length === 0) {
-      console.log(`[ProxyCheck] Source: indexer. No pure proxy found`);
-
-      return { accountId, chainIds: [] };
-    }
-
-    console.log(`[ProxyCheck] Source: indexer. Pure proxy detected on chains:`, indexerChainIds);
-
-    const verifiedChainIds = await proxiedChainsService.verifyProxiesOnChain(accountId, indexerChainIds, apis);
-    console.log(`[ProxyCheck] Source: on-chain verification. Confirmed chains:`, verifiedChainIds);
-
-    return { accountId, chainIds: verifiedChainIds };
-  },
-  key: ({ accountId }) => accountId,
-});
-
-const $externalPureProxyChainIds = createStore<ChainId[] | null>(null).reset(formInitiated);
+// Indexer query via resource (for external addresses not in local accounts)
+const $externalProxyChainId = createStore<ChainId | null>(null).reset(formInitiated);
 
 const destinationAccountIdDebounced = debounce({
   source: $destinationAccountId,
   timeout: 400,
 });
 
-// Trigger external check only when not found locally
 sample({
   clock: destinationAccountIdDebounced,
   source: {
     accountId: $destinationAccountId,
-    localResult: $localPureProxyChainIds,
-    apis: networkModel.$apis,
+    localResult: $localProxyChainId,
   },
   filter: ({ accountId, localResult }) => nonNullable(accountId) && nullable(localResult),
-  fn: ({ accountId, apis }) => ({
+  fn: ({ accountId }) => ({
     accountId: accountId!,
-    apis,
+    indexerUrl: INDEXER_URL,
   }),
-  target: checkExternalProxyFx,
+  target: proxiedChainResource.fetch,
 });
 
-// Reset external result when destination changes
 sample({
   clock: $destinationAccountId,
   fn: () => null,
-  target: $externalPureProxyChainIds,
+  target: $externalProxyChainId,
 });
 
-// Store successful results (only if destination hasn't changed)
 sample({
-  clock: checkExternalProxyFx.doneData,
-  source: $destinationAccountId,
-  filter: (currentAccountId, result) => currentAccountId === result.accountId,
-  fn: (_, result) => (result.chainIds.length > 0 ? result.chainIds : null),
-  target: $externalPureProxyChainIds,
+  clock: proxiedChainResource.fetch.doneData,
+  target: $externalProxyChainId,
 });
 
-// Merged result from all layers
-const $destinationPureProxyChainIds = combine(
-  { local: $localPureProxyChainIds, external: $externalPureProxyChainIds },
-  ({ local, external }): ChainId[] | null => local ?? external ?? null,
+// Merged result: local takes priority over indexer
+const $destinationProxyChainId = combine(
+  { local: $localProxyChainId, external: $externalProxyChainId },
+  ({ local, external }): ChainId | null => local ?? external,
 );
 
-const $proxyChains = combine(
+const $proxyChain = combine(
   {
-    pureProxyChainIds: $destinationPureProxyChainIds,
+    proxyChainId: $destinationProxyChainId,
     chains: networkModel.$chains,
   },
-  ({ pureProxyChainIds, chains }): Chain[] => {
-    if (nullable(pureProxyChainIds)) return [];
+  ({ proxyChainId, chains }): Chain | null => {
+    if (nullable(proxyChainId)) return null;
 
-    return pureProxyChainIds
-      .map((chainId) => chains[chainId])
-      .filter((chain): chain is Chain => nonNullable(chain))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    return chains[proxyChainId] ?? null;
   },
 );
 
 const $isPureProxyChainMismatch = combine(
   {
-    pureProxyChainIds: $destinationPureProxyChainIds,
+    proxyChainId: $destinationProxyChainId,
     destinationChain: $destinationChain,
   },
-  ({ pureProxyChainIds, destinationChain }) => {
-    if (nullable(pureProxyChainIds) || nullable(destinationChain)) return false;
+  ({ proxyChainId, destinationChain }) => {
+    if (nullable(proxyChainId) || nullable(destinationChain)) return false;
 
-    return !pureProxyChainIds.includes(destinationChain.chainId);
+    return proxyChainId !== destinationChain.chainId;
   },
 );
 
@@ -1367,7 +1320,7 @@ export const formModel = {
   $destinationBalanceEd,
   $hasDestinationBalanceError,
   $isPureProxyChainMismatch,
-  $proxyChains,
+  $proxyChain,
   $isDestinationReadonly,
 
   $fee: $networkFee,

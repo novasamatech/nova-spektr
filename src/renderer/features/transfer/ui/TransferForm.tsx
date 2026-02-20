@@ -140,20 +140,24 @@ const DestinationBalanceAlert = memo(() => {
 const PureProxyChainMismatchAlert = memo(() => {
   const { t } = useI18n();
   const isPureProxyChainMismatch = useUnit(formModel.$isPureProxyChainMismatch);
-  const proxyChains = useUnit(formModel.$proxyChains);
+  const proxyChain = useUnit(formModel.$proxyChain);
 
-  const chainsBadge = (
-    <span className="inline-flex items-center gap-1 align-middle font-bold">
-      {proxyChains.map((chain) => (
-        <ChainTitle key={chain.chainId} chain={chain} as="span" fontClass="font-bold text-text-primary" iconSize={14} />
-      ))}
-    </span>
+  const chainBadge = proxyChain ? (
+    <ChainTitle
+      chain={proxyChain}
+      as="span"
+      className="inline-flex"
+      fontClass="font-bold text-text-primary"
+      iconSize={14}
+    />
+  ) : (
+    <div />
   );
 
   return (
     <Alert title={t('transfer.pureProxyChainMismatch.title')} variant="error" active={isPureProxyChainMismatch}>
       <FootnoteText className="text-text-primary">
-        <Trans t={t} i18nKey="transfer.pureProxyChainMismatch.description" components={{ chains: chainsBadge }} />
+        <Trans t={t} i18nKey="transfer.pureProxyChainMismatch.description" components={{ chains: chainBadge }} />
       </FootnoteText>
     </Alert>
   );

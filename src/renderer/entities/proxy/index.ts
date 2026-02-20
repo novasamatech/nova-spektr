@@ -6,3 +6,4 @@ export { ProxyPopover } from './ui/ProxyPopover';
 export { PureProxyPopover } from './ui/PureProxyPopover';
 export { pureProxiesService } from './api/pureProxiesService';
 export { proxiedChainsService } from './api/proxiedChainsService';
+export { proxiedChainResource } from './api/proxiedChainResource';
