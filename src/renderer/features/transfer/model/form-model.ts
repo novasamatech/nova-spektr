@@ -817,34 +817,14 @@ const $availableChains = combine(
   {
     chains: networkModel.$chainsList,
     initialDestination: $initialDestination,
-    allAccounts: accounts.$list,
-    externalPureProxyChainIds: $externalPureProxyChainIds,
   },
-  ({ chains, initialDestination, allAccounts, externalPureProxyChainIds }) => {
+  ({ chains, initialDestination }) => {
     if (nullable(initialDestination) || !validateAddress(initialDestination)) {
       return chains;
     }
 
     const destinationAccountId = toAccountId(initialDestination);
-    const schemeCompatibleChains = chains.filter((chain) =>
-      accountService.isAccountSchemeMatchChain(destinationAccountId, chain),
-    );
-
-    const localProxyChainIds: ChainId[] = [];
-    for (const account of allAccounts) {
-      if (account.accountId !== destinationAccountId) continue;
-      if (accountUtils.isPureProxiedAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
-        localProxyChainIds.push(account.chainId);
-      }
-    }
-
-    const restrictedChainIds = localProxyChainIds.length > 0 ? localProxyChainIds : (externalPureProxyChainIds ?? []);
-
-    if (restrictedChainIds.length > 0) {
-      return schemeCompatibleChains.filter((chain) => restrictedChainIds.includes(chain.chainId));
-    }
-
-    return schemeCompatibleChains;
+    return chains.filter((chain) => accountService.isAccountSchemeMatchChain(destinationAccountId, chain));
   },
 );
 
