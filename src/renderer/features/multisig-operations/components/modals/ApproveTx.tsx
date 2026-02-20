@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
-import { memo, useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 
 import {
   type Chain,
@@ -52,20 +52,9 @@ const AllSteps = [Step.FORM, Step.CONFIRMATION, Step.SIGNING];
 export const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props) => {
   const { t } = useI18n();
 
-  const [isOpen, setIsOpen] = useState(false);
   const [submitData, setSubmitData] = useState<SubmitData | null>(null);
   const [activeStep, setActiveStep] = useState(Step.FORM);
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
-
-  // Control gate based on modal open state
-  useEffect(() => {
-    if (isOpen) {
-      approveModel.flow.open({ chain, operation, account });
-      return () => {
-        approveModel.flow.close({ chain, operation, account });
-      };
-    }
-  }, [isOpen, chain, operation, account]);
 
   const wallets = useUnit(walletModel.$wallets);
   const multisigAccount = useUnit(approveModel.$multisigAccount);
@@ -89,15 +78,17 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const asset = useTransactionAsset(transaction, operation.chainId);
 
   const handleToggle = (open: boolean) => {
-    setIsOpen(open);
-    if (!open) {
+    if (open) {
+      approveModel.flow.open({ chain, operation, account });
+    } else {
+      approveModel.flow.close({ chain, operation, account });
       setSubmitData(null);
       setActiveStep(Step.FORM);
     }
   };
 
   const handleClose = () => {
-    setIsOpen(false);
+    approveModel.flow.close({ chain, operation, account });
     setSubmitData(null);
     setActiveStep(Step.FORM);
   };
