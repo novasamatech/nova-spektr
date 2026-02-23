@@ -13,7 +13,6 @@ import {
   contactModel,
 } from '@/entities/contact';
 import {
-  AuthModal,
   BackendConfigurationButton,
   BackendConfigurationModal,
   BackendConnectionCard,
@@ -221,7 +220,6 @@ export const Contacts = () => {
 
       <SendToContactModal />
       <BackendConfigurationModal />
-      <AuthModal />
     </>
   );
 };
