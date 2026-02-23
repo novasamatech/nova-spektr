@@ -5,7 +5,7 @@ import { and, debounce, not, or, spread } from 'patronum';
 
 import { spellXcmService } from '@/shared/api/xcm';
 import { categorizeXcmError } from '@/shared/api/xcm/service/xcm-error-utils';
-import { type Address, type Asset, type Chain, type Transaction } from '@/shared/core';
+import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { createSubscription } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import {
@@ -33,9 +33,10 @@ import {
   createTxValidationStore,
 } from '@/shared/transactions';
 import { type TransactionValidationDryRunError, type TransactionValidationNetworkError } from '@/shared/ui-entities';
-import { type AnyAccount, type BalancePreservation, accountService, accounts, balanceService } from '@/domains/network';
+import { type AnyAccount, type BalancePreservation, INDEXER_URL, accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
+import { proxiedChainResource } from '@/entities/proxy';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -314,6 +315,91 @@ const $destinationAccountId = combine($destination, $destinationChain, (destinat
   if (nullable(chain)) return null;
   return validateAddress(destination, chain) ? toAccountId(destination) : null;
 });
+
+// pure proxy chain restriction
+
+// Local accounts check (synchronous)
+const $localProxyChainId = combine(
+  {
+    destinationAccountId: $destinationAccountId,
+    allAccounts: accounts.$list,
+  },
+  ({ destinationAccountId, allAccounts }): ChainId | null => {
+    if (nullable(destinationAccountId)) return null;
+
+    for (const account of allAccounts) {
+      if (account.accountId !== destinationAccountId) continue;
+      if (accountUtils.isPureProxiedAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
+        return account.chainId;
+      }
+    }
+
+    return null;
+  },
+);
+
+// Indexer query via resource (for external addresses not in local accounts)
+const $externalProxyChainId = createStore<ChainId | null>(null).reset(formInitiated);
+
+const destinationAccountIdDebounced = debounce({
+  source: $destinationAccountId,
+  timeout: 400,
+});
+
+sample({
+  clock: destinationAccountIdDebounced,
+  source: {
+    accountId: $destinationAccountId,
+    localResult: $localProxyChainId,
+  },
+  filter: ({ accountId, localResult }) => nonNullable(accountId) && nullable(localResult),
+  fn: ({ accountId }) => ({
+    accountId: accountId!,
+    indexerUrl: INDEXER_URL,
+  }),
+  target: proxiedChainResource.fetch,
+});
+
+sample({
+  clock: $destinationAccountId,
+  fn: () => null,
+  target: $externalProxyChainId,
+});
+
+sample({
+  clock: proxiedChainResource.fetch.doneData,
+  target: $externalProxyChainId,
+});
+
+// Merged result: local takes priority over indexer
+const $destinationProxyChainId = combine(
+  { local: $localProxyChainId, external: $externalProxyChainId },
+  ({ local, external }): ChainId | null => local ?? external,
+);
+
+const $proxyChain = combine(
+  {
+    proxyChainId: $destinationProxyChainId,
+    chains: networkModel.$chains,
+  },
+  ({ proxyChainId, chains }): Chain | null => {
+    if (nullable(proxyChainId)) return null;
+
+    return chains[proxyChainId] ?? null;
+  },
+);
+
+const $isPureProxyChainMismatch = combine(
+  {
+    proxyChainId: $destinationProxyChainId,
+    destinationChain: $destinationChain,
+  },
+  ({ proxyChainId, destinationChain }) => {
+    if (nullable(proxyChainId) || nullable(destinationChain)) return false;
+
+    return proxyChainId !== destinationChain.chainId;
+  },
+);
 
 const $destinationAsset = combine(
   {
@@ -752,6 +838,7 @@ const $canSubmit = and(
   form.$isValid,
   $valid,
   not($hasDestinationBalanceError),
+  not($isPureProxyChainMismatch),
   or(not($isXcm), not(xcmSpellTransferModel.$isDestinationFeeLoading)),
   or(not($isXcm), $areTransactionsReady),
   or(not($isXcm), not($hasDryRunError)),
@@ -1232,6 +1319,8 @@ export const formModel = {
   $destinationAsset,
   $destinationBalanceEd,
   $hasDestinationBalanceError,
+  $isPureProxyChainMismatch,
+  $proxyChain,
   $isDestinationReadonly,
 
   $fee: $networkFee,

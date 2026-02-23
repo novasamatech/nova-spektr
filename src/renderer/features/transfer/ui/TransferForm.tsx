@@ -84,6 +84,7 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
     <div className="flex flex-col gap-4 px-5 py-4">
       <TransactionValidationError errors={errors} wallets={wallets} />
       <DestinationBalanceAlert />
+      <PureProxyChainMismatchAlert />
       <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
         <XcmChainSelector />
         <InitiatorSelector />
@@ -132,6 +133,36 @@ const DestinationBalanceAlert = memo(() => {
           components={{ b: <b /> }}
         />
       </span>
+    </Alert>
+  );
+});
+
+const PureProxyChainMismatchAlert = memo(() => {
+  const { t } = useI18n();
+  const isPureProxyChainMismatch = useUnit(formModel.$isPureProxyChainMismatch);
+  const proxyChain = useUnit(formModel.$proxyChain);
+
+  const chainBadge = proxyChain ? (
+    <ChainTitle
+      chain={proxyChain}
+      as="span"
+      className="inline-flex"
+      fontClass="font-bold text-text-primary"
+      iconSize={14}
+    />
+  ) : (
+    <div />
+  );
+
+  return (
+    <Alert title={t('transfer.pureProxyChainMismatch.title')} variant="error" active={isPureProxyChainMismatch}>
+      <FootnoteText className="text-text-primary">
+        <Trans
+          t={t}
+          i18nKey="transfer.pureProxyChainMismatch.description"
+          components={{ chains: chainBadge, br: <br /> }}
+        />
+      </FootnoteText>
     </Alert>
   );
 });

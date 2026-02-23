@@ -2819,6 +2819,10 @@
     "destinationChainPlaceholder": "Select recipient network",
     "destinationCryptoError": "Unsupported address format for {network}",
     "destinationFormatError": "Address has incorrect format",
+    "pureProxyChainMismatch": {
+      "description": "This address belongs to a proxy account on <chains />.<br /> Sending tokens on different networks will make them inaccessible.",
+      "title": "Recipient is a proxy account on a different network"
+    },
     "dryRunError": {
       "description": "The transfer cannot be completed on {chain} chain.",
       "descriptionWithReason": "The transfer cannot be completed on {chain} chain. {reason}",
