@@ -17,19 +17,22 @@ type AuthState = {
 
 type AuthStep = 'selectAccount' | 'signing' | 'error';
 
+type ConnectionResult = { status: 'idle' } | { status: 'success' } | { status: 'error'; message: string };
+
 // Events
 const signInClicked = createEvent();
 const signOutClicked = createEvent();
 const accountSelected = createEvent<AccountId>();
 const signConfirmed = createEvent();
+const connectTriggered = createEvent();
 const modalClosed = createEvent();
 
 // Stores
 const $authState = createStore<AuthState | null>(null);
-const $isAuthModalOpen = createStore(false);
 const $authStep = createStore<AuthStep>('selectAccount');
 const $selectedAccountId = createStore<AccountId | null>(null);
 const $error = createStore<string | null>(null);
+const $connectionResult = createStore<ConnectionResult>({ status: 'idle' });
 
 const $isAuthenticated = $authState.map((state) => state !== null);
 
@@ -78,34 +81,55 @@ const logoutFx = createEffect(async (baseUrl: string) => {
   return authApi.logout(baseUrl);
 });
 
-// Wiring: signInClicked → open modal
-$isAuthModalOpen.on(signInClicked, () => true);
+// Wiring: connectTriggered → save URL + begin auth
+// Step 1: Save draft URL to $backendUrl (must be declared before auth trigger)
+sample({
+  clock: connectTriggered,
+  source: backendConfigurationModel.$draftUrl,
+  fn: (url) => url?.trim() ?? null,
+  target: backendConfigurationModel.$backendUrl,
+});
+
+// Step 2: Begin signing
+$authStep.on(connectTriggered, () => 'signing');
+
+// Step 3: Trigger auth challenge flow (reuses signConfirmed path)
+sample({
+  clock: connectTriggered,
+  source: $selectedAccountId,
+  filter: (id): id is AccountId => id !== null,
+  target: signConfirmed,
+});
+
+// Wiring: signInClicked → reset state for new sign-in
 $authStep.on(signInClicked, () => 'selectAccount');
 $selectedAccountId.on(signInClicked, () => null);
 $error.on(signInClicked, () => null);
 
-// Auto-select when only one extension account is available
+// Auto-select first available extension account when nothing is selected
 sample({
-  clock: signInClicked,
-  source: $extensionAccounts,
-  filter: (accounts) => accounts.length === 1,
-  fn: (accounts) => {
-    const account = accounts[0];
-    if (!account) throw new Error('Expected exactly one account');
-
-    return account.accountId;
-  },
+  clock: [signInClicked, backendConfigurationModel.events.modalOpened, backendConfigurationModel.events.editStarted],
+  source: { accounts: $extensionAccounts, selectedId: $selectedAccountId },
+  filter: ({ accounts, selectedId }) => accounts.length > 0 && selectedId === null,
+  fn: ({ accounts }) => accounts[0]!.accountId,
   target: accountSelected,
 });
 
 // Wiring: accountSelected
 $selectedAccountId.on(accountSelected, (_, id) => id);
 
-// Wiring: modalClosed
-$isAuthModalOpen.on(modalClosed, () => false);
-$authStep.on(modalClosed, () => 'selectAccount');
-$selectedAccountId.on(modalClosed, () => null);
-$error.on(modalClosed, () => null);
+// Reset auth UI state when modal opens, closes, or connect completes
+const resetAuthUiTriggers = [
+  modalClosed,
+  backendConfigurationModel.events.connectCompleted,
+  backendConfigurationModel.events.editStarted,
+  backendConfigurationModel.events.modalOpened,
+  backendConfigurationModel.events.urlCleared,
+];
+
+$authStep.on(resetAuthUiTriggers, () => 'selectAccount');
+$selectedAccountId.on(resetAuthUiTriggers, () => null);
+$error.on(resetAuthUiTriggers, () => null);
 
 // Wiring: signConfirmed → requestChallengeFx
 $authStep.on(signConfirmed, () => 'signing');
@@ -157,8 +181,18 @@ const signInSucceeded = createEvent();
 
 sample({
   clock: signAndVerifyFx.done,
-  fn: () => false,
-  target: [$isAuthModalOpen, signInSucceeded],
+  target: [signInSucceeded, backendConfigurationModel.events.connectCompleted],
+});
+
+// Connection result tracking
+$connectionResult
+  .on(signAndVerifyFx.done, () => ({ status: 'success' }) as ConnectionResult)
+  .on([connectTriggered, signInClicked, backendConfigurationModel.events.urlCleared], () => ({ status: 'idle' }) as ConnectionResult);
+
+sample({
+  clock: [requestChallengeFx.failData, signAndVerifyFx.failData],
+  fn: (error: Error): ConnectionResult => ({ status: 'error', message: error.message }),
+  target: $connectionResult,
 });
 
 // Wiring: effect failures → error step
@@ -224,10 +258,10 @@ $authState.on(checkSessionFx.fail, () => null);
 
 export const authModel = {
   $authState,
-  $isAuthModalOpen,
   $authStep,
   $selectedAccountId,
   $error,
+  $connectionResult,
   $isAuthenticated,
   $extensionAccounts,
 
@@ -237,6 +271,7 @@ export const authModel = {
     signOutClicked,
     accountSelected,
     signConfirmed,
+    connectTriggered,
     modalClosed,
   },
 };

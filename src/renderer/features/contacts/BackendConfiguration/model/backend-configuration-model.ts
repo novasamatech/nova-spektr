@@ -1,4 +1,4 @@
-import { createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 
 import { persist } from '@/shared/api/storage';
 
@@ -8,6 +8,7 @@ const urlCleared = createEvent();
 const editStarted = createEvent();
 const modalOpened = createEvent();
 const modalClosed = createEvent();
+const connectCompleted = createEvent();
 
 const $backendUrl = createStore<string | null>(null);
 persist({ store: $backendUrl, key: 'address-book-backend-url' });
@@ -29,6 +30,10 @@ const $isUrlValid = $draftUrl.map((url) => {
 
 const $hasBackend = $backendUrl.map((url) => url !== null);
 
+const $isDirty = combine($draftUrl, $backendUrl, (draft, saved) => {
+  return draft.trim() !== (saved ?? '');
+});
+
 $draftUrl.on(urlChanged, (_, url) => url);
 
 sample({
@@ -47,7 +52,8 @@ sample({
 $isModalOpen
   .on(modalOpened, () => true)
   .on(editStarted, () => true)
-  .on(modalClosed, () => false);
+  .on(modalClosed, () => false)
+  .on(connectCompleted, () => false);
 
 sample({
   clock: urlSaved,
@@ -56,13 +62,8 @@ sample({
   target: $backendUrl,
 });
 
-sample({
-  clock: urlSaved,
-  fn: () => false,
-  target: $isModalOpen,
-});
-
 $backendUrl.on(urlCleared, () => null);
+$draftUrl.on(urlCleared, () => '');
 
 export const backendConfigurationModel = {
   $backendUrl,
@@ -70,6 +71,7 @@ export const backendConfigurationModel = {
   $isModalOpen,
   $isUrlValid,
   $hasBackend,
+  $isDirty,
   events: {
     urlChanged,
     urlSaved,
@@ -77,5 +79,6 @@ export const backendConfigurationModel = {
     editStarted,
     modalOpened,
     modalClosed,
+    connectCompleted,
   },
 };

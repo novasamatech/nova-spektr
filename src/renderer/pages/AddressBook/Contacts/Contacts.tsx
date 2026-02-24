@@ -13,7 +13,6 @@ import {
   contactModel,
 } from '@/entities/contact';
 import {
-  AuthModal,
   BackendConfigurationButton,
   BackendConfigurationModal,
   BackendConnectionCard,
@@ -199,7 +198,7 @@ export const Contacts = () => {
         <section className="mt-4 h-full w-full overflow-y-auto">
           <div className="mx-auto flex h-full w-[636px] flex-col gap-y-4">
             {showTabs && (
-              <div className="flex items-center gap-x-2">
+              <div className="flex items-center justify-between">
                 <SourceTabs localCount={localContacts.length} backendCount={backendContacts.length} />
                 {isBackendTab && (
                   <IconButton
@@ -221,7 +220,6 @@ export const Contacts = () => {
 
       <SendToContactModal />
       <BackendConfigurationModal />
-      <AuthModal />
     </>
   );
 };

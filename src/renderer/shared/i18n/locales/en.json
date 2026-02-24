@@ -96,20 +96,16 @@
       "title": "Delete contact"
     },
     "auth": {
-      "closeButton": "Close",
       "connectedAccountLabel": "Connected account",
+      "connectionSuccess": "Connected successfully",
       "disconnectButton": "Disconnect",
       "errorTitle": "Authentication failed",
-      "modalTitle": "Sign in to Address Book",
       "noExtensionAccounts": "No extension wallet accounts available",
       "notConnected": "Not signed in",
       "selectAccountLabel": "Select account",
       "selectAccountPlaceholder": "Choose an account",
-      "signButton": "Sign",
-      "signInButton": "Sign in",
       "signOutButton": "Sign out",
       "signingMessage": "Waiting for signature...",
-      "tryAgainButton": "Try again",
       "signInSuccess": "Successfully signed in"
     },
     "backendConfiguration": {
@@ -119,10 +115,16 @@
       "urlLabel": "Backend URL",
       "urlPlaceholder": "https://example.com/api",
       "urlInvalidError": "Please enter a valid URL",
-      "saveButton": "Save",
+      "connectButton": "Connect",
+      "tryAgainButton": "Try again",
+      "connectingMessage": "Connecting...",
       "connectionLabel": "Backend connection",
       "tooltip": "Configure address book backend",
-      "backendRemoved": "Backend removed"
+      "backendRemoved": "Backend removed",
+      "unsavedChangesTitle": "Unsaved changes",
+      "unsavedChangesMessage": "You have modified the backend URL without connecting. Discard changes?",
+      "discardButton": "Discard",
+      "keepEditingButton": "Keep editing"
     },
     "searchPlaceholder": "Search",
     "sources": {
