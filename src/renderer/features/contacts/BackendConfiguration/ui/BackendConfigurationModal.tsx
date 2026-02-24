@@ -1,13 +1,11 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { useStatusContext } from '@/app/providers';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useConfirmContext } from '@/shared/providers/ConfirmContext';
 import { Button, FootnoteText, InputHint, Loader, SmallTitleText } from '@/shared/ui';
-import { Animation } from '@/shared/ui/Animation/Animation';
 import { Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select, useNotification } from '@/shared/ui-kit';
 import { authModel } from '../model/auth-model';
@@ -17,7 +15,6 @@ export const BackendConfigurationModal = () => {
   const { t } = useI18n();
   const { toast } = useNotification();
   const { confirm } = useConfirmContext();
-  const { showStatus } = useStatusContext();
 
   const isOpen = useUnit(backendConfigurationModel.$isModalOpen);
   const draftUrl = useUnit(backendConfigurationModel.$draftUrl);
@@ -35,13 +32,9 @@ export const BackendConfigurationModal = () => {
   useEffect(() => {
     // eslint-disable-next-line effector/no-watch
     return authModel.events.signInSucceeded.watch(() => {
-      showStatus({
-        title: t('addressBook.auth.connectionSuccess'),
-        content: <Animation variant="success" width={120} height={120} />,
-        closeTimer: 2000,
-      });
+      toast.success(t('addressBook.auth.connectionSuccess'));
     });
-  }, [showStatus, t]);
+  }, [toast, t]);
 
   const isSigning = authStep === 'signing';
   const isError = authStep === 'error';
