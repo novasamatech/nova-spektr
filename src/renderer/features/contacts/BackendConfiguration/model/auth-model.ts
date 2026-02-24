@@ -106,17 +106,12 @@ $authStep.on(signInClicked, () => 'selectAccount');
 $selectedAccountId.on(signInClicked, () => null);
 $error.on(signInClicked, () => null);
 
-// Auto-select when only one extension account is available
+// Auto-select first available extension account when nothing is selected
 sample({
-  clock: signInClicked,
-  source: $extensionAccounts,
-  filter: (accounts) => accounts.length === 1,
-  fn: (accounts) => {
-    const account = accounts[0];
-    if (!account) throw new Error('Expected exactly one account');
-
-    return account.accountId;
-  },
+  clock: [signInClicked, backendConfigurationModel.events.modalOpened, backendConfigurationModel.events.editStarted],
+  source: { accounts: $extensionAccounts, selectedId: $selectedAccountId },
+  filter: ({ accounts, selectedId }) => accounts.length > 0 && selectedId === null,
+  fn: ({ accounts }) => accounts[0]!.accountId,
   target: accountSelected,
 });
 
