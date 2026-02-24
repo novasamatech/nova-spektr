@@ -20,7 +20,7 @@ export const SourceTabs = ({ localCount, backendCount }: Props) => {
   }
 
   return (
-    <div className="min-w-[320px]">
+    <div className="min-w-[320px] [&_[role=tablist]]:mb-0">
       <Tabs value={sourceTab} onChange={sourceTabChanged}>
         <Tabs.List>
           {availableSources.map((source) => {
