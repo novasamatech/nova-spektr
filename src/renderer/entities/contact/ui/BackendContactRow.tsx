@@ -1,3 +1,5 @@
+import { Fragment } from 'react';
+
 import { type BackendContact, type Contact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, IconButton, Plate } from '@/shared/ui';
@@ -34,24 +36,16 @@ export const BackendContactRow = ({ contact, onSendTo }: Props) => {
         <div className="flex flex-wrap items-center gap-1">
           {contact.categoryName && <Label variant="blue">{contact.categoryName}</Label>}
           {contact.contactTypeName && <Label variant="gray">{contact.contactTypeName}</Label>}
-          {contact.chainName && (
-            <>
-              <FootnoteText className="text-text-tertiary">
-                {/* eslint-disable-next-line i18next/no-literal-string */}
-                {'on'}
-              </FootnoteText>
-              <Label variant="lightBlue">{contact.chainName}</Label>
-            </>
-          )}
-          {contact.entityName && (
-            <>
+          {contact.chainName && <Label variant="lightBlue">{contact.chainName}</Label>}
+          {contact.entityNames.map((entityName) => (
+            <Fragment key={entityName}>
               <FootnoteText className="text-text-tertiary">
                 {/* eslint-disable-next-line i18next/no-literal-string */}
                 {'\u00b7'}
               </FootnoteText>
-              <Label variant="purple">{contact.entityName}</Label>
-            </>
-          )}
+              <Label variant="purple">{entityName}</Label>
+            </Fragment>
+          ))}
         </div>
       </Plate>
     </li>
