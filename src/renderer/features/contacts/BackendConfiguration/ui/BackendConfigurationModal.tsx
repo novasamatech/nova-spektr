@@ -19,20 +19,18 @@ export const BackendConfigurationModal = () => {
   const { confirm } = useConfirmContext();
   const { showStatus } = useStatusContext();
 
-  const [isOpen, draftUrl, isValid, hasBackend, isDirty, isAuthenticated, authState, authStep, selectedAccountId, extensionAccounts, error] =
-    useUnit([
-      backendConfigurationModel.$isModalOpen,
-      backendConfigurationModel.$draftUrl,
-      backendConfigurationModel.$isUrlValid,
-      backendConfigurationModel.$hasBackend,
-      backendConfigurationModel.$isDirty,
-      authModel.$isAuthenticated,
-      authModel.$authState,
-      authModel.$authStep,
-      authModel.$selectedAccountId,
-      authModel.$extensionAccounts,
-      authModel.$error,
-    ]);
+  const isOpen = useUnit(backendConfigurationModel.$isModalOpen);
+  const draftUrl = useUnit(backendConfigurationModel.$draftUrl);
+  const isValid = useUnit(backendConfigurationModel.$isUrlValid);
+  const hasBackend = useUnit(backendConfigurationModel.$hasBackend);
+  const isDirty = useUnit(backendConfigurationModel.$isDirty);
+
+  const isAuthenticated = useUnit(authModel.$isAuthenticated);
+  const authState = useUnit(authModel.$authState);
+  const authStep = useUnit(authModel.$authStep);
+  const selectedAccountId = useUnit(authModel.$selectedAccountId);
+  const extensionAccounts = useUnit(authModel.$extensionAccounts);
+  const error = useUnit(authModel.$error);
 
   useEffect(() => {
     // eslint-disable-next-line effector/no-watch
@@ -126,9 +124,7 @@ export const BackendConfigurationModal = () => {
           {showSigningState && (
             <div className="flex flex-col items-center gap-4 py-4">
               <Loader color="primary" />
-              <FootnoteText className="text-text-tertiary">
-                {t('addressBook.auth.signingMessage')}
-              </FootnoteText>
+              <FootnoteText className="text-text-tertiary">{t('addressBook.auth.signingMessage')}</FootnoteText>
             </div>
           )}
 
@@ -142,9 +138,7 @@ export const BackendConfigurationModal = () => {
 
           {isError && (
             <div className="flex flex-col gap-2 rounded-md bg-badge-red-background-default p-3">
-              <SmallTitleText className="text-text-negative">
-                {t('addressBook.auth.errorTitle')}
-              </SmallTitleText>
+              <SmallTitleText className="text-text-negative">{t('addressBook.auth.errorTitle')}</SmallTitleText>
               {error && <FootnoteText className="text-text-negative">{error}</FootnoteText>}
             </div>
           )}
@@ -197,9 +191,7 @@ const AccountSelector = ({
             <Box direction="row" gap={2} verticalAlign="center">
               <Identicon address={toAddress(account.accountId)} size={20} />
               <SmallTitleText>{account.name}</SmallTitleText>
-              <FootnoteText className="text-text-tertiary">
-                {toShortAddress(toAddress(account.accountId))}
-              </FootnoteText>
+              <FootnoteText className="text-text-tertiary">{toShortAddress(toAddress(account.accountId))}</FootnoteText>
             </Box>
           </Select.Item>
         ))}
