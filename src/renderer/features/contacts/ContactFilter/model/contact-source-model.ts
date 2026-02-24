@@ -1,5 +1,6 @@
-import { combine, createEvent, createStore } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 
+import { contactModel } from '@/entities/contact';
 import { authModel, backendConfigurationModel } from '../../BackendConfiguration';
 
 const sourceTabChanged = createEvent<string>();
@@ -36,6 +37,15 @@ const $availableSources = combine(
     ];
   },
 );
+
+// When backend becomes available and there are no local contacts, default to backend tab
+sample({
+  clock: $availableSources,
+  source: contactModel.$localContacts,
+  filter: (localContacts, sources) => sources.length > 0 && localContacts.length === 0,
+  fn: (_localContacts, sources) => sources.find((s) => s.id !== 'local')!.id,
+  target: $sourceTab,
+});
 
 export const contactSourceModel = {
   $sourceTab,

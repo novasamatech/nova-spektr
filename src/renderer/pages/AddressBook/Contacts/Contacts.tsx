@@ -196,9 +196,9 @@ export const Contacts = () => {
         </Header>
 
         <section className="mt-4 h-full w-full overflow-y-auto">
-          <div className="mx-auto flex h-full w-[636px] flex-col gap-y-4">
+          <div className="mx-auto flex h-full w-[636px] flex-col gap-y-4 pb-4">
             {showTabs && (
-              <div className="flex items-center justify-between">
+              <div className="flex items-center gap-x-2">
                 <SourceTabs localCount={localContacts.length} backendCount={backendContacts.length} />
                 {isBackendTab && (
                   <IconButton
