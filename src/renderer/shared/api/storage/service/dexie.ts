@@ -9,7 +9,6 @@ import {
   type TConnection,
   type TContact,
   type TMetadata,
-  type TMultisigOperations,
   type TNotification,
   type TProxy,
   type TWallet,
@@ -18,9 +17,11 @@ import {
   addAccountCreatedAt,
   addAccountNameType,
   addFlexibleMultisigProxyType,
+  backupContactsBeforePKChange,
   migrateAccounts,
   migrateBasketTransactionAfterAddressRemoval,
   migrateCASBasket,
+  migrateContactsToStringIds,
   migrateDuplicateVaultDerivations,
   migrateEVMAccountsCryptoType,
   migrateEvents,
@@ -32,6 +33,7 @@ import {
   migrateWallets,
   removeDeprecatedProxiedAccounts,
   renameBlockNumberToEntropyBlockNumber,
+  restoreContactsAfterPKChange,
 } from '../migration';
 
 class DexieStorage extends Dexie {
@@ -45,7 +47,6 @@ class DexieStorage extends Dexie {
   accounts: TAccount;
   accounts2: TAccount2;
   contacts: TContact;
-  multisigOperations: TMultisigOperations;
   notifications: TNotification;
   metadata: TMetadata;
   proxies: TProxy;
@@ -158,13 +159,18 @@ class DexieStorage extends Dexie {
 
     this.version(44).upgrade(addAccountCreatedAt);
 
+    // Primary key change (++id → id) requires backup → delete → recreate → restore
+    this.version(45).stores({ _contactsBackup: '++id' }).upgrade(backupContactsBeforePKChange);
+    this.version(46).stores({ contacts: null });
+    this.version(47).stores({ contacts: 'id,source' }).upgrade(restoreContactsAfterPKChange);
+    this.version(48).stores({ _contactsBackup: null });
+
     this.connections = this.table('connections');
     this.balances2 = this.table('balances2');
     this.wallets = this.table('wallets');
     this.accounts = this.table('accounts');
     this.accounts2 = this.table('accounts2');
     this.contacts = this.table('contacts');
-    this.multisigOperations = this.table('multisigOperations');
     this.notifications = this.table('notifications');
     this.metadata = this.table('metadata');
     this.proxies = this.table('proxies');
@@ -186,11 +192,12 @@ export const exportDb = async () => {
 export const importDb = async (blob: Blob) => {
   await importInto(dexie, blob, { acceptVersionDiff: true });
 
-  await dexie.transaction('rw', dexie.accounts2, dexie.notifications, async (t) => {
+  await dexie.transaction('rw', dexie.accounts2, dexie.notifications, dexie.contacts, async (t) => {
     await addAccountNameType(t);
     await migrateNotificationStructure(t);
     await addFlexibleMultisigProxyType(t);
     await addAccountCreatedAt(t);
+    await migrateContactsToStringIds(t);
   });
 };
 

@@ -32,11 +32,27 @@ type NewEvent = {
   event: MultisigEvent;
 };
 
-const $anyMultisigAccountsMap = accounts.$list.map(accountsList =>
-  Object.fromEntries(
-    accountsList.filter(accountUtils.isAnyMultisigAccount).map(account => [account.accountId, account]),
-  ),
+const $anyMultisigAccounts = accounts.$list.map(accountsList =>
+  accountsList.filter(accountUtils.isAnyMultisigAccount),
 );
+
+function findAccountForOperation(
+  operation: MultisigOperation,
+  anyMultisigAccounts: AnyAccount[],
+): AnyAccount | undefined {
+  if (operation.proxiedAccountId) {
+    return anyMultisigAccounts.find(
+      a =>
+        accountUtils.isFlexibleMultisigAccount(a) &&
+        a.accountId === operation.proxiedAccountId &&
+        a.multisigAccountId === operation.multisigAccountId,
+    );
+  }
+
+  return anyMultisigAccounts.find(
+    a => accountUtils.isMultisigAccount(a) && a.accountId === operation.multisigAccountId,
+  );
+}
 
 const getNotificationStatus = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
   switch (operationStatus) {
@@ -134,19 +150,19 @@ const createOperationNotification = (
   const relativeLink = multisigOperationService.generateMultisigOperationRelativeLink({
     chainId: operation.chainId,
     callHash: operation.callHash,
-    accountId: operation.accountId,
+    multisigAccountId: operation.multisigAccountId,
     blockCreated: operation.blockCreated,
     indexCreated: operation.indexCreated,
   });
 
   return {
-    key: `${NotificationType.MULTISIG_OPERATION}-${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.accountId, operation.blockCreated, operation.indexCreated)}-${operation.status}`,
+    key: `${NotificationType.MULTISIG_OPERATION}-${multisigOperationService.getOperationId(operation.chainId, operation.callHash, operation.multisigAccountId, operation.blockCreated, operation.indexCreated)}-${operation.status}`,
     type: NotificationType.MULTISIG_OPERATION,
     status: getNotificationStatus(operation.status),
-    issuer: operation.accountId,
+    issuer: operation.multisigAccountId,
     title,
     description,
-    multisigAccountId: operation.accountId,
+    multisigAccountId: operation.multisigAccountId,
     callHash: operation.callHash,
     callTimepoint: {
       height: operation.blockCreated,
@@ -175,7 +191,7 @@ const createEventNotification = (
   const relativeLink = multisigOperationService.generateMultisigOperationRelativeLink({
     chainId: operation.chainId,
     callHash: operation.callHash,
-    accountId: operation.accountId,
+    multisigAccountId: operation.multisigAccountId,
     blockCreated: operation.blockCreated,
     indexCreated: operation.indexCreated,
   });
@@ -183,7 +199,7 @@ const createEventNotification = (
   const operationId = multisigOperationService.getOperationId(
     operation.chainId,
     operation.callHash,
-    operation.accountId,
+    operation.multisigAccountId,
     operation.blockCreated,
     operation.indexCreated,
   );
@@ -198,10 +214,10 @@ const createEventNotification = (
     key,
     type: NotificationType.MULTISIG_EVENT,
     status: event.status === 'approve' ? 'success' : 'error',
-    issuer: operation.accountId,
+    issuer: operation.multisigAccountId,
     title: event.status === 'approve' ? 'Multisig operation signed' : 'Multisig operation rejected',
     description: signerName ? `by ${signerName}` : undefined,
-    multisigAccountId: operation.accountId,
+    multisigAccountId: operation.multisigAccountId,
     callHash: operation.callHash,
     callTimepoint: {
       height: operation.blockCreated,
@@ -228,7 +244,7 @@ const createEventNotification = (
 };
 
 const getOperationId = (op: MultisigOperation) =>
-  multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated);
+  multisigOperationService.getOperationId(op.chainId, op.callHash, op.multisigAccountId, op.blockCreated, op.indexCreated);
 
 const getNotificationKey = (op: MultisigOperation) =>
   `${NotificationType.MULTISIG_OPERATION}-${getOperationId(op)}-${op.status}`;
@@ -277,32 +293,32 @@ sample({
   clock: operationChanges,
   source: {
     populated: multisigOperation.$populated,
-    anyMultisigAccountsMap: $anyMultisigAccountsMap,
+    anyMultisigAccounts: $anyMultisigAccounts,
     chains: networkModel.$chains,
   },
   filter: ({ populated }) => populated,
-  fn: ({ anyMultisigAccountsMap, chains }, { newOperations, statusChanges, removedKeys, newEvents }) => {
+  fn: ({ anyMultisigAccounts, chains }, { newOperations, statusChanges, removedKeys, newEvents }) => {
     // Filter new operations - apply timestamp filter to exclude operations created before account was connected
     const newOperationNotifications = newOperations
       .filter(operation => {
         // Don't notify the operation creator
-        if (operation.status === 'pending' && nonNullable(anyMultisigAccountsMap[operation.depositor])) {
+        if (operation.status === 'pending' && anyMultisigAccounts.some(a => a.accountId === operation.depositor)) {
           return false;
         }
 
-        const account = anyMultisigAccountsMap[operation.accountId];
+        const account = findAccountForOperation(operation, anyMultisigAccounts);
         // Show only operations created after account was connected
         return nonNullable(account) && operation.timestamp >= account.createdAt;
       })
       .map(operation => {
-        const account = anyMultisigAccountsMap[operation.accountId];
+        const account = findAccountForOperation(operation, anyMultisigAccounts);
 
         return createOperationNotification(operation, chains, account);
       });
 
     // Status changes should always create notifications regardless of when the operation was created
     const statusChangeNotifications = statusChanges.map(operation => {
-      const account = anyMultisigAccountsMap[operation.accountId];
+      const account = findAccountForOperation(operation, anyMultisigAccounts);
 
       return createOperationNotification(operation, chains, account);
     });
@@ -310,14 +326,14 @@ sample({
     const eventNotifications = newEvents
       .filter(({ event }) => {
         // Don't notify if the current user caused the event
-        if (event.accountId in anyMultisigAccountsMap && event.status !== 'reject') {
+        if (anyMultisigAccounts.some(a => a.accountId === event.accountId) && event.status !== 'reject') {
           return false;
         }
 
         return true;
       })
       .map(({ operation, event }) => {
-        const signerAccount = anyMultisigAccountsMap[event.accountId];
+        const signerAccount = anyMultisigAccounts.find(a => a.accountId === event.accountId);
 
         return createEventNotification(operation, event, signerAccount?.name);
       });

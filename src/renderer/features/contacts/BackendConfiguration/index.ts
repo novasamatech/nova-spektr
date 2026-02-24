@@ -1,4 +1,3 @@
-export { AuthModal } from './ui/AuthModal';
 export { BackendConfigurationButton } from './ui/BackendConfigurationButton';
 export { BackendConfigurationModal } from './ui/BackendConfigurationModal';
 export { BackendConnectionCard } from './ui/BackendConnectionCard';

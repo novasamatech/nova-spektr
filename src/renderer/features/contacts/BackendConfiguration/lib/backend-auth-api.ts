@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
-import { isElectron } from '@/shared/lib/utils';
+import { authFetch, clearCsrfToken, parseResponse } from './backend-fetch';
 
-type FetchResult = { ok: boolean; status: number; headers: Record<string, string>; body: string };
+export { getCsrfToken } from './backend-fetch';
 
 const challengeResponseSchema = z.object({
   challengeId: z.string(),
   nonce: z.string(),
-  expiresAt: z.string(),
+  expiresAt: z.number(),
 });
 
 const verifyResponseSchema = z.object({
@@ -22,35 +22,6 @@ const sessionResponseSchema = z.object({
 type ChallengeResponse = z.infer<typeof challengeResponseSchema>;
 type VerifyResponse = z.infer<typeof verifyResponseSchema>;
 type SessionResponse = z.infer<typeof sessionResponseSchema>;
-
-async function authFetch(url: string, init?: RequestInit): Promise<FetchResult> {
-  if (isElectron()) {
-    return window.App.proxyFetch(url, init);
-  }
-
-  const response = await fetch(url, { ...init, credentials: 'include' });
-  const body = await response.text();
-
-  return {
-    ok: response.ok,
-    status: response.status,
-    headers: {},
-    body,
-  };
-}
-
-const errorResponseSchema = z.object({
-  message: z.string().optional(),
-});
-
-function parseResponse<T>(result: FetchResult, schema: z.ZodType<T>): T {
-  if (!result.ok) {
-    const parsed = errorResponseSchema.parse(JSON.parse(result.body));
-    throw new Error(parsed.message ?? `Request failed with status ${result.status}`);
-  }
-
-  return schema.parse(JSON.parse(result.body));
-}
 
 export async function requestChallenge(baseUrl: string, accountId: string): Promise<ChallengeResponse> {
   const result = await authFetch(`${baseUrl}/auth/challenge`, {
@@ -89,6 +60,8 @@ export async function logout(baseUrl: string): Promise<void> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   });
+
+  clearCsrfToken();
 
   if (!result.ok) {
     throw new Error(`Logout failed with status ${result.status}`);

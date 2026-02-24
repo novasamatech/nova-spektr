@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
-import { memo, useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 
 import {
   type Asset,
@@ -52,19 +52,9 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING];
 export const RejectTxModal = memo(({ api, operation, account, chain, children }: Props) => {
   const { t } = useI18n();
 
-  const [isOpen, setIsOpen] = useState(false);
   const [submitData, setSubmitData] = useState<SubmitData | null>(null);
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
-
-  useEffect(() => {
-    if (isOpen) {
-      rejectModel.flow.open({ chain, operation, account });
-      return () => {
-        rejectModel.flow.close({ chain, operation, account });
-      };
-    }
-  }, [isOpen, chain, operation, account]);
 
   const wallets = useUnit(walletModel.$wallets);
 
@@ -95,15 +85,17 @@ export const RejectTxModal = memo(({ api, operation, account, chain, children }:
   }
 
   const handleToggle = (open: boolean) => {
-    setIsOpen(open);
-    if (!open) {
+    if (open) {
+      rejectModel.flow.open({ chain, operation, account });
+    } else {
+      rejectModel.flow.close({ chain, operation, account });
       setSubmitData(null);
       setActiveStep(Step.CONFIRMATION);
     }
   };
 
   const handleClose = () => {
-    setIsOpen(false);
+    rejectModel.flow.close({ chain, operation, account });
     setSubmitData(null);
     setActiveStep(Step.CONFIRMATION);
   };

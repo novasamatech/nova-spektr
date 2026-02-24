@@ -32,10 +32,15 @@ const exportToCsvFx = createEffect(({ operations, chains, tab }: ExportParams) =
 sample({
   clock: exportToCsv,
   source: {
-    operations: operationsContextModel.$filteredOperations,
+    filteredOperations: operationsContextModel.$filteredOperations,
     chains: networkModel.$chains,
     tab: operationsContextModel.$tab,
   },
+  fn: ({ filteredOperations, chains, tab }) => ({
+    operations: filteredOperations.map(item => item.operation),
+    chains,
+    tab,
+  }),
   target: exportToCsvFx,
 });
 

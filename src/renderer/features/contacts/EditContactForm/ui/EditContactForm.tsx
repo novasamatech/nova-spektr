@@ -7,12 +7,12 @@ import { useI18n } from '@/shared/i18n';
 import { Button, InputHint } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
-import { type Callbacks, editFormModel } from '../model/contact-form';
+import { editFormModel } from '../model/contact-form';
 
-type Props = Callbacks & {
+type Props = {
   contactToEdit: Contact;
 };
-export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
+export const EditContactForm = ({ contactToEdit }: Props) => {
   const { t } = useI18n();
 
   const {
@@ -26,10 +26,6 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
   useEffect(() => {
     editFormModel.events.formInitiated(contactToEdit);
   }, [contactToEdit]);
-
-  useEffect(() => {
-    editFormModel.events.callbacksChanged({ onSubmit });
-  }, [onSubmit]);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();

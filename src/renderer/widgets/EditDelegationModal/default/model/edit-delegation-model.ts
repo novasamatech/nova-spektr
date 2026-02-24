@@ -4,8 +4,7 @@ import { combineEvents, spread } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { Step, getBalanceBn, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
-import { type PathType, Paths } from '@/shared/routes';
-import { type AnyAccount, accountService } from '@/domains/network';
+import { type AnyAccount, accountService, multisigOperationService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { accountUtils } from '@/entities/wallet';
@@ -14,7 +13,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import {
   type EditDelegationConfirm,
   editDelegationConfirmModel as confirmModel,
@@ -41,7 +40,7 @@ const $accounts = createStore<AnyAccount[]>([]).reset(flowFinished);
 
 const $isUnchanged = createStore(false);
 
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $redirectAfterSubmitPath = createStore<string | null>(null).reset(flowStarted);
 
 sample({
   clock: formModel.output.formChanged,
@@ -333,9 +332,19 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: formModel.$hasAnyMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: () => Paths.OPERATIONS,
+  source: { hasMultisig: formModel.$hasAnyMultisig, coreTx: formModel.$coreTx, wrappedTx: formModel.$tx },
+  filter: ({ hasMultisig }, results) => hasMultisig && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ coreTx, wrappedTx }, results) => {
+    const { timepoint } = (results[0] as SuccessResult).params;
+
+    return multisigOperationService.generateMultisigOperationRelativeLink({
+      chainId: coreTx!.chainId,
+      callHash: wrappedTx!.args.callHash,
+      multisigAccountId: coreTx!.accountId,
+      blockCreated: timepoint.height,
+      indexCreated: timepoint.index,
+    });
+  },
   target: $redirectAfterSubmitPath,
 });
 
