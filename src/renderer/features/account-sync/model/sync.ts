@@ -136,7 +136,10 @@ export const syncProxiedAccounts = ({
       }
 
       const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
-      return !lastIndexedBlock || lastIndexedBlock >= account.entropyBlockNumber;
+
+      // Do not ever delete not indexed accounts
+      if (nullable(lastIndexedBlock)) return false;
+      return lastIndexedBlock >= account.pendingBlockNumber;
     }),
   );
 
@@ -284,7 +287,7 @@ sample({
     const deleteProxies = new Set<ProxyAccount>(
       Object.values(existingProxies)
         .flat()
-        .filter((proxy) => syncedChains.has(proxy.chainId)),
+        .filter((proxy) => syncedChains.has(proxy.chainId) && syncResult.indexedBlocks.has(proxy.chainId)),
     );
 
     for (const proxyAccount of syncedProxyAccounts) {
@@ -346,12 +349,13 @@ export const syncMultisigAccounts = ({ allAccounts, allWallets, syncResult, iden
   const deleteAccounts = new Set(
     syncedChains.size > 0
       ? multisigAccounts.filter((account) => {
-          if (!account.remarkChainId || !account.blockNumber) {
-            return true;
-          } else {
-            const lastIndexedBlock = syncResult.indexedBlocks.get(account.remarkChainId);
-            return !lastIndexedBlock || lastIndexedBlock >= account.blockNumber;
-          }
+          if (!account.remarkChainId || !account.blockNumber) return true;
+
+          const lastIndexedBlock = syncResult.indexedBlocks.get(account.remarkChainId);
+
+          // Do not ever delete not indexed accounts
+          if (nullable(lastIndexedBlock)) return false;
+          return lastIndexedBlock >= account.blockNumber;
         })
       : [],
   );
@@ -453,16 +457,15 @@ export const syncFlexibleMultisigs = ({
   const deleteWallets = new Set<Wallet>();
   const deleteAccounts = new Set(
     flexibleMultisigAccounts.filter((account) => {
-      if (!syncedChains.has(account.chainId)) {
-        return false;
-      }
+      if (!syncedChains.has(account.chainId)) return false;
 
-      if (!account.pendingBlockNumber) {
-        return true;
-      } else {
-        const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
-        return !lastIndexedBlock || lastIndexedBlock >= account.pendingBlockNumber;
-      }
+      if (!account.pendingBlockNumber) return true;
+
+      const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
+
+      // Do not ever delete not indexed accounts
+      if (nullable(lastIndexedBlock)) return false;
+      return lastIndexedBlock >= account.pendingBlockNumber;
     }),
   );
 
