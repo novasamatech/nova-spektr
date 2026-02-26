@@ -7,9 +7,6 @@ import {
   multisigAccount1,
   multisigAccount2,
   multisigAccount3,
-  multisigWallet1,
-  multisigWallet2,
-  multisigWallet3,
   syncResult,
   userAccount,
 } from './__mocks__/sync.multisig.mocks';

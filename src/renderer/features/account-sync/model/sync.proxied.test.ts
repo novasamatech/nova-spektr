@@ -8,9 +8,6 @@ import {
   proxiedAccount1,
   proxiedAccount2,
   proxiedAccount3,
-  proxiedWallet1,
-  proxiedWallet2,
-  proxiedWallet3,
   syncResult,
   userAccount,
 } from './__mocks__/sync.proxied.mocks';
