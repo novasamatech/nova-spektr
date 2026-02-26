@@ -5,9 +5,9 @@ import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useConfirmContext } from '@/shared/providers/ConfirmContext';
-import { Button, FootnoteText, InputHint, Loader, SmallTitleText } from '@/shared/ui';
+import { Alert, Button, FootnoteText, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
-import { Box, Field, Input, Modal, Select, useNotification } from '@/shared/ui-kit';
+import { Box, Field, Input, Modal, Select, Surface, useNotification } from '@/shared/ui-kit';
 import { authModel } from '../model/auth-model';
 import { backendConfigurationModel } from '../model/backend-configuration-model';
 
@@ -102,7 +102,7 @@ export const BackendConfigurationModal = () => {
 
           {showConnectedAccount && (
             <Field text={t('addressBook.auth.connectedAccountLabel')}>
-              <div className="flex items-center justify-between rounded-md border border-filter-border bg-input-background px-3 py-2">
+              <Surface className="flex items-center justify-between px-3 py-2">
                 <div className="flex items-center gap-x-2">
                   <Identicon address={toAddress(authState.accountId)} size={20} background={false} />
                   <FootnoteText>{authState.accountName}</FootnoteText>
@@ -110,7 +110,7 @@ export const BackendConfigurationModal = () => {
                 <Button variant="text" size="sm" onClick={() => authModel.events.signOutClicked()}>
                   {t('addressBook.auth.disconnectButton')}
                 </Button>
-              </div>
+              </Surface>
             </Field>
           )}
 
@@ -129,12 +129,9 @@ export const BackendConfigurationModal = () => {
             />
           )}
 
-          {isError && (
-            <div className="flex flex-col gap-2 rounded-md bg-badge-red-background-default p-3">
-              <SmallTitleText className="text-text-negative">{t('addressBook.auth.errorTitle')}</SmallTitleText>
-              {error && <FootnoteText className="text-text-negative">{error}</FootnoteText>}
-            </div>
-          )}
+          <Alert active={isError} title={t('addressBook.auth.errorTitle')} variant="error">
+            {error && <Alert.Item withDot={false}>{error}</Alert.Item>}
+          </Alert>
         </Box>
       </Modal.Content>
       <Modal.Footer>

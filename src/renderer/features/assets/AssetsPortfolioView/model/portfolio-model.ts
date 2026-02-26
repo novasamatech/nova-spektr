@@ -22,12 +22,12 @@ const transferStarted = createEvent<AssetByChains>();
 const receiveStarted = createEvent<AssetByChains>();
 
 const $hideZeroBalances = restore(hideZeroBalancesChanged, false);
-const $activeView = restore<AssetsListView | null>(activeViewChanged, null);
+const $activeView = restore<AssetsListView>(activeViewChanged, AssetsListView.TOKEN_CENTRIC);
 const $query = restore<string>(queryChanged, '');
 
 const $defaultTokens = createStore<AssetByChains[] | null>(null);
 
-const $filteredAccounts = createStore<AnyAccount[] | null>(null);
+const $filteredAccounts = createStore<AnyAccount[]>([]);
 
 const populateFx = createEffect((): Promise<AssetByChains[] | null> => {
   return tokensService.getTokensData();
@@ -122,7 +122,7 @@ const $activeTokens = combine(
     isShardsAccessDenied: shardsModel.$isAccessDenied,
   },
   ({ connections, chains, tokens, wallet, filteredAccounts }) => {
-    if (nullable(wallet) || Object.keys(connections).length === 0 || nullable(filteredAccounts)) return DEFAULT_LIST;
+    if (nullable(wallet) || Object.keys(connections).length === 0) return DEFAULT_LIST;
 
     const activeTokens: AssetByChains[] = [];
 
@@ -156,7 +156,6 @@ const $activeTokensWithBalance = combine(
   },
   ({ activeTokens, balances, chains, filteredAccounts }) => {
     const tokens: AssetByChains[] = [];
-    if (nullable(filteredAccounts)) return tokens;
 
     for (const token of activeTokens) {
       const chainsWithBalance = tokensService.getChainWithBalance(balances, token.chains, filteredAccounts, chains);
