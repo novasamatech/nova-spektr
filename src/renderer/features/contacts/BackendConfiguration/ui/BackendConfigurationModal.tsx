@@ -1,15 +1,14 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useConfirmContext } from '@/shared/providers/ConfirmContext';
-import { Alert, Button, FootnoteText, InputHint, Loader, SmallTitleText } from '@/shared/ui';
+import { Alert, Button, FootnoteText, InputHint, SmallTitleText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select, Surface, useNotification } from '@/shared/ui-kit';
-import { QrSignatureReader, QrTxGenerator } from '@/entities/transaction';
+import { OperationMessageSign } from '@/features/operations/OperationMessageSign';
 import { type SignableAccount, authModel } from '../model/auth-model';
 import { backendConfigurationModel } from '../model/backend-configuration-model';
 
@@ -29,7 +28,6 @@ export const BackendConfigurationModal = () => {
   const authStep = useUnit(authModel.$authStep);
   const selectedAccountId = useUnit(authModel.$selectedAccountId);
   const signableAccounts = useUnit(authModel.$signableAccounts);
-  const qrPayload = useUnit(authModel.$qrPayload);
   const error = useUnit(authModel.$error);
 
   useEffect(() => {
@@ -40,17 +38,15 @@ export const BackendConfigurationModal = () => {
   }, [toast, t]);
 
   const isSigning = authStep === 'signing';
-  const isVaultSign = authStep === 'vaultSign';
   const isError = authStep === 'error';
   const showUrlError = draftUrl.trim().length > 0 && !isValid;
 
   const urlUnchanged = isAuthenticated && !isDirty;
 
-  const showAccountSelector = isValid && !urlUnchanged && !isSigning && !isVaultSign;
-  const showSigningState = isSigning;
+  const showAccountSelector = isValid && !urlUnchanged && !isSigning;
   const showConnectedAccount = urlUnchanged && authState;
 
-  const canConnect = isValid && selectedAccountId !== null && !isSigning && !isVaultSign;
+  const canConnect = isValid && selectedAccountId !== null && !isSigning;
 
   const title = hasBackend
     ? t('addressBook.backendConfiguration.editTitle')
@@ -93,7 +89,7 @@ export const BackendConfigurationModal = () => {
               name="backendUrl"
               placeholder={t('addressBook.backendConfiguration.urlPlaceholder')}
               invalid={showUrlError}
-              disabled={isSigning || isVaultSign}
+              disabled={isSigning}
               value={draftUrl}
               onChange={backendConfigurationModel.events.urlChanged}
             />
@@ -116,19 +112,7 @@ export const BackendConfigurationModal = () => {
             </Field>
           )}
 
-          {showSigningState && (
-            <div className="flex flex-col items-center gap-4 py-4">
-              <Loader color="primary" />
-              <FootnoteText className="text-text-tertiary">{t('addressBook.auth.signingMessage')}</FootnoteText>
-            </div>
-          )}
-
-          {isVaultSign && qrPayload && (
-            <VaultAuthSign
-              qrPayload={qrPayload}
-              onSignature={(signature) => authModel.events.vaultSignatureScanned(signature)}
-            />
-          )}
+          {isSigning && <OperationMessageSign onGoBack={() => authModel.events.signingCancelled()} />}
 
           {showAccountSelector && (
             <AccountSelector
@@ -149,54 +133,13 @@ export const BackendConfigurationModal = () => {
             {t('addressBook.actions.delete')}
           </Button>
         )}
-        {!urlUnchanged && !isVaultSign && (
+        {!urlUnchanged && !isSigning && (
           <Button className="ml-auto" disabled={!canConnect} onClick={handleConnect}>
             {connectButtonText}
           </Button>
         )}
       </Modal.Footer>
     </Modal>
-  );
-};
-
-const VaultAuthSign = ({
-  qrPayload,
-  onSignature,
-}: {
-  qrPayload: Uint8Array;
-  onSignature: (signature: HexString) => void;
-}) => {
-  const { t } = useI18n();
-  const [phase, setPhase] = useState<'display' | 'scan'>('display');
-  const [cameraId, setCameraId] = useState<string | null>(null);
-
-  if (phase === 'display') {
-    return (
-      <div className="flex flex-col items-center gap-4">
-        <SmallTitleText>{t('addressBook.auth.scanQrTitle')}</SmallTitleText>
-        <QrTxGenerator payload={qrPayload} size="240px" />
-        <Button onClick={() => setPhase('scan')}>{t('signing.continueButton')}</Button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col items-center gap-4">
-      <SmallTitleText>{t('addressBook.auth.scanSignatureTitle')}</SmallTitleText>
-      <QrSignatureReader
-        size={280}
-        cameraId={cameraId}
-        onCameraList={(cameras) => {
-          if (cameras.length > 0 && !cameraId) {
-            setCameraId(cameras[0]!.deviceId);
-          }
-        }}
-        onResult={onSignature}
-      />
-      <Button variant="text" onClick={() => setPhase('display')}>
-        {t('operation.goBackButton')}
-      </Button>
-    </div>
   );
 };
 
