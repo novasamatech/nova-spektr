@@ -15,19 +15,30 @@ const MULTIPART = new Uint8Array([0]);
 
 export const encodeNumber = (value: number): Uint8Array => new Uint8Array([value >> 8, value & 0xff]);
 
+// All UOS sign payloads share the same envelope: [cryptoType] [command] [address] [...data...] [genesisHash]
+const createUosPayload = (
+  command: Command,
+  address: string,
+  genesisHash: ChainId | Uint8Array,
+  cryptoType: CryptoType,
+  ...data: Uint8Array[]
+): Uint8Array => {
+  return u8aConcat(
+    new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
+    new Uint8Array([command]),
+    decodeAddress(address),
+    ...data,
+    u8aToU8a(genesisHash),
+  );
+};
+
 export const createMessageSignPayload = (
   address: string,
   message: Uint8Array,
   genesisHash: ChainId | Uint8Array,
   cryptoType: CryptoType,
 ): Uint8Array => {
-  return u8aConcat(
-    new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
-    new Uint8Array([Command.Message]),
-    decodeAddress(address),
-    message,
-    u8aToU8a(genesisHash),
-  );
+  return createUosPayload(Command.Message, address, genesisHash, cryptoType, message);
 };
 
 export const createSignPayload = (
@@ -36,13 +47,7 @@ export const createSignPayload = (
   genesisHash: ChainId | Uint8Array,
   cryptoType: CryptoType,
 ): Uint8Array => {
-  return u8aConcat(
-    new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
-    new Uint8Array([Command.Transaction]),
-    decodeAddress(address),
-    u8aToU8a(payload),
-    u8aToU8a(genesisHash),
-  );
+  return createUosPayload(Command.Transaction, address, genesisHash, cryptoType, u8aToU8a(payload));
 };
 
 export const createSignWithProofPayload = (
@@ -52,13 +57,13 @@ export const createSignWithProofPayload = (
   genesisHash: ChainId | Uint8Array,
   cryptoType: CryptoType,
 ): Uint8Array => {
-  return u8aConcat(
-    new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
-    new Uint8Array([Command.TransactionWithProof]),
-    decodeAddress(address),
+  return createUosPayload(
+    Command.TransactionWithProof,
+    address,
+    genesisHash,
+    cryptoType,
     u8aToU8a(metadataProof),
     u8aToU8a(payload),
-    u8aToU8a(genesisHash),
   );
 };
 
@@ -69,13 +74,13 @@ export const createDynamicDerivationsSignPayload = (
   derivationPath: string,
   cryptoType: CryptoType,
 ): Uint8Array => {
-  return u8aConcat(
-    new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
-    new Uint8Array([Command.DynamicDerivationsTransaction]),
-    decodeAddress(rootAccountId),
+  return createUosPayload(
+    Command.DynamicDerivationsTransaction,
+    rootAccountId,
+    genesisHash,
+    cryptoType,
     str.encode(derivationPath),
     u8aToU8a(payload),
-    u8aToU8a(genesisHash),
   );
 };
 
@@ -87,14 +92,14 @@ export const createDynamicDerivationsSignWithProofPayload = (
   derivationPath: string,
   cryptoType: CryptoType,
 ): Uint8Array => {
-  return u8aConcat(
-    new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
-    new Uint8Array([Command.DynamicDerivationsTransactionWithProof]),
-    decodeAddress(rootAccountId),
+  return createUosPayload(
+    Command.DynamicDerivationsTransactionWithProof,
+    rootAccountId,
+    genesisHash,
+    cryptoType,
     str.encode(derivationPath),
     u8aToU8a(metadataProof),
     u8aToU8a(payload),
-    u8aToU8a(genesisHash),
   );
 };
 
