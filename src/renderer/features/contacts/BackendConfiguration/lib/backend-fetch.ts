@@ -27,6 +27,8 @@ export async function authFetch(url: string, init?: RequestInit): Promise<FetchR
     Object.assign(headers, initHeaders);
   }
 
+  headers['X-Client'] = 'spektr';
+
   if (csrfToken) {
     headers['X-CSRF-Token'] = csrfToken;
   }
