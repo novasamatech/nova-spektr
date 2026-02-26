@@ -7,21 +7,21 @@ import { authFetch } from '../../BackendConfiguration/lib/backend-fetch';
 const backendContactSchema = z.object({
   id: z.string(),
   name: z.string(),
-  publicKey: z.string(),
-  entity: z.object({ id: z.string(), name: z.string() }),
+  accountId: z.string(),
+  entities: z.array(z.object({ id: z.string(), name: z.string() })),
   chain: z.object({ chainId: z.string(), name: z.string() }),
   category: z.object({ id: z.string(), name: z.string() }),
   contactType: z.object({ id: z.string(), name: z.string() }).nullish(),
   derivationPath: z.string().nullish(),
-  ownerPublicKey: z.string().nullish(),
+  ownerAccountId: z.string().nullish(),
 });
 type RawBackendContact = z.infer<typeof backendContactSchema>;
 
 const PAGE_SIZE = 100;
 
 function mapToContact(raw: RawBackendContact): BackendContact {
-  const address = toAddress(raw.publicKey);
-  const accountId = toAccountId(address);
+  const accountId = toAccountId(raw.accountId);
+  const address = toAddress(raw.accountId);
 
   return {
     id: raw.id,
@@ -29,13 +29,13 @@ function mapToContact(raw: RawBackendContact): BackendContact {
     address,
     accountId,
     source: 'backend',
-    entityName: raw.entity.name,
+    entityNames: raw.entities.map((e) => e.name),
     chainId: raw.chain.chainId,
     chainName: raw.chain.name,
     categoryName: raw.category.name,
     contactTypeName: raw.contactType?.name ?? null,
     derivationPath: raw.derivationPath ?? null,
-    ownerPublicKey: raw.ownerPublicKey ?? null,
+    ownerAccountId: raw.ownerAccountId ?? null,
   };
 }
 
@@ -86,7 +86,7 @@ async function fetchContactsPage(
     try {
       contacts.push(mapToContact(parsed.data));
     } catch (e) {
-      console.warn(`[BackendContacts] Skipping contact "${parsed.data.name}" (${parsed.data.publicKey}):`, e);
+      console.warn(`[BackendContacts] Skipping contact "${parsed.data.name}" (${parsed.data.accountId}):`, e);
     }
   }
 

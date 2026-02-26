@@ -15,13 +15,13 @@ export type LocalContact = BaseContact & {
 
 export type BackendContact = BaseContact & {
   source: 'backend';
-  entityName: string;
+  entityNames: string[];
   chainId: string;
   chainName: string;
   categoryName: string;
   contactTypeName: string | null;
   derivationPath: string | null;
-  ownerPublicKey: string | null;
+  ownerAccountId: string | null;
 };
 
 export type Contact = LocalContact | BackendContact;
