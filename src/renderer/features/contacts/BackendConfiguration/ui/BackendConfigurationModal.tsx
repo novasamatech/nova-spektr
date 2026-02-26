@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
+import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -8,7 +9,8 @@ import { useConfirmContext } from '@/shared/providers/ConfirmContext';
 import { Alert, Button, FootnoteText, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select, Surface, useNotification } from '@/shared/ui-kit';
-import { authModel } from '../model/auth-model';
+import { QrSignatureReader, QrTxGenerator } from '@/entities/transaction';
+import { type SignableAccount, authModel } from '../model/auth-model';
 import { backendConfigurationModel } from '../model/backend-configuration-model';
 
 export const BackendConfigurationModal = () => {
@@ -26,7 +28,8 @@ export const BackendConfigurationModal = () => {
   const authState = useUnit(authModel.$authState);
   const authStep = useUnit(authModel.$authStep);
   const selectedAccountId = useUnit(authModel.$selectedAccountId);
-  const extensionAccounts = useUnit(authModel.$extensionAccounts);
+  const signableAccounts = useUnit(authModel.$signableAccounts);
+  const qrPayload = useUnit(authModel.$qrPayload);
   const error = useUnit(authModel.$error);
 
   useEffect(() => {
@@ -37,18 +40,17 @@ export const BackendConfigurationModal = () => {
   }, [toast, t]);
 
   const isSigning = authStep === 'signing';
+  const isVaultSign = authStep === 'vaultSign';
   const isError = authStep === 'error';
   const showUrlError = draftUrl.trim().length > 0 && !isValid;
 
-  // When authenticated and URL hasn't changed, show connected state
   const urlUnchanged = isAuthenticated && !isDirty;
 
-  // Show account selector when URL is valid and not in connected state
-  const showAccountSelector = isValid && !urlUnchanged && !isSigning;
+  const showAccountSelector = isValid && !urlUnchanged && !isSigning && !isVaultSign;
   const showSigningState = isSigning;
   const showConnectedAccount = urlUnchanged && authState;
 
-  const canConnect = isValid && selectedAccountId !== null && !isSigning;
+  const canConnect = isValid && selectedAccountId !== null && !isSigning && !isVaultSign;
 
   const title = hasBackend
     ? t('addressBook.backendConfiguration.editTitle')
@@ -91,7 +93,7 @@ export const BackendConfigurationModal = () => {
               name="backendUrl"
               placeholder={t('addressBook.backendConfiguration.urlPlaceholder')}
               invalid={showUrlError}
-              disabled={isSigning}
+              disabled={isSigning || isVaultSign}
               value={draftUrl}
               onChange={backendConfigurationModel.events.urlChanged}
             />
@@ -121,9 +123,16 @@ export const BackendConfigurationModal = () => {
             </div>
           )}
 
+          {isVaultSign && qrPayload && (
+            <VaultAuthSign
+              qrPayload={qrPayload}
+              onSignature={(signature) => authModel.events.vaultSignatureScanned(signature)}
+            />
+          )}
+
           {showAccountSelector && (
             <AccountSelector
-              extensionAccounts={extensionAccounts}
+              accounts={signableAccounts}
               selectedAccountId={selectedAccountId}
               onSelect={(id) => authModel.events.accountSelected(id)}
             />
@@ -140,7 +149,7 @@ export const BackendConfigurationModal = () => {
             {t('addressBook.actions.delete')}
           </Button>
         )}
-        {!urlUnchanged && (
+        {!urlUnchanged && !isVaultSign && (
           <Button className="ml-auto" disabled={!canConnect} onClick={handleConnect}>
             {connectButtonText}
           </Button>
@@ -150,21 +159,62 @@ export const BackendConfigurationModal = () => {
   );
 };
 
+const VaultAuthSign = ({
+  qrPayload,
+  onSignature,
+}: {
+  qrPayload: Uint8Array;
+  onSignature: (signature: HexString) => void;
+}) => {
+  const { t } = useI18n();
+  const [phase, setPhase] = useState<'display' | 'scan'>('display');
+  const [cameraId, setCameraId] = useState<string | null>(null);
+
+  if (phase === 'display') {
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <SmallTitleText>{t('addressBook.auth.scanQrTitle')}</SmallTitleText>
+        <QrTxGenerator payload={qrPayload} size="240px" />
+        <Button onClick={() => setPhase('scan')}>{t('signing.continueButton')}</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <SmallTitleText>{t('addressBook.auth.scanSignatureTitle')}</SmallTitleText>
+      <QrSignatureReader
+        size={280}
+        cameraId={cameraId}
+        onCameraList={(cameras) => {
+          if (cameras.length > 0 && !cameraId) {
+            setCameraId(cameras[0]!.deviceId);
+          }
+        }}
+        onResult={onSignature}
+      />
+      <Button variant="text" onClick={() => setPhase('display')}>
+        {t('operation.goBackButton')}
+      </Button>
+    </div>
+  );
+};
+
 const AccountSelector = ({
-  extensionAccounts,
+  accounts,
   selectedAccountId,
   onSelect,
 }: {
-  extensionAccounts: { accountId: AccountId; name: string; extension: string }[];
+  accounts: SignableAccount[];
   selectedAccountId: AccountId | null;
   onSelect: (id: AccountId) => void;
 }) => {
   const { t } = useI18n();
 
-  if (extensionAccounts.length === 0) {
+  if (accounts.length === 0) {
     return (
       <Field text={t('addressBook.auth.selectAccountLabel')}>
-        <FootnoteText className="text-text-tertiary">{t('addressBook.auth.noExtensionAccounts')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('addressBook.auth.noSignableAccounts')}</FootnoteText>
       </Field>
     );
   }
@@ -176,12 +226,14 @@ const AccountSelector = ({
         value={selectedAccountId}
         onChange={(value) => onSelect(value as AccountId)}
       >
-        {extensionAccounts.map((account) => (
+        {accounts.map((account) => (
           <Select.Item key={account.accountId} value={account.accountId}>
             <Box direction="row" gap={2} verticalAlign="center">
               <Identicon address={toAddress(account.accountId)} size={20} />
               <SmallTitleText>{account.name}</SmallTitleText>
-              <FootnoteText className="text-text-tertiary">{toShortAddress(toAddress(account.accountId))}</FootnoteText>
+              <FootnoteText className="text-text-tertiary">
+                {account.walletName} · {toShortAddress(toAddress(account.accountId))}
+              </FootnoteText>
             </Box>
           </Select.Item>
         ))}

@@ -15,6 +15,21 @@ const MULTIPART = new Uint8Array([0]);
 
 export const encodeNumber = (value: number): Uint8Array => new Uint8Array([value >> 8, value & 0xff]);
 
+export const createMessageSignPayload = (
+  address: string,
+  message: Uint8Array,
+  genesisHash: ChainId | Uint8Array,
+  cryptoType: CryptoType,
+): Uint8Array => {
+  return u8aConcat(
+    new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
+    new Uint8Array([Command.Message]),
+    decodeAddress(address),
+    message,
+    u8aToU8a(genesisHash),
+  );
+};
+
 export const createSignPayload = (
   address: string,
   payload: Uint8Array,

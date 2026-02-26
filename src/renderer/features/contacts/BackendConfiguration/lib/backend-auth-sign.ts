@@ -1,7 +1,9 @@
-import { u8aToHex } from '@polkadot/util';
+import { u8aConcat, u8aToHex } from '@polkadot/util';
 import { getWalletBySource } from '@talismn/connect-wallets';
 
+import { type ChainId, type CryptoType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
+import { SUBSTRATE_ID, createMessageSignPayload } from '@/entities/transaction';
 
 export function buildSignMessage(nonce: string): string {
   return `<Bytes>ADDRESS_BOOK_AUTH:${nonce}</Bytes>`;
@@ -31,4 +33,18 @@ export async function signChallenge(extensionSource: string, accountId: string, 
   });
 
   return result.signature;
+}
+
+export function createAuthQrPayload(
+  accountId: string,
+  nonce: string,
+  chainId: ChainId,
+  cryptoType: CryptoType,
+): Uint8Array {
+  const message = buildSignMessage(nonce);
+  const messageBytes = new TextEncoder().encode(message);
+
+  const signPayload = createMessageSignPayload(toAddress(accountId), messageBytes, chainId, cryptoType);
+
+  return u8aConcat(SUBSTRATE_ID, signPayload);
 }
