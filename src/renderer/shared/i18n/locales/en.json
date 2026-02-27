@@ -129,7 +129,8 @@
       "errorNetwork": "Could not connect to the server. Check the URL and try again.",
       "errorAuth": "Session expired. Please reconnect.",
       "errorTimeout": "The server took too long to respond. Try again later.",
-      "errorGeneric": "Something went wrong."
+      "errorGeneric": "Something went wrong.",
+      "syncErrorCached": "Sync failed — showing cached contacts"
     },
     "backendContact": {
       "category": "Category",
@@ -147,6 +148,15 @@
       "edit": "Edit {name}",
       "delete": "Delete {name}",
       "syncContacts": "Sync contacts"
+    },
+    "syncStatus": {
+      "syncing": "Syncing...",
+      "justNow": "Synced just now",
+      "minutesAgo_one": "Synced {count}m ago",
+      "minutesAgo_other": "Synced {count}m ago",
+      "hoursAgo_one": "Synced {count}h ago",
+      "hoursAgo_other": "Synced {count}h ago",
+      "syncButton": "Sync contacts"
     }
   },
   "assetBalance": {

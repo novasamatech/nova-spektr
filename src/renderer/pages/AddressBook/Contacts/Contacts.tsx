@@ -3,8 +3,7 @@ import { Outlet } from 'react-router-dom';
 
 import { type Contact, isBackendContact, isLocalContact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
-import { Header, IconButton } from '@/shared/ui';
+import { Alert, BodyText, Button, Header } from '@/shared/ui';
 import {
   BackendContactRow,
   BackendErrorView,
@@ -23,6 +22,7 @@ import {
   CreateContactNavigation,
   ImportContactsButton,
   SourceTabs,
+  SyncStatusBadge,
   backendConfigurationModel,
   backendContactsModel,
   contactSourceModel,
@@ -33,6 +33,7 @@ import { SendToContactModal, sendToContactModel } from '@/features/send-to-conta
 type ViewState =
   | { view: 'loading' }
   | { view: 'error'; message: string }
+  | { view: 'cachedWithError'; message: string; items: Contact[] }
   | { view: 'emptyLocal' }
   | { view: 'emptyBackend' }
   | { view: 'noResults' }
@@ -48,6 +49,9 @@ function computeViewState(params: {
   const { isBackendTab, isLoading, backendError, localContacts, filteredContacts } = params;
 
   if (isBackendTab && isLoading) return { view: 'loading' };
+  if (isBackendTab && backendError && filteredContacts.length > 0) {
+    return { view: 'cachedWithError', message: backendError, items: filteredContacts };
+  }
   if (isBackendTab && backendError) return { view: 'error', message: backendError };
   if (isBackendTab && filteredContacts.length === 0) return { view: 'emptyBackend' };
   if (!isBackendTab && localContacts.length === 0) return { view: 'emptyLocal' };
@@ -56,12 +60,60 @@ function computeViewState(params: {
   return { view: 'contacts', items: filteredContacts };
 }
 
+const CachedWithErrorView = ({
+  error,
+  items,
+  onSendTo,
+  onRetry,
+}: {
+  error: string;
+  items: Contact[];
+  onSendTo: (contact: Contact) => void;
+  onRetry: () => void;
+}) => {
+  const { t } = useI18n();
+
+  return (
+    <div className="flex flex-col gap-y-2">
+      <Alert title={t('addressBook.sources.syncErrorCached')} active variant="warn">
+        <Alert.Item withDot={false}>
+          <div className="flex items-center gap-x-2">
+            <BodyText className="break-all text-text-tertiary">{error}</BodyText>
+            <Button variant="text" className="h-4.5 shrink-0" onClick={onRetry}>
+              {t('addressBook.sources.retry')}
+            </Button>
+          </div>
+        </Alert.Item>
+      </Alert>
+      {renderContactList(items, onSendTo)}
+    </div>
+  );
+};
+
+function renderContactList(items: Contact[], onSendTo: (contact: Contact) => void) {
+  return (
+    <ul className="flex flex-col gap-y-2">
+      {items.map((contact) =>
+        isBackendContact(contact) ? (
+          <BackendContactRow key={contact.id} contact={contact} onSendTo={onSendTo} />
+        ) : isLocalContact(contact) ? (
+          <ContactRow key={contact.id} contact={contact} onSendTo={onSendTo} />
+        ) : null,
+      )}
+    </ul>
+  );
+}
+
 function renderViewState(viewState: ViewState, onSendTo: (contact: Contact) => void, onRetry: () => void) {
   switch (viewState.view) {
     case 'loading':
       return <BackendLoadingView />;
     case 'error':
       return <BackendErrorView error={viewState.message} onRetry={onRetry} />;
+    case 'cachedWithError':
+      return (
+        <CachedWithErrorView error={viewState.message} items={viewState.items} onSendTo={onSendTo} onRetry={onRetry} />
+      );
     case 'emptyBackend':
       return <EmptyBackendView />;
     case 'emptyLocal':
@@ -69,17 +121,7 @@ function renderViewState(viewState: ViewState, onSendTo: (contact: Contact) => v
     case 'noResults':
       return <EmptyFilteredContacts />;
     case 'contacts':
-      return (
-        <ul className="flex flex-col gap-y-2">
-          {viewState.items.map((contact) =>
-            isBackendContact(contact) ? (
-              <BackendContactRow key={contact.id} contact={contact} onSendTo={onSendTo} />
-            ) : isLocalContact(contact) ? (
-              <ContactRow key={contact.id} contact={contact} onSendTo={onSendTo} />
-            ) : null,
-          )}
-        </ul>
-      );
+      return renderContactList(viewState.items, onSendTo);
   }
 }
 
@@ -146,15 +188,7 @@ export const Contacts = () => {
             {showTabs && (
               <div className="flex items-center gap-x-2">
                 <SourceTabs localCount={localContacts.length} backendCount={backendContacts.length} />
-                {isBackendTab && (
-                  <IconButton
-                    className={cnTw('shrink-0 text-icon-default', isLoading && 'animate-spin')}
-                    disabled={isLoading}
-                    name="refresh"
-                    ariaLabel={t('addressBook.a11y.syncContacts')}
-                    onClick={handleSync}
-                  />
-                )}
+                {isBackendTab && <SyncStatusBadge />}
               </div>
             )}
 
