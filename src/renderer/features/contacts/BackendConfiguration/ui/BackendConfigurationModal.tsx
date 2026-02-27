@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useConfirmContext } from '@/shared/providers/ConfirmContext';
-import { Alert, Button, FootnoteText, InputHint, Loader, SmallTitleText } from '@/shared/ui';
+import { Alert, Button, FootnoteText, Icon, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select, Surface, useNotification } from '@/shared/ui-kit';
 import { authModel } from '../model/auth-model';
@@ -21,6 +21,7 @@ export const BackendConfigurationModal = () => {
   const isValid = useUnit(backendConfigurationModel.$isUrlValid);
   const hasBackend = useUnit(backendConfigurationModel.$hasBackend);
   const isDirty = useUnit(backendConfigurationModel.$isDirty);
+  const urlReachable = useUnit(backendConfigurationModel.$urlReachable);
 
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const authState = useUnit(authModel.$authState);
@@ -98,6 +99,30 @@ export const BackendConfigurationModal = () => {
             <InputHint variant="error" active={showUrlError}>
               {t('addressBook.backendConfiguration.urlInvalidError')}
             </InputHint>
+            {urlReachable === 'checking' && (
+              <div className="flex items-center gap-x-1.5">
+                <Loader color="primary" size={14} />
+                <FootnoteText className="text-text-tertiary">
+                  {t('addressBook.backendConfiguration.checking')}
+                </FootnoteText>
+              </div>
+            )}
+            {urlReachable === 'reachable' && (
+              <div className="flex items-center gap-x-1.5">
+                <Icon name="checkmarkOutline" size={14} className="text-icon-positive" />
+                <FootnoteText className="text-icon-positive">
+                  {t('addressBook.backendConfiguration.reachable')}
+                </FootnoteText>
+              </div>
+            )}
+            {urlReachable === 'unreachable' && (
+              <div className="flex items-center gap-x-1.5">
+                <Icon name="warnCutout" size={14} className="text-icon-negative" />
+                <FootnoteText className="text-icon-negative">
+                  {t('addressBook.backendConfiguration.unreachable')}
+                </FootnoteText>
+              </div>
+            )}
           </Field>
 
           {showConnectedAccount && (
