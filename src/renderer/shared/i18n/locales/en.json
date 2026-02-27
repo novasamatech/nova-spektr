@@ -121,6 +121,7 @@
       "loading": "Loading contacts...",
       "loadError": "Failed to load contacts from server",
       "emptyBackend": "No contacts found on the server",
+      "emptyBackendDescription": "The connected server has no contacts. Contact your administrator or check the backend configuration.",
       "retry": "Retry"
     },
     "title": "Address Book",
