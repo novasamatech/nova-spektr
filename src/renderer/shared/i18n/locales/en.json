@@ -139,7 +139,9 @@
       "category": "Category",
       "contactType": "Type",
       "chain": "Chain",
-      "entity": "Entity"
+      "entity": "Entity",
+      "synced": "Synced",
+      "managedTooltip": "This contact is managed by the backend server"
     },
     "title": "Address Book",
     "undo": "Undo"
