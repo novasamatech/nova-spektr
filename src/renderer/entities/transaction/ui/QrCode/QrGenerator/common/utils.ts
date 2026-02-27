@@ -15,8 +15,7 @@ const MULTIPART = new Uint8Array([0]);
 
 export const encodeNumber = (value: number): Uint8Array => new Uint8Array([value >> 8, value & 0xff]);
 
-// All UOS sign payloads share the same envelope: [cryptoType] [command] [address] [...data...] [genesisHash]
-const createUosPayload = (
+const createSignPayload = (
   command: Command,
   address: string,
   genesisHash: ChainId | Uint8Array,
@@ -38,16 +37,16 @@ export const createMessageSignPayload = (
   genesisHash: ChainId | Uint8Array,
   cryptoType: CryptoType,
 ): Uint8Array => {
-  return createUosPayload(Command.Message, address, genesisHash, cryptoType, message);
+  return createSignPayload(Command.Message, address, genesisHash, cryptoType, message);
 };
 
-export const createSignPayload = (
+export const createTransactionPayload = (
   address: string,
   payload: Uint8Array,
   genesisHash: ChainId | Uint8Array,
   cryptoType: CryptoType,
 ): Uint8Array => {
-  return createUosPayload(Command.Transaction, address, genesisHash, cryptoType, u8aToU8a(payload));
+  return createSignPayload(Command.Transaction, address, genesisHash, cryptoType, u8aToU8a(payload));
 };
 
 export const createSignWithProofPayload = (
@@ -57,7 +56,7 @@ export const createSignWithProofPayload = (
   genesisHash: ChainId | Uint8Array,
   cryptoType: CryptoType,
 ): Uint8Array => {
-  return createUosPayload(
+  return createSignPayload(
     Command.TransactionWithProof,
     address,
     genesisHash,
@@ -74,7 +73,7 @@ export const createDynamicDerivationsSignPayload = (
   derivationPath: string,
   cryptoType: CryptoType,
 ): Uint8Array => {
-  return createUosPayload(
+  return createSignPayload(
     Command.DynamicDerivationsTransaction,
     rootAccountId,
     genesisHash,
@@ -92,7 +91,7 @@ export const createDynamicDerivationsSignWithProofPayload = (
   derivationPath: string,
   cryptoType: CryptoType,
 ): Uint8Array => {
-  return createUosPayload(
+  return createSignPayload(
     Command.DynamicDerivationsTransactionWithProof,
     rootAccountId,
     genesisHash,

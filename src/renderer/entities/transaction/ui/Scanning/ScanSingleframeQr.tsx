@@ -17,7 +17,7 @@ import { SUBSTRATE_ID } from '../QrCode/QrGenerator/common/constants';
 import {
   createDynamicDerivationsSignPayload,
   createDynamicDerivationsSignWithProofPayload,
-  createSignPayload,
+  createTransactionPayload,
   createSignWithProofPayload,
 } from '../QrCode/QrGenerator/common/utils';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
@@ -124,7 +124,7 @@ export const ScanSingleframeQr = ({
             account.cryptoType,
           );
         } else {
-          signPayload = createSignPayload(account.accountId, payload, chain.chainId, account.cryptoType);
+          signPayload = createTransactionPayload(account.accountId, payload, chain.chainId, account.cryptoType);
         }
 
         const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
