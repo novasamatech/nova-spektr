@@ -34,13 +34,13 @@ export const BackendErrorView = ({ error, onRetry }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col gap-y-3 py-4">
+    <div className="py-4">
       <Alert title={t(getErrorMessageKey(error))} active variant="error">
         <CaptionText className="break-all text-text-tertiary">{error}</CaptionText>
+        <Button variant="text" className="h-4.5 self-start p-0" onClick={onRetry}>
+          {t('addressBook.sources.retry')}
+        </Button>
       </Alert>
-      <Button variant="text" className="h-4.5 self-center" onClick={onRetry}>
-        {t('addressBook.sources.retry')}
-      </Button>
     </div>
   );
 };

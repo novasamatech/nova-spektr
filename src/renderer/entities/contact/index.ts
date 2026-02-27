@@ -2,6 +2,7 @@ export {
   BackendContactRow,
   BackendErrorView,
   BackendLoadingView,
+  CachedWithErrorView,
   ContactList,
   ContactRow,
   ContactSkeleton,

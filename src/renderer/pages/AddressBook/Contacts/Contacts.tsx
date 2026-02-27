@@ -3,11 +3,12 @@ import { Outlet } from 'react-router-dom';
 
 import { type Contact, isBackendContact, isLocalContact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Alert, BodyText, Button, Header } from '@/shared/ui';
+import { Header } from '@/shared/ui';
 import {
   BackendContactRow,
   BackendErrorView,
   BackendLoadingView,
+  CachedWithErrorView,
   ContactRow,
   EmptyBackendView,
   EmptyContactList,
@@ -59,36 +60,6 @@ function computeViewState(params: {
 
   return { view: 'contacts', items: filteredContacts };
 }
-
-const CachedWithErrorView = ({
-  error,
-  items,
-  onSendTo,
-  onRetry,
-}: {
-  error: string;
-  items: Contact[];
-  onSendTo: (contact: Contact) => void;
-  onRetry: () => void;
-}) => {
-  const { t } = useI18n();
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      <Alert title={t('addressBook.sources.syncErrorCached')} active variant="warn">
-        <Alert.Item withDot={false}>
-          <div className="flex items-center gap-x-2">
-            <BodyText className="break-all text-text-tertiary">{error}</BodyText>
-            <Button variant="text" className="h-4.5 shrink-0" onClick={onRetry}>
-              {t('addressBook.sources.retry')}
-            </Button>
-          </div>
-        </Alert.Item>
-      </Alert>
-      {renderContactList(items, onSendTo)}
-    </div>
-  );
-};
 
 function renderContactList(items: Contact[], onSendTo: (contact: Contact) => void) {
   return (
