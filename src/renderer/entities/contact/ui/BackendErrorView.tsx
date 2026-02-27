@@ -1,22 +1,44 @@
 import { useI18n } from '@/shared/i18n';
-import { BodyText, Button, Icon } from '@/shared/ui';
+import { Alert, Button, CaptionText } from '@/shared/ui';
 
 type Props = {
   error: string;
   onRetry: () => void;
 };
 
+function getErrorMessageKey(error: string): string {
+  const lower = error.toLowerCase();
+
+  if (lower.includes('401') || lower.includes('403') || lower.includes('unauthorized') || lower.includes('forbidden')) {
+    return 'addressBook.sources.errorAuth';
+  }
+
+  if (lower.includes('timeout') || lower.includes('timed out') || lower.includes('aborted')) {
+    return 'addressBook.sources.errorTimeout';
+  }
+
+  if (
+    lower.includes('fetch') ||
+    lower.includes('network') ||
+    lower.includes('econnrefused') ||
+    lower.includes('cors') ||
+    lower.includes('dns')
+  ) {
+    return 'addressBook.sources.errorNetwork';
+  }
+
+  return 'addressBook.sources.errorGeneric';
+}
+
 export const BackendErrorView = ({ error, onRetry }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-y-3 py-12">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-badge-red-background-default">
-        <Icon name="warnCutout" size={20} className="text-text-negative" />
-      </div>
-      <BodyText className="text-text-tertiary">{t('addressBook.sources.loadError')}</BodyText>
-      <BodyText className="max-w-full text-center text-caption break-all text-text-tertiary">{error}</BodyText>
-      <Button variant="text" className="h-4.5" onClick={onRetry}>
+    <div className="flex flex-col gap-y-3 py-4">
+      <Alert title={t(getErrorMessageKey(error))} active variant="error">
+        <CaptionText className="break-all text-text-tertiary">{error}</CaptionText>
+      </Alert>
+      <Button variant="text" className="h-4.5 self-center" onClick={onRetry}>
         {t('addressBook.sources.retry')}
       </Button>
     </div>

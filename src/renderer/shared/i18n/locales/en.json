@@ -122,7 +122,11 @@
       "loadError": "Failed to load contacts from server",
       "emptyBackend": "No contacts found on the server",
       "emptyBackendDescription": "The connected server has no contacts. Contact your administrator or check the backend configuration.",
-      "retry": "Retry"
+      "retry": "Retry",
+      "errorNetwork": "Could not connect to the server. Check the URL and try again.",
+      "errorAuth": "Session expired. Please reconnect.",
+      "errorTimeout": "The server took too long to respond. Try again later.",
+      "errorGeneric": "Something went wrong."
     },
     "title": "Address Book",
     "undo": "Undo"
