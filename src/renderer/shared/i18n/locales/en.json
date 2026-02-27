@@ -106,7 +106,8 @@
       "selectAccountPlaceholder": "Choose an account",
       "signOutButton": "Sign out",
       "signingMessage": "Waiting for signature...",
-      "signInSuccess": "Successfully signed in"
+      "signInSuccess": "Successfully signed in",
+      "sessionExpired": "Session expired"
     },
     "backendConfiguration": {
       "addTitle": "Add Backend",

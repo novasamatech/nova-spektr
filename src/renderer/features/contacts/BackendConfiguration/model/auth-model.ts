@@ -1,5 +1,5 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
-import { once } from 'patronum';
+import { interval, once } from 'patronum';
 
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { walletModel } from '@/entities/wallet';
@@ -187,7 +187,10 @@ sample({
 // Connection result tracking
 $connectionResult
   .on(signAndVerifyFx.done, () => ({ status: 'success' }) as ConnectionResult)
-  .on([connectTriggered, signInClicked, backendConfigurationModel.events.urlCleared], () => ({ status: 'idle' }) as ConnectionResult);
+  .on(
+    [connectTriggered, signInClicked, backendConfigurationModel.events.urlCleared],
+    () => ({ status: 'idle' }) as ConnectionResult,
+  );
 
 sample({
   clock: [requestChallengeFx.failData, signAndVerifyFx.failData],
@@ -256,6 +259,25 @@ sample({
 // On session check failure, clear auth state silently
 $authState.on(checkSessionFx.fail, () => null);
 
+// Session expiry awareness: periodic health check every 5 minutes
+const $isSessionExpired = createStore(false);
+
+const sessionHealthCheck = interval({
+  timeout: 5 * 60 * 1000,
+  start: signAndVerifyFx.done,
+  stop: signOutClicked,
+});
+
+sample({
+  clock: sessionHealthCheck.tick,
+  source: backendConfigurationModel.$backendUrl,
+  filter: (url): url is string => url !== null,
+  target: checkSessionFx,
+});
+
+$isSessionExpired.on(checkSessionFx.fail, () => true);
+$isSessionExpired.on([signAndVerifyFx.done, signOutClicked, backendConfigurationModel.events.urlCleared], () => false);
+
 export const authModel = {
   $authState,
   $authStep,
@@ -263,6 +285,7 @@ export const authModel = {
   $error,
   $connectionResult,
   $isAuthenticated,
+  $isSessionExpired,
   $extensionAccounts,
 
   events: {
