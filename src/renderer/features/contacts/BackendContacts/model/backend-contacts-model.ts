@@ -5,10 +5,14 @@ import { contactModel } from '@/entities/contact';
 import { authModel, backendConfigurationModel } from '../../BackendConfiguration';
 import { fetchAllContacts } from '../api/backend-contacts-api';
 
+type SyncStatus = 'idle' | 'syncing' | 'done' | 'error';
+
 const syncTriggered = createEvent();
 
 const $isLoading = createStore(false);
 const $error = createStore<string | null>(null);
+const $lastSyncTime = createStore<number | null>(null);
+const $syncStatus = createStore<SyncStatus>('idle');
 
 const fetchBackendContactsFx = createEffect(async (baseUrl: string): Promise<Contact[]> => {
   return fetchAllContacts(baseUrl);
@@ -18,6 +22,10 @@ $isLoading.on(fetchBackendContactsFx, () => true);
 $isLoading.on(fetchBackendContactsFx.finally, () => false);
 $error.on(fetchBackendContactsFx, () => null);
 $error.on(fetchBackendContactsFx.failData, (_, error) => error.message);
+$syncStatus.on(fetchBackendContactsFx, () => 'syncing');
+$syncStatus.on(fetchBackendContactsFx.done, () => 'done');
+$syncStatus.on(fetchBackendContactsFx.fail, () => 'error');
+$lastSyncTime.on(fetchBackendContactsFx.done, () => Date.now());
 
 // Persist fetched backend contacts to Dexie
 sample({
@@ -53,6 +61,8 @@ $error.on(backendConfigurationModel.events.urlCleared, () => null);
 export const backendContactsModel = {
   $isLoading,
   $error,
+  $lastSyncTime,
+  $syncStatus,
 
   events: {
     syncTriggered,

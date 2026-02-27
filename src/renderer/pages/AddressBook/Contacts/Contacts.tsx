@@ -3,8 +3,7 @@ import { Outlet } from 'react-router-dom';
 
 import { type Contact, isBackendContact, isLocalContact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
-import { BodyText, Button, Header, Icon, IconButton } from '@/shared/ui';
+import { BodyText, Button, Header, Icon } from '@/shared/ui';
 import {
   BackendContactRow,
   ContactRow,
@@ -20,6 +19,7 @@ import {
   CreateContactNavigation,
   ImportContactsButton,
   SourceTabs,
+  SyncStatusBadge,
   backendConfigurationModel,
   backendContactsModel,
   contactSourceModel,
@@ -200,14 +200,7 @@ export const Contacts = () => {
             {showTabs && (
               <div className="flex items-center gap-x-2">
                 <SourceTabs localCount={localContacts.length} backendCount={backendContacts.length} />
-                {isBackendTab && (
-                  <IconButton
-                    className={cnTw('shrink-0 text-icon-default', isLoading && 'animate-spin')}
-                    disabled={isLoading}
-                    name="refresh"
-                    onClick={handleSync}
-                  />
-                )}
+                {isBackendTab && <SyncStatusBadge />}
               </div>
             )}
 

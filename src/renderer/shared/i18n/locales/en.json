@@ -142,7 +142,16 @@
       "entity": "Entity"
     },
     "title": "Address Book",
-    "undo": "Undo"
+    "undo": "Undo",
+    "syncStatus": {
+      "syncing": "Syncing...",
+      "justNow": "Synced just now",
+      "minutesAgo_one": "Synced {count}m ago",
+      "minutesAgo_other": "Synced {count}m ago",
+      "hoursAgo_one": "Synced {count}h ago",
+      "hoursAgo_other": "Synced {count}h ago",
+      "syncButton": "Sync contacts"
+    }
   },
   "assetBalance": {
     "locked": "Locked",
