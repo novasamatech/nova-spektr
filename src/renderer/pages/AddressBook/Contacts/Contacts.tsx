@@ -4,10 +4,13 @@ import { Outlet } from 'react-router-dom';
 import { type Contact, isBackendContact, isLocalContact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { BodyText, Button, Header, Icon, IconButton } from '@/shared/ui';
+import { Header, IconButton } from '@/shared/ui';
 import {
   BackendContactRow,
+  BackendErrorView,
+  BackendLoadingView,
   ContactRow,
+  EmptyBackendView,
   EmptyContactList,
   EmptyFilteredContacts,
   contactModel,
@@ -53,69 +56,12 @@ function computeViewState(params: {
   return { view: 'contacts', items: filteredContacts };
 }
 
-const ContactSkeleton = () => (
-  <div className="flex animate-pulse flex-col gap-y-2.5 rounded-md bg-white p-3">
-    <div className="flex items-center gap-x-2">
-      <div className="h-5 w-5 rounded-full bg-shade-12" />
-      <div className="flex flex-col gap-y-1">
-        <div className="h-3.5 w-24 rounded bg-shade-12" />
-        <div className="h-3 w-40 rounded bg-shade-8" />
-      </div>
-    </div>
-    <div className="flex gap-x-1">
-      <div className="h-5 w-14 rounded-2xl bg-shade-8" />
-      <div className="h-5 w-20 rounded-2xl bg-shade-8" />
-      <div className="h-5 w-16 rounded-2xl bg-shade-8" />
-    </div>
-  </div>
-);
-
-const LoadingView = () => (
-  <ul className="flex flex-col gap-y-2">
-    {Array.from({ length: 5 }).map((_, i) => (
-      <li key={i}>
-        <ContactSkeleton />
-      </li>
-    ))}
-  </ul>
-);
-
-const ErrorView = ({ error, onRetry }: { error: string; onRetry: () => void }) => {
-  const { t } = useI18n();
-
-  return (
-    <div className="flex h-full flex-col items-center justify-center gap-y-3 py-12">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-badge-red-background-default">
-        <Icon name="warnCutout" size={20} className="text-text-negative" />
-      </div>
-      <BodyText className="text-text-tertiary">{t('addressBook.sources.loadError')}</BodyText>
-      <BodyText className="max-w-full text-center text-caption break-all text-text-tertiary">{error}</BodyText>
-      <Button variant="text" className="h-4.5" onClick={onRetry}>
-        {t('addressBook.sources.retry')}
-      </Button>
-    </div>
-  );
-};
-
-const EmptyBackendView = () => {
-  const { t } = useI18n();
-
-  return (
-    <div className="flex h-full flex-col items-center justify-center gap-y-3 py-12">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-input-background-disabled">
-        <Icon name="globe" size={20} className="text-text-tertiary" />
-      </div>
-      <BodyText className="text-text-tertiary">{t('addressBook.sources.emptyBackend')}</BodyText>
-    </div>
-  );
-};
-
 function renderViewState(viewState: ViewState, onSendTo: (contact: Contact) => void, onRetry: () => void) {
   switch (viewState.view) {
     case 'loading':
-      return <LoadingView />;
+      return <BackendLoadingView />;
     case 'error':
-      return <ErrorView error={viewState.message} onRetry={onRetry} />;
+      return <BackendErrorView error={viewState.message} onRetry={onRetry} />;
     case 'emptyBackend':
       return <EmptyBackendView />;
     case 'emptyLocal':
