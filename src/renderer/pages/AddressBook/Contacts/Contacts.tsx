@@ -151,13 +151,16 @@ export const Contacts = () => {
                     className={cnTw('shrink-0 text-icon-default', isLoading && 'animate-spin')}
                     disabled={isLoading}
                     name="refresh"
+                    ariaLabel={t('addressBook.a11y.syncContacts')}
                     onClick={handleSync}
                   />
                 )}
               </div>
             )}
 
-            {renderViewState(viewState, handleSendTo, handleSync)}
+            <div aria-live="polite" aria-busy={viewState.view === 'loading'}>
+              {renderViewState(viewState, handleSendTo, handleSync)}
+            </div>
           </div>
         </section>
       </div>

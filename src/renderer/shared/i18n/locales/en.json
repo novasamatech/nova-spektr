@@ -140,7 +140,14 @@
       "managedTooltip": "This contact is managed by the backend server"
     },
     "title": "Address Book",
-    "undo": "Undo"
+    "undo": "Undo",
+    "a11y": {
+      "sendTo": "Send to {name}",
+      "copyAddress": "Copy address for {name}",
+      "edit": "Edit {name}",
+      "delete": "Delete {name}",
+      "syncContacts": "Sync contacts"
+    }
   },
   "assetBalance": {
     "locked": "Locked",

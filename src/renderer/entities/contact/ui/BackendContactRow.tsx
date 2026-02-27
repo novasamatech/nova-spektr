@@ -26,9 +26,18 @@ export const BackendContactRow = ({ contact, onSendTo }: Props) => {
             <Address address={contact.address} showIcon iconSize={20} variant="truncate" title={contact.name} />
           </div>
           <div className="ml-auto flex items-center gap-x-1">
-            <IconButton className="shrink-0 text-icon-default" name="sendArrow" onClick={handleSendTo} />
+            <IconButton
+              className="shrink-0 text-icon-default"
+              name="sendArrow"
+              ariaLabel={t('addressBook.a11y.sendTo', { name: contact.name })}
+              onClick={handleSendTo}
+            />
             <Copy value={contact.address} notification={t('general.notifications.addressCopied')}>
-              <IconButton className="shrink-0 text-icon-default" name="copy" />
+              <IconButton
+                className="shrink-0 text-icon-default"
+                name="copy"
+                ariaLabel={t('addressBook.a11y.copyAddress', { name: contact.name })}
+              />
             </Copy>
             <Tooltip enableHover delay={200}>
               <Tooltip.Trigger>
