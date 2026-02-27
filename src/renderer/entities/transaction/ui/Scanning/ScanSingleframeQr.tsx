@@ -17,8 +17,8 @@ import { SUBSTRATE_ID } from '../QrCode/QrGenerator/common/constants';
 import {
   createDynamicDerivationsSignPayload,
   createDynamicDerivationsSignWithProofPayload,
-  createTransactionPayload,
   createSignWithProofPayload,
+  createTransactionPayload,
 } from '../QrCode/QrGenerator/common/utils';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 

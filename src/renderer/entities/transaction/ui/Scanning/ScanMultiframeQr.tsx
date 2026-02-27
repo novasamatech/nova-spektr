@@ -16,8 +16,8 @@ import {
   createDynamicDerivationsSignPayload,
   createDynamicDerivationsSignWithProofPayload,
   createMultipleSignPayload,
-  createTransactionPayload,
   createSignWithProofPayload,
+  createTransactionPayload,
 } from '../QrCode/QrGenerator/common/utils';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
