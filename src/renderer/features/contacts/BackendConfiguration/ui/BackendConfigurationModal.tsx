@@ -127,18 +127,20 @@ export const BackendConfigurationModal = () => {
           </Alert>
         </Box>
       </Modal.Content>
-      <Modal.Footer>
-        {hasBackend && (
-          <Button variant="text" onClick={handleDelete}>
-            {t('addressBook.actions.delete')}
-          </Button>
-        )}
-        {!urlUnchanged && !isSigning && (
-          <Button className="ml-auto" disabled={!canConnect} onClick={handleConnect}>
-            {connectButtonText}
-          </Button>
-        )}
-      </Modal.Footer>
+      {!isSigning && (hasBackend || !urlUnchanged) && (
+        <Modal.Footer>
+          {hasBackend && (
+            <Button variant="text" onClick={handleDelete}>
+              {t('addressBook.actions.delete')}
+            </Button>
+          )}
+          {!urlUnchanged && (
+            <Button className="ml-auto" disabled={!canConnect} onClick={handleConnect}>
+              {connectButtonText}
+            </Button>
+          )}
+        </Modal.Footer>
+      )}
     </Modal>
   );
 };

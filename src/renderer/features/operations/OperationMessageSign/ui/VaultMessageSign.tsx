@@ -46,11 +46,12 @@ export const VaultMessageSign = ({ payload, signerWallet, onGoBack, onResult }: 
         <SmallTitleText>{t('addressBook.auth.scanQrTitle')}</SmallTitleText>
         <QrTxGenerator payload={qrPayload} size="240px" />
 
-        <Button onClick={() => setPhase('scan')}>{t('signing.continueButton')}</Button>
-
-        <Button variant="text" onClick={onGoBack}>
-          {t('operation.goBackButton')}
-        </Button>
+        <div className="flex w-full justify-between">
+          <Button variant="text" onClick={onGoBack}>
+            {t('operation.goBackButton')}
+          </Button>
+          <Button onClick={() => setPhase('scan')}>{t('signing.continueButton')}</Button>
+        </div>
       </div>
     );
   }
@@ -69,9 +70,11 @@ export const VaultMessageSign = ({ payload, signerWallet, onGoBack, onResult }: 
         onResult={(signature: HexString) => onResult(signature)}
       />
 
-      <Button variant="text" onClick={() => setPhase('display')}>
-        {t('operation.goBackButton')}
-      </Button>
+      <div className="flex w-full">
+        <Button variant="text" onClick={() => setPhase('display')}>
+          {t('operation.goBackButton')}
+        </Button>
+      </div>
     </div>
   );
 };

@@ -25,7 +25,7 @@ export const ExtensionMessageSign = ({ payload, signerWallet, onGoBack, onResult
   const isError = step === 'rejected' || step === 'failed';
 
   return (
-    <div className="flex flex-col items-center gap-y-2.5 p-4">
+    <div className="flex flex-col items-center gap-y-2.5">
       {signerWallet && (
         <div className="mb-1 flex h-8 w-full items-center justify-center">
           <div className="flex h-full items-center justify-center gap-x-0.5">
@@ -41,7 +41,7 @@ export const ExtensionMessageSign = ({ payload, signerWallet, onGoBack, onResult
 
       <SmallTitleText>{t('signing.signingInProgress')}</SmallTitleText>
 
-      <div className="mt-5 flex w-full justify-between">
+      <div className="flex w-full">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>
