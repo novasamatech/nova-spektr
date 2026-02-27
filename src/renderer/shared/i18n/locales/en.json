@@ -112,7 +112,10 @@
       "unsavedChangesTitle": "Unsaved changes",
       "unsavedChangesMessage": "You have modified the backend URL without connecting. Discard changes?",
       "discardButton": "Discard",
-      "keepEditingButton": "Keep editing"
+      "keepEditingButton": "Keep editing",
+      "checking": "Checking connection...",
+      "reachable": "Server is reachable",
+      "unreachable": "Server is not reachable"
     },
     "searchPlaceholder": "Search",
     "sources": {
