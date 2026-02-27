@@ -1,15 +1,30 @@
 import { useUnit } from 'effector-react';
 
+import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
-import { FootnoteText } from '@/shared/ui';
+import { FootnoteText, Icon } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { authModel } from '../model/auth-model';
 
 export const AuthStatus = () => {
-  const [isAuthenticated, authState] = useUnit([authModel.$isAuthenticated, authModel.$authState]);
+  const { t } = useI18n();
+  const [isAuthenticated, authState, isSessionExpired] = useUnit([
+    authModel.$isAuthenticated,
+    authModel.$authState,
+    authModel.$isSessionExpired,
+  ]);
+
+  if (isSessionExpired) {
+    return (
+      <div className="flex items-center gap-x-1">
+        <Icon name="warnCutout" size={14} className="text-text-warning" />
+        <FootnoteText className="text-text-warning">{t('addressBook.auth.sessionExpired')}</FootnoteText>
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !authState) {
-    return null;
+    return <FootnoteText className="text-text-tertiary">{t('addressBook.auth.disconnected')}</FootnoteText>;
   }
 
   return (

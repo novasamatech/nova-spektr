@@ -94,7 +94,11 @@
       "noExtensionAccounts": "No extension wallet accounts available",
       "selectAccountLabel": "Select account",
       "selectAccountPlaceholder": "Choose an account",
-      "signingMessage": "Waiting for signature..."
+      "signOutButton": "Sign out",
+      "signingMessage": "Waiting for signature...",
+      "signInSuccess": "Successfully signed in",
+      "sessionExpired": "Session expired",
+      "disconnected": "Disconnected"
     },
     "backendConfiguration": {
       "addTitle": "Add Backend",
