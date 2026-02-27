@@ -2412,6 +2412,14 @@
   },
   "settings": {
     "autoUpdate": "Spektr auto updates",
+    "backendSync": {
+      "title": "Address Book Sync",
+      "notConfigured": "Not configured",
+      "connected": "Connected",
+      "disconnected": "Not connected",
+      "configureButton": "Configure",
+      "addButton": "Add Backend"
+    },
     "currency": {
       "cryptocurrenciesLabel": "Cryptocurrencies",
       "modalTitle": "Currency",
