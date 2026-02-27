@@ -2,10 +2,12 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { once } from 'patronum';
 
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { walletModel } from '@/entities/wallet';
+import { type AnyAccount, accountService } from '@/domains/network';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { polkadotExtensionService } from '@/features/extension-wallet';
+import { messageSignModel } from '@/features/operations/OperationMessageSign';
 import * as authApi from '../lib/backend-auth-api';
-import { signChallenge } from '../lib/backend-auth-sign';
+import { buildSignMessage } from '../lib/backend-auth-sign';
 
 import { backendConfigurationModel } from './backend-configuration-model';
 
@@ -19,6 +21,13 @@ type AuthStep = 'selectAccount' | 'signing' | 'error';
 
 type ConnectionResult = { status: 'idle' } | { status: 'success' } | { status: 'error'; message: string };
 
+export type SignableAccount = {
+  account: AnyAccount;
+  accountId: AccountId;
+  name: string;
+  walletName: string;
+};
+
 // Events
 const signInClicked = createEvent();
 const signOutClicked = createEvent();
@@ -26,6 +35,7 @@ const accountSelected = createEvent<AccountId>();
 const signConfirmed = createEvent();
 const connectTriggered = createEvent();
 const modalClosed = createEvent();
+const signingCancelled = createEvent();
 
 // Stores
 const $authState = createStore<AuthState | null>(null);
@@ -33,16 +43,47 @@ const $authStep = createStore<AuthStep>('selectAccount');
 const $selectedAccountId = createStore<AccountId | null>(null);
 const $error = createStore<string | null>(null);
 const $connectionResult = createStore<ConnectionResult>({ status: 'idle' });
+const $challengeId = createStore<string | null>(null);
 
 const $isAuthenticated = $authState.map((state) => state !== null);
 
-const $extensionAccounts = walletModel.$wallets.map((wallets) => {
-  const extensionWallets = wallets.filter(polkadotExtensionService.isExtensionWallet);
+const $signableAccounts = walletModel.$wallets.map((wallets): SignableAccount[] => {
+  const extensionAccounts: SignableAccount[] = wallets
+    .filter(polkadotExtensionService.isExtensionWallet)
+    .flatMap((wallet) =>
+      wallet.accounts.filter(polkadotExtensionService.isExtensionAccount).map(
+        (account): SignableAccount => ({
+          account,
+          accountId: account.accountId,
+          name: account.name,
+          walletName: wallet.name,
+        }),
+      ),
+    );
 
-  return extensionWallets.flatMap((wallet) => wallet.accounts.filter(polkadotExtensionService.isExtensionAccount));
+  const vaultAccounts: SignableAccount[] = wallets
+    .filter((w) => walletUtils.isPolkadotVaultGroup(w))
+    .flatMap((wallet) =>
+      wallet.accounts.flatMap((account): SignableAccount[] => {
+        if (accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)) {
+          return [
+            {
+              account,
+              accountId: account.accountId,
+              name: account.name,
+              walletName: wallet.name,
+            },
+          ];
+        }
+
+        return [];
+      }),
+    );
+
+  return [...extensionAccounts, ...vaultAccounts];
 });
 
-const $selectedAccount = combine($extensionAccounts, $selectedAccountId, (accounts, selectedId) => {
+const $selectedAccount = combine($signableAccounts, $selectedAccountId, (accounts, selectedId) => {
   if (!selectedId) return null;
 
   return accounts.find((a) => a.accountId === selectedId) ?? null;
@@ -53,22 +94,18 @@ const requestChallengeFx = createEffect(async ({ baseUrl, accountId }: { baseUrl
   return authApi.requestChallenge(baseUrl, accountId);
 });
 
-const signAndVerifyFx = createEffect(
+const verifySignatureFx = createEffect(
   async ({
     baseUrl,
     accountId,
     challengeId,
-    nonce,
-    extensionSource,
+    signature,
   }: {
     baseUrl: string;
     accountId: string;
     challengeId: string;
-    nonce: string;
-    extensionSource: string;
+    signature: string;
   }) => {
-    const signature = await signChallenge(extensionSource, accountId, nonce);
-
     return authApi.verifySignature(baseUrl, { accountId, challengeId, signature });
   },
 );
@@ -106,10 +143,10 @@ $authStep.on(signInClicked, () => 'selectAccount');
 $selectedAccountId.on(signInClicked, () => null);
 $error.on(signInClicked, () => null);
 
-// Auto-select first available extension account when nothing is selected
+// Auto-select first available account when nothing is selected
 sample({
   clock: [signInClicked, backendConfigurationModel.events.modalOpened, backendConfigurationModel.events.editStarted],
-  source: { accounts: $extensionAccounts, selectedId: $selectedAccountId },
+  source: { accounts: $signableAccounts, selectedId: $selectedAccountId },
   filter: ({ accounts, selectedId }) => accounts.length > 0 && selectedId === null,
   fn: ({ accounts }) => accounts[0]!.accountId,
   target: accountSelected,
@@ -117,6 +154,9 @@ sample({
 
 // Wiring: accountSelected
 $selectedAccountId.on(accountSelected, (_, id) => id);
+
+// Wiring: signingCancelled → back to account selection
+$authStep.on(signingCancelled, () => 'selectAccount');
 
 // Reset auth UI state when modal opens, closes, or connect completes
 const resetAuthUiTriggers = [
@@ -130,6 +170,7 @@ const resetAuthUiTriggers = [
 $authStep.on(resetAuthUiTriggers, () => 'selectAccount');
 $selectedAccountId.on(resetAuthUiTriggers, () => null);
 $error.on(resetAuthUiTriggers, () => null);
+$challengeId.on(resetAuthUiTriggers, () => null);
 
 // Wiring: signConfirmed → requestChallengeFx
 $authStep.on(signConfirmed, () => 'signing');
@@ -145,28 +186,50 @@ sample({
   target: requestChallengeFx,
 });
 
-// Wiring: requestChallengeFx.done → signAndVerifyFx
+// Wiring: requestChallengeFx.done → store challengeId + init message signing
 sample({
   clock: requestChallengeFx.doneData,
+  fn: (data) => data.challengeId,
+  target: $challengeId,
+});
+
+sample({
+  clock: requestChallengeFx.doneData,
+  source: { account: $selectedAccount },
+  filter: ({ account }) => account !== null,
+  fn: ({ account }, challengeData) => {
+    const signatory = account!.account;
+    const messageText = buildSignMessage(challengeData.nonce);
+    const message = new TextEncoder().encode(messageText);
+    const chainId = accountService.isChainAccount(signatory) ? signatory.chainId : undefined;
+
+    return { message, signatory, chainId };
+  },
+  target: messageSignModel.init,
+});
+
+// Wiring: messageSignModel.signed → verifySignatureFx
+sample({
+  clock: messageSignModel.signed,
   source: {
     baseUrl: backendConfigurationModel.$backendUrl,
     accountId: $selectedAccountId,
-    account: $selectedAccount,
+    challengeId: $challengeId,
   },
-  filter: ({ baseUrl, accountId, account }) => baseUrl !== null && accountId !== null && account !== null,
-  fn: ({ baseUrl, accountId, account }, challengeData) => ({
+  filter: ({ baseUrl, accountId, challengeId }) =>
+    baseUrl !== null && accountId !== null && challengeId !== null,
+  fn: ({ baseUrl, accountId, challengeId }, signResult) => ({
     baseUrl: baseUrl!,
     accountId: accountId!,
-    challengeId: challengeData.challengeId,
-    nonce: challengeData.nonce,
-    extensionSource: account!.extension,
+    challengeId: challengeId!,
+    signature: signResult.signature,
   }),
-  target: signAndVerifyFx,
+  target: verifySignatureFx,
 });
 
-// Wiring: signAndVerifyFx.done → set auth state, close modal
+// Wiring: verifySignatureFx.done → set auth state, close modal
 sample({
-  clock: signAndVerifyFx.doneData,
+  clock: verifySignatureFx.doneData,
   source: { accountId: $selectedAccountId, account: $selectedAccount },
   filter: ({ accountId, account }) => accountId !== null && account !== null,
   fn: ({ accountId, account }, verifyData): AuthState => ({
@@ -180,29 +243,29 @@ sample({
 const signInSucceeded = createEvent();
 
 sample({
-  clock: signAndVerifyFx.done,
+  clock: verifySignatureFx.done,
   target: [signInSucceeded, backendConfigurationModel.events.connectCompleted],
 });
 
 // Connection result tracking
 $connectionResult
-  .on(signAndVerifyFx.done, () => ({ status: 'success' }) as ConnectionResult)
-  .on([connectTriggered, signInClicked, backendConfigurationModel.events.urlCleared], () => ({ status: 'idle' }) as ConnectionResult);
+  .on(verifySignatureFx.done, (): ConnectionResult => ({ status: 'success' }))
+  .on([connectTriggered, signInClicked, backendConfigurationModel.events.urlCleared], (): ConnectionResult => ({ status: 'idle' }));
 
 sample({
-  clock: [requestChallengeFx.failData, signAndVerifyFx.failData],
+  clock: [requestChallengeFx.failData, verifySignatureFx.failData],
   fn: (error: Error): ConnectionResult => ({ status: 'error', message: error.message }),
   target: $connectionResult,
 });
 
 // Wiring: effect failures → error step
 sample({
-  clock: [requestChallengeFx.failData, signAndVerifyFx.failData],
+  clock: [requestChallengeFx.failData, verifySignatureFx.failData],
   fn: (error: Error) => error.message,
   target: $error,
 });
 
-$authStep.on([requestChallengeFx.fail, signAndVerifyFx.fail], () => 'error');
+$authStep.on([requestChallengeFx.fail, verifySignatureFx.fail], () => 'error');
 
 // Wiring: signOutClicked → logoutFx
 sample({
@@ -238,11 +301,9 @@ sample({
 
 sample({
   clock: checkSessionFx.doneData,
-  source: walletModel.$wallets,
-  fn: (wallets, sessionData): AuthState => {
-    const extensionWallets = wallets.filter(polkadotExtensionService.isExtensionWallet);
-    const allAccounts = extensionWallets.flatMap((w) => w.accounts.filter(polkadotExtensionService.isExtensionAccount));
-    const match = allAccounts.find((a) => a.accountId === sessionData.accountId);
+  source: $signableAccounts,
+  fn: (accounts, sessionData): AuthState => {
+    const match = accounts.find((a) => a.accountId === sessionData.accountId);
 
     return {
       accountId: sessionData.accountId as AccountId,
@@ -263,7 +324,7 @@ export const authModel = {
   $error,
   $connectionResult,
   $isAuthenticated,
-  $extensionAccounts,
+  $signableAccounts,
 
   events: {
     signInClicked,
@@ -273,5 +334,6 @@ export const authModel = {
     signConfirmed,
     connectTriggered,
     modalClosed,
+    signingCancelled,
   },
 };

@@ -16,8 +16,8 @@ import {
   createDynamicDerivationsSignPayload,
   createDynamicDerivationsSignWithProofPayload,
   createMultipleSignPayload,
-  createSignPayload,
   createSignWithProofPayload,
+  createTransactionPayload,
 } from '../QrCode/QrGenerator/common/utils';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
@@ -142,7 +142,7 @@ export const ScanMultiframeQr = ({
             signatory.cryptoType,
           );
         } else {
-          signPayload = createSignPayload(signatory.accountId, info.payload, chainId, signatory.cryptoType);
+          signPayload = createTransactionPayload(signatory.accountId, info.payload, chainId, signatory.cryptoType);
         }
 
         return {
