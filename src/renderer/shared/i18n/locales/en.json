@@ -107,7 +107,8 @@
       "signOutButton": "Sign out",
       "signingMessage": "Waiting for signature...",
       "signInSuccess": "Successfully signed in",
-      "sessionExpired": "Session expired"
+      "sessionExpired": "Session expired",
+      "disconnected": "Disconnected"
     },
     "backendConfiguration": {
       "addTitle": "Add Backend",

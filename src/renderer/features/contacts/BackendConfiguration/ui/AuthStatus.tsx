@@ -24,7 +24,7 @@ export const AuthStatus = () => {
   }
 
   if (!isAuthenticated || !authState) {
-    return null;
+    return <FootnoteText className="text-text-tertiary">{t('addressBook.auth.disconnected')}</FootnoteText>;
   }
 
   return (
