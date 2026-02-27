@@ -26,15 +26,12 @@
   },
   "addressBook": {
     "actions": {
-      "delete": "Delete",
-      "edit": "Edit"
+      "delete": "Delete"
     },
     "contactDeleted": "Contact deleted",
     "contactList": {
-      "emptySearchDescription": "Try to search for another name",
       "emptySearchLabel": "No contact with entered name were found",
       "nameColumnTitle": "Name",
-      "noContactsButton": "Add your first contact",
       "noContactsLabel": "The contact list is empty, you can add a new contact"
     },
     "createContact": {
@@ -89,24 +86,15 @@
       "tooltip": "Import address book from JSON file:",
       "wikiLink": "Wiki guidelines"
     },
-    "removeConfirm": {
-      "cancelButton": "Cancel",
-      "confirmButton": "Delete",
-      "description": "Are you sure you want to remove {name} from contacts?",
-      "title": "Delete contact"
-    },
     "auth": {
       "connectedAccountLabel": "Connected account",
       "connectionSuccess": "Connected successfully",
       "disconnectButton": "Disconnect",
       "errorTitle": "Authentication failed",
       "noExtensionAccounts": "No extension wallet accounts available",
-      "notConnected": "Not signed in",
       "selectAccountLabel": "Select account",
       "selectAccountPlaceholder": "Choose an account",
-      "signOutButton": "Sign out",
-      "signingMessage": "Waiting for signature...",
-      "signInSuccess": "Successfully signed in"
+      "signingMessage": "Waiting for signature..."
     },
     "backendConfiguration": {
       "addTitle": "Add Backend",
@@ -133,13 +121,8 @@
       "loading": "Loading contacts...",
       "loadError": "Failed to load contacts from server",
       "emptyBackend": "No contacts found on the server",
+      "emptyBackendDescription": "The connected server has no contacts. Contact your administrator or check the backend configuration.",
       "retry": "Retry"
-    },
-    "backendContact": {
-      "category": "Category",
-      "contactType": "Type",
-      "chain": "Chain",
-      "entity": "Entity"
     },
     "title": "Address Book",
     "undo": "Undo"
