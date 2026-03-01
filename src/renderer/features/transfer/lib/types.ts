@@ -22,6 +22,7 @@ export type NetworkStoreParams = {
   chain: Chain;
   asset?: Asset;
   destination?: Address;
+  xcm?: boolean;
 };
 
 export type TransferStore = {
