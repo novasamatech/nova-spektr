@@ -68,18 +68,24 @@ function createGraphElements(
 ) {
   const nodes: Node<AccountNodeData>[] = [];
   const edges: Edge[] = [];
-  const processedNodes = new Set<string>();
+  const processedAccountIds = new Set<string>();
+  const accountIdToNodeId = new Map<string, string>();
+
+  function resolveNodeId(account: AnyAccount): string {
+    return accountIdToNodeId.get(account.accountId) ?? account.id;
+  }
 
   function processNode(node: AccountNode) {
-    if (processedNodes.has(node.account.id)) return;
-    processedNodes.add(node.account.id);
+    if (processedAccountIds.has(node.account.accountId)) return;
+    processedAccountIds.add(node.account.accountId);
+    accountIdToNodeId.set(node.account.accountId, node.account.id);
 
     nodes.push({
       id: node.account.id,
       type: 'accountNode',
       data: {
         node,
-        isSelected: node.account.id === selectedAccountId,
+        isSelected: node.account.accountId === selectedAccountId,
       },
       position: { x: 0, y: 0 },
       sourcePosition: Position.Left,
@@ -87,12 +93,14 @@ function createGraphElements(
     });
 
     for (const child of node.children) {
+      const childNodeId = resolveNodeId(child.account);
+      const nodeId = node.account.id;
       const connection = accountConnectionTransformer({ source: child.account, target: node.account, t });
 
       edges.push({
-        id: `e${child.account.id}-${node.account.id}`,
-        source: child.account.id,
-        target: node.account.id,
+        id: `e${childNodeId}-${nodeId}`,
+        source: childNodeId,
+        target: nodeId,
         data: {
           source: child.account,
           target: node.account,
@@ -128,7 +136,7 @@ const useGraphLayout = (
   return useCallback(async () => {
     if (!graph || !selectedAccount) return;
 
-    const { nodes, edges } = createGraphElements(graph, selectedAccount.id, t);
+    const { nodes, edges } = createGraphElements(graph, selectedAccount.accountId, t);
 
     const layoutGraph = await elk.layout({
       id: 'root',
@@ -201,10 +209,14 @@ const AccountsStructureInner = () => {
   useEffect(
     () =>
       // eslint-disable-next-line effector/no-watch
-      accountsStructureModel.focusOnSelected.watch(
-        () => selectedAccount && fitView({ nodes: [{ id: selectedAccount.id }], maxZoom: 0.5, duration: 500 }),
-      ),
-    [fitView, selectedAccount],
+      accountsStructureModel.focusOnSelected.watch(() => {
+        if (!selectedAccount) return;
+        const matchingNode = nodes.find((n) => n.data.node.account.accountId === selectedAccount.accountId);
+        if (matchingNode) {
+          fitView({ nodes: [{ id: matchingNode.id }], maxZoom: 0.5, duration: 500 });
+        }
+      }),
+    [fitView, selectedAccount, nodes],
   );
 
   return (
