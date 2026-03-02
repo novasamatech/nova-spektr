@@ -65,7 +65,7 @@ export const SyncStatusBadge = () => {
         <button
           type="button"
           className={cnTw(
-            'flex min-w-[150px] items-center gap-x-1 rounded-md px-2 py-1 transition-colors',
+            'flex items-center gap-x-1 rounded-md px-2 py-1 transition-colors',
             'hover:bg-action-background-hover',
             isError ? 'text-text-negative' : 'text-text-tertiary',
           )}
