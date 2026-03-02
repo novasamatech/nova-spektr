@@ -91,11 +91,7 @@ const checkUrlReachabilityFx = createEffect(async (url: string) => {
 
 const $urlReachable = createStore<UrlReachability>(null);
 
-$urlReachable
-  .on(urlChanged, () => null)
-  .on(checkUrlReachabilityFx, () => 'checking')
-  .on(checkUrlReachabilityFx.done, () => 'reachable')
-  .on(checkUrlReachabilityFx.fail, () => 'unreachable');
+$urlReachable.on($draftUrl, () => null);
 
 const draftUrlDebounced = debounce({ source: $draftUrl, timeout: 500 });
 
@@ -105,6 +101,28 @@ sample({
   filter: (isValid) => isValid,
   fn: (_, url) => url,
   target: checkUrlReachabilityFx,
+});
+
+sample({
+  clock: checkUrlReachabilityFx,
+  fn: (): UrlReachability => 'checking',
+  target: $urlReachable,
+});
+
+sample({
+  clock: checkUrlReachabilityFx.done,
+  source: $draftUrl,
+  filter: (draftUrl, { params: checkedUrl }) => draftUrl.trim() === checkedUrl,
+  fn: (): UrlReachability => 'reachable',
+  target: $urlReachable,
+});
+
+sample({
+  clock: checkUrlReachabilityFx.fail,
+  source: $draftUrl,
+  filter: (draftUrl, { params: checkedUrl }) => draftUrl.trim() === checkedUrl,
+  fn: (): UrlReachability => 'unreachable',
+  target: $urlReachable,
 });
 
 export const backendConfigurationModel = {
