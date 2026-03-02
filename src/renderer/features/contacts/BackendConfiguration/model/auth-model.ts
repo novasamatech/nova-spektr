@@ -1,5 +1,7 @@
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, merge, sample } from 'effector';
+import i18next from 'i18next';
 import { interval, once } from 'patronum';
+import { toast } from 'sonner';
 
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService } from '@/domains/network';
@@ -322,8 +324,8 @@ const $isSessionExpired = createStore(false);
 
 const sessionHealthCheck = interval({
   timeout: 5 * 60 * 1000,
-  start: verifySignatureFx.done,
-  stop: signOutClicked,
+  start: merge([verifySignatureFx.done, checkSessionFx.done]),
+  stop: merge([signOutClicked, backendConfigurationModel.events.urlCleared]),
 });
 
 sample({
@@ -335,6 +337,23 @@ sample({
 
 $isSessionExpired.on(checkSessionFx.fail, () => true);
 $isSessionExpired.on([verifySignatureFx.done, signOutClicked, backendConfigurationModel.events.urlCleared], () => false);
+
+const sessionExpired = createEvent();
+
+const showSessionExpiredToastFx = createEffect(() => {
+  toast.error(i18next.t('addressBook.auth.sessionExpiredToast'), {
+    action: {
+      label: i18next.t('addressBook.auth.reconnectButton'),
+      onClick: () => backendConfigurationModel.events.editStarted(),
+    },
+  });
+});
+
+sample({
+  clock: $isSessionExpired,
+  filter: (expired) => expired,
+  target: [sessionExpired, showSessionExpiredToastFx],
+});
 
 export const authModel = {
   $authState,
@@ -354,6 +373,7 @@ export const authModel = {
     signConfirmed,
     connectTriggered,
     modalClosed,
+    sessionExpired,
     signingCancelled,
   },
 };
