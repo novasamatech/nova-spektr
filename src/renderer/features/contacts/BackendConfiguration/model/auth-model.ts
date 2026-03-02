@@ -1,5 +1,5 @@
 import { combine, createEffect, createEvent, createStore, merge, sample } from 'effector';
-import i18next from 'i18next';
+import { t } from 'i18next';
 import { interval, once } from 'patronum';
 import { toast } from 'sonner';
 
@@ -341,9 +341,9 @@ $isSessionExpired.on([verifySignatureFx.done, signOutClicked, backendConfigurati
 const sessionExpired = createEvent();
 
 const showSessionExpiredToastFx = createEffect(() => {
-  toast.error(i18next.t('addressBook.auth.sessionExpiredToast'), {
+  toast.error(t('addressBook.auth.sessionExpiredToast'), {
     action: {
-      label: i18next.t('addressBook.auth.reconnectButton'),
+      label: t('addressBook.auth.reconnectButton'),
       onClick: () => backendConfigurationModel.events.editStarted(),
     },
   });
