@@ -157,9 +157,7 @@ export const Contacts = () => {
 
         <section className="mt-4 h-full w-full overflow-y-auto">
           <div className="mx-auto flex h-full w-[636px] flex-col gap-y-4 pb-4">
-            {showTabs && (
-              <SourceTabs localCount={localContacts.length} backendCount={backendContacts.length} />
-            )}
+            {showTabs && <SourceTabs localCount={localContacts.length} backendCount={backendContacts.length} />}
 
             <div aria-live="polite" aria-busy={viewState.view === 'loading'}>
               {renderViewState(viewState, handleSendTo, handleSync)}
