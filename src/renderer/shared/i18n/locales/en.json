@@ -46,7 +46,7 @@
       "selectAccountLabel": "Select account",
       "selectAccountPlaceholder": "Choose an account",
       "sessionExpired": "Session expired",
-      "sessionExpiredToast": "Session expired. Click the connection card to reconnect.",
+      "sessionExpiredToast": "Address book session expired",
       "signingMessage": "Waiting for signature...",
       "signInSuccess": "Successfully signed in",
       "signOutButton": "Sign out"

@@ -283,7 +283,12 @@ $isSessionExpired.on([signAndVerifyFx.done, signOutClicked, backendConfiguration
 const sessionExpired = createEvent();
 
 const showSessionExpiredToastFx = createEffect(() => {
-  toast.error(i18next.t('addressBook.auth.sessionExpiredToast'));
+  toast.error(i18next.t('addressBook.auth.sessionExpiredToast'), {
+    action: {
+      label: i18next.t('addressBook.auth.reconnectButton'),
+      onClick: () => backendConfigurationModel.events.editStarted(),
+    },
+  });
 });
 
 sample({
