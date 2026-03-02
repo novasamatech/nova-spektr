@@ -4,6 +4,15 @@ import { type BackendContact, type Contact } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { authFetch } from '../../BackendConfiguration/lib/backend-fetch';
 
+export class HttpError extends Error {
+  constructor(
+    public readonly status: number,
+    body: string,
+  ) {
+    super(`Request failed with status ${status}: ${body}`);
+  }
+}
+
 const backendContactSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -69,7 +78,7 @@ async function fetchContactsPage(
   });
 
   if (!result.ok) {
-    throw new Error(`Request failed with status ${result.status}: ${result.body.slice(0, 300)}`);
+    throw new HttpError(result.status, result.body.slice(0, 300));
   }
 
   const body: unknown = JSON.parse(result.body);

@@ -48,7 +48,7 @@ const meta: Meta<typeof CachedWithErrorView> = {
     ),
   ],
   args: {
-    error: 'TypeError: Failed to fetch — ECONNREFUSED',
+    errorMessage: 'TypeError: Failed to fetch — ECONNREFUSED',
     items: mockContacts,
     onSendTo: () => {},
     onRetry: () => {},

@@ -60,7 +60,7 @@ export const Error: Story = {
       [backendContactsModel.$syncStatus, 'error'],
       [backendContactsModel.$lastSyncTime, null],
       [backendContactsModel.$isLoading, false],
-      [backendContactsModel.$error, 'Connection timeout'],
+      [backendContactsModel.$error, { category: 'timeout', message: 'Connection timeout' }],
     ]),
   ],
 };

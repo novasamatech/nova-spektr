@@ -1,6 +1,6 @@
 export { BackendContactRow } from './BackendContactRow';
 export { CachedWithErrorView } from './CachedWithErrorView';
-export { BackendErrorView } from './BackendErrorView';
+export { type BackendError, type BackendErrorCategory, BackendErrorView } from './BackendErrorView';
 export { BackendLoadingView } from './BackendLoadingView';
 export { ContactRow } from './ContactRow';
 export { ContactList } from './ContactList';

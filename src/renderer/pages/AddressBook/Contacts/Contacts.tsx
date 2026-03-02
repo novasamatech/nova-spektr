@@ -5,6 +5,7 @@ import { type Contact, isBackendContact, isLocalContact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import {
+  type BackendError,
   BackendContactRow,
   BackendErrorView,
   BackendLoadingView,
@@ -33,8 +34,8 @@ import { SendToContactModal, sendToContactModel } from '@/features/send-to-conta
 
 type ViewState =
   | { view: 'loading' }
-  | { view: 'error'; message: string }
-  | { view: 'cachedWithError'; message: string; items: Contact[] }
+  | { view: 'error'; error: BackendError }
+  | { view: 'cachedWithError'; error: BackendError; items: Contact[] }
   | { view: 'emptyLocal' }
   | { view: 'emptyBackend' }
   | { view: 'noResults' }
@@ -43,7 +44,7 @@ type ViewState =
 function computeViewState(params: {
   isBackendTab: boolean;
   isLoading: boolean;
-  backendError: string | null;
+  backendError: BackendError | null;
   localContacts: Contact[];
   filteredContacts: Contact[];
 }): ViewState {
@@ -51,9 +52,9 @@ function computeViewState(params: {
 
   if (isBackendTab && isLoading && filteredContacts.length === 0) return { view: 'loading' };
   if (isBackendTab && backendError && filteredContacts.length > 0) {
-    return { view: 'cachedWithError', message: backendError, items: filteredContacts };
+    return { view: 'cachedWithError', error: backendError, items: filteredContacts };
   }
-  if (isBackendTab && backendError) return { view: 'error', message: backendError };
+  if (isBackendTab && backendError) return { view: 'error', error: backendError };
   if (isBackendTab && filteredContacts.length === 0) return { view: 'emptyBackend' };
   if (!isBackendTab && localContacts.length === 0) return { view: 'emptyLocal' };
   if (!isBackendTab && filteredContacts.length === 0) return { view: 'noResults' };
@@ -80,10 +81,10 @@ function renderViewState(viewState: ViewState, onSendTo: (contact: Contact) => v
     case 'loading':
       return <BackendLoadingView />;
     case 'error':
-      return <BackendErrorView error={viewState.message} onRetry={onRetry} />;
+      return <BackendErrorView category={viewState.error.category} message={viewState.error.message} onRetry={onRetry} />;
     case 'cachedWithError':
       return (
-        <CachedWithErrorView error={viewState.message} items={viewState.items} onSendTo={onSendTo} onRetry={onRetry} />
+        <CachedWithErrorView errorMessage={viewState.error.message} items={viewState.items} onSendTo={onSendTo} onRetry={onRetry} />
       );
     case 'emptyBackend':
       return <EmptyBackendView />;

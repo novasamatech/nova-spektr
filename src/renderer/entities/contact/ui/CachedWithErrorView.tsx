@@ -6,13 +6,13 @@ import { BackendContactRow } from './BackendContactRow';
 import { ContactRow } from './ContactRow';
 
 type Props = {
-  error: string;
+  errorMessage: string;
   items: Contact[];
   onSendTo: (contact: Contact) => void;
   onRetry: () => void;
 };
 
-export const CachedWithErrorView = ({ error, items, onSendTo, onRetry }: Props) => {
+export const CachedWithErrorView = ({ errorMessage, items, onSendTo, onRetry }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -20,7 +20,7 @@ export const CachedWithErrorView = ({ error, items, onSendTo, onRetry }: Props) 
       <Alert title={t('addressBook.sources.syncErrorCached')} active variant="warn">
         <Alert.Item withDot={false}>
           <div className="flex items-center gap-x-2">
-            <BodyText className="break-all text-text-tertiary">{error}</BodyText>
+            <BodyText className="break-all text-text-tertiary">{errorMessage}</BodyText>
             <Button variant="text" className="h-4.5 shrink-0" onClick={onRetry}>
               {t('addressBook.sources.retry')}
             </Button>

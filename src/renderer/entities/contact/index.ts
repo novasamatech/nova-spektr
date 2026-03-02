@@ -1,5 +1,7 @@
 export {
   BackendContactRow,
+  type BackendError,
+  type BackendErrorCategory,
   BackendErrorView,
   BackendLoadingView,
   CachedWithErrorView,
