@@ -80,19 +80,29 @@ export const ScanMultiframeQr = ({
 
     if (setupId !== undefined && setupId !== setupIdRef.current) return;
 
-    const transactionPromises = signingPayloads.map(async (signingPayload, nonceIncrement) => {
+    // Track nonce increments per account+chain for the "new" mode
+    const nonceIncrements: Record<string, number> = {};
+
+    const transactionPromises = signingPayloads.map(async (signingPayload) => {
       const signatory = signingPayload.signatory;
+      const chainId = signingPayload.chain.chainId;
       const derivationPath =
         accountUtils.isVaultChainAccount(signatory) || accountUtils.isVaultShardAccount(signatory)
           ? signatory.derivationPath
           : null;
 
       if (tab === 'new' && isMetadataProofsSupported) {
+        const nonceKey = `${signatory.accountId}:${chainId}`;
+        const nonceIncrement = nonceIncrements[nonceKey] ?? 0;
+        nonceIncrements[nonceKey] = nonceIncrement + 1;
+
+        const precomputedMetadata = metadataMap[signatory.accountId]?.[chainId];
         const info = await transactionService.createPayloadWithProof(
           signingPayload.extrinsic,
           signatory.accountId,
           signingPayload.api,
           nonceIncrement,
+          precomputedMetadata,
         );
 
         let signPayload: Uint8Array;

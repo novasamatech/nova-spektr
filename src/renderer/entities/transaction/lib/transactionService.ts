@@ -248,8 +248,9 @@ async function createPayloadWithProof(
   signatory: AccountId,
   api: ApiPromise,
   nonceIncrement?: number,
+  precomputedMetadata?: TxMetadata,
 ) {
-  let metadata = await createTxMetadata(signatory, api);
+  let metadata = precomputedMetadata ?? (await createTxMetadata(signatory, api));
   if (nonceIncrement) {
     metadata = upgradeNonce(metadata, nonceIncrement);
   }

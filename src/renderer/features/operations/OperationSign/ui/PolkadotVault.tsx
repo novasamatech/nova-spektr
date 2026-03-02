@@ -36,26 +36,20 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
 
     const accountIds = signingPayloads.map((p) => p.signatory.accountId);
 
-    let isVerified = false;
+    const isVerified = signatures.every((signature, index) => {
+      const payload = txPayloads.at(index);
+      const accountId = accountIds.at(index);
 
-    if (signatures.length > 1) {
-      isVerified = true;
-    } else {
-      isVerified = signatures.every((signature, index) => {
-        const payload = txPayloads.at(index);
-        const accountId = accountIds.at(index);
+      if (nullable(payload) || nullable(accountId)) return false;
 
-        if (nullable(payload) || nullable(accountId)) return false;
+      const verifiablePayload = payload.slice(1);
+      const verifiableComplexPayload = payload.slice(2);
 
-        const verifiablePayload = payload.slice(1);
-        const verifiableComplexPayload = payload.slice(2);
+      const isPayloadVerified = transactionService.verifySignature(verifiablePayload, signature, accountId);
+      const isComplexVerified = transactionService.verifySignature(verifiableComplexPayload, signature, accountId);
 
-        const isVerified = transactionService.verifySignature(verifiablePayload, signature, accountId);
-        const isComplexVerified = transactionService.verifySignature(verifiableComplexPayload, signature, accountId);
-
-        return isVerified || isComplexVerified;
-      });
-    }
+      return isPayloadVerified || isComplexVerified;
+    });
 
     const balanceValidationError = validateBalance && (await validateBalance());
 
