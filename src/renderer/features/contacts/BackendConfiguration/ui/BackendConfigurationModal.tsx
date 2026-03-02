@@ -97,30 +97,7 @@ export const BackendConfigurationModal = () => {
             <InputHint variant="error" active={showUrlError}>
               {t('addressBook.backendConfiguration.urlInvalidError')}
             </InputHint>
-            {urlReachable === 'checking' && (
-              <div className="flex items-center gap-x-1.5">
-                <Loader color="primary" size={14} />
-                <FootnoteText className="text-text-tertiary">
-                  {t('addressBook.backendConfiguration.checking')}
-                </FootnoteText>
-              </div>
-            )}
-            {urlReachable === 'reachable' && (
-              <div className="flex items-center gap-x-1.5">
-                <Icon name="checkmarkOutline" size={14} className="text-icon-positive" />
-                <FootnoteText className="text-icon-positive">
-                  {t('addressBook.backendConfiguration.reachable')}
-                </FootnoteText>
-              </div>
-            )}
-            {urlReachable === 'unreachable' && (
-              <div className="flex items-center gap-x-1.5">
-                <Icon name="warnCutout" size={14} className="text-icon-negative" />
-                <FootnoteText className="text-icon-negative">
-                  {t('addressBook.backendConfiguration.unreachable')}
-                </FootnoteText>
-              </div>
-            )}
+            {urlReachable && <UrlReachabilityStatus status={urlReachable} />}
           </Field>
 
           {showConnectedAccount && (
@@ -167,6 +144,30 @@ export const BackendConfigurationModal = () => {
         </Modal.Footer>
       )}
     </Modal>
+  );
+};
+
+const urlReachabilityConfig = {
+  checking: { icon: <Loader color="primary" size={14} />, textClass: 'text-text-tertiary' },
+  reachable: {
+    icon: <Icon name="checkmarkOutline" size={14} className="text-icon-positive" />,
+    textClass: 'text-icon-positive',
+  },
+  unreachable: {
+    icon: <Icon name="warnCutout" size={14} className="text-icon-negative" />,
+    textClass: 'text-icon-negative',
+  },
+} as const;
+
+const UrlReachabilityStatus = ({ status }: { status: 'checking' | 'reachable' | 'unreachable' }) => {
+  const { t } = useI18n();
+  const { icon, textClass } = urlReachabilityConfig[status];
+
+  return (
+    <div className="flex items-center gap-x-1.5">
+      {icon}
+      <FootnoteText className={textClass}>{t(`addressBook.backendConfiguration.${status}`)}</FootnoteText>
+    </div>
   );
 };
 
