@@ -351,7 +351,8 @@ const showSessionExpiredToastFx = createEffect(() => {
 
 sample({
   clock: $isSessionExpired,
-  filter: (expired) => expired,
+  source: sessionHealthCheck.isRunning,
+  filter: (isRunning, expired) => expired && isRunning,
   target: [sessionExpired, showSessionExpiredToastFx],
 });
 
