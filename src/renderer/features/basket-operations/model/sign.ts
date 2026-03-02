@@ -22,6 +22,22 @@ const $transactions = createStore<BasketTransaction[]>([]).reset(finishFlow);
 
 const $isModalOpen = combine($step, step => !signOperationsUtils.isNoneStep(step));
 
+const $hasIncompatibleSigningModes = combine(
+  { transactions: $transactions, chains: networkModel.$chains },
+  ({ transactions, chains }) => {
+    if (transactions.length <= 1) return false;
+
+    const modes = new Set(
+      transactions.map(tx => {
+        const chain = chains[tx.coreTx.chainId];
+        return chain?.additional?.supportsGenericLedgerApp ?? false;
+      }),
+    );
+
+    return modes.size > 1;
+  },
+);
+
 sample({
   clock: startFlow,
   fn: () => Step.CONFIRM,
@@ -50,7 +66,15 @@ sample({
     chains: networkModel.$chains,
     accounts: accounts.$list,
   },
-  filter: ({ transactions }) => nonNullable(transactions) && transactions.length > 0,
+  filter: ({ transactions, chains }) => {
+    if (!nonNullable(transactions) || transactions.length === 0) return false;
+
+    const modes = new Set(
+      transactions.map(tx => chains[tx.coreTx.chainId]?.additional?.supportsGenericLedgerApp ?? false),
+    );
+
+    return modes.size <= 1;
+  },
   fn: ({ transactions, accounts, chains }) => {
     // TODO implement wrapping in basket context. Now basket only supports PV so it's not necessary.
     const signingPayloads = transactions
@@ -134,6 +158,7 @@ export const signOperations = {
   $step,
   $transactions,
   $isModalOpen,
+  $hasIncompatibleSigningModes,
 
   startFlow,
   finishFlow,

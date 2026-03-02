@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@/shared/ui';
-import { Checkbox } from '@/shared/ui-kit';
+import { Checkbox, Tooltip } from '@/shared/ui-kit';
 import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { useFellowshipMember } from '@/aggregates/fellowship-member';
@@ -30,6 +30,7 @@ export const BasketList = () => {
   const refreshPending = useUnit(validation.validateAll.pending);
   const validationResults = useUnit(validation.$validatingResults);
   const apisFromChainsListConnected = useUnit(validation.$apisFromChainsListConnected);
+  const hasIncompatibleSigningModes = useUnit(signOperations.$hasIncompatibleSigningModes);
 
   const validOperations = operations.filter(op => {
     const hasError = validationResults[op.id]?.some(result => result.errorText);
@@ -89,14 +90,21 @@ export const BasketList = () => {
                 >
                   {t('basket.refreshButton')}
                 </Button>
-                <Button
-                  size="sm"
-                  className="w-[125px]"
-                  disabled={!isSignAvailable}
-                  onClick={() => signOperations.startFlow({ transactions: selected })}
-                >
-                  {t(selected.length === 0 ? 'basket.emptySignButton' : 'basket.signButton')}
-                </Button>
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <Button
+                      size="sm"
+                      className="w-[125px]"
+                      disabled={!isSignAvailable || hasIncompatibleSigningModes}
+                      onClick={() => signOperations.startFlow({ transactions: selected })}
+                    >
+                      {t(selected.length === 0 ? 'basket.emptySignButton' : 'basket.signButton')}
+                    </Button>
+                  </Tooltip.Trigger>
+                  {hasIncompatibleSigningModes && (
+                    <Tooltip.Content>{t('basket.incompatibleSigningModeError')}</Tooltip.Content>
+                  )}
+                </Tooltip>
               </div>
             </div>
           </div>

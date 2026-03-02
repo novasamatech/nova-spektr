@@ -243,6 +243,7 @@
     },
     "title": "Basket",
     "undo": "Undo",
+    "incompatibleSigningModeError": "Cannot sign together due to different signing modes across chains",
     "validationError": "Unavailable",
     "validationWarning": {
       "cancelButton": "Cancel",
