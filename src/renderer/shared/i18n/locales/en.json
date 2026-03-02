@@ -46,6 +46,7 @@
       "selectAccountLabel": "Select account",
       "selectAccountPlaceholder": "Choose an account",
       "sessionExpired": "Session expired",
+      "sessionExpiredToast": "Address book session expired",
       "signingMessage": "Waiting for signature...",
       "signInSuccess": "Successfully signed in",
       "signOutButton": "Sign out"
@@ -136,6 +137,45 @@
       "success": "Contacts imported",
       "tooltip": "Import address book from JSON file:",
       "wikiLink": "Wiki guidelines"
+    },
+    "removeConfirm": {
+      "cancelButton": "Cancel",
+      "confirmButton": "Delete",
+      "description": "Are you sure you want to remove {name} from contacts?",
+      "title": "Delete contact"
+    },
+    "auth": {
+      "connectedAccountLabel": "Connected account",
+      "connectionSuccess": "Connected successfully",
+      "disconnectButton": "Disconnect",
+      "errorTitle": "Authentication failed",
+      "noSignableAccounts": "No extension or Polkadot Vault accounts available",
+      "notConnected": "Not signed in",
+      "scanQrTitle": "Scan with Polkadot Vault",
+      "scanSignatureTitle": "Scan signature QR",
+      "selectAccountLabel": "Select account",
+      "selectAccountPlaceholder": "Choose an account",
+      "signOutButton": "Sign out",
+      "signingMessage": "Waiting for signature...",
+      "signInSuccess": "Successfully signed in"
+    },
+    "backendConfiguration": {
+      "addTitle": "Add Backend",
+      "buttonLabel": "External source",
+      "editTitle": "Edit Backend",
+      "urlLabel": "Backend URL",
+      "urlPlaceholder": "https://example.com/api",
+      "urlInvalidError": "Please enter a valid URL",
+      "connectButton": "Connect",
+      "tryAgainButton": "Try again",
+      "connectingMessage": "Connecting...",
+      "connectionLabel": "Backend connection",
+      "tooltip": "Configure address book backend",
+      "backendRemoved": "Backend removed",
+      "unsavedChangesTitle": "Unsaved changes",
+      "unsavedChangesMessage": "You have modified the backend URL without connecting. Discard changes?",
+      "discardButton": "Discard",
+      "keepEditingButton": "Keep editing"
     },
     "searchPlaceholder": "Search",
     "sources": {
