@@ -86,6 +86,7 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
       <DestinationBalanceAlert />
       <PureProxyChainMismatchAlert />
       <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
+        <ChainSelector />
         <XcmChainSelector />
         <InitiatorSelector />
         <SignatorySelector />
@@ -256,9 +257,56 @@ const SignatorySelector = memo(() => {
   );
 });
 
-const XcmChainSelector = memo(() => {
+const ChainSelector = memo(() => {
   const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState('');
+
+  const network = useUnit(formModel.$networkStore);
+  const availableChains = useUnit(formModel.$availableChains);
+  const isAssetPredefined = useUnit(formModel.$isAssetPredefined);
+
+  const filteredChains = useMemo(() => {
+    if (!searchQuery) return availableChains;
+
+    return performSearch({
+      query: searchQuery,
+      records: availableChains,
+      weights: { name: 1 },
+    });
+  }, [availableChains, searchQuery]);
+
+  if (isAssetPredefined || !network) {
+    return null;
+  }
+
+  const selectChain = (chainId: ChainId) => {
+    const chain = availableChains.find((chain) => chain.chainId === chainId);
+    if (!chain || chain.chainId === network.chain.chainId) return;
+
+    formModel.chainChanged(chain);
+  };
+
+  return (
+    <Field text={t('transfer.networkLabel')}>
+      <Select
+        placeholder={t('transfer.networkPlaceholder')}
+        value={network.chain.chainId}
+        testId={TEST_IDS.OPERATIONS.XCM_SELECTOR}
+        onChange={selectChain}
+        onSearch={setSearchQuery}
+      >
+        {filteredChains.map((chain) => (
+          <Select.Item key={chain.chainId} value={chain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
+            <ChainTitle chainId={chain.chainId} fontClass="text-text-primary" />
+          </Select.Item>
+        ))}
+      </Select>
+    </Field>
+  );
+});
+
+const XcmChainSelector = memo(() => {
+  const { t } = useI18n();
 
   const {
     fields: { destinationChain },
@@ -266,61 +314,20 @@ const XcmChainSelector = memo(() => {
 
   const network = useUnit(formModel.$networkStore);
   const destinationChains = useUnit(formModel.$destinationChains);
-  const availableChains = useUnit(formModel.$availableChains);
-  const isAssetPredefined = useUnit(formModel.$isAssetPredefined);
+  const isXcmEnabled = useUnit(formModel.$isXcmEnabled);
 
-  const chains = isAssetPredefined ? destinationChains : availableChains;
-
-  const filteredChains = useMemo(() => {
-    if (!searchQuery) return chains;
-
-    return performSearch({
-      query: searchQuery,
-      records: chains,
-      weights: { name: 1 },
-    });
-  }, [chains, searchQuery]);
-
-  if (chains.length <= 1 && isAssetPredefined) {
-    return null;
-  }
-
-  if (!network) {
+  if (!isXcmEnabled || destinationChains.length <= 1 || !network) {
     return null;
   }
 
   const selectChain = (chainId: ChainId) => {
-    const chainMatch = chains.find((chain) => chain.chainId === chainId);
-    if (!chainMatch) return;
+    const chain = destinationChains.find((chain) => chain.chainId === chainId);
+    if (!chain) return;
 
-    if (!isAssetPredefined && chainMatch.chainId !== network.chain.chainId) {
-      formModel.chainChanged(chainMatch);
-    } else {
-      destinationChain.onChange(chainMatch);
-    }
+    destinationChain.onChange(chain);
   };
 
-  if (!isAssetPredefined) {
-    return (
-      <Field text={t('transfer.networkLabel')}>
-        <Select
-          placeholder={t('transfer.networkPlaceholder')}
-          value={network.chain.chainId}
-          testId={TEST_IDS.OPERATIONS.XCM_SELECTOR}
-          onChange={selectChain}
-          onSearch={setSearchQuery}
-        >
-          {filteredChains.map((chain) => (
-            <Select.Item key={chain.chainId} value={chain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
-              <ChainTitle chainId={chain.chainId} fontClass="text-text-primary" />
-            </Select.Item>
-          ))}
-        </Select>
-      </Field>
-    );
-  }
-
-  const [nativeChain, ...xcmChains] = chains;
+  const [nativeChain, ...xcmChains] = destinationChains;
 
   return (
     <Field text={t('transfer.destinationChainLabel')}>
@@ -533,7 +540,6 @@ const Amount = memo(() => {
   const network = useUnit(formModel.$networkStore);
   const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
   const isXcm = useUnit(formModel.$isXcm);
-  const isAssetPredefined = useUnit(formModel.$isAssetPredefined);
 
   const showMaxButton = !isXcm && (accountAvailableBalance?.gtn(0) ?? false);
   const showEDSwitch = useUnit(formModel.$showEDSwitch);
@@ -542,7 +548,7 @@ const Amount = memo(() => {
     return null;
   }
 
-  const handleAssetClick = isAssetPredefined ? undefined : () => formModel.showTokenSelector();
+  const handleAssetClick = () => formModel.showTokenSelector();
 
   return (
     <div className="flex flex-col gap-y-2">

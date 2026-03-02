@@ -8,7 +8,8 @@ import { useConfirmContext } from '@/shared/providers/ConfirmContext';
 import { Alert, Button, FootnoteText, Icon, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select, Surface, useNotification } from '@/shared/ui-kit';
-import { authModel } from '../model/auth-model';
+import { OperationMessageSign } from '@/features/operations/OperationMessageSign';
+import { type SignableAccount, authModel } from '../model/auth-model';
 import { backendConfigurationModel } from '../model/backend-configuration-model';
 
 export const BackendConfigurationModal = () => {
@@ -27,7 +28,7 @@ export const BackendConfigurationModal = () => {
   const authState = useUnit(authModel.$authState);
   const authStep = useUnit(authModel.$authStep);
   const selectedAccountId = useUnit(authModel.$selectedAccountId);
-  const extensionAccounts = useUnit(authModel.$extensionAccounts);
+  const signableAccounts = useUnit(authModel.$signableAccounts);
   const error = useUnit(authModel.$error);
 
   useEffect(() => {
@@ -41,12 +42,9 @@ export const BackendConfigurationModal = () => {
   const isError = authStep === 'error';
   const showUrlError = draftUrl.trim().length > 0 && !isValid;
 
-  // When authenticated and URL hasn't changed, show connected state
   const urlUnchanged = isAuthenticated && !isDirty;
 
-  // Show account selector when URL is valid and not in connected state
   const showAccountSelector = isValid && !urlUnchanged && !isSigning;
-  const showSigningState = isSigning;
   const showConnectedAccount = urlUnchanged && authState;
 
   const canConnect = isValid && selectedAccountId !== null && !isSigning;
@@ -139,16 +137,11 @@ export const BackendConfigurationModal = () => {
             </Field>
           )}
 
-          {showSigningState && (
-            <div className="flex flex-col items-center gap-4 py-4">
-              <Loader color="primary" />
-              <FootnoteText className="text-text-tertiary">{t('addressBook.auth.signingMessage')}</FootnoteText>
-            </div>
-          )}
+          {isSigning && <OperationMessageSign onGoBack={() => authModel.events.signingCancelled()} />}
 
           {showAccountSelector && (
             <AccountSelector
-              extensionAccounts={extensionAccounts}
+              accounts={signableAccounts}
               selectedAccountId={selectedAccountId}
               onSelect={(id) => authModel.events.accountSelected(id)}
             />
@@ -159,37 +152,39 @@ export const BackendConfigurationModal = () => {
           </Alert>
         </Box>
       </Modal.Content>
-      <Modal.Footer>
-        {hasBackend && (
-          <Button variant="text" onClick={handleDelete}>
-            {t('addressBook.actions.delete')}
-          </Button>
-        )}
-        {!urlUnchanged && (
-          <Button className="ml-auto" disabled={!canConnect} onClick={handleConnect}>
-            {connectButtonText}
-          </Button>
-        )}
-      </Modal.Footer>
+      {!isSigning && (hasBackend || !urlUnchanged) && (
+        <Modal.Footer>
+          {hasBackend && (
+            <Button variant="text" onClick={handleDelete}>
+              {t('addressBook.actions.delete')}
+            </Button>
+          )}
+          {!urlUnchanged && (
+            <Button className="ml-auto" disabled={!canConnect} onClick={handleConnect}>
+              {connectButtonText}
+            </Button>
+          )}
+        </Modal.Footer>
+      )}
     </Modal>
   );
 };
 
 const AccountSelector = ({
-  extensionAccounts,
+  accounts,
   selectedAccountId,
   onSelect,
 }: {
-  extensionAccounts: { accountId: AccountId; name: string; extension: string }[];
+  accounts: SignableAccount[];
   selectedAccountId: AccountId | null;
   onSelect: (id: AccountId) => void;
 }) => {
   const { t } = useI18n();
 
-  if (extensionAccounts.length === 0) {
+  if (accounts.length === 0) {
     return (
       <Field text={t('addressBook.auth.selectAccountLabel')}>
-        <FootnoteText className="text-text-tertiary">{t('addressBook.auth.noExtensionAccounts')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('addressBook.auth.noSignableAccounts')}</FootnoteText>
       </Field>
     );
   }
@@ -201,12 +196,14 @@ const AccountSelector = ({
         value={selectedAccountId}
         onChange={(value) => onSelect(value as AccountId)}
       >
-        {extensionAccounts.map((account) => (
+        {accounts.map((account) => (
           <Select.Item key={account.accountId} value={account.accountId}>
             <Box direction="row" gap={2} verticalAlign="center">
               <Identicon address={toAddress(account.accountId)} size={20} />
               <SmallTitleText>{account.name}</SmallTitleText>
-              <FootnoteText className="text-text-tertiary">{toShortAddress(toAddress(account.accountId))}</FootnoteText>
+              <FootnoteText className="text-text-tertiary">
+                {account.walletName} · {toShortAddress(toAddress(account.accountId))}
+              </FootnoteText>
             </Box>
           </Select.Item>
         ))}

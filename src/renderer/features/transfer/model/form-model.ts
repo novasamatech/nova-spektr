@@ -33,7 +33,14 @@ import {
   createTxValidationStore,
 } from '@/shared/transactions';
 import { type TransactionValidationDryRunError, type TransactionValidationNetworkError } from '@/shared/ui-entities';
-import { type AnyAccount, type BalancePreservation, INDEXER_URL, accountService, accounts, balanceService } from '@/domains/network';
+import {
+  type AnyAccount,
+  type BalancePreservation,
+  INDEXER_URL,
+  accountService,
+  accounts,
+  balanceService,
+} from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { proxiedChainResource } from '@/entities/proxy';
@@ -143,6 +150,8 @@ const $isNative = $networkStore.map((network) => {
 
 const $isAssetPredefined = createStore(false).on(formInitiated, (_, params) => params.asset !== undefined);
 
+const $isXcmEnabled = createStore(false).on(formInitiated, (_, params) => params.xcm ?? true);
+
 const $initialDestination = createStore<string | null>(null).on(
   formInitiated,
   (_, { destination }) => destination ?? null,
@@ -227,8 +236,11 @@ const $isXcm = combine(
   {
     source: $chain,
     destination: $destinationChain,
+    isXcmEnabled: $isXcmEnabled,
   },
-  ({ source, destination }) => {
+  ({ source, destination, isXcmEnabled }) => {
+    if (!isXcmEnabled) return false;
+
     return nonNullable(source) && nonNullable(destination) && source.chainId !== destination.chainId;
   },
 );
@@ -853,6 +865,7 @@ sample({
 
 sample({
   clock: formInitiated,
+  filter: ({ xcm }) => xcm !== false,
   fn: ({ chain, asset }) => ({ chain, asset: asset ?? getNativeAsset(chain.assets)! }),
   target: [xcmSpellTransferModel.events.xcmStarted, xcmSpellTransferModel.events.xcmStopped],
 });
@@ -901,7 +914,7 @@ sample({
 });
 
 sample({
-  clock: formInitiated,
+  clock: [$initiators, formInitiated],
   source: $initiators,
   fn: (initiators) => initiators.at(0) ?? null,
   target: form.fields.initiator.change,
@@ -972,7 +985,9 @@ sample({
 
 sample({
   clock: form.fields.destinationChain.change.filter({ fn: nonNullable }),
-  fn: (chain) => chain.chainId,
+  source: $isXcmEnabled,
+  filter: (isXcmEnabled) => isXcmEnabled,
+  fn: (_, chain) => chain.chainId,
   target: xcmSpellTransferModel.events.xcmChainSelected,
 });
 
@@ -1227,6 +1242,7 @@ const $errors = combine(
     isChainConnected: $isChainConnected,
     isFormValid: form.$isValid,
     network: $networkStore,
+    isXcm: $isXcm,
     buildTransferDryRunResult: xcmSpellTransferModel.$buildTransferDryRunResult,
     xcmChain: xcmSpellTransferModel.$xcmChain,
   },
@@ -1236,6 +1252,7 @@ const $errors = combine(
     isChainConnected,
     isFormValid,
     network,
+    isXcm,
     buildTransferDryRunResult,
     xcmChain,
   }) => {
@@ -1256,7 +1273,7 @@ const $errors = combine(
       return result;
     }
 
-    if (buildTransferDryRunResult?.success === false && isChainConnected) {
+    if (isXcm && buildTransferDryRunResult?.success === false && isChainConnected) {
       const failureReason = buildTransferDryRunResult.failureReason || '';
       const errorInfo = categorizeXcmError(failureReason);
 
@@ -1352,6 +1369,7 @@ export const formModel = {
   $isPreparingTransaction,
 
   $isAssetPredefined,
+  $isXcmEnabled,
   $isTokenSelectorOpen,
 
   formInitiated,
