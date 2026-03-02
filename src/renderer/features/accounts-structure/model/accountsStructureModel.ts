@@ -137,7 +137,7 @@ function findNodesRelatedToAccount(
   for (const node of graph.values()) {
     accountService.traverseGraph(node, {
       enter(child) {
-        if (child.account === account) {
+        if (child.account.accountId === account.accountId) {
           result.set(node.account, node);
           return false;
         }
