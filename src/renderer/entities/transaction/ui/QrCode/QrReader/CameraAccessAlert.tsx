@@ -32,9 +32,7 @@ export const CameraAccessAlert = ({ status, onRetry }: Props) => {
               }
 
               if (platform === 'desktop-linux') {
-                return (
-                  <p className="text-xs">{t('onboarding.paritySigner.accessDeniedDescriptionDesktopLinux')}</p>
-                );
+                return <p className="text-xs">{t('onboarding.paritySigner.accessDeniedDescriptionDesktopLinux')}</p>;
               }
 
               return (
