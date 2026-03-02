@@ -2,7 +2,8 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { debounce } from 'patronum';
 
 import { persist } from '@/shared/api/storage';
-import { isElectron } from '@/shared/lib/utils';
+
+import { authFetch } from '../lib/backend-fetch';
 
 type UrlReachability = null | 'checking' | 'reachable' | 'unreachable';
 
@@ -70,23 +71,8 @@ $backendUrl.on(urlCleared, () => null);
 $draftUrl.on(urlCleared, () => '');
 
 const checkUrlReachabilityFx = createEffect(async (url: string) => {
-  if (isElectron()) {
-    const result = await window.App.proxyFetch(`${url}/health`, { method: 'GET' });
-    if (!result.ok) throw new Error(`Status ${result.status}`);
-  } else {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-
-    try {
-      const response = await fetch(`${url}/health`, {
-        method: 'GET',
-        signal: controller.signal,
-      });
-      if (!response.ok) throw new Error(`Status ${response.status}`);
-    } finally {
-      clearTimeout(timeout);
-    }
-  }
+  const result = await authFetch(`${url}/health`, { method: 'GET' });
+  if (!result.ok) throw new Error(`Status ${result.status}`);
 });
 
 const $urlReachable = createStore<UrlReachability>(null);
