@@ -1,6 +1,6 @@
 import { attach, combine, createStore } from 'effector';
 
-import { type Chain, type Contact, type Wallet } from '@/shared/core';
+import { type Chain, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createQueryResource } from '@/shared/query';
 import { contactModel } from '@/entities/contact';
@@ -28,16 +28,7 @@ export type AccountsNameParams = {
 
 type NameCache = Record<string, string>;
 
-const $contactsFallback = createStore<Contact[]>([]);
-
-// Defensive: contactModel may be in TDZ during circular module initialization (e.g. Storybook)
-const getContactsStore = () => {
-  try {
-    return contactModel.$contacts;
-  } catch {
-    return $contactsFallback;
-  }
-};
+const getContactsStore = () => contactModel?.$contacts ?? createStore([]);
 
 const getNameResolverSource = () => {
   return combine({

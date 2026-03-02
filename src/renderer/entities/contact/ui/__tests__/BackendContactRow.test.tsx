@@ -6,7 +6,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BackendContactRow } from '../BackendContactRow';
 
 vi.mock('@/shared/i18n', () => ({
-  useI18n: jest.fn().mockReturnValue({
+  useI18n: vi.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));

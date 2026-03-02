@@ -4,7 +4,7 @@ import { vi } from 'vitest';
 import { EmptyBackendView } from '../EmptyBackendView';
 
 vi.mock('@/shared/i18n', () => ({
-  useI18n: jest.fn().mockReturnValue({
+  useI18n: vi.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
