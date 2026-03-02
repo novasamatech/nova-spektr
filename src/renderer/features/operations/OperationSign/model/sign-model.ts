@@ -79,9 +79,27 @@ const convertOldFormatToNewFx = createEffect(({ input, apis }: ConvertParams) =>
 const splitExtrinsicsFx = createEffect(async (input: TransactionSigningPayload[]) => {
   let splitted: ExtrinsicSigningPayload[] = [];
 
+  console.group('[SpektrVaultDebug] Stage 1: Creating & splitting extrinsics');
+  console.log('Input transactions:', input.map(({ transaction, signatory, chain }) => ({
+    transaction,
+    signatory: signatory.accountId,
+    chain: chain.name,
+    chainId: chain.chainId,
+  })));
+
   for (const { api, chain, signatory, transaction } of input) {
     const extrinsic = transactionService.createExtrinsic(transaction, api);
+
+    console.group(`[SpektrVaultDebug] Extrinsic: ${extrinsic.method.section}.${extrinsic.method.method}`);
+    console.log('callData (hex):', extrinsic.method.toHex());
+    console.log('human args:', extrinsic.method.toHuman());
+    console.log('signatory:', signatory.accountId);
+    console.groupEnd();
+
     const extrinsics = await transactionService.splitExtrinsic(extrinsic, api);
+    if (extrinsics.length > 1) {
+      console.log(`[SpektrVaultDebug] Batch split into ${extrinsics.length} chunks`);
+    }
 
     splitted = splitted.concat(
       extrinsics.map((extrinsic) => ({
@@ -92,6 +110,9 @@ const splitExtrinsicsFx = createEffect(async (input: TransactionSigningPayload[]
       })),
     );
   }
+
+  console.log('[SpektrVaultDebug] Total extrinsics to sign:', splitted.length);
+  console.groupEnd();
 
   return splitted;
 });

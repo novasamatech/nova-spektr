@@ -36,10 +36,21 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
 
     const accountIds = signingPayloads.map((p) => p.signatory.accountId);
 
+    console.group('[SpektrVaultDebug] Stage 3: Signature received from Vault');
+    console.log('signatures count:', signatures.length);
+    signatures.forEach((sig, i) => console.log(`signature[${i}]:`, sig));
+    console.log('accountIds:', accountIds);
+    console.log('txPayloads count:', txPayloads.length);
+    txPayloads.forEach((p, i) => {
+      const buf = Buffer.from(p);
+      console.log(`txPayload[${i}] hex (${p.length} bytes):`, buf.toString('hex'));
+    });
+
     let isVerified = false;
 
     if (signatures.length > 1) {
       isVerified = true;
+      console.log('Multi-signature — skipping verification');
     } else {
       isVerified = signatures.every((signature, index) => {
         const payload = txPayloads.at(index);
@@ -53,15 +64,23 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
         const isVerified = transactionService.verifySignature(verifiablePayload, signature, accountId);
         const isComplexVerified = transactionService.verifySignature(verifiableComplexPayload, signature, accountId);
 
+        console.log(`Verification [${index}]: standard=${isVerified} complex=${isComplexVerified}`);
         return isVerified || isComplexVerified;
       });
     }
 
+    console.log('Overall verification result:', isVerified);
+
     const balanceValidationError = validateBalance && (await validateBalance());
+    if (balanceValidationError) {
+      console.warn('[SpektrVaultDebug] Balance validation error:', balanceValidationError);
+    }
+    console.groupEnd();
 
     if (!isVerified || balanceValidationError) {
       setValidationError(balanceValidationError || ValidationErrors.INVALID_SIGNATURE);
     } else {
+      console.log('[SpektrVaultDebug] Stage 3 → Signature verified, proceeding to submit');
       onResult(signatures, txPayloads);
     }
   };

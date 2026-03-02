@@ -73,11 +73,33 @@ export const ScanSingleframeQr = ({
           : null;
 
       if (tab === 'new' && isMetadataProofsSupported) {
-        const { payload, metadataProof } = await transactionService.createPayloadWithProof(
+        console.group('[SpektrVaultDebug] Stage 2a: createPayloadWithProof (new Vault + merkle metadata)');
+        console.log('extrinsic method:', `${extrinsic.method.section}.${extrinsic.method.method}`);
+        console.log('extrinsic callData:', extrinsic.method.toHex());
+        console.log('extrinsic args:', extrinsic.method.toHuman());
+        console.log('accountId:', account.accountId);
+        console.log('signingType:', account.signingType);
+        console.log('derivationPath:', derivationPath);
+
+        const { payload, metadataProof, unsigned, hexPayload } = await transactionService.createPayloadWithProof(
           extrinsic,
           account.accountId,
           api,
         );
+
+        console.log('--- signer payload (unsigned) ---');
+        console.log('address:', unsigned.address);
+        console.log('nonce:', unsigned.nonce);
+        console.log('genesisHash:', unsigned.genesisHash);
+        console.log('blockHash:', unsigned.blockHash);
+        console.log('era:', unsigned.era);
+        console.log('specVersion:', unsigned.specVersion);
+        console.log('transactionVersion:', unsigned.transactionVersion);
+        console.log('method (callData):', unsigned.method);
+        console.log('--- full payload hex ---');
+        console.log(hexPayload);
+        console.log('--- metadataProof (bytes):', metadataProof.length, '---');
+        console.groupEnd();
 
         if (setupId !== undefined && setupId !== setupIdRef.current) return;
 
@@ -104,14 +126,37 @@ export const ScanSingleframeQr = ({
 
         const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
 
+        console.log('[SpektrVaultDebug] Stage 2a → QR payload ready, bytes:', qrPayload.length);
+
         setTxPayload(payload);
         setQrPayload(qrPayload);
       } else {
+        console.group('[SpektrVaultDebug] Stage 2b: createPayloadWithMetadata (legacy Vault)');
+        console.log('extrinsic method:', `${extrinsic.method.section}.${extrinsic.method.method}`);
+        console.log('extrinsic callData:', extrinsic.method.toHex());
+        console.log('extrinsic args:', extrinsic.method.toHuman());
+        console.log('accountId:', account.accountId);
+        console.log('signingType:', account.signingType);
+        console.log('derivationPath:', derivationPath);
+
         const metadata = await createTxMetadata(account.accountId, api);
 
         if (setupId !== undefined && setupId !== setupIdRef.current) return;
 
-        const { payload } = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
+        const { payload, unsigned, hexPayload } = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
+
+        console.log('--- signer payload (unsigned) ---');
+        console.log('address:', unsigned.address);
+        console.log('nonce:', unsigned.nonce);
+        console.log('genesisHash:', unsigned.genesisHash);
+        console.log('blockHash:', unsigned.blockHash);
+        console.log('era:', unsigned.era);
+        console.log('specVersion:', unsigned.specVersion);
+        console.log('transactionVersion:', unsigned.transactionVersion);
+        console.log('method (callData):', unsigned.method);
+        console.log('--- full payload hex ---');
+        console.log(hexPayload);
+        console.groupEnd();
 
         let signPayload: Uint8Array;
         if (account.signingType === SigningType.POLKADOT_VAULT && !isEthereumAccount) {
@@ -128,6 +173,8 @@ export const ScanSingleframeQr = ({
         }
 
         const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
+
+        console.log('[SpektrVaultDebug] Stage 2b → QR payload ready, bytes:', qrPayload.length);
 
         setTxPayload(payload);
         setQrPayload(qrPayload);
