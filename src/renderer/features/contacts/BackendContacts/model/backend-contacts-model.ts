@@ -1,5 +1,6 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
+import { persist } from '@/shared/api/storage';
 import { type Contact } from '@/shared/core';
 import { contactModel } from '@/entities/contact';
 import { authModel, backendConfigurationModel } from '../../BackendConfiguration';
@@ -12,6 +13,7 @@ const syncTriggered = createEvent();
 const $isLoading = createStore(false);
 const $error = createStore<string | null>(null);
 const $lastSyncTime = createStore<number | null>(null);
+persist({ store: $lastSyncTime, key: 'address-book-last-sync-time' });
 const $syncStatus = createStore<SyncStatus>('idle');
 
 const fetchBackendContactsFx = createEffect(async (baseUrl: string): Promise<Contact[]> => {
@@ -57,6 +59,8 @@ sample({
   target: contactModel.effects.clearBackendContactsFx,
 });
 $error.on(backendConfigurationModel.events.urlCleared, () => null);
+$lastSyncTime.on(backendConfigurationModel.events.urlCleared, () => null);
+$syncStatus.on(backendConfigurationModel.events.urlCleared, () => 'idle');
 
 export const backendContactsModel = {
   $isLoading,

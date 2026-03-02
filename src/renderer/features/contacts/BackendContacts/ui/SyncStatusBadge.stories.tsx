@@ -53,3 +53,14 @@ export const SyncedMinutesAgo: Story = {
     ]),
   ],
 };
+
+export const Error: Story = {
+  decorators: [
+    withEffector([
+      [backendContactsModel.$syncStatus, 'error'],
+      [backendContactsModel.$lastSyncTime, null],
+      [backendContactsModel.$isLoading, false],
+      [backendContactsModel.$error, 'Connection timeout'],
+    ]),
+  ],
+};

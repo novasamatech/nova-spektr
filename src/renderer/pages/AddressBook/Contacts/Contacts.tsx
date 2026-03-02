@@ -49,7 +49,7 @@ function computeViewState(params: {
 }): ViewState {
   const { isBackendTab, isLoading, backendError, localContacts, filteredContacts } = params;
 
-  if (isBackendTab && isLoading) return { view: 'loading' };
+  if (isBackendTab && isLoading && filteredContacts.length === 0) return { view: 'loading' };
   if (isBackendTab && backendError && filteredContacts.length > 0) {
     return { view: 'cachedWithError', message: backendError, items: filteredContacts };
   }
@@ -148,6 +148,7 @@ export const Contacts = () => {
               <ContactFilter />
             </div>
             <div className="ml-auto flex items-center justify-end gap-x-4">
+              {isBackendTab && <SyncStatusBadge />}
               <CreateContactNavigation />
               <ImportContactsButton />
             </div>
@@ -157,10 +158,7 @@ export const Contacts = () => {
         <section className="mt-4 h-full w-full overflow-y-auto">
           <div className="mx-auto flex h-full w-[636px] flex-col gap-y-4 pb-4">
             {showTabs && (
-              <div className="flex items-center gap-x-2">
-                <SourceTabs localCount={localContacts.length} backendCount={backendContacts.length} />
-                {isBackendTab && <SyncStatusBadge />}
-              </div>
+              <SourceTabs localCount={localContacts.length} backendCount={backendContacts.length} />
             )}
 
             <div aria-live="polite" aria-busy={viewState.view === 'loading'}>

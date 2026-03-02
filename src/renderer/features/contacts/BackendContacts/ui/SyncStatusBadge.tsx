@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { FootnoteText, IconButton } from '@/shared/ui';
-import { Tooltip } from '@/shared/ui-kit';
+import { FootnoteText, Icon } from '@/shared/ui';
+import { Dropdown } from '@/shared/ui-kit';
+import { backendConfigurationModel } from '../../BackendConfiguration';
 import { backendContactsModel } from '../model/backend-contacts-model';
 
 function formatRelativeTime(timestamp: number, t: TFunction): string {
@@ -19,6 +20,14 @@ function formatRelativeTime(timestamp: number, t: TFunction): string {
   const hours = Math.floor(minutes / 60);
 
   return t('addressBook.syncStatus.hoursAgo', { count: hours });
+}
+
+function getStatusText(syncStatus: string, lastSyncTime: number | null, t: TFunction): string | null {
+  if (syncStatus === 'syncing') return t('addressBook.syncStatus.syncing');
+  if (syncStatus === 'error') return t('addressBook.syncStatus.failed');
+  if (lastSyncTime) return formatRelativeTime(lastSyncTime, t);
+
+  return null;
 }
 
 export const SyncStatusBadge = () => {
@@ -43,30 +52,39 @@ export const SyncStatusBadge = () => {
     backendContactsModel.events.syncTriggered();
   };
 
-  const statusText =
-    syncStatus === 'syncing'
-      ? t('addressBook.syncStatus.syncing')
-      : lastSyncTime
-        ? formatRelativeTime(lastSyncTime, t)
-        : null;
+  const handleOpenSettings = () => {
+    backendConfigurationModel.events.editStarted();
+  };
+
+  const statusText = getStatusText(syncStatus, lastSyncTime, t);
+  const isError = syncStatus === 'error';
 
   return (
-    <div className="flex items-center gap-x-1">
-      {statusText && (
-        <Tooltip enableHover delay={200}>
-          <Tooltip.Trigger>
-            <FootnoteText className="text-text-tertiary">{statusText}</FootnoteText>
-          </Tooltip.Trigger>
-          <Tooltip.Content>{lastSyncTime ? new Date(lastSyncTime).toLocaleTimeString() : statusText}</Tooltip.Content>
-        </Tooltip>
-      )}
-      <IconButton
-        className={cnTw('shrink-0 text-icon-default', isLoading && 'animate-spin')}
-        disabled={isLoading}
-        name="refresh"
-        ariaLabel={t('addressBook.syncStatus.syncButton')}
-        onClick={handleSync}
-      />
-    </div>
+    <Dropdown align="end" sideOffset={1}>
+      <Dropdown.Trigger>
+        <button
+          type="button"
+          className={cnTw(
+            'flex min-w-[150px] items-center gap-x-1 rounded-md px-2 py-1 transition-colors',
+            'hover:bg-action-background-hover',
+            isError ? 'text-text-negative' : 'text-text-tertiary',
+          )}
+        >
+          {statusText && <FootnoteText>{statusText}</FootnoteText>}
+          <Icon className="shrink-0" name="down" size={16} />
+        </button>
+      </Dropdown.Trigger>
+
+      <Dropdown.Content>
+        <Dropdown.Item disabled={isLoading} onSelect={handleSync}>
+          <Icon name="refresh" size={16} />
+          {t('addressBook.syncStatus.syncNow')}
+        </Dropdown.Item>
+        <Dropdown.Item onSelect={handleOpenSettings}>
+          <Icon name="settingsLite" size={16} />
+          {t('addressBook.syncStatus.viewSettings')}
+        </Dropdown.Item>
+      </Dropdown.Content>
+    </Dropdown>
   );
 };

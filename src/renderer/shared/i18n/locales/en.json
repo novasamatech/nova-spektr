@@ -160,7 +160,10 @@
       "minutesAgo_other": "Synced {count}m ago",
       "hoursAgo_one": "Synced {count}h ago",
       "hoursAgo_other": "Synced {count}h ago",
-      "syncButton": "Sync contacts"
+      "syncButton": "Sync contacts",
+      "syncNow": "Sync Now",
+      "viewSettings": "Sync Settings",
+      "failed": "Sync failed"
     }
   },
   "assetBalance": {
