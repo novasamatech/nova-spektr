@@ -25,5 +25,5 @@ export const SendToContactModal = () => {
     return null;
   }
 
-  return <DefaultTransfer chain={defaultChain} destination={contact.address} />;
+  return <DefaultTransfer chain={defaultChain} destination={contact.address} xcm={false} />;
 };
