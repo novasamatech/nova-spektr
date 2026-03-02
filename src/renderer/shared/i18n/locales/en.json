@@ -1,4 +1,5 @@
 {
+  "{index}": "{index}",
   "accountList": {
     "addressColumn": "Account",
     "networksColumn_one": "Network {count}",
@@ -25,8 +26,58 @@
     }
   },
   "addressBook": {
+    "a11y": {
+      "copyAddress": "Copy address for {name}",
+      "delete": "Delete {name}",
+      "edit": "Edit {name}",
+      "sendTo": "Send to {name}",
+      "syncContacts": "Sync contacts"
+    },
     "actions": {
       "delete": "Delete"
+    },
+    "auth": {
+      "connectedAccountLabel": "Connected account",
+      "connectionSuccess": "Connected successfully",
+      "disconnectButton": "Disconnect",
+      "disconnected": "Disconnected",
+      "errorTitle": "Authentication failed",
+      "noExtensionAccounts": "No extension wallet accounts available",
+      "selectAccountLabel": "Select account",
+      "selectAccountPlaceholder": "Choose an account",
+      "sessionExpired": "Session expired",
+      "signingMessage": "Waiting for signature...",
+      "signInSuccess": "Successfully signed in",
+      "signOutButton": "Sign out"
+    },
+    "backendConfiguration": {
+      "addTitle": "Add Backend",
+      "backendRemoved": "Backend removed",
+      "buttonLabel": "External source",
+      "checking": "Checking connection...",
+      "connectButton": "Connect",
+      "connectingMessage": "Connecting...",
+      "connectionLabel": "Backend connection",
+      "discardButton": "Discard",
+      "editTitle": "Edit Backend",
+      "keepEditingButton": "Keep editing",
+      "reachable": "Server is reachable",
+      "tooltip": "Configure address book backend",
+      "tryAgainButton": "Try again",
+      "unreachable": "Server is not reachable",
+      "unsavedChangesMessage": "You have modified the backend URL without connecting. Discard changes?",
+      "unsavedChangesTitle": "Unsaved changes",
+      "urlInvalidError": "Please enter a valid URL",
+      "urlLabel": "Backend URL",
+      "urlPlaceholder": "https://example.com/api"
+    },
+    "backendContact": {
+      "category": "Category",
+      "chain": "Chain",
+      "contactType": "Type",
+      "entity": "Entity",
+      "managedTooltip": "This contact is managed by the backend server",
+      "synced": "Synced"
     },
     "contactDeleted": "Contact deleted",
     "contactList": {
@@ -86,82 +137,35 @@
       "tooltip": "Import address book from JSON file:",
       "wikiLink": "Wiki guidelines"
     },
-    "auth": {
-      "connectedAccountLabel": "Connected account",
-      "connectionSuccess": "Connected successfully",
-      "disconnectButton": "Disconnect",
-      "errorTitle": "Authentication failed",
-      "noExtensionAccounts": "No extension wallet accounts available",
-      "selectAccountLabel": "Select account",
-      "selectAccountPlaceholder": "Choose an account",
-      "signOutButton": "Sign out",
-      "signingMessage": "Waiting for signature...",
-      "signInSuccess": "Successfully signed in",
-      "sessionExpired": "Session expired",
-      "disconnected": "Disconnected"
-    },
-    "backendConfiguration": {
-      "addTitle": "Add Backend",
-      "buttonLabel": "External source",
-      "editTitle": "Edit Backend",
-      "urlLabel": "Backend URL",
-      "urlPlaceholder": "https://example.com/api",
-      "urlInvalidError": "Please enter a valid URL",
-      "connectButton": "Connect",
-      "tryAgainButton": "Try again",
-      "connectingMessage": "Connecting...",
-      "connectionLabel": "Backend connection",
-      "tooltip": "Configure address book backend",
-      "backendRemoved": "Backend removed",
-      "unsavedChangesTitle": "Unsaved changes",
-      "unsavedChangesMessage": "You have modified the backend URL without connecting. Discard changes?",
-      "discardButton": "Discard",
-      "keepEditingButton": "Keep editing",
-      "checking": "Checking connection...",
-      "reachable": "Server is reachable",
-      "unreachable": "Server is not reachable"
-    },
     "searchPlaceholder": "Search",
     "sources": {
-      "myContacts": "My Contacts",
-      "syncButton": "Sync",
-      "loading": "Loading contacts...",
-      "loadError": "Failed to load contacts from server",
       "emptyBackend": "No contacts found on the server",
       "emptyBackendDescription": "The connected server has no contacts. Contact your administrator or check the backend configuration.",
-      "retry": "Retry",
-      "errorNetwork": "Could not connect to the server. Check the URL and try again.",
       "errorAuth": "Session expired. Please reconnect.",
-      "errorTimeout": "The server took too long to respond. Try again later.",
       "errorGeneric": "Something went wrong.",
+      "errorNetwork": "Could not connect to the server. Check the URL and try again.",
+      "errorTimeout": "The server took too long to respond. Try again later.",
+      "loadError": "Failed to load contacts from server",
+      "loading": "Loading contacts...",
+      "myContacts": "My Contacts",
+      "retry": "Retry",
+      "syncButton": "Sync",
       "syncErrorCached": "Sync failed — showing cached contacts"
     },
-    "backendContact": {
-      "category": "Category",
-      "contactType": "Type",
-      "chain": "Chain",
-      "entity": "Entity",
-      "synced": "Synced",
-      "managedTooltip": "This contact is managed by the backend server"
-    },
-    "title": "Address Book",
-    "undo": "Undo",
-    "a11y": {
-      "sendTo": "Send to {name}",
-      "copyAddress": "Copy address for {name}",
-      "edit": "Edit {name}",
-      "delete": "Delete {name}",
-      "syncContacts": "Sync contacts"
-    },
     "syncStatus": {
-      "syncing": "Syncing...",
+      "failed": "Sync failed",
+      "hoursAgo_one": "Synced {count}h ago",
+      "hoursAgo_other": "Synced {count}h ago",
       "justNow": "Synced just now",
       "minutesAgo_one": "Synced {count}m ago",
       "minutesAgo_other": "Synced {count}m ago",
-      "hoursAgo_one": "Synced {count}h ago",
-      "hoursAgo_other": "Synced {count}h ago",
-      "syncButton": "Sync contacts"
-    }
+      "syncButton": "Sync contacts",
+      "syncing": "Syncing...",
+      "syncNow": "Sync Now",
+      "viewSettings": "Sync Settings"
+    },
+    "title": "Address Book",
+    "undo": "Undo"
   },
   "assetBalance": {
     "locked": "Locked",
@@ -331,8 +335,8 @@
     "contactsTab": "Contacts",
     "continueButton": "Continue",
     "create": "Create",
-    "createMultisigWallet": "Create multisig wallet",
     "createionStatusTitle": "Mulitisig creation",
+    "createMultisigWallet": "Create multisig wallet",
     "disabledError": {
       "addressIsNotSupported": "This address is unsupported on the selected chain",
       "differentAccounts": "Wallets with different accounts for chains are not supported",
@@ -405,8 +409,6 @@
     "newMultisigTitle": "New multisig",
     "noOwnSignatory": "You need at least 1 owned account as part of the signatories",
     "noOwnSignatoryTitle": "No owned account",
-    "noWallets": "Looks like you don't have any non-watch only wallets",
-    "noWalletsLabel": "The wallet list is empty",
     "notEmptySignatory": "No empty signatory allowed",
     "notEmptySignatoryName": "No empty signatory name allowed",
     "notEmptySignatoryNameTitle": "Empty signatory name",
@@ -415,9 +417,12 @@
     "notEnoughSignatories": "You need to select at least 2 signatories",
     "notEnoughSignatoriesTitle": "Not enough signatories",
     "notEnoughTokensTitle": "Not enough tokens",
+    "noWallets": "Looks like you don't have any non-watch only wallets",
+    "noWalletsLabel": "The wallet list is empty",
     "openMultisigButton": "Open multisig wallet",
     "restoreButton": "Restore",
     "searchContactPlaceholder": "Search",
+    "selectedSignatoriesTitle": "Selected signatories",
     "selectMultisigDescription": {
       "flexibleFeatureOne": "<header>Update signatories</header> as needed while maintaining a fixed address.",
       "flexibleFeatureThree": "<header>Works only</header> on the network where it was created.",
@@ -431,7 +436,6 @@
       "regularWikiLink": "Multisigs on Wiki"
     },
     "selectSigner": "Select signing wallet",
-    "selectedSignatoriesTitle": "Selected signatories",
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
     "signatoryAddress": "Signatory account",
@@ -985,8 +989,8 @@
         },
         "submitPromotionReport": "Submit promotion report",
         "submitRetentionReport": "Submit retention report",
-        "uploadSuccess": "Upload successful",
         "uploadingToIPFS": "Uploading to IPFS...",
+        "uploadSuccess": "Upload successful",
         "validating": "Validating..."
       },
       "evidenceForm": {
@@ -1190,13 +1194,13 @@
       "threshold": "Threshold",
       "title": "Vote on",
       "tooltip": "This will create a referendum with a { vote } vote pre-cast",
+      "voted": "Voted:",
       "voteImpact": {
         "huge": "Huge",
         "impact": "Impact:",
         "minor": "Minor",
         "moderate": "Moderate"
       },
-      "voted": "Voted:",
       "votingStatus": "Voting status"
     },
     "votingHistory": {
@@ -1342,10 +1346,10 @@
       "customDelegationPlaceholder": "Enter address",
       "customDelegationTitle": "Add custom delegation on",
       "delegateActivity": "Delegate activity",
-      "delegateIdentity": "Delegate identity",
-      "delegateTitle": "Delegate",
       "delegatedTracksDescription": "{ tracks } tracks are unavailable for delegation because they are already delegated to another delegate. Please revoke the current delegation in order to delegate on those tracks.",
       "delegatedTracksTitle": "Some tracks are unavailable for delegation",
+      "delegateIdentity": "Delegate identity",
+      "delegateTitle": "Delegate",
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
       "formTitle": "Step 2. Select the number of votes and the multiplier",
@@ -1377,8 +1381,8 @@
         "accountLabel": "Account",
         "acrossTracks_one": "Across { count } track",
         "acrossTracks_other": "Across { count } tracks",
-        "delegateVoted": "Delegate voted:",
         "delegatedLabel": "Delegated",
+        "delegateVoted": "Delegate voted:",
         "delegationSummary": "Delegation summary",
         "listEmptyState": "Nothing was found"
       },
@@ -1536,15 +1540,15 @@
       "votingSummary": "Summary"
     },
     "referendums": {
-      "approveIn": "Approve in",
       "approved": "Approved",
+      "approveIn": "Approve in",
       "canceled": "Canceled",
       "cancelled": "Cancelled",
       "completed": "Completed",
       "crowdloans": "Crowdloans",
       "deciding": "Deciding",
-      "executeIn": "Execute in",
       "executed": "Executed",
+      "executeIn": "Execute in",
       "fellowshipAdmin": "Fellowship: Admin",
       "fellowshipWhitelist": "Fellowship: Whitelist",
       "governanceCanceller": "Governance: Canceller",
@@ -1560,8 +1564,8 @@
       "passing": "Passing",
       "pending": "Pending",
       "referendumTitle": "Referendum #{ index }",
-      "rejectIn": "Reject in",
       "rejected": "Rejected",
+      "rejectIn": "Reject in",
       "spendReferendumTitle": "Should we pay?",
       "staking": "Staking",
       "timedOut": "Timed out",
@@ -1590,8 +1594,8 @@
         "Awarded": "Awarded",
         "Cancelled": "Cancelled",
         "ConfirmAborted": "Confirm aborted",
-        "ConfirmStarted": "Confirm started",
         "Confirmed": "Confirmed",
+        "ConfirmStarted": "Confirm started",
         "Created": "Created",
         "Deciding": "Deciding",
         "DecisionDepositPlaced": "Decision deposit placed",
@@ -1628,18 +1632,6 @@
       "reuseLock": "Reuse lock",
       "timeoutReferendumError": "This referendum has already passed"
     },
-    "voteHistory": {
-      "delegatedBy": "Delegated by",
-      "listColumnAccount": "Account",
-      "listColumnVotingPower": "Voting power",
-      "listEmptyDescription": "Nobody has voted yet",
-      "listEmptyTitle": "{list} vote history is empty",
-      "notAvailable": "Vote history is unavailable",
-      "notAvailableDescription": "Please refresh to update the information.",
-      "title": "Vote history",
-      "totalVotesCount": "{value} votes",
-      "viewVoteHistory": "View vote history"
-    },
     "voted": "Voted",
     "votedAbstain": "ABSTAIN <amount/>",
     "votedAye": "AYE <amount/>",
@@ -1654,6 +1646,18 @@
     "votedNayBy": "NAY <amount/> via <delegate/>",
     "votedNayByDelegates": "NAY <amount/> via delegates",
     "votedWithAmount": "Voted:",
+    "voteHistory": {
+      "delegatedBy": "Delegated by",
+      "listColumnAccount": "Account",
+      "listColumnVotingPower": "Voting power",
+      "listEmptyDescription": "Nobody has voted yet",
+      "listEmptyTitle": "{list} vote history is empty",
+      "notAvailable": "Vote history is unavailable",
+      "notAvailableDescription": "Please refresh to update the information.",
+      "title": "Vote history",
+      "totalVotesCount": "{value} votes",
+      "viewVoteHistory": "View vote history"
+    },
     "voting": {
       "aboutLabel": "About voting",
       "aboutVoting": "<header>Voting</header><p>In the Polkadot OpenGov voting system, there are three types of votes:</p><ul><li>Aye vote - a vote \"for\" a proposal. Votes are counted with a conviction multiplier that increases the\nnumber of votes based on the voter's conviction.</li><li>Nay vote - a vote \"against.\" Similar to the aye vote, it considers the level of conviction, multiplying the number of votes.</li><li>Abstain vote - abstaining from voting. Abstain votes do not affect the conviction level and are not counted in the vote tally with conviction.</li></ul>",
@@ -1689,6 +1693,10 @@
     "signedMessage": "signed this operation",
     "title": "Log",
     "unknownMessage": " made an unknown action"
+  },
+  "multisigOperations": {
+    "noSignatory": "Add signatory wallet before making multisig operation",
+    "title": "Multisig Operations"
   },
   "multiTransfer": {
     "confirmation": {
@@ -1773,10 +1781,6 @@
       "title": "Parsed file"
     }
   },
-  "multisigOperations": {
-    "noSignatory": "Add signatory wallet before making multisig operation",
-    "title": "Multisig Operations"
-  },
   "navigation": {
     "addressBookLabel": "Address Book",
     "balancesLabel": "Portfolio",
@@ -1787,8 +1791,8 @@
     "governance": "Governance",
     "historyLabel": "History",
     "mstOperationLabel": "Multisig Operations",
-    "multiTransferLabel": "Multi-transfer",
     "multipleWalletsLabel": "Multiple wallets",
+    "multiTransferLabel": "Multi-transfer",
     "notificationsLabel": "Notifications",
     "settingsLabel": "Settings",
     "stakingLabel": "Staking",
@@ -1804,17 +1808,17 @@
         "signed": "signed"
       },
       "flexibleMultisigCreatedTitle": "New flexible multisig wallet added",
-      "flexibleMultisigDescription": "<strong>{name}</strong> on <chain /> with threshold { threshold } out of { signatoriesLength } signatories.",
+      "flexibleMultisigDescription": "<strong>{name}</strong>\u00a0on <chain /> with threshold { threshold } out of { signatoriesLength } signatories.",
       "flexibleMultisigEditedTitle": "Flexible multisig has been edited",
-      "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength }",
+      "multisigCreatedDescription": "<strong>{name}</strong> \u00a0with threshold { threshold } out of { signatoriesLength }",
       "multisigCreatedTitle": "New multisig wallet added",
       "multisigEventDetails": "by <wallet><walletIcon /><name>{name}</name></wallet>  on  <chain />",
       "multisigOperationDetails": "in <wallet><walletIcon /><name>{name}</name></wallet>  on  <chain />",
-      "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
+      "proxyCreatedDetails": "<chain />\u00a0 is now available for your <wallet><walletIcon /> {name}</wallet>\u00a0 to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
-      "proxyRemovedDetails": "<chain />  is no longer available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
+      "proxyRemovedDetails": "<chain />\u00a0 is no longer available for your <wallet><walletIcon /> {name}</wallet>\u00a0 to control {operations}",
       "proxyRemovedTitle": "Delegated authority wallet has been removed",
-      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>",
+      "proxyWalletAction": "<strong>{name}</strong>\u00a0 with <address><identicon /> {address}</address>",
       "status": {
         "created": "created",
         "executed": "executed",
@@ -1895,12 +1899,12 @@
       "invalidQrLabel": "The QR code may be broken or not supported.",
       "multishardQRCodeDescription": "Please choose one key set and continue.",
       "multishardQRCodeLabel": "You cannot import many key sets.",
-      "noVideoInputDescription": "Connect the camera or use a new device.",
-      "noVideoInputLabel": "We cannot find the camera.",
       "notSameQrErrorDescription": "Keep the QR code and your device still while scanning. Do not move the code or thе camera.",
       "notSameQrErrorLabel": "The app found different data in the QR code while scanning.",
       "notWorkingDescription": "Please make sure you camera is turned on",
       "notWorkingLabel": "Camera is not working!",
+      "noVideoInputDescription": "Connect the camera or use a new device.",
+      "noVideoInputLabel": "We cannot find the camera.",
       "scanAgainButton": "Scan again",
       "selectCameraLabel": "Select camera",
       "startCameraLabel": "Starting camera",
@@ -1918,8 +1922,8 @@
     "readAccountsParitySignerLabel": "Following accounts have been successfully read from Polkadot Vault",
     "readyToUseLabel": "Your wallet is ready to use!",
     "vault": {
-      "accountTitle": "Account",
       "accountsTitle": "Manage accounts",
+      "accountTitle": "Account",
       "addMoreKeysButton": "Add more keys",
       "addressColumn": "Address",
       "altHint": "Hold <button /> to see the details",
@@ -1944,9 +1948,9 @@
     "walletConnect": {
       "accountsTitle": "Manage accounts",
       "addressColumn": "Address",
+      "connectionFailed": "Connection failed",
       "manageTitle": "Set up your wallet",
       "nameColumn": "Account name",
-      "connectionFailed": "Connection failed",
       "pairedDescription": "Paired",
       "rejected": "Pairing rejected",
       "scanTitle": "Scan with your mobile wallet",
@@ -1958,11 +1962,11 @@
       "accountAddressError": "The entered address is not a valid one, please type or paste it again",
       "accountAddressPlaceholder": "Enter or paste your account address",
       "accountsTitle": "Manage accounts",
+      "addressAndNameRequiredError": "Type address and name",
+      "addressRequiredError": "Type or paste address",
       "addWatchOnlyDescription1": "Track the activity of any wallet without injecting",
       "addWatchOnlyDescription2": "your private key to Nova Spektr",
       "addWatchOnlyLabel": "Add Watch-Only Wallet",
-      "addressAndNameRequiredError": "Type address and name",
-      "addressRequiredError": "Type or paste address",
       "emptyState": "All your accounts in different networks will be shown here",
       "manageTitle": "Set up your wallet",
       "nameRequiredError": "Type a wallet name",
@@ -1974,7 +1978,7 @@
     "welcome": {
       "ledgerDescription": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets",
       "ledgerTitle": "Ledger",
-      "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet, leading mobile application for Polkadot eco",
+      "novaWalletDescription": "Seamless and secure transaction signing with Nova\u00a0Wallet, leading mobile application for Polkadot eco",
       "novaWalletTitle": "Nova Wallet",
       "polkadotExtensionDescription": "Multi-chain browser extension",
       "polkadotExtensionTitle": "Polkadot js extension",
@@ -1998,13 +2002,27 @@
     "accountNotFoundDescription": "Your account is not listed as a signatory in this multisig.\nPlease add account to sign operation.",
     "accountNotFoundTitle": "No account to sign operation",
     "addCallDataButton": "Add call data",
-    "addToBasket": "Add to basket",
     "addedToBasket": "Added to basket",
+    "addToBasket": "Add to basket",
     "advanced": "Advanced",
     "alreadySignedCloseButton": "Close",
     "alreadySignedTitle": "Operation already signed",
     "alreadySignedViewButton": "View",
     "approveButton": "Approve",
+    "callData": {
+      "addButton": "Add",
+      "addCallDataButton": "Add call data",
+      "addSuccess": "Call data added successfully",
+      "decoding": "Decoding call data...",
+      "errorDecodeFailed": "Failed to decode call data",
+      "errorHashMismatch": "Call data doesn't match operation hash",
+      "errorInvalidHex": "Call data must start with 0x",
+      "errorRequired": "Call data is required",
+      "inputHint": "Visible only for you and signers",
+      "inputPlaceholder": "0x00...",
+      "preview": "Call preview",
+      "title": "Add call data"
+    },
     "cancelTitle": "Reject",
     "closeButton": "Close",
     "connectionTimeoutButton": "Close",
@@ -2070,18 +2088,18 @@
     },
     "inProgress": "Submitting approval...",
     "logButton": "Log",
-    "openOverviewButton": "Open overview",
     "multisigExistsDescription": "Due to the blockchain limitations, multisig operations with identical details can't be in a signing status simultaneously. Wait for the current one to be signed or reject it to create a new one.",
     "multisigExistsTitle": "Same transaction already exist",
     "networkFee": "Network fee",
-    "networkFeeTotal": "Total network fee",
     "networkFee_one": "Network fee",
     "networkFee_other": "Network fees",
+    "networkFeeTotal": "Total network fee",
     "networkNotAvailableButton": "Close",
     "networkNotAvailableTitle": "Network not available",
     "noSignatoryErrorDescription": "The wallet<wallet />does not have an account on the {network} network. You cannot sign this opperation. Please add an account on {network} network.",
     "noSignatoryErrorTitle": "No account for {network}",
     "openOperationsButton": "Open operations",
+    "openOverviewButton": "Open overview",
     "operationNotFoundButton": "Close",
     "operationNotFoundDescription": "The operation you're trying to access could not be found.\nPlease check the parameters and try again.",
     "operationNotFoundTitle": "Operation not found",
@@ -2090,8 +2108,8 @@
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
     "rejectInProgress": "Submitting Rejection...",
-    "removeFromBasket": "Remove from basket",
     "removedFromBasket": "Removed from basket",
+    "removeFromBasket": "Remove from basket",
     "selectAccount": "Select account",
     "selectAccountLabel": "Account",
     "selectSignatory": "Select signatory",
@@ -2128,20 +2146,6 @@
       "success": "Operation restored",
       "undo": "Undo"
     },
-    "callData": {
-      "title": "Add call data",
-      "inputPlaceholder": "0x00...",
-      "inputHint": "Visible only for you and signers",
-      "preview": "Call preview",
-      "decoding": "Decoding call data...",
-      "addButton": "Add",
-      "addSuccess": "Call data added successfully",
-      "addCallDataButton": "Add call data",
-      "errorRequired": "Call data is required",
-      "errorInvalidHex": "Call data must start with 0x",
-      "errorHashMismatch": "Call data doesn't match operation hash",
-      "errorDecodeFailed": "Failed to decode call data"
-    },
     "viewJSON": {
       "button": "View JSON",
       "label": "Operation details"
@@ -2176,12 +2180,12 @@
   },
   "operations": {
     "callData": {
+      "adding": "Adding call data...",
       "continueButton": "Continue",
       "errorMessage": "Incorrect call data",
       "errorTitle": "Call Data Error",
       "inputHint": "Visible only for you and signers",
       "inputPlaceholder": "0x00...",
-      "adding": "Adding call data...",
       "success": "Call data added successfully",
       "title": "Enter call data"
     },
@@ -2192,6 +2196,7 @@
     },
     "filters": {
       "accountPlaceholder": "Accounts",
+      "clearAll": "operations.filters.clearAll",
       "clearFilters": "Clear filters",
       "dateRangePlaceholder": "Date range",
       "networkPlaceholder": "Networks",
@@ -2201,12 +2206,6 @@
       "proxyTypePlaceholder": "Proxy type",
       "statusPlaceholder": "Operation status",
       "statusSummary": "Operation statuses"
-    },
-    "sync": {
-      "connecting": "Connecting to networks...",
-      "syncing": "Syncing networks... {synced}/{total}",
-      "synced": "Synced",
-      "loading": "Syncing..."
     },
     "historyEmptyDescription": "Signed operations will appear here once completed.",
     "historyEmptyTitle": "Operation history list is empty",
@@ -2257,6 +2256,12 @@
     "pendingEmptyTitle": "Pending operations list is empty",
     "searchPlaceholder": "Search",
     "shareOperationTooltip": "Share transaction link with signatories",
+    "sync": {
+      "connecting": "Connecting to networks...",
+      "loading": "Syncing...",
+      "synced": "Synced",
+      "syncing": "Syncing networks... {synced}/{total}"
+    },
     "tabs": {
       "hidden": "Hidden",
       "history": "History",
@@ -2434,12 +2439,12 @@
   "settings": {
     "autoUpdate": "Spektr auto updates",
     "backendSync": {
-      "title": "Address Book Sync",
-      "notConfigured": "Not configured",
+      "addButton": "Add Backend",
+      "configureButton": "Configure",
       "connected": "Connected",
       "disconnected": "Not connected",
-      "configureButton": "Configure",
-      "addButton": "Add Backend"
+      "notConfigured": "Not configured",
+      "title": "Address Book Sync"
     },
     "currency": {
       "cryptocurrenciesLabel": "Cryptocurrencies",
@@ -2689,9 +2694,9 @@
     },
     "loadingMessage": "Connecting to { chainName }",
     "multisigDepositLabel": "Multisig Deposit",
-    "networkFeeTotal": "Total network fee",
     "networkFee_one": "Network fee",
     "networkFee_other": "Network fee per account",
+    "networkFeeTotal": "Total network fee",
     "nominators": {
       "electedTitle": "Elected",
       "nominated": "Nominated",
@@ -2772,15 +2777,15 @@
       "filterNotOversubscribed": "Not oversubscribed",
       "filterNotSlashed": "Not slashed",
       "maxValidatorsLabel": "(Max { max })",
-      "noValidatorsLabel": "No matching validators",
       "nominatedTableHeader": "Nominated",
+      "noValidatorsLabel": "No matching validators",
       "oversubPopoverSubtitle": "Validator is oversubscribed",
       "oversubPopoverTitle": "Oversubscribed",
       "ownStakeTableHeader": "Own stake",
       "rewardsTableHeader": "Rewards (APY)",
       "searchPlaceholder": "Search",
-      "selectValidatorButton": "Select at least one validator",
       "selectedValidatorsLabel": "Selected validators",
+      "selectValidatorButton": "Select at least one validator",
       "slashedPopoverSubtitle": "Validator has been slashed recently",
       "slashedPopoverTitle": "Slashed",
       "subtitle": "Validators",
@@ -2804,9 +2809,9 @@
   "time": {
     "days_one": "{ count } day",
     "days_other": "{ count } days",
-    "hoursMinutesSeconds": "{ hours }:{ minutes }:{ seconds }",
     "hours_one": "{ count } hour",
     "hours_other": "{ count } hours",
+    "hoursMinutesSeconds": "{ hours }:{ minutes }:{ seconds }",
     "minutesSeconds": "{ minutes }:{ seconds }",
     "weeks_one": "{ count } week",
     "weeks_other": "{ count } weeks"
@@ -2833,7 +2838,6 @@
     "unstake": "Unstake { amount } { asset }"
   },
   "transfer": {
-    "FIX": "Please enter amount",
     "accountDeathWarning": {
       "description": "After this transfer, your balance will <b>fall below the Existential Deposit ({ed} {asset}).</b> If any tokens remain, <b>they will be burned, and your account will be removed from on-chain storage.</b>. <br /> We recommend <b>using the MAX button for a safe Transfer</b>",
       "title": "Balance below network minimum"
@@ -2848,10 +2852,6 @@
     "destinationChainPlaceholder": "Select recipient network",
     "destinationCryptoError": "Unsupported address format for {network}",
     "destinationFormatError": "Address has incorrect format",
-    "pureProxyChainMismatch": {
-      "description": "This address belongs to a proxy account on <chains />.<br /> Sending tokens on different networks will make them inaccessible.",
-      "title": "Recipient is a proxy account on a different network"
-    },
     "dryRunError": {
       "description": "The transfer cannot be completed on {chain} chain.",
       "descriptionWithReason": "The transfer cannot be completed on {chain} chain. {reason}",
@@ -2868,9 +2868,10 @@
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "expired": "Transaction expired",
+    "FIX": "Please enter amount",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
-    "inProgress": "Submitting operation...",
     "incorrectRecipientError": "Please enter correct recipient address",
+    "inProgress": "Submitting operation...",
     "invalidAddress": "Invalid address",
     "invalidSignature": "Error occurred while decoding QR code. Scan again.",
     "max": {
@@ -2903,16 +2904,12 @@
     "notZeroAmountError": "Value cannot be zero",
     "onChainPlaceholder": "On-chain",
     "pasteButton": "Paste",
+    "pureProxyChainMismatch": {
+      "description": "This address belongs to a proxy account on <chains />.<br /> Sending tokens on different networks will make them inaccessible.",
+      "title": "Recipient is a proxy account on a different network"
+    },
     "recipientLabel": "Recipient",
     "recipientPlaceholder": "Address",
-    "tokenSelector": {
-      "title": "Select token to transfer",
-      "searchPlaceholder": "Search tokens",
-      "noSearchResults": "No tokens found",
-      "noSearchResultsDescription": "Try adjusting your search query",
-      "noTokens": "No tokens available",
-      "noTokensDescription": "You don't have any tokens with balance on this network"
-    },
     "requiredAmountError": "Please enter amount",
     "requiredDestinationError": "transfer.requiredDestinationError",
     "senderAccount": "Sender account",
@@ -2923,6 +2920,14 @@
     "swapToCryptoModeAlt": "swap input to crypto",
     "swapToCurrencyModeAlt": "swap input to currency",
     "title": "Transfer { asset } on",
+    "tokenSelector": {
+      "noSearchResults": "No tokens found",
+      "noSearchResultsDescription": "Try adjusting your search query",
+      "noTokens": "No tokens available",
+      "noTokensDescription": "You don't have any tokens with balance on this network",
+      "searchPlaceholder": "Search tokens",
+      "title": "Select token to transfer"
+    },
     "warningDescription": "They will be returned to the operation basket. You can resolve an issue and execute them later",
     "warningTitle": "{failed} out of {all} operations has not been executed",
     "xcmTitle": "Transfer { asset } from"
@@ -3032,8 +3037,8 @@
   },
   "walletDetails": {
     "common": {
-      "accountTabTitle": "Accounts",
       "accountsColumn": "Accounts",
+      "accountTabTitle": "Accounts",
       "addProxyAction": "Delegate",
       "addProxyButton": "Delegate",
       "addPureProxiedAction": "Create pure proxy",
@@ -3089,9 +3094,9 @@
     },
     "multisig": {
       "accountGroup": "Account",
-      "accountTab": "Account and signatories",
       "accountsGroup": "Your accounts",
       "accountsTab": "Accounts",
+      "accountTab": "Account and signatories",
       "addressInProgress": "In progress...",
       "chainTitle": "with threshold { threshold } out of { signatories } signatories",
       "changeSignatories": "Change signatories",
@@ -3120,6 +3125,8 @@
       "abortRejectButton": "Close",
       "confirmButton": "Yes, refresh",
       "connectedStatus": "Connected",
+      "connectionFailedDescription": "Could not connect to WalletConnect. Check your internet connection and try again.",
+      "connectionFailedTitle": "Connection failed",
       "disconnectedDescription": "Resume the connection to work with the {walletName}",
       "disconnectedStatus": "Not connected",
       "disconnectedTitle": "Wallet not connected",
@@ -3131,8 +3138,6 @@
       "refreshButton": "Refresh",
       "rejectDescription": "The operation was successfully canceled",
       "rejectTitle": "Rejected",
-      "connectionFailedTitle": "Connection failed",
-      "connectionFailedDescription": "Could not connect to WalletConnect. Check your internet connection and try again.",
       "signTitle": "Scan with {walletName} to reconnect your wallet"
     }
   },
@@ -3180,6 +3185,5 @@
     "ledgerImageAlt": "Icon of Ledger option",
     "omniEnterpriseLabel": "Nova Spektr",
     "welcomeToLabel": "Welcome to"
-  },
-  "{index}": "{index}"
+  }
 }
