@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 
 import { type BackendErrorCategory } from '../BackendErrorView';
-
 import { BackendErrorView } from '../BackendErrorView';
 
 vi.mock('@/shared/i18n', () => ({

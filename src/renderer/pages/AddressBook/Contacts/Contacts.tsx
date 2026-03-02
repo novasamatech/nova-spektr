@@ -81,10 +81,17 @@ function renderViewState(viewState: ViewState, onSendTo: (contact: Contact) => v
     case 'loading':
       return <BackendLoadingView />;
     case 'error':
-      return <BackendErrorView category={viewState.error.category} message={viewState.error.message} onRetry={onRetry} />;
+      return (
+        <BackendErrorView category={viewState.error.category} message={viewState.error.message} onRetry={onRetry} />
+      );
     case 'cachedWithError':
       return (
-        <CachedWithErrorView errorMessage={viewState.error.message} items={viewState.items} onSendTo={onSendTo} onRetry={onRetry} />
+        <CachedWithErrorView
+          errorMessage={viewState.error.message}
+          items={viewState.items}
+          onSendTo={onSendTo}
+          onRetry={onRetry}
+        />
       );
     case 'emptyBackend':
       return <EmptyBackendView />;

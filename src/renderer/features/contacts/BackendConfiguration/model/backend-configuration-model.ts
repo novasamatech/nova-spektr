@@ -2,7 +2,6 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { debounce } from 'patronum';
 
 import { persist } from '@/shared/api/storage';
-
 import { authFetch } from '../lib/backend-fetch';
 
 type UrlReachability = null | 'checking' | 'reachable' | 'unreachable';
