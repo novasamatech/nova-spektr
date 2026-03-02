@@ -262,6 +262,7 @@ async function createPayloadWithProof(
   // Set era explicitly for security reason - immortal transactions can be used in replay attacks.
   const era = createEra(api, signerPayloadBase.blockNumber, mortalLength);
 
+  await metadataV15Service.ensureFreshMetadata(api);
   const metadataHex = await metadataV15Service.getDecodedMetadataV15(api);
 
   const merkleizeParams = {

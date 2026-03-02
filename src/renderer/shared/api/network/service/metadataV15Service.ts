@@ -17,6 +17,7 @@ const pendingFetches = new Map<string, Promise<HexString>>();
  */
 export const metadataV15Service = {
   getDecodedMetadataV15,
+  ensureFreshMetadata,
   _clearCache: () => decodedV15Cache.clear(),
 };
 
@@ -87,6 +88,25 @@ async function getDecodedMetadataV15(api: ApiPromise): Promise<HexString> {
     return await fetchPromise;
   } finally {
     pendingFetches.delete(key);
+  }
+}
+
+/**
+ * Checks if the API's cached runtime version matches the on-chain version. If
+ * stale, clears in-memory metadata cache for that chain so the next
+ * getDecodedMetadataV15 call fetches fresh metadata from RPC.
+ */
+async function ensureFreshMetadata(api: ApiPromise): Promise<void> {
+  const chainId = api.genesisHash.toHex() as ChainId;
+  const cachedVersion = api.runtimeVersion.specVersion.toNumber();
+
+  const onChainVersion = await api.rpc.state.getRuntimeVersion();
+  const actualVersion = onChainVersion.specVersion.toNumber();
+
+  if (cachedVersion !== actualVersion) {
+    const staleKey = cacheKey(chainId, cachedVersion);
+    decodedV15Cache.delete(staleKey);
+    pendingFetches.delete(staleKey);
   }
 }
 
