@@ -2566,6 +2566,10 @@
     "title": "Settings"
   },
   "signing": {
+    "batchSplit": {
+      "description": "This batch was split into {chunkCount} separate transactions due to network limits. They are not atomic: some may succeed while others fail.",
+      "title": "Batch split"
+    },
     "continueButton": "Continue",
     "generateNewQrButton": "Generate new QR code",
     "metadataPortalLink": "Update metadata in Polkadot Vault",
