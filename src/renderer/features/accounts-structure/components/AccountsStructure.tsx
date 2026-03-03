@@ -61,31 +61,21 @@ const elk = new ELK({
   },
 });
 
-function createGraphElements(
-  graph: Map<AnyAccount, AccountNode>,
-  selectedAccountId: string,
-  t: TFunction<'translation'>,
-) {
+function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedNodeId: string, t: TFunction<'translation'>) {
   const nodes: Node<AccountNodeData>[] = [];
   const edges: Edge[] = [];
-  const processedAccountIds = new Set<string>();
-  const accountIdToNodeId = new Map<string, string>();
-
-  function resolveNodeId(account: AnyAccount): string {
-    return accountIdToNodeId.get(account.accountId) ?? account.id;
-  }
+  const processedNodeIds = new Set<string>();
 
   function processNode(node: AccountNode) {
-    if (processedAccountIds.has(node.account.accountId)) return;
-    processedAccountIds.add(node.account.accountId);
-    accountIdToNodeId.set(node.account.accountId, node.account.id);
+    if (processedNodeIds.has(node.account.id)) return;
+    processedNodeIds.add(node.account.id);
 
     nodes.push({
       id: node.account.id,
       type: 'accountNode',
       data: {
         node,
-        isSelected: node.account.accountId === selectedAccountId,
+        isSelected: node.account.id === selectedNodeId,
       },
       position: { x: 0, y: 0 },
       sourcePosition: Position.Left,
@@ -93,14 +83,12 @@ function createGraphElements(
     });
 
     for (const child of node.children) {
-      const childNodeId = resolveNodeId(child.account);
-      const nodeId = node.account.id;
       const connection = accountConnectionTransformer({ source: child.account, target: node.account, t });
 
       edges.push({
-        id: `e${childNodeId}-${nodeId}`,
-        source: childNodeId,
-        target: nodeId,
+        id: `e${child.account.id}-${node.account.id}`,
+        source: child.account.id,
+        target: node.account.id,
         data: {
           source: child.account,
           target: node.account,
@@ -136,7 +124,7 @@ const useGraphLayout = (
   return useCallback(async () => {
     if (!graph || !selectedAccount) return;
 
-    const { nodes, edges } = createGraphElements(graph, selectedAccount.accountId, t);
+    const { nodes, edges } = createGraphElements(graph, selectedAccount.id, t);
 
     const layoutGraph = await elk.layout({
       id: 'root',
@@ -211,7 +199,7 @@ const AccountsStructureInner = () => {
       // eslint-disable-next-line effector/no-watch
       accountsStructureModel.focusOnSelected.watch(() => {
         if (!selectedAccount) return;
-        const matchingNode = nodes.find((n) => n.data.node.account.accountId === selectedAccount.accountId);
+        const matchingNode = nodes.find((n) => n.data.node.account.id === selectedAccount.id);
         if (matchingNode) {
           fitView({ nodes: [{ id: matchingNode.id }], maxZoom: 0.5, duration: 500 });
         }
