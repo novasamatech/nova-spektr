@@ -4,7 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 import { TEST_IDS } from '@/shared/constants';
 import { type ChainId, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { type TxMetadata, assert, createTxMetadata, getBlockTimeMs, upgradeNonce } from '@/shared/lib/utils';
+import {
+  type TxMetadata,
+  assert,
+  createTxMetadata,
+  getBlockTimeMs,
+  getMortalitySeconds,
+  upgradeNonce,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Tabs } from '@/shared/ui-kit';
@@ -175,7 +182,7 @@ export const ScanMultiframeQr = ({
     let minMortalitySeconds = Infinity;
     let minEraInfo = { blockNumber: 0, mortalLength: 0 };
     for (const { info } of txRequests) {
-      const seconds = Math.floor((info.mortalLength * info.blockTimeMs) / 1000);
+      const seconds = getMortalitySeconds(info.mortalLength, info.blockTimeMs);
       if (seconds < minMortalitySeconds) {
         minMortalitySeconds = seconds;
         minEraInfo = { blockNumber: info.blockNumber, mortalLength: info.mortalLength };

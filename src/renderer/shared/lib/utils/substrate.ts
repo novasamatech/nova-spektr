@@ -32,6 +32,10 @@ export const getBlockTimeMs = (chain: Chain, api: ApiPromise): number => {
   return chain.additional?.defaultBlockTime ?? getExpectedBlockTime(api).toNumber();
 };
 
+export const getMortalitySeconds = (mortalLength: number, blockTimeMs: number): number => {
+  return Math.floor((mortalLength * blockTimeMs) / 1000);
+};
+
 /**
  * Check if a mortal era has expired, replicating Substrate's
  * `MortalEra::birth()` / `death()` logic from

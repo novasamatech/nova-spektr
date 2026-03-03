@@ -14,8 +14,6 @@ export const ETHEREUM_PUBLIC_KEY_LENGTH_BYTES = 20;
 
 export const ADDRESS_ALLOWED_ENCODED_LENGTHS = [35, 36, 37, 38];
 
-export const DEFAULT_QR_LIFETIME = 64;
-
 export const SS58_DEFAULT_PREFIX = 0;
 export const SS58_PUBLIC_KEY_PREFIX = 1;
 

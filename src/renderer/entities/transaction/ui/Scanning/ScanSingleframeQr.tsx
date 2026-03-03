@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Chain, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { assert, createTxMetadata, getBlockTimeMs } from '@/shared/lib/utils';
+import { assert, createTxMetadata, getBlockTimeMs, getMortalitySeconds } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Tabs } from '@/shared/ui-kit';
@@ -109,7 +109,7 @@ export const ScanSingleframeQr = ({
         }
 
         const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
-        const mortalitySeconds = Math.floor((mortalLength * txBlockTimeMs) / 1000);
+        const mortalitySeconds = getMortalitySeconds(mortalLength, txBlockTimeMs);
 
         onEraInfo({ blockNumber, mortalLength });
         setTxPayload(payload);
@@ -142,7 +142,7 @@ export const ScanSingleframeQr = ({
         }
 
         const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
-        const mortalitySeconds = Math.floor((legacyMortalLength * legacyBlockTimeMs) / 1000);
+        const mortalitySeconds = getMortalitySeconds(legacyMortalLength, legacyBlockTimeMs);
 
         onEraInfo({ blockNumber: legacyBlockNumber, mortalLength: legacyMortalLength });
         setTxPayload(payload);
