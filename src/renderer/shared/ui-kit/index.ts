@@ -51,4 +51,5 @@ export { type DateRange, type DateRangePickerProps, DateRangePicker } from './Da
 
 export { QR_READER_ERRORS } from './QrReader/errors';
 export { type QrReaderCamera, type QrReaderError, QrReaderErrorCode } from './QrReader/types';
+export { getVideoDevices, requestAccess, stopMediaStream } from './QrReader/helpers';
 export { defaultEasing } from './_helpers/easing';
