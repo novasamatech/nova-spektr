@@ -4,14 +4,23 @@ import { type HexString, type PolkadotVaultWallet, type SingleShardWallet } from
 import { useI18n } from '@/shared/i18n';
 import { useCountdown } from '@/shared/lib/hooks';
 import { ValidationErrors, nullable } from '@/shared/lib/utils';
-import { FootnoteText } from '@/shared/ui';
+import { Button, FootnoteText, Loader } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
-import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, transactionService } from '@/entities/transaction';
+import { Box } from '@/shared/ui-kit';
+import {
+  CameraAccessAlert,
+  QrReaderWrapper,
+  ScanMultiframeQr,
+  ScanSingleframeQr,
+  transactionService,
+  useCameraAvailability,
+} from '@/entities/transaction';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 
 export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, onGoBack, onResult }: SigningProps) => {
   const { t } = useI18n();
+  const { status: cameraStatus, retry: retryCamera } = useCameraAvailability();
 
   const apis = useMemo(() => signingPayloads.map((s) => s.api), [signingPayloads]);
   const [countdown, resetCountdown] = useCountdown(apis);
@@ -69,6 +78,25 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
   const scanAgain = () => {
     setTxPayloads([]);
   };
+
+  if (cameraStatus === 'checking') {
+    return (
+      <Box width="440px" height="490px" verticalAlign="center" horizontalAlign="center">
+        <Loader color="primary" />
+      </Box>
+    );
+  }
+
+  if (cameraStatus === 'denied' || cameraStatus === 'no_input') {
+    return (
+      <div className="flex w-[440px] flex-col items-center gap-4 px-5 py-4">
+        <CameraAccessAlert status={cameraStatus} onRetry={retryCamera} />
+        <Button variant="text" onClick={onGoBack}>
+          {t('operation.goBackButton')}
+        </Button>
+      </div>
+    );
+  }
 
   if (isScanStep) {
     return (
