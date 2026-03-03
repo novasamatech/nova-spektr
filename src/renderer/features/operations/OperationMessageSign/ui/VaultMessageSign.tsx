@@ -4,14 +4,23 @@ import { useMemo, useState } from 'react';
 import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
-import { Button, FootnoteText, SmallTitleText } from '@/shared/ui';
+import { Button, FootnoteText, Loader, SmallTitleText } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
+import { Box } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
-import { QrSignatureReader, QrTxGenerator, SUBSTRATE_ID, createMessageSignPayload } from '@/entities/transaction';
+import {
+  CameraAccessAlert,
+  QrSignatureReader,
+  QrTxGenerator,
+  SUBSTRATE_ID,
+  createMessageSignPayload,
+  useCameraAvailability,
+} from '@/entities/transaction';
 import { type MessageSigningProps } from '../lib/types';
 
 export const VaultMessageSign = ({ payload, signerWallet, onGoBack, onResult }: MessageSigningProps) => {
   const { t } = useI18n();
+  const { status: cameraStatus, retry: retryCamera } = useCameraAvailability();
   const [phase, setPhase] = useState<'display' | 'scan'>('display');
   const [cameraId, setCameraId] = useState<string | null>(null);
 
@@ -26,6 +35,25 @@ export const VaultMessageSign = ({ payload, signerWallet, onGoBack, onResult }: 
   }, [address, message, chainId, signatory.cryptoType]);
 
   if (!qrPayload) return null;
+
+  if (cameraStatus === 'checking') {
+    return (
+      <Box width="340px" height="340px" verticalAlign="center" horizontalAlign="center">
+        <Loader color="primary" />
+      </Box>
+    );
+  }
+
+  if (cameraStatus === 'denied' || cameraStatus === 'no_input') {
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <CameraAccessAlert status={cameraStatus} onRetry={retryCamera} />
+        <Button variant="text" onClick={onGoBack}>
+          {t('operation.goBackButton')}
+        </Button>
+      </div>
+    );
+  }
 
   if (phase === 'display') {
     return (
