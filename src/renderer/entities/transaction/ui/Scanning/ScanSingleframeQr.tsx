@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Chain, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { assert, createTxMetadata, estimateBlockTime } from '@/shared/lib/utils';
+import { assert, createTxMetadata, getBlockTimeMs } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Tabs } from '@/shared/ui-kit';
@@ -52,7 +52,6 @@ export const ScanSingleframeQr = ({
   const { t } = useI18n();
   const [tab, setTab] = useState('new');
   const setupIdRef = useRef(0);
-  const blockTimeMsRef = useRef<Promise<number> | null>(null);
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [qrPayload, setQrPayload] = useState<Uint8Array>();
@@ -70,8 +69,7 @@ export const ScanSingleframeQr = ({
 
   const setupTransaction = async (setupId?: number): Promise<void> => {
     try {
-      blockTimeMsRef.current ??= estimateBlockTime(api);
-      const blockTimeMs = await blockTimeMsRef.current;
+      const blockTimeMs = getBlockTimeMs(chain, api);
 
       const derivationPath =
         accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)
@@ -158,7 +156,6 @@ export const ScanSingleframeQr = ({
 
   const handleQrReset = () => {
     const currentId = ++setupIdRef.current;
-    blockTimeMsRef.current = null;
     setTxPayload(undefined);
     setQrPayload(undefined);
     setupTransaction(currentId).catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));

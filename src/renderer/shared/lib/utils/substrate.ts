@@ -4,12 +4,19 @@ import { type SignerPayloadJSON } from '@polkadot/types/types/extrinsic';
 import { type BN, BN_TWO, bnMin, hexToU8a, isHex, numberToU8a, u8aToHex, u8aToNumber } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 
-import { type BlockHeight, type CallData, type CallHash, type HexString, type ProxyType } from '@/shared/core';
+import {
+  type BlockHeight,
+  type CallData,
+  type CallHash,
+  type Chain,
+  type HexString,
+  type ProxyType,
+} from '@/shared/core';
 import { assert } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { toAddress } from './address';
-import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
+import { DEFAULT_TIME, MORTALITY_PERIOD_MS, ONE_DAY, THRESHOLD } from './constants';
 
 export type TxMetadata = {
   signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'>;
@@ -21,50 +28,8 @@ export type TxMetadata = {
 const SUPPORTED_VERSIONS = ['V2', 'V3', 'V4'];
 const UNUSED_LABEL = 'unused';
 
-const MORTAL_PERIOD_MS = 5 * 60 * 1000;
-const FALLBACK_MAX_HASH_COUNT = 250;
-const MAX_FINALITY_LAG = 5;
-
-/**
- * Compute mortalLength (era period in blocks). Power-of-two quantized, min 4.
- */
-export const computeMortalLength = (
-  blockTimeMs: number,
-  finalityLag: number = 0,
-  blockHashCount: number = FALLBACK_MAX_HASH_COUNT,
-): number => {
-  const rawPeriod = Math.floor(MORTAL_PERIOD_MS / blockTimeMs) + finalityLag;
-  const cappedPeriod = Math.min(blockHashCount, rawPeriod);
-  const factor = Math.ceil(Math.log2(cappedPeriod));
-
-  return Math.max(4, Math.pow(2, factor));
-};
-
-/**
- * Estimate actual block production time by sampling recent blocks. Falls back
- * to runtime constants if sampling fails.
- */
-export const estimateBlockTime = async (api: ApiPromise, sampleSize = 10): Promise<number> => {
-  try {
-    const bestHeader = await api.rpc.chain.getHeader();
-    const currentNumber = bestHeader.number.toNumber();
-
-    if (currentNumber < sampleSize) {
-      return getExpectedBlockTime(api).toNumber();
-    }
-
-    const startHash = await api.rpc.chain.getBlockHash(currentNumber - sampleSize);
-    const [startTs, endTs] = await Promise.all([
-      api.query.timestamp.now.at(startHash),
-      api.query.timestamp.now.at(bestHeader.hash),
-    ]);
-
-    const avgMs = (endTs.toNumber() - startTs.toNumber()) / sampleSize;
-
-    return Math.max(1000, Math.min(60000, Math.round(avgMs)));
-  } catch {
-    return getExpectedBlockTime(api).toNumber();
-  }
+export const getBlockTimeMs = (chain: Chain, api: ApiPromise): number => {
+  return chain.additional?.defaultBlockTime ?? getExpectedBlockTime(api).toNumber();
 };
 
 /**
@@ -89,29 +54,11 @@ export const createTxMetadata = async (
   blockTimeMs?: number,
 ): Promise<TxMetadata> => {
   const chainId = api.genesisHash.toHex();
-
-  const [signingInfo, finalizedHash] = await Promise.all([
-    api.derive.tx.signingInfo(accountId),
-    blockTimeMs ? api.rpc.chain.getFinalizedHead() : Promise.resolve(null),
-  ]);
-
-  const { header, nonce, mortalLength } = signingInfo;
+  const { header, nonce } = await api.derive.tx.signingInfo(accountId);
   assert(header);
 
   const effectiveBlockTimeMs = blockTimeMs ?? getExpectedBlockTime(api).toNumber();
-
-  let effectiveMortalLength: number;
-  if (blockTimeMs && finalizedHash) {
-    const finalizedHeader = await api.rpc.chain.getHeader(finalizedHash);
-    const currentNumber = header.number.toNumber();
-    const finalizedNumber = finalizedHeader.number.toNumber();
-    const finalityLag = Math.min(MAX_FINALITY_LAG, Math.max(0, currentNumber - finalizedNumber));
-    const blockHashCount = api.consts.system.blockHashCount.toNumber();
-
-    effectiveMortalLength = computeMortalLength(blockTimeMs, finalityLag, blockHashCount);
-  } else {
-    effectiveMortalLength = mortalLength;
-  }
+  const mortalLength = Math.ceil(MORTALITY_PERIOD_MS / effectiveBlockTimeMs);
 
   const signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'> = {
     address: toAddress(accountId, { prefix: api.consts.system.ss58Prefix.toNumber() }),
@@ -127,7 +74,7 @@ export const createTxMetadata = async (
 
   return {
     signerPayloadBase,
-    mortalLength: effectiveMortalLength,
+    mortalLength,
     blockTimeMs: effectiveBlockTimeMs,
     blockNumber: header.number.toNumber(),
   };

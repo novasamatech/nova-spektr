@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { TEST_IDS } from '@/shared/constants';
 import { type ChainId, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { type TxMetadata, assert, createTxMetadata, estimateBlockTime, upgradeNonce } from '@/shared/lib/utils';
+import { type TxMetadata, assert, createTxMetadata, getBlockTimeMs, upgradeNonce } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Tabs } from '@/shared/ui-kit';
@@ -46,7 +46,6 @@ export const ScanMultiframeQr = ({
   const { t } = useI18n();
   const [tab, setTab] = useState('new');
   const setupIdRef = useRef(0);
-  const blockTimeMsCacheRef = useRef<Record<ChainId, Promise<number>>>({});
 
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
   const [qrPayload, setQrPayload] = useState<Uint8Array>();
@@ -75,10 +74,7 @@ export const ScanMultiframeQr = ({
       }
 
       if (!metadataMap[accountId][chainId]) {
-        if (!resolvedBlockTimeMs[chainId]) {
-          blockTimeMsCacheRef.current[chainId] ??= estimateBlockTime(signingPayload.api);
-          resolvedBlockTimeMs[chainId] = await blockTimeMsCacheRef.current[chainId];
-        }
+        resolvedBlockTimeMs[chainId] ??= getBlockTimeMs(signingPayload.chain, signingPayload.api);
         metadataMap[accountId][chainId] = await createTxMetadata(
           signingPayload.signatory.accountId,
           signingPayload.api,
@@ -98,9 +94,7 @@ export const ScanMultiframeQr = ({
 
       if (tab === 'new' && isMetadataProofsSupported) {
         const chainId = signingPayload.chain.chainId;
-        const blockTimeMs =
-          resolvedBlockTimeMs[chainId] ??
-          (await (blockTimeMsCacheRef.current[chainId] ??= estimateBlockTime(signingPayload.api)));
+        const blockTimeMs = resolvedBlockTimeMs[chainId] ?? getBlockTimeMs(signingPayload.chain, signingPayload.api);
         const info = await transactionService.createPayloadWithProof(
           signingPayload.extrinsic,
           signatory.accountId,
@@ -196,7 +190,6 @@ export const ScanMultiframeQr = ({
 
   const handleQrReset = () => {
     const currentId = ++setupIdRef.current;
-    blockTimeMsCacheRef.current = {};
     setTxPayloads([]);
     setQrPayload(undefined);
     setupTransactions(currentId).catch(() => console.warn('ScanMultiQr | setupTransactions() failed'));
