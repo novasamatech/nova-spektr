@@ -39,23 +39,10 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
 
     const accountIds = signingPayloads.map((p) => p.signatory.accountId);
 
-    console.group('[SpektrVaultDebug] Stage 3: Signature received from Vault');
-    console.log('signatures count:', signatures.length);
-    for (const [i, sig] of signatures.entries()) {
-      console.log(`signature[${i}]:`, sig);
-    }
-    console.log('accountIds:', accountIds);
-    console.log('txPayloads count:', txPayloads.length);
-    for (const [i, p] of txPayloads.entries()) {
-      const buf = Buffer.from(p);
-      console.log(`txPayload[${i}] hex (${p.length} bytes):`, buf.toString('hex'));
-    }
-
     let isVerified = false;
 
     if (signatures.length > 1) {
       isVerified = true;
-      console.log('Multi-signature — skipping verification');
     } else {
       isVerified = signatures.every((signature, index) => {
         const payload = txPayloads.at(index);
@@ -69,18 +56,11 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
         const isVerified = transactionService.verifySignature(verifiablePayload, signature, accountId);
         const isComplexVerified = transactionService.verifySignature(verifiableComplexPayload, signature, accountId);
 
-        console.log(`Verification [${index}]: standard=${isVerified} complex=${isComplexVerified}`);
         return isVerified || isComplexVerified;
       });
     }
 
-    console.log('Overall verification result:', isVerified);
-
     const balanceValidationError = validateBalance && (await validateBalance());
-    if (balanceValidationError) {
-      console.warn('[SpektrVaultDebug] Balance validation error:', balanceValidationError);
-    }
-    console.groupEnd();
 
     if (!isVerified || balanceValidationError) {
       setValidationError(balanceValidationError || ValidationErrors.INVALID_SIGNATURE);
@@ -88,20 +68,9 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
       return;
     }
 
-    // Check if the mortal era has expired before submitting
     if (eraInfo) {
       const currentBlock = await getCurrentBlockNumber(signingPayloads[0]!.api);
       const expired = isEraExpired(currentBlock, eraInfo.blockNumber, eraInfo.mortalLength);
-      console.log(
-        '[SpektrVaultDebug] Era check: currentBlock=',
-        currentBlock,
-        'eraBlock=',
-        eraInfo.blockNumber,
-        'period=',
-        eraInfo.mortalLength,
-        'expired=',
-        expired,
-      );
 
       if (expired) {
         setValidationError(ValidationErrors.EXPIRED);
@@ -110,7 +79,6 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
       }
     }
 
-    console.log('[SpektrVaultDebug] Stage 3 → Signature verified, proceeding to submit');
     onResult(signatures, txPayloads);
   };
 

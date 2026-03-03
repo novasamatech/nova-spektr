@@ -21,15 +21,12 @@ export type TxMetadata = {
 const SUPPORTED_VERSIONS = ['V2', 'V3', 'V4'];
 const UNUSED_LABEL = 'unused';
 
-// Match Android MortalityConstructor: 5-minute target mortal period
 const MORTAL_PERIOD_MS = 5 * 60 * 1000;
 const FALLBACK_MAX_HASH_COUNT = 250;
 const MAX_FINALITY_LAG = 5;
 
 /**
- * Compute mortalLength (era period in blocks) matching Android
- * MortalityConstructor: rawPeriod = MORTAL_PERIOD / blockTime + finalityLag,
- * capped by blockHashCount, then power-of-two quantized (min 4).
+ * Compute mortalLength (era period in blocks). Power-of-two quantized, min 4.
  */
 export const computeMortalLength = (
   blockTimeMs: number,
@@ -93,21 +90,18 @@ export const createTxMetadata = async (
 ): Promise<TxMetadata> => {
   const chainId = api.genesisHash.toHex();
 
-  // When explicit blockTimeMs is provided, also fetch finalized head for finality lag
   const [signingInfo, finalizedHash] = await Promise.all([
     api.derive.tx.signingInfo(accountId),
     blockTimeMs ? api.rpc.chain.getFinalizedHead() : Promise.resolve(null),
   ]);
 
   const { header, nonce, mortalLength } = signingInfo;
-  console.log('mortalLength:', mortalLength);
   assert(header);
 
   const effectiveBlockTimeMs = blockTimeMs ?? getExpectedBlockTime(api).toNumber();
 
   let effectiveMortalLength: number;
   if (blockTimeMs && finalizedHash) {
-    // Match Android MortalityConstructor: include finality lag and cap by blockHashCount
     const finalizedHeader = await api.rpc.chain.getHeader(finalizedHash);
     const currentNumber = header.number.toNumber();
     const finalizedNumber = finalizedHeader.number.toNumber();
@@ -115,10 +109,8 @@ export const createTxMetadata = async (
     const blockHashCount = api.consts.system.blockHashCount.toNumber();
 
     effectiveMortalLength = computeMortalLength(blockTimeMs, finalityLag, blockHashCount);
-    console.log('effectiveMortalLength:', effectiveMortalLength);
   } else {
     effectiveMortalLength = mortalLength;
-    console.log('effectiveMortalLength:', effectiveMortalLength);
   }
 
   const signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'> = {

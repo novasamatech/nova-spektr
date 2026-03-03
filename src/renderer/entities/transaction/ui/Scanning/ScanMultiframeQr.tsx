@@ -78,7 +78,6 @@ export const ScanMultiframeQr = ({
         if (!resolvedBlockTimeMs[chainId]) {
           blockTimeMsCacheRef.current[chainId] ??= estimateBlockTime(signingPayload.api);
           resolvedBlockTimeMs[chainId] = await blockTimeMsCacheRef.current[chainId];
-          console.log('[SpektrVaultDebug] estimateBlockTime for', chainId, ':', resolvedBlockTimeMs[chainId]);
         }
         metadataMap[accountId][chainId] = await createTxMetadata(
           signingPayload.signatory.accountId,
@@ -179,7 +178,6 @@ export const ScanMultiframeQr = ({
     );
     const bulk = createMultipleSignPayload(transactionsEncoded);
 
-    // Use the minimum mortality across all payloads for the countdown and era info
     let minMortalitySeconds = Infinity;
     let minEraInfo = { blockNumber: 0, mortalLength: 0 };
     for (const { info } of txRequests) {

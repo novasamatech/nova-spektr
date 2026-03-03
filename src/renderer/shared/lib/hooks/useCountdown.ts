@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
 /**
- * Countdown timer in seconds. Callers provide the duration via
- * resetCountdown(seconds).
- *
- * @returns {Array | undefined} Countdown, resetCountdown
+ * Countdown timer in seconds. Starts as null until resetCountdown(seconds) is
+ * called.
  */
 export function useCountdown(): [number | null, (seconds: number) => void] {
   const [countdown, setCountdown] = useState<number | null>(null);
