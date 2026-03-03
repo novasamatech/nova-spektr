@@ -14,18 +14,112 @@ import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 export type TxMetadata = {
   signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'>;
   mortalLength: number;
+  blockTimeMs: number;
+  blockNumber: number;
 };
 
 const SUPPORTED_VERSIONS = ['V2', 'V3', 'V4'];
 const UNUSED_LABEL = 'unused';
 
+// Match Android MortalityConstructor: 5-minute target mortal period
+const MORTAL_PERIOD_MS = 5 * 60 * 1000;
+const FALLBACK_MAX_HASH_COUNT = 250;
+const MAX_FINALITY_LAG = 5;
+
+/**
+ * Compute mortalLength (era period in blocks) matching Android
+ * MortalityConstructor: rawPeriod = MORTAL_PERIOD / blockTime + finalityLag,
+ * capped by blockHashCount, then power-of-two quantized (min 4).
+ */
+export const computeMortalLength = (
+  blockTimeMs: number,
+  finalityLag: number = 0,
+  blockHashCount: number = FALLBACK_MAX_HASH_COUNT,
+): number => {
+  const rawPeriod = Math.floor(MORTAL_PERIOD_MS / blockTimeMs) + finalityLag;
+  const cappedPeriod = Math.min(blockHashCount, rawPeriod);
+  const factor = Math.ceil(Math.log2(cappedPeriod));
+
+  return Math.max(4, Math.pow(2, factor));
+};
+
+/**
+ * Estimate actual block production time by sampling recent blocks. Falls back
+ * to runtime constants if sampling fails.
+ */
+export const estimateBlockTime = async (api: ApiPromise, sampleSize = 10): Promise<number> => {
+  try {
+    const bestHeader = await api.rpc.chain.getHeader();
+    const currentNumber = bestHeader.number.toNumber();
+
+    if (currentNumber < sampleSize) {
+      return getExpectedBlockTime(api).toNumber();
+    }
+
+    const startHash = await api.rpc.chain.getBlockHash(currentNumber - sampleSize);
+    const [startTs, endTs] = await Promise.all([
+      api.query.timestamp.now.at(startHash),
+      api.query.timestamp.now.at(bestHeader.hash),
+    ]);
+
+    const avgMs = (endTs.toNumber() - startTs.toNumber()) / sampleSize;
+
+    return Math.max(1000, Math.min(60000, Math.round(avgMs)));
+  } catch {
+    return getExpectedBlockTime(api).toNumber();
+  }
+};
+
+/**
+ * Check if a mortal era has expired, replicating Substrate's
+ * `MortalEra::birth()` / `death()` logic from
+ * `frame/system/src/extensions/check_mortality.rs`.
+ */
+export const isEraExpired = (currentBlock: number, eraBlockNumber: number, period: number): boolean => {
+  const phase = eraBlockNumber % period;
+  const birth = Math.floor((Math.max(eraBlockNumber, phase) - phase) / period) * period + phase;
+  const death = birth + period;
+
+  return currentBlock >= death;
+};
+
 /**
  * Compose part of SignerPayloadJSON for
  */
-export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): Promise<TxMetadata> => {
+export const createTxMetadata = async (
+  accountId: AccountId,
+  api: ApiPromise,
+  blockTimeMs?: number,
+): Promise<TxMetadata> => {
   const chainId = api.genesisHash.toHex();
-  const { header, nonce, mortalLength } = await api.derive.tx.signingInfo(accountId);
+
+  // When explicit blockTimeMs is provided, also fetch finalized head for finality lag
+  const [signingInfo, finalizedHash] = await Promise.all([
+    api.derive.tx.signingInfo(accountId),
+    blockTimeMs ? api.rpc.chain.getFinalizedHead() : Promise.resolve(null),
+  ]);
+
+  const { header, nonce, mortalLength } = signingInfo;
+  console.log('mortalLength:', mortalLength);
   assert(header);
+
+  const effectiveBlockTimeMs = blockTimeMs ?? getExpectedBlockTime(api).toNumber();
+
+  let effectiveMortalLength: number;
+  if (blockTimeMs && finalizedHash) {
+    // Match Android MortalityConstructor: include finality lag and cap by blockHashCount
+    const finalizedHeader = await api.rpc.chain.getHeader(finalizedHash);
+    const currentNumber = header.number.toNumber();
+    const finalizedNumber = finalizedHeader.number.toNumber();
+    const finalityLag = Math.min(MAX_FINALITY_LAG, Math.max(0, currentNumber - finalizedNumber));
+    const blockHashCount = api.consts.system.blockHashCount.toNumber();
+
+    effectiveMortalLength = computeMortalLength(blockTimeMs, finalityLag, blockHashCount);
+    console.log('effectiveMortalLength:', effectiveMortalLength);
+  } else {
+    effectiveMortalLength = mortalLength;
+    console.log('effectiveMortalLength:', effectiveMortalLength);
+  }
 
   const signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'> = {
     address: toAddress(accountId, { prefix: api.consts.system.ss58Prefix.toNumber() }),
@@ -39,7 +133,12 @@ export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): P
     signedExtensions: api.registry.signedExtensions,
   };
 
-  return { signerPayloadBase, mortalLength };
+  return {
+    signerPayloadBase,
+    mortalLength: effectiveMortalLength,
+    blockTimeMs: effectiveBlockTimeMs,
+    blockNumber: header.number.toNumber(),
+  };
 };
 
 export const getCallHash = (callData: HexString) => blake2AsHex(hexToU8a(callData));

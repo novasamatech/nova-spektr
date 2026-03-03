@@ -5,10 +5,10 @@ import { useEffect, useRef, useState } from 'react';
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Chain, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { assert, createTxMetadata } from '@/shared/lib/utils';
+import { assert, createTxMetadata, estimateBlockTime } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
-import { Box, Tabs } from '@/shared/ui-kit';
+import { Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, type Extrinsic } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 import { transactionService } from '../../lib';
@@ -29,10 +29,11 @@ type Props = {
   chain: Chain;
   extrinsic: Extrinsic;
   account: AnyAccount;
-  countdown: number;
+  countdown: number | null;
   rootAccountId: AccountId;
   onGoBack: () => void;
-  onResetCountdown: () => void;
+  onResetCountdown: (seconds: number) => void;
+  onEraInfo: (info: { blockNumber: number; mortalLength: number }) => void;
   onResult: (txPayload: Uint8Array) => void;
 };
 
@@ -45,11 +46,13 @@ export const ScanSingleframeQr = ({
   rootAccountId,
   onGoBack,
   onResetCountdown,
+  onEraInfo,
   onResult,
 }: Props) => {
   const { t } = useI18n();
   const [tab, setTab] = useState('new');
   const setupIdRef = useRef(0);
+  const blockTimeMsRef = useRef<Promise<number> | null>(null);
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [qrPayload, setQrPayload] = useState<Uint8Array>();
@@ -67,6 +70,10 @@ export const ScanSingleframeQr = ({
 
   const setupTransaction = async (setupId?: number): Promise<void> => {
     try {
+      blockTimeMsRef.current ??= estimateBlockTime(api);
+      const blockTimeMs = await blockTimeMsRef.current;
+      console.log('[SpektrVaultDebug] estimateBlockTime:', blockTimeMs);
+
       const derivationPath =
         accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)
           ? account.derivationPath
@@ -81,11 +88,15 @@ export const ScanSingleframeQr = ({
         console.log('signingType:', account.signingType);
         console.log('derivationPath:', derivationPath);
 
-        const { payload, metadataProof, unsigned, hexPayload } = await transactionService.createPayloadWithProof(
-          extrinsic,
-          account.accountId,
-          api,
-        );
+        const {
+          payload,
+          metadataProof,
+          unsigned,
+          hexPayload,
+          mortalLength,
+          blockTimeMs: txBlockTimeMs,
+          blockNumber,
+        } = await transactionService.createPayloadWithProof(extrinsic, account.accountId, api, undefined, blockTimeMs);
 
         console.log('--- signer payload (unsigned) ---');
         console.log('address:', unsigned.address);
@@ -128,8 +139,20 @@ export const ScanSingleframeQr = ({
 
         console.log('[SpektrVaultDebug] Stage 2a → QR payload ready, bytes:', qrPayload.length);
 
+        const mortalitySeconds = Math.floor((mortalLength * txBlockTimeMs) / 1000);
+        console.log(
+          '[SpektrVaultDebug] mortalLength:',
+          mortalLength,
+          'blockTimeMs:',
+          txBlockTimeMs,
+          'countdown:',
+          mortalitySeconds,
+        );
+
+        onEraInfo({ blockNumber, mortalLength });
         setTxPayload(payload);
         setQrPayload(qrPayload);
+        onResetCountdown(mortalitySeconds);
       } else {
         console.group('[SpektrVaultDebug] Stage 2b: createPayloadWithMetadata (legacy Vault)');
         console.log('extrinsic method:', `${extrinsic.method.section}.${extrinsic.method.method}`);
@@ -139,11 +162,18 @@ export const ScanSingleframeQr = ({
         console.log('signingType:', account.signingType);
         console.log('derivationPath:', derivationPath);
 
-        const metadata = await createTxMetadata(account.accountId, api);
+        const metadata = await createTxMetadata(account.accountId, api, blockTimeMs);
 
         if (setupId !== undefined && setupId !== setupIdRef.current) return;
 
-        const { payload, unsigned, hexPayload } = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
+        const {
+          payload,
+          unsigned,
+          hexPayload,
+          mortalLength: legacyMortalLength,
+          blockTimeMs: legacyBlockTimeMs,
+          blockNumber: legacyBlockNumber,
+        } = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
 
         console.log('--- signer payload (unsigned) ---');
         console.log('address:', unsigned.address);
@@ -176,8 +206,20 @@ export const ScanSingleframeQr = ({
 
         console.log('[SpektrVaultDebug] Stage 2b → QR payload ready, bytes:', qrPayload.length);
 
+        const mortalitySeconds = Math.floor((legacyMortalLength * legacyBlockTimeMs) / 1000);
+        console.log(
+          '[SpektrVaultDebug] mortalLength:',
+          legacyMortalLength,
+          'blockTimeMs:',
+          legacyBlockTimeMs,
+          'countdown:',
+          mortalitySeconds,
+        );
+
+        onEraInfo({ blockNumber: legacyBlockNumber, mortalLength: legacyMortalLength });
         setTxPayload(payload);
         setQrPayload(qrPayload);
+        onResetCountdown(mortalitySeconds);
       }
     } catch (error) {
       console.warn(error);
@@ -186,12 +228,11 @@ export const ScanSingleframeQr = ({
 
   const handleQrReset = () => {
     const currentId = ++setupIdRef.current;
+    blockTimeMsRef.current = null;
     setTxPayload(undefined);
     setQrPayload(undefined);
     setupTransaction(currentId).catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
   };
-
-  useEffect(onResetCountdown, [qrPayload]);
 
   return (
     <>
@@ -200,22 +241,24 @@ export const ScanSingleframeQr = ({
         chainId={chain.chainId}
         isLegacyQR={tab === 'legacy'}
         testId={TEST_IDS.OPERATIONS.QR_CODE_CONTAINER}
-        onQrReset={handleQrReset}
-      >
-        {isMetadataProofsSupported && (
-          <Tabs value={tab} onChange={setTab}>
-            <Box shrink={0} fitContainer>
+        tabSlot={
+          isMetadataProofsSupported ? (
+            <Tabs value={tab} onChange={setTab}>
               <Tabs.List>
                 <Tabs.Trigger value="new">
-                  {t('signing.qrNewVaultTitle', {
-                    version: getPolkadotVaultVersion({ signingType: account.signingType, isBulkTx: false }),
-                  })}
+                  <span className="whitespace-nowrap">
+                    {t('signing.qrNewVaultTitle', {
+                      version: getPolkadotVaultVersion({ signingType: account.signingType, isBulkTx: false }),
+                    })}
+                  </span>
                 </Tabs.Trigger>
                 <Tabs.Trigger value="legacy">{t('signing.qrLegacyVaultTitle')}</Tabs.Trigger>
               </Tabs.List>
-            </Box>
-          </Tabs>
-        )}
+            </Tabs>
+          ) : undefined
+        }
+        onQrReset={handleQrReset}
+      >
         <QrTxGenerator payload={qrPayload} />
       </QrGeneratorContainer>
 
