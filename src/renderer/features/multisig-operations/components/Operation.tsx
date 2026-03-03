@@ -96,8 +96,8 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   const asset = useTransactionAsset(coreTx, operation.chainId);
 
   const deepLink = useMemo(
-    () => deepLinkModel.generateMultisigOperationDeepLink(operation, multisigAccount),
-    [operation, multisigAccount],
+    () => deepLinkModel.generateMultisigOperationDeepLink(operation),
+    [operation],
   );
 
   const externalTitle = useTransformer(operationTitleTransformer, {
