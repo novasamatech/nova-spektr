@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { type HexString, type PolkadotVaultWallet, type SingleShardWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -31,6 +31,12 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
   const isMultiTx = signingPayloads.length > 1;
   const chain = signingPayloads[0]!.chain;
   const rootAccountId = (signerWallet as PolkadotVaultWallet | SingleShardWallet)?.rootAccountId;
+
+  useEffect(() => {
+    if (countdown === 0 && !isScanStep) {
+      setValidationError(ValidationErrors.EXPIRED);
+    }
+  }, [countdown, isScanStep]);
 
   const handleSignature = async (scanResult: HexString | HexString[]): Promise<void> => {
     const signatures = Array.isArray(scanResult)
