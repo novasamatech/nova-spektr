@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { type HexString, type PolkadotVaultWallet, type SingleShardWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useCountdown } from '@/shared/lib/hooks';
-import { ValidationErrors, nullable } from '@/shared/lib/utils';
+import { ValidationErrors, getCurrentBlockNumber, isEraExpired, nullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, Loader } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
@@ -22,21 +22,15 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
   const { t } = useI18n();
   const { status: cameraStatus, retry: retryCamera } = useCameraAvailability();
 
-  const apis = useMemo(() => signingPayloads.map((s) => s.api), [signingPayloads]);
-  const [countdown, resetCountdown] = useCountdown(apis);
+  const [countdown, resetCountdown] = useCountdown();
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
+  const [eraInfo, setEraInfo] = useState<{ blockNumber: number; mortalLength: number } | null>(null);
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const isScanStep = !txPayloads.length;
   const isMultiTx = signingPayloads.length > 1;
   const chain = signingPayloads[0]!.chain;
   const rootAccountId = (signerWallet as PolkadotVaultWallet | SingleShardWallet)?.rootAccountId;
-
-  useEffect(() => {
-    if (countdown === 0) {
-      scanAgain();
-    }
-  }, [countdown]);
 
   const handleSignature = async (scanResult: HexString | HexString[]): Promise<void> => {
     const signatures = Array.isArray(scanResult)
@@ -45,10 +39,23 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
 
     const accountIds = signingPayloads.map((p) => p.signatory.accountId);
 
+    console.group('[SpektrVaultDebug] Stage 3: Signature received from Vault');
+    console.log('signatures count:', signatures.length);
+    for (const [i, sig] of signatures.entries()) {
+      console.log(`signature[${i}]:`, sig);
+    }
+    console.log('accountIds:', accountIds);
+    console.log('txPayloads count:', txPayloads.length);
+    for (const [i, p] of txPayloads.entries()) {
+      const buf = Buffer.from(p);
+      console.log(`txPayload[${i}] hex (${p.length} bytes):`, buf.toString('hex'));
+    }
+
     let isVerified = false;
 
     if (signatures.length > 1) {
       isVerified = true;
+      console.log('Multi-signature — skipping verification');
     } else {
       isVerified = signatures.every((signature, index) => {
         const payload = txPayloads.at(index);
@@ -62,17 +69,49 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
         const isVerified = transactionService.verifySignature(verifiablePayload, signature, accountId);
         const isComplexVerified = transactionService.verifySignature(verifiableComplexPayload, signature, accountId);
 
+        console.log(`Verification [${index}]: standard=${isVerified} complex=${isComplexVerified}`);
         return isVerified || isComplexVerified;
       });
     }
 
+    console.log('Overall verification result:', isVerified);
+
     const balanceValidationError = validateBalance && (await validateBalance());
+    if (balanceValidationError) {
+      console.warn('[SpektrVaultDebug] Balance validation error:', balanceValidationError);
+    }
+    console.groupEnd();
 
     if (!isVerified || balanceValidationError) {
       setValidationError(balanceValidationError || ValidationErrors.INVALID_SIGNATURE);
-    } else {
-      onResult(signatures, txPayloads);
+
+      return;
     }
+
+    // Check if the mortal era has expired before submitting
+    if (eraInfo) {
+      const currentBlock = await getCurrentBlockNumber(signingPayloads[0]!.api);
+      const expired = isEraExpired(currentBlock, eraInfo.blockNumber, eraInfo.mortalLength);
+      console.log(
+        '[SpektrVaultDebug] Era check: currentBlock=',
+        currentBlock,
+        'eraBlock=',
+        eraInfo.blockNumber,
+        'period=',
+        eraInfo.mortalLength,
+        'expired=',
+        expired,
+      );
+
+      if (expired) {
+        setValidationError(ValidationErrors.EXPIRED);
+
+        return;
+      }
+    }
+
+    console.log('[SpektrVaultDebug] Stage 3 → Signature verified, proceeding to submit');
+    onResult(signatures, txPayloads);
   };
 
   const scanAgain = () => {
@@ -122,6 +161,7 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
               signingPayloads={signingPayloads}
               onGoBack={onGoBack}
               onResetCountdown={resetCountdown}
+              onEraInfo={setEraInfo}
               onResult={setTxPayloads}
             />
           ) : (
@@ -134,6 +174,7 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
               extrinsic={signingPayloads[0]!.extrinsic}
               onGoBack={onGoBack}
               onResetCountdown={resetCountdown}
+              onEraInfo={setEraInfo}
               onResult={(payload) => setTxPayloads([payload])}
             />
           )}

@@ -18,6 +18,7 @@ const ValidationErrorLabels = {
   [ValidationErrors.INSUFFICIENT_BALANCE]: t('transfer.notEnoughBalanceError'),
   [ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE]: t('transfer.notEnoughBalanceForFeeError'),
   [ValidationErrors.INVALID_SIGNATURE]: t('transfer.invalidSignature'),
+  [ValidationErrors.EXPIRED]: t('signing.qrNotValid'),
 };
 
 type ScanResult = HexString | HexString[];

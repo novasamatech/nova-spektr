@@ -345,9 +345,20 @@ async function submitExtrinsic(
   signatory: AccountId,
   api: ApiPromise,
 ): Promise<SubmitResult> {
+  console.group('[SpektrVaultDebug] Stage 4: submitExtrinsic');
+  console.log('method:', `${extrinsic.method.section}.${extrinsic.method.method}`);
+  console.log('callData:', extrinsic.method.toHex());
+  console.log('args:', extrinsic.method.toHuman());
+  console.log('signatory:', signatory);
+  console.log('signature:', signature);
+  console.log('payload hex:', Buffer.from(payload).toString('hex'));
+  console.log('payload bytes:', payload.length);
+  console.groupEnd();
+
   return new Promise<SubmitResult>(resolve => {
     try {
       extrinsic.addSignature(signatory, hexToU8a(signature), payload);
+      console.log('[SpektrVaultDebug] Stage 4 → Signature added, broadcasting to chain...');
       extrinsic
         .send(result => {
           const { status, events, txHash, txIndex, blockNumber, dispatchError, internalError } = result as any;
@@ -390,6 +401,12 @@ async function submitExtrinsic(
               }
 
               if (api.events.system.ExtrinsicSuccess.is(event)) {
+                console.log(
+                  '[SpektrVaultDebug] Stage 4 → ExtrinsicSuccess in block',
+                  blockNumber.toNumber(),
+                  'txHash:',
+                  actualTxHash,
+                );
                 resolve({
                   executed: true,
                   params: {

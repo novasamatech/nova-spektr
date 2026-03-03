@@ -1,33 +1,26 @@
-import { type ApiPromise } from '@polkadot/api';
-import { BN_MILLION } from '@polkadot/util';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
 
-import { DEFAULT_QR_LIFETIME } from '@/shared/lib/utils';
 import { useCountdown } from '../useCountdown';
 
-vi.mock('@/shared/lib/utils', () => ({
-  getExpectedBlockTime: jest.fn().mockReturnValue(BN_MILLION.muln(2)),
-  DEFAULT_QR_LIFETIME: 64,
-}));
-
-describe('hooks/useToggle', () => {
-  test('should have default countdown', () => {
-    const { result } = renderHook(() => useCountdown([]));
+describe('hooks/useCountdown', () => {
+  test('should start with countdown at null', () => {
+    const { result } = renderHook(() => useCountdown());
 
     const [countdown] = result.current;
-    expect(countdown).toEqual(DEFAULT_QR_LIFETIME);
+    expect(countdown).toBeNull();
   });
 
-  test('should change countdown value', () => {
-    const { result } = renderHook(() => useCountdown([{} as ApiPromise]));
+  test('should set countdown via resetCountdown', () => {
+    const { result } = renderHook(() => useCountdown());
 
-    const [countdown, resetCountdown] = result.current;
-    expect(countdown).toEqual(DEFAULT_QR_LIFETIME);
+    act(() => {
+      const [, resetCountdown] = result.current;
+      resetCountdown(120);
+    });
 
-    act(() => resetCountdown());
     waitFor(() => {
-      expect(countdown).toEqual(128000);
+      const [countdown] = result.current;
+      expect(countdown).toEqual(120);
     });
   });
 });

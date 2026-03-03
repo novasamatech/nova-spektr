@@ -248,8 +248,9 @@ async function createPayloadWithProof(
   signatory: AccountId,
   api: ApiPromise,
   nonceIncrement?: number,
+  blockTimeMs?: number,
 ) {
-  let metadata = await createTxMetadata(signatory, api);
+  let metadata = await createTxMetadata(signatory, api, blockTimeMs);
   if (nonceIncrement) {
     metadata = upgradeNonce(metadata, nonceIncrement);
   }
@@ -305,6 +306,9 @@ async function createPayloadWithProof(
     unsigned: signingPayload,
     hexPayload: extrinsicPayload.toHex(),
     payload,
+    mortalLength,
+    blockTimeMs: metadata.blockTimeMs,
+    blockNumber: metadata.blockNumber,
   };
 }
 
@@ -343,6 +347,9 @@ function createPayloadWithMetadata(extrinsic: Extrinsic, api: ApiPromise, metada
     unsigned: signingPayload,
     hexPayload: signingPayloadHex,
     payload: hexToU8a(signingPayloadHex),
+    mortalLength,
+    blockTimeMs: metadata.blockTimeMs,
+    blockNumber: metadata.blockNumber,
   };
 }
 
