@@ -25,7 +25,8 @@ export const SourceTabs = ({ localCount, backendCount }: Props) => {
         <Tabs.List>
           {availableSources.map((source) => {
             const count = source.id === 'local' ? localCount : backendCount;
-            const label = source.id === 'local' ? t('addressBook.sources.myContacts') : source.label;
+            const label =
+              source.id === 'local' ? t('addressBook.sources.myContacts') : t('addressBook.sources.externalSource');
 
             return (
               <Tabs.Trigger key={source.id} value={source.id}>

@@ -1,17 +1,18 @@
 import { useUnit } from 'effector-react';
 
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
-import { Tooltip } from '@/shared/ui-kit';
 import { authModel } from '../model/auth-model';
 import { backendConfigurationModel } from '../model/backend-configuration-model';
 
 import { AuthStatus } from './AuthStatus';
 
 export const BackendConnectionCard = () => {
-  const [hasBackend, backendUrl, isAuthenticated, isSessionExpired] = useUnit([
+  const { t } = useI18n();
+
+  const [hasBackend, isAuthenticated, isSessionExpired] = useUnit([
     backendConfigurationModel.$hasBackend,
-    backendConfigurationModel.$backendUrl,
     authModel.$isAuthenticated,
     authModel.$isSessionExpired,
   ]);
@@ -37,12 +38,7 @@ export const BackendConnectionCard = () => {
           isSessionExpired ? 'text-text-warning' : isAuthenticated ? 'text-icon-positive' : 'text-icon-accent',
         )}
       />
-      <Tooltip enableHover delay={200}>
-        <Tooltip.Trigger>
-          <FootnoteText className="max-w-[140px] truncate">{backendUrl}</FootnoteText>
-        </Tooltip.Trigger>
-        <Tooltip.Content>{backendUrl}</Tooltip.Content>
-      </Tooltip>
+      <FootnoteText>{t('addressBook.sources.externalSource')}</FootnoteText>
       <AuthStatus />
     </button>
   );
