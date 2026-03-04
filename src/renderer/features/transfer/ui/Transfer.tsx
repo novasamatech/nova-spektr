@@ -24,10 +24,11 @@ type Props = {
   chain: Chain;
   asset?: Asset;
   destination?: Address;
+  xcm?: boolean;
   onClose?: () => void;
 };
 
-export const Transfer = ({ chain, asset, destination, onClose }: Props) => {
+export const Transfer = ({ chain, asset, destination, xcm, onClose }: Props) => {
   const { t } = useI18n();
 
   const step = useUnit(transferModel.$step);
@@ -42,7 +43,7 @@ export const Transfer = ({ chain, asset, destination, onClose }: Props) => {
   );
 
   useEffect(() => {
-    transferModel.events.flowStarted({ chain, asset, destination });
+    transferModel.events.flowStarted({ chain, asset, destination, xcm });
   }, []);
 
   useEffect(() => {

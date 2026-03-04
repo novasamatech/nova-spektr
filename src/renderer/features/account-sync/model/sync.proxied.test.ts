@@ -8,9 +8,6 @@ import {
   proxiedAccount1,
   proxiedAccount2,
   proxiedAccount3,
-  proxiedWallet1,
-  proxiedWallet2,
-  proxiedWallet3,
   syncResult,
   userAccount,
 } from './__mocks__/sync.proxied.mocks';
@@ -166,7 +163,7 @@ describe('syncProxiedAccounts', () => {
     expect(result.updateAccounts[0].deposit).toBe('2002050000000');
   });
 
-  test('should delete all proxy wallets when sync result accounts is empty', () => {
+  test('should delete proxy wallets without pendingBlockNumber when sync result accounts is empty', () => {
     const emptySyncResult = {
       ...syncResult,
       accounts: [],
@@ -181,7 +178,26 @@ describe('syncProxiedAccounts', () => {
     });
 
     expect(result.createWallets).toEqual([]);
-    expect(result.deleteWallets).toEqual([proxiedWallet1.id, proxiedWallet2.id, proxiedWallet3.id]);
+    expect(result.deleteWallets).toEqual([2, 3, 4]);
+    expect(result.updateAccounts).toEqual([]);
+  });
+
+  test('should not delete proxied wallets when indexed blocks are missing for chain', () => {
+    const syncResultWithoutIndexedBlocks = {
+      ...syncResult,
+      indexedBlocks: new Map(),
+    };
+
+    const result = syncProxiedAccounts({
+      allWallets,
+      allAccounts: [proxiedAccount1, proxiedAccount2, proxiedAccount3],
+      allChains: allChains,
+      syncResult: syncResultWithoutIndexedBlocks,
+      identities: {},
+    });
+
+    expect(result.createWallets).toEqual([]);
+    expect(result.deleteWallets).toEqual([]);
     expect(result.updateAccounts).toEqual([]);
   });
 

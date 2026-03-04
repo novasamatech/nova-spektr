@@ -7,10 +7,9 @@ import { useI18n } from '@/shared/i18n';
 import { Button, InputHint } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
-import { type Callbacks, createFormModel } from '../model/contact-form';
+import { createFormModel } from '../model/contact-form';
 
-type Props = Callbacks;
-export const CreateContactForm = ({ onSubmit }: Props) => {
+export const CreateContactForm = () => {
   const { t } = useI18n();
 
   const {
@@ -24,10 +23,6 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
   useEffect(() => {
     createFormModel.events.formInitiated();
   }, []);
-
-  useEffect(() => {
-    createFormModel.events.callbacksChanged({ onSubmit });
-  }, [onSubmit]);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();

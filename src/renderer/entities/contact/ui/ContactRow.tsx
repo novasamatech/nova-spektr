@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import { type Contact } from '@/shared/core';
+import { type Contact, type LocalContact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Paths, createLink } from '@/shared/routes';
 import { IconButton, Plate } from '@/shared/ui';
@@ -9,7 +9,7 @@ import { Copy, useNotification } from '@/shared/ui-kit';
 import { contactModel } from '../model/contact-model';
 
 type Props = {
-  contact: Contact;
+  contact: LocalContact;
   onSendTo?: (contact: Contact) => void;
 };
 
@@ -37,21 +37,42 @@ export const ContactRow = ({ contact, onSendTo }: Props) => {
   };
 
   return (
-    <Plate className="flex p-0">
-      <div className="flex min-w-0 gap-x-1 p-3">
-        <Address address={contact.address} showIcon iconSize={20} variant="truncate" title={contact.name} />
-      </div>
-      <div className="ml-auto flex items-center gap-x-2 p-3">
-        <IconButton className="shrink-0 self-center text-icon-default" name="sendArrow" onClick={handleSendTo} />
+    <li>
+      <Plate className="flex items-center border border-transparent p-3 transition-colors duration-150 hover:border-filter-border">
+        <div className="flex min-w-0 gap-x-1">
+          <Address address={contact.address} showIcon iconSize={20} variant="truncate" title={contact.name} />
+        </div>
+        <div className="ml-auto flex items-center gap-x-1">
+          <IconButton
+            className="shrink-0 text-icon-default"
+            name="sendArrow"
+            ariaLabel={t('addressBook.a11y.sendTo', { name: contact.name })}
+            onClick={handleSendTo}
+          />
 
-        <Copy value={contact.address} notification={t('general.notifications.addressCopied')}>
-          <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
-        </Copy>
+          <Copy value={contact.address} notification={t('general.notifications.addressCopied')}>
+            <IconButton
+              className="shrink-0 text-icon-default"
+              name="copy"
+              ariaLabel={t('addressBook.a11y.copyAddress', { name: contact.name })}
+            />
+          </Copy>
 
-        <IconButton className="shrink-0 self-center text-icon-default" name="edit" onClick={handleEdit} />
+          <IconButton
+            className="shrink-0 text-icon-default"
+            name="edit"
+            ariaLabel={t('addressBook.a11y.edit', { name: contact.name })}
+            onClick={handleEdit}
+          />
 
-        <IconButton className="shrink-0 self-center text-icon-default" name="delete" onClick={handleDelete} />
-      </div>
-    </Plate>
+          <IconButton
+            className="shrink-0 text-icon-default"
+            name="delete"
+            ariaLabel={t('addressBook.a11y.delete', { name: contact.name })}
+            onClick={handleDelete}
+          />
+        </div>
+      </Plate>
+    </li>
   );
 };

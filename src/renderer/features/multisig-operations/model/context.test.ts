@@ -6,14 +6,29 @@ vi.mock('../components/Operation', () => ({
   operationTitleTransformer: { createTransformer: () => {} },
 }));
 
+import { type MultisigAccount } from '@/shared/core';
 import { createAccountId, polkadotChainId } from '@/shared/mocks';
-import { multisigOperation } from '@/domains/network';
+import { accounts, multisigOperation } from '@/domains/network';
 
 import { operationsContextModel } from './context';
 import { deepLinkModel } from './deep-link';
 
 describe('operations context model', () => {
   const mockAccountId = createAccountId(1);
+
+  const mockMultisigAccount = {
+    id: '1',
+    walletId: 1,
+    name: 'Test Multisig',
+    accountId: mockAccountId,
+    accountType: 'multisig',
+    type: 'universal',
+    cryptoType: 0,
+    signingType: 'signing',
+    signatories: [],
+    threshold: 2,
+    createdAt: 0,
+  } as unknown as MultisigAccount;
 
   const createMockOperation = (status: 'pending' | 'executed' | 'cancelled' | 'error', callHash = '0xabc123') => {
     const operationId = `${polkadotChainId}-${callHash}-${mockAccountId}-100-1`;
@@ -26,7 +41,7 @@ describe('operations context model', () => {
       callHash: callHash as any,
       callData: null,
       chainId: polkadotChainId,
-      accountId: mockAccountId,
+      multisigAccountId: mockAccountId,
       depositor: mockAccountId,
       blockCreated: 100 as any,
       indexCreated: 1,
@@ -119,11 +134,11 @@ describe('operations context model', () => {
       expect(scope.getState(operationsContextModel.$tab)).toBe('pending');
     });
 
-    it('should default to history tab when operation is not found', async () => {
+    it('should default to pending tab when operation is not found', async () => {
       const scope = fork({
         values: new Map()
           .set(multisigOperation.__test.$cachedOperations, [])
-          .set(operationsContextModel.$tab, 'pending'),
+          .set(operationsContextModel.$tab, 'history'),
       });
 
       await allSettled(deepLinkModel.$focusedOperationId, {
@@ -131,8 +146,8 @@ describe('operations context model', () => {
         params: 'non-existent-operation-id',
       });
 
-      // When operation is not found, defaults to 'history' (since status !== 'pending')
-      expect(scope.getState(operationsContextModel.$tab)).toBe('history');
+      // When operation is not found, defaults to 'pending' (operation may not be fetched yet)
+      expect(scope.getState(operationsContextModel.$tab)).toBe('pending');
     });
 
     it('should switch to hidden tab when focused operation is hidden', async () => {
@@ -215,12 +230,14 @@ describe('operations context model', () => {
         values: new Map()
           .set(multisigOperation.__test.$cachedOperations, [pendingOp1, pendingOp2])
           .set(operationsContextModel.$hiddenOperationIds, [pendingOp1.id])
-          .set(operationsContextModel.$tab, 'pending'),
+          .set(operationsContextModel.$tab, 'pending')
+          .set(accounts.__test.$populated, true)
+          .set(accounts.__test.$list, [mockMultisigAccount]),
       });
 
       const filtered = scope.getState(operationsContextModel.$filteredOperations);
       expect(filtered).toHaveLength(1);
-      expect(filtered?.[0]?.id).toBe(pendingOp2.id);
+      expect(filtered?.[0]?.operation.id).toBe(pendingOp2.id);
     });
 
     it('should show only hidden operations in hidden tab', async () => {
@@ -231,12 +248,14 @@ describe('operations context model', () => {
         values: new Map()
           .set(multisigOperation.__test.$cachedOperations, [pendingOp, hiddenOp])
           .set(operationsContextModel.$hiddenOperationIds, [hiddenOp.id])
-          .set(operationsContextModel.$tab, 'hidden'),
+          .set(operationsContextModel.$tab, 'hidden')
+          .set(accounts.__test.$populated, true)
+          .set(accounts.__test.$list, [mockMultisigAccount]),
       });
 
       const filtered = scope.getState(operationsContextModel.$filteredOperations);
       expect(filtered).toHaveLength(1);
-      expect(filtered?.[0]?.id).toBe(hiddenOp.id);
+      expect(filtered?.[0]?.operation.id).toBe(hiddenOp.id);
     });
 
     it('should calculate hidden operations count correctly', async () => {
@@ -247,7 +266,9 @@ describe('operations context model', () => {
       const scope = fork({
         values: new Map()
           .set(multisigOperation.__test.$cachedOperations, [op1, op2, op3])
-          .set(operationsContextModel.$hiddenOperationIds, [op1.id, op2.id]),
+          .set(operationsContextModel.$hiddenOperationIds, [op1.id, op2.id])
+          .set(accounts.__test.$populated, true)
+          .set(accounts.__test.$list, [mockMultisigAccount]),
       });
 
       const count = scope.getState(operationsContextModel.$hiddenOperationsCount);
@@ -280,7 +301,9 @@ describe('operations context model', () => {
       const scope = fork({
         values: new Map()
           .set(multisigOperation.__test.$cachedOperations, [pendingOp1, pendingOp2, executedOp])
-          .set(operationsContextModel.$hiddenOperationIds, [pendingOp1.id]),
+          .set(operationsContextModel.$hiddenOperationIds, [pendingOp1.id])
+          .set(accounts.__test.$populated, true)
+          .set(accounts.__test.$list, [mockMultisigAccount]),
       });
 
       const pendingCount = scope.getState(operationsContextModel.$pendingOperationsCount);

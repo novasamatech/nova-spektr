@@ -17,8 +17,8 @@ import { SUBSTRATE_ID } from '../QrCode/QrGenerator/common/constants';
 import {
   createDynamicDerivationsSignPayload,
   createDynamicDerivationsSignWithProofPayload,
-  createSignPayload,
   createSignWithProofPayload,
+  createTransactionPayload,
 } from '../QrCode/QrGenerator/common/utils';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 
@@ -49,7 +49,7 @@ export const ScanSingleframeQr = ({
 }: Props) => {
   const { t } = useI18n();
   const [tab, setTab] = useState('new');
-  const prevTab = useRef<string>(null);
+  const setupIdRef = useRef(0);
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [qrPayload, setQrPayload] = useState<Uint8Array>();
@@ -58,12 +58,14 @@ export const ScanSingleframeQr = ({
   const isEthereumAccount = accountUtils.isEthereumBased(account);
 
   useEffect(() => {
-    if (txPayload && qrPayload && tab === prevTab.current) return;
-    prevTab.current = tab;
-    setupTransaction().catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
-  }, [txPayload, qrPayload, tab]);
+    const currentId = ++setupIdRef.current;
+    setTxPayload(undefined);
+    setQrPayload(undefined);
 
-  const setupTransaction = async (): Promise<void> => {
+    setupTransaction(currentId).catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
+  }, [tab]);
+
+  const setupTransaction = async (setupId?: number): Promise<void> => {
     try {
       const derivationPath =
         accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)
@@ -76,6 +78,8 @@ export const ScanSingleframeQr = ({
           account.accountId,
           api,
         );
+
+        if (setupId !== undefined && setupId !== setupIdRef.current) return;
 
         let signPayload: Uint8Array;
         if (account.signingType === SigningType.POLKADOT_VAULT) {
@@ -104,6 +108,9 @@ export const ScanSingleframeQr = ({
         setQrPayload(qrPayload);
       } else {
         const metadata = await createTxMetadata(account.accountId, api);
+
+        if (setupId !== undefined && setupId !== setupIdRef.current) return;
+
         const { payload } = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
 
         let signPayload: Uint8Array;
@@ -117,7 +124,7 @@ export const ScanSingleframeQr = ({
             account.cryptoType,
           );
         } else {
-          signPayload = createSignPayload(account.accountId, payload, chain.chainId, account.cryptoType);
+          signPayload = createTransactionPayload(account.accountId, payload, chain.chainId, account.cryptoType);
         }
 
         const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
@@ -130,6 +137,13 @@ export const ScanSingleframeQr = ({
     }
   };
 
+  const handleQrReset = () => {
+    const currentId = ++setupIdRef.current;
+    setTxPayload(undefined);
+    setQrPayload(undefined);
+    setupTransaction(currentId).catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
+  };
+
   useEffect(onResetCountdown, [qrPayload]);
 
   return (
@@ -139,7 +153,7 @@ export const ScanSingleframeQr = ({
         chainId={chain.chainId}
         isLegacyQR={tab === 'legacy'}
         testId={TEST_IDS.OPERATIONS.QR_CODE_CONTAINER}
-        onQrReset={setupTransaction}
+        onQrReset={handleQrReset}
       >
         {isMetadataProofsSupported && (
           <Tabs value={tab} onChange={setTab}>

@@ -31,7 +31,7 @@ export const Operations = () => {
         </Box>
       </Header>
 
-      <div className="mx-auto flex h-full w-full max-w-[1084px] flex-col">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1084px] flex-1 flex-col">
         <div className="flex w-full items-center justify-between py-4">
           <Tabs value={tab} onChange={handleTabChange}>
             <Tabs.List>

@@ -570,7 +570,7 @@ export const accountService = {
 
   // graph
 
-  createAccountGraphs,
+  createAccountGraphs: createAccountGraphs,
   findLeafs,
   findSignatories,
   findInitiators,
