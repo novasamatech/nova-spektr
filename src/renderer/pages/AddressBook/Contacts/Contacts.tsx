@@ -135,7 +135,7 @@ export const Contacts = () => {
     backendContactsModel.events.syncTriggered();
   };
 
-  const showTabs = availableSources.length > 0;
+  const showTabs = availableSources.length > 1;
   const isBackendTab = sourceTab !== 'local';
 
   const viewState = computeViewState({
