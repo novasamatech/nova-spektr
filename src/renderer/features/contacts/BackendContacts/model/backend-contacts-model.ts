@@ -99,11 +99,6 @@ sample({
 
 $error.on(authModel.events.signOutClicked, () => null);
 
-// Clear backend contacts from DB on URL cleared
-sample({
-  clock: backendConfigurationModel.events.urlCleared,
-  target: contactModel.effects.clearBackendContactsFx,
-});
 $error.on(backendConfigurationModel.events.urlCleared, () => null);
 $lastSyncTime.on(backendConfigurationModel.events.urlCleared, () => null);
 $syncStatus.on(backendConfigurationModel.events.urlCleared, () => 'idle');

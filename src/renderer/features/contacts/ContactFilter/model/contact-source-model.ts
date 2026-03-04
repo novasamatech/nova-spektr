@@ -9,9 +9,7 @@ const $sourceTab = createStore<string>('local');
 
 $sourceTab.on(sourceTabChanged, (_, tab) => tab);
 
-// Reset to local on sign out or URL cleared
 $sourceTab.on(authModel.events.signOutClicked, () => 'local');
-$sourceTab.on(backendConfigurationModel.events.urlCleared, () => 'local');
 
 type SourceTab = { id: string; label: string };
 
@@ -20,12 +18,14 @@ const $availableSources = combine(
     isAuthenticated: authModel.$isAuthenticated,
     isSessionExpired: authModel.$isSessionExpired,
     backendUrl: backendConfigurationModel.$backendUrl,
+    hasBackendContacts: contactModel.$backendContacts.map((cs) => cs.length > 0),
   },
-  ({ isAuthenticated, isSessionExpired, backendUrl }): SourceTab[] => {
+  ({ isAuthenticated, isSessionExpired, backendUrl, hasBackendContacts }): SourceTab[] => {
     const sources: SourceTab[] = [{ id: 'local', label: 'addressBook.sources.myContacts' }];
 
-    if (backendUrl && (isAuthenticated || isSessionExpired)) {
-      sources.push({ id: backendUrl, label: 'addressBook.sources.externalSource' });
+    const hasActiveBackend = backendUrl && (isAuthenticated || isSessionExpired);
+    if (hasActiveBackend || hasBackendContacts) {
+      sources.push({ id: 'backend', label: 'addressBook.sources.externalSource' });
     }
 
     return sources;
@@ -37,7 +37,7 @@ sample({
   clock: $availableSources,
   source: contactModel.$localContacts,
   filter: (localContacts, sources) => sources.length > 1 && localContacts.length === 0,
-  fn: (_localContacts, sources) => sources.find((s) => s.id !== 'local')!.id,
+  fn: () => 'backend',
   target: $sourceTab,
 });
 
