@@ -87,7 +87,7 @@ function renderViewState(viewState: ViewState, onSendTo: (contact: Contact) => v
     case 'cachedWithError':
       return (
         <CachedWithErrorView
-          errorMessage={viewState.error.message}
+          category={viewState.error.category}
           items={viewState.items}
           onSendTo={onSendTo}
           onRetry={onRetry}

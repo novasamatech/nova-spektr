@@ -8,7 +8,7 @@ import { HttpError, fetchAllContacts } from '../api/backend-contacts-api';
 
 function categorizeError(error: Error): BackendError {
   if (error instanceof HttpError) {
-    const category = error.status === 401 || error.status === 403 ? 'auth' : 'generic';
+    const category = error.status === 401 ? 'auth' : error.status === 403 ? 'forbidden' : 'generic';
 
     return { category, message: error.message };
   }

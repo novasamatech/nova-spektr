@@ -153,6 +153,7 @@
       "emptyBackend": "No contacts found on the server",
       "emptyBackendDescription": "The connected server has no contacts. Contact your administrator or check the backend configuration.",
       "errorAuth": "Session expired. Please reconnect.",
+      "errorForbidden": "Access denied. Please contact your administrator.",
       "errorGeneric": "Something went wrong.",
       "errorNetwork": "Could not connect to the server. Check the URL and try again.",
       "errorTimeout": "The server took too long to respond. Try again later.",
@@ -162,7 +163,7 @@
       "myContacts": "My Contacts",
       "retry": "Retry",
       "syncButton": "Sync",
-      "syncErrorCached": "Sync failed — showing cached contacts"
+      "syncErrorCached": "Sync failed - showing cached contacts"
     },
     "syncStatus": {
       "failed": "Sync failed",
