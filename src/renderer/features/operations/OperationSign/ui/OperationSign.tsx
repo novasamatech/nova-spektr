@@ -2,7 +2,7 @@ import { useGate, useUnit } from 'effector-react';
 
 import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText, Loader } from '@/shared/ui';
+import { Alert, FootnoteText, Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { walletUtils } from '@/entities/wallet';
 import { signModel } from '../model/sign-model';
@@ -18,9 +18,11 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
   const { t } = useI18n();
 
   useGate(signModel.gates.flow);
+  const { t } = useI18n();
 
   const signStore = useUnit(signModel.$signStore);
   const signerWallet = useUnit(signModel.$signerWallet);
+  const batchSplitWarning = useUnit(signModel.$batchSplitWarning);
 
   if (!signStore || !signerWallet) {
     const height = signerWallet && walletUtils.isWalletConnectGroup(signerWallet) ? '430px' : '490px';
@@ -47,11 +49,20 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
   };
 
   return (
-    <SigningSwitch
-      signerWallet={signerWallet}
-      signingPayloads={signStore}
-      onGoBack={onGoBack}
-      onResult={onSignResult}
-    />
+    <Box width="440px" direction="column" gap={3}>
+      {batchSplitWarning && (
+        <div className="px-4">
+          <Alert active variant="warn" title={t('signing.batchSplit.title')}>
+            {t('signing.batchSplit.description', { chunkCount: batchSplitWarning.extrinsicCountAfterSplit })}
+          </Alert>
+        </div>
+      )}
+      <SigningSwitch
+        signerWallet={signerWallet}
+        signingPayloads={signStore}
+        onGoBack={onGoBack}
+        onResult={onSignResult}
+      />
+    </Box>
   );
 };

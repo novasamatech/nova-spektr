@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useConfirmContext } from '@/shared/providers/ConfirmContext';
-import { Alert, Button, FootnoteText, InputHint, SmallTitleText } from '@/shared/ui';
+import { Alert, Button, FootnoteText, Icon, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select, Surface, useNotification } from '@/shared/ui-kit';
 import { OperationMessageSign } from '@/features/operations/OperationMessageSign';
@@ -22,6 +22,7 @@ export const BackendConfigurationModal = () => {
   const isValid = useUnit(backendConfigurationModel.$isUrlValid);
   const hasBackend = useUnit(backendConfigurationModel.$hasBackend);
   const isDirty = useUnit(backendConfigurationModel.$isDirty);
+  const urlReachable = useUnit(backendConfigurationModel.$urlReachable);
 
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const authState = useUnit(authModel.$authState);
@@ -96,6 +97,7 @@ export const BackendConfigurationModal = () => {
             <InputHint variant="error" active={showUrlError}>
               {t('addressBook.backendConfiguration.urlInvalidError')}
             </InputHint>
+            {urlReachable && <UrlReachabilityStatus status={urlReachable} />}
           </Field>
 
           {showConnectedAccount && (
@@ -142,6 +144,30 @@ export const BackendConfigurationModal = () => {
         </Modal.Footer>
       )}
     </Modal>
+  );
+};
+
+const urlReachabilityConfig = {
+  checking: { icon: <Loader color="primary" size={14} />, textClass: 'text-text-tertiary' },
+  reachable: {
+    icon: <Icon name="checkmarkOutline" size={14} className="text-icon-positive" />,
+    textClass: 'text-icon-positive',
+  },
+  unreachable: {
+    icon: <Icon name="warnCutout" size={14} className="text-icon-negative" />,
+    textClass: 'text-icon-negative',
+  },
+} as const;
+
+const UrlReachabilityStatus = ({ status }: { status: 'checking' | 'reachable' | 'unreachable' }) => {
+  const { t } = useI18n();
+  const { icon, textClass } = urlReachabilityConfig[status];
+
+  return (
+    <div className="flex items-center gap-x-1.5">
+      {icon}
+      <FootnoteText className={textClass}>{t(`addressBook.backendConfiguration.${status}`)}</FootnoteText>
+    </div>
   );
 };
 

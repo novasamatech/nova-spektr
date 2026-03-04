@@ -1,6 +1,10 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { debounce } from 'patronum';
 
 import { persist } from '@/shared/api/storage';
+import { authFetch } from '../lib/backend-fetch';
+
+type UrlReachability = null | 'checking' | 'reachable' | 'unreachable';
 
 const urlChanged = createEvent<string>();
 const urlSaved = createEvent();
@@ -65,6 +69,47 @@ sample({
 $backendUrl.on(urlCleared, () => null);
 $draftUrl.on(urlCleared, () => '');
 
+const checkUrlReachabilityFx = createEffect(async (url: string) => {
+  const result = await authFetch(`${url}/health`, { method: 'GET' });
+  if (!result.ok) throw new Error(`Status ${result.status}`);
+});
+
+const $urlReachable = createStore<UrlReachability>(null);
+
+$urlReachable.on($draftUrl, () => null);
+
+const draftUrlDebounced = debounce({ source: $draftUrl, timeout: 500 });
+
+sample({
+  clock: draftUrlDebounced,
+  source: $isUrlValid,
+  filter: (isValid) => isValid,
+  fn: (_, url) => url,
+  target: checkUrlReachabilityFx,
+});
+
+sample({
+  clock: checkUrlReachabilityFx,
+  fn: (): UrlReachability => 'checking',
+  target: $urlReachable,
+});
+
+sample({
+  clock: checkUrlReachabilityFx.done,
+  source: $draftUrl,
+  filter: (draftUrl, { params: checkedUrl }) => draftUrl.trim() === checkedUrl,
+  fn: (): UrlReachability => 'reachable',
+  target: $urlReachable,
+});
+
+sample({
+  clock: checkUrlReachabilityFx.fail,
+  source: $draftUrl,
+  filter: (draftUrl, { params: checkedUrl }) => draftUrl.trim() === checkedUrl,
+  fn: (): UrlReachability => 'unreachable',
+  target: $urlReachable,
+});
+
 export const backendConfigurationModel = {
   $backendUrl,
   $draftUrl,
@@ -72,6 +117,10 @@ export const backendConfigurationModel = {
   $isUrlValid,
   $hasBackend,
   $isDirty,
+  $urlReachable,
+  effects: {
+    checkUrlReachabilityFx,
+  },
   events: {
     urlChanged,
     urlSaved,
