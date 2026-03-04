@@ -2,9 +2,9 @@ import { Fragment } from 'react';
 
 import { type BackendContact, type Contact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText, IconButton, Plate } from '@/shared/ui';
+import { FootnoteText, Icon, IconButton, Plate } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import { Copy, Label } from '@/shared/ui-kit';
+import { Copy, Label, Tooltip } from '@/shared/ui-kit';
 
 type Props = {
   contact: BackendContact;
@@ -26,10 +26,28 @@ export const BackendContactRow = ({ contact, onSendTo }: Props) => {
             <Address address={contact.address} showIcon iconSize={20} variant="truncate" title={contact.name} />
           </div>
           <div className="ml-auto flex items-center gap-x-1">
-            <IconButton className="shrink-0 text-icon-default" name="sendArrow" onClick={handleSendTo} />
+            <IconButton
+              className="shrink-0 text-icon-default"
+              name="sendArrow"
+              ariaLabel={t('addressBook.a11y.sendTo', { name: contact.name })}
+              onClick={handleSendTo}
+            />
             <Copy value={contact.address} notification={t('general.notifications.addressCopied')}>
-              <IconButton className="shrink-0 text-icon-default" name="copy" />
+              <IconButton
+                className="shrink-0 text-icon-default"
+                name="copy"
+                ariaLabel={t('addressBook.a11y.copyAddress', { name: contact.name })}
+              />
             </Copy>
+            <Tooltip enableHover delay={200}>
+              <Tooltip.Trigger>
+                <div className="flex items-center gap-x-1 text-text-tertiary">
+                  <Icon name="lock" size={14} />
+                  <FootnoteText className="text-text-tertiary">{t('addressBook.backendContact.synced')}</FootnoteText>
+                </div>
+              </Tooltip.Trigger>
+              <Tooltip.Content>{t('addressBook.backendContact.managedTooltip')}</Tooltip.Content>
+            </Tooltip>
           </div>
         </div>
 
@@ -39,10 +57,7 @@ export const BackendContactRow = ({ contact, onSendTo }: Props) => {
           {contact.chainName && <Label variant="lightBlue">{contact.chainName}</Label>}
           {contact.entityNames.map((entityName) => (
             <Fragment key={entityName}>
-              <FootnoteText className="text-text-tertiary">
-                {/* eslint-disable-next-line i18next/no-literal-string */}
-                {'\u00b7'}
-              </FootnoteText>
+              <FootnoteText className="text-text-tertiary">{'\u00b7'}</FootnoteText>
               <Label variant="purple">{entityName}</Label>
             </Fragment>
           ))}
