@@ -56,24 +56,24 @@
       "signOutButton": "Sign out"
     },
     "backendConfiguration": {
-      "addTitle": "Add Backend",
+      "addTitle": "Add Connection",
       "backendRemoved": "Backend removed",
       "buttonLabel": "External source",
       "checking": "Checking connection...",
       "connectButton": "Connect",
       "connectingMessage": "Connecting...",
-      "connectionLabel": "Backend connection",
+      "connectionLabel": "External source connection",
       "discardButton": "Discard",
-      "editTitle": "Edit Backend",
+      "editTitle": "Edit Connection",
       "keepEditingButton": "Keep editing",
       "reachable": "Server is reachable",
-      "tooltip": "Configure address book backend",
+      "tooltip": "Configure address book source",
       "tryAgainButton": "Try again",
       "unreachable": "Server is not reachable",
       "unsavedChangesMessage": "You have modified the backend URL without connecting. Discard changes?",
       "unsavedChangesTitle": "Unsaved changes",
       "urlInvalidError": "Please enter a valid URL",
-      "urlLabel": "Backend URL",
+      "urlLabel": "Address Book URL",
       "urlPlaceholder": "https://example.com/api"
     },
     "backendContact": {
@@ -2450,12 +2450,12 @@
   "settings": {
     "autoUpdate": "Spektr auto updates",
     "backendSync": {
-      "addButton": "Add Backend",
+      "addButton": "Add Connection",
       "configureButton": "Configure",
       "connected": "Connected",
       "disconnected": "Not connected",
       "notConfigured": "Not configured",
-      "title": "Address Book Sync"
+      "title": "External Address Book"
     },
     "currency": {
       "cryptocurrenciesLabel": "Cryptocurrencies",
