@@ -8,7 +8,7 @@ import {
   type TxMetadata,
   assert,
   createTxMetadata,
-  getBlockTimeMs,
+  getExpectedBlockTime,
   getMortalitySeconds,
   upgradeNonce,
 } from '@/shared/lib/utils';
@@ -81,7 +81,7 @@ export const ScanMultiframeQr = ({
       }
 
       if (!metadataMap[accountId][chainId]) {
-        resolvedBlockTimeMs[chainId] ??= getBlockTimeMs(signingPayload.chain, signingPayload.api);
+        resolvedBlockTimeMs[chainId] ??= getExpectedBlockTime(signingPayload.api, signingPayload.chain).toNumber();
         metadataMap[accountId][chainId] = await createTxMetadata(
           signingPayload.signatory.accountId,
           signingPayload.api,
@@ -101,7 +101,8 @@ export const ScanMultiframeQr = ({
 
       if (tab === 'new' && isMetadataProofsSupported) {
         const chainId = signingPayload.chain.chainId;
-        const blockTimeMs = resolvedBlockTimeMs[chainId] ?? getBlockTimeMs(signingPayload.chain, signingPayload.api);
+        const blockTimeMs =
+          resolvedBlockTimeMs[chainId] ?? getExpectedBlockTime(signingPayload.api, signingPayload.chain).toNumber();
         const info = await transactionService.createPayloadWithProof(
           signingPayload.extrinsic,
           signatory.accountId,

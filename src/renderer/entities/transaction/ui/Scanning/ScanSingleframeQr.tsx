@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Chain, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { assert, createTxMetadata, getBlockTimeMs, getMortalitySeconds } from '@/shared/lib/utils';
+import { assert, createTxMetadata, getExpectedBlockTime, getMortalitySeconds } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Tabs } from '@/shared/ui-kit';
@@ -69,7 +69,7 @@ export const ScanSingleframeQr = ({
 
   const setupTransaction = async (setupId?: number): Promise<void> => {
     try {
-      const blockTimeMs = getBlockTimeMs(chain, api);
+      const blockTimeMs = getExpectedBlockTime(api, chain).toNumber();
 
       const derivationPath =
         accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)

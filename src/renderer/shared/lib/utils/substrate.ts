@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type u32 } from '@polkadot/types';
 import { type SignerPayloadJSON } from '@polkadot/types/types/extrinsic';
-import { type BN, BN_TWO, bnMin, hexToU8a, isHex, numberToU8a, u8aToHex, u8aToNumber } from '@polkadot/util';
+import { BN, BN_TWO, bnMin, hexToU8a, isHex, numberToU8a, u8aToHex, u8aToNumber } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 
 import {
@@ -27,10 +27,6 @@ export type TxMetadata = {
 
 const SUPPORTED_VERSIONS = ['V2', 'V3', 'V4'];
 const UNUSED_LABEL = 'unused';
-
-export const getBlockTimeMs = (chain: Chain, api: ApiPromise): number => {
-  return chain.additional?.defaultBlockTime ?? getExpectedBlockTime(api).toNumber();
-};
 
 export const getMortalitySeconds = (mortalLength: number, blockTimeMs: number): number => {
   return Math.floor((mortalLength * blockTimeMs) / 1000);
@@ -119,7 +115,11 @@ export async function getParachainId(api: ApiPromise): Promise<number> {
   return (parachainId as u32).toNumber();
 }
 
-export const getExpectedBlockTime = (api: ApiPromise): BN => {
+export const getExpectedBlockTime = (api: ApiPromise, chain?: Chain): BN => {
+  if (chain?.additional?.defaultBlockTime) {
+    return new BN(chain.additional.defaultBlockTime);
+  }
+
   const substrateBlockTime = api.consts.babe?.expectedBlockTime || api.consts.aura?.slotDuration;
 
   const blockTime = substrateBlockTime;
