@@ -42,6 +42,39 @@ $syncStatus.on(fetchBackendContactsFx.done, () => 'done');
 $syncStatus.on(fetchBackendContactsFx.fail, () => 'error');
 $lastSyncTime.on(fetchBackendContactsFx.done, () => Date.now());
 
+// Minimum 300ms display time for 'syncing' state (leading throttle)
+let syncStartedAt = 0;
+
+const ensureMinSyncTimeFx = createEffect(async (status: SyncStatus) => {
+  const remaining = 300 - (Date.now() - syncStartedAt);
+  if (remaining > 0) {
+    await new Promise((resolve) => setTimeout(resolve, remaining));
+  }
+
+  return status;
+});
+
+const $syncStatusThrottled = createStore<SyncStatus>('idle');
+
+sample({
+  clock: $syncStatus,
+  filter: (status) => status === 'syncing',
+  fn: (status) => {
+    syncStartedAt = Date.now();
+
+    return status;
+  },
+  target: $syncStatusThrottled,
+});
+
+sample({
+  clock: $syncStatus,
+  filter: (status) => status !== 'syncing',
+  target: ensureMinSyncTimeFx,
+});
+
+$syncStatusThrottled.on(ensureMinSyncTimeFx.doneData, (_, status) => status);
+
 // Persist fetched backend contacts to Dexie
 sample({
   clock: fetchBackendContactsFx.doneData,
@@ -80,6 +113,7 @@ export const backendContactsModel = {
   $error,
   $lastSyncTime,
   $syncStatus,
+  $syncStatusThrottled,
 
   events: {
     syncTriggered,
