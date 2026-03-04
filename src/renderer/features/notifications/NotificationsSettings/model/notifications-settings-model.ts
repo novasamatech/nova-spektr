@@ -1,5 +1,5 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
-import i18next from 'i18next';
+import { t } from 'i18next';
 import { or } from 'patronum';
 import { toast } from 'sonner';
 
@@ -59,16 +59,16 @@ const showSettingsSavedToastFx = createEffect((activeToastId: string | number | 
     toast.dismiss(activeToastId);
   }
 
-  return toast.success(i18next.t('settings.notificationsSettings.settingsSaved'), {
+  return toast.success(t('settings.notificationsSettings.settingsSaved'), {
     action: {
-      label: i18next.t('settings.notificationsSettings.undoButton'),
+      label: t('settings.notificationsSettings.undoButton'),
       onClick: () => undoSettings(),
     },
   });
 });
 
 const showSettingsRestoredToastFx = createEffect(() => {
-  toast.success(i18next.t('settings.notificationsSettings.settingsRestored'));
+  toast.success(t('settings.notificationsSettings.settingsRestored'));
 });
 
 // Track active toast ID
