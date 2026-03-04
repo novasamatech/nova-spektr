@@ -1,7 +1,7 @@
 import { useI18n } from '@/shared/i18n';
 import { Alert, Button, CaptionText } from '@/shared/ui';
 
-export type BackendErrorCategory = 'auth' | 'timeout' | 'network' | 'generic';
+export type BackendErrorCategory = 'auth' | 'forbidden' | 'timeout' | 'network' | 'generic';
 export type BackendError = { category: BackendErrorCategory; message: string };
 
 type Props = {
@@ -10,8 +10,9 @@ type Props = {
   onRetry: () => void;
 };
 
-const i18nKeyByCategory: Record<BackendErrorCategory, string> = {
+export const i18nKeyByCategory: Record<BackendErrorCategory, string> = {
   auth: 'addressBook.sources.errorAuth',
+  forbidden: 'addressBook.sources.errorForbidden',
   timeout: 'addressBook.sources.errorTimeout',
   network: 'addressBook.sources.errorNetwork',
   generic: 'addressBook.sources.errorGeneric',

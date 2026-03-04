@@ -14,6 +14,7 @@ vi.mock('@/shared/i18n', () => ({
 describe('entities/contact/ui/BackendErrorView', () => {
   test.each<[BackendErrorCategory, string]>([
     ['auth', 'addressBook.sources.errorAuth'],
+    ['forbidden', 'addressBook.sources.errorForbidden'],
     ['timeout', 'addressBook.sources.errorTimeout'],
     ['network', 'addressBook.sources.errorNetwork'],
     ['generic', 'addressBook.sources.errorGeneric'],

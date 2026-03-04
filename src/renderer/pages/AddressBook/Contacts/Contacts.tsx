@@ -87,7 +87,7 @@ function renderViewState(viewState: ViewState, onSendTo: (contact: Contact) => v
     case 'cachedWithError':
       return (
         <CachedWithErrorView
-          errorMessage={viewState.error.message}
+          category={viewState.error.category}
           items={viewState.items}
           onSendTo={onSendTo}
           onRetry={onRetry}
@@ -135,7 +135,7 @@ export const Contacts = () => {
     backendContactsModel.events.syncTriggered();
   };
 
-  const showTabs = availableSources.length > 0;
+  const showTabs = availableSources.length > 1;
   const isBackendTab = sourceTab !== 'local';
 
   const viewState = computeViewState({

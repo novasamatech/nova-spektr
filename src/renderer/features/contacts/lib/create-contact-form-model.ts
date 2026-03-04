@@ -66,7 +66,7 @@ export function createCreateFormModel() {
           {
             name: 'exist',
             errorText: t('addressBook.createContact.nameExistsError'),
-            source: contactModel.$contacts,
+            source: contactModel.$localContacts,
             validator: validateNameUnique,
           },
         ],
@@ -87,7 +87,7 @@ export function createCreateFormModel() {
           {
             name: 'exist',
             errorText: t('addressBook.createContact.accountIdExistsError'),
-            source: contactModel.$contacts,
+            source: contactModel.$localContacts,
             validator: validateAddressUnique,
           },
         ],
@@ -149,7 +149,7 @@ export function createEditFormModel() {
             errorText: t('addressBook.editContact.nameExistsError'),
             source: combine({
               contactToEdit: $contactToEdit,
-              contacts: contactModel.$contacts,
+              contacts: contactModel.$localContacts,
             }),
             validator: validateNameUniqueEdit,
           },
@@ -169,7 +169,7 @@ export function createEditFormModel() {
             errorText: t('addressBook.editContact.accountIdExistsError'),
             source: combine({
               contactToEdit: $contactToEdit,
-              contacts: contactModel.$contacts,
+              contacts: contactModel.$localContacts,
             }),
             validator: validateAddressUniqueEdit,
           },

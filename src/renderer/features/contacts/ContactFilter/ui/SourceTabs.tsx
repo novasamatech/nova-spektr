@@ -15,7 +15,7 @@ export const SourceTabs = ({ localCount, backendCount }: Props) => {
   const [sourceTab, availableSources] = useUnit([contactSourceModel.$sourceTab, contactSourceModel.$availableSources]);
   const sourceTabChanged = useUnit(contactSourceModel.events.sourceTabChanged);
 
-  if (availableSources.length === 0) {
+  if (availableSources.length <= 1) {
     return null;
   }
 
@@ -25,12 +25,10 @@ export const SourceTabs = ({ localCount, backendCount }: Props) => {
         <Tabs.List>
           {availableSources.map((source) => {
             const count = source.id === 'local' ? localCount : backendCount;
-            const label =
-              source.id === 'local' ? t('addressBook.sources.myContacts') : t('addressBook.sources.externalSource');
 
             return (
               <Tabs.Trigger key={source.id} value={source.id}>
-                <span className="whitespace-nowrap">{label}</span>
+                <span className="whitespace-nowrap">{t(source.label)}</span>
                 {count > 0 && <span className="text-text-tertiary">{count}</span>}
               </Tabs.Trigger>
             );
