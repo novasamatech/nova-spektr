@@ -12,11 +12,6 @@ import { metadata } from './metadata';
 const TEST_ACCOUNT_ID = toAccountId(TEST_ADDRESS);
 const PROXIED_ACCOUNT_ID = toAccountId('0xe4485f31d7848a3f4540dac93d8c056e7cb18b534fbab0c8367a81e1b85e464a');
 
-/**
- * ATTENTION! This tests may fail on node version >= 22 because of
- * `@polkadot/rpc-provider/mock`. It uses `assert { type 'json' }` in compiled
- * code, which breaks backward compatability.
- */
 describe('entities/transaction/lib/callDataDecoder', () => {
   const registry = new TypeRegistry();
   let provider: MockProvider;
