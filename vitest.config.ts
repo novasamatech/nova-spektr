@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 
 import { type UserConfigFnPromise, type ViteUserConfig, mergeConfig } from 'vitest/config';
-import { BaseSequencer, type TestSpecification } from 'vitest/node';
+import { type TestSpecification, BaseSequencer } from 'vitest/node';
 
 import { folders } from './config/index.js';
 import rendererConfig from './vite.config.renderer';
@@ -33,6 +33,13 @@ const config: UserConfigFnPromise = async (options) => {
   const base = await rendererConfig(options);
   const config: ViteUserConfig = {
     cacheDir: resolve(folders.root, 'node_modules/.cache/vitest'),
+    resolve: {
+      alias: {
+        // @polkadot/rpc-provider/mock ESM build uses deprecated `import ... assert { type: 'json' }`
+        // which is a SyntaxError in Node 22+. Redirect to the CJS build which uses require() instead.
+        '@polkadot/rpc-provider/mock': resolve(folders.root, 'node_modules/@polkadot/rpc-provider/cjs/mock/index.js'),
+      },
+    },
     test: {
       root: folders.root,
       dir: folders.source,

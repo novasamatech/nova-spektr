@@ -174,7 +174,9 @@ describe('operations-filter', () => {
     });
 
     test('returns false when operation accountId is not in list', () => {
-      const op = createMockOperation({ multisigAccountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never });
+      const op = createMockOperation({
+        multisigAccountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never,
+      });
       expect(matchesAccount(op, [MOCK_ACCOUNT_ID])).toBe(false);
     });
   });
@@ -309,9 +311,10 @@ describe('operations-filter', () => {
       ).toBe(true);
     });
 
-    test('interprets UTC-midnight range as local calendar day (Jan 25 excludes previous day UTC)', () => {
+    test('interprets UTC-midnight range as local calendar day (Jan 25 excludes previous day local)', () => {
       const opOnJan24 = createMockOperation({
-        timestamp: new Date('2025-01-24T23:00:00Z').getTime(),
+        // Use a time that is Jan 24 in any timezone (including UTC+14)
+        timestamp: new Date('2025-01-24T09:00:00Z').getTime(),
       });
       expect(
         matchesDateRange(opOnJan24, {
@@ -371,7 +374,9 @@ describe('operations-filter', () => {
     });
 
     test('returns false when account filter excludes operation', () => {
-      const op = createMockOperation({ multisigAccountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never });
+      const op = createMockOperation({
+        multisigAccountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never,
+      });
       const ctx: OperationsFilterContext = {
         ...emptyContext,
         filters: { ...emptyContext.filters, account: [MOCK_ACCOUNT_ID] },
