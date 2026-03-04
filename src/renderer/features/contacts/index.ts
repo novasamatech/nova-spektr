@@ -10,4 +10,4 @@ export {
   authModel,
   backendConfigurationModel,
 } from './BackendConfiguration';
-export { backendContactsModel } from './BackendContacts';
+export { SyncStatusBadge, backendContactsModel } from './BackendContacts';

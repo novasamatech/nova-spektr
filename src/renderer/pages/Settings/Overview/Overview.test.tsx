@@ -3,12 +3,13 @@ import { vi } from 'vitest';
 
 import { Overview } from './Overview';
 vi.mock('@/shared/i18n', () => ({
-  useI18n: jest.fn().mockReturnValue({
+  useI18n: vi.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
 vi.mock('./components', () => ({
+  BackendSyncSettings: () => <span>backendSyncSettings</span>,
   GeneralActions: () => <span>generalActions</span>,
   SocialLinks: () => <span>socialLinks</span>,
   Version: () => <span>version</span>,
