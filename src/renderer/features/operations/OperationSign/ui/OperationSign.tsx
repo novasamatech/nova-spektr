@@ -15,8 +15,6 @@ type Props = {
 };
 
 export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
-  const { t } = useI18n();
-
   useGate(signModel.gates.flow);
   const { t } = useI18n();
 
