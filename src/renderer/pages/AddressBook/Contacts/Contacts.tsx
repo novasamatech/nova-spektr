@@ -167,7 +167,7 @@ export const Contacts = () => {
           <div className="mx-auto flex h-full w-[636px] flex-col gap-y-4 pb-4">
             {showTabs && <SourceTabs localCount={localContacts.length} backendCount={backendContacts.length} />}
 
-            <div aria-live="polite" aria-busy={viewState.view === 'loading'}>
+            <div className="flex-1" aria-live="polite" aria-busy={viewState.view === 'loading'}>
               {renderViewState(viewState, handleSendTo, handleSync)}
             </div>
           </div>
