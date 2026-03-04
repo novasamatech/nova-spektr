@@ -78,7 +78,7 @@
     "r": "pnpm run-s"
   },
   "engines": {
-    "node": ">=20.x <22",
+    "node": ">=24.x",
     "pnpm": ">=9.x"
   },
   "dependencies": {
