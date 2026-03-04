@@ -6,11 +6,22 @@ import { type Done, persist } from '@/shared/api/storage';
 import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type DateRange } from '@/shared/ui-kit';
-import { type AnyAccount, accountService, accounts, multisigOperation } from '@/domains/network';
+import {
+  type AnyAccount,
+  type MultisigOperation,
+  accountService,
+  accounts,
+  multisigOperation,
+} from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { filterOperation } from '../lib/operations-filter';
+import { filterOperation, findAccountForOperation } from '../lib/operations-filter';
+
+export type OperationWithAccount = {
+  operation: MultisigOperation;
+  account: MultisigAccount | FlexibleMultisigAccount;
+};
 
 import { deepLinkModel } from './deep-link';
 import { multisigOperationsFeature } from './feature';
@@ -91,51 +102,57 @@ const $initiators = combine(
   },
 );
 
-const $multisigAccountsMap = accounts.$list.map(accs => {
-  const multisigAccounts = accs.filter(accountUtils.isAnyMultisigAccount);
-  const record: Record<string, MultisigAccount | FlexibleMultisigAccount> = {};
-
-  for (const account of multisigAccounts) {
-    record[account.accountId] = account;
-  }
-
-  return record;
-});
+const $multisigAccounts = accounts.$list.map(accs => accs.filter(accountUtils.isAnyMultisigAccount));
 
 const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isAnyMultisig));
 
-const $walletNameByAccountId = combine(
-  { multisigAccountsMap: $multisigAccountsMap, multisigWallets: $multisigWallets },
-  ({ multisigAccountsMap, multisigWallets }) => {
-    const result: Record<string, string> = {};
-    for (const [accountId, account] of Object.entries(multisigAccountsMap)) {
-      const wallet = multisigWallets.find(w => w.id === account.walletId);
-      if (wallet) result[accountId] = wallet.name;
+const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
+
+const $operationsWithAccounts = combine(
+  {
+    operations: multisigOperation.$list,
+    multisigAccounts: $multisigAccounts,
+    accountsPopulated: accounts.$populated,
+  },
+  ({ operations, multisigAccounts, accountsPopulated }): OperationWithAccount[] => {
+    if (!accountsPopulated) return [];
+
+    const result: OperationWithAccount[] = [];
+    for (const op of operations) {
+      const account = findAccountForOperation(op, multisigAccounts);
+      if (account) result.push({ operation: op, account });
     }
+
     return result;
   },
 );
 
-const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
-
 const $filteredOperations = combine(
   {
-    operations: multisigOperation.$list,
+    operationsWithAccounts: $operationsWithAccounts,
     filter: $filter,
     tab: $tab,
     hiddenIds: $hiddenOperationIds,
-    multisigAccountsMap: $multisigAccountsMap,
-    walletNameByAccountId: $walletNameByAccountId,
+    multisigAccounts: $multisigAccounts,
+    multisigWallets: $multisigWallets,
     chains: networkModel.$chains,
   },
-  ({ operations, filter, tab, hiddenIds, multisigAccountsMap, walletNameByAccountId, chains }) => {
-    return operations.filter(op =>
-      filterOperation(op, {
+  ({
+    operationsWithAccounts,
+    filter,
+    tab,
+    hiddenIds,
+    multisigAccounts,
+    multisigWallets,
+    chains,
+  }): OperationWithAccount[] => {
+    return operationsWithAccounts.filter(({ operation }) =>
+      filterOperation(operation, {
         filters: filter,
         tab,
         hiddenIds,
-        multisigAccountsMap,
-        walletNameByAccountId,
+        multisigAccounts,
+        multisigWallets,
         chains,
       }),
     );
@@ -143,18 +160,29 @@ const $filteredOperations = combine(
 );
 
 const $hiddenOperationsCount = combine(
-  { operations: multisigOperation.$list, hiddenIds: $hiddenOperationIds },
-  ({ operations, hiddenIds }) => operations.filter(op => hiddenIds.includes(op.id)).length,
+  { operationsWithAccounts: $operationsWithAccounts, hiddenIds: $hiddenOperationIds },
+  ({ operationsWithAccounts, hiddenIds }) =>
+    operationsWithAccounts.filter(({ operation }) => hiddenIds.includes(operation.id)).length,
 );
 
 const $pendingOperationsCount = combine(
-  { operations: multisigOperation.$list, hiddenIds: $hiddenOperationIds },
-  ({ operations, hiddenIds }) => operations.filter(op => op.status === 'pending' && !hiddenIds.includes(op.id)).length,
+  { operationsWithAccounts: $operationsWithAccounts, hiddenIds: $hiddenOperationIds },
+  ({ operationsWithAccounts, hiddenIds }) =>
+    operationsWithAccounts.filter(
+      ({ operation }) => operation.status === 'pending' && !hiddenIds.includes(operation.id),
+    ).length,
 );
 
 const $isTabDataLoading = combine(
-  { tab: $tab, onChainReady: multisigOperation.$onChainReady, offChainReady: multisigOperation.$offChainReady },
-  ({ tab, onChainReady, offChainReady }) => {
+  {
+    tab: $tab,
+    onChainReady: multisigOperation.$onChainReady,
+    offChainReady: multisigOperation.$offChainReady,
+    accountsPopulated: accounts.$populated,
+  },
+  ({ tab, onChainReady, offChainReady, accountsPopulated }) => {
+    if (!accountsPopulated) return true;
+
     return tab === 'pending' ? !onChainReady : !offChainReady;
   },
 );
@@ -162,7 +190,6 @@ const $isTabDataLoading = combine(
 sample({
   clock: multisigOperationsFeature.running,
   filter: ({ accountIds, apis }) => accountIds.length > 0 && Object.keys(apis).length > 0,
-  fn: ({ accountIds, apis, chains }) => ({ accountIds, apis, chains }),
   target: multisigOperation.subscribeToAccounts,
 });
 
@@ -190,8 +217,16 @@ sample({
   fn: ({ operations, hiddenIds }, operationId): TabFilter => {
     if (hiddenIds.includes(operationId!)) return 'hidden';
     const operation = operations.find(op => op.id === operationId);
-    return operation?.status === 'pending' ? 'pending' : 'history';
+    if (!operation) return 'pending';
+    return operation.status === 'pending' ? 'pending' : 'history';
   },
+  target: setTab,
+});
+
+// Reset to pending tab every time the Operations page is opened
+sample({
+  clock: multisigOperationsFeature.gate.open,
+  fn: (): TabFilter => 'pending',
   target: setTab,
 });
 
@@ -222,7 +257,7 @@ export const operationsContextModel = {
   $filter,
   $isFiltersSelected,
   $filteredOperations,
-  $multisigAccountsMap,
+  $multisigAccounts,
   $multisigWallets,
   $initiator,
   $tab,

@@ -1,5 +1,13 @@
-export { EditContactForm } from './EditContactForm';
-export { CreateContactForm, CreateContactNavigation } from './CreateContactForm';
+export { EditContactForm, editFormModel } from './EditContactForm';
+export { CreateContactForm, CreateContactNavigation, createFormModel } from './CreateContactForm';
 export { EditRouteGuard } from './EditRouteGuard';
-export { ContactFilter, filterModel } from './ContactFilter';
+export { ContactFilter, SourceTabs, contactSourceModel, filterModel } from './ContactFilter';
 export { ImportContactsButton } from './ImportContacts';
+export {
+  BackendConfigurationButton,
+  BackendConfigurationModal,
+  BackendConnectionCard,
+  authModel,
+  backendConfigurationModel,
+} from './BackendConfiguration';
+export { SyncStatusBadge, backendContactsModel } from './BackendContacts';

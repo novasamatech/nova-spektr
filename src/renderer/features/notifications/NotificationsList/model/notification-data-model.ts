@@ -5,10 +5,8 @@ import { accountUtils } from '@/entities/wallet';
 
 export const $operationsByKey = multisigOperation.$list.map((operations) =>
   keyBy(operations, (op) =>
-    multisigOperationService.getOperationId(op.chainId, op.callHash, op.accountId, op.blockCreated, op.indexCreated),
+    multisigOperationService.getOperationId(op.chainId, op.callHash, op.multisigAccountId, op.blockCreated, op.indexCreated),
   ),
 );
 
-export const $multisigAccountsById = accounts.$list.map((accs) =>
-  keyBy(accs.filter(accountUtils.isAnyMultisigAccount), (acc) => acc.accountId),
-);
+export const $multisigAccounts = accounts.$list.map((accs) => accs.filter(accountUtils.isAnyMultisigAccount));

@@ -1,7 +1,8 @@
 import init, { Encoder } from 'raptorq/raptorq';
 import { useEffect, useState } from 'react';
 
-import { QrCode, Skeleton } from '@/shared/ui-kit';
+import { Loader } from '@/shared/ui';
+import { QrCode } from '@/shared/ui-kit';
 
 import { DEFAULT_FRAME_DELAY, DEFAULT_MAX_FRAME_DELAY } from './common/constants';
 import { createFrames } from './common/utils';
@@ -42,7 +43,11 @@ export const QrTxGenerator = ({
   }, [enableRaptorQ, payload]);
 
   if (!frames) {
-    return <Skeleton height={size} width={size} />;
+    return (
+      <div className="flex items-center justify-center" style={{ width: size, height: size }}>
+        <Loader color="primary" size={25} />
+      </div>
+    );
   }
 
   return (

@@ -57,7 +57,7 @@ const $onChainOperations = combine(
       )
       .filter(nonNullable)
       .map(op => {
-        const userData = userCallData[op.chainId]?.[op.accountId]?.[op.callHash];
+        const userData = userCallData[op.chainId]?.[op.multisigAccountId]?.[op.callHash];
         if (userData) {
           return {
             ...op,
@@ -95,7 +95,13 @@ sample({
       const chain = chains[el.api.genesisHash.toHex()];
       if (!chain) return [];
 
-      return [{ api: el.api, hashes: el.hashes, chain }];
+      return [
+        {
+          api: el.api,
+          hashes: el.hashes,
+          chain,
+        },
+      ];
     });
   },
   target: series(subscribeOnchainResource.subscribe, { parallel: true }),
@@ -213,14 +219,19 @@ sample({
       const chain = chains[chainId];
       if (!chain) return [];
 
-      return [{ api, chain, accountIds }];
+      return [
+        {
+          api,
+          chain,
+          accountIds,
+        },
+      ];
     }),
   target: series(initialOnChainFetch.fetch, { parallel: true }),
 });
 
 sample({
   clock: subscribeToAccounts,
-  fn: ({ apis, accountIds, chains }) => ({ apis, chains, accountIds }),
   target: fetchOffchainResource.fetch,
 });
 
@@ -352,19 +363,27 @@ const $populated = restore(
 
 persist({ store: $cachedOperations, key: 'multisig-operations', done: cachedOperationsLoaded });
 
+// Clear stale cached operations that lack required fields (old format before multisigAccountId was added)
+sample({
+  clock: cachedOperationsLoaded,
+  filter: ({ value }) => value.some(op => !op.multisigAccountId),
+  fn: () => [],
+  target: $cachedOperations,
+});
+
 const updateCallData = createEvent<{
   chainId: ChainId;
-  accountId: AccountId;
+  multisigAccountId: AccountId;
   callHash: HexString;
   callData: CallData;
   transaction: DecodedTransaction;
 }>();
 
-$userAddedCallData.on(updateCallData, (state, { chainId, accountId, callHash, callData, transaction }) =>
+$userAddedCallData.on(updateCallData, (state, { chainId, multisigAccountId, callHash, callData, transaction }) =>
   produce(state, draft => {
     if (!draft[chainId]) draft[chainId] = {};
-    if (!draft[chainId][accountId]) draft[chainId][accountId] = {};
-    draft[chainId][accountId][callHash] = { callData, transaction };
+    if (!draft[chainId][multisigAccountId]) draft[chainId][multisigAccountId] = {};
+    draft[chainId][multisigAccountId][callHash] = { callData, transaction };
   }),
 );
 
@@ -438,8 +457,8 @@ sample({
 // Cleanup operations when accounts are deleted
 const deleteAccountIds = accounts.deleteAccounts.doneData.map(deleted => deleted.map(a => a.accountId));
 
-$cachedOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.accountId)));
-$offChainOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.accountId)));
+$cachedOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.multisigAccountId)));
+$offChainOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.multisigAccountId)));
 
 $onChainOperationsByCallhash.on(deleteAccountIds, (state, ids) =>
   produce(state, draft => {

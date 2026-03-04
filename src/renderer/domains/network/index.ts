@@ -20,6 +20,7 @@ export type {
 
 export { accountSync } from './account-sync/store';
 export { accountSyncService } from './account-sync/service';
+export { INDEXER_URL } from './account-sync/constants';
 export type { SyncedAccount, SyncedMultisigAccount, SyncedProxyAccount } from './account-sync/types';
 
 export { useAccountName, useAccountsNames, useWalletName, useWalletsNames } from './account/hooks';

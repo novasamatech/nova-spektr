@@ -23,6 +23,7 @@ const flow = createFlow<{
 const reset = createEvent();
 
 const $step = createStore(Step.SCAN).reset(reset);
+const $error = createStore<{ title: string; description?: string } | null>(null).reset(reset);
 
 const readyToPair = waitFor({
   source: flow.open,
@@ -177,7 +178,7 @@ sample({
 
 sample({
   clock: [reset, flow.shut],
-  target: form.reset,
+  target: [form.reset, $error.reinit],
 });
 
 sample({
@@ -202,6 +203,16 @@ sample({
   target: $step,
 });
 
+sample({
+  clock: createSessionFx.fail,
+  fn: ({ error }) =>
+    walletConnectService.buildErrorDisplay(error, {
+      rejected: { title: t('onboarding.walletConnect.rejected') },
+      unknown: { title: t('onboarding.walletConnect.connectionFailed') },
+    }),
+  target: $error,
+});
+
 export const pairingFormModel = {
   flow,
 
@@ -210,6 +221,7 @@ export const pairingFormModel = {
   $session,
   $accounts,
   $step,
+  $error,
   $identityPending: requestIdentityFx.pending,
   reset,
 };

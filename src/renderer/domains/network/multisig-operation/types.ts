@@ -31,7 +31,8 @@ export type MultisigOperation = {
   callHash: HexString;
   callData: HexString | null;
   chainId: ChainId;
-  accountId: AccountId;
+  multisigAccountId: AccountId;
+  proxiedAccountId?: AccountId;
   depositor: AccountId;
   deposit?: BN;
   blockCreated: BlockHeight;
