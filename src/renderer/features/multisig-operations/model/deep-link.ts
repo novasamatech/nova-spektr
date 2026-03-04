@@ -2,11 +2,7 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { and, delay } from 'patronum';
 import { z } from 'zod';
 
-import {
-  type Chain,
-  type ChainId,
-  ConnectionStatus,
-} from '@/shared/core';
+import { type Chain, type ChainId, ConnectionStatus } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { deepLinkService } from '@/domains/app';
@@ -100,10 +96,6 @@ const $isDeepLinkLoading = createStore(false)
 // === Flow Triggers ===
 sample({
   clock: multisigOperationDeepLinkHandler.triggered,
-  fn: val => {
-    console.log({ val });
-    return val;
-  },
   target: startDeepLinkFlow,
 });
 

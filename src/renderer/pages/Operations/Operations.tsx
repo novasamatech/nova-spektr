@@ -32,19 +32,16 @@ export const Operations = () => {
         <div className="flex w-full items-center justify-between py-4">
           <Tabs value={tab} onChange={noop}>
             <Tabs.List>
-              {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
               <span className="contents" onClick={() => setTab('pending')}>
                 <Tabs.Trigger value="pending">
                   {t('operations.tabs.pending')}
                   {pendingCount > 0 && <span className="ml-1 text-text-tertiary">{pendingCount}</span>}
                 </Tabs.Trigger>
               </span>
-              {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
               <span className="contents" onClick={() => setTab('history')}>
                 <Tabs.Trigger value="history">{t('operations.tabs.history')}</Tabs.Trigger>
               </span>
               {hiddenCount > 0 && (
-                // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
                 <span className="contents" onClick={() => setTab('hidden')}>
                   <Tabs.Trigger value="hidden">
                     {t('operations.tabs.hidden')}

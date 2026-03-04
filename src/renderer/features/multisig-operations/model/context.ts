@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 import { interval, throttle } from 'patronum';
 
