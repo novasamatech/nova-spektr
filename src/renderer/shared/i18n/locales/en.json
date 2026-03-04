@@ -158,6 +158,7 @@
       "errorTimeout": "The server took too long to respond. Try again later.",
       "loadError": "Failed to load contacts from server",
       "loading": "Loading contacts...",
+      "externalSource": "External source",
       "myContacts": "My Contacts",
       "retry": "Retry",
       "syncButton": "Sync",

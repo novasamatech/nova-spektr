@@ -151,12 +151,12 @@ export const Contacts = () => {
       <div className="flex h-full flex-col">
         <Header title={t('addressBook.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
           <div className="flex items-center gap-x-4">
+            {hasBackend && <SyncStatusBadge />}
             {hasBackend ? <BackendConnectionCard /> : <BackendConfigurationButton />}
             <div className="w-[230px]">
               <ContactFilter />
             </div>
             <div className="ml-auto flex items-center justify-end gap-x-4">
-              {isBackendTab && <SyncStatusBadge />}
               <CreateContactNavigation />
               <ImportContactsButton />
             </div>

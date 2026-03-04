@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { FootnoteText, Icon } from '@/shared/ui';
-import { Dropdown } from '@/shared/ui-kit';
-import { backendConfigurationModel } from '../../BackendConfiguration';
+import { FootnoteText, IconButton } from '@/shared/ui';
+import { Tooltip } from '@/shared/ui-kit';
 import { backendContactsModel } from '../model/backend-contacts-model';
 
 function formatRelativeTime(timestamp: number, t: TFunction): string {
@@ -32,13 +31,12 @@ function getStatusText(syncStatus: string, lastSyncTime: number | null, t: TFunc
 
 export const SyncStatusBadge = () => {
   const { t } = useI18n();
-  const [syncStatus, lastSyncTime, isLoading] = useUnit([
-    backendContactsModel.$syncStatus,
-    backendContactsModel.$lastSyncTime,
-    backendContactsModel.$isLoading,
-  ]);
+
+  const syncStatus = useUnit(backendContactsModel.$syncStatusThrottled);
+  const lastSyncTime = useUnit(backendContactsModel.$lastSyncTime);
 
   const [, setTick] = useState(0);
+  const [isSpinning, setIsSpinning] = useState(false);
 
   useEffect(() => {
     if (!lastSyncTime) return;
@@ -49,42 +47,39 @@ export const SyncStatusBadge = () => {
   }, [lastSyncTime]);
 
   const handleSync = () => {
-    backendContactsModel.events.syncTriggered();
-  };
+    if (isSpinning) return;
 
-  const handleOpenSettings = () => {
-    backendConfigurationModel.events.editStarted();
+    setIsSpinning(true);
+    backendContactsModel.events.syncTriggered();
   };
 
   const statusText = getStatusText(syncStatus, lastSyncTime, t);
   const isError = syncStatus === 'error';
 
   return (
-    <Dropdown align="end" sideOffset={1}>
-      <Dropdown.Trigger>
-        <button
-          type="button"
-          className={cnTw(
-            'flex items-center gap-x-1 rounded-md px-2 py-1 transition-colors',
-            'hover:bg-action-background-hover',
-            isError ? 'text-text-negative' : 'text-text-tertiary',
-          )}
-        >
-          {statusText && <FootnoteText>{statusText}</FootnoteText>}
-          <Icon className="shrink-0" name="down" size={16} />
-        </button>
-      </Dropdown.Trigger>
-
-      <Dropdown.Content>
-        <Dropdown.Item disabled={isLoading} onSelect={handleSync}>
-          <Icon name="refresh" size={16} />
-          {t('addressBook.syncStatus.syncNow')}
-        </Dropdown.Item>
-        <Dropdown.Item onSelect={handleOpenSettings}>
-          <Icon name="settingsLite" size={16} />
-          {t('addressBook.syncStatus.viewSettings')}
-        </Dropdown.Item>
-      </Dropdown.Content>
-    </Dropdown>
+    <div className="flex items-center gap-x-1">
+      {statusText && (
+        <FootnoteText className={cnTw(isError ? 'text-text-negative' : 'text-text-tertiary')}>
+          {statusText}
+        </FootnoteText>
+      )}
+      <Tooltip>
+        <Tooltip.Trigger>
+          <div
+            className={cnTw('inline-flex', isSpinning && 'animate-[spin_600ms_linear]')}
+            onAnimationEnd={() => setIsSpinning(false)}
+          >
+            <IconButton
+              name="refresh"
+              size={16}
+              className="cursor-pointer"
+              ariaLabel={t('addressBook.syncStatus.syncNow')}
+              onClick={handleSync}
+            />
+          </div>
+        </Tooltip.Trigger>
+        <Tooltip.Content>{t('addressBook.syncStatus.syncNow')}</Tooltip.Content>
+      </Tooltip>
+    </div>
   );
 };

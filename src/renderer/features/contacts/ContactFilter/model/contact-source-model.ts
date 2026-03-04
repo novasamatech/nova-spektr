@@ -24,17 +24,7 @@ const $availableSources = combine(
       return [];
     }
 
-    let label: string;
-    try {
-      label = new URL(backendUrl).hostname;
-    } catch {
-      label = backendUrl;
-    }
-
-    return [
-      { id: 'local', label: 'My Contacts' },
-      { id: backendUrl, label },
-    ];
+    return [{ id: 'local' }, { id: backendUrl }];
   },
 );
 
