@@ -33,7 +33,7 @@ function createSignatoryVirtualAccount(
   return {
     accountType: AccountType.MULTISIG_SIGNATORY,
     accountId: signatory.accountId,
-    id: signatory.id ? signatory.id.toString() : `${multisigAccountId} -> ${signatory.accountId}`,
+    id: signatory.id ? signatory.id.toString() : signatory.accountId,
     name: signatory.name ?? '',
     walletId,
     cryptoType: CryptoType.SR25519,
