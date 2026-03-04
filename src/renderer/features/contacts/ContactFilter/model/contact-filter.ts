@@ -3,7 +3,6 @@ import { combine, createEvent, restore, sample } from 'effector';
 import { type Contact } from '@/shared/core';
 import { includes } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
-import { backendConfigurationModel } from '../../BackendConfiguration';
 
 import { contactSourceModel } from './contact-source-model';
 
@@ -34,10 +33,9 @@ const $filteredContacts = combine(
     backendContacts: contactModel.$backendContacts,
     query: $query,
     sourceTab: contactSourceModel.$sourceTab,
-    backendUrl: backendConfigurationModel.$backendUrl,
   },
-  ({ localContacts, backendContacts, query, sourceTab, backendUrl }) => {
-    const contacts = sourceTab === 'local' ? localContacts : backendUrl ? backendContacts : [];
+  ({ localContacts, backendContacts, query, sourceTab }) => {
+    const contacts = sourceTab === 'local' ? localContacts : backendContacts;
 
     return performSearch(contacts, query).sort((a, b) => a.name.localeCompare(b.name));
   },

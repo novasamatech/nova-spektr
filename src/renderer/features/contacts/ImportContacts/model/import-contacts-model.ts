@@ -30,7 +30,7 @@ const parseFileFx = createEffect(contactImportUtils.parseJSON);
 
 // Detect accountId conflicts effect
 const detectAccountIdConflictsFx = attach({
-  source: contactModel.$contacts,
+  source: contactModel.$localContacts,
   mapParams: (contacts: ContactImport[], existingContacts: Contact[]) => ({
     contacts,
     existingContacts,
@@ -42,7 +42,7 @@ const detectAccountIdConflictsFx = attach({
 
 // Replace all contacts (update existing, create new)
 const replaceContactsFx = attach({
-  source: contactModel.$contacts,
+  source: contactModel.$localContacts,
   mapParams: (contacts: ContactImport[], existingContacts: Contact[]) => ({
     contacts,
     existingContacts,
@@ -92,7 +92,7 @@ const replaceContactsFx = attach({
 });
 
 const importNonConflictingFx = attach({
-  source: contactModel.$contacts,
+  source: contactModel.$localContacts,
   mapParams: (contacts: ContactImport[], existingContacts: Contact[]) => ({
     contacts,
     existingContacts,

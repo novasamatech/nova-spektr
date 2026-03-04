@@ -8,7 +8,7 @@ import { HttpError, fetchAllContacts } from '../api/backend-contacts-api';
 
 function categorizeError(error: Error): BackendError {
   if (error instanceof HttpError) {
-    const category = error.status === 401 || error.status === 403 ? 'auth' : 'generic';
+    const category = error.status === 401 ? 'auth' : error.status === 403 ? 'forbidden' : 'generic';
 
     return { category, message: error.message };
   }
@@ -99,11 +99,6 @@ sample({
 
 $error.on(authModel.events.signOutClicked, () => null);
 
-// Clear backend contacts from DB on URL cleared
-sample({
-  clock: backendConfigurationModel.events.urlCleared,
-  target: contactModel.effects.clearBackendContactsFx,
-});
 $error.on(backendConfigurationModel.events.urlCleared, () => null);
 $lastSyncTime.on(backendConfigurationModel.events.urlCleared, () => null);
 $syncStatus.on(backendConfigurationModel.events.urlCleared, () => 'idle');
