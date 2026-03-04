@@ -1,7 +1,8 @@
 import { useGate, useUnit } from 'effector-react';
 
 import { type HexString } from '@/shared/core';
-import { Loader } from '@/shared/ui';
+import { useI18n } from '@/shared/i18n';
+import { FootnoteText, Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { messageSignModel } from '../model/message-sign-model';
 
@@ -12,6 +13,8 @@ type Props = {
 };
 
 export const OperationMessageSign = ({ onGoBack }: Props) => {
+  const { t } = useI18n();
+
   useGate(messageSignModel.gates.flow);
 
   const signStore = useUnit(messageSignModel.$signStore);
@@ -19,8 +22,9 @@ export const OperationMessageSign = ({ onGoBack }: Props) => {
 
   if (!signStore || !signerWallet) {
     return (
-      <Box verticalAlign="center" horizontalAlign="center" padding={4}>
+      <Box verticalAlign="center" horizontalAlign="center" padding={4} gap={4}>
         <Loader color="primary" />
+        <FootnoteText className="text-text-tertiary">{t('signing.loadingSignData')}</FootnoteText>
       </Box>
     );
   }

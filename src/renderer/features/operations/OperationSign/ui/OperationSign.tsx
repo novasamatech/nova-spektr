@@ -2,7 +2,7 @@ import { useGate, useUnit } from 'effector-react';
 
 import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Alert, Loader } from '@/shared/ui';
+import { Alert, FootnoteText, Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { walletUtils } from '@/entities/wallet';
 import { signModel } from '../model/sign-model';
@@ -26,8 +26,9 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
     const height = signerWallet && walletUtils.isWalletConnectGroup(signerWallet) ? '430px' : '490px';
 
     return (
-      <Box width="440px" height={height} verticalAlign="center" horizontalAlign="center">
+      <Box width="440px" height={height} verticalAlign="center" horizontalAlign="center" gap={4}>
         <Loader color="primary" />
+        <FootnoteText className="text-text-tertiary">{t('signing.loadingSignData')}</FootnoteText>
       </Box>
     );
   }
