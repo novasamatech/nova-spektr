@@ -2,6 +2,12 @@ import { u8aConcat, u8aToU8a } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 import { render } from '@testing-library/react';
 
+vi.mock('@/shared/i18n', () => ({
+  useI18n: vi.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
+
 import { QrTxGenerator } from './QrTxGenerator';
 import { Command, SUBSTRATE_ID } from './common/constants';
 

@@ -1,7 +1,8 @@
 import init, { Encoder } from 'raptorq/raptorq';
 import { useEffect, useState } from 'react';
 
-import { Loader } from '@/shared/ui';
+import { useI18n } from '@/shared/i18n';
+import { FootnoteText, Loader } from '@/shared/ui';
 import { QrCode } from '@/shared/ui-kit';
 
 import { DEFAULT_FRAME_DELAY, DEFAULT_MAX_FRAME_DELAY } from './common/constants';
@@ -26,6 +27,7 @@ export const QrTxGenerator = ({
   className,
   testId,
 }: Props) => {
+  const { t } = useI18n();
   const [frames, setFrames] = useState<Uint8Array[] | null>(null);
 
   useEffect(() => {
@@ -44,8 +46,11 @@ export const QrTxGenerator = ({
 
   if (!frames) {
     return (
-      <div className="flex items-center justify-center" style={{ width: size, height: size }}>
+      <div className="flex flex-col items-center justify-center gap-2" style={{ width: size, height: size }}>
         <Loader color="primary" size={25} />
+        <FootnoteText className="text-text-tertiary">
+          {payload ? t('signing.loadingQr') : t('signing.loadingMetadata')}
+        </FootnoteText>
       </div>
     );
   }
