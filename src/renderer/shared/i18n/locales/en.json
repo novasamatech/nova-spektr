@@ -2527,6 +2527,9 @@
   "signing": {
     "continueButton": "Continue",
     "generateNewQrButton": "Generate new QR code",
+    "loadingMetadata": "Loading metadata...",
+    "loadingQr": "Generating QR code...",
+    "loadingSignData": "Preparing signing data...",
     "metadataPortalLink": "Update metadata in Polkadot Vault",
     "parsingCount": "{current} of {total}",
     "parsingLabel": "Parsing data",
