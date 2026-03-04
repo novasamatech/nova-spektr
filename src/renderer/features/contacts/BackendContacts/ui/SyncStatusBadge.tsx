@@ -6,7 +6,6 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { Dropdown } from '@/shared/ui-kit';
-import { backendConfigurationModel } from '../../BackendConfiguration';
 import { backendContactsModel } from '../model/backend-contacts-model';
 
 function formatRelativeTime(timestamp: number, t: TFunction): string {
@@ -52,10 +51,6 @@ export const SyncStatusBadge = () => {
     backendContactsModel.events.syncTriggered();
   };
 
-  const handleOpenSettings = () => {
-    backendConfigurationModel.events.editStarted();
-  };
-
   const statusText = getStatusText(syncStatus, lastSyncTime, t);
   const isError = syncStatus === 'error';
 
@@ -79,10 +74,6 @@ export const SyncStatusBadge = () => {
         <Dropdown.Item disabled={isLoading} onSelect={handleSync}>
           <Icon name="refresh" size={16} />
           {t('addressBook.syncStatus.syncNow')}
-        </Dropdown.Item>
-        <Dropdown.Item onSelect={handleOpenSettings}>
-          <Icon name="settingsLite" size={16} />
-          {t('addressBook.syncStatus.viewSettings')}
         </Dropdown.Item>
       </Dropdown.Content>
     </Dropdown>
