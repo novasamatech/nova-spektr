@@ -24,6 +24,9 @@ export type ChainAdditional = {
 
   // Supports metadata proofs
   supportsGenericLedgerApp: boolean;
+
+  // Expected block time in milliseconds (overrides API constants when set)
+  defaultBlockTime?: number;
 };
 
 export const enum ChainOptions {
