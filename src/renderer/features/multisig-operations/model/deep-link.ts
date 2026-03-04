@@ -2,20 +2,13 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { and, delay } from 'patronum';
 import { z } from 'zod';
 
-import {
-  type Chain,
-  type ChainId,
-  type FlexibleMultisigAccount,
-  type MultisigAccount,
-  ConnectionStatus,
-} from '@/shared/core';
+import { type Chain, type ChainId, ConnectionStatus } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { deepLinkService } from '@/domains/app';
-import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
+import { type MultisigOperation, accounts, multisigOperation, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
-import { multisigService } from '@/features/multisig-wallet';
 
 import { CONNECTION_TIMEOUT } from './constants';
 
@@ -128,7 +121,8 @@ function validateDeepLink(
   const account = accountsList.find(
     acc =>
       accountUtils.isAnyMultisigAccount(acc) &&
-      (acc.accountId === data.accountId || multisigService.getMultisigAccountId(acc) === data.accountId),
+      (acc.accountId === data.accountId ||
+        (accountUtils.isFlexibleMultisigAccount(acc) && acc.multisigAccountId === data.accountId)),
   );
   if (nullable(account)) {
     return { type: 'accountNotFound' };
@@ -245,24 +239,21 @@ const multisigAccountResolved = sample({
     operationsReady &&
     accountsList
       .filter(accountUtils.isAnyMultisigAccount)
-      .some(a => multisigService.getMultisigAccountId(a) === chainInfo!.data.accountId),
-  fn: ({ accountsList, chainInfo }) => {
-    const account = accountsList
-      .filter(accountUtils.isAnyMultisigAccount)
-      .find(a => multisigService.getMultisigAccountId(a) === chainInfo!.data.accountId);
-
-    return {
-      data: chainInfo!.data,
-      multisigAccountId: account ? multisigService.getMultisigAccountId(account) : null,
-    };
-  },
+      .some(
+        a =>
+          a.accountId === chainInfo!.data.accountId ||
+          (accountUtils.isFlexibleMultisigAccount(a) && a.multisigAccountId === chainInfo!.data.accountId),
+      ),
+  fn: ({ chainInfo }) => ({
+    data: chainInfo!.data,
+  }),
 });
 
 sample({
   clock: multisigAccountResolved,
   source: $targetOperationId,
-  filter: (alreadyResolved, { multisigAccountId }) => nonNullable(multisigAccountId) && nullable(alreadyResolved),
-  fn: (_, { data, multisigAccountId }) => getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId! }),
+  filter: nullable,
+  fn: (_, { data }) => getOperationIdFromDeepLink(data),
   target: setFocusedOperationId,
 });
 
@@ -273,15 +264,15 @@ sample({
     operationsReady: multisigOperation.$populated,
     fetchComplete: multisigOperation.$initialLoadingComplete,
   },
-  filter: ({ operationsReady, fetchComplete, operationsList }, { multisigAccountId, data }) => {
-    if (!operationsReady || nullable(multisigAccountId)) return false;
+  filter: ({ operationsReady, fetchComplete, operationsList }, { data }) => {
+    if (!operationsReady) return false;
 
-    const operationId = getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId });
+    const operationId = getOperationIdFromDeepLink(data);
     const operationExists = operationsList.some(op => op.id === operationId);
 
     return !operationExists && !fetchComplete;
   },
-  fn: (_, { data, multisigAccountId }) => getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId! }),
+  fn: (_, { data }) => getOperationIdFromDeepLink(data),
   target: $operationIdAwaitingFetch,
 });
 
@@ -332,13 +323,12 @@ sample({
 });
 
 function generateMultisigOperationDeepLink(
-  operation: Pick<MultisigOperationDeepLinkData, 'chainId' | 'callHash' | 'blockCreated' | 'indexCreated'>,
-  account: MultisigAccount | FlexibleMultisigAccount,
+  operation: Pick<MultisigOperation, 'chainId' | 'callHash' | 'blockCreated' | 'indexCreated' | 'multisigAccountId'>,
 ): string {
   return multisigOperationService.generateMultisigOperationDeepLink({
     chainId: operation.chainId,
     callHash: operation.callHash,
-    multisigAccountId: multisigService.getMultisigAccountId(account),
+    multisigAccountId: operation.multisigAccountId,
     blockCreated: operation.blockCreated,
     indexCreated: operation.indexCreated,
   });
