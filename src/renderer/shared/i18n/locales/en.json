@@ -81,7 +81,7 @@
       "chain": "Chain",
       "contactType": "Type",
       "entity": "Entity",
-      "managedTooltip": "This contact is managed by the backend server",
+      "managedTooltip": "This contact is managed externally",
       "synced": "Synced"
     },
     "contactDeleted": "Contact deleted",
