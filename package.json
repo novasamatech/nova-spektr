@@ -48,6 +48,7 @@
     "test:watch": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest",
     "test:coverage": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --coverage",
     "test:coverage-new-files": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --coverage --changed dev",
+    "test:screenshots": "playwright test --config=playwright.screenshots.config.ts",
     "test:system": "cross-env CHAINS_FILE=chains_dev playwright test",
     "test:system:regress": "cross-env CHAINS_FILE=chains_dev playwright test --grep @regress",
     "test:system:load-fee": "cross-env CHAINS_FILE=chains_dev playwright test --grep @fee-test",

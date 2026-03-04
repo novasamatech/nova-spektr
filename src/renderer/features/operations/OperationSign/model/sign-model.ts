@@ -31,6 +31,12 @@ export type SignatureResult = {
 
 const flow = createGate();
 
+export type BatchSplitWarning = {
+  wasSplit: true;
+  payloadCountBeforeSplit: number;
+  extrinsicCountAfterSplit: number;
+};
+
 /**
  * Filling sign store
  */
@@ -41,6 +47,10 @@ const init = createEvent<TransactionSigningPayload[]>();
 const signed = createEvent<SignatureResult[]>();
 
 const $signStore = createStore<ExtrinsicSigningPayload[] | null>(null).reset([init, flow.close]);
+
+const $payloadCountBeforeSplit = createStore<number>(0).reset([init, flow.close]);
+
+const $batchSplitWarning = createStore<BatchSplitWarning | null>(null).reset([init, flow.close]);
 
 /**
  * @deprecated Use "init" instead
@@ -130,12 +140,35 @@ sample({
 sample({
   clock: init,
   filter: (payloads) => payloads.length > 0,
+  fn: (payloads) => payloads.length,
+  target: $payloadCountBeforeSplit,
+});
+
+sample({
+  clock: init,
+  filter: (payloads) => payloads.length > 0,
   target: splitExtrinsicsFx,
 });
 
 sample({
   clock: splitExtrinsicsFx.doneData,
   target: $signStore,
+});
+
+sample({
+  clock: splitExtrinsicsFx.doneData,
+  source: $payloadCountBeforeSplit,
+  fn: (payloadCountBeforeSplit, extrinsicsAfterSplit) => {
+    if (extrinsicsAfterSplit.length > payloadCountBeforeSplit) {
+      return {
+        wasSplit: true as const,
+        payloadCountBeforeSplit,
+        extrinsicCountAfterSplit: extrinsicsAfterSplit.length,
+      };
+    }
+    return null;
+  },
+  target: $batchSplitWarning,
 });
 
 sample({
@@ -159,6 +192,7 @@ sample({
 export const signModel = {
   $signStore,
   $signerWallet,
+  $batchSplitWarning,
 
   init,
   signed,

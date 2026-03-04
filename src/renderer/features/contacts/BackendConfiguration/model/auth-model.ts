@@ -1,5 +1,7 @@
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
-import { once } from 'patronum';
+import { combine, createEffect, createEvent, createStore, merge, sample } from 'effector';
+import { t } from 'i18next';
+import { interval, once } from 'patronum';
+import { toast } from 'sonner';
 
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService } from '@/domains/network';
@@ -317,6 +319,43 @@ sample({
 // On session check failure, clear auth state silently
 $authState.on(checkSessionFx.fail, () => null);
 
+// Session expiry awareness: periodic health check every 5 minutes
+const $isSessionExpired = createStore(false);
+
+const sessionHealthCheck = interval({
+  timeout: 5 * 60 * 1000,
+  start: merge([verifySignatureFx.done, checkSessionFx.done]),
+  stop: merge([signOutClicked, backendConfigurationModel.events.urlCleared]),
+});
+
+sample({
+  clock: sessionHealthCheck.tick,
+  source: backendConfigurationModel.$backendUrl,
+  filter: (url): url is string => url !== null,
+  target: checkSessionFx,
+});
+
+$isSessionExpired.on(checkSessionFx.fail, () => true);
+$isSessionExpired.on([verifySignatureFx.done, signOutClicked, backendConfigurationModel.events.urlCleared], () => false);
+
+const sessionExpired = createEvent();
+
+const showSessionExpiredToastFx = createEffect(() => {
+  toast.error(t('addressBook.auth.sessionExpiredToast'), {
+    action: {
+      label: t('addressBook.auth.reconnectButton'),
+      onClick: () => backendConfigurationModel.events.editStarted(),
+    },
+  });
+});
+
+sample({
+  clock: $isSessionExpired,
+  source: sessionHealthCheck.isRunning,
+  filter: (isRunning, expired) => expired && isRunning,
+  target: [sessionExpired, showSessionExpiredToastFx],
+});
+
 export const authModel = {
   $authState,
   $authStep,
@@ -325,6 +364,7 @@ export const authModel = {
   $connectionResult,
   $isAuthenticated,
   $signableAccounts,
+  $isSessionExpired,
 
   events: {
     signInClicked,
@@ -334,6 +374,7 @@ export const authModel = {
     signConfirmed,
     connectTriggered,
     modalClosed,
+    sessionExpired,
     signingCancelled,
   },
 };

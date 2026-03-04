@@ -38,6 +38,7 @@ import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '../model/form-model';
@@ -222,6 +223,7 @@ const SignatorySelector = memo(() => {
   const balances = useUnit(balanceModel.$balanceMap);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
+  const selectedWallet = useUnit(walletSelect.$selectedWallet);
 
   const signatoriesWithBalance = useMemo(() => {
     if (!network) {
@@ -240,6 +242,32 @@ const SignatorySelector = memo(() => {
 
   if (!network) {
     return null;
+  }
+
+  if (!initiator) {
+    return (
+      <Alert active title={t('operation.noSignatoryErrorTitle', { network: network.chain.name })} variant="error">
+        <FootnoteText className="max-w-full tracking-tight text-text-secondary">
+          <Trans
+            t={t}
+            i18nKey="operation.noSignatoryErrorDescription"
+            parent="span"
+            data-testid={TEST_IDS.VALIDATIONS.MISSING_ACCOUNT}
+            values={{ network: network.chain.name }}
+            components={{
+              wallet: (
+                <span className="mx-1 inline-flex max-w-[200px] items-center gap-x-1 align-bottom">
+                  {selectedWallet && <WalletIcon type={selectedWallet.type} size={16} />}
+                  <FootnoteText as="span" className="truncate text-text-secondary transition-colors">
+                    {selectedWallet?.name}
+                  </FootnoteText>
+                </span>
+              ),
+            }}
+          />
+        </FootnoteText>
+      </Alert>
+    );
   }
 
   return (

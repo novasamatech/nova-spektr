@@ -1,6 +1,7 @@
 import { createStore } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 
+import { persist } from '@/shared/api/storage';
 import { type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createQueryResource } from '@/shared/query';
@@ -13,6 +14,8 @@ type ProxiedChainParams = {
 };
 
 const $cache = createStore<Record<string, ChainId | null>>({});
+
+persist({ store: $cache, key: 'proxiedChainCache' });
 
 export const proxiedChainResource = createQueryResource<ProxiedChainParams>({
   key: ({ accountId }) => accountId,

@@ -474,8 +474,6 @@ export const syncFlexibleMultisigs = ({
       accountSyncService.isFlexibleMultisigPair(proxy, syncedMultisig),
     );
 
-    console.log({ matchingProxies });
-
     for (const matchedSyncedProxy of matchingProxies) {
       const existingFlexibleMultisig = flexibleMultisigAccounts.find(
         (flexMulAcc) =>
