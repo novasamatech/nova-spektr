@@ -1,31 +1,64 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type u32 } from '@polkadot/types';
 import { type SignerPayloadJSON } from '@polkadot/types/types/extrinsic';
-import { type BN, BN_TWO, bnMin, hexToU8a, isHex, numberToU8a, u8aToHex, u8aToNumber } from '@polkadot/util';
+import { BN, BN_TWO, bnMin, hexToU8a, isHex, numberToU8a, u8aToHex, u8aToNumber } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 
-import { type BlockHeight, type CallData, type CallHash, type HexString, type ProxyType } from '@/shared/core';
+import {
+  type BlockHeight,
+  type CallData,
+  type CallHash,
+  type Chain,
+  type HexString,
+  type ProxyType,
+} from '@/shared/core';
 import { assert } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { toAddress } from './address';
-import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
+import { DEFAULT_TIME, MORTALITY_PERIOD_MS, ONE_DAY, THRESHOLD } from './constants';
 
 export type TxMetadata = {
   signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'>;
   mortalLength: number;
+  blockTimeMs: number;
+  blockNumber: number;
 };
 
 const SUPPORTED_VERSIONS = ['V2', 'V3', 'V4'];
 const UNUSED_LABEL = 'unused';
 
+export const getMortalitySeconds = (mortalLength: number, blockTimeMs: number): number => {
+  return Math.floor((mortalLength * blockTimeMs) / 1000);
+};
+
+/**
+ * Check if a mortal era has expired, replicating Substrate's
+ * `MortalEra::birth()` / `death()` logic from
+ * `frame/system/src/extensions/check_mortality.rs`.
+ */
+export const isEraExpired = (currentBlock: number, eraBlockNumber: number, period: number): boolean => {
+  const phase = eraBlockNumber % period;
+  const birth = Math.floor((Math.max(eraBlockNumber, phase) - phase) / period) * period + phase;
+  const death = birth + period;
+
+  return currentBlock >= death;
+};
+
 /**
  * Compose part of SignerPayloadJSON for
  */
-export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): Promise<TxMetadata> => {
+export const createTxMetadata = async (
+  accountId: AccountId,
+  api: ApiPromise,
+  blockTimeMs?: number,
+): Promise<TxMetadata> => {
   const chainId = api.genesisHash.toHex();
-  const { header, nonce, mortalLength } = await api.derive.tx.signingInfo(accountId);
+  const { header, nonce } = await api.derive.tx.signingInfo(accountId);
   assert(header);
+
+  const effectiveBlockTimeMs = blockTimeMs ?? getExpectedBlockTime(api).toNumber();
+  const mortalLength = Math.ceil(MORTALITY_PERIOD_MS / effectiveBlockTimeMs);
 
   const signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'> = {
     address: toAddress(accountId, { prefix: api.consts.system.ss58Prefix.toNumber() }),
@@ -39,7 +72,12 @@ export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): P
     signedExtensions: api.registry.signedExtensions,
   };
 
-  return { signerPayloadBase, mortalLength };
+  return {
+    signerPayloadBase,
+    mortalLength,
+    blockTimeMs: effectiveBlockTimeMs,
+    blockNumber: header.number.toNumber(),
+  };
 };
 
 export const getCallHash = (callData: HexString) => blake2AsHex(hexToU8a(callData));
@@ -77,7 +115,11 @@ export async function getParachainId(api: ApiPromise): Promise<number> {
   return (parachainId as u32).toNumber();
 }
 
-export const getExpectedBlockTime = (api: ApiPromise): BN => {
+export const getExpectedBlockTime = (api: ApiPromise, chain?: Chain): BN => {
+  if (chain?.additional?.defaultBlockTime) {
+    return new BN(chain.additional.defaultBlockTime);
+  }
+
   const substrateBlockTime = api.consts.babe?.expectedBlockTime || api.consts.aura?.slotDuration;
 
   const blockTime = substrateBlockTime;
