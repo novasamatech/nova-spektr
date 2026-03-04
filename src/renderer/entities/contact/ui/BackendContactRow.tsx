@@ -55,6 +55,18 @@ export const BackendContactRow = ({ contact, onSendTo }: Props) => {
           {contact.categoryName && <Label variant="blue">{contact.categoryName}</Label>}
           {contact.contactTypeName && <Label variant="gray">{contact.contactTypeName}</Label>}
           {contact.chainName && <Label variant="lightBlue">{contact.chainName}</Label>}
+          {contact.threshold !== null && contact.signatories !== null && (
+            <Label variant="darkGray">
+              {contact.threshold}/{contact.signatories.length}
+            </Label>
+          )}
+          {contact.tags.map((tag) =>
+            tag.values.map((value) => (
+              <Label key={`${tag.tagName}-${value}`} variant="orange">
+                {tag.tagName}: {value}
+              </Label>
+            )),
+          )}
           {contact.entityNames.map((entityName) => (
             <Fragment key={entityName}>
               <FootnoteText className="text-text-tertiary">{'\u00b7'}</FootnoteText>

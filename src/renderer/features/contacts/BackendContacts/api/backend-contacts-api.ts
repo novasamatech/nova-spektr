@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { type BackendContact, type Contact } from '@/shared/core';
+import { type BackendContact, type Contact, type ContactTag } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { authFetch } from '../../BackendConfiguration/lib/backend-fetch';
 
@@ -18,15 +18,42 @@ const backendContactSchema = z.object({
   name: z.string(),
   accountId: z.string(),
   entities: z.array(z.object({ id: z.string(), name: z.string() })),
-  chain: z.object({ chainId: z.string(), name: z.string() }),
-  category: z.object({ id: z.string(), name: z.string() }),
+  chain: z.object({ chainId: z.string(), name: z.string() }).nullish(),
+  category: z.object({ id: z.string(), name: z.string() }).nullish(),
   contactType: z.object({ id: z.string(), name: z.string() }).nullish(),
   derivationPath: z.string().nullish(),
   ownerAccountId: z.string().nullish(),
+  signatories: z.array(z.string()).nullish(),
+  threshold: z.number().nullish(),
+  contactTagOptions: z
+    .array(
+      z.object({
+        tagOption: z.object({
+          value: z.string(),
+          tag: z.object({ name: z.string() }),
+        }),
+      }),
+    )
+    .optional()
+    .default([]),
 });
 type RawBackendContact = z.infer<typeof backendContactSchema>;
 
 const PAGE_SIZE = 100;
+
+function groupTagOptions(raw: RawBackendContact): ContactTag[] {
+  const tagMap = new Map<string, string[]>();
+  for (const { tagOption } of raw.contactTagOptions) {
+    const existing = tagMap.get(tagOption.tag.name);
+    if (existing) {
+      existing.push(tagOption.value);
+    } else {
+      tagMap.set(tagOption.tag.name, [tagOption.value]);
+    }
+  }
+
+  return Array.from(tagMap, ([tagName, values]) => ({ tagName, values }));
+}
 
 function mapToContact(raw: RawBackendContact): BackendContact {
   const accountId = toAccountId(raw.accountId);
@@ -39,12 +66,15 @@ function mapToContact(raw: RawBackendContact): BackendContact {
     accountId,
     source: 'backend',
     entityNames: raw.entities.map((e) => e.name),
-    chainId: raw.chain.chainId,
-    chainName: raw.chain.name,
-    categoryName: raw.category.name,
+    chainId: raw.chain?.chainId ?? null,
+    chainName: raw.chain?.name ?? null,
+    categoryName: raw.category?.name ?? null,
     contactTypeName: raw.contactType?.name ?? null,
     derivationPath: raw.derivationPath ?? null,
     ownerAccountId: raw.ownerAccountId ?? null,
+    signatories: raw.signatories ?? null,
+    threshold: raw.threshold ?? null,
+    tags: groupTagOptions(raw),
   };
 }
 
