@@ -1,10 +1,10 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 import { interval, throttle } from 'patronum';
 
 import { type Done, persist } from '@/shared/api/storage';
 import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type DateRange } from '@/shared/ui-kit';
 import {
   type AnyAccount,
@@ -80,7 +80,14 @@ const $isFiltersSelected = $filter.map(filter =>
   ),
 );
 
-const $tab = restore(setTab, 'pending');
+const $tab = createStore<TabFilter>('pending').on(setTab, (_, tab) => {
+  console.log('setTab triggered', { tab });
+  return tab;
+});
+
+$tab.subscribe(tab => {
+  console.log({ tab });
+});
 
 const $initiators = combine(
   { accounts: walletSelect.$selectedAccounts, chains: networkModel.$chains },
@@ -213,19 +220,34 @@ sample({
 sample({
   clock: deepLinkModel.$focusedOperationId,
   source: { operations: multisigOperation.$list, hiddenIds: $hiddenOperationIds },
-  filter: (_, operationId) => nonNullable(operationId),
+  filter: (_, operationId) => {
+    console.log({ focusedOperationId: operationId });
+    return nonNullable(operationId);
+  },
   fn: ({ operations, hiddenIds }, operationId): TabFilter => {
     if (hiddenIds.includes(operationId!)) return 'hidden';
     const operation = operations.find(op => op.id === operationId);
-    if (!operation) return 'pending';
+    console.log({ operation, operationId });
+    if (!operation) {
+      console.log('setTab deepLinkModel.$focusedOperationId: ', 'pending', { operation });
+      return 'pending';
+    }
+    console.log('setTab deepLinkModel.$focusedOperationId: ', operation.status === 'pending' ? 'pending' : 'history', {
+      operation,
+    });
     return operation.status === 'pending' ? 'pending' : 'history';
   },
   target: setTab,
 });
 
-// Reset to pending tab every time the Operations page is opened
+// Reset to pending tab every time the Operations page is opened (skip if deep link is active)
 sample({
   clock: multisigOperationsFeature.gate.open,
+  source: { focusedId: deepLinkModel.$focusedOperationId, isLoading: deepLinkModel.$isDeepLinkLoading },
+  filter: ({ focusedId, isLoading }) => {
+    console.log('setTab multisigOperationsFeature.gate.open: ', 'pending', { focusedId, isLoading });
+    return nullable(focusedId) && !isLoading;
+  },
   fn: (): TabFilter => 'pending',
   target: setTab,
 });
@@ -269,7 +291,7 @@ export const operationsContextModel = {
 
   setFilter,
   resetFilters,
-  setTab,
+  setTab: setTab,
   hideOperation,
   unhideOperation,
 };

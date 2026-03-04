@@ -3,13 +3,15 @@ import { type PropsWithChildren } from 'react';
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, Countdown, FootnoteText, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
 import { TROUBLESHOOTING_URL, getMetadataPortalMetadataUrl } from '../common/constants';
 
 type Props = {
-  countdown: number;
+  countdown: number | null;
   chainId: ChainId;
   isLegacyQR?: boolean;
   testId?: string;
+  tabSlot?: React.ReactNode;
   onQrReset: () => void;
 };
 
@@ -18,6 +20,7 @@ export const QrGeneratorContainer = ({
   chainId,
   children,
   testId,
+  tabSlot,
   onQrReset,
   isLegacyQR = true,
 }: PropsWithChildren<Props>) => {
@@ -27,14 +30,23 @@ export const QrGeneratorContainer = ({
     <section className="flex flex-1 flex-col items-center">
       <SmallTitleText>{t('signing.scanQrTitle')}</SmallTitleText>
 
-      <Countdown countdown={children ? countdown : 0} className="mb-4" />
+      {countdown === null ? (
+        <div className="z-1 mt-2 mb-6 flex items-center gap-x-2">
+          <FootnoteText className="text-text-tertiary">{t('signing.qrCountdownTitle')}</FootnoteText>
+          <Skeleton width="50px" height="20px" />
+        </div>
+      ) : (
+        <Countdown countdown={children ? countdown : 0} className="mb-4" />
+      )}
+
+      {tabSlot && <div className="w-[250px]">{tabSlot}</div>}
 
       <div
         className="relative flex min-h-[250px] w-[250px] flex-col items-center justify-center gap-y-4"
         data-testid={testId}
       >
         {children &&
-          (countdown > 0 ? (
+          (countdown === null || countdown > 0 ? (
             children
           ) : (
             <>

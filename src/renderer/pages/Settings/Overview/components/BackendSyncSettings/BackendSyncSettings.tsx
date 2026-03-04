@@ -9,7 +9,6 @@ export const BackendSyncSettings = () => {
   const { t } = useI18n();
 
   const hasBackend = useUnit(backendConfigurationModel.$hasBackend);
-  const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
 
   const handleConfigure = () => {
@@ -28,7 +27,7 @@ export const BackendSyncSettings = () => {
           <div className="flex w-full items-center gap-x-2 rounded-sm p-3">
             <Icon name="globe" size={36} />
             <div className="flex min-w-0 flex-1 flex-col">
-              <BodyText className="truncate">{backendUrl}</BodyText>
+              <BodyText className="truncate">{t('settings.backendSync.title')}</BodyText>
               <FootnoteText className={isAuthenticated ? 'text-icon-positive' : 'text-text-tertiary'}>
                 {isAuthenticated ? t('settings.backendSync.connected') : t('settings.backendSync.disconnected')}
               </FootnoteText>

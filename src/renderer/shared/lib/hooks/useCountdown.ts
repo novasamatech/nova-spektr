@@ -1,30 +1,18 @@
-import { type ApiPromise } from '@polkadot/api';
-import { BN, BN_THOUSAND } from '@polkadot/util';
 import { useCallback, useEffect, useState } from 'react';
 
-import { DEFAULT_QR_LIFETIME, getExpectedBlockTime } from '../utils';
-
 /**
- * Start countdown based on Expected block time
- *
- * @param api ApiPromise to make RPC calls
- *
- * @returns {Array}
+ * Countdown timer in seconds. Starts as null until resetCountdown(seconds) is
+ * called.
  */
-export function useCountdown(apis: ApiPromise[]): [number, () => void] {
-  const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);
+export function useCountdown(): [number | null, (seconds: number) => void] {
+  const [countdown, setCountdown] = useState<number | null>(null);
 
-  const resetCountdown = useCallback(() => {
-    if (apis.length === 0) return;
-
-    // Find minimal expected block time
-    const expectedBlockTime = apis.map(getExpectedBlockTime).reduce((acc, cur) => BN.min(acc, cur));
-
-    setCountdown(expectedBlockTime.mul(new BN(DEFAULT_QR_LIFETIME)).div(BN_THOUSAND).toNumber() || 0);
-  }, [apis]);
+  const resetCountdown = useCallback((seconds: number) => {
+    setCountdown(seconds);
+  }, []);
 
   useEffect(() => {
-    if (countdown > 0) {
+    if (countdown !== null && countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
 
       return () => {

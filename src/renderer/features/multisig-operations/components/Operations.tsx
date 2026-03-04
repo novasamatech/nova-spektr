@@ -174,6 +174,11 @@ export const Operations = () => {
                     ) : (
                       <div className="pb-1.5">
                         <Operation
+                          key={
+                            item.item.operation.id === focusedOperationId
+                              ? `focused-${item.item.operation.id}`
+                              : item.item.operation.id
+                          }
                           operation={item.item.operation}
                           multisigAccount={item.item.account}
                           isDefaultOpen={item.item.operation.id === focusedOperationId}
