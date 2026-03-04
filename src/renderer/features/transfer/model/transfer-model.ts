@@ -6,6 +6,7 @@ import { isStep, nonNullable, nullable, validateAddress } from '@/shared/lib/uti
 import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
+import { multisigService } from '@/features/multisig-wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type TransferConfirmStore, transferConfirmModel } from '@/features/operations/OperationsConfirm';
@@ -209,13 +210,13 @@ sample({
   source: { coreTx: $coreTx, wrappedTx: $tx, multisigAccount: formModel.$multisigAccount },
   filter: ({ multisigAccount }, results) =>
     nonNullable(multisigAccount) && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  fn: ({ coreTx, wrappedTx, multisigAccount }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
       chainId: coreTx!.chainId,
       callHash: wrappedTx!.args.callHash,
-      multisigAccountId: coreTx!.accountId,
+      multisigAccountId: multisigService.getMultisigAccountId(multisigAccount!),
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });
