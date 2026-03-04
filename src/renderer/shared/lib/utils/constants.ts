@@ -14,8 +14,6 @@ export const ETHEREUM_PUBLIC_KEY_LENGTH_BYTES = 20;
 
 export const ADDRESS_ALLOWED_ENCODED_LENGTHS = [35, 36, 37, 38];
 
-export const DEFAULT_QR_LIFETIME = 64;
-
 export const SS58_DEFAULT_PREFIX = 0;
 export const SS58_PUBLIC_KEY_PREFIX = 1;
 
@@ -59,6 +57,8 @@ export const DEFAULT_TIME = new BN(6_000);
 export const ONE_DAY = new BN(24 * 60 * 60 * 1000);
 
 export const MONTH = 30 * 24 * 60 * 60 * 1000;
+
+export const MORTALITY_PERIOD_MS = 5 * 60 * 1000;
 
 const CHAINS_CONFIG_VERSION = 'v2';
 const TOKENS_CONFIG_VERSION = 'v1';
