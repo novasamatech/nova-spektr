@@ -6,7 +6,7 @@ import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useConfirmContext } from '@/shared/providers/ConfirmContext';
 import { Alert, Button, FootnoteText, Icon, InputHint, Loader, SmallTitleText } from '@/shared/ui';
-import { Identicon } from '@/shared/ui-entities';
+import { Address, Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select, Surface, useNotification } from '@/shared/ui-kit';
 import { OperationMessageSign } from '@/features/operations/OperationMessageSign';
 import { type SignableAccount, authModel } from '../model/auth-model';
@@ -84,7 +84,7 @@ export const BackendConfigurationModal = () => {
     <Modal isOpen={isOpen} size="sm" onToggle={(open) => !open && handleClose()}>
       <Modal.Title close>{title}</Modal.Title>
       <Modal.Content>
-        <Box padding={[4, 5]} gap={4}>
+        <Box padding={[4, 5, 2, 5]} gap={4}>
           <Field text={t('addressBook.backendConfiguration.urlLabel')}>
             <Input
               name="backendUrl"
@@ -102,11 +102,14 @@ export const BackendConfigurationModal = () => {
 
           {showConnectedAccount && (
             <Field text={t('addressBook.auth.connectedAccountLabel')}>
-              <Surface className="flex items-center justify-between px-3 py-2">
-                <div className="flex items-center gap-x-2">
-                  <Identicon address={toAddress(authState.accountId)} size={20} background={false} />
-                  <FootnoteText>{authState.accountName}</FootnoteText>
-                </div>
+              <Surface className="flex items-center justify-between gap-2">
+                <Address
+                  address={toAddress(authState.accountId)}
+                  title={authState.accountName}
+                  variant="truncate"
+                  showIcon
+                  iconSize={20}
+                />
                 <Button variant="text" size="sm" onClick={() => authModel.events.signOutClicked()}>
                   {t('addressBook.auth.disconnectButton')}
                 </Button>
@@ -130,14 +133,16 @@ export const BackendConfigurationModal = () => {
         </Box>
       </Modal.Content>
       {!isSigning && (hasBackend || !urlUnchanged) && (
-        <Modal.Footer>
-          {hasBackend && (
-            <Button variant="text" onClick={handleDelete}>
-              {t('addressBook.actions.delete')}
-            </Button>
-          )}
+        <Modal.Footer align="between">
+          <div className="-ml-2">
+            {hasBackend && (
+              <Button variant="text" onClick={handleDelete}>
+                {t('addressBook.actions.delete')}
+              </Button>
+            )}
+          </div>
           {!urlUnchanged && (
-            <Button className="ml-auto" disabled={!canConnect} onClick={handleConnect}>
+            <Button disabled={!canConnect} onClick={handleConnect}>
               {connectButtonText}
             </Button>
           )}
