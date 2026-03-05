@@ -48,10 +48,6 @@ export const OperationSubmit = ({ autoCloseTimeout, isOpen, onSuccess, onFail, o
   }, [submitStore]);
 
   const handleModalClose = () => {
-    if (submitUtils.isLoadingStep(step)) {
-      return;
-    }
-
     if (onSuccess && failedTxs.length === 0 && succeedTxs.length > 0) {
       onSuccess(succeedTxs);
     }
@@ -86,6 +82,7 @@ export const OperationSubmit = ({ autoCloseTimeout, isOpen, onSuccess, onFail, o
   return (
     <OperationResult
       isOpen={isOpen}
+      confirmClose
       {...getResultProps(step, message)}
       autoCloseTimeout={computedAutoCloseTimeout}
       onClose={handleModalClose}

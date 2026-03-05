@@ -46,14 +46,6 @@ export const OperationSubmitWithAction = ({ autoCloseTimeout, isOpen, onClose, o
     }
   }, [submitStore]);
 
-  const handleModalClose = () => {
-    if (submitUtils.isLoadingStep(step)) {
-      return;
-    }
-
-    onClose();
-  };
-
   const getResultProps = (step: SubmitStep, message: string): ResultProps => {
     if (submitUtils.isLoadingStep(step)) {
       return { title: t('transfer.inProgress'), variant: 'loading' };
@@ -77,9 +69,10 @@ export const OperationSubmitWithAction = ({ autoCloseTimeout, isOpen, onClose, o
   ) : (
     <OperationResult
       isOpen={isOpen}
+      confirmClose
       {...getResultProps(step, message)}
       autoCloseTimeout={computedAutoCloseTimeout}
-      onClose={handleModalClose}
+      onClose={onClose}
     >
       {submitUtils.isErrorStep(step) && <Button onClick={onClose}>{t('operation.submitErrorButton')}</Button>}
     </OperationResult>
