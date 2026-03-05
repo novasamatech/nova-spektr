@@ -1,6 +1,7 @@
 import NetworkIcon from '@/shared/assets/images/functionals/network.svg?jsx';
 import AddressBookIcon from '@/shared/assets/images/navigation/address-book.svg?jsx';
 import AssetIcon from '@/shared/assets/images/navigation/assets.svg?jsx';
+import BasketIcon from '@/shared/assets/images/navigation/basket.svg?jsx';
 import FellowshipIcon from '@/shared/assets/images/navigation/fellowship.svg?jsx';
 import GovernanceIcon from '@/shared/assets/images/navigation/governance.svg?jsx';
 import NotificationIcon from '@/shared/assets/images/navigation/notifications.svg?jsx';
@@ -10,6 +11,7 @@ import StakingIcon from '@/shared/assets/images/navigation/staking.svg?jsx';
 
 const NavigationImages = {
   asset: { svg: AssetIcon },
+  basket: { svg: BasketIcon },
   governance: { svg: GovernanceIcon },
   fellowshipNav: { svg: FellowshipIcon },
   operations: { svg: OperationsIcon },
