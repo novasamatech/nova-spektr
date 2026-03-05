@@ -53,7 +53,7 @@ export const ReferendumDetailsModal = memo(({ referendumId, children, title, isC
       const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
 
       if (isPromotionTrack || isRetentionTrack) {
-        const rank = isPromotionTrack ? proposer.rank + 1 : proposer.rank;
+        const rank = trackService.getRankFromTrackId(referendum.track);
 
         if (rank > 0) {
           const template = isPromotionTrack ? 'fellowship.tasks.titles.promote' : 'fellowship.tasks.titles.retain';

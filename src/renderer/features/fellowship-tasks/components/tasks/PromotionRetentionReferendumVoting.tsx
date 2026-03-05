@@ -112,32 +112,21 @@ const useTitle = ({ referendum }: { referendum: OngoingReferendum }) => {
     if (!currentTrack || !proposerMember) return '';
 
     const string = isPromotionTrack ? 'fellowship.tasks.titles.promote' : 'fellowship.tasks.titles.retain';
-    const trackName = isPromotionTrack ? 'Promotion' : 'Retention';
-
-    const rank = trackService.getProposalTrack(tracks, proposerMember, trackName);
+    const rank = trackService.getRankFromTrackId(referendum.track);
 
     return t(string, {
       name: identity?.name ?? toShortAddress(toAddress(proposerMember.accountId, { prefix: chain?.addressPrefix }), 5),
       rank: toRomanNumeral(rank),
     });
-  }, [identity, isPromotionTrack, isRetentionTrack, t, currentTrack, tracks, proposerMember, chain]);
+  }, [identity, isPromotionTrack, isRetentionTrack, t, currentTrack, proposerMember, chain, referendum.track]);
 };
 
 const useRank = ({ referendum }: { referendum: OngoingReferendum }) => {
-  const proposerAccountId = referendumService.getProposer(referendum);
-
-  const api = useFellowshipApi();
-  const { data: tracks } = useTracks({ palletType: 'fellowship', api });
-  const { data: proposerMember } = useMember({ palletType: 'fellowship', api, accountId: proposerAccountId });
-
-  const currentTrack = tracks?.find(t => t.id === referendum.track);
-  const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
-  const isPromotionTrack = trackService.isPromotionTrack(referendum.track);
-
   return useMemo(() => {
-    if (!currentTrack || !tracks || !proposerMember) return null;
-    return trackService.getProposalTrack(tracks, proposerMember, isPromotionTrack ? 'Promotion' : 'Retention');
-  }, [currentTrack, tracks, isPromotionTrack, isRetentionTrack, proposerMember]);
+    if (!referendum) return null;
+    const rank = trackService.getRankFromTrackId(referendum.track);
+    return rank > 0 ? rank : null;
+  }, [referendum]);
 };
 
 const useReferendumSummary = ({ referendum }: { referendum: OngoingReferendum }) => {
