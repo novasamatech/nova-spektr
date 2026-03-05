@@ -218,8 +218,7 @@ sample({
     accountId: $selectedAccountId,
     challengeId: $challengeId,
   },
-  filter: ({ baseUrl, accountId, challengeId }) =>
-    baseUrl !== null && accountId !== null && challengeId !== null,
+  filter: ({ baseUrl, accountId, challengeId }) => baseUrl !== null && accountId !== null && challengeId !== null,
   fn: ({ baseUrl, accountId, challengeId }, signResult) => ({
     baseUrl: baseUrl!,
     accountId: accountId!,
@@ -252,7 +251,10 @@ sample({
 // Connection result tracking
 $connectionResult
   .on(verifySignatureFx.done, (): ConnectionResult => ({ status: 'success' }))
-  .on([connectTriggered, signInClicked, backendConfigurationModel.events.urlCleared], (): ConnectionResult => ({ status: 'idle' }));
+  .on(
+    [connectTriggered, signInClicked, backendConfigurationModel.events.urlCleared],
+    (): ConnectionResult => ({ status: 'idle' }),
+  );
 
 sample({
   clock: [requestChallengeFx.failData, verifySignatureFx.failData],
@@ -336,7 +338,10 @@ sample({
 });
 
 $isSessionExpired.on(checkSessionFx.fail, () => true);
-$isSessionExpired.on([verifySignatureFx.done, signOutClicked, backendConfigurationModel.events.urlCleared], () => false);
+$isSessionExpired.on(
+  [verifySignatureFx.done, signOutClicked, backendConfigurationModel.events.urlCleared],
+  () => false,
+);
 
 const sessionExpired = createEvent();
 
@@ -376,5 +381,10 @@ export const authModel = {
     modalClosed,
     sessionExpired,
     signingCancelled,
+  },
+
+  __test: {
+    logoutFx,
+    checkSessionFx,
   },
 };
