@@ -32,7 +32,7 @@ basketNavigationFeature.inject(navigationBottomLinksSlot, {
 
     return (
       <NavItem
-        icon="operations"
+        icon="basket"
         title={t('navigation.basketLabel')}
         link={Paths.BASKET}
         badge={<BodyText className="ml-auto text-text-tertiary">{availableOperations.length || ''}</BodyText>}
