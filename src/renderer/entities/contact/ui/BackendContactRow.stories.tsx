@@ -18,6 +18,9 @@ const mockContact: BackendContact = {
   contactTypeName: 'Multisig',
   derivationPath: null,
   ownerAccountId: null,
+  signatories: ['0xabc', '0xdef', '0x123'],
+  threshold: 2,
+  tags: [{ tagName: 'Role', values: ['Signer', 'Admin'] }],
 };
 
 const meta: Meta<typeof BackendContactRow> = {
@@ -50,6 +53,28 @@ export const MinimalLabels: Story = {
       name: 'Simple Contact',
       contactTypeName: null,
       entityNames: [],
+      chainId: null,
+      chainName: null,
+      categoryName: null,
+      signatories: null,
+      threshold: null,
+      tags: [],
+    },
+  },
+};
+
+export const MultichainContact: Story = {
+  args: {
+    contact: {
+      ...mockContact,
+      id: '3',
+      name: 'Multichain Member',
+      chainId: null,
+      chainName: null,
+      contactTypeName: 'Member',
+      signatories: null,
+      threshold: null,
+      tags: [{ tagName: 'Team', values: ['Engineering'] }],
     },
   },
 };

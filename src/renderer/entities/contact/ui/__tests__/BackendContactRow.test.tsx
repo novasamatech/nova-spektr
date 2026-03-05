@@ -24,6 +24,9 @@ const mockContact = {
   contactTypeName: 'Validator',
   derivationPath: null,
   ownerAccountId: null,
+  signatories: null,
+  threshold: null,
+  tags: [],
 };
 
 describe('entities/contact/ui/BackendContactRow', () => {
@@ -40,5 +43,44 @@ describe('entities/contact/ui/BackendContactRow', () => {
     expect(screen.getByText('Validator')).toBeInTheDocument();
     expect(screen.getByText('Polkadot')).toBeInTheDocument();
     expect(screen.getByText('Parity')).toBeInTheDocument();
+  });
+
+  test('should render tag labels', () => {
+    const contactWithTags = {
+      ...mockContact,
+      tags: [{ tagName: 'Role', values: ['Signer', 'Admin'] }],
+    };
+
+    render(<BackendContactRow contact={contactWithTags} />);
+
+    expect(screen.getByText('Role: Signer')).toBeInTheDocument();
+    expect(screen.getByText('Role: Admin')).toBeInTheDocument();
+  });
+
+  test('should render multisig threshold', () => {
+    const multisigContact = {
+      ...mockContact,
+      signatories: ['0xabc', '0xdef', '0x123'],
+      threshold: 2,
+    };
+
+    render(<BackendContactRow contact={multisigContact} />);
+
+    expect(screen.getByText('2/3')).toBeInTheDocument();
+  });
+
+  test('should handle null chain and category gracefully', () => {
+    const minimalContact = {
+      ...mockContact,
+      chainId: null,
+      chainName: null,
+      categoryName: null,
+    };
+
+    render(<BackendContactRow contact={minimalContact} />);
+
+    expect(screen.queryByText('Polkadot')).not.toBeInTheDocument();
+    expect(screen.queryByText('Internal')).not.toBeInTheDocument();
+    expect(screen.getByText('Validator')).toBeInTheDocument();
   });
 });
