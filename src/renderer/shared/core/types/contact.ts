@@ -9,6 +9,11 @@ type BaseContact = {
   accountId: AccountId;
 };
 
+export type ContactTag = {
+  tagName: string;
+  values: string[];
+};
+
 export type LocalContact = BaseContact & {
   source: 'local';
 };
@@ -16,12 +21,15 @@ export type LocalContact = BaseContact & {
 export type BackendContact = BaseContact & {
   source: 'backend';
   entityNames: string[];
-  chainId: string;
-  chainName: string;
-  categoryName: string;
+  chainId: string | null;
+  chainName: string | null;
+  categoryName: string | null;
   contactTypeName: string | null;
   derivationPath: string | null;
   ownerAccountId: string | null;
+  signatories: string[] | null;
+  threshold: number | null;
+  tags: ContactTag[];
 };
 
 export type Contact = LocalContact | BackendContact;
