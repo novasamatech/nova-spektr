@@ -103,6 +103,12 @@ $error.on(backendConfigurationModel.events.urlCleared, () => null);
 $lastSyncTime.on(backendConfigurationModel.events.urlCleared, () => null);
 $syncStatus.on(backendConfigurationModel.events.urlCleared, () => 'idle');
 
+// Delete all synced contacts when connection is deleted (but not on disconnect or session expiry)
+sample({
+  clock: backendConfigurationModel.events.urlCleared,
+  target: contactModel.effects.clearBackendContactsFx,
+});
+
 export const backendContactsModel = {
   $isLoading,
   $error,
