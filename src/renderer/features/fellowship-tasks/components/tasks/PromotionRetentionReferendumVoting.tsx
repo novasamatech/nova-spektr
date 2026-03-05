@@ -111,22 +111,20 @@ const useTitle = ({ referendum }: { referendum: OngoingReferendum }) => {
   return useMemo(() => {
     if (!currentTrack || !proposerMember) return '';
 
+    const rank = referendumService.getRankForReferendum(referendum);
+    if (rank == null) return '';
+
     const string = isPromotionTrack ? 'fellowship.tasks.titles.promote' : 'fellowship.tasks.titles.retain';
-    const rank = trackService.getRankFromTrackId(referendum.track);
 
     return t(string, {
       name: identity?.name ?? toShortAddress(toAddress(proposerMember.accountId, { prefix: chain?.addressPrefix }), 5),
       rank: toRomanNumeral(rank),
     });
-  }, [identity, isPromotionTrack, isRetentionTrack, t, currentTrack, proposerMember, chain, referendum.track]);
+  }, [identity, isPromotionTrack, isRetentionTrack, t, currentTrack, proposerMember, chain, referendum]);
 };
 
 const useRank = ({ referendum }: { referendum: OngoingReferendum }) => {
-  return useMemo(() => {
-    if (!referendum) return null;
-    const rank = trackService.getRankFromTrackId(referendum.track);
-    return rank > 0 ? rank : null;
-  }, [referendum]);
+  return useMemo(() => referendumService.getRankForReferendum(referendum), [referendum]);
 };
 
 const useReferendumSummary = ({ referendum }: { referendum: OngoingReferendum }) => {

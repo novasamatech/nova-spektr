@@ -6,7 +6,7 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { VotingButtonWithTooltip } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type Evidence, type OngoingReferendum, referendumService, trackService } from '@/domains/collectives';
+import { type Evidence, type OngoingReferendum, referendumService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import { useFellowshipAccount } from '@/aggregates/fellowship-member';
 import { useFellowshipChain } from '@/aggregates/fellowship-network';
@@ -52,9 +52,10 @@ export const VotingButtons = memo(({ referendum, evidence, onClose }: Props) => 
     if (!proposerMember) return '';
 
     if (referendum.proposal && referendumService.isEvidenceProposal(referendum.proposal)) {
-      return t('fellowship.tasks.titles.votingTitle.rank', {
-        rank: trackService.getRankFromTrackId(referendum.track),
-      });
+      const rank = referendumService.getRankForReferendum(referendum);
+      return rank != null
+        ? t('fellowship.tasks.titles.votingTitle.rank', { rank })
+        : t('fellowship.tasks.titles.votingTitle.rfcOrWhitelist');
     }
 
     if (referendum.proposal && referendumService.isSpendProposal(referendum.proposal)) {
