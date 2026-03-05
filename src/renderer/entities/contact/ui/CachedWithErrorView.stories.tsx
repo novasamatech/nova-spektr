@@ -20,6 +20,9 @@ const mockContacts: BackendContact[] = [
     contactTypeName: 'Multisig',
     derivationPath: null,
     ownerAccountId: null,
+    signatories: null,
+    threshold: null,
+    tags: [],
   },
   {
     id: '2',
@@ -34,6 +37,9 @@ const mockContacts: BackendContact[] = [
     contactTypeName: null,
     derivationPath: null,
     ownerAccountId: null,
+    signatories: null,
+    threshold: null,
+    tags: [],
   },
 ];
 
