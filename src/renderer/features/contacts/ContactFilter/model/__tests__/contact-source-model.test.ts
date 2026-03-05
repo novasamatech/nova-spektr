@@ -1,6 +1,7 @@
 import { allSettled, fork } from 'effector';
 
 import { type Contact } from '@/shared/core';
+import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 import { authModel, backendConfigurationModel } from '../../../BackendConfiguration';
 import { contactSourceModel } from '../contact-source-model';
@@ -9,8 +10,8 @@ const backendContacts: Contact[] = [
   {
     id: 'backend-1',
     name: 'Backend Contact',
-    address: '111',
-    accountId: '0x01',
+    address: toAddress('111'),
+    accountId: toAccountId('0x01'),
     source: 'backend',
     entityNames: ['Entity A'],
     chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
@@ -25,8 +26,8 @@ const backendContacts: Contact[] = [
 const localContact: Contact = {
   id: 'local-1',
   name: 'Local Contact',
-  address: '333',
-  accountId: '0x03',
+  address: toAddress('333'),
+  accountId: toAccountId('0x03'),
   source: 'local',
 };
 
