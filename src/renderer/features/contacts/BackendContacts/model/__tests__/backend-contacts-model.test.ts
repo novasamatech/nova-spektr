@@ -21,6 +21,9 @@ const backendContacts: Contact[] = [
     contactTypeName: null,
     derivationPath: null,
     ownerAccountId: null,
+    signatories: null,
+    threshold: null,
+    tags: [],
   },
   {
     id: 'backend-2',
@@ -35,6 +38,9 @@ const backendContacts: Contact[] = [
     contactTypeName: null,
     derivationPath: null,
     ownerAccountId: null,
+    signatories: null,
+    threshold: null,
+    tags: [],
   },
 ];
 
