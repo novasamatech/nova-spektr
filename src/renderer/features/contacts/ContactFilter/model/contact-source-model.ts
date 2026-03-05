@@ -10,6 +10,7 @@ const $sourceTab = createStore<string>('local');
 $sourceTab.on(sourceTabChanged, (_, tab) => tab);
 
 $sourceTab.on(authModel.events.signOutClicked, () => 'local');
+$sourceTab.on(backendConfigurationModel.events.urlCleared, () => 'local');
 
 type SourceTab = { id: string; label: string };
 
