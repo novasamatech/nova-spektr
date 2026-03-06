@@ -1,4 +1,5 @@
 import { type TrackId } from '@/shared/pallet/referenda';
+import { trackService } from '../tracks/service';
 
 import {
   type ApprovedReferendum,
@@ -63,6 +64,14 @@ function getProposer(referendum: Referendum) {
   return referendum.submissionDeposit?.who ?? null;
 }
 
+function getRankForReferendum(referendum: OngoingReferendum): number | null {
+  if (referendum.proposal?.type === 'Evidence' && referendum.proposal.rank != null) {
+    return referendum.proposal.rank;
+  }
+  const rank = trackService.getRankFromTrackId(referendum.track);
+  return rank > 0 ? rank : null;
+}
+
 export const referendumService = {
   isOngoing,
   isRejected,
@@ -83,4 +92,5 @@ export const referendumService = {
   getCompletedReferendums,
   getOperationStatus,
   getProposer,
+  getRankForReferendum,
 };

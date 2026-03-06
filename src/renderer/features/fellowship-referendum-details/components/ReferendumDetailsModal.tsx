@@ -53,9 +53,9 @@ export const ReferendumDetailsModal = memo(({ referendumId, children, title, isC
       const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
 
       if (isPromotionTrack || isRetentionTrack) {
-        const rank = isPromotionTrack ? proposer.rank + 1 : proposer.rank;
+        const rank = referendumService.getRankForReferendum(referendum);
 
-        if (rank > 0) {
+        if (rank != null && rank > 0) {
           const template = isPromotionTrack ? 'fellowship.tasks.titles.promote' : 'fellowship.tasks.titles.retain';
           const name =
             identity?.name ?? toShortAddress(toAddress(proposer.accountId, { prefix: chain?.addressPrefix }), 5);
