@@ -4,13 +4,14 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
-import { type Evidence, type Referendum, trackService } from '@/domains/collectives';
+import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
 import { useEvidenceContent } from '../hooks/useEvidenceContent';
 import { useMetadata } from '../hooks/useMetadata';
 
 import { AdditionalContext } from './AdditionalContext';
 import { Card } from './Card';
 import { ConnectedGovernanceReferendum } from './ConnectedGovernanceReferendum';
+import { TechnicalDetails } from './TechnicalDetails';
 
 type Props = {
   referendum: Referendum | null;
@@ -32,6 +33,8 @@ export const ReferendumDescription = memo(({ referendum, evidence }: Props) => {
   const shouldRenderEvidenceAlert =
     canHaveEvidence && nullable(evidenceContent) && (!pendingEvidenceContent || nullable(evidence));
 
+  const ongoingReferendum = nonNullable(referendum) && referendumService.isOngoing(referendum) ? referendum : null;
+
   return (
     <div className="flex h-full flex-col gap-4">
       {shouldRenderEvidencePending ? (
@@ -50,6 +53,8 @@ export const ReferendumDescription = memo(({ referendum, evidence }: Props) => {
       ) : null}
 
       {shouldRenderEvidenceAlert ? <NoEvidence /> : null}
+
+      {ongoingReferendum && <TechnicalDetails referendum={ongoingReferendum} />}
 
       {nonNullable(referendum) && <ConnectedGovernanceReferendum referendum={referendum} />}
       <div className="flex-1">

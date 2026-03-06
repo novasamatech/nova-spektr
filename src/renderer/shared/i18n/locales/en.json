@@ -1239,6 +1239,17 @@
       "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
     },
+    "technicalDetails": {
+      "callData": "Call data",
+      "callHash": "Call hash",
+      "callHashCopied": "Call hash copied!",
+      "governanceNotCreated": "Governance referendum not created yet",
+      "origin": "Origin",
+      "referendumId": "Referendum ID",
+      "title": "Technical details",
+      "track": "Track",
+      "viewJson": "View JSON"
+    },
     "whitelist": {
       "aiGenerated": "AI generated",
       "callData": "Call data",
