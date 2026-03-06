@@ -1,7 +1,7 @@
 {
   "name": "Nova Spektr",
 
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
 
   "runArgs": ["--name", "nova-spektr-dev"],
 

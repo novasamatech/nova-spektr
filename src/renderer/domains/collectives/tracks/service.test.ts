@@ -36,4 +36,25 @@ describe('track service', () => {
 
     expect(voteWeight).toEqual(15);
   });
+
+  describe('getRankFromTrackId', () => {
+    it.each([
+      { trackId: 11, expected: 1, description: 'retention track 11 (retain at I Dan)' },
+      { trackId: 12, expected: 2, description: 'retention track 12 (retain at II Dan)' },
+      { trackId: 16, expected: 6, description: 'retention track 16' },
+      { trackId: 21, expected: 1, description: 'regular promotion track 21 (promote to I Dan)' },
+      { trackId: 22, expected: 2, description: 'regular promotion track 22 (promote to II Dan)' },
+      { trackId: 26, expected: 6, description: 'regular promotion track 26' },
+      { trackId: 31, expected: 1, description: 'fast promotion track 31 (fast promote to I Dan)' },
+      { trackId: 33, expected: 3, description: 'fast promotion track 33 (fast promote to III Dan)' },
+      { trackId: 36, expected: 6, description: 'fast promotion track 36' },
+    ])('returns $expected for $description', ({ trackId, expected }) => {
+      expect(trackService.getRankFromTrackId(trackId)).toEqual(expected);
+    });
+
+    it('returns 0 for non-promotion/retention tracks', () => {
+      expect(trackService.getRankFromTrackId(0)).toEqual(0);
+      expect(trackService.getRankFromTrackId(5)).toEqual(0);
+    });
+  });
 });
