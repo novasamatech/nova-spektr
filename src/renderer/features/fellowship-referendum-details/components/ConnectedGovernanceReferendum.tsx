@@ -148,7 +148,9 @@ export const GovernanceReferendumCard = memo(
     let status: ReferendumStatus | null = null;
     if (governanceReferendumService.isOngoing(governanceReferendum)) {
       track = tracks[governanceReferendum.track] ?? null;
-      endBlock = governanceReferendumService.getReferendumEndTime(governanceReferendum, track!, undecidingTimeout);
+      if (track) {
+        endBlock = governanceReferendumService.getReferendumEndTime(governanceReferendum, track, undecidingTimeout);
+      }
       status = governanceReferendumService.getReferendumStatus(governanceReferendum);
     }
 
