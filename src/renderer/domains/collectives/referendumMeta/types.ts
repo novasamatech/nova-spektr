@@ -10,7 +10,7 @@ export type ReferendumMeta = {
   chainId: ChainId;
   pallet: CollectivePalletsType;
   title: string;
-  description: string;
+  description: string | null;
   track: number;
   created: number;
   status: string;

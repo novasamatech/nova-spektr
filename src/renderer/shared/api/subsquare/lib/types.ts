@@ -79,7 +79,7 @@ export type SubsquareSimpleReferendum = {
 };
 
 export type SubsquareFullReferendum = SubsquareSimpleReferendum & {
-  content: string;
+  content: string | null;
 };
 
 type SubsquareReferendumVoteCommonData = {
