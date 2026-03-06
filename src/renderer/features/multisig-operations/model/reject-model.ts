@@ -102,6 +102,10 @@ const {
   transaction: $transaction,
 });
 
+// Reset async-computed stores on new flow to prevent stale data from previous rejection
+$tx.reset(flow.open);
+$fee.reset(flow.open);
+
 const validator = createTxValidator();
 const { $errors, $valid, $balanceValidationResults } = createTxValidationStore({
   validator,
