@@ -1243,6 +1243,7 @@
       "callData": "Call data",
       "callHash": "Call hash",
       "callHashCopied": "Call hash copied!",
+      "call": "Call",
       "governanceNotCreated": "Governance referendum not created yet",
       "origin": "Origin",
       "referendumId": "Referendum ID",

@@ -41,6 +41,12 @@ export const TechnicalDetails = memo(({ referendum }: Props) => {
             <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.origin')}</FootnoteText>
             <FootnoteText>{referendum.origin}</FootnoteText>
           </div>
+          {referendum.proposal && (
+            <div className="flex items-center justify-between">
+              <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.call')}</FootnoteText>
+              <FootnoteText>{referendum.proposal.type}</FootnoteText>
+            </div>
+          )}
 
           {whitelistProposal && (
             <>
