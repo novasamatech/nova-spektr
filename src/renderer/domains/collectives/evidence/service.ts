@@ -26,7 +26,7 @@ function getEvidenceFromCid(cid: string): HexString {
 }
 
 function getEvidenceIpfsUrl(evidence: HexString) {
-  return new URL(`/ipfs/${getCidByEvidence(evidence)}`, 'https://subsquare.infura-ipfs.io');
+  return new URL(`/ipfs/${getCidByEvidence(evidence)}`, 'https://ipfs.io');
 }
 
 function getEvidenceUploadIpfsUrl() {
