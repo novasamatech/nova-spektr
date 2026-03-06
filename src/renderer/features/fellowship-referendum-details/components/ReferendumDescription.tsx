@@ -27,8 +27,10 @@ export const ReferendumDescription = memo(({ referendum, evidence }: Props) => {
     (trackService.isPromotionTrack(referendumMeta.track) || trackService.isRetentionTrack(referendumMeta.track));
 
   const shouldRenderEvidence = nonNullable(evidenceContent) && !pendingEvidenceContent;
-  const shouldRenderEvidencePending = canHaveEvidence && nullable(evidenceContent) && pendingEvidenceContent;
-  const shouldRenderEvidenceAlert = canHaveEvidence && nullable(evidenceContent) && !pendingEvidenceContent;
+  const shouldRenderEvidencePending =
+    canHaveEvidence && nullable(evidenceContent) && pendingEvidenceContent && nonNullable(evidence);
+  const shouldRenderEvidenceAlert =
+    canHaveEvidence && nullable(evidenceContent) && (!pendingEvidenceContent || nullable(evidence));
 
   return (
     <div className="flex h-full flex-col gap-4">
