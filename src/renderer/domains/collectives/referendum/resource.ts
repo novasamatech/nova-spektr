@@ -41,14 +41,16 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
   try {
     const struct = api.registry.createType('Proposal', proposalHex);
 
-    // parsing "who" argument for promote/retain
+    // parsing "who" and rank (atRank/toRank) for promote/retain
     if (struct.method === 'promote' || struct.method === 'promoteFast' || struct.method === 'approve') {
-      const parsed = pjsSchema.accountId.safeParse(struct.args.at(0));
+      const accountIdParsed = pjsSchema.accountId.safeParse(struct.args.at(0));
+      const rankParsed = pjsSchema.u16.safeParse(struct.args.at(1));
 
-      if (parsed.success) {
+      if (accountIdParsed.success) {
         return {
           type: 'Evidence',
-          accountId: parsed.data,
+          accountId: accountIdParsed.data,
+          ...(rankParsed.success ? { rank: rankParsed.data } : {}),
         };
       }
     }

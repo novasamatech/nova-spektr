@@ -235,17 +235,21 @@ export const getProposalTrack = (tracks: Track[], proposerMember: Member, wish: 
   return 0;
 };
 
-function getRankFromTrack(track: Track): number {
-  if (isRetentionTrack(track.id)) {
-    return track.id - 10;
+function getRankFromTrackId(trackId: TrackId): number {
+  if (isRetentionTrack(trackId)) {
+    return trackId - 10;
   }
-  if (isFastPromotionTrack(track.id)) {
-    return track.id - 31 + 1;
+  if (isFastPromotionTrack(trackId)) {
+    return trackId - 31 + 1;
   }
-  if (isPromotionTrack(track.id)) {
-    return track.id - 21 + 1;
+  if (isPromotionTrack(trackId)) {
+    return trackId - 21 + 1;
   }
   return 0;
+}
+
+function getRankFromTrack(track: Track): number {
+  return getRankFromTrackId(track.id);
 }
 
 export const trackService = {
@@ -265,4 +269,5 @@ export const trackService = {
   originNameFromTrack,
   getProposalTrack,
   getRankFromTrack,
+  getRankFromTrackId,
 };
