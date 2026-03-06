@@ -13,7 +13,7 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { Modal } from '@/shared/ui-kit';
+import { ConfirmModal, Modal } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult, isXcmTransaction, useTransactionAsset } from '@/entities/transaction';
@@ -55,6 +55,8 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const [submitData, setSubmitData] = useState<SubmitData | null>(null);
   const [activeStep, setActiveStep] = useState(Step.FORM);
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const wallets = useUnit(walletModel.$wallets);
   const multisigAccount = useUnit(approveModel.$multisigAccount);
@@ -80,10 +82,14 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const handleToggle = (open: boolean) => {
     if (open) {
       approveModel.flow.open({ chain, operation, account });
+      setIsModalOpen(true);
+    } else if (activeStep === Step.SIGNING) {
+      setShowConfirm(true);
     } else {
       approveModel.flow.close({ chain, operation, account });
       setSubmitData(null);
       setActiveStep(Step.FORM);
+      setIsModalOpen(false);
     }
   };
 
@@ -91,6 +97,8 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
     approveModel.flow.close({ chain, operation, account });
     setSubmitData(null);
     setActiveStep(Step.FORM);
+    setIsModalOpen(false);
+    setShowConfirm(false);
   };
 
   const goBack = () => {
@@ -136,59 +144,70 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   }
 
   return (
-    <Modal size="md" onToggle={handleToggle}>
-      <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>
-        <OperationTitle
-          title={activeStep !== Step.FORM ? t(transactionTitle || '', { asset: asset?.symbol }) : ''}
-          chainId={operation.chainId}
-        />
-      </Modal.Title>
-      <Modal.Content>
-        {activeStep === Step.FORM && multisigAccount && (
-          <ApproveForm
-            unsignedAccounts={unsignedAccounts}
-            chain={chain}
-            nativeAsset={nativeAsset}
-            operation={operation}
-            onSubmit={onFormSubmit}
+    <>
+      <Modal size="md" isOpen={isModalOpen} onToggle={handleToggle}>
+        <Modal.Trigger>{children}</Modal.Trigger>
+        <Modal.Title close>
+          <OperationTitle
+            title={activeStep !== Step.FORM ? t(transactionTitle || '', { asset: asset?.symbol }) : ''}
+            chainId={operation.chainId}
           />
-        )}
-        {activeStep === Step.CONFIRMATION && (
-          <Confirmation
-            operation={operation}
-            api={api}
-            chain={chain}
-            fee={fee}
-            isFeeLoading={isFeeLoading}
-            isDepositRequired={isDepositRequired}
-            signAccount={signAccount}
-            multisigDeposit={multisigDeposit}
-            valid={valid}
-            onSign={handleConfirm}
-            onGoBack={() => setActiveStep(Step.FORM)}
-          />
-        )}
+        </Modal.Title>
+        <Modal.Content>
+          {activeStep === Step.FORM && multisigAccount && (
+            <ApproveForm
+              unsignedAccounts={unsignedAccounts}
+              chain={chain}
+              nativeAsset={nativeAsset}
+              operation={operation}
+              onSubmit={onFormSubmit}
+            />
+          )}
+          {activeStep === Step.CONFIRMATION && (
+            <Confirmation
+              operation={operation}
+              api={api}
+              chain={chain}
+              fee={fee}
+              isFeeLoading={isFeeLoading}
+              isDepositRequired={isDepositRequired}
+              signAccount={signAccount}
+              multisigDeposit={multisigDeposit}
+              valid={valid}
+              onSign={handleConfirm}
+              onGoBack={() => setActiveStep(Step.FORM)}
+            />
+          )}
 
-        {activeStep === Step.SIGNING && signingPayloads && signAccount && (
-          <SigningSwitch
-            signerWallet={wallets.find(w => w.id === signAccount.walletId)}
-            signingPayloads={signingPayloads}
-            onGoBack={goBack}
-            onResult={onSignResult}
-          />
-        )}
+          {activeStep === Step.SIGNING && signingPayloads && signAccount && (
+            <SigningSwitch
+              signerWallet={wallets.find(w => w.id === signAccount.walletId)}
+              signingPayloads={signingPayloads}
+              onGoBack={goBack}
+              onResult={onSignResult}
+            />
+          )}
 
-        <OperationResult
-          isOpen={isFeeModalOpen}
-          variant="error"
-          title={t('operation.feeErrorTitle')}
-          description={t('operation.feeErrorMessage')}
-          onClose={toggleFeeModal}
-        >
-          <Button onClick={toggleFeeModal}>{t('operation.submitErrorButton')}</Button>
-        </OperationResult>
-      </Modal.Content>
-    </Modal>
+          <OperationResult
+            isOpen={isFeeModalOpen}
+            variant="error"
+            title={t('operation.feeErrorTitle')}
+            description={t('operation.feeErrorMessage')}
+            onClose={toggleFeeModal}
+          >
+            <Button onClick={toggleFeeModal}>{t('operation.submitErrorButton')}</Button>
+          </OperationResult>
+        </Modal.Content>
+      </Modal>
+      <ConfirmModal
+        isOpen={showConfirm}
+        title={t('operation.submitCloseConfirmTitle')}
+        description={t('operation.submitCloseConfirmDescription')}
+        cancelText={t('operation.submitCloseConfirmLeave')}
+        confirmText={t('operation.submitCloseConfirmStay')}
+        onCancel={handleClose}
+        onConfirm={() => setShowConfirm(false)}
+      />
+    </>
   );
 });
