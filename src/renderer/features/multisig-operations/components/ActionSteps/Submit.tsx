@@ -6,6 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { Button, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
+import { ConfirmModal } from '@/shared/ui-kit';
 import { type MultisigOperation, accountSync, transactionService } from '@/domains/network';
 import { getExtrinsic, isProxyTypeTransaction } from '@/entities/transaction';
 
@@ -27,6 +28,16 @@ export const Submit = ({ api, tx, operation, txPayload, signature, isReject, onC
   const [inProgress, toggleInProgress] = useToggle(true);
   const [successMessage, toggleSuccessMessage] = useToggle();
   const [errorMessage, setErrorMessage] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleClose = () => {
+    if (inProgress) {
+      setShowConfirm(true);
+
+      return;
+    }
+    onClose();
+  };
 
   useEffect(() => {
     submitExtrinsic(signature).catch(() => console.warn('Error getting signed extrinsics'));
@@ -90,8 +101,23 @@ export const Submit = ({ api, tx, operation, txPayload, signature, isReject, onC
   };
 
   return (
-    <StatusModal isOpen={Boolean(inProgress || errorMessage || successMessage)} {...getResultProps()} onClose={onClose}>
-      {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.submitErrorButton')}</Button>}
-    </StatusModal>
+    <>
+      <StatusModal
+        isOpen={Boolean(inProgress || errorMessage || successMessage)}
+        {...getResultProps()}
+        onClose={handleClose}
+      >
+        {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.submitErrorButton')}</Button>}
+      </StatusModal>
+      <ConfirmModal
+        isOpen={showConfirm}
+        title={t('operation.submitCloseConfirmTitle')}
+        description={t('operation.submitCloseConfirmDescription')}
+        cancelText={t('operation.submitCloseConfirmLeave')}
+        confirmText={t('operation.submitCloseConfirmStay')}
+        onCancel={onClose}
+        onConfirm={() => setShowConfirm(false)}
+      />
+    </>
   );
 };
