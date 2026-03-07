@@ -2461,7 +2461,8 @@
       "connected": "Connected",
       "disconnected": "Not connected",
       "notConfigured": "Not configured",
-      "title": "External Address Book"
+      "title": "External Address Book",
+      "wikiLink": "For more information check Wiki page"
     },
     "currency": {
       "cryptocurrenciesLabel": "Cryptocurrencies",

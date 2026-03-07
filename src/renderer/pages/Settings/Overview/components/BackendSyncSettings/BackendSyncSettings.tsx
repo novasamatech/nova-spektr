@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { BodyText, Button, FootnoteText, Icon } from '@/shared/ui';
+import { BodyText, Button, FootnoteText, Icon, InfoLink } from '@/shared/ui';
 import { Plate } from '@/shared/ui';
 import { authModel, backendConfigurationModel } from '@/features/contacts';
 
@@ -46,6 +46,9 @@ export const BackendSyncSettings = () => {
           </div>
         )}
       </Plate>
+      <InfoLink url="https://docs.novaspektr.io/address-book/remote-contact-management" iconName="info">
+        {t('settings.backendSync.wikiLink')}
+      </InfoLink>
     </div>
   );
 };
