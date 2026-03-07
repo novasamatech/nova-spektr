@@ -1,7 +1,7 @@
-import { type PropsWithChildren } from 'react';
+import { type PropsWithChildren, type ReactNode } from 'react';
 
 type Props = {
-  text: string;
+  text: ReactNode;
   testId?: string;
 };
 
