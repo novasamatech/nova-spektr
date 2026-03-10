@@ -23,6 +23,7 @@ export const walletIconSlot = createSlot<{ wallet: Wallet; size: number }>();
 
 export const WalletSelect = memo(() => {
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
+  const folded = useUnit(sidebarModel.$folded);
 
   useEffect(() => {
     walletList.fetchWallets();
@@ -33,7 +34,7 @@ export const WalletSelect = memo(() => {
   }
 
   return (
-    <Popover align="start" sideOffset={2}>
+    <Popover align="start" side={folded ? 'right' : 'bottom'} sideOffset={2}>
       <Popover.Trigger>
         <WalletSelectTrigger wallet={selectedWallet} />
       </Popover.Trigger>
