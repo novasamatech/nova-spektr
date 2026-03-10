@@ -22,6 +22,7 @@ export const walletIconSlot = createSlot<{ wallet: Wallet; size: number }>();
 
 export const WalletSelect = memo(({ folded }: { folded: boolean }) => {
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
+  const folded = useUnit(sidebarModel.$folded);
 
   useEffect(() => {
     walletList.fetchWallets();
