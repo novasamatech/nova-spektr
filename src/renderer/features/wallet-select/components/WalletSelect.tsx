@@ -10,7 +10,6 @@ import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
 import { Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
 import { useWalletName } from '@/domains/network';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { sidebarModel } from '@/features/app-shell';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletList } from '../model/list';
 
@@ -21,9 +20,8 @@ export const walletGroupSlot = createSlot<{
 export const walletSelectActionsSlot = createSlot();
 export const walletIconSlot = createSlot<{ wallet: Wallet; size: number }>();
 
-export const WalletSelect = memo(() => {
+export const WalletSelect = memo(({ folded }: { folded: boolean }) => {
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
-  const folded = useUnit(sidebarModel.$folded);
 
   useEffect(() => {
     walletList.fetchWallets();
@@ -36,7 +34,7 @@ export const WalletSelect = memo(() => {
   return (
     <Popover align="start" side={folded ? 'right' : 'bottom'} sideOffset={2}>
       <Popover.Trigger>
-        <WalletSelectTrigger wallet={selectedWallet} />
+        <WalletSelectTrigger wallet={selectedWallet} folded={folded} />
       </Popover.Trigger>
       <Popover.Content>
         <WalletSelectDropdown />
@@ -46,9 +44,8 @@ export const WalletSelect = memo(() => {
 });
 
 const WalletSelectTrigger = memo(
-  ({ wallet, ...rest }: Pick<ComponentProps<'button'>, 'onClick'> & { wallet: Wallet }) => {
+  ({ wallet, folded, ...rest }: Pick<ComponentProps<'button'>, 'onClick'> & { wallet: Wallet; folded: boolean }) => {
     const walletName = useWalletName(wallet);
-    const folded = useUnit(sidebarModel.$folded);
 
     return (
       <button

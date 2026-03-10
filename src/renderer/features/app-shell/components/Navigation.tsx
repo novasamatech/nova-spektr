@@ -17,13 +17,13 @@ export const navigationTopLinksPipeline = createPipeline<NavItemProps[]>({
   },
 });
 export const navigationBottomLinksSlot = createSlot();
-export const navigationCustomOperationsSlot = createSlot();
+export const navigationCustomOperationsSlot = createSlot<{ folded: boolean }>();
 
 export const Navigation = memo(() => {
   const upperItems = usePipeline(navigationTopLinksPipeline, []);
   const lowerItems = useSlot(navigationBottomLinksSlot);
-  const customOperationItems = useSlot(navigationCustomOperationsSlot);
   const folded = useUnit(sidebarModel.$folded);
+  const customOperationItems = useSlot(navigationCustomOperationsSlot, { props: { folded } });
 
   return (
     <nav className="h-full overflow-x-hidden overflow-y-auto">

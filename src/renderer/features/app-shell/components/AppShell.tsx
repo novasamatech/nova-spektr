@@ -10,13 +10,13 @@ import { Favicon } from './Favicon';
 import { Navigation } from './Navigation';
 import { NotificationsPortal } from './NotificationsPortal';
 
-export const navigationHeaderSlot = createSlot();
+export const navigationHeaderSlot = createSlot<{ folded: boolean }>();
 export const modalsSlot = createSlot();
 
 export const AppShell = memo(() => {
-  const headerNodes = useSlot(navigationHeaderSlot);
   const modals = useSlot(modalsSlot);
   const folded = useUnit(sidebarModel.$folded);
+  const headerNodes = useSlot(navigationHeaderSlot, { props: { folded } });
 
   return (
     <div className="flex h-full animate-in fade-in">

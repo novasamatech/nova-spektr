@@ -1,19 +1,15 @@
-import { useUnit } from 'effector-react';
-
 import { createSlot, useSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
 import { Dropdown, Tooltip } from '@/shared/ui-kit';
-import { sidebarModel } from '@/features/app-shell';
 
 export const customOperationsSlot = createSlot();
 
-export const CustomOperations = () => {
+export const CustomOperations = ({ folded }: { folded: boolean }) => {
   const { t } = useI18n();
   const [isActionsOpen, toggleIsActionsOpen] = useToggle();
-  const folded = useUnit(sidebarModel.$folded);
 
   const customOperations = useSlot(customOperationsSlot);
 
