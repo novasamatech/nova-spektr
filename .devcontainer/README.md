@@ -23,25 +23,41 @@ The first build takes a few minutes. Subsequent starts are much faster.
 
 ## 🔒 First Run: HTTPS Certificate Setup
 
-After the container builds, run the app to generate certificates:
+The dev server uses HTTPS via `vite-plugin-mkcert`. The container is configured to reuse
+your host's `mkcert` root CA so the browser trusts the certificates without extra steps.
+
+### macOS
+
+```sh
+# 1. Install mkcert on the host
+brew install mkcert
+
+# 2. Create root CA and add it to macOS keychain + browser trust stores
+mkcert -install
+```
+
+Then rebuild the dev container. The `devcontainer.json` mounts your host's mkcert root CA
+(`~/Library/Application Support/mkcert/`) into the container and sets `CAROOT` so the
+vite plugin signs leaf certificates with the already-trusted root CA.
+
+### Linux
+
+```sh
+# 1. Install mkcert (see https://github.com/FiloSottile/mkcert#installation)
+# 2. Create root CA and add it to system trust store
+mkcert -install
+```
+
+The default `devcontainer.json` mount path is macOS-specific. Linux users need to update
+the `mounts` source path in `devcontainer.json` to their `CAROOT` (find it with `mkcert -CAROOT`,
+usually `~/.local/share/mkcert`).
+
+### Verify
+
+After rebuilding the container, run:
 
 ```sh
 pnpm start:renderer
 ```
 
-Then install the HTTPS certificate to the system trust store.
-
-For macOS keychain:
-
-```sh
-# 1. Copy cert from container to host
-docker cp nova-spektr-dev:/home/node/.vite-plugin-mkcert/rootCA.pem ~/Downloads/nova-spektr-rootCA.pem
-
-# 2. Install to macOS keychain
-sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ~/Downloads/nova-spektr-rootCA.pem
-
-# 3. Clean up (optional)
-rm ~/Downloads/nova-spektr-rootCA.pem
-```
-
-✅ Done! You can now develop with HTTPS locally.
+Chrome should show a trusted HTTPS connection with no warnings.
