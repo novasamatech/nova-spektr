@@ -1,12 +1,20 @@
 {
   "name": "Nova Spektr",
-
   "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
-
-  "runArgs": ["--name", "nova-spektr-dev"],
-
-  "forwardPorts": [3000, 6006],
-
+  "runArgs": [
+    "--name",
+    "nova-spektr-dev"
+  ],
+  "mounts": [
+    "source=${localEnv:HOME}/Library/Application Support/mkcert,target=/home/node/.mkcert-host,type=bind,readonly"
+  ],
+  "containerEnv": {
+    "CAROOT": "/home/node/.mkcert-host"
+  },
+  "forwardPorts": [
+    3000,
+    6006
+  ],
   "portsAttributes": {
     "3000": {
       "label": "Renderer Dev Server",
@@ -18,9 +26,7 @@
       "onAutoForward": "notify"
     }
   },
-
   "postCreateCommand": "npm install -g pnpm@latest && pnpm install",
-
   "customizations": {
     "vscode": {
       "settings": {
