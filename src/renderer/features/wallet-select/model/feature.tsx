@@ -6,6 +6,8 @@ export const walletSelectFeatureStatus = createFeature({
   name: 'wallet/select',
 });
 
-walletSelectFeatureStatus.inject(navigationHeaderSlot, () => {
-  return <WalletSelect />;
+walletSelectFeatureStatus.inject(navigationHeaderSlot, {
+  render({ folded }) {
+    return <WalletSelect folded={folded} />;
+  },
 });

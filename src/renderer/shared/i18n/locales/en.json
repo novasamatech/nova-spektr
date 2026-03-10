@@ -1812,7 +1812,8 @@
     "transfersLabel": "Transfer",
     "unknownWalletLabel": "Unknown wallet",
     "vestedTransfersLabel": "Vested transfer",
-    "walletsLabel": "Wallets"
+    "walletsLabel": "Wallets",
+    "collapseLabel": "Collapse"
   },
   "notifications": {
     "details": {
