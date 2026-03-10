@@ -5,10 +5,12 @@ import { TEST_IDS } from '@/shared/constants';
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
 import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
-import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
+import { Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
 import { useWalletName } from '@/domains/network';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { sidebarModel } from '@/features/app-shell';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletList } from '../model/list';
 
@@ -45,26 +47,30 @@ export const WalletSelect = memo(() => {
 const WalletSelectTrigger = memo(
   ({ wallet, ...rest }: Pick<ComponentProps<'button'>, 'onClick'> & { wallet: Wallet }) => {
     const walletName = useWalletName(wallet);
+    const folded = useUnit(sidebarModel.$folded);
 
     return (
       <button
         type="button"
         data-testid={TEST_IDS.COMMON.WALLET_BUTTON}
-        className="w-full cursor-pointer rounded-md border border-container-border bg-left-navigation-menu-background shadow-card-shadow"
+        className={cnTw(
+          'w-full cursor-pointer rounded-md border py-3 transition-all duration-200',
+          folded
+            ? 'border-transparent px-1'
+            : 'border-container-border bg-left-navigation-menu-background px-3 shadow-card-shadow',
+        )}
         {...rest}
       >
-        <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={3}>
-          <div className="flex h-8 w-full min-w-0 items-center gap-x-2">
-            <div className="relative">
-              <Slot id={walletIconSlot} props={{ wallet, size: 32 }} />
-            </div>
-            <div className="flex min-w-0 flex-col">
-              <BodyText className="truncate text-text-primary">{walletName}</BodyText>
-              <WalletFiatBalance wallet={wallet} className="truncate" />
-            </div>
+        <div className="flex h-8 items-center gap-x-2">
+          <div className="relative shrink-0">
+            <Slot id={walletIconSlot} props={{ wallet, size: 32 }} />
+          </div>
+          <div className="flex min-w-0 flex-col overflow-hidden">
+            <BodyText className="whitespace-nowrap text-text-primary">{walletName}</BodyText>
+            <WalletFiatBalance wallet={wallet} className="whitespace-nowrap" />
           </div>
           <Icon name="down" size={16} className="ml-auto shrink-0" />
-        </Box>
+        </div>
       </button>
     );
   },
