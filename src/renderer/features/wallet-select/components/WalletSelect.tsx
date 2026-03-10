@@ -62,7 +62,7 @@ const WalletSelectTrigger = memo(
         {...rest}
       >
         <div className="flex h-8 items-center gap-x-2">
-          <div className="relative shrink-0">
+          <div className={cnTw('relative shrink-0', folded && 'pointer-events-none')}>
             <Slot id={walletIconSlot} props={{ wallet, size: 32 }} />
           </div>
           <div className="flex min-w-0 flex-col overflow-hidden">
