@@ -57,7 +57,7 @@ export const accountUtils = {
   getAddressesForWallet,
   getAccountsIdsForWallet,
   getAccountsAndShardGroups,
-  getMultisigAccountId,
+  getMultisigAccountId: getMultisigAccountId,
   getSignatoryAccounts,
   getDerivationPath,
 

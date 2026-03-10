@@ -2,7 +2,7 @@
   "name": "nova-spektr",
   "description": "Polkadot Enterprise application",
   "type": "module",
-  "version": "2.6.1",
+  "version": "2.7.0",
   "main": "./release/build/main.cjs",
   "repository": "https://github.com/novasamatech/nova-spektr",
   "license": "MIT",
@@ -50,6 +50,7 @@
     "test:watch": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest",
     "test:coverage": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --coverage",
     "test:coverage-new-files": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --coverage --changed dev",
+    "test:screenshots": "playwright test --config=playwright.screenshots.config.ts",
     "test:system": "cross-env CHAINS_FILE=chains_dev playwright test",
     "test:system:regress": "cross-env CHAINS_FILE=chains_dev playwright test --grep @regress",
     "test:system:load-fee": "cross-env CHAINS_FILE=chains_dev playwright test --grep @fee-test",
@@ -79,7 +80,7 @@
     "r": "pnpm run-s"
   },
   "engines": {
-    "node": ">=20.x <22",
+    "node": ">=24.x",
     "pnpm": ">=9.x"
   },
   "dependencies": {

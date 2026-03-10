@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type GenericExtrinsic } from '@polkadot/types';
 import { type AnyTuple } from '@polkadot/types/types';
-import { BN, u8aToHex } from '@polkadot/util';
+import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 
 import {
@@ -58,13 +58,6 @@ export const serializeOperation = <T extends NoID<MultisigOperation>>(tx: T) => 
     ...tx,
     deposit: tx.deposit?.toString(),
   } as Serializable<T>;
-};
-
-export const deserializeOperation = (tx: Serializable<MultisigOperation>): MultisigOperation => {
-  return {
-    ...tx,
-    deposit: tx.deposit ? new BN(tx.deposit) : undefined,
-  };
 };
 
 function findInnerExtrinsicCall(extrinsic: GenericExtrinsic<AnyTuple>) {
@@ -157,7 +150,7 @@ const mergeMultisigOperations = (
 export type MultisigOperationDeepLinkParams = {
   chainId: string;
   callHash: string;
-  accountId: AccountId;
+  multisigAccountId: AccountId;
   blockCreated: number;
   indexCreated: number;
 };
@@ -166,7 +159,7 @@ function generateMultisigOperationDeepLink(params: MultisigOperationDeepLinkPara
   const searchParams = new URLSearchParams({
     chainId: params.chainId,
     callHash: params.callHash,
-    accountId: params.accountId,
+    accountId: params.multisigAccountId,
     blockCreated: params.blockCreated.toString(),
     indexCreated: params.indexCreated.toString(),
   });
@@ -178,7 +171,7 @@ function generateMultisigOperationRelativeLink(params: MultisigOperationDeepLink
   const searchParams = new URLSearchParams({
     chainId: params.chainId,
     callHash: params.callHash,
-    accountId: params.accountId,
+    accountId: params.multisigAccountId,
     blockCreated: params.blockCreated.toString(),
     indexCreated: params.indexCreated.toString(),
   });

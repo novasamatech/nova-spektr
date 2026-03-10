@@ -19,6 +19,8 @@ import { accountsStructureModel } from '../model/accountsStructureModel';
 
 export const CustomEdge = ({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
@@ -90,9 +92,7 @@ export const CustomEdge = ({
   const labels = connection?.labels;
   const connectionColor = connection?.color || '#363643';
 
-  const shouldFade = highlightedNodesIds
-    ? !highlightedNodesIds.has(sourceAccount.id) || !highlightedNodesIds.has(targetAccount.id)
-    : false;
+  const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(source) || !highlightedNodesIds.has(target) : false;
 
   return isOutsideViewport ? null : (
     <AsyncItem>

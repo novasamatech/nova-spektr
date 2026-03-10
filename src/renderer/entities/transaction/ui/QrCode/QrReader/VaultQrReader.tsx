@@ -5,7 +5,7 @@ import { useRef, useState } from 'react';
 
 import { CryptoTypeString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, getPlatformType, validateSignerFormat } from '@/shared/lib/utils';
+import { cnTw, validateSignerFormat } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
 import { type QrReaderCamera, QrReader, QrReaderErrorCode, Select } from '@/shared/ui-kit';
 import {
@@ -18,6 +18,7 @@ import {
 import { QR_READER_DECODE_ERRORS } from '../common/errors';
 import { type DdSeedInfo, type ErrorObject, type SeedInfo, DecodeQrError } from '../common/types';
 
+import { CameraAccessAlert } from './CameraAccessAlert';
 import { RaptorFrame } from './RaptorFrame';
 
 const enum CameraState {
@@ -235,8 +236,8 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, isScanComplete
         result = EXPORT_ADDRESS.decode(fountainResult.slice(3)).payload;
       }
 
-      onScanResult(makeResultPayload(result));
       isComplete.current = true;
+      onScanResult(makeResultPayload(result));
       break;
     }
   };
@@ -370,70 +371,10 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, isScanComplete
       )}
 
       {isCameraError ? (
-        <div className="m-auto flex h-full max-h-[240px] w-full max-w-[240px] flex-col items-center justify-center gap-2 rounded-[22px] border-2 border-filter-border p-5">
-          <div className="flex h-full w-full flex-col items-center justify-center gap-4 text-center">
-            {cameraState === CameraState.DENY_ERROR && (
-              <>
-                <SmallTitleText as="p" align="center" className="px-4">
-                  {t('onboarding.paritySigner.accessDeniedLabel')}
-                </SmallTitleText>
-                {(() => {
-                  const platform = getPlatformType();
-                  const settingsUrl =
-                    platform === 'desktop-mac'
-                      ? 'x-apple.systempreferences:com.apple.preference.security?Privacy_Camera'
-                      : platform === 'desktop-windows'
-                        ? 'ms-settings:privacy-webcam'
-                        : null;
-
-                  if (platform === 'web') {
-                    return <p className="text-xs">{t('onboarding.paritySigner.accessDeniedDescriptionWeb')}</p>;
-                  }
-
-                  if (platform === 'desktop-linux') {
-                    return (
-                      <p className="text-xs">{t('onboarding.paritySigner.accessDeniedDescriptionDesktopLinux')}</p>
-                    );
-                  }
-
-                  return (
-                    <p className="text-xs">
-                      {t('onboarding.paritySigner.allowCameraPrefix')}
-                      {settingsUrl && (
-                        <a
-                          href={settingsUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={t('onboarding.paritySigner.systemSettingsAria')}
-                          tabIndex={0}
-                          className="text-primary outline-none hover:underline focus:underline"
-                        >
-                          {t('onboarding.paritySigner.systemSettings')}
-                        </a>
-                      )}
-                      {t('onboarding.paritySigner.allowCameraSuffix')}
-                    </p>
-                  );
-                })()}
-              </>
-            )}
-            {cameraState === CameraState.NO_VIDEO_INPUT && (
-              <>
-                <SmallTitleText as="p" align="center" className="px-3">
-                  {t('onboarding.paritySigner.noVideoInputLabel')}
-                </SmallTitleText>
-                <p className="text-xs">{t('onboarding.paritySigner.noVideoInputDescription')}</p>
-              </>
-            )}
-            <Button
-              className="mb-5 h-[32px] w-max"
-              prefixElement={<Icon size={18} name="refresh" className="text-white" />}
-              onClick={onRetryCamera}
-            >
-              {t('onboarding.paritySigner.tryAgainButton')}
-            </Button>
-          </div>
-        </div>
+        <CameraAccessAlert
+          status={cameraState === CameraState.DENY_ERROR ? 'denied' : 'no_input'}
+          onRetry={onRetryCamera}
+        />
       ) : (
         <div className={cnTw('relative overflow-hidden rounded-2lg', isCameraPending && 'hidden')} style={sizeStyle}>
           <QrReader

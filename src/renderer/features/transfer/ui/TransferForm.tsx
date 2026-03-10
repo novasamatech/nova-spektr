@@ -38,6 +38,7 @@ import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '../model/form-model';
@@ -84,7 +85,9 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
     <div className="flex flex-col gap-4 px-5 py-4">
       <TransactionValidationError errors={errors} wallets={wallets} />
       <DestinationBalanceAlert />
+      <PureProxyChainMismatchAlert />
       <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
+        <ChainSelector />
         <XcmChainSelector />
         <InitiatorSelector />
         <SignatorySelector />
@@ -132,6 +135,36 @@ const DestinationBalanceAlert = memo(() => {
           components={{ b: <b /> }}
         />
       </span>
+    </Alert>
+  );
+});
+
+const PureProxyChainMismatchAlert = memo(() => {
+  const { t } = useI18n();
+  const isPureProxyChainMismatch = useUnit(formModel.$isPureProxyChainMismatch);
+  const proxyChain = useUnit(formModel.$proxyChain);
+
+  const chainBadge = proxyChain ? (
+    <ChainTitle
+      chain={proxyChain}
+      as="span"
+      className="inline-flex"
+      fontClass="font-bold text-text-primary"
+      iconSize={14}
+    />
+  ) : (
+    <div />
+  );
+
+  return (
+    <Alert title={t('transfer.pureProxyChainMismatch.title')} variant="error" active={isPureProxyChainMismatch}>
+      <FootnoteText className="text-text-primary">
+        <Trans
+          t={t}
+          i18nKey="transfer.pureProxyChainMismatch.description"
+          components={{ chains: chainBadge, br: <br /> }}
+        />
+      </FootnoteText>
     </Alert>
   );
 });
@@ -190,6 +223,7 @@ const SignatorySelector = memo(() => {
   const balances = useUnit(balanceModel.$balanceMap);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
+  const selectedWallet = useUnit(walletSelect.$selectedWallet);
 
   const signatoriesWithBalance = useMemo(() => {
     if (!network) {
@@ -210,6 +244,32 @@ const SignatorySelector = memo(() => {
     return null;
   }
 
+  if (!initiator) {
+    return (
+      <Alert active title={t('operation.noSignatoryErrorTitle', { network: network.chain.name })} variant="error">
+        <FootnoteText className="max-w-full tracking-tight text-text-secondary">
+          <Trans
+            t={t}
+            i18nKey="operation.noSignatoryErrorDescription"
+            parent="span"
+            data-testid={TEST_IDS.VALIDATIONS.MISSING_ACCOUNT}
+            values={{ network: network.chain.name }}
+            components={{
+              wallet: (
+                <span className="mx-1 inline-flex max-w-[200px] items-center gap-x-1 align-bottom">
+                  {selectedWallet && <WalletIcon type={selectedWallet.type} size={16} />}
+                  <FootnoteText as="span" className="truncate text-text-secondary transition-colors">
+                    {selectedWallet?.name}
+                  </FootnoteText>
+                </span>
+              ),
+            }}
+          />
+        </FootnoteText>
+      </Alert>
+    );
+  }
+
   return (
     <SignatorySelect
       signatory={signatory.value}
@@ -225,9 +285,56 @@ const SignatorySelector = memo(() => {
   );
 });
 
-const XcmChainSelector = memo(() => {
+const ChainSelector = memo(() => {
   const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState('');
+
+  const network = useUnit(formModel.$networkStore);
+  const availableChains = useUnit(formModel.$availableChains);
+  const isAssetPredefined = useUnit(formModel.$isAssetPredefined);
+
+  const filteredChains = useMemo(() => {
+    if (!searchQuery) return availableChains;
+
+    return performSearch({
+      query: searchQuery,
+      records: availableChains,
+      weights: { name: 1 },
+    });
+  }, [availableChains, searchQuery]);
+
+  if (isAssetPredefined || !network) {
+    return null;
+  }
+
+  const selectChain = (chainId: ChainId) => {
+    const chain = availableChains.find((chain) => chain.chainId === chainId);
+    if (!chain || chain.chainId === network.chain.chainId) return;
+
+    formModel.chainChanged(chain);
+  };
+
+  return (
+    <Field text={t('transfer.networkLabel')}>
+      <Select
+        placeholder={t('transfer.networkPlaceholder')}
+        value={network.chain.chainId}
+        testId={TEST_IDS.OPERATIONS.XCM_SELECTOR}
+        onChange={selectChain}
+        onSearch={setSearchQuery}
+      >
+        {filteredChains.map((chain) => (
+          <Select.Item key={chain.chainId} value={chain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
+            <ChainTitle chainId={chain.chainId} fontClass="text-text-primary" />
+          </Select.Item>
+        ))}
+      </Select>
+    </Field>
+  );
+});
+
+const XcmChainSelector = memo(() => {
+  const { t } = useI18n();
 
   const {
     fields: { destinationChain },
@@ -235,61 +342,20 @@ const XcmChainSelector = memo(() => {
 
   const network = useUnit(formModel.$networkStore);
   const destinationChains = useUnit(formModel.$destinationChains);
-  const availableChains = useUnit(formModel.$availableChains);
-  const isAssetPredefined = useUnit(formModel.$isAssetPredefined);
+  const isXcmEnabled = useUnit(formModel.$isXcmEnabled);
 
-  const chains = isAssetPredefined ? destinationChains : availableChains;
-
-  const filteredChains = useMemo(() => {
-    if (!searchQuery) return chains;
-
-    return performSearch({
-      query: searchQuery,
-      records: chains,
-      weights: { name: 1 },
-    });
-  }, [chains, searchQuery]);
-
-  if (chains.length <= 1 && isAssetPredefined) {
-    return null;
-  }
-
-  if (!network) {
+  if (!isXcmEnabled || destinationChains.length <= 1 || !network) {
     return null;
   }
 
   const selectChain = (chainId: ChainId) => {
-    const chainMatch = chains.find((chain) => chain.chainId === chainId);
-    if (!chainMatch) return;
+    const chain = destinationChains.find((chain) => chain.chainId === chainId);
+    if (!chain) return;
 
-    if (!isAssetPredefined && chainMatch.chainId !== network.chain.chainId) {
-      formModel.chainChanged(chainMatch);
-    } else {
-      destinationChain.onChange(chainMatch);
-    }
+    destinationChain.onChange(chain);
   };
 
-  if (!isAssetPredefined) {
-    return (
-      <Field text={t('transfer.networkLabel')}>
-        <Select
-          placeholder={t('transfer.networkPlaceholder')}
-          value={network.chain.chainId}
-          testId={TEST_IDS.OPERATIONS.XCM_SELECTOR}
-          onChange={selectChain}
-          onSearch={setSearchQuery}
-        >
-          {filteredChains.map((chain) => (
-            <Select.Item key={chain.chainId} value={chain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
-              <ChainTitle chainId={chain.chainId} fontClass="text-text-primary" />
-            </Select.Item>
-          ))}
-        </Select>
-      </Field>
-    );
-  }
-
-  const [nativeChain, ...xcmChains] = chains;
+  const [nativeChain, ...xcmChains] = destinationChains;
 
   return (
     <Field text={t('transfer.destinationChainLabel')}>
@@ -502,7 +568,6 @@ const Amount = memo(() => {
   const network = useUnit(formModel.$networkStore);
   const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
   const isXcm = useUnit(formModel.$isXcm);
-  const isAssetPredefined = useUnit(formModel.$isAssetPredefined);
 
   const showMaxButton = !isXcm && (accountAvailableBalance?.gtn(0) ?? false);
   const showEDSwitch = useUnit(formModel.$showEDSwitch);
@@ -511,7 +576,7 @@ const Amount = memo(() => {
     return null;
   }
 
-  const handleAssetClick = isAssetPredefined ? undefined : () => formModel.showTokenSelector();
+  const handleAssetClick = () => formModel.showTokenSelector();
 
   return (
     <div className="flex flex-col gap-y-2">

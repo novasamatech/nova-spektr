@@ -3,7 +3,7 @@ import { delay, spread } from 'patronum';
 
 import { type PartialProxiedAccount, ProxyVariant } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { type PathType, Paths } from '@/shared/routes';
+import { multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
@@ -13,7 +13,7 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { type SigningPayload } from '@/features/operations/OperationSign';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import {
   type AddPureProxiedConfirm,
   addPureProxiedConfirmModel as confirmModel,
@@ -32,7 +32,7 @@ const txSaved = createEvent();
 
 const $step = restore(stepChanged, Step.NONE);
 
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(formModel.flowStarted);
+const $redirectAfterSubmitPath = createStore<string | null>(null).reset(formModel.flowStarted);
 
 const $initiatorWallet = combine(
   {
@@ -245,9 +245,19 @@ sample({
 
 sample({
   clock: submitModel.done,
-  source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: () => Paths.OPERATIONS,
+  source: { isMultisig: formModel.$isMultisig, coreTx: formModel.$coreTx, wrappedTx: formModel.$tx },
+  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ coreTx, wrappedTx }, results) => {
+    const { timepoint } = (results[0] as SuccessResult).params;
+
+    return multisigOperationService.generateMultisigOperationRelativeLink({
+      chainId: coreTx!.chainId,
+      callHash: wrappedTx!.args.callHash,
+      multisigAccountId: coreTx!.accountId,
+      blockCreated: timepoint.height,
+      indexCreated: timepoint.index,
+    });
+  },
   target: $redirectAfterSubmitPath,
 });
 

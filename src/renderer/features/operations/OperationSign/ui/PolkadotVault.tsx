@@ -1,21 +1,30 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { type HexString, type PolkadotVaultWallet, type SingleShardWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useCountdown } from '@/shared/lib/hooks';
-import { ValidationErrors, nullable } from '@/shared/lib/utils';
-import { FootnoteText } from '@/shared/ui';
+import { ValidationErrors, getCurrentBlockNumber, isEraExpired, nullable } from '@/shared/lib/utils';
+import { Button, FootnoteText, Loader } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
-import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, transactionService } from '@/entities/transaction';
+import { Box } from '@/shared/ui-kit';
+import {
+  CameraAccessAlert,
+  QrReaderWrapper,
+  ScanMultiframeQr,
+  ScanSingleframeQr,
+  transactionService,
+  useCameraAvailability,
+} from '@/entities/transaction';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 
 export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, onGoBack, onResult }: SigningProps) => {
   const { t } = useI18n();
+  const { status: cameraStatus, retry: retryCamera } = useCameraAvailability();
 
-  const apis = useMemo(() => signingPayloads.map((s) => s.api), [signingPayloads]);
-  const [countdown, resetCountdown] = useCountdown(apis);
+  const [countdown, resetCountdown] = useCountdown();
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
+  const [eraInfo, setEraInfo] = useState<{ blockNumber: number; mortalLength: number } | null>(null);
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const isScanStep = !txPayloads.length;
@@ -24,10 +33,10 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
   const rootAccountId = (signerWallet as PolkadotVaultWallet | SingleShardWallet)?.rootAccountId;
 
   useEffect(() => {
-    if (countdown === 0) {
-      scanAgain();
+    if (countdown === 0 && !isScanStep) {
+      setValidationError(ValidationErrors.EXPIRED);
     }
-  }, [countdown]);
+  }, [countdown, isScanStep]);
 
   const handleSignature = async (scanResult: HexString | HexString[]): Promise<void> => {
     const signatures = Array.isArray(scanResult)
@@ -61,14 +70,46 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
 
     if (!isVerified || balanceValidationError) {
       setValidationError(balanceValidationError || ValidationErrors.INVALID_SIGNATURE);
-    } else {
-      onResult(signatures, txPayloads);
+
+      return;
     }
+
+    if (eraInfo) {
+      const currentBlock = await getCurrentBlockNumber(signingPayloads[0]!.api);
+      const expired = isEraExpired(currentBlock, eraInfo.blockNumber, eraInfo.mortalLength);
+
+      if (expired) {
+        setValidationError(ValidationErrors.EXPIRED);
+
+        return;
+      }
+    }
+
+    onResult(signatures, txPayloads);
   };
 
   const scanAgain = () => {
     setTxPayloads([]);
   };
+
+  if (cameraStatus === 'checking') {
+    return (
+      <Box width="440px" height="490px" verticalAlign="center" horizontalAlign="center">
+        <Loader color="primary" />
+      </Box>
+    );
+  }
+
+  if (cameraStatus === 'denied' || cameraStatus === 'no_input') {
+    return (
+      <div className="flex w-[440px] flex-col items-center gap-4 px-5 py-4">
+        <CameraAccessAlert status={cameraStatus} onRetry={retryCamera} />
+        <Button variant="text" onClick={onGoBack}>
+          {t('operation.goBackButton')}
+        </Button>
+      </div>
+    );
+  }
 
   if (isScanStep) {
     return (
@@ -94,6 +135,7 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
               signingPayloads={signingPayloads}
               onGoBack={onGoBack}
               onResetCountdown={resetCountdown}
+              onEraInfo={setEraInfo}
               onResult={setTxPayloads}
             />
           ) : (
@@ -106,6 +148,7 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
               extrinsic={signingPayloads[0]!.extrinsic}
               onGoBack={onGoBack}
               onResetCountdown={resetCountdown}
+              onEraInfo={setEraInfo}
               onResult={(payload) => setTxPayloads([payload])}
             />
           )}

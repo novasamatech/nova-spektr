@@ -15,7 +15,16 @@ import {
   SigningType,
   WalletType,
 } from '@/shared/core';
-import { Step, TEST_ACCOUNTS, getNativeAsset, isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import {
+  Step,
+  TEST_ACCOUNTS,
+  getNativeAsset,
+  isStep,
+  nonNullable,
+  nullable,
+  toAccountId,
+  toAddress,
+} from '@/shared/lib/utils';
 import {
   createFeeCalculator,
   createMultisigDeposit,
@@ -459,14 +468,12 @@ sample({
     return signatories
       .slice(1)
       .filter(signatory => !signatory.walletId && !contactsSet.has(toAccountId(signatory.address)))
-      .map(
-        ({ address, name }) =>
-          ({
-            address: address,
-            name: name,
-            accountId: toAccountId(address),
-          }) as Contact,
-      );
+      .map(({ address, name }) => ({
+        address: toAddress(address),
+        name: name,
+        accountId: toAccountId(address),
+        source: 'local' as const,
+      }));
   },
   target: contactModel.effects.createContactsFx,
 });

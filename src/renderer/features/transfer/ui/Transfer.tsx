@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type Address, type Asset, type Chain } from '@/shared/core';
@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { Modal } from '@/shared/ui-kit';
+import { ConfirmModal, Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
@@ -24,10 +24,11 @@ type Props = {
   chain: Chain;
   asset?: Asset;
   destination?: Address;
+  xcm?: boolean;
   onClose?: () => void;
 };
 
-export const Transfer = ({ chain, asset, destination, onClose }: Props) => {
+export const Transfer = ({ chain, asset, destination, xcm, onClose }: Props) => {
   const { t } = useI18n();
 
   const step = useUnit(transferModel.$step);
@@ -40,9 +41,19 @@ export const Transfer = ({ chain, asset, destination, onClose }: Props) => {
     transferUtils.isBasketStep(step),
     transferModel.output.flowFinished,
   );
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleToggle = () => {
+    if (transferUtils.isSignStep(step)) {
+      setShowConfirm(true);
+
+      return;
+    }
+    closeModal();
+  };
 
   useEffect(() => {
-    transferModel.events.flowStarted({ chain, asset, destination });
+    transferModel.events.flowStarted({ chain, asset, destination, xcm });
   }, []);
 
   useEffect(() => {
@@ -80,27 +91,41 @@ export const Transfer = ({ chain, asset, destination, onClose }: Props) => {
   };
 
   return (
-    <Modal size="md" isOpen={isModalOpen} testId={TEST_IDS.TRANSFER.MODAL} onToggle={closeModal}>
-      <Modal.Title close>{getModalTitle()}</Modal.Title>
-      <Modal.Content>
-        {transferUtils.isInitStep(step) && <TransferForm onGoBack={closeModal} />}
-        {transferUtils.isConfirmStep(step) && (
-          <TransferConfirm
-            secondaryActionButton={
-              initiatorWallet &&
-              basketUtils.isBasketAvailable(initiatorWallet) && (
-                <Button pallet="secondary" onClick={() => transferModel.events.txSaved()}>
-                  {t('operation.addToBasket')}
-                </Button>
-              )
-            }
-            onGoBack={() => transferModel.events.stepChanged(Step.INIT)}
-          />
-        )}
-        {transferUtils.isSignStep(step) && (
-          <OperationSign onGoBack={() => transferModel.events.stepChanged(Step.CONFIRM)} />
-        )}
-      </Modal.Content>
-    </Modal>
+    <>
+      <Modal size="md" isOpen={isModalOpen} testId={TEST_IDS.TRANSFER.MODAL} onToggle={handleToggle}>
+        <Modal.Title close>{getModalTitle()}</Modal.Title>
+        <Modal.Content>
+          {transferUtils.isInitStep(step) && <TransferForm onGoBack={closeModal} />}
+          {transferUtils.isConfirmStep(step) && (
+            <TransferConfirm
+              secondaryActionButton={
+                initiatorWallet &&
+                basketUtils.isBasketAvailable(initiatorWallet) && (
+                  <Button pallet="secondary" onClick={() => transferModel.events.txSaved()}>
+                    {t('operation.addToBasket')}
+                  </Button>
+                )
+              }
+              onGoBack={() => transferModel.events.stepChanged(Step.INIT)}
+            />
+          )}
+          {transferUtils.isSignStep(step) && (
+            <OperationSign onGoBack={() => transferModel.events.stepChanged(Step.CONFIRM)} />
+          )}
+        </Modal.Content>
+      </Modal>
+      <ConfirmModal
+        isOpen={showConfirm}
+        title={t('operation.submitCloseConfirmTitle')}
+        description={t('operation.submitCloseConfirmDescription')}
+        cancelText={t('operation.submitCloseConfirmLeave')}
+        confirmText={t('operation.submitCloseConfirmStay')}
+        onCancel={() => {
+          setShowConfirm(false);
+          closeModal();
+        }}
+        onConfirm={() => setShowConfirm(false)}
+      />
+    </>
   );
 };

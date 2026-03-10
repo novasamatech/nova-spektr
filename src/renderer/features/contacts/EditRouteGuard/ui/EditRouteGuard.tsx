@@ -1,9 +1,9 @@
 import { useUnit } from 'effector-react';
-import { type ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { type Contact } from '@/shared/core';
-import * as editGuardModel from '../model/edit-guard';
+import { contactModel } from '@/entities/contact';
 
 type Props = {
   redirectPath: string;
@@ -12,17 +12,16 @@ type Props = {
 export const EditRouteGuard = ({ redirectPath, children }: Props) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const contacts = useUnit(contactModel.$contacts);
 
-  const contact = useUnit(editGuardModel.$contact);
+  const contactId = searchParams.get('id');
+  const contact = useMemo(() => contacts.find((c) => c.id === contactId) ?? null, [contacts, contactId]);
 
   useEffect(() => {
-    editGuardModel.events.navigateApiChanged({ navigate, redirectPath });
-    editGuardModel.events.validateUrlParams(searchParams);
-
-    return () => {
-      editGuardModel.events.storeCleared();
-    };
-  }, [searchParams]);
+    if (!contactId || (contacts.length > 0 && !contact)) {
+      navigate(redirectPath, { replace: true });
+    }
+  }, [contact, contactId, contacts.length, navigate, redirectPath]);
 
   if (!contact) {
     return null;

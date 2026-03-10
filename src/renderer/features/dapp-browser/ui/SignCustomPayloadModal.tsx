@@ -27,8 +27,6 @@ type Props = {
 export const SignCustomPayloadModal = memo(({ payload, onCancel, onResult }: Props) => {
   useGate(formModel.flow, { payload });
 
-  console.log({ payload });
-
   const step = useUnit(formModel.$step);
   const signatureResult = useUnit(formModel.$signatureResult);
 

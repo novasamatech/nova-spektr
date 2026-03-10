@@ -5,7 +5,7 @@ import { and, debounce, not, or, spread } from 'patronum';
 
 import { spellXcmService } from '@/shared/api/xcm';
 import { categorizeXcmError } from '@/shared/api/xcm/service/xcm-error-utils';
-import { type Address, type Asset, type Chain, type Transaction } from '@/shared/core';
+import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { createSubscription } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import {
@@ -33,9 +33,17 @@ import {
   createTxValidationStore,
 } from '@/shared/transactions';
 import { type TransactionValidationDryRunError, type TransactionValidationNetworkError } from '@/shared/ui-entities';
-import { type AnyAccount, type BalancePreservation, accountService, accounts, balanceService } from '@/domains/network';
+import {
+  type AnyAccount,
+  type BalancePreservation,
+  INDEXER_URL,
+  accountService,
+  accounts,
+  balanceService,
+} from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
+import { proxiedChainResource } from '@/entities/proxy';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -142,6 +150,15 @@ const $isNative = $networkStore.map((network) => {
 
 const $isAssetPredefined = createStore(false).on(formInitiated, (_, params) => params.asset !== undefined);
 
+const $isXcmEnabled = createStore(false).on(formInitiated, (_, params) => params.xcm ?? true);
+
+const $initialDestination = createStore<string | null>(null).on(
+  formInitiated,
+  (_, { destination }) => destination ?? null,
+);
+
+const $isDestinationReadonly = $initialDestination.map(nonNullable);
+
 const showTokenSelector = createEvent();
 const hideTokenSelector = createEvent();
 const assetChanged = createEvent<Asset>();
@@ -219,8 +236,11 @@ const $isXcm = combine(
   {
     source: $chain,
     destination: $destinationChain,
+    isXcmEnabled: $isXcmEnabled,
   },
-  ({ source, destination }) => {
+  ({ source, destination, isXcmEnabled }) => {
+    if (!isXcmEnabled) return false;
+
     return nonNullable(source) && nonNullable(destination) && source.chainId !== destination.chainId;
   },
 );
@@ -307,6 +327,91 @@ const $destinationAccountId = combine($destination, $destinationChain, (destinat
   if (nullable(chain)) return null;
   return validateAddress(destination, chain) ? toAccountId(destination) : null;
 });
+
+// pure proxy chain restriction
+
+// Local accounts check (synchronous)
+const $localProxyChainId = combine(
+  {
+    destinationAccountId: $destinationAccountId,
+    allAccounts: accounts.$list,
+  },
+  ({ destinationAccountId, allAccounts }): ChainId | null => {
+    if (nullable(destinationAccountId)) return null;
+
+    for (const account of allAccounts) {
+      if (account.accountId !== destinationAccountId) continue;
+      if (accountUtils.isPureProxiedAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
+        return account.chainId;
+      }
+    }
+
+    return null;
+  },
+);
+
+// Indexer query via resource (for external addresses not in local accounts)
+const $externalProxyChainId = createStore<ChainId | null>(null).reset(formInitiated);
+
+const destinationAccountIdDebounced = debounce({
+  source: $destinationAccountId,
+  timeout: 400,
+});
+
+sample({
+  clock: destinationAccountIdDebounced,
+  source: {
+    accountId: $destinationAccountId,
+    localResult: $localProxyChainId,
+  },
+  filter: ({ accountId, localResult }) => nonNullable(accountId) && nullable(localResult),
+  fn: ({ accountId }) => ({
+    accountId: accountId!,
+    indexerUrl: INDEXER_URL,
+  }),
+  target: proxiedChainResource.fetch,
+});
+
+sample({
+  clock: $destinationAccountId,
+  fn: () => null,
+  target: $externalProxyChainId,
+});
+
+sample({
+  clock: proxiedChainResource.fetch.doneData,
+  target: $externalProxyChainId,
+});
+
+// Merged result: local takes priority over indexer
+const $destinationProxyChainId = combine(
+  { local: $localProxyChainId, external: $externalProxyChainId },
+  ({ local, external }): ChainId | null => local ?? external,
+);
+
+const $proxyChain = combine(
+  {
+    proxyChainId: $destinationProxyChainId,
+    chains: networkModel.$chains,
+  },
+  ({ proxyChainId, chains }): Chain | null => {
+    if (nullable(proxyChainId)) return null;
+
+    return chains[proxyChainId] ?? null;
+  },
+);
+
+const $isPureProxyChainMismatch = combine(
+  {
+    proxyChainId: $destinationProxyChainId,
+    destinationChain: $destinationChain,
+  },
+  ({ proxyChainId, destinationChain }) => {
+    if (nullable(proxyChainId) || nullable(destinationChain)) return false;
+
+    return proxyChainId !== destinationChain.chainId;
+  },
+);
 
 const $destinationAsset = combine(
   {
@@ -690,7 +795,20 @@ const $destinationChains = combine(
   },
 );
 
-const $availableChains = networkModel.$chainsList;
+const $availableChains = combine(
+  {
+    chains: networkModel.$chainsList,
+    initialDestination: $initialDestination,
+  },
+  ({ chains, initialDestination }) => {
+    if (nullable(initialDestination) || !validateAddress(initialDestination)) {
+      return chains;
+    }
+
+    const destinationAccountId = toAccountId(initialDestination);
+    return chains.filter((chain) => accountService.isAccountSchemeMatchChain(destinationAccountId, chain));
+  },
+);
 
 const $destinationAccounts = combine(
   {
@@ -732,6 +850,7 @@ const $canSubmit = and(
   form.$isValid,
   $valid,
   not($hasDestinationBalanceError),
+  not($isPureProxyChainMismatch),
   or(not($isXcm), not(xcmSpellTransferModel.$isDestinationFeeLoading)),
   or(not($isXcm), $areTransactionsReady),
   or(not($isXcm), not($hasDryRunError)),
@@ -746,6 +865,7 @@ sample({
 
 sample({
   clock: formInitiated,
+  filter: ({ xcm }) => xcm !== false,
   fn: ({ chain, asset }) => ({ chain, asset: asset ?? getNativeAsset(chain.assets)! }),
   target: [xcmSpellTransferModel.events.xcmStarted, xcmSpellTransferModel.events.xcmStopped],
 });
@@ -794,7 +914,7 @@ sample({
 });
 
 sample({
-  clock: formInitiated,
+  clock: [$initiators, formInitiated],
   source: $initiators,
   fn: (initiators) => initiators.at(0) ?? null,
   target: form.fields.initiator.change,
@@ -806,13 +926,6 @@ sample({
   fn: (signatories) => signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
-
-const $initialDestination = createStore<string | null>(null).on(
-  formInitiated,
-  (_, { destination }) => destination ?? null,
-);
-
-const $isDestinationReadonly = $initialDestination.map(nonNullable);
 
 sample({
   clock: form.fields.destinationChain.change,
@@ -872,7 +985,9 @@ sample({
 
 sample({
   clock: form.fields.destinationChain.change.filter({ fn: nonNullable }),
-  fn: (chain) => chain.chainId,
+  source: $isXcmEnabled,
+  filter: (isXcmEnabled) => isXcmEnabled,
+  fn: (_, chain) => chain.chainId,
   target: xcmSpellTransferModel.events.xcmChainSelected,
 });
 
@@ -1127,6 +1242,7 @@ const $errors = combine(
     isChainConnected: $isChainConnected,
     isFormValid: form.$isValid,
     network: $networkStore,
+    isXcm: $isXcm,
     buildTransferDryRunResult: xcmSpellTransferModel.$buildTransferDryRunResult,
     xcmChain: xcmSpellTransferModel.$xcmChain,
   },
@@ -1136,6 +1252,7 @@ const $errors = combine(
     isChainConnected,
     isFormValid,
     network,
+    isXcm,
     buildTransferDryRunResult,
     xcmChain,
   }) => {
@@ -1156,7 +1273,7 @@ const $errors = combine(
       return result;
     }
 
-    if (buildTransferDryRunResult?.success === false && isChainConnected) {
+    if (isXcm && buildTransferDryRunResult?.success === false && isChainConnected) {
       const failureReason = buildTransferDryRunResult.failureReason || '';
       const errorInfo = categorizeXcmError(failureReason);
 
@@ -1219,6 +1336,8 @@ export const formModel = {
   $destinationAsset,
   $destinationBalanceEd,
   $hasDestinationBalanceError,
+  $isPureProxyChainMismatch,
+  $proxyChain,
   $isDestinationReadonly,
 
   $fee: $networkFee,
@@ -1250,6 +1369,7 @@ export const formModel = {
   $isPreparingTransaction,
 
   $isAssetPredefined,
+  $isXcmEnabled,
   $isTokenSelectorOpen,
 
   formInitiated,

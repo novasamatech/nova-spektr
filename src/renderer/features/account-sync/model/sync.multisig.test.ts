@@ -7,9 +7,6 @@ import {
   multisigAccount1,
   multisigAccount2,
   multisigAccount3,
-  multisigWallet1,
-  multisigWallet2,
-  multisigWallet3,
   syncResult,
   userAccount,
 } from './__mocks__/sync.multisig.mocks';
@@ -147,7 +144,7 @@ describe('syncMultisigAccounts', () => {
     expect(result.deleteWallets).toEqual([]);
   });
 
-  test('should delete all multisig wallets when sync result accounts is empty', () => {
+  test('should delete multisig wallets when sync result accounts is empty and indexer has passed their block', () => {
     const emptySyncResult = {
       ...syncResult,
       accounts: [],
@@ -161,7 +158,24 @@ describe('syncMultisigAccounts', () => {
     });
 
     expect(result.createWallets).toEqual([]);
-    expect(result.deleteWallets).toEqual([multisigWallet1.id, multisigWallet2.id, multisigWallet3.id]);
+    expect(result.deleteWallets).toEqual([10, 11, 12]);
+  });
+
+  test('should not delete multisig wallets when indexed blocks are missing', () => {
+    const syncResultWithoutIndexedBlocks = {
+      ...syncResult,
+      indexedBlocks: new Map(),
+    };
+
+    const result = syncMultisigAccounts({
+      allWallets,
+      allAccounts: [multisigAccount1, multisigAccount2, multisigAccount3],
+      syncResult: syncResultWithoutIndexedBlocks,
+      identities: {},
+    });
+
+    expect(result.createWallets).toEqual([]);
+    expect(result.deleteWallets).toEqual([]);
   });
 
   test('should create wallet with default name when no identity exists', () => {
@@ -199,10 +213,7 @@ describe('syncMultisigAccounts', () => {
     const result = syncMultisigAccounts({
       allWallets: [...allWallets, oldWallet],
       allAccounts: [...allAccounts, oldMultisigAccount],
-      syncResult: {
-        ...syncResult,
-        accounts: [], // Empty sync result should trigger deletion
-      },
+      syncResult,
       identities: {},
     });
 
@@ -229,10 +240,7 @@ describe('syncMultisigAccounts', () => {
     const result = syncMultisigAccounts({
       allWallets: [...allWallets, walletWithoutMeta],
       allAccounts: [...allAccounts, accountWithoutMeta],
-      syncResult: {
-        ...syncResult,
-        accounts: [], // Empty sync result should trigger deletion
-      },
+      syncResult,
       identities: {},
     });
 

@@ -5,10 +5,10 @@ import { useEffect, useRef, useState } from 'react';
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Chain, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { assert, createTxMetadata } from '@/shared/lib/utils';
+import { assert, createTxMetadata, getExpectedBlockTime, getMortalitySeconds } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
-import { Box, Tabs } from '@/shared/ui-kit';
+import { Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, type Extrinsic } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 import { transactionService } from '../../lib';
@@ -17,8 +17,8 @@ import { SUBSTRATE_ID } from '../QrCode/QrGenerator/common/constants';
 import {
   createDynamicDerivationsSignPayload,
   createDynamicDerivationsSignWithProofPayload,
-  createSignPayload,
   createSignWithProofPayload,
+  createTransactionPayload,
 } from '../QrCode/QrGenerator/common/utils';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 
@@ -29,10 +29,11 @@ type Props = {
   chain: Chain;
   extrinsic: Extrinsic;
   account: AnyAccount;
-  countdown: number;
+  countdown: number | null;
   rootAccountId: AccountId;
   onGoBack: () => void;
-  onResetCountdown: () => void;
+  onResetCountdown: (seconds: number) => void;
+  onEraInfo: (info: { blockNumber: number; mortalLength: number }) => void;
   onResult: (txPayload: Uint8Array) => void;
 };
 
@@ -45,11 +46,12 @@ export const ScanSingleframeQr = ({
   rootAccountId,
   onGoBack,
   onResetCountdown,
+  onEraInfo,
   onResult,
 }: Props) => {
   const { t } = useI18n();
   const [tab, setTab] = useState('new');
-  const prevTab = useRef<string>(null);
+  const setupIdRef = useRef(0);
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [qrPayload, setQrPayload] = useState<Uint8Array>();
@@ -58,24 +60,32 @@ export const ScanSingleframeQr = ({
   const isEthereumAccount = accountUtils.isEthereumBased(account);
 
   useEffect(() => {
-    if (txPayload && qrPayload && tab === prevTab.current) return;
-    prevTab.current = tab;
-    setupTransaction().catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
-  }, [txPayload, qrPayload, tab]);
+    const currentId = ++setupIdRef.current;
+    setTxPayload(undefined);
+    setQrPayload(undefined);
 
-  const setupTransaction = async (): Promise<void> => {
+    setupTransaction(currentId).catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
+  }, [tab]);
+
+  const setupTransaction = async (setupId?: number): Promise<void> => {
     try {
+      const blockTimeMs = getExpectedBlockTime(api, chain).toNumber();
+
       const derivationPath =
         accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)
           ? account.derivationPath
           : null;
 
       if (tab === 'new' && isMetadataProofsSupported) {
-        const { payload, metadataProof } = await transactionService.createPayloadWithProof(
-          extrinsic,
-          account.accountId,
-          api,
-        );
+        const {
+          payload,
+          metadataProof,
+          mortalLength,
+          blockTimeMs: txBlockTimeMs,
+          blockNumber,
+        } = await transactionService.createPayloadWithProof(extrinsic, account.accountId, api, undefined, blockTimeMs);
+
+        if (setupId !== undefined && setupId !== setupIdRef.current) return;
 
         let signPayload: Uint8Array;
         if (account.signingType === SigningType.POLKADOT_VAULT) {
@@ -99,12 +109,23 @@ export const ScanSingleframeQr = ({
         }
 
         const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
+        const mortalitySeconds = getMortalitySeconds(mortalLength, txBlockTimeMs);
 
+        onEraInfo({ blockNumber, mortalLength });
         setTxPayload(payload);
         setQrPayload(qrPayload);
+        onResetCountdown(mortalitySeconds);
       } else {
-        const metadata = await createTxMetadata(account.accountId, api);
-        const { payload } = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
+        const metadata = await createTxMetadata(account.accountId, api, blockTimeMs);
+
+        if (setupId !== undefined && setupId !== setupIdRef.current) return;
+
+        const {
+          payload,
+          mortalLength: legacyMortalLength,
+          blockTimeMs: legacyBlockTimeMs,
+          blockNumber: legacyBlockNumber,
+        } = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
 
         let signPayload: Uint8Array;
         if (account.signingType === SigningType.POLKADOT_VAULT && !isEthereumAccount) {
@@ -117,20 +138,28 @@ export const ScanSingleframeQr = ({
             account.cryptoType,
           );
         } else {
-          signPayload = createSignPayload(account.accountId, payload, chain.chainId, account.cryptoType);
+          signPayload = createTransactionPayload(account.accountId, payload, chain.chainId, account.cryptoType);
         }
 
         const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
+        const mortalitySeconds = getMortalitySeconds(legacyMortalLength, legacyBlockTimeMs);
 
+        onEraInfo({ blockNumber: legacyBlockNumber, mortalLength: legacyMortalLength });
         setTxPayload(payload);
         setQrPayload(qrPayload);
+        onResetCountdown(mortalitySeconds);
       }
     } catch (error) {
       console.warn(error);
     }
   };
 
-  useEffect(onResetCountdown, [qrPayload]);
+  const handleQrReset = () => {
+    const currentId = ++setupIdRef.current;
+    setTxPayload(undefined);
+    setQrPayload(undefined);
+    setupTransaction(currentId).catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
+  };
 
   return (
     <>
@@ -139,22 +168,24 @@ export const ScanSingleframeQr = ({
         chainId={chain.chainId}
         isLegacyQR={tab === 'legacy'}
         testId={TEST_IDS.OPERATIONS.QR_CODE_CONTAINER}
-        onQrReset={setupTransaction}
-      >
-        {isMetadataProofsSupported && (
-          <Tabs value={tab} onChange={setTab}>
-            <Box shrink={0} fitContainer>
+        tabSlot={
+          isMetadataProofsSupported ? (
+            <Tabs value={tab} onChange={setTab}>
               <Tabs.List>
                 <Tabs.Trigger value="new">
-                  {t('signing.qrNewVaultTitle', {
-                    version: getPolkadotVaultVersion({ signingType: account.signingType, isBulkTx: false }),
-                  })}
+                  <span className="whitespace-nowrap">
+                    {t('signing.qrNewVaultTitle', {
+                      version: getPolkadotVaultVersion({ signingType: account.signingType, isBulkTx: false }),
+                    })}
+                  </span>
                 </Tabs.Trigger>
                 <Tabs.Trigger value="legacy">{t('signing.qrLegacyVaultTitle')}</Tabs.Trigger>
               </Tabs.List>
-            </Box>
-          </Tabs>
-        )}
+            </Tabs>
+          ) : undefined
+        }
+        onQrReset={handleQrReset}
+      >
         <QrTxGenerator payload={qrPayload} />
       </QrGeneratorContainer>
 

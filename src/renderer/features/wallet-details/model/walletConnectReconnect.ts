@@ -1,5 +1,6 @@
 import { attach, combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
+import { t } from 'i18next';
 import { spread } from 'patronum';
 
 import { type WcAccount } from '@/shared/core';
@@ -38,6 +39,7 @@ const updateSessionFx = attach({
 });
 
 const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).reset(flow.close);
+const $error = createStore<{ title: string; description?: string } | null>(null).reset(flow.close);
 
 sample({
   clock: start,
@@ -117,15 +119,37 @@ sample({
 });
 
 sample({
+  clock: updateSessionFx.fail,
+  fn: ({ error }) =>
+    walletConnectService.buildErrorDisplay(error, {
+      rejected: {
+        title: t('walletDetails.walletConnect.rejectTitle'),
+        description: t('walletDetails.walletConnect.rejectDescription'),
+      },
+      unknown: {
+        title: t('walletDetails.walletConnect.connectionFailedTitle'),
+        description: t('walletDetails.walletConnect.connectionFailedDescription'),
+      },
+    }),
+  target: $error,
+});
+
+sample({
   clock: abort,
   fn: () => ReconnectStep.NOT_STARTED,
   target: $reconnectStep,
+});
+
+sample({
+  clock: abort,
+  target: $error.reinit,
 });
 
 export const walletConnectReconnect = {
   $accounts,
   $connected,
   $reconnectStep,
+  $error,
   $reconnectUri: walletConnect.$pairingUri,
   start,
   abort,
