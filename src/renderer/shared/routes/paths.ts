@@ -6,6 +6,9 @@ export const Paths = {
   // Onboarding
   ONBOARDING: '/onboarding',
 
+  // Dashboard
+  DASHBOARD: '/dashboard',
+
   // Assets
   ASSETS: '/assets',
   TRANSFER_ASSET: '/assets/transfer',

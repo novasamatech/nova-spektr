@@ -15,6 +15,8 @@ import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
 import { callDataExecuteFeature } from '@/features/call-data-execute';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
+import { dashboardNavigationFeature } from '@/features/dashboard-navigation';
+import { dashboardTotalBalanceFeature } from '@/features/dashboard-total-balance';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { multiTransferFeature } from '@/features/multi-transfer';
@@ -63,6 +65,8 @@ export const bootstrap = () => {
   registerFeatures([
     config,
 
+    dashboardNavigationFeature,
+    dashboardTotalBalanceFeature,
     assetsNavigationFeature,
     fellowshipNavigationFeature,
     operationsNavigationFeature,

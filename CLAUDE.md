@@ -95,6 +95,8 @@ See [`tests/integrations/CLAUDE.md`](tests/integrations/CLAUDE.md) for the compl
 
 **Note:** Prefer `pnpm types:go` for type checking - it uses tsgo (TypeScript's native Go port) and is approximately 6x faster than tsc.
 
+**Known issue:** `vite.config.renderer.ts:34` has a persistent `TS2578` (unused `@ts-expect-error`). This is pre-existing — don't treat as a regression from your changes.
+
 ### Single Test Execution
 To run a single test file:
 ```bash
@@ -121,9 +123,16 @@ The renderer follows Feature-Sliced Design methodology:
 ### Key Architectural Patterns
 - **Effector** - State management with stores, events, and effects
 - **Dependency Injection** - Custom DI system in `shared/di/`
+  - **Slots**: Page creates `createSlot<Props>({ name })`, renders `<Slot id={slot} props={...} />`. Features inject via `feature.inject(slot, { order, render: Component })`.
+  - **Pipelines**: Data transformation chains (`createPipeline<Value>`). Features inject via `feature.inject(pipeline, (value) => transform(value))`.
 - **Resource Management** - Data fetching abstractions in `shared/resource/`
 - **Feature Flags** - Dynamic feature toggling system
 - **Form Management** - Custom form utilities with validation
+
+### Balance Subscription System
+- `balanceSubModel.fetchAccounts` (`features/assets-balances`) accepts `AnyAccount[]` — wallet account objects only. It uses `accountService.isAccountAvailableOnChain` to filter chains per account.
+- For contacts or arbitrary addresses, use `balanceSubModel.fetchAccountIds` (low-level) with `RequestedAccount[]` (`{ accountId: AccountId, chain: Chain }`) — you must pair with all chains yourself since there's no chain-availability check for non-wallet addresses.
+- `AccountId` is a branded type from `@/shared/polkadotjs-schemas`, not `@/shared/core`. Use source objects with proper types (e.g., `Contact.accountId`) rather than casting strings.
 
 ### Domain Structure
 - **`domains/network/`** - Blockchain network interactions (accounts, transactions, multisig operations)
