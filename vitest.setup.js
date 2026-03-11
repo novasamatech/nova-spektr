@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/vitest';
+import 'allure-vitest/setup';
 import 'fake-indexeddb/auto';
 
 import { default as crypto } from 'crypto';
