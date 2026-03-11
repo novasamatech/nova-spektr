@@ -501,12 +501,24 @@
     "totalBalance": {
       "title": "Total Balance",
       "holdings": "Holdings by Asset",
+      "holdingsByChain": "Holdings by Chain",
+      "byAsset": "By Asset",
+      "byChain": "By Chain",
       "assetDetail": {
         "title": "{symbol} Details",
         "totalHoldings": "Total Holdings",
         "addressCount_one": "{count} address",
         "addressCount_other": "{count} addresses",
         "address": "Address",
+        "amount": "Amount",
+        "value": "Value",
+        "share": "Share"
+      },
+      "chainDetail": {
+        "title": "{chainName} Details",
+        "assetCount_one": "{count} asset",
+        "assetCount_other": "{count} assets",
+        "asset": "Asset",
         "amount": "Amount",
         "value": "Value",
         "share": "Share"

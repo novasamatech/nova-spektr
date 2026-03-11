@@ -27,6 +27,9 @@ export const FALLBACK_COLORS: [string, ...string[]] = [
 export const getAssetColor = (priceId: string, fallbackIndex: number): string =>
   BRAND_COLORS[priceId] ?? FALLBACK_COLORS[fallbackIndex % FALLBACK_COLORS.length] ?? FALLBACK_COLORS[0];
 
+export const getChainColor = (index: number): string =>
+  FALLBACK_COLORS[index % FALLBACK_COLORS.length] ?? FALLBACK_COLORS[0];
+
 export const CHART_TOOLTIP_STYLE: CSSProperties = {
   backgroundColor: 'white',
   border: '1px solid #e2e2e2',

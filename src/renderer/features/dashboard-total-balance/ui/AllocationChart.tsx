@@ -13,6 +13,7 @@ type Props = {
 type ChartEntry = {
   name: string;
   value: number;
+  percent: number;
   index: number;
   holding: Holding;
 };
@@ -37,14 +38,21 @@ const ChartTooltip = ({ active, payload }: { active?: boolean; payload?: Tooltip
         {formatted}
         {suffix} {holding.symbol}
       </div>
+      <div>{item.payload.percent.toFixed(1)}%</div>
     </div>
   );
 };
 
 export const AllocationChart = ({ holdings, colors }: Props) => {
-  const data: ChartEntry[] = holdings
+  const filtered = holdings
     .map((h, i) => ({ name: h.symbol, value: parseFloat(h.fiatValue), index: i, holding: h }))
     .filter((d) => d.value > 0);
+
+  const total = filtered.reduce((sum, d) => sum + d.value, 0);
+  const data: ChartEntry[] = filtered.map((d) => ({
+    ...d,
+    percent: total > 0 ? (d.value / total) * 100 : 0,
+  }));
 
   if (data.length === 0) return null;
 
