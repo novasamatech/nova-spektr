@@ -7,7 +7,13 @@ import { type Asset, type Chain, type ChainId, AssetType } from '@/shared/core';
 import { CHAIN_ID_TO_SPELL_NAME_MAP, isEthereumAccountId, nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-import { type XcmDestinationBlacklistEntry, XCM_DESTINATION_BLACKLIST, XCM_DESTINATION_WHITELIST } from './constants';
+import {
+  type XcmDestinationBlacklistEntry,
+  type XcmDestinationWhitelistEntry,
+  XCM_DESTINATION_BLACKLIST,
+  XCM_DESTINATION_WHITELIST_LEGACY,
+  getXcmWhitelist,
+} from './constants';
 import { normalizeXcmError } from './xcm-error-utils';
 
 type XcmTransferParams = {
@@ -105,13 +111,55 @@ function isRouteBlacklisted(sourceChainId: ChainId, destinationChainId: ChainId)
   });
 }
 
+let cachedWhitelistEntries: XcmDestinationWhitelistEntry[] | null = null;
+let whitelistLoadingPromise: Promise<XcmDestinationWhitelistEntry[]> | null = null;
+
+/**
+ * Gets whitelist entries, loading from nova-utils if not already cached
+ */
+async function getWhitelistEntries(chains: Chain[]): Promise<XcmDestinationWhitelistEntry[]> {
+  if (cachedWhitelistEntries) {
+    return cachedWhitelistEntries;
+  }
+
+  if (whitelistLoadingPromise) {
+    return whitelistLoadingPromise;
+  }
+
+  whitelistLoadingPromise = getXcmWhitelist(chains).then((entries) => {
+    cachedWhitelistEntries = entries;
+    whitelistLoadingPromise = null;
+    return entries;
+  });
+
+  return whitelistLoadingPromise;
+}
+
+/**
+ * Synchronous version that uses cached whitelist or falls back to legacy
+ */
+function getWhitelistEntriesSync(): XcmDestinationWhitelistEntry[] {
+  if (cachedWhitelistEntries) {
+    return cachedWhitelistEntries;
+  }
+  // Fallback to legacy whitelist if nova-utils hasn't loaded yet
+  return XCM_DESTINATION_WHITELIST_LEGACY;
+}
+
 function isRouteWhitelisted(
   sourceChainId: ChainId,
   destinationChainId: ChainId,
   sourceAssetSymbol?: string,
   destinationAssetSymbol?: string,
+  whitelistEntries?: XcmDestinationWhitelistEntry[],
 ): boolean {
-  return XCM_DESTINATION_WHITELIST.some((entry) => {
+  const entries = whitelistEntries || getWhitelistEntriesSync();
+
+  if (!entries || entries.length === 0) {
+    return false;
+  }
+
+  return entries.some((entry) => {
     if (entry.sourceChainId !== sourceChainId || entry.destinationChainId !== destinationChainId) {
       return false;
     }
@@ -484,6 +532,25 @@ async function buildTransfer(params: XcmTransferParams): Promise<XcmTransferResu
   };
 }
 
+/**
+ * Initializes the XCM whitelist by loading it from nova-utils This should be
+ * called early in the application lifecycle when chains are available
+ *
+ * @param chains - Array of all available chains
+ */
+async function initializeXcmWhitelist(chains: Chain[]): Promise<void> {
+  if (cachedWhitelistEntries) {
+    return;
+  }
+
+  try {
+    const entries = await getWhitelistEntries(chains);
+    console.log(`✅ XCM whitelist loaded from nova-utils: ${entries.length} entries`);
+  } catch (error) {
+    console.warn('Failed to initialize XCM whitelist from nova-utils, using legacy whitelist:', error);
+  }
+}
+
 function getAvailableTransfers(fromChain: Chain, asset: Asset): string[] {
   const fromChainName = getSpellChainName(fromChain);
   if (!fromChainName) {
@@ -504,6 +571,7 @@ function getAvailableTransfers(fromChain: Chain, asset: Asset): string[] {
         return false;
       }
 
+      // Use cached whitelist synchronously (will fallback to legacy if not loaded yet)
       return isRouteWhitelisted(fromChain.chainId, destinationChainId, asset.symbol);
     });
     return filteredDestinations;
@@ -525,4 +593,5 @@ export const spellXcmService = {
   detectHopChains,
   buildXcmTransferBuilder,
   createBuilderConfig,
+  initializeXcmWhitelist,
 };
