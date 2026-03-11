@@ -31,6 +31,16 @@ vi.mock('@/shared/api/xcm', async (importOriginal) => {
   };
 });
 
+vi.mock('graphql-request', async (importOriginal) => {
+  const actual = (await importOriginal()) as object;
+  return {
+    ...actual,
+    GraphQLClient: vi.fn().mockImplementation(() => ({
+      request: vi.fn().mockResolvedValue({ proxieds: { nodes: [] } }),
+    })),
+  };
+});
+
 const FULL_BALANCE_PLANCK = '10000000000000';
 
 function createTransferEnvBuilder(withRecipient: boolean) {
