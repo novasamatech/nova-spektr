@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { Modal, Tabs } from '@/shared/ui-kit';
 import { FELLOWSHIP_TABS } from '../model/constants';
@@ -28,7 +29,7 @@ export const FellowshipOverviewModal = () => {
   };
 
   return (
-    <Modal isOpen={isOpen} size="xl" height="full" onToggle={closeModal}>
+    <Modal isOpen={isOpen} size="xl" height="full" testId={TEST_IDS.FELLOWSHIP.OVERVIEW_MODAL} onToggle={closeModal}>
       <Modal.Title close>{t('fellowship.overview.modalTitle')}</Modal.Title>
 
       <Modal.Content disableScroll background="secondary">

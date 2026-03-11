@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -56,7 +57,10 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
         props={{
           referendumId: referendum.id,
           children: (
-            <div className="block w-full cursor-pointer appearance-none p-4">
+            <div
+              className="block w-full cursor-pointer appearance-none p-4"
+              data-testid={TEST_IDS.FELLOWSHIP.TASK_ITEM}
+            >
               <Box direction="row" gap={2} verticalAlign="start">
                 <div className="shrink-0">
                   {rank ? (

@@ -4,7 +4,9 @@ import { TEST_IDS } from '@/shared/constants';
 import { type ChainModel } from '../../data/chains/testChainModel';
 import { readConfig } from '../../utils/readConfig';
 import { AssetsSettingsModalElements } from '../_elements/AssetsSettingsModalElements';
+import { FellowshipPageElements } from '../_elements/FellowshipPageElements';
 import { GovernancePageElements } from '../_elements/GovernancePageElements';
+import { FellowshipPage } from '../fellowshipPage/FellowshipPage';
 import { GovernancePage } from '../governancePage/GovernancePage';
 import { AssetsSettingsModalWindow } from '../modals/AssetsSettingsModalWindow';
 
@@ -14,6 +16,12 @@ export class VaultAssetsPage extends BaseAssetsPage {
   public async goToGovernancePage(): Promise<GovernancePage> {
     return await step('Navigate to Governance page', async () => {
       return new GovernancePage(this.page, new GovernancePageElements()).gotoMain();
+    });
+  }
+
+  public async goToFellowshipPage(): Promise<FellowshipPage> {
+    return await step('Navigate to Fellowship page', async () => {
+      return new FellowshipPage(this.page, new FellowshipPageElements()).gotoMain();
     });
   }
 

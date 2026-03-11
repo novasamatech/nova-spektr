@@ -1,5 +1,6 @@
 import { type PropsWithChildren, memo, useMemo, useState } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toRomanNumeral, toShortAddress } from '@/shared/lib/utils';
@@ -80,7 +81,13 @@ export const ReferendumDetailsModal = memo(({ referendumId, children, title, isC
   };
 
   return (
-    <Modal size="xl" height="fit" isOpen={isOpen} onToggle={handleToggle}>
+    <Modal
+      size="xl"
+      height="fit"
+      isOpen={isOpen}
+      testId={TEST_IDS.FELLOWSHIP.REFERENDUM_DETAILS_MODAL}
+      onToggle={handleToggle}
+    >
       {children && <Modal.Trigger>{children}</Modal.Trigger>}
       <Modal.Title close>{modalTitle}</Modal.Title>
       <Modal.Content background="secondary">
