@@ -1,7 +1,21 @@
-import { CryptoType } from '@/shared/core';
+import { type DecodedTransaction, CryptoType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 
 import { multisigOperationService } from './service';
+
+const PROXIED_ACCOUNT = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+
+const makeDecodedTransaction = (
+  section: string,
+  method: string,
+  args: Record<string, unknown> = {},
+): DecodedTransaction => ({
+  section,
+  method,
+  args,
+  chainId: '0x00' as any,
+  accountId: '0x00' as any,
+});
 
 describe('multisig operation service', () => {
   it('should generate SS58 multisig address', () => {
@@ -30,5 +44,151 @@ describe('multisig operation service', () => {
     );
 
     expect(multisigAccount).toEqual('0xb4e55b61678623fd5ece9c24e79d6c0532bee057');
+  });
+
+  describe('extractProxiedAccountId', () => {
+    it('should return undefined for null transaction', () => {
+      expect(multisigOperationService.extractProxiedAccountId(null)).toBeUndefined();
+    });
+
+    it('should extract account from direct proxy.proxy call', () => {
+      const tx = makeDecodedTransaction('proxy', 'proxy', { real: PROXIED_ACCOUNT });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toEqual(toAccountId(PROXIED_ACCOUNT));
+    });
+
+    it('should return undefined when proxy.proxy has non-string real arg', () => {
+      const tx = makeDecodedTransaction('proxy', 'proxy', { real: 42 });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toBeUndefined();
+    });
+
+    it('should return undefined when proxy.proxy has no real arg', () => {
+      const tx = makeDecodedTransaction('proxy', 'proxy', {});
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toBeUndefined();
+    });
+
+    it('should extract account from utility.batchAll wrapping proxy.proxy', () => {
+      const tx = makeDecodedTransaction('utility', 'batchAll', {
+        transactions: [makeDecodedTransaction('proxy', 'proxy', { real: PROXIED_ACCOUNT })],
+      });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toEqual(toAccountId(PROXIED_ACCOUNT));
+    });
+
+    it('should extract account from utility.batch wrapping proxy.proxy', () => {
+      const tx = makeDecodedTransaction('utility', 'batch', {
+        transactions: [makeDecodedTransaction('proxy', 'proxy', { real: PROXIED_ACCOUNT })],
+      });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toEqual(toAccountId(PROXIED_ACCOUNT));
+    });
+
+    it('should extract account from utility.forceBatch wrapping proxy.proxy', () => {
+      const tx = makeDecodedTransaction('utility', 'forceBatch', {
+        transactions: [makeDecodedTransaction('proxy', 'proxy', { real: PROXIED_ACCOUNT })],
+      });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toEqual(toAccountId(PROXIED_ACCOUNT));
+    });
+
+    it('should return undefined for batch with empty transactions', () => {
+      const tx = makeDecodedTransaction('utility', 'batchAll', { transactions: [] });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toBeUndefined();
+    });
+
+    it('should return undefined for batch with non-array transactions', () => {
+      const tx = makeDecodedTransaction('utility', 'batchAll', { transactions: 'not an array' });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toBeUndefined();
+    });
+
+    it('should return undefined for batch where first tx is not proxy.proxy', () => {
+      const tx = makeDecodedTransaction('utility', 'batchAll', {
+        transactions: [makeDecodedTransaction('balances', 'transferKeepAlive', { dest: '0x00', value: '1000' })],
+      });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toBeUndefined();
+    });
+
+    it('should return undefined for simple balances.transfer', () => {
+      const tx = makeDecodedTransaction('balances', 'transferKeepAlive', { dest: '0x00', value: '1000' });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toBeUndefined();
+    });
+
+    it('should return undefined for proxy.addProxy (not proxy.proxy)', () => {
+      const tx = makeDecodedTransaction('proxy', 'addProxy', {
+        delegate: PROXIED_ACCOUNT,
+        proxyType: 'Any',
+        delay: 0,
+      });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toBeUndefined();
+    });
+
+    it('should return undefined for staking operations', () => {
+      const tx = makeDecodedTransaction('staking', 'bond', { value: '1000', payee: 'Staked' });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toBeUndefined();
+    });
+
+    it('should NOT detect flex for utility.batchAll containing as_derivative > force_batch > proxy.add_proxy (bug case)', () => {
+      // This is the actual transaction that caused the bug.
+      // It contains Proxy.add_proxy calls deeply nested inside as_derivative > force_batch,
+      // but no proxy.proxy wrapper — so it must NOT be treated as flex.
+      const makeAddProxyCall = (delegate: string): DecodedTransaction =>
+        makeDecodedTransaction('proxy', 'addProxy', {
+          delegate,
+          proxyType: 'Staking',
+          delay: 0,
+        });
+
+      const makeAsDerivativeCall = (index: number): DecodedTransaction =>
+        makeDecodedTransaction('utility', 'asDerivative', {
+          index,
+          call: makeDecodedTransaction('utility', 'forceBatch', {
+            transactions: [
+              makeAddProxyCall('0xf67ceef1fef1a1419a67a10b7ffa429c41f8ba70f51f2e222606fa2a8edcbd4f'),
+              makeAddProxyCall('0x89476626a4400ad0b49be9aae39db9d1cfa93e779088ad9bfe8e14e6cc0cb723'),
+            ],
+          }),
+        });
+
+      const tx = makeDecodedTransaction('utility', 'batchAll', {
+        transactions: [
+          makeAsDerivativeCall(0),
+          makeAsDerivativeCall(1),
+          makeAsDerivativeCall(2),
+          makeAsDerivativeCall(3),
+          makeAsDerivativeCall(4),
+          makeAsDerivativeCall(5),
+        ],
+      });
+
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toBeUndefined();
+    });
+
+    it('should NOT detect flex for utility.forceBatch wrapping proxy.addProxy (not proxy.proxy)', () => {
+      const tx = makeDecodedTransaction('utility', 'forceBatch', {
+        transactions: [
+          makeDecodedTransaction('proxy', 'addProxy', {
+            delegate: PROXIED_ACCOUNT,
+            proxyType: 'Any',
+            delay: 0,
+          }),
+        ],
+      });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toBeUndefined();
+    });
+
+    it('should handle multiple proxy.proxy calls in batch — only checks first', () => {
+      const otherAccount = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd';
+      const tx = makeDecodedTransaction('utility', 'batchAll', {
+        transactions: [
+          makeDecodedTransaction('proxy', 'proxy', { real: PROXIED_ACCOUNT }),
+          makeDecodedTransaction('proxy', 'proxy', { real: otherAccount }),
+        ],
+      });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toEqual(toAccountId(PROXIED_ACCOUNT));
+    });
+
+    it('should return undefined for utility.asDerivative (not a batch method)', () => {
+      const tx = makeDecodedTransaction('utility', 'asDerivative', {
+        index: 0,
+        call: makeDecodedTransaction('proxy', 'proxy', { real: PROXIED_ACCOUNT }),
+      });
+      expect(multisigOperationService.extractProxiedAccountId(tx)).toBeUndefined();
+    });
   });
 });
