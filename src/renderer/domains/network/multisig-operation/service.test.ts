@@ -123,10 +123,7 @@ describe('multisig operation service', () => {
       expect(multisigOperationService.extractProxiedAccountId(tx)).toBeUndefined();
     });
 
-    it('should NOT detect flex for utility.batchAll containing as_derivative > force_batch > proxy.add_proxy (bug case)', () => {
-      // This is the actual transaction that caused the bug.
-      // It contains Proxy.add_proxy calls deeply nested inside as_derivative > force_batch,
-      // but no proxy.proxy wrapper — so it must NOT be treated as flex.
+    it('should NOT detect flex for utility.batchAll containing as_derivative > force_batch > proxy.add_proxy', () => {
       const makeAddProxyCall = (delegate: string): DecodedTransaction =>
         makeDecodedTransaction('proxy', 'addProxy', {
           delegate,
