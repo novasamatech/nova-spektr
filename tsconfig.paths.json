@@ -3,7 +3,8 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["./src/renderer/*"],
-      "~config": ["./config/index.js"]
+      "~config": ["./config/index.js"],
+      "@tests/integrations/*": ["./tests/integrations/*"]
     }
   }
 }

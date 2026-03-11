@@ -7,7 +7,8 @@ export interface TestAccounts {
 export async function getTestAccounts(url: string) {
   const accounts = await httpRequest(url).then((r) => r?.json());
 
-  return <TestAccounts[]>accounts;
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- external API response shape
+  return accounts as TestAccounts[];
 }
 
 export async function httpRequest(url: string): Promise<Response | undefined> {

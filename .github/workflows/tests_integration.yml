@@ -1,4 +1,4 @@
-name: Run system tests - integration
+name: Integration tests
 
 on:
   workflow_dispatch:
@@ -11,15 +11,18 @@ on:
         type: string
         description: ALLURE_USERNAME service parameter. Leave blank.
         required: false
-  schedule:
-    - cron: '0 6 * * *' # 9:00 GMT+3
+  push:
+    branches:
+      - 'dev'
   pull_request:
-    paths:
-      - 'tests/system/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  pull-requests: write
+  checks: write
 
 env:
   NODE_OPTIONS: "--max-old-space-size=8192"
@@ -31,8 +34,9 @@ env:
   ALLURE_RESULTS: allure-results
 
 jobs:
-  system-tests:
+  integration-tests:
     runs-on: ubuntu-latest
+
     steps:
       - name: ⚙️Checkout
         uses: actions/checkout@v4
@@ -40,12 +44,24 @@ jobs:
       - name: ⚙️Install dependencies
         uses: ./.github/workflows/install-pnpm
 
-      - name: ⚙️ Install test dependencies
-        uses: ./.github/workflows/install-test
+      - name: Install allurectl
+        uses: allure-framework/setup-allurectl@v1
 
-      - name: Run System Tests - Fee loading
-        uses: ./.github/workflows/run-system-tests
+      - name: 🧪 Run integration tests
+        id: vitest_tests
+        run: allurectl watch -- pnpm test:integration
+
+      - name: Create Allure testplan if missing
+        if: always()
+        run: |
+          mkdir -p .allure
+          echo '{}' > .allure/testplan.json
+
+      - name: 📄 Post results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          telegram_token: ${{ secrets.TELEGRAM_TOKEN }}
-          telegram_to: ${{ secrets.TELEGRAM_TO }}
-          test_grep: '@fee-test'
+          files: ./junit.xml
+          check_name: 'Integration Test Results'
+          comment_mode: 'changes'
+          github_token: ${{ secrets.GITHUB_TOKEN }}

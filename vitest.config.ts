@@ -16,7 +16,7 @@ const testsPriority = [
 ];
 
 class Seqencer extends BaseSequencer {
-  async sort(files: TestSpecification[]) {
+  async sort(files: TestSpecification[]): Promise<TestSpecification[]> {
     return files.sort((a, b) => {
       const ac = testsPriority.findIndex((dir) => a.moduleId.startsWith(dir));
       const bc = testsPriority.findIndex((dir) => b.moduleId.startsWith(dir));
@@ -42,9 +42,18 @@ const config: UserConfigFnPromise = async (options) => {
     },
     test: {
       root: folders.root,
-      dir: folders.source,
+      dir: folders.root,
+      include: [
+        'tests/integrations/**/*.test.ts',
+        'tests/integrations/**/*.test.tsx',
+        'src/**/*.test.ts',
+        'src/**/*.test.tsx',
+      ],
       globals: true,
       environmentMatchGlobs: [
+        // Integration tests need happy-dom for fake-indexeddb and Dexie
+        ['tests/integrations/**/*.test.ts', 'happy-dom'],
+        ['tests/integrations/**/*.test.tsx', 'happy-dom'],
         // This list should dissapear over time, simple logic tests shouldn't depend on environment.
         ['src/renderer/shared/lib/hooks/**/*.ts', 'happy-dom'],
         ['src/renderer/shared/lib/utils/**/*.ts', 'happy-dom'],
@@ -60,7 +69,21 @@ const config: UserConfigFnPromise = async (options) => {
         ['**/*.ts', 'node'],
       ],
       setupFiles: resolve(folders.root, './vitest.setup.js'),
-      reporters: ['default', 'junit'],
+      reporters: [
+        'default',
+        'junit',
+        [
+          'allure-vitest/reporter',
+          {
+            resultsDir: resolve(folders.root, './allure-results'),
+            links: {
+              issue: {
+                urlTemplate: 'https://github.com/novasamatech/nova-spektr/issues/%s',
+              },
+            },
+          },
+        ],
+      ],
       outputFile: {
         junit: resolve(folders.root, './junit.xml'),
       },

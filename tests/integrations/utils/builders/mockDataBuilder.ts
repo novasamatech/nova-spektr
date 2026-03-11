@@ -1,3 +1,10 @@
+interface Signatory {
+  index: string;
+  name: string;
+  address: string | undefined;
+  accountId: string | undefined;
+}
+
 const accountIds = [
   '0x6e9c89561fd4af9ed7d90c32d2b0bc88f8264df518d673d48b892ab82803511b',
   '0xe444006d851071d23a8673685fbf3727bab5852444927b559930cc124e676317',
@@ -49,8 +56,8 @@ export class MockDataBuilder {
     };
   }
 
-  generateSignatories(num: number): any[] {
-    const signatories: any[] = [];
+  generateSignatories(num: number): Signatory[] {
+    const signatories: Signatory[] = [];
     for (let i = 0; i < num; i++) {
       signatories.push({
         index: i.toString(),
