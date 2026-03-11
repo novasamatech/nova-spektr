@@ -27,8 +27,7 @@ import {
   watchOnlyWallet,
 } from '../../fixtures';
 
-import { type FeatureTestEnvironment } from './FeatureTestBuilder';
-import { FeatureTestBuilder } from './FeatureTestBuilder';
+import { type FeatureTestEnvironment, FeatureTestBuilder } from './FeatureTestBuilder';
 
 /**
  * Creates a basic transfer scenario with: - Vault wallet - Sender account with
