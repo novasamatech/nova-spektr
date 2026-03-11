@@ -45,7 +45,7 @@
     "prod:sequence": "pnpm r clean:build clean:prod build postbuild dist",
     "test": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run",
     "test:unit": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run src/",
-    "test:integration": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run tests/integrations/",
+    "test:integration": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --config tests/integrations/vitest.config.ts",
     "test:ui": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest --ui",
     "test:watch": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest",
     "test:coverage": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --coverage",
