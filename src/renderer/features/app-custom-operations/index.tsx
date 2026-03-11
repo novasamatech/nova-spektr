@@ -8,5 +8,5 @@ export { appCustomOperationsFeature };
 
 appCustomOperationsFeature.inject(navigationCustomOperationsSlot, {
   order: 0,
-  render: () => <CustomOperations />,
+  render: ({ folded }) => <CustomOperations folded={folded} />,
 });

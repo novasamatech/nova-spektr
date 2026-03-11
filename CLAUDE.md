@@ -158,3 +158,8 @@ The renderer follows Feature-Sliced Design methodology:
 - Prioritize code correctness and clarity. Speed and efficiency are secondary priorities unless otherwise specified.
 - Do not write organizational or comments that summarize the code. Comments should only be written in order to explain "why" the code is written in some way in the case there is a reason that is tricky / non-obvious.
 - **Avoid `as` type casts** - Use typeguards with actual runtime checks instead. Prefer `satisfies` for type validation without casting. Type casts hide potential bugs; typeguards catch them.
+
+### UI Animation Patterns
+- **Smooth fold/collapse animations**: Never use conditional DOM branches (`if (folded) return <A>; return <B>`) for animated transitions. Keep identical DOM structure in both states; only change CSS classes (e.g. `max-w-0 opacity-0` ↔ `max-w-[180px] opacity-100`). DOM swaps cause instant jumps that CSS transitions can't smooth over.
+- **Radix UI `asChild` + React Router `NavLink`**: Never put `NavLink` directly inside Radix `Trigger` components (Tooltip.Trigger, etc.) — Radix's `asChild` stringifies NavLink's function `className`. Always wrap NavLink in a `<div>` first.
+- **Radix Tooltip conditional control**: To show tooltip only in certain states, use `open={condition ? undefined : false}` instead of conditionally rendering the Tooltip wrapper.
