@@ -23,7 +23,7 @@ jobs:
         uses: ./.github/workflows/install-pnpm
 
       - name: 🧪 Run tests
-        run: pnpm test
+        run: pnpm test:unit
 
       - name: 📄 Post results
         if: always()
