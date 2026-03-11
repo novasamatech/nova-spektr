@@ -7,6 +7,7 @@ import { createKeyMulti } from '@polkadot/util-crypto';
 import {
   type CallHash,
   type Chain,
+  type DecodedTransaction,
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type NoID,
@@ -14,7 +15,7 @@ import {
   ChainOptions,
   CryptoType,
 } from '@/shared/core';
-import { isEqual, merge, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
+import { isEqual, merge, nonNullable, nullable, toAccountId, validateCallData } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import { transactionService } from '../transaction/service';
@@ -179,6 +180,40 @@ function generateMultisigOperationRelativeLink(params: MultisigOperationDeepLink
   return `${Paths.OPERATIONS}?${searchParams.toString()}`;
 }
 
+/**
+ * Extracts the proxied account ID from a decoded transaction when the outermost
+ * call is proxy.proxy (direct) or utility.batchAll wrapping proxy.proxy calls
+ * (Nova Wallet style).
+ *
+ * Only the wrapper-level proxy call is considered: nested proxy calls inside
+ * arbitrary inner structures are intentionally ignored.
+ */
+function extractProxiedAccountId(transaction: DecodedTransaction | null): AccountId | undefined {
+  if (nullable(transaction)) return undefined;
+
+  const isDirectProxy = transaction.section === 'proxy' && transaction.method === 'proxy';
+  if (isDirectProxy) {
+    const real: unknown = transaction.args['real'];
+    return typeof real === 'string' ? toAccountId(real) : undefined;
+  }
+
+  const isBatchAll =
+    transaction.section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(transaction.method);
+  if (isBatchAll) {
+    const transactions: unknown = transaction.args['transactions'];
+    if (!Array.isArray(transactions) || transactions.length === 0) return undefined;
+
+    const firstTx = transactions[0] as DecodedTransaction;
+    const isProxyInBatch = firstTx.section === 'proxy' && firstTx.method === 'proxy';
+    if (!isProxyInBatch) return undefined;
+
+    const real: unknown = firstTx.args['real'];
+    return typeof real === 'string' ? toAccountId(real) : undefined;
+  }
+
+  return undefined;
+}
+
 export const multisigOperationService = {
   getOperationId,
   getEventId,
@@ -186,6 +221,8 @@ export const multisigOperationService = {
   getMultisigAccountId,
 
   mergeMultisigOperations,
+
+  extractProxiedAccountId,
 
   isMultisigSupported,
   getOtherSignatories,
