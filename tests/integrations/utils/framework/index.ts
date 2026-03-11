@@ -9,7 +9,7 @@
  * - Scenario helpers - Pre-configured test scenarios
  */
 
-export { FeatureTestBuilder, type FeatureTestBuilderOptions } from './FeatureTestBuilder';
+export { type FeatureTestBuilderOptions, FeatureTestBuilder } from './FeatureTestBuilder';
 export { FeatureTestEnvironment } from './FeatureTestEnvironment';
 export { TestStorageBuilder } from './TestStorageBuilder';
 export * from './scenarios';

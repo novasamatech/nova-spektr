@@ -1,5 +1,8 @@
-import { type AssetId, AssetType, type Chain, ChainOptions, ChainType, StakingType } from '@/shared/core';
+import { type AssetId, type Chain, AssetType, ChainOptions, StakingType } from '@/shared/core';
 import { polkadotChain as basePolkadotChain } from '@/shared/mocks';
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+const toAssetId = (n: number) => n as AssetId;
 
 /**
  * Chain IDs for test fixtures
@@ -27,7 +30,7 @@ export const kusamaChain: Chain = {
   parentId: undefined,
   assets: [
     {
-      assetId: 0 as AssetId,
+      assetId: toAssetId(0),
       symbol: 'KSM',
       name: 'Kusama',
       precision: 12,
@@ -46,8 +49,7 @@ export const kusamaChain: Chain = {
   explorers: [],
   icon: 'https://example.com/kusama.svg',
   options: [ChainOptions.MULTISIG],
-  chainType: ChainType.SUBSTRATE,
-} as unknown as Chain;
+};
 
 /**
  * Asset Hub parachain (Polkadot)
@@ -59,7 +61,7 @@ export const assetHubChain: Chain = {
   parentId: polkadotChainId,
   assets: [
     {
-      assetId: 0 as AssetId,
+      assetId: toAssetId(0),
       symbol: 'DOT',
       name: 'Polkadot',
       precision: 10,
@@ -72,7 +74,7 @@ export const assetHubChain: Chain = {
       },
     },
     {
-      assetId: 1337 as AssetId,
+      assetId: toAssetId(1337),
       symbol: 'USDT',
       name: 'Tether USD',
       precision: 6,
@@ -94,8 +96,7 @@ export const assetHubChain: Chain = {
   explorers: [],
   icon: 'https://example.com/assethub.svg',
   options: [ChainOptions.MULTISIG],
-  chainType: ChainType.SUBSTRATE,
-} as unknown as Chain;
+};
 
 /**
  * Bifrost parachain (Polkadot)
@@ -107,7 +108,7 @@ export const bifrostChain: Chain = {
   parentId: polkadotChainId,
   assets: [
     {
-      assetId: 0 as AssetId,
+      assetId: toAssetId(0),
       symbol: 'BNC',
       name: 'Bifrost',
       precision: 12,
@@ -126,5 +127,4 @@ export const bifrostChain: Chain = {
   explorers: [],
   icon: 'https://example.com/bifrost.svg',
   options: [ChainOptions.MULTISIG],
-  chainType: ChainType.SUBSTRATE,
-} as unknown as Chain;
+};

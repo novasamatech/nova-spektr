@@ -10,4 +10,4 @@
 
 export { createWsConnection } from './createWsConnection';
 export { createNodeFetchPolyfill, setupFetchPolyfill } from './fetchPolyfill';
-export { getTestAccounts, httpRequest, type TestAccounts } from './getTestAccounts';
+export { type TestAccounts, getTestAccounts, httpRequest } from './getTestAccounts';

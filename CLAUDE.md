@@ -76,6 +76,14 @@ Nova Spektr is a Polkadot & Kusama ecosystem Enterprise Desktop application buil
 - `pnpm test:ui` - Run tests with UI
 - `pnpm test:coverage` - Run tests with coverage report
 - `pnpm test:system` - Run end-to-end tests (Playwright)
+- `pnpm test tests/integrations` - Run integration tests
+
+#### Integration Tests
+Integration tests live in `tests/integrations/` and test feature model logic (Effector stores/events), storage persistence (IndexedDB), state management workflows, validation rules, and transaction building. They use a custom FeatureTestBuilder/FeatureTestEnvironment framework with fake IndexedDB and isolated Effector scopes.
+
+**When to use**: Multi-step business logic spanning stores, events, and storage. Not for UI rendering (component tests), pure functions (unit tests), or full user flows (E2E/Playwright).
+
+See [`tests/integrations/CLAUDE.md`](tests/integrations/CLAUDE.md) for the complete framework reference.
 
 ### Code Quality
 - `pnpm lint` - Run ESLint on source code

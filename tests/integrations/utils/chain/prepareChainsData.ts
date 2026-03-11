@@ -7,18 +7,17 @@ export function prepareTestData(chains: Chain[]): [Chain[], Chain[], Chain[], Ch
   const polkadot = chains.find((chain) => chain.chainId === polkadotId)!;
   const kusama = chains.find((chain) => chain.chainId === kusamaId)!;
 
-  const [polkadotParachains, kusamaParachains] = chains.reduce(
+  const [polkadotParachains, kusamaParachains] = chains.reduce<[Chain[], Chain[]]>(
     (acc, currentChain) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      currentChain.parentId === polkadotId
-        ? acc[0].push(currentChain)
-        : currentChain.parentId === kusamaId
-          ? acc[1].push(currentChain)
-          : null;
+      if (currentChain.parentId === polkadotId) {
+        acc[0].push(currentChain);
+      } else if (currentChain.parentId === kusamaId) {
+        acc[1].push(currentChain);
+      }
 
       return acc;
     },
-    [<Chain[]>(<unknown>[]), <Chain[]>(<unknown>[])],
+    [[], []],
   );
 
   return [chains, polkadotParachains, kusamaParachains, polkadot, kusama];

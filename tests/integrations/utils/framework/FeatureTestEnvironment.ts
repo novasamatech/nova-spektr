@@ -1,4 +1,5 @@
 import type Dexie from 'dexie';
+import { type IndexableType } from 'dexie';
 import { type EventCallable, type Scope, type Store, allSettled } from 'effector';
 
 import { type Feature } from '@/shared/feature';
@@ -96,7 +97,7 @@ export class FeatureTestEnvironment {
    *
    * @returns Promise that resolves to true if condition is met
    */
-  async verifyInStorage<T = any>(tableName: string, condition: (items: T[]) => boolean): Promise<boolean> {
+  async verifyInStorage<T = unknown>(tableName: string, condition: (items: T[]) => boolean): Promise<boolean> {
     const items = await this.db.table(tableName).toArray();
     return condition(items);
   }
@@ -108,7 +109,7 @@ export class FeatureTestEnvironment {
    *
    * @returns Promise that resolves to an array of items
    */
-  async getStorageData<T = any>(tableName: string): Promise<T[]> {
+  async getStorageData<T = unknown>(tableName: string): Promise<T[]> {
     return this.db.table(tableName).toArray();
   }
 
@@ -118,7 +119,7 @@ export class FeatureTestEnvironment {
    * @param tableName - Name of the table
    * @param data - Data to add
    */
-  async addToStorage(tableName: string, data: any | any[]): Promise<void> {
+  async addToStorage(tableName: string, data: unknown | unknown[]): Promise<void> {
     if (Array.isArray(data)) {
       await this.db.table(tableName).bulkAdd(data);
     } else {
@@ -133,7 +134,7 @@ export class FeatureTestEnvironment {
    * @param id - ID of the item to update
    * @param changes - Changes to apply
    */
-  async updateInStorage(tableName: string, id: any, changes: any): Promise<void> {
+  async updateInStorage(tableName: string, id: IndexableType, changes: Record<string, unknown>): Promise<void> {
     await this.db.table(tableName).update(id, changes);
   }
 
@@ -143,7 +144,7 @@ export class FeatureTestEnvironment {
    * @param tableName - Name of the table
    * @param id - ID of the item to delete
    */
-  async deleteFromStorage(tableName: string, id: any): Promise<void> {
+  async deleteFromStorage(tableName: string, id: IndexableType): Promise<void> {
     await this.db.table(tableName).delete(id);
   }
 

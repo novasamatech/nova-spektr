@@ -8,6 +8,7 @@ import { polkadotChainId } from '../chain';
 /**
  * Ongoing referendum - Root track (most powerful)
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 export const rootReferendum: AggregatedReferendum<OngoingReferendum> = {
   type: 'Ongoing',
   referendumId: '100',
@@ -63,6 +64,7 @@ export const rootReferendum: AggregatedReferendum<OngoingReferendum> = {
 /**
  * Ongoing referendum - Whitelisted Caller track
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 export const whitelistedCallerReferendum: AggregatedReferendum<OngoingReferendum> = {
   type: 'Ongoing',
   referendumId: '101',
@@ -118,6 +120,7 @@ export const whitelistedCallerReferendum: AggregatedReferendum<OngoingReferendum
 /**
  * Ongoing referendum - Treasurer track
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 export const treasurerReferendum: AggregatedReferendum<OngoingReferendum> = {
   type: 'Ongoing',
   referendumId: '102',
@@ -171,6 +174,7 @@ export const treasurerReferendum: AggregatedReferendum<OngoingReferendum> = {
 /**
  * Ongoing referendum - Small Tipper track
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 export const smallTipperReferendum: AggregatedReferendum<OngoingReferendum> = {
   type: 'Ongoing',
   referendumId: '103',
@@ -254,6 +258,7 @@ export const testReferendums = [
 /**
  * Referendum with low voter turnout for testing edge cases
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 export const lowTurnoutReferendum: AggregatedReferendum<OngoingReferendum> = {
   type: 'Ongoing',
   referendumId: '104',

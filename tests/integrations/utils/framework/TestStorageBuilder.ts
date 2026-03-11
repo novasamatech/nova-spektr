@@ -22,14 +22,14 @@ export class TestStorageBuilder {
   private db: Dexie;
   private wallets: Wallet[] = [];
   private accounts: AnyAccount[] = [];
-  private balances: any[] = [];
+  private balances: unknown[] = [];
   private contacts: Contact[] = [];
-  private proxies: any[] = [];
-  private connections: any[] = [];
-  private notifications: any[] = [];
-  private basketTransactions: any[] = [];
-  private multisigOperations: any[] = [];
-  private metadata: any[] = [];
+  private proxies: unknown[] = [];
+  private connections: unknown[] = [];
+  private notifications: unknown[] = [];
+  private basketTransactions: unknown[] = [];
+  private multisigOperations: unknown[] = [];
+  private metadata: unknown[] = [];
   private isOpened = false;
 
   constructor(private dbName = `test-${Date.now()}-${Math.random().toString(36).slice(2)}`) {
@@ -123,7 +123,7 @@ export class TestStorageBuilder {
   /**
    * Add a proxy to the test storage
    */
-  withProxy(proxy: any): this {
+  withProxy(proxy: unknown): this {
     this.proxies.push(proxy);
     return this;
   }
@@ -131,7 +131,7 @@ export class TestStorageBuilder {
   /**
    * Add a connection to the test storage
    */
-  withConnection(connection: any): this {
+  withConnection(connection: unknown): this {
     this.connections.push(connection);
     return this;
   }
@@ -139,7 +139,7 @@ export class TestStorageBuilder {
   /**
    * Add a notification to the test storage
    */
-  withNotification(notification: any): this {
+  withNotification(notification: unknown): this {
     this.notifications.push(notification);
     return this;
   }
@@ -147,7 +147,7 @@ export class TestStorageBuilder {
   /**
    * Add a basket transaction to the test storage
    */
-  withBasketTransaction(transaction: any): this {
+  withBasketTransaction(transaction: unknown): this {
     this.basketTransactions.push(transaction);
     return this;
   }
@@ -155,7 +155,7 @@ export class TestStorageBuilder {
   /**
    * Add a multisig operation to the test storage
    */
-  withMultisigOperation(operation: any): this {
+  withMultisigOperation(operation: unknown): this {
     this.multisigOperations.push(operation);
     return this;
   }
@@ -163,7 +163,7 @@ export class TestStorageBuilder {
   /**
    * Add metadata to the test storage
    */
-  withMetadata(metadata: any): this {
+  withMetadata(metadata: unknown): this {
     this.metadata.push(metadata);
     return this;
   }
@@ -236,7 +236,7 @@ export class TestStorageBuilder {
    *     wallets.some((w) => w.name === 'Test Wallet'),
    *   );
    */
-  async verifyTable<T = any>(tableName: string, condition: (items: T[]) => boolean): Promise<boolean> {
+  async verifyTable<T = unknown>(tableName: string, condition: (items: T[]) => boolean): Promise<boolean> {
     const items = await this.db.table(tableName).toArray();
     return condition(items);
   }
@@ -244,7 +244,7 @@ export class TestStorageBuilder {
   /**
    * Get all items from a table
    */
-  async getTableData<T = any>(tableName: string): Promise<T[]> {
+  async getTableData<T = unknown>(tableName: string): Promise<T[]> {
     return this.db.table(tableName).toArray();
   }
 
@@ -258,7 +258,7 @@ export class TestStorageBuilder {
   /**
    * Add data to a table after initialization
    */
-  async addToTable(tableName: string, data: any | any[]): Promise<void> {
+  async addToTable(tableName: string, data: unknown | unknown[]): Promise<void> {
     if (Array.isArray(data)) {
       await this.db.table(tableName).bulkAdd(data);
     } else {

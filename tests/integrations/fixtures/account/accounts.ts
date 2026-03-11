@@ -35,6 +35,7 @@ export const recipientAccount: AnyAccount = {
 /**
  * Multisig account (2 of 3)
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 export const multisigAccount: AnyAccount = {
   id: 'multisig-1',
   accountId: createAccountId(10),
@@ -81,6 +82,7 @@ export const signatoryAccount: AnyAccount = {
 /**
  * Proxied account
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 export const proxiedAccount: AnyAccount = {
   id: 'proxied-1',
   accountId: createAccountId(20),

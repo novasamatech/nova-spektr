@@ -37,18 +37,13 @@ describe('My Feature Tests', () => {
 ## 📖 Documentation
 
 - **[README.md](./README.md)** (this file) - Developer quick start guide
-- **[.ai/CONTEXT.md](./.ai/CONTEXT.md)** - Complete AI testing guide
-- **[.ai/ORGANIZATION.md](./.ai/ORGANIZATION.md)** - Feature-based structure guide
+- **[CLAUDE.md](./CLAUDE.md)** - Complete AI testing guide (framework API, patterns, templates)
 
 ## 📁 Structure
 
 ```
 tests/integrations/
-├── .ai/                           # AI context and docs
-│   ├── CONTEXT.md                # Complete testing guide
-│   ├── ORGANIZATION.md           # Structure guide
-│   └── MIGRATION.md              # Migration history
-│
+├── CLAUDE.md                      # AI testing guide
 ├── fixtures/                      # Test data (by domain)
 │   ├── wallet/                   # Wallet fixtures
 │   ├── account/                  # Account fixtures
@@ -83,7 +78,7 @@ tests/integrations/
 └── README.md                      # This file
 ```
 
-**See [.ai/ORGANIZATION.md](./.ai/ORGANIZATION.md) for detailed structure guide**
+**See [CLAUDE.md](./CLAUDE.md) for detailed framework reference**
 
 ## 🛠️ Core Utilities
 
@@ -289,5 +284,5 @@ When adding features:
 
 ---
 
-**Need help?** Check [`.ai/CONTEXT.md`](./.ai/CONTEXT.md) for complete reference or review example tests in
-[`tests/`](./tests/)
+**Need help?** Check [`CLAUDE.md`](./CLAUDE.md) for complete reference or review example tests in
+[`cases/`](./cases/)

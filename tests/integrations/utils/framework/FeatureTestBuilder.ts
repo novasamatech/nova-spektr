@@ -1,4 +1,4 @@
-import { type Scope, allSettled, fork } from 'effector';
+import { type Scope, type StoreWritable, allSettled, fork } from 'effector';
 
 import { type Balance, type Chain, type Contact, type Wallet } from '@/shared/core';
 import { type AnyAccount, accounts } from '@/domains/network';
@@ -28,7 +28,8 @@ export interface FeatureTestBuilderOptions {
   /**
    * Initial values for Effector stores
    */
-  initialValues?: Map<any, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Effector's LegacyMap type is Map<StoreWritable<any>, any>
+  initialValues?: Map<StoreWritable<any>, any>;
 }
 
 /**
@@ -52,7 +53,7 @@ export interface FeatureTestBuilderOptions {
 export class FeatureTestBuilder {
   private storage: TestStorageBuilder;
   private chains: Record<string, Chain> = {};
-  private apis: Record<string, any> = {};
+  private apis: Record<string, unknown> = {};
   private connectionStatuses: Record<string, string> = {};
   private options: Required<FeatureTestBuilderOptions>;
 
@@ -146,7 +147,7 @@ export class FeatureTestBuilder {
   /**
    * Add an API connection for a chain
    */
-  withApi(chainId: string, api: any): this {
+  withApi(chainId: string, api: unknown): this {
     this.apis[chainId] = api;
     return this;
   }
@@ -162,7 +163,7 @@ export class FeatureTestBuilder {
   /**
    * Add a proxy to the test environment
    */
-  withProxy(proxy: any): this {
+  withProxy(proxy: unknown): this {
     this.storage.withProxy(proxy);
     return this;
   }
@@ -170,7 +171,7 @@ export class FeatureTestBuilder {
   /**
    * Add a multisig operation to the test environment
    */
-  withMultisigOperation(operation: any): this {
+  withMultisigOperation(operation: unknown): this {
     this.storage.withMultisigOperation(operation);
     return this;
   }
@@ -178,7 +179,7 @@ export class FeatureTestBuilder {
   /**
    * Add a basket transaction to the test environment
    */
-  withBasketTransaction(transaction: any): this {
+  withBasketTransaction(transaction: unknown): this {
     this.storage.withBasketTransaction(transaction);
     return this;
   }
@@ -186,7 +187,7 @@ export class FeatureTestBuilder {
   /**
    * Add metadata to the test environment
    */
-  withMetadata(metadata: any): this {
+  withMetadata(metadata: unknown): this {
     this.storage.withMetadata(metadata);
     return this;
   }
@@ -194,7 +195,8 @@ export class FeatureTestBuilder {
   /**
    * Add a custom store value to the Effector scope
    */
-  withStoreValue<T>(store: any, value: T): this {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Effector's StoreWritable<any> needed for heterogeneous Map
+  withStoreValue<T>(store: StoreWritable<any>, value: T): this {
     this.options.initialValues.set(store, value);
     return this;
   }

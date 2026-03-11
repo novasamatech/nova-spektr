@@ -27,7 +27,8 @@ import {
   watchOnlyWallet,
 } from '../../fixtures';
 
-import { FeatureTestBuilder, type FeatureTestEnvironment } from './FeatureTestBuilder';
+import { type FeatureTestEnvironment } from './FeatureTestBuilder';
+import { FeatureTestBuilder } from './FeatureTestBuilder';
 
 /**
  * Creates a basic transfer scenario with: - Vault wallet - Sender account with
@@ -107,6 +108,7 @@ export async function createMultiAccountScenario(accountCount = 3): Promise<Feat
 
     const balance = {
       ...senderBalance,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- AssetId is a branded number type
       id: balanceUtils.constructBalanceId(account.accountId, polkadotChainId, 0 as AssetId),
       accountId: account.accountId,
       total: `${(i + 1) * 10000000000000}`, // Different amounts
