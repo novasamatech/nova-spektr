@@ -3,7 +3,8 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/renderer/*"],
-      "~config": ["./config/index.js"]
+      "~config": ["./config/index.js"],
+      "@tests/integrations/*": ["./tests/integrations/*"]
     }
   },
   "include": ["src", ".storybook", "tests", "scripts", "config", "vite-env.d.ts"],
