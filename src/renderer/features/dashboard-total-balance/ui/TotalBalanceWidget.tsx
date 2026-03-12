@@ -46,7 +46,7 @@ export const TotalBalanceWidget = ({ accountIds, allEntries }: Props) => {
     return (
       <div className={containerClass}>
         <FootnoteText className="text-text-tertiary">{t('dashboard.totalBalance.title')}</FootnoteText>
-        <div className="flex flex-col items-center gap-y-1 py-6">
+        <div className="flex flex-1 flex-col items-center justify-center gap-y-1">
           <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
           <BodyText className="text-text-tertiary">{t('dashboard.noSelection.description')}</BodyText>
         </div>

@@ -90,33 +90,9 @@ export const PriceChartCard = ({ assetId, label, color, currency, currentPrice, 
     </div>
   );
 
-  if (pending && showRetry && chartData.length === 0) {
-    return (
-      <div className={containerClass}>
-        {renderHeader()}
-        <div style={{ height: CHART_HEIGHT }} className="flex flex-col items-center justify-center gap-2">
-          <Skeleton width="100%" height={`${CHART_HEIGHT}px`} />
-          <button className="text-footnote font-semibold text-primary-button-background-default" onClick={handleRetry}>
-            {t('dashboard.priceCharts.retry')}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (pending && chartData.length === 0) {
-    return (
-      <div className={containerClass}>
-        {renderHeader()}
-        <Skeleton width="100%" height={`${CHART_HEIGHT}px`} />
-      </div>
-    );
-  }
-
-  return (
-    <div className={containerClass}>
-      {renderHeader()}
-      {chartData.length > 0 && (
+  const renderChart = () => {
+    if (chartData.length > 0) {
+      return (
         <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
           <AreaChart data={chartData}>
             <defs>
@@ -134,7 +110,30 @@ export const PriceChartCard = ({ assetId, label, color, currency, currentPrice, 
             <Area type="monotone" dataKey="price" stroke={color} strokeWidth={2} fill={`url(#${gradientId})`} />
           </AreaChart>
         </ResponsiveContainer>
-      )}
+      );
+    }
+
+    return (
+      <div style={{ height: CHART_HEIGHT }} className="relative">
+        <Skeleton width="100%" height={`${CHART_HEIGHT}px`} />
+        {showRetry && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <button
+              className="text-footnote font-semibold text-primary-button-background-default"
+              onClick={handleRetry}
+            >
+              {t('dashboard.priceCharts.retry')}
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className={containerClass}>
+      {renderHeader()}
+      {renderChart()}
     </div>
   );
 };
