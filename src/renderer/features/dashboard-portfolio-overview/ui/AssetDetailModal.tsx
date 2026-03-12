@@ -3,21 +3,21 @@ import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 
 import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance } from '@/shared/lib/utils';
+import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { AssetIcon } from '@/shared/ui-entities';
+import { AssetIcon, Identicon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
 
 import { Price } from './Price';
-import { CHART_TOOLTIP_STYLE, getAssetColor } from './chartConstants';
-import { type ChainAssetRow, useChainBreakdown } from './useChainBreakdown';
-import { type ChainHolding } from './useChainHoldings';
+import { CHART_TOOLTIP_STYLE, FALLBACK_COLORS } from './chartConstants';
+import { type BreakdownRow, useHoldingBreakdown } from './useHoldingBreakdown';
+import { type Holding } from './useHoldings';
 
 type ChartEntry = {
   name: string;
   value: number;
   index: number;
-  row: ChainAssetRow;
+  row: BreakdownRow;
 };
 
 type TooltipPayloadItem = {
@@ -31,56 +31,61 @@ const ChartTooltip = ({ active, payload }: { active?: boolean; payload?: Tooltip
   if (!item) return null;
 
   const { row } = item.payload;
-  const { formatted, suffix } = formatBalance(row.rawAmount, row.precision);
 
   return (
     <div style={CHART_TOOLTIP_STYLE}>
-      <div style={{ fontWeight: 600 }}>{row.symbol}</div>
-      <div>
-        {formatted}
-        {suffix} {row.symbol}
-      </div>
+      <div style={{ fontWeight: 600 }}>{row.name || toShortAddress(row.address)}</div>
       <div>{row.sharePercent.toFixed(1)}%</div>
     </div>
   );
 };
 
+type EntryLike = { accountId: string; name: string; address: string };
+
 type Props = {
-  chainHolding: ChainHolding;
+  holding: Holding;
   accountIds: string[];
+  allEntries: EntryLike[];
   currency: CurrencyItem | null;
   onClose: () => void;
 };
 
-export const ChainDetailModal = ({ chainHolding, accountIds, currency, onClose }: Props) => {
+export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, onClose }: Props) => {
   const { t } = useI18n();
-  const { rows } = useChainBreakdown(chainHolding.chainId, accountIds);
+  const { rows } = useHoldingBreakdown(holding.priceId, accountIds, allEntries);
+  const addressCount = rows.length;
+  const { formatted, suffix } = formatBalance(holding.totalRaw, holding.precision);
 
   const chartData = useMemo<ChartEntry[]>(
     () =>
-      rows.map((row, i) => ({ name: row.symbol, value: row.fiatValueNum, index: i, row })).filter((d) => d.value > 0),
+      rows
+        .map((row, i) => ({ name: row.name || toShortAddress(row.address), value: row.fiatValueNum, index: i, row }))
+        .filter((d) => d.value > 0),
     [rows],
   );
 
-  const columns: Column<ChainAssetRow>[] = [
+  const columns: Column<BreakdownRow>[] = [
     {
       key: 'name',
-      title: t('dashboard.totalBalance.chainDetail.asset'),
+      title: t('dashboard.portfolioOverview.assetDetail.address'),
       width: '35%',
       render: (_, item) => (
         <div className="flex items-center gap-2">
           <span
             className="h-2 w-2 shrink-0 rounded-full"
-            style={{ backgroundColor: getAssetColor(item.priceId, item.colorIndex) }}
+            style={{ backgroundColor: FALLBACK_COLORS[item.colorIndex % FALLBACK_COLORS.length] }}
           />
-          <AssetIcon asset={item} size={24} />
-          <FootnoteText className="truncate font-semibold">{item.symbol}</FootnoteText>
+          <Identicon address={toAddress(item.address)} />
+          <div className="min-w-0">
+            <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
+            <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
+          </div>
         </div>
       ),
     },
     {
       key: 'rawAmountNum',
-      title: t('dashboard.totalBalance.chainDetail.amount'),
+      title: t('dashboard.portfolioOverview.assetDetail.amount'),
       sortable: true,
       width: '25%',
       render: (_, item) => {
@@ -96,7 +101,7 @@ export const ChainDetailModal = ({ chainHolding, accountIds, currency, onClose }
     },
     {
       key: 'fiatValueNum',
-      title: t('dashboard.totalBalance.chainDetail.value'),
+      title: t('dashboard.portfolioOverview.assetDetail.value'),
       sortable: true,
       width: '22%',
       render: (_, item) => (
@@ -107,7 +112,7 @@ export const ChainDetailModal = ({ chainHolding, accountIds, currency, onClose }
     },
     {
       key: 'sharePercent',
-      title: t('dashboard.totalBalance.chainDetail.share'),
+      title: t('dashboard.portfolioOverview.assetDetail.share'),
       sortable: true,
       width: '18%',
       render: (_, item) => <FootnoteText className="tabular-nums">{item.sharePercent.toFixed(1)}%</FootnoteText>,
@@ -118,21 +123,23 @@ export const ChainDetailModal = ({ chainHolding, accountIds, currency, onClose }
 
   return (
     <Modal isOpen size="lg" onToggle={(open) => !open && onClose()}>
-      <Modal.Title close>
-        {t('dashboard.totalBalance.chainDetail.title', { chainName: chainHolding.chainName })}
-      </Modal.Title>
+      <Modal.Title close>{t('dashboard.portfolioOverview.assetDetail.title', { symbol: holding.symbol })}</Modal.Title>
       <Modal.Content disableScroll>
         <div className="flex items-center gap-3 px-5 py-3">
-          <img src={chainHolding.chainIcon} alt={chainHolding.chainName} width={32} height={32} className="shrink-0" />
+          <AssetIcon asset={holding} size={32} />
           <div className="min-w-0 flex-1">
-            <FootnoteText className="font-bold">{chainHolding.chainName}</FootnoteText>
+            <FootnoteText className="font-bold">{holding.symbol}</FootnoteText>
             <FootnoteText className="text-text-tertiary">
-              {t('dashboard.totalBalance.chainDetail.assetCount', { count: chainHolding.assetCount })}
+              {t('dashboard.portfolioOverview.assetDetail.addressCount', { count: addressCount })}
             </FootnoteText>
           </div>
           <div className="shrink-0">
             <FootnoteText align="right" className="font-bold tabular-nums">
-              <Price amount={chainHolding.fiatValue} currency={currency} />
+              {formatted}
+              {suffix} {holding.symbol}
+            </FootnoteText>
+            <FootnoteText align="right" className="text-text-tertiary tabular-nums">
+              <Price amount={holding.fiatValue} currency={currency} />
             </FootnoteText>
           </div>
         </div>
@@ -151,7 +158,7 @@ export const ChainDetailModal = ({ chainHolding, accountIds, currency, onClose }
                 animationDuration={400}
               >
                 {chartData.map((entry) => (
-                  <Cell key={entry.index} fill={getAssetColor(entry.row.priceId, entry.index)} />
+                  <Cell key={entry.index} fill={FALLBACK_COLORS[entry.index % FALLBACK_COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip content={<ChartTooltip />} />

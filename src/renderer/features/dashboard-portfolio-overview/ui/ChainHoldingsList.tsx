@@ -57,7 +57,7 @@ export const ChainHoldingsList = ({ chainHoldings, currency, onSelect }: Props) 
 
   return (
     <div>
-      <FootnoteText className="text-text-tertiary">{t('dashboard.totalBalance.holdingsByChain')}</FootnoteText>
+      <FootnoteText className="text-text-tertiary">{t('dashboard.portfolioOverview.holdingsByChain')}</FootnoteText>
 
       <div className="mt-3 flex items-start gap-4">
         <div className="shrink-0">

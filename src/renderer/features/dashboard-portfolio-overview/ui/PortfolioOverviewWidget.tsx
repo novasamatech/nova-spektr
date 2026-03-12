@@ -28,7 +28,7 @@ const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold 
 const activeToggleClass = 'bg-white text-text-primary shadow-sm';
 const inactiveToggleClass = 'text-text-tertiary hover:text-text-secondary';
 
-export const TotalBalanceWidget = ({ accountIds, allEntries }: Props) => {
+export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const { holdings, totalFiat, fiatFlag, currency } = useHoldings(accountIds);
   const { chainHoldings } = useChainHoldings(accountIds);
@@ -44,7 +44,7 @@ export const TotalBalanceWidget = ({ accountIds, allEntries }: Props) => {
   if (accountIds.length === 0) {
     return (
       <div className={containerClass}>
-        <FootnoteText className="text-text-tertiary">{t('dashboard.totalBalance.title')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('dashboard.portfolioOverview.title')}</FootnoteText>
         <div className="flex flex-col items-center gap-y-1 py-6">
           <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
           <BodyText className="text-text-tertiary">{t('dashboard.noSelection.description')}</BodyText>
@@ -57,7 +57,7 @@ export const TotalBalanceWidget = ({ accountIds, allEntries }: Props) => {
 
   return (
     <div className={containerClass}>
-      <FootnoteText className="text-text-tertiary">{t('dashboard.totalBalance.title')}</FootnoteText>
+      <FootnoteText className="text-text-tertiary">{t('dashboard.portfolioOverview.title')}</FootnoteText>
       <TitleText className="mt-1">
         {totalFiat === null ? <Skeleton width={120} height={28} /> : <Price amount={totalFiat} currency={currency} />}
       </TitleText>
@@ -71,13 +71,13 @@ export const TotalBalanceWidget = ({ accountIds, allEntries }: Props) => {
               className={`${toggleButtonClass} ${viewMode === 'asset' ? activeToggleClass : inactiveToggleClass}`}
               onClick={() => setViewMode('asset')}
             >
-              {t('dashboard.totalBalance.byAsset')}
+              {t('dashboard.portfolioOverview.byAsset')}
             </button>
             <button
               className={`${toggleButtonClass} ${viewMode === 'chain' ? activeToggleClass : inactiveToggleClass}`}
               onClick={() => setViewMode('chain')}
             >
-              {t('dashboard.totalBalance.byChain')}
+              {t('dashboard.portfolioOverview.byChain')}
             </button>
           </div>
 

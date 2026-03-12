@@ -498,7 +498,7 @@
       "title": "No accounts selected",
       "description": "Select accounts above to view your balance"
     },
-    "totalBalance": {
+    "portfolioOverview": {
       "title": "Portfolio Overview",
       "holdings": "Holdings by Asset",
       "holdingsByChain": "Holdings by Chain",

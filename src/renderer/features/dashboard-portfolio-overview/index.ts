@@ -7,10 +7,10 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { dashboardWidgetsSlot } from '@/pages/Dashboard';
 import { dashboardModel } from '@/pages/Dashboard/model/dashboard-model';
 
-import { TotalBalanceWidget } from './ui/TotalBalanceWidget';
+import { PortfolioOverviewWidget } from './ui/PortfolioOverviewWidget';
 
-export const dashboardTotalBalanceFeature = createFeature({
-  name: 'dashboard/total-balance',
+export const dashboardPortfolioOverviewFeature = createFeature({
+  name: 'dashboard/portfolio-overview',
   input: createStore({}),
   enable: $features.map(({ dashboard }) => dashboard),
 });
@@ -28,7 +28,7 @@ sample({
   target: balanceSubModel.fetchAccountIds,
 });
 
-dashboardTotalBalanceFeature.inject(dashboardWidgetsSlot, {
+dashboardPortfolioOverviewFeature.inject(dashboardWidgetsSlot, {
   order: 0,
-  render: TotalBalanceWidget,
+  render: PortfolioOverviewWidget,
 });
