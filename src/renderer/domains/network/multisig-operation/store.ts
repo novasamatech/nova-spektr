@@ -366,7 +366,7 @@ persist({ store: $cachedOperations, key: 'multisig-operations', done: cachedOper
 // Clear stale cached operations that lack required fields (old format before multisigAccountId was added)
 sample({
   clock: cachedOperationsLoaded,
-  filter: ({ value }) => value.some(op => !op.multisigAccountId),
+  filter: ({ value }) => Array.isArray(value) && value.some(op => !op.multisigAccountId),
   fn: () => [],
   target: $cachedOperations,
 });
