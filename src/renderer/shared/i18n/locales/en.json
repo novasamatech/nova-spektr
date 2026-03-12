@@ -480,6 +480,58 @@
     "lastYear": "Last year",
     "resetButton": "Reset"
   },
+  "dashboard": {
+    "title": "Dashboard",
+    "accountSelector": {
+      "placeholder": "Select accounts",
+      "allAccounts": "All accounts",
+      "walletsGroup": "Wallets",
+      "contactsGroup": "Contacts",
+      "selectedCount_one": "{{count}} account selected",
+      "selectedCount_other": "{{count}} accounts selected"
+    },
+    "emptyState": {
+      "title": "No accounts available",
+      "description": "Add a wallet or contact to get started"
+    },
+    "noSelection": {
+      "title": "No accounts selected",
+      "description": "Select accounts above to view your balance"
+    },
+    "portfolioOverview": {
+      "title": "Portfolio Overview",
+      "holdings": "Holdings by Asset",
+      "holdingsByChain": "Holdings by Chain",
+      "byAsset": "By Asset",
+      "byChain": "By Chain",
+      "assetDetail": {
+        "title": "{symbol} Details",
+        "totalHoldings": "Total Holdings",
+        "addressCount_one": "{count} address",
+        "addressCount_other": "{count} addresses",
+        "address": "Address",
+        "amount": "Amount",
+        "value": "Value",
+        "share": "Share"
+      },
+      "chainDetail": {
+        "title": "{chainName} Details",
+        "assetCount_one": "{count} asset",
+        "assetCount_other": "{count} assets",
+        "asset": "Asset",
+        "amount": "Amount",
+        "value": "Value",
+        "share": "Share"
+      }
+    },
+    "priceCharts": {
+      "range7d": "7D",
+      "range30d": "30D",
+      "range90d": "90D",
+      "errorMessage": "Failed to load price data",
+      "retry": "Retry"
+    }
+  },
   "delegate": {
     "title": "Delegations"
   },
@@ -1797,6 +1849,7 @@
   "navigation": {
     "addressBookLabel": "Address Book",
     "balancesLabel": "Portfolio",
+    "dashboardLabel": "Dashboard",
     "basketLabel": "Basket",
     "callDataLabel": "Add call data",
     "customOperationLabel": "Custom operation",
