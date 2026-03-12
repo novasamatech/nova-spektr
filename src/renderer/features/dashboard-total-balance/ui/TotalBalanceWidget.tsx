@@ -22,8 +22,7 @@ type Props = {
   allEntries: EntryLike[];
 };
 
-const containerClass =
-  'flex w-[560px] flex-col rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
+const containerClass = 'w-[560px] rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
 const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold transition-colors';
 const activeToggleClass = 'bg-white text-text-primary shadow-sm';
@@ -46,7 +45,7 @@ export const TotalBalanceWidget = ({ accountIds, allEntries }: Props) => {
     return (
       <div className={containerClass}>
         <FootnoteText className="text-text-tertiary">{t('dashboard.totalBalance.title')}</FootnoteText>
-        <div className="flex flex-1 flex-col items-center justify-center gap-y-1">
+        <div className="flex flex-col items-center gap-y-1 py-6">
           <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
           <BodyText className="text-text-tertiary">{t('dashboard.noSelection.description')}</BodyText>
         </div>
@@ -82,7 +81,7 @@ export const TotalBalanceWidget = ({ accountIds, allEntries }: Props) => {
             </button>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div>
             {viewMode === 'asset' ? (
               <HoldingsList holdings={holdings} currency={currency} onSelect={(h) => setSelectedPriceId(h.priceId)} />
             ) : (

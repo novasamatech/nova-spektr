@@ -149,7 +149,14 @@ export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, on
         {showChart && (
           <div className="flex justify-center px-5 py-3">
             <PieChart width={180} height={180}>
-              <Pie data={chartData} innerRadius={55} outerRadius={85} dataKey="value" stroke="none">
+              <Pie
+                data={chartData}
+                innerRadius={55}
+                outerRadius={85}
+                dataKey="value"
+                stroke="none"
+                animationDuration={400}
+              >
                 {chartData.map((entry) => (
                   <Cell key={entry.index} fill={FALLBACK_COLORS[entry.index % FALLBACK_COLORS.length]} />
                 ))}

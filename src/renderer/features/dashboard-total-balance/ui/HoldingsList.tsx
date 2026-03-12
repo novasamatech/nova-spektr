@@ -32,7 +32,7 @@ export const HoldingsList = ({ holdings, currency, onSelect }: Props) => {
     <div>
       <FootnoteText className="text-text-tertiary">{t('dashboard.totalBalance.holdings')}</FootnoteText>
 
-      <div className="mt-3 flex items-center gap-4">
+      <div className="mt-3 flex items-start gap-4">
         <div className="shrink-0">
           <AllocationChart holdings={holdings} colors={colors} />
         </div>

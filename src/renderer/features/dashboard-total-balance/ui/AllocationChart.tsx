@@ -58,7 +58,7 @@ export const AllocationChart = ({ holdings, colors }: Props) => {
 
   return (
     <PieChart width={180} height={180}>
-      <Pie data={data} innerRadius={55} outerRadius={85} dataKey="value" stroke="none">
+      <Pie data={data} innerRadius={55} outerRadius={85} dataKey="value" stroke="none" animationDuration={400}>
         {data.map((entry) => (
           <Cell key={entry.name} fill={colors[entry.index % colors.length]} />
         ))}

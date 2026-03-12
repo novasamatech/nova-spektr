@@ -59,11 +59,18 @@ export const ChainHoldingsList = ({ chainHoldings, currency, onSelect }: Props) 
     <div>
       <FootnoteText className="text-text-tertiary">{t('dashboard.totalBalance.holdingsByChain')}</FootnoteText>
 
-      <div className="mt-3 flex items-center gap-4">
+      <div className="mt-3 flex items-start gap-4">
         <div className="shrink-0">
           {chartData.length > 0 && (
             <PieChart width={180} height={180}>
-              <Pie data={chartData} innerRadius={55} outerRadius={85} dataKey="value" stroke="none">
+              <Pie
+                data={chartData}
+                innerRadius={55}
+                outerRadius={85}
+                dataKey="value"
+                stroke="none"
+                animationDuration={400}
+              >
                 {chartData.map((entry) => (
                   <Cell key={entry.name} fill={colors[entry.index % colors.length]} />
                 ))}
