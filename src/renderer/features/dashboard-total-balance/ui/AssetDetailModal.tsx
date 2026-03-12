@@ -3,9 +3,9 @@ import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 
 import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toShortAddress } from '@/shared/lib/utils';
+import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { AssetIcon } from '@/shared/ui-entities';
+import { AssetIcon, Identicon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
 
 import { Price } from './Price';
@@ -75,6 +75,7 @@ export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, on
             className="h-2 w-2 shrink-0 rounded-full"
             style={{ backgroundColor: FALLBACK_COLORS[item.colorIndex % FALLBACK_COLORS.length] }}
           />
+          <Identicon address={toAddress(item.address)} />
           <div className="min-w-0">
             <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
             <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
@@ -121,7 +122,7 @@ export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, on
   const showChart = chartData.length > 1;
 
   return (
-    <Modal isOpen size="md" onToggle={(open) => !open && onClose()}>
+    <Modal isOpen size="lg" onToggle={(open) => !open && onClose()}>
       <Modal.Title close>{t('dashboard.totalBalance.assetDetail.title', { symbol: holding.symbol })}</Modal.Title>
       <Modal.Content disableScroll>
         <div className="flex items-center gap-3 px-5 py-3">
@@ -147,8 +148,8 @@ export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, on
 
         {showChart && (
           <div className="flex justify-center px-5 py-3">
-            <PieChart width={140} height={140}>
-              <Pie data={chartData} innerRadius={42} outerRadius={62} dataKey="value" stroke="none">
+            <PieChart width={180} height={180}>
+              <Pie data={chartData} innerRadius={55} outerRadius={85} dataKey="value" stroke="none">
                 {chartData.map((entry) => (
                   <Cell key={entry.index} fill={FALLBACK_COLORS[entry.index % FALLBACK_COLORS.length]} />
                 ))}
@@ -158,7 +159,7 @@ export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, on
           </div>
         )}
 
-        <div className="overflow-y-auto px-5 pb-4" style={{ maxHeight: 300 }}>
+        <div className="overflow-y-auto px-5 pb-4" style={{ maxHeight: 440 }}>
           <Table columns={columns} data={rows} />
         </div>
       </Modal.Content>

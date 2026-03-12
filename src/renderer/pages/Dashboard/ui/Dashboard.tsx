@@ -44,7 +44,7 @@ export const Dashboard = () => {
           </div>
         </div>
       ) : (
-        <div className="flex w-full flex-col gap-4 overflow-y-auto p-4">
+        <div className="flex w-full flex-wrap items-stretch gap-4 overflow-y-auto p-4">
           <Slot id={dashboardWidgetsSlot} props={{ accountIds, allEntries }} />
         </div>
       )}

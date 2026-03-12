@@ -117,7 +117,7 @@ export const ChainDetailModal = ({ chainHolding, accountIds, currency, onClose }
   const showChart = chartData.length > 1;
 
   return (
-    <Modal isOpen size="md" onToggle={(open) => !open && onClose()}>
+    <Modal isOpen size="lg" onToggle={(open) => !open && onClose()}>
       <Modal.Title close>
         {t('dashboard.totalBalance.chainDetail.title', { chainName: chainHolding.chainName })}
       </Modal.Title>
@@ -141,8 +141,8 @@ export const ChainDetailModal = ({ chainHolding, accountIds, currency, onClose }
 
         {showChart && (
           <div className="flex justify-center px-5 py-3">
-            <PieChart width={140} height={140}>
-              <Pie data={chartData} innerRadius={42} outerRadius={62} dataKey="value" stroke="none">
+            <PieChart width={180} height={180}>
+              <Pie data={chartData} innerRadius={55} outerRadius={85} dataKey="value" stroke="none">
                 {chartData.map((entry) => (
                   <Cell key={entry.index} fill={getAssetColor(entry.row.priceId, entry.index)} />
                 ))}
@@ -152,7 +152,7 @@ export const ChainDetailModal = ({ chainHolding, accountIds, currency, onClose }
           </div>
         )}
 
-        <div className="overflow-y-auto px-5 pb-4" style={{ maxHeight: 300 }}>
+        <div className="overflow-y-auto px-5 pb-4" style={{ maxHeight: 440 }}>
           <Table columns={columns} data={rows} />
         </div>
       </Modal.Content>

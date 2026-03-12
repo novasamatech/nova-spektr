@@ -62,8 +62,8 @@ export const ChainHoldingsList = ({ chainHoldings, currency, onSelect }: Props) 
       <div className="mt-3 flex items-center gap-4">
         <div className="shrink-0">
           {chartData.length > 0 && (
-            <PieChart width={140} height={140}>
-              <Pie data={chartData} innerRadius={45} outerRadius={65} dataKey="value" stroke="none">
+            <PieChart width={180} height={180}>
+              <Pie data={chartData} innerRadius={55} outerRadius={85} dataKey="value" stroke="none">
                 {chartData.map((entry) => (
                   <Cell key={entry.name} fill={colors[entry.index % colors.length]} />
                 ))}

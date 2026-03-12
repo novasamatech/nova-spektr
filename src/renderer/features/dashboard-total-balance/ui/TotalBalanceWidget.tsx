@@ -22,7 +22,8 @@ type Props = {
   allEntries: EntryLike[];
 };
 
-const containerClass = 'max-w-[480px] rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
+const containerClass =
+  'flex w-[560px] flex-col rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
 const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold transition-colors';
 const activeToggleClass = 'bg-white text-text-primary shadow-sm';
@@ -81,15 +82,17 @@ export const TotalBalanceWidget = ({ accountIds, allEntries }: Props) => {
             </button>
           </div>
 
-          {viewMode === 'asset' ? (
-            <HoldingsList holdings={holdings} currency={currency} onSelect={(h) => setSelectedPriceId(h.priceId)} />
-          ) : (
-            <ChainHoldingsList
-              chainHoldings={chainHoldings}
-              currency={currency}
-              onSelect={(h) => setSelectedChainId(h.chainId)}
-            />
-          )}
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {viewMode === 'asset' ? (
+              <HoldingsList holdings={holdings} currency={currency} onSelect={(h) => setSelectedPriceId(h.priceId)} />
+            ) : (
+              <ChainHoldingsList
+                chainHoldings={chainHoldings}
+                currency={currency}
+                onSelect={(h) => setSelectedChainId(h.chainId)}
+              />
+            )}
+          </div>
         </>
       )}
 

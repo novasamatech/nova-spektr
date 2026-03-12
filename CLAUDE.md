@@ -126,6 +126,7 @@ The renderer follows Feature-Sliced Design methodology:
   - **Slots**: Page creates `createSlot<Props>({ name })`, renders `<Slot id={slot} props={...} />`. Features inject via `feature.inject(slot, { order, render: Component })`.
   - **Pipelines**: Data transformation chains (`createPipeline<Value>`). Features inject via `feature.inject(pipeline, (value) => transform(value))`.
 - **Resource Management** - Data fetching abstractions in `shared/resource/`
+- **Query Resources** - Standard data-fetching pattern using `createQueryResource` + `useResource` from `shared/query/`. Reference implementations: `domains/governance/tracks/resource.ts` and `hooks.ts`. Prefer this over hand-rolled Effector effects with manual cache stores.
 - **Feature Flags** - Dynamic feature toggling system
 - **Form Management** - Custom form utilities with validation
 
@@ -166,6 +167,8 @@ The renderer follows Feature-Sliced Design methodology:
   ```
 
 ### Code Style Requirements
+- **Import boundaries**: Features must import from domain barrel files (`@/domains/network`), never deep paths (`@/domains/network/price-history/resource`). The `boundaries/entry-point` lint rule enforces this.
+- **Inline type imports**: Use `import { type Foo } from '...'` (inline specifier), not `import type { Foo } from '...'` (top-level). Enforced by `import-x/consistent-type-specifier-style`.
 - Follow existing TypeScript and React patterns
 - Use Effector for state management (stores, events, effects)
 - Implement proper error boundaries and loading states
@@ -175,6 +178,7 @@ The renderer follows Feature-Sliced Design methodology:
 - Prioritize code correctness and clarity. Speed and efficiency are secondary priorities unless otherwise specified.
 - Do not write organizational or comments that summarize the code. Comments should only be written in order to explain "why" the code is written in some way in the case there is a reason that is tricky / non-obvious.
 - **Avoid `as` type casts** - Use typeguards with actual runtime checks instead. Prefer `satisfies` for type validation without casting. Type casts hide potential bugs; typeguards catch them.
+- **Branded types (`Address`, `AccountId`)**: `Address` (`@/shared/core`) and `AccountId` (`@/shared/polkadotjs-schemas`) are different branded string types. Use `toAddress(str)` from `@/shared/lib/utils` to convert plain strings to `Address` at call sites (e.g., for `<Identicon>`). Don't change data layer types just to satisfy a UI component's branded type.
 
 ### UI Animation Patterns
 - **Smooth fold/collapse animations**: Never use conditional DOM branches (`if (folded) return <A>; return <B>`) for animated transitions. Keep identical DOM structure in both states; only change CSS classes (e.g. `max-w-0 opacity-0` ↔ `max-w-[180px] opacity-100`). DOM swaps cause instant jumps that CSS transitions can't smooth over.
