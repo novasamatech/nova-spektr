@@ -2415,7 +2415,7 @@
   },
   "pureProxyRemove": {
     "warning": {
-      "inputHint": "Enter the sentence <i>“I understand that I will not be able to manage this wallet”</i> in the field above",
+      "inputHint": "Enter the sentence <i>\"I understand that I will not be able to manage this wallet\"</i> in the field above",
       "isCorrectProxyCheckbox": "I am certain that I am removing <strong>the correct delegated authority</strong> from this Pure Proxy",
       "isInaccessibleCheckbox": "I understand that once this delegated authority is removed then <strong>the pure proxy will become permanently inaccessible and cannot be restored</strong>",
       "isIrreversibleCheckbox": "I understand that this <strong>process is irreversible</strong> and cannot be undone",
