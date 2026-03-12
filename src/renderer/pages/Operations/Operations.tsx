@@ -4,7 +4,6 @@ import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { Box, Tabs } from '@/shared/ui-kit';
 import {
-  type TabFilter,
   ExportButton,
   Operations as OperationsList,
   OperationsFilter,
@@ -19,9 +18,7 @@ export const Operations = () => {
   const pendingCount = useUnit(operationsContextModel.$pendingOperationsCount);
   const hiddenCount = useUnit(operationsContextModel.$hiddenOperationsCount);
 
-  const handleTabChange = (value: string) => {
-    setTab(value as TabFilter);
-  };
+  const noop = () => {};
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
@@ -31,20 +28,26 @@ export const Operations = () => {
         </Box>
       </Header>
 
-      <div className="mx-auto flex h-full w-full max-w-[1084px] flex-col">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1084px] flex-1 flex-col">
         <div className="flex w-full items-center justify-between py-4">
-          <Tabs value={tab} onChange={handleTabChange}>
+          <Tabs value={tab} onChange={noop}>
             <Tabs.List>
-              <Tabs.Trigger value="pending">
-                {t('operations.tabs.pending')}
-                {pendingCount > 0 && <span className="ml-1 text-text-tertiary">{pendingCount}</span>}
-              </Tabs.Trigger>
-              <Tabs.Trigger value="history">{t('operations.tabs.history')}</Tabs.Trigger>
-              {hiddenCount > 0 && (
-                <Tabs.Trigger value="hidden">
-                  {t('operations.tabs.hidden')}
-                  <span className="ml-1 text-text-tertiary">{hiddenCount}</span>
+              <span className="contents" onClick={() => setTab('pending')}>
+                <Tabs.Trigger value="pending">
+                  {t('operations.tabs.pending')}
+                  {pendingCount > 0 && <span className="ml-1 text-text-tertiary">{pendingCount}</span>}
                 </Tabs.Trigger>
+              </span>
+              <span className="contents" onClick={() => setTab('history')}>
+                <Tabs.Trigger value="history">{t('operations.tabs.history')}</Tabs.Trigger>
+              </span>
+              {hiddenCount > 0 && (
+                <span className="contents" onClick={() => setTab('hidden')}>
+                  <Tabs.Trigger value="hidden">
+                    {t('operations.tabs.hidden')}
+                    <span className="ml-1 text-text-tertiary">{hiddenCount}</span>
+                  </Tabs.Trigger>
+                </span>
               )}
             </Tabs.List>
           </Tabs>

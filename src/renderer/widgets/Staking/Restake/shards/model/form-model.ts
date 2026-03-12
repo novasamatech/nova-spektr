@@ -242,7 +242,7 @@ const $txWrappers = combine(
     return transactionService.getTxWrappers({
       wallet,
       wallets: filteredWallets || [],
-      account: shards[0],
+      account: shards[0]!,
       signatories,
     });
   },
@@ -257,7 +257,7 @@ const $realAccounts = combine(
     if (shards.length === 0) return [];
     if (txWrappers.length === 0) return shards;
 
-    if (transactionService.hasMultisig([txWrappers[0]])) {
+    if (transactionService.hasMultisig([txWrappers[0]!])) {
       return [(txWrappers[0] as MultisigTxWrapper).multisigAccount];
     }
 
@@ -274,7 +274,7 @@ const $proxyWallet = combine(
   ({ isProxy, accounts, wallets }) => {
     if (!isProxy || accounts.length === 0) return undefined;
 
-    return walletUtils.getWalletById(wallets, accounts[0].walletId);
+    return walletUtils.getWalletById(wallets, accounts[0]!.walletId);
   },
   { skipVoid: false },
 );
@@ -332,7 +332,10 @@ const $isChainConnected = combine(
   ({ network, statuses }) => {
     if (!network) return false;
 
-    return networkUtils.isConnectedStatus(statuses[network.chain.chainId]);
+    const status = statuses[network.chain.chainId];
+    if (!status) return false;
+
+    return networkUtils.isConnectedStatus(status);
   },
 );
 
@@ -381,7 +384,7 @@ const $transactions = combine(
 
     return pureTxs.map((tx) =>
       transactionService.getWrappedTransaction({
-        api: apis[networkStore.chain.chainId],
+        api: apis[networkStore.chain.chainId]!,
         transaction: tx,
         txWrappers,
       }),
@@ -477,7 +480,7 @@ sample({
       if (!balance) return acc;
 
       return new BN(balance).lt(new BN(acc)) ? balance : acc;
-    }, unstakedBalances[0]);
+    }, '0');
 
     return unstakedBalances.length > 1 ? [ZERO_BALANCE, minUnstakedBalance] : minUnstakedBalance;
   },
@@ -573,7 +576,7 @@ sample({
   fn: ({ balances, network, proxyAccounts }) => {
     const balance = balanceUtils.getBalance(
       balances,
-      proxyAccounts[0].accountId,
+      proxyAccounts[0]!.accountId,
       network!.chain.chainId,
       network!.asset.assetId,
     );

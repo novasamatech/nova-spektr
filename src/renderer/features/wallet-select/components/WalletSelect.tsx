@@ -5,8 +5,9 @@ import { TEST_IDS } from '@/shared/constants';
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
 import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
-import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
+import { Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
 import { useWalletName } from '@/domains/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
@@ -19,7 +20,7 @@ export const walletGroupSlot = createSlot<{
 export const walletSelectActionsSlot = createSlot();
 export const walletIconSlot = createSlot<{ wallet: Wallet; size: number }>();
 
-export const WalletSelect = memo(() => {
+export const WalletSelect = memo(({ folded }: { folded: boolean }) => {
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
 
   useEffect(() => {
@@ -31,9 +32,9 @@ export const WalletSelect = memo(() => {
   }
 
   return (
-    <Popover align="start" sideOffset={2}>
+    <Popover align="start" side={folded ? 'right' : 'bottom'} sideOffset={2}>
       <Popover.Trigger>
-        <WalletSelectTrigger wallet={selectedWallet} />
+        <WalletSelectTrigger wallet={selectedWallet} folded={folded} />
       </Popover.Trigger>
       <Popover.Content>
         <WalletSelectDropdown />
@@ -43,28 +44,31 @@ export const WalletSelect = memo(() => {
 });
 
 const WalletSelectTrigger = memo(
-  ({ wallet, ...rest }: Pick<ComponentProps<'button'>, 'onClick'> & { wallet: Wallet }) => {
+  ({ wallet, folded, ...rest }: Pick<ComponentProps<'button'>, 'onClick'> & { wallet: Wallet; folded: boolean }) => {
     const walletName = useWalletName(wallet);
 
     return (
       <button
         type="button"
         data-testid={TEST_IDS.COMMON.WALLET_BUTTON}
-        className="w-full cursor-pointer rounded-md border border-container-border bg-left-navigation-menu-background shadow-card-shadow"
+        className={cnTw(
+          'w-full cursor-pointer rounded-md border py-3 transition-all duration-200',
+          folded
+            ? 'border-transparent px-1'
+            : 'border-container-border bg-left-navigation-menu-background px-3 shadow-card-shadow',
+        )}
         {...rest}
       >
-        <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={3}>
-          <div className="flex h-8 w-full min-w-0 items-center gap-x-2">
-            <div className="relative">
-              <Slot id={walletIconSlot} props={{ wallet, size: 32 }} />
-            </div>
-            <div className="flex min-w-0 flex-col">
-              <BodyText className="truncate text-text-primary">{walletName}</BodyText>
-              <WalletFiatBalance wallet={wallet} className="truncate" />
-            </div>
+        <div className="flex h-8 items-center gap-x-2">
+          <div className={cnTw('relative shrink-0', folded && 'pointer-events-none')}>
+            <Slot id={walletIconSlot} props={{ wallet, size: 32 }} />
+          </div>
+          <div className="flex min-w-0 flex-col overflow-hidden">
+            <BodyText className="whitespace-nowrap text-text-primary">{walletName}</BodyText>
+            <WalletFiatBalance wallet={wallet} className="whitespace-nowrap" />
           </div>
           <Icon name="down" size={16} className="ml-auto shrink-0" />
-        </Box>
+        </div>
       </button>
     );
   },
@@ -80,7 +84,7 @@ const WalletSelectDropdown = memo(() => {
   }, []);
 
   return (
-    <section className="flex h-full max-h-[87vh] min-h-0 w-[300px] flex-col overflow-hidden">
+    <section className="flex h-full max-h-[87vh] min-h-0 w-[325px] flex-col overflow-hidden">
       <header className="flex items-center justify-between border-b border-divider px-5 py-3">
         <SmallTitleText>{t('wallets.title')}</SmallTitleText>
         <div className="flex items-center gap-2">

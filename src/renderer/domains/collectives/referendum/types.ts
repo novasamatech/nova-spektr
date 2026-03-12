@@ -20,6 +20,7 @@ export type Deposit = {
 export type EvidenceProposal = {
   type: 'Evidence';
   accountId: AccountId;
+  rank?: number;
 };
 
 export type RfcProposal = {

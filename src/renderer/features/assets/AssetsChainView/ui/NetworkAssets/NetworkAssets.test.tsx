@@ -25,8 +25,8 @@ import { networkModel } from '@/entities/network';
 import { NetworkAssets } from './NetworkAssets';
 
 const testChain = polkadotAssetHubChain;
-const testAsset = testChain.assets[0];
-const testAsset2 = testChain.assets[1];
+const testAsset = testChain.assets[0]!;
+const testAsset2 = testChain.assets[1]!;
 
 vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -150,8 +150,8 @@ describe('features/AssetsChainView/ui/NetworkAssets', () => {
 
     const assetsNames = screen.getAllByTestId('AssetCard').map((element) => element.firstChild);
 
-    expect(assetsNames[0]).toHaveTextContent(testAsset2.name);
-    expect(assetsNames[1]).toHaveTextContent(testAsset.name);
+    expect(assetsNames[0]!).toHaveTextContent(testAsset2.name);
+    expect(assetsNames[1]!).toHaveTextContent(testAsset.name);
     expect((assetsNames[1]?.textContent || '').localeCompare(assetsNames[2]?.textContent || '')).toBeLessThanOrEqual(
       -1,
     );

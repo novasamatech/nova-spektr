@@ -200,7 +200,7 @@ const FeeSection = () => {
           api={api}
           asset={getNativeAsset(network.chain.assets)!}
           multiply={transactions.length}
-          transaction={transactions[0].wrappedTx}
+          transaction={transactions[0]?.wrappedTx}
           onFeeChange={formModel.events.totalFeeChanged}
           onFeeLoading={formModel.events.isFeeLoadingChanged}
         />

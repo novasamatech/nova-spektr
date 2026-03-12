@@ -1,11 +1,10 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import { Step, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
-import { type PathType, Paths } from '@/shared/routes';
-import { accountService } from '@/domains/network';
+import { accountService, multisigOperationService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { accountUtils } from '@/entities/wallet';
@@ -19,7 +18,7 @@ import {
 } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import {
   type DelegateConfirm,
   delegateConfirmModel as confirmModel,
@@ -36,7 +35,7 @@ const txsConfirmed = createEvent();
 
 const $step = restore(stepChanged, Step.NONE);
 
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $redirectAfterSubmitPath = createStore<string | null>(null).reset(flowStarted);
 
 // Steps
 
@@ -134,7 +133,7 @@ const formSubmitted = sample({
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),
-          locks: delegateData.locks[initiator.accountId],
+          locks: delegateData.locks[initiator.accountId] ?? BN_ZERO,
           coreTx,
           initiator,
           route,
@@ -309,10 +308,21 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: formModel.$hasAnyMultisig,
+  source: { hasMultisig: formModel.$hasAnyMultisig, coreTx: formModel.$coreTx, wrappedTx: formModel.$tx },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  filter: (isMultisig: boolean, results: any) => isMultisig && submitUtils.isSuccessResult(results[0].result),
-  fn: () => Paths.OPERATIONS,
+  filter: ({ hasMultisig }: { hasMultisig: boolean }, results: any) =>
+    hasMultisig && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ coreTx, wrappedTx }, results) => {
+    const { timepoint } = (results[0] as SuccessResult).params;
+
+    return multisigOperationService.generateMultisigOperationRelativeLink({
+      chainId: coreTx!.chainId,
+      callHash: wrappedTx!.args.callHash,
+      multisigAccountId: coreTx!.accountId,
+      blockCreated: timepoint.height,
+      indexCreated: timepoint.index,
+    });
+  },
   target: $redirectAfterSubmitPath,
 });
 

@@ -213,12 +213,13 @@ sample({
     const lightClientChains = networkUtils.getLightClientChains();
 
     return keys(chains).reduce<Record<ChainId, Connection>>((acc, chainId) => {
-      acc[chainId] = connectionsMap[chainId] || {
+      const connection = connectionsMap[chainId] ?? ({
         chainId,
         customNodes: [],
         connectionType: ConnectionType.AUTO_BALANCE,
-      };
-      acc[chainId].canUseLightClient = lightClientChains.includes(chainId);
+      } as unknown as Connection);
+      connection.canUseLightClient = lightClientChains.includes(chainId);
+      acc[chainId] = connection;
 
       return acc;
     }, {});
@@ -289,11 +290,11 @@ sample({
     metadata: $metadata,
   },
   filter: ({ connections, chains }, chainId) => {
-    return !chains[chainId] || !connections[chainId] || networkUtils.isEnabledConnection(connections[chainId]);
+    return !chains[chainId] || !connections[chainId] || networkUtils.isEnabledConnection(connections[chainId]!);
   },
   fn: (store, chainId) => {
-    const connection = store.connections[chainId];
-    const chain = store.chains[chainId];
+    const connection = store.connections[chainId]!;
+    const chain = store.chains[chainId]!;
 
     const providerType = networkUtils.isLightClientConnection(connection)
       ? ProviderType.LIGHT_CLIENT
@@ -404,8 +405,8 @@ sample({
     return nonNullable(apis[chainId]) && nonNullable(providers[chainId]);
   },
   fn: ({ apis, providers }, chainId) => ({
-    api: apis[chainId],
-    provider: providers[chainId],
+    api: apis[chainId]!,
+    provider: providers[chainId]!,
   }),
   target: disconnectConnectionFx,
 });
@@ -446,7 +447,7 @@ sample({
   clock: disconnectConnectionFx.doneData,
   source: $metadataSubscriptions,
   filter: (subscriptions, chainId) => nonNullable(subscriptions[chainId]),
-  fn: (subscriptions, chainId) => subscriptions[chainId],
+  fn: (subscriptions, chainId) => subscriptions[chainId]!,
   target: unsubscribeMetadataFx,
 });
 

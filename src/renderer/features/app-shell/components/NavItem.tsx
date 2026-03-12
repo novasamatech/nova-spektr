@@ -1,9 +1,12 @@
+import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { type IconNames, BodyText, Icon } from '@/shared/ui';
+import { Tooltip } from '@/shared/ui-kit';
+import { sidebarModel } from '../model/sidebar-model';
 
 export type Props = {
   order?: number;
@@ -15,41 +18,69 @@ export type Props = {
 
 export const NavItem = ({ title, link, icon, badge }: Props) => {
   const { t } = useI18n();
+  const folded = useUnit(sidebarModel.$folded);
+
+  const translatedTitle = t(title);
 
   return (
-    <NavLink
-      to={link}
-      className={({ isActive }) =>
-        cnTw(
-          'flex cursor-pointer items-center rounded-md px-3.5 py-2.5 outline-offset-reduced select-none hover:bg-tab-background',
-          isActive && 'bg-tab-background',
-        )
-      }
-    >
-      {({ isActive }) => (
-        <>
-          {typeof icon === 'string' ? (
-            <Icon
-              className={cnTw(isActive ? 'text-tab-icon-active' : 'text-tab-icon-inactive')}
-              name={icon as IconNames}
-              size={20}
-            />
-          ) : (
-            <span
-              className={cnTw(
-                'h-5 w-5 shrink-0 overflow-hidden',
-                isActive ? 'text-tab-icon-active' : 'text-tab-icon-inactive',
-              )}
-            >
-              {icon}
-            </span>
-          )}
-          <BodyText className={cnTw('ml-3', isActive ? 'text-text-primary' : 'text-text-secondary')}>
-            {t(title)}
-          </BodyText>
-          {badge}
-        </>
-      )}
-    </NavLink>
+    <Tooltip side="right" open={folded ? undefined : false}>
+      <Tooltip.Trigger>
+        <div>
+          <NavLink
+            to={link}
+            className={({ isActive }) =>
+              cnTw(
+                'flex cursor-pointer items-center rounded-md px-3.5 py-2.5 outline-offset-reduced transition-all duration-200 select-none hover:bg-tab-background',
+                isActive && 'bg-tab-background',
+              )
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <div className="relative shrink-0">
+                  {typeof icon === 'string' ? (
+                    <Icon
+                      className={cnTw(isActive ? 'text-tab-icon-active' : 'text-tab-icon-inactive')}
+                      name={icon as IconNames}
+                      size={20}
+                    />
+                  ) : (
+                    <span
+                      className={cnTw(
+                        'h-5 w-5 shrink-0 overflow-hidden',
+                        isActive ? 'text-tab-icon-active' : 'text-tab-icon-inactive',
+                      )}
+                    >
+                      {icon}
+                    </span>
+                  )}
+                  {folded && badge && (
+                    <span className="absolute -top-0.5 -right-1.5 h-1.5 w-1.5 rounded-full bg-icon-accent" />
+                  )}
+                </div>
+                <BodyText
+                  className={cnTw(
+                    'overflow-hidden whitespace-nowrap transition-all duration-200',
+                    folded ? 'ml-0 max-w-0 opacity-0' : 'ml-3 max-w-[180px] opacity-100',
+                    isActive ? 'text-text-primary' : 'text-text-secondary',
+                  )}
+                >
+                  {translatedTitle}
+                </BodyText>
+                <div
+                  className={cnTw(
+                    'ml-auto overflow-hidden transition-all duration-200',
+                    folded ? 'max-w-0 opacity-0' : 'max-w-[100px] opacity-100',
+                  )}
+                >
+                  {badge}
+                </div>
+              </>
+            )}
+          </NavLink>
+        </div>
+      </Tooltip.Trigger>
+      <Tooltip.Content>{translatedTitle}</Tooltip.Content>
+    </Tooltip>
   );
 };

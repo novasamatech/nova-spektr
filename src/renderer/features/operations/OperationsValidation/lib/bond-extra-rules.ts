@@ -38,7 +38,7 @@ export const BondExtraRules = {
         const value = config?.withFormatAmount ? formatAmount(form.amount, network.asset.precision) : form.amount;
         const amountBN = new BN(value);
 
-        return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index])));
+        return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index]!)));
       },
     }),
   },
@@ -86,7 +86,7 @@ export const BondExtraRules = {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
         const amountBN = new BN(value);
 
-        const bondBalance = Array.isArray(bondBalanceRange) ? bondBalanceRange[0] : bondBalanceRange;
+        const bondBalance = Array.isArray(bondBalanceRange) ? bondBalanceRange[0]! : bondBalanceRange;
 
         return amountBN.lte(new BN(bondBalance));
       },
@@ -103,7 +103,7 @@ export const BondExtraRules = {
         const amountBN = new BN(value);
 
         return form.shards.every((_: AnyAccount, index: number) => {
-          return amountBN.add(feeBN).lte(new BN(accountsBalances[index]));
+          return amountBN.add(feeBN).lte(new BN(accountsBalances[index]!));
         });
       },
     }),

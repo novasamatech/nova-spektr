@@ -14,8 +14,8 @@ function getExtendedChain(
   return chains.map((chain) => {
     return {
       ...chain,
-      connection: connections[chain.chainId],
-      connectionStatus: connectionStatuses[chain.chainId],
+      connection: connections[chain.chainId]!,
+      connectionStatus: connectionStatuses[chain.chainId]!,
     };
   }, []);
 }

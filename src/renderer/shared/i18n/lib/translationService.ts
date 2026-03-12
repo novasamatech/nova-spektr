@@ -2,7 +2,7 @@ import { type InitOptions } from 'i18next';
 
 import { LocaleFiles } from '../locales';
 
-import { LanguageOptions, Locales } from './constants';
+import { DEFAULT_LOCALE, LanguageOptions } from './constants';
 import { useLocaleStorage } from './localeStorage';
 import { type ITranslationService, type LanguageItem } from './types';
 
@@ -11,10 +11,10 @@ export const useTranslationService = (): ITranslationService => {
 
   const getConfig = (): InitOptions => ({
     resources: {
-      [Locales.en]: { translation: LocaleFiles.en },
+      [DEFAULT_LOCALE]: { translation: LocaleFiles.en },
     },
     lng: getLocale(),
-    fallbackLng: Locales.en,
+    fallbackLng: DEFAULT_LOCALE,
     debug: false,
     react: {
       transKeepBasicHtmlNodesFor: ['br', 'strong', 'i', 'u'],

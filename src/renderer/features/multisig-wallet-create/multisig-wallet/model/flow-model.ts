@@ -15,7 +15,16 @@ import {
   SigningType,
   WalletType,
 } from '@/shared/core';
-import { Step, TEST_ACCOUNTS, getNativeAsset, isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import {
+  Step,
+  TEST_ACCOUNTS,
+  getNativeAsset,
+  isStep,
+  nonNullable,
+  nullable,
+  toAccountId,
+  toAddress,
+} from '@/shared/lib/utils';
 import {
   createFeeCalculator,
   createMultisigDeposit,
@@ -77,7 +86,7 @@ sample({
 const $initiator = combine($initiators, formModel.$chain, (initiators, chain) => {
   if (nullable(initiators) || nullable(chain)) return null;
 
-  return initiators.find(i => accountService.isAccountAvailableOnChain(i, chain)) ?? initiators[0];
+  return initiators.find(i => accountService.isAccountAvailableOnChain(i, chain)) ?? initiators[0] ?? null;
 });
 
 sample({
@@ -119,7 +128,7 @@ sample({
   fn: ({ multisigChains, chainId }) => {
     const nextChainIndex = multisigChains.findIndex(chain => chain.chainId === chainId) + 1;
 
-    return multisigChains[nextChainIndex]?.chainId ?? multisigChains[0].chainId;
+    return multisigChains[nextChainIndex]?.chainId ?? multisigChains[0]!.chainId;
   },
   target: formModel.form.fields.chainId.change,
 });
@@ -156,7 +165,7 @@ const $allChainsSignatories = combine(
 sample({
   clock: $signatories,
   fn: signatories => {
-    return signatories.length >= 1 ? signatories[0] : null;
+    return signatories.length >= 1 ? signatories[0]! : null;
   },
   target: $signer,
 });
@@ -173,13 +182,13 @@ sample({
       addedSignatory.index === 0 &&
       nonNullable(initiators) &&
       initiators.length === 1 &&
-      accountService.isChainAccount(initiators[0])
+      accountService.isChainAccount(initiators[0]!)
     );
   },
   fn: ({ multisigChains, initiators }) => {
     const initiator = initiators!.at(0)! as ChainAccount;
 
-    return multisigChains.find(i => i.chainId === initiator.chainId)?.chainId ?? multisigChains[0].chainId;
+    return multisigChains.find(i => i.chainId === initiator.chainId)?.chainId ?? multisigChains[0]!.chainId;
   },
   target: formModel.form.fields.chainId.change,
 });
@@ -459,14 +468,12 @@ sample({
     return signatories
       .slice(1)
       .filter(signatory => !signatory.walletId && !contactsSet.has(toAccountId(signatory.address)))
-      .map(
-        ({ address, name }) =>
-          ({
-            address: address,
-            name: name,
-            accountId: toAccountId(address),
-          }) as Contact,
-      );
+      .map(({ address, name }) => ({
+        address: toAddress(address),
+        name: name,
+        accountId: toAccountId(address),
+        source: 'local' as const,
+      }));
   },
   target: contactModel.effects.createContactsFx,
 });

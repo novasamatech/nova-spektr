@@ -6,6 +6,7 @@ import { REACT_DEVELOPER_TOOLS, default as installExtension } from 'electron-dev
 import { runAppSingleInstance } from './factories/instance';
 import { setupLogger } from './factories/logs';
 import { processUrl, registerDeepLinkProtocol } from './factories/protocol';
+import { setupProxy } from './factories/proxy';
 import { setupAutoUpdater } from './factories/updater';
 import { createWindow } from './factories/window';
 import { ENVIRONMENT } from './shared/constants/environment';
@@ -14,6 +15,7 @@ import { PLATFORM } from './shared/constants/platform';
 runAppSingleInstance(async () => {
   setupLogger();
   setupAutoUpdater();
+  setupProxy();
   registerDeepLinkProtocol();
 
   app.commandLine.appendSwitch('force-color-profile', 'srgb');

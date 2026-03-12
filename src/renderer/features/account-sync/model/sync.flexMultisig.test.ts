@@ -7,9 +7,6 @@ import {
   flexMultisigAccount1,
   flexMultisigAccount2,
   flexMultisigAccount3,
-  flexMultisigWallet1,
-  flexMultisigWallet2,
-  flexMultisigWallet3,
   syncResult,
   userAccount,
 } from './__mocks__/sync.flexMultisig.mocks';
@@ -169,7 +166,7 @@ describe('syncFlexibleMultisigs', () => {
     expect(result.deleteWallets).toEqual([]);
   });
 
-  test('should delete all flexible multisig wallets when sync result accounts is empty', () => {
+  test('should delete flexible multisig wallets without pendingBlockNumber when sync result accounts is empty', () => {
     const emptySyncResult = {
       ...syncResult,
       accounts: [],
@@ -184,6 +181,6 @@ describe('syncFlexibleMultisigs', () => {
     } as unknown as SyncFlexibleMultisigParams);
 
     expect(result.createWallets).toEqual([]);
-    expect(result.deleteWallets).toEqual([flexMultisigWallet1.id, flexMultisigWallet2.id, flexMultisigWallet3.id]);
+    expect(result.deleteWallets).toEqual([68, 69, 70]);
   });
 });

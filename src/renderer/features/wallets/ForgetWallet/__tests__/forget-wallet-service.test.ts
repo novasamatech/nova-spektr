@@ -3,6 +3,10 @@ import { forgetService } from '../service';
 
 import { accounts } from './mocks';
 
+function mkNode(account: AnyAccount, children: AccountNode[] = []): AccountNode {
+  return { account, children };
+}
+
 describe('forgetService.findParentAccounts', () => {
   let testGraph: Map<AnyAccount, AccountNode>;
   beforeEach(() => {
@@ -11,11 +15,8 @@ describe('forgetService.findParentAccounts', () => {
 
   it('should return empty array when account has no parents', () => {
     // Create a simple graph with just one account (no parents)
-    const node: AccountNode = {
-      account: accounts.walletConnect,
-      children: [],
-    };
-    testGraph.set(accounts.walletConnect, node);
+    const n = mkNode(accounts.walletConnect);
+    testGraph.set(accounts.walletConnect, n);
 
     const result = forgetService.findParentAccounts(testGraph, accounts.walletConnect);
     expect(result).toEqual([]);
@@ -23,15 +24,8 @@ describe('forgetService.findParentAccounts', () => {
 
   it('should find parent when there is a single-child path to target account', () => {
     // Create: Parent -> Child (target)
-    const childNode: AccountNode = {
-      account: accounts.walletConnect,
-      children: [],
-    };
-
-    const parentNode: AccountNode = {
-      account: accounts.multisig1,
-      children: [childNode],
-    };
+    const childNode = mkNode(accounts.walletConnect);
+    const parentNode = mkNode(accounts.multisig1, [childNode]);
 
     testGraph.set(accounts.multisig1, parentNode);
 
@@ -41,20 +35,9 @@ describe('forgetService.findParentAccounts', () => {
 
   it('should not return parent when parent has multiple children', () => {
     // Create: Parent -> [Child1, Child2 (target)]
-    const targetChild: AccountNode = {
-      account: accounts.walletConnect,
-      children: [],
-    };
-
-    const otherChild: AccountNode = {
-      account: accounts.emptyWallet,
-      children: [],
-    };
-
-    const parentNode: AccountNode = {
-      account: accounts.multisig1,
-      children: [targetChild, otherChild],
-    };
+    const targetChild = mkNode(accounts.walletConnect);
+    const otherChild = mkNode(accounts.emptyWallet);
+    const parentNode = mkNode(accounts.multisig1, [targetChild, otherChild]);
 
     testGraph.set(accounts.multisig1, parentNode);
 
@@ -64,20 +47,9 @@ describe('forgetService.findParentAccounts', () => {
 
   it('should handle complex hierarchical structure', () => {
     // Create: GrandParent -> Parent -> Target
-    const targetNode: AccountNode = {
-      account: accounts.walletConnect,
-      children: [],
-    };
-
-    const parentNode: AccountNode = {
-      account: accounts.multisig1,
-      children: [targetNode],
-    };
-
-    const grandParentNode: AccountNode = {
-      account: accounts.proxy1,
-      children: [parentNode],
-    };
+    const targetNode = mkNode(accounts.walletConnect);
+    const parentNode = mkNode(accounts.multisig1, [targetNode]);
+    const grandParentNode = mkNode(accounts.proxy1, [parentNode]);
 
     testGraph.set(accounts.proxy1, grandParentNode);
 
@@ -90,25 +62,10 @@ describe('forgetService.findParentAccounts', () => {
 
   it('should clear results when encountering parent with multiple children in the path', () => {
     // Create: GrandParent -> Parent (with multiple children) -> Target
-    const targetNode: AccountNode = {
-      account: accounts.walletConnect,
-      children: [],
-    };
-
-    const siblingNode: AccountNode = {
-      account: accounts.emptyWallet,
-      children: [],
-    };
-
-    const parentNode: AccountNode = {
-      account: accounts.multisig1,
-      children: [targetNode, siblingNode],
-    };
-
-    const grandParentNode: AccountNode = {
-      account: accounts.proxy1,
-      children: [parentNode],
-    };
+    const targetNode = mkNode(accounts.walletConnect);
+    const siblingNode = mkNode(accounts.emptyWallet);
+    const parentNode = mkNode(accounts.multisig1, [targetNode, siblingNode]);
+    const grandParentNode = mkNode(accounts.proxy1, [parentNode]);
 
     testGraph.set(accounts.proxy1, grandParentNode);
 
@@ -119,26 +76,12 @@ describe('forgetService.findParentAccounts', () => {
 
   it('should handle multiple separate trees in the graph', () => {
     // Tree 1: Parent1 -> Target
-    const targetInTree1: AccountNode = {
-      account: accounts.walletConnect,
-      children: [],
-    };
-
-    const parentInTree1: AccountNode = {
-      account: accounts.multisig1,
-      children: [targetInTree1],
-    };
+    const targetInTree1 = mkNode(accounts.walletConnect);
+    const parentInTree1 = mkNode(accounts.multisig1, [targetInTree1]);
 
     // Tree 2: Parent2 -> OtherAccount (not the target)
-    const otherAccountNode: AccountNode = {
-      account: accounts.emptyWallet,
-      children: [],
-    };
-
-    const parentInTree2: AccountNode = {
-      account: accounts.multisig2,
-      children: [otherAccountNode],
-    };
+    const otherAccountNode = mkNode(accounts.emptyWallet);
+    const parentInTree2 = mkNode(accounts.multisig2, [otherAccountNode]);
 
     testGraph.set(accounts.multisig1, parentInTree1);
     testGraph.set(accounts.multisig2, parentInTree2);
@@ -151,10 +94,7 @@ describe('forgetService.findParentAccounts', () => {
   });
 
   it('should return empty array when target account is not found in graph', () => {
-    const someNode: AccountNode = {
-      account: accounts.multisig1,
-      children: [],
-    };
+    const someNode = mkNode(accounts.multisig1);
 
     testGraph.set(accounts.multisig1, someNode);
 
@@ -165,30 +105,11 @@ describe('forgetService.findParentAccounts', () => {
 
   it('should handle deep nesting with single children', () => {
     // Create: Root -> Level1 -> Level2 -> Level3 -> Target
-    const targetNode: AccountNode = {
-      account: accounts.walletConnect,
-      children: [],
-    };
-
-    const level3Node: AccountNode = {
-      account: accounts.multisig1,
-      children: [targetNode],
-    };
-
-    const level2Node: AccountNode = {
-      account: accounts.multisig2,
-      children: [level3Node],
-    };
-
-    const level1Node: AccountNode = {
-      account: accounts.proxy1,
-      children: [level2Node],
-    };
-
-    const rootNode: AccountNode = {
-      account: accounts.emptyWallet,
-      children: [level1Node],
-    };
+    const targetNode = mkNode(accounts.walletConnect);
+    const level3Node = mkNode(accounts.multisig1, [targetNode]);
+    const level2Node = mkNode(accounts.multisig2, [level3Node]);
+    const level1Node = mkNode(accounts.proxy1, [level2Node]);
+    const rootNode = mkNode(accounts.emptyWallet, [level1Node]);
 
     testGraph.set(accounts.emptyWallet, rootNode);
 
@@ -203,26 +124,12 @@ describe('forgetService.findParentAccounts', () => {
   });
 
   it('should use exit visitor to clean up result set correctly', () => {
-    const targetNode: AccountNode = {
-      account: accounts.walletConnect,
-      children: [],
-    };
-
-    const parentNode: AccountNode = {
-      account: accounts.multisig1,
-      children: [targetNode],
-    };
+    const targetNode = mkNode(accounts.walletConnect);
+    const parentNode = mkNode(accounts.multisig1, [targetNode]);
 
     // Add another tree that doesn't contain the target
-    const otherLeafNode: AccountNode = {
-      account: accounts.emptyWallet,
-      children: [],
-    };
-
-    const otherParentNode: AccountNode = {
-      account: accounts.multisig2,
-      children: [otherLeafNode],
-    };
+    const otherLeafNode = mkNode(accounts.emptyWallet);
+    const otherParentNode = mkNode(accounts.multisig2, [otherLeafNode]);
 
     testGraph.set(accounts.multisig1, parentNode);
     testGraph.set(accounts.multisig2, otherParentNode);
@@ -237,26 +144,12 @@ describe('forgetService.findParentAccounts', () => {
 
   it('should not include unrelated single-child parents', () => {
     // Tree 1: Contains our target
-    const targetNode: AccountNode = {
-      account: accounts.walletConnect,
-      children: [],
-    };
-
-    const relatedParentNode: AccountNode = {
-      account: accounts.multisig1,
-      children: [targetNode],
-    };
+    const targetNode = mkNode(accounts.walletConnect);
+    const relatedParentNode = mkNode(accounts.multisig1, [targetNode]);
 
     // Tree 2: Completely unrelated tree with single child
-    const unrelatedChildNode: AccountNode = {
-      account: accounts.emptyWallet,
-      children: [],
-    };
-
-    const unrelatedParentNode: AccountNode = {
-      account: accounts.multisig2,
-      children: [unrelatedChildNode],
-    };
+    const unrelatedChildNode = mkNode(accounts.emptyWallet);
+    const unrelatedParentNode = mkNode(accounts.multisig2, [unrelatedChildNode]);
 
     testGraph.set(accounts.multisig1, relatedParentNode);
     testGraph.set(accounts.multisig2, unrelatedParentNode);
@@ -270,31 +163,13 @@ describe('forgetService.findParentAccounts', () => {
 
   it('should handle complex hierarchy correctly', () => {
     // Create: GrandParent -> Parent -> Target
-    const targetNode: AccountNode = {
-      account: accounts.walletConnect,
-      children: [],
-    };
-
-    const parentNode: AccountNode = {
-      account: accounts.multisig1,
-      children: [targetNode],
-    };
-
-    const grandParentNode: AccountNode = {
-      account: accounts.proxy1,
-      children: [parentNode],
-    };
+    const targetNode = mkNode(accounts.walletConnect);
+    const parentNode = mkNode(accounts.multisig1, [targetNode]);
+    const grandParentNode = mkNode(accounts.proxy1, [parentNode]);
 
     // Add unrelated tree
-    const unrelatedNode: AccountNode = {
-      account: accounts.emptyWallet,
-      children: [],
-    };
-
-    const unrelatedParentNode: AccountNode = {
-      account: accounts.multisig2,
-      children: [unrelatedNode],
-    };
+    const unrelatedNode = mkNode(accounts.emptyWallet);
+    const unrelatedParentNode = mkNode(accounts.multisig2, [unrelatedNode]);
 
     testGraph.set(accounts.proxy1, grandParentNode);
     testGraph.set(accounts.multisig2, unrelatedParentNode);

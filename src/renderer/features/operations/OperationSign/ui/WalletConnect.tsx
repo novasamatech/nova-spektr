@@ -30,11 +30,11 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
 
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
-  const account = payload.signatory;
+  const account = payload?.signatory;
 
-  useGate(operationSignModel.SignerGate, account);
+  useGate(operationSignModel.SignerGate, account!);
 
-  if (!accountUtils.isWcAccount(account)) {
+  if (!account || !accountUtils.isWcAccount(account)) {
     throw new Error(`Account is not Wallet Connect account, got ${JSON.stringify(account, null, 2)}`);
   }
 
@@ -54,7 +54,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
 
       isVerified =
         transaction &&
-        transactionService.verifySignature(transaction.payload, signature as HexString, payload.signatory.accountId);
+        transactionService.verifySignature(transaction.payload, signature as HexString, payload!.signatory.accountId);
       balanceValidationError = validateBalance && (await validateBalance());
     }
 
@@ -71,10 +71,6 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
   const walletName = signerWallet?.type === WalletType.NOVA_WALLET ? 'Nova Wallet' : 'WalletConnect';
 
   const isErrorModalOpen = step === 'rejected' || step === 'failed';
-  const isUserRejected = error?.code === 4001;
-  const errorMessage = isUserRejected
-    ? t('operation.walletConnect.errors.userRejected')
-    : t('operation.walletConnect.errors.otherError');
 
   return (
     <div className="flex w-[440px] flex-col items-center gap-y-2.5 rounded-b-lg p-4">
@@ -124,8 +120,8 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
         <Modal.Content>
           <div className="flex w-full max-w-[240px] flex-col items-center justify-center px-1">
             <Animation variant="error" />
-            <SmallTitleText className="mb-4">{t('operation.walletConnect.errors.rejected')}</SmallTitleText>
-            <FootnoteText className="text-center text-text-secondary">{errorMessage}</FootnoteText>
+            <SmallTitleText className="mb-4">{error?.title}</SmallTitleText>
+            <FootnoteText className="text-center text-text-secondary">{error?.description}</FootnoteText>
           </div>
         </Modal.Content>
         <Modal.Footer>

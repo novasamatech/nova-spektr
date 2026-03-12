@@ -17,13 +17,13 @@ import {
 } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type PathType, Paths } from '@/shared/routes';
 import {
   createComplexTxStore,
   createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
+import { multisigOperationService } from '@/domains/network';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { accountSync } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -35,7 +35,7 @@ import { type BasketTransactionDraft, basketOperations } from '@/aggregates/bask
 import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import {
   type RemoveProxyConfirm,
   removeProxyConfirmModel as confirmModel,
@@ -64,7 +64,7 @@ const $step = restore(stepChanged, Step.NONE);
 
 const $removeProxyStore = createStore<RemoveProxyStore | null>(null).reset(flowFinished);
 
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $redirectAfterSubmitPath = createStore<string | null>(null).reset(flowStarted);
 
 const $chain = $removeProxyStore.map((store) => store?.chain ?? null);
 
@@ -279,11 +279,12 @@ sample({
   },
   fn: ({ chains, apis }, { proxy, proxied }) => {
     const chain = chains[proxy.chainId];
+    const api = chain ? apis[chain.chainId] : undefined;
 
-    if (!chain) return null;
+    if (!chain || !api) return null;
 
     return {
-      api: apis[chain.chainId],
+      api,
       chain,
       proxyAccount: proxy,
       proxiedAccount: proxied,
@@ -453,8 +454,8 @@ sample({
     );
   },
   fn: ({ chainProxies, proxied, proxy, chain }) => {
-    const proxyToRemove = chainProxies[chain!.chainId].find(
-      (currentProxy) =>
+    const proxyToRemove = chainProxies?.[chain!.chainId]?.find(
+      (currentProxy: { accountId: string; proxyType: string; proxiedAccountId: string }) =>
         proxy!.accountId === currentProxy.accountId &&
         proxy!.proxyType === currentProxy.proxyType &&
         proxy!.proxiedAccountId === proxied!.accountId,
@@ -513,9 +514,19 @@ sample({
 
 sample({
   clock: submitModel.done,
-  source: $isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
-  fn: () => Paths.OPERATIONS,
+  source: { isMultisig: $isMultisig, coreTx: $coreTx, wrappedTx: $tx },
+  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ coreTx, wrappedTx }, results) => {
+    const { timepoint } = (results[0] as SuccessResult).params;
+
+    return multisigOperationService.generateMultisigOperationRelativeLink({
+      chainId: coreTx!.chainId,
+      callHash: wrappedTx!.args.callHash,
+      multisigAccountId: coreTx!.accountId,
+      blockCreated: timepoint.height,
+      indexCreated: timepoint.index,
+    });
+  },
   target: $redirectAfterSubmitPath,
 });
 
@@ -523,7 +534,7 @@ sample({
   clock: submitModel.done,
   source: $removeProxyStore,
   filter: (removeProxyStore, results) =>
-    nonNullable(removeProxyStore) && submitUtils.isSuccessResult(results[0].result),
+    nonNullable(removeProxyStore) && submitUtils.isSuccessResult(results[0]!.result),
   target: flowFinished,
 });
 

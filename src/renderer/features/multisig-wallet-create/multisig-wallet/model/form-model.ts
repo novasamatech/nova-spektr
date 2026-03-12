@@ -55,7 +55,10 @@ const $isChainConnected = combine(
     statuses: networkModel.$connectionStatuses,
   },
   ({ chainId, statuses }) => {
-    return networkUtils.isConnectedStatus(statuses[chainId]);
+    const status = statuses[chainId];
+    if (!status) return false;
+
+    return networkUtils.isConnectedStatus(status);
   },
 );
 

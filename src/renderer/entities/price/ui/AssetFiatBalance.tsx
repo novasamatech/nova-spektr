@@ -35,8 +35,8 @@ export const AssetFiatBalance = memo(({ asset, amount, className }: Props) => {
 
   const amountBn = BigNumber.isBigNumber(amount) ? amount : new BigNumber(amount.toString());
 
-  const price =
-    currency && prices && asset.priceId && prices[asset.priceId] && prices[asset.priceId][currency.coingeckoId];
+  const assetPrices = prices?.[asset.priceId];
+  const price = currency && assetPrices && assetPrices[currency.coingeckoId];
 
   if (!price) {
     return <Skeleton width="56px" height="18px" />;

@@ -150,7 +150,7 @@ export const TransactionDetails = memo(({ wallets, chain, initiators, signatory,
         isOpen={isAccountsOpen}
         accounts={initiators}
         chainId={chain.chainId}
-        asset={chain.assets[0]!}
+        asset={chain.assets[0]!!}
         addressPrefix={chain.addressPrefix}
         onClose={toggleAccounts}
       />

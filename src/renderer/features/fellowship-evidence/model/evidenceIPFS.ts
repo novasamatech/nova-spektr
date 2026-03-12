@@ -26,7 +26,7 @@ const fetchIPFSContentFx = createEffect(async ({ hash }: IPFSParams) => {
   if (hash.startsWith('http://') || hash.startsWith('https://')) {
     const url = new URL(hash);
     const pathParts = url.pathname.split('/');
-    cid = pathParts[pathParts.length - 1];
+    cid = pathParts[pathParts.length - 1]!;
   }
 
   const evidence = evidenceService.getEvidenceFromCid(cid);

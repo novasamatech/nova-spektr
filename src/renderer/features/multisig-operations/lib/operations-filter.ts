@@ -6,6 +6,7 @@ import {
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type ProxyType,
+  type Wallet,
   TransactionType,
 } from '@/shared/core';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
@@ -29,9 +30,33 @@ export interface OperationsFilterContext {
   filters: OperationsFilterCriteria;
   tab: OperationsFilterTab;
   hiddenIds: string[];
-  multisigAccountsMap: Record<string, MultisigAccount | FlexibleMultisigAccount>;
-  walletNameByAccountId: Record<string, string>;
+  multisigAccounts: (MultisigAccount | FlexibleMultisigAccount)[];
+  multisigWallets: Wallet[];
   chains: Record<ChainId, Chain>;
+}
+
+export function findAccountForOperation(
+  operation: MultisigOperation,
+  multisigAccounts: (MultisigAccount | FlexibleMultisigAccount)[],
+): MultisigAccount | FlexibleMultisigAccount | undefined {
+  if (operation.proxiedAccountId) {
+    return multisigAccounts.find(
+      a =>
+        accountUtils.isFlexibleMultisigAccount(a) &&
+        a.accountId === operation.proxiedAccountId &&
+        a.multisigAccountId === operation.multisigAccountId,
+    );
+  }
+
+  return multisigAccounts.find(a => {
+    if (accountUtils.isMultisigAccount(a)) {
+      return a.accountId === operation.multisigAccountId;
+    }
+    if (accountUtils.isFlexibleMultisigAccount(a)) {
+      return a.multisigAccountId === operation.multisigAccountId;
+    }
+    return false;
+  });
 }
 
 export const getFilterableTxType = (operation: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
@@ -69,7 +94,7 @@ export const matchesTab = (operation: MultisigOperation, tab: OperationsFilterTa
 };
 
 export const matchesAccount = (operation: MultisigOperation, accountIds: string[]) =>
-  accountIds.length === 0 || accountIds.includes(operation.accountId);
+  accountIds.length === 0 || accountIds.includes(operation.multisigAccountId);
 
 export const matchesNetwork = (operation: MultisigOperation, networkIds: string[]) => {
   if (networkIds.length === 0) return true;
@@ -83,13 +108,13 @@ export const matchesTxType = (operation: MultisigOperation, typeIds: string[]) =
 export const matchesProxyType = (
   operation: MultisigOperation,
   proxyTypeIds: string[],
-  multisigAccountsMap: Record<string, MultisigAccount | FlexibleMultisigAccount>,
+  multisigAccounts: (MultisigAccount | FlexibleMultisigAccount)[],
 ) => {
   if (proxyTypeIds.length === 0) return true;
-  const multisigAccount = multisigAccountsMap[operation.accountId];
+  const account = findAccountForOperation(operation, multisigAccounts);
   let operationProxyType: ProxyType | null = null;
-  if (multisigAccount && accountUtils.isFlexibleMultisigAccount(multisigAccount)) {
-    operationProxyType = multisigAccount.proxyType;
+  if (account && accountUtils.isFlexibleMultisigAccount(account)) {
+    operationProxyType = account.proxyType;
   }
   return nonNullable(operationProxyType) && proxyTypeIds.includes(operationProxyType);
 };
@@ -116,17 +141,19 @@ export const matchesDateRange = (operation: MultisigOperation, dateRange: Operat
 export const matchesSearch = (
   operation: MultisigOperation,
   searchQuery: string | undefined,
-  walletNameByAccountId: Record<string, string>,
   chains: Record<ChainId, Chain>,
-  multisigAccountsMap: Record<string, MultisigAccount | FlexibleMultisigAccount>,
+  multisigAccounts: (MultisigAccount | FlexibleMultisigAccount)[],
+  multisigWallets: Wallet[],
 ) => {
   const query = searchQuery?.trim().toLowerCase();
   if (!query) return true;
-  const walletName = (walletNameByAccountId[operation.accountId] ?? '').toLowerCase();
-  const multisigAccount = multisigAccountsMap[operation.accountId];
-  const isFlexibleMultisigAccount = multisigAccount && accountUtils.isFlexibleMultisigAccount(multisigAccount);
-  const addressPrefix = isFlexibleMultisigAccount ? chains[operation.chainId]?.addressPrefix : undefined;
-  const accountAddress = toAddress(operation.accountId, { prefix: addressPrefix }).toLowerCase();
+
+  const account = findAccountForOperation(operation, multisigAccounts);
+  const wallet = account ? multisigWallets.find(w => w.id === account.walletId) : undefined;
+  const walletName = (wallet?.name ?? '').toLowerCase();
+  const isFlex = account && accountUtils.isFlexibleMultisigAccount(account);
+  const addressPrefix = isFlex ? chains[operation.chainId]?.addressPrefix : undefined;
+  const accountAddress = toAddress(operation.multisigAccountId, { prefix: addressPrefix }).toLowerCase();
 
   return (
     walletName.includes(query) || accountAddress.includes(query) || operation.callHash.toLowerCase().includes(query)
@@ -134,15 +161,15 @@ export const matchesSearch = (
 };
 
 export const filterOperation = (operation: MultisigOperation, context: OperationsFilterContext) => {
-  const { filters, tab, hiddenIds, multisigAccountsMap, walletNameByAccountId, chains } = context;
+  const { filters, tab, hiddenIds, multisigAccounts, multisigWallets, chains } = context;
 
   if (!matchesTab(operation, tab, hiddenIds)) return false;
   if (!matchesAccount(operation, filters.account)) return false;
   if (!matchesNetwork(operation, filters.network)) return false;
   if (!matchesTxType(operation, filters.type)) return false;
-  if (!matchesProxyType(operation, filters.proxyType, multisigAccountsMap)) return false;
+  if (!matchesProxyType(operation, filters.proxyType, multisigAccounts)) return false;
   if (!matchesDateRange(operation, filters.dateRange)) return false;
-  if (!matchesSearch(operation, filters.searchQuery, walletNameByAccountId, chains, multisigAccountsMap)) return false;
+  if (!matchesSearch(operation, filters.searchQuery, chains, multisigAccounts, multisigWallets)) return false;
 
   return true;
 };

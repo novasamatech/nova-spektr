@@ -61,25 +61,21 @@ const elk = new ELK({
   },
 });
 
-function createGraphElements(
-  graph: Map<AnyAccount, AccountNode>,
-  selectedAccountId: string,
-  t: TFunction<'translation'>,
-) {
+function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedNodeId: string, t: TFunction<'translation'>) {
   const nodes: Node<AccountNodeData>[] = [];
   const edges: Edge[] = [];
-  const processedNodes = new Set<string>();
+  const processedNodeIds = new Set<string>();
 
   function processNode(node: AccountNode) {
-    if (processedNodes.has(node.account.id)) return;
-    processedNodes.add(node.account.id);
+    if (processedNodeIds.has(node.account.id)) return;
+    processedNodeIds.add(node.account.id);
 
     nodes.push({
       id: node.account.id,
       type: 'accountNode',
       data: {
         node,
-        isSelected: node.account.id === selectedAccountId,
+        isSelected: node.account.id === selectedNodeId,
       },
       position: { x: 0, y: 0 },
       sourcePosition: Position.Left,
@@ -201,10 +197,14 @@ const AccountsStructureInner = () => {
   useEffect(
     () =>
       // eslint-disable-next-line effector/no-watch
-      accountsStructureModel.focusOnSelected.watch(
-        () => selectedAccount && fitView({ nodes: [{ id: selectedAccount.id }], maxZoom: 0.5, duration: 500 }),
-      ),
-    [fitView, selectedAccount],
+      accountsStructureModel.focusOnSelected.watch(() => {
+        if (!selectedAccount) return;
+        const matchingNode = nodes.find((n) => n.data.node.account.id === selectedAccount.id);
+        if (matchingNode) {
+          fitView({ nodes: [{ id: matchingNode.id }], maxZoom: 0.5, duration: 500 });
+        }
+      }),
+    [fitView, selectedAccount, nodes],
   );
 
   return (

@@ -177,7 +177,7 @@ const FeeSection = () => {
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
-          asset={network.chain.assets[0]}
+          asset={network.chain.assets[0]!!}
           threshold={(shards.value[0] as MultisigAccount).threshold || 1}
           onDepositChange={formModel.multisigDepositChanged}
         />
@@ -186,7 +186,7 @@ const FeeSection = () => {
       <FeeWithLabelWithDataLoading
         label={t('staking.networkFee', { count: shards.value.length || 1 })}
         api={api}
-        asset={network.chain.assets[0]}
+        asset={network.chain.assets[0]!!}
         transaction={transactions?.[0]?.wrappedTx}
         onFeeChange={formModel.feeChanged}
         onFeeLoading={formModel.isFeeLoadingChanged}
@@ -196,9 +196,9 @@ const FeeSection = () => {
         <FeeWithLabelWithDataLoading
           label={t('staking.networkFeeTotal')}
           api={api}
-          asset={network.chain.assets[0]}
+          asset={network.chain.assets[0]!!}
           multiply={transactions.length}
-          transaction={transactions[0].wrappedTx}
+          transaction={transactions[0]?.wrappedTx}
           onFeeChange={formModel.totalFeeChanged}
           onFeeLoading={formModel.isFeeLoadingChanged}
         />

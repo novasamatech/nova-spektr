@@ -90,8 +90,8 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     );
 
     for (const account of keysGroups) {
-      const chainId = accountUtils.isAccountWithShards(account) ? account[0].chainId : account.chainId;
-      chainsMap[chainId].push(account);
+      const chainId = accountUtils.isAccountWithShards(account) ? account[0]!.chainId : account.chainId;
+      chainsMap[chainId]!.push(account);
     }
 
     setChainElements(Object.entries(chainsMap) as [ChainId, (VaultChainAccount | VaultShardAccount[])[]][]);

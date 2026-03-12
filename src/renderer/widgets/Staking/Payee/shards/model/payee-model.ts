@@ -11,15 +11,14 @@ import {
   WrapperKind,
 } from '@/shared/core';
 import { getRelaychainAsset, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
-import { type PathType, Paths } from '@/shared/routes';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type PayeeConfirm, payeeConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { payeeUtils } from '../lib/payee-utils';
 import { type FeeData, type PayeeData, type WalletData, Step } from '../lib/types';
@@ -40,7 +39,7 @@ const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit
 
 const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
 const $pureTxs = createStore<Transaction[]>([]).reset(flowFinished);
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $redirectAfterSubmitPath = createStore<string | null>(null).reset(flowStarted);
 
 type FeeParams = {
   api: ApiPromise;
@@ -64,7 +63,7 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData ? apis[walletData.chain.chainId] : undefined;
+    return walletData ? (apis[walletData.chain.chainId] ?? null) : null;
   },
   { skipVoid: false },
 );
@@ -105,7 +104,7 @@ sample({
       chain: walletData!.chain,
       wallet: walletData!.wallet,
       wallets,
-      account: walletData!.shards[0],
+      account: walletData!.shards[0]!,
       signatories,
     });
   },
@@ -165,7 +164,7 @@ sample({
   filter: (api, transactions) => Boolean(api) && Boolean(transactions?.length),
   fn: (api, transactions) => ({
     api: api!,
-    transaction: transactions![0].wrappedTx,
+    transaction: transactions![0]!.wrappedTx,
   }),
   target: getTransactionFeeFx,
 });
@@ -250,8 +249,8 @@ sample({
           initiator: shard,
           signatory: shard,
           route: [shard],
-          tx: coreTxs[index],
-          coreTx: coreTxs[index],
+          tx: coreTxs[index]!,
+          coreTx: coreTxs[index]!,
         } satisfies PayeeConfirm;
       }),
       step: Step.CONFIRM,
@@ -281,7 +280,7 @@ sample({
       event: {
         signingPayloads: transactions!.map((tx, index) => ({
           chain: walletData!.chain,
-          account: wrapper ? wrapper.proxyAccount : payeeData!.shards[index],
+          account: wrapper ? wrapper.proxyAccount : payeeData!.shards[index]!,
           signatory: payeeData!.signatory,
           transaction: tx.wrappedTx,
         })),
@@ -309,7 +308,7 @@ sample({
     event: {
       ...signParams,
       chain: payeeFlowData.walletData!.chain,
-      account: payeeFlowData.payeeData!.shards[0],
+      account: payeeFlowData.payeeData!.shards[0]!,
       signatory: payeeFlowData.payeeData!.signatory,
       coreTxs: payeeFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: payeeFlowData.transactions!.map((tx) => tx.wrappedTx),
@@ -330,9 +329,19 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
-  fn: () => Paths.OPERATIONS,
+  source: { isMultisig: formModel.$isMultisig, coreTx: $pureTxs, wrappedTx: $transactions },
+  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ coreTx, wrappedTx }, results) => {
+    const { timepoint } = (results[0] as SuccessResult).params;
+
+    return multisigOperationService.generateMultisigOperationRelativeLink({
+      chainId: coreTx[0]!.chainId,
+      callHash: wrappedTx![0]!.wrappedTx.args.callHash,
+      multisigAccountId: coreTx[0]!.accountId,
+      blockCreated: timepoint.height,
+      indexCreated: timepoint.index,
+    });
+  },
   target: $redirectAfterSubmitPath,
 });
 

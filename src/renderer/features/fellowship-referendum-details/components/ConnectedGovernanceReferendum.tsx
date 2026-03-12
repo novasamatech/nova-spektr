@@ -45,7 +45,7 @@ export const ConnectedGovernanceReferendum = ({ referendum: fellowshipReferendum
 
   const { data: governanceReferendumConnection } = useConnectedReferendum(fellowshipReferendum.id);
 
-  const governanceApi = apis[governanceReferendumConnection?.chainId];
+  const governanceApi = governanceReferendumConnection ? apis[governanceReferendumConnection.chainId] : undefined;
 
   const { data: governanceReferendums, pending: isGovernanceReferendumsLoading } = useReferendums({
     api: governanceApi,
@@ -64,8 +64,8 @@ export const ConnectedGovernanceReferendum = ({ referendum: fellowshipReferendum
   const onViewClick = useCallback(() => {
     navigate(
       generatePath(Paths.GOVERNANCE_REFERENDUM, {
-        chainId: governanceReferendumConnection?.chainId,
-        referendumId: governanceReferendumConnection?.referendumId,
+        chainId: governanceReferendumConnection?.chainId ?? null,
+        referendumId: governanceReferendumConnection?.referendumId ?? null,
       }),
     );
   }, []);
@@ -80,8 +80,8 @@ export const ConnectedGovernanceReferendum = ({ referendum: fellowshipReferendum
 
   const chain = chains[governanceReferendumConnection.chainId];
   const connectedGovernanceReferendumSummaryText =
-    connectedGovernanceReferendumSummary?.[governanceReferendumConnection?.referendumId].summary;
-  const timelineApi = chain.additional?.timelineChain ? apis[chain.additional.timelineChain] : null;
+    connectedGovernanceReferendumSummary?.[governanceReferendumConnection?.referendumId]?.summary;
+  const timelineApi = chain?.additional?.timelineChain ? apis[chain.additional.timelineChain] : null;
 
   return (
     <Card>
@@ -94,12 +94,12 @@ export const ConnectedGovernanceReferendum = ({ referendum: fellowshipReferendum
 
         <Separator className="mt-4 mb-2" />
 
-        {connectedGovernanceReferendum ? (
+        {connectedGovernanceReferendum && chain ? (
           <GovernanceReferendumCard
             timelineApi={timelineApi!}
             chain={chain}
             governanceReferendum={connectedGovernanceReferendum}
-            api={governanceApi}
+            api={governanceApi!}
             onViewClick={onViewClick}
           />
         ) : (
@@ -147,8 +147,10 @@ export const GovernanceReferendumCard = memo(
     let endBlock: BlockHeight | null = null;
     let status: ReferendumStatus | null = null;
     if (governanceReferendumService.isOngoing(governanceReferendum)) {
-      track = tracks[governanceReferendum.track];
-      endBlock = governanceReferendumService.getReferendumEndTime(governanceReferendum, track, undecidingTimeout);
+      track = tracks[governanceReferendum.track] ?? null;
+      if (track) {
+        endBlock = governanceReferendumService.getReferendumEndTime(governanceReferendum, track, undecidingTimeout);
+      }
       status = governanceReferendumService.getReferendumStatus(governanceReferendum);
     }
 

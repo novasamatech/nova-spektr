@@ -6,16 +6,10 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { VotingButtonWithTooltip } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import {
-  type Evidence,
-  type OngoingReferendum,
-  referendumService,
-  trackService,
-  useTracks,
-} from '@/domains/collectives';
+import { type Evidence, type OngoingReferendum, referendumService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import { useFellowshipAccount } from '@/aggregates/fellowship-member';
-import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 import { Card } from '@/features/fellowship-referendum-details';
 import { useCanVoteForReferendum } from '../hooks/useCanVoteForReferendum';
 import { useMemberVoteInfo } from '../hooks/useMemberVoteInfo';
@@ -35,9 +29,7 @@ export const VotingButtons = memo(({ referendum, evidence, onClose }: Props) => 
   const { t } = useI18n();
 
   const chain = useFellowshipChain();
-  const api = useFellowshipApi();
 
-  const { data: tracks } = useTracks({ palletType: 'fellowship', api });
   const { data: proposerMember } = useProposer(referendum, evidence);
   const { data: vote } = useReferendumVote(referendum);
   const { data: account } = useFellowshipAccount();
@@ -57,16 +49,13 @@ export const VotingButtons = memo(({ referendum, evidence, onClose }: Props) => 
   const title = useMemo(() => {
     if (nullable(chain) || nullable(referendum) || !referendumService.isOngoing(referendum)) return '';
 
-    const isPromotion = evidence?.wish === 'Promotion' || trackService.isPromotionTrack(referendum.track);
-
     if (!proposerMember) return '';
 
-    const trackName = isPromotion ? 'Promotion' : 'Retention';
-
     if (referendum.proposal && referendumService.isEvidenceProposal(referendum.proposal)) {
-      return t('fellowship.tasks.titles.votingTitle.rank', {
-        rank: trackService.getProposalTrack(tracks, proposerMember, trackName),
-      });
+      const rank = referendumService.getRankForReferendum(referendum);
+      return rank != null
+        ? t('fellowship.tasks.titles.votingTitle.rank', { rank })
+        : t('fellowship.tasks.titles.votingTitle.rfcOrWhitelist');
     }
 
     if (referendum.proposal && referendumService.isSpendProposal(referendum.proposal)) {
@@ -74,7 +63,7 @@ export const VotingButtons = memo(({ referendum, evidence, onClose }: Props) => 
     }
 
     return t('fellowship.tasks.titles.votingTitle.rfcOrWhitelist');
-  }, [referendum, chain, tracks]);
+  }, [referendum, chain, proposerMember, t]);
 
   if (nullable(referendum) || nullable(userVotesImpact)) {
     return null;

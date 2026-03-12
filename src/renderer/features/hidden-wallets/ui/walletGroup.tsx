@@ -99,7 +99,7 @@ export const WalletGroup = (props: Props) => {
             // TODO incorrect connection between features, this data should be inserted other way, by slot on smth
             if (walletUtils.isFlexibleMultisig(wallet)) {
               const chainId = wallet.accounts.find(accountUtils.isFlexibleMultisigAccount)?.chainId;
-              chain = chainId ? chains[chainId] : null;
+              chain = chainId ? chains[chainId]! : null;
               label = t('wallets.flexibleMultisigFlexLabel');
             }
 
@@ -116,7 +116,7 @@ export const WalletGroup = (props: Props) => {
                     onClick={(e) => e.stopPropagation()}
                   />
                 }
-                description={<FiatBalance amount={balances[wallet.id].toString()} />}
+                description={<FiatBalance amount={balances[wallet.id]!.toString()} />}
                 chain={chain}
                 label={label}
                 onClick={() => handleWalletClick(wallet)}

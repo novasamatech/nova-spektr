@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, cloneElement, isValidElement, useCallback, useEffect, useState } from 'react';
+import { type PropsWithChildren, cloneElement, isValidElement, useCallback, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
@@ -12,7 +12,6 @@ import { evidencePost } from '../model/evidencePost';
 import { EvidencePostModal } from './EvidencePostModal';
 import { IPFSUploadModal } from './IPFSUploadModal';
 import { MarkdownPreviewModal } from './MarkdownPreviewModal';
-import { SubmitEvidenceFromScratch } from './SubmitEvidenceFromScratch';
 import { EvidenceWarningAlerts } from './alerts/EvidenceWarningAlerts';
 
 type Props = PropsWithChildren<{
@@ -22,25 +21,15 @@ type Props = PropsWithChildren<{
 export const SubmitEvidencePopover = ({ wish, children }: Props) => {
   const { t } = useI18n();
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [fromScratchOpen, setFromScratchOpen] = useState(false);
 
   const ipfsStep = useUnit(evidenceIPFS.$step);
   const submitModalOpen = useUnit(evidencePost.$submitModalOpen);
-  const fromScratchEvidence = useUnit(evidenceForm.$evidence);
   const ipfsEvidence = useUnit(evidenceIPFS.$evidence);
   const flowType = useUnit(evidenceForm.$flowType);
   const activeWish = useUnit(evidenceForm.$wish);
 
   const shouldRenderUpload = ipfsStep === 'upload' && activeWish === wish;
   const shouldRenderPreview = ipfsStep === 'preview' && activeWish === wish;
-
-  const handleFromScratch = useCallback(() => {
-    evidenceForm.setFlowType('fromScratch');
-    evidencePost.setActiveWish(wish);
-    evidencePost.setStep('form');
-    evidenceForm.flow.open({ wish });
-    setPopoverOpen(false);
-  }, [wish]);
 
   const handleUploadFromIPFS = useCallback(() => {
     evidenceIPFS.reset();
@@ -49,24 +38,6 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
     evidenceIPFS.startFlow();
     setPopoverOpen(false);
   }, [wish]);
-
-  const handleFromScratchClose = useCallback((open: boolean) => {
-    setFromScratchOpen(open);
-    if (!open) {
-      evidenceForm.setFlowType(null);
-      evidenceForm.reset();
-      evidencePost.setActiveWish(null);
-      evidencePost.setStep('closed');
-      evidenceForm.flow.close({ wish: null });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (nonNullable(fromScratchEvidence) && flowType === 'fromScratch' && fromScratchOpen) {
-      setFromScratchOpen(false);
-      evidencePost.setStep('submit');
-    }
-  }, [fromScratchEvidence, flowType, fromScratchOpen]);
 
   const handleIPFSUploadClose = useCallback((open: boolean) => {
     if (!open) {
@@ -112,13 +83,6 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
         <Popover.Trigger>{childWithIcon}</Popover.Trigger>
         <Popover.Content>
           <Box padding={[1, 1]} gap={1}>
-            <EvidenceWarningAlerts wish={wish} onConfirm={handleFromScratch}>
-              <div className="cursor-pointer rounded px-3 py-2 hover:bg-action-background-hover">
-                <FootnoteText className="text-text-secondary">
-                  {t('fellowship.salary.evidence.submitOptions.fromScratch')}
-                </FootnoteText>
-              </div>
-            </EvidenceWarningAlerts>
             <EvidenceWarningAlerts wish={wish} onConfirm={handleUploadFromIPFS}>
               <div className="cursor-pointer rounded px-3 py-2 hover:bg-action-background-hover">
                 <FootnoteText className="text-text-secondary">
@@ -129,8 +93,6 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
           </Box>
         </Popover.Content>
       </Popover>
-
-      <SubmitEvidenceFromScratch wish={wish} isOpen={fromScratchOpen} onToggle={handleFromScratchClose} />
 
       {shouldRenderUpload && <IPFSUploadModal isOpen={true} wish={wish} onToggle={handleIPFSUploadClose} />}
 

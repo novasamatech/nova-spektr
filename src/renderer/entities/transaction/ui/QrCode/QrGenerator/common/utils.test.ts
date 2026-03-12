@@ -7,8 +7,8 @@ import {
   createDynamicDerivationsSignPayload,
   createDynamicDerivationsSignWithProofPayload,
   createFrames,
-  createSignPayload,
   createSignWithProofPayload,
+  createTransactionPayload,
   encodeNumber,
 } from './utils';
 
@@ -24,7 +24,7 @@ describe('QrCode/QrGenerator/onChainUtils', () => {
   test('should encode a payload properly', () => {
     expect(
       u8aToHex(
-        createSignPayload(
+        createTransactionPayload(
           '5HbgaJEuVN5qGbkhgtuDQANivSWwHXWsC2erP1SQUXgciTVq',
           hexToU8a('0x12345678'),
           '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
@@ -112,7 +112,7 @@ describe('QrCode/QrGenerator/onChainUtils', () => {
   test('should encode a payload for EVM account properly', () => {
     expect(
       u8aToHex(
-        createSignPayload(
+        createTransactionPayload(
           '0x563db1de8239fd6fa0ad90859925fec29541989e',
           hexToU8a('0x12345678'),
           '0xf6ee56e9c5277df5b4ce6ae9983ee88f3cbed27d31beeb98f9f84f997a1ab0b9',
@@ -156,7 +156,7 @@ describe('QrCode/QrGenerator/onChainUtils', () => {
       createFrames(
         u8aConcat(
           SUBSTRATE_ID,
-          createSignPayload(
+          createTransactionPayload(
             '5HbgaJEuVN5qGbkhgtuDQANivSWwHXWsC2erP1SQUXgciTVq',
             hexToU8a('0x12345678'),
             '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',

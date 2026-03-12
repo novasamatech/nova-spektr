@@ -22,7 +22,7 @@ export const OperationsFilter = memo(() => {
   const isFiltersSelected = useUnit(operationsContextModel.$isFiltersSelected);
   const chains = useUnit(networkModel.$chains);
   const chainsList = useUnit(networkModel.$chainsList);
-  const multisigAccountsMap = useUnit(operationsContextModel.$multisigAccountsMap);
+  const multisigAccounts = useUnit(operationsContextModel.$multisigAccounts);
   const multisigWallets = useUnit(operationsContextModel.$multisigWallets);
 
   const resolvedWallets = useWalletsNames(multisigWallets);
@@ -31,8 +31,6 @@ export const OperationsFilter = memo(() => {
   const [networkSearchQuery, setNetworkSearchQuery] = useState('');
   const [typeSearchQuery, setTypeSearchQuery] = useState('');
   const [proxyTypeSearchQuery, setProxyTypeSearchQuery] = useState('');
-
-  const multisigAccounts = useMemo(() => Object.values(multisigAccountsMap), [multisigAccountsMap]);
 
   const TransactionOptions = getTransactionOptions(t);
   const NetworkOptions = chainsList.map(({ chainId, name }) => ({

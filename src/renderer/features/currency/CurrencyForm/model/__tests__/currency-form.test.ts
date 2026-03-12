@@ -47,6 +47,6 @@ describe('features/currency/model/currency-form', () => {
     const { fiatFlag, currency } = currencyFormModel.$currencyForm.fields;
 
     expect(scope.getState(fiatFlag.$value)).toEqual(true);
-    expect(scope.getState(currency.$value)).toEqual(config[1].id);
+    expect(scope.getState(currency.$value)).toEqual(config[1]!.id);
   });
 });

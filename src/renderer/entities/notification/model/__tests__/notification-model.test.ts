@@ -227,7 +227,7 @@ describe('entities/notification/model/notification-model', () => {
       // Try to add notification with same key
       const duplicateNotification: CreateNotificationParams[] = [
         {
-          ...newNotificationParams[0],
+          ...newNotificationParams[0]!,
           key: 'test-key-1', // Same key as existing
         },
       ];
@@ -596,7 +596,199 @@ describe('entities/notification/model/notification-model', () => {
       await allSettled(notificationModel.events.notificationEdited, { scope, params: editedNotification });
 
       const result = scope.getState(notificationModel.$notifications);
-      expect(result[0].title).toBe('Updated title');
+      expect(result[0]!.title).toBe('Updated title');
+    });
+  });
+
+  describe('toast batching by status', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    const makeOperationNotification = (
+      key: string,
+      status: 'info' | 'success' | 'error',
+      batchTitle: string,
+    ): CreateNotificationParams => ({
+      key,
+      type: NotificationType.MULTISIG_OPERATION,
+      status,
+      issuer: mockAccountId,
+      chainId: mockChainId,
+      title: `Operation ${key}`,
+      multisigAccountId: mockAccountId,
+      callHash: '0x00' as `0x${string}`,
+      callTimepoint: { height: 1, index: 0 },
+      batch: {
+        title: batchTitle,
+        link: { title: 'View', path: '/operations' },
+      },
+    });
+
+    const makeEventNotification = (
+      key: string,
+      status: 'success' | 'error',
+      batchTitle: string,
+    ): CreateNotificationParams => ({
+      key,
+      type: NotificationType.MULTISIG_EVENT,
+      status,
+      issuer: mockAccountId,
+      chainId: mockChainId,
+      title: `Event ${key}`,
+      multisigAccountId: mockAccountId,
+      callHash: '0x00' as `0x${string}`,
+      callTimepoint: { height: 1, index: 0 },
+      signerAccountId: mockAccountId2,
+      eventStatus: status === 'success' ? 'approve' : 'reject',
+      batch: {
+        title: batchTitle,
+        link: { title: 'View', path: '/operations' },
+      },
+    });
+
+    test('should group notifications by batch title into separate toasts', async () => {
+      vi.spyOn(storageService.notifications, 'createAll').mockResolvedValue([]);
+      vi.spyOn(storageService.notifications, 'readAll').mockResolvedValue([]);
+
+      const scope = await createScopeWithFilters([mockWallet], [1], ALL_EVENTS);
+
+      const mixedNotifications: CreateNotificationParams[] = [
+        makeOperationNotification('op-1', 'info', 'notifications.toast.batch.multisigOperationsAdded'),
+        makeOperationNotification('op-2', 'info', 'notifications.toast.batch.multisigOperationsAdded'),
+        makeOperationNotification('op-3', 'error', 'notifications.toast.batch.multisigOperationsRejected'),
+        makeOperationNotification('op-4', 'error', 'notifications.toast.batch.multisigOperationsRejected'),
+        makeOperationNotification('op-5', 'error', 'notifications.toast.batch.multisigOperationsRejected'),
+        makeOperationNotification('op-6', 'success', 'notifications.toast.batch.multisigOperationsApproved'),
+      ];
+
+      const promise = allSettled(notificationModel.events.notificationsAdded, {
+        scope,
+        params: mixedNotifications,
+      });
+      vi.advanceTimersByTime(1000);
+      await promise;
+
+      const toasts = scope.getState(notificationModel.$toasts);
+
+      expect(toasts).toHaveLength(3);
+
+      const addedToast = toasts.find((t) => t.title === 'notifications.toast.batch.multisigOperationsAdded');
+      const rejectedToast = toasts.find((t) => t.title === 'notifications.toast.batch.multisigOperationsRejected');
+      // Single notification keeps its original title, not the batch title
+      const approvedToast = toasts.find((t) => t.title === 'Operation op-6');
+
+      expect(addedToast).toEqual({
+        title: 'notifications.toast.batch.multisigOperationsAdded',
+        status: 'info',
+        link: { title: 'View', path: '/operations' },
+        count: 2,
+      });
+
+      expect(rejectedToast).toEqual({
+        title: 'notifications.toast.batch.multisigOperationsRejected',
+        status: 'error',
+        link: { title: 'View', path: '/operations' },
+        count: 3,
+      });
+
+      expect(approvedToast).toMatchObject({
+        title: 'Operation op-6',
+        status: 'success',
+      });
+      expect(approvedToast?.count).toBeUndefined();
+    });
+
+    test('should show single notification as-is without batching', async () => {
+      vi.spyOn(storageService.notifications, 'createAll').mockResolvedValue([]);
+      vi.spyOn(storageService.notifications, 'readAll').mockResolvedValue([]);
+
+      const scope = await createScopeWithFilters([mockWallet], [1], ALL_EVENTS);
+
+      const singleNotification: CreateNotificationParams[] = [
+        makeOperationNotification('op-1', 'info', 'notifications.toast.batch.multisigOperationsAdded'),
+      ];
+
+      const promise = allSettled(notificationModel.events.notificationsAdded, {
+        scope,
+        params: singleNotification,
+      });
+      vi.advanceTimersByTime(1000);
+      await promise;
+
+      const toasts = scope.getState(notificationModel.$toasts);
+
+      expect(toasts).toHaveLength(1);
+      expect(toasts[0]).toMatchObject({
+        title: 'Operation op-1',
+        status: 'info',
+      });
+      expect(toasts[0]?.count).toBeUndefined();
+    });
+
+    test('should keep different notification types in separate groups even with the same batch title', async () => {
+      vi.spyOn(storageService.notifications, 'createAll').mockResolvedValue([]);
+      vi.spyOn(storageService.notifications, 'readAll').mockResolvedValue([]);
+
+      const scope = await createScopeWithFilters([mockWallet], [1], ALL_EVENTS);
+
+      const notifications: CreateNotificationParams[] = [
+        makeOperationNotification('op-1', 'success', 'notifications.toast.batch.multisigOperationsApproved'),
+        makeEventNotification('ev-1', 'success', 'notifications.toast.batch.multisigOperationsApproved'),
+      ];
+
+      const promise = allSettled(notificationModel.events.notificationsAdded, {
+        scope,
+        params: notifications,
+      });
+      vi.advanceTimersByTime(1000);
+      await promise;
+
+      const toasts = scope.getState(notificationModel.$toasts);
+
+      // Each type is a separate toast since grouping key includes notification type
+      expect(toasts).toHaveLength(2);
+      expect(toasts[0]).toMatchObject({ title: 'Operation op-1', status: 'success' });
+      expect(toasts[1]).toMatchObject({ title: 'Event ev-1', status: 'success' });
+    });
+
+    test('should produce correct counts matching number of notifications per status', async () => {
+      vi.spyOn(storageService.notifications, 'createAll').mockResolvedValue([]);
+      vi.spyOn(storageService.notifications, 'readAll').mockResolvedValue([]);
+
+      const scope = await createScopeWithFilters([mockWallet], [1], ALL_EVENTS);
+
+      const notifications: CreateNotificationParams[] = [
+        makeOperationNotification('op-1', 'info', 'notifications.toast.batch.multisigOperationsAdded'),
+        makeOperationNotification('op-2', 'info', 'notifications.toast.batch.multisigOperationsAdded'),
+        makeOperationNotification('op-3', 'info', 'notifications.toast.batch.multisigOperationsAdded'),
+        makeOperationNotification('op-4', 'info', 'notifications.toast.batch.multisigOperationsAdded'),
+        makeOperationNotification('op-5', 'info', 'notifications.toast.batch.multisigOperationsAdded'),
+        makeOperationNotification('op-6', 'error', 'notifications.toast.batch.multisigOperationsRejected'),
+        makeOperationNotification('op-7', 'error', 'notifications.toast.batch.multisigOperationsRejected'),
+        makeOperationNotification('op-8', 'error', 'notifications.toast.batch.multisigOperationsRejected'),
+      ];
+
+      const promise = allSettled(notificationModel.events.notificationsAdded, {
+        scope,
+        params: notifications,
+      });
+      vi.advanceTimersByTime(1000);
+      await promise;
+
+      const toasts = scope.getState(notificationModel.$toasts);
+
+      expect(toasts).toHaveLength(2);
+
+      const addedToast = toasts.find((t) => t.title === 'notifications.toast.batch.multisigOperationsAdded');
+      const rejectedToast = toasts.find((t) => t.title === 'notifications.toast.batch.multisigOperationsRejected');
+
+      expect(addedToast?.count).toBe(5);
+      expect(rejectedToast?.count).toBe(3);
     });
   });
 

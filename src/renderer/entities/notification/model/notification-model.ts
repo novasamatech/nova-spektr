@@ -303,17 +303,18 @@ const batchedNotifications = createBuffer({
   timeframe: 1000,
 }).map((batches): ToastData[] => {
   const notifications = batches.flat();
-  const grouped = new Map<NotificationType, CreateNotificationParams[]>();
+  const grouped = new Map<string, CreateNotificationParams[]>();
 
   for (const notification of notifications) {
-    const existing = grouped.get(notification.type) ?? [];
-    grouped.set(notification.type, [...existing, notification]);
+    const key = notification.type + notification.batch.title;
+    const existing = grouped.get(key) ?? [];
+    grouped.set(key, [...existing, notification]);
   }
 
   const toasts: ToastData[] = [];
   for (const [, items] of grouped) {
     if (items.length > 1) {
-      const first = items[0];
+      const first = items[0]!;
       const batchParams = first.batch;
 
       toasts.push({
@@ -324,7 +325,7 @@ const batchedNotifications = createBuffer({
         count: items.length,
       });
     } else {
-      const item = items[0];
+      const item = items[0]!;
       toasts.push({ ...item });
     }
   }

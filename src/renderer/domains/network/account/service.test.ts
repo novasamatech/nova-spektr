@@ -369,10 +369,11 @@ describe('account service', () => {
     it('should return contact name if contact exists', () => {
       const contacts: Contact[] = [
         {
-          id: 1,
+          id: 'test-uuid-1',
           accountId,
           name: 'Contact Name',
           address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+          source: 'local',
         },
       ];
 
@@ -391,10 +392,11 @@ describe('account service', () => {
     it('should prioritize contact over identity', () => {
       const contacts: Contact[] = [
         {
-          id: 1,
+          id: 'test-uuid-1',
           accountId,
           name: 'Contact Name',
           address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+          source: 'local',
         },
       ];
 
@@ -505,10 +507,11 @@ describe('account service', () => {
       const accounts: AnyAccount[] = [walletAccount];
       const contacts: Contact[] = [
         {
-          id: 1,
+          id: 'test-uuid-1',
           accountId,
           name: 'Contact Name',
           address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+          source: 'local',
         },
       ];
 

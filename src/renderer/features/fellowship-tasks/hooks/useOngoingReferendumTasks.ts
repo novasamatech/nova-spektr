@@ -144,7 +144,7 @@ export const useOngoingReferendumTasks = () => {
             nonNullable(connectedGovernanceReferendum) && nonNullable(connectedGovernanceReferendum.end)
               ? {
                   ...referendum,
-                  ends: pjsSchema.blockHeight.parse(Math.min(referendum.ends, connectedGovernanceReferendum.end)),
+                  ends: pjsSchema.helpers.toBlockHeight(Math.min(referendum.ends, connectedGovernanceReferendum.end)),
                 }
               : referendum;
 

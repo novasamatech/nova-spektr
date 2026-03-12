@@ -113,7 +113,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
 
       react({
         plugins: isDevServer
-          ? [['@effector/swc-plugin', { hmr: 'es', addNames: true, addLoc: true, factories: ['@/shared/di'] }]]
+          ? [['@effector/swc-plugin', { hmr: 'es', addNames: true, addLoc: false, factories: ['@/shared/di'] }]]
           : [],
       }),
       svgr({

@@ -51,7 +51,7 @@ export const BondExtra = () => {
     <Modal isOpen={isModalOpen} size="md" onToggle={closeModal}>
       <Modal.Title close>
         <OperationTitle
-          title={t('staking.stakeMore.title', { asset: walletData.chain.assets[0].symbol })}
+          title={t('staking.stakeMore.title', { asset: walletData.chain.assets[0]!.symbol })}
           chainId={walletData.chain.chainId}
         />
       </Modal.Title>

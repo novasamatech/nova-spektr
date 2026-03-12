@@ -8,3 +8,4 @@ export {
 export { modalsSlot, navigationHeaderSlot } from './components/AppShell';
 export { Favicon } from './components/Favicon';
 export { faviconModel } from './model/favicon-model';
+export { sidebarModel } from './model/sidebar-model';

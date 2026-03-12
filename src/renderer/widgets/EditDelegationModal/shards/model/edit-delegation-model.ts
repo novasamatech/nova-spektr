@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
@@ -21,8 +21,7 @@ import {
   nullable,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { type PathType, Paths } from '@/shared/routes';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, multisigOperationService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -39,7 +38,7 @@ import {
 } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import {
   type EditDelegationConfirm,
   editDelegationConfirmModel as confirmModel,
@@ -73,7 +72,7 @@ const $isUnchanged = createStore(false);
 
 const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
 const $coreTxs = createStore<Transaction[]>([]).reset(flowFinished);
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $redirectAfterSubmitPath = createStore<string | null>(null).reset(flowStarted);
 
 const $activeDelegations = combine(
   { delegations: delegationAggregate.$activeDelegations, delegate: $target },
@@ -108,7 +107,7 @@ const $api = combine(
   ({ apis, walletData }) => {
     if (!walletData.chain) return null;
 
-    return apis[walletData.chain.chainId] || null;
+    return apis[walletData.chain.chainId] ?? null;
   },
 );
 
@@ -146,7 +145,7 @@ sample({
     return transactionService.getTxWrappers({
       wallet: walletData.wallet!,
       wallets,
-      account: walletData.wallet!.accounts[0],
+      account: walletData.wallet!.accounts[0]!,
       signatories,
     });
   },
@@ -211,21 +210,21 @@ sample({
 
     return accounts.map((shard) => {
       const conviction = delegateData!.isUnchanged
-        ? activeDelegations[shard.accountId].conviction
+        ? activeDelegations[shard.accountId]?.conviction
         : delegateData!.conviction;
       const amount = delegateData!.isUnchanged
-        ? activeDelegations[shard.accountId].balance.toString()
-        : walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision);
+        ? activeDelegations[shard.accountId]?.balance.toString()
+        : walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0]!.precision);
 
       return transactionBuilder.buildEditDelegation({
         chain: walletData.chain!,
         accountId: shard.accountId,
         balance: amount || '0',
         conviction: conviction || 'None',
-        previousConviction: activeDelegations[shard.accountId].conviction || 'None',
+        previousConviction: activeDelegations[shard.accountId]?.conviction || 'None',
         target: target.accountId,
         tracks,
-        undelegateTracks: activeTracks[target!.accountId]?.[shard.accountId].map(Number) || [],
+        undelegateTracks: activeTracks[target!.accountId]?.[shard.accountId]?.map(Number) || [],
       });
     });
   },
@@ -238,7 +237,7 @@ sample({
   filter: (api, transactions) => Boolean(api) && Boolean(transactions?.length),
   fn: (api, transactions) => ({
     api: api!,
-    transaction: transactions![0].wrappedTx,
+    transaction: transactions![0]!.wrappedTx,
   }),
   target: getTransactionFeeFx,
 });
@@ -375,6 +374,9 @@ sample({
           return null;
         }
 
+        const coreTx = coreTxs[index]!;
+        const transaction = transactions![index]!;
+
         return {
           chain: walletData.chain!,
           asset: asset!,
@@ -386,17 +388,20 @@ sample({
           ...delegateData!,
           signatory: delegateData!.signatory!,
           ...(isUnchanged && {
-            balance: getBalanceBn(activeDelegations[shard.accountId].balance.toString(), asset.precision).toString(),
-            conviction: activeDelegations[shard.accountId].conviction,
+            balance: getBalanceBn(
+              activeDelegations[shard.accountId]?.balance.toString() ?? '0',
+              asset.precision,
+            ).toString(),
+            conviction: activeDelegations[shard.accountId]?.conviction,
           }),
-          previousConviction: activeDelegations[shard.accountId].conviction,
+          previousConviction: activeDelegations[shard.accountId]?.conviction ?? 'None',
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
-          locks: delegateData!.locks[shard.accountId],
-          coreTx: coreTxs[index],
+          locks: delegateData!.locks[shard.accountId] ?? BN_ZERO,
+          coreTx,
           route: [shard],
-          tx: transactions![index].wrappedTx,
+          tx: transaction.wrappedTx,
           initiator: shard,
         } satisfies EditDelegationConfirm;
       })
@@ -434,7 +439,7 @@ sample({
         signingPayloads:
           transactions?.map((tx, index) => ({
             chain: walletData.chain!,
-            account: wrapper ? wrapper.proxyAccount : accounts[index],
+            account: wrapper ? wrapper.proxyAccount : accounts[index]!,
             signatory: delegateData!.signatory,
             transaction: tx.wrappedTx,
           })) || [],
@@ -457,14 +462,20 @@ sample({
     accounts: $accounts,
     step: $step,
   },
-  filter: ({ delegateData, walletData, transactions, step }) => {
-    return Boolean(delegateData) && Boolean(walletData) && Boolean(transactions) && isStep(step, Step.SIGN);
+  filter: ({ delegateData, walletData, transactions, accounts, step }) => {
+    return (
+      Boolean(delegateData) &&
+      Boolean(walletData) &&
+      Boolean(transactions) &&
+      accounts.length > 0 &&
+      isStep(step, Step.SIGN)
+    );
   },
   fn: (delegateFlowData, signParams) => ({
     event: {
       ...signParams,
       chain: delegateFlowData.walletData.chain!,
-      account: delegateFlowData.accounts[0],
+      account: delegateFlowData.accounts[0]!,
       signatory: delegateFlowData.delegateData!.signatory,
       coreTxs: delegateFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: delegateFlowData.transactions!.map((tx) => tx.wrappedTx),
@@ -530,9 +541,19 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: formModel.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
-  fn: () => Paths.OPERATIONS,
+  source: { isMultisig: formModel.$isMultisig, coreTx: $coreTxs, wrappedTx: $transactions },
+  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ coreTx, wrappedTx }, results) => {
+    const { timepoint } = (results[0] as SuccessResult).params;
+
+    return multisigOperationService.generateMultisigOperationRelativeLink({
+      chainId: coreTx[0]!.chainId,
+      callHash: wrappedTx![0]!.wrappedTx.args.callHash,
+      multisigAccountId: coreTx[0]!.accountId,
+      blockCreated: timepoint.height,
+      indexCreated: timepoint.index,
+    });
+  },
   target: $redirectAfterSubmitPath,
 });
 

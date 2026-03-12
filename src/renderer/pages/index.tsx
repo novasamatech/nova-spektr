@@ -12,6 +12,8 @@ import { Currency, Networks, Overview as Settings, ReferendumData } from './Sett
 
 // features with lower priority - can be loaded later
 
+const Dashboard = lazy(() => import('./Dashboard').then(({ Dashboard }) => ({ default: Dashboard })));
+
 const Notifications = lazy(() =>
   import('./Notifications/Notifications').then(({ Notifications }) => ({ default: Notifications })),
 );
@@ -55,7 +57,15 @@ export const ROUTES_CONFIG: RouteObject[] = [
       </ShellRouteGuard>
     ),
     children: [
-      { index: true, element: <Navigate to={Paths.ASSETS} replace /> },
+      { index: true, element: <Navigate to={Paths.DASHBOARD} replace /> },
+      {
+        path: Paths.DASHBOARD,
+        element: (
+          <Suspense fallback={<PageLoadingState />}>
+            <Dashboard />
+          </Suspense>
+        ),
+      },
       {
         path: Paths.ASSETS,
         element: <Assets />,
@@ -191,5 +201,5 @@ export const ROUTES_CONFIG: RouteObject[] = [
       },
     ],
   },
-  { path: '*', element: <Navigate to={Paths.ASSETS} replace /> },
+  { path: '*', element: <Navigate to={Paths.DASHBOARD} replace /> },
 ];

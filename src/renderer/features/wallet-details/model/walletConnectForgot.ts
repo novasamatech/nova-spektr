@@ -44,7 +44,8 @@ sample({
 
 sample({
   clock: forget,
-  fn: wallet => wallet.accounts[0]?.walletId,
+  filter: wallet => wallet.accounts.length > 0,
+  fn: wallet => wallet.accounts[0]!.walletId,
   target: walletModel.events.removeWallet,
 });
 

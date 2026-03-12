@@ -22,7 +22,7 @@ const $list = combine(
 
     const accountIds = walletAccounts.map((a) => a.accountId);
     return operations.filter(
-      (tx) => accountIds.includes(tx.accountId) && tx.chainId in chains && tx.status === 'pending',
+      (tx) => accountIds.includes(tx.multisigAccountId) && tx.chainId in chains && tx.status === 'pending',
     );
   },
 );

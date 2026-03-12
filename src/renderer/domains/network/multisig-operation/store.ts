@@ -5,7 +5,7 @@ import { uniqBy } from 'lodash';
 import { and, once, readonly } from 'patronum';
 
 import { type Done, persist } from '@/shared/api/storage';
-import { type Chain, type ChainId } from '@/shared/core';
+import { type CallData, type Chain, type ChainId, type DecodedTransaction, type HexString } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { entries, groupBy, keys, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -40,12 +40,35 @@ const $subscribedApis = createStore<Record<ChainId, ApiPromise>>({});
 const $chainIdsWithMultisigSupport = createStore<ChainId[]>([]).reset(unsubscribeFromAccounts);
 const $initializedChainIds = createStore<ChainId[]>([]).reset(unsubscribeFromAccounts);
 
-const $onChainOperations = $onChainOperationsByCallhash.map(state =>
-  Object.values(state)
-    .flatMap(chainOperations =>
-      Object.values(chainOperations).flatMap(accountOperations => Object.values(accountOperations)),
-    )
-    .filter(nonNullable),
+// Separate store for user-added callData (not mixed with on-chain data)
+type UserCallDataEntry = {
+  callData: CallData;
+  transaction: DecodedTransaction;
+};
+type UserCallDataState = Record<ChainId, Record<AccountId, Record<HexString, UserCallDataEntry>>>;
+const $userAddedCallData = createStore<UserCallDataState>({});
+
+const $onChainOperations = combine(
+  { operations: $onChainOperationsByCallhash, userCallData: $userAddedCallData },
+  ({ operations, userCallData }) =>
+    Object.values(operations)
+      .flatMap(chainOperations =>
+        Object.values(chainOperations).flatMap(accountOperations => Object.values(accountOperations)),
+      )
+      .filter(nonNullable)
+      .map(op => {
+        const userData = userCallData[op.chainId]?.[op.multisigAccountId]?.[op.callHash];
+        if (userData) {
+          return {
+            ...op,
+            callData: userData.callData,
+            transaction: userData.transaction,
+            method: userData.transaction.method,
+            section: userData.transaction.section,
+          };
+        }
+        return op;
+      }),
 );
 
 const $initialOnChainFetched = combine(
@@ -72,7 +95,13 @@ sample({
       const chain = chains[el.api.genesisHash.toHex()];
       if (!chain) return [];
 
-      return [{ api: el.api, hashes: el.hashes, chain }];
+      return [
+        {
+          api: el.api,
+          hashes: el.hashes,
+          chain,
+        },
+      ];
     });
   },
   target: series(subscribeOnchainResource.subscribe, { parallel: true }),
@@ -190,14 +219,19 @@ sample({
       const chain = chains[chainId];
       if (!chain) return [];
 
-      return [{ api, chain, accountIds }];
+      return [
+        {
+          api,
+          chain,
+          accountIds,
+        },
+      ];
     }),
   target: series(initialOnChainFetch.fetch, { parallel: true }),
 });
 
 sample({
   clock: subscribeToAccounts,
-  fn: ({ apis, accountIds, chains }) => ({ apis, chains, accountIds }),
   target: fetchOffchainResource.fetch,
 });
 
@@ -284,6 +318,7 @@ sample({
     $onChainOperationsByCallhash.reinit!,
     $completionEvents.reinit!,
     $removedFromChainStorageOperations.reinit!,
+    $userAddedCallData.reinit!,
   ],
 });
 
@@ -327,6 +362,30 @@ const $populated = restore(
 );
 
 persist({ store: $cachedOperations, key: 'multisig-operations', done: cachedOperationsLoaded });
+
+// Clear stale cached operations that lack required fields (old format before multisigAccountId was added)
+sample({
+  clock: cachedOperationsLoaded,
+  filter: ({ value }) => Array.isArray(value) && value.some(op => !op.multisigAccountId),
+  fn: () => [],
+  target: $cachedOperations,
+});
+
+const updateCallData = createEvent<{
+  chainId: ChainId;
+  multisigAccountId: AccountId;
+  callHash: HexString;
+  callData: CallData;
+  transaction: DecodedTransaction;
+}>();
+
+$userAddedCallData.on(updateCallData, (state, { chainId, multisigAccountId, callHash, callData, transaction }) =>
+  produce(state, draft => {
+    if (!draft[chainId]) draft[chainId] = {};
+    if (!draft[chainId][multisigAccountId]) draft[chainId][multisigAccountId] = {};
+    draft[chainId][multisigAccountId][callHash] = { callData, transaction };
+  }),
+);
 
 const $liveOperations = combine(
   {
@@ -398,8 +457,8 @@ sample({
 // Cleanup operations when accounts are deleted
 const deleteAccountIds = accounts.deleteAccounts.doneData.map(deleted => deleted.map(a => a.accountId));
 
-$cachedOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.accountId)));
-$offChainOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.accountId)));
+$cachedOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.multisigAccountId)));
+$offChainOperations.on(deleteAccountIds, (ops, ids) => ops.filter(op => !ids.includes(op.multisigAccountId)));
 
 $onChainOperationsByCallhash.on(deleteAccountIds, (state, ids) =>
   produce(state, draft => {
@@ -435,6 +494,7 @@ export const multisigOperation = {
   subscribeToAccounts,
   unsubscribeFromAccounts,
   refetchOffchainOperations,
+  updateCallData,
 
   requestOffchainOperations: fetchOffchainResource.start,
   initialOnChainFetch: initialOnChainFetch.start,
