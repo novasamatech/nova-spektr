@@ -37,7 +37,7 @@ export const HoldingsList = ({ holdings, currency, onSelect }: Props) => {
           <AllocationChart holdings={holdings} colors={colors} />
         </div>
 
-        <div className="min-w-0 flex-1 overflow-y-auto" style={{ maxHeight: 180 }}>
+        <div className="min-w-0 flex-1 overflow-y-auto pr-2" style={{ maxHeight: 300 }}>
           <div className="flex flex-col gap-2">
             {holdings.map((holding, index) => (
               <HoldingRow

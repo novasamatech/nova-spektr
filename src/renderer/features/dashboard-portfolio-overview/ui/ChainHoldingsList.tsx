@@ -80,7 +80,7 @@ export const ChainHoldingsList = ({ chainHoldings, currency, onSelect }: Props) 
           )}
         </div>
 
-        <div className="min-w-0 flex-1 overflow-y-auto" style={{ maxHeight: 180 }}>
+        <div className="min-w-0 flex-1 overflow-y-auto pr-2" style={{ maxHeight: 300 }}>
           <div className="flex flex-col gap-2">
             {chainHoldings.map((holding, index) => (
               <ChainHoldingRow
