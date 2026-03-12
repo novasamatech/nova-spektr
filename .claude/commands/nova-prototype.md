@@ -239,7 +239,10 @@ Available icon names by category:
 <RadioGroup value={val} onChange={setVal}>
   <RadioGroup.Option value="a">Option A</RadioGroup.Option>
 </RadioGroup>
-<Tooltip content="Tooltip text"><Button>Hover me</Button></Tooltip>
+<Tooltip>
+  <Tooltip.Trigger><Button>Hover me</Button></Tooltip.Trigger>
+  <Tooltip.Content>Tooltip text</Tooltip.Content>
+</Tooltip>
 <Popover>
   <Popover.Trigger><Button>Open</Button></Popover.Trigger>
   <Popover.Content>Popover body</Popover.Content>
@@ -247,7 +250,7 @@ Available icon names by category:
 <ScrollArea>Scrollable content (no className — use wrapper div)</ScrollArea>
 <Skeleton className="h-4 w-20" />
 <Label label="Field name" variant="default" | "top"><Input /></Label>
-<Copy text="text to copy" />
+<Copy value="text to copy"><button type="button">Click to copy</button></Copy>  // value prop (NOT text), requires ReactElement child
 <Combobox value={v} options={[{id:'1', element:<span>Opt</span>, value:'1'}]} onChange={setV} placeholder="Search..." />
 <Timeline steps={[{ title: 'Step 1', status: 'done' }]} />
 <StepIndicator steps={[{ id: '1', label: 'Step 1' }]} activeStep="1" />
@@ -294,13 +297,13 @@ Available `WalletType` enum values:
 - `WalletType.SUBWALLET_EXTENSION` (`'wallet_subwallet_ext'`)
 
 #### Wallet icon with badge overlay (for wallet-created / proxy notifications)
+Use `WalletIconWithBadge` from `_shared/`:
 ```tsx
-<div className="relative shrink-0">
-  <WalletIcon type={WalletType.MULTISIG} size={20} />
-  <div className="absolute top-[13px] -right-px h-2 w-2 rounded-full border border-white bg-icon-positive" />
-</div>
+import { WalletIconWithBadge } from './_shared';
+
+<WalletIconWithBadge type={WalletType.MULTISIG} badgeColor="bg-icon-positive" />  // created/added
+<WalletIconWithBadge type={WalletType.PROXIED} badgeColor="bg-icon-negative" />   // removed
 ```
-Badge colors: `bg-icon-positive` (created/added), `bg-icon-negative` (removed).
 
 #### Inline wallet icon in description text
 ```tsx
@@ -310,22 +313,21 @@ Badge colors: `bg-icon-positive` (created/added), `bg-icon-negative` (removed).
 ```
 
 ### ChainIcon (with mock Chain objects)
-`ChainIcon` requires a `Chain` object (not a string ID). For prototypes, create mock chains:
+`ChainIcon` requires a `Chain` object (not a string ID). Use mock chains from `_shared/`:
 ```tsx
-import { type Chain } from '@/shared/core';
+import { MOCK_CHAINS, getChain, mockChain } from './_shared';
 
-const CHAIN_ICON_BASE = 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains';
+// Pre-built chains:
+MOCK_CHAINS.polkadot    // Polkadot
+MOCK_CHAINS.kusama      // Kusama
+MOCK_CHAINS.polkadotAssetHub  // Polkadot Asset Hub
+MOCK_CHAINS.westend     // Westend
 
-const mockChain = (name: string, iconName: string, chainId: string): Chain =>
-  ({
-    chainId,
-    name,
-    specName: name.toLowerCase().replace(/ /g, '-'),
-    icon: `${CHAIN_ICON_BASE}/${iconName}.svg`,
-    addressPrefix: 0,
-    nodes: [],
-    assets: [],
-  }) as unknown as Chain;
+// Lookup by name:
+getChain('Polkadot')    // returns MOCK_CHAINS.polkadot
+
+// Custom chain (for chains not in MOCK_CHAINS):
+mockChain('Acala', 'Acala', '0x...')
 ```
 
 **Known icon filenames** (case-sensitive, verified):
@@ -343,17 +345,17 @@ const mockChain = (name: string, iconName: string, chainId: string): Chain =>
 
 Usage:
 ```tsx
-<ChainIcon chain={mockChain('Polkadot', 'Polkadot', '0x91b1...')} size={16} />
+<ChainIcon chain={MOCK_CHAINS.polkadot} size={16} />
 ```
 
-#### Inline chain title (ChainIcon + name, matches real `<ChainTitle>`)
+#### Inline chain title (ChainIcon + name)
+Use `InlineChainTitle` from `_shared/` (matches real `<ChainTitle>`):
 ```tsx
-const InlineChainTitle = ({ chain, fontClass }: { chain: Chain; fontClass?: string }) => (
-  <span className="mx-1 inline-flex items-center gap-x-1">
-    <ChainIcon chain={chain} size={16} />
-    <span className={fontClass ?? 'text-text-secondary'}>{chain.name}</span>
-  </span>
-);
+import { InlineChainTitle } from './_shared';
+
+<InlineChainTitle chainName="Polkadot" />                    // lookup by name
+<InlineChainTitle chain={MOCK_CHAINS.polkadot} />            // pass chain object
+<InlineChainTitle chainName="Kusama" fontClass="text-text-primary" />  // custom font
 ```
 
 ### Account (renders identicon + name + address)
@@ -418,9 +420,11 @@ The real app renders wallet/address/chain references inline using `<Trans>` comp
 
 ### Chain reference (ChainIcon + name inline)
 ```tsx
-<InlineChainTitle chain={chain} fontClass="text-text-primary" />
+import { InlineChainTitle } from './_shared';
+
+<InlineChainTitle chainName="Polkadot" />                          // secondary context (default)
+<InlineChainTitle chainName="Kusama" fontClass="text-text-primary" />  // when chain is the main subject
 ```
-Use `fontClass="text-text-secondary"` for secondary context, `"text-text-primary"` when chain is the main subject.
 
 ---
 
@@ -510,12 +514,68 @@ Use `parameters: { layout: 'centered' }` in story meta.
 
 ### Detail Section (key-value pairs)
 ```tsx
-<div className="flex flex-col gap-1.5">
-  <div className="flex justify-between">
-    <HelpText className="text-text-tertiary">Label</HelpText>
-    <FootnoteText className="text-text-primary">Value</FootnoteText>
-  </div>
+<div className="flex flex-col gap-y-2">
+  <DetailRow label="Label" className="text-text-secondary">
+    <FootnoteText className="text-text-secondary">Value</FootnoteText>
+  </DetailRow>
 </div>
+```
+
+### Shared Prototype Components (`_shared/`)
+
+Reusable building blocks live in `src/renderer/stories/prototypes/_shared/`. Import from `./_shared` in your stories:
+
+```tsx
+import {
+  AccountIdenticon,    // Identicon + WalletIcon badge overlay
+  CopyableIconButton,  // Copy icon button with optional tooltip
+  CopyableValue,       // Truncated hash/address with copy + hover
+  CreateNewButton,     // Dashed border "create new" action
+  InlineChainTitle,    // ChainIcon + chain name inline (accepts chainName string or chain object)
+  MOCK_ADDRESSES,      // alice, bob, charlie, dave, eve (as Address)
+  MOCK_CHAINS,         // polkadot, kusama, polkadotAssetHub, westend (as Chain)
+  SectionBadge,        // Count pill for section headers
+  SignatoryRow,        // Row with icon + name + SIGNED/UNSIGNED badge
+  StatusPill,          // Generic status pill (default/positive/negative/accent)
+  WalletIconWithBadge, // WalletIcon + colored dot indicator
+  getChain,            // Lookup chain by name string
+  mockChain,           // Create mock Chain object
+  truncateStr,         // Truncate long strings: truncateStr(hash, 7, 8)
+} from './_shared';
+```
+
+See source files for full API:
+- **`_shared/helpers.ts`** — `truncateStr(str, start?, end?)`
+- **`_shared/mock-data.ts`** — `MOCK_ADDRESSES`, `MOCK_CHAINS`, `mockChain()`, `getChain()`
+- **`_shared/components.tsx`** — all UI components listed above (including `InlineChainTitle`)
+
+### Expanded Accordion — 3-Column Detail View
+Real app uses `grid grid-cols-3` for expanded operation details. Each column needs `min-w-0` to prevent overflow:
+```tsx
+<Accordion.Content>
+  <div className="border-t border-divider">
+    <div className="grid grid-cols-3">
+      <div className="flex min-w-0 flex-col gap-y-4 border-r border-divider p-4">
+        <SmallTitleText>Details</SmallTitleText>
+        <div className="flex flex-col gap-y-2">
+          <DetailRow label="Depositor" className="text-text-secondary">...</DetailRow>
+        </div>
+      </div>
+      <div className="flex min-w-0 flex-col border-r border-divider p-4">
+        <SmallTitleText>Signatories</SmallTitleText>
+        <ul className="flex flex-col">
+          <SignatoryRow icon={<WalletIcon type={WalletType.POLKADOT_VAULT} size={20} />} signed={true}>
+            <BodyText className="truncate text-text-secondary">Wallet name</BodyText>
+          </SignatoryRow>
+        </ul>
+      </div>
+      <div className="flex min-w-0 flex-col gap-y-4 p-4">
+        <SmallTitleText>Advanced</SmallTitleText>
+        <DetailRow label="Call Hash"><CopyableValue value={hash} /></DetailRow>
+      </div>
+    </div>
+  </div>
+</Accordion.Content>
 ```
 
 ### Step Wizard in Modal
@@ -568,14 +628,10 @@ Use `ChainIcon` with mock `Chain` objects (see "ChainIcon" in Domain Components 
 ## Mock Data Patterns
 
 ### Polkadot SS58 Addresses
+Import from `_shared` instead of defining locally:
 ```tsx
-const MOCK_ADDRESSES = {
-  alice: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' as Address,
-  bob: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as Address,
-  charlie: '5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MRQg3gKrUYgw6J9i' as Address,
-  dave: '5DfhGyQdFobKM8NsWvEeAKk5EhQhro4TPAqv3HRfCCUjQcSo' as Address,
-  eve: '5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw' as Address,
-};
+import { MOCK_ADDRESSES } from './_shared';
+// MOCK_ADDRESSES.alice, .bob, .charlie, .dave, .eve — all typed as Address
 ```
 
 ### Amounts
@@ -615,17 +671,12 @@ const MOCK_ADDRESSES = {
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+
 import { Button, BodyText, FootnoteText, TitleText, Icon, IconButton, CaptionText, HelpText, Separator } from '@/shared/ui';
 import { Modal, Input, Select, Surface, Box, Tabs, SearchInput, Accordion } from '@/shared/ui-kit';
 import { Identicon, Hash } from '@/shared/ui-entities';
-import type { Address } from '@/shared/core';
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
-
-const MOCK_ADDRESSES = {
-  alice: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' as Address,
-  bob: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as Address,
-};
+import { MOCK_ADDRESSES, MOCK_CHAINS, InlineChainTitle, StatusPill } from './_shared';
 
 // ─── Main prototype ──────────────────────────────────────────────────────────
 

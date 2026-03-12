@@ -1,7 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 import { useMemo, useState } from 'react';
 
-import { type Address, type Chain, WalletType } from '@/shared/core';
+import { type Address, WalletType } from '@/shared/core';
 import {
   BodyText,
   Button,
@@ -15,18 +15,10 @@ import {
   Switch,
   TitleText,
 } from '@/shared/ui';
-import { ChainIcon, Hash, Identicon, WalletIcon } from '@/shared/ui-entities';
+import { Hash, Identicon, WalletIcon } from '@/shared/ui-entities';
 import { Accordion, Modal, SearchInput, Select, Tabs } from '@/shared/ui-kit';
 
-// ─── Mock data ───────────────────────────────────────────────────────────────
-
-const MOCK_ADDRESSES = {
-  alice: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' as Address,
-  bob: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as Address,
-  charlie: '5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MRQg3gKrUYgw6J9i' as Address,
-  dave: '5DfhGyQdFobKM8NsWvEeAKk5EhQhro4TPAqv3HRfCCUjQcSo' as Address,
-  eve: '5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw' as Address,
-};
+import { InlineChainTitle, MOCK_ADDRESSES, WalletIconWithBadge } from './_shared';
 
 type MockWallet = {
   id: string;
@@ -41,41 +33,6 @@ const WALLETS: MockWallet[] = [
   { id: 'w3', name: 'Main Vault', type: WalletType.POLKADOT_VAULT, address: MOCK_ADDRESSES.charlie },
   { id: 'w4', name: 'Watch Only', type: WalletType.WATCH_ONLY, address: MOCK_ADDRESSES.dave },
 ];
-
-// ─── Mock chains (icon URLs from nova-spektr-utils repo) ─────────────────────
-
-const CHAIN_ICON_BASE = 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains';
-
-const mockChain = (name: string, iconName: string, chainId: string): Chain =>
-  ({
-    chainId,
-    name,
-    specName: name.toLowerCase().replace(/ /g, '-'),
-    icon: `${CHAIN_ICON_BASE}/${iconName}.svg`,
-    addressPrefix: 0,
-    nodes: [],
-    assets: [],
-  }) as unknown as Chain;
-
-const MOCK_CHAINS = {
-  Polkadot: mockChain('Polkadot', 'Polkadot', '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3'),
-  Kusama: mockChain('Kusama', 'Kusama', '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe'),
-  'Polkadot Asset Hub': mockChain(
-    'Polkadot Asset Hub',
-    'Polkadot_Asset_Hub',
-    '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f',
-  ),
-} satisfies Record<'Polkadot' | 'Kusama' | 'Polkadot Asset Hub', Chain>;
-
-const getChain = (name: string): Chain => {
-  const key: keyof typeof MOCK_CHAINS = name.startsWith('Polkadot Asset')
-    ? 'Polkadot Asset Hub'
-    : name.startsWith('Kusama')
-      ? 'Kusama'
-      : 'Polkadot';
-
-  return MOCK_CHAINS[key];
-};
 
 // ─── Notification types ──────────────────────────────────────────────────────
 
@@ -274,24 +231,6 @@ const opStatusLabel: Record<NotificationStatus, string> = {
   success: 'Executed',
   error: 'Rejected',
 };
-
-// ─── Inline chain title (ChainIcon + name, matches <ChainTitle>) ─────────────
-
-const InlineChainTitle = ({ chainName, fontClass }: { chainName: string; fontClass?: string }) => (
-  <span className="mx-1 inline-flex items-center gap-x-1">
-    <ChainIcon chain={getChain(chainName)} size={16} />
-    <span className={fontClass ?? 'text-text-secondary'}>{getChain(chainName).name}</span>
-  </span>
-);
-
-// ─── Wallet icon with badge ──────────────────────────────────────────────────
-
-const WalletIconWithBadge = ({ type, badgeColor }: { type: WalletType; badgeColor: string }) => (
-  <div className="relative shrink-0">
-    <WalletIcon type={type} size={20} />
-    <div className={`absolute top-[13px] -right-px h-2 w-2 rounded-full border border-white ${badgeColor}`} />
-  </div>
-);
 
 // ─── MultisigOperation: "Transfer 500 DOT Created" ──────────────────────────
 // Detail: in <walletIcon><walletName> on <chain>

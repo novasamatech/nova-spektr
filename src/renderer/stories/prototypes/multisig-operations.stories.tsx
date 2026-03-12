@@ -16,16 +16,21 @@ import {
   TitleText,
 } from '@/shared/ui';
 import { Hash, Identicon, WalletIcon } from '@/shared/ui-entities';
-import { Accordion, Box, Copy, Input, Modal, SearchInput, Select, Surface, Tabs, Tooltip } from '@/shared/ui-kit';
+import { Accordion, Box, Input, Modal, SearchInput, Select, Surface, Tabs, Tooltip } from '@/shared/ui-kit';
+
+import {
+  AccountIdenticon,
+  CopyableIconButton,
+  CopyableValue,
+  CreateNewButton,
+  MOCK_ADDRESSES,
+  SectionBadge,
+  SignatoryRow,
+  StatusPill,
+  truncateStr,
+} from './_shared';
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
-
-const MOCK_ADDRESSES = {
-  alice: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' as Address,
-  bob: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as Address,
-  charlie: '5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MRQg3gKrUYgw6J9i' as Address,
-  dave: '5DfhGyQdFobKM8NsWvEeAKk5EhQhro4TPAqv3HRfCCUjQcSo' as Address,
-};
 
 type MockOperation = {
   id: string;
@@ -264,9 +269,6 @@ const PARSED_CALL_DATA = {
 
 // ─── Operation icon ─────────────────────────────────────────────────────────
 
-const truncateStr = (str: string, start = 7, end = 8) =>
-  str.length > start + end + 3 ? `${str.slice(0, start)}...${str.slice(-end)}` : str;
-
 const opIconBg: Record<string, string> = {
   pending: 'bg-icon-warning',
   executed: 'bg-icon-positive',
@@ -277,25 +279,12 @@ const opIconBg: Record<string, string> = {
 
 const StatusBadge = ({ op }: { op: MockOperation }) => {
   if (op.status === 'pending') {
-    return (
-      <div className="flex w-fit items-center rounded-[20px] border border-shade-8 px-2.5 py-1">
-        <CaptionText className="text-text-secondary uppercase">
-          {op.signed} of {op.threshold} signed
-        </CaptionText>
-      </div>
-    );
+    return <StatusPill label={`${op.signed} of ${op.threshold} signed`} />;
   }
 
-  const colors: Record<string, string> = {
-    executed: 'border-text-positive text-text-positive',
-    cancelled: 'border-text-negative text-text-negative',
-  };
+  const variant = op.status === 'executed' ? 'positive' : 'negative';
 
-  return (
-    <div className={`flex w-fit items-center rounded-[20px] border px-2.5 py-1 ${colors[op.status]}`}>
-      <CaptionText className="uppercase">{op.status === 'executed' ? 'Executed' : 'Cancelled'}</CaptionText>
-    </div>
-  );
+  return <StatusPill label={op.status === 'executed' ? 'Executed' : 'Cancelled'} variant={variant} />;
 };
 
 // ─── Chain icon placeholder ─────────────────────────────────────────────────
@@ -341,12 +330,10 @@ const OperationRow = ({ op }: { op: MockOperation }) => (
           </div>
           <div className="flex min-w-0 flex-1 items-center">
             <div className="flex w-[240px] shrink-0 items-center gap-x-2">
-              <div className="relative shrink-0">
-                <Identicon address={op.account.address} size={32} theme="polkadot" />
-                <div className="absolute -right-0.5 -bottom-0.5">
-                  <WalletIcon type={op.account.walletType ?? WalletType.MULTISIG} size={14} />
-                </div>
-              </div>
+              <AccountIdenticon
+                address={op.account.address}
+                walletType={op.account.walletType ?? WalletType.MULTISIG}
+              />
               <div className="flex min-w-0 flex-col">
                 <FootnoteText className="truncate text-text-primary">{op.account.name}</FootnoteText>
                 <HelpText className="text-text-tertiary">{truncateStr(op.account.address, 6, 6)}</HelpText>
@@ -400,9 +387,7 @@ const OperationRow = ({ op }: { op: MockOperation }) => (
                       <FootnoteText className="truncate text-text-secondary">
                         {truncateStr(op.recipient.address, 6, 6)}
                       </FootnoteText>
-                      <Copy value={op.recipient.address}>
-                        <IconButton name="copy" className="shrink-0 text-icon-default" />
-                      </Copy>
+                      <CopyableIconButton value={op.recipient.address} />
                     </div>
                   </DetailRow>
                 )}
@@ -438,24 +423,13 @@ const OperationRow = ({ op }: { op: MockOperation }) => (
                       {op.signatories
                         .filter((s) => !s.isContact)
                         .map((s) => (
-                          <li
+                          <SignatoryRow
                             key={s.address}
-                            className="flex items-center justify-between rounded-sm px-2 py-1.5 hover:bg-action-background-hover"
+                            icon={<WalletIcon type={s.walletType ?? WalletType.POLKADOT_VAULT} size={20} />}
+                            signed={s.signed}
                           >
-                            <div className="flex min-w-0 items-center gap-2">
-                              <WalletIcon type={s.walletType ?? WalletType.POLKADOT_VAULT} size={20} />
-                              <BodyText className="mr-auto truncate text-text-secondary">{s.name}</BodyText>
-                            </div>
-                            <div
-                              className={`flex w-fit items-center rounded-[20px] border px-2 py-0.5 ${
-                                s.signed
-                                  ? 'border-text-positive text-text-positive'
-                                  : 'border-shade-8 text-text-tertiary'
-                              }`}
-                            >
-                              <CaptionText className="uppercase">{s.signed ? 'Signed' : 'Unsigned'}</CaptionText>
-                            </div>
-                          </li>
+                            <BodyText className="mr-auto truncate text-text-secondary">{s.name}</BodyText>
+                          </SignatoryRow>
                         ))}
                     </ul>
                   </div>
@@ -469,29 +443,18 @@ const OperationRow = ({ op }: { op: MockOperation }) => (
                       {op.signatories
                         .filter((s) => s.isContact)
                         .map((s) => (
-                          <li
+                          <SignatoryRow
                             key={s.address}
-                            className="flex items-center justify-between rounded-sm px-2 py-1.5 hover:bg-action-background-hover"
+                            icon={<Identicon address={s.address} size={20} theme="polkadot" />}
+                            signed={s.signed}
                           >
-                            <div className="flex min-w-0 items-center gap-2">
-                              <Identicon address={s.address} size={20} theme="polkadot" />
-                              <div className="flex min-w-0 flex-col">
-                                <FootnoteText className="truncate text-text-secondary">{s.name}</FootnoteText>
-                                <HelpText className="truncate text-text-tertiary">
-                                  {truncateStr(s.address, 6, 6)}
-                                </HelpText>
-                              </div>
+                            <div className="flex min-w-0 flex-col">
+                              <FootnoteText className="truncate text-text-secondary">{s.name}</FootnoteText>
+                              <HelpText className="truncate text-text-tertiary">
+                                {truncateStr(s.address, 6, 6)}
+                              </HelpText>
                             </div>
-                            <div
-                              className={`flex shrink-0 items-center rounded-[20px] border px-2 py-0.5 ${
-                                s.signed
-                                  ? 'border-text-positive text-text-positive'
-                                  : 'border-shade-8 text-text-tertiary'
-                              }`}
-                            >
-                              <CaptionText className="uppercase">{s.signed ? 'Signed' : 'Unsigned'}</CaptionText>
-                            </div>
-                          </li>
+                          </SignatoryRow>
                         ))}
                     </ul>
                   </div>
@@ -514,37 +477,13 @@ const OperationRow = ({ op }: { op: MockOperation }) => (
               <div className="flex flex-col gap-y-2">
                 {op.callHash && (
                   <DetailRow label="Call Hash" className="text-text-secondary">
-                    <Copy value={op.callHash}>
-                      <button
-                        type="button"
-                        className="group -mr-2 flex cursor-pointer items-center gap-x-1 rounded-sm px-2 py-[3px] hover:bg-action-background-hover"
-                      >
-                        <FootnoteText className="truncate text-text-secondary">{truncateStr(op.callHash)}</FootnoteText>
-                        <Icon
-                          name="copy"
-                          size={16}
-                          className="shrink-0 text-icon-default group-hover:text-icon-hover"
-                        />
-                      </button>
-                    </Copy>
+                    <CopyableValue value={op.callHash} />
                   </DetailRow>
                 )}
 
                 {op.callData && (
                   <DetailRow label="Call Data" className="text-text-secondary">
-                    <Copy value={op.callData}>
-                      <button
-                        type="button"
-                        className="group -mr-2 flex cursor-pointer items-center gap-x-1 rounded-sm px-2 py-[3px] hover:bg-action-background-hover"
-                      >
-                        <FootnoteText className="truncate text-text-secondary">{truncateStr(op.callData)}</FootnoteText>
-                        <Icon
-                          name="copy"
-                          size={16}
-                          className="shrink-0 text-icon-default group-hover:text-icon-hover"
-                        />
-                      </button>
-                    </Copy>
+                    <CopyableValue value={op.callData} />
                   </DetailRow>
                 )}
 
@@ -607,9 +546,7 @@ const DraftRow = ({
 
       {/* Draft badge */}
       <div className="mx-3 flex w-[80px] shrink-0 items-center justify-end">
-        <div className="flex w-fit items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
-          <CaptionText className="text-icon-accent uppercase">Draft</CaptionText>
-        </div>
+        <StatusPill label="Draft" variant="accent" />
       </div>
 
       {/* Actions */}
@@ -646,9 +583,7 @@ const DraftsSection = ({
       <Accordion.Trigger sticky>
         <div className="flex items-center gap-2 py-2">
           <FootnoteText className="font-medium text-text-secondary">Drafts</FootnoteText>
-          <div className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-icon-accent/15 px-2">
-            <CaptionText className="font-medium text-icon-accent">{drafts.length}</CaptionText>
-          </div>
+          <SectionBadge count={drafts.length} />
         </div>
       </Accordion.Trigger>
       <Accordion.Content>
@@ -663,25 +598,7 @@ const DraftsSection = ({
             />
           ))}
 
-          {/* Create new draft button */}
-          <button
-            type="button"
-            className="group w-full cursor-pointer rounded-lg border-2 border-dashed border-shade-12 px-4 py-3.5 transition-all hover:border-icon-accent hover:bg-icon-accent/4 active:scale-[0.998]"
-            onClick={onCreateDraft}
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-dashed border-shade-12 transition-colors group-hover:border-icon-accent group-hover:bg-icon-accent/10">
-                <Icon
-                  name="add"
-                  size={14}
-                  className="text-text-tertiary transition-colors group-hover:text-icon-accent"
-                />
-              </div>
-              <FootnoteText className="font-medium text-text-tertiary transition-colors group-hover:text-icon-accent">
-                Create new draft
-              </FootnoteText>
-            </div>
-          </button>
+          <CreateNewButton label="Create new draft" onClick={onCreateDraft} />
         </div>
       </Accordion.Content>
     </Accordion>
