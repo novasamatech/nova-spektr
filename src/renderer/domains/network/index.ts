@@ -42,3 +42,7 @@ export { initialOnChainFetch } from './multisig-operation/resource';
 export { multisigOperationService } from './multisig-operation/service';
 export type { MultisigOperationDeepLinkParams } from './multisig-operation/service';
 export type { MultisigEvent, MultisigOperation } from './multisig-operation/types';
+
+export { priceHistoryResource } from './price-history/resource';
+export { usePriceHistory } from './price-history/hooks';
+export type { PriceHistoryParams, TimeRange as PriceHistoryTimeRange } from './price-history/resource';

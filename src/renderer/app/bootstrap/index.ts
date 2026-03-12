@@ -16,6 +16,7 @@ import { basketNavigationFeature } from '@/features/basket-navigation';
 import { callDataExecuteFeature } from '@/features/call-data-execute';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { dashboardNavigationFeature } from '@/features/dashboard-navigation';
+import { dashboardPriceChartsFeature } from '@/features/dashboard-price-charts';
 import { dashboardTotalBalanceFeature } from '@/features/dashboard-total-balance';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
@@ -67,6 +68,7 @@ export const bootstrap = () => {
 
     dashboardNavigationFeature,
     dashboardTotalBalanceFeature,
+    dashboardPriceChartsFeature,
     assetsNavigationFeature,
     fellowshipNavigationFeature,
     operationsNavigationFeature,
