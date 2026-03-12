@@ -81,6 +81,26 @@ Fix any type errors before considering the prototype done. Common type issues:
 
 After all fixes, the only acceptable warnings are `@typescript-eslint/consistent-type-assertions` from `as Address` casts (unavoidable for mock data).
 
+## STEP 6: Self-update this skill
+
+After completing the prototype, update **this skill file** (`.claude/commands/nova-prototype.md`) if any of the following happened during the task:
+
+1. **New shared component created** in `_shared/components.tsx` — add it to the "Shared Prototype Components" import list with a comment describing what it does
+2. **New mock data added** to `_shared/mock-data.ts` — update the "Shared Prototype Components" import list and "Mock Data Patterns" section
+3. **New helper function** in `_shared/helpers.ts` — add to the import list
+4. **New `_shared/` barrel export** in `_shared/index.ts` — ensure import list matches
+5. **New prototype story created** — no skill update needed (stories are self-documenting)
+6. **Component API gotcha discovered** (e.g., wrong prop name, required prop, type mismatch) — add to the "Rules" section or the relevant component docs to prevent repeating the mistake
+7. **New layout pattern** used that isn't documented — add to "App Layout Patterns" section
+
+**How to update:**
+- Read the current skill file first
+- Make minimal, targeted edits — only add/change what's new
+- Keep examples concise (1-3 lines, not full components)
+- Don't duplicate information already in `_shared/` source files — reference them instead
+
+**Skip this step** if no new reusable patterns, components, or API gotchas were introduced.
+
 ---
 
 # Component Reference
