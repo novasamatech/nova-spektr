@@ -37,6 +37,7 @@ import {
   toShortAddress,
   truncate,
 } from '@/shared/lib/utils';
+import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type AccountIdentity,
@@ -51,7 +52,6 @@ import {
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
-import { proxyPallet } from '@/shared/pallet/proxy';
 import { type WalletCreateParams, accountUtils, walletModel } from '@/entities/wallet';
 
 const createWalletsFx = attach({ effect: walletModel.createWallets });
@@ -107,12 +107,14 @@ type VerifyProxiedDeletionParams = {
 };
 
 /**
- * Before removing proxy wallets from local storage, perform on-chain verification
- * for each candidate account. Only wallets confirmed absent on-chain are deleted.
+ * Before removing proxy wallets from local storage, perform on-chain
+ * verification for each candidate account. Only wallets confirmed absent
+ * on-chain are deleted.
  *
- * This prevents false deletions caused by indexer lag or incomplete indexer responses.
- * If the API for a chain is unavailable or an error occurs, we conservatively skip
- * deletion for that chain (err on the side of keeping data).
+ * This prevents false deletions caused by indexer lag or incomplete indexer
+ * responses. If the API for a chain is unavailable or an error occurs, we
+ * conservatively skip deletion for that chain (err on the side of keeping
+ * data).
  */
 const verifyProxiedDeletionFx = createEffect(
   async ({ candidateWalletIds, allAccounts, apis }: VerifyProxiedDeletionParams): Promise<number[]> => {
@@ -750,4 +752,9 @@ sample({
 export const sync = {
   syncAccounts: accountSync.syncAccounts,
   $pending,
+
+  /** Exposed only for testing — do not use in production code. */
+  _test: {
+    verifyProxiedDeletionFx,
+  },
 };
