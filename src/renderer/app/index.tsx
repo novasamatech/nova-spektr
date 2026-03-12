@@ -78,7 +78,7 @@ const Root = () => {
             onError={(error, errorInfo) => {
               console.error(error.message);
               console.error(errorInfo.componentStack);
-              if (error.message.includes('Failed to fetch dynamically imported module')) {
+              if (error.message.includes('Failed to fetch dynamically imported module') && import.meta.env.PROD) {
                 location.reload();
               }
             }}
