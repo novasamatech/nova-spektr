@@ -28,7 +28,6 @@ const config: UserConfigFn = async ({ mode, command }) => {
   const { default: react } = await import('@vitejs/plugin-react-swc');
   const { default: mkcert } = await import('vite-plugin-mkcert');
   const { compression, defineAlgorithm } = await import('vite-plugin-compression2');
-  const { nodePolyfills } = await import('vite-plugin-node-polyfills');
   const { default: tailwindcss } = await import('@tailwindcss/vite');
 
   const isDevServer = command === 'serve';
@@ -36,18 +35,17 @@ const config: UserConfigFn = async ({ mode, command }) => {
   const isProd = mode === 'production';
   const isStage = mode === 'staging';
 
-  const commonPlugins = [
-    skipSourcemaps(['node_modules']),
-    nodePolyfills({
-      include: ['buffer', 'events', 'crypto', 'stream'],
-    }),
-  ];
+  const commonPlugins = [skipSourcemaps(['node_modules'])];
 
   return defineConfig({
     mode: isStage ? 'production' : mode,
     cacheDir: resolve(folders.cache, 'vite-renderer'),
     resolve: {
       tsconfigPaths: true,
+      alias: {
+        crypto: 'crypto-browserify',
+        stream: 'stream-browserify',
+      },
     },
     base: '',
     root: resolve(folders.rendererRoot, 'app'),
@@ -58,6 +56,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
       'process.env.CHAINS_FILE': JSON.stringify(process.env.CHAINS_FILE ?? 'chains'),
       'process.env.TOKENS_FILE': JSON.stringify(process.env.TOKENS_FILE ?? 'tokens'),
       'process.env.LOGGER': JSON.stringify(process.env.LOGGER),
+      global: 'globalThis',
     },
     worker: {
       format: 'es',
