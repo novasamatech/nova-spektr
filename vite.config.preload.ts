@@ -26,7 +26,7 @@ const config: UserConfigFn = async ({ mode }) => {
         fileName: () => 'preload.cjs',
         formats: ['cjs'],
       },
-      rollupOptions: {
+      rolldownOptions: {
         output: {
           globals: {
             process: 'process',

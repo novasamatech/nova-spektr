@@ -31,10 +31,8 @@ const config: UserConfigFn = async ({ mode }) => {
         fileName: () => 'main.cjs',
         formats: ['cjs'],
       },
-      rollupOptions: {
+      rolldownOptions: {
         output: {
-          // entryFileNames: `[name].js`,
-          // chunkFileNames: `[name].js`,
           globals: {
             process: 'process',
           },

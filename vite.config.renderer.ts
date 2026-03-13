@@ -1,6 +1,5 @@
 /// <reference types="vitest/config" />
 
-import { cpus } from 'node:os';
 import { resolve } from 'node:path';
 
 import { type Plugin, type UserConfigFn } from 'vite';
@@ -31,7 +30,6 @@ const config: UserConfigFn = async ({ mode, command }) => {
   const { default: mkcert } = await import('vite-plugin-mkcert');
   const { compression, defineAlgorithm } = await import('vite-plugin-compression2');
   const { nodePolyfills } = await import('vite-plugin-node-polyfills');
-  // @ts-expect-error unresolved import type
   const { default: tailwindcss } = await import('@tailwindcss/vite');
 
   const isDevServer = command === 'serve';
@@ -70,21 +68,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
       outDir: folders.devBuild,
       emptyOutDir: false,
       target: 'es2021',
-      rollupOptions: {
-        treeshake: 'recommended',
-        maxParallelFileOps: Math.max(1, cpus().length - 1),
-        onLog(level, log, handler) {
-          if (log.cause) {
-            const cause = log.cause as Record<string, string>;
-
-            if (cause.message === `Can't resolve original location of error.`) {
-              return;
-            }
-          }
-
-          handler(level, log);
-        },
-      },
+      rolldownOptions: {},
     },
     assetsInclude: ['**/*.wasm'],
     server: {
