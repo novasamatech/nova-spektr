@@ -1,26 +1,18 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-import { type Chain, ExternalType } from '@/shared/core';
+import { type Chain, type ChainId, ExternalType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { useResource } from '@/shared/query';
 import { networkModel } from '@/entities/network';
-import { stakingRewardsApi } from '../api/stakingRewardsService';
+import { type StakingRewardsParams, stakingRewardsResource } from '../lib/staking-rewards-resource';
 import { type RewardSource, stakingUtils } from '../lib/staking-utils';
-import { type IStakingRewardsService, type RewardsMap } from '../lib/types';
+import { type RewardsMap } from '../lib/types';
 
-export const useStakingRewards = (accounts: AccountId[], chain: Chain | null): IStakingRewardsService => {
+const EMPTY_MAP: RewardsMap = {};
+
+export const useStakingRewards = (accounts: AccountId[], chain: Chain | null) => {
   const chainsMap = useUnit(networkModel.$chains);
-
-  const emptyMap = useMemo<RewardsMap>(() => {
-    return accounts.reduce<RewardsMap>((acc, account) => {
-      acc[account] = '0';
-
-      return acc;
-    }, {});
-  }, [accounts]);
-
-  const [rewards, setRewards] = useState<RewardsMap>(emptyMap);
-  const [isRewardsLoading, setRewardsLoading] = useState(false);
 
   const rewardSources = useMemo<RewardSource[]>(() => {
     if (!chain) return [];
@@ -48,39 +40,27 @@ export const useStakingRewards = (accounts: AccountId[], chain: Chain | null): I
     return Array.from(uniqueSources.values());
   }, [chain, chainsMap]);
 
-  useEffect(() => {
-    setRewards(emptyMap);
-  }, [emptyMap]);
+  const params = useMemo<StakingRewardsParams | null>(() => {
+    if (!chain || accounts.length === 0 || rewardSources.length === 0) return null;
 
-  useEffect(() => {
-    if (accounts.length === 0 || rewardSources.length === 0) {
-      setRewardsLoading(false);
-      setRewards(emptyMap);
-      return;
-    }
+    return { chainId: chain.chainId, accounts, rewardSources };
+  }, [chain, accounts, rewardSources]);
 
-    setRewardsLoading(true);
+  const { data: rewards, pending: isRewardsLoading } = useResource(stakingRewardsResource, {
+    params,
+    defaultValue: EMPTY_MAP,
+    map: (cache: Record<ChainId, RewardsMap>, p: StakingRewardsParams) => {
+      const cached = cache[p.chainId];
+      if (!cached) return undefined;
 
-    stakingRewardsApi
-      .fetch({
-        accounts,
-        rewardSources,
-        baseMap: emptyMap,
-      })
-      .then((aggregated) => {
-        setRewards(aggregated);
-        setRewardsLoading(false);
-      })
-      .catch((error) => {
-        console.error('Staking: failed to fetch rewards', error);
+      const merged: RewardsMap = {};
+      for (const account of p.accounts) {
+        merged[account] = cached[account] ?? '0';
+      }
 
-        setRewards(emptyMap);
-        setRewardsLoading(false);
-      });
-  }, [accounts, emptyMap, rewardSources]);
+      return merged;
+    },
+  });
 
-  return {
-    rewards,
-    isRewardsLoading,
-  };
+  return { rewards, isRewardsLoading };
 };

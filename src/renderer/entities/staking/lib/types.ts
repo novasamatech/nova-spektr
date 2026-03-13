@@ -18,15 +18,6 @@ export interface IStakingDataService {
 }
 
 // =====================================================
-// ============ IRewardsService interface ==============
-// =====================================================
-
-export interface IStakingRewardsService {
-  rewards: RewardsMap;
-  isRewardsLoading: boolean;
-}
-
-// =====================================================
 // ======================= General =====================
 // =====================================================
 
