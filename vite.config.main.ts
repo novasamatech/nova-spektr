@@ -6,7 +6,6 @@ import { folders, title, version } from './config/index.js';
 
 const config: UserConfigFn = async ({ mode }) => {
   const { defineConfig } = await import('vite');
-  const { default: tsconfigPaths } = await import('vite-tsconfig-paths');
   const { default: target } = await import('vite-plugin-target');
 
   const isDev = mode === 'development';
@@ -39,7 +38,10 @@ const config: UserConfigFn = async ({ mode }) => {
         },
       },
     },
-    plugins: [target({ 'electron-main': {} }), tsconfigPaths()],
+    resolve: {
+      tsconfigPaths: true,
+    },
+    plugins: [target({ 'electron-main': {} })],
   });
 };
 

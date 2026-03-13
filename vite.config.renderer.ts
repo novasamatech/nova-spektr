@@ -23,7 +23,6 @@ function skipSourcemaps(paths: string[]): Plugin {
 
 const config: UserConfigFn = async ({ mode, command }) => {
   const { defineConfig } = await import('vite');
-  const { default: tsconfigPaths } = await import('vite-tsconfig-paths');
   const { default: svgr } = await import('vite-plugin-svgr');
   const { default: favicons } = await import('@peterek/vite-plugin-favicons');
   const { default: react } = await import('@vitejs/plugin-react-swc');
@@ -39,7 +38,6 @@ const config: UserConfigFn = async ({ mode, command }) => {
 
   const commonPlugins = [
     skipSourcemaps(['node_modules']),
-    tsconfigPaths(),
     nodePolyfills({
       include: ['buffer', 'events', 'crypto', 'stream'],
     }),
@@ -48,6 +46,9 @@ const config: UserConfigFn = async ({ mode, command }) => {
   return defineConfig({
     mode: isStage ? 'production' : mode,
     cacheDir: resolve(folders.cache, 'vite-renderer'),
+    resolve: {
+      tsconfigPaths: true,
+    },
     base: '',
     root: resolve(folders.rendererRoot, 'app'),
     define: {
