@@ -14,6 +14,11 @@ export const dashboardWidgetsSlot = createSlot<{
   allEntries: { accountId: string; name: string; address: string }[];
 }>({ name: 'dashboardWidgets' });
 
+export const dashboardStakingSlot = createSlot<{
+  accountIds: string[];
+  allEntries: { accountId: string; name: string; address: string }[];
+}>({ name: 'dashboardStaking' });
+
 const TABS = ['overview', 'staking', 'governance', 'alerts'] as const;
 
 export const Dashboard = () => {
@@ -68,10 +73,18 @@ export const Dashboard = () => {
           </Tabs.Content>
 
           <Tabs.Content value="staking">
-            <div className="flex h-full w-full flex-col items-center justify-center py-20">
-              <SmallTitleText className="text-text-tertiary">{t('dashboard.tabs.staking')}</SmallTitleText>
-              <BodyText className="text-text-tertiary">{t('dashboard.tabs.comingSoon')}</BodyText>
-            </div>
+            {allEntries.length === 0 ? (
+              <div className="flex h-full w-full flex-col items-center justify-center">
+                <div className="flex flex-col items-center gap-y-2">
+                  <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
+                  <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+                </div>
+              </div>
+            ) : (
+              <div className="flex w-full flex-wrap items-start gap-4 overflow-y-auto py-4">
+                <Slot id={dashboardStakingSlot} props={{ accountIds, allEntries }} />
+              </div>
+            )}
           </Tabs.Content>
 
           <Tabs.Content value="governance">

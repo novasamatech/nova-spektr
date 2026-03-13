@@ -1,26 +1,32 @@
 import { type ApiPromise } from '@polkadot/api';
+import { createStore } from 'effector';
 
 import { type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createSubscriptionResource } from '@/shared/resource';
+import { createSubscriptionResource } from '@/shared/query';
 
 import { stakingUtils } from './staking-utils';
 import { type StakingMap } from './types';
 
-type StakingResourceParams = {
+export type StakingResourceParams = {
   chainId: ChainId;
   api: ApiPromise;
   accounts: AccountId[];
 };
 
-export const stakingResource = createSubscriptionResource<StakingResourceParams, StakingMap>({
-  name: 'staking',
-  pool: (params) => `${params.chainId}_${params.accounts.join('_')}`,
-  fn: async (params, callback) => {
-    const unsubscribe = await stakingUtils.subscribeStaking(params.chainId, params.api, params.accounts, (staking) => {
-      callback({ done: false, value: staking });
-    });
+const $stakingCache = createStore<Record<ChainId, StakingMap>>({});
 
-    return unsubscribe;
-  },
-});
+export const stakingResource = createSubscriptionResource<StakingResourceParams>({
+  key: ({ chainId, accounts }) => [chainId, accounts.join('_')],
+})
+  .subscribe<StakingMap>(({ chainId, api, accounts }, callback) => {
+    return stakingUtils.subscribeStaking(chainId, api, accounts, callback);
+  })
+  .cache({
+    store: $stakingCache,
+    map: (state, staking, { chainId }) => ({
+      ...state,
+      [chainId]: staking,
+    }),
+  })
+  .build();

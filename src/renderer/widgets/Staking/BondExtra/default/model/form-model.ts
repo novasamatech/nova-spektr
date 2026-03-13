@@ -13,6 +13,7 @@ import {
   reservableAmountBN,
   transferableAmount,
 } from '@/shared/lib/utils';
+import { type ResourceRequestKey } from '@/shared/query/types';
 import {
   createComplexTxStore,
   createMultisigDeposit,
@@ -46,6 +47,7 @@ const $isReuseLockModeEnabled = createStore(false)
   .reset(formInitiated);
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
+const $stakingSubKey = createStore<ResourceRequestKey | null>(null).reset(formInitiated);
 const $chain = $networkStore.map((network) => network?.chain ?? null);
 
 const form: Form<FormParams> = createForm<FormParams>({
@@ -287,6 +289,24 @@ sample({
 
 sample({
   clock: formInitiated,
+  source: {
+    networkStore: $networkStore,
+    api: $api,
+  },
+  filter: ({ networkStore, api }, { initiator }) => {
+    return Boolean(networkStore) && Boolean(api) && nonNullable(initiator);
+  },
+  fn: ({ networkStore, api }, { initiator }) =>
+    stakingResource.createKey({
+      chainId: networkStore!.chain.chainId,
+      api: api!,
+      accounts: [initiator!.accountId],
+    }),
+  target: $stakingSubKey,
+});
+
+sample({
+  clock: formInitiated,
   source: $signatories,
   filter: (signatories) => signatories.length === 1,
   fn: (signatories) => signatories.at(0) ?? null,
@@ -335,12 +355,21 @@ sample({
 
 sample({
   clock: formSubmitted,
+  source: $stakingSubKey,
+  filter: nonNullable,
   target: stakingResource.unsubscribe,
 });
 
 sample({
   clock: formCleared,
-  target: [form.reset, stakingResource.unsubscribe],
+  source: $stakingSubKey,
+  filter: nonNullable,
+  target: stakingResource.unsubscribe,
+});
+
+sample({
+  clock: formCleared,
+  target: form.reset,
 });
 
 export const formModel = {

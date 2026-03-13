@@ -4,7 +4,8 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { type ChainId } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type StakingMap, stakingResource } from '@/entities/staking';
+import { type ResourceRequestKey } from '@/shared/query/types';
+import { stakingResource } from '@/entities/staking';
 
 type StakingParams = {
   chainId: ChainId | null;
@@ -19,38 +20,23 @@ const $stakingParams = createStore<StakingParams>({ chainId: null, api: null, ac
   .on(stakingParamsChanged, (_, params) => params)
   .reset(reset);
 
-// Staking data store
-const $stakingData = createStore<StakingMap>({})
-  .on(stakingResource.push, (_, { result }) => result ?? {})
-  .reset(reset);
+const $currentKey = createStore<ResourceRequestKey | null>(null).reset(reset);
+
+const $stakingData = combine(stakingResource.$cache, $stakingParams, (cache, params) =>
+  params.chainId ? (cache[params.chainId] ?? {}) : {},
+);
 
 const $isStakingLoading = combine(
   {
-    pending: stakingResource.pending,
-    subscribed: stakingResource.subscribed,
     stakingData: $stakingData,
     params: $stakingParams,
+    hasKey: $currentKey.map(nonNullable),
   },
-  ({ pending, subscribed, stakingData, params }) => {
-    // If no accounts, not loading (empty state)
-    if (params.accounts.length === 0) {
-      return false;
-    }
-
-    // Loading if no API available but we have accounts
-    if (!params.api || !params.chainId) {
-      return true;
-    }
-
-    // Loading if subscription is pending
-    if (pending && !subscribed) {
-      return true;
-    }
-
-    // Loading if subscribed but no data received yet
-    if (subscribed && Object.keys(stakingData).length === 0) {
-      return true;
-    }
+  ({ stakingData, params, hasKey }) => {
+    if (params.accounts.length === 0) return false;
+    if (!params.api || !params.chainId) return true;
+    if (!hasKey) return true;
+    if (Object.keys(stakingData).length === 0) return true;
 
     return false;
   },
@@ -68,7 +54,21 @@ sample({
 });
 
 sample({
+  clock: stakingParamsChanged,
+  filter: ({ chainId, api, accounts }) => nonNullable(chainId) && nonNullable(api) && accounts.length > 0,
+  fn: ({ chainId, api, accounts }) =>
+    stakingResource.createKey({
+      chainId: chainId!,
+      api: api!,
+      accounts,
+    }),
+  target: $currentKey,
+});
+
+sample({
   clock: reset,
+  source: $currentKey,
+  filter: nonNullable,
   target: stakingResource.unsubscribe,
 });
 
@@ -76,7 +76,7 @@ export const stakingModel = {
   $stakingData,
   $stakingParams,
   $isStakingLoading,
-  $subscribed: stakingResource.subscribed,
+  $subscribed: $currentKey.map(nonNullable),
 
   stakingParamsChanged,
   reset,
