@@ -1,16 +1,18 @@
+import { useState } from 'react';
 import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 
 import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
-import { FootnoteText } from '@/shared/ui';
+import { formatBalance, toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { FootnoteText, Icon, Loader } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
-import { type StakingMap } from '@/entities/staking';
+import { type StakingMap, ValidatorsModal } from '@/entities/staking';
 
 import { ChartTooltip } from './ChartTooltip';
 import { Price } from './Price';
 import { FALLBACK_COLORS } from './chartConstants';
+import { useNominatedValidators } from './useNominatedValidators';
 import { type EntryLike, type StakingBreakdownRow, useStakingBreakdown } from './useStakingBreakdown';
 import { type ChainStakingSummary } from './useStakingOverview';
 
@@ -27,6 +29,15 @@ export const StakingDetailModal = ({ chainSummary, stakingData, accountIds, allE
   const { t } = useI18n();
   const { rows } = useStakingBreakdown({ stakingData, chainSummary, accountIds, allEntries });
   const { formatted, suffix } = formatBalance(chainSummary.totalStaked, chainSummary.precision);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+
+  const stash = selectedAccountId ? (stakingData[toAccountId(selectedAccountId)]?.stash ?? null) : null;
+
+  const { elected, notElected, identities, chain, asset, pending } = useNominatedValidators(
+    chainSummary.chainId,
+    stash,
+  );
+  const hasNominations = elected.length > 0 || notElected.length > 0;
 
   const totalFiat = rows.reduce((sum, r) => sum + r.fiatValueNum, 0);
   const chartData = rows
@@ -42,7 +53,7 @@ export const StakingDetailModal = ({ chainSummary, stakingData, accountIds, allE
     {
       key: 'name',
       title: t('dashboard.stakingOverview.stakingDetail.account'),
-      width: '35%',
+      width: '33%',
       render: (_, item) => (
         <div className="flex items-center gap-2">
           <span
@@ -61,7 +72,7 @@ export const StakingDetailModal = ({ chainSummary, stakingData, accountIds, allE
       key: 'rawAmountNum',
       title: t('dashboard.stakingOverview.stakingDetail.staked'),
       sortable: true,
-      width: '25%',
+      width: '23%',
       render: (_, item) => {
         const bal = formatBalance(item.rawAmount, item.precision);
 
@@ -77,7 +88,7 @@ export const StakingDetailModal = ({ chainSummary, stakingData, accountIds, allE
       key: 'fiatValueNum',
       title: t('dashboard.stakingOverview.stakingDetail.value'),
       sortable: true,
-      width: '22%',
+      width: '20%',
       render: (_, item) => (
         <FootnoteText className="tabular-nums">
           <Price amount={item.fiatValue} currency={currency} />
@@ -88,64 +99,108 @@ export const StakingDetailModal = ({ chainSummary, stakingData, accountIds, allE
       key: 'sharePercent',
       title: t('dashboard.stakingOverview.stakingDetail.share'),
       sortable: true,
-      width: '18%',
+      width: '16%',
       render: (_, item) => <FootnoteText className="tabular-nums">{item.sharePercent.toFixed(1)}%</FootnoteText>,
+    },
+    {
+      key: 'accountId',
+      title: '',
+      width: '8%',
+      render: () => <Icon name="right" size={16} className="text-text-tertiary" />,
     },
   ];
 
   const showChart = chartData.length > 1;
+  const showValidatorsModal = selectedAccountId !== null && !pending;
+  const showLoadingModal = selectedAccountId !== null && pending;
 
   return (
-    <Modal isOpen size="lg" onToggle={(open) => !open && onClose()}>
-      <Modal.Title close>
-        {t('dashboard.stakingOverview.stakingDetail.title', { chain: chainSummary.chainName })}
-      </Modal.Title>
-      <Modal.Content disableScroll>
-        <div className="flex items-center gap-3 px-5 py-3">
-          <img src={chainSummary.icon.colored} alt={chainSummary.chainName} className="h-8 w-8" />
-          <div className="min-w-0 flex-1">
-            <FootnoteText className="font-bold">{chainSummary.chainName}</FootnoteText>
-            <FootnoteText className="text-text-tertiary">
-              {t('dashboard.stakingOverview.stakingDetail.accountCount', { count: rows.length })}
-            </FootnoteText>
+    <>
+      <Modal isOpen size="lg" onToggle={(open) => !open && onClose()}>
+        <Modal.Title close>
+          {t('dashboard.stakingOverview.stakingDetail.title', { chain: chainSummary.chainName })}
+        </Modal.Title>
+        <Modal.Content disableScroll>
+          <div className="flex items-center gap-3 px-5 py-3">
+            <img src={chainSummary.icon.colored} alt={chainSummary.chainName} className="h-8 w-8" />
+            <div className="min-w-0 flex-1">
+              <FootnoteText className="font-bold">{chainSummary.chainName}</FootnoteText>
+              <FootnoteText className="text-text-tertiary">
+                {t('dashboard.stakingOverview.stakingDetail.accountCount', { count: rows.length })}
+              </FootnoteText>
+            </div>
+            <div className="shrink-0">
+              <FootnoteText align="right" className="font-bold tabular-nums">
+                {formatted}
+                {suffix ? ` ${suffix}` : ''} {chainSummary.symbol}
+              </FootnoteText>
+              <FootnoteText align="right" className="text-text-tertiary tabular-nums">
+                <Price amount={chainSummary.fiatValue} currency={currency} />
+              </FootnoteText>
+            </div>
           </div>
-          <div className="shrink-0">
-            <FootnoteText align="right" className="font-bold tabular-nums">
-              {formatted}
-              {suffix ? ` ${suffix}` : ''} {chainSummary.symbol}
-            </FootnoteText>
-            <FootnoteText align="right" className="text-text-tertiary tabular-nums">
-              <Price amount={chainSummary.fiatValue} currency={currency} />
-            </FootnoteText>
+
+          <div className="border-t border-divider" />
+
+          {showChart && (
+            <div className="flex justify-center px-5 py-3">
+              <PieChart width={180} height={180}>
+                <Pie
+                  data={chartData}
+                  innerRadius={55}
+                  outerRadius={85}
+                  dataKey="value"
+                  stroke="none"
+                  animationDuration={400}
+                >
+                  {chartData.map((entry) => (
+                    <Cell key={entry.index} fill={FALLBACK_COLORS[entry.index % FALLBACK_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={<ChartTooltip />} />
+              </PieChart>
+            </div>
+          )}
+
+          <div className="overflow-y-auto px-5 pb-4" style={{ maxHeight: 440 }}>
+            <Table columns={columns} data={rows} onRowClick={(row) => setSelectedAccountId(row.accountId)} />
           </div>
-        </div>
+        </Modal.Content>
+      </Modal>
 
-        <div className="border-t border-divider" />
+      {showLoadingModal && (
+        <Modal isOpen size="sm" onToggle={() => setSelectedAccountId(null)}>
+          <Modal.Title close>{t('staking.confirmation.validatorsTitle')}</Modal.Title>
+          <Modal.Content>
+            <div className="flex items-center justify-center py-10">
+              <Loader color="primary" size={24} />
+            </div>
+          </Modal.Content>
+        </Modal>
+      )}
 
-        {showChart && (
-          <div className="flex justify-center px-5 py-3">
-            <PieChart width={180} height={180}>
-              <Pie
-                data={chartData}
-                innerRadius={55}
-                outerRadius={85}
-                dataKey="value"
-                stroke="none"
-                animationDuration={400}
-              >
-                {chartData.map((entry) => (
-                  <Cell key={entry.index} fill={FALLBACK_COLORS[entry.index % FALLBACK_COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip content={<ChartTooltip />} />
-            </PieChart>
-          </div>
-        )}
+      {showValidatorsModal && hasNominations && (
+        <ValidatorsModal
+          isOpen
+          selectedValidators={elected}
+          notSelectedValidators={notElected}
+          identities={identities}
+          asset={asset}
+          chain={chain ?? undefined}
+          onClose={() => setSelectedAccountId(null)}
+        />
+      )}
 
-        <div className="overflow-y-auto px-5 pb-4" style={{ maxHeight: 440 }}>
-          <Table columns={columns} data={rows} />
-        </div>
-      </Modal.Content>
-    </Modal>
+      {showValidatorsModal && !hasNominations && (
+        <Modal isOpen size="sm" onToggle={() => setSelectedAccountId(null)}>
+          <Modal.Title close>{t('staking.confirmation.validatorsTitle')}</Modal.Title>
+          <Modal.Content>
+            <div className="flex items-center justify-center py-10">
+              <FootnoteText className="text-text-tertiary">{t('staking.validators.noValidatorsLabel')}</FootnoteText>
+            </div>
+          </Modal.Content>
+        </Modal>
+      )}
+    </>
   );
 };
