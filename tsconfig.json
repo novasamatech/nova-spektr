@@ -1,5 +1,5 @@
 {
   "extends": ["./tsconfig.base.json", "./tsconfig.paths.json"],
-  "include": ["src", ".storybook", "tests", "scripts", "config", ".eslintrc.cjs", "*.ts", "*.js", "*.cjs"],
-  "exclude": ["node_modules"]
+  "include": ["src", ".storybook", "tests", "scripts", "config", "*.ts", "*.js", "*.cjs"],
+  "exclude": ["node_modules", "*.config.ts", "vite.config.*.ts", "tests/**/vitest.config.ts"]
 }
