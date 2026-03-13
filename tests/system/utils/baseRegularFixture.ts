@@ -54,7 +54,7 @@ export const test = base.extend<TestScopedFixtures>({
   context: async ({ browser }, use) => {
     const context = await browser.newContext({
       ignoreHTTPSErrors: true,
-      permissions: [],
+      permissions: ['camera'],
     });
     await applyInitFlags(context);
     await use(context);
@@ -98,7 +98,7 @@ function createWorkerScopedFixture(config: WorkerFixtureConfig) {
       async ({ browser }, use) => {
         const context = await browser.newContext({
           ignoreHTTPSErrors: true,
-          permissions: [],
+          permissions: ['camera'],
         });
         await applyInitFlags(context);
         await use(context);
