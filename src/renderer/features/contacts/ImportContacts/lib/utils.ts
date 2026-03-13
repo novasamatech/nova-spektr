@@ -1,5 +1,5 @@
 import { type Contact } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
+import { sanitizeContactName, toAccountId } from '@/shared/lib/utils';
 
 import { type AccountIdConflict } from './types';
 import { type ContactImport, contactsArraySchema } from './validation';
@@ -38,7 +38,16 @@ async function parseJSON(file: File): Promise<ParseResult> {
     return { success: false };
   }
 
-  return { success: true, data: parsed };
+  // Sanitize contact names before returning
+  const sanitized = parsed.map((contact) => ({
+    ...contact,
+    name: sanitizeContactName(contact.name),
+  }));
+
+  // Filter out contacts whose name becomes empty after sanitization
+  const valid = sanitized.filter((contact) => contact.name.length > 0);
+
+  return { success: true, data: valid };
 }
 
 function detectAccountIdConflicts(contacts: ContactImport[], existingContacts: Contact[]): AccountIdConflict[] {
@@ -68,16 +77,20 @@ function resolveNameConflicts(
   contacts: ContactImport[],
   existingContacts: Contact[],
 ): { name: string; address: string; accountId: string }[] {
-  const allExistingNames = new Set(existingContacts.map((c) => c.name.toLowerCase()));
+  // Use sanitized names for all comparisons to prevent optical duplicates
+  const allExistingNames = new Set(existingContacts.map((c) => sanitizeContactName(c.name).toLowerCase()));
   const usedNames = new Set<string>();
   const resolved: { name: string; address: string; accountId: string }[] = [];
 
   for (const contact of contacts) {
     const accountId = toAccountId(contact.address);
-    let finalName = contact.name;
+    const sanitizedName = sanitizeContactName(contact.name);
+    let finalName = sanitizedName;
     let nameIndex = 1;
 
-    const existingWithSameName = existingContacts.find((c) => c.name.toLowerCase() === contact.name.toLowerCase());
+    const existingWithSameName = existingContacts.find(
+      (c) => sanitizeContactName(c.name).toLowerCase() === sanitizedName.toLowerCase(),
+    );
     const isAccountIdConflict = existingWithSameName && existingWithSameName.accountId === accountId;
 
     if (!isAccountIdConflict && allExistingNames.has(finalName.toLowerCase())) {
@@ -94,12 +107,12 @@ function resolveNameConflicts(
     if (usedNames.has(finalName.toLowerCase())) {
       nameIndex = 1;
       while (
-        allExistingNames.has(`${contact.name} (${nameIndex})`.toLowerCase()) ||
-        usedNames.has(`${contact.name} (${nameIndex})`.toLowerCase())
+        allExistingNames.has(`${sanitizedName} (${nameIndex})`.toLowerCase()) ||
+        usedNames.has(`${sanitizedName} (${nameIndex})`.toLowerCase())
       ) {
         nameIndex++;
       }
-      finalName = `${contact.name} (${nameIndex})`;
+      finalName = `${sanitizedName} (${nameIndex})`;
     }
 
     usedNames.add(finalName.toLowerCase());

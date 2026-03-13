@@ -4,7 +4,7 @@ import { t } from 'i18next';
 import { not } from 'patronum';
 
 import { type Contact } from '@/shared/core';
-import { toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { sanitizeContactName, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 
 type ContactFormFields = {
@@ -15,7 +15,9 @@ type ContactFormFields = {
 function validateNameUnique(value: string, _: unknown, contacts: Contact[]): boolean {
   if (!value) return true;
 
-  return contacts.every((contact) => contact.name.toLowerCase() !== value.toLowerCase());
+  const sanitized = sanitizeContactName(value);
+
+  return contacts.every((contact) => sanitizeContactName(contact.name).toLowerCase() !== sanitized.toLowerCase());
 }
 
 function validateAddressUnique(value: string, _: unknown, contacts: Contact[]): boolean {
@@ -33,8 +35,12 @@ function validateNameUniqueEdit(
 ): boolean {
   if (!value) return true;
 
-  const isSameName = value.toLowerCase() === params.contactToEdit.name.toLowerCase();
-  const isUnique = params.contacts.every((contact) => contact.name.toLowerCase() !== value.toLowerCase());
+  const sanitized = sanitizeContactName(value).toLowerCase();
+  const sanitizedOriginal = sanitizeContactName(params.contactToEdit.name).toLowerCase();
+  const isSameName = sanitized === sanitizedOriginal;
+  const isUnique = params.contacts.every(
+    (contact) => sanitizeContactName(contact.name).toLowerCase() !== sanitized,
+  );
 
   return isSameName || isUnique;
 }
@@ -63,6 +69,11 @@ export function createCreateFormModel() {
         init: '',
         rules: [
           { name: 'required', errorText: t('addressBook.createContact.nameRequiredError'), validator: Boolean },
+          {
+            name: 'invalid',
+            errorText: t('addressBook.createContact.nameRequiredError'),
+            validator: (value: string) => sanitizeContactName(value).length > 0,
+          },
           {
             name: 'exist',
             errorText: t('addressBook.createContact.nameExistsError'),
@@ -103,7 +114,7 @@ export function createCreateFormModel() {
       const address = toAddress(data.address);
 
       return {
-        name: data.name,
+        name: sanitizeContactName(data.name),
         address,
         accountId: toAccountId(address),
         source: 'local' as const,
@@ -144,6 +155,11 @@ export function createEditFormModel() {
         init: '',
         rules: [
           { name: 'required', errorText: t('addressBook.editContact.nameRequiredError'), validator: Boolean },
+          {
+            name: 'invalid',
+            errorText: t('addressBook.editContact.nameRequiredError'),
+            validator: (value: string) => sanitizeContactName(value).length > 0,
+          },
           {
             name: 'exist',
             errorText: t('addressBook.editContact.nameExistsError'),
@@ -198,7 +214,7 @@ export function createEditFormModel() {
     filter: (contactToEdit): contactToEdit is Contact => contactToEdit !== null,
     fn: (contactToEdit, form) => {
       const address = toAddress(form.address);
-      const base = { ...contactToEdit, name: form.name, address, accountId: toAccountId(address) };
+      const base = { ...contactToEdit, name: sanitizeContactName(form.name), address, accountId: toAccountId(address) };
 
       return base as Contact;
     },
