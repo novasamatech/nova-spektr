@@ -1,3 +1,4 @@
+import './polyfills';
 import './index.css';
 import './document.css';
 import './styles/theme/default.css';

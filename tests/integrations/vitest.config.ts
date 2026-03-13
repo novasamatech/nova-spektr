@@ -1,11 +1,11 @@
 import { resolve } from 'node:path';
 
-import { type UserConfigFnPromise, type ViteUserConfig, mergeConfig } from 'vitest/config';
+import { type ViteUserConfig, type ViteUserConfigFnPromise, mergeConfig } from 'vitest/config';
 
 import { folders } from '../../config/index.js';
 import rendererConfig from '../../vite.config.renderer';
 
-const config: UserConfigFnPromise = async (options) => {
+const config: ViteUserConfigFnPromise = async (options) => {
   const base = await rendererConfig(options);
   const testConfig: ViteUserConfig = {
     cacheDir: resolve(folders.root, 'node_modules/.cache/vitest'),
