@@ -10,7 +10,7 @@ type DashboardEntry = {
   name: string;
   address: string;
   accountId: string;
-  source: 'wallet' | 'contact';
+  source: 'wallet' | 'local-contact' | 'backend-contact';
   walletId?: ID;
   walletName?: string;
   walletType?: WalletType;
@@ -34,9 +34,12 @@ const $accountsWithWallets = combine(walletModel.$availableAccounts, walletModel
 }));
 
 const $allEntries = combine(
-  $accountsWithWallets,
-  contactModel.$contacts,
-  ({ accounts, wallets }, contacts): DashboardEntry[] => {
+  {
+    accountsWithWallets: $accountsWithWallets,
+    localContacts: contactModel.$localContacts,
+    backendContacts: contactModel.$backendContacts,
+  },
+  ({ accountsWithWallets: { accounts, wallets }, localContacts, backendContacts }): DashboardEntry[] => {
     const walletNameById = new Map(wallets.map((w) => [w.id, w.name]));
     const walletTypeById = new Map(wallets.map((w) => [w.id, w.type]));
     const entries: DashboardEntry[] = [];
@@ -56,13 +59,23 @@ const $allEntries = combine(
       });
     }
 
-    for (const contact of contacts) {
+    for (const contact of localContacts) {
       entries.push({
         id: contact.id,
         name: contact.name,
         address: contact.address,
         accountId: contact.accountId,
-        source: 'contact',
+        source: 'local-contact',
+      });
+    }
+
+    for (const contact of backendContacts) {
+      entries.push({
+        id: contact.id,
+        name: contact.name,
+        address: contact.address,
+        accountId: contact.accountId,
+        source: 'backend-contact',
       });
     }
 

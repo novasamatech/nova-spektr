@@ -3,7 +3,7 @@ import { createStore } from 'effector';
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { Paths } from '@/shared/routes';
-import { navigationTopLinksPipeline } from '@/features/app-shell';
+import { NavItem, navigationBottomLinksSlot } from '@/features/app-shell';
 
 export const dashboardNavigationFeature = createFeature({
   name: 'dashboard/navigation',
@@ -11,11 +11,7 @@ export const dashboardNavigationFeature = createFeature({
   enable: $features.map(({ dashboard }) => dashboard),
 });
 
-dashboardNavigationFeature.inject(navigationTopLinksPipeline, (items) => {
-  return items.concat({
-    order: -1,
-    icon: 'dashboard',
-    title: 'navigation.dashboardLabel',
-    link: Paths.DASHBOARD,
-  });
+dashboardNavigationFeature.inject(navigationBottomLinksSlot, {
+  order: -1,
+  render: () => <NavItem icon="dashboard" title="navigation.dashboardLabel" link={Paths.DASHBOARD} />,
 });

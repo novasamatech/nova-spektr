@@ -482,11 +482,19 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "tabs": {
+      "overview": "Overview",
+      "staking": "Staking",
+      "governance": "Governance",
+      "alerts": "Alerts",
+      "comingSoon": "Coming soon"
+    },
     "accountSelector": {
       "placeholder": "Select accounts",
       "allAccounts": "All accounts",
-      "walletsGroup": "Wallets",
-      "contactsGroup": "Contacts",
+      "walletsGroup": "Your accounts",
+      "localContactsGroup": "My Contacts",
+      "backendContactsGroup": "External Contacts",
       "selectedCount_one": "{{count}} account selected",
       "selectedCount_other": "{{count}} accounts selected"
     },
