@@ -10,7 +10,7 @@ import { AssetBalance } from '@/shared/ui-entities';
 import { CardStack, Checkbox, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
-import { useStakingData } from '@/entities/staking';
+import { stakingUtils } from '@/entities/staking';
 import { type NominatorInfo } from '../lib/types';
 
 import { NominatorsItem } from './NominatorItem';
@@ -39,7 +39,7 @@ export const ShardedList = ({
   getContent,
 }: Props) => {
   const { t } = useI18n();
-  const { getNextUnstakingEra, hasRedeem } = useStakingData();
+  const { getNextUnstakingEra, hasRedeem } = stakingUtils;
 
   const selectAllShards = (isChecked: boolean) => {
     for (const shard of shardsStake) {

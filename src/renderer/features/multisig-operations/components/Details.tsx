@@ -17,7 +17,7 @@ import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
-import { SelectedValidatorsModal, useValidatorsMap } from '@/entities/staking';
+import { SelectedValidatorsModal, useActiveEra, useValidators } from '@/entities/staking';
 import {
   isAddProxyTransaction,
   isManageProxyTransaction,
@@ -93,7 +93,8 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
 
   const defaultAsset = chain?.assets?.[0];
 
-  const validatorsMap = useValidatorsMap(api);
+  const { data: era } = useActiveEra({ chainId: operation.chainId, api });
+  const { data: validatorsMap } = useValidators({ chainId: operation.chainId, api, era });
 
   const [isValidatorsOpen, toggleValidators] = useToggle();
 

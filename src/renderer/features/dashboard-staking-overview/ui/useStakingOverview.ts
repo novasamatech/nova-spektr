@@ -15,9 +15,8 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useApi } from '@/entities/network';
 import { networkModel } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { type StakingMap, AssetHubChains, useStaking } from '@/entities/staking';
+import { type StakingMap, AssetHubChains, useActiveEra, useStaking } from '@/entities/staking';
 
-import { useActiveEra } from './useActiveEra';
 import { useActiveValidatorCount } from './useActiveValidatorCount';
 
 export type ChainStakingSummary = {
@@ -93,8 +92,8 @@ export const useStakingOverview = (accountIds: string[]): StakingOverviewData =>
   const polkadotApi = useApi(POLKADOT_AH_CHAIN_ID);
   const kusamaApi = useApi(KUSAMA_AH_CHAIN_ID);
 
-  const polkadotEra = useActiveEra(polkadotApi);
-  const kusamaEra = useActiveEra(kusamaApi);
+  const { data: polkadotEra } = useActiveEra({ chainId: POLKADOT_AH_CHAIN_ID, api: polkadotApi });
+  const { data: kusamaEra } = useActiveEra({ chainId: KUSAMA_AH_CHAIN_ID, api: kusamaApi });
 
   const typedAccountIds = useMemo(() => accountIds.map((id) => toAccountId(id)), [accountIds]);
 

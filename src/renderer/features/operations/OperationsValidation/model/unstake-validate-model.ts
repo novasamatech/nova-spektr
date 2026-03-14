@@ -6,7 +6,7 @@ import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } fr
 import { ZERO_BALANCE, getAssetById, getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { type StakingMap, stakingResource } from '@/entities/staking';
+import { type StakingMap, staking } from '@/entities/staking';
 import { transactionService } from '@/entities/transaction';
 import { UnstakeRules } from '../lib/unstake-rules';
 import { validationUtils } from '../lib/validation-utils';
@@ -67,7 +67,7 @@ const validateFx = attach({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     balances: balanceModel.$balanceMap,
-    stakingCache: stakingResource.$cache,
+    stakingCache: staking.stakingResource.$cache,
   },
   async effect({ chains, balances, apis, stakingCache }, { id, transaction }: ValidationStartedParams) {
     const chain = chains[transaction.chainId];

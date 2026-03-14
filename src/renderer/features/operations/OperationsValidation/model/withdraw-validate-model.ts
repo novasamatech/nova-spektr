@@ -8,7 +8,7 @@ import { assert, getNativeAsset, redeemableAmount, transferableAmount } from '@/
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { type StakingMap, eraService, useStakingData } from '@/entities/staking';
+import { type StakingMap, eraService, stakingService } from '@/entities/staking';
 import { transactionService } from '@/entities/transaction';
 import { validationUtils } from '../lib/validation-utils';
 import { WithdrawRules } from '../lib/withdraw-rules';
@@ -32,7 +32,7 @@ type StakingParams = {
   accounts: AccountId[];
 };
 const fetchStakingFx = createEffect(({ chainId, api, accounts }: StakingParams) => {
-  return useStakingData().fetchLedger(chainId, api, accounts);
+  return stakingService.fetchStakingLedger(chainId, api, accounts);
 });
 
 type ValidateParams = {

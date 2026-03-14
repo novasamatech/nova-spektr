@@ -137,6 +137,14 @@ export const bootstrap = () => {
     import('@/features/staking-operation-details').then(({ stakingOperationDetailFeature }) => stakingOperationDetailFeature),
     import('@/features/staking-basket').then(({ stakingBasketFeature }) => stakingBasketFeature),
 
+    import('@/features/staking-unstake').then(({ stakingUnstakeFeature }) => stakingUnstakeFeature),
+    import('@/features/staking-withdraw').then(({ stakingWithdrawFeature }) => stakingWithdrawFeature),
+    import('@/features/staking-bond-extra').then(({ stakingBondExtraFeature }) => stakingBondExtraFeature),
+    import('@/features/staking-restake').then(({ stakingRestakeFeature }) => stakingRestakeFeature),
+    import('@/features/staking-payee').then(({ stakingPayeeFeature }) => stakingPayeeFeature),
+    import('@/features/staking-nominate').then(({ stakingNominateFeature }) => stakingNominateFeature),
+    import('@/features/staking-bond-nominate').then(({ stakingBondNominateFeature }) => stakingBondNominateFeature),
+
     import('@/features/flexible-operation-details').then(({ flexibleOperationDetailFeature }) => flexibleOperationDetailFeature),
 
     import('@/features/proxy-operation-details').then(({ proxyOperationDetailFeature }) => proxyOperationDetailFeature),
