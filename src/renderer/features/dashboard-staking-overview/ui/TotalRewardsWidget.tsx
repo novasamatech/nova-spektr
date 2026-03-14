@@ -94,11 +94,7 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <TitleText className="mt-1">
-              {pending && totalFiat === null ? (
-                <Skeleton width={120} height={28} />
-              ) : (
-                <Price amount={totalFiat ?? '0'} currency={currency} />
-              )}
+              {pending ? <Skeleton width={30} height={7} /> : <Price amount={totalFiat ?? '0'} currency={currency} />}
             </TitleText>
           </div>
         </div>

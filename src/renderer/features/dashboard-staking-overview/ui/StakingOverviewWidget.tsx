@@ -45,11 +45,7 @@ export const StakingOverviewWidget = ({ accountIds, allEntries }: Props) => {
     <div className={containerClass}>
       <FootnoteText className="text-text-tertiary">{t('dashboard.stakingOverview.title')}</FootnoteText>
       <TitleText className="mt-1">
-        {pending && totalFiat === null ? (
-          <Skeleton width={120} height={28} />
-        ) : (
-          <Price amount={totalFiat ?? '0'} currency={currency} />
-        )}
+        {pending ? <Skeleton width={30} height={7} /> : <Price amount={totalFiat ?? '0'} currency={currency} />}
       </TitleText>
       {totalActiveValidators !== undefined && totalActiveValidators > 0 && (
         <FootnoteText className="text-text-tertiary">
