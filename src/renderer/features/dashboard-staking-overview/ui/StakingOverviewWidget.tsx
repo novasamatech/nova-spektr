@@ -1,5 +1,5 @@
 import { default as BigNumber } from 'bignumber.js';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -19,7 +19,7 @@ type Props = {
 
 const containerClass = 'w-[560px] rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
-export const StakingOverviewWidget = ({ accountIds, allEntries }: Props) => {
+export const StakingOverviewWidget = memo(({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const { chains, stakingDataByChain, totalFiat, totalActiveValidators, pending, fiatFlag, currency } =
     useStakingOverview(accountIds);
@@ -86,6 +86,13 @@ export const StakingOverviewWidget = ({ accountIds, allEntries }: Props) => {
                               </>
                             )}
                           </FootnoteText>
+                          {chain.apy ? (
+                            <FootnoteText className="text-text-positive">
+                              {t('dashboard.stakingOverview.apy', { apy: chain.apy })}
+                            </FootnoteText>
+                          ) : (
+                            pending && <Skeleton width={16} height={3} />
+                          )}
                         </div>
                       </div>
                       <FootnoteText className="text-text-secondary">
@@ -147,4 +154,4 @@ export const StakingOverviewWidget = ({ accountIds, allEntries }: Props) => {
       )}
     </div>
   );
-};
+});

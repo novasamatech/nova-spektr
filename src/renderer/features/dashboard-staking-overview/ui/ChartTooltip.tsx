@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { CHART_TOOLTIP_STYLE } from '@/shared/ui/chart-constants';
 
 type TooltipEntry = {
@@ -14,7 +16,7 @@ type Props = {
   payload?: TooltipPayloadItem[];
 };
 
-export const ChartTooltip = ({ active, payload }: Props) => {
+export const ChartTooltip = memo(({ active, payload }: Props) => {
   if (!active || !payload?.length) return null;
 
   const item = payload[0];
@@ -26,4 +28,4 @@ export const ChartTooltip = ({ active, payload }: Props) => {
       <div>{item.payload.percent.toFixed(1)}%</div>
     </div>
   );
-};
+});

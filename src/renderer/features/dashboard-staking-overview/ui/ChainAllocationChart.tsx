@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
 
 import { getColorByPriceId } from '@/shared/ui/chart-constants';
@@ -21,7 +22,7 @@ type Props = {
   chains: ChainEntry[];
 };
 
-export const ChainAllocationChart = ({ chains }: Props) => {
+export const ChainAllocationChart = memo(({ chains }: Props) => {
   const filtered = chains
     .map((c, i) => ({
       name: c.chainName,
@@ -44,4 +45,4 @@ export const ChainAllocationChart = ({ chains }: Props) => {
       <Tooltip content={<ChartTooltip />} />
     </PieChart>
   );
-};
+});

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
@@ -17,7 +17,7 @@ type Props = {
   onSelect?: (holding: Holding) => void;
 };
 
-export const HoldingsList = ({ holdings, currency, onSelect }: Props) => {
+export const HoldingsList = memo(({ holdings, currency, onSelect }: Props) => {
   const { t } = useI18n();
 
   const colors = useMemo(() => {
@@ -53,7 +53,7 @@ export const HoldingsList = ({ holdings, currency, onSelect }: Props) => {
       </div>
     </div>
   );
-};
+});
 
 type RowProps = {
   holding: Holding;
@@ -62,7 +62,7 @@ type RowProps = {
   onSelect?: (holding: Holding) => void;
 };
 
-const HoldingRow = ({ holding, color, currency, onSelect }: RowProps) => {
+const HoldingRow = memo(({ holding, color, currency, onSelect }: RowProps) => {
   const { formatted, suffix } = formatBalance(holding.totalRaw, holding.precision);
 
   return (
@@ -86,4 +86,4 @@ const HoldingRow = ({ holding, color, currency, onSelect }: RowProps) => {
       </div>
     </div>
   );
-};
+});

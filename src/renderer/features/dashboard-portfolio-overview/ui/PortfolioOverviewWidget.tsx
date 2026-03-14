@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -28,7 +28,7 @@ const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold 
 const activeToggleClass = 'bg-white text-text-primary shadow-sm';
 const inactiveToggleClass = 'text-text-tertiary hover:text-text-secondary';
 
-export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
+export const PortfolioOverviewWidget = memo(({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const { holdings, totalFiat, fiatFlag, currency } = useHoldings(accountIds);
   const { chainHoldings } = useChainHoldings(accountIds);
@@ -115,4 +115,4 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
       )}
     </div>
   );
-};
+});

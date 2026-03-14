@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -33,7 +33,7 @@ const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold 
 const activeClass = 'bg-white text-text-primary shadow-sm';
 const inactiveClass = 'text-text-tertiary hover:text-text-secondary';
 
-export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
+export const TotalRewardsWidget = memo(({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const [timeRange, setTimeRange] = useState<RewardsTimeRange>('all');
   // Freeze `since` per range: computed once on first selection, reused on return.
@@ -147,7 +147,7 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
             <div className="my-4 border-t border-divider" />
             <div className="flex gap-3">
               <Skeleton circle width={40} />
-              <div className="flex flex-1 flex-col justify-center gap-3">
+              <div className="flex flex-1 flex-col gap-3">
                 <Skeleton width="100%" height={10} />
                 <Skeleton width="100%" height={10} />
               </div>
@@ -168,4 +168,4 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
       )}
     </>
   );
-};
+});

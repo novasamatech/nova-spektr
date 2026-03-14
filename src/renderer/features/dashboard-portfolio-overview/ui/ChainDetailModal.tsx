@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
 
 import { type CurrencyItem } from '@/shared/api/price-provider';
@@ -25,7 +25,7 @@ type TooltipPayloadItem = {
   payload: ChartEntry;
 };
 
-const ChartTooltip = ({ active, payload }: { active?: boolean; payload?: TooltipPayloadItem[] }) => {
+const ChartTooltip = memo(({ active, payload }: { active?: boolean; payload?: TooltipPayloadItem[] }) => {
   if (!active || !payload?.length) return null;
 
   const item = payload[0];
@@ -44,7 +44,7 @@ const ChartTooltip = ({ active, payload }: { active?: boolean; payload?: Tooltip
       <div>{row.sharePercent.toFixed(1)}%</div>
     </div>
   );
-};
+});
 
 type Props = {
   chainHolding: ChainHolding;
@@ -53,7 +53,7 @@ type Props = {
   onClose: () => void;
 };
 
-export const ChainDetailModal = ({ chainHolding, accountIds, currency, onClose }: Props) => {
+export const ChainDetailModal = memo(({ chainHolding, accountIds, currency, onClose }: Props) => {
   const { t } = useI18n();
   const { rows } = useChainBreakdown(chainHolding.chainId, accountIds);
 
@@ -170,4 +170,4 @@ export const ChainDetailModal = ({ chainHolding, accountIds, currency, onClose }
       </Modal.Content>
     </Modal>
   );
-};
+});
