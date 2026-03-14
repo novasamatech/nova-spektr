@@ -1,5 +1,5 @@
 import { default as BigNumber } from 'bignumber.js';
-import { memo, useState } from 'react';
+import { useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -19,7 +19,7 @@ type Props = {
 
 const containerClass = 'w-[560px] rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
-export const StakingOverviewWidget = memo(({ accountIds, allEntries }: Props) => {
+export const StakingOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const { chains, stakingDataByChain, totalFiat, totalActiveValidators, pending, fiatFlag, currency } =
     useStakingOverview(accountIds);
@@ -154,4 +154,4 @@ export const StakingOverviewWidget = memo(({ accountIds, allEntries }: Props) =>
       )}
     </div>
   );
-});
+};

@@ -4,8 +4,10 @@ import { useResource } from '@/shared/query';
 import { type ValidatorMap } from '../_lib/types';
 
 import {
+  type ApyResourceParams,
   type NominatorsResourceParams,
   type ValidatorsResourceParams,
+  apyResource,
   nominatorsCacheKey,
   nominatorsResource,
   validatorsResource,
@@ -26,5 +28,13 @@ export const useNominators = (params: NullableMap<NominatorsResourceParams>) => 
     params: nonNullableMap(params) ? params : null,
     defaultValue: EMPTY_MAP,
     map: (cache, p: NominatorsResourceParams) => cache[nominatorsCacheKey(p.chainId, p.stash)] ?? EMPTY_MAP,
+  });
+};
+
+export const useNetworkApy = (params: NullableMap<ApyResourceParams>) => {
+  return useResource(apyResource, {
+    params: nonNullableMap(params) ? params : null,
+    defaultValue: undefined as string | undefined,
+    map: (cache, { chainId }) => cache[chainId] ?? undefined,
   });
 };

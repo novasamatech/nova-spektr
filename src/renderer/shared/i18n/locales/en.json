@@ -558,6 +558,7 @@
       "redeemable": "Redeemable",
       "activeValidators_one": "{count} active validator",
       "activeValidators_other": "{count} active validators",
+      "apy": "{apy}% APY",
       "stakingDetail": {
         "title": "{chain} Staking",
         "account": "Account",

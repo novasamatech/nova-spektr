@@ -12,7 +12,7 @@ import {
   unlockingAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type StakingMap, AssetHubChains, useActiveEra, useStaking } from '@/domains/staking';
+import { type StakingMap, AssetHubChains, useActiveEra, useNetworkApy, useStaking } from '@/domains/staking';
 import { networkModel, useApi } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
 
@@ -32,6 +32,7 @@ export type ChainStakingSummary = {
   unstakingFiatValue: string;
   redeemableFiatValue: string;
   activeValidatorCount?: number;
+  apy?: string;
 };
 
 export type StakingOverviewData = {
@@ -116,12 +117,31 @@ export const useStakingOverview = (accountIds: string[]): StakingOverviewData =>
   );
   const { count: kusamaValidatorCount } = useActiveValidatorCount(kusamaApi, kusamaStaking, typedAccountIds, kusamaEra);
 
+  const { data: polkadotApy, pending: polkadotApyPending } = useNetworkApy({
+    api: polkadotApi,
+    era: polkadotEra,
+    chainId: POLKADOT_AH_CHAIN_ID,
+  });
+  const { data: kusamaApy, pending: kusamaApyPending } = useNetworkApy({
+    api: kusamaApi,
+    era: kusamaEra,
+    chainId: KUSAMA_AH_CHAIN_ID,
+  });
+
   const validatorCountByChain: Record<string, number | undefined> = useMemo(
     () => ({
       [POLKADOT_AH_CHAIN_ID]: polkadotValidatorCount,
       [KUSAMA_AH_CHAIN_ID]: kusamaValidatorCount,
     }),
     [polkadotValidatorCount, kusamaValidatorCount],
+  );
+
+  const apyByChain: Record<string, string | undefined> = useMemo(
+    () => ({
+      [POLKADOT_AH_CHAIN_ID]: polkadotApy,
+      [KUSAMA_AH_CHAIN_ID]: kusamaApy,
+    }),
+    [polkadotApy, kusamaApy],
   );
 
   const result = useMemo(() => {
@@ -172,6 +192,7 @@ export const useStakingOverview = (accountIds: string[]): StakingOverviewData =>
         unstakingFiatValue: toFiat(breakdown.unstaking).toString(),
         redeemableFiatValue: toFiat(breakdown.redeemable).toString(),
         activeValidatorCount: validatorCountByChain[chainId],
+        apy: apyByChain[chainId],
       });
     }
 
@@ -190,11 +211,12 @@ export const useStakingOverview = (accountIds: string[]): StakingOverviewData =>
     polkadotEra,
     kusamaEra,
     validatorCountByChain,
+    apyByChain,
   ]);
 
   return {
     ...result,
-    pending: accountIds.length > 0 && (polkadotPending || kusamaPending),
+    pending: accountIds.length > 0 && (polkadotPending || kusamaPending || polkadotApyPending || kusamaApyPending),
     fiatFlag,
     currency,
   };

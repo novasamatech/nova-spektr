@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -23,9 +23,10 @@ const TABS = ['overview', 'staking', 'governance', 'alerts'] as const;
 
 export const Dashboard = () => {
   const { t } = useI18n();
-  const [activeTab, setActiveTab] = useState<string>('overview');
   const allEntries = useUnit(dashboardModel.$allEntries);
   const selectedIds = useUnit(dashboardModel.$selectedIds);
+  const activeTab = useUnit(dashboardModel.$activeTab);
+  const tabChanged = useUnit(dashboardModel.tabChanged);
 
   const accountIds = useMemo(() => {
     const selectedIdSet = new Set(selectedIds);
@@ -46,7 +47,7 @@ export const Dashboard = () => {
       </Header>
 
       <div className="flex min-h-0 flex-1 flex-col px-4">
-        <Tabs value={activeTab} onChange={setActiveTab}>
+        <Tabs value={activeTab} onChange={tabChanged}>
           <div className="w-fit">
             <Tabs.List>
               {TABS.map((tab) => (

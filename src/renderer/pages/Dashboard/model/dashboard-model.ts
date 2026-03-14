@@ -19,6 +19,11 @@ type DashboardEntry = {
 const selectionChanged = createEvent<string[]>();
 const selectAll = createEvent();
 const deselectAll = createEvent();
+const tabChanged = createEvent<string>();
+
+const $activeTab = createStore('overview');
+
+$activeTab.on(tabChanged, (_, tab) => tab);
 
 const $initialized = createStore(false);
 
@@ -149,10 +154,12 @@ export const dashboardModel = {
   $selectedIds: $validSelectedIds,
   $selectedAccounts,
   $selectedContactAccountIds,
+  $activeTab,
 
   selectionChanged,
   selectAll,
   deselectAll,
+  tabChanged,
 };
 
 export type { DashboardEntry };

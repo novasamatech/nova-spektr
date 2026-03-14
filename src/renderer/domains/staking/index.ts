@@ -27,7 +27,7 @@ export { useStaking } from './staking/hooks';
 // validators
 export { nominators, validators } from './validators/store';
 export { getAvgApy, getValidatorsApy, validatorsService } from './validators/service';
-export { useNominators, useValidators } from './validators/hooks';
+export { useNetworkApy, useNominators, useValidators } from './validators/hooks';
 
 // rewards
 export { rewards } from './rewards/store';
