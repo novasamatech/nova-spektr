@@ -8,9 +8,10 @@ import { Button, CaptionText, DetailRow, Duration, FootnoteText, Icon } from '@/
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
+import { stakingService } from '@/domains/staking';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { SelectedValidatorsModal, StakingPopover, UnstakingDuration, stakingService } from '@/entities/staking';
+import { SelectedValidatorsModal, StakingPopover, UnstakingDuration } from '@/entities/staking';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { type Config } from '../../../OperationsValidation';

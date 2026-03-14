@@ -4,10 +4,10 @@ import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
+import { CHART_TOOLTIP_STYLE, FALLBACK_COLORS, getColorByIndex } from '@/shared/ui/chart-constants';
+import { type ChainHolding } from '../hooks/useChainHoldings';
 
 import { Price } from './Price';
-import { CHART_TOOLTIP_STYLE, FALLBACK_COLORS, getChainColor } from './chartConstants';
-import { type ChainHolding } from './useChainHoldings';
 
 type ChartEntry = {
   name: string;
@@ -43,7 +43,7 @@ type Props = {
 export const ChainHoldingsList = ({ chainHoldings, currency, onSelect }: Props) => {
   const { t } = useI18n();
 
-  const colors = useMemo(() => chainHoldings.map((_, i) => getChainColor(i)), [chainHoldings]);
+  const colors = useMemo(() => chainHoldings.map((_, i) => getColorByIndex(i)), [chainHoldings]);
 
   const chartData = useMemo<ChartEntry[]>(() => {
     const filtered = chainHoldings

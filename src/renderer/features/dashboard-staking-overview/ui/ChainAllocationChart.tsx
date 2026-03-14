@@ -1,26 +1,32 @@
-import { Cell, Pie, PieChart, Tooltip } from 'recharts';
+import { Pie, PieChart, Tooltip } from 'recharts';
+
+import { getColorByPriceId } from '@/shared/ui/chart-constants';
 
 import { ChartTooltip } from './ChartTooltip';
-import { getChainColor } from './chartConstants';
-import { type ChainStakingSummary } from './useStakingOverview';
+
+type ChainEntry = {
+  chainName: string;
+  fiatValue: string;
+  priceId: string;
+};
 
 type ChartEntry = {
   name: string;
   value: number;
   percent: number;
-  color: string;
+  fill: string;
 };
 
 type Props = {
-  chains: ChainStakingSummary[];
+  chains: ChainEntry[];
 };
 
-export const StakingAllocationChart = ({ chains }: Props) => {
+export const ChainAllocationChart = ({ chains }: Props) => {
   const filtered = chains
     .map((c, i) => ({
       name: c.chainName,
       value: parseFloat(c.fiatValue),
-      color: getChainColor(c.priceId, i),
+      fill: getColorByPriceId(c.priceId, i),
     }))
     .filter((d) => d.value > 0);
 
@@ -30,15 +36,11 @@ export const StakingAllocationChart = ({ chains }: Props) => {
     percent: total > 0 ? (d.value / total) * 100 : 0,
   }));
 
-  if (data.length < 2) return null;
+  if (data.length === 0) return null;
 
   return (
     <PieChart width={160} height={160}>
-      <Pie data={data} innerRadius={50} outerRadius={75} dataKey="value" stroke="none" animationDuration={400}>
-        {data.map((entry) => (
-          <Cell key={entry.name} fill={entry.color} />
-        ))}
-      </Pie>
+      <Pie data={data} innerRadius={50} outerRadius={75} dataKey="value" stroke="none" animationDuration={400} />
       <Tooltip content={<ChartTooltip />} />
     </PieChart>
   );

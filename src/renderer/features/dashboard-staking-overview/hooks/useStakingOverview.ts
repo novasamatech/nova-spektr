@@ -12,10 +12,9 @@ import {
   unlockingAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { useApi } from '@/entities/network';
-import { networkModel } from '@/entities/network';
+import { type StakingMap, AssetHubChains, useActiveEra, useStaking } from '@/domains/staking';
+import { networkModel, useApi } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { type StakingMap, AssetHubChains, useActiveEra, useStaking } from '@/entities/staking';
 
 import { useActiveValidatorCount } from './useActiveValidatorCount';
 

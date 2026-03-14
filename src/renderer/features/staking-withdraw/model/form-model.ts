@@ -17,9 +17,9 @@ import {
 import { type ResourceRequestKey } from '@/shared/query';
 import { createComplexTxStore, createSignatoriesStore, createTxValidationStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
+import { eraService, staking } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { eraService, staking } from '@/entities/staking';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { withdrawValidator } from '@/features/operations/OperationsValidation';

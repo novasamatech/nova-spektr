@@ -16,6 +16,20 @@ const GET_TOTAL_REWARDS = `
   }
 `;
 
+const GET_PERIOD_REWARDS = `
+  query RewardsForPeriod($addresses: [String!]!, $since: BigFloat!) {
+    accountRewards(filter: {
+      address: { in: $addresses }
+      timestamp: { greaterThanOrEqualTo: $since }
+    }) {
+      groupedAggregates(groupBy: ADDRESS) {
+        keys
+        sum { amount }
+      }
+    }
+  }
+`;
+
 type RewardsQuery = {
   accumulatedRewards: {
     nodes: {
@@ -27,16 +41,27 @@ type RewardsQuery = {
   };
 };
 
+type PeriodRewardsQuery = {
+  accountRewards: {
+    groupedAggregates: {
+      keys: string[];
+      sum: { amount: string };
+    }[];
+  };
+};
+
 type FetchStakingRewardsParams = {
   accounts: AccountId[];
   rewardSources: RewardSource[];
   baseMap: RewardsMap;
+  since?: number;
 };
 
 export const fetchStakingRewards = async ({
   accounts,
   rewardSources,
   baseMap,
+  since,
 }: FetchStakingRewardsParams): Promise<RewardsMap> => {
   if (accounts.length === 0 || rewardSources.length === 0) {
     return baseMap;
@@ -59,20 +84,33 @@ export const fetchStakingRewards = async ({
     rewardSources.map(async ({ url, addressPrefix }) => {
       try {
         const client = new GraphQLClient(url);
+        const addresses = buildAddresses(addressPrefix);
 
-        const data = await client.request<RewardsQuery>(GET_TOTAL_REWARDS, {
-          addresses: buildAddresses(addressPrefix),
-        });
+        if (since !== undefined) {
+          const data = await client.request<PeriodRewardsQuery>(GET_PERIOD_REWARDS, {
+            addresses,
+            since: since.toString(),
+          });
 
-        const nodes = data.accumulatedRewards?.nodes ?? [];
+          const aggregates = data.accountRewards?.groupedAggregates ?? [];
 
-        for (const { id, amount } of nodes) {
-          const accountId = toAccountId(id);
-          if (!sums[accountId]) {
-            sums[accountId] = new BN(0);
+          for (const { keys: groupKeys, sum } of aggregates) {
+            const address = groupKeys[0];
+            if (!address) continue;
+            const accountId = toAccountId(address);
+            sums[accountId] = (sums[accountId] ?? new BN(0)).add(new BN(sum.amount));
           }
+        } else {
+          const data = await client.request<RewardsQuery>(GET_TOTAL_REWARDS, {
+            addresses,
+          });
 
-          sums[accountId] = sums[accountId]!.add(new BN(amount));
+          const nodes = data.accumulatedRewards?.nodes ?? [];
+
+          for (const { id, amount } of nodes) {
+            const accountId = toAccountId(id);
+            sums[accountId] = (sums[accountId] ?? new BN(0)).add(new BN(amount));
+          }
         }
       } catch (error) {
         console.error('Staking: rewards request failed for', url, error);

@@ -532,6 +532,24 @@
         "share": "Share"
       }
     },
+    "totalRewards": {
+      "title": "Total Rewards",
+      "range7d": "7D",
+      "range1m": "1M",
+      "range6m": "6M",
+      "range1y": "1Y",
+      "rangeAll": "Max",
+      "noRewards": "No staking rewards found",
+      "rewardsDetail": {
+        "title": "{chain} Rewards",
+        "account": "Account",
+        "rewards": "Rewards",
+        "value": "Value",
+        "share": "Share",
+        "accountCount_one": "{count} account",
+        "accountCount_other": "{count} accounts"
+      }
+    },
     "stakingOverview": {
       "title": "Staking Overview",
       "totalStaked": "Total Staked",

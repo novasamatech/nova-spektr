@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { type EraIndex } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type StakingMap } from '@/entities/staking';
+import { type StakingMap } from '@/domains/staking';
 
 type ActiveValidatorCountResult = {
   count: number | undefined;

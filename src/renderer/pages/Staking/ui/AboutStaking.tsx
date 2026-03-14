@@ -6,8 +6,8 @@ import { type Asset, type EraIndex, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Duration, FootnoteText, Shimmering } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
+import { stakingService } from '@/domains/staking';
 import { AssetFiatBalance } from '@/entities/price';
-import { stakingService } from '@/entities/staking';
 
 type Props = {
   api: ApiPromise | null;

@@ -10,7 +10,12 @@ import { type StakingRewardsParams, stakingRewardsResource } from './resource';
 
 const EMPTY_MAP: RewardsMap = {};
 
-export const useStakingRewards = (accounts: AccountId[], chain: Chain | null, chainsMap: Record<ChainId, Chain>) => {
+export const useStakingRewards = (
+  accounts: AccountId[],
+  chain: Chain | null,
+  chainsMap: Record<ChainId, Chain>,
+  since?: number,
+) => {
   const rewardSources = useMemo<RewardSource[]>(() => {
     if (!chain) return [];
 
@@ -40,14 +45,14 @@ export const useStakingRewards = (accounts: AccountId[], chain: Chain | null, ch
   const params = useMemo<StakingRewardsParams | null>(() => {
     if (!chain || accounts.length === 0 || rewardSources.length === 0) return null;
 
-    return { chainId: chain.chainId, accounts, rewardSources };
-  }, [chain, accounts, rewardSources]);
+    return { chainId: chain.chainId, accounts, rewardSources, since };
+  }, [chain, accounts, rewardSources, since]);
 
   const { data: rewards, pending: isRewardsLoading } = useResource(stakingRewardsResource, {
     params,
     defaultValue: EMPTY_MAP,
-    map: (cache: Record<ChainId, RewardsMap>, p: StakingRewardsParams) => {
-      const cached = cache[p.chainId];
+    map: (cache: Record<string, RewardsMap>, p: StakingRewardsParams) => {
+      const cached = cache[`${p.chainId}-${p.since ?? 'all'}`];
       if (!cached) return undefined;
 
       const merged: RewardsMap = {};

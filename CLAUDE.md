@@ -125,6 +125,7 @@ The renderer follows Feature-Sliced Design methodology:
 - **Dependency Injection** - Custom DI system in `shared/di/`
   - **Slots**: Page creates `createSlot<Props>({ name })`, renders `<Slot id={slot} props={...} />`. Features inject via `feature.inject(slot, { order, render: Component })`.
   - **Pipelines**: Data transformation chains (`createPipeline<Value>`). Features inject via `feature.inject(pipeline, (value) => transform(value))`.
+- **Feature file layout**: `ui/` contains React components only. Hooks (custom React hooks) live in a dedicated `hooks/` subfolder within the feature, not in `ui/`. Shared chart/visual constants belong in `shared/ui/chart-constants.ts`.
 - **Resource Management** - Data fetching abstractions in `shared/resource/`
 - **Query Resources** - Standard data-fetching pattern using `createQueryResource` + `useResource` from `shared/query/`. Reference implementations: `domains/governance/tracks/resource.ts` and `hooks.ts`. Prefer this over hand-rolled Effector effects with manual cache stores.
 - **Feature Flags** - Dynamic feature toggling system
@@ -182,7 +183,11 @@ The renderer follows Feature-Sliced Design methodology:
 - Prioritize code correctness and clarity. Speed and efficiency are secondary priorities unless otherwise specified.
 - Do not write organizational or comments that summarize the code. Comments should only be written in order to explain "why" the code is written in some way in the case there is a reason that is tricky / non-obvious.
 - **Avoid `as` type casts** - Use typeguards with actual runtime checks instead. Prefer `satisfies` for type validation without casting. Type casts hide potential bugs; typeguards catch them.
+- **`replace_all` rename trap**: Never use `replace_all: true` when the new name contains the old name as a substring (e.g. renaming `TimeRange` → `PriceHistoryTimeRange` corrupts existing `PriceHistoryTimeRange` into `PriceHistoryPriceHistoryTimeRange` and renames component identifiers containing the old string). Use targeted per-line edits instead.
 - **Branded types (`Address`, `AccountId`)**: `Address` (`@/shared/core`) and `AccountId` (`@/shared/polkadotjs-schemas`) are different branded string types. Use `toAddress(str)` from `@/shared/lib/utils` to convert plain strings to `Address` at call sites (e.g., for `<Identicon>`). Don't change data layer types just to satisfy a UI component's branded type.
+
+### UI/Chart Patterns
+- **Recharts single-segment pie**: Guard with `data.length === 0` not `data.length < 2`. Recharts renders a single pie segment as a valid full donut ring — `< 2` hides a legitimate "100% in one chain" state.
 
 ### UI Animation Patterns
 - **Smooth fold/collapse animations**: Never use conditional DOM branches (`if (folded) return <A>; return <B>`) for animated transitions. Keep identical DOM structure in both states; only change CSS classes (e.g. `max-w-0 opacity-0` ↔ `max-w-[180px] opacity-100`). DOM swaps cause instant jumps that CSS transitions can't smooth over.
@@ -191,3 +196,4 @@ The renderer follows Feature-Sliced Design methodology:
 
 ### DI System Quirks
 - **HMR doesn't work for Slot-injected components** — Components rendered via `<Slot>` require full page reload to pick up changes. Debug via browser console dynamic imports: `import('/@fs/...path...').then(m => m.store.$cache.getState())`.
+- **One slot registration per feature** — The DI system keys registrations as `feature: ${name}`. Calling `feature.inject(slot, ...)` twice on the same feature instance replaces the first registration — only the last component renders. Use two separate `createFeature()` instances with distinct names to inject two components into the same slot.

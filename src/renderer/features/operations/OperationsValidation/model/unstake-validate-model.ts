@@ -4,9 +4,9 @@ import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
 import { ZERO_BALANCE, getAssetById, getNativeAsset, transferableAmount } from '@/shared/lib/utils';
+import { type StakingMap, staking } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { type StakingMap, staking } from '@/entities/staking';
 import { transactionService } from '@/entities/transaction';
 import { UnstakeRules } from '../lib/unstake-rules';
 import { validationUtils } from '../lib/validation-utils';

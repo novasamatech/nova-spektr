@@ -1,11 +1,17 @@
 import { useStoreMap, useUnit } from 'effector-react';
+import { useState } from 'react';
 
+import { type PriceHistoryTimeRange } from '@/domains/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { TRACKED_ASSETS, priceHistoryModel } from '../model/price-history-model';
 
 import { PriceChartCard } from './PriceChartCard';
 import { TimeRangeToggle } from './TimeRangeToggle';
 import { DOT_COLOR, KSM_COLOR } from './chartConstants';
+
+const TRACKED_ASSETS = [
+  { id: 'polkadot', label: 'DOT' },
+  { id: 'kusama', label: 'KSM' },
+];
 
 const ASSET_COLORS: Record<string, string> = {
   polkadot: DOT_COLOR,
@@ -13,9 +19,10 @@ const ASSET_COLORS: Record<string, string> = {
 };
 
 export const PriceChartsWidget = () => {
+  const [timeRange, setTimeRange] = useState<PriceHistoryTimeRange>('7d');
+
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
-  const timeRange = useUnit(priceHistoryModel.$timeRange);
 
   const prices = useStoreMap({
     store: priceProviderModel.$assetsPrices,
@@ -42,7 +49,7 @@ export const PriceChartsWidget = () => {
 
   return (
     <div className="flex w-[480px] flex-col gap-3">
-      <TimeRangeToggle value={timeRange} onChange={priceHistoryModel.events.timeRangeChanged} />
+      <TimeRangeToggle value={timeRange} onChange={setTimeRange} />
       {TRACKED_ASSETS.map((asset) => (
         <PriceChartCard
           key={asset.id}

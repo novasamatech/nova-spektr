@@ -7,9 +7,10 @@ import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, getAssetById, keys, toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { type MultisigOperation, identity } from '@/domains/network';
+import { useActiveEra, useValidators } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { ValidatorsModal, useActiveEra, useValidators } from '@/entities/staking';
+import { ValidatorsModal } from '@/entities/staking';
 
 type Props = {
   operation: MultisigOperation;

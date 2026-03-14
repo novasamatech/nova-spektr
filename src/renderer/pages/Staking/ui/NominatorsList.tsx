@@ -10,7 +10,7 @@ import { FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { type AnyAccount, useAccountName } from '@/domains/network';
-import { stakingUtils } from '@/entities/staking';
+import { stakingUtils } from '@/domains/staking';
 import { type NominatorInfo } from '../lib/types';
 
 import { NominatorsItem } from './NominatorItem';

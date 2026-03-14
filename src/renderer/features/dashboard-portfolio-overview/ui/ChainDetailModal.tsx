@@ -1,22 +1,23 @@
 import { useMemo } from 'react';
-import { Cell, Pie, PieChart, Tooltip } from 'recharts';
+import { Pie, PieChart, Tooltip } from 'recharts';
 
 import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
+import { CHART_TOOLTIP_STYLE, getColorByPriceId } from '@/shared/ui/chart-constants';
 import { AssetIcon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
+import { type ChainAssetRow, useChainBreakdown } from '../hooks/useChainBreakdown';
+import { type ChainHolding } from '../hooks/useChainHoldings';
 
 import { Price } from './Price';
-import { CHART_TOOLTIP_STYLE, getAssetColor } from './chartConstants';
-import { type ChainAssetRow, useChainBreakdown } from './useChainBreakdown';
-import { type ChainHolding } from './useChainHoldings';
 
 type ChartEntry = {
   name: string;
   value: number;
   index: number;
+  fill: string;
   row: ChainAssetRow;
 };
 
@@ -58,7 +59,15 @@ export const ChainDetailModal = ({ chainHolding, accountIds, currency, onClose }
 
   const chartData = useMemo<ChartEntry[]>(
     () =>
-      rows.map((row, i) => ({ name: row.symbol, value: row.fiatValueNum, index: i, row })).filter((d) => d.value > 0),
+      rows
+        .map((row, i) => ({
+          name: row.symbol,
+          value: row.fiatValueNum,
+          index: i,
+          fill: getColorByPriceId(row.priceId, i),
+          row,
+        }))
+        .filter((d) => d.value > 0),
     [rows],
   );
 
@@ -71,7 +80,7 @@ export const ChainDetailModal = ({ chainHolding, accountIds, currency, onClose }
         <div className="flex items-center gap-2">
           <span
             className="h-2 w-2 shrink-0 rounded-full"
-            style={{ backgroundColor: getAssetColor(item.priceId, item.colorIndex) }}
+            style={{ backgroundColor: getColorByPriceId(item.priceId, item.colorIndex) }}
           />
           <AssetIcon asset={item} size={24} />
           <FootnoteText className="truncate font-semibold">{item.symbol}</FootnoteText>
@@ -149,11 +158,7 @@ export const ChainDetailModal = ({ chainHolding, accountIds, currency, onClose }
                 dataKey="value"
                 stroke="none"
                 animationDuration={400}
-              >
-                {chartData.map((entry) => (
-                  <Cell key={entry.index} fill={getAssetColor(entry.row.priceId, entry.index)} />
-                ))}
-              </Pie>
+              />
               <Tooltip content={<ChartTooltip />} />
             </PieChart>
           </div>

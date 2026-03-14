@@ -4,8 +4,8 @@ import { or } from 'patronum';
 import { localStorageService } from '@/shared/api/local-storage';
 import { type ChainId, ConnectionStatus } from '@/shared/core';
 import { getRelaychainAsset, nullable } from '@/shared/lib/utils';
+import { DEFAULT_STAKING_CHAIN, STAKING_NETWORK } from '@/domains/staking';
 import { networkModel, networkUtils } from '@/entities/network';
-import { DEFAULT_STAKING_CHAIN, STAKING_NETWORK } from '@/entities/staking';
 
 const selectChain = createEvent<ChainId>();
 const init = createEvent();

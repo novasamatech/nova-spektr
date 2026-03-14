@@ -7,7 +7,7 @@ import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query/types';
 import { accountService } from '@/domains/network';
-import { type StakingMap, staking } from '@/entities/staking';
+import { type StakingMap, staking } from '@/domains/staking';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { stakingNetwork } from '@/aggregates/staking-network';
 import { walletSelect } from '@/aggregates/wallet-select';

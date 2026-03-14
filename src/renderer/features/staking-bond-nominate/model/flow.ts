@@ -4,8 +4,8 @@ import { spread } from 'patronum';
 
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { multisigOperationService } from '@/domains/network';
+import { validatorsService } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { validatorsService } from '@/entities/staking';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';

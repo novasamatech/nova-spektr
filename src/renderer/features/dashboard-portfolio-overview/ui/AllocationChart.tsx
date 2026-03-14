@@ -1,9 +1,8 @@
 import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 
 import { formatBalance } from '@/shared/lib/utils';
-
-import { CHART_TOOLTIP_STYLE } from './chartConstants';
-import { type Holding } from './useHoldings';
+import { CHART_TOOLTIP_STYLE } from '@/shared/ui/chart-constants';
+import { type Holding } from '../hooks/useHoldings';
 
 type Props = {
   holdings: Holding[];

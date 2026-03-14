@@ -4,12 +4,12 @@ import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
+import { BRAND_COLORS, FALLBACK_COLORS, getColorByPriceId } from '@/shared/ui/chart-constants';
 import { AssetIcon } from '@/shared/ui-entities';
+import { type Holding } from '../hooks/useHoldings';
 
 import { AllocationChart } from './AllocationChart';
 import { Price } from './Price';
-import { BRAND_COLORS, FALLBACK_COLORS, getAssetColor } from './chartConstants';
-import { type Holding } from './useHoldings';
 
 type Props = {
   holdings: Holding[];
@@ -24,7 +24,7 @@ export const HoldingsList = ({ holdings, currency, onSelect }: Props) => {
     let idx = 0;
 
     return holdings.map((h) =>
-      BRAND_COLORS[h.priceId] ? getAssetColor(h.priceId, 0) : getAssetColor(h.priceId, idx++),
+      BRAND_COLORS[h.priceId] ? getColorByPriceId(h.priceId, 0) : getColorByPriceId(h.priceId, idx++),
     );
   }, [holdings]);
 

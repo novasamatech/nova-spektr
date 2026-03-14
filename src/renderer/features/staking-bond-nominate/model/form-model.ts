@@ -19,9 +19,9 @@ import {
 } from '@/shared/lib/utils';
 import { createComplexTxStore, createSignatoriesStore, createTxValidationStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { stakingUtils } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { stakingUtils } from '@/entities/staking';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';

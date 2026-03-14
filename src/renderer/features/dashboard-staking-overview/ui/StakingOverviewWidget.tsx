@@ -6,11 +6,11 @@ import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText, TitleText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
+import { useStakingOverview } from '../hooks/useStakingOverview';
 
+import { ChainAllocationChart } from './ChainAllocationChart';
 import { Price } from './Price';
-import { StakingAllocationChart } from './StakingAllocationChart';
 import { StakingDetailModal } from './StakingDetailModal';
-import { useStakingOverview } from './useStakingOverview';
 
 type Props = {
   accountIds: string[];
@@ -61,7 +61,7 @@ export const StakingOverviewWidget = ({ accountIds, allEntries }: Props) => {
         <>
           <div className="my-4 border-t border-divider" />
           <div className="flex gap-4">
-            <StakingAllocationChart chains={chains} />
+            <ChainAllocationChart chains={chains} />
             <div className="flex flex-1 flex-col gap-3">
               {chains.map((chain) => {
                 const { formatted, suffix } = formatBalance(chain.totalStaked, chain.precision);

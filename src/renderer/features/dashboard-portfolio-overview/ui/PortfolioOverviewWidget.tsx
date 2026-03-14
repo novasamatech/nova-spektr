@@ -4,14 +4,14 @@ import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, SmallTitleText, TitleText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
+import { useChainHoldings } from '../hooks/useChainHoldings';
+import { useHoldings } from '../hooks/useHoldings';
 
 import { AssetDetailModal } from './AssetDetailModal';
 import { ChainDetailModal } from './ChainDetailModal';
 import { ChainHoldingsList } from './ChainHoldingsList';
 import { HoldingsList } from './HoldingsList';
 import { Price } from './Price';
-import { useChainHoldings } from './useChainHoldings';
-import { useHoldings } from './useHoldings';
 
 type EntryLike = { accountId: string; name: string; address: string };
 

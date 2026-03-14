@@ -5,8 +5,8 @@ import { type Validator } from '@/shared/core/types/validator';
 import { getRelaychainAsset } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AccountIdentity, useIdentities } from '@/domains/network';
+import { useActiveEra, useNominators, useValidators } from '@/domains/staking';
 import { useApi, useChain } from '@/entities/network';
-import { useActiveEra, useNominators, useValidators } from '@/entities/staking';
 
 type NominatedValidatorsResult = {
   elected: Validator[];

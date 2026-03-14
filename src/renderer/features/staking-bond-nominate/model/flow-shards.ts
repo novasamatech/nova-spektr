@@ -13,9 +13,9 @@ import {
 } from '@/shared/core';
 import { TEST_ADDRESS, getNativeAsset, getRelaychainAsset, nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount, multisigOperationService } from '@/domains/network';
+import { validatorsService } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { operationsUtils } from '@/entities/operations';
-import { validatorsService } from '@/entities/staking';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';

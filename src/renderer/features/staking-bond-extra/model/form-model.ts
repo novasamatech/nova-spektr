@@ -21,9 +21,9 @@ import {
   createTxValidationStore,
 } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
+import { staking, stakingUtils } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { staking, stakingUtils } from '@/entities/staking';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';

@@ -11,28 +11,30 @@ export type StakingRewardsParams = {
   chainId: ChainId;
   accounts: AccountId[];
   rewardSources: RewardSource[];
+  since?: number;
 };
 
-const $rewardsCache = createStore<Record<ChainId, RewardsMap>>({});
+const $rewardsCache = createStore<Record<string, RewardsMap>>({});
 
 export const stakingRewardsResource = createQueryResource<StakingRewardsParams>({
-  key: ({ chainId, accounts }) => [chainId, ...accounts],
+  key: ({ chainId, accounts, since }) => [chainId, ...accounts, since ?? 'all'],
 })
   .name('staking-rewards')
-  .request<RewardsMap>(({ accounts, rewardSources }) => {
+  .request<RewardsMap>(({ accounts, rewardSources, since }) => {
     const baseMap = accounts.reduce<RewardsMap>((acc, account) => {
       acc[account] = '0';
 
       return acc;
     }, {});
 
-    return fetchStakingRewards({ accounts, rewardSources, baseMap });
+    return fetchStakingRewards({ accounts, rewardSources, baseMap, since });
   })
   .cache({
     store: $rewardsCache,
-    map: (state, rewards, { chainId }) => ({
+    map: (state, rewards, { chainId, since }) => ({
       ...state,
-      [chainId]: rewards,
+      [`${chainId}-${since ?? 'all'}`]: rewards,
     }),
+    staleAfter: 10 * 60 * 1000,
   })
   .build();

@@ -3,12 +3,13 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { getRoundedValue } from '@/shared/lib/utils';
+import { type RewardsMap } from '@/domains/staking';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { type StakingMap } from '@/entities/staking';
 
-import { type ChainStakingSummary } from './useStakingOverview';
+import { type EntryLike } from './useStakingBreakdown';
+import { type ChainRewardsSummary } from './useTotalRewards';
 
-export type StakingBreakdownRow = {
+export type RewardsBreakdownRow = {
   accountId: string;
   name: string;
   address: string;
@@ -22,16 +23,14 @@ export type StakingBreakdownRow = {
   colorIndex: number;
 };
 
-export type EntryLike = { accountId: string; name: string; address: string };
-
 type Params = {
-  stakingData: StakingMap;
-  chainSummary: ChainStakingSummary;
+  rewardsMap: RewardsMap;
+  chainSummary: ChainRewardsSummary;
   accountIds: string[];
   allEntries: EntryLike[];
 };
 
-export const useStakingBreakdown = ({ stakingData, chainSummary, accountIds, allEntries }: Params) => {
+export const useRewardsBreakdown = ({ rewardsMap, chainSummary, accountIds, allEntries }: Params) => {
   const prices = useUnit(priceProviderModel.$assetsPrices);
   const currency = useUnit(currencyModel.$activeCurrency);
 
@@ -46,17 +45,17 @@ export const useStakingBreakdown = ({ stakingData, chainSummary, accountIds, all
     const priceItem = prices[chainSummary.priceId]?.[currency.coingeckoId];
     const accountIdSet = new Set(accountIds);
 
-    const rawRows: StakingBreakdownRow[] = [];
+    const rawRows: RewardsBreakdownRow[] = [];
     let totalFiat = new BigNumber(0);
 
-    for (const [accountId, stake] of Object.entries(stakingData)) {
-      if (!accountIdSet.has(accountId) || !stake) continue;
+    for (const [accountId, reward] of Object.entries(rewardsMap)) {
+      if (!accountIdSet.has(accountId) || !reward) continue;
 
-      const totalBN = new BigNumber(stake.total);
-      if (totalBN.isZero()) continue;
+      const rewardBN = new BigNumber(reward);
+      if (rewardBN.isZero()) continue;
 
       const fiat = priceItem
-        ? new BigNumber(getRoundedValue(stake.total, priceItem.price, chainSummary.precision))
+        ? new BigNumber(getRoundedValue(reward, priceItem.price, chainSummary.precision))
         : new BigNumber(0);
 
       totalFiat = totalFiat.plus(fiat);
@@ -66,8 +65,8 @@ export const useStakingBreakdown = ({ stakingData, chainSummary, accountIds, all
         accountId,
         name: entry?.name ?? '',
         address: entry?.address ?? '',
-        rawAmount: stake.total,
-        rawAmountNum: totalBN.toNumber(),
+        rawAmount: reward,
+        rawAmountNum: rewardBN.toNumber(),
         fiatValue: fiat.toString(),
         fiatValueNum: fiat.toNumber(),
         sharePercent: 0,
@@ -88,5 +87,5 @@ export const useStakingBreakdown = ({ stakingData, chainSummary, accountIds, all
     }
 
     return { rows: rawRows };
-  }, [stakingData, chainSummary, accountIds, allEntries, prices, currency]);
+  }, [rewardsMap, chainSummary, accountIds, allEntries, prices, currency]);
 };

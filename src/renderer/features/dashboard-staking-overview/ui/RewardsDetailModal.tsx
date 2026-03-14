@@ -1,74 +1,50 @@
-import { useMemo } from 'react';
-import { Cell, Pie, PieChart, Tooltip } from 'recharts';
+import { Pie, PieChart, Tooltip } from 'recharts';
 
 import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { CHART_TOOLTIP_STYLE, FALLBACK_COLORS } from '@/shared/ui/chart-constants';
-import { AssetIcon, Identicon } from '@/shared/ui-entities';
+import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
+import { Identicon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
-import { type BreakdownRow, useHoldingBreakdown } from '../hooks/useHoldingBreakdown';
-import { type Holding } from '../hooks/useHoldings';
+import { type RewardsMap } from '@/domains/staking';
+import { type RewardsBreakdownRow, useRewardsBreakdown } from '../hooks/useRewardsBreakdown';
+import { type EntryLike } from '../hooks/useStakingBreakdown';
+import { type ChainRewardsSummary } from '../hooks/useTotalRewards';
 
+import { ChartTooltip } from './ChartTooltip';
 import { Price } from './Price';
 
-type ChartEntry = {
-  name: string;
-  value: number;
-  index: number;
-  row: BreakdownRow;
-};
-
-type TooltipPayloadItem = {
-  payload: ChartEntry;
-};
-
-const ChartTooltip = ({ active, payload }: { active?: boolean; payload?: TooltipPayloadItem[] }) => {
-  if (!active || !payload?.length) return null;
-
-  const item = payload[0];
-  if (!item) return null;
-
-  const { row } = item.payload;
-
-  return (
-    <div style={CHART_TOOLTIP_STYLE}>
-      <div style={{ fontWeight: 600 }}>{row.name || toShortAddress(row.address)}</div>
-      <div>{row.sharePercent.toFixed(1)}%</div>
-    </div>
-  );
-};
-
-type EntryLike = { accountId: string; name: string; address: string };
-
 type Props = {
-  holding: Holding;
+  chainSummary: ChainRewardsSummary;
+  rewardsMap: RewardsMap;
   accountIds: string[];
   allEntries: EntryLike[];
   currency: CurrencyItem | null;
   onClose: () => void;
 };
 
-export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, onClose }: Props) => {
+export const RewardsDetailModal = ({ chainSummary, rewardsMap, accountIds, allEntries, currency, onClose }: Props) => {
   const { t } = useI18n();
-  const { rows } = useHoldingBreakdown(holding.priceId, accountIds, allEntries);
-  const addressCount = rows.length;
-  const { formatted, suffix } = formatBalance(holding.totalRaw, holding.precision);
+  const { rows } = useRewardsBreakdown({ rewardsMap, chainSummary, accountIds, allEntries });
+  const { formatted, suffix } = formatBalance(chainSummary.totalRewards, chainSummary.precision);
 
-  const chartData = useMemo<ChartEntry[]>(
-    () =>
-      rows
-        .map((row, i) => ({ name: row.name || toShortAddress(row.address), value: row.fiatValueNum, index: i, row }))
-        .filter((d) => d.value > 0),
-    [rows],
-  );
+  const totalFiat = rows.reduce((sum, r) => sum + r.fiatValueNum, 0);
+  const chartData = rows
+    .map((row, i) => ({
+      name: row.name || toShortAddress(row.address),
+      value: row.fiatValueNum,
+      percent: totalFiat > 0 ? (row.fiatValueNum / totalFiat) * 100 : 0,
+      index: i,
+      fill: FALLBACK_COLORS[i % FALLBACK_COLORS.length],
+    }))
+    .filter((d) => d.value > 0);
 
-  const columns: Column<BreakdownRow>[] = [
+  const columns: Column<RewardsBreakdownRow>[] = [
     {
       key: 'name',
-      title: t('dashboard.portfolioOverview.assetDetail.address'),
-      width: '35%',
+      title: t('dashboard.totalRewards.rewardsDetail.account'),
+      width: '40%',
       render: (_, item) => (
         <div className="flex items-center gap-2">
           <span
@@ -85,9 +61,9 @@ export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, on
     },
     {
       key: 'rawAmountNum',
-      title: t('dashboard.portfolioOverview.assetDetail.amount'),
+      title: t('dashboard.totalRewards.rewardsDetail.rewards'),
       sortable: true,
-      width: '25%',
+      width: '27%',
       render: (_, item) => {
         const bal = formatBalance(item.rawAmount, item.precision);
 
@@ -101,9 +77,9 @@ export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, on
     },
     {
       key: 'fiatValueNum',
-      title: t('dashboard.portfolioOverview.assetDetail.value'),
+      title: t('dashboard.totalRewards.rewardsDetail.value'),
       sortable: true,
-      width: '22%',
+      width: '20%',
       render: (_, item) => (
         <FootnoteText className="tabular-nums">
           <Price amount={item.fiatValue} currency={currency} />
@@ -112,9 +88,9 @@ export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, on
     },
     {
       key: 'sharePercent',
-      title: t('dashboard.portfolioOverview.assetDetail.share'),
+      title: t('dashboard.totalRewards.rewardsDetail.share'),
       sortable: true,
-      width: '18%',
+      width: '13%',
       render: (_, item) => <FootnoteText className="tabular-nums">{item.sharePercent.toFixed(1)}%</FootnoteText>,
     },
   ];
@@ -123,23 +99,25 @@ export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, on
 
   return (
     <Modal isOpen size="lg" onToggle={(open) => !open && onClose()}>
-      <Modal.Title close>{t('dashboard.portfolioOverview.assetDetail.title', { symbol: holding.symbol })}</Modal.Title>
+      <Modal.Title close>
+        {t('dashboard.totalRewards.rewardsDetail.title', { chain: chainSummary.chainName })}
+      </Modal.Title>
       <Modal.Content disableScroll>
         <div className="flex items-center gap-3 px-5 py-3">
-          <AssetIcon asset={holding} size={32} />
+          <img src={chainSummary.icon.colored} alt={chainSummary.chainName} className="h-8 w-8" />
           <div className="min-w-0 flex-1">
-            <FootnoteText className="font-bold">{holding.symbol}</FootnoteText>
+            <FootnoteText className="font-bold">{chainSummary.chainName}</FootnoteText>
             <FootnoteText className="text-text-tertiary">
-              {t('dashboard.portfolioOverview.assetDetail.addressCount', { count: addressCount })}
+              {t('dashboard.totalRewards.rewardsDetail.accountCount', { count: rows.length })}
             </FootnoteText>
           </div>
           <div className="shrink-0">
             <FootnoteText align="right" className="font-bold tabular-nums">
               {formatted}
-              {suffix} {holding.symbol}
+              {suffix ? ` ${suffix}` : ''} {chainSummary.symbol}
             </FootnoteText>
             <FootnoteText align="right" className="text-text-tertiary tabular-nums">
-              <Price amount={holding.fiatValue} currency={currency} />
+              <Price amount={chainSummary.fiatValue} currency={currency} />
             </FootnoteText>
           </div>
         </div>
@@ -156,11 +134,7 @@ export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, on
                 dataKey="value"
                 stroke="none"
                 animationDuration={400}
-              >
-                {chartData.map((entry) => (
-                  <Cell key={entry.index} fill={FALLBACK_COLORS[entry.index % FALLBACK_COLORS.length]} />
-                ))}
-              </Pie>
+              />
               <Tooltip content={<ChartTooltip />} />
             </PieChart>
           </div>

@@ -1,20 +1,21 @@
 import { useState } from 'react';
-import { Cell, Pie, PieChart, Tooltip } from 'recharts';
+import { Pie, PieChart, Tooltip } from 'recharts';
 
 import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Loader } from '@/shared/ui';
+import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { Identicon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
-import { type StakingMap, ValidatorsModal } from '@/entities/staking';
+import { type StakingMap } from '@/domains/staking';
+import { ValidatorsModal } from '@/entities/staking';
+import { useNominatedValidators } from '../hooks/useNominatedValidators';
+import { type EntryLike, type StakingBreakdownRow, useStakingBreakdown } from '../hooks/useStakingBreakdown';
+import { type ChainStakingSummary } from '../hooks/useStakingOverview';
 
 import { ChartTooltip } from './ChartTooltip';
 import { Price } from './Price';
-import { FALLBACK_COLORS } from './chartConstants';
-import { useNominatedValidators } from './useNominatedValidators';
-import { type EntryLike, type StakingBreakdownRow, useStakingBreakdown } from './useStakingBreakdown';
-import { type ChainStakingSummary } from './useStakingOverview';
 
 type Props = {
   chainSummary: ChainStakingSummary;
@@ -46,6 +47,7 @@ export const StakingDetailModal = ({ chainSummary, stakingData, accountIds, allE
       value: row.fiatValueNum,
       percent: totalFiat > 0 ? (row.fiatValueNum / totalFiat) * 100 : 0,
       index: i,
+      fill: FALLBACK_COLORS[i % FALLBACK_COLORS.length],
     }))
     .filter((d) => d.value > 0);
 
@@ -152,11 +154,7 @@ export const StakingDetailModal = ({ chainSummary, stakingData, accountIds, allE
                   dataKey="value"
                   stroke="none"
                   animationDuration={400}
-                >
-                  {chartData.map((entry) => (
-                    <Cell key={entry.index} fill={FALLBACK_COLORS[entry.index % FALLBACK_COLORS.length]} />
-                  ))}
-                </Pie>
+                />
                 <Tooltip content={<ChartTooltip />} />
               </PieChart>
             </div>

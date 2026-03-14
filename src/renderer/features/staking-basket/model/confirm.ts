@@ -5,8 +5,8 @@ import { createGate } from 'effector-react';
 import { type Chain, type ChainId, type Connection, type Transaction, TransactionType } from '@/shared/core';
 import { getNativeAsset, redeemableAmount, toAccountId } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
+import { eraService, stakingService, validatorsService } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { eraService, stakingService, validatorsService } from '@/entities/staking';
 import { walletModel } from '@/entities/wallet';
 import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {

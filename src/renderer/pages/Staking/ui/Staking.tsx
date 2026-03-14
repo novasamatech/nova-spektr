@@ -10,14 +10,9 @@ import { getRelaychainAsset, keys, nonNullable, toAccountId } from '@/shared/lib
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
 import { type AnyAccount, identity } from '@/domains/network';
+import { type ValidatorMap, eraService, useStakingRewards, validatorsService } from '@/domains/staking';
 import { InactiveNetwork, networkModel, useNetworkData } from '@/entities/network';
-import {
-  type ValidatorMap,
-  ValidatorsModal,
-  eraService,
-  useStakingRewards,
-  validatorsService,
-} from '@/entities/staking';
+import { ValidatorsModal } from '@/entities/staking';
 import { permissionUtils, walletUtils } from '@/entities/wallet';
 import { stakingAccounts } from '@/aggregates/staking-accounts';
 import { stakingNetwork } from '@/aggregates/staking-network';

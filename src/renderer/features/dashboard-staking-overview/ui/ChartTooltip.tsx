@@ -1,4 +1,4 @@
-import { CHART_TOOLTIP_STYLE } from './chartConstants';
+import { CHART_TOOLTIP_STYLE } from '@/shared/ui/chart-constants';
 
 type TooltipEntry = {
   name: string;
