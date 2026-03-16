@@ -10,7 +10,7 @@ import { FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { type AnyAccount, useAccountName } from '@/domains/network';
-import { stakingCommonService } from '@/domains/staking';
+import { stakingUtils } from '@/domains/staking';
 import { type NominatorInfo } from '../lib/types';
 
 import { NominatorsItem } from './NominatorItem';
@@ -41,7 +41,7 @@ export const NominatorsList = ({
   onToggleNominator,
 }: Props) => {
   const { t } = useI18n();
-  const { getNextUnstakingEra, hasRedeem } = stakingCommonService;
+  const { getNextUnstakingEra, hasRedeem } = stakingUtils;
 
   const getUnstakeBadge = (stake: NominatorInfo<AnyAccount>) => {
     const nextUnstakingEra = getNextUnstakingEra(stake.unlocking, era);

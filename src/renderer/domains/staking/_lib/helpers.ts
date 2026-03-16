@@ -59,7 +59,7 @@ function hasRedeem(unlocking: Unlocking[] = [], era?: number): boolean {
   return redeemableAmount(unlocking, era) !== ZERO_BALANCE;
 }
 
-export const stakingCommonService = {
+export const stakingUtils = {
   isKusamaChainId,
   collectRewardSources,
   isAssetHubChain,

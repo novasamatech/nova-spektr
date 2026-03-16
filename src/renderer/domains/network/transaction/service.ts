@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Call, type DispatchError, type Weight } from '@polkadot/types/interfaces';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { type Registry } from '@polkadot/types/types';
-import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
+import { BN_ZERO, hexToU8a } from '@polkadot/util';
 
 import { type HexString, type Transaction as DeprecatedTransaction } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
@@ -11,38 +11,8 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { type AnyAccount } from '../account/types';
 
-import { LEAVE_SOME_SPACE_MULTIPLIER } from './constants';
+import { BlockWeight } from './helpers';
 import { type AnyDecodedTransaction, type AnyTransaction, type EncodedTransaction, type Extrinsic } from './types';
-
-class BlockWeight {
-  constructor(
-    public readonly refTime: BN,
-    public readonly proofSize: BN,
-  ) {}
-
-  static fromWeight(weight: Weight): BlockWeight {
-    return new BlockWeight(weight.refTime.toBn(), weight.proofSize?.toBn?.() ?? BN_ZERO);
-  }
-
-  add(other: BlockWeight): BlockWeight {
-    return new BlockWeight(this.refTime.add(other.refTime), this.proofSize.add(other.proofSize));
-  }
-
-  withMargin(): BlockWeight {
-    return new BlockWeight(
-      this.refTime.muln(LEAVE_SOME_SPACE_MULTIPLIER),
-      this.proofSize.muln(LEAVE_SOME_SPACE_MULTIPLIER),
-    );
-  }
-
-  fitsIn(limit: BlockWeight): boolean {
-    return this.refTime.lt(limit.refTime) && this.proofSize.lt(limit.proofSize);
-  }
-
-  static takeMinimums(a: BlockWeight, b: BlockWeight): BlockWeight {
-    return new BlockWeight(BN.min(a.refTime, b.refTime), BN.min(a.proofSize, b.proofSize));
-  }
-}
 
 const wrapTransactionTransformer = createTransformer<
   AnyTransaction,
