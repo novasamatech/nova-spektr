@@ -102,10 +102,10 @@ const PriceChangeIndicator = ({ change }: { change: number | null }) => {
   return (
     <Tooltip>
       <Tooltip.Trigger>
-        <FootnoteText className={cnTw('tabular-nums', isPositive ? 'text-text-positive' : 'text-text-negative')}>
+        <span className={cnTw('text-footnote tabular-nums', isPositive ? 'text-text-positive' : 'text-text-negative')}>
           {isPositive ? '↑' : '↓'}
           {Math.abs(change).toFixed(2)}%
-        </FootnoteText>
+        </span>
       </Tooltip.Trigger>
       <Tooltip.Content>{t('dashboard.portfolioOverview.priceChange24h')}</Tooltip.Content>
     </Tooltip>
