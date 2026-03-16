@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatBalance } from '@/shared/lib/utils';
+import { cnTw, formatBalance } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { BRAND_COLORS, FALLBACK_COLORS, getColorByPriceId } from '@/shared/ui/chart-constants';
 import { AssetIcon } from '@/shared/ui-entities';
@@ -80,10 +80,28 @@ const HoldingRow = memo(({ holding, color, currency, onSelect }: RowProps) => {
           {formatted}
           {suffix} {holding.symbol}
         </FootnoteText>
-        <FootnoteText align="right" className="text-text-tertiary tabular-nums">
-          <Price amount={holding.fiatValue} currency={currency} />
-        </FootnoteText>
+        <div className="flex items-center justify-end gap-1">
+          <PriceChangeIndicator change={holding.change} />
+          <FootnoteText align="right" className="text-text-tertiary tabular-nums">
+            <Price amount={holding.fiatValue} currency={currency} />
+          </FootnoteText>
+        </div>
       </div>
     </div>
   );
 });
+
+const PriceChangeIndicator = ({ change }: { change: number | null }) => {
+  if (change === null || change === 0 || !Number.isFinite(change)) return null;
+
+  const isPositive = change > 0;
+
+  return (
+    <FootnoteText className={cnTw('tabular-nums', isPositive ? 'text-text-positive' : 'text-text-negative')}>
+      {/* eslint-disable-next-line i18next/no-literal-string */}
+      {isPositive ? '↑' : '↓'}
+      {isPositive ? '+' : ''}
+      {change.toFixed(2)}%
+    </FootnoteText>
+  );
+};

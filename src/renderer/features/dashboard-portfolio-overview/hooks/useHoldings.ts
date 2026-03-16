@@ -16,6 +16,7 @@ export type Holding = {
   precision: number;
   totalRaw: string;
   fiatValue: string;
+  change: number | null;
 };
 
 export type HoldingsData = {
@@ -48,6 +49,7 @@ export const useHoldings = (accountIds: string[]): HoldingsData => {
         precision: number;
         totalRaw: BigNumber;
         fiatValue: BigNumber;
+        change: number | null;
       }
     >();
 
@@ -79,6 +81,7 @@ export const useHoldings = (accountIds: string[]): HoldingsData => {
           precision: asset.precision,
           totalRaw: new BigNumber(rawBN.toString()),
           fiatValue: new BigNumber(fiat),
+          change: priceItem.change ?? null,
         });
       }
     }
@@ -99,6 +102,7 @@ export const useHoldings = (accountIds: string[]): HoldingsData => {
         precision: group.precision,
         totalRaw: group.totalRaw.toFixed(0),
         fiatValue: group.fiatValue.toString(),
+        change: group.change,
       };
     });
 
