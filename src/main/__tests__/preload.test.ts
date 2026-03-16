@@ -1,12 +1,5 @@
 // @vitest-environment node
 
-/**
- * Tests for src/main/preload.ts security hardening
- *
- * #18 — ALLOWED_STORE_KEYS whitelist + isAllowedKey() type guard #20 — username
- * (process.env.USER) removed from contextBridge API
- */
-
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // vi.hoisted ensures mock fns can be referenced in vi.mock factory
