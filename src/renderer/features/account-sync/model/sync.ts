@@ -106,16 +106,8 @@ type VerifyProxiedDeletionParams = {
   apis: Record<ChainId, ApiPromise>;
 };
 
-/**
- * Before removing proxy wallets from local storage, perform on-chain
- * verification for each candidate account. Only wallets confirmed absent
- * on-chain are deleted.
- *
- * This prevents false deletions caused by indexer lag or incomplete indexer
- * responses. If the API for a chain is unavailable or an error occurs, we
- * conservatively skip deletion for that chain (err on the side of keeping
- * data).
- */
+// Guards against false deletions caused by indexer lag: only remove a proxied wallet
+// after confirming on-chain that the proxy relationship is gone. Missing API = skip deletion.
 const verifyProxiedDeletionFx = createEffect(
   async ({ candidateWalletIds, allAccounts, apis }: VerifyProxiedDeletionParams): Promise<number[]> => {
     if (candidateWalletIds.length === 0) return [];
@@ -753,8 +745,7 @@ export const sync = {
   syncAccounts: accountSync.syncAccounts,
   $pending,
 
-  /** Exposed only for testing — do not use in production code. */
-  _test: {
+  __test: {
     verifyProxiedDeletionFx,
   },
 };

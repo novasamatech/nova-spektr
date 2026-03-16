@@ -1,26 +1,7 @@
 // @ts-nocheck - Test file; mocks don't satisfy strict types
-/**
- * Tests for on-chain verification before proxy account deletion (#15)
- *
- * The fix introduces `verifyProxiedDeletionFx` which makes an on-chain call via
- * `proxyPallet.storage.proxies()` before removing any proxied accounts.
- *
- * Key rules under test:
- *
- * 1. Account absent in indexer AND absent on-chain → deleted
- * 2. Account absent in indexer BUT present on-chain → kept (indexer was lagging)
- * 3. API unavailable / throws → kept (conservative)
- * 4. No API connected for chain → kept (conservative)
- * 5. CandidateWalletIds is empty → nothing happens
- *
- * Integration tests verify the Effector graph wiring:
- * verifyProxiedDeletionFx.doneData → walletModel.walletsRemoved
- */
-
 import { allSettled, fork } from 'effector';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ─── Mock proxyPallet BEFORE any import that transitively uses it ──────────
 vi.mock('@/shared/pallet/proxy', () => ({
   proxyPallet: {
     storage: {
@@ -31,7 +12,6 @@ vi.mock('@/shared/pallet/proxy', () => ({
   },
 }));
 
-// ─── Mock storage so effect doesn't touch IndexedDB ───────────────────────
 vi.mock('@/shared/api/storage', async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   return {
@@ -45,16 +25,13 @@ vi.mock('@/shared/api/storage', async (importOriginal) => {
   };
 });
 
-// ─── Imports (after mocks) ─────────────────────────────────────────────────
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { walletModel } from '@/entities/wallet';
 
 import { allAccounts, proxiedAccount1, proxiedAccount2, proxiedAccount3 } from './__mocks__/sync.proxied.mocks';
 import { sync } from './sync';
 
-// ─── Shared helpers ────────────────────────────────────────────────────────
-
-const { verifyProxiedDeletionFx } = sync._test;
+const { verifyProxiedDeletionFx } = sync.__test;
 
 const CHAIN_ID = '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42' as const;
 
@@ -72,11 +49,7 @@ const hasProxiesResult = (accountIds: string[]) =>
     },
   }));
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Unit tests — call verifyProxiedDeletionFx directly, assert on return value
-// ═══════════════════════════════════════════════════════════════════════════
-
-describe('verifyProxiedDeletionFx — unit tests', () => {
+describe('verifyProxiedDeletionFx', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -92,7 +65,7 @@ describe('verifyProxiedDeletionFx — unit tests', () => {
     expect(proxyPallet.storage.proxies).not.toHaveBeenCalled();
   });
 
-  it('returns wallet ID as confirmed-deleted when on-chain proxies list is empty', async () => {
+  it('returns wallet ID when on-chain proxies list is empty', async () => {
     proxyPallet.storage.proxies.mockResolvedValueOnce(noProxiesResult([proxiedAccount1.accountId]));
 
     const result = await verifyProxiedDeletionFx({
@@ -104,7 +77,7 @@ describe('verifyProxiedDeletionFx — unit tests', () => {
     expect(result).toEqual([proxiedAccount1.walletId]);
   });
 
-  it('does NOT return wallet ID when on-chain proxies are present (account still exists)', async () => {
+  it('does not return wallet ID when on-chain proxies are present', async () => {
     proxyPallet.storage.proxies.mockResolvedValueOnce(hasProxiesResult([proxiedAccount1.accountId]));
 
     const result = await verifyProxiedDeletionFx({
@@ -116,7 +89,7 @@ describe('verifyProxiedDeletionFx — unit tests', () => {
     expect(result).toEqual([]);
   });
 
-  it('does NOT return wallet ID when on-chain API throws — conservative error handling', async () => {
+  it('does not return wallet ID when API throws — conservative error handling', async () => {
     proxyPallet.storage.proxies.mockRejectedValueOnce(new Error('RPC timeout'));
 
     const result = await verifyProxiedDeletionFx({
@@ -128,19 +101,18 @@ describe('verifyProxiedDeletionFx — unit tests', () => {
     expect(result).toEqual([]);
   });
 
-  it('does NOT return wallet ID when no API is connected for the chain — conservative', async () => {
+  it('does not return wallet ID when no API is connected for the chain — conservative', async () => {
     const result = await verifyProxiedDeletionFx({
       candidateWalletIds: [proxiedAccount1.walletId],
       allAccounts,
-      apis: {}, // no API for CHAIN_ID
+      apis: {},
     });
 
     expect(result).toEqual([]);
     expect(proxyPallet.storage.proxies).not.toHaveBeenCalled();
   });
 
-  it('correctly partitions mixed results: deletes absent accounts, keeps present ones', async () => {
-    // account1 → absent on-chain (delete), account2 → present on-chain (keep)
+  it('partitions mixed results: deletes absent accounts, keeps present ones', async () => {
     proxyPallet.storage.proxies.mockResolvedValueOnce([
       { account: proxiedAccount1.accountId, value: { proxies: [], deposit: '0' } },
       {
@@ -159,11 +131,10 @@ describe('verifyProxiedDeletionFx — unit tests', () => {
     expect(result).not.toContain(proxiedAccount2.walletId);
   });
 
-  it('falls back to original wallet IDs when allAccounts contains no matching proxied accounts', async () => {
-    // Unexpected state guard: if we can't find accounts, return candidates as-is
+  it('falls back to original wallet IDs when no matching proxied accounts found', async () => {
     const result = await verifyProxiedDeletionFx({
       candidateWalletIds: [999],
-      allAccounts: [], // empty — no proxied accounts to find
+      allAccounts: [],
       apis: { [CHAIN_ID]: buildMockApi() },
     });
 
@@ -171,129 +142,67 @@ describe('verifyProxiedDeletionFx — unit tests', () => {
   });
 });
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Integration tests — Effector graph wiring
-//   verifyProxiedDeletionFx → (doneData) → walletModel.walletsRemoved
-//
-// These tests verify that after verifyProxiedDeletionFx resolves,
-// walletModel.walletsRemoved is correctly triggered (or not) based on
-// the on-chain verification result.
-// ═══════════════════════════════════════════════════════════════════════════
+describe('verifyProxiedDeletionFx → walletModel.walletsRemoved (Effector graph)', () => {
+  let walletsRemovedMock: ReturnType<typeof vi.fn>;
+  let scope: ReturnType<typeof fork>;
 
-describe('proxy sync on-chain verification — integration (Effector graph)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    walletsRemovedMock = vi.fn().mockResolvedValue(undefined);
+    // walletsRemoved is attach({ source: $allWallets, effect }) — mock is called as (allWallets, walletIds)
+    scope = fork({ handlers: new Map().set(walletModel.walletsRemoved, walletsRemovedMock) });
   });
 
-  it('removes account when absent from indexer and confirmed absent on-chain', async () => {
-    // Scenario: indexer missed the account AND on-chain shows 0 proxies → delete it
+  it('triggers walletsRemoved with confirmed-deleted wallet IDs', async () => {
     proxyPallet.storage.proxies.mockResolvedValueOnce(noProxiesResult([proxiedAccount1.accountId]));
-
-    const walletsRemovedMock = vi.fn().mockResolvedValue(undefined);
-
-    // We only override handlers; no store values needed — effect params are passed directly
-    const scope = fork({
-      handlers: new Map().set(walletModel.walletsRemoved, walletsRemovedMock),
-    });
 
     await allSettled(verifyProxiedDeletionFx, {
       scope,
-      params: {
-        candidateWalletIds: [proxiedAccount1.walletId],
-        allAccounts,
-        apis: { [CHAIN_ID]: buildMockApi() },
-      },
+      params: { candidateWalletIds: [proxiedAccount1.walletId], allAccounts, apis: { [CHAIN_ID]: buildMockApi() } },
     });
 
-    // walletsRemovedFx is an attach() effect: handler receives (sourceStore, params)
-    // so mock is called as (allWallets, walletIds)
     expect(walletsRemovedMock).toHaveBeenCalledWith(
       expect.anything(),
       expect.arrayContaining([proxiedAccount1.walletId]),
     );
   });
 
-  it('keeps account when absent from indexer but present on-chain — KEY security test', async () => {
-    // Scenario: indexer lag — account still exists on-chain but indexer didn't return it.
-    // This is the critical false-deletion scenario the fix prevents.
+  it('triggers walletsRemoved with empty array when account is still on-chain (indexer lag)', async () => {
     proxyPallet.storage.proxies.mockResolvedValueOnce(hasProxiesResult([proxiedAccount1.accountId]));
 
-    const walletsRemovedMock = vi.fn().mockResolvedValue(undefined);
-
-    const scope = fork({
-      handlers: new Map().set(walletModel.walletsRemoved, walletsRemovedMock),
-    });
-
     await allSettled(verifyProxiedDeletionFx, {
       scope,
-      params: {
-        candidateWalletIds: [proxiedAccount1.walletId],
-        allAccounts,
-        apis: { [CHAIN_ID]: buildMockApi() },
-      },
+      params: { candidateWalletIds: [proxiedAccount1.walletId], allAccounts, apis: { [CHAIN_ID]: buildMockApi() } },
     });
 
-    // walletsRemoved might be called with [] but the target wallet must NOT appear
-    const calls = walletsRemovedMock.mock.calls;
-    const removedIds: number[] = calls.length > 0 ? (calls[0][0] as number[]) : [];
-    expect(removedIds).not.toContain(proxiedAccount1.walletId);
+    expect(walletsRemovedMock).toHaveBeenCalledWith(expect.anything(), []);
   });
 
-  it('keeps account when on-chain API is unavailable — conservative logic', async () => {
+  it('triggers walletsRemoved with empty array when API throws', async () => {
     proxyPallet.storage.proxies.mockRejectedValueOnce(new Error('Network error'));
 
-    const walletsRemovedMock = vi.fn().mockResolvedValue(undefined);
-
-    const scope = fork({
-      handlers: new Map().set(walletModel.walletsRemoved, walletsRemovedMock),
-    });
-
     await allSettled(verifyProxiedDeletionFx, {
       scope,
-      params: {
-        candidateWalletIds: [proxiedAccount1.walletId],
-        allAccounts,
-        apis: { [CHAIN_ID]: buildMockApi() },
-      },
+      params: { candidateWalletIds: [proxiedAccount1.walletId], allAccounts, apis: { [CHAIN_ID]: buildMockApi() } },
     });
 
-    const calls = walletsRemovedMock.mock.calls;
-    const removedIds: number[] = calls.length > 0 ? (calls[0][0] as number[]) : [];
-    expect(removedIds).not.toContain(proxiedAccount1.walletId);
+    expect(walletsRemovedMock).toHaveBeenCalledWith(expect.anything(), []);
   });
 
-  it('keeps account when no API is connected for its chain — conservative logic', async () => {
-    const walletsRemovedMock = vi.fn().mockResolvedValue(undefined);
-
-    const scope = fork({
-      handlers: new Map().set(walletModel.walletsRemoved, walletsRemovedMock),
-    });
-
+  it('triggers walletsRemoved with empty array when no API is connected', async () => {
     await allSettled(verifyProxiedDeletionFx, {
       scope,
-      params: {
-        candidateWalletIds: [proxiedAccount1.walletId],
-        allAccounts,
-        apis: {}, // no API connected
-      },
+      params: { candidateWalletIds: [proxiedAccount1.walletId], allAccounts, apis: {} },
     });
 
-    const calls = walletsRemovedMock.mock.calls;
-    const removedIds: number[] = calls.length > 0 ? (calls[0][0] as number[]) : [];
-    expect(removedIds).not.toContain(proxiedAccount1.walletId);
+    expect(walletsRemovedMock).toHaveBeenCalledWith(expect.anything(), []);
     expect(proxyPallet.storage.proxies).not.toHaveBeenCalled();
   });
 
-  it('removes all three wallets when all confirmed absent on-chain', async () => {
+  it('triggers walletsRemoved with all three wallet IDs when all confirmed absent on-chain', async () => {
     proxyPallet.storage.proxies.mockResolvedValueOnce(
       noProxiesResult([proxiedAccount1.accountId, proxiedAccount2.accountId, proxiedAccount3.accountId]),
     );
-
-    const walletsRemovedMock = vi.fn().mockResolvedValue(undefined);
-
-    const scope = fork({
-      handlers: new Map().set(walletModel.walletsRemoved, walletsRemovedMock),
-    });
 
     await allSettled(verifyProxiedDeletionFx, {
       scope,
@@ -304,7 +213,6 @@ describe('proxy sync on-chain verification — integration (Effector graph)', ()
       },
     });
 
-    // walletsRemovedFx is an attach() effect: handler receives (sourceStore, params)
     expect(walletsRemovedMock).toHaveBeenCalledWith(
       expect.anything(),
       expect.arrayContaining([proxiedAccount1.walletId, proxiedAccount2.walletId, proxiedAccount3.walletId]),
