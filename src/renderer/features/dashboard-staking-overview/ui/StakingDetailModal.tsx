@@ -1,13 +1,13 @@
 import { memo, useState } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
 
-import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Loader } from '@/shared/ui';
 import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { Identicon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
+import { type CurrencyItem } from '@/domains/price';
 import { type StakingMap } from '@/domains/staking';
 import { ValidatorsModal } from '@/entities/staking';
 import { useNominatedValidators } from '../hooks/useNominatedValidators';

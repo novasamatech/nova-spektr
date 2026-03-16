@@ -3,8 +3,9 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { getRoundedValue } from '@/shared/lib/utils';
+import { useAssetsPrices } from '@/domains/price';
 import { type RewardsMap } from '@/domains/staking';
-import { currencyModel, priceProviderModel } from '@/entities/price';
+import { currencySelect } from '@/aggregates/currency-select';
 
 import { type EntryLike } from './useStakingBreakdown';
 import { type ChainRewardsSummary } from './useTotalRewards';
@@ -31,8 +32,9 @@ type Params = {
 };
 
 export const useRewardsBreakdown = ({ rewardsMap, chainSummary, accountIds, allEntries }: Params) => {
-  const prices = useUnit(priceProviderModel.$assetsPrices);
-  const currency = useUnit(currencyModel.$activeCurrency);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   return useMemo(() => {
     if (!prices || !currency) return { rows: [] };

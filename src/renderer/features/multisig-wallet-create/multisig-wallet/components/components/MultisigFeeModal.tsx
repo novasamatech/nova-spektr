@@ -10,7 +10,7 @@ import { Button, EmptyListWithIcon, FootnoteText, HelpText, LabelHelpBox } from 
 import { RadioGroup } from '@/shared/ui/RadioGroup/RadioGroup';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box, Modal, Popover, SearchInput, Skeleton } from '@/shared/ui-kit';
-import { Fee } from '@/entities/transaction';
+import { Fee } from '@/widgets/transaction-fee';
 import { chainSelectorModel } from '../../model/chain-model';
 import { formModel } from '../../model/form-model';
 

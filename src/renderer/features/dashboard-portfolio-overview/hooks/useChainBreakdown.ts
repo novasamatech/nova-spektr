@@ -4,9 +4,10 @@ import { useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { getRoundedValue, totalAmount, totalAmountBN } from '@/shared/lib/utils';
+import { useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { currencyModel, priceProviderModel } from '@/entities/price';
+import { currencySelect } from '@/aggregates/currency-select';
 
 export type ChainAssetRow = {
   assetId: number;
@@ -30,8 +31,9 @@ export type ChainBreakdownData = {
 export const useChainBreakdown = (chainId: ChainId, accountIds: string[]): ChainBreakdownData => {
   const balanceMap = useUnit(balanceModel.$balanceMap);
   const chains = useUnit(networkModel.$chains);
-  const prices = useUnit(priceProviderModel.$assetsPrices);
-  const currency = useUnit(currencyModel.$activeCurrency);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   return useMemo(() => {
     if (!prices || !currency) return { rows: [] };

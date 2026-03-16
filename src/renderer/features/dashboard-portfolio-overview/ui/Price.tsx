@@ -1,7 +1,7 @@
 import { memo } from 'react';
 
-import { type CurrencyItem } from '@/shared/api/price-provider';
 import { formatFiatBalance } from '@/shared/lib/utils';
+import { type CurrencyItem } from '@/domains/price';
 
 type Props = {
   amount: string;

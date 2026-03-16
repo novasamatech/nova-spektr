@@ -8,7 +8,7 @@ import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, InfoLink, InputHint } from '@/shared/ui';
 import { InputFile } from '@/shared/ui-kit';
 import { type ValidationIssue, MultiTransferCsvError } from '@/entities/multi-transfer';
-import { MultiTransferPreview } from '@/entities/multi-transfer';
+import { MultiTransferPreview } from '@/widgets/multi-transfer-preview';
 import { formModel } from '../model/form';
 import { multiTransferUtils } from '../utils';
 

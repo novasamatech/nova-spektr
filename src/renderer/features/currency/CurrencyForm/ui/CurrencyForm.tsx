@@ -2,11 +2,11 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect } from 'react';
 
-import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, HelpText, Switch } from '@/shared/ui';
 import { Select } from '@/shared/ui-kit';
+import { type CurrencyItem } from '@/domains/price';
 import { type Callbacks, currencyFormModel } from '../model/currency-form';
 
 const getCurrencyTitle = (currency: CurrencyItem): string => {

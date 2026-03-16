@@ -3,9 +3,9 @@ import { useMemo } from 'react';
 import { type Chain, type ChainId, ExternalType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useResource } from '@/shared/query';
-import { type RewardSource, type RewardsMap } from '../_lib/types';
+import { type RewardSource, type RewardsMap } from '../types';
 
-import { type StakingRewardsParams, stakingRewardsResource } from './resource';
+import { type StakingRewardsParams, rewardsCacheKey, stakingRewardsResource } from './resource';
 import { collectRewardSources, isAssetHubChain } from './service';
 
 const EMPTY_MAP: RewardsMap = {};
@@ -52,7 +52,7 @@ export const useStakingRewards = (
     params,
     defaultValue: EMPTY_MAP,
     map: (cache: Record<string, RewardsMap>, p: StakingRewardsParams) => {
-      const cached = cache[`${p.chainId}-${p.since ?? 'all'}`];
+      const cached = cache[rewardsCacheKey(p.chainId, p.since)];
       if (!cached) return undefined;
 
       const merged: RewardsMap = {};

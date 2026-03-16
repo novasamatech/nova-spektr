@@ -1,11 +1,11 @@
 import { memo, useMemo } from 'react';
 
-import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { BRAND_COLORS, FALLBACK_COLORS, getColorByPriceId } from '@/shared/ui/chart-constants';
 import { AssetIcon } from '@/shared/ui-entities';
+import { type CurrencyItem } from '@/domains/price';
 import { type Holding } from '../hooks/useHoldings';
 
 import { AllocationChart } from './AllocationChart';

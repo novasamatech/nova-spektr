@@ -7,11 +7,11 @@ import { useConfirmContext } from '@/shared/providers';
 import { FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
-import { AssetFiatBalance } from '@/entities/price';
 import { walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { WalletDetails } from '@/features/wallet-details';
+import { AssetFiatBalance } from '@/widgets/price';
 import { delegationAggregate } from '../../aggregates/delegation';
 
 type Props = {

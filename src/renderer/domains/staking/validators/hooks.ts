@@ -1,7 +1,7 @@
 import { type ChainId, type NullableMap } from '@/shared/core';
 import { nonNullableMap } from '@/shared/lib/utils';
 import { useResource } from '@/shared/query';
-import { type ValidatorMap } from '../_lib/types';
+import { type ValidatorMap } from '../types';
 
 import {
   type ApyResourceParams,

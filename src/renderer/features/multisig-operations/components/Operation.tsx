@@ -22,7 +22,6 @@ import { AsyncItem, Copy, Tooltip } from '@/shared/ui-kit';
 import { type MultisigOperation, useWalletName } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { OperationTitleStatus } from '@/entities/operations';
-import { AssetFiatBalance } from '@/entities/price';
 import {
   TransactionTitle,
   findCoreTransaction,
@@ -30,6 +29,7 @@ import {
   useTransactionAsset,
 } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { AssetFiatBalance } from '@/widgets/price';
 import { type TabFilter } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 

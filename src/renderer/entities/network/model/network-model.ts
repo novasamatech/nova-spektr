@@ -213,11 +213,13 @@ sample({
     const lightClientChains = networkUtils.getLightClientChains();
 
     return keys(chains).reduce<Record<ChainId, Connection>>((acc, chainId) => {
-      const connection = connectionsMap[chainId] ?? ({
-        chainId,
-        customNodes: [],
-        connectionType: ConnectionType.AUTO_BALANCE,
-      } as unknown as Connection);
+      const connection =
+        connectionsMap[chainId] ??
+        ({
+          chainId,
+          customNodes: [],
+          connectionType: ConnectionType.AUTO_BALANCE,
+        } as unknown as Connection);
       connection.canUseLightClient = lightClientChains.includes(chainId);
       acc[chainId] = connection;
 
