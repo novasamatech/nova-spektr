@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
 import { Duration } from '@/shared/ui';
-import { useStakingData } from '../../api';
+import { stakingService } from '@/domains/staking';
 
 type Props = {
   api?: ApiPromise;
@@ -11,7 +11,7 @@ type Props = {
 };
 
 export const UnstakingDuration = ({ api, timelineApi, className }: Props) => {
-  const { getUnbondingPeriod } = useStakingData();
+  const { getUnbondingPeriod } = stakingService;
 
   const [unstakingPeriod, setUnstakingPeriod] = useState('...');
 

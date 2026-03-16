@@ -18,6 +18,7 @@ import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { dashboardNavigationFeature } from '@/features/dashboard-navigation';
 import { dashboardPortfolioOverviewFeature } from '@/features/dashboard-portfolio-overview';
 import { dashboardPriceChartsFeature } from '@/features/dashboard-price-charts';
+import { dashboardStakingOverviewFeature } from '@/features/dashboard-staking-overview';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { multiTransferFeature } from '@/features/multi-transfer';
@@ -69,6 +70,7 @@ export const bootstrap = () => {
     dashboardNavigationFeature,
     dashboardPortfolioOverviewFeature,
     dashboardPriceChartsFeature,
+    dashboardStakingOverviewFeature,
     assetsNavigationFeature,
     fellowshipNavigationFeature,
     operationsNavigationFeature,
@@ -134,6 +136,14 @@ export const bootstrap = () => {
 
     import('@/features/staking-operation-details').then(({ stakingOperationDetailFeature }) => stakingOperationDetailFeature),
     import('@/features/staking-basket').then(({ stakingBasketFeature }) => stakingBasketFeature),
+
+    import('@/features/staking-unstake').then(({ stakingUnstakeFeature }) => stakingUnstakeFeature),
+    import('@/features/staking-withdraw').then(({ stakingWithdrawFeature }) => stakingWithdrawFeature),
+    import('@/features/staking-bond-extra').then(({ stakingBondExtraFeature }) => stakingBondExtraFeature),
+    import('@/features/staking-restake').then(({ stakingRestakeFeature }) => stakingRestakeFeature),
+    import('@/features/staking-payee').then(({ stakingPayeeFeature }) => stakingPayeeFeature),
+    import('@/features/staking-nominate').then(({ stakingNominateFeature }) => stakingNominateFeature),
+    import('@/features/staking-bond-nominate').then(({ stakingBondNominateFeature }) => stakingBondNominateFeature),
 
     import('@/features/flexible-operation-details').then(({ flexibleOperationDetailFeature }) => flexibleOperationDetailFeature),
 

@@ -5,8 +5,8 @@ import { createGate } from 'effector-react';
 import { type Chain, type ChainId, type Connection, type Transaction, TransactionType } from '@/shared/core';
 import { getNativeAsset, redeemableAmount, toAccountId } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
+import { eraService, stakingService, validatorsService } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { type StakingMap, eraService, stakingUtils, validatorsService } from '@/entities/staking';
 import { walletModel } from '@/entities/wallet';
 import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {
@@ -42,12 +42,7 @@ const prepareBondNominateDataFx = createEffect(async ({ transaction, accounts, c
     (t: Transaction) => t.type === TransactionType.NOMINATE,
   )!;
 
-  const { chain, account, fee } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
   assert(chain, 'Chain not found');
 
@@ -97,12 +92,7 @@ const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chai
 });
 
 const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
-  const { chain, account, fee } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
   assert(chain, 'Chain not found');
 
@@ -199,21 +189,14 @@ const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains
 });
 
 const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
-  const { chain, account, fee } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
   assert(chain, 'Chain not found');
 
   const api = apis[chain.chainId]!;
   const era = await eraService.getActiveEra(api);
 
-  const staking = await new Promise<StakingMap>((resolve) => {
-    stakingUtils.subscribeStaking(chain.chainId, api, [transaction.coreTx.accountId], resolve);
-  });
+  const staking = await stakingService.fetchStakingLedger(chain.chainId, api, [transaction.coreTx.accountId]);
 
   const amount = redeemableAmount(staking?.[transaction.coreTx.accountId]?.unlocking, era || 0);
 

@@ -1,13 +1,13 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 
 import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
+import { CHART_TOOLTIP_STYLE, FALLBACK_COLORS, getColorByIndex } from '@/shared/ui/chart-constants';
+import { type ChainHolding } from '../hooks/useChainHoldings';
 
 import { Price } from './Price';
-import { CHART_TOOLTIP_STYLE, FALLBACK_COLORS, getChainColor } from './chartConstants';
-import { type ChainHolding } from './useChainHoldings';
 
 type ChartEntry = {
   name: string;
@@ -20,7 +20,7 @@ type TooltipPayloadItem = {
   payload: ChartEntry;
 };
 
-const ChartTooltip = ({ active, payload }: { active?: boolean; payload?: TooltipPayloadItem[] }) => {
+const ChartTooltip = memo(({ active, payload }: { active?: boolean; payload?: TooltipPayloadItem[] }) => {
   if (!active || !payload?.length) return null;
 
   const item = payload[0];
@@ -32,7 +32,7 @@ const ChartTooltip = ({ active, payload }: { active?: boolean; payload?: Tooltip
       <div>{item.payload.percent.toFixed(1)}%</div>
     </div>
   );
-};
+});
 
 type Props = {
   chainHoldings: ChainHolding[];
@@ -40,10 +40,10 @@ type Props = {
   onSelect?: (chainHolding: ChainHolding) => void;
 };
 
-export const ChainHoldingsList = ({ chainHoldings, currency, onSelect }: Props) => {
+export const ChainHoldingsList = memo(({ chainHoldings, currency, onSelect }: Props) => {
   const { t } = useI18n();
 
-  const colors = useMemo(() => chainHoldings.map((_, i) => getChainColor(i)), [chainHoldings]);
+  const colors = useMemo(() => chainHoldings.map((_, i) => getColorByIndex(i)), [chainHoldings]);
 
   const chartData = useMemo<ChartEntry[]>(() => {
     const filtered = chainHoldings
@@ -96,7 +96,7 @@ export const ChainHoldingsList = ({ chainHoldings, currency, onSelect }: Props) 
       </div>
     </div>
   );
-};
+});
 
 type RowProps = {
   holding: ChainHolding;
@@ -105,7 +105,7 @@ type RowProps = {
   onSelect?: (holding: ChainHolding) => void;
 };
 
-const ChainHoldingRow = ({ holding, color, currency, onSelect }: RowProps) => {
+const ChainHoldingRow = memo(({ holding, color, currency, onSelect }: RowProps) => {
   return (
     <div
       className="flex cursor-pointer items-center gap-2 rounded py-1 transition-colors hover:bg-hover"
@@ -123,4 +123,4 @@ const ChainHoldingRow = ({ holding, color, currency, onSelect }: RowProps) => {
       </div>
     </div>
   );
-};
+});

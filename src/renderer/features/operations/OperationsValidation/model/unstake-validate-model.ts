@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/submittable/types';
-import { type Store, attach, createEffect, createStore } from 'effector';
+import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
 import { ZERO_BALANCE, getAssetById, getNativeAsset, transferableAmount } from '@/shared/lib/utils';
+import { type StakingMap, staking } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { type StakingMap, stakingResource } from '@/entities/staking';
 import { transactionService } from '@/entities/transaction';
 import { UnstakeRules } from '../lib/unstake-rules';
 import { validationUtils } from '../lib/validation-utils';
@@ -22,9 +22,6 @@ type ValidateParams = {
   stakingData: StakingMap;
   signerOptions?: Partial<SignerOptions>;
 };
-
-// Staking data store
-const $stakingData = createStore<StakingMap>({}).on(stakingResource.push, (_, { result }) => result ?? {});
 
 const rootValidateFx = createEffect(
   async ({ id, api, chain, asset, transaction, balances, stakingData, signerOptions }: ValidateParams) => {
@@ -70,15 +67,16 @@ const validateFx = attach({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     balances: balanceModel.$balanceMap,
-    stakingData: $stakingData,
+    stakingCache: staking.stakingResource.$cache,
   },
-  async effect({ chains, balances, apis, stakingData }, { id, transaction }: ValidationStartedParams) {
+  async effect({ chains, balances, apis, stakingCache }, { id, transaction }: ValidationStartedParams) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
     if (!chain || !api) {
       return { id, result: undefined };
     }
     const asset = getAssetById(transaction.args.asset, chain.assets) ?? getNativeAsset(chain.assets);
+    const stakingData = stakingCache[transaction.chainId] ?? {};
 
     return rootValidateFx({
       id,

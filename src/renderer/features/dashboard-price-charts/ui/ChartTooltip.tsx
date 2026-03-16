@@ -1,4 +1,4 @@
-import { type TimeRange } from '../model/price-history-model';
+import { type PriceHistoryTimeRange } from '@/domains/network';
 
 import { CHART_TOOLTIP_STYLE } from './chartConstants';
 
@@ -13,13 +13,13 @@ type Props = {
   active?: boolean;
   payload?: TooltipPayloadItem[];
   currencySymbol: string;
-  timeRange: TimeRange;
+  timeRange: PriceHistoryTimeRange;
 };
 
-function formatDate(timestamp: number, timeRange: TimeRange): string {
+function formatDate(timestamp: number, timeRange: PriceHistoryTimeRange): string {
   const date = new Date(timestamp);
 
-  if (timeRange === '7d') {
+  if (timeRange === '1d' || timeRange === '7d') {
     return new Intl.DateTimeFormat(undefined, {
       month: 'short',
       day: 'numeric',

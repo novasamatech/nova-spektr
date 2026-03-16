@@ -1,9 +1,9 @@
+import { memo } from 'react';
 import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 
 import { formatBalance } from '@/shared/lib/utils';
-
-import { CHART_TOOLTIP_STYLE } from './chartConstants';
-import { type Holding } from './useHoldings';
+import { CHART_TOOLTIP_STYLE } from '@/shared/ui/chart-constants';
+import { type Holding } from '../hooks/useHoldings';
 
 type Props = {
   holdings: Holding[];
@@ -22,7 +22,7 @@ type TooltipPayloadItem = {
   payload: ChartEntry;
 };
 
-const ChartTooltip = ({ active, payload }: { active?: boolean; payload?: TooltipPayloadItem[] }) => {
+const ChartTooltip = memo(({ active, payload }: { active?: boolean; payload?: TooltipPayloadItem[] }) => {
   if (!active || !payload?.length) return null;
 
   const item = payload[0];
@@ -41,9 +41,9 @@ const ChartTooltip = ({ active, payload }: { active?: boolean; payload?: Tooltip
       <div>{item.payload.percent.toFixed(1)}%</div>
     </div>
   );
-};
+});
 
-export const AllocationChart = ({ holdings, colors }: Props) => {
+export const AllocationChart = memo(({ holdings, colors }: Props) => {
   const filtered = holdings
     .map((h, i) => ({ name: h.symbol, value: parseFloat(h.fiatValue), index: i, holding: h }))
     .filter((d) => d.value > 0);
@@ -66,4 +66,4 @@ export const AllocationChart = ({ holdings, colors }: Props) => {
       <Tooltip content={<ChartTooltip />} />
     </PieChart>
   );
-};
+});

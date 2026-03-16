@@ -1,6 +1,6 @@
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { persist } from 'effector-storage/local';
 
-import { localStorageService } from '@/shared/api/local-storage';
 import { type Chain } from '@/shared/core';
 import { createFlow } from '@/shared/effector';
 import { getNativeAsset, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
@@ -54,26 +54,14 @@ sample({
 
 // Show popup
 
-const $showPopup = createStore(false);
+const saveLegacyFormatViewed = createEvent<boolean>();
+const $legacyFormatViewed = createStore(false);
 
-const saveLegacyFormatViewedFx = createEffect((value: boolean): boolean => {
-  return localStorageService.saveToStorage('legacy_format_viewed', value);
-});
+persist({ key: 'legacy_format_viewed', store: $legacyFormatViewed, sync: true });
 
-const getLegacyFormatViewedFx = createEffect((): boolean => {
-  return localStorageService.getFromStorage('legacy_format_viewed', false);
-});
+$legacyFormatViewed.on(saveLegacyFormatViewed, (_, value) => value);
 
-sample({
-  clock: flow.open,
-  target: getLegacyFormatViewedFx,
-});
-
-sample({
-  clock: getLegacyFormatViewedFx.doneData,
-  fn: (value) => !value,
-  target: $showPopup,
-});
+const $showPopup = $legacyFormatViewed.map((v) => !v);
 
 // Navigation
 
@@ -89,7 +77,7 @@ export const receiveModel = {
   $showPopup,
 
   selectAccount,
-  saveLegacyFormatViewed: saveLegacyFormatViewedFx,
+  saveLegacyFormatViewed,
 
   flow,
 };

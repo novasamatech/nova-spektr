@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 
-import { type UserConfigFnPromise, type ViteUserConfig, mergeConfig } from 'vitest/config';
+import { type ViteUserConfig, type ViteUserConfigFnPromise, mergeConfig } from 'vitest/config';
 import { type TestSpecification, BaseSequencer } from 'vitest/node';
 
 import { folders } from './config/index.js';
@@ -29,7 +29,7 @@ class Seqencer extends BaseSequencer {
   }
 }
 
-const config: UserConfigFnPromise = async (options) => {
+const config: ViteUserConfigFnPromise = async (options) => {
   const base = await rendererConfig(options);
   const config: ViteUserConfig = {
     cacheDir: resolve(folders.root, 'node_modules/.cache/vitest'),
@@ -50,24 +50,7 @@ const config: UserConfigFnPromise = async (options) => {
         'src/**/*.test.tsx',
       ],
       globals: true,
-      environmentMatchGlobs: [
-        // Integration tests need happy-dom for fake-indexeddb and Dexie
-        ['tests/integrations/**/*.test.ts', 'happy-dom'],
-        ['tests/integrations/**/*.test.tsx', 'happy-dom'],
-        // This list should dissapear over time, simple logic tests shouldn't depend on environment.
-        ['src/renderer/shared/lib/hooks/**/*.ts', 'happy-dom'],
-        ['src/renderer/shared/lib/utils/**/*.ts', 'happy-dom'],
-        ['src/renderer/shared/i18n/**/*.ts', 'happy-dom'],
-        ['src/renderer/shared/api/**/*.ts', 'happy-dom'],
-        ['src/renderer/domains/**/*.ts', 'happy-dom'],
-        ['src/renderer/aggregates/**/*.ts', 'happy-dom'],
-        ['src/renderer/entities/**/*.ts', 'happy-dom'],
-        ['src/renderer/features/**/*.ts', 'happy-dom'],
-        ['src/renderer/widgets/**/*.ts', 'happy-dom'],
-        ['src/renderer/pages/**/*.ts', 'happy-dom'],
-        ['**/*.tsx', 'happy-dom'],
-        ['**/*.ts', 'node'],
-      ],
+      environment: 'happy-dom',
       setupFiles: resolve(folders.root, './vitest.setup.js'),
       reporters: [
         'default',

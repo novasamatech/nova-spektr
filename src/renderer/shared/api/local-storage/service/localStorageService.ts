@@ -1,3 +1,6 @@
+/**
+ * @deprecated Use `effector-storage/local instead`
+ */
 export const localStorageService = {
   getFromStorage,
   saveToStorage,
