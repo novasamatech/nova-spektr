@@ -1,6 +1,6 @@
 import { ethChains } from '../../data/chains/chainsList';
 import { setupTestMetadata } from '../../utils/baseRegularFixture';
-import { test } from '../../utils/feeFixture';
+import { ethTest as test } from '../../utils/feeFixture';
 
 test.describe(
   'Load Transfer fee as ethereum_based polkadot Vault wallet',
