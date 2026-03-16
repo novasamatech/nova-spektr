@@ -2,7 +2,7 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@/shared/lib/utils';
 import { Modal } from '@/shared/ui-kit';
-import { CurrencyForm } from '@/features/currency';
+import { CurrencyForm } from '../CurrencyForm';
 
 type Props = {
   onClose: () => void;
@@ -10,7 +10,6 @@ type Props = {
 
 export const CurrencyModal = ({ onClose }: Props) => {
   const { t } = useI18n();
-
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
 
   const closeFiatModal = () => {
