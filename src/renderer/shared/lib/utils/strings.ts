@@ -2,7 +2,9 @@ import { type HexString } from '@/shared/core';
 
 /**
  * Sanitizes a contact name by:
- * - Removing invisible/zero-width Unicode characters
+ *
+ * - Removing Unicode "Format" category characters (invisible chars, bidi
+ *   controls, etc.)
  * - Trimming leading/trailing whitespace
  * - Normalizing Unicode to NFC form
  *
@@ -11,13 +13,8 @@ import { type HexString } from '@/shared/core';
  * @returns {String} Sanitized name
  */
 export const sanitizeContactName = (name: string): string => {
-  // Remove invisible/zero-width Unicode characters:
-  // \u200B zero-width space, \u200C zero-width non-joiner, \u200D zero-width joiner,
-  // \u2060 word joiner, \uFEFF BOM/zero-width no-break space, \u00AD soft hyphen,
-  // \u180E Mongolian vowel separator, \u202A-\u202F directional formatting,
-  // \u2066-\u2069 directional isolates
   return name
-    .replace(/[\u200B\u200C\u200D\u2060\uFEFF\u00AD\u180E\u202A-\u202F\u2066-\u2069]/g, '')
+    .replace(/\p{Cf}/gu, '')
     .trim()
     .normalize('NFC');
 };

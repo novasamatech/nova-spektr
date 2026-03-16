@@ -38,16 +38,7 @@ async function parseJSON(file: File): Promise<ParseResult> {
     return { success: false };
   }
 
-  // Sanitize contact names before returning
-  const sanitized = parsed.map((contact) => ({
-    ...contact,
-    name: sanitizeContactName(contact.name),
-  }));
-
-  // Filter out contacts whose name becomes empty after sanitization
-  const valid = sanitized.filter((contact) => contact.name.length > 0);
-
-  return { success: true, data: valid };
+  return { success: true, data: parsed.filter((contact) => contact.name.length > 0) };
 }
 
 function detectAccountIdConflicts(contacts: ContactImport[], existingContacts: Contact[]): AccountIdConflict[] {
@@ -84,12 +75,11 @@ function resolveNameConflicts(
 
   for (const contact of contacts) {
     const accountId = toAccountId(contact.address);
-    const sanitizedName = sanitizeContactName(contact.name);
-    let finalName = sanitizedName;
+    let finalName = contact.name;
     let nameIndex = 1;
 
     const existingWithSameName = existingContacts.find(
-      (c) => sanitizeContactName(c.name).toLowerCase() === sanitizedName.toLowerCase(),
+      (c) => sanitizeContactName(c.name).toLowerCase() === contact.name.toLowerCase(),
     );
     const isAccountIdConflict = existingWithSameName && existingWithSameName.accountId === accountId;
 
@@ -103,16 +93,15 @@ function resolveNameConflicts(
       finalName = `${finalName} (${nameIndex})`;
     }
 
-    // Also check for duplicates within the imported file
     if (usedNames.has(finalName.toLowerCase())) {
       nameIndex = 1;
       while (
-        allExistingNames.has(`${sanitizedName} (${nameIndex})`.toLowerCase()) ||
-        usedNames.has(`${sanitizedName} (${nameIndex})`.toLowerCase())
+        allExistingNames.has(`${contact.name} (${nameIndex})`.toLowerCase()) ||
+        usedNames.has(`${contact.name} (${nameIndex})`.toLowerCase())
       ) {
         nameIndex++;
       }
-      finalName = `${sanitizedName} (${nameIndex})`;
+      finalName = `${contact.name} (${nameIndex})`;
     }
 
     usedNames.add(finalName.toLowerCase());

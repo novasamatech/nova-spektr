@@ -4,7 +4,7 @@ import { t } from 'i18next';
 import { not } from 'patronum';
 
 import { type Contact } from '@/shared/core';
-import { sanitizeContactName, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { isValidContactName, sanitizeContactName, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 
 type ContactFormFields = {
@@ -38,9 +38,7 @@ function validateNameUniqueEdit(
   const sanitized = sanitizeContactName(value).toLowerCase();
   const sanitizedOriginal = sanitizeContactName(params.contactToEdit.name).toLowerCase();
   const isSameName = sanitized === sanitizedOriginal;
-  const isUnique = params.contacts.every(
-    (contact) => sanitizeContactName(contact.name).toLowerCase() !== sanitized,
-  );
+  const isUnique = params.contacts.every((contact) => sanitizeContactName(contact.name).toLowerCase() !== sanitized);
 
   return isSameName || isUnique;
 }
@@ -68,11 +66,10 @@ export function createCreateFormModel() {
       name: {
         init: '',
         rules: [
-          { name: 'required', errorText: t('addressBook.createContact.nameRequiredError'), validator: Boolean },
           {
             name: 'invalid',
             errorText: t('addressBook.createContact.nameRequiredError'),
-            validator: (value: string) => sanitizeContactName(value).length > 0,
+            validator: isValidContactName,
           },
           {
             name: 'exist',
@@ -154,11 +151,10 @@ export function createEditFormModel() {
       name: {
         init: '',
         rules: [
-          { name: 'required', errorText: t('addressBook.editContact.nameRequiredError'), validator: Boolean },
           {
             name: 'invalid',
             errorText: t('addressBook.editContact.nameRequiredError'),
-            validator: (value: string) => sanitizeContactName(value).length > 0,
+            validator: isValidContactName,
           },
           {
             name: 'exist',
