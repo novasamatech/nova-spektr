@@ -87,7 +87,8 @@ export const useStakingOverview = (accountIds: string[]): StakingOverviewData =>
   const chains = useUnit(networkModel.$chains);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
-  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   const polkadotApi = useApi(POLKADOT_AH_CHAIN_ID);
   const kusamaApi = useApi(KUSAMA_AH_CHAIN_ID);

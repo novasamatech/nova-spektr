@@ -49,7 +49,8 @@ export const useTotalRewards = (accountIds: string[], since?: number): TotalRewa
   const chains = useUnit(networkModel.$chains);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
-  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   const typedAccountIds = useMemo(() => accountIds.map((id) => toAccountId(id)), [accountIds]);
 

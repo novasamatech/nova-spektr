@@ -29,7 +29,8 @@ export const WalletFiatBalance = ({ wallet, className }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const balances = useUnit(balanceModel.$balanceMap);
   const currency = useUnit(currencyModel.$activeCurrency);
-  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   const balance = useMemo(() => {
     if (!fiatFlag) return null;

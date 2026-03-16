@@ -29,7 +29,8 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, asse
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
-  const { data: assetsPrices } = useAssetsPrices(currency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: assetsPrices } = useAssetsPrices(pricesParams);
   const connections = useUnit(networkModel.$connections);
   const chains = useUnit(networkModel.$chains);
 

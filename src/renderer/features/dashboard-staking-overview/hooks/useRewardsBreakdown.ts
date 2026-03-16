@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { getRoundedValue } from '@/shared/lib/utils';
-import { currencyModel, useAssetsPrices } from '@/domains/price';
+import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
 import { type RewardsMap } from '@/domains/staking';
 
 import { type EntryLike } from './useStakingBreakdown';
@@ -32,7 +32,8 @@ type Params = {
 
 export const useRewardsBreakdown = ({ rewardsMap, chainSummary, accountIds, allEntries }: Params) => {
   const currency = useUnit(currencyModel.$activeCurrency);
-  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   return useMemo(() => {
     if (!prices || !currency) return { rows: [] };

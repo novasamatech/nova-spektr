@@ -30,7 +30,8 @@ export const useHoldings = (accountIds: string[]): HoldingsData => {
   const chains = useUnit(networkModel.$chains);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
-  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   const { holdings, totalFiat } = useMemo(() => {
     if (!prices || !currency) return { holdings: [], totalFiat: null };

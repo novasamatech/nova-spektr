@@ -35,7 +35,8 @@ export const TokenSelectorModal = memo(({ isOpen, chain, onSelect, onClose }: Pr
   const balances = useUnit(balanceModel.$balanceMap);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
-  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   const assetsWithBalances = useMemo(() => {
     return chain.assets

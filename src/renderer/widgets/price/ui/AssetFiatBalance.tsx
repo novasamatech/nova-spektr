@@ -22,7 +22,8 @@ export const AssetFiatBalance = memo(({ asset, amount, className }: Props) => {
 
   const currency = useUnit(currencyModel.$activeCurrency);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   if (!fiatFlag) {
     return null;

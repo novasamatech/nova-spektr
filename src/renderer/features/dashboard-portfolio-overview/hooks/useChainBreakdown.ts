@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { getRoundedValue, totalAmount, totalAmountBN } from '@/shared/lib/utils';
-import { currencyModel, useAssetsPrices } from '@/domains/price';
+import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 
@@ -31,7 +31,8 @@ export const useChainBreakdown = (chainId: ChainId, accountIds: string[]): Chain
   const balanceMap = useUnit(balanceModel.$balanceMap);
   const chains = useUnit(networkModel.$chains);
   const currency = useUnit(currencyModel.$activeCurrency);
-  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   return useMemo(() => {
     if (!prices || !currency) return { rows: [] };

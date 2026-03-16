@@ -5,7 +5,8 @@ import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/pr
 export const useCurrencyRate = (assetId?: string, showCurrency?: boolean): number | null => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const activeCurrency = useUnit(currencyModel.$activeCurrency);
-  const { data: assetsPrices } = useAssetsPrices(activeCurrency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: assetsPrices } = useAssetsPrices(pricesParams);
 
   if (
     !showCurrency ||

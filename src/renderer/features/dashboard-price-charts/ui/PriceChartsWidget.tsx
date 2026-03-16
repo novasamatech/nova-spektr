@@ -23,7 +23,8 @@ export const PriceChartsWidget = () => {
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
-  const { data: allPrices } = useAssetsPrices(currency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: allPrices } = useAssetsPrices(pricesParams);
 
   const prices = useMemo(() => {
     if (!allPrices || !currency) return {};

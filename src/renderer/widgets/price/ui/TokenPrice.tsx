@@ -17,7 +17,8 @@ type Props = {
 export const TokenPrice = memo(({ assetId, className, wrapperClassName }: Props) => {
   const { t } = useI18n();
   const currency = useUnit(currencyModel.$activeCurrency);
-  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const price = (() => {

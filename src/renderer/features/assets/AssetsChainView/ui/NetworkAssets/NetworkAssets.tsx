@@ -26,7 +26,8 @@ type Props = {
 export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, wallet }: Props) => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
-  const { data: assetsPrices } = useAssetsPrices(currency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: assetsPrices } = useAssetsPrices(pricesParams);
   const balances = useUnit(balanceModel.$balances);
 
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);

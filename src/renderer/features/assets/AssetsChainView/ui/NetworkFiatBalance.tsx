@@ -19,7 +19,8 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
   const [fiatAmount, setFiatAmount] = useState<BigNumber>(new BigNumber(0));
 
   const currency = useUnit(currencyModel.$activeCurrency);
-  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
+  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   useEffect(() => {
