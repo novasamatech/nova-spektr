@@ -5,6 +5,7 @@ import { cnTw, formatBalance } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { BRAND_COLORS, FALLBACK_COLORS, getColorByPriceId } from '@/shared/ui/chart-constants';
 import { AssetIcon } from '@/shared/ui-entities';
+import { Tooltip } from '@/shared/ui-kit';
 import { type CurrencyItem } from '@/domains/price';
 import { type Holding } from '../hooks/useHoldings';
 
@@ -92,16 +93,21 @@ const HoldingRow = memo(({ holding, color, currency, onSelect }: RowProps) => {
 });
 
 const PriceChangeIndicator = ({ change }: { change: number | null }) => {
+  const { t } = useI18n();
+
   if (change === null || change === 0 || !Number.isFinite(change)) return null;
 
   const isPositive = change > 0;
 
   return (
-    <FootnoteText className={cnTw('tabular-nums', isPositive ? 'text-text-positive' : 'text-text-negative')}>
-      {/* eslint-disable-next-line i18next/no-literal-string */}
-      {isPositive ? '↑' : '↓'}
-      {isPositive ? '+' : ''}
-      {change.toFixed(2)}%
-    </FootnoteText>
+    <Tooltip>
+      <Tooltip.Trigger>
+        <FootnoteText className={cnTw('tabular-nums', isPositive ? 'text-text-positive' : 'text-text-negative')}>
+          {isPositive ? '↑' : '↓'}
+          {Math.abs(change).toFixed(2)}%
+        </FootnoteText>
+      </Tooltip.Trigger>
+      <Tooltip.Content>{t('dashboard.portfolioOverview.priceChange24h')}</Tooltip.Content>
+    </Tooltip>
   );
 };
