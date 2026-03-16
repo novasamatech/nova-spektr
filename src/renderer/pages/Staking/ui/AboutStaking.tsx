@@ -6,8 +6,8 @@ import { type Asset, type EraIndex, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Duration, FootnoteText, Shimmering } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
+import { stakingService } from '@/domains/staking';
 import { AssetFiatBalance } from '@/entities/price';
-import { useStakingData } from '@/entities/staking';
 
 type Props = {
   api: ApiPromise | null;
@@ -26,7 +26,7 @@ type Props = {
 export const AboutStaking = ({ api, timelineApi, era, asset, validators }: Props) => {
   const { t } = useI18n();
 
-  const { getMinNominatorBond, getUnbondingPeriod, getTotalStaked } = useStakingData();
+  const { getMinNominatorBond, getUnbondingPeriod, getTotalStaked } = stakingService;
 
   const [minimumStake, setMinimumStake] = useState('');
   const [unstakingPeriod, setUnstakingPeriod] = useState('');

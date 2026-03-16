@@ -6,9 +6,9 @@ import { combineEvents } from 'patronum';
 import { type Asset, type BalanceMap, type Chain, type ChainId, type ID, type Transaction } from '@/shared/core';
 import { assert, getNativeAsset, redeemableAmount, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type StakingMap, eraService, stakingService } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { type StakingMap, eraService, useStakingData } from '@/entities/staking';
 import { transactionService } from '@/entities/transaction';
 import { validationUtils } from '../lib/validation-utils';
 import { WithdrawRules } from '../lib/withdraw-rules';
@@ -32,7 +32,7 @@ type StakingParams = {
   accounts: AccountId[];
 };
 const fetchStakingFx = createEffect(({ chainId, api, accounts }: StakingParams) => {
-  return useStakingData().fetchLedger(chainId, api, accounts);
+  return stakingService.fetchStakingLedger(chainId, api, accounts);
 });
 
 type ValidateParams = {

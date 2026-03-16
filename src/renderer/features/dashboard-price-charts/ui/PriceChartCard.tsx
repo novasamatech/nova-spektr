@@ -5,8 +5,7 @@ import { type CurrencyItem, type PriceRange } from '@/shared/api/price-provider'
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, TitleText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
-import { priceHistoryResource, usePriceHistory } from '@/domains/network';
-import { type TimeRange } from '../model/price-history-model';
+import { type PriceHistoryTimeRange, priceHistoryResource, usePriceHistory } from '@/domains/network';
 
 import { ChartTooltip } from './ChartTooltip';
 import { PriceChange } from './PriceChange';
@@ -17,7 +16,7 @@ type Props = {
   color: string;
   currency: CurrencyItem;
   currentPrice: { price: number; change: number } | null;
-  timeRange: TimeRange;
+  timeRange: PriceHistoryTimeRange;
 };
 
 type ChartDataPoint = {

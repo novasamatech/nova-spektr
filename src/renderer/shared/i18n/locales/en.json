@@ -482,11 +482,19 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "tabs": {
+      "overview": "Overview",
+      "staking": "Staking",
+      "governance": "Governance",
+      "alerts": "Alerts",
+      "comingSoon": "Coming soon"
+    },
     "accountSelector": {
       "placeholder": "Select accounts",
       "allAccounts": "All accounts",
-      "walletsGroup": "Wallets",
-      "contactsGroup": "Contacts",
+      "walletsGroup": "Your accounts",
+      "localContactsGroup": "My Contacts",
+      "backendContactsGroup": "External Contacts",
       "selectedCount_one": "{{count}} account selected",
       "selectedCount_other": "{{count}} accounts selected"
     },
@@ -522,6 +530,43 @@
         "amount": "Amount",
         "value": "Value",
         "share": "Share"
+      }
+    },
+    "totalRewards": {
+      "title": "Total Rewards",
+      "range7d": "7D",
+      "range1m": "1M",
+      "range6m": "6M",
+      "range1y": "1Y",
+      "rangeAll": "Max",
+      "noRewards": "No staking rewards found",
+      "rewardsDetail": {
+        "title": "{chain} Rewards",
+        "account": "Account",
+        "rewards": "Rewards",
+        "value": "Value",
+        "share": "Share",
+        "accountCount_one": "{count} account",
+        "accountCount_other": "{count} accounts"
+      }
+    },
+    "stakingOverview": {
+      "title": "Staking Overview",
+      "totalStaked": "Total Staked",
+      "noStaking": "No staking positions found",
+      "unstaking": "Unstaking",
+      "redeemable": "Redeemable",
+      "activeValidators_one": "{count} active validator",
+      "activeValidators_other": "{count} active validators",
+      "apy": "{apy}% APY",
+      "stakingDetail": {
+        "title": "{chain} Staking",
+        "account": "Account",
+        "staked": "Staked",
+        "value": "Value",
+        "share": "Share",
+        "accountCount_one": "{count} account",
+        "accountCount_other": "{count} accounts"
       }
     },
     "priceCharts": {

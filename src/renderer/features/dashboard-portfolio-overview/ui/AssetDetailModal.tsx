@@ -1,17 +1,17 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 
 import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
+import { CHART_TOOLTIP_STYLE, FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { AssetIcon, Identicon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
+import { type BreakdownRow, useHoldingBreakdown } from '../hooks/useHoldingBreakdown';
+import { type Holding } from '../hooks/useHoldings';
 
 import { Price } from './Price';
-import { CHART_TOOLTIP_STYLE, FALLBACK_COLORS } from './chartConstants';
-import { type BreakdownRow, useHoldingBreakdown } from './useHoldingBreakdown';
-import { type Holding } from './useHoldings';
 
 type ChartEntry = {
   name: string;
@@ -24,7 +24,7 @@ type TooltipPayloadItem = {
   payload: ChartEntry;
 };
 
-const ChartTooltip = ({ active, payload }: { active?: boolean; payload?: TooltipPayloadItem[] }) => {
+const ChartTooltip = memo(({ active, payload }: { active?: boolean; payload?: TooltipPayloadItem[] }) => {
   if (!active || !payload?.length) return null;
 
   const item = payload[0];
@@ -38,7 +38,7 @@ const ChartTooltip = ({ active, payload }: { active?: boolean; payload?: Tooltip
       <div>{row.sharePercent.toFixed(1)}%</div>
     </div>
   );
-};
+});
 
 type EntryLike = { accountId: string; name: string; address: string };
 
@@ -50,7 +50,7 @@ type Props = {
   onClose: () => void;
 };
 
-export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, onClose }: Props) => {
+export const AssetDetailModal = memo(({ holding, accountIds, allEntries, currency, onClose }: Props) => {
   const { t } = useI18n();
   const { rows } = useHoldingBreakdown(holding.priceId, accountIds, allEntries);
   const addressCount = rows.length;
@@ -172,4 +172,4 @@ export const AssetDetailModal = ({ holding, accountIds, allEntries, currency, on
       </Modal.Content>
     </Modal>
   );
-};
+});

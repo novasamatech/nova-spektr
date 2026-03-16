@@ -1,112 +1,68 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { uniqBy } from 'lodash';
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { localStorageService } from '@/shared/api/local-storage';
 import { type ChainId, type Stake, type Validator } from '@/shared/core';
+import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getRelaychainAsset, keys, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import { getRelaychainAsset, keys, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
-import { type AnyAccount, accountService, identity } from '@/domains/network';
-import { InactiveNetwork, networkModel, networkUtils, useNetworkData } from '@/entities/network';
-import {
-  type ValidatorMap,
-  DEFAULT_STAKING_CHAIN,
-  STAKING_NETWORK,
-  ValidatorsModal,
-  eraService,
-  useStakingRewards,
-  validatorsService,
-} from '@/entities/staking';
-import { accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
+import { type AnyAccount, identity } from '@/domains/network';
+import { type ValidatorMap, eraService, useStakingRewards, validatorsService } from '@/domains/staking';
+import { InactiveNetwork, networkModel, useNetworkData } from '@/entities/network';
+import { ValidatorsModal } from '@/entities/staking';
+import { permissionUtils, walletUtils } from '@/entities/wallet';
+import { stakingAccounts } from '@/aggregates/staking-accounts';
+import { stakingNetwork } from '@/aggregates/staking-network';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { EmptyAccountMessage } from '@/features/emptyList';
+import { bondExtraModel, bondExtraShardsModel } from '@/features/staking-bond-extra';
+import { bondNominateModel, bondNominateModelShards } from '@/features/staking-bond-nominate';
+import { nominateModel, nominateShardsModel } from '@/features/staking-nominate';
+import { payeeModel, payeeModelShards } from '@/features/staking-payee';
+import { restakeModel, restakeModelShards } from '@/features/staking-restake';
+import { unstakeModel, unstakeModelShards } from '@/features/staking-unstake';
+import { withdrawModel, withdrawShardsModel } from '@/features/staking-withdraw';
 import { WalletDetails } from '@/features/wallet-details';
-import {
-  bondExtraModel,
-  bondExtraShardsModel,
-  bondNominateModel,
-  bondNominateModelShards,
-  nominateModel,
-  nominateShardsModel,
-  payeeModel,
-  payeeModelShards,
-  restakeModel,
-  restakeModelShards,
-  unstakeModel,
-  unstakeModelShards,
-  withdrawModel,
-  withdrawShardsModel,
-} from '@/widgets/Staking';
 import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
-import { stakingModel } from '../model/staking-model';
+import {
+  stakingBondExtraSlot,
+  stakingBondNominateSlot,
+  stakingNominateSlot,
+  stakingPayeeSlot,
+  stakingRestakeSlot,
+  stakingUnstakeSlot,
+  stakingWithdrawSlot,
+} from '../slots';
 
 import { AboutStaking } from './AboutStaking';
 import { Actions } from './Actions';
 import { NetworkInfo } from './NetworkInfo';
 import { NominatorsList } from './NominatorsList';
 
-// TODO: will be much simpler when we refactor staking page
-
-// Lazy-loaded components
-const LazyUnstake = lazy(() => import('@/widgets/Staking').then(({ Unstake }) => ({ default: Unstake })));
-const LazyUnstakeShards = lazy(() =>
-  import('@/widgets/Staking').then(({ UnstakeShards }) => ({ default: UnstakeShards })),
-);
-
-const LazyBondExtra = lazy(() => import('@/widgets/Staking').then(({ BondExtra }) => ({ default: BondExtra })));
-const LazyBondExtraShards = lazy(() =>
-  import('@/widgets/Staking').then(({ BondExtraShards }) => ({ default: BondExtraShards })),
-);
-
-const LazyNominate = lazy(() => import('@/widgets/Staking').then(({ Nominate }) => ({ default: Nominate })));
-const LazyNominateShards = lazy(() =>
-  import('@/widgets/Staking').then(({ NominateShards }) => ({ default: NominateShards })),
-);
-
-const LazyWithdraw = lazy(() => import('@/widgets/Staking').then(({ Withdraw }) => ({ default: Withdraw })));
-const LazyWithdrawShards = lazy(() =>
-  import('@/widgets/Staking').then(({ WithdrawShards }) => ({ default: WithdrawShards })),
-);
-
-const LazyPayee = lazy(() => import('@/widgets/Staking').then(({ Payee }) => ({ default: Payee })));
-const LazyPayeeShards = lazy(() => import('@/widgets/Staking').then(({ PayeeShards }) => ({ default: PayeeShards })));
-
-const LazyBondNominate = lazy(() =>
-  import('@/widgets/Staking').then(({ BondNominate }) => ({ default: BondNominate })),
-);
-const LazyBondNominateShards = lazy(() =>
-  import('@/widgets/Staking').then(({ BondNominateShards }) => ({ default: BondNominateShards })),
-);
-
-const LazyRestake = lazy(() => import('@/widgets/Staking').then(({ Restake }) => ({ default: Restake })));
-const LazyRestakeShards = lazy(() =>
-  import('@/widgets/Staking').then(({ RestakeShards }) => ({ default: RestakeShards })),
-);
-
 export const Staking = () => {
   const { t } = useI18n();
 
-  const chains = useUnit(networkModel.$chains);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
-  const selectedAccounts = useUnit(walletSelect.$selectedAccounts);
+  const chain = useUnit(stakingNetwork.$chain);
+  const chainId = useUnit(stakingNetwork.$selectedChainId);
+  const api = useUnit(stakingNetwork.$api);
+  const networkIsActive = useUnit(stakingNetwork.$networkIsActive);
+
+  const accounts = useUnit(stakingAccounts.$accounts);
+  const accountIds = useUnit(stakingAccounts.$accountIds);
+  const groupedAccounts = useUnit(stakingAccounts.$groupedAccounts);
+  const selectedNominators = useUnit(stakingAccounts.$selectedNominators);
+  const isMultipleSelected = useUnit(stakingAccounts.$isMultipleSelected);
+  const staking = useUnit(stakingAccounts.$stakingData);
+  const isStakingLoading = useUnit(stakingAccounts.$isStakingLoading);
 
   const [isShowNominators, toggleNominators] = useToggle();
-
-  const staking = useUnit(stakingModel.$stakingData);
-  const isStakingLoading = useUnit(stakingModel.$isStakingLoading);
-
   const [chainEra, setChainEra] = useState<Record<ChainId, number | undefined>>({});
-
   const [validators, setValidators] = useState<ValidatorMap>({});
   const [nominators, setNominators] = useState<Validator[]>([]);
-
-  const [chainId, setChainId] = useState<ChainId | null>(null);
-  const [networkIsActive, setNetworkIsActive] = useState(true);
-
-  const [selectedNominators, setSelectedNominators] = useState<AccountId[]>([]);
   const [selectedStash, setSelectedStash] = useState<AccountId | null>(null);
   const [showWalletDetails, setShowWalletDetails] = useState(false);
 
@@ -116,52 +72,15 @@ export const Staking = () => {
     fn: (list, [chainId]) => (chainId ? (list[chainId] ?? {}) : {}),
   });
 
-  const { api, connection, connectionStatus } = useNetworkData(chainId || undefined);
-
-  const activeChain = chainId && chains[chainId] ? chains[chainId] : null;
-  const addressPrefix = activeChain?.addressPrefix;
-
   const timelineChainId = useMemo(() => {
-    return activeChain?.additional?.timelineChain ?? activeChain?.chainId;
-  }, [activeChain]);
+    return chain?.additional?.timelineChain ?? chain?.chainId;
+  }, [chain]);
   const { api: timelineApi } = useNetworkData(timelineChainId);
 
-  const accounts = useMemo(() => {
-    if (!selectedAccounts.length || !activeChain) return [];
+  const chains = useUnit(networkModel.$chains);
+  const { data: rewards, pending: isRewardsLoading } = useStakingRewards(accountIds, chain, chains);
 
-    const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
-
-    const filteredAccounts = selectedAccounts.filter((account, _, collection) => {
-      const isBaseAccount = accountUtils.isVaultBaseAccount(account);
-      const hasManyAccounts = collection.length > 1;
-
-      if (isPolkadotVault && isBaseAccount && hasManyAccounts) {
-        return false;
-      }
-
-      return accountService.isAccountAvailableOnChain(account, activeChain);
-    });
-
-    return uniqBy(filteredAccounts, 'accountId');
-  }, [selectedAccounts, activeChain, activeWallet]);
-
-  const accountIds = useMemo(() => accounts.map((a) => a.accountId), [accounts]);
-
-  const { rewards, isRewardsLoading } = useStakingRewards(accountIds, activeChain);
-
-  useEffect(() => {
-    setChainId(localStorageService.getFromStorage(STAKING_NETWORK, DEFAULT_STAKING_CHAIN) ?? null);
-  }, []);
-
-  useEffect(() => {
-    if (nullable(connection) || nullable(connectionStatus)) return;
-
-    const isDisabled = networkUtils.isDisabledConnection(connection);
-    const isError = networkUtils.isErrorStatus(connectionStatus);
-
-    setNetworkIsActive(!isDisabled && !isError);
-  }, [chainId, connection]);
-
+  // Subscribe to active era
   useEffect(() => {
     if (!chainId || !api?.isConnected) return;
 
@@ -178,43 +97,7 @@ export const Staking = () => {
     };
   }, [chainId, api]);
 
-  useEffect(() => {
-    stakingModel.stakingParamsChanged({ chainId, api, accounts: accountIds });
-
-    return () => {
-      stakingModel.reset();
-    };
-  }, [chainId, api, accountIds]);
-
-  useEffect(() => {
-    if (!activeWallet) return;
-
-    // TODO remove this check
-    const isMultisig = walletUtils.isAnyMultisig(activeWallet);
-    const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
-    const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
-    const isPolkadotVault = walletUtils.isPolkadotVaultGroup(activeWallet);
-    const isPolkadotExtension = walletUtils.isPolkadotExtension(activeWallet);
-    const isTalismanExtension = walletUtils.isTalismanExtension(activeWallet);
-    const isSubWalletExtension = walletUtils.isSubWalletExtension(activeWallet);
-    const isProxied = walletUtils.isProxied(activeWallet);
-
-    if (
-      isMultisig ||
-      isNovaWallet ||
-      isWalletConnect ||
-      isProxied ||
-      isPolkadotExtension ||
-      isTalismanExtension ||
-      isSubWalletExtension ||
-      (isPolkadotVault && accountIds.length === 1)
-    ) {
-      setSelectedNominators([accountIds[0]!]);
-    } else {
-      setSelectedNominators([]);
-    }
-  }, [chainId, activeWallet]);
-
+  // Fetch validators list
   useEffect(() => {
     if (!chainId || !api?.isConnected) return;
 
@@ -224,14 +107,16 @@ export const Staking = () => {
     validatorsService.getValidatorsList(api, era).then(setValidators);
   }, [chainId, api, chainEra]);
 
+  // Request identities for validators
   useEffect(() => {
-    const accounts = keys(validators).map(toAccountId);
+    const validatorAccounts = keys(validators).map(toAccountId);
 
-    if (!chainId || accounts.length === 0) return;
+    if (!chainId || validatorAccounts.length === 0) return;
 
-    identity.request({ chainId, accounts });
+    identity.request({ chainId, accounts: validatorAccounts });
   }, [validators]);
 
+  // Fetch nominators for selected stash
   useEffect(() => {
     if (!api || !selectedStash) return;
 
@@ -243,10 +128,9 @@ export const Staking = () => {
   const changeNetwork = (nextChainId: ChainId) => {
     if (nextChainId === chainId) return;
 
-    setChainId(nextChainId);
-    setSelectedNominators([]);
+    stakingNetwork.selectChain(nextChainId);
+    stakingAccounts.resetNominators();
     setValidators({});
-    localStorageService.saveToStorage(STAKING_NETWORK, nextChainId);
   };
 
   const openSelectedValidators = (stash?: AccountId) => {
@@ -255,17 +139,6 @@ export const Staking = () => {
     setSelectedStash(stash);
     toggleNominators();
   };
-
-  const groupedAccounts = useMemo(() => {
-    if (!activeWallet) {
-      return [];
-    }
-    if (!walletUtils.isPolkadotVault(activeWallet)) {
-      return accounts;
-    }
-
-    return accountUtils.getAccountsAndShardGroups(accounts);
-  }, [activeWallet, accounts]);
 
   const nominatorsInfo = useMemo(() => {
     const getInfo = <T extends AnyAccount>(account: T): NominatorInfo<T> => ({
@@ -278,9 +151,8 @@ export const Staking = () => {
     });
 
     return groupedAccounts.reduce<NominatorInfo<any>[]>((acc, account) => {
-      if (accountUtils.isAccountWithShards(account)) {
+      if (Array.isArray(account)) {
         const shardsGroup = account.map(getInfo);
-
         // @ts-expect-error TODO fix
         acc.push(shardsGroup);
       } else {
@@ -289,7 +161,7 @@ export const Staking = () => {
 
       return acc;
     }, []);
-  }, [groupedAccounts, addressPrefix, isStakingLoading, isRewardsLoading, staking, selectedNominators]);
+  }, [groupedAccounts, isStakingLoading, isRewardsLoading, staking, selectedNominators]);
 
   const selectedStakes = selectedNominators.reduce<Stake[]>((acc, accountId) => {
     const stake = staking[accountId];
@@ -314,16 +186,15 @@ export const Staking = () => {
     [[], []],
   );
 
-  const isMultipleAccountsSelected = selectedNominators.length > 1;
   const totalStakes = Object.values(staking)
     .map((stake) => stake?.total)
     .filter((total): total is string => nonNullable(total));
 
   const navigateToStake = (operation: StakeOperations, as?: AccountId[]) => {
-    if (!activeChain || !activeWallet) return;
+    if (!chain || !activeWallet) return;
 
     if (as) {
-      setSelectedNominators(as);
+      stakingAccounts.setSelectedNominators(as);
 
       return;
     }
@@ -331,44 +202,40 @@ export const Staking = () => {
     const shards = accounts.filter((account) => selectedNominators.includes(account.accountId));
 
     const model = {
-      [StakeOperations.UNSTAKE]: isMultipleAccountsSelected
+      [StakeOperations.UNSTAKE]: isMultipleSelected
         ? unstakeModelShards.events.flowStarted
         : unstakeModel.events.flowStarted,
-      [StakeOperations.BOND_NOMINATE]: isMultipleAccountsSelected
+      [StakeOperations.BOND_NOMINATE]: isMultipleSelected
         ? bondNominateModelShards.flowStarted
         : bondNominateModel.flowStarted,
-      [StakeOperations.BOND_EXTRA]: isMultipleAccountsSelected
+      [StakeOperations.BOND_EXTRA]: isMultipleSelected
         ? bondExtraShardsModel.events.flowStarted
         : bondExtraModel.events.flowStarted,
-      [StakeOperations.NOMINATE]: isMultipleAccountsSelected
+      [StakeOperations.NOMINATE]: isMultipleSelected
         ? nominateShardsModel.events.flowStarted
         : nominateModel.events.flowStarted,
-      [StakeOperations.RESTAKE]: isMultipleAccountsSelected ? restakeModelShards.flowStarted : restakeModel.flowStarted,
-      [StakeOperations.WITHDRAW]: isMultipleAccountsSelected
+      [StakeOperations.RESTAKE]: isMultipleSelected
+        ? restakeModelShards.events.flowStarted
+        : restakeModel.events.flowStarted,
+      [StakeOperations.WITHDRAW]: isMultipleSelected
         ? withdrawShardsModel.events.flowStarted
         : withdrawModel.events.flowStarted,
-      [StakeOperations.SET_PAYEE]: isMultipleAccountsSelected
+      [StakeOperations.SET_PAYEE]: isMultipleSelected
         ? payeeModelShards.events.flowStarted
         : payeeModel.events.flowStarted,
     };
 
     model[operation]({
       wallet: activeWallet,
-      chain: activeChain,
+      chain,
       shards: uniqBy(shards, 'accountId'),
     });
   };
 
-  const relaychainAsset = getRelaychainAsset(activeChain?.assets);
+  const relaychainAsset = getRelaychainAsset(chain?.assets);
 
   const toggleSelectedNominators = (id: AccountId, isAllSelected?: boolean) => {
-    const isSelected = isAllSelected === undefined ? selectedNominators.includes(id) : !isAllSelected;
-
-    if (isSelected) {
-      setSelectedNominators((value) => value.filter((a) => a !== id));
-    } else {
-      setSelectedNominators((value) => value.concat(id));
-    }
+    stakingAccounts.toggleNominator({ id, isAllSelected });
   };
 
   return (
@@ -379,7 +246,7 @@ export const Staking = () => {
         <div className="mt-6 h-full w-full overflow-y-auto">
           <section className="mx-auto flex h-full w-[546px] flex-col gap-y-6">
             <NetworkInfo
-              chain={activeChain}
+              chain={chain}
               rewards={Object.values(rewards)}
               isRewardsLoading={isRewardsLoading}
               isStakingLoading={isStakingLoading}
@@ -395,7 +262,7 @@ export const Staking = () => {
               />
             </NetworkInfo>
 
-            {networkIsActive && accounts.length > 0 && activeChain && (
+            {networkIsActive && accounts.length > 0 && chain && (
               <>
                 <Actions
                   canInteract={!!activeWallet && permissionUtils.canStake(activeWallet)}
@@ -409,7 +276,7 @@ export const Staking = () => {
                   era={chainId ? chainEra[chainId] : undefined}
                   nominators={nominatorsInfo}
                   asset={relaychainAsset}
-                  chain={activeChain}
+                  chain={chain}
                   isStakingLoading={isStakingLoading}
                   onCheckValidators={openSelectedValidators}
                   onToggleNominator={toggleSelectedNominators}
@@ -437,7 +304,7 @@ export const Staking = () => {
         selectedValidators={selectedValidators}
         notSelectedValidators={notSelectedValidators}
         identities={identities}
-        chain={activeChain ?? undefined}
+        chain={chain ?? undefined}
         isOpen={isShowNominators}
         onClose={toggleNominators}
       />
@@ -448,15 +315,13 @@ export const Staking = () => {
         onClose={() => setShowWalletDetails(false)}
       />
 
-      <Suspense fallback={null}>
-        {isMultipleAccountsSelected ? <LazyBondNominateShards /> : <LazyBondNominate />}
-      </Suspense>
-      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyBondExtraShards /> : <LazyBondExtra />}</Suspense>
-      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyUnstakeShards /> : <LazyUnstake />}</Suspense>
-      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyNominateShards /> : <LazyNominate />}</Suspense>
-      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyRestakeShards /> : <LazyRestake />}</Suspense>
-      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyWithdrawShards /> : <LazyWithdraw />}</Suspense>
-      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyPayeeShards /> : <LazyPayee />}</Suspense>
+      <Slot id={stakingUnstakeSlot} />
+      <Slot id={stakingWithdrawSlot} />
+      <Slot id={stakingBondExtraSlot} />
+      <Slot id={stakingBondNominateSlot} />
+      <Slot id={stakingNominateSlot} />
+      <Slot id={stakingRestakeSlot} />
+      <Slot id={stakingPayeeSlot} />
     </>
   );
 };

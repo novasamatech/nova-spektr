@@ -1,1 +1,1 @@
-export { Dashboard, dashboardWidgetsSlot } from './ui/Dashboard';
+export { Dashboard, dashboardStakingSlot, dashboardWidgetsSlot } from './ui/Dashboard';
