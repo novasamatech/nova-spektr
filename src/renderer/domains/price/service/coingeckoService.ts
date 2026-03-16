@@ -9,7 +9,7 @@ import {
 } from '../lib/types';
 import { getCurrencyChangeKey } from '../lib/utils';
 
-export const coingekoService: PriceAdapter = {
+export const coingeckoService: PriceAdapter = {
   getPrice,
   getHistoryData,
 };

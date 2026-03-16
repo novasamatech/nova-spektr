@@ -3,9 +3,9 @@ import { combine, createEvent, sample } from 'effector';
 
 import { balanceService } from '@/shared/api/balances';
 import { series } from '@/shared/effector';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { currencyModel, priceProviderModel } from '@/entities/price';
 import { balanceSubModel } from '@/features/assets-balances';
 
 import { hiddenWalletsModel } from './hidden-wallets';

@@ -8,10 +8,10 @@ import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
-import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { type VestingScheduleRaw, VestingSchedulePreview } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
+import { AssetFiatBalance } from '@/widgets/price';
 import { confirmModel } from '../model/confirm';
 
 type Props = {

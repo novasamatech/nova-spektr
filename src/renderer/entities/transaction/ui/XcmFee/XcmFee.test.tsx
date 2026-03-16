@@ -9,8 +9,8 @@ import { spellXcmService } from '@/shared/api/xcm';
 import { type Asset, type Chain, type ChainId, type Transaction, AssetType } from '@/shared/core';
 import { createAccountId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { priceProviderModel } from '@/domains/price';
 import { networkModel } from '@/entities/network';
-import { priceProviderModel } from '@/entities/price';
 
 import { XcmFee } from './XcmFee';
 
@@ -24,7 +24,7 @@ vi.mock('@/shared/ui-entities', () => ({
   AssetBalance: ({ value }: { value: string }) => <div data-testid="asset-balance">{value}</div>,
 }));
 
-vi.mock('@/entities/price', async (importOriginal) => ({
+vi.mock('@/widgets/price', async (importOriginal) => ({
   ...(await importOriginal()),
   AssetFiatBalance: () => <div data-testid="fiat-balance" />,
 }));

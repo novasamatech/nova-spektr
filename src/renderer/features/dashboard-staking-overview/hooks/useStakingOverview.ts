@@ -2,7 +2,6 @@ import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type CurrencyItem } from '@/shared/api/price-provider';
 import { type ChainId, type EraIndex } from '@/shared/core';
 import {
   getRelaychainAsset,
@@ -12,9 +11,10 @@ import {
   unlockingAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type CurrencyItem } from '@/domains/price';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 import { type StakingMap, AssetHubChains, useActiveEra, useNetworkApy, useStaking } from '@/domains/staking';
 import { networkModel, useApi } from '@/entities/network';
-import { currencyModel, priceProviderModel } from '@/entities/price';
 
 import { useActiveValidatorCount } from './useActiveValidatorCount';
 

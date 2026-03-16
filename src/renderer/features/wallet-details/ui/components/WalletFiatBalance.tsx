@@ -4,7 +4,8 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance, nullable } from '@/shared/lib/utils';
 import { Skeleton } from '@/shared/ui-kit';
-import { FiatBalance, priceProviderModel } from '@/entities/price';
+import { priceProviderModel } from '@/domains/price';
+import { FiatBalance } from '@/widgets/price';
 import { walletBalanceModel } from '../../model/wallet-balance';
 
 BigNumber.config({

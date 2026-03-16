@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { type CurrencyItem, type PriceRange } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, TitleText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
-import { type PriceHistoryTimeRange, priceHistoryResource, usePriceHistory } from '@/domains/network';
+import { type CurrencyItem, type PriceRange } from '@/domains/price';
+import { type PriceHistoryTimeRange, priceHistoryResource, usePriceHistory } from '@/domains/price';
 
 import { ChartTooltip } from './ChartTooltip';
 import { PriceChange } from './PriceChange';

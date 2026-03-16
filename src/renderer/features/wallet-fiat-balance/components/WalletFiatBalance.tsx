@@ -7,9 +7,10 @@ import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance } from '@/shared/lib/utils';
 import { Skeleton } from '@/shared/ui-kit';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { FiatBalance, currencyModel, priceProviderModel } from '@/entities/price';
+import { FiatBalance } from '@/widgets/price';
 
 BigNumber.config({
   ROUNDING_MODE: BigNumber.ROUND_DOWN,

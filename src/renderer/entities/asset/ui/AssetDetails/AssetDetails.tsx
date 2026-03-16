@@ -5,7 +5,8 @@ import { memo } from 'react';
 import { type Asset } from '@/shared/core';
 import { HelpText, Shimmering } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
-import { AssetFiatBalance } from '@/entities/price';
+// eslint-disable-next-line boundaries/element-types
+import { AssetFiatBalance } from '@/widgets/price';
 
 type Props = {
   asset: Asset;

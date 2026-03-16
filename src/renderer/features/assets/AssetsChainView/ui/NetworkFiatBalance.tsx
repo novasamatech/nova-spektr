@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react';
 import { type Asset, type Balance } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance, getRoundedValue, totalAmount } from '@/shared/lib/utils';
-import { FiatBalance, currencyModel, priceProviderModel } from '@/entities/price';
+import { currencyModel, priceProviderModel } from '@/domains/price';
+import { FiatBalance } from '@/widgets/price';
 
 type Props = {
   assets: Asset[];

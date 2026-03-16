@@ -7,10 +7,10 @@ import { ZERO_BALANCE, entries, groupBy, nullable, totalAmount } from '@/shared/
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Accordion } from '@/shared/ui-kit';
 import { type AnyAccount, accountService } from '@/domains/network';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { type ExtendedChain } from '@/entities/network';
-import { currencyModel, priceProviderModel } from '@/entities/price';
 import { balanceSorter } from '../../lib/utils';
 import { AssetCard } from '../AssetCard/AssetCard';
 import { NetworkFiatBalance } from '../NetworkFiatBalance';

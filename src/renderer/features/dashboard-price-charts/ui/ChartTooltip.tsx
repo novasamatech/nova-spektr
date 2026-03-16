@@ -1,4 +1,4 @@
-import { type PriceHistoryTimeRange } from '@/domains/network';
+import { type PriceHistoryTimeRange } from '@/domains/price';
 
 import { CHART_TOOLTIP_STYLE } from './chartConstants';
 

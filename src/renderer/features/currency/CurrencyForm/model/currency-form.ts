@@ -2,8 +2,8 @@ import { attach, combine, createApi, createEvent, createStore, sample } from 'ef
 import { createForm } from 'effector-forms';
 import { combineEvents, spread } from 'patronum';
 
-import { type CurrencyItem } from '@/shared/api/price-provider';
-import { currencyModel, priceProviderModel } from '@/entities/price';
+import { type CurrencyItem } from '@/domains/price';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -42,18 +42,13 @@ const $isFormValid = combine(
   ({ isCurrencyDirty, isFiatFlagDirty }) => isFiatFlagDirty || isCurrencyDirty,
 );
 
-type Params = {
-  fiatFlag: boolean | null;
-  currency: CurrencyItem | null;
-};
-
 sample({
-  clock: [priceProviderModel.output.fiatFlagLoaded, currencyModel.output.activeCurrencyLoaded, formInitiated],
+  clock: formInitiated,
   source: {
     fiatFlag: priceProviderModel.$fiatFlag,
     currency: currencyModel.$activeCurrency,
   },
-  fn: ({ fiatFlag, currency }: Params) => ({ fiatFlag: Boolean(fiatFlag), currency: currency?.id || 0 }),
+  fn: ({ fiatFlag, currency }) => ({ fiatFlag, currency: currency?.id || 0 }),
   target: $currencyForm.setInitialForm,
 });
 

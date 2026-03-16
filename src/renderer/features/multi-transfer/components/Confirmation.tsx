@@ -8,9 +8,9 @@ import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { MultiTransferPreview } from '@/entities/multi-transfer';
 import { SignButton } from '@/entities/operations';
-import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { AssetFiatBalance } from '@/widgets/price';
 import { confirmModel } from '../model/confirm';
 
 type Props = {

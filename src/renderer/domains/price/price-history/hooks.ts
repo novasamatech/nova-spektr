@@ -1,5 +1,5 @@
-import { type PriceRange } from '@/shared/api/price-provider';
 import { useResource } from '@/shared/query';
+import { type PriceRange } from '../lib/types';
 
 import { type PriceHistoryParams, type TimeRange, priceHistoryResource } from './resource';
 

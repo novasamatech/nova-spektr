@@ -7,8 +7,7 @@ import { type Asset, type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { ZERO_BALANCE, formatFiatBalance } from '@/shared/lib/utils';
 import { Skeleton } from '@/shared/ui-kit';
-import { currencyModel } from '../model/currency-model';
-import { priceProviderModel } from '../model/price-provider-model';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 
 import { FiatBalance } from './FiatBalance';
 

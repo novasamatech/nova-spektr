@@ -21,7 +21,8 @@ import {
 import { FootnoteText, HelpText, Icon, IconButton, TitleText } from '@/shared/ui';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
-import { currencyModel, useCurrencyRate } from '@/entities/price';
+import { currencyModel } from '@/domains/price';
+import { useCurrencyRate } from '@/widgets/price';
 
 type Props = {
   name?: string;

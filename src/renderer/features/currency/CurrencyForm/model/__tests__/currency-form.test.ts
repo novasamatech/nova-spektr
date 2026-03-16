@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { currencyModel, priceProviderModel } from '@/entities/price';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 import { currencyFormModel } from '../currency-form';
 
 describe('features/currency/model/currency-form', () => {
@@ -39,9 +39,10 @@ describe('features/currency/model/currency-form', () => {
 
   test('should set form initial values on formInitiated event', async () => {
     const scope = fork({
-      values: new Map().set(priceProviderModel.$fiatFlag, true).set(currencyModel.$activeCurrency, config[1]),
+      values: new Map().set(priceProviderModel.$fiatFlag, true).set(currencyModel.$currencyConfig, config),
     });
 
+    await allSettled(currencyModel.events.currencyChanged, { scope, params: config[1]!.id });
     await allSettled(currencyFormModel.events.formInitiated, { scope });
 
     const { fiatFlag, currency } = currencyFormModel.$currencyForm.fields;

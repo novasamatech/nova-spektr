@@ -4,7 +4,7 @@ import { memo, useEffect, useState } from 'react';
 
 import { proxyService } from '@/shared/api/proxy';
 import { type Asset } from '@/shared/core';
-import { priceProviderModel } from '@/entities/price';
+import { priceProviderModel } from '@/domains/price';
 import { Fee } from '../Fee/Fee';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 

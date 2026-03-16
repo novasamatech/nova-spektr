@@ -4,9 +4,9 @@ import { useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { getRoundedValue, totalAmount, totalAmountBN } from '@/shared/lib/utils';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { currencyModel, priceProviderModel } from '@/entities/price';
 
 export type ChainAssetRow = {
   assetId: number;

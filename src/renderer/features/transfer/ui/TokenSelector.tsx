@@ -15,8 +15,9 @@ import {
 import { BodyText, EmptyListWithIcon, FootnoteText } from '@/shared/ui';
 import { AssetBalance, AssetIcon, ChainIcon } from '@/shared/ui-entities';
 import { Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { AssetFiatBalance, FiatBalance, TokenPrice, currencyModel, priceProviderModel } from '@/entities/price';
+import { AssetFiatBalance, FiatBalance, TokenPrice } from '@/widgets/price';
 import { formModel } from '../model/form-model';
 
 type Props = {

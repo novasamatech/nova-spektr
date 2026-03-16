@@ -1,3 +1,7 @@
+export const enum PriceApiProvider {
+  COINGEKO = 'coingeko',
+}
+
 export type Currency = string;
 export type AssetId = string;
 

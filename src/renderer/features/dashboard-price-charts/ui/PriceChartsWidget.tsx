@@ -1,8 +1,8 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { useState } from 'react';
 
-import { type PriceHistoryTimeRange } from '@/domains/network';
-import { currencyModel, priceProviderModel } from '@/entities/price';
+import { type PriceHistoryTimeRange } from '@/domains/price';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 
 import { PriceChartCard } from './PriceChartCard';
 import { TimeRangeToggle } from './TimeRangeToggle';

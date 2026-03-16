@@ -4,8 +4,7 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { ZERO_BALANCE, cnTw, formatFiatBalance } from '@/shared/lib/utils';
 import { FootnoteText, Shimmering } from '@/shared/ui';
-import { currencyModel } from '../model/currency-model';
-import { priceProviderModel } from '../model/price-provider-model';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 
 import { FiatBalance } from './FiatBalance';
 

@@ -7,10 +7,10 @@ import { getSecondsDurationToBlock } from '@/shared/lib/utils';
 import { Button, Duration, FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
-import { AssetFiatBalance } from '@/entities/price';
 import { permissionUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { locksModel, networkSelectorModel, unlockModel } from '@/features/governance';
+import { AssetFiatBalance } from '@/widgets/price';
 import { unlockAggregate } from '../model/unlock';
 
 export const UnlockInfo = () => {

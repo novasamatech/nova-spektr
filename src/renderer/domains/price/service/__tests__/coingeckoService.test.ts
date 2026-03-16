@@ -1,6 +1,6 @@
-import { coingekoService } from '../service/coingeckoService';
+import { coingeckoService } from '../coingeckoService';
 
-describe('shared/api/price-provider/services/coingekoService', () => {
+describe('domains/price/service/coingeckoService', () => {
   test('get price-provider from coingecko', async () => {
     global.fetch = jest.fn(() =>
       Promise.resolve({
@@ -22,7 +22,7 @@ describe('shared/api/price-provider/services/coingekoService', () => {
       }),
     ) as jest.Mock;
 
-    const result = await coingekoService.getPrice(['kusama', 'polkadot'], ['usd', 'rub'], true);
+    const result = await coingeckoService.getPrice(['kusama', 'polkadot'], ['usd', 'rub'], true);
 
     expect(result['kusama']!['usd']!.price).toBeDefined();
     expect(result['polkadot']!['rub']!.change).toBeDefined();
@@ -42,7 +42,7 @@ describe('shared/api/price-provider/services/coingekoService', () => {
       }),
     ) as jest.Mock;
 
-    const result = await coingekoService.getHistoryData('kusama', 'usd', 1692700000, 1692701000);
+    const result = await coingeckoService.getHistoryData('kusama', 'usd', 1692700000, 1692701000);
 
     expect(result.length).toEqual(3);
   });

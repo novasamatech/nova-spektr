@@ -2,11 +2,11 @@ import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type CurrencyItem } from '@/shared/api/price-provider';
 import { getRoundedValue, totalAmount, totalAmountBN } from '@/shared/lib/utils';
+import { type CurrencyItem } from '@/domains/price';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { currencyModel, priceProviderModel } from '@/entities/price';
 
 export type Holding = {
   priceId: string;

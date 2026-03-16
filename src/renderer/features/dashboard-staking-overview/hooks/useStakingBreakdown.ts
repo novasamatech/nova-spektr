@@ -3,8 +3,8 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { getRoundedValue } from '@/shared/lib/utils';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 import { type StakingMap } from '@/domains/staking';
-import { currencyModel, priceProviderModel } from '@/entities/price';
 
 import { type ChainStakingSummary } from './useStakingOverview';
 

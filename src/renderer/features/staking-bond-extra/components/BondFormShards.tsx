@@ -7,11 +7,12 @@ import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, MultiSelect } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
+import { priceProviderModel } from '@/domains/price';
 import { FeeLoader } from '@/entities/transaction';
 import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
+import { AssetFiatBalance } from '@/widgets/price';
 import { formModelShards } from '../model/form-model-shards';
 
 type Props = {

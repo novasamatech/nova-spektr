@@ -6,10 +6,10 @@ import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
-import { AssetFiatBalance } from '@/entities/price';
 import { StakingPopover, UnstakingDuration } from '@/entities/staking';
 import { Fee, FeeWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { AssetFiatBalance } from '@/widgets/price';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 

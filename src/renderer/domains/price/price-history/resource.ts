@@ -1,7 +1,8 @@
 import { createStore } from 'effector';
 
-import { type PriceRange, coingekoService } from '@/shared/api/price-provider';
 import { createQueryResource } from '@/shared/query';
+import { type PriceRange } from '../lib/types';
+import { coingeckoService } from '../service/coingeckoService';
 
 export type TimeRange = '1d' | '7d' | '30d' | '90d';
 
@@ -29,7 +30,7 @@ export const priceHistoryResource = createQueryResource<PriceHistoryParams>({
     const to = Math.floor(Date.now() / 1000);
     const from = to - days * 24 * 60 * 60;
 
-    return coingekoService.getHistoryData(assetId, currency, from, to);
+    return coingeckoService.getHistoryData(assetId, currency, from, to);
   })
   .cache<CacheState>({
     store: createStore<CacheState>({}),

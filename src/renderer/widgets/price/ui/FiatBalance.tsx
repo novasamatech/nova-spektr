@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui/Typography';
 import { Skeleton } from '@/shared/ui-kit';
-import { currencyModel } from '../model/currency-model';
+import { currencyModel } from '@/domains/price';
 
 import { Price } from './Price';
 

@@ -8,10 +8,10 @@ import { includesMultiple, nullable } from '@/shared/lib/utils';
 import { Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type AnyAccount, accountService } from '@/domains/network';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { currencyModel, priceProviderModel } from '@/entities/price';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 import { NetworkAssets } from './NetworkAssets/NetworkAssets';

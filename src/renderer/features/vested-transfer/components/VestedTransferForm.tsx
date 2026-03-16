@@ -12,7 +12,6 @@ import { Box, Field, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import {
   type ValidationIssue,
@@ -23,6 +22,7 @@ import {
   VestingSchedulePreview,
 } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
+import { AssetFiatBalance } from '@/widgets/price';
 import { formModel } from '../model/form';
 import { vestedTransferUtils } from '../utils';
 

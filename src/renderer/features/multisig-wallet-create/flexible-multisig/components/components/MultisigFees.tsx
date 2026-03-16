@@ -4,7 +4,7 @@ import { useI18n } from '@/shared/i18n';
 import { FootnoteText, IconButton } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { priceProviderModel } from '@/entities/price';
+import { priceProviderModel } from '@/domains/price';
 import { FeeLoader } from '@/entities/transaction';
 import { flexibleMultisigModel } from '../../model/flexible-multisig-create';
 

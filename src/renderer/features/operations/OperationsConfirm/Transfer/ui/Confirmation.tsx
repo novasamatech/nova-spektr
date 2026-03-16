@@ -9,9 +9,9 @@ import { AssetBalance, TransactionDetails, TransactionValidationError } from '@/
 import { Box, Tooltip } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
-import { AssetFiatBalance } from '@/entities/price';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
+import { AssetFiatBalance } from '@/widgets/price';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 

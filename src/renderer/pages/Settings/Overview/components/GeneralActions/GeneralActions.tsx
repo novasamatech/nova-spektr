@@ -8,7 +8,7 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { BodyText, FootnoteText, HelpText, Icon, Plate, Switch } from '@/shared/ui';
-import { currencyModel, priceProviderModel } from '@/entities/price';
+import { currencyModel, priceProviderModel } from '@/domains/price';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 export const generalActionsSlot = createSlot();

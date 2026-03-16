@@ -1,13 +1,13 @@
 import { memo } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
 
-import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { Identicon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
+import { type CurrencyItem } from '@/domains/price';
 import { type RewardsMap } from '@/domains/staking';
 import { type RewardsBreakdownRow, useRewardsBreakdown } from '../hooks/useRewardsBreakdown';
 import { type EntryLike } from '../hooks/useStakingBreakdown';

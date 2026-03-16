@@ -7,8 +7,9 @@ import { useToggle } from '@/shared/lib/hooks';
 import { KeyboardKey, cnTw, totalAmount, transferableAmountBN } from '@/shared/lib/utils';
 import { BodyText, Shimmering } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
+import { priceProviderModel } from '@/domains/price';
 import { AssetDetails, AssetIcon, AssetLinks } from '@/entities/asset';
-import { AssetFiatBalance, TokenPrice, priceProviderModel } from '@/entities/price';
+import { AssetFiatBalance, TokenPrice } from '@/widgets/price';
 
 type Props = {
   chainId: ChainId;

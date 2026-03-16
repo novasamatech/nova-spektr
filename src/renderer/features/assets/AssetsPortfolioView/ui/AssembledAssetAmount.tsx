@@ -7,7 +7,8 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton, Tooltip } from '@/shared/ui-kit';
-import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
+import { priceProviderModel } from '@/domains/price';
+import { AssetFiatBalance } from '@/widgets/price';
 
 type Props = PropsWithChildren & {
   asset: AssetByChains;
