@@ -62,7 +62,7 @@ type ContentProps = PropsWithChildren<{
 
 const Content = ({ value, __index, children }: ContentProps) => {
   return (
-    <RadixTabs.Content className="relative min-h-0" value={value} forceMount>
+    <RadixTabs.Content className="relative min-h-0 overflow-hidden" value={value} forceMount>
       <Carousel.Item id={value} index={__index ?? 0}>
         {children}
       </Carousel.Item>

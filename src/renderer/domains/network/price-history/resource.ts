@@ -3,7 +3,7 @@ import { createStore } from 'effector';
 import { type PriceRange, coingekoService } from '@/shared/api/price-provider';
 import { createQueryResource } from '@/shared/query';
 
-export type TimeRange = '7d' | '30d' | '90d';
+export type TimeRange = '1d' | '7d' | '30d' | '90d';
 
 export type PriceHistoryParams = {
   assetId: string;
@@ -11,7 +11,7 @@ export type PriceHistoryParams = {
   range: TimeRange;
 };
 
-const RANGE_DAYS: Record<TimeRange, number> = { '7d': 7, '30d': 30, '90d': 90 };
+const RANGE_DAYS: Record<TimeRange, number> = { '1d': 1, '7d': 7, '30d': 30, '90d': 90 };
 const STALE_AFTER_MS = 5 * 60 * 1000;
 
 function cacheKey({ assetId, currency, range }: PriceHistoryParams): string {
