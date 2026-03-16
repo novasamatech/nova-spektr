@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 import { useMemo, useState } from 'react';
 
-import { type PriceHistoryTimeRange } from '@/domains/price';
-import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
+import { type PriceHistoryTimeRange, useAssetsPrices } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 
 import { PriceChartCard } from './PriceChartCard';
 import { TimeRangeToggle } from './TimeRangeToggle';
@@ -21,9 +21,9 @@ const ASSET_COLORS: Record<string, string> = {
 export const PriceChartsWidget = () => {
   const [timeRange, setTimeRange] = useState<PriceHistoryTimeRange>('7d');
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const currency = useUnit(currencyModel.$activeCurrency);
-  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: allPrices } = useAssetsPrices(pricesParams);
 
   const prices = useMemo(() => {

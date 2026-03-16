@@ -3,9 +3,10 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { getRoundedValue, totalAmount, totalAmountBN } from '@/shared/lib/utils';
-import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
+import { useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { currencySelect } from '@/aggregates/currency-select';
 
 export type BreakdownRow = {
   accountId: string;
@@ -30,8 +31,8 @@ type EntryLike = { accountId: string; name: string; address: string };
 export const useHoldingBreakdown = (priceId: string, accountIds: string[], allEntries: EntryLike[]): BreakdownData => {
   const balanceMap = useUnit(balanceModel.$balanceMap);
   const chains = useUnit(networkModel.$chains);
-  const currency = useUnit(currencyModel.$activeCurrency);
-  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: prices } = useAssetsPrices(pricesParams);
 
   return useMemo(() => {

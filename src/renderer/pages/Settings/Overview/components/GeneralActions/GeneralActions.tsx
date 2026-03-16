@@ -8,7 +8,7 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { BodyText, FootnoteText, HelpText, Icon, Plate, Switch } from '@/shared/ui';
-import { currencyModel, priceProviderModel } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 export const generalActionsSlot = createSlot();
@@ -17,8 +17,8 @@ export const generalActionsSlot = createSlot();
 export const GeneralActions = () => {
   const { t } = useI18n();
 
-  const currency = useUnit(currencyModel.$activeCurrency);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
   const governanceApi = useUnit(governanceMetaProvider.$metaProvider);
 
   const [isAutoUpdateOn, setIsAutoUpdateOn] = useState(true);

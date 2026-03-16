@@ -7,9 +7,10 @@ import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance } from '@/shared/lib/utils';
 import { Skeleton } from '@/shared/ui-kit';
-import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
+import { useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { currencySelect } from '@/aggregates/currency-select';
 import { FiatBalance } from '@/widgets/price';
 
 BigNumber.config({
@@ -24,12 +25,12 @@ type Props = {
 export const WalletFiatBalance = ({ wallet, className }: Props) => {
   const { t } = useI18n();
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
 
   const chains = useUnit(networkModel.$chains);
   const balances = useUnit(balanceModel.$balanceMap);
-  const currency = useUnit(currencyModel.$activeCurrency);
-  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: prices } = useAssetsPrices(pricesParams);
 
   const balance = useMemo(() => {

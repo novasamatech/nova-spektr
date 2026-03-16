@@ -5,10 +5,10 @@ import { useMemo } from 'react';
 import { type ChainId } from '@/shared/core';
 import { getRelaychainAsset, getRoundedValue, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type CurrencyItem } from '@/domains/price';
-import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
+import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { type RewardsMap, AssetHubChains, useStakingRewards } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
+import { currencySelect } from '@/aggregates/currency-select';
 
 export type ChainRewardsSummary = {
   chainId: ChainId;
@@ -47,9 +47,9 @@ function sumRewards(rewardsMap: RewardsMap, accountIds: AccountId[]): BigNumber 
 
 export const useTotalRewards = (accountIds: string[], since?: number): TotalRewardsData => {
   const chains = useUnit(networkModel.$chains);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const currency = useUnit(currencyModel.$activeCurrency);
-  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: prices } = useAssetsPrices(pricesParams);
 
   const typedAccountIds = useMemo(() => accountIds.map((id) => toAccountId(id)), [accountIds]);

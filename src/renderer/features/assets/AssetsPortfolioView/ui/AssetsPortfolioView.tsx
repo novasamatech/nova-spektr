@@ -6,9 +6,9 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { priceProviderModel } from '@/domains/price';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { walletUtils } from '@/entities/wallet';
+import { currencySelect } from '@/aggregates/currency-select';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { portfolioModel } from '../model/portfolio-model';
 
@@ -33,7 +33,7 @@ export const AssetsPortfolioView = () => {
   const sortedTokens = useUnit(portfolioModel.$sortedTokens);
   const tokensPopulated = useUnit(portfolioModel.$tokensPopulated);
   const accounts = useUnit(portfolioModel.$accounts);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
   const wallet = useUnit(walletSelect.$selectedWallet);
 
   const { list, isLoading } = useDeferredList({

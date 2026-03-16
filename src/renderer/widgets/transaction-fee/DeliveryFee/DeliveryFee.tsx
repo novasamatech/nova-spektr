@@ -4,7 +4,7 @@ import { memo } from 'react';
 
 import { type Asset } from '@/shared/core';
 import { AssetBalance } from '@/shared/ui-entities';
-import { priceProviderModel } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
@@ -16,7 +16,7 @@ type Props = {
 };
 
 export const DeliveryFee = memo(({ fee, loading, asset, className }: Props) => {
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
 
   if (loading) {
     return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;

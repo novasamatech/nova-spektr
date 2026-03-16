@@ -7,10 +7,11 @@ import { ZERO_BALANCE, entries, groupBy, nullable, totalAmount } from '@/shared/
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Accordion } from '@/shared/ui-kit';
 import { type AnyAccount, accountService } from '@/domains/network';
-import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
+import { useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { type ExtendedChain } from '@/entities/network';
+import { currencySelect } from '@/aggregates/currency-select';
 import { balanceSorter } from '../../lib/utils';
 import { AssetCard } from '../AssetCard/AssetCard';
 import { NetworkFiatBalance } from '../NetworkFiatBalance';
@@ -24,9 +25,9 @@ type Props = {
 };
 
 export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, wallet }: Props) => {
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const currency = useUnit(currencyModel.$activeCurrency);
-  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: assetsPrices } = useAssetsPrices(pricesParams);
   const balances = useUnit(balanceModel.$balances);
 

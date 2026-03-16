@@ -7,8 +7,8 @@ import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, MultiSelect } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { priceProviderModel } from '@/domains/price';
 import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
+import { currencySelect } from '@/aggregates/currency-select';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { AssetFiatBalance } from '@/widgets/price';
@@ -169,7 +169,7 @@ const FeeSection = () => {
   const isFeeLoading = useUnit(formModelShards.$isFeeLoading);
   const isMultisig = useUnit(formModelShards.$isMultisig);
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
 
   if (!network || shards.value.length === 0) {
     return null;

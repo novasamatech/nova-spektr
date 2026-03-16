@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance, nullable } from '@/shared/lib/utils';
 import { Skeleton } from '@/shared/ui-kit';
-import { priceProviderModel } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 import { FiatBalance } from '@/widgets/price';
 import { walletBalanceModel } from '../../model/wallet-balance';
 
@@ -19,7 +19,7 @@ type Props = {
 export const WalletFiatBalance = ({ className }: Props) => {
   const { t } = useI18n();
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
   const walletBalances = useUnit(walletBalanceModel.$walletBalance);
   const isLoading = useUnit(walletBalanceModel.$isLoading);
 

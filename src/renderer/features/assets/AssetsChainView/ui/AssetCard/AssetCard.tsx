@@ -7,8 +7,8 @@ import { useToggle } from '@/shared/lib/hooks';
 import { KeyboardKey, cnTw, totalAmount, transferableAmountBN } from '@/shared/lib/utils';
 import { BodyText, Shimmering } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
-import { priceProviderModel } from '@/domains/price';
 import { AssetIcon, AssetLinks } from '@/entities/asset';
+import { currencySelect } from '@/aggregates/currency-select';
 import { AssetDetails } from '@/widgets/asset-details';
 import { AssetFiatBalance, TokenPrice } from '@/widgets/price';
 
@@ -22,7 +22,7 @@ type Props = {
 export const AssetCard = memo(({ chainId, asset, balance, wallet }: Props) => {
   const { t } = useI18n();
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
 
   const [isExpanded, toggleExpanded] = useToggle();
 

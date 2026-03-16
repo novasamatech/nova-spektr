@@ -7,8 +7,8 @@ import { spellXcmService } from '@/shared/api/xcm';
 import { type Asset, type ChainId, type DecodedTransaction, type Transaction } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
-import { priceProviderModel } from '@/domains/price';
 import { networkModel } from '@/entities/network';
+import { currencySelect } from '@/aggregates/currency-select';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
@@ -36,7 +36,7 @@ export const XcmFee = memo(
     fee: externalFee,
     isLoading: externalIsLoading,
   }: Props) => {
-    const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+    const fiatFlag = useUnit(currencySelect.$fiatFlag);
     const chains = useUnit(networkModel.$chains);
     const apis = useUnit(networkModel.$apis);
 

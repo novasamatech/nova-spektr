@@ -5,8 +5,8 @@ import { memo, useEffect, useState } from 'react';
 
 import { type Asset, type Transaction } from '@/shared/core';
 import { AssetBalance } from '@/shared/ui-entities';
-import { priceProviderModel } from '@/domains/price';
 import { transactionService } from '@/entities/transaction';
+import { currencySelect } from '@/aggregates/currency-select';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
@@ -24,7 +24,7 @@ type Props = {
 /** @deprecated Use Fee with complexTxStore instead */
 export const FeeWithDataLoading = memo(
   ({ api, multiply = 1, asset, testId, transaction, className, onFeeChange, onFeeLoading }: Props) => {
-    const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+    const fiatFlag = useUnit(currencySelect.$fiatFlag);
 
     const [fee, setFee] = useState('');
     const [isLoading, setIsLoading] = useState(true);

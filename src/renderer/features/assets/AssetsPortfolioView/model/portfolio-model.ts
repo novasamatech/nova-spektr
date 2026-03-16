@@ -5,10 +5,10 @@ import { once } from 'patronum';
 import { type AssetByChains } from '@/shared/core';
 import { includesMultiple, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService } from '@/domains/network';
-import { currencyModel, priceProviderModel } from '@/domains/price';
 import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
+import { currencySelect } from '@/aggregates/currency-select';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { shardsModel, shardsUtils } from '@/features/wallets';
 import { tokensService } from '../lib/tokensService';
@@ -218,9 +218,9 @@ const $sortedTokens = combine(
     activeTokensWithBalance: $activeTokensWithBalance,
     hideZeroBalances: $hideZeroBalances,
     filteredTokens: $filteredTokensWithBalance,
-    assetsPrices: priceProviderModel.$assetsPrices,
-    fiatFlag: priceProviderModel.$fiatFlag,
-    currency: currencyModel.$activeCurrency,
+    assetsPrices: currencySelect.$assetsPrices,
+    fiatFlag: currencySelect.$fiatFlag,
+    currency: currencySelect.$activeCurrency,
   },
   ({ query, activeTokensWithBalance, filteredTokens, hideZeroBalances, assetsPrices, fiatFlag, currency }) => {
     const tokenList = query

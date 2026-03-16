@@ -3,9 +3,9 @@ import { combine, createEvent, sample } from 'effector';
 
 import { balanceService } from '@/shared/api/balances';
 import { series } from '@/shared/effector';
-import { currencyModel, priceProviderModel } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { currencySelect } from '@/aggregates/currency-select';
 import { balanceSubModel } from '@/features/assets-balances';
 
 import { hiddenWalletsModel } from './hidden-wallets';
@@ -24,8 +24,8 @@ const $balances = combine(
     wallets: hiddenWalletsModel.$hiddenWallets,
     chains: networkModel.$chains,
     balances: balanceModel.$balanceMap,
-    currency: currencyModel.$activeCurrency,
-    prices: priceProviderModel.$assetsPrices,
+    currency: currencySelect.$activeCurrency,
+    prices: currencySelect.$assetsPrices,
   },
   ({ wallets, chains, balances, currency, prices }) => {
     return wallets.reduce<Record<string, BigNumber>>((acc, wallet) => {

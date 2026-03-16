@@ -5,7 +5,7 @@ import { memo } from 'react';
 import { TEST_IDS } from '@/shared/constants';
 import { type Asset } from '@/shared/core';
 import { AssetBalance } from '@/shared/ui-entities';
-import { priceProviderModel } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
@@ -19,7 +19,7 @@ type Props = {
 };
 
 export const Fee = memo(({ fee, isLoading, asset, showSymbol, hideFiat, className }: Props) => {
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
 
   if (isLoading || !fee) {
     return <FeeLoader testId={TEST_IDS.OPERATIONS.FEE_LOADER} fiatFlag={Boolean(fiatFlag) && !hideFiat} />;

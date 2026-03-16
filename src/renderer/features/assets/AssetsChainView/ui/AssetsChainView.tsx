@@ -8,10 +8,11 @@ import { includesMultiple, nullable } from '@/shared/lib/utils';
 import { Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type AnyAccount, accountService } from '@/domains/network';
-import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
+import { useAssetsPrices } from '@/domains/price';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
+import { currencySelect } from '@/aggregates/currency-select';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 import { NetworkAssets } from './NetworkAssets/NetworkAssets';
@@ -27,9 +28,9 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, asse
   const activeWalletAccounts = useUnit(walletSelect.$selectedAccounts);
   const balances = useUnit(balanceModel.$balanceMap);
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const currency = useUnit(currencyModel.$activeCurrency);
-  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: assetsPrices } = useAssetsPrices(pricesParams);
   const connections = useUnit(networkModel.$connections);
   const chains = useUnit(networkModel.$chains);

@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { currencyModel, priceProviderModel } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 import { currencyFormModel } from '../currency-form';
 
 describe('features/currency/model/currency-form', () => {
@@ -13,7 +13,7 @@ describe('features/currency/model/currency-form', () => {
 
   test('should submit new $fiatFlag & $activeCurrency', async () => {
     const scope = fork({
-      values: new Map().set(priceProviderModel.$fiatFlag, false).set(currencyModel.$currencyConfig, config),
+      values: new Map().set(currencySelect.$fiatFlag, false).set(currencySelect.$currencyConfig, config),
     });
 
     const { fiatFlag, currency } = currencyFormModel.$currencyForm.fields;
@@ -21,13 +21,13 @@ describe('features/currency/model/currency-form', () => {
     await allSettled(currency.onChange, { scope, params: 1 });
     await allSettled(currencyFormModel.$currencyForm.submit, { scope });
 
-    expect(scope.getState(currencyModel.$activeCurrency)).toEqual(config[1]);
-    expect(scope.getState(priceProviderModel.$fiatFlag)).toEqual(true);
+    expect(scope.getState(currencySelect.$activeCurrency)).toEqual(config[1]);
+    expect(scope.getState(currencySelect.$fiatFlag)).toEqual(true);
   });
 
   test('should filter currencies', () => {
     const scope = fork({
-      values: new Map().set(currencyModel.$currencyConfig, config),
+      values: new Map().set(currencySelect.$currencyConfig, config),
     });
 
     const { $cryptoCurrencies, $popularFiatCurrencies, $unpopularFiatCurrencies } = currencyFormModel;
@@ -39,10 +39,10 @@ describe('features/currency/model/currency-form', () => {
 
   test('should set form initial values on formInitiated event', async () => {
     const scope = fork({
-      values: new Map().set(priceProviderModel.$fiatFlag, true).set(currencyModel.$currencyConfig, config),
+      values: new Map().set(currencySelect.$fiatFlag, true).set(currencySelect.$currencyConfig, config),
     });
 
-    await allSettled(currencyModel.events.currencyChanged, { scope, params: config[1]!.id });
+    await allSettled(currencySelect.events.currencyChanged, { scope, params: config[1]!.id });
     await allSettled(currencyFormModel.events.formInitiated, { scope });
 
     const { fiatFlag, currency } = currencyFormModel.$currencyForm.fields;

@@ -4,14 +4,14 @@ import { useI18n } from '@/shared/i18n';
 import { FootnoteText, IconButton } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { priceProviderModel } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 import { FeeLoader } from '@/widgets/transaction-fee';
 import { flexibleMultisigModel } from '../../model/flexible-multisig-create';
 
 export const MultisigFees = () => {
   const { t } = useI18n();
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
   const fee = useUnit(flexibleMultisigModel.$fee);
   const proxyDeposit = useUnit(flexibleMultisigModel.$proxyDeposit);
   const existentialDeposit = useUnit(flexibleMultisigModel.$existentialDeposit);

@@ -1,11 +1,12 @@
 import { useUnit } from 'effector-react';
 
-import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
+import { useAssetsPrices } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 
 export const useCurrencyRate = (assetId?: string, showCurrency?: boolean): number | null => {
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const activeCurrency = useUnit(currencyModel.$activeCurrency);
-  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
+  const activeCurrency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: assetsPrices } = useAssetsPrices(pricesParams);
 
   if (

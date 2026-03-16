@@ -1,7 +1,3 @@
-// Models
-export { priceProviderModel } from './model/price-provider-model';
-export { currencyModel } from './model/currency-model';
-
 // Current Prices
 export { currentPricesResource } from './current-prices/resource';
 export type { CurrentPricesParams } from './current-prices/resource';

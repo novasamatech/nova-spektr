@@ -4,8 +4,8 @@ import { memo, useEffect, useState } from 'react';
 
 import { type Asset } from '@/shared/core';
 import { AssetBalance } from '@/shared/ui-entities';
-import { priceProviderModel } from '@/domains/price';
 import { transactionService } from '@/entities/transaction';
+import { currencySelect } from '@/aggregates/currency-select';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
@@ -18,7 +18,7 @@ type Props = {
 };
 
 export const MultisigDeposit = memo(({ api, asset, threshold, className, onDepositChange }: Props) => {
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
 
   const [isLoading, setIsLoading] = useState(true);
   const [deposit, setDeposit] = useState('');

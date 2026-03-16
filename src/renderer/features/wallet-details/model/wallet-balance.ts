@@ -3,10 +3,10 @@ import { combine, sample } from 'effector';
 
 import { dictionary, getRoundedValue, nonNullable, totalAmount } from '@/shared/lib/utils';
 import { accountService, accounts } from '@/domains/network';
-import { currencyModel, priceProviderModel } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
+import { currencySelect } from '@/aggregates/currency-select';
 import { balanceSubModel } from '@/features/assets-balances';
 
 import { walletDetailsModel } from './wallet-details-model';
@@ -36,8 +36,8 @@ const $walletBalance = combine(
     wallet: walletDetailsModel.$wallet,
     chains: networkModel.$chains,
     balances: balanceModel.$balanceMap,
-    currency: currencyModel.$activeCurrency,
-    prices: priceProviderModel.$assetsPrices,
+    currency: currencySelect.$activeCurrency,
+    prices: currencySelect.$assetsPrices,
     accounts: accounts.$list,
   },
   params => {

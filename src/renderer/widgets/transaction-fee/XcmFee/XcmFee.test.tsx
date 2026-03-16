@@ -9,8 +9,8 @@ import { spellXcmService } from '@/shared/api/xcm';
 import { type Asset, type Chain, type ChainId, type Transaction, AssetType } from '@/shared/core';
 import { createAccountId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { priceProviderModel } from '@/domains/price';
 import { networkModel } from '@/entities/network';
+import { currencySelect } from '@/aggregates/currency-select';
 
 import { XcmFee } from './XcmFee';
 
@@ -80,7 +80,7 @@ const createScope = (chains = {}, apis = {}) =>
     values: new Map()
       .set(networkModel.$chains, chains)
       .set(networkModel.$apis, apis)
-      .set(priceProviderModel.$fiatFlag, false),
+      .set(currencySelect.$fiatFlag, false),
   });
 
 const createMockTransaction = (overrides?: Partial<Transaction>): Transaction =>

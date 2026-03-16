@@ -11,10 +11,10 @@ import {
   unlockingAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type CurrencyItem } from '@/domains/price';
-import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
+import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { type StakingMap, AssetHubChains, useActiveEra, useNetworkApy, useStaking } from '@/domains/staking';
 import { networkModel, useApi } from '@/entities/network';
+import { currencySelect } from '@/aggregates/currency-select';
 
 import { useActiveValidatorCount } from './useActiveValidatorCount';
 
@@ -85,9 +85,9 @@ function computeBreakdown(
 
 export const useStakingOverview = (accountIds: string[]): StakingOverviewData => {
   const chains = useUnit(networkModel.$chains);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const currency = useUnit(currencyModel.$activeCurrency);
-  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: prices } = useAssetsPrices(pricesParams);
 
   const polkadotApi = useApi(POLKADOT_AH_CHAIN_ID);

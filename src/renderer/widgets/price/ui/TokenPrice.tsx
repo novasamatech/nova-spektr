@@ -4,7 +4,8 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { ZERO_BALANCE, cnTw, formatFiatBalance } from '@/shared/lib/utils';
 import { FootnoteText, Shimmering } from '@/shared/ui';
-import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
+import { useAssetsPrices } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 
 import { FiatBalance } from './FiatBalance';
 
@@ -16,10 +17,10 @@ type Props = {
 
 export const TokenPrice = memo(({ assetId, className, wrapperClassName }: Props) => {
   const { t } = useI18n();
-  const currency = useUnit(currencyModel.$activeCurrency);
-  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: prices } = useAssetsPrices(pricesParams);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
 
   const price = (() => {
     if (!currency || !prices || !assetId) return null;

@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui/Typography';
 import { Skeleton } from '@/shared/ui-kit';
-import { currencyModel } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 
 import { Price } from './Price';
 
@@ -14,7 +14,7 @@ type Props = {
 };
 
 export const FiatBalance = ({ amount, className }: Props) => {
-  const currency = useUnit(currencyModel.$activeCurrency);
+  const currency = useUnit(currencySelect.$activeCurrency);
 
   if (!amount) {
     return <Skeleton width="56px" height="18px" />;

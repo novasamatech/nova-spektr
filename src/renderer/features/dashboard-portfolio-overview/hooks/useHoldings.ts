@@ -3,10 +3,10 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { getRoundedValue, totalAmount, totalAmountBN } from '@/shared/lib/utils';
-import { type CurrencyItem } from '@/domains/price';
-import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
+import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { currencySelect } from '@/aggregates/currency-select';
 
 export type Holding = {
   priceId: string;
@@ -28,9 +28,9 @@ export type HoldingsData = {
 export const useHoldings = (accountIds: string[]): HoldingsData => {
   const balanceMap = useUnit(balanceModel.$balanceMap);
   const chains = useUnit(networkModel.$chains);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const currency = useUnit(currencyModel.$activeCurrency);
-  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: prices } = useAssetsPrices(pricesParams);
 
   const { holdings, totalFiat } = useMemo(() => {

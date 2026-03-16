@@ -7,7 +7,8 @@ import { type Asset, type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { ZERO_BALANCE, formatFiatBalance } from '@/shared/lib/utils';
 import { Skeleton } from '@/shared/ui-kit';
-import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
+import { useAssetsPrices } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 
 import { FiatBalance } from './FiatBalance';
 
@@ -20,9 +21,9 @@ type Props = {
 export const AssetFiatBalance = memo(({ asset, amount, className }: Props) => {
   const { t } = useI18n();
 
-  const currency = useUnit(currencyModel.$activeCurrency);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: prices } = useAssetsPrices(pricesParams);
 
   if (!fiatFlag) {

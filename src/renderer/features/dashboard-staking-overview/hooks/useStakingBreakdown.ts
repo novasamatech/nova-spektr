@@ -3,8 +3,9 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { getRoundedValue } from '@/shared/lib/utils';
-import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
+import { useAssetsPrices } from '@/domains/price';
 import { type StakingMap } from '@/domains/staking';
+import { currencySelect } from '@/aggregates/currency-select';
 
 import { type ChainStakingSummary } from './useStakingOverview';
 
@@ -32,8 +33,8 @@ type Params = {
 };
 
 export const useStakingBreakdown = ({ stakingData, chainSummary, accountIds, allEntries }: Params) => {
-  const currency = useUnit(currencyModel.$activeCurrency);
-  const pricesParams = useUnit(priceProviderModel.$currentPricesParams);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: prices } = useAssetsPrices(pricesParams);
 
   return useMemo(() => {

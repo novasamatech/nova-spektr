@@ -21,7 +21,7 @@ import {
 import { FootnoteText, HelpText, Icon, IconButton, TitleText } from '@/shared/ui';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
-import { currencyModel } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 import { useCurrencyRate } from '@/widgets/price';
 
 type Props = {
@@ -62,7 +62,7 @@ export const AmountInput = ({
   const { t } = useI18n();
 
   const rate = useCurrencyRate(asset.priceId, showCurrency);
-  const activeCurrency = useUnit(currencyModel.$activeCurrency);
+  const activeCurrency = useUnit(currencySelect.$activeCurrency);
 
   const [inputValue, setInputValue] = useState(value);
   const [assetValue, setAssetValue] = useState(value);

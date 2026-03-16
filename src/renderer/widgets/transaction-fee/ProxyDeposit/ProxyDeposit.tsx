@@ -4,7 +4,7 @@ import { memo, useEffect, useState } from 'react';
 
 import { proxyService } from '@/shared/api/proxy';
 import { type Asset } from '@/shared/core';
-import { priceProviderModel } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 import { Fee } from '../Fee/Fee';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
@@ -20,7 +20,7 @@ type Props = {
 
 export const ProxyDeposit = memo(
   ({ api, asset, deposit, proxyNumber, className, onDepositChange, onDepositLoading }: Props) => {
-    const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+    const fiatFlag = useUnit(currencySelect.$fiatFlag);
 
     const [proxyDeposit, setProxyDeposit] = useState('');
     const [isLoading, setIsLoading] = useState(true);
