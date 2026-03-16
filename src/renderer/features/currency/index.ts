@@ -5,5 +5,5 @@ import { CurrencyModal } from './ui/CurrencyModal';
 
 export { CurrencyForm } from './CurrencyForm';
 
-const currencyFeature = createFeature({ name: 'settings/currency' });
+export const currencyFeature = createFeature({ name: 'settings/currency' });
 currencyFeature.inject(currencyModalSlot, { render: CurrencyModal });

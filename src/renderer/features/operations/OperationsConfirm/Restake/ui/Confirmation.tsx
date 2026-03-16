@@ -8,9 +8,9 @@ import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { StakingPopover } from '@/entities/staking';
-import { FeeWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { AssetFiatBalance } from '@/widgets/price';
+import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 

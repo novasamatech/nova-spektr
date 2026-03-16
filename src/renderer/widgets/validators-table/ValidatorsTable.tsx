@@ -6,7 +6,6 @@ import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { AccountExplorers, Address, AssetBalance, Hash, Identicon } from '@/shared/ui-entities';
 import { type AccountIdentity } from '@/domains/network';
-// eslint-disable-next-line boundaries/element-types
 import { AssetFiatBalance } from '@/widgets/price';
 
 const TABLE_GRID_CELLS = 'grid-cols-[1fr_128px_128px_40px]';

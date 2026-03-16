@@ -13,12 +13,12 @@ import { priceProviderModel } from '@/domains/price';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
-import { FeeLoader } from '@/entities/transaction';
 import { ProxyWalletAlert, walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { ConvictionSelect } from '@/widgets/VoteModal';
 import { AssetFiatBalance } from '@/widgets/price';
+import { FeeLoader } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
 
 type Props = {

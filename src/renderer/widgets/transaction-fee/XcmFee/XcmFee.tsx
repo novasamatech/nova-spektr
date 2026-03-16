@@ -9,7 +9,6 @@ import { toAddress } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
 import { priceProviderModel } from '@/domains/price';
 import { networkModel } from '@/entities/network';
-// eslint-disable-next-line boundaries/element-types
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 

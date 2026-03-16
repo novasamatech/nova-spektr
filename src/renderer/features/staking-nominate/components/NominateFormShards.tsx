@@ -8,10 +8,10 @@ import { Button, DetailRow, FootnoteText, Icon, InputHint, MultiSelect } from '@
 import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { priceProviderModel } from '@/domains/price';
-import { FeeLoader } from '@/entities/transaction';
 import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AssetFiatBalance } from '@/widgets/price';
+import { FeeLoader } from '@/widgets/transaction-fee';
 import { formModelShards } from '../model/form-model-shards';
 
 type Props = {

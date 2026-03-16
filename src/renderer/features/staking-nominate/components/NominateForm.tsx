@@ -9,8 +9,8 @@ import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entitie
 import { Tooltip } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { Fee, FeeWithLabel } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
 
 type Props = {

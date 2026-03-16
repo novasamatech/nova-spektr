@@ -8,10 +8,10 @@ import { formatBalance, getNativeAsset, toAddress, toShortAddress } from '@/shar
 import { Button, InputHint, MultiSelect } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { accountService } from '@/domains/network';
-import { FeeWithLabelWithDataLoading, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
+import { FeeWithLabelWithDataLoading, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { formModelShards } from '../model/form-model-shards';
 
 type Props = {

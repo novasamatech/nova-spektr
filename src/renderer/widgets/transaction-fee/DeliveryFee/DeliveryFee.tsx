@@ -5,7 +5,6 @@ import { memo } from 'react';
 import { type Asset } from '@/shared/core';
 import { AssetBalance } from '@/shared/ui-entities';
 import { priceProviderModel } from '@/domains/price';
-// eslint-disable-next-line boundaries/element-types
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 

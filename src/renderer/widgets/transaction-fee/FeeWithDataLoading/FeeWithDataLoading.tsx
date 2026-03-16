@@ -6,9 +6,8 @@ import { memo, useEffect, useState } from 'react';
 import { type Asset, type Transaction } from '@/shared/core';
 import { AssetBalance } from '@/shared/ui-entities';
 import { priceProviderModel } from '@/domains/price';
-// eslint-disable-next-line boundaries/element-types
+import { transactionService } from '@/entities/transaction';
 import { AssetFiatBalance } from '@/widgets/price';
-import { transactionService } from '../../lib';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {

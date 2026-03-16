@@ -12,9 +12,8 @@ import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
 import { useBlockTimestamp, useIdentity } from '@/domains/network';
-// eslint-disable-next-line boundaries/element-types
+import { type ValidationIssue, type VestingScheduleRaw, VestingFieldError } from '@/entities/vesting';
 import { AssetFiatBalance } from '@/widgets/price';
-import { type ValidationIssue, type VestingScheduleRaw, VestingFieldError } from '../lib/types';
 
 import { CliffMinVestedTransferError } from './CliffMinVestedTransferError';
 import { MinVestedTransferError } from './MinVestedTransferError';

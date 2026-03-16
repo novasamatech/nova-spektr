@@ -7,9 +7,9 @@ import { nullable } from '@/shared/lib/utils';
 import { Button, DetailRow } from '@/shared/ui';
 import { AssetBalance, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
-import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { AssetFiatBalance } from '@/widgets/price';
+import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form';
 
 import { UploadCSV } from './MultiTransferUpload';

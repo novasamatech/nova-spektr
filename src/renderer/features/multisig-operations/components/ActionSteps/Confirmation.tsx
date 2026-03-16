@@ -15,8 +15,8 @@ import {
 } from '@/shared/ui-entities';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
-import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { operationsContextModel } from '../../model/context';
 import { Details } from '../Details';
 

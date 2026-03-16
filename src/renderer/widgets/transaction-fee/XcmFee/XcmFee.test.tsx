@@ -105,7 +105,7 @@ const setupSuccessfulFeeCalculation = () => {
   });
 };
 
-describe('entities/transaction/ui/XcmFee', () => {
+describe('widgets/transaction-fee/XcmFee', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

@@ -7,9 +7,10 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Button, DetailRow } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
-import { type MultiTransferRow, MultiTransferPreview } from '@/entities/multi-transfer';
+import { type MultiTransferRow } from '@/entities/multi-transfer';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
+import { MultiTransferPreview } from '@/widgets/multi-transfer-preview';
 
 type Props = {
   operation: MultisigOperation;

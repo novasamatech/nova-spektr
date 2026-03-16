@@ -17,7 +17,7 @@ vi.mock('../FeeLoader/FeeLoader', () => ({
   FeeLoader: ({ fiatFlag }: any) => <div>{fiatFlag ? 'fiat' : 'crypto'}</div>,
 }));
 
-vi.mock('../../lib', () => ({
+vi.mock('@/entities/transaction', () => ({
   transactionService: {
     getTransactionFee: jest.fn().mockResolvedValue('12'),
   },
@@ -27,7 +27,7 @@ vi.mock('@/shared/ui-entities', () => ({
   AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
 
-describe('entities/transaction/ui/Fee', () => {
+describe('widgets/transaction-fee/FeeWithDataLoading', () => {
   test('should render component', async () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
     const tx = { accountId: '0x123' as AccountId, args: {} } as Transaction;

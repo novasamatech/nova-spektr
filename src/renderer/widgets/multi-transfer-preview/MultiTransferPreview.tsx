@@ -9,9 +9,8 @@ import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
 import { useAccountName } from '@/domains/network';
-// eslint-disable-next-line boundaries/element-types
+import { type MultiTransferRow, type ValidationIssue, MultiTransferFieldError } from '@/entities/multi-transfer';
 import { AssetFiatBalance } from '@/widgets/price';
-import { type MultiTransferRow, type ValidationIssue, MultiTransferFieldError } from '../lib/types';
 
 type RowStatus = 'error' | 'warning' | 'valid';
 

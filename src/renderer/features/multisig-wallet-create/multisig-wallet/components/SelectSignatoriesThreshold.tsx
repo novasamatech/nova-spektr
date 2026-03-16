@@ -10,9 +10,9 @@ import { Alert, Button, FootnoteText, Icon, IconButton, InputHint, SmallTitleTex
 import { Address, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
-import { Fee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { Fee } from '@/widgets/transaction-fee';
 import { flowModel } from '../model/flow-model';
 import { formModel } from '../model/form-model';
 import { signatoryModel } from '../model/signatory-model';

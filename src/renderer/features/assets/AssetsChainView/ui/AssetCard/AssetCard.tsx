@@ -8,7 +8,8 @@ import { KeyboardKey, cnTw, totalAmount, transferableAmountBN } from '@/shared/l
 import { BodyText, Shimmering } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { priceProviderModel } from '@/domains/price';
-import { AssetDetails, AssetIcon, AssetLinks } from '@/entities/asset';
+import { AssetIcon, AssetLinks } from '@/entities/asset';
+import { AssetDetails } from '@/widgets/asset-details';
 import { AssetFiatBalance, TokenPrice } from '@/widgets/price';
 
 type Props = {
