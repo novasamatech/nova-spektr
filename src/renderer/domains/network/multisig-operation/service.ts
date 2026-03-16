@@ -185,8 +185,9 @@ function generateMultisigOperationRelativeLink(params: MultisigOperationDeepLink
  * call is proxy.proxy (direct) or utility.batchAll wrapping proxy.proxy calls
  * (Nova Wallet style).
  *
- * Only the wrapper-level proxy call is considered: nested proxy calls inside
- * arbitrary inner structures are intentionally ignored.
+ * For batch calls, only the first transaction is inspected via a recursive
+ * call; nested proxy calls inside arbitrary inner structures are intentionally
+ * ignored.
  */
 function extractProxiedAccountId(transaction: DecodedTransaction | null): AccountId | undefined {
   if (nullable(transaction)) return undefined;
@@ -203,12 +204,7 @@ function extractProxiedAccountId(transaction: DecodedTransaction | null): Accoun
     const transactions: unknown = transaction.args['transactions'];
     if (!Array.isArray(transactions) || transactions.length === 0) return undefined;
 
-    const firstTx = transactions[0] as DecodedTransaction;
-    const isProxyInBatch = firstTx.section === 'proxy' && firstTx.method === 'proxy';
-    if (!isProxyInBatch) return undefined;
-
-    const real: unknown = firstTx.args['real'];
-    return typeof real === 'string' ? toAccountId(real) : undefined;
+    return extractProxiedAccountId(transactions[0] as DecodedTransaction);
   }
 
   return undefined;
