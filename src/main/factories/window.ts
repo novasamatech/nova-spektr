@@ -48,6 +48,17 @@ export function createWindow(): BrowserWindow {
     callback({ requestHeaders: details.requestHeaders });
   });
 
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' wss: ws: https:; font-src 'self' data:; object-src 'none'; frame-src 'none'; upgrade-insecure-requests",
+        ],
+      },
+    });
+  });
+
   // Open urls in the user's browser
   window.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url);
