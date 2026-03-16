@@ -18,7 +18,11 @@ const mockWindow = {
 };
 
 vi.mock('electron', () => ({
-  BrowserWindow: vi.fn(() => mockWindow),
+  BrowserWindow: class {
+    constructor() {
+      return mockWindow;
+    }
+  },
   Menu: {
     setApplicationMenu: vi.fn(),
     buildFromTemplate: vi.fn(),
