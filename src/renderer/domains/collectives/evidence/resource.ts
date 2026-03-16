@@ -10,7 +10,7 @@ import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createQueryResource, createSubscriptionResource } from '@/shared/query';
-import { mergeNested } from '../_lib/helpers';
+import { mergeNested } from '../_lib/service';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { evidenceService } from './service';

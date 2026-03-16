@@ -1,4 +1,4 @@
-// _lib: types, constants, helpers
+// _lib: types, constants, service
 export type { ApyValidator, Payee, RewardSource, RewardsMap, StakingMap, ValidatorMap } from './_lib/types';
 export {
   AssetHubChains,
@@ -12,7 +12,7 @@ export {
   STAKED_PORTION_IDEAL,
   STAKING_NETWORK,
 } from './_lib/constants';
-export { stakingUtils } from './_lib/helpers';
+export { stakingCommonService } from './_lib/service';
 
 // era
 export { era } from './era/store';

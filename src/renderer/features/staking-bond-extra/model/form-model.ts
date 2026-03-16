@@ -21,7 +21,7 @@ import {
   createTxValidationStore,
 } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
-import { staking, stakingUtils } from '@/domains/staking';
+import { staking, stakingCommonService } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
@@ -176,7 +176,7 @@ const $reusableLock = combine({
     return null;
   }
 
-  const reusableLock = stakingUtils.reusableLockBN(balance);
+  const reusableLock = stakingCommonService.reusableLockBN(balance);
 
   return BN.min(available, reusableLock);
 });

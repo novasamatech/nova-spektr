@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { type Chain, type ChainId, ExternalType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useResource } from '@/shared/query';
-import { stakingUtils } from '../_lib/helpers';
+import { stakingCommonService } from '../_lib/service';
 import { type RewardSource, type RewardsMap } from '../_lib/types';
 
 import { type StakingRewardsParams, stakingRewardsResource } from './resource';
@@ -21,22 +21,22 @@ export const useStakingRewards = (
 
     const uniqueSources = new Map<string, RewardSource>();
 
-    stakingUtils.collectRewardSources(chain, ExternalType.STAKING, uniqueSources);
+    stakingCommonService.collectRewardSources(chain, ExternalType.STAKING, uniqueSources);
 
-    if (stakingUtils.isAssetHubChain(chain)) {
-      stakingUtils.collectRewardSources(chain, ExternalType.HISTORY, uniqueSources);
+    if (stakingCommonService.isAssetHubChain(chain)) {
+      stakingCommonService.collectRewardSources(chain, ExternalType.HISTORY, uniqueSources);
 
       if (chain.parentId) {
-        stakingUtils.collectRewardSources(chainsMap[chain.parentId], ExternalType.STAKING, uniqueSources);
+        stakingCommonService.collectRewardSources(chainsMap[chain.parentId], ExternalType.STAKING, uniqueSources);
       }
     }
 
     for (const candidate of Object.values(chainsMap)) {
       if (candidate.parentId !== chain.chainId) continue;
 
-      if (!stakingUtils.isAssetHubChain(candidate)) continue;
+      if (!stakingCommonService.isAssetHubChain(candidate)) continue;
 
-      stakingUtils.collectRewardSources(candidate, ExternalType.HISTORY, uniqueSources);
+      stakingCommonService.collectRewardSources(candidate, ExternalType.HISTORY, uniqueSources);
     }
 
     return Array.from(uniqueSources.values());

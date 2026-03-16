@@ -5,7 +5,7 @@ import { produce } from 'immer';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type ReferendaCurve, referendaPallet } from '@/shared/pallet/referenda';
 import { createQueryResource } from '@/shared/query';
-import { mergeNested } from '../_lib/helpers';
+import { mergeNested } from '../_lib/service';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type Track, type VotingCurve } from './types';

@@ -6,7 +6,7 @@ import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { createSubscriptionResource } from '@/shared/query';
-import { mergeNested } from '../_lib/helpers';
+import { mergeNested } from '../_lib/service';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type CoreMember, type Member } from './types';

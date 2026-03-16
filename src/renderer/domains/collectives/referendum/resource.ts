@@ -17,7 +17,7 @@ import {
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { createQueryResource, createSubscriptionResource } from '@/shared/query';
-import { mergeNested } from '../_lib/helpers';
+import { mergeNested } from '../_lib/service';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type Proposal, type Referendum } from './types';

@@ -1,6 +1,6 @@
 import { combine } from 'effector';
 
-import { combineStores } from './_lib/helpers';
+import { combineStores } from './_lib/service';
 import { evidence } from './evidence/store';
 import { feed } from './feed/store';
 import { member } from './member/store';

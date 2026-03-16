@@ -13,7 +13,7 @@ import {
   MINIMUM_INFLATION,
   STAKED_PORTION_IDEAL,
 } from '../_lib/constants';
-import { stakingUtils } from '../_lib/helpers';
+import { stakingCommonService } from '../_lib/service';
 import { type ApyValidator, type ValidatorMap } from '../_lib/types';
 
 // =====================================================
@@ -137,7 +137,7 @@ async function getValidatorsPrefs(api: ApiPromise, era: EraIndex): Promise<Valid
 }
 
 function getDefaultValidatorsAmount(api: ApiPromise): number {
-  if (stakingUtils.isKusamaChainId(api.genesisHash.toHex())) return KUSAMA_MAX_NOMINATORS;
+  if (stakingCommonService.isKusamaChainId(api.genesisHash.toHex())) return KUSAMA_MAX_NOMINATORS;
 
   return DEFAULT_MAX_NOMINATORS;
 }
