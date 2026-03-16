@@ -1,5 +1,5 @@
 import { useResource } from '@/shared/query';
-import { type PriceObject } from '../lib/types';
+import { type PriceObject } from '../types';
 
 import { type CurrentPricesParams, currentPricesResource } from './resource';
 

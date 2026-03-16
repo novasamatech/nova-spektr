@@ -1,9 +1,10 @@
 import { allSettled, fork } from 'effector';
 
-import { type CurrencyItem } from '../../lib/types';
-import { currencyModel } from '../currency-model';
+import { type CurrencyItem } from '../types';
 
-describe('domains/price/model/currency-model', () => {
+import { currencyModel } from './currency-model';
+
+describe('currencyModel', () => {
   const config: CurrencyItem[] = [
     {
       code: 'EUR',

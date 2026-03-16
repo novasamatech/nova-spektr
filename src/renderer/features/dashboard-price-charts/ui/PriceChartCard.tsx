@@ -33,11 +33,7 @@ export const PriceChartCard = ({ assetId, label, color, currency, currentPrice, 
   const currencySymbol = currency.symbol ?? currency.code;
   const gradientId = `gradient-${label}`;
 
-  const { data: historyData, pending } = usePriceHistory({
-    assetId,
-    currency: currency.coingeckoId,
-    range: timeRange,
-  });
+  const { data: historyData, pending } = usePriceHistory({ assetId, currency: currency.coingeckoId, range: timeRange });
 
   const [showRetry, setShowRetry] = useState(false);
 

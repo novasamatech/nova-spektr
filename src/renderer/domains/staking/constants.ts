@@ -17,7 +17,6 @@ type AssetHubChainKey = 'POLKADOT_AH' | 'KUSAMA_AH';
 export const AssetHubChains: Record<AssetHubChainKey, ChainId> = {
   POLKADOT_AH: '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f',
   KUSAMA_AH: '0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a',
-  // WESTEND_AH: '0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9',
 };
 
 export const DEFAULT_STAKING_CHAIN = AssetHubChains['POLKADOT_AH'];

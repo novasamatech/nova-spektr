@@ -1,13 +1,16 @@
 import { allSettled, fork } from 'effector';
 
 import { networkModel } from '@/entities/network';
-import { type CurrencyItem, type PriceObject } from '../../lib/types';
-import { PriceApiProvider } from '../../lib/types';
-import { coingeckoService } from '../../service/coingeckoService';
-import { currencyModel } from '../currency-model';
-import { priceProviderModel } from '../price-provider-model';
+import { type CurrencyItem, type PriceObject } from '../types';
 
-describe('domains/price/model/price-provider-model', () => {
+import { currencyModel } from './currency-model';
+import { priceProviderModel } from './price-provider-model';
+
+function mockFetchJson(data: unknown) {
+  global.fetch = jest.fn(() => Promise.resolve({ json: () => Promise.resolve(data) })) as jest.Mock;
+}
+
+describe('priceProviderModel', () => {
   const prices: PriceObject = {
     kusama: {
       usd: { price: 19.24, change: -4.745815232356294 },
@@ -43,34 +46,16 @@ describe('domains/price/model/price-provider-model', () => {
     expect(scope.getState(priceProviderModel.$fiatFlag)).toBe(true);
   });
 
-  test('should have default $priceProvider as COINGEKO', () => {
-    const scope = fork();
-    expect(scope.getState(priceProviderModel.$priceProvider)).toBe(PriceApiProvider.COINGEKO);
-  });
-
   test('should change $fiatFlag when fiatFlagChanged', async () => {
     const scope = fork();
     await allSettled(priceProviderModel.events.fiatFlagChanged, { scope, params: false });
     expect(scope.getState(priceProviderModel.$fiatFlag)).toBe(false);
   });
 
-  test('should change $priceProvider when priceProviderChanged', async () => {
-    const scope = fork();
-    await allSettled(priceProviderModel.events.priceProviderChanged, {
-      scope,
-      params: 'my_provider' as PriceApiProvider,
-    });
-    expect(scope.getState(priceProviderModel.$priceProvider)).toEqual('my_provider');
-  });
-
   test('should update $assetPrices when currencyChanged', async () => {
-    const newPrices = {
-      kusama: {
-        eur: { price: 11.1, change: 22.2 },
-      },
-    };
-
-    jest.spyOn(coingeckoService, 'getPrice').mockResolvedValue(prices);
+    mockFetchJson({
+      kusama: { usd: 19.24, usd_24h_change: -4.745815232356294 },
+    });
 
     const scope = fork({
       values: new Map()
@@ -81,34 +66,36 @@ describe('domains/price/model/price-provider-model', () => {
             assets: [{ priceId: 'kusama' }],
           },
         })
-        .set(currencyModel.$currencyConfig, config)
-        .set(priceProviderModel.$priceProvider, PriceApiProvider.COINGEKO),
+        .set(currencyModel.$currencyConfig, config),
     });
 
     await allSettled(currencyModel.events.currencyChanged, { scope, params: 0 });
     expect(scope.getState(priceProviderModel.$assetsPrices)).toEqual(prices);
 
-    jest.spyOn(coingeckoService, 'getPrice').mockResolvedValue(newPrices);
+    mockFetchJson({
+      kusama: { eur: 11.1, eur_24h_change: 22.2 },
+    });
     await allSettled(currencyModel.events.currencyChanged, { scope, params: 1 });
-    expect(scope.getState(priceProviderModel.$assetsPrices)).toEqual(newPrices);
+    expect(scope.getState(priceProviderModel.$assetsPrices)).toEqual({
+      kusama: {
+        eur: { price: 11.1, change: 22.2 },
+      },
+    });
   });
 
   test('should not fetch prices when chains store is empty', async () => {
-    const getPrice = jest.spyOn(coingeckoService, 'getPrice').mockResolvedValue({});
+    mockFetchJson({});
 
     const scope = fork({
-      values: new Map()
-        .set(networkModel.$chains, {})
-        .set(priceProviderModel.$priceProvider, PriceApiProvider.COINGEKO)
-        .set(currencyModel.$currencyConfig, config),
+      values: new Map().set(networkModel.$chains, {}).set(currencyModel.$currencyConfig, config),
     });
 
     await allSettled(currencyModel.events.currencyChanged, { scope, params: 1 });
-    expect(getPrice).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
   test('should fetch prices with correct params when chains has assets', async () => {
-    const getPrice = jest.spyOn(coingeckoService, 'getPrice').mockResolvedValue({});
+    mockFetchJson({});
 
     const mockChain = {
       chainId: '0x123',
@@ -130,14 +117,16 @@ describe('domains/price/model/price-provider-model', () => {
     ];
 
     const scope = fork({
-      values: new Map()
-        .set(networkModel.$chains, { '0x123': mockChain })
-        .set(priceProviderModel.$priceProvider, PriceApiProvider.COINGEKO)
-        .set(currencyModel.$currencyConfig, gbpConfig),
+      values: new Map().set(networkModel.$chains, { '0x123': mockChain }).set(currencyModel.$currencyConfig, gbpConfig),
     });
 
     await allSettled(currencyModel.events.currencyChanged, { scope, params: 2 });
 
-    expect(getPrice).toHaveBeenCalledWith(['kusama', 'polkadot'], ['gbp'], true);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    const calledUrl = (global.fetch as jest.Mock).mock.calls[0][0] as URL;
+    const params = new URLSearchParams(calledUrl.search);
+    expect(params.get('ids')).toBe('kusama,polkadot');
+    expect(params.get('vs_currencies')).toBe('gbp');
+    expect(params.get('include_24hr_change')).toBe('true');
   });
 });

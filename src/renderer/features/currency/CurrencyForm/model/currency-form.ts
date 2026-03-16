@@ -68,7 +68,7 @@ sample({
 
 sample({
   clock: combineEvents({
-    events: [priceProviderModel.output.fiatFlagChangedDone, currencyModel.output.currencyChangedDone],
+    events: [priceProviderModel.events.fiatFlagChanged, currencyModel.output.currencyChanged],
   }),
   target: attach({
     source: $callbacks,

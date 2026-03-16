@@ -2,8 +2,8 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { persist } from 'effector-storage/local';
 
 import CURRENCY from '@/shared/config/currency/currencies.json';
-import { CURRENCY_CODE_KEY, DEFAULT_CURRENCY_CODE } from '../lib/constants';
-import { type CurrencyItem } from '../lib/types';
+import { CURRENCY_CODE_KEY, DEFAULT_CURRENCY_CODE } from '../constants';
+import { type CurrencyItem } from '../types';
 
 const $currencyConfig = createStore<CurrencyItem[]>(CURRENCY as CurrencyItem[]);
 
@@ -39,7 +39,6 @@ export const currencyModel = {
     currencyChanged,
   },
   output: {
-    currencyChangedDone: $activeCurrencyCode.updates,
-    currencyChangedFail: $activeCurrencyCode.updates,
+    currencyChanged: $activeCurrencyCode.updates,
   },
 };
