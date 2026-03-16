@@ -10,12 +10,13 @@ const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold 
 const activeClass = 'bg-white text-text-primary shadow-sm';
 const inactiveClass = 'text-text-tertiary hover:text-text-secondary';
 
-const RANGES: PriceHistoryTimeRange[] = ['7d', '30d', '90d'];
+const RANGES: PriceHistoryTimeRange[] = ['1d', '7d', '30d', '90d'];
 
 export const TimeRangeToggle = ({ value, onChange }: Props) => {
   const { t } = useI18n();
 
   const labels: Record<PriceHistoryTimeRange, string> = {
+    '1d': t('dashboard.priceCharts.range1d'),
     '7d': t('dashboard.priceCharts.range7d'),
     '30d': t('dashboard.priceCharts.range30d'),
     '90d': t('dashboard.priceCharts.range90d'),
