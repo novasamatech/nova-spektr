@@ -7,7 +7,10 @@ import {
   type PriceObject,
   type PriceRange,
 } from '../lib/types';
-import { getCurrencyChangeKey } from '../lib/utils';
+
+export function getCurrencyChangeKey(currency: string): string {
+  return `${currency}_24h_change`;
+}
 
 export const coingeckoService: PriceAdapter = {
   getPrice,
