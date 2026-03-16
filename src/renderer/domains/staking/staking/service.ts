@@ -23,6 +23,50 @@ async function getControllers(api: ApiPromise, accounts: AccountId[]): Promise<A
   }
 }
 
+type LedgerUnlock = { value: { toString(): string }; era: { toString(): string } };
+type LedgerOption = {
+  isNone: boolean;
+  unwrap(): {
+    active: { toString(): string };
+    stash: { toHuman(): string };
+    total: { toString(): string };
+    unlocking: { toArray(): LedgerUnlock[] };
+  };
+};
+
+function buildStakingMap(
+  chainId: ChainId,
+  data: LedgerOption[],
+  accounts: AccountId[],
+  controllers: AccountId[],
+): StakingMap {
+  return data.reduce<StakingMap>((acc, ledger, index) => {
+    const account = accounts[index];
+    if (!account) return acc;
+
+    if (ledger.isNone) {
+      acc[account] = undefined;
+    } else {
+      const { active, stash, total, unlocking } = ledger.unwrap();
+
+      acc[account] = {
+        accountId: account,
+        chainId,
+        controller: controllers[index] || toAccountId(stash.toHuman()),
+        stash: toAccountId(stash.toHuman()),
+        active: active.toString(),
+        total: total.toString(),
+        unlocking: unlocking.toArray().map(unlock => ({
+          value: unlock.value.toString(),
+          era: unlock.era.toString(),
+        })),
+      };
+    }
+
+    return acc;
+  }, {});
+}
+
 async function listenToLedger(
   chainId: ChainId,
   api: ApiPromise,
@@ -32,35 +76,7 @@ async function listenToLedger(
 ): Promise<() => void> {
   return api.query.staking.ledger.multi(controllers, data => {
     try {
-      const staking = data.reduce<StakingMap>((acc, ledger, index) => {
-        const account = accounts[index];
-        if (!account) return acc;
-
-        if (ledger.isNone) {
-          acc[account] = undefined;
-        } else {
-          const { active, stash, total, unlocking } = ledger.unwrap();
-
-          const formattedUnlocking = unlocking.toArray().map(unlock => ({
-            value: unlock.value.toString(),
-            era: unlock.era.toString(),
-          }));
-
-          acc[account] = {
-            accountId: account,
-            chainId,
-            controller: controllers[index] || toAccountId(stash.toHuman()),
-            stash: toAccountId(stash.toHuman()),
-            active: active.toString(),
-            total: total.toString(),
-            unlocking: formattedUnlocking,
-          };
-        }
-
-        return acc;
-      }, {});
-
-      callback(staking);
+      callback(buildStakingMap(chainId, data, accounts, controllers));
     } catch (error) {
       console.warn(error);
       callback({});
@@ -89,35 +105,7 @@ export const stakingService = {
     const data = await api.query.staking.ledger.multi(controllers);
 
     try {
-      const staking = data.reduce<StakingMap>((acc, ledger, index) => {
-        const account = accounts[index];
-        if (!account) return acc;
-
-        if (ledger.isNone) {
-          acc[account] = undefined;
-        } else {
-          const { active, stash, total, unlocking } = ledger.unwrap();
-
-          const formattedUnlocking = unlocking.toArray().map(unlock => ({
-            value: unlock.value.toString(),
-            era: unlock.era.toString(),
-          }));
-
-          acc[account] = {
-            accountId: account,
-            chainId,
-            controller: controllers[index] || toAccountId(stash.toHuman()),
-            stash: toAccountId(stash.toHuman()),
-            active: active.toString(),
-            total: total.toString(),
-            unlocking: formattedUnlocking,
-          };
-        }
-
-        return acc;
-      }, {});
-
-      return staking;
+      return buildStakingMap(chainId, data, accounts, controllers);
     } catch (error) {
       console.warn(error);
       return {};

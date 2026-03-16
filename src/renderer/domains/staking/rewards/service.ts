@@ -1,9 +1,39 @@
 import { BN } from '@polkadot/util';
 import { GraphQLClient } from 'graphql-request';
 
+import { type Chain, type ExternalType } from '@/shared/core';
 import { keys, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { AssetHubChains } from '../_lib/constants';
 import { type RewardSource, type RewardsMap } from '../_lib/types';
+
+const ASSET_HUB_CHAIN_IDS = new Set(Object.values(AssetHubChains));
+
+function isAssetHubChain(chain?: Chain | null): boolean {
+  if (!chain) return false;
+  return ASSET_HUB_CHAIN_IDS.has(chain.chainId);
+}
+
+function collectRewardSources(
+  sourceChain: Chain | undefined,
+  type: ExternalType,
+  map: Map<string, RewardSource>,
+): void {
+  if (!sourceChain) return;
+  const external = sourceChain.externalApi?.[type];
+  if (!external) return;
+
+  for (const item of external) {
+    if (item.type !== 'subquery' || map.has(item.url)) continue;
+
+    map.set(item.url, {
+      url: item.url,
+      addressPrefix: sourceChain.addressPrefix,
+    });
+  }
+}
+
+export { collectRewardSources, isAssetHubChain };
 
 const GET_TOTAL_REWARDS = `
   query Rewards($addresses: [String!]) {

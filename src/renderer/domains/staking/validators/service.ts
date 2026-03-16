@@ -13,8 +13,11 @@ import {
   MINIMUM_INFLATION,
   STAKED_PORTION_IDEAL,
 } from '../_lib/constants';
-import { stakingUtils } from '../_lib/helpers';
 import { type ApyValidator, type ValidatorMap } from '../_lib/types';
+
+function isKusamaChainId(chainId: string): boolean {
+  return chainId === '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe';
+}
 
 // =====================================================
 // ============== validatorsService ====================
@@ -137,7 +140,7 @@ async function getValidatorsPrefs(api: ApiPromise, era: EraIndex): Promise<Valid
 }
 
 function getDefaultValidatorsAmount(api: ApiPromise): number {
-  if (stakingUtils.isKusamaChainId(api.genesisHash.toHex())) return KUSAMA_MAX_NOMINATORS;
+  if (isKusamaChainId(api.genesisHash.toHex())) return KUSAMA_MAX_NOMINATORS;
 
   return DEFAULT_MAX_NOMINATORS;
 }
