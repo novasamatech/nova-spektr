@@ -1,16 +1,9 @@
-/**
- * Unit tests for feature flags module (shared/config/features) Tests the
- * enableFeature/disableFeature/resetFeatureConfig logic that is exposed via
- * window.__spektr_config in DEV mode.
- *
- * Issue: #19 — Debug interfaces exposure
- */
 import { allSettled, fork } from 'effector';
 import { describe, expect, it } from 'vitest';
 
 import { $features, $mutatedFeatures, resetFeatureStatuses, updateFeatureStatus } from './index';
 
-describe('shared/config/features — unit tests', () => {
+describe('shared/config/features', () => {
   describe('default feature flags', () => {
     it('should have default features defined', () => {
       const scope = fork();
@@ -40,7 +33,6 @@ describe('shared/config/features — unit tests', () => {
   describe('updateFeatureStatus — enableFeature', () => {
     it('should enable a disabled feature', async () => {
       const scope = fork();
-      // dappBrowser defaults to false
       expect(scope.getState($features).dappBrowser).toBe(false);
 
       await allSettled(updateFeatureStatus, { scope, params: ['dappBrowser', true] });
@@ -51,7 +43,6 @@ describe('shared/config/features — unit tests', () => {
     it('should record override in mutations store when toggling non-default value', async () => {
       const scope = fork();
 
-      // dappBrowser defaults to false, so enabling it creates a mutation
       await allSettled(updateFeatureStatus, { scope, params: ['dappBrowser', true] });
 
       expect(scope.getState($mutatedFeatures)).toHaveProperty('dappBrowser', true);
@@ -60,11 +51,9 @@ describe('shared/config/features — unit tests', () => {
     it('should remove mutation when restoring to default value', async () => {
       const scope = fork();
 
-      // dashboard defaults to true — disabling creates mutation
       await allSettled(updateFeatureStatus, { scope, params: ['dashboard', false] });
       expect(scope.getState($mutatedFeatures)).toHaveProperty('dashboard', false);
 
-      // re-enabling (back to default) should remove the mutation
       await allSettled(updateFeatureStatus, { scope, params: ['dashboard', true] });
       expect(scope.getState($mutatedFeatures)).not.toHaveProperty('dashboard');
     });
@@ -145,7 +134,6 @@ describe('shared/config/features — unit tests', () => {
       expect(features.dappBrowser).toBe(true);
       expect(features.dashboard).toBe(false);
       expect(features.staking).toBe(false);
-      // Unrelated features remain at default
       expect(features.assets).toBe(true);
     });
   });
