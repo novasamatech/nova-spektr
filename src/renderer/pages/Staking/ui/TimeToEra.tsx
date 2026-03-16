@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { nullable } from '@/shared/lib/utils';
 import { Duration, Shimmering } from '@/shared/ui';
-import { eraService } from '@/entities/staking';
+import { eraService } from '@/domains/staking';
 
 type Props = {
   api: ApiPromise | null;

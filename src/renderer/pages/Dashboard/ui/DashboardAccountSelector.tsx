@@ -44,7 +44,8 @@ export const DashboardAccountSelector = () => {
   const areSomeSelected = selectedCount > 0;
 
   const walletEntries = allEntries.filter((e) => e.source === 'wallet');
-  const contactEntries = allEntries.filter((e) => e.source === 'contact');
+  const localContactEntries = allEntries.filter((e) => e.source === 'local-contact');
+  const backendContactEntries = allEntries.filter((e) => e.source === 'backend-contact');
 
   const toggleAll = (checked: boolean) => {
     if (checked) {
@@ -64,8 +65,8 @@ export const DashboardAccountSelector = () => {
     }
   };
 
-  const toggleContacts = (checked: boolean) => {
-    const linked = linkedIdsFor(contactEntries);
+  const toggleGroup = (entries: DashboardEntry[], checked: boolean) => {
+    const linked = linkedIdsFor(entries);
     if (checked) {
       const toAdd = Array.from(linked).filter((id) => !selectedSet.has(id));
       dashboardModel.selectionChanged([...selectedIds, ...toAdd]);
@@ -74,8 +75,16 @@ export const DashboardAccountSelector = () => {
     }
   };
 
-  const allContactsSelected = contactEntries.length > 0 && contactEntries.every((e) => selectedSet.has(e.id));
-  const someContactsSelected = contactEntries.some((e) => selectedSet.has(e.id));
+  const allLocalContactsSelected =
+    localContactEntries.length > 0 && localContactEntries.every((e) => selectedSet.has(e.id));
+  const someLocalContactsSelected = localContactEntries.some((e) => selectedSet.has(e.id));
+
+  const allBackendContactsSelected =
+    backendContactEntries.length > 0 && backendContactEntries.every((e) => selectedSet.has(e.id));
+  const someBackendContactsSelected = backendContactEntries.some((e) => selectedSet.has(e.id));
+
+  const allWalletsSelected = walletEntries.length > 0 && walletEntries.every((e) => selectedSet.has(e.id));
+  const someWalletsSelected = walletEntries.some((e) => selectedSet.has(e.id));
 
   return (
     <Popover align="start" open={open} side="bottom" onToggle={setOpen}>
@@ -97,30 +106,80 @@ export const DashboardAccountSelector = () => {
           </div>
 
           <div className="max-h-[320px] overflow-y-auto">
-            {walletEntries.map((entry) => (
-              <WalletRow key={entry.id} entry={entry} selected={selectedSet.has(entry.id)} onToggle={toggleEntry} />
-            ))}
-
-            {contactEntries.length > 0 && (
+            {localContactEntries.length > 0 && (
               <>
-                <div className="my-1 border-t border-divider" />
                 <div className="rounded-sm p-2 hover:bg-action-background-hover">
-                  <Checkbox checked={allContactsSelected} semiChecked={someContactsSelected} onChange={toggleContacts}>
+                  <Checkbox
+                    checked={allLocalContactsSelected}
+                    semiChecked={someLocalContactsSelected}
+                    onChange={(checked) => toggleGroup(localContactEntries, checked)}
+                  >
                     <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
-                      <CaptionText className="text-text-secondary">{contactEntries.length}</CaptionText>
+                      <CaptionText className="text-text-secondary">{localContactEntries.length}</CaptionText>
                     </div>
-                    <FootnoteText className={someContactsSelected ? 'text-text-primary' : 'text-text-secondary'}>
-                      {t('dashboard.accountSelector.contactsGroup')}
+                    <FootnoteText className={someLocalContactsSelected ? 'text-text-primary' : 'text-text-secondary'}>
+                      {t('dashboard.accountSelector.localContactsGroup')}
                     </FootnoteText>
                   </Checkbox>
                 </div>
-                {contactEntries.map((entry) => (
+                {localContactEntries.map((entry) => (
                   <ContactRow
                     key={entry.id}
                     entry={entry}
                     selected={selectedSet.has(entry.id)}
                     onToggle={toggleEntry}
                   />
+                ))}
+                <div className="my-1 border-t border-divider" />
+              </>
+            )}
+
+            {backendContactEntries.length > 0 && (
+              <>
+                <div className="rounded-sm p-2 hover:bg-action-background-hover">
+                  <Checkbox
+                    checked={allBackendContactsSelected}
+                    semiChecked={someBackendContactsSelected}
+                    onChange={(checked) => toggleGroup(backendContactEntries, checked)}
+                  >
+                    <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
+                      <CaptionText className="text-text-secondary">{backendContactEntries.length}</CaptionText>
+                    </div>
+                    <FootnoteText className={someBackendContactsSelected ? 'text-text-primary' : 'text-text-secondary'}>
+                      {t('dashboard.accountSelector.backendContactsGroup')}
+                    </FootnoteText>
+                  </Checkbox>
+                </div>
+                {backendContactEntries.map((entry) => (
+                  <ContactRow
+                    key={entry.id}
+                    entry={entry}
+                    selected={selectedSet.has(entry.id)}
+                    onToggle={toggleEntry}
+                  />
+                ))}
+                <div className="my-1 border-t border-divider" />
+              </>
+            )}
+
+            {walletEntries.length > 0 && (
+              <>
+                <div className="rounded-sm p-2 hover:bg-action-background-hover">
+                  <Checkbox
+                    checked={allWalletsSelected}
+                    semiChecked={someWalletsSelected}
+                    onChange={(checked) => toggleGroup(walletEntries, checked)}
+                  >
+                    <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
+                      <CaptionText className="text-text-secondary">{walletEntries.length}</CaptionText>
+                    </div>
+                    <FootnoteText className={someWalletsSelected ? 'text-text-primary' : 'text-text-secondary'}>
+                      {t('dashboard.accountSelector.walletsGroup')}
+                    </FootnoteText>
+                  </Checkbox>
+                </div>
+                {walletEntries.map((entry) => (
+                  <WalletRow key={entry.id} entry={entry} selected={selectedSet.has(entry.id)} onToggle={toggleEntry} />
                 ))}
               </>
             )}
