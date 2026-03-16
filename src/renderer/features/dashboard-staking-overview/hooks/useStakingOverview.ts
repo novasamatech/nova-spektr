@@ -12,7 +12,7 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type CurrencyItem } from '@/domains/price';
-import { currencyModel, priceProviderModel } from '@/domains/price';
+import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
 import { type StakingMap, AssetHubChains, useActiveEra, useNetworkApy, useStaking } from '@/domains/staking';
 import { networkModel, useApi } from '@/entities/network';
 
@@ -85,9 +85,9 @@ function computeBreakdown(
 
 export const useStakingOverview = (accountIds: string[]): StakingOverviewData => {
   const chains = useUnit(networkModel.$chains);
-  const prices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
+  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
 
   const polkadotApi = useApi(POLKADOT_AH_CHAIN_ID);
   const kusamaApi = useApi(KUSAMA_AH_CHAIN_ID);

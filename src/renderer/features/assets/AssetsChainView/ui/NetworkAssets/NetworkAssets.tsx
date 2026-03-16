@@ -7,7 +7,7 @@ import { ZERO_BALANCE, entries, groupBy, nullable, totalAmount } from '@/shared/
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Accordion } from '@/shared/ui-kit';
 import { type AnyAccount, accountService } from '@/domains/network';
-import { currencyModel, priceProviderModel } from '@/domains/price';
+import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { type ExtendedChain } from '@/entities/network';
@@ -24,9 +24,9 @@ type Props = {
 };
 
 export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, wallet }: Props) => {
-  const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
+  const { data: assetsPrices } = useAssetsPrices(currency?.coingeckoId ?? null);
   const balances = useUnit(balanceModel.$balances);
 
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);

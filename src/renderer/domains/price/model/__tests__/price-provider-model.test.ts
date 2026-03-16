@@ -70,9 +70,10 @@ describe('domains/price/model/price-provider-model', () => {
       },
     };
 
+    jest.spyOn(coingeckoService, 'getPrice').mockResolvedValue(prices);
+
     const scope = fork({
       values: new Map()
-        .set(priceProviderModel.$assetsPrices, prices)
         .set(networkModel.$chains, {
           '0x123': {
             chainId: '0x123',
@@ -84,7 +85,6 @@ describe('domains/price/model/price-provider-model', () => {
         .set(priceProviderModel.$priceProvider, PriceApiProvider.COINGEKO),
     });
 
-    jest.spyOn(coingeckoService, 'getPrice').mockResolvedValue(prices);
     await allSettled(currencyModel.events.currencyChanged, { scope, params: 0 });
     expect(scope.getState(priceProviderModel.$assetsPrices)).toEqual(prices);
 
@@ -93,7 +93,7 @@ describe('domains/price/model/price-provider-model', () => {
     expect(scope.getState(priceProviderModel.$assetsPrices)).toEqual(newPrices);
   });
 
-  test('should not call fetchAssetsPricesFx when chains store is empty', async () => {
+  test('should not fetch prices when chains store is empty', async () => {
     const getPrice = jest.spyOn(coingeckoService, 'getPrice').mockResolvedValue({});
 
     const scope = fork({
@@ -107,7 +107,7 @@ describe('domains/price/model/price-provider-model', () => {
     expect(getPrice).not.toHaveBeenCalled();
   });
 
-  test('should call fetchAssetsPricesFx with correct params when chains has assets', async () => {
+  test('should fetch prices with correct params when chains has assets', async () => {
     const getPrice = jest.spyOn(coingeckoService, 'getPrice').mockResolvedValue({});
 
     const mockChain = {
@@ -116,15 +116,28 @@ describe('domains/price/model/price-provider-model', () => {
       assets: [{ priceId: 'kusama' }, { priceId: 'polkadot' }, { priceId: null }],
     };
 
+    const gbpConfig: CurrencyItem[] = [
+      ...config,
+      {
+        code: 'GBP',
+        name: 'British Pound',
+        symbol: '£',
+        category: 'fiat',
+        popular: false,
+        id: 2,
+        coingeckoId: 'gbp',
+      },
+    ];
+
     const scope = fork({
       values: new Map()
         .set(networkModel.$chains, { '0x123': mockChain })
         .set(priceProviderModel.$priceProvider, PriceApiProvider.COINGEKO)
-        .set(currencyModel.$currencyConfig, config),
+        .set(currencyModel.$currencyConfig, gbpConfig),
     });
 
-    await allSettled(currencyModel.events.currencyChanged, { scope, params: 1 });
+    await allSettled(currencyModel.events.currencyChanged, { scope, params: 2 });
 
-    expect(getPrice).toHaveBeenCalledWith(['kusama', 'polkadot'], ['eur'], true);
+    expect(getPrice).toHaveBeenCalledWith(['kusama', 'polkadot'], ['gbp'], true);
   });
 });

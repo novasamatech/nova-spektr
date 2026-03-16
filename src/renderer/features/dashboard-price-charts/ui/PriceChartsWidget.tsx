@@ -1,8 +1,8 @@
-import { useStoreMap, useUnit } from 'effector-react';
-import { useState } from 'react';
+import { useUnit } from 'effector-react';
+import { useMemo, useState } from 'react';
 
 import { type PriceHistoryTimeRange } from '@/domains/price';
-import { currencyModel, priceProviderModel } from '@/domains/price';
+import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
 
 import { PriceChartCard } from './PriceChartCard';
 import { TimeRangeToggle } from './TimeRangeToggle';
@@ -23,27 +23,24 @@ export const PriceChartsWidget = () => {
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
+  const { data: allPrices } = useAssetsPrices(currency?.coingeckoId ?? null);
 
-  const prices = useStoreMap({
-    store: priceProviderModel.$assetsPrices,
-    keys: [currency],
-    fn: (allPrices, [curr]) => {
-      if (!allPrices || !curr) return {};
+  const prices = useMemo(() => {
+    if (!allPrices || !currency) return {};
 
-      const result: Record<string, { price: number; change: number }> = {};
-      for (const asset of TRACKED_ASSETS) {
-        const assetPrices = allPrices[asset.id];
-        if (assetPrices) {
-          const priceItem = assetPrices[curr.coingeckoId];
-          if (priceItem) {
-            result[asset.id] = priceItem;
-          }
+    const result: Record<string, { price: number; change: number }> = {};
+    for (const asset of TRACKED_ASSETS) {
+      const assetPrices = allPrices[asset.id];
+      if (assetPrices) {
+        const priceItem = assetPrices[currency.coingeckoId];
+        if (priceItem) {
+          result[asset.id] = priceItem;
         }
       }
+    }
 
-      return result;
-    },
-  });
+    return result;
+  }, [allPrices, currency]);
 
   if (!fiatFlag || !currency) return null;
 

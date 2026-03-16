@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { type ChainId } from '@/shared/core';
 import { getRoundedValue, totalAmount, totalAmountBN } from '@/shared/lib/utils';
 import { type CurrencyItem } from '@/domains/price';
-import { currencyModel, priceProviderModel } from '@/domains/price';
+import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 
@@ -27,9 +27,9 @@ export type ChainHoldingsData = {
 export const useChainHoldings = (accountIds: string[]): ChainHoldingsData => {
   const balanceMap = useUnit(balanceModel.$balanceMap);
   const chains = useUnit(networkModel.$chains);
-  const prices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
+  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
 
   const { chainHoldings, totalFiat } = useMemo(() => {
     if (!prices || !currency) return { chainHoldings: [], totalFiat: null };

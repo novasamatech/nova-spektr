@@ -7,7 +7,7 @@ import { type Asset, type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { ZERO_BALANCE, formatFiatBalance } from '@/shared/lib/utils';
 import { Skeleton } from '@/shared/ui-kit';
-import { currencyModel, priceProviderModel } from '@/domains/price';
+import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
 
 import { FiatBalance } from './FiatBalance';
 
@@ -22,7 +22,7 @@ export const AssetFiatBalance = memo(({ asset, amount, className }: Props) => {
 
   const currency = useUnit(currencyModel.$activeCurrency);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const prices = useUnit(priceProviderModel.$assetsPrices);
+  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
 
   if (!fiatFlag) {
     return null;

@@ -1,10 +1,10 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { ZERO_BALANCE, cnTw, formatFiatBalance } from '@/shared/lib/utils';
 import { FootnoteText, Shimmering } from '@/shared/ui';
-import { currencyModel, priceProviderModel } from '@/domains/price';
+import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
 
 import { FiatBalance } from './FiatBalance';
 
@@ -17,19 +17,17 @@ type Props = {
 export const TokenPrice = memo(({ assetId, className, wrapperClassName }: Props) => {
   const { t } = useI18n();
   const currency = useUnit(currencyModel.$activeCurrency);
-  const price = useStoreMap({
-    store: priceProviderModel.$assetsPrices,
-    keys: [currency, assetId],
-    fn: (prices, [currency, assetId]) => {
-      if (!currency || !prices || !assetId) return null;
-
-      const assetPrice = prices[assetId];
-      if (!assetPrice) return null;
-
-      return assetPrice[currency.coingeckoId] ?? null;
-    },
-  });
+  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+
+  const price = (() => {
+    if (!currency || !prices || !assetId) return null;
+
+    const assetPrice = prices[assetId];
+    if (!assetPrice) return null;
+
+    return assetPrice[currency.coingeckoId] ?? null;
+  })();
 
   if (!fiatFlag) {
     return null;

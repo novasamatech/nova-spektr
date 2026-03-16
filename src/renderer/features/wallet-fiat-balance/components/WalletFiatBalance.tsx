@@ -7,7 +7,7 @@ import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance } from '@/shared/lib/utils';
 import { Skeleton } from '@/shared/ui-kit';
-import { currencyModel, priceProviderModel } from '@/domains/price';
+import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { FiatBalance } from '@/widgets/price';
@@ -29,7 +29,7 @@ export const WalletFiatBalance = ({ wallet, className }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const balances = useUnit(balanceModel.$balanceMap);
   const currency = useUnit(currencyModel.$activeCurrency);
-  const prices = useUnit(priceProviderModel.$assetsPrices);
+  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
 
   const balance = useMemo(() => {
     if (!fiatFlag) return null;

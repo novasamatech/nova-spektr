@@ -1,11 +1,11 @@
 import { useUnit } from 'effector-react';
 
-import { currencyModel, priceProviderModel } from '@/domains/price';
+import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
 
 export const useCurrencyRate = (assetId?: string, showCurrency?: boolean): number | null => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const activeCurrency = useUnit(currencyModel.$activeCurrency);
-  const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
+  const { data: assetsPrices } = useAssetsPrices(activeCurrency?.coingeckoId ?? null);
 
   if (
     !showCurrency ||

@@ -15,7 +15,7 @@ import {
 import { BodyText, EmptyListWithIcon, FootnoteText } from '@/shared/ui';
 import { AssetBalance, AssetIcon, ChainIcon } from '@/shared/ui-entities';
 import { Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
-import { currencyModel, priceProviderModel } from '@/domains/price';
+import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { AssetFiatBalance, FiatBalance, TokenPrice } from '@/widgets/price';
 import { formModel } from '../model/form-model';
@@ -34,8 +34,8 @@ export const TokenSelectorModal = memo(({ isOpen, chain, onSelect, onClose }: Pr
   const initiator = useUnit(formModel.form.fields.initiator.$value);
   const balances = useUnit(balanceModel.$balanceMap);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const prices = useUnit(priceProviderModel.$assetsPrices);
   const currency = useUnit(currencyModel.$activeCurrency);
+  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
 
   const assetsWithBalances = useMemo(() => {
     return chain.assets

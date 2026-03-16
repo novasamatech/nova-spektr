@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { type Asset, type Balance } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance, getRoundedValue, totalAmount } from '@/shared/lib/utils';
-import { currencyModel, priceProviderModel } from '@/domains/price';
+import { currencyModel, priceProviderModel, useAssetsPrices } from '@/domains/price';
 import { FiatBalance } from '@/widgets/price';
 
 type Props = {
@@ -19,7 +19,7 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
   const [fiatAmount, setFiatAmount] = useState<BigNumber>(new BigNumber(0));
 
   const currency = useUnit(currencyModel.$activeCurrency);
-  const prices = useUnit(priceProviderModel.$assetsPrices);
+  const { data: prices } = useAssetsPrices(currency?.coingeckoId ?? null);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   useEffect(() => {
