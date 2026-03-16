@@ -2556,6 +2556,9 @@
   },
   "settings": {
     "autoUpdate": "Spektr auto updates",
+    "theme": {
+      "label": "Dark theme"
+    },
     "backendSync": {
       "addButton": "Add Connection",
       "configureButton": "Configure",

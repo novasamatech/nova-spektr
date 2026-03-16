@@ -99,7 +99,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
 
         {validationError === ValidationErrors.EXPIRED && (
           <>
-            <div className="absolute top-0 right-0 bottom-0 left-0 bg-white opacity-70" />
+            <div className="absolute top-0 right-0 bottom-0 left-0 bg-card-background opacity-70" />
             <div className="absolute top-0 right-0 bottom-0 left-0 flex flex-col items-center justify-center gap-4">
               <FootnoteText>{t('operation.walletConnect.expiredDescription')}</FootnoteText>
               <Button size="sm" onClick={onGoBack}>

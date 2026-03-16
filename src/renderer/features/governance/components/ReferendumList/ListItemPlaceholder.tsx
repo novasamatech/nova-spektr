@@ -3,7 +3,7 @@ import { Skeleton } from '@/shared/ui-kit';
 
 export const ListItemPlaceholder = () => {
   return (
-    <div className="flex w-full flex-col gap-y-3 rounded-md bg-white p-3">
+    <div className="flex w-full flex-col gap-y-3 rounded-md bg-card-background p-3">
       <div className="flex justify-between gap-x-2">
         <Skeleton width="240px" height="18px" />
         <Skeleton width="125px" height="18px" />

@@ -73,7 +73,7 @@ export const VotingRecord = memo(() => {
 
   return (
     <Box direction="row" width="100%" gap={1.5}>
-      <div className="flex-1 rounded-lg bg-white px-4 py-3">
+      <div className="flex-1 rounded-lg bg-card-background px-4 py-3">
         <Box width="100%" grow={1} gap={1.5}>
           <Box direction="row" verticalAlign="start" gap={3}>
             <Speedometer size={40} value={actualActivity} max={100} variant={isActivityFit ? 'green' : 'grey'} />
@@ -99,7 +99,7 @@ export const VotingRecord = memo(() => {
         </Box>
       </div>
 
-      <div className="flex-1 rounded-lg bg-white px-4 py-3">
+      <div className="flex-1 rounded-lg bg-card-background px-4 py-3">
         <Box width="100%" grow={1} gap={1.5}>
           <Box direction="row" verticalAlign="start" gap={3}>
             <Speedometer size={40} value={actualAgreement} max={100} variant={isAgreementFit ? 'green' : 'grey'} />

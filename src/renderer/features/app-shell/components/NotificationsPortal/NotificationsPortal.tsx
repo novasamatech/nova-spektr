@@ -37,7 +37,7 @@ export const NotificationsPortal = () => {
 
       toast.custom(
         (toastId) => (
-          <div className="flex w-[356px] items-start gap-2 rounded-lg bg-white p-3 shadow-card-shadow">
+          <div className="flex w-[356px] items-start gap-2 rounded-lg bg-card-background p-3 shadow-card-shadow">
             <div className="mt-0.5 shrink-0">{getIconForStatus(status)}</div>
             <div className="flex flex-1 flex-col gap-1">
               <span className="text-body-bold text-text-primary">{displayTitle}</span>

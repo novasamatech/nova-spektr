@@ -78,7 +78,7 @@ interface TableOfContentsProps {
 
 export const TableOfContents = ({ items, activeSection, onSectionChange }: TableOfContentsProps) => {
   return (
-    <div className="w-[240px] rounded-lg bg-white p-3">
+    <div className="w-[240px] rounded-lg bg-card-background p-3">
       <div className="mb-3">
         <SmallTitleText className="text-[14px] leading-[18px] font-extrabold tracking-[-0.182px] text-text-primary">
           Table of contents

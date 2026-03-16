@@ -34,7 +34,7 @@ export const AddCustomDelegationModel = () => {
     <BaseModal
       closeButton
       headerClass="px-5 py-3"
-      panelClass="flex flex-col w-modal bg-white"
+      panelClass="flex flex-col w-modal bg-card-background"
       contentClass="min-h-0 h-full w-full py-4"
       isOpen={isModalOpen}
       title={

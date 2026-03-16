@@ -32,7 +32,7 @@ export const DelegationCard = ({ asset, delegate, votes = [], onClick }: Props) 
   return (
     <button
       className={cnTw(
-        'w-full rounded-sm border border-container-border bg-white transition-shadow',
+        'w-full rounded-sm border border-container-border bg-card-background transition-shadow',
         'shadow-shadow-1 hover:shadow-shadow-2 focus:shadow-shadow-2',
       )}
       onClick={onClick}

@@ -63,7 +63,7 @@ export const DerivedAccount = ({
               size={20}
             />
             <Icon
-              className="z-10 -ml-2.5 rounded-full border bg-white text-text-secondary"
+              className="z-10 -ml-2.5 rounded-full border bg-card-background text-text-secondary"
               size={20}
               name={KeyIcon[account.keyType]}
             />

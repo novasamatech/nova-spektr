@@ -119,7 +119,7 @@ export const DappContainer = ({ id }: Props) => {
     <div className="h-full w-full overflow-hidden p-2">
       <div className="flex h-full w-full flex-col overflow-hidden rounded-lg shadow-sm">
         {nonNullable(config) && (
-          <div className="relative z-5 flex h-10 shrink-0 items-center justify-between gap-1 bg-white px-4">
+          <div className="relative z-5 flex h-10 shrink-0 items-center justify-between gap-1 bg-card-background px-4">
             <div className="flex items-center gap-2">{hasSecureConnection && <Icon name="lock" size={12} />}</div>
 
             <div className="absolute inset-0 m-auto flex h-full w-fit items-center gap-2">

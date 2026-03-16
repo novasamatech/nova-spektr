@@ -15,13 +15,13 @@ export const StepIndicator = ({ steps }: StepIndicatorProps) => {
     <div className="flex items-center gap-2">
       {steps.map(step => {
         const getStepColor = () => {
-          if (step.isCompleted) return 'text-black';
+          if (step.isCompleted) return 'text-text-primary';
           if (step.isActive) return 'text-icon-accent';
           return 'text-text-tertiary';
         };
 
         const getIndicatorColor = () => {
-          if (step.isCompleted) return 'bg-black';
+          if (step.isCompleted) return 'bg-switch-background-active';
           if (step.isActive) return 'bg-icon-accent';
           return 'bg-text-tertiary';
         };

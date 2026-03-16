@@ -40,7 +40,7 @@ export const ContactItem = ({
 
           {keyType && (
             <Icon
-              className="z-10 -ml-2.5 rounded-full border bg-white text-text-secondary"
+              className="z-10 -ml-2.5 rounded-full border bg-card-background text-text-secondary"
               size={iconSize}
               name={KeyIcon[keyType]}
             />

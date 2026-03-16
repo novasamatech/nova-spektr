@@ -2,6 +2,7 @@ import './polyfills';
 import './index.css';
 import './document.css';
 import './styles/theme/default.css';
+import './styles/theme/dark.css';
 
 import '@/shared/assets/fonts/Inter/Inter-400.woff2';
 import '@/shared/assets/fonts/Inter/Inter-500.woff2';
@@ -12,6 +13,7 @@ import '@/shared/assets/fonts/Manrope/Manrope-500.woff2';
 import '@/shared/assets/fonts/Manrope/Manrope-600.woff2';
 import '@/shared/assets/fonts/Manrope/Manrope-800.woff2';
 
+import { useUnit } from 'effector-react';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -22,6 +24,7 @@ import { I18Provider } from '@/shared/i18n';
 import { isElectron } from '@/shared/lib/utils';
 import { FallbackScreen } from '@/shared/ui';
 import { NotificationProvider, ThemeProvider } from '@/shared/ui-kit';
+import { $theme } from '@/entities/theme';
 
 import { LoadingDelay, controlledLazy, suspenseDelay } from './DelayedSuspense';
 import { ElectronSplashScreen } from './components/ElectronSplashScreen/ElectronSplashScreen';
@@ -55,6 +58,7 @@ const App = controlledLazy(() => import('./App').then((m) => m.App));
  * immediately, else splash screen appears for at least DIRTY_LOADING_TIMEOUT.
  */
 const Root = () => {
+  const theme = useUnit($theme);
   const [renderSplashScreen, setRenderSplashScreen] = useState(false);
   const [appLoaded, setAppLoaded] = useState(false);
 
@@ -71,7 +75,7 @@ const Root = () => {
   const splashScreen = renderSplashScreen ? isElectron() ? <ElectronSplashScreen /> : <WebSplashScreen /> : null;
 
   return (
-    <ThemeProvider theme="light" iconStyle="colored">
+    <ThemeProvider theme={theme} iconStyle="colored">
       <HashRouter>
         <I18Provider>
           <ErrorBoundary

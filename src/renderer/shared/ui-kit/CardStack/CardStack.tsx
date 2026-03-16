@@ -120,7 +120,7 @@ const Content = ({ children }: PropsWithChildren) => {
     <div className="relative min-h-1.5 overflow-hidden">
       <div
         className={cnTw(
-          'card-stack-plate absolute top-0 left-1/2 h-full w-full -translate-x-1/2 rounded-b-md bg-white shadow-stack',
+          'card-stack-plate absolute top-0 left-1/2 h-full w-full -translate-x-1/2 rounded-b-md bg-card-background shadow-stack',
           'group-data-[state=open]/stack:shadow-none',
         )}
       />

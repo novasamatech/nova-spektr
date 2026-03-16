@@ -59,7 +59,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
         <div className="flex flex-col gap-1 bg-background-suffix-hover p-4">
           <Alerts />
 
-          <div className="rounded-lg bg-white py-3 pr-4 pl-2">
+          <div className="rounded-lg bg-card-background py-3 pr-4 pl-2">
             <div>
               <Box gap={6}>
                 <Box direction="row" verticalAlign="center" gap={2}>

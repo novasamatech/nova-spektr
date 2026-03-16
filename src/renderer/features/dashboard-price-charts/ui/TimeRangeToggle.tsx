@@ -7,7 +7,7 @@ type Props = {
 };
 
 const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold transition-colors';
-const activeClass = 'bg-white text-text-primary shadow-sm';
+const activeClass = 'bg-card-background text-text-primary shadow-sm';
 const inactiveClass = 'text-text-tertiary hover:text-text-secondary';
 
 const RANGES: PriceHistoryTimeRange[] = ['1d', '7d', '30d', '90d'];

@@ -33,7 +33,7 @@ export const Tabs = ({
         <Tab
           key={id}
           className={cnTw(
-            'flex w-full items-center justify-center rounded-sm bg-transparent px-2 py-1.5 ui-selected:bg-white ui-selected:shadow-card-shadow',
+            'flex w-full items-center justify-center rounded-sm bg-transparent px-2 py-1.5 ui-selected:bg-card-background ui-selected:shadow-card-shadow',
             tabClassName,
           )}
         >

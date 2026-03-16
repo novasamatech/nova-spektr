@@ -47,7 +47,7 @@ const Root = ({
             className={cnTw(
               'flex w-60 flex-col overflow-hidden p-4',
               'text-center align-middle text-body',
-              'transform rounded-lg bg-white shadow-modal transition-transform',
+              'transform rounded-lg bg-card-background shadow-modal transition-transform',
               'duration-200 animate-in fade-in zoom-in-95',
             )}
           >

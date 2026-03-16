@@ -21,7 +21,7 @@ export const RetentionTimeline = memo(({ steps, value, submissionPosition, submi
         <Tooltip side="top" sideOffset={2} enableHover>
           <Tooltip.Trigger>
             <div
-              className="absolute -top-1.5 z-10 -translate-x-1/2 rounded-full bg-white p-0.5"
+              className="absolute -top-1.5 z-10 -translate-x-1/2 rounded-full bg-card-background p-0.5"
               style={{ left: `${submissionPosition}%` }}
             >
               <Icon name="checkmarkOutline" size={16} className="text-text-positive" />

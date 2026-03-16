@@ -190,7 +190,7 @@ const Root = <T extends string>({
                 'h-8.5': height === 'sm',
                 'h-10.5': height === 'md',
                 'border-filter-border bg-input-background text-text-primary': theme === 'light',
-                'border-border-dark bg-background-dark text-white': theme === 'dark',
+                'border-container-border bg-input-background text-text-primary': theme === 'dark',
                 'cursor-not-allowed bg-input-background-disabled text-text-tertiary': disabled,
                 'border-filter-border-negative': invalid,
               },
@@ -240,7 +240,7 @@ const Root = <T extends string>({
             'flex max-h-[300px] min-w-max flex-col overflow-auto overscroll-contain rounded-md border p-1 shadow-lg',
             {
               'border-filter-border bg-input-background': theme === 'light',
-              'border-border-dark bg-background-dark': theme === 'dark',
+              'border-container-border bg-card-background': theme === 'dark',
             },
           )}
           data-theme={theme}

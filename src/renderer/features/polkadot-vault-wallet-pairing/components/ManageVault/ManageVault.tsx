@@ -165,7 +165,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
 
   return (
     <div className="flex h-full w-full">
-      <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
+      <div className="flex w-[472px] flex-col rounded-l-lg bg-card-background px-5 py-4">
         <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 

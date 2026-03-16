@@ -52,7 +52,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <label
         className={cnTw(
-          'box-border flex cursor-text items-center gap-x-2 rounded-sm px-[11px]',
+          'box-border flex cursor-text items-center gap-x-2 rounded-md px-[11px]',
           'border border-filter-border bg-input-background',
           {
             'h-[34px]': height === 'sm',

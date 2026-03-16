@@ -185,7 +185,7 @@ export const SearchWithDropdown = ({
 
       {isDropdownOpen && searchResults.length > 0 && (
         <div className="absolute top-full right-0 left-0 z-50 mt-1">
-          <div className="rounded-lg border border-[rgba(69,69,137,0.06)] bg-white shadow-lg">
+          <div className="rounded-lg border border-[rgba(69,69,137,0.06)] bg-card-background shadow-lg">
             <div className="border-b border-[rgba(69,69,137,0.06)] px-4 py-2">
               <div className="text-[12px] leading-[18px] font-medium tracking-[-0.12px] text-text-secondary">
                 {searchResults.length} {t('fellowship.overview.matchingArticles')}

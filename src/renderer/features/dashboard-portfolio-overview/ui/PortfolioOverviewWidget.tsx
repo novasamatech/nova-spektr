@@ -24,10 +24,11 @@ type Props = {
   allEntries: EntryLike[];
 };
 
-const containerClass = 'w-[560px] rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
+const containerClass =
+  'w-[560px] rounded-lg border border-token-container-border bg-card-background p-4 shadow-card-shadow';
 
 const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold transition-colors';
-const activeToggleClass = 'bg-white text-text-primary shadow-sm';
+const activeToggleClass = 'bg-card-background text-text-primary shadow-sm';
 const inactiveToggleClass = 'text-text-tertiary hover:text-text-secondary';
 
 export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {

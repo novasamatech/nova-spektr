@@ -9,6 +9,7 @@ import { cnTw } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { BodyText, FootnoteText, HelpText, Icon, Plate, Switch } from '@/shared/ui';
 import { currencyModel, priceProviderModel } from '@/entities/price';
+import { $theme, themeToggled } from '@/entities/theme';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 export const generalActionsSlot = createSlot();
@@ -20,6 +21,8 @@ export const GeneralActions = () => {
   const currency = useUnit(currencyModel.$activeCurrency);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const governanceApi = useUnit(governanceMetaProvider.$metaProvider);
+  const theme = useUnit($theme);
+  const toggleTheme = useUnit(themeToggled);
 
   const [isAutoUpdateOn, setIsAutoUpdateOn] = useState(true);
 
@@ -114,6 +117,19 @@ export const GeneralActions = () => {
       </Plate>
 
       <Slot id={generalActionsSlot} />
+
+      <Plate className="p-0">
+        <div className="flex w-full items-center gap-x-2 rounded-sm p-3 transition hover:shadow-card-shadow focus:shadow-card-shadow">
+          <Icon className="row-span-2" name="settingsLite" size={36} />
+          <BodyText className="mr-auto">{t('settings.theme.label')}</BodyText>
+          <Switch
+            checked={theme === 'dark'}
+            knobClassName="transition-none"
+            switchClassName="transition-none"
+            onChange={() => toggleTheme()}
+          />
+        </div>
+      </Plate>
 
       {isAutoUpdateSupported && (
         <Plate className="p-0">

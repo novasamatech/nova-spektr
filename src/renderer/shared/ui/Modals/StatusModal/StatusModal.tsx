@@ -33,7 +33,7 @@ export const StatusModal = ({
       zIndex={zIndex}
       panelClass={cnTw(
         'flex w-[240px] max-w-md transform flex-col items-center justify-center rounded-lg align-middle',
-        'bg-white p-4 shadow-card-shadow transition-all',
+        'bg-card-background p-4 shadow-card-shadow transition-all',
         className,
       )}
       contentClass="p-0 flex flex-col items-center w-full"

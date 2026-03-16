@@ -111,7 +111,7 @@ export const PairingModal = memo(({ variant, children }: Props) => {
         <Carousel item={step.toString()} fixedHeight>
           <Carousel.Item id={Step.SCAN.toString()} index={0}>
             <div className="flex h-full w-full">
-              <div className="flex w-full max-w-[472px] min-w-96 flex-col rounded-l-lg bg-white px-5 py-4">
+              <div className="flex w-full max-w-[472px] min-w-96 flex-col rounded-l-lg bg-card-background px-5 py-4">
                 <HeaderTitleText className="mb-10">{header}</HeaderTitleText>
                 <SmallTitleText className="mb-6">{scanTitle}</SmallTitleText>
 

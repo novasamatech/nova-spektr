@@ -21,14 +21,14 @@ export const TimelineWithRanks = memo(
     return (
       <div className="relative">
         <Timeline steps={steps} value={value} />
-        <span className="absolute -top-1.5 left-0 z-10 bg-white pr-0.5">
+        <span className="absolute -top-1.5 left-0 z-10 bg-card-background pr-0.5">
           <CollectiveRank rank={currentRank} />
         </span>
         {nonNullable(submissionPosition) && nonNullable(submissionDate) && (
           <Tooltip side="top" sideOffset={2} enableHover>
             <Tooltip.Trigger>
               <div
-                className="absolute -top-1.5 z-10 -translate-x-1/2 rounded-full bg-white p-0.5"
+                className="absolute -top-1.5 z-10 -translate-x-1/2 rounded-full bg-card-background p-0.5"
                 style={{ left: `${submissionPosition}%` }}
               >
                 <Icon name="checkmarkOutline" size={16} className="text-text-positive" />
@@ -41,7 +41,7 @@ export const TimelineWithRanks = memo(
             </Tooltip.Content>
           </Tooltip>
         )}
-        <span className="absolute -top-1.5 right-0 z-10 bg-white pl-0.5">
+        <span className="absolute -top-1.5 right-0 z-10 bg-card-background pl-0.5">
           <CollectiveRank rank={currentRank + 1} />
         </span>
       </div>

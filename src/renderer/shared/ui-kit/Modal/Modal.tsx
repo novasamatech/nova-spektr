@@ -57,7 +57,7 @@ const Root = ({
             className={cnTw(
               'ui-kit-modal-height flex max-w-full min-w-32 flex-col overflow-hidden',
               'text-left align-middle text-body',
-              'transform rounded-lg bg-white shadow-modal transition-transform',
+              'transform rounded-lg bg-card-background shadow-modal transition-transform',
               'duration-200 animate-in fade-in zoom-in-95',
               {
                 'w-modal-sm': size === 'sm',

@@ -26,7 +26,7 @@ type ChartDataPoint = {
 
 const CHART_HEIGHT = 120;
 const RETRY_TIMEOUT_MS = 10_000;
-const containerClass = 'rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
+const containerClass = 'rounded-lg border border-token-container-border bg-card-background p-4 shadow-card-shadow';
 
 export const PriceChartCard = ({ assetId, label, color, currency, currentPrice, timeRange }: Props) => {
   const { t } = useI18n();

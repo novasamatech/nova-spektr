@@ -75,7 +75,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
 
       <div
         ref={nodeRef}
-        className="flex cursor-pointer overflow-hidden rounded-md bg-white shadow-md"
+        className="flex cursor-pointer overflow-hidden rounded-md bg-card-background shadow-md"
         style={{
           opacity: shouldFade ? 0.2 : 1,
           transition: 'opacity 300ms',

@@ -96,7 +96,7 @@ export const DashboardAccountSelector = () => {
       </Popover.Trigger>
 
       <Popover.Content>
-        <div className="w-[400px] rounded-md border border-token-container-border bg-white p-1 shadow-card-shadow">
+        <div className="w-[400px] rounded-md border border-token-container-border bg-card-background p-1 shadow-card-shadow">
           <div className="rounded-sm p-2 hover:bg-action-background-hover">
             <Checkbox checked={areAllSelected} semiChecked={areSomeSelected} onChange={toggleAll}>
               <FootnoteText className={areSomeSelected ? 'text-text-primary' : 'text-text-secondary'}>

@@ -1,7 +1,7 @@
 import { Skeleton } from '@/shared/ui-kit';
 
 export const ContactSkeleton = () => (
-  <div className="flex flex-col gap-y-2.5 rounded-md bg-white p-3">
+  <div className="flex flex-col gap-y-2.5 rounded-md bg-card-background p-3">
     <div className="flex items-center gap-x-2">
       <Skeleton circle width={5} />
       <div className="flex flex-col gap-y-1">

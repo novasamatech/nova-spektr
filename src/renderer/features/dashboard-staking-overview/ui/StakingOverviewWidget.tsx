@@ -17,7 +17,8 @@ type Props = {
   allEntries: { accountId: string; name: string; address: string }[];
 };
 
-const containerClass = 'w-[560px] rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
+const containerClass =
+  'w-[560px] rounded-lg border border-token-container-border bg-card-background p-4 shadow-card-shadow';
 
 export const StakingOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();

@@ -28,9 +28,10 @@ const SINCE_OFFSETS: Record<Exclude<RewardsTimeRange, 'all'>, number> = {
   '1y': 365 * 24 * 3600,
 };
 
-const containerClass = 'w-[560px] rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
+const containerClass =
+  'w-[560px] rounded-lg border border-token-container-border bg-card-background p-4 shadow-card-shadow';
 const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold transition-colors';
-const activeClass = 'bg-white text-text-primary shadow-sm';
+const activeClass = 'bg-card-background text-text-primary shadow-sm';
 const inactiveClass = 'text-text-tertiary hover:text-text-secondary';
 
 export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
