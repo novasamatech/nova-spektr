@@ -29,7 +29,7 @@ import { WebSplashScreen } from './components/WebSplashScreen/WebSplashScreen';
 
 declare global {
   interface Window {
-    __spektr_config: {
+    __spektr_config?: {
       enableFeature(name: string): void;
       disableFeature(name: string): void;
       resetFeatureConfig(): void;
@@ -37,11 +37,16 @@ declare global {
   }
 }
 
-window.__spektr_config = {
-  enableFeature: (name) => updateFeatureStatus([name, true]),
-  disableFeature: (name) => updateFeatureStatus([name, false]),
-  resetFeatureConfig: () => resetFeatureStatuses(),
-};
+// Expose feature-flag controls only in non-production builds.
+// In production the window property is not set, preventing console-based
+// toggling of features (walletConnect, multisig, dappBrowser, etc.).
+if (import.meta.env.DEV) {
+  window.__spektr_config = {
+    enableFeature: (name) => updateFeatureStatus([name, true]),
+    disableFeature: (name) => updateFeatureStatus([name, false]),
+    resetFeatureConfig: () => resetFeatureStatuses(),
+  };
+}
 
 const CLEAR_LOADING_TIMEOUT = 700;
 const DIRTY_LOADING_TIMEOUT = 2000;

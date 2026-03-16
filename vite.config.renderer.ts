@@ -82,6 +82,10 @@ const config: UserConfigFn = async ({ mode, command }) => {
 
       tailwindcss(),
 
+      // @vitejs/plugin-react-swc automatically disables React Fast Refresh
+      // (and the associated window.$RefreshReg$ / window.$RefreshSig$ globals)
+      // in production builds. The effector SWC plugin with HMR is only applied
+      // during the dev-server to keep those globals out of production bundles.
       react({
         plugins: isDevServer
           ? [['@effector/swc-plugin', { hmr: 'es', addNames: true, addLoc: false, factories: ['@/shared/di'] }]]
