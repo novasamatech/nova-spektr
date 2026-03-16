@@ -80,11 +80,6 @@ export const Staking = () => {
   const chains = useUnit(networkModel.$chains);
   const { data: rewards, pending: isRewardsLoading } = useStakingRewards(accountIds, chain, chains);
 
-  // Initialize network from localStorage
-  useEffect(() => {
-    stakingNetwork.init();
-  }, []);
-
   // Subscribe to active era
   useEffect(() => {
     if (!chainId || !api?.isConnected) return;

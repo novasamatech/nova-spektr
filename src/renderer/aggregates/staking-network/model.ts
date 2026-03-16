@@ -1,38 +1,23 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore } from 'effector';
+import { persist } from 'effector-storage/local';
 import { or } from 'patronum';
 
-import { localStorageService } from '@/shared/api/local-storage';
 import { type ChainId, ConnectionStatus } from '@/shared/core';
 import { getRelaychainAsset, nullable } from '@/shared/lib/utils';
 import { DEFAULT_STAKING_CHAIN, STAKING_NETWORK } from '@/domains/staking';
 import { networkModel, networkUtils } from '@/entities/network';
 
 const selectChain = createEvent<ChainId>();
-const init = createEvent();
 
-const $selectedChainId = createStore<ChainId | null>(null);
+const $selectedChainId = createStore<ChainId>(DEFAULT_STAKING_CHAIN);
 
-sample({
-  clock: init,
-  fn: () => localStorageService.getFromStorage(STAKING_NETWORK, DEFAULT_STAKING_CHAIN) ?? null,
-  target: $selectedChainId,
+persist({
+  key: STAKING_NETWORK,
+  store: $selectedChainId,
+  sync: true,
 });
 
-sample({
-  clock: selectChain,
-  fn: chainId => {
-    localStorageService.saveToStorage(STAKING_NETWORK, chainId);
-
-    return chainId;
-  },
-  target: $selectedChainId,
-});
-
-const $chain = combine(networkModel.$chains, $selectedChainId, (chains, chainId) => {
-  if (nullable(chainId)) return null;
-
-  return chains[chainId] ?? null;
-});
+const $chain = combine(networkModel.$chains, $selectedChainId, (chains, chainId) => chains[chainId] ?? null);
 
 const $connectionStatus = combine($selectedChainId, networkModel.$connectionStatuses, (chainId, statuses) => {
   if (!chainId) return ConnectionStatus.CONNECTING;
@@ -89,6 +74,5 @@ export const stakingNetwork = {
   $isDisconnected,
   $networkIsActive,
 
-  init,
   selectChain,
 };

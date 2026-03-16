@@ -140,6 +140,11 @@ The renderer follows Feature-Sliced Design methodology:
 - **Staking lives on Asset Hub**, not relay chains. `DEFAULT_STAKING_CHAIN` is Polkadot Asset Hub (`AssetHubChains['POLKADOT_AH']`). Kusama staking is on Kusama Asset Hub.
 - `shared/resource/createSubscriptionResource` is **legacy** (single subscription). Use `shared/query/createSubscriptionResource` (pooled, ref-counted) for new code. Reference: `domains/governance/voting/resource.ts`.
 
+### Local Storage / State Persistence
+- **`localStorageService` is deprecated** — use `persist` from `effector-storage/local` instead.
+- Pattern: initialize store with default value, call `persist({ key, store, sync: true })`. No manual `init` event needed — `persist` auto-hydrates at module load.
+- Reference: `aggregates/staking-network/model.ts`, `shared/config/features/index.ts`
+
 ### Domain Structure
 - **`domains/network/`** - Blockchain network interactions (accounts, transactions, multisig operations)
 - **`domains/collectives/`** - Polkadot Fellowship and governance-related logic
