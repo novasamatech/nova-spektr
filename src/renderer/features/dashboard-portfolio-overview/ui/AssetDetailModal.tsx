@@ -12,6 +12,7 @@ import { type BreakdownRow, useHoldingBreakdown } from '../hooks/useHoldingBreak
 import { type Holding } from '../hooks/useHoldings';
 
 import { Price } from './Price';
+import { PriceChangeIndicator } from './PriceChangeIndicator';
 
 type ChartEntry = {
   name: string;
@@ -138,9 +139,12 @@ export const AssetDetailModal = memo(({ holding, accountIds, allEntries, currenc
               {formatted}
               {suffix} {holding.symbol}
             </FootnoteText>
-            <FootnoteText align="right" className="text-text-tertiary tabular-nums">
-              <Price amount={holding.fiatValue} currency={currency} />
-            </FootnoteText>
+            <div className="flex items-center justify-end gap-1">
+              <PriceChangeIndicator change={holding.change} />
+              <FootnoteText align="right" className="text-text-tertiary tabular-nums">
+                <Price amount={holding.fiatValue} currency={currency} />
+              </FootnoteText>
+            </div>
           </div>
         </div>
 
