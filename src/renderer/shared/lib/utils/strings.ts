@@ -1,6 +1,36 @@
 import { type HexString } from '@/shared/core';
 
 /**
+ * Sanitizes a contact name by:
+ *
+ * - Removing Unicode "Format" category characters (invisible chars, bidi
+ *   controls, etc.)
+ * - Trimming leading/trailing whitespace
+ * - Normalizing Unicode to NFC form
+ *
+ * @param name Contact name to sanitize
+ *
+ * @returns {String} Sanitized name
+ */
+export const sanitizeContactName = (name: string): string => {
+  return name
+    .replace(/\p{Cf}/gu, '')
+    .trim()
+    .normalize('NFC');
+};
+
+/**
+ * Validates that a contact name is not empty after sanitization
+ *
+ * @param name Contact name to validate
+ *
+ * @returns {Boolean}
+ */
+export const isValidContactName = (name: string): boolean => {
+  return sanitizeContactName(name).length > 0;
+};
+
+/**
  * Validate Polkadot Vault QR format
  *
  * @param value Qr code to validate

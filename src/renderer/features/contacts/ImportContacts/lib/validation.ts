@@ -1,10 +1,14 @@
 import { z } from 'zod';
 
-import { validateAddress } from '@/shared/lib/utils';
+import { sanitizeContactName, validateAddress } from '@/shared/lib/utils';
 
 export const contactImportSchema = z
   .object({
-    name: z.string().min(1, 'Contact name is required').max(256, 'Contact name is too long'),
+    name: z
+      .string()
+      .min(1, 'Contact name is required')
+      .max(256, 'Contact name is too long')
+      .transform(sanitizeContactName),
     address: z
       .string()
       .min(1, 'Contact address is required')
