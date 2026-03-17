@@ -2,7 +2,6 @@ import { combine } from 'effector';
 
 import { nullable } from '@/shared/lib/utils';
 import { multisigOperation } from '@/domains/network';
-import { multisigService as multisigAccountsService } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -24,13 +23,7 @@ const $list = combine(
     if (accounts.some(accountUtils.isFlexibleMultisigAccount)) {
       const proxiedAccountId = account.accountId;
 
-      return accountOperations.filter(tx => {
-        if (tx.proxiedAccountId) {
-          return tx.proxiedAccountId === proxiedAccountId;
-        }
-
-        return multisigAccountsService.isFlexibleMultisigOperation(tx, proxiedAccountId);
-      });
+      return accountOperations.filter(tx => tx.proxiedAccountId === proxiedAccountId);
     }
 
     return accountOperations;
