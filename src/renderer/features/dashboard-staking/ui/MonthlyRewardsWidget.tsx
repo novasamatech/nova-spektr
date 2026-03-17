@@ -26,7 +26,8 @@ const pillButtonClass = 'rounded px-3 py-1 text-footnote font-semibold transitio
 const pillActiveClass = 'shadow-sm text-white';
 const pillInactiveClass = 'text-text-tertiary hover:text-text-secondary';
 
-const containerClass = 'w-full rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
+const containerClass =
+  'relative w-full rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
 const DualLabel = (props: LabelProps & { data?: MonthlyBarData[] }) => {
   const x = typeof props.x === 'number' ? props.x : 0;
@@ -226,6 +227,8 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
               <Tooltip
                 content={({ active, payload }) => <StackTooltip active={active} payload={payload ?? undefined} />}
                 cursor={{ fill: 'rgba(0,0,0,0.04)', radius: 4 }}
+                allowEscapeViewBox={{ x: true, y: true }}
+                wrapperStyle={{ zIndex: 10 }}
               />
               {accounts.map((account, i) => {
                 const isLast = i === accounts.length - 1;
