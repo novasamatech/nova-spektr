@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { formatBalance, formatFiatBalance, getRelaychainAsset, getRoundedValue, toAccountId } from '@/shared/lib/utils';
+import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { type MonthlyRewardRecord, AssetHubChains, useMonthlyRewards } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
@@ -14,6 +15,24 @@ const KUSAMA_AH_CHAIN_ID = AssetHubChains['KUSAMA_AH']!;
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
+const DOT_COLORS = ['#e6007a', '#ff4da6', '#cc006c', '#b30060', '#ff80c0', '#990052', '#ff1a8c', '#d40071'];
+const KSM_COLORS = ['#333', '#555', '#222', '#444', '#666', '#1a1a1a', '#777', '#111'];
+
+export type ChainMode = 'dot' | 'ksm';
+
+export const getAccountColor = (index: number, mode: ChainMode): string => {
+  const palette = mode === 'dot' ? DOT_COLORS : KSM_COLORS;
+
+  return palette[index % palette.length] ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length] ?? '#888';
+};
+
+export type SegmentData = {
+  accountId: string;
+  color: string;
+  fraction: number;
+  value: number;
+};
+
 export type MonthlyBarData = {
   month: string;
   year: number;
@@ -22,7 +41,8 @@ export type MonthlyBarData = {
   fiatAmount: string;
   rawTotal: number;
   isPeak: boolean;
-  [accountId: string]: string | number | boolean;
+  segments: SegmentData[];
+  [accountId: string]: string | number | boolean | SegmentData[];
 };
 
 export type AccountInfo = {
@@ -69,8 +89,8 @@ export function bucketRecords(
   price: number | undefined,
   currencySymbol: string | undefined,
   accountIds: string[],
-): { bars: MonthlyBarData[]; activeAccounts: string[] } {
-  // bucket: monthKey -> accountAddress -> BigNumber
+  addressToId?: Map<string, string>,
+): { bars: MonthlyBarData[]; activeAccounts: string[]; totalRaw: BigNumber } {
   const buckets = new Map<string, Map<string, BigNumber>>();
 
   for (const boundary of boundaries) {
@@ -78,18 +98,27 @@ export function bucketRecords(
   }
 
   const seenAccounts = new Set<string>();
+  const addrCache = addressToId ?? new Map<string, string>();
+  let totalRaw = new BigNumber(0);
 
   for (const record of records) {
-    const normalizedId = toAccountId(record.address);
-    for (const boundary of boundaries) {
-      if (record.timestamp >= boundary.start && record.timestamp < boundary.end) {
-        const key = `${boundary.year}-${boundary.month}`;
-        const monthBucket = buckets.get(key)!;
-        const current = monthBucket.get(normalizedId) ?? new BigNumber(0);
-        monthBucket.set(normalizedId, current.plus(record.amount));
-        seenAccounts.add(normalizedId);
-        break;
-      }
+    let normalizedId = addrCache.get(record.address);
+    if (!normalizedId) {
+      normalizedId = toAccountId(record.address);
+      addrCache.set(record.address, normalizedId);
+    }
+
+    totalRaw = totalRaw.plus(record.amount);
+
+    // Direct month calculation instead of O(records × 12) boundary iteration
+    const date = new Date(record.timestamp * 1000);
+    const key = `${date.getFullYear()}-${date.getMonth()}`;
+
+    if (buckets.has(key)) {
+      const monthBucket = buckets.get(key)!;
+      const current = monthBucket.get(normalizedId) ?? new BigNumber(0);
+      monthBucket.set(normalizedId, current.plus(record.amount));
+      seenAccounts.add(normalizedId);
     }
   }
 
@@ -129,6 +158,7 @@ export function bucketRecords(
       fiatAmount: fiatDisplay,
       rawTotal: rawTotal.dividedBy(divisor).toNumber(),
       isPeak: false,
+      segments: [] as SegmentData[],
       ...perAccount,
     };
   });
@@ -141,7 +171,25 @@ export function bucketRecords(
     }
   }
 
-  return { bars, activeAccounts };
+  return { bars, activeAccounts, totalRaw };
+}
+
+function computeSegments(bars: MonthlyBarData[], accounts: AccountInfo[], mode: ChainMode): void {
+  for (const bar of bars) {
+    const segments: SegmentData[] = [];
+    for (let i = 0; i < accounts.length; i++) {
+      const val = bar[accounts[i]!.dataKey];
+      if (typeof val === 'number' && val > 0 && bar.rawTotal > 0) {
+        segments.push({
+          accountId: accounts[i]!.accountId,
+          color: getAccountColor(i, mode),
+          fraction: val / bar.rawTotal,
+          value: val,
+        });
+      }
+    }
+    bar.segments = segments;
+  }
 }
 
 export const useMonthlyRewardsChart = (
@@ -176,25 +224,35 @@ export const useMonthlyRewardsChart = (
   const result = useMemo(() => {
     const emptyTotal = { token: '0', fiat: '0', symbol: '', precision: 0 };
 
-    const processChain = (chainId: ChainId, records: MonthlyRewardRecord[]) => {
+    const emptyResult = { bars: [] as MonthlyBarData[], accounts: [] as AccountInfo[], total: emptyTotal };
+
+    const processChain = (chainId: ChainId, records: MonthlyRewardRecord[], mode: ChainMode) => {
       const chain = chains[chainId];
-      if (!chain) return { bars: [], accounts: [], total: emptyTotal };
+      if (!chain) return emptyResult;
 
       const asset = getRelaychainAsset(chain.assets);
-      if (!asset?.priceId) return { bars: [], accounts: [], total: emptyTotal };
+      if (!asset?.priceId) return emptyResult;
 
       const priceItem = prices?.[asset.priceId]?.[currency?.coingeckoId ?? ''];
       const priceValue = priceItem?.price;
 
-      const normalizedIds = Array.from(new Set(records.map((r) => toAccountId(r.address))));
+      // Build addressToId map once per record set — avoids duplicate toAccountId calls
+      const addressToId = new Map<string, string>();
+      for (const r of records) {
+        if (!addressToId.has(r.address)) {
+          addressToId.set(r.address, toAccountId(r.address));
+        }
+      }
+      const normalizedIds = Array.from(new Set(addressToId.values()));
 
-      const { bars, activeAccounts } = bucketRecords(
+      const { bars, activeAccounts, totalRaw } = bucketRecords(
         records,
         boundaries,
         asset.precision,
         priceValue,
         currency?.symbol,
         normalizedIds,
+        addressToId,
       );
 
       const accounts: AccountInfo[] = activeAccounts.map((id) => ({
@@ -203,7 +261,8 @@ export const useMonthlyRewardsChart = (
         dataKey: id,
       }));
 
-      const totalRaw = records.reduce((sum, r) => sum.plus(r.amount), new BigNumber(0));
+      computeSegments(bars, accounts, mode);
+
       const { formatted: tokenTotal, suffix } = formatBalance(totalRaw.toFixed(0), asset.precision);
       const tokenTotalDisplay = suffix ? `${tokenTotal}${suffix}` : tokenTotal;
 
@@ -219,8 +278,8 @@ export const useMonthlyRewardsChart = (
       };
     };
 
-    const dot = processChain(POLKADOT_AH_CHAIN_ID, dotRecords);
-    const ksm = processChain(KUSAMA_AH_CHAIN_ID, ksmRecords);
+    const dot = processChain(POLKADOT_AH_CHAIN_ID, dotRecords, 'dot');
+    const ksm = processChain(KUSAMA_AH_CHAIN_ID, ksmRecords, 'ksm');
 
     return {
       dotBars: dot.bars,

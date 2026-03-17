@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { type LabelProps, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { type BarShapeProps } from 'recharts/types/cartesian/Bar';
 import { type XAxisTickContentProps } from 'recharts/types/util/types';
@@ -6,21 +6,15 @@ import { type XAxisTickContentProps } from 'recharts/types/util/types';
 import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance, toAccountId } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
-import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { Skeleton } from '@/shared/ui-kit';
 import { useAccountName } from '@/domains/network';
-import { type AccountInfo, type MonthlyBarData, useMonthlyRewardsChart } from '../hooks/useMonthlyRewardsChart';
+import { type ChainMode, type MonthlyBarData, useMonthlyRewardsChart } from '../hooks/useMonthlyRewardsChart';
 import { type EntryLike } from '../hooks/useStakingBreakdown';
 
 type Props = {
   accountIds: string[];
   allEntries: EntryLike[];
 };
-
-type ChainMode = 'dot' | 'ksm';
-
-const DOT_COLORS = ['#e6007a', '#ff4da6', '#cc006c', '#b30060', '#ff80c0', '#990052', '#ff1a8c', '#d40071'];
-const KSM_COLORS = ['#333', '#555', '#222', '#444', '#666', '#1a1a1a', '#777', '#111'];
 
 const pillContainerClass = 'flex rounded-md bg-tab-background p-0.5';
 const pillButtonClass = 'rounded px-3 py-1 text-footnote font-semibold transition-colors cursor-pointer';
@@ -104,26 +98,9 @@ const TooltipRow = ({ accountId, value, color }: { accountId: string; value: num
   );
 };
 
-const getAccountColor = (index: number, mode: ChainMode): string => {
-  const palette = mode === 'dot' ? DOT_COLORS : KSM_COLORS;
-
-  return palette[index % palette.length] ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length] ?? '#888';
-};
-
 const R = 8;
 
-// Single custom shape that paints stacked account segments inside one bar
-const StackedShape = ({
-  barProps,
-  barData,
-  accounts,
-  mode,
-}: {
-  barProps: BarShapeProps;
-  barData: MonthlyBarData[];
-  accounts: AccountInfo[];
-  mode: ChainMode;
-}) => {
+const StackedShape = ({ barProps, barData }: { barProps: BarShapeProps; barData: MonthlyBarData[] }) => {
   const x = typeof barProps.x === 'number' ? barProps.x : 0;
   const y = typeof barProps.y === 'number' ? barProps.y : 0;
   const w = typeof barProps.width === 'number' ? barProps.width : 0;
@@ -133,29 +110,17 @@ const StackedShape = ({
   if (h <= 0 || idx < 0) return null;
 
   const entry = barData[idx];
-  if (!entry) return null;
+  if (!entry || entry.segments.length === 0) return null;
 
-  // Collect segments with values
-  const segments: { color: string; fraction: number }[] = [];
-  for (let i = 0; i < accounts.length; i++) {
-    const val = entry[accounts[i]!.dataKey];
-    if (typeof val === 'number' && val > 0 && entry.rawTotal > 0) {
-      segments.push({ color: getAccountColor(i, mode), fraction: val / entry.rawTotal });
-    }
-  }
-
-  if (segments.length === 0) return null;
-
-  // Clip entire bar as rounded rect, paint flat segments inside
   const clipId = `bar-clip-${idx}`;
   const r = Math.min(R, h / 2, w / 2);
 
   const rects: React.ReactNode[] = [];
   let offsetY = 0;
 
-  for (let i = 0; i < segments.length; i++) {
-    const seg = segments[i]!;
-    const segH = i === segments.length - 1 ? h - offsetY : Math.max(Math.round(seg.fraction * h), 2);
+  for (let i = 0; i < entry.segments.length; i++) {
+    const seg = entry.segments[i]!;
+    const segH = i === entry.segments.length - 1 ? h - offsetY : Math.max(Math.round(seg.fraction * h), 2);
     const segY = y + h - offsetY - segH;
     rects.push(<rect key={i} x={x} y={segY} width={w} height={segH} fill={seg.color} />);
     offsetY += segH;
@@ -179,14 +144,27 @@ const SKELETON_HEIGHTS = [15, 22, 30, 19, 35, 28, 21, 24, 32, 25, 29, 26];
 export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const [mode, setMode] = useState<ChainMode>('dot');
-  const { dotBars, ksmBars, dotAccounts, ksmAccounts, dotTotal, ksmTotal, pending, fiatFlag, currency } =
-    useMonthlyRewardsChart(accountIds, allEntries);
-
-  if (!fiatFlag) return null;
+  const { dotBars, ksmBars, dotTotal, ksmTotal, pending, fiatFlag, currency } = useMonthlyRewardsChart(
+    accountIds,
+    allEntries,
+  );
 
   const bars = mode === 'dot' ? dotBars : ksmBars;
-  const accounts = mode === 'dot' ? dotAccounts : ksmAccounts;
   const total = mode === 'dot' ? dotTotal : ksmTotal;
+
+  const renderShape = useCallback(
+    (shapeProps: BarShapeProps) => <StackedShape barProps={shapeProps} barData={bars} />,
+    [bars],
+  );
+
+  const renderLabel = useCallback((labelProps: LabelProps) => <DualLabel {...labelProps} data={bars} />, [bars]);
+
+  const renderTick = useCallback(
+    (tickProps: XAxisTickContentProps) => <XAxisTick {...tickProps} data={bars} />,
+    [bars],
+  );
+
+  if (!fiatFlag) return null;
 
   if (accountIds.length === 0) {
     return (
@@ -203,19 +181,6 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
   const fiatTotal = currency?.symbol
     ? `${currency.symbol}${formatFiatBalance(total.fiat).formatted}`
     : formatFiatBalance(total.fiat).formatted;
-
-  // Build tooltip data: for each month, list accounts with their values and colors
-  const tooltipData = bars.map((bar) => {
-    const items: { accountId: string; value: number; color: string }[] = [];
-    for (let i = 0; i < accounts.length; i++) {
-      const val = bar[accounts[i]!.dataKey];
-      if (typeof val === 'number' && val > 0) {
-        items.push({ accountId: accounts[i]!.accountId, value: val, color: getAccountColor(i, mode) });
-      }
-    }
-
-    return items;
-  });
 
   return (
     <div className={containerClass}>
@@ -264,20 +229,14 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
             ))}
           </div>
         ) : bars.length > 0 ? (
-          <ResponsiveContainer key={mode} width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={300}>
             <BarChart data={bars} margin={{ top: 45, right: 4, bottom: 8, left: 4 }} barCategoryGap="12%">
-              <XAxis
-                dataKey="month"
-                axisLine={false}
-                tickLine={false}
-                tick={(tickProps: XAxisTickContentProps) => <XAxisTick {...tickProps} data={bars} />}
-                height={32}
-              />
+              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={renderTick} height={32} />
               <Tooltip
                 content={({ active, label }) => {
                   if (!active || typeof label !== 'string') return null;
                   const idx = bars.findIndex((b) => b.month === label);
-                  const items = idx >= 0 ? tooltipData[idx] : undefined;
+                  const items = idx >= 0 ? bars[idx]?.segments : undefined;
                   if (!items?.length) return null;
 
                   return (
@@ -297,10 +256,8 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                 dataKey="rawTotal"
                 radius={[R, R, 0, 0]}
                 animationDuration={600}
-                label={(labelProps: LabelProps) => <DualLabel {...labelProps} data={bars} />}
-                shape={(shapeProps: BarShapeProps) => (
-                  <StackedShape barProps={shapeProps} barData={bars} accounts={accounts} mode={mode} />
-                )}
+                label={renderLabel}
+                shape={renderShape}
               />
             </BarChart>
           </ResponsiveContainer>
