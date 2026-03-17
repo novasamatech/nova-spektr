@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { type LabelProps, Bar, BarChart, ResponsiveContainer, XAxis } from 'recharts';
-import { type BarShapeProps } from 'recharts/types/cartesian/Bar';
+import { type LabelProps, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { type XAxisTickContentProps } from 'recharts/types/util/types';
 
 import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
+import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { Skeleton } from '@/shared/ui-kit';
-import { type MonthlyBarData, useMonthlyRewardsChart } from '../hooks/useMonthlyRewardsChart';
+import { type AccountInfo, type MonthlyBarData, useMonthlyRewardsChart } from '../hooks/useMonthlyRewardsChart';
 import { type EntryLike } from '../hooks/useStakingBreakdown';
 
 type Props = {
@@ -17,10 +17,8 @@ type Props = {
 
 type ChainMode = 'dot' | 'ksm';
 
-const DOT_GRADIENT_ID = 'monthlyDotGradient';
-const DOT_PEAK_GRADIENT_ID = 'monthlyDotPeakGradient';
-const KSM_GRADIENT_ID = 'monthlyKsmGradient';
-const KSM_PEAK_GRADIENT_ID = 'monthlyKsmPeakGradient';
+const DOT_COLORS = ['#e6007a', '#ff4da6', '#cc006c', '#b30060', '#ff80c0', '#990052', '#ff1a8c', '#d40071'];
+const KSM_COLORS = ['#333', '#555', '#222', '#444', '#666', '#1a1a1a', '#777', '#111'];
 
 const pillContainerClass = 'flex rounded-md bg-tab-background p-0.5';
 const pillButtonClass = 'rounded px-3 py-1 text-footnote font-semibold transition-colors cursor-pointer';
@@ -29,7 +27,6 @@ const pillInactiveClass = 'text-text-tertiary hover:text-text-secondary';
 
 const containerClass = 'w-full rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
-// Recharts render-prop callbacks receive arbitrary props — runtime guards used instead of `as` casts
 const DualLabel = (props: LabelProps & { data?: MonthlyBarData[] }) => {
   const x = typeof props.x === 'number' ? props.x : 0;
   const y = typeof props.y === 'number' ? props.y : 0;
@@ -90,20 +87,59 @@ const XAxisTick = (props: XAxisTickContentProps & { data?: MonthlyBarData[] }) =
   );
 };
 
+type StackTooltipProps = {
+  active?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: readonly Record<string, any>[];
+  accounts: AccountInfo[];
+};
+
+const StackTooltip = ({ active, payload, accounts }: StackTooltipProps) => {
+  if (!active || !payload?.length) return null;
+
+  const nameMap = new Map(accounts.map((a) => [a.dataKey, a.name]));
+  const items = payload.filter((p) => typeof p.value === 'number' && p.value > 0).reverse();
+
+  if (items.length <= 1) return null;
+
+  return (
+    <div className="rounded-lg border border-token-container-border bg-white px-3 py-2 shadow-card-shadow">
+      {items.map((item, i) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <div key={i} className="flex items-center gap-2 py-0.5">
+          <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: item.color }} />
+          <span className="text-help-text text-text-secondary">
+            {nameMap.get(String(item.dataKey ?? '')) ?? String(item.name ?? '')}
+          </span>
+          <span className="ml-auto text-help-text font-semibold text-text-primary">
+            {typeof item.value === 'number' ? item.value.toFixed(2) : '0'}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 // Skeleton height is in Tailwind grid units (×4px), so 15 = 60px, 35 = 140px
 const SKELETON_HEIGHTS = [15, 22, 30, 19, 35, 28, 21, 24, 32, 25, 29, 26];
 
-export const MonthlyRewardsWidget = ({ accountIds }: Props) => {
+const getAccountColor = (index: number, mode: ChainMode): string => {
+  const palette = mode === 'dot' ? DOT_COLORS : KSM_COLORS;
+
+  return palette[index % palette.length] ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length] ?? '#888';
+};
+
+export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const [mode, setMode] = useState<ChainMode>('dot');
-  const { dotBars, ksmBars, dotTotal, ksmTotal, pending, fiatFlag, currency } = useMonthlyRewardsChart(accountIds);
+  const { dotBars, ksmBars, dotAccounts, ksmAccounts, dotTotal, ksmTotal, pending, fiatFlag, currency } =
+    useMonthlyRewardsChart(accountIds, allEntries);
 
   if (!fiatFlag) return null;
 
   const bars = mode === 'dot' ? dotBars : ksmBars;
+  const accounts = mode === 'dot' ? dotAccounts : ksmAccounts;
   const total = mode === 'dot' ? dotTotal : ksmTotal;
-  const gradientId = mode === 'dot' ? DOT_GRADIENT_ID : KSM_GRADIENT_ID;
-  const peakGradientId = mode === 'dot' ? DOT_PEAK_GRADIENT_ID : KSM_PEAK_GRADIENT_ID;
 
   if (accountIds.length === 0) {
     return (
@@ -170,26 +206,6 @@ export const MonthlyRewardsWidget = ({ accountIds }: Props) => {
         ) : bars.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={bars} margin={{ top: 45, right: 4, bottom: 8, left: 4 }} barCategoryGap="12%">
-              <defs>
-                <linearGradient id={DOT_GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#e6007a" />
-                  <stop offset="100%" stopColor="#8a0048" />
-                </linearGradient>
-                <linearGradient id={DOT_PEAK_GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#ff1a8c" />
-                  <stop offset="40%" stopColor="#e6007a" />
-                  <stop offset="100%" stopColor="#8a0048" />
-                </linearGradient>
-                <linearGradient id={KSM_GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#555" />
-                  <stop offset="100%" stopColor="#1a1a1a" />
-                </linearGradient>
-                <linearGradient id={KSM_PEAK_GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#888" />
-                  <stop offset="40%" stopColor="#555" />
-                  <stop offset="100%" stopColor="#1a1a1a" />
-                </linearGradient>
-              </defs>
               <XAxis
                 dataKey="month"
                 axisLine={false}
@@ -197,24 +213,29 @@ export const MonthlyRewardsWidget = ({ accountIds }: Props) => {
                 tick={(tickProps: XAxisTickContentProps) => <XAxisTick {...tickProps} data={bars} />}
                 height={32}
               />
-              <Bar
-                dataKey="rawAmount"
-                radius={[4, 4, 1, 1]}
-                animationDuration={600}
-                minPointSize={8}
-                label={(labelProps: LabelProps) => <DualLabel {...labelProps} data={bars} />}
-                shape={(shapeProps: BarShapeProps) => {
-                  const x = typeof shapeProps.x === 'number' ? shapeProps.x : 0;
-                  const y = typeof shapeProps.y === 'number' ? shapeProps.y : 0;
-                  const w = typeof shapeProps.width === 'number' ? shapeProps.width : 0;
-                  const h = typeof shapeProps.height === 'number' ? shapeProps.height : 0;
-                  const idx = typeof shapeProps.index === 'number' ? shapeProps.index : -1;
-                  const bar = idx >= 0 ? bars[idx] : undefined;
-                  const fill = bar?.isPeak ? `url(#${peakGradientId})` : `url(#${gradientId})`;
-
-                  return <rect x={x} y={y} width={w} height={h} rx={4} ry={4} fill={fill} />;
-                }}
+              <Tooltip
+                content={({ active, payload }) => (
+                  <StackTooltip active={active} payload={payload ?? undefined} accounts={accounts} />
+                )}
+                cursor={{ fill: 'rgba(0,0,0,0.04)', radius: 4 }}
               />
+              {accounts.map((account, i) => {
+                const isLast = i === accounts.length - 1;
+                const color = getAccountColor(i, mode);
+
+                return (
+                  <Bar
+                    key={account.dataKey}
+                    dataKey={account.dataKey}
+                    stackId="rewards"
+                    fill={color}
+                    radius={isLast ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                    animationDuration={600}
+                    minPointSize={isLast ? 8 : 0}
+                    label={isLast ? (labelProps: LabelProps) => <DualLabel {...labelProps} data={bars} /> : undefined}
+                  />
+                );
+              })}
             </BarChart>
           </ResponsiveContainer>
         ) : (
