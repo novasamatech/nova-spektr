@@ -254,6 +254,9 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                       const barEntry = idx >= 0 ? bars[idx] : undefined;
 
                       if (sh <= 0) return null;
+                      const minH = 6;
+                      const adjustedH = Math.max(sh, minH);
+                      const adjustedY = sy - (adjustedH - sh);
 
                       const isTopSegment =
                         barEntry !== undefined &&
@@ -263,15 +266,15 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                           return typeof val !== 'number' || val <= 0;
                         });
 
-                      const r = isTopSegment ? Math.min(8, sh / 2, sw / 2) : 0;
+                      const r = isTopSegment ? Math.min(8, adjustedH / 2, sw / 2) : 0;
 
                       if (r === 0) {
-                        return <rect x={sx} y={sy} width={sw} height={sh} fill={color} />;
+                        return <rect x={sx} y={adjustedY} width={sw} height={adjustedH} fill={color} />;
                       }
 
                       return (
                         <path
-                          d={`M${sx},${sy + r} Q${sx},${sy} ${sx + r},${sy} L${sx + sw - r},${sy} Q${sx + sw},${sy} ${sx + sw},${sy + r} L${sx + sw},${sy + sh} L${sx},${sy + sh} Z`}
+                          d={`M${sx},${adjustedY + r} Q${sx},${adjustedY} ${sx + r},${adjustedY} L${sx + sw - r},${adjustedY} Q${sx + sw},${adjustedY} ${sx + sw},${adjustedY + r} L${sx + sw},${adjustedY + adjustedH} L${sx},${adjustedY + adjustedH} Z`}
                           fill={color}
                         />
                       );
