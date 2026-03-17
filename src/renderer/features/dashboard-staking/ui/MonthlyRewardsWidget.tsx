@@ -9,7 +9,7 @@ import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { Skeleton } from '@/shared/ui-kit';
 import { useAccountName } from '@/domains/network';
-import { type MonthlyBarData, useMonthlyRewardsChart } from '../hooks/useMonthlyRewardsChart';
+import { type AccountInfo, type MonthlyBarData, useMonthlyRewardsChart } from '../hooks/useMonthlyRewardsChart';
 import { type EntryLike } from '../hooks/useStakingBreakdown';
 
 type Props = {
@@ -90,12 +90,6 @@ const XAxisTick = (props: XAxisTickContentProps & { data?: MonthlyBarData[] }) =
   );
 };
 
-type StackTooltipProps = {
-  active?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload?: readonly Record<string, any>[];
-};
-
 const TooltipRow = ({ accountId, value, color }: { accountId: string; value: number; color?: string }) => {
   const name = useAccountName({ accountId: toAccountId(accountId) });
 
@@ -110,36 +104,79 @@ const TooltipRow = ({ accountId, value, color }: { accountId: string; value: num
   );
 };
 
-const StackTooltip = ({ active, payload }: StackTooltipProps) => {
-  if (!active || !payload?.length) return null;
-
-  const items = payload.filter((p) => typeof p.value === 'number' && p.value > 0).reverse();
-
-  if (items.length === 0) return null;
-
-  return (
-    <div className="rounded-lg border border-token-container-border bg-white px-3 py-2 shadow-card-shadow">
-      {items.map((item, i) => (
-        <TooltipRow
-          // eslint-disable-next-line react/no-array-index-key
-          key={i}
-          accountId={String(item.dataKey ?? item.name ?? '')}
-          value={typeof item.value === 'number' ? item.value : 0}
-          color={item.color}
-        />
-      ))}
-    </div>
-  );
-};
-
-// Skeleton height is in Tailwind grid units (×4px), so 15 = 60px, 35 = 140px
-const SKELETON_HEIGHTS = [15, 22, 30, 19, 35, 28, 21, 24, 32, 25, 29, 26];
-
 const getAccountColor = (index: number, mode: ChainMode): string => {
   const palette = mode === 'dot' ? DOT_COLORS : KSM_COLORS;
 
   return palette[index % palette.length] ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length] ?? '#888';
 };
+
+const R = 8;
+
+// Single custom shape that paints stacked account segments inside one bar
+const StackedShape = ({
+  barProps,
+  barData,
+  accounts,
+  mode,
+}: {
+  barProps: BarShapeProps;
+  barData: MonthlyBarData[];
+  accounts: AccountInfo[];
+  mode: ChainMode;
+}) => {
+  const x = typeof barProps.x === 'number' ? barProps.x : 0;
+  const y = typeof barProps.y === 'number' ? barProps.y : 0;
+  const w = typeof barProps.width === 'number' ? barProps.width : 0;
+  const h = typeof barProps.height === 'number' ? barProps.height : 0;
+  const idx = typeof barProps.index === 'number' ? barProps.index : -1;
+
+  if (h <= 0 || idx < 0) return null;
+
+  const entry = barData[idx];
+  if (!entry) return null;
+
+  // Collect segments with values
+  const segments: { color: string; fraction: number }[] = [];
+  for (let i = 0; i < accounts.length; i++) {
+    const val = entry[accounts[i]!.dataKey];
+    if (typeof val === 'number' && val > 0 && entry.rawTotal > 0) {
+      segments.push({ color: getAccountColor(i, mode), fraction: val / entry.rawTotal });
+    }
+  }
+
+  if (segments.length === 0) return null;
+
+  // Draw segments bottom-to-top inside the bar rect
+  const r = Math.min(R, h / 2, w / 2);
+  const rects: React.ReactNode[] = [];
+  let offsetY = 0;
+
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i]!;
+    const segH = i === segments.length - 1 ? h - offsetY : Math.max(Math.round(seg.fraction * h), 2);
+    const segY = y + h - offsetY - segH;
+    const isTop = i === segments.length - 1;
+
+    if (isTop && r > 0) {
+      rects.push(
+        <path
+          key={i}
+          d={`M${x},${segY + r} Q${x},${segY} ${x + r},${segY} L${x + w - r},${segY} Q${x + w},${segY} ${x + w},${segY + r} L${x + w},${segY + segH} L${x},${segY + segH} Z`}
+          fill={seg.color}
+        />,
+      );
+    } else {
+      rects.push(<rect key={i} x={x} y={segY} width={w} height={segH} fill={seg.color} />);
+    }
+
+    offsetY += segH;
+  }
+
+  return <g>{rects}</g>;
+};
+
+// Skeleton height is in Tailwind grid units (×4px), so 15 = 60px, 35 = 140px
+const SKELETON_HEIGHTS = [15, 22, 30, 19, 35, 28, 21, 24, 32, 25, 29, 26];
 
 export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
@@ -168,6 +205,19 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
   const fiatTotal = currency?.symbol
     ? `${currency.symbol}${formatFiatBalance(total.fiat).formatted}`
     : formatFiatBalance(total.fiat).formatted;
+
+  // Build tooltip data: for each month, list accounts with their values and colors
+  const tooltipData = bars.map((bar) => {
+    const items: { accountId: string; value: number; color: string }[] = [];
+    for (let i = 0; i < accounts.length; i++) {
+      const val = bar[accounts[i]!.dataKey];
+      if (typeof val === 'number' && val > 0) {
+        items.push({ accountId: accounts[i]!.accountId, value: val, color: getAccountColor(i, mode) });
+      }
+    }
+
+    return items;
+  });
 
   return (
     <div className={containerClass}>
@@ -226,66 +276,34 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                 height={32}
               />
               <Tooltip
-                content={({ active, payload }) => <StackTooltip active={active} payload={payload ?? undefined} />}
+                content={({ active, label }) => {
+                  if (!active || typeof label !== 'string') return null;
+                  const idx = bars.findIndex((b) => b.month === label);
+                  const items = idx >= 0 ? tooltipData[idx] : undefined;
+                  if (!items?.length) return null;
+
+                  return (
+                    <div className="rounded-lg border border-token-container-border bg-white px-3 py-2 shadow-card-shadow">
+                      {items.map((item, j) => (
+                        // eslint-disable-next-line react/no-array-index-key
+                        <TooltipRow key={j} accountId={item.accountId} value={item.value} color={item.color} />
+                      ))}
+                    </div>
+                  );
+                }}
                 cursor={{ fill: 'rgba(0,0,0,0.04)', radius: 4 }}
                 allowEscapeViewBox={{ x: true, y: true }}
                 wrapperStyle={{ zIndex: 10 }}
               />
-              {accounts.map((account, i) => {
-                const isLast = i === accounts.length - 1;
-                const color = getAccountColor(i, mode);
-
-                return (
-                  <Bar
-                    key={account.dataKey}
-                    dataKey={account.dataKey}
-                    stackId="rewards"
-                    fill={color}
-                    radius={[0, 0, 0, 0]}
-                    animationDuration={600}
-                    minPointSize={2}
-                    label={isLast ? (labelProps: LabelProps) => <DualLabel {...labelProps} data={bars} /> : undefined}
-                    shape={(props: BarShapeProps) => {
-                      const sx = typeof props.x === 'number' ? props.x : 0;
-                      const sy = typeof props.y === 'number' ? props.y : 0;
-                      const sw = typeof props.width === 'number' ? props.width : 0;
-                      const sh = typeof props.height === 'number' ? props.height : 0;
-                      const idx = typeof props.index === 'number' ? props.index : -1;
-                      const barEntry = idx >= 0 ? bars[idx] : undefined;
-
-                      const dataValue = barEntry ? barEntry[account.dataKey] : undefined;
-                      const hasValue = typeof dataValue === 'number' && dataValue > 0;
-
-                      if (!hasValue || sh <= 0) return null;
-
-                      const minH = 6;
-                      const adjustedH = Math.max(sh, minH);
-                      const adjustedY = sy - (adjustedH - sh);
-
-                      const isTopSegment =
-                        barEntry !== undefined &&
-                        accounts.slice(i + 1).every((a) => {
-                          const val = barEntry[a.dataKey];
-
-                          return typeof val !== 'number' || val <= 0;
-                        });
-
-                      const r = isTopSegment ? Math.min(8, adjustedH / 2, sw / 2) : 0;
-
-                      if (r === 0) {
-                        return <rect x={sx} y={adjustedY} width={sw} height={adjustedH} fill={color} />;
-                      }
-
-                      return (
-                        <path
-                          d={`M${sx},${adjustedY + r} Q${sx},${adjustedY} ${sx + r},${adjustedY} L${sx + sw - r},${adjustedY} Q${sx + sw},${adjustedY} ${sx + sw},${adjustedY + r} L${sx + sw},${adjustedY + adjustedH} L${sx},${adjustedY + adjustedH} Z`}
-                          fill={color}
-                        />
-                      );
-                    }}
-                  />
-                );
-              })}
+              <Bar
+                dataKey="rawTotal"
+                radius={[R, R, 0, 0]}
+                animationDuration={600}
+                label={(labelProps: LabelProps) => <DualLabel {...labelProps} data={bars} />}
+                shape={(shapeProps: BarShapeProps) => (
+                  <StackedShape barProps={shapeProps} barData={bars} accounts={accounts} mode={mode} />
+                )}
+              />
             </BarChart>
           </ResponsiveContainer>
         ) : (
