@@ -240,7 +240,7 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                     dataKey={account.dataKey}
                     stackId="rewards"
                     fill={color}
-                    radius={isLast ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                    radius={isLast ? [8, 8, 0, 0] : [0, 0, 0, 0]}
                     animationDuration={600}
                     minPointSize={isLast ? 8 : 0}
                     label={isLast ? (labelProps: LabelProps) => <DualLabel {...labelProps} data={bars} /> : undefined}
