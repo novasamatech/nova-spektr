@@ -216,7 +216,7 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
             ))}
           </div>
         ) : bars.length > 0 ? (
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer key={mode} width="100%" height={300}>
             <BarChart data={bars} margin={{ top: 45, right: 4, bottom: 8, left: 4 }} barCategoryGap="12%">
               <XAxis
                 dataKey="month"
