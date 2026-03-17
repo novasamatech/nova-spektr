@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { type LabelProps, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { type XAxisTickContentProps } from 'recharts/types/util/types';
 
 import { useI18n } from '@/shared/i18n';
-import { formatFiatBalance, toAccountId } from '@/shared/lib/utils';
+import { toAccountId } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { Skeleton } from '@/shared/ui-kit';
 import { useAccountName } from '@/domains/network';
 import { type MonthlyBarData, useMonthlyRewardsChart } from '../hooks/useMonthlyRewardsChart';
 import { type EntryLike } from '../hooks/useStakingBreakdown';
+
+import { Price } from './Price';
 
 type Props = {
   accountIds: string[];
@@ -96,7 +98,8 @@ type StackTooltipProps = {
 };
 
 const TooltipRow = ({ accountId, value, color }: { accountId: string; value: number; color?: string }) => {
-  const name = useAccountName({ accountId: toAccountId(accountId) });
+  const typedAccountId = useMemo(() => toAccountId(accountId), [accountId]);
+  const name = useAccountName({ accountId: typedAccountId });
 
   return (
     <div className="flex items-center gap-2 py-0.5">
@@ -118,10 +121,9 @@ const StackTooltip = ({ active, payload }: StackTooltipProps) => {
 
   return (
     <div className="rounded-lg border border-token-container-border bg-white px-3 py-2 shadow-card-shadow">
-      {items.map((item, i) => (
+      {items.map((item) => (
         <TooltipRow
-          // eslint-disable-next-line react/no-array-index-key
-          key={i}
+          key={String(item.dataKey ?? item.name ?? '')}
           accountId={String(item.dataKey ?? item.name ?? '')}
           value={typeof item.value === 'number' ? item.value : 0}
           color={item.color}
@@ -164,10 +166,6 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
     );
   }
 
-  const fiatTotal = currency?.symbol
-    ? `${currency.symbol}${formatFiatBalance(total.fiat).formatted}`
-    : formatFiatBalance(total.fiat).formatted;
-
   return (
     <div className={containerClass}>
       <div className="flex items-start justify-between">
@@ -181,7 +179,10 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                 <SmallTitleText>
                   {total.token} {total.symbol}
                 </SmallTitleText>
-                <FootnoteText className="text-text-tertiary">≈ {fiatTotal}</FootnoteText>
+                <FootnoteText className="text-text-tertiary">
+                  {/* eslint-disable-next-line i18next/no-literal-string */}
+                  ≈ <Price amount={total.fiat} currency={currency} />
+                </FootnoteText>
               </>
             )}
           </div>

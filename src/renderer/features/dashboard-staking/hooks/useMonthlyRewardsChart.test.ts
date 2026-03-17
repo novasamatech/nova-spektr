@@ -1,16 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { toAccountId } from '@/shared/lib/utils';
-import { type MonthlyRewardRecord } from '@/domains/staking';
-
 import { bucketRecords, generateMonthBoundaries } from './useMonthlyRewardsChart';
 
-// Use real-ish SS58 addresses so toAccountId normalization in bucketRecords works consistently
-const ADDR_A = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
-const ADDR_B = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
-
-const ID_A = toAccountId(ADDR_A);
-const ID_B = toAccountId(ADDR_B);
+const ID_A = '0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d';
+const ID_B = '0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48';
 
 describe('useMonthlyRewardsChart', () => {
   describe('generateMonthBoundaries', () => {
@@ -50,7 +43,7 @@ describe('useMonthlyRewardsChart', () => {
     it('should bucket a record into the correct month', () => {
       const midMonth = Math.floor((boundaries[6]!.start + boundaries[6]!.end) / 2);
 
-      const records: MonthlyRewardRecord[] = [{ address: ADDR_A, amount: '10000000000', timestamp: midMonth }];
+      const records = [{ accountId: ID_A, amount: '10000000000', timestamp: midMonth }];
 
       const { bars } = bucketRecords(records, boundaries, precision, undefined, undefined, [ID_A]);
       expect(bars[6]!.rawTotal).toBeCloseTo(1.0, 5);
@@ -59,9 +52,9 @@ describe('useMonthlyRewardsChart', () => {
 
     it('should track per-account amounts in bar data', () => {
       const ts = boundaries[3]!.start + 100;
-      const records: MonthlyRewardRecord[] = [
-        { address: ADDR_A, amount: '5000000000', timestamp: ts },
-        { address: ADDR_B, amount: '3000000000', timestamp: ts + 50 },
+      const records = [
+        { accountId: ID_A, amount: '5000000000', timestamp: ts },
+        { accountId: ID_B, amount: '3000000000', timestamp: ts + 50 },
       ];
 
       const { bars } = bucketRecords(records, boundaries, precision, undefined, undefined, [ID_A, ID_B]);
@@ -71,20 +64,28 @@ describe('useMonthlyRewardsChart', () => {
     });
 
     it('should return active accounts that have rewards', () => {
-      const records: MonthlyRewardRecord[] = [
-        { address: ADDR_A, amount: '10000000000', timestamp: boundaries[0]!.start + 100 },
-      ];
+      const records = [{ accountId: ID_A, amount: '10000000000', timestamp: boundaries[0]!.start + 100 }];
 
       const { activeAccounts } = bucketRecords(records, boundaries, precision, undefined, undefined, [ID_A, ID_B]);
       expect(activeAccounts).toContain(ID_A);
       expect(activeAccounts).not.toContain(ID_B);
     });
 
+    it('should track grandTotal across all months', () => {
+      const records = [
+        { accountId: ID_A, amount: '5000000000', timestamp: boundaries[0]!.start + 100 },
+        { accountId: ID_A, amount: '3000000000', timestamp: boundaries[5]!.start + 100 },
+      ];
+
+      const { grandTotal } = bucketRecords(records, boundaries, precision, undefined, undefined, [ID_A]);
+      expect(grandTotal.toString()).toBe('8000000000');
+    });
+
     it('should mark the peak month', () => {
-      const records: MonthlyRewardRecord[] = [
-        { address: ADDR_A, amount: '1000000000', timestamp: boundaries[0]!.start + 100 },
-        { address: ADDR_A, amount: '5000000000', timestamp: boundaries[5]!.start + 100 },
-        { address: ADDR_A, amount: '2000000000', timestamp: boundaries[9]!.start + 100 },
+      const records = [
+        { accountId: ID_A, amount: '1000000000', timestamp: boundaries[0]!.start + 100 },
+        { accountId: ID_A, amount: '5000000000', timestamp: boundaries[5]!.start + 100 },
+        { accountId: ID_A, amount: '2000000000', timestamp: boundaries[9]!.start + 100 },
       ];
 
       const { bars } = bucketRecords(records, boundaries, precision, undefined, undefined, [ID_A]);
@@ -93,9 +94,7 @@ describe('useMonthlyRewardsChart', () => {
     });
 
     it('should compute fiat amounts when price is provided', () => {
-      const records: MonthlyRewardRecord[] = [
-        { address: ADDR_A, amount: '10000000000', timestamp: boundaries[0]!.start + 100 },
-      ];
+      const records = [{ accountId: ID_A, amount: '10000000000', timestamp: boundaries[0]!.start + 100 }];
 
       const { bars } = bucketRecords(records, boundaries, precision, 5.0, '$', [ID_A]);
       expect(bars[0]!.fiatAmount).toContain('$');

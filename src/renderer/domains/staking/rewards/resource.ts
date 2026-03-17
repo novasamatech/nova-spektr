@@ -19,7 +19,7 @@ export function rewardsCacheKey(chainId: ChainId, since?: number): string {
 }
 
 export function monthlyCacheKey(chainId: ChainId, accounts: AccountId[]): string {
-  return `${chainId}-${accounts.join(',')}`;
+  return `${chainId}-${[...accounts].sort().join(',')}`;
 }
 
 const $rewardsCache = createStore<Record<string, RewardsMap>>({});
