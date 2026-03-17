@@ -227,8 +227,7 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
               <Tooltip
                 content={({ active, payload }) => <StackTooltip active={active} payload={payload ?? undefined} />}
                 cursor={{ fill: 'rgba(0,0,0,0.04)', radius: 4 }}
-                allowEscapeViewBox={{ x: true, y: true }}
-                wrapperStyle={{ zIndex: 10 }}
+                allowEscapeViewBox={{ x: false, y: true }}
               />
               {accounts.map((account, i) => {
                 const isLast = i === accounts.length - 1;
