@@ -146,8 +146,10 @@ const StackedShape = ({
 
   if (segments.length === 0) return null;
 
-  // Draw segments bottom-to-top inside the bar rect
+  // Clip entire bar as rounded rect, paint flat segments inside
+  const clipId = `bar-clip-${idx}`;
   const r = Math.min(R, h / 2, w / 2);
+
   const rects: React.ReactNode[] = [];
   let offsetY = 0;
 
@@ -155,24 +157,20 @@ const StackedShape = ({
     const seg = segments[i]!;
     const segH = i === segments.length - 1 ? h - offsetY : Math.max(Math.round(seg.fraction * h), 2);
     const segY = y + h - offsetY - segH;
-    const isTop = i === segments.length - 1;
-
-    if (isTop && r > 0) {
-      rects.push(
-        <path
-          key={i}
-          d={`M${x},${segY + r} Q${x},${segY} ${x + r},${segY} L${x + w - r},${segY} Q${x + w},${segY} ${x + w},${segY + r} L${x + w},${segY + segH} L${x},${segY + segH} Z`}
-          fill={seg.color}
-        />,
-      );
-    } else {
-      rects.push(<rect key={i} x={x} y={segY} width={w} height={segH} fill={seg.color} />);
-    }
-
+    rects.push(<rect key={i} x={x} y={segY} width={w} height={segH} fill={seg.color} />);
     offsetY += segH;
   }
 
-  return <g>{rects}</g>;
+  return (
+    <g>
+      <defs>
+        <clipPath id={clipId}>
+          <rect x={x} y={y} width={w} height={h} rx={r} ry={r} />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${clipId})`}>{rects}</g>
+    </g>
+  );
 };
 
 // Skeleton height is in Tailwind grid units (×4px), so 15 = 60px, 35 = 140px
