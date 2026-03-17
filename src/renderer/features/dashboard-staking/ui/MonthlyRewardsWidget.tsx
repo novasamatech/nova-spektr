@@ -33,6 +33,7 @@ const containerClass = 'w-full rounded-lg border border-token-container-border b
 const DualLabel = (props: LabelProps & { data?: MonthlyBarData[] }) => {
   const x = typeof props.x === 'number' ? props.x : 0;
   const y = typeof props.y === 'number' ? props.y : 0;
+  const width = typeof props.width === 'number' ? props.width : 0;
   const index = typeof props.index === 'number' ? props.index : -1;
   const allBars = Array.isArray(props.data) ? props.data : null;
 
@@ -41,13 +42,15 @@ const DualLabel = (props: LabelProps & { data?: MonthlyBarData[] }) => {
   const bar = allBars[index];
   if (!bar) return null;
 
+  const cx = x + width / 2;
+
   return (
     <g>
-      <text x={x} y={y - 22} textAnchor="middle" fill="#888" fontSize={10}>
+      <text x={cx} y={y - 22} textAnchor="middle" fill="#888" fontSize={10}>
         {bar.fiatAmount}
       </text>
       <text
-        x={x}
+        x={cx}
         y={y - 6}
         textAnchor="middle"
         fill={bar.isPeak ? '#e6007a' : '#b0b0b0'}
