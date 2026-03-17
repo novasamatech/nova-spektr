@@ -1,4 +1,4 @@
-export type { Payee, RewardsMap, StakingMap, ValidatorMap } from './types';
+export type { MonthlyRewardRecord, Payee, RewardsMap, StakingMap, ValidatorMap } from './types';
 export { AssetHubChains, DEFAULT_STAKING_CHAIN, STAKING_NETWORK } from './constants';
 export { stakingUtils } from './helpers';
 
