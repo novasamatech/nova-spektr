@@ -1,17 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { type LabelProps, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { type XAxisTickContentProps } from 'recharts/types/util/types';
 
 import { useI18n } from '@/shared/i18n';
-import { toAccountId } from '@/shared/lib/utils';
+import { formatFiatBalance, toAccountId } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { Skeleton } from '@/shared/ui-kit';
 import { useAccountName } from '@/domains/network';
 import { type MonthlyBarData, useMonthlyRewardsChart } from '../hooks/useMonthlyRewardsChart';
 import { type EntryLike } from '../hooks/useStakingBreakdown';
-
-import { Price } from './Price';
 
 type Props = {
   accountIds: string[];
@@ -98,8 +96,7 @@ type StackTooltipProps = {
 };
 
 const TooltipRow = ({ accountId, value, color }: { accountId: string; value: number; color?: string }) => {
-  const typedAccountId = useMemo(() => toAccountId(accountId), [accountId]);
-  const name = useAccountName({ accountId: typedAccountId });
+  const name = useAccountName({ accountId: toAccountId(accountId) });
 
   return (
     <div className="flex items-center gap-2 py-0.5">
@@ -121,9 +118,10 @@ const StackTooltip = ({ active, payload }: StackTooltipProps) => {
 
   return (
     <div className="rounded-lg border border-token-container-border bg-white px-3 py-2 shadow-card-shadow">
-      {items.map((item) => (
+      {items.map((item, i) => (
         <TooltipRow
-          key={String(item.dataKey ?? item.name ?? '')}
+          // eslint-disable-next-line react/no-array-index-key
+          key={i}
           accountId={String(item.dataKey ?? item.name ?? '')}
           value={typeof item.value === 'number' ? item.value : 0}
           color={item.color}
@@ -166,6 +164,10 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
     );
   }
 
+  const fiatTotal = currency?.symbol
+    ? `${currency.symbol}${formatFiatBalance(total.fiat).formatted}`
+    : formatFiatBalance(total.fiat).formatted;
+
   return (
     <div className={containerClass}>
       <div className="flex items-start justify-between">
@@ -179,10 +181,7 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                 <SmallTitleText>
                   {total.token} {total.symbol}
                 </SmallTitleText>
-                <FootnoteText className="text-text-tertiary">
-                  {/* eslint-disable-next-line i18next/no-literal-string */}
-                  ≈ <Price amount={total.fiat} currency={currency} />
-                </FootnoteText>
+                <FootnoteText className="text-text-tertiary">≈ {fiatTotal}</FootnoteText>
               </>
             )}
           </div>
@@ -228,7 +227,8 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
               <Tooltip
                 content={({ active, payload }) => <StackTooltip active={active} payload={payload ?? undefined} />}
                 cursor={{ fill: 'rgba(0,0,0,0.04)', radius: 4 }}
-                allowEscapeViewBox={{ x: false, y: true }}
+                allowEscapeViewBox={{ x: true, y: true }}
+                wrapperStyle={{ zIndex: 10 }}
               />
               {accounts.map((account, i) => {
                 const isLast = i === accounts.length - 1;
@@ -240,20 +240,8 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                     dataKey={account.dataKey}
                     stackId="rewards"
                     fill={color}
+                    radius={[8, 8, 0, 0]}
                     animationDuration={600}
-                    minPointSize={0}
-                    shape={(shapeProps) => {
-                      const sx = typeof shapeProps.x === 'number' ? shapeProps.x : 0;
-                      const sy = typeof shapeProps.y === 'number' ? shapeProps.y : 0;
-                      const sw = typeof shapeProps.width === 'number' ? shapeProps.width : 0;
-                      const sh = typeof shapeProps.height === 'number' ? shapeProps.height : 0;
-                      const fill = typeof shapeProps.fill === 'string' ? shapeProps.fill : color;
-                      const r = isLast && sh > 10 ? 8 : 0;
-
-                      if (sh < 1) return null;
-
-                      return <rect x={sx} y={sy} width={sw} height={sh} rx={r} ry={r} fill={fill} />;
-                    }}
                     label={isLast ? (labelProps: LabelProps) => <DualLabel {...labelProps} data={bars} /> : undefined}
                   />
                 );
