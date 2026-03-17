@@ -242,7 +242,7 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                     fill={color}
                     radius={isLast ? [8, 8, 0, 0] : [0, 0, 0, 0]}
                     animationDuration={600}
-                    minPointSize={isLast ? 8 : 0}
+                    minPointSize={2}
                     label={isLast ? (labelProps: LabelProps) => <DualLabel {...labelProps} data={bars} /> : undefined}
                   />
                 );

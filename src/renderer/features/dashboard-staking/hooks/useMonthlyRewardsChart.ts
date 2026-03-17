@@ -185,7 +185,7 @@ export const useMonthlyRewardsChart = (
       const priceItem = prices?.[asset.priceId]?.[currency?.coingeckoId ?? ''];
       const priceValue = priceItem?.price;
 
-      const normalizedIds = Array.from(new Set(records.map((r) => toAccountId(r.address))));
+      const normalizedIds = Array.from(new Set(records.map((r) => toAccountId(r.address)))).sort();
 
       const { bars, activeAccounts } = bucketRecords(
         records,
