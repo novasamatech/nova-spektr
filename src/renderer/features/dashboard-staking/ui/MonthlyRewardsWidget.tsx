@@ -253,7 +253,11 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                       const idx = typeof props.index === 'number' ? props.index : -1;
                       const barEntry = idx >= 0 ? bars[idx] : undefined;
 
-                      if (sh <= 0) return null;
+                      const dataValue = barEntry ? barEntry[account.dataKey] : undefined;
+                      const hasValue = typeof dataValue === 'number' && dataValue > 0;
+
+                      if (!hasValue || sh <= 0) return null;
+
                       const minH = 6;
                       const adjustedH = Math.max(sh, minH);
                       const adjustedY = sy - (adjustedH - sh);
