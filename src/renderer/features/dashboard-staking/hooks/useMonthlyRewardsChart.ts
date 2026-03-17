@@ -43,12 +43,6 @@ export type MonthlyRewardsChartData = {
   currency: CurrencyItem | null;
 };
 
-type NormalizedRecord = {
-  accountId: string;
-  amount: string;
-  timestamp: number;
-};
-
 export function generateMonthBoundaries(): { month: number; year: number; start: number; end: number }[] {
   const now = new Date();
   const boundaries: { month: number; year: number; start: number; end: number }[] = [];
@@ -69,13 +63,14 @@ export function generateMonthBoundaries(): { month: number; year: number; start:
 }
 
 export function bucketRecords(
-  records: NormalizedRecord[],
+  records: MonthlyRewardRecord[],
   boundaries: { month: number; year: number; start: number; end: number }[],
   precision: number,
   price: number | undefined,
   currencySymbol: string | undefined,
   accountIds: string[],
-): { bars: MonthlyBarData[]; activeAccounts: string[]; grandTotal: BigNumber } {
+): { bars: MonthlyBarData[]; activeAccounts: string[] } {
+  // bucket: monthKey -> accountAddress -> BigNumber
   const buckets = new Map<string, Map<string, BigNumber>>();
 
   for (const boundary of boundaries) {
@@ -83,17 +78,16 @@ export function bucketRecords(
   }
 
   const seenAccounts = new Set<string>();
-  let grandTotal = new BigNumber(0);
 
   for (const record of records) {
+    const normalizedId = toAccountId(record.address);
     for (const boundary of boundaries) {
       if (record.timestamp >= boundary.start && record.timestamp < boundary.end) {
         const key = `${boundary.year}-${boundary.month}`;
         const monthBucket = buckets.get(key)!;
-        const current = monthBucket.get(record.accountId) ?? new BigNumber(0);
-        monthBucket.set(record.accountId, current.plus(record.amount));
-        seenAccounts.add(record.accountId);
-        grandTotal = grandTotal.plus(record.amount);
+        const current = monthBucket.get(normalizedId) ?? new BigNumber(0);
+        monthBucket.set(normalizedId, current.plus(record.amount));
+        seenAccounts.add(normalizedId);
         break;
       }
     }
@@ -111,6 +105,7 @@ export function bucketRecords(
 
     for (const accountId of activeAccounts) {
       const amount = monthBucket.get(accountId) ?? new BigNumber(0);
+      if (amount.isZero()) continue;
       const value = amount.dividedBy(divisor).toNumber();
       perAccount[accountId] = value;
       rawTotal = rawTotal.plus(amount);
@@ -146,20 +141,7 @@ export function bucketRecords(
     }
   }
 
-  return { bars, activeAccounts, grandTotal };
-}
-
-function normalizeRecords(records: MonthlyRewardRecord[]): { normalized: NormalizedRecord[]; accountIds: string[] } {
-  const normalized: NormalizedRecord[] = [];
-  const accountIdSet = new Set<string>();
-
-  for (const record of records) {
-    const accountId = toAccountId(record.address);
-    normalized.push({ accountId, amount: record.amount, timestamp: record.timestamp });
-    accountIdSet.add(accountId);
-  }
-
-  return { normalized, accountIds: Array.from(accountIdSet).sort() };
+  return { bars, activeAccounts };
 }
 
 export const useMonthlyRewardsChart = (
@@ -204,10 +186,10 @@ export const useMonthlyRewardsChart = (
       const priceItem = prices?.[asset.priceId]?.[currency?.coingeckoId ?? ''];
       const priceValue = priceItem?.price;
 
-      const { normalized, accountIds: normalizedIds } = normalizeRecords(records);
+      const normalizedIds = Array.from(new Set(records.map((r) => toAccountId(r.address))));
 
-      const { bars, activeAccounts, grandTotal } = bucketRecords(
-        normalized,
+      const { bars, activeAccounts } = bucketRecords(
+        records,
         boundaries,
         asset.precision,
         priceValue,
@@ -221,12 +203,13 @@ export const useMonthlyRewardsChart = (
         dataKey: id,
       }));
 
-      const { formatted: tokenTotal, suffix } = formatBalance(grandTotal.toFixed(0), asset.precision);
+      const totalRaw = records.reduce((sum, r) => sum.plus(r.amount), new BigNumber(0));
+      const { formatted: tokenTotal, suffix } = formatBalance(totalRaw.toFixed(0), asset.precision);
       const tokenTotalDisplay = suffix ? `${tokenTotal}${suffix}` : tokenTotal;
 
       let fiatTotal = '0';
       if (priceValue !== undefined) {
-        fiatTotal = grandTotal.isZero() ? '0' : getRoundedValue(grandTotal.toFixed(0), priceValue, asset.precision);
+        fiatTotal = totalRaw.isZero() ? '0' : getRoundedValue(totalRaw.toFixed(0), priceValue, asset.precision);
       }
 
       return {
