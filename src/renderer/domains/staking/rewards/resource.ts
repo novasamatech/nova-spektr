@@ -18,6 +18,10 @@ export function rewardsCacheKey(chainId: ChainId, since?: number): string {
   return `${chainId}-${since ?? 'all'}`;
 }
 
+export function monthlyCacheKey(chainId: ChainId, accounts: AccountId[]): string {
+  return `${chainId}-${accounts.join(',')}`;
+}
+
 const $rewardsCache = createStore<Record<string, RewardsMap>>({});
 
 export type MonthlyRewardsParams = {
@@ -38,9 +42,9 @@ export const monthlyRewardsResource = createQueryResource<MonthlyRewardsParams>(
   })
   .cache({
     store: $monthlyRewardsCache,
-    map: (state, records, { chainId }) => ({
+    map: (state, records, { chainId, accounts }) => ({
       ...state,
-      [chainId]: records,
+      [monthlyCacheKey(chainId, accounts)]: records,
     }),
     staleAfter: 10 * 60 * 1000,
   })

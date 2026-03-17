@@ -8,6 +8,7 @@ import { type MonthlyRewardRecord, type RewardSource, type RewardsMap } from '..
 import {
   type MonthlyRewardsParams,
   type StakingRewardsParams,
+  monthlyCacheKey,
   monthlyRewardsResource,
   rewardsCacheKey,
   stakingRewardsResource,
@@ -100,7 +101,7 @@ export const useMonthlyRewards = (accounts: AccountId[], chain: Chain | null, ch
     params,
     defaultValue: EMPTY_RECORDS,
     map: (cache: Record<string, MonthlyRewardRecord[]>, p: MonthlyRewardsParams) => {
-      return cache[p.chainId];
+      return cache[monthlyCacheKey(p.chainId, p.accounts)];
     },
   });
 

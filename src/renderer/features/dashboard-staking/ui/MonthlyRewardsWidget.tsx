@@ -43,12 +43,12 @@ const DualLabel = (props: LabelProps & { data?: MonthlyBarData[] }) => {
 
   return (
     <g>
-      <text x={x} y={y - 18} textAnchor="middle" fill="#888" fontSize={10}>
+      <text x={x} y={y - 22} textAnchor="middle" fill="#888" fontSize={10}>
         {bar.fiatAmount}
       </text>
       <text
         x={x}
-        y={y - 4}
+        y={y - 6}
         textAnchor="middle"
         fill={bar.isPeak ? '#e6007a' : '#b0b0b0'}
         fontSize={11}
@@ -165,8 +165,8 @@ export const MonthlyRewardsWidget = ({ accountIds }: Props) => {
             ))}
           </div>
         ) : bars.length > 0 ? (
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={bars} margin={{ top: 30, right: 4, bottom: 8, left: 4 }} barCategoryGap="12%">
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={bars} margin={{ top: 45, right: 4, bottom: 8, left: 4 }} barCategoryGap="12%">
               <defs>
                 <linearGradient id={DOT_GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#e6007a" />
