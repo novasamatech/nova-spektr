@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { type LabelProps, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
+import { type BarShapeProps } from 'recharts/types/cartesian/Bar';
 import { type XAxisTickContentProps } from 'recharts/types/util/types';
 
 import { useI18n } from '@/shared/i18n';
@@ -240,9 +241,41 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                     dataKey={account.dataKey}
                     stackId="rewards"
                     fill={color}
-                    radius={[8, 8, 0, 0]}
+                    radius={[0, 0, 0, 0]}
                     animationDuration={600}
+                    minPointSize={2}
                     label={isLast ? (labelProps: LabelProps) => <DualLabel {...labelProps} data={bars} /> : undefined}
+                    shape={(props: BarShapeProps) => {
+                      const sx = typeof props.x === 'number' ? props.x : 0;
+                      const sy = typeof props.y === 'number' ? props.y : 0;
+                      const sw = typeof props.width === 'number' ? props.width : 0;
+                      const sh = typeof props.height === 'number' ? props.height : 0;
+                      const idx = typeof props.index === 'number' ? props.index : -1;
+                      const barEntry = idx >= 0 ? bars[idx] : undefined;
+
+                      if (sh <= 0) return null;
+
+                      const isTopSegment =
+                        barEntry !== undefined &&
+                        accounts.slice(i + 1).every((a) => {
+                          const val = barEntry[a.dataKey];
+
+                          return typeof val !== 'number' || val <= 0;
+                        });
+
+                      const r = isTopSegment ? 8 : 0;
+
+                      if (r === 0) {
+                        return <rect x={sx} y={sy} width={sw} height={sh} fill={color} />;
+                      }
+
+                      return (
+                        <path
+                          d={`M${sx},${sy + r} Q${sx},${sy} ${sx + r},${sy} L${sx + sw - r},${sy} Q${sx + sw},${sy} ${sx + sw},${sy + r} L${sx + sw},${sy + sh} L${sx},${sy + sh} Z`}
+                          fill={color}
+                        />
+                      );
+                    }}
                   />
                 );
               })}
