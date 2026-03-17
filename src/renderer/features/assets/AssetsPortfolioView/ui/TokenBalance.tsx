@@ -7,8 +7,8 @@ import { BodyText, FootnoteText, Plate } from '@/shared/ui';
 import { AssetIcon, ChainIcon } from '@/shared/ui-entities';
 import { AssetLinks } from '@/entities/asset';
 import { networkModel } from '@/entities/network';
-import { TokenPrice } from '@/entities/price';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { TokenPrice } from '@/widgets/price';
 
 import { AssembledAssetAmount } from './AssembledAssetAmount';
 

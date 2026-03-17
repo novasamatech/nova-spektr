@@ -1,4 +1,4 @@
-import { type PriceHistoryTimeRange } from '@/domains/network';
+import { type PriceHistoryTimeRange } from '@/domains/price';
 
 import { CHART_TOOLTIP_STYLE } from './chartConstants';
 
@@ -19,7 +19,7 @@ type Props = {
 function formatDate(timestamp: number, timeRange: PriceHistoryTimeRange): string {
   const date = new Date(timestamp);
 
-  if (timeRange === '7d') {
+  if (timeRange === '1d' || timeRange === '7d') {
     return new Intl.DateTimeFormat(undefined, {
       month: 'short',
       day: 'numeric',

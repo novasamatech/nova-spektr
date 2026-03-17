@@ -522,6 +522,8 @@
         "value": "Value",
         "share": "Share"
       },
+      "priceChange24h": "24h change",
+      "assetAllocation": "Asset Allocation",
       "chainDetail": {
         "title": "{chainName} Details",
         "assetCount_one": "{count} asset",
@@ -570,6 +572,7 @@
       }
     },
     "priceCharts": {
+      "range1d": "24H",
       "range7d": "7D",
       "range30d": "30D",
       "range90d": "90D",

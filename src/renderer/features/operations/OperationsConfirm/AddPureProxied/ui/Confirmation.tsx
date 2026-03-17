@@ -7,8 +7,8 @@ import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
-import { Fee, FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { Fee, FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 

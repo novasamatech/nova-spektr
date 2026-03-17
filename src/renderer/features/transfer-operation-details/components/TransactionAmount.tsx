@@ -1,8 +1,8 @@
 import { cnTw } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
 import { type MultisigOperation } from '@/domains/network';
-import { AssetFiatBalance } from '@/entities/price';
 import { getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
+import { AssetFiatBalance } from '@/widgets/price';
 
 type Props = {
   operation: MultisigOperation;

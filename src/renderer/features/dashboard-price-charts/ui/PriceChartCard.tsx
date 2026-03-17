@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { type CurrencyItem, type PriceRange } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, TitleText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
-import { type PriceHistoryTimeRange, priceHistoryResource, usePriceHistory } from '@/domains/network';
+import { type CurrencyItem, type PriceRange } from '@/domains/price';
+import { type PriceHistoryTimeRange, priceHistoryResource, usePriceHistory } from '@/domains/price';
 
 import { ChartTooltip } from './ChartTooltip';
 import { PriceChange } from './PriceChange';
@@ -33,11 +33,7 @@ export const PriceChartCard = ({ assetId, label, color, currency, currentPrice, 
   const currencySymbol = currency.symbol ?? currency.code;
   const gradientId = `gradient-${label}`;
 
-  const { data: historyData, pending } = usePriceHistory({
-    assetId,
-    currency: currency.coingeckoId,
-    range: timeRange,
-  });
+  const { data: historyData, pending } = usePriceHistory({ assetId, currency: currency.coingeckoId, range: timeRange });
 
   const [showRetry, setShowRetry] = useState(false);
 

@@ -2,11 +2,11 @@ import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type CurrencyItem } from '@/shared/api/price-provider';
 import { getRoundedValue, totalAmount, totalAmountBN } from '@/shared/lib/utils';
+import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { currencyModel, priceProviderModel } from '@/entities/price';
+import { currencySelect } from '@/aggregates/currency-select';
 
 export type Holding = {
   priceId: string;
@@ -16,6 +16,7 @@ export type Holding = {
   precision: number;
   totalRaw: string;
   fiatValue: string;
+  change: number | null;
 };
 
 export type HoldingsData = {
@@ -28,9 +29,10 @@ export type HoldingsData = {
 export const useHoldings = (accountIds: string[]): HoldingsData => {
   const balanceMap = useUnit(balanceModel.$balanceMap);
   const chains = useUnit(networkModel.$chains);
-  const prices = useUnit(priceProviderModel.$assetsPrices);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const currency = useUnit(currencyModel.$activeCurrency);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   const { holdings, totalFiat } = useMemo(() => {
     if (!prices || !currency) return { holdings: [], totalFiat: null };
@@ -47,6 +49,7 @@ export const useHoldings = (accountIds: string[]): HoldingsData => {
         precision: number;
         totalRaw: BigNumber;
         fiatValue: BigNumber;
+        change: number | null;
       }
     >();
 
@@ -78,6 +81,7 @@ export const useHoldings = (accountIds: string[]): HoldingsData => {
           precision: asset.precision,
           totalRaw: new BigNumber(rawBN.toString()),
           fiatValue: new BigNumber(fiat),
+          change: priceItem.change ?? null,
         });
       }
     }
@@ -98,6 +102,7 @@ export const useHoldings = (accountIds: string[]): HoldingsData => {
         precision: group.precision,
         totalRaw: group.totalRaw.toFixed(0),
         fiatValue: group.fiatValue.toString(),
+        change: group.change,
       };
     });
 

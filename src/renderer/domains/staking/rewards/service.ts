@@ -4,8 +4,8 @@ import { GraphQLClient } from 'graphql-request';
 import { type Chain, type ExternalType } from '@/shared/core';
 import { keys, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { AssetHubChains } from '../_lib/constants';
-import { type RewardSource, type RewardsMap } from '../_lib/types';
+import { AssetHubChains } from '../constants';
+import { type RewardSource, type RewardsMap } from '../types';
 
 const ASSET_HUB_CHAIN_IDS = new Set(Object.values(AssetHubChains));
 
@@ -158,8 +158,4 @@ export const fetchStakingRewards = async ({
   );
 
   return aggregated;
-};
-
-export const stakingRewardsApi = {
-  fetch: fetchStakingRewards,
 };

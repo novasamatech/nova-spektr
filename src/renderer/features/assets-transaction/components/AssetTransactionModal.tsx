@@ -10,7 +10,7 @@ import { ChainIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
 import { EmptyAssetsState } from '@/entities/asset';
 import { networkModel } from '@/entities/network';
-import { AssetFiatBalance } from '@/entities/price';
+import { AssetFiatBalance } from '@/widgets/price';
 import { ModalType } from '../lib/types';
 import { assetTransactionModel } from '../model/asset-transaction-model';
 

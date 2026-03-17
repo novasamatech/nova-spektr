@@ -15,8 +15,10 @@ import {
 import { BodyText, EmptyListWithIcon, FootnoteText } from '@/shared/ui';
 import { AssetBalance, AssetIcon, ChainIcon } from '@/shared/ui-entities';
 import { Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
+import { useAssetsPrices } from '@/domains/price';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { AssetFiatBalance, FiatBalance, TokenPrice, currencyModel, priceProviderModel } from '@/entities/price';
+import { currencySelect } from '@/aggregates/currency-select';
+import { AssetFiatBalance, FiatBalance, TokenPrice } from '@/widgets/price';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -32,9 +34,10 @@ export const TokenSelectorModal = memo(({ isOpen, chain, onSelect, onClose }: Pr
 
   const initiator = useUnit(formModel.form.fields.initiator.$value);
   const balances = useUnit(balanceModel.$balanceMap);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const prices = useUnit(priceProviderModel.$assetsPrices);
-  const currency = useUnit(currencyModel.$activeCurrency);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   const assetsWithBalances = useMemo(() => {
     return chain.assets

@@ -6,9 +6,9 @@ import { BodyText, Button, Counter, DetailRow, Icon, IconButton, Separator } fro
 import { WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
-import { Fee, FeeWithLabel, MultisigDepositFee, ProxyDepositLabel } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
+import { Fee, FeeWithLabel, MultisigDepositFee, ProxyDepositLabel } from '@/widgets/transaction-fee';
 import { changeSignatoriesModel } from '../model/change-signatories-model';
 import { confirmModel } from '../model/confirm-model';
 import { formModel } from '../model/form-model';

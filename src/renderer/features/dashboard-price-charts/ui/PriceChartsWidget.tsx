@@ -1,8 +1,8 @@
-import { useStoreMap, useUnit } from 'effector-react';
-import { useState } from 'react';
+import { useUnit } from 'effector-react';
+import { useMemo, useState } from 'react';
 
-import { type PriceHistoryTimeRange } from '@/domains/network';
-import { currencyModel, priceProviderModel } from '@/entities/price';
+import { type PriceHistoryTimeRange, useAssetsPrices } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 
 import { PriceChartCard } from './PriceChartCard';
 import { TimeRangeToggle } from './TimeRangeToggle';
@@ -21,29 +21,27 @@ const ASSET_COLORS: Record<string, string> = {
 export const PriceChartsWidget = () => {
   const [timeRange, setTimeRange] = useState<PriceHistoryTimeRange>('7d');
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const currency = useUnit(currencyModel.$activeCurrency);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
+  const { data: allPrices } = useAssetsPrices(pricesParams);
 
-  const prices = useStoreMap({
-    store: priceProviderModel.$assetsPrices,
-    keys: [currency],
-    fn: (allPrices, [curr]) => {
-      if (!allPrices || !curr) return {};
+  const prices = useMemo(() => {
+    if (!allPrices || !currency) return {};
 
-      const result: Record<string, { price: number; change: number }> = {};
-      for (const asset of TRACKED_ASSETS) {
-        const assetPrices = allPrices[asset.id];
-        if (assetPrices) {
-          const priceItem = assetPrices[curr.coingeckoId];
-          if (priceItem) {
-            result[asset.id] = priceItem;
-          }
+    const result: Record<string, { price: number; change: number }> = {};
+    for (const asset of TRACKED_ASSETS) {
+      const assetPrices = allPrices[asset.id];
+      if (assetPrices) {
+        const priceItem = assetPrices[currency.coingeckoId];
+        if (priceItem) {
+          result[asset.id] = priceItem;
         }
       }
+    }
 
-      return result;
-    },
-  });
+    return result;
+  }, [allPrices, currency]);
 
   if (!fiatFlag || !currency) return null;
 

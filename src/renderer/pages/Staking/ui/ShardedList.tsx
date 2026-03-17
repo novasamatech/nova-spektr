@@ -10,7 +10,7 @@ import { AssetBalance } from '@/shared/ui-entities';
 import { CardStack, Checkbox, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { stakingUtils } from '@/domains/staking';
-import { AssetFiatBalance } from '@/entities/price';
+import { AssetFiatBalance } from '@/widgets/price';
 import { type NominatorInfo } from '../lib/types';
 
 import { NominatorsItem } from './NominatorItem';

@@ -7,8 +7,8 @@ import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, Input, JsonArgs, Modal, ScrollArea } from '@/shared/ui-kit';
-import { Fee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { Fee } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form';
 
 import { InitiatorSelect } from './InitiatorSelect';
