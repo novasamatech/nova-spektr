@@ -263,7 +263,7 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                           return typeof val !== 'number' || val <= 0;
                         });
 
-                      const r = isTopSegment ? 8 : 0;
+                      const r = isTopSegment ? Math.min(8, sh / 2, sw / 2) : 0;
 
                       if (r === 0) {
                         return <rect x={sx} y={sy} width={sw} height={sh} fill={color} />;
