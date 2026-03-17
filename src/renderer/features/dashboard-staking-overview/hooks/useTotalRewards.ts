@@ -2,13 +2,13 @@ import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type CurrencyItem } from '@/shared/api/price-provider';
 import { type ChainId } from '@/shared/core';
 import { getRelaychainAsset, getRoundedValue, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { type RewardsMap, AssetHubChains, useStakingRewards } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { currencyModel, priceProviderModel } from '@/entities/price';
+import { currencySelect } from '@/aggregates/currency-select';
 
 export type ChainRewardsSummary = {
   chainId: ChainId;
@@ -47,9 +47,10 @@ function sumRewards(rewardsMap: RewardsMap, accountIds: AccountId[]): BigNumber 
 
 export const useTotalRewards = (accountIds: string[], since?: number): TotalRewardsData => {
   const chains = useUnit(networkModel.$chains);
-  const prices = useUnit(priceProviderModel.$assetsPrices);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const currency = useUnit(currencyModel.$activeCurrency);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   const typedAccountIds = useMemo(() => accountIds.map((id) => toAccountId(id)), [accountIds]);
 

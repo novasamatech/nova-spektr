@@ -9,9 +9,9 @@ import { Button, InputHint } from '@/shared/ui';
 import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
 
 type Props = {

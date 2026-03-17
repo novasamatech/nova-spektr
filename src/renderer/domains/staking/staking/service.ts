@@ -3,11 +3,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ChainId, type EraIndex } from '@/shared/core';
 import { getExpectedBlockTime, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type StakingMap } from '../_lib/types';
-
-// =====================================================
-// ================ subscribeStaking ===================
-// =====================================================
+import { type StakingMap } from '../types';
 
 async function getControllers(api: ApiPromise, accounts: AccountId[]): Promise<AccountId[]> {
   try {
@@ -94,10 +90,6 @@ export async function subscribeStaking(
 
   return listenToLedger(chainId, api, controllers, accounts, callback);
 }
-
-// =====================================================
-// ================ stakingService =====================
-// =====================================================
 
 export const stakingService = {
   fetchStakingLedger: async (chainId: ChainId, api: ApiPromise, accounts: AccountId[]): Promise<StakingMap> => {

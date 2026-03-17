@@ -8,8 +8,8 @@ import { TransactionDetails } from '@/shared/ui-entities';
 import { Box, JsonArgs, Modal } from '@/shared/ui-kit';
 import { transactionService } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
-import { FeeWithLabel } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { confirmModel } from '../model/confirm';
 
 type Props = {

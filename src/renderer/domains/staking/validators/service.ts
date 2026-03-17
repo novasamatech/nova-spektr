@@ -12,16 +12,12 @@ import {
   KUSAMA_MAX_NOMINATORS,
   MINIMUM_INFLATION,
   STAKED_PORTION_IDEAL,
-} from '../_lib/constants';
-import { type ApyValidator, type ValidatorMap } from '../_lib/types';
+} from '../constants';
+import { type ApyValidator, type ValidatorMap } from '../types';
 
 function isKusamaChainId(chainId: string): boolean {
   return chainId === '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe';
 }
-
-// =====================================================
-// ============== validatorsService ====================
-// =====================================================
 
 export const validatorsService = {
   getValidatorsWithInfo,
@@ -33,7 +29,7 @@ export const validatorsService = {
 async function getValidatorsList(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
   const [stake, prefs] = await Promise.all([getValidatorFunction(api)(era), getValidatorsPrefs(api, era)]);
 
-  return merge(stake, prefs);
+  return merge(stake, prefs) as ValidatorMap;
 }
 
 async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
@@ -44,9 +40,9 @@ async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex): Promise<Va
   try {
     const slashes = await getSlashingSpans(api, keys(stake), era);
 
-    return merge(mergedValidators, slashes);
+    return merge(mergedValidators, slashes) as ValidatorMap;
   } catch {
-    return mergedValidators;
+    return mergedValidators as ValidatorMap;
   }
 }
 
@@ -63,8 +59,6 @@ function getValidatorFunction(api: ApiPromise) {
  * @deprecated Will become deprecated after runtime upgrade for DOT/KSM
  */
 async function getValidatorsStake_OLD(api: ApiPromise, era: EraIndex): Promise<Record<AccountId, ValidatorStake>> {
-  // HINT: uncomment if we need full list of nominators (even those who doesn't get rewards)
-  // const data = await api.query.staking.erasStakers.entries(era);
   const data = await api.query.staking.erasStakersClipped.entries(era);
   const maxNominatorRewarded = getMaxNominatorRewarded(api);
 
@@ -88,17 +82,13 @@ async function getValidatorsStake_OLD(api: ApiPromise, era: EraIndex): Promise<R
 }
 
 type ValidatorStake = Pick<Validator, 'accountId' | 'totalStake' | 'oversubscribed' | 'ownStake' | 'nominators'>;
+type ValidatorPrefs = Pick<Validator, 'accountId' | 'commission' | 'blocked'>;
 
 async function getValidatorsStake(api: ApiPromise, era: EraIndex): Promise<Record<AccountId, ValidatorStake>> {
-  // HINT: to get full list of nominators uncomment code below to paginate for each validator
   const data = await api.query.staking.erasStakersOverview.entries(era);
 
   return data.reduce<Record<AccountId, ValidatorStake>>((acc, [storageKey, type]) => {
     const accountId = toAccountId(storageKey.args[1].toString());
-
-    // const pageCount = type.value.pageCount.toNumber();
-    // const pagedRequests = Array.from({ length: pageCount }, (_, index) => [era, address, index]);
-    // acc.requests.push(api.query.staking.erasStakersPaged.multi(pagedRequests));
 
     acc[accountId] = {
       accountId,
@@ -110,30 +100,19 @@ async function getValidatorsStake(api: ApiPromise, era: EraIndex): Promise<Recor
 
     return acc;
   }, {});
-
-  // const nominatorsPages = await Promise.all(requests);
-  // return stakes.reduce<Record<Address, ValidatorStake>>((acc, stake, index) => {
-  //   const nominators = nominatorsPages[index].flatMap((pages) => {
-  //     return pages.value.others.map((page: any) => ({ who: page.who.toString(), value: page.value.toString() }));
-  //   });
-  //
-  //   acc[stake.address] = { ...stake, nominators };
-  //
-  //   return acc;
-  // }, {});
 }
 
-async function getValidatorsPrefs(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
+async function getValidatorsPrefs(api: ApiPromise, era: EraIndex): Promise<Record<AccountId, ValidatorPrefs>> {
   const data = await api.query.staking.erasValidatorPrefs.entries(era);
 
-  return data.reduce<ValidatorMap>((acc, [storageKey, type]) => {
+  return data.reduce<Record<AccountId, ValidatorPrefs>>((acc, [storageKey, type]) => {
     const accountId = toAccountId(storageKey.args[1].toString());
 
     acc[accountId] = {
       accountId,
-      commission: parseFloat(type.commission.toHuman() as string),
-      blocked: type.blocked.toHuman(),
-    } as Validator;
+      commission: parseFloat(String(type.commission.toHuman())),
+      blocked: type.blocked.toHuman() as boolean,
+    };
 
     return acc;
   }, {});
@@ -154,15 +133,6 @@ function getMaxValidators(api: ApiPromise): number {
   return getDefaultValidatorsAmount(api);
 }
 
-// Don't show APY in UI right now
-// async function getApy(api: ApiPromise, validators: Validator[]): Promise<Record<Address, { apy: number }>> {
-//   const apy = await getValidatorsApy(api, validators);
-//
-//   return Object.entries(apy).reduce((acc, [address, apy]) => {
-//     return { ...acc, [address]: { apy } };
-//   }, {});
-// }
-
 async function getNominators(api: ApiPromise, stash: AccountId): Promise<ValidatorMap> {
   try {
     const data = await api.query.staking.nominators(stash);
@@ -170,13 +140,14 @@ async function getNominators(api: ApiPromise, stash: AccountId): Promise<Validat
     if (data.isNone) return {};
 
     const nominatorsUnwraped = data.unwrap();
+    const result: Record<AccountId, Pick<Validator, 'accountId'>> = {};
 
-    return nominatorsUnwraped.targets.toArray().reduce<ValidatorMap>((acc, nominator) => {
+    for (const nominator of nominatorsUnwraped.targets.toArray()) {
       const accountId = toAccountId(nominator.toString());
-      acc[accountId] = { accountId } as Validator;
+      result[accountId] = { accountId };
+    }
 
-      return acc;
-    }, {});
+    return result as ValidatorMap;
   } catch (error) {
     console.warn(error);
 
@@ -209,10 +180,6 @@ async function getSlashingSpans(
 
   return Object.fromEntries(accounts.map(account => [account, { slashed: slashedSet.has(account) }]));
 }
-
-// =====================================================
-// ================ APY Calculator =====================
-// =====================================================
 
 const calculateYearlyInflation = (stakedPortion: number): number => {
   let calculatedInflation;

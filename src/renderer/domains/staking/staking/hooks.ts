@@ -1,7 +1,7 @@
 import { type NullableMap } from '@/shared/core';
 import { nonNullableMap } from '@/shared/lib/utils';
 import { useResource } from '@/shared/query';
-import { type StakingMap } from '../_lib/types';
+import { type StakingMap } from '../types';
 
 import { type StakingResourceParams, stakingResource } from './resource';
 
