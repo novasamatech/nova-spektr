@@ -80,13 +80,14 @@ export function bucketRecords(
   const seenAccounts = new Set<string>();
 
   for (const record of records) {
+    const normalizedId = toAccountId(record.address);
     for (const boundary of boundaries) {
       if (record.timestamp >= boundary.start && record.timestamp < boundary.end) {
         const key = `${boundary.year}-${boundary.month}`;
         const monthBucket = buckets.get(key)!;
-        const current = monthBucket.get(record.address) ?? new BigNumber(0);
-        monthBucket.set(record.address, current.plus(record.amount));
-        seenAccounts.add(record.address);
+        const current = monthBucket.get(normalizedId) ?? new BigNumber(0);
+        monthBucket.set(normalizedId, current.plus(record.amount));
+        seenAccounts.add(normalizedId);
         break;
       }
     }
@@ -184,8 +185,7 @@ export const useMonthlyRewardsChart = (
       const priceItem = prices?.[asset.priceId]?.[currency?.coingeckoId ?? ''];
       const priceValue = priceItem?.price;
 
-      const allAddresses = records.map((r) => r.address);
-      const uniqueAddresses = Array.from(new Set(allAddresses));
+      const normalizedIds = Array.from(new Set(records.map((r) => toAccountId(r.address))));
 
       const { bars, activeAccounts } = bucketRecords(
         records,
@@ -193,13 +193,13 @@ export const useMonthlyRewardsChart = (
         asset.precision,
         priceValue,
         currency?.symbol,
-        uniqueAddresses,
+        normalizedIds,
       );
 
-      const accounts: AccountInfo[] = activeAccounts.map((addr) => ({
-        accountId: addr,
-        name: nameMap.get(addr) ?? `${addr.slice(0, 6)}…${addr.slice(-4)}`,
-        dataKey: addr,
+      const accounts: AccountInfo[] = activeAccounts.map((id) => ({
+        accountId: id,
+        name: nameMap.get(id) ?? `${id.slice(0, 6)}…${id.slice(-4)}`,
+        dataKey: id,
       }));
 
       const totalRaw = records.reduce((sum, r) => sum.plus(r.amount), new BigNumber(0));

@@ -3,11 +3,12 @@ import { type LabelProps, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } f
 import { type XAxisTickContentProps } from 'recharts/types/util/types';
 
 import { useI18n } from '@/shared/i18n';
-import { formatFiatBalance } from '@/shared/lib/utils';
+import { formatFiatBalance, toAccountId } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { Skeleton } from '@/shared/ui-kit';
-import { type AccountInfo, type MonthlyBarData, useMonthlyRewardsChart } from '../hooks/useMonthlyRewardsChart';
+import { useAccountName } from '@/domains/network';
+import { type MonthlyBarData, useMonthlyRewardsChart } from '../hooks/useMonthlyRewardsChart';
 import { type EntryLike } from '../hooks/useStakingBreakdown';
 
 type Props = {
@@ -91,13 +92,25 @@ type StackTooltipProps = {
   active?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload?: readonly Record<string, any>[];
-  accounts: AccountInfo[];
 };
 
-const StackTooltip = ({ active, payload, accounts }: StackTooltipProps) => {
+const TooltipRow = ({ accountId, value, color }: { accountId: string; value: number; color?: string }) => {
+  const name = useAccountName({ accountId: toAccountId(accountId) });
+
+  return (
+    <div className="flex items-center gap-2 py-0.5">
+      <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: color }} />
+      <span className="text-help-text text-text-secondary">
+        {name || `${accountId.slice(0, 6)}…${accountId.slice(-4)}`}
+      </span>
+      <span className="ml-auto pl-3 text-help-text font-semibold text-text-primary">{value.toFixed(2)}</span>
+    </div>
+  );
+};
+
+const StackTooltip = ({ active, payload }: StackTooltipProps) => {
   if (!active || !payload?.length) return null;
 
-  const nameMap = new Map(accounts.map((a) => [a.dataKey, a.name]));
   const items = payload.filter((p) => typeof p.value === 'number' && p.value > 0).reverse();
 
   if (items.length <= 1) return null;
@@ -105,16 +118,13 @@ const StackTooltip = ({ active, payload, accounts }: StackTooltipProps) => {
   return (
     <div className="rounded-lg border border-token-container-border bg-white px-3 py-2 shadow-card-shadow">
       {items.map((item, i) => (
-        // eslint-disable-next-line react/no-array-index-key
-        <div key={i} className="flex items-center gap-2 py-0.5">
-          <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: item.color }} />
-          <span className="text-help-text text-text-secondary">
-            {nameMap.get(String(item.dataKey ?? '')) ?? String(item.name ?? '')}
-          </span>
-          <span className="ml-auto text-help-text font-semibold text-text-primary">
-            {typeof item.value === 'number' ? item.value.toFixed(2) : '0'}
-          </span>
-        </div>
+        <TooltipRow
+          // eslint-disable-next-line react/no-array-index-key
+          key={i}
+          accountId={String(item.dataKey ?? item.name ?? '')}
+          value={typeof item.value === 'number' ? item.value : 0}
+          color={item.color}
+        />
       ))}
     </div>
   );
@@ -214,9 +224,7 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                 height={32}
               />
               <Tooltip
-                content={({ active, payload }) => (
-                  <StackTooltip active={active} payload={payload ?? undefined} accounts={accounts} />
-                )}
+                content={({ active, payload }) => <StackTooltip active={active} payload={payload ?? undefined} />}
                 cursor={{ fill: 'rgba(0,0,0,0.04)', radius: 4 }}
               />
               {accounts.map((account, i) => {
