@@ -27,7 +27,8 @@ runs:
         mkdir -p .allure
         echo '{}' > .allure/testplan.json
 
-    - if: always()
+    - name: Prepare Telegram notification
+      if: always()
       shell: bash
       run: |
         allurectl job-run env >> $GITHUB_ENV
@@ -37,6 +38,8 @@ runs:
         echo "EOF" >> $GITHUB_ENV
         if [ "${{ steps.playwright_tests.outcome }}" == "failure" ]; then
           echo "TEST_STATUS=❌ Failed" >> $GITHUB_ENV
+        elif [ "${{ steps.playwright_tests.outcome }}" == "cancelled" ]; then
+          echo "TEST_STATUS=❌ Failed (timeout reached)" >> $GITHUB_ENV
         else
           echo "TEST_STATUS=✅ Passed" >> $GITHUB_ENV
         fi

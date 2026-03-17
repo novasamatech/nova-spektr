@@ -52,16 +52,3 @@ jobs:
           telegram_to: ${{ secrets.TELEGRAM_TO }}
           test_grep: '@regress'
 
-      - name: Notify Telegram - Timeout
-        if: cancelled()
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          format: markdown
-          message: |
-            📋 Playwright Test Report Published
-            Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
-            ❌ Failed (timeout reached)
-
-            Test group: @regress
