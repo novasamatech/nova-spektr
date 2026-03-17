@@ -240,9 +240,20 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
                     dataKey={account.dataKey}
                     stackId="rewards"
                     fill={color}
-                    radius={isLast ? [8, 8, 0, 0] : [0, 0, 0, 0]}
                     animationDuration={600}
-                    minPointSize={isLast ? 2 : 0}
+                    minPointSize={0}
+                    shape={(shapeProps) => {
+                      const sx = typeof shapeProps.x === 'number' ? shapeProps.x : 0;
+                      const sy = typeof shapeProps.y === 'number' ? shapeProps.y : 0;
+                      const sw = typeof shapeProps.width === 'number' ? shapeProps.width : 0;
+                      const sh = typeof shapeProps.height === 'number' ? shapeProps.height : 0;
+                      const fill = typeof shapeProps.fill === 'string' ? shapeProps.fill : color;
+                      const r = isLast && sh > 10 ? 8 : 0;
+
+                      if (sh < 1) return null;
+
+                      return <rect x={sx} y={sy} width={sw} height={sh} rx={r} ry={r} fill={fill} />;
+                    }}
                     label={isLast ? (labelProps: LabelProps) => <DualLabel {...labelProps} data={bars} /> : undefined}
                   />
                 );
