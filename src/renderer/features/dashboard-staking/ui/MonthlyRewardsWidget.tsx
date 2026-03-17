@@ -114,7 +114,7 @@ const StackTooltip = ({ active, payload }: StackTooltipProps) => {
 
   const items = payload.filter((p) => typeof p.value === 'number' && p.value > 0).reverse();
 
-  if (items.length <= 1) return null;
+  if (items.length === 0) return null;
 
   return (
     <div className="rounded-lg border border-token-container-border bg-white px-3 py-2 shadow-card-shadow">
