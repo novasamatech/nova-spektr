@@ -3,20 +3,22 @@ import { useMemo } from 'react';
 import { type Chain, type ChainId, ExternalType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useResource } from '@/shared/query';
-import { type RewardSource, type RewardsMap } from '../types';
+import { type MonthlyRewardRecord, type RewardSource, type RewardsMap } from '../types';
 
-import { type StakingRewardsParams, rewardsCacheKey, stakingRewardsResource } from './resource';
+import {
+  type MonthlyRewardsParams,
+  type StakingRewardsParams,
+  monthlyRewardsResource,
+  rewardsCacheKey,
+  stakingRewardsResource,
+} from './resource';
 import { collectRewardSources, isAssetHubChain } from './service';
 
 const EMPTY_MAP: RewardsMap = {};
+const EMPTY_RECORDS: MonthlyRewardRecord[] = [];
 
-export const useStakingRewards = (
-  accounts: AccountId[],
-  chain: Chain | null,
-  chainsMap: Record<ChainId, Chain>,
-  since?: number,
-) => {
-  const rewardSources = useMemo<RewardSource[]>(() => {
+const useRewardSources = (chain: Chain | null, chainsMap: Record<ChainId, Chain>): RewardSource[] => {
+  return useMemo<RewardSource[]>(() => {
     if (!chain) return [];
 
     const uniqueSources = new Map<string, RewardSource>();
@@ -41,6 +43,15 @@ export const useStakingRewards = (
 
     return Array.from(uniqueSources.values());
   }, [chain, chainsMap]);
+};
+
+export const useStakingRewards = (
+  accounts: AccountId[],
+  chain: Chain | null,
+  chainsMap: Record<ChainId, Chain>,
+  since?: number,
+) => {
+  const rewardSources = useRewardSources(chain, chainsMap);
 
   const params = useMemo<StakingRewardsParams | null>(() => {
     if (!chain || accounts.length === 0 || rewardSources.length === 0) return null;
@@ -65,4 +76,33 @@ export const useStakingRewards = (
   });
 
   return { data: rewards, pending: isRewardsLoading };
+};
+
+export const useMonthlyRewards = (accounts: AccountId[], chain: Chain | null, chainsMap: Record<ChainId, Chain>) => {
+  const rewardSources = useRewardSources(chain, chainsMap);
+
+  const since = useMemo(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 12);
+    d.setDate(1);
+    d.setHours(0, 0, 0, 0);
+
+    return Math.floor(d.getTime() / 1000);
+  }, []);
+
+  const params = useMemo<MonthlyRewardsParams | null>(() => {
+    if (!chain || accounts.length === 0 || rewardSources.length === 0) return null;
+
+    return { chainId: chain.chainId, accounts, rewardSources, since };
+  }, [chain, accounts, rewardSources, since]);
+
+  const { data: records, pending } = useResource(monthlyRewardsResource, {
+    params,
+    defaultValue: EMPTY_RECORDS,
+    map: (cache: Record<string, MonthlyRewardRecord[]>, p: MonthlyRewardsParams) => {
+      return cache[p.chainId];
+    },
+  });
+
+  return { data: records, pending };
 };

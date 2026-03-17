@@ -15,4 +15,4 @@ export { getAvgApy, validatorsService } from './validators/service';
 export { useNetworkApy, useNominators, useValidators } from './validators/hooks';
 
 export { rewards } from './rewards/store';
-export { useStakingRewards } from './rewards/hooks';
+export { useMonthlyRewards, useStakingRewards } from './rewards/hooks';
