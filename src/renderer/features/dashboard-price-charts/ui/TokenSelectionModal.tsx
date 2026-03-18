@@ -34,7 +34,7 @@ export const TokenSelectionModal = ({ onClose }: Props) => {
   };
 
   return (
-    <Modal size="md" isOpen onToggle={(open) => !open && onClose()}>
+    <Modal size="sm" isOpen onToggle={(open) => !open && onClose()}>
       <Modal.Title close>{t('dashboard.priceCharts.manageTokens')}</Modal.Title>
       <Modal.Content>
         <div className="flex flex-col gap-3 px-5 py-4">
