@@ -1,6 +1,5 @@
+import { CHART_TOOLTIP_STYLE } from '@/shared/ui/chart-constants';
 import { type PriceHistoryTimeRange } from '@/domains/price';
-
-import { CHART_TOOLTIP_STYLE } from './chartConstants';
 
 type TooltipPayloadItem = {
   payload: {

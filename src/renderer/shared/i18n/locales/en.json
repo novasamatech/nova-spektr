@@ -585,6 +585,10 @@
       "noStaking": "No active staking positions"
     },
     "priceCharts": {
+      "title": "Price Tracker",
+      "manageTokens": "Manage tokens",
+      "emptyState": "No tokens tracked. Click + to add tokens.",
+      "searchPlaceholder": "Search assets...",
       "range1d": "24H",
       "range7d": "7D",
       "range30d": "30D",
