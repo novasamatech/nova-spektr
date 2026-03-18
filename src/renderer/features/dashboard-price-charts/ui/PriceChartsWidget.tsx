@@ -54,7 +54,7 @@ export const PriceChartsWidget = () => {
       {trackedAssets.length === 0 ? (
         <p className="text-footnote text-text-tertiary">{t('dashboard.priceCharts.emptyState')}</p>
       ) : (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-5 gap-2">
           {trackedAssets.map((asset, index) => (
             <PriceTile
               key={asset.priceId}
