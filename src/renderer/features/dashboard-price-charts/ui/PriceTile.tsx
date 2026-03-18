@@ -1,4 +1,4 @@
-import { BodyText, FootnoteText } from '@/shared/ui';
+import { FootnoteText } from '@/shared/ui';
 import { getColorByPriceId } from '@/shared/ui/chart-constants';
 import { AssetIcon } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
@@ -26,26 +26,26 @@ export const PriceTile = ({ asset, index, price, currencySymbol, pending, onClic
     >
       <div className="absolute inset-y-0 left-0 w-0.5" style={{ backgroundColor: accentColor }} />
 
-      <div className="flex w-full flex-col gap-2.5 py-3 pr-3 pl-3.5">
-        <div className="flex items-center gap-2">
+      <div className="flex w-full flex-col gap-1.5 py-2 pr-2.5 pl-3">
+        <div className="flex items-center gap-1.5">
           <AssetIcon asset={asset} size={24} />
           <FootnoteText className="font-semibold text-text-secondary">{asset.symbol}</FootnoteText>
         </div>
 
         {price ? (
-          <div className="flex flex-col gap-1">
-            <BodyText className="text-left font-semibold text-text-primary tabular-nums">
+          <div className="flex flex-col gap-0.5">
+            <FootnoteText className="text-left font-semibold text-text-primary tabular-nums">
               {currencySymbol}
               {price.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
-            </BodyText>
+            </FootnoteText>
             <div className="flex">
               <PriceChange change={price.change} />
             </div>
           </div>
         ) : pending ? (
-          <div className="flex flex-col gap-1">
-            <Skeleton width={20} height={5} />
-            <Skeleton width={12} height={4} />
+          <div className="flex flex-col gap-0.5">
+            <Skeleton width={18} height={4} />
+            <Skeleton width={10} height={3} />
           </div>
         ) : null}
       </div>
