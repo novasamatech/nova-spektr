@@ -21,10 +21,10 @@ type Props = {
 export const PriceTile = ({ asset, index, price, currencySymbol, pending, onClick }: Props) => {
   const accentColor = getColorByPriceId(asset.priceId, index);
 
-  const glowStyle = useMemo(
+  const tileStyle = useMemo(
     () => ({
-      '--accent': accentColor,
-      background: `linear-gradient(135deg, ${accentColor}08 0%, transparent 60%)`,
+      '--accent': `${accentColor}66`,
+      background: `linear-gradient(135deg, ${accentColor}06 0%, transparent 60%)`,
     }),
     [accentColor],
   );
@@ -38,10 +38,13 @@ export const PriceTile = ({ asset, index, price, currencySymbol, pending, onClic
         'hover:shadow-card-shadow-level2',
         'border-token-container-border hover:border-[var(--accent)]',
       )}
-      style={glowStyle}
+      style={tileStyle}
       onClick={onClick}
     >
-      <div className="absolute inset-y-0 left-0 w-[3px] rounded-l-lg" style={{ backgroundColor: accentColor }} />
+      <div
+        className="absolute inset-y-0 left-0 w-[2px] rounded-l-lg opacity-40"
+        style={{ backgroundColor: accentColor }}
+      />
 
       <div className="flex w-full flex-col gap-1.5 p-2.5 pl-3.5">
         <div className="flex items-center gap-1.5">
