@@ -8,6 +8,7 @@ import { formatFiatBalance, toAccountId } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { useAccountName } from '@/domains/network';
+import { DashboardWidget } from '@/pages/Dashboard';
 import { type ChainMode, type MonthlyBarData, useMonthlyRewardsChart } from '../hooks/useMonthlyRewardsChart';
 import { type EntryLike } from '../hooks/useStakingBreakdown';
 
@@ -20,9 +21,6 @@ const pillContainerClass = 'flex rounded-md bg-tab-background p-0.5';
 const pillButtonClass = 'rounded px-3 py-1 text-footnote font-semibold transition-colors cursor-pointer';
 const pillActiveClass = 'shadow-sm text-white';
 const pillInactiveClass = 'text-text-tertiary hover:text-text-secondary';
-
-const containerClass =
-  'relative w-full rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
 const DualLabel = (props: LabelProps & { data?: MonthlyBarData[] }) => {
   const x = typeof props.x === 'number' ? props.x : 0;
@@ -168,13 +166,13 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
 
   if (accountIds.length === 0) {
     return (
-      <div className={containerClass}>
+      <DashboardWidget colSpan={4} className="relative">
         <FootnoteText className="text-text-tertiary">{t('dashboard.monthlyRewards.title')}</FootnoteText>
         <div className="flex flex-col items-center gap-y-1 py-6">
           <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
           <BodyText className="text-text-tertiary">{t('dashboard.noSelection.description')}</BodyText>
         </div>
-      </div>
+      </DashboardWidget>
     );
   }
 
@@ -183,7 +181,7 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
     : formatFiatBalance(total.fiat).formatted;
 
   return (
-    <div className={containerClass}>
+    <DashboardWidget colSpan={4} className="relative">
       <div className="flex items-start justify-between">
         <div>
           <FootnoteText className="text-text-tertiary">{t('dashboard.monthlyRewards.title')}</FootnoteText>
@@ -267,6 +265,6 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
           </div>
         )}
       </div>
-    </div>
+    </DashboardWidget>
   );
 };

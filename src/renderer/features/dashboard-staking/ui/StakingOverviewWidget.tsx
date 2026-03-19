@@ -6,6 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText, TitleText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
+import { DashboardWidget } from '@/pages/Dashboard';
 import { useStakingOverview } from '../hooks/useStakingOverview';
 
 import { ChainAllocationChart } from './ChainAllocationChart';
@@ -17,8 +18,6 @@ type Props = {
   allEntries: { accountId: string; name: string; address: string }[];
 };
 
-const containerClass = 'w-[560px] rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
-
 export const StakingOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const { chains, stakingDataByChain, totalFiat, totalActiveValidators, pending, fiatFlag, currency } =
@@ -29,20 +28,20 @@ export const StakingOverviewWidget = ({ accountIds, allEntries }: Props) => {
 
   if (accountIds.length === 0) {
     return (
-      <div className={containerClass}>
+      <DashboardWidget>
         <FootnoteText className="text-text-tertiary">{t('dashboard.stakingOverview.title')}</FootnoteText>
         <div className="flex flex-col items-center gap-y-1 py-6">
           <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
           <BodyText className="text-text-tertiary">{t('dashboard.noSelection.description')}</BodyText>
         </div>
-      </div>
+      </DashboardWidget>
     );
   }
 
   const selectedChain = selectedChainId ? chains.find((c) => c.chainId === selectedChainId) : null;
 
   return (
-    <div className={containerClass}>
+    <DashboardWidget>
       <FootnoteText className="text-text-tertiary">{t('dashboard.stakingOverview.title')}</FootnoteText>
       <TitleText className="mt-1">
         {pending ? <Skeleton width={30} height={7} /> : <Price amount={totalFiat ?? '0'} currency={currency} />}
@@ -152,6 +151,6 @@ export const StakingOverviewWidget = ({ accountIds, allEntries }: Props) => {
           onClose={() => setSelectedChainId(null)}
         />
       )}
-    </div>
+    </DashboardWidget>
   );
 };
