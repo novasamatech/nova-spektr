@@ -1,4 +1,5 @@
-import { attach, createStore, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
+import { attach, createEffect, createStore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import {
@@ -36,6 +37,7 @@ import {
   toShortAddress,
   truncate,
 } from '@/shared/lib/utils';
+import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type AccountIdentity,
@@ -97,6 +99,66 @@ sample({
 });
 
 // proxy sync
+
+type VerifyProxiedDeletionParams = {
+  candidateWalletIds: number[];
+  allAccounts: AnyAccount[];
+  apis: Record<ChainId, ApiPromise>;
+};
+
+// Guards against false deletions caused by indexer lag: only remove a proxied wallet
+// after confirming on-chain that the proxy relationship is gone. Missing API = skip deletion.
+const verifyProxiedDeletionFx = createEffect(
+  async ({ candidateWalletIds, allAccounts, apis }: VerifyProxiedDeletionParams): Promise<number[]> => {
+    if (candidateWalletIds.length === 0) return [];
+
+    // Find the proxied accounts that correspond to the candidate wallet IDs
+    const candidates = allAccounts
+      .filter(accountUtils.isProxiedAccount)
+      .filter((a) => candidateWalletIds.includes(a.walletId));
+
+    // If we cannot find any matching accounts (unexpected state), fall back to
+    // the original list to avoid silently swallowing deletions.
+    if (candidates.length === 0) return candidateWalletIds;
+
+    const byChain = groupBy(candidates, (a) => a.chainId);
+    const confirmedDeleteWalletIds = new Set<number>();
+
+    for (const [chainId, chainCandidates] of entries(byChain)) {
+      if (nullable(chainCandidates)) continue;
+
+      const api = apis[chainId as ChainId];
+      if (nullable(api)) {
+        // No connected API for this chain — be conservative and skip deletion.
+        continue;
+      }
+
+      const accountIds = chainCandidates.map((a) => a.accountId);
+
+      try {
+        const onChainData = await proxyPallet.storage.proxies(api, accountIds);
+
+        for (const { account: accountId, value } of onChainData) {
+          // A proxied account with zero on-chain proxies is truly gone.
+          const stillExistsOnChain = value.proxies.length > 0;
+
+          if (!stillExistsOnChain) {
+            const candidate = chainCandidates.find((c) => c.accountId === accountId);
+            if (candidate) {
+              confirmedDeleteWalletIds.add(candidate.walletId);
+            }
+          }
+          // If still present on-chain the indexer was just lagging — keep the wallet.
+        }
+      } catch (e) {
+        // On any RPC error be conservative: skip deletion for this chain.
+        console.warn('[proxy-sync] On-chain verification failed for chain', chainId, '— skipping deletion:', e);
+      }
+    }
+
+    return Array.from(confirmedDeleteWalletIds);
+  },
+);
 
 export type SyncProxiedParams = {
   allAccounts: AnyAccount[];
@@ -256,21 +318,36 @@ sample({
     allAccounts: accounts.$list,
     allWallets: walletModel.$allWallets,
     allChains: networkModel.$chains,
+    apis: networkModel.$apis,
   },
-  fn({ allAccounts, allWallets, allChains }, [syncResult, identities]) {
-    return syncProxiedAccounts({
+  fn({ allAccounts, allWallets, allChains, apis }, [syncResult, identities]) {
+    const { createWallets, deleteWallets, updateAccounts } = syncProxiedAccounts({
       allAccounts,
       allWallets,
       allChains,
       syncResult,
       identities,
     });
+
+    return {
+      createWallets,
+      updateAccounts,
+      // Instead of deleting immediately, pass candidates to on-chain verification.
+      // walletModel.walletsRemoved is called only after confirmed absence on-chain.
+      verifyDeletion: { candidateWalletIds: deleteWallets, allAccounts, apis },
+    };
   },
   target: spread({
     createWallets: createWalletsFx,
-    deleteWallets: walletModel.walletsRemoved,
     updateAccounts: accounts.updateAccounts,
+    verifyDeletion: verifyProxiedDeletionFx,
   }),
+});
+
+// Only remove wallets that have been confirmed absent on-chain.
+sample({
+  clock: verifyProxiedDeletionFx.doneData,
+  target: walletModel.walletsRemoved,
 });
 
 sample({
@@ -667,4 +744,8 @@ sample({
 export const sync = {
   syncAccounts: accountSync.syncAccounts,
   $pending,
+
+  __test: {
+    verifyProxiedDeletionFx,
+  },
 };
