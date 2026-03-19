@@ -7,9 +7,9 @@ import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { SignButton } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
-import { Fee, FeeWithLabel, MultisigDepositFee, ProxyDepositLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
+import { Fee, FeeWithLabel, MultisigDepositFee, ProxyDepositLabel } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 

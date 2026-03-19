@@ -5,7 +5,7 @@ import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, IconButton } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { FeeLoader } from '@/entities/transaction';
+import { FeeLoader } from '@/widgets/transaction-fee';
 import { changeSignatoriesModel } from '../../model/change-signatories-model';
 import { formModel } from '../../model/form-model';
 

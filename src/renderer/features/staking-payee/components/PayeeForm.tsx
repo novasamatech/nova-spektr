@@ -11,9 +11,9 @@ import { AssetBalance, Identicon, SignatorySelect, TransactionValidationError } 
 import { Tooltip } from '@/shared/ui-kit';
 import { accounts, useAccountsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { AssetFiatBalance } from '@/entities/price';
-import { FeeWithLabel } from '@/entities/transaction';
 import { AccountAddress, walletModel } from '@/entities/wallet';
+import { AssetFiatBalance } from '@/widgets/price';
+import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
 
 type Props = {

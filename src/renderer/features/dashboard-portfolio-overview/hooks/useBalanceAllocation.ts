@@ -3,9 +3,10 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { getRoundedValue, transferableAmountBN } from '@/shared/lib/utils';
+import { useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { currencyModel, priceProviderModel } from '@/entities/price';
+import { currencySelect } from '@/aggregates/currency-select';
 
 export type AllocationData = {
   transferablePct: number;
@@ -16,8 +17,9 @@ export type AllocationData = {
 export const useBalanceAllocation = (accountIds: string[]): AllocationData | null => {
   const balanceMap = useUnit(balanceModel.$balanceMap);
   const chains = useUnit(networkModel.$chains);
-  const prices = useUnit(priceProviderModel.$assetsPrices);
-  const currency = useUnit(currencyModel.$activeCurrency);
+  const currency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
 
   return useMemo(() => {
     if (!prices || !currency) return null;

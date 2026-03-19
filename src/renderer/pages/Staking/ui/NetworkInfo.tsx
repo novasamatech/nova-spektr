@@ -10,7 +10,7 @@ import { FootnoteText, IconButton, Plate } from '@/shared/ui';
 import { AssetBalance, ChainSelect } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
-import { AssetFiatBalance } from '@/entities/price';
+import { AssetFiatBalance } from '@/widgets/price';
 
 const getTotal = (values: string[]): BN => {
   return values.reduce((acc, value) => {

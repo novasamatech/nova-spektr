@@ -13,9 +13,9 @@ import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { ProxyPopover, proxyUtils } from '@/entities/proxy';
-import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/entities/transaction';
 import { AccountAddress, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
 
 export const AddProxyForm = () => {

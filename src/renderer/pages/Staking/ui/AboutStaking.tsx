@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { Duration, FootnoteText, Shimmering } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { stakingService } from '@/domains/staking';
-import { AssetFiatBalance } from '@/entities/price';
+import { AssetFiatBalance } from '@/widgets/price';
 
 type Props = {
   api: ApiPromise | null;

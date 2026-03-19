@@ -7,7 +7,8 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton, Tooltip } from '@/shared/ui-kit';
-import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
+import { currencySelect } from '@/aggregates/currency-select';
+import { AssetFiatBalance } from '@/widgets/price';
 
 type Props = PropsWithChildren & {
   asset: AssetByChains;
@@ -17,7 +18,7 @@ type Props = PropsWithChildren & {
 export const AssembledAssetAmount = ({ balance, asset }: Props) => {
   const { t } = useI18n();
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
 
   if (!balance) {
     return (

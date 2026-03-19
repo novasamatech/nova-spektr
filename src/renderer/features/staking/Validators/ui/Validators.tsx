@@ -7,7 +7,7 @@ import { cnTw, nullable } from '@/shared/lib/utils';
 import { BodyText, Button, Loader, Shimmering, SmallTitleText } from '@/shared/ui';
 import { Checkbox, Graphics, SearchInput } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
-import { ValidatorsTable } from '@/entities/staking';
+import { ValidatorsTable } from '@/widgets/validators-table';
 import { validatorsModel } from '../model/validators-model';
 
 type Props = {
