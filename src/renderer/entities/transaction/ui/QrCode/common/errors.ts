@@ -1,4 +1,4 @@
-import { QR_READER_ERRORS } from '@/shared/ui-kit';
+import { QR_READER_ERRORS } from '@/shared/ui-kit/QrReader/errors';
 
 import { type ErrorObject, DecodeQrError } from './types';
 

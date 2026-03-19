@@ -60,24 +60,28 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
         {sticky && open && (
           <div className="card-stack-sticky-gap absolute -top-2 right-0 left-0 -z-10 h-4 w-full bg-top-nav-bar-background" />
         )}
-        <RadixAccordion.Trigger
-          className={cnTw(
-            'card-stack-trigger group flex w-full cursor-pointer items-center gap-x-2 bg-row-background py-1 pr-2 pl-3',
-            'shadow-stack outline-hidden! hover:shadow-stack-hover focus:shadow-stack-hover data-[state=open]:shadow-none',
-            'transition-all duration-300',
-            'data-[state=closed]:rounded-md data-[state=open]:rounded-t-md',
-            'border-b border-transparent data-[state=open]:border-divider',
-          )}
-        >
-          <Icon
+        <RadixAccordion.Trigger asChild>
+          <div
+            role="button"
+            tabIndex={0}
             className={cnTw(
-              'transition-all duration-100 group-data-[state=open]:rotate-90',
-              'shrink-0 text-icon-default group-hover:text-icon-hover group-focus:text-icon-hover',
+              'card-stack-trigger group flex w-full cursor-pointer items-center gap-x-2 bg-row-background py-1 pr-2 pl-3',
+              'shadow-stack outline-hidden! hover:shadow-stack-hover focus:shadow-stack-hover data-[state=open]:shadow-none',
+              'transition-all duration-300',
+              'data-[state=closed]:rounded-md data-[state=open]:rounded-t-md',
+              'border-b border-transparent data-[state=open]:border-divider',
             )}
-            name="shelfRight"
-            size={16}
-          />
-          <div className="flex min-w-0 grow">{children}</div>
+          >
+            <Icon
+              className={cnTw(
+                'transition-all duration-100 group-data-[state=open]:rotate-90',
+                'shrink-0 text-icon-default group-hover:text-icon-hover group-focus:text-icon-hover',
+              )}
+              name="shelfRight"
+              size={16}
+            />
+            <div className="flex min-w-0 grow">{children}</div>
+          </div>
         </RadixAccordion.Trigger>
       </div>
     </RadixAccordion.Header>
