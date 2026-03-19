@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { type ReactNode, memo, useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
@@ -15,7 +15,7 @@ import { TaskLabels } from '../TaskLabels';
 export const evidenceDetailsModalSlot = createSlot<{
   evidence: Evidence;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
   transaction: Transaction | null;
 }>();
 export const evidenceVotingTaskActionSlot = createSlot<{

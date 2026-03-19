@@ -1,7 +1,7 @@
 import { type Ref, Suspense, forwardRef, lazy, memo } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
-import { Shimmering } from '../Shimmering/Shimmering';
+import { Skeleton } from '@/shared/ui-kit';
 
 import { type IconNames } from './data';
 
@@ -25,7 +25,7 @@ const LazyIcon = lazy(async () => {
     if (!IconComponent) {
       console.warn(`Icon "${name}" doesn't exist`);
 
-      return <Shimmering circle width={size} height={size} testId={testId} />;
+      return <Skeleton circle width={`${size}px`} height={`${size}px`} testId={testId} />;
     }
 
     return (
@@ -52,7 +52,7 @@ export const Icon = memo(
     }
 
     return (
-      <Suspense fallback={<Shimmering circle width={size} height={size} testId={`${testId}:${name}`} />}>
+      <Suspense fallback={<Skeleton circle width={`${size}px`} height={`${size}px`} testId={`${testId}:${name}`} />}>
         <LazyIcon name={name} size={size} innerRef={ref} className={className} testId={`${testId}:${name}`} />
       </Suspense>
     );

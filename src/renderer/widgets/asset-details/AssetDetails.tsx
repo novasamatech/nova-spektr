@@ -3,8 +3,9 @@ import { BigNumber } from 'bignumber.js';
 import { memo } from 'react';
 
 import { type Asset } from '@/shared/core';
-import { HelpText, Shimmering } from '@/shared/ui';
+import { HelpText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
+import { Skeleton } from '@/shared/ui-kit';
 import { AssetFiatBalance } from '@/widgets/price';
 
 type Props = {
@@ -19,12 +20,12 @@ export const AssetDetails = memo(({ asset, value, label }: Props) => {
       <HelpText as="dt" className="text-text-tertiary">
         {label}
       </HelpText>
-      <dd>{value ? <AssetBalance value={value} asset={asset} /> : <Shimmering width={150} height={20} />}</dd>
+      <dd>{value ? <AssetBalance value={value} asset={asset} /> : <Skeleton width="150px" height={5} />}</dd>
       <dd>
         {value ? (
           <AssetFiatBalance amount={new BigNumber(value.toString())} asset={asset} />
         ) : (
-          <Shimmering width={56} height={18} />
+          <Skeleton width={14} height="18px" />
         )}
       </dd>
     </div>

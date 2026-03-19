@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
-import { memo, useState } from 'react';
+import { type ReactNode, memo, useState } from 'react';
 
 import {
   type Chain,
@@ -31,7 +31,7 @@ type Props = {
   account: MultisigAccount | FlexibleMultisigAccount;
   chain: Chain;
   api: ApiPromise;
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 type SubmitData = {

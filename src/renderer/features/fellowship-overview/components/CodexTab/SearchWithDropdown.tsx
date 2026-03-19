@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Icon, IconButton } from '@/shared/ui';
@@ -27,7 +27,7 @@ export interface SearchWithDropdownProps {
   onNavigateMatch?: (direction: 'prev' | 'next') => void;
 }
 
-const parseHighlightedText = (text: string): React.ReactNode[] => {
+const parseHighlightedText = (text: string): ReactNode[] => {
   const parts = text.split(/(<mark>.*?<\/mark>)/g);
   return parts.map((part, index) => {
     if (part.startsWith('<mark>') && part.endsWith('</mark>')) {

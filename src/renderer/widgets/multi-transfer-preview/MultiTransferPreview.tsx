@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { type ReactNode, memo, useCallback, useMemo, useState } from 'react';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -32,7 +32,7 @@ type Props = {
   asset: Asset | null;
   issues?: ValidationIssue[] | null;
   onDownloadClick?: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 const MAX_VISIBLE_ROWS = 50;

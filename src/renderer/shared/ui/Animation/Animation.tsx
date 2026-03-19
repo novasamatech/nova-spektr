@@ -1,7 +1,7 @@
 import { Suspense, lazy, memo, useEffect, useState } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
-import { Shimmering } from '../Shimmering/Shimmering';
+import { Skeleton } from '@/shared/ui-kit';
 
 type Props = {
   variant: 'error' | 'success' | 'loading';
@@ -55,7 +55,7 @@ const LazyAnimation = lazy(async () => {
 
 export const Animation = memo<Props>(
   ({ variant, width = 80, height = 80, loop = false, autoplay = true, className }) => {
-    const fallback = <Shimmering width={width} height={height} circle={width === height} />;
+    const fallback = <Skeleton width={`${width}px`} height={`${height}px`} circle={width === height} />;
 
     return (
       <Suspense fallback={fallback}>

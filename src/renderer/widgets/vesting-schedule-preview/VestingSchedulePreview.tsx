@@ -1,7 +1,15 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { format } from 'date-fns';
-import { type PropsWithChildren, memo, useCallback, useMemo, useState } from 'react';
+import {
+  type ComponentType,
+  type PropsWithChildren,
+  type ReactNode,
+  memo,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -32,7 +40,7 @@ type CellComponentProps = {
 
 type Props = PropsWithChildren & {
   vestingSchedule: VestingScheduleRaw[];
-  children: React.ReactNode;
+  children: ReactNode;
   timelineApi: ApiPromise | null;
   chain: Chain | null;
   asset: Asset | null;
@@ -70,7 +78,7 @@ export const VestingSchedulePreview = memo(
     );
 
     const renderCell = useCallback(
-      (row: TableData, field: keyof VestingScheduleRaw, Component: React.ComponentType<CellComponentProps>) => {
+      (row: TableData, field: keyof VestingScheduleRaw, Component: ComponentType<CellComponentProps>) => {
         const rowIssues = getRowIssues(row.index);
         const fieldIssues = getFieldIssues(row.index, field);
         const status = getRowStatus(rowIssues);
