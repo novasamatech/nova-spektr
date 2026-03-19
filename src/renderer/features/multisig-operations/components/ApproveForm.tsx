@@ -10,8 +10,8 @@ import { AccountSelect, SignatorySelect, TransactionValidationError } from '@/sh
 import { Field } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { approveModel } from '../model/approve-model';
 
 import { confirmTransactionInfoSlot } from './ActionSteps/Confirmation';

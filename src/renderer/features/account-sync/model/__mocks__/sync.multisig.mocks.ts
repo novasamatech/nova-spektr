@@ -131,26 +131,14 @@ export const multisigWallet3 = {
 };
 
 // Indexed blocks map
-export const indexedBlocks = new Map([
-  ['0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42', 6152557],
-]);
+export const indexedBlocks = new Map([['0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42', 6152557]]);
 
-export const allAccounts = [
-  userAccount,
-  multisigAccount1,
-  multisigAccount2,
-  multisigAccount3,
-];
+export const allAccounts = [userAccount, multisigAccount1, multisigAccount2, multisigAccount3];
 
-export const allWallets = [
-  oneGuyWallet,
-  multisigWallet1,
-  multisigWallet2,
-  multisigWallet3,
-];
+export const allWallets = [oneGuyWallet, multisigWallet1, multisigWallet2, multisigWallet3];
 
-export const allChains = { 
-  '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42': { addressPrefix: 0 } 
+export const allChains = {
+  '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42': { addressPrefix: 0 },
 };
 
 export const syncResult = {

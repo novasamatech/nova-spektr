@@ -522,6 +522,7 @@
         "value": "Value",
         "share": "Share"
       },
+      "priceChange24h": "24h change",
       "assetAllocation": "Asset Allocation",
       "chainDetail": {
         "title": "{chainName} Details",
@@ -551,8 +552,14 @@
         "accountCount_other": "{count} accounts"
       }
     },
+    "monthlyRewards": {
+      "title": "12-Month Rewards",
+      "dot": "DOT",
+      "ksm": "KSM",
+      "noData": "No rewards data available"
+    },
     "stakingOverview": {
-      "title": "Staking Overview",
+      "title": "Staking Positions",
       "totalStaked": "Total Staked",
       "noStaking": "No staking positions found",
       "unstaking": "Unstaking",
@@ -570,7 +577,18 @@
         "accountCount_other": "{count} accounts"
       }
     },
+    "stakingSummary": {
+      "title": "Staking Overview",
+      "averageApy": "Average APY",
+      "stakingAccounts": "Staking accounts",
+      "totalStaked": "Total staked",
+      "noStaking": "No active staking positions"
+    },
     "priceCharts": {
+      "title": "Price Tracker",
+      "manageTokens": "Manage tokens",
+      "emptyState": "No tokens tracked. Click + to add tokens.",
+      "searchPlaceholder": "Search assets...",
       "range1d": "24H",
       "range7d": "7D",
       "range30d": "30D",

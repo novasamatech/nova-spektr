@@ -29,20 +29,13 @@ type DataParams = {
 const flow = createGate<BasketTransaction>();
 
 const prepareAddProxyDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
-  const { chain, account, fee } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
   assert(chain, 'Chain not found');
 
   const api = apis[chain.chainId]!;
   const proxy = await proxyService.getProxiesForAccount(api, transaction.coreTx.accountId);
-  const proxyDeposit = proxyService
-    .getProxyDepositDelta(api, proxy.deposit, proxy.accounts.length + 1)
-    .toString();
+  const proxyDeposit = proxyService.getProxyDepositDelta(api, proxy.deposit, proxy.accounts.length + 1).toString();
 
   return {
     id: transaction.id,
@@ -63,12 +56,7 @@ const prepareAddProxyDataFx = createEffect(async ({ transaction, accounts, chain
 });
 
 const prepareAddPureProxiedDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
-  const { chain, account, fee } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
   assert(chain, 'Chain not found');
 

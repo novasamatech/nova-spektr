@@ -67,7 +67,7 @@ export const Dashboard = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex w-full flex-wrap items-start gap-4 overflow-y-auto py-4">
+              <div className="flex h-full w-full flex-wrap content-start items-start gap-4 overflow-y-auto py-4">
                 <Slot id={dashboardWidgetsSlot} props={{ accountIds, allEntries }} />
               </div>
             )}
@@ -82,7 +82,7 @@ export const Dashboard = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex w-full flex-wrap items-start gap-4 overflow-y-auto py-4">
+              <div className="flex h-full w-full flex-wrap content-start items-start gap-4 overflow-y-auto py-4">
                 <Slot id={dashboardStakingSlot} props={{ accountIds, allEntries }} />
               </div>
             )}

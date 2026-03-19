@@ -36,11 +36,11 @@ import { accountService, accounts, useAccountName, useAccountsNames } from '@/do
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 

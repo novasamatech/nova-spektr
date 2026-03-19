@@ -8,9 +8,9 @@ import { useI18n } from '@/shared/i18n';
 import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Checkbox } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
-import { FiatBalance } from '@/entities/price';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { FiatBalance } from '@/widgets/price';
 import { hiddenWalletsBalancesModel } from '../model/balances';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();

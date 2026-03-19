@@ -4,7 +4,6 @@ import { concat } from 'lodash';
 
 import { isKusama, isNameStartsWithNumber, isPolkadot } from '@/shared/api/network/lib/utils';
 import { sumValues } from '@/shared/api/network/service/chainsService';
-import { type PriceObject } from '@/shared/api/price-provider';
 import {
   type AssetByChains,
   type Balance,
@@ -23,6 +22,7 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService } from '@/domains/network';
+import { type PriceObject } from '@/domains/price';
 import { balanceUtils } from '@/entities/balance';
 
 import { type AssetByChainsWithBalance, type AssetByChainsWithFiatBalance, type AssetChain } from './types';
