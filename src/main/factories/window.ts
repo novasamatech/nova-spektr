@@ -56,7 +56,7 @@ export function createWindow(): BrowserWindow {
         responseHeaders: {
           ...details.responseHeaders,
           'Content-Security-Policy': [
-            "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' wss: ws: https: http:; font-src 'self' data:; worker-src 'self' blob:; object-src 'none'; frame-src 'none'",
+            "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' data: wss: ws: https: http:; font-src 'self' data:; worker-src 'self' blob:; object-src 'none'; frame-src 'none'",
           ],
         },
       });
