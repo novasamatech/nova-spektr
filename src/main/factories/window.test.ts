@@ -72,7 +72,7 @@ vi.mock('../shared/constants/environment', () => ({
 }));
 
 const EXPECTED_CSP =
-  "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' wss: ws: https:; font-src 'self' data:; object-src 'none'; frame-src 'none'; upgrade-insecure-requests";
+  "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' data: wss: ws: https: http:; font-src 'self' data:; worker-src 'self' blob:; object-src 'none'; frame-src 'none'";
 
 type HeadersReceivedCallback = (
   details: Record<string, unknown>,
@@ -92,11 +92,9 @@ async function getHeadersReceivedCallback(): Promise<HeadersReceivedCallback> {
 async function invokeCallback(
   callback: HeadersReceivedCallback,
   existingHeaders: Record<string, string[]> = {},
-): Promise<Record<string, string[]>> {
-  const result: Record<string, unknown> = await new Promise((resolve) =>
-    callback({ responseHeaders: existingHeaders }, resolve),
-  );
-  return result.responseHeaders as Record<string, string[]>;
+  resourceType = 'mainFrame',
+): Promise<Record<string, unknown>> {
+  return new Promise((resolve) => callback({ responseHeaders: existingHeaders, resourceType }, resolve));
 }
 
 describe('window.ts — CSP header via session.webRequest.onHeadersReceived', () => {
@@ -111,15 +109,24 @@ describe('window.ts — CSP header via session.webRequest.onHeadersReceived', ()
     expect(mockOnHeadersReceived).toHaveBeenCalledTimes(1);
   });
 
-  it('should inject Content-Security-Policy into response headers', async () => {
+  it('should inject Content-Security-Policy into document response headers', async () => {
     const cb = await getHeadersReceivedCallback();
-    const headers = await invokeCallback(cb);
+    const result = await invokeCallback(cb, {}, 'mainFrame');
+    const headers = result.responseHeaders as Record<string, string[]>;
     expect(headers).toHaveProperty('Content-Security-Policy');
+  });
+
+  it('should NOT inject CSP into non-document responses (e.g. websocket, xhr)', async () => {
+    const cb = await getHeadersReceivedCallback();
+    const result = await invokeCallback(cb, { 'X-Custom': ['value'] }, 'websocket');
+    expect(result.cancel).toBe(false);
+    expect(result.responseHeaders).toBeUndefined();
   });
 
   it('CSP header value should be an array with exactly one entry', async () => {
     const cb = await getHeadersReceivedCallback();
-    const headers = await invokeCallback(cb);
+    const result = await invokeCallback(cb, {}, 'mainFrame');
+    const headers = result.responseHeaders as Record<string, string[]>;
     const cspValues = headers['Content-Security-Policy'];
     expect(Array.isArray(cspValues)).toBe(true);
     expect(cspValues).toHaveLength(1);
@@ -127,41 +134,48 @@ describe('window.ts — CSP header via session.webRequest.onHeadersReceived', ()
 
   it("should set directive default-src 'self'", async () => {
     const cb = await getHeadersReceivedCallback();
-    const headers = await invokeCallback(cb);
+    const result = await invokeCallback(cb, {}, 'mainFrame');
+    const headers = result.responseHeaders as Record<string, string[]>;
     expect(headers['Content-Security-Policy']?.[0]).toContain("default-src 'self'");
   });
 
-  it("should set directive script-src 'self'", async () => {
+  it("should set directive script-src 'self' 'wasm-unsafe-eval'", async () => {
     const cb = await getHeadersReceivedCallback();
-    const headers = await invokeCallback(cb);
-    expect(headers['Content-Security-Policy']?.[0]).toContain("script-src 'self'");
+    const result = await invokeCallback(cb, {}, 'mainFrame');
+    const headers = result.responseHeaders as Record<string, string[]>;
+    expect(headers['Content-Security-Policy']?.[0]).toContain("script-src 'self' 'wasm-unsafe-eval'");
   });
 
   it("should set directive object-src 'none' (blocks embedded plugins/Flash)", async () => {
     const cb = await getHeadersReceivedCallback();
-    const headers = await invokeCallback(cb);
+    const result = await invokeCallback(cb, {}, 'mainFrame');
+    const headers = result.responseHeaders as Record<string, string[]>;
     expect(headers['Content-Security-Policy']?.[0]).toContain("object-src 'none'");
   });
 
   it("should set directive frame-src 'none' (blocks iframes)", async () => {
     const cb = await getHeadersReceivedCallback();
-    const headers = await invokeCallback(cb);
+    const result = await invokeCallback(cb, {}, 'mainFrame');
+    const headers = result.responseHeaders as Record<string, string[]>;
     expect(headers['Content-Security-Policy']?.[0]).toContain("frame-src 'none'");
   });
 
-  it('should set connect-src directive allowing wss: ws: https: (Substrate RPC)', async () => {
+  it('should set connect-src directive allowing wss: ws: https: http: (Substrate RPC)', async () => {
     const cb = await getHeadersReceivedCallback();
-    const headers = await invokeCallback(cb);
+    const result = await invokeCallback(cb, {}, 'mainFrame');
+    const headers = result.responseHeaders as Record<string, string[]>;
     const csp = headers['Content-Security-Policy']?.[0];
     expect(csp).toContain('connect-src');
     expect(csp).toContain('wss:');
     expect(csp).toContain('ws:');
     expect(csp).toContain('https:');
+    expect(csp).toContain('http:');
   });
 
   it('should set img-src directive allowing data: blob: https:', async () => {
     const cb = await getHeadersReceivedCallback();
-    const headers = await invokeCallback(cb);
+    const result = await invokeCallback(cb, {}, 'mainFrame');
+    const headers = result.responseHeaders as Record<string, string[]>;
     const csp = headers['Content-Security-Policy']?.[0];
     expect(csp).toContain('img-src');
     expect(csp).toContain('data:');
@@ -169,18 +183,31 @@ describe('window.ts — CSP header via session.webRequest.onHeadersReceived', ()
     expect(csp).toContain('https:');
   });
 
-  it('should set upgrade-insecure-requests directive', async () => {
+  it("should set worker-src 'self' blob: directive", async () => {
     const cb = await getHeadersReceivedCallback();
-    const headers = await invokeCallback(cb);
-    expect(headers['Content-Security-Policy']?.[0]).toContain('upgrade-insecure-requests');
+    const result = await invokeCallback(cb, {}, 'mainFrame');
+    const headers = result.responseHeaders as Record<string, string[]>;
+    expect(headers['Content-Security-Policy']?.[0]).toContain("worker-src 'self' blob:");
+  });
+
+  it('should NOT contain upgrade-insecure-requests (unnecessary in Electron file:// context)', async () => {
+    const cb = await getHeadersReceivedCallback();
+    const result = await invokeCallback(cb, {}, 'mainFrame');
+    const headers = result.responseHeaders as Record<string, string[]>;
+    expect(headers['Content-Security-Policy']?.[0]).not.toContain('upgrade-insecure-requests');
   });
 
   it('should preserve existing response headers (spread behaviour)', async () => {
     const cb = await getHeadersReceivedCallback();
-    const headers = await invokeCallback(cb, {
-      'Content-Type': ['text/html; charset=utf-8'],
-      'X-Frame-Options': ['DENY'],
-    });
+    const result = await invokeCallback(
+      cb,
+      {
+        'Content-Type': ['text/html; charset=utf-8'],
+        'X-Frame-Options': ['DENY'],
+      },
+      'mainFrame',
+    );
+    const headers = result.responseHeaders as Record<string, string[]>;
     expect(headers['Content-Type']).toEqual(['text/html; charset=utf-8']);
     expect(headers['X-Frame-Options']).toEqual(['DENY']);
     expect(headers['Content-Security-Policy']).toBeDefined();
@@ -188,7 +215,8 @@ describe('window.ts — CSP header via session.webRequest.onHeadersReceived', ()
 
   it('CSP value should match the full expected policy string exactly', async () => {
     const cb = await getHeadersReceivedCallback();
-    const headers = await invokeCallback(cb);
+    const result = await invokeCallback(cb, {}, 'mainFrame');
+    const headers = result.responseHeaders as Record<string, string[]>;
     expect(headers['Content-Security-Policy']?.[0]).toBe(EXPECTED_CSP);
   });
 });
