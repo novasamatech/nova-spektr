@@ -46,13 +46,21 @@ export async function verifySignature(
   return parseResponse(result, verifyResponseSchema);
 }
 
-export async function checkSession(baseUrl: string): Promise<SessionResponse> {
+export async function checkSession(baseUrl: string): Promise<SessionResponse | null> {
   const result = await authFetch(`${baseUrl}/auth/me`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });
 
-  return parseResponse(result, sessionResponseSchema);
+  if (!result.ok) {
+    return null;
+  }
+
+  try {
+    return parseResponse(result, sessionResponseSchema);
+  } catch {
+    return null;
+  }
 }
 
 export async function logout(baseUrl: string): Promise<void> {
