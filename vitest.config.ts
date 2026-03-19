@@ -59,7 +59,6 @@ const config: ViteUserConfigFnPromise = async (options) => {
         resolve(folders.root, './vitest.setup.js'),
         resolve(folders.root, './tests/integrations/vitest.setup.ts'),
       ],
-      testTimeout: 15_000,
       reporters: [
         'default',
         'junit',

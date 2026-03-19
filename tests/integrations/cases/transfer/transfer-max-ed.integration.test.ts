@@ -96,7 +96,7 @@ async function fillTransferForm(
  * @group transfer
  * @group max-button
  */
-describe('Transfer MAX + ED', () => {
+describe('Transfer MAX + ED', { timeout: 15_000 }, () => {
   let env: FeatureTestEnvironment;
 
   afterEach(async () => {
