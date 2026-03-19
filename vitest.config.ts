@@ -35,6 +35,10 @@ const config: ViteUserConfigFnPromise = async (options) => {
     cacheDir: resolve(folders.root, 'node_modules/.cache/vitest'),
     resolve: {
       alias: {
+        // Vite 7 native tsconfigPaths does not resolve @/ aliases during Vitest's
+        // transform pass (it works in production Rolldown builds but not test runs).
+        // Explicit alias ensures @/X → src/renderer/X in all environments.
+        '@': resolve(folders.rendererRoot),
         // @polkadot/rpc-provider/mock ESM build uses deprecated `import ... assert { type: 'json' }`
         // which is a SyntaxError in Node 22+. Redirect to the CJS build which uses require() instead.
         '@polkadot/rpc-provider/mock': resolve(folders.root, 'node_modules/@polkadot/rpc-provider/cjs/mock/index.js'),
