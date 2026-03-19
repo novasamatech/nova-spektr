@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useMemo, useState } from 'react';
+import { type MouseEvent, useEffect, useMemo, useState } from 'react';
 
 import { NotificationEvent } from '@/shared/core';
 import { useForm } from '@/shared/forms';
@@ -111,7 +111,7 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
     soundEnabled.markAsTouched();
   };
 
-  const handlePlaySound = (e: React.MouseEvent) => {
+  const handlePlaySound = (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     notificationsSettingsModel.events.soundPlayed();

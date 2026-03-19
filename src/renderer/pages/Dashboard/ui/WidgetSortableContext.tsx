@@ -1,9 +1,9 @@
 import { useSortable } from '@dnd-kit/react/sortable';
-import { type ReactNode, createContext, useContext, useMemo, useRef } from 'react';
+import { type ReactNode, type RefObject, createContext, useContext, useMemo, useRef } from 'react';
 
 type WidgetSortableContextValue = {
   sortableRef: (element: Element | null) => void;
-  handleRef: React.RefObject<HTMLButtonElement | null>;
+  handleRef: RefObject<HTMLButtonElement | null>;
   editMode: boolean;
   isDragging: boolean;
 };

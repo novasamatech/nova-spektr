@@ -3,7 +3,8 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { getNativeAsset } from '@/shared/lib/utils';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
@@ -51,35 +52,32 @@ export const UnstakeShards = () => {
   }
 
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      isOpen={isModalOpen}
-      title={
+    <Modal size="md" isOpen={isModalOpen} onToggle={(open) => !open && closeModal()}>
+      <Modal.Title close>
         <OperationTitle
           title={t('staking.unstake.title', { asset: getNativeAsset(networkStore.chain.assets)!.symbol })}
           chainId={networkStore.chain.chainId}
         />
-      }
-      onClose={closeModal}
-    >
-      {unstakeUtils.isInitStep(step) && <UnstakeFormShards onGoBack={closeModal} />}
-      {unstakeUtils.isConfirmStep(step) && (
-        <Confirmation
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => unstakeFlowShards.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => unstakeFlowShards.events.stepChanged(Step.INIT)}
-        />
-      )}
-      {unstakeUtils.isSignStep(step) && (
-        <OperationSign onGoBack={() => unstakeFlowShards.events.stepChanged(Step.CONFIRM)} />
-      )}
-    </BaseModal>
+      </Modal.Title>
+      <Modal.Content>
+        {unstakeUtils.isInitStep(step) && <UnstakeFormShards onGoBack={closeModal} />}
+        {unstakeUtils.isConfirmStep(step) && (
+          <Confirmation
+            secondaryActionButton={
+              initiatorWallet &&
+              basketUtils.isBasketAvailable(initiatorWallet) && (
+                <Button pallet="secondary" onClick={() => unstakeFlowShards.events.txSaved()}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )
+            }
+            onGoBack={() => unstakeFlowShards.events.stepChanged(Step.INIT)}
+          />
+        )}
+        {unstakeUtils.isSignStep(step) && (
+          <OperationSign onGoBack={() => unstakeFlowShards.events.stepChanged(Step.CONFIRM)} />
+        )}
+      </Modal.Content>
+    </Modal>
   );
 };

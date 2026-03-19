@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { type ReactNode, useCallback, useState } from 'react';
 import { type LabelProps, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { type BarShapeProps } from 'recharts/types/cartesian/Bar';
 import { type XAxisTickContentProps } from 'recharts/types/util/types';
@@ -113,7 +113,7 @@ const StackedShape = ({ barProps, barData }: { barProps: BarShapeProps; barData:
   const clipId = `bar-clip-${idx}`;
   const r = Math.min(R, h / 2, w / 2);
 
-  const rects: React.ReactNode[] = [];
+  const rects: ReactNode[] = [];
   let offsetY = 0;
 
   for (let i = 0; i < entry.segments.length; i++) {

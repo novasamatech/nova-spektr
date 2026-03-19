@@ -30,7 +30,7 @@ export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 type SignatoryContactItemProps = {
   accountId: AccountId;
-  children?: React.ReactNode;
+  children?: ReactNode;
 };
 
 const SignatoryContactItem = ({ accountId, children }: SignatoryContactItemProps) => {

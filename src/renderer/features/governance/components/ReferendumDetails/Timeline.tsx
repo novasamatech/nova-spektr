@@ -1,7 +1,7 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
 import { type ReferendumId } from '@/shared/core';
-import { Shimmering } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
 import { detailsAggregate } from '../../aggregates/details';
 
 import { TimelineItem } from './TimelineItem';
@@ -26,8 +26,8 @@ export const Timeline = ({ referendumId }: Props) => {
     <div className="flex flex-col gap-3.5">
       {shouldRenderLoadingState && (
         <div className="flex items-center justify-between">
-          <Shimmering height={18} width={120} />
-          <Shimmering height={18} width={80} />
+          <Skeleton height="18px" width={30} />
+          <Skeleton height="18px" width={20} />
         </div>
       )}
 
