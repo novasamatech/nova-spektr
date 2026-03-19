@@ -1,17 +1,18 @@
 import { memo, useMemo } from 'react';
 import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 
-import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { CHART_TOOLTIP_STYLE, FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { AssetIcon, Identicon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
+import { type CurrencyItem } from '@/domains/price';
 import { type BreakdownRow, useHoldingBreakdown } from '../hooks/useHoldingBreakdown';
 import { type Holding } from '../hooks/useHoldings';
 
 import { Price } from './Price';
+import { PriceChangeIndicator } from './PriceChangeIndicator';
 
 type ChartEntry = {
   name: string;
@@ -138,9 +139,12 @@ export const AssetDetailModal = memo(({ holding, accountIds, allEntries, currenc
               {formatted}
               {suffix} {holding.symbol}
             </FootnoteText>
-            <FootnoteText align="right" className="text-text-tertiary tabular-nums">
-              <Price amount={holding.fiatValue} currency={currency} />
-            </FootnoteText>
+            <div className="flex items-center justify-end gap-1">
+              <PriceChangeIndicator change={holding.change} />
+              <FootnoteText align="right" className="text-text-tertiary tabular-nums">
+                <Price amount={holding.fiatValue} currency={currency} />
+              </FootnoteText>
+            </div>
           </div>
         </div>
 

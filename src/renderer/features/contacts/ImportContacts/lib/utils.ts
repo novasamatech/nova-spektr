@@ -1,5 +1,5 @@
 import { type Contact } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
+import { sanitizeContactName, toAccountId } from '@/shared/lib/utils';
 
 import { type AccountIdConflict } from './types';
 import { type ContactImport, contactsArraySchema } from './validation';
@@ -38,7 +38,7 @@ async function parseJSON(file: File): Promise<ParseResult> {
     return { success: false };
   }
 
-  return { success: true, data: parsed };
+  return { success: true, data: parsed.filter((contact) => contact.name.length > 0) };
 }
 
 function detectAccountIdConflicts(contacts: ContactImport[], existingContacts: Contact[]): AccountIdConflict[] {
@@ -68,7 +68,8 @@ function resolveNameConflicts(
   contacts: ContactImport[],
   existingContacts: Contact[],
 ): { name: string; address: string; accountId: string }[] {
-  const allExistingNames = new Set(existingContacts.map((c) => c.name.toLowerCase()));
+  // Use sanitized names for all comparisons to prevent optical duplicates
+  const allExistingNames = new Set(existingContacts.map((c) => sanitizeContactName(c.name).toLowerCase()));
   const usedNames = new Set<string>();
   const resolved: { name: string; address: string; accountId: string }[] = [];
 
@@ -77,7 +78,9 @@ function resolveNameConflicts(
     let finalName = contact.name;
     let nameIndex = 1;
 
-    const existingWithSameName = existingContacts.find((c) => c.name.toLowerCase() === contact.name.toLowerCase());
+    const existingWithSameName = existingContacts.find(
+      (c) => sanitizeContactName(c.name).toLowerCase() === contact.name.toLowerCase(),
+    );
     const isAccountIdConflict = existingWithSameName && existingWithSameName.accountId === accountId;
 
     if (!isAccountIdConflict && allExistingNames.has(finalName.toLowerCase())) {
@@ -90,7 +93,6 @@ function resolveNameConflicts(
       finalName = `${finalName} (${nameIndex})`;
     }
 
-    // Also check for duplicates within the imported file
     if (usedNames.has(finalName.toLowerCase())) {
       nameIndex = 1;
       while (

@@ -4,7 +4,7 @@ import { createStore } from 'effector';
 import { type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createSubscriptionResource } from '@/shared/query';
-import { type StakingMap } from '../_lib/types';
+import { type StakingMap } from '../types';
 
 import { subscribeStaking } from './service';
 

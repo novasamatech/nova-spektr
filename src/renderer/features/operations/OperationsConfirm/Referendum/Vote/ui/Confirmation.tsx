@@ -10,11 +10,11 @@ import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
-import { FeeWithDataLoading } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { getLocksForAccount, lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
+import { FeeWithDataLoading } from '@/widgets/transaction-fee';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {

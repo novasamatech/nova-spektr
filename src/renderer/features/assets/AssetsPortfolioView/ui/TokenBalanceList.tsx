@@ -7,9 +7,9 @@ import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, IconButton } from '@/shared/ui';
 import { AssetIcon } from '@/shared/ui-entities';
 import { CardStack } from '@/shared/ui-kit';
-import { TokenPrice } from '@/entities/price';
 import { CheckPermission, OperationType } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { TokenPrice } from '@/widgets/price';
 import { tokensService } from '../lib/tokensService';
 import { portfolioModel } from '../model/portfolio-model';
 

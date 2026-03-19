@@ -1,15 +1,16 @@
 import { memo, useMemo } from 'react';
 
-import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { BRAND_COLORS, FALLBACK_COLORS, getColorByPriceId } from '@/shared/ui/chart-constants';
 import { AssetIcon } from '@/shared/ui-entities';
+import { type CurrencyItem } from '@/domains/price';
 import { type Holding } from '../hooks/useHoldings';
 
 import { AllocationChart } from './AllocationChart';
 import { Price } from './Price';
+import { PriceChangeIndicator } from './PriceChangeIndicator';
 
 type Props = {
   holdings: Holding[];
@@ -80,9 +81,12 @@ const HoldingRow = memo(({ holding, color, currency, onSelect }: RowProps) => {
           {formatted}
           {suffix} {holding.symbol}
         </FootnoteText>
-        <FootnoteText align="right" className="text-text-tertiary tabular-nums">
-          <Price amount={holding.fiatValue} currency={currency} />
-        </FootnoteText>
+        <div className="flex items-center justify-end gap-1">
+          <PriceChangeIndicator change={holding.change} />
+          <FootnoteText align="right" className="text-text-tertiary tabular-nums">
+            <Price amount={holding.fiatValue} currency={currency} />
+          </FootnoteText>
+        </div>
       </div>
     </div>
   );

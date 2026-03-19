@@ -5,7 +5,13 @@ import { accountUtils } from '@/entities/wallet';
 
 export const $operationsByKey = multisigOperation.$list.map((operations) =>
   keyBy(operations, (op) =>
-    multisigOperationService.getOperationId(op.chainId, op.callHash, op.multisigAccountId, op.blockCreated, op.indexCreated),
+    multisigOperationService.getOperationId(
+      op.chainId,
+      op.callHash,
+      op.multisigAccountId,
+      op.blockCreated,
+      op.indexCreated,
+    ),
   ),
 );
 

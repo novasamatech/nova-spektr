@@ -4,13 +4,9 @@ import { createStore } from 'effector';
 import { type ChainId, type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createQueryResource } from '@/shared/query';
-import { type ValidatorMap } from '../_lib/types';
+import { type ValidatorMap } from '../types';
 
 import { getAvgApy, validatorsService } from './service';
-
-// =====================================================
-// ============= validatorsResource ====================
-// =====================================================
 
 export type ValidatorsResourceParams = {
   chainId: ChainId;
@@ -36,10 +32,6 @@ export const validatorsResource = createQueryResource<ValidatorsResourceParams>(
     staleAfter: Number.POSITIVE_INFINITY,
   })
   .build();
-
-// =====================================================
-// ============= nominatorsResource ====================
-// =====================================================
 
 export type NominatorsResourceParams = {
   chainId: ChainId;
@@ -73,10 +65,6 @@ export const nominatorsResource = createQueryResource<NominatorsResourceParams>(
 
 export { cacheKey as nominatorsCacheKey };
 
-// =====================================================
-// ============= apyResource ===========================
-// =====================================================
-
 export type ApyResourceParams = {
   api: ApiPromise;
   chainId: ChainId;
@@ -89,7 +77,7 @@ export const apyResource = createQueryResource<ApyResourceParams>({
   key: ({ chainId, era }) => [chainId, String(era)],
 })
   .name('networkApy')
-  .request<string | null>(async ({ api, chainId: _chainId, era }) => {
+  .request<string | null>(async ({ api, era }) => {
     const validatorMap = await validatorsService.getValidatorsWithInfo(api, era);
     const apyValidators = Object.values(validatorMap).filter(
       v => v.totalStake !== undefined && v.commission !== undefined,

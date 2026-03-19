@@ -9,10 +9,10 @@ import { Button, InputHint } from '@/shared/ui';
 import { SignatorySelect } from '@/shared/ui-entities';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { networkSelectorModel } from '@/features/governance';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { unlockFormAggregate } from '../model/unlockForm';
 
 type Props = {

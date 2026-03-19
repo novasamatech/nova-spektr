@@ -13,10 +13,10 @@ export const createAsyncPipeline = <Value, Meta = void>(config?: {
   const identifier = createAbstractIdentifier<Meta, Promise<Value>, AsyncPipelineHandler<Value, Meta>>({
     type: 'asyncPipeline',
     name: config?.name ?? 'unknownAsyncPipeline',
-    processHandler: (handler) => ({
+    processHandler: handler => ({
       key: handler.key,
       available: handler.available,
-      body: ({ acc, input }) => acc.then((value) => handler.body(value, input)),
+      body: ({ acc, input }) => acc.then(value => handler.body(value, input)),
     }),
   });
 
@@ -29,7 +29,7 @@ export const createAsyncPipeline = <Value, Meta = void>(config?: {
         identifier,
         input: meta,
         acc: Promise.resolve(value),
-        postprocess: ({ output }) => output.then((v) => postprocess(v, meta) as Awaited<Value>),
+        postprocess: ({ output }) => output.then(v => postprocess(v, meta) as Awaited<Value>),
       });
     },
   };

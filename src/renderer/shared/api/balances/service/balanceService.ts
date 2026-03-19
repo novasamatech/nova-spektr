@@ -31,7 +31,8 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceUtils } from '@/entities/balance';
-import { type CurrencyItem, type PriceObject } from '../../price-provider/lib/types';
+type CurrencyItem = { coingeckoId: string };
+type PriceObject = Record<string, Record<string, { price: number; change: number }>>;
 
 export const balanceService = {
   subscribeBalances,

@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { type QrReaderError, QrReaderErrorCode, getVideoDevices, requestAccess, stopMediaStream } from '@/shared/ui-kit';
+import {
+  type QrReaderError,
+  QrReaderErrorCode,
+  getVideoDevices,
+  requestAccess,
+  stopMediaStream,
+} from '@/shared/ui-kit';
 
 type CameraStatus = 'checking' | 'available' | 'denied' | 'no_input';
 
