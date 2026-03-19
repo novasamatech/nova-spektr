@@ -47,18 +47,10 @@ const config: ViteUserConfigFnPromise = async (options) => {
     test: {
       root: folders.root,
       dir: folders.root,
-      include: [
-        'tests/integrations/**/*.test.ts',
-        'tests/integrations/**/*.test.tsx',
-        'src/**/*.test.ts',
-        'src/**/*.test.tsx',
-      ],
+      include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
       globals: true,
       environment: 'happy-dom',
-      setupFiles: [
-        resolve(folders.root, './vitest.setup.js'),
-        resolve(folders.root, './tests/integrations/vitest.setup.ts'),
-      ],
+      setupFiles: resolve(folders.root, './vitest.setup.js'),
       reporters: [
         'default',
         'junit',
