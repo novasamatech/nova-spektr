@@ -63,17 +63,14 @@ export type EvidenceContentRequestParams = {
   palletType: CollectivePalletsType;
   chainId: ChainId;
   evidenceHash: HexString;
+  gateways: string[];
 };
 
 export const evidenceContentResource = createQueryResource<EvidenceContentRequestParams>({
-  key: ({ palletType, chainId, evidenceHash }) => [palletType, chainId, evidenceHash],
+  key: ({ palletType, chainId, evidenceHash, gateways }) => [palletType, chainId, evidenceHash, gateways.join('|')],
 })
-  .request<EvidenceContent | null>(async ({ palletType, chainId, evidenceHash }) => {
-    const response = await fetch(evidenceService.getEvidenceIpfsUrl(evidenceHash));
-
-    if (response.status < 200 || response.status >= 300) {
-      throw new Error(`Failed to fetch evidence content: ${response.status} ${response.statusText}`);
-    }
+  .request<EvidenceContent | null>(async ({ palletType, chainId, evidenceHash, gateways }) => {
+    const response = await evidenceService.fetchEvidenceFromIpfs(evidenceHash, gateways);
     const content = await response.text();
 
     return {
