@@ -55,7 +55,11 @@ const config: ViteUserConfigFnPromise = async (options) => {
       ],
       globals: true,
       environment: 'happy-dom',
-      setupFiles: resolve(folders.root, './vitest.setup.js'),
+      setupFiles: [
+        resolve(folders.root, './vitest.setup.js'),
+        resolve(folders.root, './tests/integrations/vitest.setup.ts'),
+      ],
+      testTimeout: 15_000,
       reporters: [
         'default',
         'junit',
