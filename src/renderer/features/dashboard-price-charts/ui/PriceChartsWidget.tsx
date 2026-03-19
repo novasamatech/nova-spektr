@@ -5,6 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { IconButton, TitleText } from '@/shared/ui';
 import { useAssetsPrices } from '@/domains/price';
 import { currencySelect } from '@/aggregates/currency-select';
+import { DashboardWidget } from '@/pages/Dashboard';
 import { type TrackedAssetInfo } from '../hooks/useAvailableAssets';
 import { useTrackedAssets } from '../hooks/useTrackedAssets';
 
@@ -45,7 +46,7 @@ export const PriceChartsWidget = () => {
   const currencySymbol = currency.symbol ?? currency.code;
 
   return (
-    <div className="flex w-[560px] flex-col gap-3">
+    <DashboardWidget card={false} className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <TitleText>{t('dashboard.priceCharts.title')}</TitleText>
         <IconButton name="settingsLite" size={16} onClick={() => setShowTokenSelector(true)} />
@@ -79,6 +80,6 @@ export const PriceChartsWidget = () => {
       )}
 
       {showTokenSelector && <TokenSelectionModal onClose={() => setShowTokenSelector(false)} />}
-    </div>
+    </DashboardWidget>
   );
 };
