@@ -17,7 +17,7 @@ describe('shared/config/features', () => {
       const scope = fork();
       const features = scope.getState($features);
 
-      expect(features.dashboard).toBe(true);
+      expect(features.governance).toBe(true);
       expect(features.assets).toBe(true);
       expect(features.staking).toBe(true);
       expect(features.governance).toBe(true);
@@ -51,22 +51,22 @@ describe('shared/config/features', () => {
     it('should remove mutation when restoring to default value', async () => {
       const scope = fork();
 
-      await allSettled(updateFeatureStatus, { scope, params: ['dashboard', false] });
-      expect(scope.getState($mutatedFeatures)).toHaveProperty('dashboard', false);
+      await allSettled(updateFeatureStatus, { scope, params: ['governance', false] });
+      expect(scope.getState($mutatedFeatures)).toHaveProperty('governance', false);
 
-      await allSettled(updateFeatureStatus, { scope, params: ['dashboard', true] });
-      expect(scope.getState($mutatedFeatures)).not.toHaveProperty('dashboard');
+      await allSettled(updateFeatureStatus, { scope, params: ['governance', true] });
+      expect(scope.getState($mutatedFeatures)).not.toHaveProperty('governance');
     });
   });
 
   describe('updateFeatureStatus — disableFeature', () => {
     it('should disable an enabled feature', async () => {
       const scope = fork();
-      expect(scope.getState($features).dashboard).toBe(true);
+      expect(scope.getState($features).governance).toBe(true);
 
-      await allSettled(updateFeatureStatus, { scope, params: ['dashboard', false] });
+      await allSettled(updateFeatureStatus, { scope, params: ['governance', false] });
 
-      expect(scope.getState($features).dashboard).toBe(false);
+      expect(scope.getState($features).governance).toBe(false);
     });
 
     it('should record override when disabling a default-true feature', async () => {
@@ -92,7 +92,7 @@ describe('shared/config/features', () => {
       const scope = fork();
 
       await allSettled(updateFeatureStatus, { scope, params: ['dappBrowser', true] });
-      await allSettled(updateFeatureStatus, { scope, params: ['dashboard', false] });
+      await allSettled(updateFeatureStatus, { scope, params: ['governance', false] });
       await allSettled(updateFeatureStatus, { scope, params: ['staking', false] });
 
       expect(Object.keys(scope.getState($mutatedFeatures)).length).toBeGreaterThan(0);
@@ -105,12 +105,12 @@ describe('shared/config/features', () => {
     it('should restore default values after reset', async () => {
       const scope = fork();
 
-      await allSettled(updateFeatureStatus, { scope, params: ['dashboard', false] });
-      expect(scope.getState($features).dashboard).toBe(false);
+      await allSettled(updateFeatureStatus, { scope, params: ['governance', false] });
+      expect(scope.getState($features).governance).toBe(false);
 
       await allSettled(resetFeatureStatuses, { scope });
 
-      expect(scope.getState($features).dashboard).toBe(true);
+      expect(scope.getState($features).governance).toBe(true);
     });
 
     it('should be idempotent — reset on empty mutations is safe', async () => {
@@ -127,12 +127,12 @@ describe('shared/config/features', () => {
       const scope = fork();
 
       await allSettled(updateFeatureStatus, { scope, params: ['dappBrowser', true] });
-      await allSettled(updateFeatureStatus, { scope, params: ['dashboard', false] });
+      await allSettled(updateFeatureStatus, { scope, params: ['governance', false] });
       await allSettled(updateFeatureStatus, { scope, params: ['staking', false] });
 
       const features = scope.getState($features);
       expect(features.dappBrowser).toBe(true);
-      expect(features.dashboard).toBe(false);
+      expect(features.governance).toBe(false);
       expect(features.staking).toBe(false);
       expect(features.assets).toBe(true);
     });
