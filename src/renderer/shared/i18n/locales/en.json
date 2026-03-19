@@ -584,6 +584,15 @@
       "totalStaked": "Total staked",
       "noStaking": "No active staking positions"
     },
+    "governanceOverview": {
+      "title": "Governance Overview",
+      "votingAccounts": "Voting accounts",
+      "totalLocked": "Total locked",
+      "unlockable": "Unlockable",
+      "averageConviction": "Avg. conviction",
+      "noGovernance": "No governance activity found",
+      "convictionDisplay": "{value}x"
+    },
     "priceCharts": {
       "title": "Price Tracker",
       "manageTokens": "Manage tokens",
