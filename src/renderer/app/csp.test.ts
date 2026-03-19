@@ -37,8 +37,8 @@ describe('src/renderer/app/index.html — Content-Security-Policy meta tag', () 
     expect(cspContent).toContain("default-src 'self'");
   });
 
-  it("should contain directive: script-src 'self'", () => {
-    expect(cspContent).toContain("script-src 'self'");
+  it("should contain directive: script-src 'self' 'wasm-unsafe-eval'", () => {
+    expect(cspContent).toContain("script-src 'self' 'wasm-unsafe-eval'");
   });
 
   it("should contain directive: style-src 'self' 'unsafe-inline'", () => {
@@ -72,12 +72,20 @@ describe('src/renderer/app/index.html — Content-Security-Policy meta tag', () 
     expect(cspContent).toContain("frame-src 'none'");
   });
 
-  it('should contain upgrade-insecure-requests directive', () => {
-    expect(cspContent).toContain('upgrade-insecure-requests');
+  it('should NOT contain upgrade-insecure-requests (unnecessary in Electron file:// context)', () => {
+    expect(cspContent).not.toContain('upgrade-insecure-requests');
+  });
+
+  it("should contain worker-src 'self' blob: for substrate-connect workers", () => {
+    expect(cspContent).toContain("worker-src 'self' blob:");
   });
 
   it('should NOT allow unsafe-eval in script-src (prevents XSS)', () => {
     expect(cspContent).not.toContain("'unsafe-eval'");
+  });
+
+  it("should allow 'wasm-unsafe-eval' for polkadot WASM crypto", () => {
+    expect(cspContent).toContain("'wasm-unsafe-eval'");
   });
 
   it('should NOT use wildcard (*) as default-src', () => {
