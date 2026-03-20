@@ -4,7 +4,7 @@ import { type PropsWithChildren, memo, useDeferredValue, useEffect, useState } f
 import { type CallData, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { validateCallData } from '@/shared/lib/utils';
-import { Button, InputHint, SmallTitleText } from '@/shared/ui';
+import { Alert, Button, InputHint, SmallTitleText } from '@/shared/ui';
 import { Input, Json, Modal, useNotification } from '@/shared/ui-kit';
 import {
   type MultisigOperation,
@@ -127,6 +127,10 @@ export const CallDataModal = memo(({ operation, api, chain, children }: Props) =
       <Modal.Title close>{t('operation.callData.title')}</Modal.Title>
       <Modal.Content>
         <div className="flex flex-col gap-y-4 p-5">
+          <Alert active variant="info" title={t('operation.callData.hintTitle')}>
+            <Alert.Item withDot={false}>{t('operation.callData.hintDescription')}</Alert.Item>
+          </Alert>
+
           <Input
             placeholder={t('operation.callData.inputPlaceholder')}
             value={callData}
