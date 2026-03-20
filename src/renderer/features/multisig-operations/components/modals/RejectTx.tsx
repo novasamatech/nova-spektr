@@ -156,6 +156,8 @@ export const RejectTxModal = memo(({ api, operation, account, chain, children }:
           {activeStep === Step.CONFIRMATION && (
             <Confirmation
               operation={operation}
+              multisigAccount={account}
+              initiator={initiator}
               api={api}
               chain={chain}
               fee={fee}

@@ -125,7 +125,7 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
                   <Modal.Title close>{t('operation.viewJSON.label')}</Modal.Title>
                   <Modal.Content>
                     <Box padding={5}>
-                      <Json value={jsonArgs} name="operation" />
+                      <Json value={jsonArgs} name="operation" expandDepth={3} />
                     </Box>
                   </Modal.Content>
                 </Modal>
