@@ -17,7 +17,6 @@ import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { proxyUtils } from '@/entities/proxy';
 import { SelectedValidatorsModal } from '@/entities/staking';
 import {
   isAddProxyTransaction,
@@ -251,9 +250,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
       {isRemovePureProxyTransaction(transaction) && proxyType && spawner && (
         <>
           <DetailRow label={t('operation.details.revokeAccessType')}>
-            <FootnoteText className="text-text-secondary">
-              {t(proxyUtils.getProxyTypeOperation(proxyType))}
-            </FootnoteText>
+            <FootnoteText className="text-text-secondary">{proxyType}</FootnoteText>
           </DetailRow>
           <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
             {spawnerAccountId && <NamedAccount chain={chain} accountId={spawnerAccountId} variant="short" />}
@@ -263,7 +260,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
 
       {isManageProxyTransaction(transaction) && proxyType && (
         <DetailRow label={t('operation.details.accessType')}>
-          <FootnoteText className="text-text-secondary">{t(proxyUtils.getProxyTypeOperation(proxyType))}</FootnoteText>
+          <FootnoteText className="text-text-secondary">{proxyType}</FootnoteText>
         </DetailRow>
       )}
 

@@ -5,7 +5,7 @@ import { and, not } from 'patronum';
 
 import { chainsService } from '@/shared/api/network';
 import { proxyService } from '@/shared/api/proxy';
-import { type Address, type Chain, type ProxyType, type Transaction, type Wallet } from '@/shared/core';
+import { type Address, type Chain, type ProxyType, type Transaction, type Wallet, ProxyTypes } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import {
@@ -295,7 +295,7 @@ const $proxyTypes = combine(
       return getProxyTypes(apis[chain.chainId]!);
     }
 
-    return ['Any'] as const;
+    return [ProxyTypes.ANY];
   },
 );
 
@@ -340,7 +340,7 @@ const $fakeTx = combine(
       chain: chain,
       accountId: TEST_ACCOUNTS[0],
       delegateAccountId: TEST_ACCOUNTS[0],
-      type: 'Any',
+      type: ProxyTypes.ANY,
     });
   },
 );

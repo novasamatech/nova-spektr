@@ -12,7 +12,7 @@ import { Field } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
-import { ProxyPopover, proxyUtils } from '@/entities/proxy';
+import { ProxyPopover } from '@/entities/proxy';
 import { AccountAddress, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/widgets/transaction-fee';
@@ -281,7 +281,7 @@ const ProxyTypeSelector = () => {
   const options = proxyTypes.map((type) => ({
     id: type,
     value: type,
-    element: t(proxyUtils.getProxyTypeOperation(type)),
+    element: type,
   }));
 
   return (
