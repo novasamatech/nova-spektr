@@ -3,7 +3,7 @@ import { t } from 'i18next';
 import { interval, once } from 'patronum';
 import { toast } from 'sonner';
 
-import { assert } from '@/shared/lib/utils';
+import { RelayChains, assert } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -68,7 +68,11 @@ const $signableAccounts = walletModel.$wallets.map((wallets): SignableAccount[] 
     .filter((w) => walletUtils.isPolkadotVaultGroup(w))
     .flatMap((wallet) =>
       wallet.accounts.flatMap((account): SignableAccount[] => {
-        if (accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)) {
+        const isSignable = walletUtils.isSingleShard(wallet)
+          ? accountUtils.isVaultBaseAccount(account)
+          : accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account);
+
+        if (isSignable) {
           return [
             {
               account,
@@ -204,7 +208,7 @@ sample({
     const signatory = account!.account;
     const messageText = buildSignMessage(challengeData.nonce);
     const message = new TextEncoder().encode(messageText);
-    const chainId = accountService.isChainAccount(signatory) ? signatory.chainId : undefined;
+    const chainId = accountService.isChainAccount(signatory) ? signatory.chainId : RelayChains.POLKADOT;
 
     return { message, signatory, chainId };
   },
