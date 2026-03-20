@@ -13,7 +13,6 @@ import {
   ZERO_BALANCE,
   getNativeAsset,
   getProxyTypes,
-  isStringsMatchQuery,
   nonNullable,
   nullable,
   toAccountId,
@@ -75,8 +74,6 @@ const flowStarted = createEvent<Wallet>();
 
 const formInitiated = createEvent();
 const formSubmitted = createEvent<FormSubmitEvent>();
-const proxyQueryChanged = createEvent<string>();
-
 const proxyDepositChanged = createEvent<string>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
 
@@ -85,7 +82,6 @@ const $wallet = restore(flowStarted, null);
 const $newProxyDeposit = restore(proxyDepositChanged, ZERO_BALANCE);
 const $isProxyDepositLoading = restore(isProxyDepositLoadingChanged, true);
 
-const $proxyQuery = createStore<string>('');
 const $maxProxies = createStore<number>(0);
 
 const form: Form<FormParams> = createForm<FormParams>({
@@ -262,9 +258,8 @@ const $proxyAccounts = combine(
   {
     wallets: walletModel.$wallets,
     chain: form.fields.chain.$value,
-    query: $proxyQuery,
   },
-  ({ wallets, chain, query }) => {
+  ({ wallets, chain }) => {
     if (!chain?.chainId) return [];
 
     return walletUtils.getAccountsBy(wallets, (account, wallet) => {
@@ -274,9 +269,8 @@ const $proxyAccounts = combine(
 
       const isShardAccount = accountUtils.isVaultShardAccount(account);
       const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, chain);
-      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
-      return isChainAndCryptoMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);
+      return isChainAndCryptoMatch && !isShardAccount;
     });
   },
 );
@@ -438,7 +432,7 @@ sample({
 
 sample({
   clock: formInitiated,
-  target: [form.reset, $proxyQuery.reinit],
+  target: form.reset,
 });
 
 sample({
@@ -456,11 +450,6 @@ sample({
 });
 
 sample({
-  clock: proxyQueryChanged,
-  target: $proxyQuery,
-});
-
-sample({
   clock: [form.fields.delegate.change, form.fields.proxyType.change],
   target: [form.fields.delegate.resetError, form.fields.proxyType.resetError],
 });
@@ -468,7 +457,6 @@ sample({
 sample({
   clock: form.fields.chain.change,
   target: [
-    $proxyQuery.reinit,
     form.fields.chain.resetError,
     form.fields.initiator.resetError,
     form.fields.signatory.resetError,
@@ -566,7 +554,6 @@ export const formModel = {
   $signatories,
   $proxyAccounts,
   $proxyTypes,
-  $proxyQuery,
 
   $activeProxies,
   $oldProxyDeposit,
@@ -583,7 +570,6 @@ export const formModel = {
   $canSubmit,
 
   formInitiated,
-  proxyQueryChanged,
   proxyDepositChanged,
   isProxyDepositLoadingChanged,
   formSubmitted,
