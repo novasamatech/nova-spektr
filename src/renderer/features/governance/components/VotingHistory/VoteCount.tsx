@@ -1,4 +1,5 @@
-import { FootnoteText, Shimmering } from '@/shared/ui';
+import { FootnoteText } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
 
 type Props = {
   count: number;
@@ -7,7 +8,7 @@ type Props = {
 
 export const VoteCount = ({ count, loading }: Props) => {
   if (loading) {
-    return <Shimmering height="1em" width="1ch" />;
+    return <Skeleton height="1em" width="1ch" />;
   }
 
   return (

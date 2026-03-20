@@ -2,8 +2,8 @@ import { useStoreMap, useUnit } from 'effector-react';
 
 import { type ChainId, type Referendum } from '@/shared/core';
 import { pickNestedValue } from '@/shared/lib/utils';
-import { HeaderTitleText, Shimmering } from '@/shared/ui';
-import { Markdown } from '@/shared/ui-kit/Markdown/Markdown';
+import { HeaderTitleText } from '@/shared/ui';
+import { Markdown, Skeleton } from '@/shared/ui-kit';
 import { TrackInfo, referendumService } from '@/entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
 
@@ -41,14 +41,14 @@ export const ProposalDescription = ({ chainId, addressPrefix, referendum }: Prop
 
       <div className="flex flex-col gap-4">
         <HeaderTitleText className="text-balance">
-          {!title && isTitlesLoading ? <Shimmering height="1em" /> : title}
+          {!title && isTitlesLoading ? <Skeleton height="1em" /> : title}
         </HeaderTitleText>
         {referendum.type === 'Ongoing' && referendum.proposal && <Proposal proposal={referendum.proposal} />}
         {isDescriptionLoading && (
           <div className="flex flex-col gap-3">
-            <Shimmering height={18} />
-            <Shimmering height={18} width={240} />
-            <Shimmering height={300} />
+            <Skeleton height="18px" />
+            <Skeleton height="18px" width={60} />
+            <Skeleton height={75} />
           </div>
         )}
 

@@ -1,9 +1,9 @@
 import { type PropsWithChildren } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
+import { Modal } from '@/shared/ui-kit';
 import { Button } from '../../Buttons';
 import { type Pallet } from '../../Buttons/common/types';
-import { BaseModal } from '../BaseModal/BaseModal';
 
 type Props = {
   isOpen: boolean;
@@ -27,25 +27,23 @@ export const ConfirmModal = ({
   onClose,
   onConfirm,
 }: PropsWithChildren<Props>) => (
-  <BaseModal
-    isOpen={isOpen}
-    panelClass={panelClass}
-    contentClass={cnTw('p-4', contentClass)}
-    zIndex="z-[60]"
-    onClose={onClose}
-  >
-    {children}
-    <div className="mt-4 flex gap-x-3">
-      {cancelText && (
-        <Button className="flex-1" variant="fill" pallet="secondary" size="sm" onClick={onClose}>
-          {cancelText}
-        </Button>
-      )}
-      {confirmText && (
-        <Button className="flex-1" variant="fill" size="sm" pallet={confirmPallet} onClick={onConfirm}>
-          {confirmText}
-        </Button>
-      )}
-    </div>
-  </BaseModal>
+  <Modal size="fit" isOpen={isOpen} onToggle={(open) => !open && onClose()}>
+    <Modal.Content>
+      <div className={cnTw('p-4', panelClass, contentClass)}>
+        {children}
+        <div className="mt-4 flex gap-x-3">
+          {cancelText && (
+            <Button className="flex-1" variant="fill" pallet="secondary" size="sm" onClick={onClose}>
+              {cancelText}
+            </Button>
+          )}
+          {confirmText && (
+            <Button className="flex-1" variant="fill" size="sm" pallet={confirmPallet} onClick={onConfirm}>
+              {confirmText}
+            </Button>
+          )}
+        </div>
+      </div>
+    </Modal.Content>
+  </Modal>
 );

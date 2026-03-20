@@ -86,6 +86,8 @@
   "dependencies": {
     "@apollo/client": "3.13.9",
     "@ariakit/react": "0.4.17",
+    "@dnd-kit/helpers": "0.3.2",
+    "@dnd-kit/react": "0.3.2",
     "@effector-storage/idb-keyval": "2.0.0",
     "@headlessui/react": "1.7.19",
     "@novasamatech/spektr-dapp-host-container": "0.0.12",

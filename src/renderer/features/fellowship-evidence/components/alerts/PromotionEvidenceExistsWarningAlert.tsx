@@ -2,6 +2,7 @@ import { Slot } from '@radix-ui/react-slot';
 import {
   type ForwardedRef,
   type HTMLAttributes,
+  type MouseEvent,
   type ReactElement,
   forwardRef,
   useEffect,
@@ -66,7 +67,7 @@ const PromotionEvidenceExistsWarningAlertInner = (
     }
   }, [autoTrigger]);
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: MouseEvent) => {
     e.stopPropagation();
     trigger();
     radix.onClick?.(e);

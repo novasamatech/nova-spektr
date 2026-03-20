@@ -3,7 +3,8 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { ZERO_BALANCE, cnTw, formatFiatBalance } from '@/shared/lib/utils';
-import { FootnoteText, Shimmering } from '@/shared/ui';
+import { FootnoteText } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
 import { useAssetsPrices } from '@/domains/price';
 import { currencySelect } from '@/aggregates/currency-select';
 
@@ -44,7 +45,7 @@ export const TokenPrice = memo(({ assetId, className, wrapperClassName }: Props)
   }
 
   if (!price) {
-    return <Shimmering width={56} height={18} />;
+    return <Skeleton width={14} height="18px" />;
   }
 
   const isGrow = price.change >= 0;

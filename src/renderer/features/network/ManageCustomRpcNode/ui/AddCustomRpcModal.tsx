@@ -4,8 +4,8 @@ import { type FormEvent } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { Alert, BaseModal, Button, InputHint } from '@/shared/ui';
-import { Field, Input } from '@/shared/ui-kit';
+import { Alert, Button, InputHint } from '@/shared/ui';
+import { Field, Input, Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
 import { addCustomRpcModel } from '../model/add-custom-rpc-model';
@@ -30,23 +30,24 @@ export const AddCustomRpcModal = () => {
   }
 
   return (
-    <BaseModal
-      closeButton
-      title={<OperationTitle title={t('settings.networks.titleAdd')} chainId={chainId} />}
-      headerClass="py-3 pl-5 pr-3"
-      isOpen={isModalOpen}
-      onClose={closeModal}
-    >
-      <form id="add-rpc-form" onSubmit={onSubmit}>
-        <div className="mt-4 flex flex-col gap-y-4">
-          <NameInput />
-          <UrlInput />
-          <Alerts />
-        </div>
+    <Modal size="md" isOpen={isModalOpen} onToggle={(open) => !open && closeModal()}>
+      <Modal.Title close>
+        <OperationTitle title={t('settings.networks.titleAdd')} chainId={chainId} />
+      </Modal.Title>
+      <Modal.Content>
+        <div className="px-5 pb-4">
+          <form id="add-rpc-form" onSubmit={onSubmit}>
+            <div className="mt-4 flex flex-col gap-y-4">
+              <NameInput />
+              <UrlInput />
+              <Alerts />
+            </div>
 
-        <ActionSection />
-      </form>
-    </BaseModal>
+            <ActionSection />
+          </form>
+        </div>
+      </Modal.Content>
+    </Modal>
   );
 };
 

@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
+import { DashboardWidget } from '@/pages/Dashboard';
 import { useStakingOverview } from '../hooks/useStakingOverview';
 
 import { Price } from './Price';
@@ -11,8 +12,6 @@ type Props = {
   accountIds: string[];
   allEntries: { accountId: string; name: string; address: string }[];
 };
-
-const containerClass = 'w-fit rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
 export const StakingSummaryWidget = ({ accountIds }: Props) => {
   const { t } = useI18n();
@@ -45,7 +44,7 @@ export const StakingSummaryWidget = ({ accountIds }: Props) => {
   const hasStaking = chains.length > 0;
 
   return (
-    <div className={containerClass}>
+    <DashboardWidget colSpan={1}>
       <FootnoteText className="text-text-tertiary">{t('dashboard.stakingSummary.title')}</FootnoteText>
 
       {pending && !hasStaking && (
@@ -86,6 +85,6 @@ export const StakingSummaryWidget = ({ accountIds }: Props) => {
           </div>
         </div>
       )}
-    </div>
+    </DashboardWidget>
   );
 };

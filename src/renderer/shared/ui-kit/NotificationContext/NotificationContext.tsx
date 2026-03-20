@@ -2,6 +2,7 @@ import noop from 'lodash/noop';
 import { nanoid } from 'nanoid';
 import {
   type PropsWithChildren,
+  type RefObject,
   createContext,
   useCallback,
   useContext,
@@ -40,7 +41,7 @@ const createModalNotification = (props: ModalNotificationProps): ModalNotificati
 
 const shouldAutoDismiss = (duration: number): boolean => duration > NO_AUTO_DISMISS;
 
-const clearTimeoutSafely = (timeoutRef: React.RefObject<NodeJS.Timeout | null>): void => {
+const clearTimeoutSafely = (timeoutRef: RefObject<NodeJS.Timeout | null>): void => {
   if (timeoutRef.current) {
     clearTimeout(timeoutRef.current);
     timeoutRef.current = null;

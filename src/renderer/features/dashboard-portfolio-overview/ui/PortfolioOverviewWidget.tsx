@@ -4,6 +4,7 @@ import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, SmallTitleText, TitleText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
+import { DashboardWidget } from '@/pages/Dashboard';
 import { useBalanceAllocation } from '../hooks/useBalanceAllocation';
 import { useChainHoldings } from '../hooks/useChainHoldings';
 import { useHoldings } from '../hooks/useHoldings';
@@ -23,8 +24,6 @@ type Props = {
   accountIds: string[];
   allEntries: EntryLike[];
 };
-
-const containerClass = 'w-[560px] rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
 const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold transition-colors';
 const activeToggleClass = 'bg-white text-text-primary shadow-sm';
@@ -46,20 +45,20 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
 
   if (accountIds.length === 0) {
     return (
-      <div className={containerClass}>
+      <DashboardWidget>
         <FootnoteText className="text-text-tertiary">{t('dashboard.portfolioOverview.title')}</FootnoteText>
         <div className="flex flex-col items-center gap-y-1 py-6">
           <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
           <BodyText className="text-text-tertiary">{t('dashboard.noSelection.description')}</BodyText>
         </div>
-      </div>
+      </DashboardWidget>
     );
   }
 
   const hasData = (viewMode === 'asset' ? holdings.length > 0 : chainHoldings.length > 0) && totalFiat !== null;
 
   return (
-    <div className={containerClass}>
+    <DashboardWidget>
       <div className="flex items-start justify-between gap-4">
         <div>
           <FootnoteText className="text-text-tertiary">{t('dashboard.portfolioOverview.title')}</FootnoteText>
@@ -125,6 +124,6 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
           onClose={() => setSelectedChainId(null)}
         />
       )}
-    </div>
+    </DashboardWidget>
   );
 };

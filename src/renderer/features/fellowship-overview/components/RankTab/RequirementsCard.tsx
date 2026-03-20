@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
+import { type MouseEvent, memo } from 'react';
 
 import { $features } from '@/shared/config/features';
 import { useI18n } from '@/shared/i18n';
@@ -23,7 +23,7 @@ export const RequirementsCard = memo(({ rankId }: RequirementsCardProps) => {
     return null;
   }
 
-  const handleCodexClick = (e: React.MouseEvent) => {
+  const handleCodexClick = (e: MouseEvent) => {
     e.preventDefault();
     modal.switchTab(FELLOWSHIP_TABS.CODEX);
   };

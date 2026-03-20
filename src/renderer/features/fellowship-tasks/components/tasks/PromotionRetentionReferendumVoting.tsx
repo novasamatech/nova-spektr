@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { type ReactNode, memo, useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
@@ -32,7 +32,7 @@ type Props = {
 
 export const promotionRetentionReferendumVotingSlot = createSlot<{
   referendumId: ReferendumId;
-  children: React.ReactNode;
+  children: ReactNode;
 }>();
 
 export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, transaction }: Props) => {

@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { type ReactNode } from 'react';
 
 import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -18,7 +19,7 @@ interface SignatoryInfo {
 type Props = {
   chain: Chain;
   signatories: Omit<SignatoryInfo, 'index'>[];
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 export const SelectedSignatoriesModal = ({ signatories, chain, children }: Props) => {
