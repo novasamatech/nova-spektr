@@ -12,3 +12,9 @@ export type RewardSource = {
   url: string;
   addressPrefix: number;
 };
+
+export type MonthlyRewardRecord = {
+  address: string;
+  amount: string;
+  timestamp: number;
+};

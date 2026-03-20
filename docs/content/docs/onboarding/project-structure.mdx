@@ -38,7 +38,7 @@ Source code is separated into 3 build targets:
   - pages/ combination of features
   - shared/ helpers, utils, integrations
   - entities/ **deprecated** logic and ui for given entity (e.g. wallet, chain, etc.)
-  - widgets/ **deprecated** modal windows for creating transactions
+  - widgets/ hook-consuming UI components (access data via useUnit, useStoreMap, etc.)
 </FileTree>
 
 ## Domain
@@ -164,8 +164,8 @@ Feature **must not**:
 
 <FileTree>
   - feature-name
-    - components/
-    - services/
+    - ui/ React components only
+    - hooks/ custom React hooks
     - model/
       - feature.tsx
       - ...

@@ -5,6 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText, TitleText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
+import { DashboardWidget } from '@/pages/Dashboard';
 import { type EntryLike } from '../hooks/useStakingBreakdown';
 import { useTotalRewards } from '../hooks/useTotalRewards';
 
@@ -28,7 +29,6 @@ const SINCE_OFFSETS: Record<Exclude<RewardsTimeRange, 'all'>, number> = {
   '1y': 365 * 24 * 3600,
 };
 
-const containerClass = 'w-[560px] rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold transition-colors';
 const activeClass = 'bg-white text-text-primary shadow-sm';
 const inactiveClass = 'text-text-tertiary hover:text-text-secondary';
@@ -55,13 +55,13 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
 
   if (accountIds.length === 0) {
     return (
-      <div className={containerClass}>
+      <DashboardWidget>
         <FootnoteText className="text-text-tertiary">{t('dashboard.totalRewards.title')}</FootnoteText>
         <div className="flex flex-col items-center gap-y-1 py-6">
           <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
           <BodyText className="text-text-tertiary">{t('dashboard.noSelection.description')}</BodyText>
         </div>
-      </div>
+      </DashboardWidget>
     );
   }
 
@@ -74,87 +74,85 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
   };
 
   return (
-    <>
-      <div className={containerClass}>
-        <div className="flex items-center justify-between">
-          <FootnoteText className="text-text-tertiary">{t('dashboard.totalRewards.title')}</FootnoteText>
-          <div className="flex w-fit rounded-md bg-tab-background p-0.5">
-            {RANGES.map((range) => (
-              <button
-                key={range}
-                type="button"
-                className={`${toggleButtonClass} ${timeRange === range ? activeClass : inactiveClass}`}
-                onClick={() => setTimeRange(range)}
-              >
-                {rangeLabels[range]}
-              </button>
-            ))}
-          </div>
+    <DashboardWidget>
+      <div className="flex items-center justify-between">
+        <FootnoteText className="text-text-tertiary">{t('dashboard.totalRewards.title')}</FootnoteText>
+        <div className="flex w-fit rounded-md bg-tab-background p-0.5">
+          {RANGES.map((range) => (
+            <button
+              key={range}
+              type="button"
+              className={`${toggleButtonClass} ${timeRange === range ? activeClass : inactiveClass}`}
+              onClick={() => setTimeRange(range)}
+            >
+              {rangeLabels[range]}
+            </button>
+          ))}
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <TitleText className="mt-1">
-              {pending ? <Skeleton width={30} height={7} /> : <Price amount={totalFiat ?? '0'} currency={currency} />}
-            </TitleText>
-          </div>
-        </div>
-
-        {chains.length > 0 && (
-          <>
-            <div className="my-4 border-t border-divider" />
-            <div className="flex gap-3">
-              <ChainAllocationChart chains={chains} />
-              <div className="flex flex-1 flex-col gap-3">
-                {chains.map((chain) => {
-                  const { formatted, suffix } = formatBalance(chain.totalRewards, chain.precision);
-
-                  return (
-                    <button
-                      key={chain.chainId}
-                      type="button"
-                      className="flex cursor-pointer items-center justify-between rounded-md px-2 py-1 hover:bg-hover"
-                      onClick={() => setSelectedChainId(chain.chainId)}
-                    >
-                      <div className="flex items-center gap-2">
-                        <img src={chain.icon.colored} alt={chain.chainName} className="h-6 w-6" />
-                        <div>
-                          <FootnoteText className="text-text-primary">{chain.chainName}</FootnoteText>
-                          <FootnoteText className="text-text-tertiary">
-                            {formatted}
-                            {suffix ? ` ${suffix}` : ''} {chain.symbol}
-                          </FootnoteText>
-                        </div>
-                      </div>
-                      <FootnoteText className="text-text-secondary">
-                        <Price amount={chain.fiatValue} currency={currency} />
-                      </FootnoteText>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </>
-        )}
-
-        {!pending && chains.length === 0 && (
-          <div className="flex flex-col items-center gap-y-1 py-6">
-            <BodyText className="text-text-tertiary">{t('dashboard.totalRewards.noRewards')}</BodyText>
-          </div>
-        )}
-
-        {pending && chains.length === 0 && (
-          <>
-            <div className="my-4 border-t border-divider" />
-            <div className="flex gap-3">
-              <Skeleton circle width={40} />
-              <div className="flex flex-1 flex-col gap-3">
-                <Skeleton width="100%" height={10} />
-                <Skeleton width="100%" height={10} />
-              </div>
-            </div>
-          </>
-        )}
       </div>
+      <div className="flex items-center gap-4">
+        <div className="flex-1">
+          <TitleText className="mt-1">
+            {pending ? <Skeleton width={30} height={7} /> : <Price amount={totalFiat ?? '0'} currency={currency} />}
+          </TitleText>
+        </div>
+      </div>
+
+      {chains.length > 0 && (
+        <>
+          <div className="my-4 border-t border-divider" />
+          <div className="flex gap-3">
+            <ChainAllocationChart chains={chains} />
+            <div className="flex flex-1 flex-col gap-3">
+              {chains.map((chain) => {
+                const { formatted, suffix } = formatBalance(chain.totalRewards, chain.precision);
+
+                return (
+                  <button
+                    key={chain.chainId}
+                    type="button"
+                    className="flex cursor-pointer items-center justify-between rounded-md px-2 py-1 hover:bg-hover"
+                    onClick={() => setSelectedChainId(chain.chainId)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <img src={chain.icon.colored} alt={chain.chainName} className="h-6 w-6" />
+                      <div>
+                        <FootnoteText className="text-text-primary">{chain.chainName}</FootnoteText>
+                        <FootnoteText className="text-text-tertiary">
+                          {formatted}
+                          {suffix ? ` ${suffix}` : ''} {chain.symbol}
+                        </FootnoteText>
+                      </div>
+                    </div>
+                    <FootnoteText className="text-text-secondary">
+                      <Price amount={chain.fiatValue} currency={currency} />
+                    </FootnoteText>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+
+      {!pending && chains.length === 0 && (
+        <div className="flex flex-col items-center gap-y-1 py-6">
+          <BodyText className="text-text-tertiary">{t('dashboard.totalRewards.noRewards')}</BodyText>
+        </div>
+      )}
+
+      {pending && chains.length === 0 && (
+        <>
+          <div className="my-4 border-t border-divider" />
+          <div className="flex gap-3">
+            <Skeleton circle width={40} />
+            <div className="flex flex-1 flex-col gap-3">
+              <Skeleton width="100%" height={10} />
+              <Skeleton width="100%" height={10} />
+            </div>
+          </div>
+        </>
+      )}
 
       {selectedChain && (
         <RewardsDetailModal
@@ -166,6 +164,6 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
           onClose={() => setSelectedChainId(null)}
         />
       )}
-    </>
+    </DashboardWidget>
   );
 };

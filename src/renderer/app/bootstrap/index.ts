@@ -18,7 +18,7 @@ import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { dashboardNavigationFeature } from '@/features/dashboard-navigation';
 import { dashboardPortfolioOverviewFeature } from '@/features/dashboard-portfolio-overview';
 import { dashboardPriceChartsFeature } from '@/features/dashboard-price-charts';
-import { dashboardStakingOverviewFeature } from '@/features/dashboard-staking-overview';
+import { dashboardStakingFeature } from '@/features/dashboard-staking';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { multiTransferFeature } from '@/features/multi-transfer';
@@ -70,7 +70,7 @@ export const bootstrap = () => {
     dashboardNavigationFeature,
     dashboardPortfolioOverviewFeature,
     dashboardPriceChartsFeature,
-    dashboardStakingOverviewFeature,
+    dashboardStakingFeature,
     assetsNavigationFeature,
     fellowshipNavigationFeature,
     operationsNavigationFeature,

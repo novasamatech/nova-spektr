@@ -20,8 +20,16 @@ const selectionChanged = createEvent<string[]>();
 const selectAll = createEvent();
 const deselectAll = createEvent();
 const tabChanged = createEvent<string>();
+const widgetOrderChanged = createEvent<{ tab: string; order: string[] }>();
+const editModeToggled = createEvent();
 
 const $activeTab = createStore('overview');
+const $editMode = createStore(false);
+$editMode.on(editModeToggled, (state) => !state);
+
+const $widgetOrder = createStore<Record<string, string[]>>({});
+persist({ store: $widgetOrder, key: 'dashboard-widget-order', sync: true });
+$widgetOrder.on(widgetOrderChanged, (state, { tab, order }) => ({ ...state, [tab]: order }));
 
 $activeTab.on(tabChanged, (_, tab) => tab);
 
@@ -155,11 +163,15 @@ export const dashboardModel = {
   $selectedAccounts,
   $selectedContactAccountIds,
   $activeTab,
+  $widgetOrder,
+  $editMode,
 
   selectionChanged,
   selectAll,
   deselectAll,
   tabChanged,
+  widgetOrderChanged,
+  editModeToggled,
 };
 
 export type { DashboardEntry };

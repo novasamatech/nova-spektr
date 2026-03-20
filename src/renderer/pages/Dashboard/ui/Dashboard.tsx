@@ -1,13 +1,14 @@
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { Slot, createSlot } from '@/shared/di';
+import { createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { BodyText, Header, SmallTitleText } from '@/shared/ui';
+import { BodyText, Header, IconButton, SmallTitleText } from '@/shared/ui';
 import { Tabs } from '@/shared/ui-kit';
 import { dashboardModel } from '../model/dashboard-model';
 
 import { DashboardAccountSelector } from './DashboardAccountSelector';
+import { DashboardGrid } from './DashboardGrid';
 
 export const dashboardWidgetsSlot = createSlot<{
   accountIds: string[];
@@ -26,7 +27,9 @@ export const Dashboard = () => {
   const allEntries = useUnit(dashboardModel.$allEntries);
   const selectedIds = useUnit(dashboardModel.$selectedIds);
   const activeTab = useUnit(dashboardModel.$activeTab);
+  const editMode = useUnit(dashboardModel.$editMode);
   const tabChanged = useUnit(dashboardModel.tabChanged);
+  const editModeToggled = useUnit(dashboardModel.editModeToggled);
 
   const accountIds = useMemo(() => {
     const selectedIdSet = new Set(selectedIds);
@@ -43,7 +46,12 @@ export const Dashboard = () => {
   return (
     <section className="flex h-full flex-col">
       <Header title={t('dashboard.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-        {allEntries.length > 0 && <DashboardAccountSelector />}
+        {allEntries.length > 0 && (
+          <div className="flex items-center gap-x-2">
+            <IconButton className={editMode ? 'text-icon-accent' : ''} name="edit" onClick={editModeToggled} />
+            <DashboardAccountSelector />
+          </div>
+        )}
       </Header>
 
       <div className="flex min-h-0 flex-1 flex-col px-4">
@@ -67,9 +75,12 @@ export const Dashboard = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex w-full flex-wrap items-start gap-4 overflow-y-auto py-4">
-                <Slot id={dashboardWidgetsSlot} props={{ accountIds, allEntries }} />
-              </div>
+              <DashboardGrid
+                slot={dashboardWidgetsSlot}
+                tab="overview"
+                editMode={editMode}
+                props={{ accountIds, allEntries }}
+              />
             )}
           </Tabs.Content>
 
@@ -82,9 +93,12 @@ export const Dashboard = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex w-full flex-wrap items-start gap-4 overflow-y-auto py-4">
-                <Slot id={dashboardStakingSlot} props={{ accountIds, allEntries }} />
-              </div>
+              <DashboardGrid
+                slot={dashboardStakingSlot}
+                tab="staking"
+                editMode={editMode}
+                props={{ accountIds, allEntries }}
+              />
             )}
           </Tabs.Content>
 

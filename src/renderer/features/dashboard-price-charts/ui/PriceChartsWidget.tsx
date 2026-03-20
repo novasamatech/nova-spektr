@@ -1,64 +1,85 @@
 import { useUnit } from 'effector-react';
 import { useMemo, useState } from 'react';
 
-import { type PriceHistoryTimeRange, useAssetsPrices } from '@/domains/price';
+import { useI18n } from '@/shared/i18n';
+import { IconButton, TitleText } from '@/shared/ui';
+import { useAssetsPrices } from '@/domains/price';
 import { currencySelect } from '@/aggregates/currency-select';
+import { DashboardWidget } from '@/pages/Dashboard';
+import { type TrackedAssetInfo } from '../hooks/useAvailableAssets';
+import { useTrackedAssets } from '../hooks/useTrackedAssets';
 
-import { PriceChartCard } from './PriceChartCard';
-import { TimeRangeToggle } from './TimeRangeToggle';
-import { DOT_COLOR, KSM_COLOR } from './chartConstants';
-
-const TRACKED_ASSETS = [
-  { id: 'polkadot', label: 'DOT' },
-  { id: 'kusama', label: 'KSM' },
-];
-
-const ASSET_COLORS: Record<string, string> = {
-  polkadot: DOT_COLOR,
-  kusama: KSM_COLOR,
-};
+import { PriceChartModal } from './PriceChartModal';
+import { PriceTile } from './PriceTile';
+import { TokenSelectionModal } from './TokenSelectionModal';
 
 export const PriceChartsWidget = () => {
-  const [timeRange, setTimeRange] = useState<PriceHistoryTimeRange>('7d');
+  const { t } = useI18n();
+  const [selectedAsset, setSelectedAsset] = useState<TrackedAssetInfo | null>(null);
+  const [showTokenSelector, setShowTokenSelector] = useState(false);
 
   const fiatFlag = useUnit(currencySelect.$fiatFlag);
   const currency = useUnit(currencySelect.$activeCurrency);
   const pricesParams = useUnit(currencySelect.$currentPricesParams);
-  const { data: allPrices } = useAssetsPrices(pricesParams);
+  const { data: allPrices, pending } = useAssetsPrices(pricesParams);
+  const { trackedAssets } = useTrackedAssets();
 
   const prices = useMemo(() => {
     if (!allPrices || !currency) return {};
 
     const result: Record<string, { price: number; change: number }> = {};
-    for (const asset of TRACKED_ASSETS) {
-      const assetPrices = allPrices[asset.id];
+    for (const asset of trackedAssets) {
+      const assetPrices = allPrices[asset.priceId];
       if (assetPrices) {
         const priceItem = assetPrices[currency.coingeckoId];
         if (priceItem) {
-          result[asset.id] = priceItem;
+          result[asset.priceId] = priceItem;
         }
       }
     }
 
     return result;
-  }, [allPrices, currency]);
+  }, [allPrices, currency, trackedAssets]);
 
   if (!fiatFlag || !currency) return null;
 
+  const currencySymbol = currency.symbol ?? currency.code;
+
   return (
-    <div className="flex w-[480px] flex-col gap-3">
-      <TimeRangeToggle value={timeRange} onChange={setTimeRange} />
-      {TRACKED_ASSETS.map((asset) => (
-        <PriceChartCard
-          key={asset.id}
-          assetId={asset.id}
-          label={asset.label}
-          color={ASSET_COLORS[asset.id] ?? DOT_COLOR}
+    <DashboardWidget card={false} className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <TitleText>{t('dashboard.priceCharts.title')}</TitleText>
+        <IconButton name="settingsLite" size={16} onClick={() => setShowTokenSelector(true)} />
+      </div>
+
+      {trackedAssets.length === 0 ? (
+        <p className="text-footnote text-text-tertiary">{t('dashboard.priceCharts.emptyState')}</p>
+      ) : (
+        <div className="grid grid-cols-5 gap-2">
+          {trackedAssets.map((asset, index) => (
+            <PriceTile
+              key={asset.priceId}
+              asset={asset}
+              index={index}
+              price={prices[asset.priceId] ?? null}
+              currencySymbol={currencySymbol}
+              pending={pending}
+              onClick={() => setSelectedAsset(asset)}
+            />
+          ))}
+        </div>
+      )}
+
+      {selectedAsset && (
+        <PriceChartModal
+          asset={selectedAsset}
           currency={currency}
-          currentPrice={prices[asset.id] ?? null}
-          timeRange={timeRange}
+          currentPrice={prices[selectedAsset.priceId] ?? null}
+          onClose={() => setSelectedAsset(null)}
         />
-      ))}
-    </div>
+      )}
+
+      {showTokenSelector && <TokenSelectionModal onClose={() => setShowTokenSelector(false)} />}
+    </DashboardWidget>
   );
 };

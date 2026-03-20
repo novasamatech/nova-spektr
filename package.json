@@ -14,7 +14,7 @@
     "electron": "electron .",
     "preview": "cross-env RENDERER_SOURCE=localhost pnpm build:staging && concurrently \"pnpm renderer:preview\" \"pnpm electron\"",
     "local:preview": "npm run renderer:dev && npm run renderer:preview",
-    "start": "pnpm r clean:build main:dev preload:dev && concurrently \"pnpm main:dev:watch\" \"pnpm preload:dev:watch\" \"pnpm renderer:dev:watch\" \"pnpm electron\"",
+    "start": "pnpm r clean:build main:dev preload:dev && concurrently \"pnpm main:dev:watch\" \"pnpm preload:dev:watch\" \"pnpm renderer:dev:watch\" \"node scripts/waitForRenderer.mjs && pnpm electron\"",
     "start:renderer": "pnpm renderer:dev:watch",
     "renderer:dev": "cross-env CHAINS_FILE=chains_dev TOKENS_FILE=tokens_dev LOGGER=false vite build --mode development -c vite.config.renderer.ts",
     "renderer:dev:watch": "cross-env CHAINS_FILE=chains_dev TOKENS_FILE=tokens_dev LOGGER=false vite --mode development -c vite.config.renderer.ts",
@@ -86,6 +86,8 @@
   "dependencies": {
     "@apollo/client": "3.13.9",
     "@ariakit/react": "0.4.17",
+    "@dnd-kit/helpers": "0.3.2",
+    "@dnd-kit/react": "0.3.2",
     "@effector-storage/idb-keyval": "2.0.0",
     "@headlessui/react": "1.7.19",
     "@novasamatech/spektr-dapp-host-container": "0.0.12",
@@ -286,6 +288,16 @@
       "allowedVersions": {
         "vite": "8"
       }
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "@tailwindcss/oxide",
+      "electron",
+      "electron-winstaller",
+      "esbuild",
+      "oxc-resolver",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }

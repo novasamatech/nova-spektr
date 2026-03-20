@@ -1,3 +1,5 @@
+import { type ReactNode } from 'react';
+
 import { cnTw } from '@/shared/lib/utils';
 import { Icon, LabelText } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
@@ -11,7 +13,7 @@ export type WalletAction =
       variant?: 'default' | 'danger';
     }
   | {
-      component: React.ReactNode;
+      component: ReactNode;
     };
 
 type Props = {

@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button, Icon, InfoLink } from '@/shared/ui';
@@ -79,7 +79,7 @@ export const ImportContactsButton = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       importContactsModel.events.fileSelected(file);

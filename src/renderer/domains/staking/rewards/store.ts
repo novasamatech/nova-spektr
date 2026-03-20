@@ -1,3 +1,3 @@
-import { stakingRewardsResource } from './resource';
+import { monthlyRewardsResource, stakingRewardsResource } from './resource';
 
-export const rewards = { stakingRewardsResource };
+export const rewards = { stakingRewardsResource, monthlyRewardsResource };

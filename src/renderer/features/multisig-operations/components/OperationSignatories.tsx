@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useCallback, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 
 import {
   type Chain,
@@ -44,7 +44,7 @@ const SignatoryAddress = ({ accountId, chain }: SignatoryAddressProps) => {
 
 export const operationOverviewSlot = createSlot<{
   walletAccounts: AnyAccount[];
-  trigger?: React.ReactNode;
+  trigger?: ReactNode;
 }>();
 
 type WalletSignatory = Signatory & { wallet: Wallet };

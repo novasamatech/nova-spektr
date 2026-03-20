@@ -5,7 +5,8 @@ import { type Asset, type Chain, type OngoingReferendum } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep } from '@/shared/lib/utils';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
@@ -60,30 +61,27 @@ export const RevoteModal = ({ referendum, asset, chain, onClose, onVoteSuccess }
   }
 
   return (
-    <BaseModal
-      isOpen
-      closeButton
-      title={<OperationTitle title={t('governance.voting.revoteTitle')} chainId={chain.chainId}></OperationTitle>}
-      headerClass="px-5 py-3"
-      panelClass="flex flex-col w-modal max-h-[736px]"
-      contentClass="flex flex-col h-full min-h-0 overflow-y-auto shrink"
-      onClose={onClose}
-    >
-      {isStep(step, Step.INIT) && <VoteForm chain={chain} asset={asset} />}
-      {isStep(step, Step.CONFIRM) && (
-        <VoteConfirmation
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => voteModal.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => voteModal.events.setStep(Step.INIT)}
-        />
-      )}
-      {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => voteModal.events.setStep(Step.CONFIRM)} />}
-    </BaseModal>
+    <Modal size="md" isOpen onToggle={(open) => !open && onClose()}>
+      <Modal.Title close>
+        <OperationTitle title={t('governance.voting.revoteTitle')} chainId={chain.chainId} />
+      </Modal.Title>
+      <Modal.Content>
+        {isStep(step, Step.INIT) && <VoteForm chain={chain} asset={asset} />}
+        {isStep(step, Step.CONFIRM) && (
+          <VoteConfirmation
+            secondaryActionButton={
+              initiatorWallet &&
+              basketUtils.isBasketAvailable(initiatorWallet) && (
+                <Button pallet="secondary" onClick={() => voteModal.events.txSaved()}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )
+            }
+            onGoBack={() => voteModal.events.setStep(Step.INIT)}
+          />
+        )}
+        {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => voteModal.events.setStep(Step.CONFIRM)} />}
+      </Modal.Content>
+    </Modal>
   );
 };
