@@ -13,8 +13,8 @@ test.describe(
     });
 
     ethChains.forEach((chain) => {
-      test(`Can load fee for ${chain.name}`, async ({ vaultWallet }, testInfo) => {
-        testInfo.setTimeout(90_000);
+      test(`Can load fee for ${chain.name}`, async ({ vaultWallet }) => {
+        test.slow();
         const assetsPage = await vaultWallet.gotoMain();
         await assetsPage.checkTransferFee(chain);
       });
