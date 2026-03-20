@@ -67,7 +67,7 @@ export type EvidenceContentRequestParams = {
 };
 
 export const evidenceContentResource = createQueryResource<EvidenceContentRequestParams>({
-  key: ({ palletType, chainId, evidenceHash, gateways }) => [palletType, chainId, evidenceHash, gateways.join('|')],
+  key: ({ palletType, chainId, evidenceHash, gateways }) => [palletType, chainId, evidenceHash, ...gateways],
 })
   .request<EvidenceContent | null>(async ({ palletType, chainId, evidenceHash, gateways }) => {
     const response = await evidenceService.fetchEvidenceFromIpfs(evidenceHash, gateways);
