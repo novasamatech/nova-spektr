@@ -93,15 +93,6 @@ See [`tests/integrations/CLAUDE.md`](tests/integrations/CLAUDE.md) for the compl
 - `pnpm fmt:check` - Check code formatting with Prettier
 - `pnpm fmt:fix` - Auto-fix code formatting
 
-**Note:** Prefer `pnpm types:go` for type checking - it uses tsgo (TypeScript's native Go port) and is approximately 6x faster than tsc.
-
-**Known issue:** `vite.config.renderer.ts:34` has a persistent `TS2578` (unused `@ts-expect-error`). This is pre-existing — don't treat as a regression from your changes.
-
-### Single Test Execution
-To run a single test file:
-```bash
-pnpm test path/to/test-file.test.ts
-```
 
 ## Architecture
 
@@ -111,13 +102,14 @@ pnpm test path/to/test-file.test.ts
 - **Renderer Process** (`src/renderer/`) - React-based UI application
 
 ### Frontend Architecture (Feature-Sliced Design)
-The renderer follows Feature-Sliced Design methodology:
+The renderer follows a modified Feature-Sliced Design methodology:
 
 - **`app/`** - Application initialization, routing, and global providers
 - **`pages/`** - Route-level components (Assets, Governance, Staking, etc.)
-- **`widgets/`** - Complex UI blocks combining multiple features
+- **`widgets/`** - UI components that access data via hooks (useUnit, useStoreMap, etc.), not whole features — just hook-consuming UI
 - **`features/`** - Business logic units (wallet management, transactions, governance)
-- **`entities/`** - Business entities (wallet, chain, balance, governance, etc.)
+- **`sdk/`** - Simple way to integrate features and domains
+- **`entities/`** - **DEPRECATED.** Never create new modules here. When touching existing entity code, migrate: models/services → `domains/`, hook-consuming UI → `widgets/`
 - **`shared/`** - Reusable code across layers
 
 ### Key Architectural Patterns
@@ -146,9 +138,11 @@ The renderer follows Feature-Sliced Design methodology:
 - Reference: `aggregates/staking-network/model.ts`, `shared/config/features/index.ts`
 
 ### Domain Structure
-- **`domains/network/`** - Blockchain network interactions (accounts, transactions, multisig operations)
-- **`domains/collectives/`** - Polkadot Fellowship and governance-related logic
-- **`aggregates/`** - Complex business operations spanning multiple entities
+- **`domains/`** - Pure business logic: Effector models, services, types, constants, resources. No `effector-react` imports allowed.
+  - **`domains/network/`** - Blockchain network interactions (accounts, transactions, multisig operations)
+  - **`domains/collectives/`** - Polkadot Fellowship and governance-related logic
+  - **Naming**: Service exports must be named `somethingService` (e.g. `stakingService`), not `somethingUtils`.
+- **`aggregates/`** - User-preference stores and orchestration logic that combine multiple domains. Domains stay pure for data-fetching; if a model needs a user preference or cross-domain combine, it belongs in an aggregate.
 
 ### Key Technologies
 - **React 19** with TypeScript and SWC compilation
@@ -157,11 +151,6 @@ The renderer follows Feature-Sliced Design methodology:
 - **Radix UI** for accessible components
 - **Vitest** for unit testing, **Playwright** for e2e testing
 - **Vite** for build tooling
-
-### Testing
-- Unit tests use **Vitest** with custom sequencing by architectural layers
-- E2e tests use **Playwright** with custom page objects in `tests/system/`
-- Test files should be co-located with source files using `.test.ts` suffix
 
 ### Environment Configuration
 - **Development**: Uses test chains (`chains_dev.json`), debug tools enabled
@@ -179,16 +168,8 @@ The renderer follows Feature-Sliced Design methodology:
 ### Code Style Requirements
 - **Import boundaries**: Features must import from domain barrel files (`@/domains/network`), never deep paths (`@/domains/network/price-history/resource`). The `boundaries/entry-point` lint rule enforces this.
 - **Inline type imports**: Use `import { type Foo } from '...'` (inline specifier), not `import type { Foo } from '...'` (top-level). Enforced by `import-x/consistent-type-specifier-style`.
-- Follow existing TypeScript and React patterns
-- Use Effector for state management (stores, events, effects)
-- Implement proper error boundaries and loading states
-- Use the custom DI system for dependency injection
-- Follow Feature-Sliced Design import rules (no upward imports between layers)
-- Use absolute imports via TypeScript path mapping
-- Prioritize code correctness and clarity. Speed and efficiency are secondary priorities unless otherwise specified.
-- Do not write organizational or comments that summarize the code. Comments should only be written in order to explain "why" the code is written in some way in the case there is a reason that is tricky / non-obvious.
 - **Avoid `as` type casts** - Use typeguards with actual runtime checks instead. Prefer `satisfies` for type validation without casting. Type casts hide potential bugs; typeguards catch them.
-- **`replace_all` rename trap**: Never use `replace_all: true` when the new name contains the old name as a substring (e.g. renaming `TimeRange` → `PriceHistoryTimeRange` corrupts existing `PriceHistoryTimeRange` into `PriceHistoryPriceHistoryTimeRange` and renames component identifiers containing the old string). Use targeted per-line edits instead.
+- **No `React.` namespace** - Never use `React.memo()`, `React.ComponentProps`, etc. Always destructure from `'react'` directly: `import { memo, type ComponentProps } from 'react'`.
 - **Branded types (`Address`, `AccountId`)**: `Address` (`@/shared/core`) and `AccountId` (`@/shared/polkadotjs-schemas`) are different branded string types. Use `toAddress(str)` from `@/shared/lib/utils` to convert plain strings to `Address` at call sites (e.g., for `<Identicon>`). Don't change data layer types just to satisfy a UI component's branded type.
 
 ### UI/Chart Patterns

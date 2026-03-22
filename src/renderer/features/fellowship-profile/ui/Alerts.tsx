@@ -1,4 +1,4 @@
-import React, { type ReactNode, memo } from 'react';
+import { type ReactNode, memo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -11,7 +11,7 @@ import { alertsModel } from '../model/alerts';
 
 export const alertsReferendumSlot = createSlot<{
   referendumId: ReferendumId;
-  children: React.ReactNode;
+  children: ReactNode;
 }>();
 
 const ICONS = {
