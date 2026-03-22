@@ -4,8 +4,9 @@ import { type PropsWithChildren, memo, useDeferredValue, useEffect, useState } f
 import { type CallData, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { validateCallData } from '@/shared/lib/utils';
-import { Alert, Button, InputHint, SmallTitleText } from '@/shared/ui';
-import { Input, Json, Modal, useNotification } from '@/shared/ui-kit';
+import { Button, InputHint, SmallTitleText } from '@/shared/ui';
+import { Input, Modal, useNotification } from '@/shared/ui-kit';
+import { Json } from '@/shared/ui-kit/Json/Json';
 import {
   type MultisigOperation,
   multisigOperation,
