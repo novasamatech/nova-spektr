@@ -1,4 +1,4 @@
-import { Markdown } from '@/shared/ui-kit';
+import { Markdown } from '@/shared/ui-kit/Markdown/Markdown';
 
 type Props = {
   children: string;
