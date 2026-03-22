@@ -2,7 +2,8 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, TitleText } from '@/shared/ui';
-import { Box, Markdown, Surface } from '@/shared/ui-kit';
+import { Box, Surface } from '@/shared/ui-kit';
+import { Markdown } from '@/shared/ui-kit/Markdown/Markdown';
 import { getRankDataByRank, getRankIcon } from '../../utils/rankHelpers';
 
 interface RankCardProps {
