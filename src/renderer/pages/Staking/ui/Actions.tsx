@@ -6,8 +6,8 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { entries } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BaseModal, Button, Icon, SmallTitleText } from '@/shared/ui';
-import { Dropdown } from '@/shared/ui-kit';
+import { Button, Icon, SmallTitleText } from '@/shared/ui';
+import { Dropdown, Modal } from '@/shared/ui-kit';
 import { ControllerOperations, OperationOptions, StashOperations } from '../lib/constants';
 import { type Operations, ControllerTypes } from '../lib/types';
 
@@ -171,9 +171,8 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
         </div>
       </div>
 
-      <BaseModal
-        isOpen={isDialogOpen}
-        title={
+      <Modal size="md" isOpen={isDialogOpen} onToggle={(open) => !open && toggleIsDialogOpen()}>
+        <Modal.Title>
           <div className="flex items-center gap-2.5">
             {operation && (
               <>
@@ -182,23 +181,25 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
               </>
             )}
           </div>
-        }
-        onClose={toggleIsDialogOpen}
-      >
-        <p className="text-neutral-variant">
-          <Trans t={t} i18nKey={warningMessage} />
-        </p>
+        </Modal.Title>
+        <Modal.Content>
+          <div className="px-5 pb-4">
+            <p className="text-neutral-variant">
+              <Trans t={t} i18nKey={warningMessage} />
+            </p>
 
-        <div className="mt-5 flex items-center gap-2.5">
-          <Button className="flex-1" variant="text" onClick={toggleIsDialogOpen}>
-            {t('staking.warning.noButton')}
-          </Button>
+            <div className="mt-5 flex items-center gap-2.5">
+              <Button className="flex-1" variant="text" onClick={toggleIsDialogOpen}>
+                {t('staking.warning.noButton')}
+              </Button>
 
-          <Button className="flex-1" onClick={onDeselectAccounts}>
-            {t('staking.warning.yesButton')}
-          </Button>
-        </div>
-      </BaseModal>
+              <Button className="flex-1" onClick={onDeselectAccounts}>
+                {t('staking.warning.yesButton')}
+              </Button>
+            </div>
+          </div>
+        </Modal.Content>
+      </Modal>
     </>
   );
 };

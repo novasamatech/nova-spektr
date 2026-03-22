@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
@@ -31,7 +31,7 @@ export const LooseDateThresholds: DateThresholds = {
 
 export const ongoingReferendumVotingSlot = createSlot<{
   referendumId: ReferendumId;
-  children: React.ReactNode;
+  children: ReactNode;
 }>();
 
 export const referendumVotingTaskActionSlot = createSlot<{

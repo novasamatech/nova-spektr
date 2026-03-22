@@ -1,5 +1,5 @@
 import { useGate } from 'effector-react';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type XOR } from '@/shared/core/types/utility';
@@ -64,7 +64,7 @@ type DropdownItemProps = XOR<
     onClick: () => void;
   },
   {
-    component: React.ReactNode;
+    component: ReactNode;
   }
 >;
 

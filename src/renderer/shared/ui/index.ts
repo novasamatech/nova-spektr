@@ -1,6 +1,6 @@
 export { Button, ButtonCard, ButtonLink, ButtonWebLink, IconButton } from './Buttons';
 
-export { BaseModal, ConfirmModal, StatusModal } from './Modals';
+export { ConfirmModal, StatusModal } from './Modals';
 
 export { Combobox, DropdownIconButton, MultiSelect, Select } from './Dropdowns';
 
@@ -30,7 +30,6 @@ export { StatusLabel } from './StatusLabel/StatusLabel';
 export { Switch } from './Switch/Switch';
 export { Icon } from './Icon/Icon';
 export { LanguageSwitcher } from './LanguageSwitcher/LanguageSwitcher';
-export { Shimmering } from './Shimmering/Shimmering';
 export { Duration } from './Duration/Duration';
 export { Loader } from './Loader/Loader';
 export { DetailRow } from './DetailRow/DetailRow';

@@ -1,5 +1,5 @@
 import { type TFunction } from 'i18next';
-import React, { memo, useMemo } from 'react';
+import { type ReactNode, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -13,7 +13,7 @@ import { ReferendumTaskMarkdown } from '../ReferendumTaskMarkdown';
 
 export const completedReferendumVotingSlot = createSlot<{
   referendumId: ReferendumId;
-  children: React.ReactNode;
+  children: ReactNode;
 }>();
 
 const getStatusLabel = (type: CompletedReferendum['type'], t: TFunction): { icon: IconNames; label: string } => {

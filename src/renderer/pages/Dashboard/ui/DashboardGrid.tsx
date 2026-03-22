@@ -1,7 +1,7 @@
 import { move } from '@dnd-kit/helpers';
 import { DragDropProvider } from '@dnd-kit/react';
 import { useUnit } from 'effector-react';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { type ComponentProps, type ComponentType, useCallback, useMemo, useRef, useState } from 'react';
 
 import { type SlotIdentifier, type SlotProps } from '@/shared/di/createSlot';
 import { dashboardModel } from '../model/dashboard-model';
@@ -67,8 +67,8 @@ export const DashboardGrid = <P extends SlotProps>({ slot, tab, props, editMode 
     setDragKeys(storeKeys);
   }, [storeKeys]);
 
-  const handleDragOver: React.ComponentProps<typeof DragDropProvider>['onDragOver'] = useCallback(
-    (event: Parameters<NonNullable<React.ComponentProps<typeof DragDropProvider>['onDragOver']>>[0]) => {
+  const handleDragOver: ComponentProps<typeof DragDropProvider>['onDragOver'] = useCallback(
+    (event: Parameters<NonNullable<ComponentProps<typeof DragDropProvider>['onDragOver']>>[0]) => {
       setDragKeys((prev) => {
         if (!prev) return prev;
         const next = move(prev, event);
@@ -96,7 +96,7 @@ export const DashboardGrid = <P extends SlotProps>({ slot, tab, props, editMode 
           if (!handler) return null;
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const Component = handler.body.render as React.ComponentType<any>;
+          const Component = handler.body.render as ComponentType<any>;
 
           return (
             <WidgetSortableProvider key={key} id={key} index={index} editMode={editMode}>

@@ -4,8 +4,8 @@ import { memo } from 'react';
 import { type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nullable } from '@/shared/lib/utils';
-import { BodyText, Button, Loader, Shimmering, SmallTitleText } from '@/shared/ui';
-import { Checkbox, Graphics, SearchInput } from '@/shared/ui-kit';
+import { BodyText, Button, Loader, SmallTitleText } from '@/shared/ui';
+import { Checkbox, Graphics, SearchInput, Skeleton } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
 import { ValidatorsTable } from '@/widgets/validators-table';
 import { validatorsModel } from '../model/validators-model';
@@ -38,7 +38,7 @@ const Header = () => {
     <div className="flex items-center gap-x-1 px-5">
       <SmallTitleText as="p">{t('staking.validators.selectedValidatorsLabel')}</SmallTitleText>
       {isValidatorsLoading ? (
-        <Shimmering className="ml-1" width={70} height={16} />
+        <Skeleton width="70px" height={4} />
       ) : (
         <SmallTitleText as="p" className="text-text-tertiary">
           {t('staking.validators.maxValidatorsLabel', { max: maxValidators })}
