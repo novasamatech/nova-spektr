@@ -67,7 +67,7 @@ export const operationTitleTransformer = createTransformer<
   OperationTitle
 >();
 
-const OperationWalletInfo = ({ wallet, accountAddress }: { wallet: Wallet; accountAddress: Address }) => {
+const OperationWalletInfo = memo(({ wallet, accountAddress }: { wallet: Wallet; accountAddress: Address }) => {
   const walletName = useWalletName(wallet);
 
   return (
@@ -79,7 +79,7 @@ const OperationWalletInfo = ({ wallet, accountAddress }: { wallet: Wallet; accou
       </div>
     </div>
   );
-};
+});
 
 export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false, tab, chains, wallets }: Props) => {
   const { t } = useI18n();
@@ -157,13 +157,11 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
             </div>
 
             <div className="flex min-w-0 flex-1 items-center justify-between">
-              <AsyncItem strategy="idle" fallback={<div className="w-[240px]" />}>
-                {wallet && accountAddress ? (
-                  <OperationWalletInfo wallet={wallet} accountAddress={accountAddress} />
-                ) : (
-                  <div className="w-[240px]" />
-                )}
-              </AsyncItem>
+              {wallet && accountAddress ? (
+                <OperationWalletInfo wallet={wallet} accountAddress={accountAddress} />
+              ) : (
+                <div className="w-[240px]" />
+              )}
 
               <OperationTitleStatus operation={operation} account={multisigAccount} />
 
