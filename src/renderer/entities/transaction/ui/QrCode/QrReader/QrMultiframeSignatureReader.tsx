@@ -4,7 +4,9 @@ import init, { Decoder, EncodingPacket } from 'raptorq/raptorq';
 import { useRef } from 'react';
 
 import { type HexString } from '@/shared/core';
-import { type QrReaderCamera, QR_READER_ERRORS, QrReader, QrReaderErrorCode } from '@/shared/ui-kit';
+import { QrReader } from '@/shared/ui-kit/QrReader/QrReader';
+import { QR_READER_ERRORS } from '@/shared/ui-kit/QrReader/errors';
+import { type QrReaderCamera, QrReaderErrorCode } from '@/shared/ui-kit/QrReader/types';
 import { cryptoTypeToMultisignerIndex } from '../QrGenerator/common/utils';
 import { FRAME_KEY, SIGNED_TRANSACTION_BULK } from '../common/constants';
 import { QR_READER_DECODE_ERRORS } from '../common/errors';

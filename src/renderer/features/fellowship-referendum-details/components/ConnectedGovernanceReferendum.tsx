@@ -14,7 +14,9 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, truncate } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { Button, FootnoteText, HeadlineText, IconButton, Separator, TitleText } from '@/shared/ui';
-import { Box, Copy, JsonArgs, Label, Markdown, Modal, Skeleton } from '@/shared/ui-kit';
+import { Box, Copy, Label, Modal, Skeleton } from '@/shared/ui-kit';
+import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
+import { Markdown } from '@/shared/ui-kit/Markdown/Markdown';
 import { type Referendum, referendumService } from '@/domains/collectives';
 import {
   useReferendumSummary,
