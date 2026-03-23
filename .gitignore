@@ -40,3 +40,5 @@ schema.graphql
 allure-results
 
 .cursor
+.superpowers
+docs/superpowers
