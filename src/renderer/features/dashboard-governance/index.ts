@@ -4,8 +4,8 @@ import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { dashboardGovernanceSlot } from '@/pages/Dashboard';
 
-import { ActiveReferendumsWidget } from './ui/ActiveReferendumsWidget';
 import { GovernanceOverviewWidget } from './ui/GovernanceOverviewWidget';
+import { ReferendumsWidget } from './ui/ReferendumsWidget';
 
 const enableFlag = $features.map(({ dashboard }) => dashboard);
 
@@ -28,5 +28,5 @@ export const dashboardReferendumsFeature = createFeature({
 
 dashboardReferendumsFeature.inject(dashboardGovernanceSlot, {
   order: 1,
-  render: ActiveReferendumsWidget,
+  render: ReferendumsWidget,
 });

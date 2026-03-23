@@ -49,7 +49,7 @@ export type ActiveReferendum = {
   ourVotes: OurVote[];
 };
 
-function getVoteDirection(vote: AccountVote): VoteDirection {
+export function getVoteDirection(vote: AccountVote): VoteDirection {
   if (votingService.isStandardVote(vote)) {
     return vote.vote.aye ? 'aye' : 'nay';
   }
@@ -58,14 +58,14 @@ function getVoteDirection(vote: AccountVote): VoteDirection {
   return 'abstain';
 }
 
-function formatConviction(vote: AccountVote): string {
+export function formatConviction(vote: AccountVote): string {
   const conviction = votingService.getAccountVoteConviction(vote);
   const multiplier = votingService.getConvictionMultiplier(conviction);
 
   return multiplier < 1 ? 'None' : `${multiplier}x`;
 }
 
-type EntryInfo = { name: string; address: string };
+export type EntryInfo = { name: string; address: string };
 
 function useChainActiveReferendums(
   chainId: ChainId,

@@ -7,8 +7,11 @@ import { VoteChart } from '@/shared/ui-entities';
 import { type Column, Skeleton, Table, Tooltip } from '@/shared/ui-kit';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { type ActiveReferendum, useActiveReferendums } from '../hooks/useActiveReferendums';
+import { type EndedReferendum, useEndedReferendums } from '../hooks/useEndedReferendums';
 
+import { EndedReferendumDetailModal } from './EndedReferendumDetailModal';
 import { ReferendumDetailModal } from './ReferendumDetailModal';
+import { OUTCOME_I18N_KEY, OUTCOME_STYLES, formatEndDate } from './referendum-helpers';
 
 type Props = {
   accountIds: string[];
@@ -61,25 +64,30 @@ function getUrgency(ms: number): UrgencyLevel {
   return 'normal';
 }
 
+type TabId = 'active' | 'ended';
+
 type ReferendumRow = ActiveReferendum & {
   tvlNumeric: number;
 };
 
-export const ActiveReferendumsWidget = ({ accountIds, allEntries }: Props) => {
+export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
-  const { referendums, pending, fiatFlag } = useActiveReferendums(accountIds, allEntries);
-  const [selectedReferendum, setSelectedReferendum] = useState<ActiveReferendum | null>(null);
+  const [tab, setTab] = useState<TabId>('active');
+  const { referendums: activeRefs, pending: activePending, fiatFlag } = useActiveReferendums(accountIds, allEntries);
+  const { referendums: endedRefs, pending: endedPending } = useEndedReferendums(accountIds, allEntries);
+  const [selectedActive, setSelectedActive] = useState<ActiveReferendum | null>(null);
+  const [selectedEnded, setSelectedEnded] = useState<EndedReferendum | null>(null);
 
-  const rows = useMemo(
+  const activeRows = useMemo(
     (): ReferendumRow[] =>
-      referendums.map((ref) => ({
+      activeRefs.map((ref) => ({
         ...ref,
         tvlNumeric: parseFloat(ref.totalLockedFiat),
       })),
-    [referendums],
+    [activeRefs],
   );
 
-  const columns = useMemo(
+  const activeColumns = useMemo(
     (): Column<ReferendumRow>[] => [
       {
         key: 'chainIcon',
@@ -134,8 +142,70 @@ export const ActiveReferendumsWidget = ({ accountIds, allEntries }: Props) => {
     [t],
   );
 
-  const handleRowClick = useCallback((_row: ReferendumRow) => {
-    setSelectedReferendum(_row);
+  const endedColumns = useMemo(
+    (): Column<EndedReferendum>[] => [
+      {
+        key: 'chainIcon',
+        title: '',
+        width: '52px',
+        render: (_v, row) => <img src={row.chainIcon} alt={row.chainName} className="h-10 w-10" />,
+      },
+      {
+        key: 'id',
+        title: '',
+        width: '56px',
+        render: (_v, row) => <FootnoteText className="font-mono text-text-tertiary">#{row.id}</FootnoteText>,
+      },
+      {
+        key: 'trackId',
+        title: '',
+        width: '192px',
+        render: (_v, row) => <TrackCell trackId={row.trackId} t={t} />,
+      },
+      {
+        key: 'title',
+        title: '',
+        render: (_v, row) => <FootnoteText className="line-clamp-2 text-text-primary">{row.title}</FootnoteText>,
+      },
+      {
+        key: 'outcome',
+        title: t('dashboard.referendums.outcome'),
+        width: '100px',
+        render: (_v, row) => <OutcomeCell outcome={row.outcome} t={t} />,
+      },
+      {
+        key: 'endedAtMs',
+        title: t('dashboard.referendums.ended'),
+        sortable: true,
+        width: '90px',
+        render: (_v, row) => <FootnoteText className="text-text-tertiary">{formatEndDate(row.endedAtMs)}</FootnoteText>,
+      },
+      {
+        key: 'unlockableAmount',
+        title: t('dashboard.referendums.unlockable'),
+        width: '110px',
+        render: (_v, row) => <UnlockableCell referendum={row} />,
+      },
+      {
+        key: 'addressesWithLocks',
+        title: t('dashboard.referendums.locks'),
+        width: '60px',
+        render: (_v, row) => (
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-chip-icon px-1.5 text-help-text font-semibold text-white">
+            {row.addressesWithLocks}
+          </span>
+        ),
+      },
+    ],
+    [t],
+  );
+
+  const handleActiveRowClick = useCallback((_row: ReferendumRow) => {
+    setSelectedActive(_row);
+  }, []);
+
+  const handleEndedRowClick = useCallback((_row: EndedReferendum) => {
+    setSelectedEnded(_row);
   }, []);
 
   if (!fiatFlag) return null;
@@ -152,17 +222,35 @@ export const ActiveReferendumsWidget = ({ accountIds, allEntries }: Props) => {
     );
   }
 
+  const pending = tab === 'active' ? activePending : endedPending;
+  const isEmpty = tab === 'active' ? activeRefs.length === 0 : endedRefs.length === 0;
+  const emptyMessage =
+    tab === 'active' ? t('dashboard.activeReferendums.noReferendums') : t('dashboard.referendums.noEndedReferendums');
+
   return (
     <>
       <DashboardWidget colSpan={4}>
         <div className="flex items-center gap-2">
           <FootnoteText className="text-text-tertiary">{t('dashboard.activeReferendums.title')}</FootnoteText>
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-chip-icon px-1.5 text-help-text font-semibold text-white">
-            {referendums.length}
-          </span>
         </div>
 
-        {pending && referendums.length === 0 && (
+        {/* Tab bar */}
+        <div className="mt-2 flex gap-1">
+          <TabButton
+            active={tab === 'active'}
+            count={activeRefs.length}
+            label={t('dashboard.referendums.activeTab')}
+            onClick={() => setTab('active')}
+          />
+          <TabButton
+            active={tab === 'ended'}
+            count={endedRefs.length}
+            label={t('dashboard.referendums.endedTab')}
+            onClick={() => setTab('ended')}
+          />
+        </div>
+
+        {pending && isEmpty && (
           <div className="my-4 flex flex-col gap-3">
             <Skeleton width="100%" height={10} />
             <Skeleton width="100%" height={10} />
@@ -170,25 +258,64 @@ export const ActiveReferendumsWidget = ({ accountIds, allEntries }: Props) => {
           </div>
         )}
 
-        {!pending && referendums.length === 0 && (
+        {!pending && isEmpty && (
           <div className="flex flex-col items-center gap-y-1 py-6">
-            <BodyText className="text-text-tertiary">{t('dashboard.activeReferendums.noReferendums')}</BodyText>
+            <BodyText className="text-text-tertiary">{emptyMessage}</BodyText>
           </div>
         )}
 
-        {rows.length > 0 && (
+        {tab === 'active' && activeRows.length > 0 && (
           <div className="mt-3 max-h-[400px] overflow-y-auto">
-            <Table columns={columns} data={rows} onRowClick={handleRowClick} />
+            <Table columns={activeColumns} data={activeRows} onRowClick={handleActiveRowClick} />
+          </div>
+        )}
+
+        {tab === 'ended' && endedRefs.length > 0 && (
+          <div className="mt-3 max-h-[400px] overflow-y-auto">
+            <Table columns={endedColumns} data={endedRefs} onRowClick={handleEndedRowClick} />
           </div>
         )}
       </DashboardWidget>
 
-      {selectedReferendum && (
-        <ReferendumDetailModal referendum={selectedReferendum} onClose={() => setSelectedReferendum(null)} />
+      {selectedActive && <ReferendumDetailModal referendum={selectedActive} onClose={() => setSelectedActive(null)} />}
+
+      {selectedEnded && (
+        <EndedReferendumDetailModal referendum={selectedEnded} onClose={() => setSelectedEnded(null)} />
       )}
     </>
   );
 };
+
+const TabButton = ({
+  active,
+  count,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  count: number;
+  label: string;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    className={cnTw(
+      'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-help-text font-semibold transition-colors',
+      active ? 'bg-selected-background text-text-primary' : 'text-text-tertiary hover:text-text-secondary',
+    )}
+    onClick={onClick}
+  >
+    {label}
+    <span
+      className={cnTw(
+        'flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-help-text font-semibold',
+        active ? 'bg-chip-icon text-white' : 'bg-input-background-disabled text-text-tertiary',
+      )}
+    >
+      {count}
+    </span>
+  </button>
+);
 
 const TrackCell = ({ trackId, t }: { trackId: number; t: ReturnType<typeof useI18n>['t'] }) => {
   const trackInfo = getTrackInfo(trackId);
@@ -307,6 +434,32 @@ const TvlCell = ({ referendum }: { referendum: ActiveReferendum }) => {
         {tokenFormatted} {referendum.symbol}
       </FootnoteText>
       <FootnoteText className="text-help-text text-text-tertiary tabular-nums">${fiatFormatted}</FootnoteText>
+    </div>
+  );
+};
+
+const OutcomeCell = ({ outcome, t }: { outcome: EndedReferendum['outcome']; t: ReturnType<typeof useI18n>['t'] }) => (
+  <span className={cnTw('rounded px-1.5 py-0.5 text-help-text font-medium', OUTCOME_STYLES[outcome])}>
+    {t(`dashboard.referendums.${OUTCOME_I18N_KEY[outcome]}`)}
+  </span>
+);
+
+const UnlockableCell = ({ referendum }: { referendum: EndedReferendum }) => {
+  const { formatted: tokenFormatted } = formatBalance(referendum.unlockableAmount, referendum.precision);
+  const hasUnlockable = referendum.unlockableAmount !== '0';
+
+  return (
+    <div className="text-right">
+      <FootnoteText
+        className={cnTw('tabular-nums', hasUnlockable ? 'font-semibold text-text-positive' : 'text-text-tertiary')}
+      >
+        {tokenFormatted} {referendum.symbol}
+      </FootnoteText>
+      {hasUnlockable && (
+        <FootnoteText className="text-help-text text-text-tertiary tabular-nums">
+          ${formatFiatBalance(referendum.unlockableAmountFiat).formatted}
+        </FootnoteText>
+      )}
     </div>
   );
 };

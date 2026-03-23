@@ -592,8 +592,29 @@
       "noGovernance": "No governance activity found",
       "convictionDisplay": "{value}x"
     },
+    "referendums": {
+      "activeTab": "Active",
+      "endedTab": "Ended",
+      "outcome": "Outcome",
+      "ended": "Ended",
+      "unlockable": "Unlockable",
+      "locks": "Locks",
+      "noEndedReferendums": "No ended referendums with locks",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled",
+      "timedOut": "Timed out",
+      "killed": "Killed",
+      "unlockableStatus": "Unlockable",
+      "lockedUntil": "Locked until ~{date}",
+      "detail": {
+        "endedTitle": "Ended Referendum",
+        "lockStatus": "Lock Status",
+        "endedDate": "Ended {date}"
+      }
+    },
     "activeReferendums": {
-      "title": "Active Referendums",
+      "title": "Referendums",
       "noReferendums": "No active referendums found",
       "aye": "Aye",
       "nay": "Nay",
