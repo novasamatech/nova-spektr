@@ -13,14 +13,18 @@ export type {
   CancelledReferendum,
   CompletedReferendum,
   Deposit,
+  EvidenceProposal,
   KilledReferendum,
   OngoingReferendum,
   Proposal,
   Referendum,
   RejectedReferendum,
   RfcProposal,
+  SpendProposal,
   Tally,
   TimedOutReferendum,
+  UnknownProposal,
+  WhitelistProposal,
 } from './referendum/types';
 
 export { referendumMeta } from './referendumMeta/store';
