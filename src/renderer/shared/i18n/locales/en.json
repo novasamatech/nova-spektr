@@ -587,11 +587,31 @@
     "governanceOverview": {
       "title": "Governance Overview",
       "votingAccounts": "Voting accounts",
-      "totalLocked": "Total locked",
       "unlockable": "Unlockable",
       "averageConviction": "Avg. conviction",
       "noGovernance": "No governance activity found",
       "convictionDisplay": "{value}x"
+    },
+    "activeReferendums": {
+      "title": "Active Referendums",
+      "noReferendums": "No active referendums found",
+      "aye": "Aye",
+      "nay": "Nay",
+      "abstain": "Abstain",
+      "split": "Split",
+      "unknownTrack": "Unknown track",
+      "votes": "Votes",
+      "time": "Time",
+      "tvl": "TVL",
+      "detail": {
+        "title": "Referendum Details",
+        "ourVotes": "Our Votes",
+        "account": "Account",
+        "vote": "Vote",
+        "amount": "Amount",
+        "conviction": "Conviction",
+        "value": "Value (USD)"
+      }
     },
     "priceCharts": {
       "title": "Price Tracker",
