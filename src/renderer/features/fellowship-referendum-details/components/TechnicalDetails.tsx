@@ -1,3 +1,4 @@
+import { capitalize } from 'lodash';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -15,6 +16,7 @@ import {
   type UnknownProposal,
   type WhitelistProposal,
   referendumService,
+  trackService,
   useTracks,
 } from '@/domains/collectives';
 import { useFellowshipApi, useFellowshipAsset, useFellowshipChain } from '@/aggregates/fellowship-network';
@@ -35,6 +37,18 @@ export const TechnicalDetails = memo(({ referendum }: Props) => {
   const track = tracks.find(tr => tr.id === referendum.track);
   const isWhitelist = referendum.proposal && referendumService.isWhitelistProposal(referendum.proposal);
 
+  const isPromotionTrack = trackService.isPromotionTrack(referendum.track);
+  const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
+
+  let referendumType: string | null = null;
+  if (isPromotionTrack) {
+    referendumType = t('fellowship.voting.confirmation.promotionTrack');
+  } else if (isRetentionTrack) {
+    referendumType = t('fellowship.voting.confirmation.retentionTrack');
+  } else if (track) {
+    referendumType = capitalize(track.name);
+  }
+
   return (
     <Card>
       <Box padding={6} gap={4}>
@@ -42,7 +56,7 @@ export const TechnicalDetails = memo(({ referendum }: Props) => {
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.referendumId')}</FootnoteText>
-            <FootnoteText>#{referendum.id}</FootnoteText>
+            <FootnoteText>{referendum.id}</FootnoteText>
           </div>
           <div className="flex items-center justify-between">
             <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.track')}</FootnoteText>
@@ -52,15 +66,13 @@ export const TechnicalDetails = memo(({ referendum }: Props) => {
             <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.origin')}</FootnoteText>
             <FootnoteText>{referendum.origin}</FootnoteText>
           </div>
-          {referendum.proposal && (
-            <>
-              <div className="flex items-center justify-between">
-                <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.call')}</FootnoteText>
-                <FootnoteText>{referendum.proposal.type}</FootnoteText>
-              </div>
-              <ProposalDetails proposal={referendum.proposal} />
-            </>
+          {referendumType && (
+            <div className="flex items-center justify-between">
+              <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.call')}</FootnoteText>
+              <FootnoteText>{referendumType}</FootnoteText>
+            </div>
           )}
+          {referendum.proposal && <ProposalDetails proposal={referendum.proposal} />}
 
           {!pendingConnected && !connectedReferendum && isWhitelist && (
             <FootnoteText className="mt-2 text-text-tertiary">
