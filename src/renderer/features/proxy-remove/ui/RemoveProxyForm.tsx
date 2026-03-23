@@ -8,8 +8,8 @@ import { Button } from '@/shared/ui';
 import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { removeProxyModel } from '../model/remove-proxy-model';
 
 type Props = {

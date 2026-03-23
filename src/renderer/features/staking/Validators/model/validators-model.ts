@@ -5,8 +5,8 @@ import { pending, spread } from 'patronum';
 import { type Asset, type Chain, type EraIndex, type Validator } from '@/shared/core';
 import { includesMultiple, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { identity } from '@/domains/network';
+import { type ValidatorMap, eraService, validatorsService } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { type ValidatorMap, eraService, validatorsService } from '@/entities/staking';
 
 type Input = {
   chain: Chain;

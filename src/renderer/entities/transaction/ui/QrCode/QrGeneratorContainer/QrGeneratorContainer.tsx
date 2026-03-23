@@ -1,4 +1,4 @@
-import { type PropsWithChildren } from 'react';
+import { type PropsWithChildren, type ReactNode } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -11,7 +11,7 @@ type Props = {
   chainId: ChainId;
   isLegacyQR?: boolean;
   testId?: string;
-  tabSlot?: React.ReactNode;
+  tabSlot?: ReactNode;
   onQrReset: () => void;
 };
 

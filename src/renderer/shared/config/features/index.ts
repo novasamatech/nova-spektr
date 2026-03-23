@@ -11,6 +11,7 @@ export const resetFeatureStatuses = createEvent();
 
 export const $mutatedFeatures = createStore<Partial<Features>>({});
 export const $defaultFeatures = createStore({
+  dashboard: true,
   assets: true,
   staking: true,
   governance: true,

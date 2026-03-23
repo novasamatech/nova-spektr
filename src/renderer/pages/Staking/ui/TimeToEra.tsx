@@ -2,8 +2,9 @@ import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
 import { nullable } from '@/shared/lib/utils';
-import { Duration, Shimmering } from '@/shared/ui';
-import { eraService } from '@/entities/staking';
+import { Duration } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
+import { eraService } from '@/domains/staking';
 
 type Props = {
   api: ApiPromise | null;
@@ -32,7 +33,7 @@ export const TimeToEra = ({ api, timelineApi, era, className }: Props) => {
   }, [seconds]);
 
   if (seconds <= 0) {
-    return <Shimmering width={40} height={10} className={className} />;
+    return <Skeleton width={10} height="10px" />;
   }
 
   return <Duration seconds={seconds.toString()} className={className} />;

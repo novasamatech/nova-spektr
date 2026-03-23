@@ -22,8 +22,8 @@ import {
 import { localStorageService } from '@/shared/api/local-storage';
 import { chainsService } from '@/shared/api/network';
 import { type ChainId, ExternalType } from '@/shared/core';
+import { DEFAULT_STAKING_CHAIN, STAKING_NETWORK } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { DEFAULT_STAKING_CHAIN, STAKING_NETWORK } from '@/entities/staking';
 
 type GraphqlContextProps = {
   changeClient: (chainId: ChainId) => void;

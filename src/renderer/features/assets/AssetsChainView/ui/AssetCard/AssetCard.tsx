@@ -5,10 +5,13 @@ import { type Asset, type Balance, type ChainId, type Wallet } from '@/shared/co
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { KeyboardKey, cnTw, totalAmount, transferableAmountBN } from '@/shared/lib/utils';
-import { BodyText, Shimmering } from '@/shared/ui';
+import { BodyText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
-import { AssetDetails, AssetIcon, AssetLinks } from '@/entities/asset';
-import { AssetFiatBalance, TokenPrice, priceProviderModel } from '@/entities/price';
+import { Skeleton } from '@/shared/ui-kit';
+import { AssetIcon, AssetLinks } from '@/entities/asset';
+import { currencySelect } from '@/aggregates/currency-select';
+import { AssetDetails } from '@/widgets/asset-details';
+import { AssetFiatBalance, TokenPrice } from '@/widgets/price';
 
 type Props = {
   chainId: ChainId;
@@ -20,7 +23,7 @@ type Props = {
 export const AssetCard = memo(({ chainId, asset, balance, wallet }: Props) => {
   const { t } = useI18n();
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const fiatFlag = useUnit(currencySelect.$fiatFlag);
 
   const [isExpanded, toggleExpanded] = useToggle();
 
@@ -64,8 +67,8 @@ export const AssetCard = memo(({ chainId, asset, balance, wallet }: Props) => {
             </>
           ) : (
             <div className="flex flex-col items-end gap-y-1">
-              <Shimmering width={82} height={20} />
-              {fiatFlag && <Shimmering width={56} height={18} />}
+              <Skeleton width="82px" height={5} />
+              {fiatFlag && <Skeleton width={14} height="18px" />}
             </div>
           )}
         </div>

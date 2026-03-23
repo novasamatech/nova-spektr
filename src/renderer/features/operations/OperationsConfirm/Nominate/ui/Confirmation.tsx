@@ -9,8 +9,8 @@ import { Tooltip } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
 import { SelectedValidatorsModal, StakingPopover } from '@/entities/staking';
-import { Fee, FeeWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 

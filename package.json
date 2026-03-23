@@ -2,7 +2,7 @@
   "name": "nova-spektr",
   "description": "Polkadot Enterprise application",
   "type": "module",
-  "version": "2.6.2",
+  "version": "2.7.0",
   "main": "./release/build/main.cjs",
   "repository": "https://github.com/novasamatech/nova-spektr",
   "license": "MIT",
@@ -14,7 +14,7 @@
     "electron": "electron .",
     "preview": "cross-env RENDERER_SOURCE=localhost pnpm build:staging && concurrently \"pnpm renderer:preview\" \"pnpm electron\"",
     "local:preview": "npm run renderer:dev && npm run renderer:preview",
-    "start": "pnpm r clean:build main:dev preload:dev && concurrently \"pnpm main:dev:watch\" \"pnpm preload:dev:watch\" \"pnpm renderer:dev:watch\" \"pnpm electron\"",
+    "start": "pnpm r clean:build main:dev preload:dev && concurrently \"pnpm main:dev:watch\" \"pnpm preload:dev:watch\" \"pnpm renderer:dev:watch\" \"node scripts/waitForRenderer.mjs && pnpm electron\"",
     "start:renderer": "pnpm renderer:dev:watch",
     "renderer:dev": "cross-env CHAINS_FILE=chains_dev TOKENS_FILE=tokens_dev LOGGER=false vite build --mode development -c vite.config.renderer.ts",
     "renderer:dev:watch": "cross-env CHAINS_FILE=chains_dev TOKENS_FILE=tokens_dev LOGGER=false vite --mode development -c vite.config.renderer.ts",
@@ -44,6 +44,8 @@
     "staging:sequence": "pnpm r clean:build clean:prod build:staging postbuild:staging dist:staging",
     "prod:sequence": "pnpm r clean:build clean:prod build postbuild dist",
     "test": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run",
+    "test:unit": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run src/",
+    "test:integration": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --config tests/integrations/vitest.config.ts",
     "test:ui": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest --ui",
     "test:watch": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest",
     "test:coverage": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --coverage",
@@ -84,6 +86,8 @@
   "dependencies": {
     "@apollo/client": "3.13.9",
     "@ariakit/react": "0.4.17",
+    "@dnd-kit/helpers": "0.3.2",
+    "@dnd-kit/react": "0.3.2",
     "@effector-storage/idb-keyval": "2.0.0",
     "@headlessui/react": "1.7.19",
     "@novasamatech/spektr-dapp-host-container": "0.0.12",
@@ -165,6 +169,7 @@
     "react-i18next": "16.0.0",
     "react-markdown": "10.1.0",
     "react-router-dom": "7.9.4",
+    "recharts": "3.8.0",
     "rehype-raw": "7.0.0",
     "rehype-sanitize": "6.0.0",
     "remark-gfm": "4.0.1",
@@ -179,7 +184,7 @@
     "@astrojs/starlight": "0.35.2",
     "@commitlint/cli": "19.8.1",
     "@commitlint/config-conventional": "19.8.1",
-    "@effector/swc-plugin": "0.8.1",
+    "@effector/swc-plugin": "1.0.0",
     "@electron/notarize": "2.5.0",
     "@eslint/js": "9.39.2",
     "@eslint/json": "0.12.0",
@@ -193,7 +198,7 @@
     "@storybook/addon-links": "9.1.12",
     "@storybook/react-vite": "9.1.12",
     "@svgr/plugin-svgo": "8.1.0",
-    "@swc/core": "1.13.5",
+    "@swc/core": "1.15.11",
     "@swc/helpers": "0.5.17",
     "@tailwindcss/language-server": "0.14.26",
     "@tailwindcss/vite": "4.1.12",
@@ -208,11 +213,12 @@
     "@typescript-eslint/eslint-plugin": "8.39.1",
     "@typescript-eslint/parser": "8.39.1",
     "@typescript/native-preview": "7.0.0-dev.20260126.1",
-    "@vitejs/plugin-react-swc": "4.1.0",
-    "@vitest/coverage-v8": "3.2.4",
-    "@vitest/ui": "3.2.4",
+    "@vitejs/plugin-react-swc": "4.3.0",
+    "@vitest/coverage-v8": "4.1.0",
+    "@vitest/ui": "4.1.0",
     "allure-js-commons": "3.2.0",
     "allure-playwright": "3.0.6",
+    "allure-vitest": "3.6.0",
     "astro": "5.13.1",
     "camelcase": "6.3.0",
     "concurrently": "7.6.0",
@@ -265,17 +271,33 @@
     "tslib": "2.8.1",
     "typescript": "5.9.2",
     "typescript-eslint": "8.39.1",
-    "vite": "7.1.11",
+    "vite": "8.0.0",
     "vite-plugin-compression2": "2.2.1",
     "vite-plugin-mkcert": "1.17.8",
     "vite-plugin-node-polyfills": "0.24.0",
     "vite-plugin-svgr": "4.5.0",
     "vite-plugin-target": "0.1.1",
-    "vite-tsconfig-paths": "5.1.4",
-    "vitest": "3.2.4"
+    "vitest": "4.1.0"
   },
   "sideEffects": [
     "*.css",
     "*.ts"
-  ]
+  ],
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "vite": "8"
+      }
+    },
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "@tailwindcss/oxide",
+      "electron",
+      "electron-winstaller",
+      "esbuild",
+      "oxc-resolver",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
 }

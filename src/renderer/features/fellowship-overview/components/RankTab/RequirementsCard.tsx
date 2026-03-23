@@ -1,10 +1,11 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
+import { type MouseEvent, memo } from 'react';
 
 import { $features } from '@/shared/config/features';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, InfoLink, TitleText } from '@/shared/ui';
-import { Box, Markdown, Surface } from '@/shared/ui-kit';
+import { Box, Surface } from '@/shared/ui-kit';
+import { Markdown } from '@/shared/ui-kit/Markdown/Markdown';
 import { FELLOWSHIP_TABS } from '../../model/constants';
 import { modal } from '../../model/modal';
 import { getRankDataByRank } from '../../utils/rankHelpers';
@@ -22,7 +23,7 @@ export const RequirementsCard = memo(({ rankId }: RequirementsCardProps) => {
     return null;
   }
 
-  const handleCodexClick = (e: React.MouseEvent) => {
+  const handleCodexClick = (e: MouseEvent) => {
     e.preventDefault();
     modal.switchTab(FELLOWSHIP_TABS.CODEX);
   };

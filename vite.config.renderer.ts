@@ -1,6 +1,5 @@
 /// <reference types="vitest/config" />
 
-import { cpus } from 'node:os';
 import { resolve } from 'node:path';
 
 import { type Plugin, type UserConfigFn } from 'vite';
@@ -24,14 +23,11 @@ function skipSourcemaps(paths: string[]): Plugin {
 
 const config: UserConfigFn = async ({ mode, command }) => {
   const { defineConfig } = await import('vite');
-  const { default: tsconfigPaths } = await import('vite-tsconfig-paths');
   const { default: svgr } = await import('vite-plugin-svgr');
   const { default: favicons } = await import('@peterek/vite-plugin-favicons');
   const { default: react } = await import('@vitejs/plugin-react-swc');
   const { default: mkcert } = await import('vite-plugin-mkcert');
   const { compression, defineAlgorithm } = await import('vite-plugin-compression2');
-  const { nodePolyfills } = await import('vite-plugin-node-polyfills');
-  // @ts-expect-error unresolved import type
   const { default: tailwindcss } = await import('@tailwindcss/vite');
 
   const isDevServer = command === 'serve';
@@ -39,17 +35,19 @@ const config: UserConfigFn = async ({ mode, command }) => {
   const isProd = mode === 'production';
   const isStage = mode === 'staging';
 
-  const commonPlugins = [
-    skipSourcemaps(['node_modules']),
-    tsconfigPaths(),
-    nodePolyfills({
-      include: ['buffer', 'events', 'crypto', 'stream'],
-    }),
-  ];
+  const commonPlugins = [skipSourcemaps(['node_modules'])];
 
   return defineConfig({
     mode: isStage ? 'production' : mode,
     cacheDir: resolve(folders.cache, 'vite-renderer'),
+    resolve: {
+      tsconfigPaths: true,
+      alias: {
+        crypto: 'crypto-browserify',
+        stream: 'stream-browserify',
+        lodash: 'lodash-es',
+      },
+    },
     base: '',
     root: resolve(folders.rendererRoot, 'app'),
     define: {
@@ -59,6 +57,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
       'process.env.CHAINS_FILE': JSON.stringify(process.env.CHAINS_FILE ?? 'chains'),
       'process.env.TOKENS_FILE': JSON.stringify(process.env.TOKENS_FILE ?? 'tokens'),
       'process.env.LOGGER': JSON.stringify(process.env.LOGGER),
+      global: 'globalThis',
     },
     worker: {
       format: 'es',
@@ -70,19 +69,13 @@ const config: UserConfigFn = async ({ mode, command }) => {
       outDir: folders.devBuild,
       emptyOutDir: false,
       target: 'es2021',
-      rollupOptions: {
-        treeshake: 'recommended',
-        maxParallelFileOps: Math.max(1, cpus().length - 1),
-        onLog(level, log, handler) {
-          if (log.cause) {
-            const cause = log.cause as Record<string, string>;
-
-            if (cause.message === `Can't resolve original location of error.`) {
-              return;
-            }
-          }
-
-          handler(level, log);
+      rolldownOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('@polkadot/')) return 'polkadot';
+            if (id.includes('@walletconnect/')) return 'walletconnect';
+            if (id.includes('react-dom') || id.includes('react-router')) return 'react-vendor';
+          },
         },
       },
     },
@@ -98,9 +91,13 @@ const config: UserConfigFn = async ({ mode, command }) => {
 
       tailwindcss(),
 
+      // @vitejs/plugin-react-swc automatically disables React Fast Refresh
+      // (and the associated window.$RefreshReg$ / window.$RefreshSig$ globals)
+      // in production builds. The effector SWC plugin with HMR is only applied
+      // during the dev-server to keep those globals out of production bundles.
       react({
         plugins: isDevServer
-          ? [['@effector/swc-plugin', { hmr: 'es', addNames: true, addLoc: true, factories: ['@/shared/di'] }]]
+          ? [['@effector/swc-plugin', { hmr: 'es', addNames: true, addLoc: false, factories: ['@/shared/di'] }]]
           : [],
       }),
       svgr({

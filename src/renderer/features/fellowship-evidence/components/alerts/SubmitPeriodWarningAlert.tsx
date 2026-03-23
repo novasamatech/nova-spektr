@@ -1,6 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
 import { differenceInDays } from 'date-fns';
-import { type HTMLAttributes, type ReactElement, useMemo, useState } from 'react';
+import { type HTMLAttributes, type MouseEvent, type ReactElement, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
@@ -54,7 +54,7 @@ export const SubmitPeriodWarningAlert = ({ wish, onConfirm, children, ...radix }
     return false;
   }, [wish, retentionPeriodDates]);
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: MouseEvent) => {
     e.stopPropagation();
 
     if (shouldShowWarning) {

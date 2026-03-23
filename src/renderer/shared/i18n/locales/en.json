@@ -480,6 +480,123 @@
     "lastYear": "Last year",
     "resetButton": "Reset"
   },
+  "dashboard": {
+    "title": "Dashboard",
+    "tabs": {
+      "overview": "Overview",
+      "staking": "Staking",
+      "governance": "Governance",
+      "alerts": "Alerts",
+      "comingSoon": "Coming soon"
+    },
+    "accountSelector": {
+      "placeholder": "Select accounts",
+      "allAccounts": "All accounts",
+      "walletsGroup": "Your accounts",
+      "localContactsGroup": "My Contacts",
+      "backendContactsGroup": "External Contacts",
+      "selectedCount_one": "{{count}} account selected",
+      "selectedCount_other": "{{count}} accounts selected"
+    },
+    "emptyState": {
+      "title": "No accounts available",
+      "description": "Add a wallet or contact to get started"
+    },
+    "noSelection": {
+      "title": "No accounts selected",
+      "description": "Select accounts above to view your balance"
+    },
+    "portfolioOverview": {
+      "title": "Portfolio Overview",
+      "holdings": "Holdings by Asset",
+      "holdingsByChain": "Holdings by Chain",
+      "byAsset": "By Asset",
+      "byChain": "By Chain",
+      "assetDetail": {
+        "title": "{symbol} Details",
+        "totalHoldings": "Total Holdings",
+        "addressCount_one": "{count} address",
+        "addressCount_other": "{count} addresses",
+        "address": "Address",
+        "amount": "Amount",
+        "value": "Value",
+        "share": "Share"
+      },
+      "priceChange24h": "24h change",
+      "assetAllocation": "Asset Allocation",
+      "chainDetail": {
+        "title": "{chainName} Details",
+        "assetCount_one": "{count} asset",
+        "assetCount_other": "{count} assets",
+        "asset": "Asset",
+        "amount": "Amount",
+        "value": "Value",
+        "share": "Share"
+      }
+    },
+    "totalRewards": {
+      "title": "Total Rewards",
+      "range7d": "7D",
+      "range1m": "1M",
+      "range6m": "6M",
+      "range1y": "1Y",
+      "rangeAll": "Max",
+      "noRewards": "No staking rewards found",
+      "rewardsDetail": {
+        "title": "{chain} Rewards",
+        "account": "Account",
+        "rewards": "Rewards",
+        "value": "Value",
+        "share": "Share",
+        "accountCount_one": "{count} account",
+        "accountCount_other": "{count} accounts"
+      }
+    },
+    "monthlyRewards": {
+      "title": "12-Month Rewards",
+      "dot": "DOT",
+      "ksm": "KSM",
+      "noData": "No rewards data available"
+    },
+    "stakingOverview": {
+      "title": "Staking Positions",
+      "totalStaked": "Total Staked",
+      "noStaking": "No staking positions found",
+      "unstaking": "Unstaking",
+      "redeemable": "Redeemable",
+      "activeValidators_one": "{count} active validator",
+      "activeValidators_other": "{count} active validators",
+      "apy": "{apy}% APY",
+      "stakingDetail": {
+        "title": "{chain} Staking",
+        "account": "Account",
+        "staked": "Staked",
+        "value": "Value",
+        "share": "Share",
+        "accountCount_one": "{count} account",
+        "accountCount_other": "{count} accounts"
+      }
+    },
+    "stakingSummary": {
+      "title": "Staking Overview",
+      "averageApy": "Average APY",
+      "stakingAccounts": "Staking accounts",
+      "totalStaked": "Total staked",
+      "noStaking": "No active staking positions"
+    },
+    "priceCharts": {
+      "title": "Price Tracker",
+      "manageTokens": "Manage tokens",
+      "emptyState": "No tokens tracked. Click + to add tokens.",
+      "searchPlaceholder": "Search assets...",
+      "range1d": "24H",
+      "range7d": "7D",
+      "range30d": "30D",
+      "range90d": "90D",
+      "errorMessage": "Failed to load price data",
+      "retry": "Retry"
+    }
+  },
   "delegate": {
     "title": "Delegations"
   },
@@ -1809,6 +1926,7 @@
   "navigation": {
     "addressBookLabel": "Address Book",
     "balancesLabel": "Portfolio",
+    "dashboardLabel": "Dashboard",
     "basketLabel": "Basket",
     "callDataLabel": "Add call data",
     "customOperationLabel": "Custom operation",
@@ -1824,7 +1942,8 @@
     "transfersLabel": "Transfer",
     "unknownWalletLabel": "Unknown wallet",
     "vestedTransfersLabel": "Vested transfer",
-    "walletsLabel": "Wallets"
+    "walletsLabel": "Wallets",
+    "collapseLabel": "Collapse"
   },
   "notifications": {
     "details": {

@@ -1,0 +1,122 @@
+import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
+
+import { createSlot } from '@/shared/di';
+import { useI18n } from '@/shared/i18n';
+import { BodyText, Header, IconButton, SmallTitleText } from '@/shared/ui';
+import { Tabs } from '@/shared/ui-kit';
+import { dashboardModel } from '../model/dashboard-model';
+
+import { DashboardAccountSelector } from './DashboardAccountSelector';
+import { DashboardGrid } from './DashboardGrid';
+
+export const dashboardWidgetsSlot = createSlot<{
+  accountIds: string[];
+  allEntries: { accountId: string; name: string; address: string }[];
+}>({ name: 'dashboardWidgets' });
+
+export const dashboardStakingSlot = createSlot<{
+  accountIds: string[];
+  allEntries: { accountId: string; name: string; address: string }[];
+}>({ name: 'dashboardStaking' });
+
+const TABS = ['overview', 'staking', 'governance', 'alerts'] as const;
+
+export const Dashboard = () => {
+  const { t } = useI18n();
+  const allEntries = useUnit(dashboardModel.$allEntries);
+  const selectedIds = useUnit(dashboardModel.$selectedIds);
+  const activeTab = useUnit(dashboardModel.$activeTab);
+  const editMode = useUnit(dashboardModel.$editMode);
+  const tabChanged = useUnit(dashboardModel.tabChanged);
+  const editModeToggled = useUnit(dashboardModel.editModeToggled);
+
+  const accountIds = useMemo(() => {
+    const selectedIdSet = new Set(selectedIds);
+    const ids = new Set<string>();
+    for (const entry of allEntries) {
+      if (selectedIdSet.has(entry.id)) {
+        ids.add(entry.accountId);
+      }
+    }
+
+    return Array.from(ids);
+  }, [allEntries, selectedIds]);
+
+  return (
+    <section className="flex h-full flex-col">
+      <Header title={t('dashboard.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
+        {allEntries.length > 0 && (
+          <div className="flex items-center gap-x-2">
+            <IconButton className={editMode ? 'text-icon-accent' : ''} name="edit" onClick={editModeToggled} />
+            <DashboardAccountSelector />
+          </div>
+        )}
+      </Header>
+
+      <div className="flex min-h-0 flex-1 flex-col px-4">
+        <Tabs value={activeTab} onChange={tabChanged}>
+          <div className="w-fit">
+            <Tabs.List>
+              {TABS.map((tab) => (
+                <Tabs.Trigger key={tab} value={tab}>
+                  {t(`dashboard.tabs.${tab}`)}
+                </Tabs.Trigger>
+              ))}
+            </Tabs.List>
+          </div>
+
+          <Tabs.Content value="overview">
+            {allEntries.length === 0 ? (
+              <div className="flex h-full w-full flex-col items-center justify-center">
+                <div className="flex flex-col items-center gap-y-2">
+                  <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
+                  <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+                </div>
+              </div>
+            ) : (
+              <DashboardGrid
+                slot={dashboardWidgetsSlot}
+                tab="overview"
+                editMode={editMode}
+                props={{ accountIds, allEntries }}
+              />
+            )}
+          </Tabs.Content>
+
+          <Tabs.Content value="staking">
+            {allEntries.length === 0 ? (
+              <div className="flex h-full w-full flex-col items-center justify-center">
+                <div className="flex flex-col items-center gap-y-2">
+                  <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
+                  <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+                </div>
+              </div>
+            ) : (
+              <DashboardGrid
+                slot={dashboardStakingSlot}
+                tab="staking"
+                editMode={editMode}
+                props={{ accountIds, allEntries }}
+              />
+            )}
+          </Tabs.Content>
+
+          <Tabs.Content value="governance">
+            <div className="flex h-full w-full flex-col items-center justify-center py-20">
+              <SmallTitleText className="text-text-tertiary">{t('dashboard.tabs.governance')}</SmallTitleText>
+              <BodyText className="text-text-tertiary">{t('dashboard.tabs.comingSoon')}</BodyText>
+            </div>
+          </Tabs.Content>
+
+          <Tabs.Content value="alerts">
+            <div className="flex h-full w-full flex-col items-center justify-center py-20">
+              <SmallTitleText className="text-text-tertiary">{t('dashboard.tabs.alerts')}</SmallTitleText>
+              <BodyText className="text-text-tertiary">{t('dashboard.tabs.comingSoon')}</BodyText>
+            </div>
+          </Tabs.Content>
+        </Tabs>
+      </div>
+    </section>
+  );
+};
