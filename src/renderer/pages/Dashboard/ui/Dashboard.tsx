@@ -7,7 +7,6 @@ import { BodyText, Header, IconButton, SmallTitleText } from '@/shared/ui';
 import { Tabs } from '@/shared/ui-kit';
 import { dashboardModel } from '../model/dashboard-model';
 
-import { DashboardAccountSelector } from './DashboardAccountSelector';
 import { DashboardGrid } from './DashboardGrid';
 
 export const dashboardWidgetsSlot = createSlot<{
@@ -49,7 +48,7 @@ export const Dashboard = () => {
         {allEntries.length > 0 && (
           <div className="flex items-center gap-x-2">
             <IconButton className={editMode ? 'text-icon-accent' : ''} name="edit" onClick={editModeToggled} />
-            <DashboardAccountSelector />
+            {/* PresetSegmentSwitcher will be added here */}
           </div>
         )}
       </Header>
