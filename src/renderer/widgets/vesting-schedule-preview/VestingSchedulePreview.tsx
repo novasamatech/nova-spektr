@@ -219,7 +219,12 @@ export const VestingSchedulePreview = memo(
           width: '120px',
           render: (_, row) =>
             renderCell(row, 'startingBlock', ({ row, status }) => (
-              <StartingBlock timelineApi={timelineApi} status={status} startingBlock={row.startingBlock} />
+              <StartingBlock
+                timelineApi={timelineApi}
+                chain={chain}
+                status={status}
+                startingBlock={row.startingBlock}
+              />
             )),
         },
         {
@@ -397,10 +402,12 @@ const TargetAccount = memo(({ target, chain }: { target: AccountId; chain: Chain
 const StartingBlock = memo(
   ({
     timelineApi,
+    chain,
     status,
     startingBlock,
   }: {
     timelineApi: ApiPromise | null;
+    chain: Chain | null;
     status: RowStatus;
     startingBlock: string;
   }) => {
@@ -412,6 +419,7 @@ const StartingBlock = memo(
     const { data: blockTime } = useBlockTimestamp({
       api: timelineApi,
       blockHeight: startingBlockHeight,
+      chain,
     });
 
     let date: string | null = null;

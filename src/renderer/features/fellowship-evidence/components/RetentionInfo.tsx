@@ -34,7 +34,7 @@ export const RetentionInfo = memo(() => {
   useEffect(() => {
     if (input?.api && leftToDemotion) {
       if (leftToDemotion > 0) {
-        getRelativeTimeFromApi(leftToDemotion, input.api).then(setTimeLeft);
+        getRelativeTimeFromApi(leftToDemotion, input.api, input.chain ?? undefined).then(setTimeLeft);
       } else {
         setTimeLeft(0);
       }

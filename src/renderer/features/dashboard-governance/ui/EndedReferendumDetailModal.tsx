@@ -15,7 +15,7 @@ type Props = {
 };
 
 function formatUnlockDate(ms: number): string {
-  return new Date(ms).toLocaleDateString('en', { month: 'short', day: 'numeric' });
+  return new Date(ms).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export const EndedReferendumDetailModal = memo(({ referendum, onClose }: Props) => {
@@ -103,7 +103,7 @@ export const EndedReferendumDetailModal = memo(({ referendum, onClose }: Props) 
             );
           }
 
-          return <FootnoteText className="text-text-tertiary">&mdash;</FootnoteText>;
+          return <FootnoteText className="text-text-tertiary">{t('dashboard.referendums.shadowedLock')}</FootnoteText>;
         },
       },
     ],

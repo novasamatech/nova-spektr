@@ -23,6 +23,7 @@ export const useActivity = (accountId: AccountId | null) => {
   const { data: meta, pending: metaPending } = useReferendumMeta({
     palletType: 'fellowship',
     api,
+    chain,
     provider: provider?.type ?? null,
   });
   const { data: votes, pending: votesPending } = useAllVotes({ palletType: 'fellowship', api, chain });

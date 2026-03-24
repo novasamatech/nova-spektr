@@ -107,7 +107,7 @@ function useChainActiveReferendums(
   const timelineChainId = chain?.additional?.timelineChain ?? chainId;
   const timelineApi = useApi(timelineChainId);
   const { data: currentBlock } = useBlock(timelineApi);
-  const { data: blockTime } = useBlockTime(timelineApi);
+  const { data: blockTime } = useBlockTime(timelineApi, chains[timelineChainId]);
   const { data: titles } = useReferendumTitles({
     chain,
     service: metaProvider?.service ?? null,

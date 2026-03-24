@@ -6,6 +6,7 @@ import { dashboardGovernanceSlot } from '@/pages/Dashboard';
 
 import { GovernanceOverviewWidget } from './ui/GovernanceOverviewWidget';
 import { ReferendumsWidget } from './ui/ReferendumsWidget';
+import { UnlockScheduleWidget } from './ui/UnlockScheduleWidget';
 
 const enableFlag = $features.map(({ dashboard }) => dashboard);
 
@@ -29,4 +30,15 @@ export const dashboardReferendumsFeature = createFeature({
 dashboardReferendumsFeature.inject(dashboardGovernanceSlot, {
   order: 1,
   render: ReferendumsWidget,
+});
+
+export const dashboardUnlockScheduleFeature = createFeature({
+  name: 'dashboard/unlock-schedule',
+  input: createStore({}),
+  enable: enableFlag,
+});
+
+dashboardUnlockScheduleFeature.inject(dashboardGovernanceSlot, {
+  order: 2,
+  render: UnlockScheduleWidget,
 });

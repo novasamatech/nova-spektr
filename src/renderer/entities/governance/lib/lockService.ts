@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO, bnMax } from '@polkadot/util';
 
 import { type ClaimTime, type ClaimTimeAt, type ClaimTimeUntil } from '@/shared/api/governance';
-import { type Balance, type Conviction, type Voting } from '@/shared/core';
+import { type Balance, type Chain, type Conviction, type Voting } from '@/shared/core';
 import { getRelativeTimeFromApi, totalAmountBN } from '@/shared/lib/utils';
 
 import { votingService } from './votingService';
@@ -51,14 +51,14 @@ const getTotalLock = (voting: Voting): BN => {
   return BN_ZERO;
 };
 
-const getLockPeriods = async (api: ApiPromise) => {
+const getLockPeriods = async (api: ApiPromise, chain: Chain) => {
   const voteLockingPeriod = await api.consts.convictionVoting.voteLockingPeriod.toNumber();
   const convictionList = votingService.getConvictionList();
   const requests = convictionList.map(
     async (conviction) =>
       [
         conviction,
-        await getRelativeTimeFromApi(voteLockingPeriod * locksService.getLockPeriodsMultiplier(conviction), api),
+        await getRelativeTimeFromApi(voteLockingPeriod * locksService.getLockPeriodsMultiplier(conviction), api, chain),
       ] as const,
   );
   const responses = await Promise.all(requests);

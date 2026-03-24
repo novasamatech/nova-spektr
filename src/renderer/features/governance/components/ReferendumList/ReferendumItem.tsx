@@ -74,7 +74,12 @@ export const ReferendumItem = memo(
         <div className="flex w-full items-center gap-x-2">
           <VotingStatusBadge referendum={referendum} />
 
-          <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} timelineApi={timelineApi} />
+          <ReferendumEndTimer
+            status={referendum.status}
+            endBlock={referendum.end}
+            timelineApi={timelineApi}
+            chain={chain}
+          />
 
           <div className="ml-auto flex text-text-secondary">
             {referendumId && (

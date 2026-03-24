@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
+import { type Chain } from '@/shared/core';
 import { getTimeToBlock } from '@/shared/lib/utils';
 import { Timeout } from '@/shared/ui-kit';
 
@@ -17,15 +18,16 @@ function getTimerColor(time: number): 'urgent' | 'warning' | 'idle' {
 type Props = {
   endBlock: number | null;
   api: ApiPromise;
+  chain: Chain;
   shortDateFormat?: boolean;
 };
 
-export const PeriodEndTimer = ({ endBlock, api, shortDateFormat }: Props) => {
+export const PeriodEndTimer = ({ endBlock, api, chain, shortDateFormat }: Props) => {
   const [secondsToEnd, setSecondsToEnd] = useState<number>();
 
   useEffect(() => {
     if (endBlock && api) {
-      getTimeToBlock(endBlock, api).then(date => {
+      getTimeToBlock(endBlock, api, chain).then(date => {
         setSecondsToEnd(date / 1000);
       });
     }

@@ -606,12 +606,22 @@
       "timedOut": "Timed out",
       "killed": "Killed",
       "unlockableStatus": "Unlockable",
+      "shadowedLock": "Shadowed",
       "lockedUntil": "Locked until ~{date}",
       "detail": {
         "endedTitle": "Ended Referendum",
         "lockStatus": "Lock Status",
         "endedDate": "Ended {date}"
       }
+    },
+    "unlockSchedule": {
+      "title": "Unlock Schedule",
+      "claimableNow": "Claimable",
+      "pendingLocks": "Pending",
+      "delegated": "Delegated",
+      "upcomingUnlocks": "Upcoming Unlocks",
+      "noLocks": "No governance locks found",
+      "accountCount": "{count} accounts"
     },
     "activeReferendums": {
       "title": "Referendums",

@@ -2,14 +2,22 @@ import { type BN, BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useMemo, useRef } from 'react';
 
+import { UnlockChunkType } from '@/shared/api/governance';
 import { type AccountVote, type ChainId, type CompletedReferendum, type VotingMap } from '@/shared/core';
 import { entries, getRoundedValue, toAccountId, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { useReferendumTitles, useReferendums, useTracks, useVoting } from '@/domains/governance';
+import {
+  useReferendumTitles,
+  useReferendums,
+  useTrackLocks,
+  useTracks,
+  useUndecidingTimeout,
+  useVoting,
+} from '@/domains/governance';
 import { useBlock, useBlockTime } from '@/domains/network';
 import { useAssetsPrices } from '@/domains/price';
 import { AssetHubChains } from '@/domains/staking';
-import { locksService, referendumService, votingService } from '@/entities/governance';
+import { claimScheduleService, locksService, referendumService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
@@ -107,13 +115,24 @@ function useChainEndedReferendums(
     return filtered;
   }, [rawVotingMap, typedAccountIds]);
 
+  const { data: trackLocks } = useTrackLocks({
+    api,
+    accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
+  });
+
+  const { data: undecidingTimeout } = useUndecidingTimeout({ api });
+
   const { data: referendums } = useReferendums({ api });
+
+  // Governance chain block for claim schedule (accurate for lock comparisons)
+  const { data: govCurrentBlock } = useBlock(api);
 
   const chain = chains[chainId] ?? null;
   const timelineChainId = chain?.additional?.timelineChain ?? chainId;
   const timelineApi = useApi(timelineChainId);
+  // Timeline block for display-oriented timestamps (may differ from governance chain)
   const { data: currentBlock } = useBlock(timelineApi);
-  const { data: blockTime } = useBlockTime(timelineApi);
+  const { data: blockTime } = useBlockTime(timelineApi, chains[timelineChainId]);
   const { data: titles } = useReferendumTitles({
     chain,
     service: metaProvider?.service ?? null,
@@ -127,8 +146,42 @@ function useChainEndedReferendums(
     hasEverLoaded.current = true;
   }
 
+  // Build set of (accountId, refId) pairs that are truly claimable (overlocking-aware).
+  // Separated from the main useMemo so it doesn't recompute when titles/entryMap change.
+  const claimableVotes = useMemo(() => {
+    const set = new Set<string>();
+    if (!api || govCurrentBlock === null || Object.keys(tracks).length === 0) return set;
+
+    const voteLockingPeriod = api.consts.convictionVoting.voteLockingPeriod.toNumber();
+
+    for (const [accountId, trackVoting] of entries(votingMap)) {
+      const accountTrackLocks = trackLocks[accountId] ?? {};
+
+      const schedule = claimScheduleService.estimateClaimSchedule({
+        currentBlockNumber: govCurrentBlock,
+        referendums,
+        tracks,
+        trackLocks: accountTrackLocks,
+        votingByTrack: trackVoting,
+        undecidingTimeout,
+        voteLockingPeriod,
+      });
+
+      for (const chunk of schedule) {
+        if (chunk.type !== UnlockChunkType.CLAIMABLE) continue;
+        for (const action of chunk.actions) {
+          if (action.type === 'remove_vote') {
+            set.add(`${accountId}:${action.referendumId}`);
+          }
+        }
+      }
+    }
+
+    return set;
+  }, [api, govCurrentBlock, votingMap, referendums, tracks, trackLocks, undecidingTimeout]);
+
   const data = useMemo((): EndedReferendum[] => {
-    if (!chain || !asset || !api || currentBlock === null || blockTime === null) return [];
+    if (!chain || !asset || !api || currentBlock === null || govCurrentBlock === null || blockTime === null) return [];
 
     const blockTimeMs = blockTime.toNumber();
     const voteLockingPeriod = api.consts.convictionVoting.voteLockingPeriod.toNumber();
@@ -148,9 +201,10 @@ function useChainEndedReferendums(
 
           const completedRef = ref;
           const lockExpiry = getVoteLockExpiry(vote, completedRef, voteLockingPeriod);
-          const unlockable = currentBlock >= lockExpiry;
+          const lockExpired = currentBlock >= lockExpiry;
+          const unlockable = claimableVotes.has(`${accountId}:${refId}`);
 
-          const unlockAtMs = unlockable ? null : now + (lockExpiry - currentBlock) * blockTimeMs;
+          const unlockAtMs = lockExpired ? null : now + (lockExpiry - currentBlock) * blockTimeMs;
 
           const entry = entryMap.get(accountId);
           const amount = votingService.calculateAccountVoteAmount(vote);
@@ -222,7 +276,21 @@ function useChainEndedReferendums(
     }
 
     return result.sort((a, b) => b.endedAtMs - a.endedAtMs);
-  }, [chain, asset, api, currentBlock, blockTime, referendums, votingMap, titles, entryMap, priceItem, chainId]);
+  }, [
+    chain,
+    asset,
+    api,
+    currentBlock,
+    govCurrentBlock,
+    blockTime,
+    referendums,
+    votingMap,
+    titles,
+    entryMap,
+    priceItem,
+    chainId,
+    claimableVotes,
+  ]);
 
   return {
     data,

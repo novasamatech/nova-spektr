@@ -2,22 +2,34 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useMemo, useRef } from 'react';
 
-import { UnlockChunkType } from '@/shared/api/governance';
+import { type Chunks, UnlockChunkType } from '@/shared/api/governance';
 import { type ChainId, type VotingMap } from '@/shared/core';
 import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useReferendums, useTrackLocks, useTracks, useUndecidingTimeout, useVoting } from '@/domains/governance';
-import { useBlock } from '@/domains/network';
-import { claimScheduleService, votingService } from '@/entities/governance';
+import { useBlock, useBlockTime } from '@/domains/network';
+import { claimScheduleService, locksService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
 
 const BN_ZERO = new BN(0);
+
+export type AccountUnlockChunk = {
+  accountId: string;
+  block: number;
+  amount: string;
+  tracks: string[];
+  type: 'pending_lock' | 'pending_delegation';
+};
 
 export type ChainGovernanceData = {
   activeVotingAccounts: number;
   totalLocked: string;
   claimableAmount: string;
   averageConviction: number;
+  unlockChunks: AccountUnlockChunk[];
+  delegatedAmount: string;
+  blockTimeMs: number | null;
+  currentBlock: number | null;
   chainName: string;
   symbol: string;
   precision: number;
@@ -80,6 +92,29 @@ function computeGovernanceStats(votingMap: VotingMap) {
   return { activeVotingAccounts, totalLocked, averageConviction };
 }
 
+function collectChunks(schedule: Chunks[], accountId: string, target: AccountUnlockChunk[]) {
+  for (const chunk of schedule) {
+    if (chunk.type === UnlockChunkType.PENDING_LOCK && locksService.isClaimAt(chunk.claimableAt)) {
+      const chunkTracks = [...new Set(chunk.affected.map((a) => a.trackId))];
+      target.push({
+        accountId,
+        block: chunk.claimableAt.block,
+        amount: chunk.amount.toString(),
+        tracks: chunkTracks,
+        type: 'pending_lock',
+      });
+    } else if (chunk.type === UnlockChunkType.PENDING_DELEGATION) {
+      target.push({
+        accountId,
+        block: 0,
+        amount: chunk.amount.toString(),
+        tracks: [],
+        type: 'pending_delegation',
+      });
+    }
+  }
+}
+
 export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) => {
   const chains = useUnit(networkModel.$chains);
   const api = useApi(chainId);
@@ -123,8 +158,10 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
 
   const { data: currentBlock } = useBlock(api);
 
-  // Calculate claimable amount synchronously now that currentBlock is a resource
-  const claimableAmount = useMemo(() => {
+  const { data: blockTime } = useBlockTime(api, chains[chainId]);
+
+  // Calculate claimable amount, pending locks, and delegated amount
+  const claimData = useMemo(() => {
     if (
       !api ||
       currentBlock === null ||
@@ -133,11 +170,13 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
       referendums.length === 0 ||
       Object.keys(tracks).length === 0
     ) {
-      return BN_ZERO;
+      return { claimable: BN_ZERO, unlockChunks: [] as AccountUnlockChunk[], delegated: BN_ZERO };
     }
 
     const voteLockingPeriod = api.consts.convictionVoting.voteLockingPeriod.toNumber();
     let totalClaimable = BN_ZERO;
+    let totalDelegated = BN_ZERO;
+    const allChunks: AccountUnlockChunk[] = [];
 
     for (const accountId of typedAccountIds) {
       const votingByTrack = votingMap[accountId];
@@ -155,14 +194,18 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
         voteLockingPeriod,
       });
 
+      collectChunks(schedule, accountId, allChunks);
+
       for (const chunk of schedule) {
         if (chunk.type === UnlockChunkType.CLAIMABLE && !chunk.amount.isZero()) {
           totalClaimable = totalClaimable.add(chunk.amount);
+        } else if (chunk.type === UnlockChunkType.PENDING_DELEGATION) {
+          totalDelegated = totalDelegated.add(chunk.amount);
         }
       }
     }
 
-    return totalClaimable;
+    return { claimable: totalClaimable, unlockChunks: allChunks, delegated: totalDelegated };
   }, [api, currentBlock, typedAccountIds, votingMap, referendums, tracks, trackLocks, undecidingTimeout]);
 
   const stats = useMemo(() => computeGovernanceStats(votingMap), [votingMap]);
@@ -187,8 +230,12 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
   return {
     activeVotingAccounts: stats.activeVotingAccounts,
     totalLocked: stats.totalLocked.toString(),
-    claimableAmount: claimableAmount.toString(),
+    claimableAmount: claimData.claimable.toString(),
     averageConviction: stats.averageConviction,
+    unlockChunks: claimData.unlockChunks,
+    delegatedAmount: claimData.delegated.toString(),
+    blockTimeMs: blockTime?.toNumber() ?? null,
+    currentBlock,
     chainName: chain.name,
     symbol: asset.symbol,
     precision: asset.precision,

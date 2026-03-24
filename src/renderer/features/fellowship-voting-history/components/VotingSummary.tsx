@@ -12,7 +12,7 @@ import {
   useReferendumMeta,
   votingHistoryService,
 } from '@/domains/collectives';
-import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 import { useReferendumVotes } from '../hooks/useReferendumVotes';
 
@@ -22,10 +22,12 @@ export const VotingSummary = ({ referendum }: { referendum: Referendum }) => {
   const { votes, pending } = useReferendumVotes(referendum.id);
 
   const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const provider = useUnit(governanceMetaProvider.$metaProvider);
   const { data: referendumMetas } = useReferendumMeta({
     provider: provider?.type,
     api,
+    chain,
     palletType: 'fellowship',
   });
 
