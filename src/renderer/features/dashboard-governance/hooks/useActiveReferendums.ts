@@ -33,6 +33,7 @@ export type OurVote = {
 
 export type ActiveReferendum = {
   id: string;
+  idNumeric: number;
   chainId: ChainId;
   chainName: string;
   chainIcon: string;
@@ -163,6 +164,7 @@ function useChainActiveReferendums(
 
       result.push({
         id: ref.referendumId,
+        idNumeric: Number(ref.referendumId),
         chainId,
         chainName: chain.name,
         chainIcon: asset.icon.colored,
