@@ -1,7 +1,7 @@
 import { kernelModel } from '@/shared/core';
 import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';
-import { config as collectivesConfig, trackService } from '@/domains/collectives';
+import { config as collectivesConfig, ipfsGatewayModel, trackService } from '@/domains/collectives';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -54,6 +54,7 @@ const populate = async () => {
   governanceMetaProvider.populate();
   portfolioModel.populate();
   balanceModel.populate();
+  ipfsGatewayModel.populate();
 
   // TODO rework as populate effects
   kernelModel.events.appStarted();
