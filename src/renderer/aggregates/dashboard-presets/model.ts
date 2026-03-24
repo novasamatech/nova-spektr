@@ -22,7 +22,6 @@ $presets.on(presetCreated, (presets, { name, filters }) => [
     id: crypto.randomUUID(),
     name: name.trim().slice(0, 30),
     filters,
-    lastActivatedAt: Date.now(),
   },
 ]);
 

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { includes, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { cnTw, includes, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { SearchInput } from '@/shared/ui-kit';
@@ -66,10 +66,10 @@ export const MatchedAccountsPreview = ({ allEntries, filters }: Props) => {
                 <CaptionText className="text-text-tertiary">{toShortAddress(entry.accountId, 6)}</CaptionText>
               </div>
               <span
-                className={[
+                className={cnTw(
                   'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium',
-                  SOURCE_BADGE_COLORS[entry.source] ?? '',
-                ].join(' ')}
+                  SOURCE_BADGE_COLORS[entry.source],
+                )}
               >
                 {entry.source}
               </span>

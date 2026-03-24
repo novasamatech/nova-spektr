@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
 import { MultiSelect } from '@/shared/ui';
 import { Input } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
@@ -108,12 +109,12 @@ export const PresetFilterEditor = ({ name, filters, onNameChange, onFiltersChang
               <button
                 key={opt.id}
                 type="button"
-                className={[
+                className={cnTw(
                   'rounded-full px-3 py-1 text-footnote transition-colors',
                   active
                     ? 'bg-icon-accent text-white'
                     : 'border border-filter-border text-text-secondary hover:bg-action-background-hover',
-                ].join(' ')}
+                )}
                 onClick={() => toggleSource(opt.id)}
               >
                 {t(opt.label)}

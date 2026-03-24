@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { dashboardPresetsModel } from '../model';
 
 describe('dashboardPresetsModel', () => {
-  it('creates a preset with generated id and timestamp', async () => {
+  it('creates a preset with generated id', async () => {
     const scope = fork();
     await allSettled(dashboardPresetsModel.presetCreated, {
       scope,
@@ -15,7 +15,6 @@ describe('dashboardPresetsModel', () => {
     expect(presets[0]!.name).toBe('Work');
     expect(presets[0]!.filters.sources).toEqual(['wallet']);
     expect(presets[0]!.id).toBeTruthy();
-    expect(presets[0]!.lastActivatedAt).toBeGreaterThan(0);
   });
 
   it('trims and limits preset name to 30 chars', async () => {
@@ -42,7 +41,6 @@ describe('dashboardPresetsModel', () => {
               id: '1',
               name: 'Old',
               filters: { sources: [], entityNames: [], categoryNames: [], tags: [] },
-              lastActivatedAt: 0,
             },
           ],
         ],
@@ -62,7 +60,6 @@ describe('dashboardPresetsModel', () => {
               id: '1',
               name: 'X',
               filters: { sources: [], entityNames: [], categoryNames: [], tags: [] },
-              lastActivatedAt: 0,
             },
           ],
         ],
@@ -82,7 +79,6 @@ describe('dashboardPresetsModel', () => {
               id: '1',
               name: 'X',
               filters: { sources: [], entityNames: [], categoryNames: [], tags: [] },
-              lastActivatedAt: 0,
             },
           ],
         ],
@@ -103,7 +99,6 @@ describe('dashboardPresetsModel', () => {
               id: '1',
               name: 'A',
               filters: { sources: [], entityNames: [], categoryNames: [], tags: [] },
-              lastActivatedAt: 100,
             },
           ],
         ],
@@ -125,19 +120,16 @@ describe('dashboardPresetsModel', () => {
         id: '2',
         name: 'B',
         filters: { sources: [], entityNames: [], categoryNames: [], tags: [] },
-        lastActivatedAt: 300,
       },
       {
         id: '3',
         name: 'C',
         filters: { sources: [], entityNames: [], categoryNames: [], tags: [] },
-        lastActivatedAt: 200,
       },
       {
         id: '4',
         name: 'D',
         filters: { sources: [], entityNames: [], categoryNames: [], tags: [] },
-        lastActivatedAt: 50,
       },
     ];
     const scope = fork({ values: [[dashboardPresetsModel.$presets, presets]] });

@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { includes } from '@/shared/lib/utils';
+import { cnTw, includes } from '@/shared/lib/utils';
 import { FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { Popover, SearchInput, Tabs } from '@/shared/ui-kit';
 import { dashboardPresetsModel } from '@/aggregates/dashboard-presets';
@@ -75,10 +75,10 @@ export const PresetSegmentSwitcher = () => {
                     <button
                       key={preset.id}
                       type="button"
-                      className={[
+                      className={cnTw(
                         'flex w-full items-center rounded px-2 py-1.5 text-left transition-colors hover:bg-action-background-hover',
-                        activePresetId === preset.id ? 'border-l-2 border-icon-accent bg-block-background-default' : '',
-                      ].join(' ')}
+                        activePresetId === preset.id && 'border-l-2 border-icon-accent bg-block-background-default',
+                      )}
                       onClick={() => handleOverflowActivate(preset.id)}
                     >
                       <FootnoteText className="text-text-primary">{preset.name}</FootnoteText>

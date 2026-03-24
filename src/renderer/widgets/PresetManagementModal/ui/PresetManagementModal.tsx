@@ -1,7 +1,8 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
 import { Button, FootnoteText } from '@/shared/ui';
 import { ConfirmModal, Modal } from '@/shared/ui-kit';
 import { type PresetFilterCriteria, EMPTY_FILTERS, dashboardPresetsModel } from '@/aggregates/dashboard-presets';
@@ -28,18 +29,30 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   const [editName, setEditName] = useState('');
   const [editFilters, setEditFilters] = useState<PresetFilterCriteria>(EMPTY_FILTERS);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  // pendingSelectNew: after creating a new preset, auto-select the newest one
   const [pendingSelectNew, setPendingSelectNew] = useState(false);
+
+  const selectPreset = useCallback(
+    (id: string) => {
+      const preset = presets.find((p) => p.id === id);
+      if (!preset) return;
+      setSelectedId(id);
+      setEditName(preset.name);
+      setEditFilters(preset.filters);
+    },
+    [presets],
+  );
+
+  const resetEditor = useCallback(() => {
+    setSelectedId(null);
+    setEditName('');
+    setEditFilters(EMPTY_FILTERS);
+  }, []);
 
   // When modal opens, select the first preset if any
   useEffect(() => {
     if (isOpen && presets.length > 0 && selectedId === null) {
       const first = presets[0];
-      if (first) {
-        setSelectedId(first.id);
-        setEditName(first.name);
-        setEditFilters(first.filters);
-      }
+      if (first) selectPreset(first.id);
     }
     if (!isOpen) {
       setSelectedId(null);
@@ -48,37 +61,17 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
 
   // Auto-select new preset after creation
   useEffect(() => {
-    if (pendingSelectNew && presets.length > 0) {
-      // The newly created preset will be last in the array
-      const newest = presets[presets.length - 1];
-      if (newest) {
-        setSelectedId(newest.id);
-        setEditName(newest.name);
-        setEditFilters(newest.filters);
-      }
-      setPendingSelectNew(false);
-    }
-  }, [presets, pendingSelectNew]);
+    if (!pendingSelectNew) return;
 
-  const handleSelectPreset = (id: string) => {
-    const preset = presets.find((p) => p.id === id);
-    if (!preset) return;
-    setSelectedId(id);
-    setEditName(preset.name);
-    setEditFilters(preset.filters);
-  };
-
-  const handleNewPreset = () => {
-    setSelectedId(null);
-    setEditName('');
-    setEditFilters(EMPTY_FILTERS);
-  };
+    const newest = presets[presets.length - 1];
+    if (newest) selectPreset(newest.id);
+    setPendingSelectNew(false);
+  }, [pendingSelectNew]);
 
   const handleSave = () => {
     if (!editName.trim()) return;
 
     if (selectedId === null) {
-      // Creating new preset
       presetCreated({ name: editName, filters: editFilters });
       setPendingSelectNew(true);
     } else {
@@ -93,20 +86,13 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
     presetDeleted(selectedId);
     setConfirmDeleteOpen(false);
 
-    // Auto-select next or previous preset
     const remaining = presets.filter((p) => p.id !== selectedId);
     if (remaining.length > 0) {
       const nextIndex = Math.min(currentIndex, remaining.length - 1);
       const next = remaining[nextIndex];
-      if (next) {
-        setSelectedId(next.id);
-        setEditName(next.name);
-        setEditFilters(next.filters);
-      }
+      if (next) selectPreset(next.id);
     } else {
-      setSelectedId(null);
-      setEditName('');
-      setEditFilters(EMPTY_FILTERS);
+      resetEditor();
     }
   };
 
@@ -126,11 +112,11 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
                   <button
                     key={preset.id}
                     type="button"
-                    className={[
+                    className={cnTw(
                       'flex w-full items-center px-4 py-2.5 text-left transition-colors hover:bg-action-background-hover',
-                      selectedId === preset.id ? 'border-l-2 border-icon-accent bg-block-background-default' : '',
-                    ].join(' ')}
-                    onClick={() => handleSelectPreset(preset.id)}
+                      selectedId === preset.id && 'border-l-2 border-icon-accent bg-block-background-default',
+                    )}
+                    onClick={() => selectPreset(preset.id)}
                   >
                     <FootnoteText className="w-full truncate text-text-primary">{preset.name}</FootnoteText>
                   </button>
@@ -141,7 +127,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
                 <button
                   type="button"
                   className="flex w-full items-center justify-center gap-x-1.5 rounded px-3 py-1.5 text-footnote text-icon-accent transition-colors hover:bg-action-background-hover"
-                  onClick={handleNewPreset}
+                  onClick={resetEditor}
                 >
                   <span className="text-base leading-none">+</span>
                   <FootnoteText as="span" className="text-inherit">
