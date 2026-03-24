@@ -1,4 +1,5 @@
 import { type BN } from '@polkadot/util';
+import { useUnit } from 'effector-react';
 
 import { type Asset, type Chain, type HexString, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -6,7 +7,7 @@ import { formatAsset } from '@/shared/lib/utils';
 import { ButtonWebLink, DetailRow, Icon, Separator } from '@/shared/ui';
 import { Hash, TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { evidenceService } from '@/domains/collectives';
+import { $primaryIpfsGateway, evidenceService } from '@/domains/collectives';
 import { type AnyAccount } from '@/domains/network';
 
 type Props = {
@@ -31,8 +32,9 @@ export const EvidencePostConfirmation = ({
   rank,
 }: Props) => {
   const { t } = useI18n();
+  const primaryGateway = useUnit($primaryIpfsGateway);
 
-  const ipfsUrl = evidenceService.getEvidenceIpfsUrl(evidence);
+  const ipfsUrl = evidenceService.getEvidenceFetchIpfsUrl(evidence, primaryGateway);
 
   return (
     <Box>

@@ -2500,30 +2500,6 @@
       "revokeFor": "Revoke for",
       "sender": "Sender"
     },
-    "names": {
-      "any": "All",
-      "auction": "Auction",
-      "cancelProxy": "Cancel",
-      "governance": "Governance",
-      "identityJudgement": "Judgement",
-      "nominationPools": "Nominations",
-      "nonTransfer": "All, except transfer",
-      "staking": "Staking",
-      "sudoBalances": "Sudo balances",
-      "unknown": "Unknown"
-    },
-    "operations": {
-      "any": "all operations",
-      "auction": "auction operations",
-      "cancelProxy": "cancel operations",
-      "governance": "governance operations",
-      "identityJudgement": "judgement operations",
-      "nominationPools": "nominations operations",
-      "nonTransfer": "all, except transfer operations",
-      "removeProxyTitle": "Revoke delegated authority (proxy) on ",
-      "staking": "staking operations",
-      "sudoBalances": "balances via sudo"
-    },
     "proxyDepositHint": "The deposit stays reserved on your account until the proxy is removed",
     "proxyDepositLabel": "Proxy deposit",
     "proxyTooltip": "Delegated authorities (proxies)",
@@ -2539,18 +2515,7 @@
     "submitInProgress": "Submitting operation...",
     "submitSuccess": "Operation Success",
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
-    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet.",
-    "types": {
-      "Any": "Any",
-      "Auction": "Auction",
-      "CancelProxy": "Cancel",
-      "Governance": "Governance",
-      "IdentityJudgement": "Judgement",
-      "NominationPools": "Nominations",
-      "NonTransfer": "Non Transfer",
-      "Staking": "Staking",
-      "SudoBalances": "Sudo Balances"
-    }
+    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
   },
   "pureProxyRemove": {
     "warning": {

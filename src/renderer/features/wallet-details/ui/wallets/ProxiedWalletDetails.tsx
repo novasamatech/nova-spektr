@@ -1,7 +1,7 @@
 import { useGate, useUnit } from 'effector-react';
 import { useState } from 'react';
 
-import { type ProxiedWallet, type ProxyType } from '@/shared/core';
+import { type ProxiedWallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
@@ -23,18 +23,6 @@ import { ProxiesList } from '../components/ProxiesList';
 import { type WalletAction, Action, WalletActions } from '../components/WalletActions';
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
-
-const ProxyTypeOperation: Record<ProxyType, string> = {
-  Any: 'proxy.operations.any',
-  NonTransfer: 'proxy.operations.nonTransfer',
-  Staking: 'proxy.operations.staking',
-  Auction: 'proxy.operations.auction',
-  CancelProxy: 'proxy.operations.cancelProxy',
-  Governance: 'proxy.operations.governance',
-  IdentityJudgement: 'proxy.operations.identityJudgement',
-  NominationPools: 'proxy.operations.nominationPools',
-  SudoBalances: 'proxy.operations.sudoBalances',
-};
 
 type Props = {
   wallet: ProxiedWallet;
@@ -159,9 +147,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
                   &nbsp;
                   <FootnoteText className="whitespace-nowrap">{t('walletDetails.common.proxyToControl')}</FootnoteText>
                   &nbsp;
-                  <FootnoteText className="whitespace-nowrap">
-                    {t(ProxyTypeOperation[connection.proxyType])}
-                  </FootnoteText>
+                  <FootnoteText className="whitespace-nowrap">{connection.proxyType}</FootnoteText>
                 </div>
               ),
           )}

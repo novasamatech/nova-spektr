@@ -39,6 +39,7 @@ export type { CoreMember, Member } from './member/types';
 
 export { evidence } from './evidence/store';
 export { evidenceService } from './evidence/service';
+export { $ipfsGateways, $primaryIpfsGateway, ipfsGatewayModel } from './evidence/ipfsGateway';
 export {
   useEvidencePeriod,
   useEvidenceSummary,

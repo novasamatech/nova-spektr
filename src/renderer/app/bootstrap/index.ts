@@ -1,7 +1,7 @@
 import { kernelModel } from '@/shared/core';
 import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';
-import { config as collectivesConfig, trackService } from '@/domains/collectives';
+import { config as collectivesConfig, ipfsGatewayModel, trackService } from '@/domains/collectives';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -9,7 +9,6 @@ import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
-import { appCustomOperationsFeature } from '@/features/app-custom-operations';
 import { assetsSettingsModel, portfolioModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
@@ -54,6 +53,7 @@ const populate = async () => {
   governanceMetaProvider.populate();
   portfolioModel.populate();
   balanceModel.populate();
+  ipfsGatewayModel.populate();
 
   // TODO rework as populate effects
   kernelModel.events.appStarted();
@@ -83,7 +83,7 @@ export const bootstrap = () => {
     governanceNavigationFeature,
     vestedTransferFeature,
     multiTransferFeature,
-    appCustomOperationsFeature,
+    import('@/features/app-custom-operations').then(({ appCustomOperationsFeature }) => appCustomOperationsFeature),
 
     import('@/features/wallet-select').then(({ walletSelectFeature }) => walletSelectFeature.feature),
     import('@/features/wallet-details').then(({ walletDetailsFeature }) => walletDetailsFeature),

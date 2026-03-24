@@ -21,6 +21,19 @@ function skipSourcemaps(paths: string[]): Plugin {
   };
 }
 
+/**
+ * Strict CSP meta in index.html blocks Vite's inline HMR/React Refresh scripts;
+ * strip only for dev server.
+ */
+function stripCspMetaInDev(): Plugin {
+  return {
+    name: 'strip-csp-meta-dev',
+    transformIndexHtml(html) {
+      return html.replace(/<meta[\s\S]*?http-equiv=["']Content-Security-Policy["'][\s\S]*?\/>/gi, '');
+    },
+  };
+}
+
 const config: UserConfigFn = async ({ mode, command }) => {
   const { defineConfig } = await import('vite');
   const { default: svgr } = await import('vite-plugin-svgr');
@@ -86,6 +99,8 @@ const config: UserConfigFn = async ({ mode, command }) => {
     },
     plugins: [
       ...commonPlugins,
+
+      isDevServer && stripCspMetaInDev(),
 
       isDevServer && mkcert(),
 
