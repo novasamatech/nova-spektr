@@ -498,6 +498,39 @@
       "selectedCount_one": "{{count}} account selected",
       "selectedCount_other": "{{count}} accounts selected"
     },
+    "presets": {
+      "all": "All",
+      "overflow": "+{count} more",
+      "manage": "Manage Presets",
+      "searchPresets": "Search presets...",
+      "modal": {
+        "title": "Manage Presets",
+        "newPreset": "New Preset",
+        "name": "Name",
+        "namePlaceholder": "Preset name",
+        "sourceType": "Source Type",
+        "entity": "Entity",
+        "category": "Category",
+        "tags": "Tags",
+        "anyCategory": "Any category",
+        "anyTags": "Any tags",
+        "matchingAccounts": "Matching Accounts ({count})",
+        "searchAccounts": "Search accounts...",
+        "noMatches": "No accounts match these filters",
+        "matchesAll": "This preset matches all accounts",
+        "moreAccounts": "+{count} more",
+        "delete": "Delete Preset",
+        "deleteConfirmTitle": "Delete Preset",
+        "deleteConfirmDescription": "Are you sure you want to delete \"{name}\"?",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "sources": {
+        "wallet": "Wallet",
+        "localContact": "Local Contacts",
+        "backendContact": "Backend Contacts"
+      }
+    },
     "emptyState": {
       "title": "No accounts available",
       "description": "Add a wallet or contact to get started"
