@@ -10,9 +10,9 @@ import { useEvidenceContent } from '../hooks/useEvidenceContent';
 import { useMetadata } from '../hooks/useMetadata';
 
 import { AdditionalContext } from './AdditionalContext';
+import { CallData } from './CallData';
 import { Card } from './Card';
 import { ConnectedGovernanceReferendum } from './ConnectedGovernanceReferendum';
-import { TechnicalDetails } from './TechnicalDetails';
 
 type Props = {
   referendum: Referendum | null;
@@ -55,7 +55,7 @@ export const ReferendumDescription = memo(({ referendum, evidence }: Props) => {
 
       {shouldRenderEvidenceAlert ? <NoEvidence /> : null}
 
-      {ongoingReferendum && <TechnicalDetails referendum={ongoingReferendum} />}
+      {ongoingReferendum && <CallData referendum={ongoingReferendum} />}
 
       {nonNullable(referendum) && <ConnectedGovernanceReferendum referendum={referendum} />}
       <div className="flex-1">

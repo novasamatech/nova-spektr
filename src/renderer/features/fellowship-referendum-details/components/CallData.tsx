@@ -28,7 +28,7 @@ type Props = {
   referendum: OngoingReferendum;
 };
 
-export const TechnicalDetails = memo(({ referendum }: Props) => {
+export const CallData = memo(({ referendum }: Props) => {
   const { t } = useI18n();
   const api = useFellowshipApi();
   const { data: tracks } = useTracks({ palletType: 'fellowship', api });
@@ -52,23 +52,23 @@ export const TechnicalDetails = memo(({ referendum }: Props) => {
   return (
     <Card>
       <Box padding={6} gap={4}>
-        <SmallTitleText>{t('fellowship.technicalDetails.title')}</SmallTitleText>
+        <SmallTitleText>{t('fellowship.callData.title')}</SmallTitleText>
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.referendumId')}</FootnoteText>
+            <FootnoteText className="text-text-tertiary">{t('fellowship.callData.referendumId')}</FootnoteText>
             <FootnoteText>{referendum.id}</FootnoteText>
           </div>
           <div className="flex items-center justify-between">
-            <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.track')}</FootnoteText>
+            <FootnoteText className="text-text-tertiary">{t('fellowship.callData.track')}</FootnoteText>
             <FootnoteText>{track ? `${track.name} (#${referendum.track})` : `#${referendum.track}`}</FootnoteText>
           </div>
           <div className="flex items-center justify-between">
-            <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.origin')}</FootnoteText>
+            <FootnoteText className="text-text-tertiary">{t('fellowship.callData.origin')}</FootnoteText>
             <FootnoteText>{referendum.origin}</FootnoteText>
           </div>
           {referendumType && (
             <div className="flex items-center justify-between">
-              <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.call')}</FootnoteText>
+              <FootnoteText className="text-text-tertiary">{t('fellowship.callData.call')}</FootnoteText>
               <FootnoteText>{referendumType}</FootnoteText>
             </div>
           )}
@@ -76,7 +76,7 @@ export const TechnicalDetails = memo(({ referendum }: Props) => {
 
           {!pendingConnected && !connectedReferendum && isWhitelist && (
             <FootnoteText className="mt-2 text-text-tertiary">
-              {t('fellowship.technicalDetails.governanceNotCreated')}
+              {t('fellowship.callData.governanceNotCreated')}
             </FootnoteText>
           )}
         </div>
@@ -116,7 +116,7 @@ const EvidenceDetails = ({ proposal }: { proposal: EvidenceProposal }) => {
   return (
     <>
       <div className="flex items-center justify-between">
-        <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.member')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('fellowship.callData.member')}</FootnoteText>
         <div className="max-w-[60%]">
           <Address
             address={toAddress(proposal.accountId, { prefix: chain?.addressPrefix })}
@@ -128,7 +128,7 @@ const EvidenceDetails = ({ proposal }: { proposal: EvidenceProposal }) => {
       </div>
       {proposal.rank != null && (
         <div className="flex items-center justify-between">
-          <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.targetRank')}</FootnoteText>
+          <FootnoteText className="text-text-tertiary">{t('fellowship.callData.targetRank')}</FootnoteText>
           <FootnoteText>{`Rank ${proposal.rank}`}</FootnoteText>
         </div>
       )}
@@ -142,15 +142,15 @@ const RfcDetails = ({ proposal }: { proposal: RfcProposal }) => {
   return (
     <>
       <div className="flex items-center justify-between">
-        <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.pullRequest')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('fellowship.callData.pullRequest')}</FootnoteText>
         <InfoLink url={`https://github.com/polkadot-fellows/RFCs/pull/${proposal.pullRequest}`}>
           {`#${proposal.pullRequest}`}
         </InfoLink>
       </div>
       <div className="flex items-center">
-        <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.documentHash')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('fellowship.callData.documentHash')}</FootnoteText>
         <FootnoteText className="ml-auto text-text-tertiary">{truncate(proposal.documentHash, 7, 7)}</FootnoteText>
-        <Copy value={proposal.documentHash} notification={t('fellowship.technicalDetails.documentHashCopied')}>
+        <Copy value={proposal.documentHash} notification={t('fellowship.callData.documentHashCopied')}>
           <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
         </Copy>
       </div>
@@ -164,21 +164,21 @@ const WhitelistDetails = ({ proposal }: { proposal: WhitelistProposal }) => {
   return (
     <>
       <div className="flex items-center">
-        <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.callHash')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('fellowship.callData.callHash')}</FootnoteText>
         <FootnoteText className="ml-auto text-text-tertiary">{truncate(proposal.proposalHash, 7, 7)}</FootnoteText>
-        <Copy value={proposal.proposalHash} notification={t('fellowship.technicalDetails.callHashCopied')}>
+        <Copy value={proposal.proposalHash} notification={t('fellowship.callData.callHashCopied')}>
           <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
         </Copy>
       </div>
       <div className="flex items-center justify-between">
-        <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.callData')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('fellowship.callData.details')}</FootnoteText>
         <Modal size="fit" height="lg">
           <Modal.Trigger>
             <Button className="p-0" size="sm" variant="text">
-              {t('fellowship.technicalDetails.viewJson')}
+              {t('fellowship.callData.viewJson')}
             </Button>
           </Modal.Trigger>
-          <Modal.Title close>{t('fellowship.technicalDetails.callData')}</Modal.Title>
+          <Modal.Title close>{t('fellowship.callData.details')}</Modal.Title>
           <Modal.Content>
             <JsonArgs value={proposal.proposalJSON} />
           </Modal.Content>
@@ -198,7 +198,7 @@ const SpendDetails = ({ proposal }: { proposal: SpendProposal }) => {
 
   return (
     <div className="flex items-center justify-between">
-      <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.amount')}</FootnoteText>
+      <FootnoteText className="text-text-tertiary">{t('fellowship.callData.amount')}</FootnoteText>
       <FootnoteText>{formattedAmount}</FootnoteText>
     </div>
   );
@@ -211,7 +211,7 @@ const UnknownDetails = ({ proposal }: { proposal: UnknownProposal }) => {
 
   return (
     <div className="flex items-center justify-between">
-      <FootnoteText className="text-text-tertiary">{t('fellowship.technicalDetails.description')}</FootnoteText>
+      <FootnoteText className="text-text-tertiary">{t('fellowship.callData.description')}</FootnoteText>
       <FootnoteText className="max-w-[60%] truncate">{proposal.description}</FootnoteText>
     </div>
   );
