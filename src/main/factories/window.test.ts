@@ -93,8 +93,9 @@ async function invokeCallback(
   callback: HeadersReceivedCallback,
   existingHeaders: Record<string, string[]> = {},
   resourceType = 'mainFrame',
+  url = 'file:///app/index.html',
 ): Promise<Record<string, unknown>> {
-  return new Promise((resolve) => callback({ responseHeaders: existingHeaders, resourceType }, resolve));
+  return new Promise((resolve) => callback({ responseHeaders: existingHeaders, resourceType, url }, resolve));
 }
 
 describe('window.ts — CSP header via session.webRequest.onHeadersReceived', () => {
@@ -218,5 +219,12 @@ describe('window.ts — CSP header via session.webRequest.onHeadersReceived', ()
     const result = await invokeCallback(cb, {}, 'mainFrame');
     const headers = result.responseHeaders as Record<string, string[]>;
     expect(headers['Content-Security-Policy']?.[0]).toBe(EXPECTED_CSP);
+  });
+
+  it('should NOT inject CSP for renderer dev server document URL (Vite inline scripts)', async () => {
+    const cb = await getHeadersReceivedCallback();
+    const result = await invokeCallback(cb, {}, 'mainFrame', 'http://localhost:3000/');
+    expect(result.cancel).toBe(false);
+    expect(result.responseHeaders).toBeUndefined();
   });
 });
