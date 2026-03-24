@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { memo, useMemo, useState } from 'react';
 
-import { TransactionType } from '@/shared/core';
+import { ProxyTypeOrder, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
 import { Button, MultiSelect } from '@/shared/ui';
@@ -10,7 +10,6 @@ import { Hash, WalletAccountIcon } from '@/shared/ui-entities';
 import { DateRangePicker } from '@/shared/ui-kit';
 import { accountService, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { ProxyTypeName } from '@/entities/proxy';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
 import { operationsContextModel } from '../model/context';
@@ -38,10 +37,10 @@ export const OperationsFilter = memo(() => {
     value: chainId,
     element: name,
   }));
-  const ProxyTypeOptions = Object.entries(ProxyTypeName).map(([type, name]) => ({
+  const ProxyTypeOptions = ProxyTypeOrder.map(type => ({
     id: type,
     value: type,
-    element: t(name),
+    element: type,
   }));
 
   const filtersOptions = useMemo(() => {
