@@ -87,7 +87,7 @@ export const useWalletsNames = (wallets: Wallet[]) => {
 };
 
 export const useWalletName = (wallet: Wallet | null | undefined) => {
-  const wallets = useMemo(() => (wallet ? [wallet] : []), [wallet?.id]);
+  const wallets = useMemo(() => (wallet ? [wallet] : []), [wallet?.id, wallet?.name]);
   const resolvedWallets = useWalletsNames(wallets);
 
   if (!wallet) return null;
