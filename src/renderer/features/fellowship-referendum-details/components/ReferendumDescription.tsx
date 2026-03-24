@@ -5,15 +5,13 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { Markdown } from '@/shared/ui-kit/Markdown/Markdown';
-import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
+import { type Evidence, type Referendum, trackService } from '@/domains/collectives';
 import { useEvidenceContent } from '../hooks/useEvidenceContent';
 import { useMetadata } from '../hooks/useMetadata';
 
 import { AdditionalContext } from './AdditionalContext';
 import { Card } from './Card';
 import { ConnectedGovernanceReferendum } from './ConnectedGovernanceReferendum';
-import { OnChainData } from './OnChainData';
-
 type Props = {
   referendum: Referendum | null;
   evidence: Evidence | null;
@@ -33,8 +31,6 @@ export const ReferendumDescription = memo(({ referendum, evidence }: Props) => {
     canHaveEvidence && nullable(evidenceContent) && pendingEvidenceContent && nonNullable(evidence);
   const shouldRenderEvidenceAlert =
     canHaveEvidence && nullable(evidenceContent) && (!pendingEvidenceContent || nullable(evidence));
-
-  const ongoingReferendum = nonNullable(referendum) && referendumService.isOngoing(referendum) ? referendum : null;
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -57,7 +53,6 @@ export const ReferendumDescription = memo(({ referendum, evidence }: Props) => {
 
       {nonNullable(referendum) && <ConnectedGovernanceReferendum referendum={referendum} />}
 
-      {ongoingReferendum && <OnChainData referendum={ongoingReferendum} />}
       <div className="flex-1">
         <AdditionalContext referendum={referendum} />
       </div>

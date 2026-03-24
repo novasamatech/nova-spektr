@@ -2,10 +2,11 @@ import { capitalize } from 'lodash';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, truncate } from '@/shared/lib/utils';
-import { FootnoteText, IconButton, InfoLink, TitleText } from '@/shared/ui';
+import { cnTw, formatBalance, toAddress, truncate } from '@/shared/lib/utils';
+import { FootnoteText, Icon, IconButton, InfoLink, TitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import { Box, Copy } from '@/shared/ui-kit';
+import { Box, Copy, Modal } from '@/shared/ui-kit';
+import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import {
   type EvidenceProposal,
   type OngoingReferendum,
@@ -155,6 +156,9 @@ const RfcDetails = ({ proposal }: { proposal: RfcProposal }) => {
   );
 };
 
+const InteractionStyle =
+  'rounded-sm hover:bg-action-background-hover hover:text-text-primary cursor-pointer py-[3px] px-2 -mr-2';
+
 const WhitelistDetails = ({ proposal }: { proposal: WhitelistProposal }) => {
   const { t } = useI18n();
   const chain = useFellowshipChain();
@@ -171,6 +175,30 @@ const WhitelistDetails = ({ proposal }: { proposal: WhitelistProposal }) => {
         <Copy value={proposal.proposalHash} notification={t('fellowship.onChainData.callHashCopied')}>
           <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
         </Copy>
+      </div>
+      <div className="flex items-center justify-between">
+        <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.callData')}</FootnoteText>
+        <div className="flex items-center gap-1">
+          <Copy value={proposal.proposalHex} notification={t('fellowship.onChainData.callDataCopied')}>
+            <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
+              <FootnoteText className="text-inherit">{truncate(proposal.proposalHex, 7, 8)}</FootnoteText>
+              <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
+            </button>
+          </Copy>
+          <Modal size="lg" height="fit">
+            <Modal.Trigger>
+              <button type="button" className={cnTw('group', InteractionStyle)}>
+                <Icon name="details" size={16} className="group-hover:text-icon-hover" />
+              </button>
+            </Modal.Trigger>
+            <Modal.Title close>{t('fellowship.onChainData.viewJson')}</Modal.Title>
+            <Modal.Content>
+              <Box padding={5}>
+                <JsonArgs value={proposal.proposalJSON} />
+              </Box>
+            </Modal.Content>
+          </Modal>
+        </div>
       </div>
       {decodeUrl && (
         <div className="flex items-center justify-between">
