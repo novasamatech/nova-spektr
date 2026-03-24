@@ -498,6 +498,47 @@
       "selectedCount_one": "{{count}} account selected",
       "selectedCount_other": "{{count}} accounts selected"
     },
+    "presets": {
+      "all": "All",
+      "overflow": "+{count} more",
+      "manage": "Manage Presets",
+      "searchPresets": "Search presets...",
+      "modal": {
+        "title": "Manage Presets",
+        "newPreset": "New Preset",
+        "name": "Name",
+        "namePlaceholder": "Preset name",
+        "sourceType": "Source Type",
+        "entity": "Entity",
+        "category": "Category",
+        "tags": "Tags",
+        "anyCategory": "Any category",
+        "anyTags": "Any tags",
+        "matchingAccounts": "Matching Accounts ({count})",
+        "searchAccounts": "Search accounts...",
+        "noMatches": "No accounts match these filters",
+        "matchesAll": "This preset matches all accounts",
+        "moreAccounts": "+{count} more",
+        "delete": "Delete Preset",
+        "deleteConfirmTitle": "Delete Preset",
+        "deleteConfirmDescription": "Are you sure you want to delete \"{name}\"?",
+        "cancel": "Cancel",
+        "save": "Save",
+        "savedToast": "Preset \"{name}\" saved",
+        "createdToast": "Preset \"{name}\" created",
+        "deletedToast": "Preset \"{name}\" deleted",
+        "typeFilter": "Smart Filter",
+        "typeCustom": "Custom Selection",
+        "selectAll": "Select All",
+        "deselectAll": "Deselect All",
+        "selectedCount": "{count} selected"
+      },
+      "sources": {
+        "wallet": "Wallet",
+        "localContact": "My Contacts",
+        "backendContact": "External Source"
+      }
+    },
     "emptyState": {
       "title": "No accounts available",
       "description": "Add a wallet or contact to get started"
@@ -1421,6 +1462,27 @@
       "votes_one": "{ count } vote",
       "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
+    },
+    "onChainData": {
+      "amount": "Amount",
+      "call": "Call",
+      "callData": "Call data",
+      "callDataCopied": "Call data copied!",
+      "callHash": "Call hash",
+      "callHashCopied": "Call hash copied!",
+      "decode": "Decode",
+      "description": "Description",
+      "details": "Details",
+      "documentHash": "Document hash",
+      "documentHashCopied": "Document hash copied!",
+      "governanceNotCreated": "Governance referendum not created yet",
+      "member": "Member",
+      "origin": "Origin",
+      "proposalNotAvailable": "Proposal data not available",
+      "pullRequest": "Pull request",
+      "targetRank": "Target rank",
+      "title": "On-chain data",
+      "viewJson": "View JSON"
     },
     "whitelist": {
       "aiGenerated": "AI generated",
@@ -2545,30 +2607,6 @@
       "revokeFor": "Revoke for",
       "sender": "Sender"
     },
-    "names": {
-      "any": "All",
-      "auction": "Auction",
-      "cancelProxy": "Cancel",
-      "governance": "Governance",
-      "identityJudgement": "Judgement",
-      "nominationPools": "Nominations",
-      "nonTransfer": "All, except transfer",
-      "staking": "Staking",
-      "sudoBalances": "Sudo balances",
-      "unknown": "Unknown"
-    },
-    "operations": {
-      "any": "all operations",
-      "auction": "auction operations",
-      "cancelProxy": "cancel operations",
-      "governance": "governance operations",
-      "identityJudgement": "judgement operations",
-      "nominationPools": "nominations operations",
-      "nonTransfer": "all, except transfer operations",
-      "removeProxyTitle": "Revoke delegated authority (proxy) on ",
-      "staking": "staking operations",
-      "sudoBalances": "balances via sudo"
-    },
     "proxyDepositHint": "The deposit stays reserved on your account until the proxy is removed",
     "proxyDepositLabel": "Proxy deposit",
     "proxyTooltip": "Delegated authorities (proxies)",
@@ -2584,18 +2622,7 @@
     "submitInProgress": "Submitting operation...",
     "submitSuccess": "Operation Success",
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
-    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet.",
-    "types": {
-      "Any": "Any",
-      "Auction": "Auction",
-      "CancelProxy": "Cancel",
-      "Governance": "Governance",
-      "IdentityJudgement": "Judgement",
-      "NominationPools": "Nominations",
-      "NonTransfer": "Non Transfer",
-      "Staking": "Staking",
-      "SudoBalances": "Sudo Balances"
-    }
+    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
   },
   "pureProxyRemove": {
     "warning": {

@@ -7,7 +7,9 @@ import { CryptoTypeString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, validateSignerFormat } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
-import { type QrReaderCamera, QrReader, QrReaderErrorCode, Select } from '@/shared/ui-kit';
+import { Select } from '@/shared/ui-kit';
+import { QrReader } from '@/shared/ui-kit/QrReader/QrReader';
+import { type QrReaderCamera, QrReaderErrorCode } from '@/shared/ui-kit/QrReader/types';
 import {
   type VaultFeature,
   DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE,

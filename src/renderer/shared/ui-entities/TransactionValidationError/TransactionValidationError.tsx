@@ -4,26 +4,22 @@ import { Trans } from 'react-i18next';
 
 import { categorizeXcmError, getHumanReadableXcmError } from '@/shared/api/xcm/service/xcm-error-utils';
 import { TEST_IDS } from '@/shared/constants/testIds';
-import { type Asset, type ProxyType, type Wallet } from '@/shared/core';
+import { type Asset, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatAsset, groupBy, nonNullable, nullable } from '@/shared/lib/utils';
 import { Alert, FootnoteText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type AnyAccount, type BalanceUpdateResult } from '@/domains/network';
 import { useWalletName } from '@/domains/network';
-import { ProxyTypeOperation } from '@/entities/proxy';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 const PermissionErrorItem = memo(({ wallet, permission }: { wallet: Wallet; permission: string }) => {
-  const { t } = useI18n();
   const walletName = useWalletName(wallet);
-  const permissionTranslationKey = ProxyTypeOperation[permission as ProxyType] ?? permission;
-
   return (
     <Box as="span" direction="row" gap={1} verticalAlign="center">
       <WalletIcon type={wallet.type} size={16} />
       <span>
-        {walletName}: {t(permissionTranslationKey)}
+        {walletName}: {permission}
       </span>
     </Box>
   );

@@ -11,11 +11,12 @@ import {
   type TrackInfo,
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable, truncate } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
-import { Button, FootnoteText, HeadlineText, IconButton, Separator, TitleText } from '@/shared/ui';
-import { Box, Copy, JsonArgs, Label, Markdown, Modal, Skeleton } from '@/shared/ui-kit';
-import { type Referendum, referendumService } from '@/domains/collectives';
+import { Button, HeadlineText, Separator, TitleText } from '@/shared/ui';
+import { Box, Label, Skeleton } from '@/shared/ui-kit';
+import { Markdown } from '@/shared/ui-kit/Markdown/Markdown';
+import { type Referendum } from '@/domains/collectives';
 import {
   useReferendumSummary,
   useReferendumTitles,
@@ -105,8 +106,6 @@ export const ConnectedGovernanceReferendum = ({ referendum: fellowshipReferendum
         ) : (
           <Skeleton height="86px" width="100%" />
         )}
-
-        <Proposal referendum={fellowshipReferendum} />
       </Box>
     </Card>
   );
@@ -174,46 +173,3 @@ export const GovernanceReferendumCard = memo(
     );
   },
 );
-
-const Proposal = ({ referendum }: { referendum: Referendum }) => {
-  const { t } = useI18n();
-
-  if (
-    !referendumService.isOngoing(referendum) ||
-    !referendum.proposal ||
-    !referendumService.isWhitelistProposal(referendum.proposal)
-  ) {
-    return null;
-  }
-
-  const { proposalHash, proposalJSON } = referendum.proposal;
-
-  return (
-    <>
-      <Separator className="my-4" />
-      <div>
-        <div className="flex items-center">
-          <FootnoteText className="text-text-tertiary">{t('fellowship.whitelist.callHash')}</FootnoteText>
-          <FootnoteText className="ml-auto text-text-tertiary">{truncate(proposalHash, 7, 7)}</FootnoteText>
-          <Copy value={proposalHash} notification={t('fellowship.whitelist.callHashCopied')}>
-            <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
-          </Copy>
-        </div>
-        <div className="mt-2 flex items-center justify-between">
-          <FootnoteText className="text-text-tertiary">{t('fellowship.whitelist.callData')}</FootnoteText>
-          <Modal size="fit" height="lg">
-            <Modal.Trigger>
-              <Button className="p-0" size="sm" variant="text">
-                {t('fellowship.whitelist.viewJson')}
-              </Button>
-            </Modal.Trigger>
-            <Modal.Title close>{t('fellowship.whitelist.callData')}</Modal.Title>
-            <Modal.Content>
-              <JsonArgs value={proposalJSON} />
-            </Modal.Content>
-          </Modal>
-        </div>
-      </div>
-    </>
-  );
-};

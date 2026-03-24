@@ -12,7 +12,7 @@
   "scripts": {
     "config": "node config/bin.js",
     "electron": "electron .",
-    "preview": "cross-env RENDERER_SOURCE=localhost pnpm build:staging && concurrently \"pnpm renderer:preview\" \"pnpm electron\"",
+    "preview": "cross-env RENDERER_SOURCE=localhost pnpm build:staging && concurrently \"pnpm renderer:preview\" \"node scripts/waitForRenderer.mjs $(pnpm --silent run config renderer.server.origin) && pnpm electron\"",
     "local:preview": "npm run renderer:dev && npm run renderer:preview",
     "start": "pnpm r clean:build main:dev preload:dev && concurrently \"pnpm main:dev:watch\" \"pnpm preload:dev:watch\" \"pnpm renderer:dev:watch\" \"node scripts/waitForRenderer.mjs && pnpm electron\"",
     "start:renderer": "pnpm renderer:dev:watch",
@@ -131,7 +131,6 @@
     "@zxing/browser": "0.1.5",
     "@zxing/library": "0.21.3",
     "bignumber.js": "9.1.2",
-    "binary-parser": "2.2.1",
     "buffer": "6.0.3",
     "classnames": "2.5.1",
     "crypto-browserify": "3.12.1",

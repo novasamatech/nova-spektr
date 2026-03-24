@@ -1,5 +1,5 @@
 import { type ChainId, type CryptoType, type CryptoTypeString } from '@/shared/core';
-import { type QrReaderError } from '@/shared/ui-kit';
+import { type QrReaderError } from '@/shared/ui-kit/QrReader/types';
 
 import { type VaultFeature } from './constants';
 

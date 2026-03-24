@@ -5,7 +5,8 @@ import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { ValidationErrors, cnTw } from '@/shared/lib/utils';
 import { Button, CaptionText, Countdown, FootnoteText, SmallTitleText } from '@/shared/ui';
-import { type QrReaderCamera, QrReaderErrorCode, Select, ThemeProvider } from '@/shared/ui-kit';
+import { Select, ThemeProvider } from '@/shared/ui-kit';
+import { type QrReaderCamera, QrReaderErrorCode } from '@/shared/ui-kit/QrReader/types';
 import { CameraAccessErrors, CameraError, WhiteTextButtonStyle } from '../common/constants';
 import { type ErrorObject, type Progress } from '../common/types';
 

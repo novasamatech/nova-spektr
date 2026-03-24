@@ -40,5 +40,6 @@ schema.graphql
 allure-results
 
 .cursor
-.superpowers
-docs/superpowers
+# Superpowers brainstorming artifacts
+.superpowers/
+docs/superpowers/

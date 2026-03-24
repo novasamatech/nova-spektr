@@ -1,4 +1,5 @@
 import { formatDate } from 'date-fns';
+import { useUnit } from 'effector-react';
 import { type PropsWithChildren, type ReactNode, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
@@ -9,6 +10,7 @@ import { Box, Skeleton } from '@/shared/ui-kit';
 import {
   type Member,
   type Referendum,
+  $ipfsGateways,
   memberService,
   useEvidencesContent,
   votingHistoryService,
@@ -123,10 +125,13 @@ export const EvidenceSubmitted = memo(() => {
   const { data: promotionEvidence } = usePromotionEvidence();
   const { fromDateFormatted, toDateFormatted, promotionPeriodDates, timelineValue, member } = usePromotionData();
 
+  const gateways = useUnit($ipfsGateways);
+
   const { data: evidenceContent } = useEvidencesContent({
     palletType: 'fellowship',
     chainId: chain?.chainId,
     evidenceHash: promotionEvidence?.hash,
+    gateways,
   });
 
   const submissionDateFormatted = promotionEvidenceSubmissionDate

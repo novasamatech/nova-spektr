@@ -6,7 +6,6 @@ import { getNativeAsset, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { SignButton } from '@/entities/operations';
-import { proxyUtils } from '@/entities/proxy';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { Fee, FeeWithLabel, MultisigDepositFee, ProxyDepositLabel } from '@/widgets/transaction-fee';
@@ -53,7 +52,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
       <TransactionDetails chain={chain} wallets={wallets} initiators={initiators} signatory={signatory}>
         <DetailRow label={t('proxy.details.grantAccessType')} className="pr-2">
-          <FootnoteText>{t(proxyUtils.getProxyTypeOperation(proxyType))}</FootnoteText>
+          <FootnoteText>{proxyType}</FootnoteText>
         </DetailRow>
 
         <DetailRow label={t('proxy.details.delegateTo')} className="text-text-secondary">

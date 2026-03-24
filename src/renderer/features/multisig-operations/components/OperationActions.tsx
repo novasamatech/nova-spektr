@@ -24,7 +24,10 @@ export const OperationActions = memo(({ operation, account }: Props) => {
   const allAccounts = useUnit(accounts.$list);
 
   const hasRejectAccount = allAccounts.some(a => {
-    return a.accountId === operation.depositor && !accountUtils.isWatchOnlyAccount(a);
+    const isDepositor = a.accountId === operation.depositor;
+    const isOnChain = chain ? accountService.isAccountAvailableOnChain(a, chain) : false;
+
+    return isDepositor && isOnChain && !accountUtils.isWatchOnlyAccount(a);
   });
 
   const hasApproveAccount = allAccounts.some(a => {
