@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { type PropsWithChildren, memo, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -9,7 +10,7 @@ import { useDeferredList } from '@/shared/lib/hooks/useDeferredList';
 import { entries, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
 import { Duration, FootnoteText, HelpText, Icon, Separator, SmallTitleText } from '@/shared/ui';
 import { Box, Modal, Select } from '@/shared/ui-kit';
-import { type FeedRecord, evidenceService } from '@/domains/collectives';
+import { type FeedRecord, $primaryIpfsGateway, evidenceService } from '@/domains/collectives';
 import { useMemberFeed } from '../hooks/useMemberFeed';
 import { alertsModel } from '../model/alerts';
 
@@ -71,7 +72,7 @@ const getMessage = (t: TFunction, record: FeedRecord) => {
   return '';
 };
 
-const getLink = (t: TFunction, record: FeedRecord): { text: string; url: string } | null => {
+const getLink = (t: TFunction, record: FeedRecord, primaryGateway: string): { text: string; url: string } | null => {
   if (
     record.type === 'imported' ||
     record.type === 'promoted' ||
@@ -87,7 +88,7 @@ const getLink = (t: TFunction, record: FeedRecord): { text: string; url: string 
   if (record.type === 'requested') {
     return {
       text: t('fellowship.profile.activityFeed.viewEvidence'),
-      url: evidenceService.getEvidenceIpfsUrl(record.hash).toString(),
+      url: evidenceService.getEvidenceFetchIpfsUrl(record.hash, primaryGateway).toString(),
     };
   }
 
@@ -96,6 +97,7 @@ const getLink = (t: TFunction, record: FeedRecord): { text: string; url: string 
 
 export const ActivityFeed = memo(({ children }: PropsWithChildren) => {
   const { t } = useI18n();
+  const primaryGateway = useUnit($primaryIpfsGateway);
   const { data: list, pending } = useMemberFeed();
   const [filter, setFilter] = useState<FilterType | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -179,7 +181,7 @@ export const ActivityFeed = memo(({ children }: PropsWithChildren) => {
               {deferredList.map(x => {
                 const age = now - x.at.getTime();
                 const isOlderThanMonth = age > ONE_MONTH_MS;
-                const link = getLink(t, x);
+                const link = getLink(t, x, primaryGateway);
                 const isShowIconLink =
                   x.type === 'imported' || x.type === 'promoted' || x.type === 'demoted' || x.type === 'proven';
 

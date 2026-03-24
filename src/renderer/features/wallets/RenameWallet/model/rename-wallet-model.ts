@@ -1,7 +1,7 @@
 import { attach, combine, createEffect, createEvent, restore, sample } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { type Contact, type Wallet, AccountNameType } from '@/shared/core';
+import { type LocalContact, type Wallet, AccountNameType } from '@/shared/core';
 import { createForm } from '@/shared/forms/createForm';
 import { type ValidationError } from '@/shared/forms/types';
 import { toAddress } from '@/shared/lib/utils';
@@ -71,7 +71,7 @@ const syncContactsOnWalletRenameFx = createEffect(
     allAccounts,
   }: {
     wallet: Wallet;
-    existingContacts: Contact[];
+    existingContacts: LocalContact[];
     allAccounts: AnyAccount[];
   }) => {
     const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
@@ -107,7 +107,7 @@ const syncContactsOnWalletRenameFx = createEffect(
 
 const syncContactsOnWalletRenameAttachedFx = attach({
   source: {
-    contacts: contactModel.$contacts,
+    contacts: contactModel.$localContacts,
     accounts: accounts.$list,
   },
   mapParams: (wallet: Wallet, source) => ({
@@ -194,4 +194,8 @@ export const renameWalletModel = {
 
   callbackChanged,
   formInitiated,
+
+  __test: {
+    syncContactsOnWalletRenameFx,
+  },
 };

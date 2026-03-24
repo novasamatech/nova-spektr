@@ -11,6 +11,8 @@ import {
   type Wallet,
   AccountNameType,
   WalletType,
+  isBackendContact,
+  isLocalContact,
 } from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
 import { isEthereumAccountId, keys, nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
@@ -216,15 +218,20 @@ function resolveWalletName({ wallet, accounts, contacts, identities, chains }: R
     return wallet.name;
   }
 
-  const contact = contacts.find(contact => contact.accountId === accountId);
-  if (contact) {
-    return contact.name;
-  }
-
   const walletAccount = walletAccounts.find(account => account.accountId === accountId);
 
   if (walletAccount && walletAccount.nameType === AccountNameType.CUSTOM) {
     return walletAccount.name;
+  }
+
+  const localContact = contacts.find(c => c.accountId === accountId && isLocalContact(c));
+  if (localContact) {
+    return localContact.name;
+  }
+
+  const backendContact = contacts.find(c => c.accountId === accountId && isBackendContact(c));
+  if (backendContact) {
+    return backendContact.name;
   }
 
   const identity = getAccountIdentity(accountId, identities);
@@ -254,14 +261,19 @@ function resolveAccountName({
     return title;
   }
 
-  const contact = contacts.find(contact => contact.accountId === accountId);
-  if (contact) {
-    return contact.name;
-  }
-
   const relatedAccount = accounts.find(account => account.accountId === accountId);
   if (relatedAccount && isCustomAccountName(relatedAccount)) {
     return relatedAccount.name;
+  }
+
+  const localContact = contacts.find(c => c.accountId === accountId && isLocalContact(c));
+  if (localContact) {
+    return localContact.name;
+  }
+
+  const backendContact = contacts.find(c => c.accountId === accountId && isBackendContact(c));
+  if (backendContact) {
+    return backendContact.name;
   }
 
   for (const chainId of keys(identities)) {

@@ -1,5 +1,5 @@
 import { type DelegateAccount } from '@/shared/api/governance';
-import { Markdown } from '@/shared/ui-kit';
+import { Markdown } from '@/shared/ui-kit/Markdown/Markdown';
 import { DelegateName } from '@/features/governance';
 
 type Props = {
