@@ -1356,7 +1356,7 @@
       "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
     },
-    "callData": {
+    "onChainData": {
       "amount": "Amount",
       "call": "Call",
       "callHash": "Call hash",
@@ -1368,11 +1368,10 @@
       "governanceNotCreated": "Governance referendum not created yet",
       "member": "Member",
       "origin": "Origin",
+      "proposalNotAvailable": "Proposal data not available",
       "pullRequest": "Pull request",
-      "referendumId": "Referendum ID",
       "targetRank": "Target rank",
-      "title": "Call data",
-      "track": "Track",
+      "title": "On-chain data",
       "viewJson": "View JSON"
     },
     "whitelist": {
