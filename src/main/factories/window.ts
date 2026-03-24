@@ -8,6 +8,15 @@ import { ENVIRONMENT } from '../shared/constants/environment';
 
 import { buildMenuTemplate } from './menu';
 
+function isViteRendererDocumentUrl(url: string): boolean {
+  try {
+    const base = renderer.server.origin ?? `${renderer.server.protocol}${renderer.server.host}:${renderer.server.port}`;
+    return new URL(url).origin === new URL(base).origin;
+  } catch {
+    return false;
+  }
+}
+
 export function createWindow(): BrowserWindow {
   const mainWindowState = windowStateKeeper({
     defaultWidth: main.window.width,
@@ -52,6 +61,12 @@ export function createWindow(): BrowserWindow {
     // Only attach CSP to document (navigation) responses.
     // Adding headers to WebSocket upgrade (101) responses breaks the handshake in Electron.
     if (details.resourceType === 'mainFrame' || details.resourceType === 'subFrame') {
+      if (isViteRendererDocumentUrl(details.url)) {
+        callback({ cancel: false });
+
+        return;
+      }
+
       callback({
         responseHeaders: {
           ...details.responseHeaders,

@@ -21,6 +21,19 @@ function skipSourcemaps(paths: string[]): Plugin {
   };
 }
 
+/**
+ * Strict CSP meta in index.html blocks Vite's inline HMR/React Refresh scripts;
+ * strip only for dev server.
+ */
+function stripCspMetaInDev(): Plugin {
+  return {
+    name: 'strip-csp-meta-dev',
+    transformIndexHtml(html) {
+      return html.replace(/<meta[\s\S]*?http-equiv=["']Content-Security-Policy["'][\s\S]*?\/>/gi, '');
+    },
+  };
+}
+
 const config: UserConfigFn = async ({ mode, command }) => {
   const { defineConfig } = await import('vite');
   const { default: svgr } = await import('vite-plugin-svgr');
@@ -45,6 +58,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
       alias: {
         crypto: 'crypto-browserify',
         stream: 'stream-browserify',
+        lodash: 'lodash-es',
       },
     },
     base: '',
@@ -68,7 +82,15 @@ const config: UserConfigFn = async ({ mode, command }) => {
       outDir: folders.devBuild,
       emptyOutDir: false,
       target: 'es2021',
-      rolldownOptions: {},
+      rolldownOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('@polkadot/')) return 'polkadot';
+            if (id.includes('@walletconnect/')) return 'walletconnect';
+            if (id.includes('react-dom') || id.includes('react-router')) return 'react-vendor';
+          },
+        },
+      },
     },
     assetsInclude: ['**/*.wasm'],
     server: {
@@ -77,6 +99,8 @@ const config: UserConfigFn = async ({ mode, command }) => {
     },
     plugins: [
       ...commonPlugins,
+
+      isDevServer && stripCspMetaInDev(),
 
       isDevServer && mkcert(),
 
