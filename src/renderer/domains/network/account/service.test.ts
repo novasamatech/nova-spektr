@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { type Chain, type Contact, AccountNameType, CryptoType, SigningType } from '@/shared/core';
+import { type BackendContact, type Chain, type Contact, AccountNameType, CryptoType, SigningType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import {
   createAccountId,
@@ -50,6 +50,23 @@ const universalAccount: UniversalAccount = {
   cryptoType: CryptoType.SR25519,
   createdAt: Date.now(),
 };
+
+const createBackendContact = (
+  overrides: Pick<BackendContact, 'id' | 'accountId' | 'name' | 'address'>,
+): BackendContact => ({
+  source: 'backend',
+  entityNames: [],
+  chainId: null,
+  chainName: null,
+  categoryName: null,
+  contactTypeName: null,
+  derivationPath: null,
+  ownerAccountId: null,
+  signatories: null,
+  threshold: null,
+  tags: [],
+  ...overrides,
+});
 
 describe('account service', () => {
   afterEach(() => {
@@ -495,23 +512,12 @@ describe('account service', () => {
 
     it('should prioritize local contact over backend contact', () => {
       const contacts: Contact[] = [
-        {
+        createBackendContact({
           id: 'test-uuid-backend',
           accountId,
           name: 'Backend Contact Name',
           address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
-          source: 'backend',
-          entityNames: [],
-          chainId: null,
-          chainName: null,
-          categoryName: null,
-          contactTypeName: null,
-          derivationPath: null,
-          ownerAccountId: null,
-          signatories: null,
-          threshold: null,
-          tags: [],
-        },
+        }),
         {
           id: 'test-uuid-local',
           accountId,
@@ -535,23 +541,12 @@ describe('account service', () => {
 
     it('should prioritize backend contact over identity', () => {
       const contacts: Contact[] = [
-        {
+        createBackendContact({
           id: 'test-uuid-backend',
           accountId,
           name: 'Backend Contact Name',
           address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
-          source: 'backend',
-          entityNames: [],
-          chainId: null,
-          chainName: null,
-          categoryName: null,
-          contactTypeName: null,
-          derivationPath: null,
-          ownerAccountId: null,
-          signatories: null,
-          threshold: null,
-          tags: [],
-        },
+        }),
       ];
 
       const identities: IdentityMap = {
@@ -784,23 +779,12 @@ describe('account service', () => {
       };
 
       const contacts: Contact[] = [
-        {
+        createBackendContact({
           id: 'test-uuid-backend',
           accountId,
           name: 'Backend Contact Name',
           address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
-          source: 'backend',
-          entityNames: [],
-          chainId: null,
-          chainName: null,
-          categoryName: null,
-          contactTypeName: null,
-          derivationPath: null,
-          ownerAccountId: null,
-          signatories: null,
-          threshold: null,
-          tags: [],
-        },
+        }),
         {
           id: 'test-uuid-local',
           accountId,
@@ -836,23 +820,12 @@ describe('account service', () => {
       };
 
       const contacts: Contact[] = [
-        {
+        createBackendContact({
           id: 'test-uuid-backend',
           accountId,
           name: 'Backend Contact Name',
           address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
-          source: 'backend',
-          entityNames: [],
-          chainId: null,
-          chainName: null,
-          categoryName: null,
-          contactTypeName: null,
-          derivationPath: null,
-          ownerAccountId: null,
-          signatories: null,
-          threshold: null,
-          tags: [],
-        },
+        }),
       ];
 
       const identities: IdentityMap = {
