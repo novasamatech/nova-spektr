@@ -55,9 +55,9 @@ export const ReferendumDescription = memo(({ referendum, evidence }: Props) => {
 
       {shouldRenderEvidenceAlert ? <NoEvidence /> : null}
 
-      {ongoingReferendum && <OnChainData referendum={ongoingReferendum} />}
-
       {nonNullable(referendum) && <ConnectedGovernanceReferendum referendum={referendum} />}
+
+      {ongoingReferendum && <OnChainData referendum={ongoingReferendum} />}
       <div className="flex-1">
         <AdditionalContext referendum={referendum} />
       </div>

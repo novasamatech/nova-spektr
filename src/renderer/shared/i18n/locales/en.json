@@ -1361,6 +1361,7 @@
       "call": "Call",
       "callHash": "Call hash",
       "callHashCopied": "Call hash copied!",
+      "decode": "Decode",
       "description": "Description",
       "details": "Call data",
       "documentHash": "Document hash",

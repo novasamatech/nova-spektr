@@ -3,10 +3,9 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, truncate } from '@/shared/lib/utils';
-import { Button, FootnoteText, IconButton, InfoLink, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, IconButton, InfoLink, TitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import { Box, Copy, Modal } from '@/shared/ui-kit';
-import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
+import { Box, Copy } from '@/shared/ui-kit';
 import {
   type EvidenceProposal,
   type OngoingReferendum,
@@ -52,7 +51,7 @@ export const OnChainData = memo(({ referendum }: Props) => {
   return (
     <Card>
       <Box padding={6} gap={4}>
-        <SmallTitleText>{t('fellowship.onChainData.title')}</SmallTitleText>
+        <TitleText>{t('fellowship.onChainData.title')}</TitleText>
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.origin')}</FootnoteText>
@@ -158,6 +157,11 @@ const RfcDetails = ({ proposal }: { proposal: RfcProposal }) => {
 
 const WhitelistDetails = ({ proposal }: { proposal: WhitelistProposal }) => {
   const { t } = useI18n();
+  const chain = useFellowshipChain();
+
+  const decodeUrl = chain?.nodes[0]
+    ? `https://polkadot.js.org/apps/?rpc=${encodeURIComponent(chain.nodes[0].url)}#/extrinsics/decode/${encodeURIComponent(proposal.proposalHex)}`
+    : null;
 
   return (
     <>
@@ -168,20 +172,12 @@ const WhitelistDetails = ({ proposal }: { proposal: WhitelistProposal }) => {
           <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
         </Copy>
       </div>
-      <div className="flex items-center justify-between">
-        <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.details')}</FootnoteText>
-        <Modal size="fit" height="lg">
-          <Modal.Trigger>
-            <Button className="p-0" size="sm" variant="text">
-              {t('fellowship.onChainData.viewJson')}
-            </Button>
-          </Modal.Trigger>
-          <Modal.Title close>{t('fellowship.onChainData.details')}</Modal.Title>
-          <Modal.Content>
-            <JsonArgs value={proposal.proposalJSON} />
-          </Modal.Content>
-        </Modal>
-      </div>
+      {decodeUrl && (
+        <div className="flex items-center justify-between">
+          <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.details')}</FootnoteText>
+          <InfoLink url={decodeUrl}>{t('fellowship.onChainData.decode')}</InfoLink>
+        </div>
+      )}
     </>
   );
 };
