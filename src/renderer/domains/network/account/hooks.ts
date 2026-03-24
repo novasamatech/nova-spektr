@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { type Chain, type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -85,7 +87,8 @@ export const useWalletsNames = (wallets: Wallet[]) => {
 };
 
 export const useWalletName = (wallet: Wallet | null | undefined) => {
-  const resolvedWallets = useWalletsNames(wallet ? [wallet] : []);
+  const wallets = useMemo(() => (wallet ? [wallet] : []), [wallet?.id, wallet?.name]);
+  const resolvedWallets = useWalletsNames(wallets);
 
   if (!wallet) return null;
 

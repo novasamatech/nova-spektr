@@ -94,7 +94,7 @@ export const Operations = () => {
     count: flatItems.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: index => (flatItems[index]?.type === 'header' ? 44 : 74),
-    overscan: 5,
+    overscan: 15,
     getItemKey: index => {
       const item = flatItems[index];
       if (!item) return `unknown-${index}`;

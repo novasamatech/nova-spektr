@@ -39,7 +39,10 @@ export function createCachedProvider(Provider: new (...args: any[]) => ProviderI
 
       if (method === STATE_METADATA_METHOD && !hasParams) {
         if (this.metadata) {
-          return Promise.resolve(this.metadata.metadata);
+          const runtimeVersion = await this.getRuntimeVersion();
+          if (runtimeVersion.specVersion === this.metadata.runtimeVersion) {
+            return Promise.resolve(this.metadata.metadata);
+          }
         }
 
         const metadata = await super.send(method, params, ...args);
@@ -60,7 +63,10 @@ export function createCachedProvider(Provider: new (...args: any[]) => ProviderI
         if (call === 'Metadata_metadata_at_version') {
           const metadataVersion = isString(rawVersion) ? scaleEncodedToNumber(rawVersion) : 0;
           if (metadataVersion === this.metadata?.metadataVersion) {
-            return Promise.resolve(this.metadata.metadata);
+            const runtimeVersion = await this.getRuntimeVersion();
+            if (runtimeVersion.specVersion === this.metadata.runtimeVersion) {
+              return Promise.resolve(this.metadata.metadata);
+            }
           }
 
           const metadata = await super.send(method, params, ...args);
