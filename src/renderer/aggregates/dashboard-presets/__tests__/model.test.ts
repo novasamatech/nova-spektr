@@ -93,7 +93,7 @@ describe('dashboardPresetsModel', () => {
     expect(scope.getState(dashboardPresetsModel.$activePresetId)).toBeNull();
   });
 
-  it('activates a preset and updates lastActivatedAt', async () => {
+  it('activates a preset by setting activePresetId', async () => {
     const scope = fork({
       values: [
         [
@@ -111,10 +111,9 @@ describe('dashboardPresetsModel', () => {
     });
     await allSettled(dashboardPresetsModel.presetActivated, { scope, params: '1' });
     expect(scope.getState(dashboardPresetsModel.$activePresetId)).toBe('1');
-    expect(scope.getState(dashboardPresetsModel.$presets)[0]!.lastActivatedAt).toBeGreaterThan(100);
   });
 
-  it('segments show top 3 by MRU', async () => {
+  it('segments show first 3 in creation order', async () => {
     const presets = [
       {
         id: '1',
@@ -143,7 +142,7 @@ describe('dashboardPresetsModel', () => {
     ];
     const scope = fork({ values: [[dashboardPresetsModel.$presets, presets]] });
     const segments = scope.getState(dashboardPresetsModel.$segmentPresets);
-    expect(segments.map(p => p.name)).toEqual(['B', 'C', 'A']);
+    expect(segments.map(p => p.name)).toEqual(['A', 'B', 'C']);
     const overflow = scope.getState(dashboardPresetsModel.$overflowPresets);
     expect(overflow.map(p => p.name)).toEqual(['D']);
   });

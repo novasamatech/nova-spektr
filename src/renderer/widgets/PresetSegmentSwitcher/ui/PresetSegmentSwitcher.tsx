@@ -4,9 +4,11 @@ import { useMemo, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { includes } from '@/shared/lib/utils';
 import { FootnoteText, Icon, IconButton } from '@/shared/ui';
-import { Popover, SearchInput } from '@/shared/ui-kit';
+import { Popover, SearchInput, Tabs } from '@/shared/ui-kit';
 import { dashboardPresetsModel } from '@/aggregates/dashboard-presets';
 import { PresetManagementModal } from '@/widgets/PresetManagementModal';
+
+const ALL_VALUE = '__all__';
 
 export const PresetSegmentSwitcher = () => {
   const { t } = useI18n();
@@ -26,8 +28,8 @@ export const PresetSegmentSwitcher = () => {
     [overflowPresets, search],
   );
 
-  const handleActivate = (id: string | null) => {
-    presetActivated(id);
+  const handleTabChange = (value: string) => {
+    presetActivated(value === ALL_VALUE ? null : value);
   };
 
   const handleOverflowActivate = (id: string) => {
@@ -36,105 +38,72 @@ export const PresetSegmentSwitcher = () => {
     setSearch('');
   };
 
+  const tabValue = activePresetId ?? ALL_VALUE;
+
   return (
     <>
       <div className="flex items-center gap-x-1">
-        <div className="flex items-center rounded-md border border-filter-border bg-input-background">
-          {/* All button — always first */}
-          <button
-            type="button"
-            className={[
-              'border-r border-filter-border px-3 py-1.5 text-footnote transition-colors last:border-r-0',
-              activePresetId === null
-                ? 'bg-icon-accent text-white'
-                : 'text-text-secondary hover:bg-action-background-hover',
-            ].join(' ')}
-            onClick={() => handleActivate(null)}
-          >
-            <FootnoteText as="span" className="text-inherit">
-              {t('dashboard.presets.all')}
-            </FootnoteText>
-          </button>
-
-          {/* Up to 3 MRU segment presets */}
-          {segmentPresets.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              className={[
-                'border-r border-filter-border px-3 py-1.5 text-footnote transition-colors last:border-r-0',
-                activePresetId === preset.id
-                  ? 'bg-icon-accent text-white'
-                  : 'text-text-secondary hover:bg-action-background-hover',
-              ].join(' ')}
-              onClick={() => handleActivate(preset.id)}
-            >
-              <FootnoteText as="span" className="text-inherit">
+        <Tabs value={tabValue} onChange={handleTabChange}>
+          <Tabs.List>
+            <Tabs.Trigger value={ALL_VALUE}>{t('dashboard.presets.all')}</Tabs.Trigger>
+            {segmentPresets.map((preset) => (
+              <Tabs.Trigger key={preset.id} value={preset.id}>
                 {preset.name}
-              </FootnoteText>
-            </button>
-          ))}
+              </Tabs.Trigger>
+            ))}
+          </Tabs.List>
+        </Tabs>
 
-          {/* Overflow button — shows when there are more than 3 presets */}
-          {hasOverflow && (
-            <Popover open={overflowOpen} align="end" side="bottom" onToggle={setOverflowOpen}>
-              <Popover.Trigger>
-                <button
-                  type="button"
-                  className="border-r border-filter-border px-3 py-1.5 text-footnote text-text-secondary transition-colors last:border-r-0 hover:bg-action-background-hover"
-                >
-                  <FootnoteText as="span" className="text-inherit">
-                    {'▾ ' + String(overflowPresets.length)}
-                  </FootnoteText>
-                </button>
-              </Popover.Trigger>
-              <Popover.Content>
-                <div className="w-[220px] p-1">
-                  <div className="px-2 pt-2 pb-1">
-                    <SearchInput
-                      value={search}
-                      placeholder={t('dashboard.presets.searchPresets')}
-                      onChange={setSearch}
-                    />
-                  </div>
-                  <div className="mt-1 max-h-48 overflow-y-auto">
-                    {filteredOverflow.map((preset) => (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        className={[
-                          'flex w-full items-center rounded px-2 py-1.5 text-left transition-colors hover:bg-action-background-hover',
-                          activePresetId === preset.id
-                            ? 'border-l-2 border-icon-accent bg-block-background-default'
-                            : '',
-                        ].join(' ')}
-                        onClick={() => handleOverflowActivate(preset.id)}
-                      >
-                        <FootnoteText className="text-text-primary">{preset.name}</FootnoteText>
-                      </button>
-                    ))}
-                  </div>
-                  <div className="mt-1 border-t border-divider pt-1">
-                    <button
-                      type="button"
-                      className="flex w-full items-center gap-x-1.5 rounded px-2 py-1.5 text-left transition-colors hover:bg-action-background-hover"
-                      onClick={() => {
-                        setModalOpen(true);
-                        setOverflowOpen(false);
-                      }}
-                    >
-                      <Icon name="settingsLite" size={14} className="text-icon-default" />
-                      <FootnoteText className="text-text-secondary">{t('dashboard.presets.manage')}</FootnoteText>
-                    </button>
-                  </div>
+        {hasOverflow ? (
+          <Popover open={overflowOpen} align="end" side="bottom" onToggle={setOverflowOpen}>
+            <Popover.Trigger>
+              <button
+                type="button"
+                className="rounded-md bg-tab-background px-3 py-1.5 text-footnote text-text-secondary transition-colors hover:bg-action-background-hover"
+              >
+                {/* eslint-disable-next-line i18next/no-literal-string */}
+                {'▾ ' + String(overflowPresets.length)}
+              </button>
+            </Popover.Trigger>
+            <Popover.Content>
+              <div className="w-[220px] p-1">
+                <div className="px-2 pt-2 pb-1">
+                  <SearchInput value={search} placeholder={t('dashboard.presets.searchPresets')} onChange={setSearch} />
                 </div>
-              </Popover.Content>
-            </Popover>
-          )}
-        </div>
-
-        {/* Gear icon — always shown when no overflow popover (which has its own manage button) */}
-        {!hasOverflow && <IconButton name="settingsLite" onClick={() => setModalOpen(true)} />}
+                <div className="mt-1 max-h-48 overflow-y-auto">
+                  {filteredOverflow.map((preset) => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      className={[
+                        'flex w-full items-center rounded px-2 py-1.5 text-left transition-colors hover:bg-action-background-hover',
+                        activePresetId === preset.id ? 'border-l-2 border-icon-accent bg-block-background-default' : '',
+                      ].join(' ')}
+                      onClick={() => handleOverflowActivate(preset.id)}
+                    >
+                      <FootnoteText className="text-text-primary">{preset.name}</FootnoteText>
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-1 border-t border-divider pt-1">
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-x-1.5 rounded px-2 py-1.5 text-left transition-colors hover:bg-action-background-hover"
+                    onClick={() => {
+                      setModalOpen(true);
+                      setOverflowOpen(false);
+                    }}
+                  >
+                    <Icon name="settingsLite" size={14} className="text-icon-default" />
+                    <FootnoteText className="text-text-secondary">{t('dashboard.presets.manage')}</FootnoteText>
+                  </button>
+                </div>
+              </div>
+            </Popover.Content>
+          </Popover>
+        ) : (
+          <IconButton name="settingsLite" onClick={() => setModalOpen(true)} />
+        )}
       </div>
       <PresetManagementModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
     </>

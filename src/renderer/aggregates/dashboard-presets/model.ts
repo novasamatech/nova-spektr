@@ -32,11 +32,6 @@ $presets.on(presetUpdated, (presets, { id, ...changes }) =>
 
 $presets.on(presetDeleted, (presets, id) => presets.filter(p => p.id !== id));
 
-$presets.on(presetActivated, (presets, id) => {
-  if (!id) return presets;
-  return presets.map(p => (p.id === id ? { ...p, lastActivatedAt: Date.now() } : p));
-});
-
 sample({
   clock: presetDeleted,
   source: $activePresetId,
@@ -55,11 +50,10 @@ const $activePreset = combine($presets, $activePresetId, (presets, activeId) => 
   return presets.find(p => p.id === activeId) ?? null;
 });
 
-const $sortedPresets = $presets.map(presets => [...presets].sort((a, b) => b.lastActivatedAt - a.lastActivatedAt));
+// Stable order — presets keep their creation order, no rearranging on select
+const $segmentPresets = $presets.map(presets => presets.slice(0, MAX_SEGMENTS));
 
-const $segmentPresets = $sortedPresets.map(presets => presets.slice(0, MAX_SEGMENTS));
-
-const $overflowPresets = $sortedPresets.map(presets => presets.slice(MAX_SEGMENTS));
+const $overflowPresets = $presets.map(presets => presets.slice(MAX_SEGMENTS));
 
 export { EMPTY_FILTERS };
 
