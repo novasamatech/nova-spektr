@@ -3,7 +3,8 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { type ChainId, type Referendum } from '@/shared/core';
 import { pickNestedValue } from '@/shared/lib/utils';
 import { HeaderTitleText } from '@/shared/ui';
-import { Markdown, Skeleton } from '@/shared/ui-kit';
+import { Skeleton } from '@/shared/ui-kit';
+import { Markdown } from '@/shared/ui-kit/Markdown/Markdown';
 import { TrackInfo, referendumService } from '@/entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
 
