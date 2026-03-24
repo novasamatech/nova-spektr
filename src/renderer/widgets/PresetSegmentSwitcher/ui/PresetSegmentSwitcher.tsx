@@ -19,7 +19,6 @@ export const PresetSegmentSwitcher = () => {
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
 
-  const hasPresets = segmentPresets.length > 0 || overflowPresets.length > 0;
   const hasOverflow = overflowPresets.length > 0;
 
   const filteredOverflow = useMemo(
@@ -36,8 +35,6 @@ export const PresetSegmentSwitcher = () => {
     setOverflowOpen(false);
     setSearch('');
   };
-
-  if (!hasPresets) return null;
 
   return (
     <>
@@ -136,7 +133,7 @@ export const PresetSegmentSwitcher = () => {
           )}
         </div>
 
-        {/* Gear icon — shown when there are presets but no overflow */}
+        {/* Gear icon — always shown when no overflow popover (which has its own manage button) */}
         {!hasOverflow && <IconButton name="settingsLite" onClick={() => setModalOpen(true)} />}
       </div>
       <PresetManagementModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
