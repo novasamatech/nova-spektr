@@ -175,7 +175,9 @@ const WhitelistDetails = ({ proposal }: { proposal: WhitelistProposal }) => {
       {decodeUrl && (
         <div className="flex items-center justify-between">
           <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.details')}</FootnoteText>
-          <InfoLink url={decodeUrl}>{t('fellowship.onChainData.decode')}</InfoLink>
+          <InfoLink url={decodeUrl} withLinkIcon>
+            {t('fellowship.onChainData.decode')}
+          </InfoLink>
         </div>
       )}
     </>
