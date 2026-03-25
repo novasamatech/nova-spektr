@@ -149,9 +149,6 @@ importers:
       bignumber.js:
         specifier: 9.1.2
         version: 9.1.2
-      binary-parser:
-        specifier: 2.2.1
-        version: 2.2.1
       buffer:
         specifier: 6.0.3
         version: 6.0.3
@@ -4790,10 +4787,6 @@ packages:
 
   bignumber.js@9.1.2:
     resolution: {integrity: sha512-2/mKyZH9K85bzOEfhXDBFZTGd1CTs+5IHpeFQo9luiBG7hghdC851Pj2WAhb6E3R6b9tZj/XKhbg4fum+Kepug==}
-
-  binary-parser@2.2.1:
-    resolution: {integrity: sha512-5ATpz/uPDgq5GgEDxTB4ouXCde7q2lqAQlSdBRQVl/AJnxmQmhIfyxJx+0MGu//D5rHQifkfGbWWlaysG0o9NA==}
-    engines: {node: '>=12'}
 
   binary-searching@2.0.5:
     resolution: {integrity: sha512-v4N2l3RxL+m4zDxyxz3Ne2aTmiPn8ZUpKFpdPtO+ItW1NcTCXA7JeHG5GMBSvoKSkQZ9ycS+EouDVxYB9ufKWA==}
@@ -15626,8 +15619,6 @@ snapshots:
       open: 8.4.2
 
   bignumber.js@9.1.2: {}
-
-  binary-parser@2.2.1: {}
 
   binary-searching@2.0.5: {}
 
