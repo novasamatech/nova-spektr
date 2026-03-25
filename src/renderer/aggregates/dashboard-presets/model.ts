@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { persist } from 'effector-storage/local';
 
-import { type AccountPreset, type PresetFilterCriteria, type PresetType, EMPTY_FILTERS } from './types';
+import { type AccountPreset, type PresetFilterCriteria, type PresetType } from './types';
 
 const MAX_SEGMENTS = 3;
 
@@ -43,8 +43,18 @@ $presets.on(presetCreated, (presets, { name, type, filters, selectedIds }) => [
   },
 ]);
 
-$presets.on(presetUpdated, (presets, { id, ...changes }) =>
-  presets.map(p => (p.id === id ? { ...p, ...changes, name: changes.name?.trim().slice(0, 30) ?? p.name } : p)),
+$presets.on(presetUpdated, (presets, { id, name, type, filters, selectedIds }) =>
+  presets.map(p => {
+    if (p.id !== id) return p;
+
+    return {
+      ...p,
+      ...(name !== undefined && { name: name.trim().slice(0, 30) }),
+      ...(type !== undefined && { type }),
+      ...(filters !== undefined && { filters }),
+      ...(selectedIds !== undefined && { selectedIds }),
+    };
+  }),
 );
 
 $presets.on(presetDeleted, (presets, id) => presets.filter(p => p.id !== id));
@@ -76,8 +86,6 @@ const $activePreset = combine($presets, $activePresetId, (presets, activeId) => 
 const $segmentPresets = $presets.map(presets => presets.slice(0, MAX_SEGMENTS));
 
 const $overflowPresets = $presets.map(presets => presets.slice(MAX_SEGMENTS));
-
-export { EMPTY_FILTERS };
 
 export const dashboardPresetsModel = {
   $presets,

@@ -2,7 +2,7 @@ import { move } from '@dnd-kit/helpers';
 import { DragDropProvider } from '@dnd-kit/react';
 import { useSortable } from '@dnd-kit/react/sortable';
 import { useUnit } from 'effector-react';
-import { type ComponentProps, useCallback, useEffect, useRef, useState } from 'react';
+import { type ComponentProps, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
@@ -44,12 +44,12 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [pendingSelectNew, setPendingSelectNew] = useState(false);
 
-  // DnD state
   const [dragIds, setDragIds] = useState<string[] | null>(null);
   const dragIdsRef = useRef<string[] | null>(null);
   dragIdsRef.current = dragIds;
 
-  const presetIds = presets.map((p) => p.id);
+  const presetIds = useMemo(() => presets.map((p) => p.id), [presets]);
+  const presetsById = useMemo(() => new Map(presets.map((p) => [p.id, p])), [presets]);
   const displayIds = dragIds ?? presetIds;
 
   const selectPreset = useCallback(
@@ -163,12 +163,11 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
         <Modal.Title close>{t('dashboard.presets.modal.title')}</Modal.Title>
         <Modal.Content disableScroll>
           <div className="flex h-full min-h-[400px]">
-            {/* Left panel — sortable preset list */}
             <div className="flex w-[200px] shrink-0 flex-col border-r border-divider">
               <DragDropProvider onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
                 <div className="flex-1 overflow-y-auto py-1">
                   {displayIds.map((id, index) => {
-                    const preset = presets.find((p) => p.id === id);
+                    const preset = presetsById.get(id);
                     if (!preset) return null;
 
                     return (
@@ -202,9 +201,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
               </div>
             </div>
 
-            {/* Right panel — editor */}
             <div className="flex min-w-0 flex-1 flex-col gap-y-4 overflow-y-auto px-5 py-4">
-              {/* Preset type switcher */}
               <div className="flex gap-x-2">
                 <TypeChip
                   active={editType === 'filter'}

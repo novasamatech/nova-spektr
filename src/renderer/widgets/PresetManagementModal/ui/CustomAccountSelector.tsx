@@ -26,8 +26,11 @@ export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameCha
     [allEntries, search],
   );
 
-  const allFilteredSelected = filtered.length > 0 && filtered.every((e) => selectedSet.has(e.id));
-  const someFilteredSelected = filtered.some((e) => selectedSet.has(e.id));
+  const allFilteredSelected = useMemo(
+    () => filtered.length > 0 && filtered.every((e) => selectedSet.has(e.id)),
+    [filtered, selectedSet],
+  );
+  const someFilteredSelected = useMemo(() => filtered.some((e) => selectedSet.has(e.id)), [filtered, selectedSet]);
 
   const toggleEntry = (entryId: string) => {
     if (selectedSet.has(entryId)) {
@@ -38,19 +41,18 @@ export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameCha
   };
 
   const toggleAll = (checked: boolean) => {
+    const filteredIds = new Set(filtered.map((e) => e.id));
+
     if (checked) {
-      const filteredIds = new Set(filtered.map((e) => e.id));
       const merged = new Set([...selectedIds, ...filteredIds]);
       onSelectedIdsChange(Array.from(merged));
     } else {
-      const filteredIds = new Set(filtered.map((e) => e.id));
       onSelectedIdsChange(selectedIds.filter((id) => !filteredIds.has(id)));
     }
   };
 
   return (
     <div className="flex flex-col gap-y-3">
-      {/* Name */}
       <div className="flex flex-col gap-y-1">
         <label className="text-footnote text-text-tertiary">{t('dashboard.presets.modal.name')}</label>
         <Input
@@ -62,15 +64,12 @@ export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameCha
         />
       </div>
 
-      {/* Selection header */}
       <FootnoteText className="text-text-tertiary">
         {t('dashboard.presets.modal.selectedCount', { count: selectedIds.length })}
       </FootnoteText>
 
-      {/* Search */}
       <SearchInput value={search} placeholder={t('dashboard.presets.modal.searchAccounts')} onChange={setSearch} />
 
-      {/* Select all visible checkbox */}
       <div className="rounded-sm px-2 py-1">
         <Checkbox checked={allFilteredSelected} semiChecked={someFilteredSelected} onChange={toggleAll}>
           <FootnoteText className="text-text-secondary">
@@ -79,7 +78,6 @@ export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameCha
         </Checkbox>
       </div>
 
-      {/* Account list */}
       <div className="max-h-[280px] overflow-y-auto rounded-sm">
         {filtered.map((entry) => (
           <div

@@ -86,7 +86,6 @@ export const PresetFilterEditor = ({ name, filters, onNameChange, onFiltersChang
 
   return (
     <div className="flex flex-col gap-y-3">
-      {/* Name */}
       <div className="flex flex-col gap-y-1">
         <label className="text-footnote text-text-tertiary">{t('dashboard.presets.modal.name')}</label>
         <Input
@@ -98,7 +97,6 @@ export const PresetFilterEditor = ({ name, filters, onNameChange, onFiltersChang
         />
       </div>
 
-      {/* Source Type */}
       <div className="flex flex-col gap-y-1">
         <span className="text-footnote text-text-tertiary">{t('dashboard.presets.modal.sourceType')}</span>
         <div className="flex flex-wrap gap-2">
@@ -124,7 +122,6 @@ export const PresetFilterEditor = ({ name, filters, onNameChange, onFiltersChang
         </div>
       </div>
 
-      {/* Entity */}
       {entityNameOptions.length > 0 && (
         <MultiSelect
           label={t('dashboard.presets.modal.entity')}
@@ -135,7 +132,6 @@ export const PresetFilterEditor = ({ name, filters, onNameChange, onFiltersChang
         />
       )}
 
-      {/* Category */}
       {categoryOptions.length > 0 && (
         <MultiSelect
           label={t('dashboard.presets.modal.category')}
@@ -146,7 +142,6 @@ export const PresetFilterEditor = ({ name, filters, onNameChange, onFiltersChang
         />
       )}
 
-      {/* Tags */}
       {tagOptions.map(({ tagName, options }) => {
         const tagFilter = filters.tags.find((t) => t.tagName === tagName);
 
