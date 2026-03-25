@@ -285,14 +285,19 @@ const SortablePresetItem = ({ id, index, name, isSelected, onClick }: SortablePr
     <div
       ref={ref}
       className={cnTw(
-        'group flex w-full items-center transition-colors',
-        isSelected ? 'border-l-2 border-icon-accent bg-block-background-default' : 'hover:bg-action-background-hover',
+        'group relative flex w-full items-center transition-all duration-150',
+        isSelected
+          ? 'bg-primary-button-background-default/8 shadow-[inset_3px_0_0_0] shadow-icon-accent'
+          : 'hover:bg-action-background-hover',
         isDragging && 'z-10 opacity-60',
       )}
     >
       <div
         ref={handleRef}
-        className="flex shrink-0 cursor-grab items-center px-1.5 py-2.5 text-icon-default opacity-0 group-hover:opacity-50 active:cursor-grabbing"
+        className={cnTw(
+          'flex shrink-0 cursor-grab items-center px-1.5 py-2.5 opacity-0 transition-opacity active:cursor-grabbing',
+          isSelected ? 'text-icon-accent group-hover:opacity-60' : 'text-icon-default group-hover:opacity-40',
+        )}
       >
         <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
           <circle cx="5" cy="3" r="1.5" />
