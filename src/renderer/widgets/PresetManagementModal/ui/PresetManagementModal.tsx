@@ -160,7 +160,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   const canSave = editName.trim().length > 0 && (editType === 'filter' || editSelectedIds.length > 0);
 
   return (
-    <Modal isOpen={isOpen} size="lg" onToggle={(open) => !open && onClose()}>
+    <Modal isOpen={isOpen} size="lg" preventOutsideClick onToggle={(open) => !open && onClose()}>
       <Modal.Title close>{t('dashboard.presets.modal.title')}</Modal.Title>
       <Modal.Content disableScroll>
         <div className="flex h-full min-h-[400px]">
