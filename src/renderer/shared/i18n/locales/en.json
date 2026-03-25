@@ -1356,6 +1356,27 @@
       "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
     },
+    "onChainData": {
+      "amount": "Amount",
+      "call": "Call",
+      "callData": "Call data",
+      "callDataCopied": "Call data copied!",
+      "callHash": "Call hash",
+      "callHashCopied": "Call hash copied!",
+      "decode": "Decode",
+      "description": "Description",
+      "details": "Details",
+      "documentHash": "Document hash",
+      "documentHashCopied": "Document hash copied!",
+      "governanceNotCreated": "Governance referendum not created yet",
+      "member": "Member",
+      "origin": "Origin",
+      "proposalNotAvailable": "Proposal data not available",
+      "pullRequest": "Pull request",
+      "targetRank": "Target rank",
+      "title": "On-chain data",
+      "viewJson": "View JSON"
+    },
     "whitelist": {
       "aiGenerated": "AI generated",
       "callData": "Call data",

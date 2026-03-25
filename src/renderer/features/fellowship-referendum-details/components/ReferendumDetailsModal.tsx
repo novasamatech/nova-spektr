@@ -14,6 +14,7 @@ import { useReferendum } from '../hooks/useReferendum';
 
 import { AdditionalInfo } from './AdditionalInfo';
 import { MemberProfile } from './MemberProfile';
+import { OnChainData } from './OnChainData';
 import { ReferendumDescription } from './ReferendumDescription';
 
 export const referendumAdditionalHighPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
@@ -96,6 +97,8 @@ export const ReferendumDetailsModal = memo(({ referendumId, children, title, isC
             {referendum && <Slot id={referendumAdditionalInfoSlot} props={{ referendum: referendum }} />}
 
             {!isCurrentUser && <Slot id={referendumActionsSlot} props={{ referendum, evidence, onClose }} />}
+
+            {referendum && referendumService.isOngoing(referendum) && <OnChainData referendum={referendum} />}
 
             <AdditionalInfo referendumId={referendumId} evidenceHash={evidenceHash} />
           </Box>
