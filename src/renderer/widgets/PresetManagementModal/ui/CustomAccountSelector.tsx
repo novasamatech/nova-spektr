@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, includes, toAddress, toShortAddress } from '@/shared/lib/utils';
-import { CaptionText, FootnoteText } from '@/shared/ui';
+import { cnTw, includes, toAddress } from '@/shared/lib/utils';
+import { FootnoteText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { Checkbox, Input, SearchInput } from '@/shared/ui-kit';
 import { type DashboardEntry } from '@/pages/Dashboard/model/dashboard-model';
@@ -14,6 +14,20 @@ type Props = {
   onNameChange: (name: string) => void;
   onSelectedIdsChange: (ids: string[]) => void;
 };
+
+const SOURCE_LABELS: Record<string, string> = {
+  wallet: 'wallet',
+  'local-contact': 'contact',
+  'backend-contact': 'external',
+};
+
+const SOURCE_BADGE_COLORS: Record<string, string> = {
+  wallet: 'bg-icon-accent/10 text-icon-accent',
+  'local-contact': 'bg-icon-positive/10 text-icon-positive',
+  'backend-contact': 'bg-icon-alert/10 text-icon-alert',
+};
+
+const ENTITY_BADGE = 'bg-badge-orange-background-default text-badge-orange-text';
 
 export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameChange, onSelectedIdsChange }: Props) => {
   const { t } = useI18n();
@@ -94,12 +108,20 @@ export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameCha
             </div>
             <div className="min-w-0 flex-1">
               <FootnoteText className="truncate text-text-primary">{entry.name}</FootnoteText>
-              <CaptionText className="text-text-tertiary">{toShortAddress(entry.address, 6)}</CaptionText>
             </div>
-            <CaptionText className="shrink-0 text-text-tertiary">{entry.source}</CaptionText>
+            <div className="flex shrink-0 items-center gap-x-1">
+              {entry.entityNames && entry.entityNames.length > 0 && (
+                <Badge className={ENTITY_BADGE}>{entry.entityNames[0]}</Badge>
+              )}
+              <Badge className={SOURCE_BADGE_COLORS[entry.source]}>{SOURCE_LABELS[entry.source] ?? entry.source}</Badge>
+            </div>
           </div>
         ))}
       </div>
     </div>
   );
 };
+
+const Badge = ({ className, children }: { className?: string; children: ReactNode }) => (
+  <span className={cnTw('rounded-full px-2 py-0.5 text-[10px] font-medium', className)}>{children}</span>
+);
