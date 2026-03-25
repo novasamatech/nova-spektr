@@ -9,7 +9,7 @@ const RAPTORQ_HEADER_SIZE = 4;
  * Previously used `binary-parser` which relies on `new Function()` (eval),
  * blocked by CSP `script-src` without `unsafe-eval`.
  */
-function parseFrame(data: Uint8Array): { size: number; payload: Uint8Array } {
+export function parseFrame(data: Uint8Array): { size: number; payload: Uint8Array } {
   const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
   // Bytes 1-3: transfer size as 24-bit big-endian unsigned int (byte 0 is tag, unused)
   const size = (view.getUint8(1) << 16) | (view.getUint8(2) << 8) | view.getUint8(3);
