@@ -1,12 +1,27 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { persist } from 'effector-storage/local';
 
-import { type AccountPreset, type PresetFilterCriteria, EMPTY_FILTERS } from './types';
+import { type AccountPreset, type PresetFilterCriteria, type PresetType, EMPTY_FILTERS } from './types';
 
 const MAX_SEGMENTS = 3;
 
-const presetCreated = createEvent<{ name: string; filters: PresetFilterCriteria }>();
-const presetUpdated = createEvent<{ id: string; name?: string; filters?: PresetFilterCriteria }>();
+type CreatePresetParams = {
+  name: string;
+  type: PresetType;
+  filters: PresetFilterCriteria;
+  selectedIds: string[];
+};
+
+type UpdatePresetParams = {
+  id: string;
+  name?: string;
+  type?: PresetType;
+  filters?: PresetFilterCriteria;
+  selectedIds?: string[];
+};
+
+const presetCreated = createEvent<CreatePresetParams>();
+const presetUpdated = createEvent<UpdatePresetParams>();
 const presetDeleted = createEvent<string>();
 const presetActivated = createEvent<string | null>();
 
@@ -16,12 +31,14 @@ persist({ store: $presets, key: 'dashboard_presets', sync: true });
 const $activePresetId = createStore<string | null>(null);
 persist({ store: $activePresetId, key: 'dashboard_active_preset', sync: true });
 
-$presets.on(presetCreated, (presets, { name, filters }) => [
+$presets.on(presetCreated, (presets, { name, type, filters, selectedIds }) => [
   ...presets,
   {
     id: crypto.randomUUID(),
     name: name.trim().slice(0, 30),
+    type,
     filters,
+    selectedIds,
   },
 ]);
 

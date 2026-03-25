@@ -111,6 +111,12 @@ const $allEntries = combine(
 
 const $matchedEntries = combine(dashboardPresetsModel.$activePreset, $allEntries, (preset, entries) => {
   if (!preset) return entries;
+
+  if (preset.type === 'custom') {
+    const selected = new Set(preset.selectedIds);
+    return entries.filter((e) => selected.has(e.id));
+  }
+
   return applyPresetFilter(preset.filters, entries);
 });
 

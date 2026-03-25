@@ -523,12 +523,20 @@
         "deleteConfirmTitle": "Delete Preset",
         "deleteConfirmDescription": "Are you sure you want to delete \"{name}\"?",
         "cancel": "Cancel",
-        "save": "Save"
+        "save": "Save",
+        "savedToast": "Preset \"{name}\" saved",
+        "createdToast": "Preset \"{name}\" created",
+        "deletedToast": "Preset \"{name}\" deleted",
+        "typeFilter": "Smart Filter",
+        "typeCustom": "Custom Selection",
+        "selectAll": "Select All",
+        "deselectAll": "Deselect All",
+        "selectedCount": "{count} selected"
       },
       "sources": {
         "wallet": "Wallet",
-        "localContact": "Local Contacts",
-        "backendContact": "Backend Contacts"
+        "localContact": "My Contacts",
+        "backendContact": "External Source"
       }
     },
     "emptyState": {

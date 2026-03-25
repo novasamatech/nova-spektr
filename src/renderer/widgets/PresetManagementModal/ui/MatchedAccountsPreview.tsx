@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, includes, toAddress, toShortAddress } from '@/shared/lib/utils';
@@ -15,11 +15,19 @@ type Props = {
 
 const MAX_VISIBLE = 50;
 
+const SOURCE_LABELS: Record<string, string> = {
+  wallet: 'wallet',
+  'local-contact': 'contact',
+  'backend-contact': 'external',
+};
+
 const SOURCE_BADGE_COLORS: Record<string, string> = {
   wallet: 'bg-icon-accent/10 text-icon-accent',
   'local-contact': 'bg-icon-positive/10 text-icon-positive',
   'backend-contact': 'bg-icon-alert/10 text-icon-alert',
 };
+
+const ENTITY_BADGE = 'bg-badge-orange-background-default text-badge-orange-text';
 
 export const MatchedAccountsPreview = ({ allEntries, filters }: Props) => {
   const { t } = useI18n();
@@ -29,7 +37,7 @@ export const MatchedAccountsPreview = ({ allEntries, filters }: Props) => {
   const matchesAll = matched.length === allEntries.length && allEntries.length > 0;
 
   const filtered = useMemo(
-    () => matched.filter((entry) => includes(entry.name, search) || includes(entry.accountId, search)),
+    () => matched.filter((entry) => includes(entry.name, search) || includes(entry.address, search)),
     [matched, search],
   );
 
@@ -60,19 +68,21 @@ export const MatchedAccountsPreview = ({ allEntries, filters }: Props) => {
         <div className="max-h-40 overflow-y-auto rounded-sm">
           {visible.map((entry) => (
             <div key={entry.id} className="flex items-center gap-x-2 rounded px-2 py-1.5">
-              <Identicon address={toAddress(entry.accountId)} size={24} canCopy={false} />
+              <div className="pointer-events-none shrink-0">
+                <Identicon address={toAddress(entry.address)} size={24} canCopy={false} />
+              </div>
               <div className="min-w-0 flex-1">
                 <FootnoteText className="truncate text-text-primary">{entry.name}</FootnoteText>
-                <CaptionText className="text-text-tertiary">{toShortAddress(entry.accountId, 6)}</CaptionText>
+                <CaptionText className="text-text-tertiary">{toShortAddress(entry.address, 6)}</CaptionText>
               </div>
-              <span
-                className={cnTw(
-                  'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium',
-                  SOURCE_BADGE_COLORS[entry.source],
+              <div className="flex shrink-0 items-center gap-x-1">
+                {entry.entityNames && entry.entityNames.length > 0 && (
+                  <Badge className={ENTITY_BADGE}>{entry.entityNames[0]}</Badge>
                 )}
-              >
-                {entry.source}
-              </span>
+                <Badge className={SOURCE_BADGE_COLORS[entry.source]}>
+                  {SOURCE_LABELS[entry.source] ?? entry.source}
+                </Badge>
+              </div>
             </div>
           ))}
         </div>
@@ -86,3 +96,7 @@ export const MatchedAccountsPreview = ({ allEntries, filters }: Props) => {
     </div>
   );
 };
+
+const Badge = ({ className, children }: { className?: string; children: ReactNode }) => (
+  <span className={cnTw('rounded-full px-2 py-0.5 text-[10px] font-medium', className)}>{children}</span>
+);

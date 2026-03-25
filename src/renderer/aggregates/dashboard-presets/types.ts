@@ -7,10 +7,14 @@ export type PresetFilterCriteria = {
   tags: ContactTag[];
 };
 
+export type PresetType = 'filter' | 'custom';
+
 export type AccountPreset = {
   id: string;
   name: string;
+  type: PresetType;
   filters: PresetFilterCriteria;
+  selectedIds: string[]; // used when type === 'custom'
 };
 
 export const EMPTY_FILTERS: PresetFilterCriteria = {

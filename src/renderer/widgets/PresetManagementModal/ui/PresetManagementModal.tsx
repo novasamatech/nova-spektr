@@ -4,10 +4,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Button, FootnoteText } from '@/shared/ui';
-import { ConfirmModal, Modal } from '@/shared/ui-kit';
-import { type PresetFilterCriteria, EMPTY_FILTERS, dashboardPresetsModel } from '@/aggregates/dashboard-presets';
+import { ConfirmModal, Modal, useNotification } from '@/shared/ui-kit';
+import {
+  type PresetFilterCriteria,
+  type PresetType,
+  EMPTY_FILTERS,
+  dashboardPresetsModel,
+} from '@/aggregates/dashboard-presets';
 import { dashboardModel } from '@/pages/Dashboard/model/dashboard-model';
 
+import { CustomAccountSelector } from './CustomAccountSelector';
 import { MatchedAccountsPreview } from './MatchedAccountsPreview';
 import { PresetFilterEditor } from './PresetFilterEditor';
 
@@ -18,6 +24,7 @@ type Props = {
 
 export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
+  const { toast } = useNotification();
 
   const presets = useUnit(dashboardPresetsModel.$presets);
   const allEntries = useUnit(dashboardModel.$allEntries);
@@ -27,7 +34,9 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const [editType, setEditType] = useState<PresetType>('filter');
   const [editFilters, setEditFilters] = useState<PresetFilterCriteria>(EMPTY_FILTERS);
+  const [editSelectedIds, setEditSelectedIds] = useState<string[]>([]);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [pendingSelectNew, setPendingSelectNew] = useState(false);
 
@@ -37,7 +46,9 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
       if (!preset) return;
       setSelectedId(id);
       setEditName(preset.name);
+      setEditType(preset.type ?? 'filter');
       setEditFilters(preset.filters);
+      setEditSelectedIds(preset.selectedIds ?? []);
     },
     [presets],
   );
@@ -45,10 +56,11 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   const resetEditor = useCallback(() => {
     setSelectedId(null);
     setEditName('');
+    setEditType('filter');
     setEditFilters(EMPTY_FILTERS);
+    setEditSelectedIds([]);
   }, []);
 
-  // When modal opens, select the first preset if any
   useEffect(() => {
     if (isOpen && presets.length > 0 && selectedId === null) {
       const first = presets[0];
@@ -59,7 +71,6 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
     }
   }, [isOpen]);
 
-  // Auto-select new preset after creation
   useEffect(() => {
     if (!pendingSelectNew) return;
 
@@ -69,22 +80,34 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   }, [pendingSelectNew]);
 
   const handleSave = () => {
-    if (!editName.trim()) return;
+    const trimmedName = editName.trim();
+    if (!trimmedName) return;
+
+    const payload = {
+      name: trimmedName,
+      type: editType,
+      filters: editType === 'filter' ? editFilters : EMPTY_FILTERS,
+      selectedIds: editType === 'custom' ? editSelectedIds : [],
+    };
 
     if (selectedId === null) {
-      presetCreated({ name: editName, filters: editFilters });
+      presetCreated(payload);
       setPendingSelectNew(true);
+      toast.success(t('dashboard.presets.modal.createdToast', { name: trimmedName }));
     } else {
-      presetUpdated({ id: selectedId, name: editName, filters: editFilters });
+      presetUpdated({ id: selectedId, ...payload });
+      toast.success(t('dashboard.presets.modal.savedToast', { name: trimmedName }));
     }
   };
 
   const handleDelete = () => {
     if (selectedId === null) return;
 
+    const deletedName = editName;
     const currentIndex = presets.findIndex((p) => p.id === selectedId);
     presetDeleted(selectedId);
     setConfirmDeleteOpen(false);
+    toast.success(t('dashboard.presets.modal.deletedToast', { name: deletedName }));
 
     const remaining = presets.filter((p) => p.id !== selectedId);
     if (remaining.length > 0) {
@@ -97,7 +120,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   };
 
   const isNewPreset = selectedId === null;
-  const canSave = editName.trim().length > 0;
+  const canSave = editName.trim().length > 0 && (editType === 'filter' || editSelectedIds.length > 0);
 
   return (
     <>
@@ -113,7 +136,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
                     key={preset.id}
                     type="button"
                     className={cnTw(
-                      'flex w-full items-center px-4 py-2.5 text-left transition-colors hover:bg-action-background-hover',
+                      'flex w-full items-center gap-x-2 px-4 py-2.5 text-left transition-colors hover:bg-action-background-hover',
                       selectedId === preset.id && 'border-l-2 border-icon-accent bg-block-background-default',
                     )}
                     onClick={() => selectPreset(preset.id)}
@@ -139,13 +162,39 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
 
             {/* Right panel — editor */}
             <div className="flex min-w-0 flex-1 flex-col gap-y-4 overflow-y-auto px-5 py-4">
-              <PresetFilterEditor
-                name={editName}
-                filters={editFilters}
-                onNameChange={setEditName}
-                onFiltersChange={setEditFilters}
-              />
-              <MatchedAccountsPreview allEntries={allEntries} filters={editFilters} />
+              {/* Preset type switcher */}
+              <div className="flex gap-x-2">
+                <TypeChip
+                  active={editType === 'filter'}
+                  label={t('dashboard.presets.modal.typeFilter')}
+                  onClick={() => setEditType('filter')}
+                />
+                <TypeChip
+                  active={editType === 'custom'}
+                  label={t('dashboard.presets.modal.typeCustom')}
+                  onClick={() => setEditType('custom')}
+                />
+              </div>
+
+              {editType === 'filter' ? (
+                <>
+                  <PresetFilterEditor
+                    name={editName}
+                    filters={editFilters}
+                    onNameChange={setEditName}
+                    onFiltersChange={setEditFilters}
+                  />
+                  <MatchedAccountsPreview allEntries={allEntries} filters={editFilters} />
+                </>
+              ) : (
+                <CustomAccountSelector
+                  name={editName}
+                  allEntries={allEntries}
+                  selectedIds={editSelectedIds}
+                  onNameChange={setEditName}
+                  onSelectedIdsChange={setEditSelectedIds}
+                />
+              )}
             </div>
           </div>
         </Modal.Content>
@@ -183,3 +232,24 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
     </>
   );
 };
+
+type TypeChipProps = {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+};
+
+const TypeChip = ({ active, onClick, label }: TypeChipProps) => (
+  <button
+    type="button"
+    className={cnTw(
+      'rounded-full px-3 py-1 text-footnote transition-colors',
+      active
+        ? 'bg-icon-accent text-white'
+        : 'border border-filter-border text-text-secondary hover:bg-action-background-hover',
+    )}
+    onClick={onClick}
+  >
+    {label}
+  </button>
+);
