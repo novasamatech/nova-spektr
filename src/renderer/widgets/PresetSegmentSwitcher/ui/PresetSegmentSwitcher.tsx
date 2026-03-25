@@ -15,7 +15,6 @@ export const PresetSegmentSwitcher = () => {
   const activePresetId = useUnit(dashboardPresetsModel.$activePresetId);
   const segmentPresets = useUnit(dashboardPresetsModel.$segmentPresets);
   const overflowPresets = useUnit(dashboardPresetsModel.$overflowPresets);
-  const presetActivated = useUnit(dashboardPresetsModel.presetActivated);
 
   const [overflowOpen, setOverflowOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -29,11 +28,11 @@ export const PresetSegmentSwitcher = () => {
   );
 
   const handleTabChange = (value: string) => {
-    presetActivated(value === ALL_VALUE ? null : value);
+    dashboardPresetsModel.presetActivated(value === ALL_VALUE ? null : value);
   };
 
   const handleOverflowActivate = (id: string) => {
-    presetActivated(id);
+    dashboardPresetsModel.presetActivated(id);
     setOverflowOpen(false);
     setSearch('');
   };

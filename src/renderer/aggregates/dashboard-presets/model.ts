@@ -23,6 +23,7 @@ type UpdatePresetParams = {
 const presetCreated = createEvent<CreatePresetParams>();
 const presetUpdated = createEvent<UpdatePresetParams>();
 const presetDeleted = createEvent<string>();
+const presetRestored = createEvent<{ preset: AccountPreset; index: number }>();
 const presetActivated = createEvent<string | null>();
 const presetsReordered = createEvent<string[]>();
 
@@ -58,6 +59,13 @@ $presets.on(presetUpdated, (presets, { id, name, type, filters, selectedIds }) =
 );
 
 $presets.on(presetDeleted, (presets, id) => presets.filter(p => p.id !== id));
+
+$presets.on(presetRestored, (presets, { preset, index }) => {
+  const next = [...presets];
+  next.splice(index, 0, preset);
+
+  return next;
+});
 
 $presets.on(presetsReordered, (presets, orderedIds) => {
   const byId = new Map(presets.map(p => [p.id, p]));
@@ -96,6 +104,7 @@ export const dashboardPresetsModel = {
   presetCreated,
   presetUpdated,
   presetDeleted,
+  presetRestored,
   presetActivated,
   presetsReordered,
 };
