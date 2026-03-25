@@ -57,14 +57,14 @@ accountSDK(proxiedWalletFeature, {
       };
     }
   },
-  connection({ source, target, t }) {
+  connection({ source, target }) {
     if (accountUtils.isProxiedAccount(target)) {
       return {
         labels: target.connections
           .filter(connection => connection.proxyAccountId === source.accountId)
           .map(connection => {
             return {
-              text: t([`proxy.types.${connection.proxyType}`, connection.proxyType]),
+              text: connection.proxyType,
               color: 'var(--icons-icon-alert, #7B29FF)',
               background: '#F5EEFF',
             };
