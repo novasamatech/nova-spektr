@@ -1,22 +1,65 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent, useMemo } from 'react';
+import { uniqBy } from 'lodash';
+import { type FormEvent, type ReactNode, memo, useEffect, useMemo, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type ChainId } from '@/shared/core';
+import { type Address as AddressType, type Chain, type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, toAddress, toShortAddress, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
-import { Alert, Button, Combobox, InputHint, Select } from '@/shared/ui';
-import { AssetBalance, Identicon, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
-import { Field } from '@/shared/ui-kit';
-import { accountService, accounts } from '@/domains/network';
+import {
+  entries,
+  getNativeAsset,
+  includesMultiple,
+  nonNullable,
+  performSearch,
+  toAddress,
+  toShortAddress,
+  transferableAmount,
+  validateAddress,
+  withdrawableAmount,
+} from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { Alert, Button, CaptionText, InputHint } from '@/shared/ui';
+import {
+  Address,
+  AssetBalance,
+  Identicon,
+  SignatorySelect,
+  TransactionValidationError,
+  WalletIcon,
+} from '@/shared/ui-entities';
+import { Combobox, Field, Select } from '@/shared/ui-kit';
+import { accountService, accounts, useAccountName, useAccountsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
-import { ProxyPopover, proxyUtils } from '@/entities/proxy';
-import { AccountAddress, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { contactModel } from '@/entities/contact';
+import { ProxyPopover } from '@/entities/proxy';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
+
+const { services, constants } = walletSelectFeature;
+
+type DelegateComboboxItem = {
+  id: string;
+  label: ReactNode;
+  value: { address: string; walletId?: number };
+};
+
+type DelegateComboboxGroup = {
+  id: string;
+  label: ReactNode;
+  items: DelegateComboboxItem[];
+};
+
+const AccountAddressItem = memo(
+  ({ accountId, chain, address }: { accountId: AccountId; chain: Chain; address: AddressType }) => {
+    const resolvedName = useAccountName({ accountId, chain });
+    return <Address showIcon title={resolvedName} address={address} />;
+  },
+);
 
 export const AddProxyForm = () => {
   const { t } = useI18n();
@@ -58,42 +101,51 @@ const NetworkSelector = () => {
   } = useForm(formModel.form);
 
   const availableChains = useUnit(formModel.$availableChains);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const options = useMemo(
-    () =>
-      Object.values(availableChains).map((chain) => ({
-        id: chain.chainId,
-        value: chain,
-        element: (
-          <ChainTitle
-            className="overflow-hidden"
-            fontClass="text-text-primary truncate"
-            key={chain.chainId}
-            chain={chain}
-          />
-        ),
-      })),
-    [availableChains],
-  );
+  useEffect(() => {
+    setSearchQuery('');
+  }, [chain.value?.chainId]);
+
+  const filteredChains = useMemo(() => {
+    if (!searchQuery) return availableChains;
+
+    return performSearch({
+      query: searchQuery,
+      records: availableChains,
+      weights: { name: 1, chainId: 0.5, specName: 0.5 },
+    });
+  }, [availableChains, searchQuery]);
 
   if (!chain.value) {
     return null;
   }
 
+  const handleChange = (chainId: ChainId) => {
+    const next = availableChains.find((c) => c.chainId === chainId);
+    if (next) chain.onChange(next);
+  };
+
   return (
-    <div className="flex flex-col gap-y-2">
+    <Field text={t('proxy.addProxy.networkLabel')}>
       <Select
-        label={t('proxy.addProxy.networkLabel')}
         placeholder={t('proxy.addProxy.networkPlaceholder')}
-        selectedId={chain.value.chainId}
+        value={chain.value.chainId}
         invalid={chain.hasError}
-        options={options}
-        onChange={({ value }) => chain.onChange(value)}
-      />
+        height="sm"
+        onChange={handleChange}
+        onSearch={setSearchQuery}
+      >
+        {filteredChains.map((c) => (
+          <Select.Item key={c.chainId} value={c.chainId}>
+            <ChainTitle className="overflow-hidden" fontClass="text-text-primary truncate" chain={c} />
+          </Select.Item>
+        ))}
+      </Select>
       <InputHint variant="error" active={chain.hasError}>
         {t(chain.errorMessage)}
       </InputHint>
-    </div>
+    </Field>
   );
 };
 
@@ -108,6 +160,11 @@ const AccountSelector = () => {
   const availableAccounts = useUnit(formModel.$availableAccounts);
   const wallet = useUnit(walletSelect.$selectedWallet);
   const balances = useUnit(balanceModel.$balanceMap);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    setSearchQuery('');
+  }, [chain?.chainId]);
 
   if (availableAccounts.length < 2 || walletUtils.isFlexibleMultisig(wallet) || !initiator.value || !chain) {
     return null;
@@ -115,47 +172,66 @@ const AccountSelector = () => {
 
   const nativeAsset = getNativeAsset(chain.assets);
 
-  const options = availableAccounts.map((account) => {
-    const isShard = accountUtils.isVaultShardAccount(account);
-    const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-    const id = accountService.uniqId(account);
+  const filteredAccounts = useMemo(() => {
+    return performSearch({
+      query: searchQuery,
+      records: availableAccounts,
+      getMeta: (account) => ({
+        address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+      }),
+      weights: { name: 1, address: 0.5 },
+    });
+  }, [availableAccounts, chain.addressPrefix, searchQuery]);
 
-    const balance = balanceUtils.getBalance(
-      balances,
-      account.accountId,
-      chain.chainId,
-      getNativeAsset(chain.assets).assetId,
-    );
+  const handleChange = (id: string) => {
+    const account = availableAccounts.find((a) => accountService.uniqId(a) === id);
+    if (account) initiator.onChange(account);
+  };
 
-    return {
-      id,
-      value: account,
-      element: (
-        <div className="flex w-full justify-between" key={id}>
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            name={isShard ? toShortAddress(address, 16) : account.name}
-            canCopy={false}
-          />
-          <AssetBalance value={transferableAmount(balance)} asset={nativeAsset} />
-        </div>
-      ),
-    };
-  });
+  const isSingleOption = availableAccounts.length === 1;
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <Field text={t('proxy.addProxy.accountLabel')}>
       <Select
-        label={t('proxy.addProxy.accountLabel')}
         placeholder={t('proxy.addProxy.accountPlaceholder')}
-        selectedId={accountService.uniqId(initiator.value)}
-        options={options}
-        disabled={options.length === 1}
-        onChange={({ value }) => initiator.onChange(value)}
-      />
-    </div>
+        value={accountService.uniqId(initiator.value)}
+        disabled={isSingleOption}
+        height="sm"
+        onChange={handleChange}
+        onSearch={setSearchQuery}
+      >
+        {filteredAccounts.map((account) => {
+          const isShard = accountUtils.isVaultShardAccount(account);
+          const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+          const id = accountService.uniqId(account);
+          const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, nativeAsset.assetId);
+          const title = isShard ? toShortAddress(address, 16) : account.name || undefined;
+
+          return (
+            <Select.Item key={id} value={id}>
+              <div className="flex h-9 max-h-9 min-h-9 w-full items-center justify-between gap-x-2 overflow-hidden">
+                <div className="min-w-0 flex-1">
+                  <Address
+                    showIcon
+                    iconSize={20}
+                    canCopy={false}
+                    address={address}
+                    variant="short"
+                    title={title}
+                    hideAddress={Boolean(title)}
+                  />
+                </div>
+                <AssetBalance
+                  className="text-footnote leading-none text-text-primary"
+                  value={transferableAmount(balance)}
+                  asset={nativeAsset}
+                />
+              </div>
+            </Select.Item>
+          );
+        })}
+      </Select>
+    </Field>
   );
 };
 
@@ -212,56 +288,142 @@ const ProxyInput = () => {
   const { t } = useI18n();
 
   const {
-    fields: { delegate, chain },
+    fields: { delegate, chain, initiator },
   } = useForm(formModel.form);
 
   const proxyAccounts = useUnit(formModel.$proxyAccounts);
-  const proxyQuery = useUnit(formModel.$proxyQuery);
+  const wallets = useUnit(walletModel.$wallets);
+  const contacts = useUnit(contactModel.$contacts);
+
+  const [query, setQuery] = useState('');
+
+  useEffect(() => {
+    setQuery('');
+  }, [chain.value?.chainId]);
 
   if (!chain.value) return null;
 
-  const options = proxyAccounts.map((proxyAccount) => {
-    const isShard = accountUtils.isVaultShardAccount(proxyAccount);
-    const address = toAddress(proxyAccount.accountId, { prefix: chain.value?.addressPrefix });
-    const id = accountService.uniqId(proxyAccount);
+  const selectedChain = chain.value;
 
-    return {
-      id,
-      value: address,
-      element: (
-        <div className="flex w-full justify-between" key={id}>
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            name={isShard ? toShortAddress(address, 20) : proxyAccount.name}
-            canCopy={false}
-          />
-        </div>
-      ),
-    };
-  });
+  const filteredContacts = useMemo(() => {
+    return performSearch({
+      query,
+      records: contacts,
+      weights: { name: 1, address: 0.5 },
+    });
+  }, [query, contacts]);
+
+  const resolvedAccounts = useAccountsNames(proxyAccounts, selectedChain);
+
+  const walletsOptions = useMemo<DelegateComboboxGroup[]>(() => {
+    const filteredAccounts = resolvedAccounts.filter((account) => {
+      const address = toAddress(account.accountId, { prefix: selectedChain.addressPrefix });
+      const queryPass = includesMultiple([account.name, address], query);
+      const isInitiator = nonNullable(initiator.value) && initiator.value.accountId === account.accountId;
+
+      return queryPass && !isInitiator;
+    });
+    const uniqueAccounts = uniqBy(filteredAccounts, 'accountId');
+
+    const accountByGroup = services.walletSelect.getWalletFamilyByAccounts(wallets, uniqueAccounts);
+    const ownAccountOptions: DelegateComboboxGroup[] = [];
+
+    for (const [walletFamily, accountsGroup] of entries(accountByGroup)) {
+      if (accountsGroup.length === 0) continue;
+
+      const accountOptions: DelegateComboboxItem[] = [];
+
+      for (const account of accountsGroup) {
+        const address = toAddress(account.accountId, { prefix: selectedChain.addressPrefix });
+
+        accountOptions.push({
+          id: address,
+          value: { address, walletId: account.walletId },
+          label: <AccountAddressItem accountId={account.accountId} chain={selectedChain} address={address} />,
+        });
+      }
+
+      ownAccountOptions.push({
+        id: walletFamily,
+        label: (
+          <div className="flex items-center gap-x-2" key={walletFamily}>
+            <WalletIcon type={walletFamily} />
+            <CaptionText className="font-semibold text-text-secondary uppercase">
+              {t(constants.GROUP_LABELS[walletFamily])}
+            </CaptionText>
+          </div>
+        ),
+        items: accountOptions,
+      });
+    }
+
+    return ownAccountOptions;
+  }, [query, selectedChain, resolvedAccounts, wallets, initiator.value, t]);
+
+  const contactOptions = useMemo<DelegateComboboxGroup[]>(() => {
+    if (validateAddress(query, selectedChain)) return [];
+
+    const addressOptions: DelegateComboboxItem[] = [];
+    for (const contact of filteredContacts) {
+      const displayedAddress = toAddress(contact.accountId, { prefix: selectedChain.addressPrefix });
+      const isValidAddress = validateAddress(displayedAddress, selectedChain);
+
+      if (!isValidAddress) continue;
+
+      addressOptions.push({
+        id: contact.id.toString(),
+        label: <Address showIcon title={contact.name} address={displayedAddress} />,
+        value: { address: displayedAddress },
+      });
+    }
+
+    if (addressOptions.length === 0) return [];
+
+    return [
+      {
+        id: 'contacts',
+        label: t('createMultisigAccount.contactsGroup'),
+        items: addressOptions,
+      },
+    ];
+  }, [query, selectedChain, filteredContacts, t]);
+
+  const options = [...walletsOptions, ...contactOptions];
 
   const prefixElement = (
-    <div className="flex h-auto items-center">
-      <Identicon address={toAddress(delegate.value)} size={20} background={false} canCopy={false} />
-    </div>
+    <Identicon
+      invalid={delegate.touched && delegate.hasError}
+      address={toAddress(delegate.value, { prefix: selectedChain.addressPrefix })}
+      size={20}
+      background={false}
+      canCopy={false}
+    />
   );
 
   return (
     <Field text={t('proxy.addProxy.delegateLabel')}>
       <Combobox
+        data-testid={TEST_IDS.PROXY_FORM.ADDRESS_INPUT}
         placeholder={t('proxy.addProxy.delegatePlaceholder')}
-        query={proxyQuery}
-        testId={TEST_IDS.PROXY_FORM.ADDRESS_INPUT}
-        options={options}
-        value={delegate.value}
-        invalid={delegate.hasError}
+        invalid={delegate.touched && delegate.hasError}
+        value={delegate.value.trim()}
         prefixElement={prefixElement}
-        onInput={formModel.proxyQueryChanged}
-        onChange={({ value }) => delegate.onChange(value)}
-      />
-      <InputHint variant="error" active={delegate.hasError}>
+        height="sm"
+        onChange={delegate.onChange}
+        onBlur={delegate.markAsTouched}
+        onInput={setQuery}
+      >
+        {options.map((group) => (
+          <Combobox.Group key={group.id} title={group.label}>
+            {group.items.map((option) => (
+              <Combobox.Item key={`${option.id}-${option.value.walletId ?? 'unknown'}`} value={option.value.address}>
+                {option.label}
+              </Combobox.Item>
+            ))}
+          </Combobox.Group>
+        ))}
+      </Combobox>
+      <InputHint variant="error" active={delegate.touched && delegate.hasError}>
         {t(delegate.errorMessage)}
       </InputHint>
     </Field>
@@ -278,27 +440,29 @@ const ProxyTypeSelector = () => {
   const proxyTypes = useUnit(formModel.$proxyTypes);
   const isChainConnected = useUnit(formModel.$isChainConnected);
 
-  const options = proxyTypes.map((type) => ({
-    id: type,
-    value: type,
-    element: t(proxyUtils.getProxyTypeOperation(type)),
-  }));
-
   return (
-    <div className="flex flex-col gap-y-2">
+    <Field text={t('proxy.addProxy.proxyTypeLabel')}>
       <Select
-        label={t('proxy.addProxy.proxyTypeLabel')}
         placeholder={t('proxy.addProxy.proxyTypePlaceholder')}
-        selectedId={proxyType.value}
-        options={options}
+        value={proxyType.value || null}
         invalid={proxyType.hasError}
         disabled={!isChainConnected}
-        onChange={({ value }) => proxyType.onChange(value)}
-      />
+        height="sm"
+        onChange={(value) => {
+          const next = proxyTypes.find((type) => type === value);
+          if (next) proxyType.onChange(next);
+        }}
+      >
+        {proxyTypes.map((type) => (
+          <Select.Item key={type} value={type}>
+            {type}
+          </Select.Item>
+        ))}
+      </Select>
       <InputHint variant="error" active={proxyType.hasError}>
         {t(proxyType.errorMessage)}
       </InputHint>
-    </div>
+    </Field>
   );
 };
 
