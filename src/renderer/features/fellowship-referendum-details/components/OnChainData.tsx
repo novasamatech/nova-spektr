@@ -1,5 +1,5 @@
 import { capitalize } from 'lodash';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance, toAddress, truncate } from '@/shared/lib/utils';
@@ -37,17 +37,19 @@ export const OnChainData = memo(({ referendum }: Props) => {
   const track = tracks.find(tr => tr.id === referendum.track);
   const isWhitelist = referendum.proposal && referendumService.isWhitelistProposal(referendum.proposal);
 
-  const isPromotionTrack = trackService.isPromotionTrack(referendum.track);
-  const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
+  const referendumType = useMemo(() => {
+    if (trackService.isPromotionTrack(referendum.track)) {
+      return t('fellowship.voting.confirmation.promotionTrack');
+    }
+    if (trackService.isRetentionTrack(referendum.track)) {
+      return t('fellowship.voting.confirmation.retentionTrack');
+    }
+    if (track) {
+      return capitalize(track.name);
+    }
 
-  let referendumType: string | null = null;
-  if (isPromotionTrack) {
-    referendumType = t('fellowship.voting.confirmation.promotionTrack');
-  } else if (isRetentionTrack) {
-    referendumType = t('fellowship.voting.confirmation.retentionTrack');
-  } else if (track) {
-    referendumType = capitalize(track.name);
-  }
+    return null;
+  }, [referendum.track, track, t]);
 
   return (
     <Card>
