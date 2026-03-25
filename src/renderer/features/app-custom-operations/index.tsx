@@ -1,12 +1,5 @@
-import { navigationCustomOperationsSlot } from '@/features/app-shell';
-
-import { appCustomOperationsFeature } from './model/feature';
+import { appCustomOperationsFeature } from './feature';
 import { CustomOperations } from './ui/CustomOperations';
 
+export { CustomOperations, appCustomOperationsFeature };
 export { customOperationsSlot } from './ui/CustomOperations';
-export { appCustomOperationsFeature };
-
-appCustomOperationsFeature.inject(navigationCustomOperationsSlot, {
-  order: 0,
-  render: () => <CustomOperations />,
-});
