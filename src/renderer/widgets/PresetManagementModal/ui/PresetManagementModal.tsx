@@ -1,5 +1,8 @@
+import { move } from '@dnd-kit/helpers';
+import { DragDropProvider } from '@dnd-kit/react';
+import { useSortable } from '@dnd-kit/react/sortable';
 import { useUnit } from 'effector-react';
-import { useCallback, useEffect, useState } from 'react';
+import { type ComponentProps, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
@@ -31,6 +34,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   const presetCreated = useUnit(dashboardPresetsModel.presetCreated);
   const presetUpdated = useUnit(dashboardPresetsModel.presetUpdated);
   const presetDeleted = useUnit(dashboardPresetsModel.presetDeleted);
+  const presetsReordered = useUnit(dashboardPresetsModel.presetsReordered);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
@@ -39,6 +43,14 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   const [editSelectedIds, setEditSelectedIds] = useState<string[]>([]);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [pendingSelectNew, setPendingSelectNew] = useState(false);
+
+  // DnD state
+  const [dragIds, setDragIds] = useState<string[] | null>(null);
+  const dragIdsRef = useRef<string[] | null>(null);
+  dragIdsRef.current = dragIds;
+
+  const presetIds = presets.map((p) => p.id);
+  const displayIds = dragIds ?? presetIds;
 
   const selectPreset = useCallback(
     (id: string) => {
@@ -78,6 +90,29 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
     if (newest) selectPreset(newest.id);
     setPendingSelectNew(false);
   }, [pendingSelectNew]);
+
+  // DnD handlers
+  const handleDragStart = useCallback(() => {
+    setDragIds(presetIds);
+  }, [presetIds]);
+
+  const handleDragOver: ComponentProps<typeof DragDropProvider>['onDragOver'] = useCallback(
+    (event: Parameters<NonNullable<ComponentProps<typeof DragDropProvider>['onDragOver']>>[0]) => {
+      setDragIds((prev) => {
+        if (!prev) return prev;
+        const next = move(prev, event);
+        return next.join(',') === prev.join(',') ? prev : next;
+      });
+    },
+    [],
+  );
+
+  const handleDragEnd = useCallback(() => {
+    if (dragIdsRef.current) {
+      presetsReordered(dragIdsRef.current);
+    }
+    setDragIds(null);
+  }, [presetsReordered]);
 
   const handleSave = () => {
     const trimmedName = editName.trim();
@@ -128,28 +163,35 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
         <Modal.Title close>{t('dashboard.presets.modal.title')}</Modal.Title>
         <Modal.Content disableScroll>
           <div className="flex h-full min-h-[400px]">
-            {/* Left panel — preset list */}
+            {/* Left panel — sortable preset list */}
             <div className="flex w-[200px] shrink-0 flex-col border-r border-divider">
-              <div className="flex-1 overflow-y-auto">
-                {presets.map((preset) => (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    className={cnTw(
-                      'flex w-full items-center gap-x-2 px-4 py-2.5 text-left transition-colors hover:bg-action-background-hover',
-                      selectedId === preset.id && 'border-l-2 border-icon-accent bg-block-background-default',
-                    )}
-                    onClick={() => selectPreset(preset.id)}
-                  >
-                    <FootnoteText className="w-full truncate text-text-primary">{preset.name}</FootnoteText>
-                  </button>
-                ))}
-              </div>
+              <DragDropProvider onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
+                <div className="flex-1 overflow-y-auto py-1">
+                  {displayIds.map((id, index) => {
+                    const preset = presets.find((p) => p.id === id);
+                    if (!preset) return null;
+
+                    return (
+                      <SortablePresetItem
+                        key={id}
+                        id={id}
+                        index={index}
+                        name={preset.name}
+                        isSelected={selectedId === id && !isNewPreset}
+                        onClick={() => selectPreset(id)}
+                      />
+                    );
+                  })}
+                </div>
+              </DragDropProvider>
 
               <div className="border-t border-divider p-2">
                 <button
                   type="button"
-                  className="flex w-full items-center justify-center gap-x-1.5 rounded px-3 py-1.5 text-footnote text-icon-accent transition-colors hover:bg-action-background-hover"
+                  className={cnTw(
+                    'flex w-full items-center justify-center gap-x-1.5 rounded px-3 py-1.5 text-footnote transition-colors hover:bg-action-background-hover',
+                    isNewPreset ? 'bg-icon-accent text-white' : 'text-icon-accent',
+                  )}
                   onClick={resetEditor}
                 >
                   <span className="text-base leading-none">+</span>
@@ -207,14 +249,9 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
               </Button>
             )}
           </div>
-          <div className="flex gap-x-3">
-            <Button size="sm" variant="fill" pallet="secondary" onClick={onClose}>
-              {t('dashboard.presets.modal.cancel')}
-            </Button>
-            <Button size="sm" variant="fill" pallet="primary" disabled={!canSave} onClick={handleSave}>
-              {t('dashboard.presets.modal.save')}
-            </Button>
-          </div>
+          <Button size="sm" variant="fill" pallet="primary" disabled={!canSave} onClick={handleSave}>
+            {t('dashboard.presets.modal.save')}
+          </Button>
         </Modal.Footer>
       </Modal>
 
@@ -232,6 +269,55 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
     </>
   );
 };
+
+// --- Sortable preset item ---
+
+type SortablePresetItemProps = {
+  id: string;
+  index: number;
+  name: string;
+  isSelected: boolean;
+  onClick: () => void;
+};
+
+const SortablePresetItem = ({ id, index, name, isSelected, onClick }: SortablePresetItemProps) => {
+  const handleRef = useRef<HTMLDivElement>(null);
+  const { ref, isDragging } = useSortable({ id, index, handle: handleRef });
+
+  return (
+    <div
+      ref={ref}
+      className={cnTw(
+        'group flex w-full items-center transition-colors',
+        isSelected ? 'border-l-2 border-icon-accent bg-block-background-default' : 'hover:bg-action-background-hover',
+        isDragging && 'z-10 opacity-60',
+      )}
+    >
+      <div
+        ref={handleRef}
+        className="flex shrink-0 cursor-grab items-center px-1.5 py-2.5 text-icon-default opacity-0 group-hover:opacity-50 active:cursor-grabbing"
+      >
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+          <circle cx="5" cy="3" r="1.5" />
+          <circle cx="11" cy="3" r="1.5" />
+          <circle cx="5" cy="8" r="1.5" />
+          <circle cx="11" cy="8" r="1.5" />
+          <circle cx="5" cy="13" r="1.5" />
+          <circle cx="11" cy="13" r="1.5" />
+        </svg>
+      </div>
+      <button type="button" className="min-w-0 flex-1 py-2.5 pr-4 text-left" onClick={onClick}>
+        <FootnoteText
+          className={cnTw('w-full truncate', isSelected ? 'font-semibold text-text-primary' : 'text-text-secondary')}
+        >
+          {name}
+        </FootnoteText>
+      </button>
+    </div>
+  );
+};
+
+// --- Type chip ---
 
 type TypeChipProps = {
   active: boolean;

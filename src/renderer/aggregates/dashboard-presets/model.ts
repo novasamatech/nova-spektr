@@ -24,6 +24,7 @@ const presetCreated = createEvent<CreatePresetParams>();
 const presetUpdated = createEvent<UpdatePresetParams>();
 const presetDeleted = createEvent<string>();
 const presetActivated = createEvent<string | null>();
+const presetsReordered = createEvent<string[]>();
 
 const $presets = createStore<AccountPreset[]>([]);
 persist({ store: $presets, key: 'dashboard_presets', sync: true });
@@ -47,6 +48,11 @@ $presets.on(presetUpdated, (presets, { id, ...changes }) =>
 );
 
 $presets.on(presetDeleted, (presets, id) => presets.filter(p => p.id !== id));
+
+$presets.on(presetsReordered, (presets, orderedIds) => {
+  const byId = new Map(presets.map(p => [p.id, p]));
+  return orderedIds.map(id => byId.get(id)).filter(Boolean) as AccountPreset[];
+});
 
 sample({
   clock: presetDeleted,
@@ -83,4 +89,5 @@ export const dashboardPresetsModel = {
   presetUpdated,
   presetDeleted,
   presetActivated,
+  presetsReordered,
 };

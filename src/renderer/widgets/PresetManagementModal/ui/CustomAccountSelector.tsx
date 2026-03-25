@@ -63,27 +63,9 @@ export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameCha
       </div>
 
       {/* Selection header */}
-      <div className="flex items-center justify-between">
-        <FootnoteText className="text-text-tertiary">
-          {t('dashboard.presets.modal.selectedCount', { count: selectedIds.length })}
-        </FootnoteText>
-        <div className="flex gap-x-2">
-          <button
-            type="button"
-            className="text-text-link text-footnote hover:underline"
-            onClick={() => onSelectedIdsChange(allEntries.map((e) => e.id))}
-          >
-            {t('dashboard.presets.modal.selectAll')}
-          </button>
-          <button
-            type="button"
-            className="text-text-link text-footnote hover:underline"
-            onClick={() => onSelectedIdsChange([])}
-          >
-            {t('dashboard.presets.modal.deselectAll')}
-          </button>
-        </div>
-      </div>
+      <FootnoteText className="text-text-tertiary">
+        {t('dashboard.presets.modal.selectedCount', { count: selectedIds.length })}
+      </FootnoteText>
 
       {/* Search */}
       <SearchInput value={search} placeholder={t('dashboard.presets.modal.searchAccounts')} onChange={setSearch} />

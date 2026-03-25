@@ -43,16 +43,18 @@ export const PresetSegmentSwitcher = () => {
   return (
     <>
       <div className="flex items-center gap-x-1">
-        <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tabs.List>
-            <Tabs.Trigger value={ALL_VALUE}>{t('dashboard.presets.all')}</Tabs.Trigger>
-            {segmentPresets.map((preset) => (
-              <Tabs.Trigger key={preset.id} value={preset.id}>
-                {preset.name}
-              </Tabs.Trigger>
-            ))}
-          </Tabs.List>
-        </Tabs>
+        <div className="[&_[role=tablist]]:mb-0">
+          <Tabs value={tabValue} onChange={handleTabChange}>
+            <Tabs.List>
+              <Tabs.Trigger value={ALL_VALUE}>{t('dashboard.presets.all')}</Tabs.Trigger>
+              {segmentPresets.map((preset) => (
+                <Tabs.Trigger key={preset.id} value={preset.id}>
+                  {preset.name}
+                </Tabs.Trigger>
+              ))}
+            </Tabs.List>
+          </Tabs>
+        </div>
 
         {hasOverflow ? (
           <Popover open={overflowOpen} align="end" side="bottom" onToggle={setOverflowOpen}>
