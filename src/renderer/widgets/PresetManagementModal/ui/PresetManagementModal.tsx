@@ -63,7 +63,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   const resetEditor = useCallback(() => {
     setSelectedId(null);
     setEditName('');
-    setEditType('filter');
+    setEditType('custom');
     setEditFilters(EMPTY_FILTERS);
     setEditSelectedIds([]);
   }, []);
@@ -205,14 +205,14 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
           <div className="flex min-w-0 flex-1 flex-col gap-y-4 overflow-y-auto px-5 py-4">
             <div className="flex gap-x-2">
               <TypeChip
-                active={editType === 'filter'}
-                label={t('dashboard.presets.modal.typeFilter')}
-                onClick={() => setEditType('filter')}
-              />
-              <TypeChip
                 active={editType === 'custom'}
                 label={t('dashboard.presets.modal.typeCustom')}
                 onClick={() => setEditType('custom')}
+              />
+              <TypeChip
+                active={editType === 'filter'}
+                label={t('dashboard.presets.modal.typeFilter')}
+                onClick={() => setEditType('filter')}
               />
             </div>
 
