@@ -139,12 +139,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
     const deletedIndex = presets.findIndex((p) => p.id === selectedId);
     dashboardPresetsModel.presetDeleted(selectedId);
 
-    toast.success(t('dashboard.presets.modal.deletedToast', { name: deletedPreset.name }), {
-      action: {
-        label: t('general.button.undoButton'),
-        onClick: () => dashboardPresetsModel.presetRestored({ preset: deletedPreset, index: deletedIndex }),
-      },
-    });
+    toast.success(t('dashboard.presets.modal.deletedToast', { name: deletedPreset.name }));
 
     const remaining = presets.filter((p) => p.id !== selectedId);
     if (remaining.length > 0) {
@@ -160,7 +155,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   const canSave = editName.trim().length > 0 && (editType === 'filter' || editSelectedIds.length > 0);
 
   return (
-    <Modal isOpen={isOpen} size="lg" preventOutsideClick onToggle={(open) => !open && onClose()}>
+    <Modal isOpen={isOpen} size="lg" onToggle={(open) => !open && onClose()}>
       <Modal.Title close>{t('dashboard.presets.modal.title')}</Modal.Title>
       <Modal.Content disableScroll>
         <div className="flex h-full min-h-[400px]">
@@ -182,24 +177,25 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
                     />
                   );
                 })}
+
+                <button
+                  type="button"
+                  className={cnTw(
+                    'flex w-full items-center gap-x-1.5 py-2.5 pl-7 text-footnote transition-all duration-150',
+                    isNewPreset
+                      ? 'bg-primary-button-background-default/8 font-semibold text-text-primary shadow-[inset_3px_0_0_0] shadow-icon-accent'
+                      : 'text-icon-accent hover:bg-action-background-hover',
+                  )}
+                  onClick={resetEditor}
+                >
+                  {/* eslint-disable-next-line i18next/no-literal-string */}
+                  <span className="text-base leading-none">+</span>
+                  <FootnoteText as="span" className="text-inherit">
+                    {t('dashboard.presets.modal.newPreset')}
+                  </FootnoteText>
+                </button>
               </div>
             </DragDropProvider>
-
-            <div className="border-t border-divider p-2">
-              <button
-                type="button"
-                className={cnTw(
-                  'flex w-full items-center justify-center gap-x-1.5 rounded px-3 py-1.5 text-footnote transition-colors hover:bg-action-background-hover',
-                  isNewPreset ? 'bg-icon-accent text-white' : 'text-icon-accent',
-                )}
-                onClick={resetEditor}
-              >
-                <span className="text-base leading-none">+</span>
-                <FootnoteText as="span" className="text-inherit">
-                  {t('dashboard.presets.modal.newPreset')}
-                </FootnoteText>
-              </button>
-            </div>
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col gap-y-4 overflow-y-auto px-5 py-4">
