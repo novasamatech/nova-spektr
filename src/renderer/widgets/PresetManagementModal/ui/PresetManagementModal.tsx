@@ -6,7 +6,7 @@ import { type ComponentProps, useCallback, useEffect, useMemo, useRef, useState 
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Button, FootnoteText } from '@/shared/ui';
+import { Button, FootnoteText, Icon } from '@/shared/ui';
 import { ConfirmModal, Modal, useNotification } from '@/shared/ui-kit';
 import {
   type PresetFilterCriteria,
@@ -241,9 +241,14 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
         <Modal.Footer align="between">
           <div>
             {!isNewPreset && (
-              <Button size="sm" variant="text" pallet="error" onClick={() => setConfirmDeleteOpen(true)}>
+              <button
+                type="button"
+                className="flex items-center gap-x-1.5 rounded px-2 py-1.5 text-footnote text-text-tertiary transition-colors hover:bg-action-background-hover hover:text-text-negative"
+                onClick={() => setConfirmDeleteOpen(true)}
+              >
+                <Icon name="delete" size={14} />
                 {t('dashboard.presets.modal.delete')}
-              </Button>
+              </button>
             )}
           </div>
           <Button size="sm" variant="fill" pallet="primary" disabled={!canSave} onClick={handleSave}>
@@ -295,8 +300,10 @@ const SortablePresetItem = ({ id, index, name, isSelected, onClick }: SortablePr
       <div
         ref={handleRef}
         className={cnTw(
-          'flex shrink-0 cursor-grab items-center px-1.5 py-2.5 opacity-0 transition-opacity active:cursor-grabbing',
-          isSelected ? 'text-icon-accent group-hover:opacity-60' : 'text-icon-default group-hover:opacity-40',
+          'flex shrink-0 cursor-grab items-center px-1.5 py-2.5 transition-opacity active:cursor-grabbing',
+          isSelected
+            ? 'text-icon-accent opacity-50 group-hover:opacity-80'
+            : 'text-icon-default opacity-30 group-hover:opacity-60',
         )}
       >
         <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
