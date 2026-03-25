@@ -16,6 +16,7 @@ import { callDataExecuteFeature } from '@/features/call-data-execute';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { dashboardNavigationFeature } from '@/features/dashboard-navigation';
 import { dashboardPortfolioOverviewFeature } from '@/features/dashboard-portfolio-overview';
+import { dashboardPresetsFeature } from '@/features/dashboard-presets';
 import { dashboardPriceChartsFeature } from '@/features/dashboard-price-charts';
 import { dashboardStakingFeature } from '@/features/dashboard-staking';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
@@ -68,6 +69,7 @@ export const bootstrap = () => {
     config,
 
     dashboardNavigationFeature,
+    dashboardPresetsFeature,
     dashboardPortfolioOverviewFeature,
     dashboardPriceChartsFeature,
     dashboardStakingFeature,
