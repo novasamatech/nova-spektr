@@ -3,7 +3,7 @@ import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance, toAddress, truncate } from '@/shared/lib/utils';
-import { FootnoteText, Icon, IconButton, InfoLink, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Copy, Modal } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
@@ -147,11 +147,13 @@ const RfcDetails = ({ proposal }: { proposal: RfcProposal }) => {
           {`#${proposal.pullRequest}`}
         </InfoLink>
       </div>
-      <div className="flex items-center">
+      <div className="flex items-center gap-x-1">
         <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.documentHash')}</FootnoteText>
         <FootnoteText className="ml-auto text-text-tertiary">{truncate(proposal.documentHash, 7, 7)}</FootnoteText>
         <Copy value={proposal.documentHash} notification={t('fellowship.onChainData.documentHashCopied')}>
-          <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
+          <button type="button" className="shrink-0 cursor-pointer text-icon-default hover:text-icon-hover">
+            <Icon name="copy" size={16} />
+          </button>
         </Copy>
       </div>
     </>
