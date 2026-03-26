@@ -1,4 +1,4 @@
-import { capitalize } from 'lodash';
+import { upperFirst } from 'lodash';
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -16,7 +16,6 @@ import {
   type UnknownProposal,
   type WhitelistProposal,
   referendumService,
-  trackService,
   useTracks,
 } from '@/domains/collectives';
 import { useFellowshipApi, useFellowshipAsset, useFellowshipChain } from '@/aggregates/fellowship-network';
@@ -37,19 +36,13 @@ export const OnChainData = memo(({ referendum }: Props) => {
   const track = tracks.find(tr => tr.id === referendum.track);
   const isWhitelist = referendum.proposal && referendumService.isWhitelistProposal(referendum.proposal);
 
-  const referendumType = useMemo(() => {
-    if (trackService.isPromotionTrack(referendum.track)) {
-      return t('fellowship.voting.confirmation.promotionTrack');
-    }
-    if (trackService.isRetentionTrack(referendum.track)) {
-      return t('fellowship.voting.confirmation.retentionTrack');
-    }
+  const trackName = useMemo(() => {
     if (track) {
-      return capitalize(track.name);
+      return upperFirst(track.name);
     }
 
     return null;
-  }, [referendum.track, track, t]);
+  }, [track]);
 
   return (
     <Card>
@@ -57,13 +50,13 @@ export const OnChainData = memo(({ referendum }: Props) => {
         <SmallTitleText>{t('fellowship.onChainData.title')}</SmallTitleText>
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.origin')}</FootnoteText>
-            <FootnoteText>{referendum.origin}</FootnoteText>
+            <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.referendumId')}</FootnoteText>
+            <FootnoteText>{`#${referendum.id}`}</FootnoteText>
           </div>
-          {referendumType && (
+          {trackName && (
             <div className="flex items-center justify-between">
               <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.call')}</FootnoteText>
-              <FootnoteText>{referendumType}</FootnoteText>
+              <FootnoteText>{trackName}</FootnoteText>
             </div>
           )}
           {referendum.proposal ? (
@@ -106,7 +99,15 @@ const ProposalDetails = ({ proposal }: { proposal: Proposal }) => {
     return <UnknownDetails proposal={proposal} />;
   }
 
-  return null;
+  return <ParseFailed />;
+};
+
+const ParseFailed = () => {
+  const { t } = useI18n();
+
+  return (
+    <FootnoteText className="mt-2 text-text-tertiary">{t('fellowship.onChainData.proposalParseFailed')}</FootnoteText>
+  );
 };
 
 const EvidenceDetails = ({ proposal }: { proposal: EvidenceProposal }) => {
