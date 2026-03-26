@@ -111,7 +111,7 @@ export const HiddenWalletsModal = () => {
               key={type}
               walletType={type}
               wallets={wallets ?? []}
-              selectedWallets={selectionState.selectedWallets}
+              selectedWalletIds={selectionState.selectedWalletIds}
               onGroupToggle={hiddenWalletsModel.toggleGroupSelection}
               onWalletToggle={hiddenWalletsModel.toggleWalletSelection}
             />
