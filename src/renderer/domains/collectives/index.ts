@@ -17,6 +17,7 @@ export type {
   KilledReferendum,
   OngoingReferendum,
   Proposal,
+  ProposalCallData,
   Referendum,
   RejectedReferendum,
   RfcProposal,

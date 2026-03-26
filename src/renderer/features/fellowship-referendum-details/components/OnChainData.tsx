@@ -11,6 +11,7 @@ import {
   type EvidenceProposal,
   type OngoingReferendum,
   type Proposal,
+  type ProposalCallData,
   type RfcProposal,
   type SpendProposal,
   type UnknownProposal,
@@ -80,11 +81,21 @@ export const OnChainData = memo(({ referendum }: Props) => {
 
 const ProposalDetails = ({ proposal }: { proposal: Proposal }) => {
   if (referendumService.isEvidenceProposal(proposal)) {
-    return <EvidenceDetails proposal={proposal} />;
+    return (
+      <>
+        <EvidenceDetails proposal={proposal} />
+        {proposal.callData && <CallDataDetails callData={proposal.callData} />}
+      </>
+    );
   }
 
   if (referendumService.isRfcProposal(proposal)) {
-    return <RfcDetails proposal={proposal} />;
+    return (
+      <>
+        <RfcDetails proposal={proposal} />
+        {proposal.callData && <CallDataDetails callData={proposal.callData} />}
+      </>
+    );
   }
 
   if (referendumService.isWhitelistProposal(proposal)) {
@@ -92,11 +103,21 @@ const ProposalDetails = ({ proposal }: { proposal: Proposal }) => {
   }
 
   if (referendumService.isSpendProposal(proposal)) {
-    return <SpendDetails proposal={proposal} />;
+    return (
+      <>
+        <SpendDetails proposal={proposal} />
+        {proposal.callData && <CallDataDetails callData={proposal.callData} />}
+      </>
+    );
   }
 
   if (referendumService.isUnknownProposal(proposal)) {
-    return <UnknownDetails proposal={proposal} />;
+    return (
+      <>
+        <UnknownDetails proposal={proposal} />
+        {proposal.callData && <CallDataDetails callData={proposal.callData} />}
+      </>
+    );
   }
 
   return <ParseFailed />;
@@ -165,20 +186,26 @@ const InteractionStyle =
   'rounded-sm hover:bg-action-background-hover hover:text-text-primary cursor-pointer py-[3px] px-2 -mr-2';
 
 const WhitelistDetails = ({ proposal }: { proposal: WhitelistProposal }) => {
+  if (!proposal.callData) return null;
+
+  return <CallDataDetails callData={proposal.callData} />;
+};
+
+const CallDataDetails = ({ callData }: { callData: NonNullable<ProposalCallData['callData']> }) => {
   const { t } = useI18n();
   const chain = useFellowshipChain();
 
   const decodeUrl = chain?.nodes[0]
-    ? `https://polkadot.js.org/apps/?rpc=${encodeURIComponent(chain.nodes[0].url)}#/extrinsics/decode/${encodeURIComponent(proposal.proposalHex)}`
+    ? `https://polkadot.js.org/apps/?rpc=${encodeURIComponent(chain.nodes[0].url)}#/extrinsics/decode/${encodeURIComponent(callData.hex)}`
     : null;
 
   return (
     <>
       <div className="flex items-center justify-between">
         <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.callHash')}</FootnoteText>
-        <Copy value={proposal.proposalHash} notification={t('fellowship.onChainData.callHashCopied')}>
+        <Copy value={callData.hash} notification={t('fellowship.onChainData.callHashCopied')}>
           <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
-            <FootnoteText className="text-inherit">{truncate(proposal.proposalHash, 7, 7)}</FootnoteText>
+            <FootnoteText className="text-inherit">{truncate(callData.hash, 7, 7)}</FootnoteText>
             <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
           </button>
         </Copy>
@@ -186,9 +213,9 @@ const WhitelistDetails = ({ proposal }: { proposal: WhitelistProposal }) => {
       <div className="flex items-center justify-between">
         <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.callData')}</FootnoteText>
         <div className="flex items-center gap-1">
-          <Copy value={proposal.proposalHex} notification={t('fellowship.onChainData.callDataCopied')}>
+          <Copy value={callData.hex} notification={t('fellowship.onChainData.callDataCopied')}>
             <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
-              <FootnoteText className="text-inherit">{truncate(proposal.proposalHex, 7, 8)}</FootnoteText>
+              <FootnoteText className="text-inherit">{truncate(callData.hex, 7, 8)}</FootnoteText>
               <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
             </button>
           </Copy>
@@ -201,7 +228,7 @@ const WhitelistDetails = ({ proposal }: { proposal: WhitelistProposal }) => {
             <Modal.Title close>{t('fellowship.onChainData.viewJson')}</Modal.Title>
             <Modal.Content>
               <Box padding={5}>
-                <JsonArgs value={proposal.proposalJSON} />
+                <JsonArgs value={callData.json} />
               </Box>
             </Modal.Content>
           </Modal>
