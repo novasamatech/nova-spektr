@@ -8,7 +8,6 @@ import { getAssetById, nullable, toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { proxyUtils } from '@/entities/proxy';
 import {
   TransactionTitle,
   findCoreTransaction,
@@ -108,7 +107,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isManageProxyTransaction(transaction) && proxyType) {
       result.push(
         <DetailRow label={t('operation.details.accessType')} className="text-text-secondary">
-          <FootnoteText className="text-text-secondary">{t(proxyUtils.getProxyTypeOperation(proxyType))}</FootnoteText>
+          <FootnoteText className="text-text-secondary">{proxyType}</FootnoteText>
         </DetailRow>,
       );
     }

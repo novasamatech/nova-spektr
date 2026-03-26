@@ -1,14 +1,15 @@
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { createSlot } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Header, IconButton, SmallTitleText } from '@/shared/ui';
 import { Tabs } from '@/shared/ui-kit';
 import { dashboardModel } from '../model/dashboard-model';
 
-import { DashboardAccountSelector } from './DashboardAccountSelector';
 import { DashboardGrid } from './DashboardGrid';
+
+export const dashboardPresetSwitcherSlot = createSlot({ name: 'dashboardPresetSwitcher' });
 
 export const dashboardWidgetsSlot = createSlot<{
   accountIds: string[];
@@ -28,7 +29,6 @@ export const Dashboard = () => {
   const selectedIds = useUnit(dashboardModel.$selectedIds);
   const activeTab = useUnit(dashboardModel.$activeTab);
   const editMode = useUnit(dashboardModel.$editMode);
-  const tabChanged = useUnit(dashboardModel.tabChanged);
   const editModeToggled = useUnit(dashboardModel.editModeToggled);
 
   const accountIds = useMemo(() => {
@@ -49,13 +49,13 @@ export const Dashboard = () => {
         {allEntries.length > 0 && (
           <div className="flex items-center gap-x-2">
             <IconButton className={editMode ? 'text-icon-accent' : ''} name="edit" onClick={editModeToggled} />
-            <DashboardAccountSelector />
+            <Slot id={dashboardPresetSwitcherSlot} />
           </div>
         )}
       </Header>
 
       <div className="flex min-h-0 flex-1 flex-col px-4">
-        <Tabs value={activeTab} onChange={tabChanged}>
+        <Tabs value={activeTab} onChange={dashboardModel.tabChanged}>
           <div className="w-fit">
             <Tabs.List>
               {TABS.map((tab) => (

@@ -62,7 +62,7 @@ export { RewardsDestination } from './types/stake';
 export type { Stake, Unlocking } from './types/stake';
 
 export type { PartialProxiedAccount, PartialProxyAccount, ProxyAccount, ProxyType } from './types/proxy';
-export { ProxyVariant } from './types/proxy';
+export { ProxyTypeOrder, ProxyTypes, ProxyVariant } from './types/proxy';
 
 export type {
   CreateFlexibleMultisigOperationParams,

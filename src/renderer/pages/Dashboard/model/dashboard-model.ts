@@ -1,9 +1,11 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore } from 'effector';
 import { persist } from 'effector-storage/local';
 
 import { type ID, type WalletType } from '@/shared/core';
+import { type ContactTag } from '@/shared/core/types/contact';
 import { contactModel } from '@/entities/contact';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { type PresetFilterCriteria, dashboardPresetsModel } from '@/aggregates/dashboard-presets';
 
 type DashboardEntry = {
   id: string;
@@ -14,11 +16,27 @@ type DashboardEntry = {
   walletId?: ID;
   walletName?: string;
   walletType?: WalletType;
+  entityNames?: string[];
+  categoryName?: string | null;
+  tags?: ContactTag[];
 };
 
-const selectionChanged = createEvent<string[]>();
-const selectAll = createEvent();
-const deselectAll = createEvent();
+function applyPresetFilter(filters: PresetFilterCriteria, entries: DashboardEntry[]): DashboardEntry[] {
+  const { sources, entityNames, categoryNames, tags } = filters;
+
+  return entries.filter(
+    (entry) =>
+      (sources.length === 0 || sources.includes(entry.source)) &&
+      (entityNames.length === 0 || (entry.entityNames?.some((e) => entityNames.includes(e)) ?? false)) &&
+      (categoryNames.length === 0 || (entry.categoryName != null && categoryNames.includes(entry.categoryName))) &&
+      (tags.length === 0 ||
+        tags.every(
+          (t) =>
+            entry.tags?.some((et) => et.tagName === t.tagName && t.values.some((v) => et.values.includes(v))) ?? false,
+        )),
+  );
+}
+
 const tabChanged = createEvent<string>();
 const widgetOrderChanged = createEvent<{ tab: string; order: string[] }>();
 const editModeToggled = createEvent();
@@ -32,14 +50,6 @@ persist({ store: $widgetOrder, key: 'dashboard-widget-order', sync: true });
 $widgetOrder.on(widgetOrderChanged, (state, { tab, order }) => ({ ...state, [tab]: order }));
 
 $activeTab.on(tabChanged, (_, tab) => tab);
-
-const $initialized = createStore(false);
-
-persist({ store: $initialized, key: 'dashboard-initialized' });
-
-const $selectedIds = createStore<string[]>([]);
-
-persist({ store: $selectedIds, key: 'dashboard-selected-ids' });
 
 const $accountsWithWallets = combine(walletModel.$availableAccounts, walletModel.$wallets, (accounts, wallets) => ({
   accounts,
@@ -89,6 +99,9 @@ const $allEntries = combine(
         address: contact.address,
         accountId: contact.accountId,
         source: 'backend-contact',
+        entityNames: contact.entityNames,
+        categoryName: contact.categoryName,
+        tags: contact.tags,
       });
     }
 
@@ -96,18 +109,29 @@ const $allEntries = combine(
   },
 );
 
-const $validSelectedIds = combine($selectedIds, $allEntries, (selectedIds, entries) => {
-  const entryIds = new Set(entries.map((e) => e.id));
-  const validIds = new Set(selectedIds.filter((id) => entryIds.has(id)));
+const $matchedEntries = combine(dashboardPresetsModel.$activePreset, $allEntries, (preset, entries) => {
+  if (!preset) return entries;
 
-  // Expand selection to all entries sharing an accountId with any selected entry
+  if (preset.type === 'custom') {
+    const selected = new Set(preset.selectedIds);
+    return entries.filter((e) => selected.has(e.id));
+  }
+
+  return applyPresetFilter(preset.filters, entries);
+});
+
+const $validSelectedIds = combine($matchedEntries, $allEntries, (matchedEntries, allEntries) => {
+  const matchedIds = new Set(matchedEntries.map((e) => e.id));
+
   const selectedAccountIds = new Set<string>();
-  for (const entry of entries) {
-    if (validIds.has(entry.id)) {
+  for (const entry of allEntries) {
+    if (matchedIds.has(entry.id)) {
       selectedAccountIds.add(entry.accountId);
     }
   }
-  for (const entry of entries) {
+
+  const validIds = new Set<string>();
+  for (const entry of allEntries) {
     if (selectedAccountIds.has(entry.accountId)) {
       validIds.add(entry.id);
     }
@@ -128,35 +152,6 @@ const $selectedContactAccountIds = combine($validSelectedIds, contactModel.$cont
   return contacts.filter((c) => idSet.has(c.id)).map((c) => c.accountId);
 });
 
-// Auto-select all on first visit
-const autoSelectAll = sample({
-  clock: $allEntries,
-  source: $initialized,
-  filter: (isInit, entries) => !isInit && entries.length > 0,
-  fn: (_, entries) => entries.map((e) => e.id),
-});
-
-$selectedIds.on(autoSelectAll, (_, ids) => ids);
-$initialized.on(autoSelectAll, () => true);
-
-sample({
-  clock: selectionChanged,
-  target: $selectedIds,
-});
-
-sample({
-  clock: selectAll,
-  source: $allEntries,
-  fn: (entries) => entries.map((e) => e.id),
-  target: $selectedIds,
-});
-
-sample({
-  clock: deselectAll,
-  fn: () => [],
-  target: $selectedIds,
-});
-
 export const dashboardModel = {
   $allEntries,
   $selectedIds: $validSelectedIds,
@@ -165,13 +160,10 @@ export const dashboardModel = {
   $activeTab,
   $widgetOrder,
   $editMode,
-
-  selectionChanged,
-  selectAll,
-  deselectAll,
   tabChanged,
   widgetOrderChanged,
   editModeToggled,
 };
 
+export { applyPresetFilter };
 export type { DashboardEntry };

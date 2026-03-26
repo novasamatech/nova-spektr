@@ -35,7 +35,6 @@ import { submitModel } from '@/features/operations/OperationSubmit';
 import { Step } from '../lib/types';
 
 import { type ConfirmInput, confirmModel } from './confirm';
-import { callDataExecuteFeature } from './feature';
 
 type FormData = {
   chain: Chain | null;
@@ -188,7 +187,6 @@ sample({
 });
 
 const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
-  active: callDataExecuteFeature.isRunning,
   extrinsic: $wrappedExtrinsic,
 });
 

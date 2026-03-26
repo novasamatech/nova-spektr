@@ -1,6 +1,9 @@
 import { allSettled, fork } from 'effector';
 import { vi } from 'vitest';
 
+import { type BackendContact, type LocalContact } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
+import { contactModel } from '@/entities/contact';
 import { walletModel } from '@/entities/wallet';
 import { renameWalletModel } from '../rename-wallet-model';
 
@@ -14,7 +17,22 @@ vi.mock('@walletconnect/sign-client', () => ({
   Client: {},
 }));
 
-describe('entities/wallet/model/wallet-model', () => {
+vi.mock('@/shared/api/storage', async (importOriginal) => {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+  const actual = await importOriginal<typeof import('@/shared/api/storage')>();
+
+  return {
+    ...actual,
+    storageService: {
+      contacts: {
+        insertAll: vi.fn().mockResolvedValue(undefined),
+        updateAll: vi.fn().mockResolvedValue(undefined),
+      },
+    },
+  };
+});
+
+describe('features/wallets/RenameWallet/model/rename-wallet-model', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -32,26 +50,53 @@ describe('entities/wallet/model/wallet-model', () => {
     expect(scope.getState(renameWalletModel.$walletForm.$isValid)).toEqual(false);
   });
 
-  // test('should updated wallet name after form submit', async () => {
-  //   const newName = 'New wallet name';
-  //   const updatedWallet = {
-  //     ...walletMock.wallet1,
-  //     name: newName,
-  //     accounts: [createVaultBaseAccount('1', { walletId: 1, name: 'New wallet name' })],
-  //   };
+  test('should not modify backend contacts when renaming wallet', async () => {
+    const wallet = walletMock.wallet1;
+    const walletAccount = wallet.accounts[0]!;
 
-  //   jest.spyOn(storageService.wallets, 'update').mockResolvedValue(updatedWallet.id);
+    const backendContact: BackendContact = {
+      id: 'backend-1',
+      name: 'External Name',
+      address: toAddress(walletAccount.accountId),
+      accountId: walletAccount.accountId,
+      source: 'backend',
+      entityNames: [],
+      chainId: null,
+      chainName: null,
+      categoryName: null,
+      contactTypeName: null,
+      derivationPath: null,
+      ownerAccountId: null,
+      signatories: null,
+      threshold: null,
+      tags: [],
+    };
 
-  //   const scope = fork({
-  //     values: new Map()
-  //       .set(walletModel.__test.$rawWallets, [walletMock.wallet1])
-  //       .set(networkDomain.accounts.__test.$list, walletMock.wallet1.accounts.concat(walletMock.wallet2.accounts)),
-  //   });
+    const scope = fork({
+      values: [[contactModel.$contacts, [backendContact]]],
+    });
 
-  //   await allSettled(renameWalletModel.events.formInitiated, { scope, params: walletMock.wallet1 });
-  //   await allSettled(renameWalletModel.$walletForm.fields.name.change, { scope, params: newName });
-  //   await allSettled(renameWalletModel.$walletForm.submit, { scope });
+    // Directly call the sync effect with only local contacts (empty, since we only have backend)
+    // This simulates what happens after the source store change from $contacts to $localContacts
+    await allSettled(renameWalletModel.__test.syncContactsOnWalletRenameFx, {
+      scope,
+      params: {
+        wallet: { ...wallet, name: 'New Wallet Name' },
+        existingContacts: [] as LocalContact[], // No local contacts — simulates $localContacts filtering
+        allAccounts: wallet.accounts,
+      },
+    });
 
-  //   expect(scope.getState(walletModel.$allWallets)).toEqual([updatedWallet]);
-  // });
+    const contacts = scope.getState(contactModel.$contacts);
+    const backendContacts = contacts.filter((c) => c.source === 'backend');
+    const localContacts = contacts.filter((c) => c.source === 'local');
+
+    // Backend contact must remain unchanged
+    expect(backendContacts).toHaveLength(1);
+    expect(backendContacts[0]!.name).toBe('External Name');
+
+    // A new local contact should be created instead of modifying the backend one
+    expect(localContacts).toHaveLength(1);
+    expect(localContacts[0]!.name).toBe('New Wallet Name');
+  });
 });
