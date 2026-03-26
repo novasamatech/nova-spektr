@@ -3,7 +3,7 @@ import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance, toAddress, truncate } from '@/shared/lib/utils';
-import { FootnoteText, Icon, IconButton, InfoLink, TitleText } from '@/shared/ui';
+import { FootnoteText, Icon, IconButton, InfoLink, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Copy, Modal } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
@@ -54,7 +54,7 @@ export const OnChainData = memo(({ referendum }: Props) => {
   return (
     <Card>
       <Box padding={6} gap={4}>
-        <TitleText>{t('fellowship.onChainData.title')}</TitleText>
+        <SmallTitleText>{t('fellowship.onChainData.title')}</SmallTitleText>
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.origin')}</FootnoteText>
@@ -117,10 +117,10 @@ const EvidenceDetails = ({ proposal }: { proposal: EvidenceProposal }) => {
     <>
       <div className="flex items-center justify-between">
         <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.member')}</FootnoteText>
-        <div className="max-w-[60%]">
+        <div className="ml-auto max-w-[60%]">
           <Address
             address={toAddress(proposal.accountId, { prefix: chain?.addressPrefix })}
-            variant="truncate"
+            variant="short"
             showIcon
             iconSize={16}
           />
@@ -171,11 +171,13 @@ const WhitelistDetails = ({ proposal }: { proposal: WhitelistProposal }) => {
 
   return (
     <>
-      <div className="flex items-center">
+      <div className="flex items-center justify-between">
         <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.callHash')}</FootnoteText>
-        <FootnoteText className="ml-auto text-text-tertiary">{truncate(proposal.proposalHash, 7, 7)}</FootnoteText>
         <Copy value={proposal.proposalHash} notification={t('fellowship.onChainData.callHashCopied')}>
-          <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
+          <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
+            <FootnoteText className="text-inherit">{truncate(proposal.proposalHash, 7, 7)}</FootnoteText>
+            <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
+          </button>
         </Copy>
       </div>
       <div className="flex items-center justify-between">
