@@ -40,10 +40,11 @@ const $input = combine(
   {
     apis: $debouncedApis,
     chains: networkModel.$chains,
+    connections: networkModel.$connections,
     accounts: accounts.$list,
     notificationsReady: $notificationsReady, // initialize notifications binding
   },
-  ({ apis, chains, accounts }) => {
+  ({ apis, chains, connections, accounts }) => {
     const multisigs = accounts.filter(accountUtils.isAnyMultisigAccount);
     if (multisigs.length === 0) return null;
 
@@ -61,7 +62,11 @@ const $input = combine(
       }
     }
 
-    const uniqueChains = uniqBy(availableChains, 'chainId');
+    const uniqueChains = uniqBy(availableChains, 'chainId').filter(chain => {
+      const connection = connections[chain.chainId];
+
+      return !connection || networkUtils.isEnabledConnection(connection);
+    });
     const availableApis: Record<ChainId, ApiPromise> = {};
 
     for (const chain of uniqueChains) {

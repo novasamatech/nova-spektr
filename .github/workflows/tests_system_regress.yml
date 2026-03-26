@@ -16,7 +16,7 @@ on:
       - 'dev'
   pull_request:
     paths:
-      - 'tests/**'
+      - 'tests/system/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

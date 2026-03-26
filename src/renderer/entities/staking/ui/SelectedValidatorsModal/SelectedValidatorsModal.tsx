@@ -4,7 +4,8 @@ import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Modal } from '@/shared/ui-kit';
 import { type AccountIdentity } from '@/domains/network';
-import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';
+// eslint-disable-next-line boundaries/element-types
+import { ValidatorsTable } from '@/widgets/validators-table';
 
 type Props = {
   isOpen: boolean;

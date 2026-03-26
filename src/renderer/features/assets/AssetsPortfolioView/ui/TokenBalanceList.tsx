@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo, useMemo } from 'react';
+import { type MouseEvent, memo, useMemo } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type AssetByChains } from '@/shared/core';
@@ -7,9 +7,9 @@ import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, IconButton } from '@/shared/ui';
 import { AssetIcon } from '@/shared/ui-entities';
 import { CardStack } from '@/shared/ui-kit';
-import { TokenPrice } from '@/entities/price';
 import { CheckPermission, OperationType } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { TokenPrice } from '@/widgets/price';
 import { tokensService } from '../lib/tokensService';
 import { portfolioModel } from '../model/portfolio-model';
 
@@ -26,12 +26,12 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
 
   const wallet = useUnit(walletSelect.$selectedWallet);
 
-  const handleSend = (e: React.MouseEvent) => {
+  const handleSend = (e: MouseEvent) => {
     e.stopPropagation();
     portfolioModel.events.transferStarted(asset);
   };
 
-  const handleReceive = (e: React.MouseEvent) => {
+  const handleReceive = (e: MouseEvent) => {
     e.stopPropagation();
     portfolioModel.events.receiveStarted(asset);
   };

@@ -11,9 +11,9 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { basketUtils } from '@/entities/basket';
 import { BalanceDiff } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
-import { AssetFiatBalance } from '@/entities/price';
-import { FeeWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { AssetFiatBalance } from '@/widgets/price';
+import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { unlockConfirmModel } from '../model/unlockConfirm';
 

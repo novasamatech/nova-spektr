@@ -3,9 +3,9 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, toAddress } from '@/shared/lib/utils';
-import { BaseModal, Button, InputHint } from '@/shared/ui';
+import { Button, InputHint } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
-import { Field, Input } from '@/shared/ui-kit';
+import { Field, Input, Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { networkSelectorModel } from '@/features/governance';
 import { DelegationErrorMessages } from '../common/constants';
@@ -31,37 +31,36 @@ export const AddCustomDelegationModel = () => {
   );
 
   return (
-    <BaseModal
-      closeButton
-      headerClass="px-5 py-3"
-      panelClass="flex flex-col w-modal bg-white"
-      contentClass="min-h-0 h-full w-full py-4"
-      isOpen={isModalOpen}
-      title={
-        chain && <OperationTitle title={t('governance.addDelegation.customDelegationTitle')} chainId={chain.chainId} />
-      }
-      onClose={closeModal}
-    >
-      <div className="px-5 pb-4">
-        <Field text={t('governance.addDelegation.customDelegationLabel')}>
-          <Input
-            placeholder={t('governance.addDelegation.customDelegationPlaceholder')}
-            invalid={!!customDelegate && !!error}
-            value={customDelegate}
-            prefixElement={prefixElement}
-            onChange={delegationModel.events.customDelegateChanged}
-          />
-          <InputHint variant="error" active={!!customDelegate && !!error}>
-            {error && t(DelegationErrorMessages[error])}
-          </InputHint>
-        </Field>
-      </div>
+    <Modal size="md" isOpen={isModalOpen} onToggle={(open) => !open && closeModal()}>
+      <Modal.Title close>
+        {chain && (
+          <OperationTitle title={t('governance.addDelegation.customDelegationTitle')} chainId={chain.chainId} />
+        )}
+      </Modal.Title>
+      <Modal.Content>
+        <div className="py-4">
+          <div className="px-5 pb-4">
+            <Field text={t('governance.addDelegation.customDelegationLabel')}>
+              <Input
+                placeholder={t('governance.addDelegation.customDelegationPlaceholder')}
+                invalid={!!customDelegate && !!error}
+                value={customDelegate}
+                prefixElement={prefixElement}
+                onChange={delegationModel.events.customDelegateChanged}
+              />
+              <InputHint variant="error" active={!!customDelegate && !!error}>
+                {error && t(DelegationErrorMessages[error])}
+              </InputHint>
+            </Field>
+          </div>
 
-      <div className="flex justify-end px-5 pt-3">
-        <Button disabled={!!error} onClick={() => delegationModel.events.createCustomDelegate()}>
-          {t('signing.continueButton')}
-        </Button>
-      </div>
-    </BaseModal>
+          <div className="flex justify-end px-5 pt-3">
+            <Button disabled={!!error} onClick={() => delegationModel.events.createCustomDelegate()}>
+              {t('signing.continueButton')}
+            </Button>
+          </div>
+        </div>
+      </Modal.Content>
+    </Modal>
   );
 };

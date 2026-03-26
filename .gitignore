@@ -40,4 +40,6 @@ schema.graphql
 allure-results
 
 .cursor
-CLAUDE.md
+# Superpowers brainstorming artifacts
+.superpowers/
+docs/superpowers/

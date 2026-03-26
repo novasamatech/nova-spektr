@@ -692,12 +692,13 @@ const $availableBalance = combine(
 );
 
 sample({
-  clock: setMaxMode.filter({ fn: (enabled) => enabled }),
+  clock: [setMaxMode.filter({ fn: (enabled) => enabled }), $balancePreservationStrategy],
   source: {
     balance: $availableBalance,
     balancePreservationStrategy: $balancePreservationStrategy,
+    isMaxModeEnabled: $isMaxModeEnabled,
   },
-  filter: ({ balance }) => nonNullable(balance),
+  filter: ({ balance, isMaxModeEnabled }) => nonNullable(balance) && isMaxModeEnabled,
   fn: ({ balance, balancePreservationStrategy }) =>
     balanceService.withdrawableAmount(balance!, balancePreservationStrategy),
   target: $maxModeAvailableBalanceAfterFees,

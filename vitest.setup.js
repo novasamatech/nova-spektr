@@ -1,19 +1,24 @@
 import '@testing-library/jest-dom/vitest';
+import 'allure-vitest/setup';
 import 'fake-indexeddb/auto';
 
 import { default as crypto } from 'crypto';
 import { TextDecoder, TextEncoder } from 'util';
 
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  disconnect: vi.fn(),
-}));
+global.IntersectionObserver = vi.fn().mockImplementation(function () {
+  return {
+    observe: vi.fn(),
+    disconnect: vi.fn(),
+  };
+});
 
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  disconnect: vi.fn(),
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-}));
+global.ResizeObserver = vi.fn().mockImplementation(function () {
+  return {
+    disconnect: vi.fn(),
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+  };
+});
 
 Object.defineProperty(global, 'crypto', {
   value: {

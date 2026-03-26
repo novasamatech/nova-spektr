@@ -1,0 +1,67 @@
+name: Integration tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      ALLURE_JOB_RUN_ID:
+        type: string
+        description: ALLURE_JOB_RUN_ID service parameter. Leave blank.
+        required: false
+      ALLURE_USERNAME:
+        type: string
+        description: ALLURE_USERNAME service parameter. Leave blank.
+        required: false
+  push:
+    branches:
+      - 'dev'
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  pull-requests: write
+  checks: write
+
+env:
+  NODE_OPTIONS: "--max-old-space-size=8192"
+  CI: true
+  ALLURE_ENDPOINT: https://nova.testops.cloud/
+  ALLURE_PROJECT_ID: 1
+  ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
+  ALLURE_JOB_RUN_ID: ${{ github.event.inputs.ALLURE_JOB_RUN_ID }}
+  ALLURE_RESULTS: allure-results
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⚙️Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: Install allurectl
+        uses: allure-framework/setup-allurectl@v1
+
+      - name: 🧪 Run integration tests
+        id: vitest_tests
+        run: allurectl watch -- pnpm test:integration
+
+      - name: Create Allure testplan if missing
+        if: always()
+        run: |
+          mkdir -p .allure
+          echo '{}' > .allure/testplan.json
+
+      - name: 📄 Post results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: ./junit.xml
+          check_name: 'Integration Test Results'
+          comment_mode: 'changes'
+          github_token: ${{ secrets.GITHUB_TOKEN }}

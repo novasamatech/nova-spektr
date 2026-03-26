@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 
-import { type UserConfigFnPromise, type ViteUserConfig, mergeConfig } from 'vitest/config';
+import { type ViteUserConfig, type ViteUserConfigFnPromise, mergeConfig } from 'vitest/config';
 import { type TestSpecification, BaseSequencer } from 'vitest/node';
 
 import { folders } from './config/index.js';
@@ -16,7 +16,7 @@ const testsPriority = [
 ];
 
 class Seqencer extends BaseSequencer {
-  async sort(files: TestSpecification[]) {
+  async sort(files: TestSpecification[]): Promise<TestSpecification[]> {
     return files.sort((a, b) => {
       const ac = testsPriority.findIndex((dir) => a.moduleId.startsWith(dir));
       const bc = testsPriority.findIndex((dir) => b.moduleId.startsWith(dir));
@@ -29,12 +29,16 @@ class Seqencer extends BaseSequencer {
   }
 }
 
-const config: UserConfigFnPromise = async (options) => {
+const config: ViteUserConfigFnPromise = async (options) => {
   const base = await rendererConfig(options);
   const config: ViteUserConfig = {
     cacheDir: resolve(folders.root, 'node_modules/.cache/vitest'),
     resolve: {
       alias: {
+        // Vite 7 native tsconfigPaths does not resolve @/ aliases during Vitest's
+        // transform pass (it works in production Rolldown builds but not test runs).
+        // Explicit alias ensures @/X → src/renderer/X in all environments.
+        '@': resolve(folders.rendererRoot),
         // @polkadot/rpc-provider/mock ESM build uses deprecated `import ... assert { type: 'json' }`
         // which is a SyntaxError in Node 22+. Redirect to the CJS build which uses require() instead.
         '@polkadot/rpc-provider/mock': resolve(folders.root, 'node_modules/@polkadot/rpc-provider/cjs/mock/index.js'),
@@ -42,25 +46,26 @@ const config: UserConfigFnPromise = async (options) => {
     },
     test: {
       root: folders.root,
-      dir: folders.source,
+      dir: folders.root,
+      include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
       globals: true,
-      environmentMatchGlobs: [
-        // This list should dissapear over time, simple logic tests shouldn't depend on environment.
-        ['src/renderer/shared/lib/hooks/**/*.ts', 'happy-dom'],
-        ['src/renderer/shared/lib/utils/**/*.ts', 'happy-dom'],
-        ['src/renderer/shared/i18n/**/*.ts', 'happy-dom'],
-        ['src/renderer/shared/api/**/*.ts', 'happy-dom'],
-        ['src/renderer/domains/**/*.ts', 'happy-dom'],
-        ['src/renderer/aggregates/**/*.ts', 'happy-dom'],
-        ['src/renderer/entities/**/*.ts', 'happy-dom'],
-        ['src/renderer/features/**/*.ts', 'happy-dom'],
-        ['src/renderer/widgets/**/*.ts', 'happy-dom'],
-        ['src/renderer/pages/**/*.ts', 'happy-dom'],
-        ['**/*.tsx', 'happy-dom'],
-        ['**/*.ts', 'node'],
-      ],
+      environment: 'happy-dom',
       setupFiles: resolve(folders.root, './vitest.setup.js'),
-      reporters: ['default', 'junit'],
+      reporters: [
+        'default',
+        'junit',
+        [
+          'allure-vitest/reporter',
+          {
+            resultsDir: resolve(folders.root, './allure-results'),
+            links: {
+              issue: {
+                urlTemplate: 'https://github.com/novasamatech/nova-spektr/issues/%s',
+              },
+            },
+          },
+        ],
+      ],
       outputFile: {
         junit: resolve(folders.root, './junit.xml'),
       },

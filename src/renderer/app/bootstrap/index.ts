@@ -1,7 +1,7 @@
 import { kernelModel } from '@/shared/core';
 import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';
-import { config as collectivesConfig, trackService } from '@/domains/collectives';
+import { config as collectivesConfig, ipfsGatewayModel, trackService } from '@/domains/collectives';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -9,12 +9,16 @@ import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
-import { appCustomOperationsFeature } from '@/features/app-custom-operations';
 import { assetsSettingsModel, portfolioModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
 import { callDataExecuteFeature } from '@/features/call-data-execute';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
+import { dashboardNavigationFeature } from '@/features/dashboard-navigation';
+import { dashboardPortfolioOverviewFeature } from '@/features/dashboard-portfolio-overview';
+import { dashboardPresetsFeature } from '@/features/dashboard-presets';
+import { dashboardPriceChartsFeature } from '@/features/dashboard-price-charts';
+import { dashboardStakingFeature } from '@/features/dashboard-staking';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { multiTransferFeature } from '@/features/multi-transfer';
@@ -50,6 +54,7 @@ const populate = async () => {
   governanceMetaProvider.populate();
   portfolioModel.populate();
   balanceModel.populate();
+  ipfsGatewayModel.populate();
 
   // TODO rework as populate effects
   kernelModel.events.appStarted();
@@ -63,6 +68,11 @@ export const bootstrap = () => {
   registerFeatures([
     config,
 
+    dashboardNavigationFeature,
+    dashboardPresetsFeature,
+    dashboardPortfolioOverviewFeature,
+    dashboardPriceChartsFeature,
+    dashboardStakingFeature,
     assetsNavigationFeature,
     fellowshipNavigationFeature,
     operationsNavigationFeature,
@@ -75,7 +85,7 @@ export const bootstrap = () => {
     governanceNavigationFeature,
     vestedTransferFeature,
     multiTransferFeature,
-    appCustomOperationsFeature,
+    import('@/features/app-custom-operations').then(({ appCustomOperationsFeature }) => appCustomOperationsFeature),
 
     import('@/features/wallet-select').then(({ walletSelectFeature }) => walletSelectFeature.feature),
     import('@/features/wallet-details').then(({ walletDetailsFeature }) => walletDetailsFeature),
@@ -129,6 +139,14 @@ export const bootstrap = () => {
     import('@/features/staking-operation-details').then(({ stakingOperationDetailFeature }) => stakingOperationDetailFeature),
     import('@/features/staking-basket').then(({ stakingBasketFeature }) => stakingBasketFeature),
 
+    import('@/features/staking-unstake').then(({ stakingUnstakeFeature }) => stakingUnstakeFeature),
+    import('@/features/staking-withdraw').then(({ stakingWithdrawFeature }) => stakingWithdrawFeature),
+    import('@/features/staking-bond-extra').then(({ stakingBondExtraFeature }) => stakingBondExtraFeature),
+    import('@/features/staking-restake').then(({ stakingRestakeFeature }) => stakingRestakeFeature),
+    import('@/features/staking-payee').then(({ stakingPayeeFeature }) => stakingPayeeFeature),
+    import('@/features/staking-nominate').then(({ stakingNominateFeature }) => stakingNominateFeature),
+    import('@/features/staking-bond-nominate').then(({ stakingBondNominateFeature }) => stakingBondNominateFeature),
+
     import('@/features/flexible-operation-details').then(({ flexibleOperationDetailFeature }) => flexibleOperationDetailFeature),
 
     import('@/features/proxy-operation-details').then(({ proxyOperationDetailFeature }) => proxyOperationDetailFeature),
@@ -140,6 +158,7 @@ export const bootstrap = () => {
     import('@/features/import-db').then(({ importDBFeature }) => importDBFeature),
     import('@/features/hidden-wallets').then(({ hiddenWalletsFeature }) => hiddenWalletsFeature),
     import('@/features/notifications').then(({ notificationsSettingsFeature }) => notificationsSettingsFeature),
+    import('@/features/currency').then(({ currencyFeature }) => currencyFeature),
 
     import('@/features/fellowship-promotion').then(({ fellowshipPromotionFeature }) => fellowshipPromotionFeature),
     import('@/features/fellowship-retention').then(({ fellowshipRetentionFeature }) => fellowshipRetentionFeature),

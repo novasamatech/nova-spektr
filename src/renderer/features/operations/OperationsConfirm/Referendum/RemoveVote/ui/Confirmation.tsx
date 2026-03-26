@@ -14,10 +14,10 @@ import {
   votingService,
 } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
-import { FeeWithDataLoading } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { getLocksForAccount, lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
+import { FeeWithDataLoading } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 

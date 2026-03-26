@@ -11,6 +11,7 @@ import {
   type ProxiedWallet,
   AccountType,
   CryptoType,
+  ProxyTypes,
   ProxyVariant,
   SigningType,
   WalletType,
@@ -113,7 +114,7 @@ const $coreTx = combine(
       multisigAccountId: toAccountId(multisigAccountId),
       threshold,
       proxyAccountId: pureCreated.accountId,
-      proxyType: 'Any',
+      proxyType: ProxyTypes.ANY,
       pureTopUpAmount,
       isMultisigExists,
     });
@@ -254,7 +255,7 @@ sample({
       pendingBlockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
 
-      proxyType: 'Any',
+      proxyType: ProxyTypes.ANY,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       signingType: SigningType.MULTISIG,
       accountType: AccountType.FLEX_MULTISIG,
@@ -312,7 +313,7 @@ sample({
         {
           proxyAccountId: multisigAccountId!,
           delay: 0,
-          proxyType: 'Any',
+          proxyType: ProxyTypes.ANY,
         },
       ],
       proxyVariant: ProxyVariant.PURE,

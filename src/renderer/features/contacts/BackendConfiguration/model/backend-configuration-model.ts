@@ -77,6 +77,7 @@ const checkUrlReachabilityFx = createEffect(async (url: string) => {
 const $urlReachable = createStore<UrlReachability>(null);
 
 $urlReachable.on($draftUrl, () => null);
+$urlReachable.on([editStarted, modalOpened], () => null);
 
 const draftUrlDebounced = debounce({ source: $draftUrl, timeout: 500 });
 
@@ -85,6 +86,14 @@ sample({
   source: $isUrlValid,
   filter: (isValid) => isValid,
   fn: (_, url) => url,
+  target: checkUrlReachabilityFx,
+});
+
+// Re-check reachability on each modal open (draftUrl may not change, so debounce won't fire)
+sample({
+  clock: editStarted,
+  source: $backendUrl,
+  filter: (url): url is string => url !== null,
   target: checkUrlReachabilityFx,
 });
 

@@ -53,14 +53,9 @@ const $fellowshipStore = $collectiveStore.map(store => store['fellowship'] || nu
 // vote
 
 const prepareVoteFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chain, account, fee } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
-  assert(chain, 'Chain not found');
+  if (nullable(chain) || nullable(account)) return null;
 
   const coreTx = basketOperationsService.getCoreTx(transaction);
   const api = apis[chain.chainId]!;
@@ -71,8 +66,8 @@ const prepareVoteFx = createEffect(async ({ transaction, wallets, accounts, chai
     wallets,
     id: transaction.id,
     asset: getNativeAsset(chain.assets),
-    initiator: account!,
-    signatory: account!,
+    initiator: account,
+    signatory: account,
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
     aye: coreTx.args.aye,
     poll: coreTx.args.poll,
@@ -120,14 +115,9 @@ sample({
 // salary induct
 
 const prepareSalaryInductFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chain, account, fee } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
-  assert(chain, 'Chain not found');
+  if (nullable(chain) || nullable(account)) return null;
 
   const coreTx = basketOperationsService.getCoreTx(transaction);
   const api = apis[chain.chainId]!;
@@ -138,8 +128,8 @@ const prepareSalaryInductFx = createEffect(async ({ transaction, wallets, accoun
     wallets,
     id: transaction.id,
     asset: getNativeAsset(chain.assets),
-    initiator: account!,
-    signatory: account!,
+    initiator: account,
+    signatory: account,
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
     fee: new BN(fee),
     coreTx: transaction.coreTx,
@@ -184,14 +174,9 @@ sample({
 // salary request
 
 const prepareSalaryRequestFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chain, account, fee } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
-  assert(chain, 'Chain not found');
+  if (nullable(chain) || nullable(account)) return null;
 
   const coreTx = basketOperationsService.getCoreTx(transaction);
   const api = apis[chain.chainId]!;
@@ -202,8 +187,8 @@ const prepareSalaryRequestFx = createEffect(async ({ transaction, wallets, accou
     wallets,
     id: transaction.id,
     asset: getNativeAsset(chain.assets),
-    initiator: account!,
-    signatory: account!,
+    initiator: account,
+    signatory: account,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
     route: [],
@@ -248,14 +233,9 @@ sample({
 // salary payout
 
 const prepareSalaryPayoutFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chain, account, fee } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
-  assert(chain, 'Chain not found');
+  if (nullable(chain) || nullable(account)) return null;
 
   const coreTx = basketOperationsService.getCoreTx(transaction);
   const api = apis[chain.chainId]!;
@@ -266,8 +246,8 @@ const prepareSalaryPayoutFx = createEffect(async ({ transaction, wallets, accoun
     wallets,
     id: transaction.id,
     asset: getNativeAsset(chain.assets),
-    initiator: account!,
-    signatory: account!,
+    initiator: account,
+    signatory: account,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
     route: [],
@@ -313,14 +293,9 @@ sample({
 // evidence
 
 const prepareEvidencePayoutFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-  const { chain, account, fee } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
-  assert(chain, 'Chain not found');
+  if (nullable(chain) || nullable(account)) return null;
 
   const coreTx = basketOperationsService.getCoreTx(transaction);
   const api = apis[chain.chainId]!;
@@ -331,8 +306,8 @@ const prepareEvidencePayoutFx = createEffect(async ({ transaction, wallets, acco
     wallets,
     id: transaction.id,
     asset: getNativeAsset(chain.assets),
-    initiator: account!,
-    signatory: account!,
+    initiator: account,
+    signatory: account,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
     route: [],
@@ -401,7 +376,7 @@ const prepareEvidenceVoteFx = createEffect<
       accounts,
     );
 
-    assert(chain, 'Chain not found');
+    if (nullable(chain) || nullable(account)) return undefined;
 
     const coreTx = basketOperationsService.getCoreTx(transaction);
     const api = apis[chain.chainId]!;
@@ -411,7 +386,7 @@ const prepareEvidenceVoteFx = createEffect<
     const members = fellowshipStore?.members ?? [];
     const maxRank = fellowshipStore?.maxRank ?? 0;
 
-    const votingMember = members.find(m => m.accountId === account?.accountId);
+    const votingMember = members.find(m => m.accountId === account.accountId);
 
     const proposalHex = coreTx.args.proposal;
     const struct = api?.registry.createType('Proposal', proposalHex);
@@ -439,8 +414,8 @@ const prepareEvidenceVoteFx = createEffect<
 
     return {
       id: transaction.id,
-      initiator: account!,
-      signatory: account!,
+      initiator: account,
+      signatory: account,
       chain,
       tx: transaction.coreTx,
       coreTx: transaction.coreTx,

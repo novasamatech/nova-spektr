@@ -1,2 +1,10 @@
 export { Staking } from './ui/Staking';
-export { stakingModel } from './model/staking-model';
+export {
+  stakingBondExtraSlot,
+  stakingBondNominateSlot,
+  stakingNominateSlot,
+  stakingPayeeSlot,
+  stakingRestakeSlot,
+  stakingUnstakeSlot,
+  stakingWithdrawSlot,
+} from './slots';

@@ -3,7 +3,8 @@ import { useStoreMap } from 'effector-react';
 import { type Referendum } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
-import { FootnoteText, Shimmering } from '@/shared/ui';
+import { FootnoteText } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
 import { referendumService } from '@/entities/governance';
 import { AccountAddress } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
@@ -53,7 +54,7 @@ export const ProposerName = ({ referendum, addressPrefix }: Props) => {
     />
   ) : null;
 
-  const proposerLoader = isProposerLoading ? <Shimmering height={18} width={70} /> : null;
+  const proposerLoader = isProposerLoading ? <Skeleton height="18px" width="70px" /> : null;
 
   if (!proposerName && !proposerLoader) return null;
 

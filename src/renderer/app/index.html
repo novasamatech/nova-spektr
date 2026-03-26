@@ -4,7 +4,20 @@
     <meta charset="UTF-8" />
 
     <meta name="msapplication-TileColor" content="#da532c">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src 'self' 'wasm-unsafe-eval';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: blob: https:;
+        connect-src 'self' data: wss: ws: https: http:;
+        font-src 'self' data:;
+        worker-src 'self' blob:;
+        object-src 'none';
+        frame-src 'none'
+      "
+    />
 
     <!--    This tag commented on purpose - that's the way to "support" mobile devices-->
     <!--    <meta name="viewport" content="width=device-width, initial-scale=1" />-->
@@ -25,7 +38,6 @@
     <!--  <link rel="stylesheet" href="theme/default.css" />-->
     <!--  <link rel="stylesheet" href="theme/dark.css" />  Add when dark theme colors are ready  -->
 
-    <!--  TODO: add CSP https://csplite.com/ru/csp216/-->
     <title>Nova Spektr</title>
 
     <!-- FAVICONS -->

@@ -30,7 +30,7 @@ import { type WalletAction, Action, WalletActions } from '../components/WalletAc
 type SignatoryContactItemProps = {
   accountId: AccountId;
   chain: Chain | null;
-  children?: React.ReactNode;
+  children?: ReactNode;
 };
 
 const SignatoryContactItem = ({ accountId, chain, children }: SignatoryContactItemProps) => {

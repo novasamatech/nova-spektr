@@ -85,7 +85,21 @@ export const BackendConfigurationModal = () => {
       <Modal.Title close>{title}</Modal.Title>
       <Modal.Content>
         <Box padding={[4, 5, 2, 5]} gap={4}>
-          <Field text={t('addressBook.backendConfiguration.urlLabel')}>
+          <Field
+            text={
+              <span className="flex items-center gap-x-1">
+                {t('addressBook.backendConfiguration.urlLabel')}
+                <a
+                  href="https://docs.novaspektr.io/address-book/external-contact-management"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  className="text-text-tertiary hover:text-primary-button-background-default"
+                >
+                  <Icon name="info" size={12} className="text-inherit" />
+                </a>
+              </span>
+            }
+          >
             <Input
               name="backendUrl"
               placeholder={t('addressBook.backendConfiguration.urlPlaceholder')}
