@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useState } from 'react';
+import { type ReactNode, memo, useCallback, useState } from 'react';
 import { type LabelProps, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { type BarShapeProps } from 'recharts/types/cartesian/Bar';
 import { type XAxisTickContentProps } from 'recharts/types/util/types';
@@ -22,7 +22,7 @@ const pillButtonClass = 'rounded px-3 py-1 text-footnote font-semibold transitio
 const pillActiveClass = 'shadow-sm text-white';
 const pillInactiveClass = 'text-text-tertiary hover:text-text-secondary';
 
-const DualLabel = (props: LabelProps & { data?: MonthlyBarData[] }) => {
+const DualLabel = memo((props: LabelProps & { data?: MonthlyBarData[] }) => {
   const x = typeof props.x === 'number' ? props.x : 0;
   const y = typeof props.y === 'number' ? props.y : 0;
   const width = typeof props.width === 'number' ? props.width : 0;
@@ -53,9 +53,9 @@ const DualLabel = (props: LabelProps & { data?: MonthlyBarData[] }) => {
       </text>
     </g>
   );
-};
+});
 
-const XAxisTick = (props: XAxisTickContentProps & { data?: MonthlyBarData[] }) => {
+const XAxisTick = memo((props: XAxisTickContentProps & { data?: MonthlyBarData[] }) => {
   const x = typeof props.x === 'number' ? props.x : 0;
   const y = typeof props.y === 'number' ? props.y : 0;
   const payload = props.payload ?? null;
@@ -80,9 +80,9 @@ const XAxisTick = (props: XAxisTickContentProps & { data?: MonthlyBarData[] }) =
       )}
     </g>
   );
-};
+});
 
-const TooltipRow = ({ accountId, value, color }: { accountId: string; value: number; color?: string }) => {
+const TooltipRow = memo(({ accountId, value, color }: { accountId: string; value: number; color?: string }) => {
   const name = useAccountName({ accountId: toAccountId(accountId) });
 
   return (
@@ -94,11 +94,11 @@ const TooltipRow = ({ accountId, value, color }: { accountId: string; value: num
       <span className="ml-auto pl-3 text-help-text font-semibold text-text-primary">{value.toFixed(2)}</span>
     </div>
   );
-};
+});
 
 const R = 8;
 
-const StackedShape = ({ barProps, barData }: { barProps: BarShapeProps; barData: MonthlyBarData[] }) => {
+const StackedShape = memo(({ barProps, barData }: { barProps: BarShapeProps; barData: MonthlyBarData[] }) => {
   const x = typeof barProps.x === 'number' ? barProps.x : 0;
   const y = typeof barProps.y === 'number' ? barProps.y : 0;
   const w = typeof barProps.width === 'number' ? barProps.width : 0;
@@ -134,7 +134,7 @@ const StackedShape = ({ barProps, barData }: { barProps: BarShapeProps; barData:
       <g clipPath={`url(#${clipId})`}>{rects}</g>
     </g>
   );
-};
+});
 
 // Skeleton height is in Tailwind grid units (×4px), so 15 = 60px, 35 = 140px
 const SKELETON_HEIGHTS = [15, 22, 30, 19, 35, 28, 21, 24, 32, 25, 29, 26];
@@ -149,6 +149,9 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
 
   const bars = mode === 'dot' ? dotBars : ksmBars;
   const total = mode === 'dot' ? dotTotal : ksmTotal;
+
+  const handleSetDot = useCallback(() => setMode('dot'), []);
+  const handleSetKsm = useCallback(() => setMode('ksm'), []);
 
   const renderShape = useCallback(
     (shapeProps: BarShapeProps) => <StackedShape barProps={shapeProps} barData={bars} />,
@@ -202,14 +205,14 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
           <button
             type="button"
             className={`${pillButtonClass} ${mode === 'dot' ? `${pillActiveClass} bg-[#e6007a]` : pillInactiveClass}`}
-            onClick={() => setMode('dot')}
+            onClick={handleSetDot}
           >
             {t('dashboard.monthlyRewards.dot')}
           </button>
           <button
             type="button"
             className={`${pillButtonClass} ${mode === 'ksm' ? `${pillActiveClass} bg-[#222]` : pillInactiveClass}`}
-            onClick={() => setMode('ksm')}
+            onClick={handleSetKsm}
           >
             {t('dashboard.monthlyRewards.ksm')}
           </button>

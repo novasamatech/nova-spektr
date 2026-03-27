@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, memo } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 
@@ -20,7 +20,7 @@ const COL_SPAN_CLASS: Record<number, string> = {
 
 const CARD_CLASS = 'rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
-export const DashboardWidget = ({ colSpan = 2, children, className, card = true }: Props) => {
+export const DashboardWidget = memo(({ colSpan = 2, children, className, card = true }: Props) => {
   const ctx = useWidgetSortable();
 
   return (
@@ -55,4 +55,4 @@ export const DashboardWidget = ({ colSpan = 2, children, className, card = true 
       {children}
     </div>
   );
-};
+});

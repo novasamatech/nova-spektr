@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance, formatFiatBalance, performSearch } from '@/shared/lib/utils';
@@ -89,6 +89,10 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
   const [selectedEnded, setSelectedEnded] = useState<EndedReferendum | null>(null);
   const [chainFilter, setChainFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const setActiveTab = useCallback(() => setTab('active'), []);
+  const setEndedTab = useCallback(() => setTab('ended'), []);
+  const handleChainFilterChange = useCallback((v: string) => setChainFilter((prev) => (v === prev ? null : v)), []);
 
   const uniqueChains = useMemo(() => {
     const seen = new Map<string, { chainId: string; chainName: string; chainIcon: string }>();
@@ -270,13 +274,13 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
               active={tab === 'active'}
               count={activeRefs.length}
               label={t('dashboard.referendums.activeTab')}
-              onClick={() => setTab('active')}
+              onClick={setActiveTab}
             />
             <TabButton
               active={tab === 'ended'}
               count={endedRefs.length}
               label={t('dashboard.referendums.endedTab')}
-              onClick={() => setTab('ended')}
+              onClick={setEndedTab}
             />
           </div>
           {!isEmpty && (
@@ -286,7 +290,7 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
                   height="sm"
                   placeholder={t('dashboard.activeReferendums.allChains')}
                   value={chainFilter}
-                  onChange={(v) => setChainFilter(v === chainFilter ? null : v)}
+                  onChange={handleChainFilterChange}
                 >
                   {uniqueChains.map((c) => (
                     <Select.Item key={c.chainId} value={c.chainId}>
@@ -351,38 +355,30 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
   );
 };
 
-const TabButton = ({
-  active,
-  count,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  count: number;
-  label: string;
-  onClick: () => void;
-}) => (
-  <button
-    type="button"
-    className={cnTw(
-      'flex items-center gap-2 rounded-md px-3 py-1.5 text-footnote font-semibold transition-colors',
-      active ? 'bg-selected-background text-text-primary' : 'text-text-tertiary hover:text-text-secondary',
-    )}
-    onClick={onClick}
-  >
-    {label}
-    <span
+const TabButton = memo(
+  ({ active, count, label, onClick }: { active: boolean; count: number; label: string; onClick: () => void }) => (
+    <button
+      type="button"
       className={cnTw(
-        'flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-help-text font-semibold',
-        active ? 'bg-chip-icon text-white' : 'bg-input-background-disabled text-text-tertiary',
+        'flex items-center gap-2 rounded-md px-3 py-1.5 text-footnote font-semibold transition-colors',
+        active ? 'bg-selected-background text-text-primary' : 'text-text-tertiary hover:text-text-secondary',
       )}
+      onClick={onClick}
     >
-      {count}
-    </span>
-  </button>
+      {label}
+      <span
+        className={cnTw(
+          'flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-help-text font-semibold',
+          active ? 'bg-chip-icon text-white' : 'bg-input-background-disabled text-text-tertiary',
+        )}
+      >
+        {count}
+      </span>
+    </button>
+  ),
 );
 
-const TrackCell = ({ trackId, t }: { trackId: number; t: ReturnType<typeof useI18n>['t'] }) => {
+const TrackCell = memo(({ trackId, t }: { trackId: number; t: ReturnType<typeof useI18n>['t'] }) => {
   const trackInfo = getTrackInfo(trackId);
   const label = t(trackInfo.title);
 
@@ -392,63 +388,59 @@ const TrackCell = ({ trackId, t }: { trackId: number; t: ReturnType<typeof useI1
       <FootnoteText className="truncate text-text-secondary">{label}</FootnoteText>
     </div>
   );
-};
+});
 
-const VoteChipsCell = ({
-  ourVotes,
-  t,
-}: {
-  ourVotes: ActiveReferendum['ourVotes'];
-  t: ReturnType<typeof useI18n>['t'];
-}) => {
-  const counts = { aye: 0, nay: 0, abstain: 0, split: 0 };
-  for (const v of ourVotes) {
-    if (v.direction in counts) counts[v.direction as keyof typeof counts]++;
-  }
+const VoteChipsCell = memo(
+  ({ ourVotes, t }: { ourVotes: ActiveReferendum['ourVotes']; t: ReturnType<typeof useI18n>['t'] }) => {
+    const counts = { aye: 0, nay: 0, abstain: 0, split: 0 };
+    for (const v of ourVotes) {
+      if (v.direction in counts) counts[v.direction as keyof typeof counts]++;
+    }
 
-  const chips: { label: string; className: string }[] = [];
+    const chips: { label: string; className: string }[] = [];
 
-  if (counts.aye > 0) {
-    chips.push({
-      label: `${t('dashboard.activeReferendums.aye')} ×${counts.aye}`,
-      className: 'bg-text-positive/10 text-text-positive',
-    });
-  }
-  if (counts.nay > 0) {
-    chips.push({
-      label: `${t('dashboard.activeReferendums.nay')} ×${counts.nay}`,
-      className: 'bg-text-negative/10 text-text-negative',
-    });
-  }
-  if (counts.abstain > 0) {
-    chips.push({
-      label: `${t('dashboard.activeReferendums.abstain')} ×${counts.abstain}`,
-      className: 'bg-text-tertiary/10 text-text-tertiary',
-    });
-  }
-  if (counts.split > 0) {
-    chips.push({
-      label: `${t('dashboard.activeReferendums.split')} ×${counts.split}`,
-      className: 'bg-text-tertiary/10 text-text-tertiary',
-    });
-  }
+    if (counts.aye > 0) {
+      chips.push({
+        label: `${t('dashboard.activeReferendums.aye')} ×${counts.aye}`,
+        className: 'bg-text-positive/10 text-text-positive',
+      });
+    }
+    if (counts.nay > 0) {
+      chips.push({
+        label: `${t('dashboard.activeReferendums.nay')} ×${counts.nay}`,
+        className: 'bg-text-negative/10 text-text-negative',
+      });
+    }
+    if (counts.abstain > 0) {
+      chips.push({
+        label: `${t('dashboard.activeReferendums.abstain')} ×${counts.abstain}`,
+        className: 'bg-text-tertiary/10 text-text-tertiary',
+      });
+    }
+    if (counts.split > 0) {
+      chips.push({
+        label: `${t('dashboard.activeReferendums.split')} ×${counts.split}`,
+        className: 'bg-text-tertiary/10 text-text-tertiary',
+      });
+    }
 
-  if (chips.length === 0) {
-    return <FootnoteText className="text-text-tertiary">&mdash;</FootnoteText>;
-  }
+    if (chips.length === 0) {
+      return <FootnoteText className="text-text-tertiary">&mdash;</FootnoteText>;
+    }
 
-  return (
-    <div className="flex items-center gap-1">
-      {chips.map((chip) => (
-        <span key={chip.label} className={cnTw('rounded px-1.5 py-0.5 text-help-text font-medium', chip.className)}>
-          {chip.label}
-        </span>
-      ))}
-    </div>
-  );
-};
+    return (
+      <div className="flex items-center gap-1">
+        {chips.map((chip) => (
+          <span key={chip.label} className={cnTw('rounded px-1.5 py-0.5 text-help-text font-medium', chip.className)}>
+            {chip.label}
+          </span>
+        ))}
+      </div>
+    );
+  },
+);
 
-const TimeLeftCell = ({ timeLeftMs }: { timeLeftMs: number }) => {
+const TimeLeftCell = memo(({ timeLeftMs }: { timeLeftMs: number }) => {
   const urgency = getUrgency(timeLeftMs);
   const timeText = formatTimeLeft(timeLeftMs);
 
@@ -465,9 +457,9 @@ const TimeLeftCell = ({ timeLeftMs }: { timeLeftMs: number }) => {
       <FootnoteText className="text-inherit">{timeText}</FootnoteText>
     </div>
   );
-};
+});
 
-const AyeNayCell = ({ ayePercent, t }: { ayePercent: number; t: ReturnType<typeof useI18n>['t'] }) => {
+const AyeNayCell = memo(({ ayePercent, t }: { ayePercent: number; t: ReturnType<typeof useI18n>['t'] }) => {
   const ayePct = ayePercent * 100;
   const nayPct = 100 - ayePct;
 
@@ -487,9 +479,9 @@ const AyeNayCell = ({ ayePercent, t }: { ayePercent: number; t: ReturnType<typeo
       </Tooltip.Content>
     </Tooltip>
   );
-};
+});
 
-const TvlCell = ({ referendum }: { referendum: ActiveReferendum }) => {
+const TvlCell = memo(({ referendum }: { referendum: ActiveReferendum }) => {
   const { formatted: fiatFormatted } = formatFiatBalance(referendum.totalLockedFiat);
   const { formatted: tokenFormatted } = formatBalance(referendum.totalLocked, referendum.precision);
 
@@ -501,15 +493,17 @@ const TvlCell = ({ referendum }: { referendum: ActiveReferendum }) => {
       <FootnoteText className="text-help-text text-text-tertiary tabular-nums">${fiatFormatted}</FootnoteText>
     </div>
   );
-};
+});
 
-const OutcomeCell = ({ outcome, t }: { outcome: EndedReferendum['outcome']; t: ReturnType<typeof useI18n>['t'] }) => (
-  <span className={cnTw('rounded px-1.5 py-0.5 text-help-text font-medium', OUTCOME_STYLES[outcome])}>
-    {t(`dashboard.referendums.${OUTCOME_I18N_KEY[outcome]}`)}
-  </span>
+const OutcomeCell = memo(
+  ({ outcome, t }: { outcome: EndedReferendum['outcome']; t: ReturnType<typeof useI18n>['t'] }) => (
+    <span className={cnTw('rounded px-1.5 py-0.5 text-help-text font-medium', OUTCOME_STYLES[outcome])}>
+      {t(`dashboard.referendums.${OUTCOME_I18N_KEY[outcome]}`)}
+    </span>
+  ),
 );
 
-const UnlockableCell = ({ referendum }: { referendum: EndedReferendum }) => {
+const UnlockableCell = memo(({ referendum }: { referendum: EndedReferendum }) => {
   const { formatted: tokenFormatted } = formatBalance(referendum.unlockableAmount, referendum.precision);
   const hasUnlockable = referendum.unlockableAmount !== '0';
 
@@ -527,4 +521,4 @@ const UnlockableCell = ({ referendum }: { referendum: EndedReferendum }) => {
       )}
     </div>
   );
-};
+});

@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
@@ -65,11 +65,12 @@ type RowProps = {
 
 const HoldingRow = memo(({ holding, color, currency, onSelect }: RowProps) => {
   const { formatted, suffix } = formatBalance(holding.totalRaw, holding.precision);
+  const handleClick = useCallback(() => onSelect?.(holding), [onSelect, holding]);
 
   return (
     <div
       className="flex cursor-pointer items-center gap-2 rounded py-1 transition-colors hover:bg-hover"
-      onClick={() => onSelect?.(holding)}
+      onClick={handleClick}
     >
       <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
       <AssetIcon asset={holding} size={28} />

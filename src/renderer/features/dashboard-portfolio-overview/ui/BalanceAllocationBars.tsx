@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { type AllocationData } from '../hooks/useBalanceAllocation';
@@ -18,7 +20,7 @@ const BARS: ((allocation: AllocationData) => BarConfig)[] = [
   (a) => ({ labelKey: 'assetBalance.reserved', color: '#F7931A', pct: a.reservedPct }),
 ];
 
-export const BalanceAllocationBars = ({ allocation }: Props) => {
+export const BalanceAllocationBars = memo(({ allocation }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -45,4 +47,4 @@ export const BalanceAllocationBars = ({ allocation }: Props) => {
       })}
     </div>
   );
-};
+});
