@@ -6,14 +6,7 @@ import { type AccountVote, type ChainId, type VotingMap } from '@/shared/core';
 import { useThrottle } from '@/shared/lib/hooks';
 import { entries, getRoundedValue, toAccountId, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import {
-  useReferendumTitles,
-  useReferendums,
-  useTrackLocks,
-  useTracks,
-  useUndecidingTimeout,
-  useVoting,
-} from '@/domains/governance';
+import { useReferendumTitles, useReferendums, useTracks, useUndecidingTimeout, useVoting } from '@/domains/governance';
 import { useBlock, useBlockTime } from '@/domains/network';
 import { useAssetsPrices } from '@/domains/price';
 import { AssetHubChains } from '@/domains/staking';
@@ -24,7 +17,6 @@ import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 const POLKADOT_AH_CHAIN_ID = AssetHubChains['POLKADOT_AH'];
 const KUSAMA_AH_CHAIN_ID = AssetHubChains['KUSAMA_AH'];
-const EMPTY_VOTING_MAP: VotingMap = {};
 
 export type VoteDirection = 'aye' | 'nay' | 'abstain' | 'split';
 
@@ -91,31 +83,14 @@ function useChainActiveReferendums(
   const { data: tracks, pending: tracksPending } = useTracks({ api });
   const trackIds = useMemo(() => Object.keys(tracks), [tracks]);
 
-  // Pre-filter: only query voting for accounts with governance locks.
-  const { data: trackLocks } = useTrackLocks({
-    api,
-    accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
-  });
-
-  const governanceAccountIds = useMemo(() => {
-    const active = typedAccountIds.filter((id) => {
-      const locks = trackLocks[id];
-
-      return locks && Object.keys(locks).length > 0;
-    });
-
-    return active.length > 0 ? active : null;
-  }, [trackLocks, typedAccountIds]);
-
   const { data: rawVotingMap, pending: votingPending } = useVoting({
     api,
     tracks: trackIds.length > 0 ? trackIds : null,
-    accounts: governanceAccountIds,
+    accounts: typedAccountIds,
   });
 
   const votingMap = useMemo(() => {
-    if (!governanceAccountIds) return EMPTY_VOTING_MAP;
-    const accountSet = new Set<AccountId>(governanceAccountIds);
+    const accountSet = new Set<AccountId>(typedAccountIds);
     const filtered: VotingMap = {};
 
     for (const [accountId, trackVoting] of entries(rawVotingMap)) {
@@ -125,7 +100,7 @@ function useChainActiveReferendums(
     }
 
     return filtered;
-  }, [rawVotingMap, governanceAccountIds]);
+  }, [rawVotingMap, typedAccountIds]);
 
   const { data: referendums } = useReferendums({ api });
   const { data: undecidingTimeout } = useUndecidingTimeout({ api });

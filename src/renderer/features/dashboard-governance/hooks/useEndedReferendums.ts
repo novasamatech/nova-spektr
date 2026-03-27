@@ -34,7 +34,6 @@ import {
 
 const POLKADOT_AH_CHAIN_ID = AssetHubChains['POLKADOT_AH'];
 const KUSAMA_AH_CHAIN_ID = AssetHubChains['KUSAMA_AH'];
-const EMPTY_VOTING_MAP: VotingMap = {};
 
 export type EndedVote = OurVote & {
   unlockable: boolean;
@@ -99,31 +98,14 @@ function useChainEndedReferendums(
   const { data: tracks, pending: tracksPending } = useTracks({ api });
   const trackIds = useMemo(() => Object.keys(tracks), [tracks]);
 
-  // Pre-filter: only query voting for accounts with governance locks.
-  const { data: trackLocks } = useTrackLocks({
-    api,
-    accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
-  });
-
-  const governanceAccountIds = useMemo(() => {
-    const active = typedAccountIds.filter((id) => {
-      const locks = trackLocks[id];
-
-      return locks && Object.keys(locks).length > 0;
-    });
-
-    return active.length > 0 ? active : null;
-  }, [trackLocks, typedAccountIds]);
-
   const { data: rawVotingMap, pending: votingPending } = useVoting({
     api,
     tracks: trackIds.length > 0 ? trackIds : null,
-    accounts: governanceAccountIds,
+    accounts: typedAccountIds,
   });
 
   const votingMap = useMemo(() => {
-    if (!governanceAccountIds) return EMPTY_VOTING_MAP;
-    const accountSet = new Set<AccountId>(governanceAccountIds);
+    const accountSet = new Set<AccountId>(typedAccountIds);
     const filtered: VotingMap = {};
 
     for (const [accountId, trackVoting] of entries(rawVotingMap)) {
@@ -133,7 +115,12 @@ function useChainEndedReferendums(
     }
 
     return filtered;
-  }, [rawVotingMap, governanceAccountIds]);
+  }, [rawVotingMap, typedAccountIds]);
+
+  const { data: trackLocks } = useTrackLocks({
+    api,
+    accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
+  });
 
   const { data: undecidingTimeout } = useUndecidingTimeout({ api });
 
