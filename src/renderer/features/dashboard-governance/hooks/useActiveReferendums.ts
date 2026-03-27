@@ -9,14 +9,12 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useReferendumTitles, useReferendums, useTracks, useUndecidingTimeout, useVoting } from '@/domains/governance';
 import { useBlock, useBlockTime } from '@/domains/network';
 import { useAssetsPrices } from '@/domains/price';
-import { AssetHubChains } from '@/domains/staking';
 import { referendumService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
-const POLKADOT_AH_CHAIN_ID = AssetHubChains['POLKADOT_AH'];
-const KUSAMA_AH_CHAIN_ID = AssetHubChains['KUSAMA_AH'];
+import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
 
 export type VoteDirection = 'aye' | 'nay' | 'abstain' | 'split';
 
@@ -205,7 +203,7 @@ function useChainActiveReferendums(
   };
 }
 
-type AllEntry = { accountId: string; name: string; address: string };
+export type AllEntry = { accountId: string; name: string; address: string };
 
 export const useActiveReferendums = (accountIds: string[], allEntries: AllEntry[]) => {
   const fiatFlag = useUnit(currencySelect.$fiatFlag);
@@ -216,7 +214,6 @@ export const useActiveReferendums = (accountIds: string[], allEntries: AllEntry[
   const accountIdsKey = accountIds.join(',');
   const typedAccountIds = useMemo(() => accountIds.map((id) => toAccountId(id)), [accountIdsKey]);
 
-  const entriesKey = useMemo(() => allEntries.map((e) => e.accountId).join(','), [allEntries]);
   const entryMap = useMemo(() => {
     const map = new Map<string, EntryInfo>();
     for (const entry of allEntries) {
@@ -224,7 +221,7 @@ export const useActiveReferendums = (accountIds: string[], allEntries: AllEntry[
     }
 
     return map;
-  }, [entriesKey]);
+  }, [allEntries]);
 
   const currencyCode = currency?.coingeckoId ?? null;
 

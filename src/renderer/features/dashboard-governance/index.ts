@@ -21,17 +21,6 @@ dashboardGovernanceFeature.inject(dashboardGovernanceSlot, {
   render: GovernanceOverviewWidget,
 });
 
-export const dashboardReferendumsFeature = createFeature({
-  name: 'dashboard/referendums',
-  input: createStore({}),
-  enable: enableFlag,
-});
-
-dashboardReferendumsFeature.inject(dashboardGovernanceSlot, {
-  order: 1,
-  render: ReferendumsWidget,
-});
-
 export const dashboardUnlockScheduleFeature = createFeature({
   name: 'dashboard/unlock-schedule',
   input: createStore({}),
@@ -39,6 +28,17 @@ export const dashboardUnlockScheduleFeature = createFeature({
 });
 
 dashboardUnlockScheduleFeature.inject(dashboardGovernanceSlot, {
-  order: 2,
+  order: 1,
   render: UnlockScheduleWidget,
+});
+
+export const dashboardReferendumsFeature = createFeature({
+  name: 'dashboard/referendums',
+  input: createStore({}),
+  enable: enableFlag,
+});
+
+dashboardReferendumsFeature.inject(dashboardGovernanceSlot, {
+  order: 2,
+  render: ReferendumsWidget,
 });

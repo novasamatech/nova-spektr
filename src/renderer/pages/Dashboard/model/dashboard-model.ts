@@ -121,23 +121,16 @@ const $matchedEntries = combine(dashboardPresetsModel.$activePreset, $allEntries
 });
 
 const $validSelectedIdsRaw = combine($matchedEntries, $allEntries, (matchedEntries, allEntries) => {
-  const matchedIds = new Set(matchedEntries.map((e) => e.id));
+  const selectedAccountIds = new Set(matchedEntries.map((e) => e.accountId));
 
-  const selectedAccountIds = new Set<string>();
-  for (const entry of allEntries) {
-    if (matchedIds.has(entry.id)) {
-      selectedAccountIds.add(entry.accountId);
-    }
-  }
-
-  const validIds = new Set<string>();
+  const validIds: string[] = [];
   for (const entry of allEntries) {
     if (selectedAccountIds.has(entry.accountId)) {
-      validIds.add(entry.id);
+      validIds.push(entry.id);
     }
   }
 
-  return Array.from(validIds).sort();
+  return validIds.sort();
 });
 
 const $validSelectedIds = createStore<string[]>([], {

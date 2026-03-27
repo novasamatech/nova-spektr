@@ -50,14 +50,9 @@ export const Dashboard = () => {
 
   const accountIds = useMemo(() => (accountIdsKey ? accountIdsKey.split('\0') : []), [accountIdsKey]);
 
-  const slimEntriesKey = useMemo(
-    () => allEntries.map((e) => `${e.accountId}\t${e.name}\t${e.address}`).join('\n'),
-    [allEntries],
-  );
-
   const slimEntries = useMemo(
     () => allEntries.map((e) => ({ accountId: e.accountId, name: e.name, address: e.address })),
-    [slimEntriesKey], // eslint-disable-line -- allEntries is intentionally excluded; slimEntriesKey tracks content changes
+    [allEntries],
   );
 
   return (

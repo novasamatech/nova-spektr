@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useMemo, useRef } from 'react';
 
@@ -13,8 +13,6 @@ import { locksService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
 
 import { cachedEstimateClaimSchedule } from './claimScheduleCache';
-
-const BN_ZERO = new BN(0);
 
 type ClaimResult = { claimable: BN; unlockChunks: AccountUnlockChunk[]; delegated: BN };
 const EMPTY_CLAIM: ClaimResult = { claimable: BN_ZERO, unlockChunks: [], delegated: BN_ZERO };
@@ -125,8 +123,6 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
   const chains = useUnit(networkModel.$chains);
   const api = useApi(chainId);
 
-  // Stabilize typedAccountIds — only recompute when the serialized value changes,
-  // not on every new array reference from the parent.
   const accountIdsKey = accountIds.join(',');
   const typedAccountIds = useMemo(() => accountIds.map((id) => toAccountId(id)), [accountIdsKey]);
 
@@ -139,7 +135,6 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     accounts: typedAccountIds,
   });
 
-  // Filter voting map to only include currently selected accounts.
   // The subscription cache may retain data from previously selected accounts.
   const votingMap = useMemo(() => {
     const accountSet = new Set<AccountId>(typedAccountIds);
@@ -227,7 +222,6 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     hasEverLoaded.current = true;
   }
 
-  // Chain metadata
   const chain = chains[chainId];
   const asset = chain ? votingService.getVotingAsset(chain) : null;
   const pending = accountIds.length > 0 && !hasEverLoaded.current;

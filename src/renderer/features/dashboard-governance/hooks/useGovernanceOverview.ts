@@ -5,13 +5,10 @@ import { useMemo } from 'react';
 import { type ChainId } from '@/shared/core';
 import { getRoundedValue } from '@/shared/lib/utils';
 import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
-import { AssetHubChains } from '@/domains/staking';
 import { currencySelect } from '@/aggregates/currency-select';
 
+import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
 import { type ChainGovernanceData, useChainGovernanceData } from './useChainGovernanceData';
-
-const POLKADOT_AH_CHAIN_ID = AssetHubChains['POLKADOT_AH'];
-const KUSAMA_AH_CHAIN_ID = AssetHubChains['KUSAMA_AH'];
 
 export type ChainGovernanceSummary = ChainGovernanceData & {
   chainId: ChainId;

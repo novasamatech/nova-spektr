@@ -17,23 +17,21 @@ import {
 } from '@/domains/governance';
 import { useBlock, useBlockTime } from '@/domains/network';
 import { useAssetsPrices } from '@/domains/price';
-import { AssetHubChains } from '@/domains/staking';
 import { locksService, referendumService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 import { cachedEstimateClaimSchedule } from './claimScheduleCache';
+import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
 import {
+  type AllEntry,
   type EntryInfo,
   type OurVote,
   type VoteDirection,
   formatConviction,
   getVoteDirection,
 } from './useActiveReferendums';
-
-const POLKADOT_AH_CHAIN_ID = AssetHubChains['POLKADOT_AH'];
-const KUSAMA_AH_CHAIN_ID = AssetHubChains['KUSAMA_AH'];
 
 export type EndedVote = OurVote & {
   unlockable: boolean;
@@ -203,8 +201,7 @@ function useChainEndedReferendums(
           const ref = refMap.get(refId);
           if (!ref || !referendumService.isCompleted(ref)) continue;
 
-          const completedRef = ref;
-          const lockExpiry = getVoteLockExpiry(vote, completedRef, voteLockingPeriod);
+          const lockExpiry = getVoteLockExpiry(vote, ref, voteLockingPeriod);
           const lockExpired = currentBlock >= lockExpiry;
           const unlockable = claimableVotes.has(`${accountId}:${refId}`);
 
@@ -237,7 +234,7 @@ function useChainEndedReferendums(
             existing.accountIds.add(accountId);
           } else {
             grouped.set(refId, {
-              referendum: completedRef,
+              referendum: ref,
               trackId: Number(trackId),
               votes: [endedVote],
               totalLocked: amount,
@@ -302,8 +299,6 @@ function useChainEndedReferendums(
   };
 }
 
-type AllEntry = { accountId: string; name: string; address: string };
-
 export const useEndedReferendums = (accountIds: string[], allEntries: AllEntry[]) => {
   const fiatFlag = useUnit(currencySelect.$fiatFlag);
   const currency = useUnit(currencySelect.$activeCurrency);
@@ -313,7 +308,6 @@ export const useEndedReferendums = (accountIds: string[], allEntries: AllEntry[]
   const accountIdsKey = accountIds.join(',');
   const typedAccountIds = useMemo(() => accountIds.map((id) => toAccountId(id)), [accountIdsKey]);
 
-  const entriesKey = useMemo(() => allEntries.map((e) => e.accountId).join(','), [allEntries]);
   const entryMap = useMemo(() => {
     const map = new Map<string, EntryInfo>();
     for (const entry of allEntries) {
@@ -321,7 +315,7 @@ export const useEndedReferendums = (accountIds: string[], allEntries: AllEntry[]
     }
 
     return map;
-  }, [entriesKey]);
+  }, [allEntries]);
 
   const currencyCode = currency?.coingeckoId ?? null;
 

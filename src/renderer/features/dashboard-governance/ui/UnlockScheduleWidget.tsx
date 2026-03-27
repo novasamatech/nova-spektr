@@ -84,8 +84,13 @@ export const UnlockScheduleWidget = ({ accountIds, allEntries }: Props) => {
             {t('dashboard.unlockSchedule.upcomingUnlocks')}
           </FootnoteText>
           <div className="flex max-h-[200px] flex-col gap-2 overflow-y-auto">
-            {events.map((event, i) => (
-              <UnlockEventRow key={i} event={event} currency={currency} accountNameMap={accountNameMap} />
+            {events.map((event) => (
+              <UnlockEventRow
+                key={`${event.chainName}-${event.unlockAtMs}`}
+                event={event}
+                currency={currency}
+                accountNameMap={accountNameMap}
+              />
             ))}
           </div>
         </>
