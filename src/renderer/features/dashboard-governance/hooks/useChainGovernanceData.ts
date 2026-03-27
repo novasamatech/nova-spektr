@@ -223,7 +223,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
   // Flip when pending states resolve (not when data appears), so accounts with
   // no governance activity don't get stuck in skeleton.
   const hasEverLoaded = useRef(false);
-  if (api && !tracksPending && !votingPending) {
+  if (api && !tracksPending && !votingPending && currentBlock !== null) {
     hasEverLoaded.current = true;
   }
 
