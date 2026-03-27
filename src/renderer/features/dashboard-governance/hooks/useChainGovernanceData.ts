@@ -4,7 +4,7 @@ import { useMemo, useRef } from 'react';
 
 import { type Chunks, UnlockChunkType } from '@/shared/api/governance';
 import { type ChainId, type VotingMap } from '@/shared/core';
-import { useThrottle } from '@/shared/lib/hooks';
+import { useThrottledSnapshot } from '@/shared/lib/hooks';
 import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useReferendums, useTrackLocks, useTracks, useUndecidingTimeout, useVoting } from '@/domains/governance';
@@ -162,8 +162,8 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
   });
 
-  const currentBlock = useThrottle(useBlock(api).data, 300_000);
-  const blockTime = useThrottle(useBlockTime(api, chains[chainId]).data, 300_000);
+  const currentBlock = useThrottledSnapshot(useBlock(api).data, 300_000);
+  const blockTime = useThrottledSnapshot(useBlockTime(api, chains[chainId]).data, 300_000);
 
   const claimData = useMemo(() => {
     if (

@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { useMemo, useRef } from 'react';
 
 import { type AccountVote, type ChainId, type VotingMap } from '@/shared/core';
-import { useThrottle } from '@/shared/lib/hooks';
+import { useThrottledSnapshot } from '@/shared/lib/hooks';
 import { entries, getRoundedValue, toAccountId, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useReferendumTitles, useReferendums, useTracks, useUndecidingTimeout, useVoting } from '@/domains/governance';
@@ -108,8 +108,8 @@ function useChainActiveReferendums(
   const chain = chains[chainId] ?? null;
   const timelineChainId = chain?.additional?.timelineChain ?? chainId;
   const timelineApi = useApi(timelineChainId);
-  const currentBlock = useThrottle(useBlock(timelineApi).data, 300_000);
-  const blockTime = useThrottle(useBlockTime(timelineApi, chains[timelineChainId]).data, 300_000);
+  const currentBlock = useThrottledSnapshot(useBlock(timelineApi).data, 300_000);
+  const blockTime = useThrottledSnapshot(useBlockTime(timelineApi, chains[timelineChainId]).data, 300_000);
   const { data: titles } = useReferendumTitles({
     chain,
     service: metaProvider?.service ?? null,
