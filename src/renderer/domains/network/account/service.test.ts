@@ -4,6 +4,7 @@ import { type BackendContact, type Chain, type Contact, AccountNameType, CryptoT
 import { toAddress } from '@/shared/lib/utils';
 import {
   createAccountId,
+  createPolkadotWallet,
   createSingleShardWallet,
   kusamaChain,
   kusamaChainId,
@@ -849,6 +850,66 @@ describe('account service', () => {
       });
 
       expect(result).toBe('Backend Contact Name');
+    });
+
+    it('should return wallet name when no account matches rootAccountId (key-set vault)', () => {
+      const rootAccountId = createAccountId('root');
+      const wallet = createPolkadotWallet(walletId, {
+        rootAccountId,
+        name: 'My Vault Wallet',
+      });
+
+      // Derived chain accounts have different accountIds than rootAccountId
+      const derivedAccount: ChainAccount = {
+        ...chainAccount,
+        accountId: createAccountId('derived1'),
+        walletId,
+      };
+
+      const result = accountService.resolveWalletName({
+        wallet,
+        accounts: [derivedAccount],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('My Vault Wallet');
+    });
+
+    it('should return wallet name over local contact when no account matches rootAccountId', () => {
+      const rootAccountId = createAccountId('root');
+      const wallet = createPolkadotWallet(walletId, {
+        rootAccountId,
+        name: 'My Vault Wallet',
+      });
+
+      const derivedAccount: ChainAccount = {
+        ...chainAccount,
+        accountId: createAccountId('derived1'),
+        walletId,
+      };
+
+      // Contact exists for rootAccountId, but wallet name should take precedence
+      const contacts: Contact[] = [
+        {
+          id: 'test-uuid-1',
+          accountId: rootAccountId,
+          name: 'Contact Name',
+          address: toAddress(rootAccountId, { prefix: polkadotChain.addressPrefix }),
+          source: 'local',
+        },
+      ];
+
+      const result = accountService.resolveWalletName({
+        wallet,
+        accounts: [derivedAccount],
+        contacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('My Vault Wallet');
     });
   });
 });
