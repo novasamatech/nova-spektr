@@ -99,10 +99,8 @@ describe('computeAssetRowAllocations', () => {
     const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
     const currency = makeCurrency();
 
-    const rows = [{ accountId: 'acc1', name: 'Wallet 1', address: 'addr1' }];
-
     const result = computeAssetRowAllocations({
-      rows: rows as any,
+      accountIds: ['acc1'],
       priceId: 'polkadot',
       balanceMap: balanceMap as any,
       chains: chains as any,
@@ -126,7 +124,7 @@ describe('computeAssetRowAllocations', () => {
     const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
 
     const result = computeAssetRowAllocations({
-      rows: [{ accountId: 'acc1' }] as any,
+      accountIds: ['acc1'],
       priceId: 'polkadot',
       balanceMap: balanceMap as any,
       chains: chains as any,
@@ -149,7 +147,7 @@ describe('computeAssetRowAllocations', () => {
     const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
 
     const result = computeAssetRowAllocations({
-      rows: [{ accountId: 'acc1' }] as any,
+      accountIds: ['acc1'],
       priceId: 'polkadot',
       balanceMap: balanceMap as any,
       chains: chains as any,
@@ -174,7 +172,7 @@ describe('computeAssetRowAllocations', () => {
     const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
 
     const result = computeAssetRowAllocations({
-      rows: [{ accountId: 'acc1' }] as any,
+      accountIds: ['acc1'],
       priceId: 'polkadot',
       balanceMap: balanceMap as any,
       chains: chains as any,
@@ -203,7 +201,7 @@ describe('computeChainRowAllocations', () => {
     const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
 
     const result = computeChainRowAllocations({
-      rows: [{ assetId: 0 }] as any,
+      assetIds: [0],
       chainId: 'chain1' as any,
       accountIds: ['acc1', 'acc2'],
       balanceMap: balanceMap as any,
@@ -230,7 +228,7 @@ describe('computeChainRowAllocations', () => {
     const prices = makePrices([{ priceId: 'usdt', coingeckoId: 'usd', price: 1 }]);
 
     const result = computeChainRowAllocations({
-      rows: [{ assetId: 5 }] as any,
+      assetIds: [5],
       chainId: 'chain1' as any,
       accountIds: ['acc1'],
       balanceMap: balanceMap as any,

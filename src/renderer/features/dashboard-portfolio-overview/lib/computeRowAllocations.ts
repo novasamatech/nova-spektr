@@ -1,9 +1,7 @@
 import { default as BigNumber } from 'bignumber.js';
 
-import { type ChainId } from '@/shared/core';
+import { type Balance, type Chain, type ChainId } from '@/shared/core';
 import { getRoundedValue, transferableAmountBN } from '@/shared/lib/utils';
-import { type ChainAssetRow } from '../hooks/useChainBreakdown';
-import { type BreakdownRow } from '../hooks/useHoldingBreakdown';
 
 export type RowAllocation = {
   transferablePct: number;
@@ -14,20 +12,20 @@ export type RowAllocation = {
 type PriceMap = Record<string, Record<string, { price: number; change: number }>>;
 
 type AssetAllocParams = {
-  rows: BreakdownRow[];
+  accountIds: string[];
   priceId: string;
-  balanceMap: Record<string, any>;
-  chains: Record<string, any>;
+  balanceMap: Record<string, Balance>;
+  chains: Record<string, Chain>;
   prices: PriceMap;
   currency: { coingeckoId: string };
 };
 
 type ChainAllocParams = {
-  rows: ChainAssetRow[];
+  assetIds: number[];
   chainId: ChainId;
   accountIds: string[];
-  balanceMap: Record<string, any>;
-  chains: Record<string, any>;
+  balanceMap: Record<string, Balance>;
+  chains: Record<string, Chain>;
   prices: PriceMap;
   currency: { coingeckoId: string };
 };
@@ -39,6 +37,7 @@ function toAllocation(
 ): RowAllocation | null {
   if (grandTotal.isZero()) return null;
 
+  // locked = total - transferable - reserved, clamped to zero
   const lockedFiat = BigNumber.max(0, grandTotal.minus(transferableTotal).minus(reservedTotal));
 
   return {
@@ -49,21 +48,21 @@ function toAllocation(
 }
 
 export function computeAssetRowAllocations(params: AssetAllocParams): Map<string, RowAllocation> {
-  const { rows, priceId, balanceMap, chains, prices, currency } = params;
+  const { accountIds, priceId, balanceMap, chains, prices, currency } = params;
   const result = new Map<string, RowAllocation>();
 
-  const accountIds = new Set(rows.map((r) => r.accountId));
+  const accountIdSet = new Set(accountIds);
 
   // Group balances by accountId, filtering to matching priceId
   const grouped = new Map<string, { transferable: BigNumber; reserved: BigNumber; total: BigNumber }>();
 
   for (const balance of Object.values(balanceMap)) {
-    if (!accountIds.has(balance.accountId)) continue;
+    if (!accountIdSet.has(balance.accountId)) continue;
 
     const chain = chains[balance.chainId];
     if (!chain) continue;
 
-    const asset = chain.assets.find((a: any) => a.assetId === balance.assetId);
+    const asset = chain.assets.find((a) => a.assetId === balance.assetId);
     if (!asset?.priceId || asset.priceId !== priceId) continue;
 
     const priceItem = prices[asset.priceId]?.[currency.coingeckoId];
@@ -100,11 +99,11 @@ export function computeAssetRowAllocations(params: AssetAllocParams): Map<string
 }
 
 export function computeChainRowAllocations(params: ChainAllocParams): Map<number, RowAllocation> {
-  const { rows, chainId, accountIds, balanceMap, chains, prices, currency } = params;
+  const { assetIds, chainId, accountIds, balanceMap, chains, prices, currency } = params;
   const result = new Map<number, RowAllocation>();
 
   const accountIdSet = new Set(accountIds);
-  const assetIds = new Set(rows.map((r) => r.assetId));
+  const assetIdSet = new Set(assetIds);
   const chain = chains[chainId];
   if (!chain) return result;
 
@@ -113,9 +112,9 @@ export function computeChainRowAllocations(params: ChainAllocParams): Map<number
   for (const balance of Object.values(balanceMap)) {
     if (!accountIdSet.has(balance.accountId)) continue;
     if (balance.chainId !== chainId) continue;
-    if (!assetIds.has(balance.assetId)) continue;
+    if (!assetIdSet.has(balance.assetId)) continue;
 
-    const asset = chain.assets.find((a: any) => a.assetId === balance.assetId);
+    const asset = chain.assets.find((a) => a.assetId === balance.assetId);
     if (!asset?.priceId) continue;
 
     const priceItem = prices[asset.priceId]?.[currency.coingeckoId];
