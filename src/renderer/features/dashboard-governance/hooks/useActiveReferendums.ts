@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { useMemo, useRef } from 'react';
 
 import { type AccountVote, type ChainId, type VotingMap } from '@/shared/core';
-import { useSnapshot } from '@/shared/lib/hooks';
+import { useThrottle } from '@/shared/lib/hooks';
 import { entries, getRoundedValue, toAccountId, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
@@ -133,9 +133,8 @@ function useChainActiveReferendums(
   const chain = chains[chainId] ?? null;
   const timelineChainId = chain?.additional?.timelineChain ?? chainId;
   const timelineApi = useApi(timelineChainId);
-  // Snapshot on first load — dashboard doesn't need live block updates.
-  const currentBlock = useSnapshot(useBlock(timelineApi).data);
-  const blockTime = useSnapshot(useBlockTime(timelineApi, chains[timelineChainId]).data);
+  const currentBlock = useThrottle(useBlock(timelineApi).data, 300_000);
+  const blockTime = useThrottle(useBlockTime(timelineApi, chains[timelineChainId]).data, 300_000);
   const { data: titles } = useReferendumTitles({
     chain,
     service: metaProvider?.service ?? null,
