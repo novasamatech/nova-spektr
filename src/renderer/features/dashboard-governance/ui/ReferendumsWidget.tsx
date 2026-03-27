@@ -2,8 +2,8 @@ import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance, formatFiatBalance, performSearch } from '@/shared/lib/utils';
-import { type IconNames, BodyText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
-import { VoteChart } from '@/shared/ui-entities';
+import { BodyText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { TrackInfo, VoteChart } from '@/shared/ui-entities';
 import { type Column, SearchInput, Select, Skeleton, Table, Tooltip } from '@/shared/ui-kit';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { type ActiveReferendum, useActiveReferendums } from '../hooks/useActiveReferendums';
@@ -20,29 +20,6 @@ type Props = {
 
 const HOUR = 3_600_000;
 const DAY = 86_400_000;
-
-const TRACK_MAP: Record<number, { title: string; icon: IconNames }> = {
-  0: { title: 'governance.referendums.mainAgenda', icon: 'polkadot' },
-  1: { title: 'governance.referendums.fellowshipWhitelist', icon: 'fellowship' },
-  2: { title: 'governance.referendums.wishForChange', icon: 'voting' },
-  10: { title: 'governance.referendums.staking', icon: 'stake' },
-  11: { title: 'governance.referendums.treasuryAny', icon: 'treasury' },
-  12: { title: 'governance.referendums.governanceLease', icon: 'voting' },
-  13: { title: 'governance.referendums.fellowshipAdmin', icon: 'fellowship' },
-  14: { title: 'governance.referendums.governanceRegistrar', icon: 'voting' },
-  15: { title: 'governance.referendums.crowdloans', icon: 'rocket' },
-  20: { title: 'governance.referendums.governanceCanceller', icon: 'voting' },
-  21: { title: 'governance.referendums.governanceKiller', icon: 'voting' },
-  30: { title: 'governance.referendums.treasurySmallTips', icon: 'treasury' },
-  31: { title: 'governance.referendums.treasuryBigTips', icon: 'treasury' },
-  32: { title: 'governance.referendums.treasurySmallSpend', icon: 'treasury' },
-  33: { title: 'governance.referendums.treasuryMediumSpend', icon: 'treasury' },
-  34: { title: 'governance.referendums.treasuryBigSpend', icon: 'treasury' },
-};
-
-function getTrackInfo(trackId: number): { title: string; icon: IconNames } {
-  return TRACK_MAP[trackId] ?? { title: 'dashboard.activeReferendums.unknownTrack', icon: 'voting' };
-}
 
 function formatTimeLeft(ms: number): string {
   if (ms <= 0) return '0h';
@@ -138,7 +115,7 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
         key: 'trackId',
         title: t('dashboard.activeReferendums.track'),
         width: '192px',
-        render: (_v, row) => <TrackCell trackId={row.trackId} t={t} />,
+        render: (_v, row) => <TrackCell trackId={row.trackId} />,
       },
       {
         key: 'title',
@@ -193,7 +170,7 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
         key: 'trackId',
         title: t('dashboard.activeReferendums.track'),
         width: '192px',
-        render: (_v, row) => <TrackCell trackId={row.trackId} t={t} />,
+        render: (_v, row) => <TrackCell trackId={row.trackId} />,
       },
       {
         key: 'title',
@@ -378,16 +355,8 @@ const TabButton = memo(
   ),
 );
 
-const TrackCell = memo(({ trackId, t }: { trackId: number; t: ReturnType<typeof useI18n>['t'] }) => {
-  const trackInfo = getTrackInfo(trackId);
-  const label = t(trackInfo.title);
-
-  return (
-    <div className="flex items-center gap-1" title={label}>
-      <Icon name={trackInfo.icon} size={14} className="shrink-0 text-text-secondary" />
-      <FootnoteText className="truncate text-text-secondary">{label}</FootnoteText>
-    </div>
-  );
+const TrackCell = memo(({ trackId }: { trackId: number }) => {
+  return <TrackInfo trackId={String(trackId)} />;
 });
 
 const VoteChipsCell = memo(

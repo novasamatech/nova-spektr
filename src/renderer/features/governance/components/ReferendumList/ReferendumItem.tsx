@@ -87,7 +87,9 @@ export const ReferendumItem = memo(
                 #{referendumId}
               </FootnoteText>
             )}
-            {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
+            {referendumService.isOngoing(referendum) && (
+              <TrackInfo trackId={referendum.track} className="ml-auto flex text-text-secondary" />
+            )}
             <Copy value={referendumLink.href} notification={t('governance.referendums.linkCopied')}>
               <IconButton className="ml-2 shrink-0 p-0 text-icon-default" name="export" />
             </Copy>
