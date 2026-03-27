@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useDeferredValue, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -33,6 +33,7 @@ export const Dashboard = () => {
   const allEntries = useUnit(dashboardModel.$allEntries);
   const selectedIds = useUnit(dashboardModel.$selectedIds);
   const activeTab = useUnit(dashboardModel.$activeTab);
+  const deferredTab = useDeferredValue(activeTab);
   const editMode = useUnit(dashboardModel.$editMode);
   const editModeToggled = useUnit(dashboardModel.editModeToggled);
 
@@ -79,7 +80,7 @@ export const Dashboard = () => {
           </div>
 
           <Tabs.Content value="overview">
-            {activeTab === 'overview' &&
+            {deferredTab === 'overview' &&
               (allEntries.length === 0 ? (
                 <div className="flex h-full w-full flex-col items-center justify-center">
                   <div className="flex flex-col items-center gap-y-2">
@@ -98,7 +99,7 @@ export const Dashboard = () => {
           </Tabs.Content>
 
           <Tabs.Content value="staking">
-            {activeTab === 'staking' &&
+            {deferredTab === 'staking' &&
               (allEntries.length === 0 ? (
                 <div className="flex h-full w-full flex-col items-center justify-center">
                   <div className="flex flex-col items-center gap-y-2">
@@ -117,7 +118,7 @@ export const Dashboard = () => {
           </Tabs.Content>
 
           <Tabs.Content value="governance">
-            {activeTab === 'governance' &&
+            {deferredTab === 'governance' &&
               (allEntries.length === 0 ? (
                 <div className="flex h-full w-full flex-col items-center justify-center">
                   <div className="flex flex-col items-center gap-y-2">

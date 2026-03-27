@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { IconButton, TitleText } from '@/shared/ui';
+import { FootnoteText, IconButton } from '@/shared/ui';
 import { useAssetsPrices } from '@/domains/price';
 import { currencySelect } from '@/aggregates/currency-select';
 import { DashboardWidget } from '@/pages/Dashboard';
@@ -50,9 +50,9 @@ export const PriceChartsWidget = () => {
   const currencySymbol = currency.symbol ?? currency.code;
 
   return (
-    <DashboardWidget card={false} className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <TitleText>{t('dashboard.priceCharts.title')}</TitleText>
+    <DashboardWidget className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <FootnoteText className="text-text-tertiary">{t('dashboard.priceCharts.title')}</FootnoteText>
         <IconButton name="settingsLite" size={16} onClick={openTokenSelector} />
       </div>
 

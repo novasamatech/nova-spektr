@@ -161,8 +161,9 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
         render: (_v, row) => <img src={row.chainIcon} alt={row.chainName} className="h-10 w-10" />,
       },
       {
-        key: 'id',
+        key: 'idNumeric',
         title: t('dashboard.activeReferendums.id'),
+        sortable: true,
         width: '56px',
         render: (_v, row) => <FootnoteText className="font-mono text-text-tertiary">#{row.id}</FootnoteText>,
       },

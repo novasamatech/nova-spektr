@@ -40,6 +40,7 @@ export type EndedVote = OurVote & {
 
 export type EndedReferendum = {
   id: string;
+  idNumeric: number;
   chainId: ChainId;
   chainName: string;
   chainIcon: string;
@@ -254,6 +255,7 @@ function useChainEndedReferendums(
 
       result.push({
         id: refId,
+        idNumeric: Number(refId),
         chainId,
         chainName: chain.name,
         chainIcon: asset.icon.colored,
