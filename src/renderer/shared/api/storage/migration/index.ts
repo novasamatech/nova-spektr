@@ -16,3 +16,4 @@ export { migrateNotificationStructure } from './migration-15';
 export { addFlexibleMultisigProxyType } from './migration-16';
 export { addAccountCreatedAt } from './migration-17';
 export { backupContactsBeforePKChange, migrateContactsToStringIds, restoreContactsAfterPKChange } from './migration-18';
+export { migrateMultisigAccountNameType } from './migration-19';

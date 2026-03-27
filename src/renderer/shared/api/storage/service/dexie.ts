@@ -26,6 +26,7 @@ import {
   migrateEVMAccountsCryptoType,
   migrateEvents,
   migrateMultishardAccounts,
+  migrateMultisigAccountNameType,
   migrateMultisigAccounts,
   migrateNotificationStructure,
   migratePVAccounts,
@@ -165,6 +166,8 @@ class DexieStorage extends Dexie {
     this.version(47).stores({ contacts: 'id,source' }).upgrade(restoreContactsAfterPKChange);
     this.version(48).stores({ _contactsBackup: null });
 
+    this.version(49).upgrade(migrateMultisigAccountNameType);
+
     this.connections = this.table('connections');
     this.balances2 = this.table('balances2');
     this.wallets = this.table('wallets');
@@ -198,6 +201,7 @@ export const importDb = async (blob: Blob) => {
     await addFlexibleMultisigProxyType(t);
     await addAccountCreatedAt(t);
     await migrateContactsToStringIds(t);
+    await migrateMultisigAccountNameType(t);
   });
 };
 

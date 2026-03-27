@@ -1,6 +1,8 @@
 // @ts-nocheck - Test file with mock data that doesn't match strict types
 import { describe, expect, test } from 'vitest';
 
+import { AccountNameType } from '@/shared/core';
+
 import {
   allAccounts,
   allWallets,
@@ -31,6 +33,7 @@ describe('syncMultisigAccounts', () => {
               accountType: multisigAccount1.accountType,
               cryptoType: multisigAccount1.cryptoType,
               name: '13HZ3...deSPH',
+              nameType: AccountNameType.CUSTOM,
               signatories: multisigAccount1.signatories,
               signingType: multisigAccount1.signingType,
               threshold: multisigAccount1.threshold,
@@ -47,6 +50,7 @@ describe('syncMultisigAccounts', () => {
               accountType: multisigAccount2.accountType,
               cryptoType: multisigAccount2.cryptoType,
               name: '13oKT...bKKxZ',
+              nameType: AccountNameType.CUSTOM,
               signatories: multisigAccount2.signatories,
               signingType: multisigAccount2.signingType,
               threshold: multisigAccount2.threshold,
@@ -63,6 +67,7 @@ describe('syncMultisigAccounts', () => {
               accountType: multisigAccount3.accountType,
               cryptoType: multisigAccount3.cryptoType,
               name: '149AX...N4idM',
+              nameType: AccountNameType.CUSTOM,
               signatories: multisigAccount3.signatories,
               signingType: multisigAccount3.signingType,
               threshold: multisigAccount3.threshold,

@@ -10,6 +10,7 @@ import {
   type MultisigAccount,
   type NoID,
   type Wallet,
+  AccountNameType,
   AccountType,
   CryptoType,
   SigningType,
@@ -389,6 +390,7 @@ sample({
     const account: Omit<NoID<MultisigAccount>, 'walletId'> = {
       signatories: sortedSignatories,
       name: name.trim(),
+      nameType: AccountNameType.CUSTOM,
       accountId: accountId,
       threshold: threshold,
       cryptoType,

@@ -19,6 +19,7 @@ import {
   type ProxyAccount,
   type ProxyType,
   type Wallet,
+  AccountNameType,
   AccountType,
   CryptoType,
   NotificationType,
@@ -456,6 +457,7 @@ export const syncMultisigAccounts = ({ allAccounts, allWallets, syncResult, iden
         accounts: [
           {
             name,
+            nameType: AccountNameType.CUSTOM,
             type: 'universal',
             accountType: AccountType.MULTISIG,
             accountId: syncedAccount.accountId,
@@ -573,6 +575,7 @@ export const syncFlexibleMultisigs = ({
           type: 'chain',
           chainId: matchedSyncedProxy.chainId,
           name: proxiedName,
+          nameType: AccountNameType.CUSTOM,
           accountId: matchedSyncedProxy.accountId,
 
           multisigAccountId: syncedMultisig.accountId,

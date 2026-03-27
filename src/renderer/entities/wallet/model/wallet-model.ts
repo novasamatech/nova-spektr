@@ -103,7 +103,7 @@ const createWalletsFx = createEffect(async (drafts: WalletCreateParams[]): Promi
       accountsToCreate.push({
         ...account,
         walletId: wallet.id,
-        nameType: account.nameType ?? AccountNameType.GENERATED,
+        nameType: account.nameType ?? AccountNameType.CUSTOM,
       } as AnyAccountDraft);
     }
   }
