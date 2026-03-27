@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useDeferredValue } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
 
 import { useI18n } from '@/shared/i18n';
@@ -18,7 +18,8 @@ type Props = {
 
 export const GovernanceOverviewWidget = ({ accountIds }: Props) => {
   const { t } = useI18n();
-  const { chains, totalFiat, pending, fiatFlag, currency } = useGovernanceOverview(accountIds);
+  const deferredAccountIds = useDeferredValue(accountIds);
+  const { chains, totalFiat, pending, fiatFlag, currency } = useGovernanceOverview(deferredAccountIds);
 
   if (!fiatFlag) return null;
 

@@ -10,6 +10,10 @@ type CacheEntry = {
 
 const cache = new Map<string, CacheEntry>();
 
+// Stable empty reference for accounts with no track locks — prevents cache misses
+// from `trackLocks[accountId] ?? {}` creating a new object each time.
+export const EMPTY_TRACK_LOCKS: Record<string, never> = {};
+
 // Cache keyed by accountId; invalidates on block change or data reference change.
 export function cachedEstimateClaimSchedule(
   accountId: string,

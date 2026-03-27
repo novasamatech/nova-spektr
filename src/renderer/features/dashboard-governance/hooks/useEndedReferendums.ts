@@ -22,7 +22,7 @@ import { networkModel, useApi } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
-import { cachedEstimateClaimSchedule } from './claimScheduleCache';
+import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
 import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
 import {
   type AllEntry,
@@ -153,7 +153,7 @@ function useChainEndedReferendums(
     const voteLockingPeriod = api.consts.convictionVoting.voteLockingPeriod.toNumber();
 
     for (const [accountId, trackVoting] of entries(votingMap)) {
-      const accountTrackLocks = trackLocks[accountId] ?? {};
+      const accountTrackLocks = trackLocks[accountId] ?? EMPTY_TRACK_LOCKS;
 
       const schedule = cachedEstimateClaimSchedule(
         accountId,

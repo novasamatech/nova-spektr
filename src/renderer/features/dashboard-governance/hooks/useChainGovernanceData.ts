@@ -12,7 +12,7 @@ import { useBlock, useBlockTime } from '@/domains/network';
 import { locksService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
 
-import { cachedEstimateClaimSchedule } from './claimScheduleCache';
+import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
 
 type ClaimResult = { claimable: BN; unlockChunks: AccountUnlockChunk[]; delegated: BN };
 const EMPTY_CLAIM: ClaimResult = { claimable: BN_ZERO, unlockChunks: [], delegated: BN_ZERO };
@@ -181,7 +181,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
       const votingByTrack = votingMap[accountId];
       if (!votingByTrack) continue;
 
-      const accountTrackLocks = trackLocks[accountId] ?? {};
+      const accountTrackLocks = trackLocks[accountId] ?? EMPTY_TRACK_LOCKS;
 
       const schedule = cachedEstimateClaimSchedule(
         accountId,

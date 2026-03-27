@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useDeferredValue, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toShortAddress } from '@/shared/lib/utils';
@@ -16,6 +16,7 @@ type Props = {
 
 export const UnlockScheduleWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
+  const deferredAccountIds = useDeferredValue(accountIds);
 
   const accountNameMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -26,7 +27,7 @@ export const UnlockScheduleWidget = ({ accountIds, allEntries }: Props) => {
     return map;
   }, [allEntries]);
   const { claimableNowFiat, pendingLocksFiat, delegatedFiat, events, pending, fiatFlag, currency } =
-    useUnlockSchedule(accountIds);
+    useUnlockSchedule(deferredAccountIds);
 
   if (!fiatFlag) return null;
 
