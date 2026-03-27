@@ -4,6 +4,7 @@ import { useMemo, useRef } from 'react';
 
 import { UnlockChunkType } from '@/shared/api/governance';
 import { type AccountVote, type ChainId, type CompletedReferendum, type VotingMap } from '@/shared/core';
+import { useSnapshot } from '@/shared/lib/hooks';
 import { entries, getRoundedValue, toAccountId, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
@@ -17,11 +18,12 @@ import {
 import { useBlock, useBlockTime } from '@/domains/network';
 import { useAssetsPrices } from '@/domains/price';
 import { AssetHubChains } from '@/domains/staking';
-import { claimScheduleService, locksService, referendumService, votingService } from '@/entities/governance';
+import { locksService, referendumService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
+import { cachedEstimateClaimSchedule } from './claimScheduleCache';
 import {
   type EntryInfo,
   type OurVote,
@@ -32,6 +34,7 @@ import {
 
 const POLKADOT_AH_CHAIN_ID = AssetHubChains['POLKADOT_AH'];
 const KUSAMA_AH_CHAIN_ID = AssetHubChains['KUSAMA_AH'];
+const EMPTY_VOTING_MAP: VotingMap = {};
 
 export type EndedVote = OurVote & {
   unlockable: boolean;
@@ -96,14 +99,31 @@ function useChainEndedReferendums(
   const { data: tracks, pending: tracksPending } = useTracks({ api });
   const trackIds = useMemo(() => Object.keys(tracks), [tracks]);
 
+  // Pre-filter: only query voting for accounts with governance locks.
+  const { data: trackLocks } = useTrackLocks({
+    api,
+    accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
+  });
+
+  const governanceAccountIds = useMemo(() => {
+    const active = typedAccountIds.filter((id) => {
+      const locks = trackLocks[id];
+
+      return locks && Object.keys(locks).length > 0;
+    });
+
+    return active.length > 0 ? active : null;
+  }, [trackLocks, typedAccountIds]);
+
   const { data: rawVotingMap, pending: votingPending } = useVoting({
     api,
     tracks: trackIds.length > 0 ? trackIds : null,
-    accounts: typedAccountIds,
+    accounts: governanceAccountIds,
   });
 
   const votingMap = useMemo(() => {
-    const accountSet = new Set<AccountId>(typedAccountIds);
+    if (!governanceAccountIds) return EMPTY_VOTING_MAP;
+    const accountSet = new Set<AccountId>(governanceAccountIds);
     const filtered: VotingMap = {};
 
     for (const [accountId, trackVoting] of entries(rawVotingMap)) {
@@ -113,26 +133,21 @@ function useChainEndedReferendums(
     }
 
     return filtered;
-  }, [rawVotingMap, typedAccountIds]);
-
-  const { data: trackLocks } = useTrackLocks({
-    api,
-    accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
-  });
+  }, [rawVotingMap, governanceAccountIds]);
 
   const { data: undecidingTimeout } = useUndecidingTimeout({ api });
 
   const { data: referendums } = useReferendums({ api });
 
-  // Governance chain block for claim schedule (accurate for lock comparisons)
-  const { data: govCurrentBlock } = useBlock(api);
+  // Snapshot on first load — dashboard doesn't need live block updates.
+  const govCurrentBlock = useSnapshot(useBlock(api).data);
 
   const chain = chains[chainId] ?? null;
   const timelineChainId = chain?.additional?.timelineChain ?? chainId;
   const timelineApi = useApi(timelineChainId);
-  // Timeline block for display-oriented timestamps (may differ from governance chain)
-  const { data: currentBlock } = useBlock(timelineApi);
-  const { data: blockTime } = useBlockTime(timelineApi, chains[timelineChainId]);
+
+  const currentBlock = useSnapshot(useBlock(timelineApi).data);
+  const blockTime = useSnapshot(useBlockTime(timelineApi, chains[timelineChainId]).data);
   const { data: titles } = useReferendumTitles({
     chain,
     service: metaProvider?.service ?? null,
@@ -146,8 +161,6 @@ function useChainEndedReferendums(
     hasEverLoaded.current = true;
   }
 
-  // Build set of (accountId, refId) pairs that are truly claimable (overlocking-aware).
-  // Separated from the main useMemo so it doesn't recompute when titles/entryMap change.
   const claimableVotes = useMemo(() => {
     const set = new Set<string>();
     if (!api || govCurrentBlock === null || Object.keys(tracks).length === 0) return set;
@@ -157,15 +170,20 @@ function useChainEndedReferendums(
     for (const [accountId, trackVoting] of entries(votingMap)) {
       const accountTrackLocks = trackLocks[accountId] ?? {};
 
-      const schedule = claimScheduleService.estimateClaimSchedule({
-        currentBlockNumber: govCurrentBlock,
-        referendums,
-        tracks,
-        trackLocks: accountTrackLocks,
-        votingByTrack: trackVoting,
-        undecidingTimeout,
-        voteLockingPeriod,
-      });
+      const schedule = cachedEstimateClaimSchedule(
+        accountId,
+        {
+          currentBlockNumber: govCurrentBlock,
+          referendums,
+          tracks,
+          trackLocks: accountTrackLocks,
+          votingByTrack: trackVoting,
+          undecidingTimeout,
+          voteLockingPeriod,
+        },
+        trackVoting,
+        accountTrackLocks,
+      );
 
       for (const chunk of schedule) {
         if (chunk.type !== UnlockChunkType.CLAIMABLE) continue;

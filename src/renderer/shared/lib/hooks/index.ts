@@ -14,3 +14,4 @@ export { useExternalState } from './useExternalState';
 export { useKeyCombo } from './useKeyCombo';
 export { useClock } from './useClock';
 export { useAsync } from './useAsync';
+export { useSnapshot } from './useSnapshot';

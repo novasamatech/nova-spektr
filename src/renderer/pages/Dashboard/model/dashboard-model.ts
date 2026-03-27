@@ -120,7 +120,7 @@ const $matchedEntries = combine(dashboardPresetsModel.$activePreset, $allEntries
   return applyPresetFilter(preset.filters, entries);
 });
 
-const $validSelectedIds = combine($matchedEntries, $allEntries, (matchedEntries, allEntries) => {
+const $validSelectedIdsRaw = combine($matchedEntries, $allEntries, (matchedEntries, allEntries) => {
   const matchedIds = new Set(matchedEntries.map((e) => e.id));
 
   const selectedAccountIds = new Set<string>();
@@ -137,8 +137,17 @@ const $validSelectedIds = combine($matchedEntries, $allEntries, (matchedEntries,
     }
   }
 
-  return Array.from(validIds);
+  return Array.from(validIds).sort();
 });
+
+const $validSelectedIds = createStore<string[]>([], {
+  updateFilter: (next, prev) => {
+    if (next.length !== prev.length) return true;
+
+    return next.some((id, i) => id !== prev[i]);
+  },
+});
+$validSelectedIds.on($validSelectedIdsRaw, (_, ids) => ids);
 
 const $selectedAccounts = combine($validSelectedIds, $accountsWithWallets, (selectedIds, { accounts }) => {
   const idSet = new Set(selectedIds);

@@ -4,14 +4,21 @@ import { useMemo, useRef } from 'react';
 
 import { type Chunks, UnlockChunkType } from '@/shared/api/governance';
 import { type ChainId, type VotingMap } from '@/shared/core';
+import { useSnapshot } from '@/shared/lib/hooks';
 import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useReferendums, useTrackLocks, useTracks, useUndecidingTimeout, useVoting } from '@/domains/governance';
 import { useBlock, useBlockTime } from '@/domains/network';
-import { claimScheduleService, locksService, votingService } from '@/entities/governance';
+import { locksService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
 
+import { cachedEstimateClaimSchedule } from './claimScheduleCache';
+
 const BN_ZERO = new BN(0);
+const EMPTY_VOTING_MAP: VotingMap = {};
+
+type ClaimResult = { claimable: BN; unlockChunks: AccountUnlockChunk[]; delegated: BN };
+const EMPTY_CLAIM: ClaimResult = { claimable: BN_ZERO, unlockChunks: [], delegated: BN_ZERO };
 
 export type AccountUnlockChunk = {
   accountId: string;
@@ -127,16 +134,34 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
   const { data: tracks, pending: tracksPending } = useTracks({ api });
   const trackIds = useMemo(() => Object.keys(tracks), [tracks]);
 
+  // Fetch track locks first (70 keys — fast) to pre-filter accounts for the
+  // much heavier voting subscription (70 × 15 tracks = 1,050 keys without filter).
+  const { data: trackLocks } = useTrackLocks({
+    api,
+    accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
+  });
+
+  const governanceAccountIds = useMemo(() => {
+    const active = typedAccountIds.filter((id) => {
+      const locks = trackLocks[id];
+
+      return locks && Object.keys(locks).length > 0;
+    });
+
+    return active.length > 0 ? active : null;
+  }, [trackLocks, typedAccountIds]);
+
   const { data: rawVotingMap, pending: votingPending } = useVoting({
     api,
     tracks: trackIds.length > 0 ? trackIds : null,
-    accounts: typedAccountIds,
+    accounts: governanceAccountIds,
   });
 
   // Filter voting map to only include currently selected accounts.
   // The subscription cache may retain data from previously selected accounts.
   const votingMap = useMemo(() => {
-    const accountSet = new Set<AccountId>(typedAccountIds);
+    if (!governanceAccountIds) return EMPTY_VOTING_MAP;
+    const accountSet = new Set<AccountId>(governanceAccountIds);
     const filtered: VotingMap = {};
 
     for (const [accountId, trackVoting] of entries(rawVotingMap)) {
@@ -146,31 +171,25 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     }
 
     return filtered;
-  }, [rawVotingMap, typedAccountIds]);
+  }, [rawVotingMap, governanceAccountIds]);
 
   const { data: referendums } = useReferendums({ api });
   const { data: undecidingTimeout } = useUndecidingTimeout({ api });
 
-  const { data: trackLocks } = useTrackLocks({
-    api,
-    accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
-  });
+  // Snapshot on first load — dashboard doesn't need live block updates.
+  const currentBlock = useSnapshot(useBlock(api).data);
+  const blockTime = useSnapshot(useBlockTime(api, chains[chainId]).data);
 
-  const { data: currentBlock } = useBlock(api);
-
-  const { data: blockTime } = useBlockTime(api, chains[chainId]);
-
-  // Calculate claimable amount, pending locks, and delegated amount
   const claimData = useMemo(() => {
     if (
       !api ||
       currentBlock === null ||
-      typedAccountIds.length === 0 ||
+      !governanceAccountIds ||
       Object.keys(votingMap).length === 0 ||
       referendums.length === 0 ||
       Object.keys(tracks).length === 0
     ) {
-      return { claimable: BN_ZERO, unlockChunks: [] as AccountUnlockChunk[], delegated: BN_ZERO };
+      return EMPTY_CLAIM;
     }
 
     const voteLockingPeriod = api.consts.convictionVoting.voteLockingPeriod.toNumber();
@@ -178,21 +197,26 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     let totalDelegated = BN_ZERO;
     const allChunks: AccountUnlockChunk[] = [];
 
-    for (const accountId of typedAccountIds) {
+    for (const accountId of governanceAccountIds) {
       const votingByTrack = votingMap[accountId];
       if (!votingByTrack) continue;
 
       const accountTrackLocks = trackLocks[accountId] ?? {};
 
-      const schedule = claimScheduleService.estimateClaimSchedule({
-        currentBlockNumber: currentBlock,
-        referendums,
-        tracks,
-        trackLocks: accountTrackLocks,
+      const schedule = cachedEstimateClaimSchedule(
+        accountId,
+        {
+          currentBlockNumber: currentBlock,
+          referendums,
+          tracks,
+          trackLocks: accountTrackLocks,
+          votingByTrack,
+          undecidingTimeout,
+          voteLockingPeriod,
+        },
         votingByTrack,
-        undecidingTimeout,
-        voteLockingPeriod,
-      });
+        accountTrackLocks,
+      );
 
       collectChunks(schedule, accountId, allChunks);
 
@@ -206,7 +230,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     }
 
     return { claimable: totalClaimable, unlockChunks: allChunks, delegated: totalDelegated };
-  }, [api, currentBlock, typedAccountIds, votingMap, referendums, tracks, trackLocks, undecidingTimeout]);
+  }, [api, currentBlock, governanceAccountIds, votingMap, referendums, tracks, trackLocks, undecidingTimeout]);
 
   const stats = useMemo(() => computeGovernanceStats(votingMap), [votingMap]);
 

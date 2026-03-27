@@ -36,7 +36,7 @@ export const Dashboard = () => {
   const editMode = useUnit(dashboardModel.$editMode);
   const editModeToggled = useUnit(dashboardModel.editModeToggled);
 
-  const accountIds = useMemo(() => {
+  const accountIdsKey = useMemo(() => {
     const selectedIdSet = new Set(selectedIds);
     const ids = new Set<string>();
     for (const entry of allEntries) {
@@ -45,8 +45,20 @@ export const Dashboard = () => {
       }
     }
 
-    return Array.from(ids);
+    return [...ids].sort().join('\0');
   }, [allEntries, selectedIds]);
+
+  const accountIds = useMemo(() => (accountIdsKey ? accountIdsKey.split('\0') : []), [accountIdsKey]);
+
+  const slimEntriesKey = useMemo(
+    () => allEntries.map((e) => `${e.accountId}\t${e.name}\t${e.address}`).join('\n'),
+    [allEntries],
+  );
+
+  const slimEntries = useMemo(
+    () => allEntries.map((e) => ({ accountId: e.accountId, name: e.name, address: e.address })),
+    [slimEntriesKey], // eslint-disable-line -- allEntries is intentionally excluded; slimEntriesKey tracks content changes
+  );
 
   return (
     <section className="flex h-full flex-col">
@@ -72,57 +84,60 @@ export const Dashboard = () => {
           </div>
 
           <Tabs.Content value="overview">
-            {allEntries.length === 0 ? (
-              <div className="flex h-full w-full flex-col items-center justify-center">
-                <div className="flex flex-col items-center gap-y-2">
-                  <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
-                  <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+            {activeTab === 'overview' &&
+              (allEntries.length === 0 ? (
+                <div className="flex h-full w-full flex-col items-center justify-center">
+                  <div className="flex flex-col items-center gap-y-2">
+                    <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
+                    <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <DashboardGrid
-                slot={dashboardWidgetsSlot}
-                tab="overview"
-                editMode={editMode}
-                props={{ accountIds, allEntries }}
-              />
-            )}
+              ) : (
+                <DashboardGrid
+                  slot={dashboardWidgetsSlot}
+                  tab="overview"
+                  editMode={editMode}
+                  props={{ accountIds, allEntries: slimEntries }}
+                />
+              ))}
           </Tabs.Content>
 
           <Tabs.Content value="staking">
-            {allEntries.length === 0 ? (
-              <div className="flex h-full w-full flex-col items-center justify-center">
-                <div className="flex flex-col items-center gap-y-2">
-                  <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
-                  <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+            {activeTab === 'staking' &&
+              (allEntries.length === 0 ? (
+                <div className="flex h-full w-full flex-col items-center justify-center">
+                  <div className="flex flex-col items-center gap-y-2">
+                    <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
+                    <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <DashboardGrid
-                slot={dashboardStakingSlot}
-                tab="staking"
-                editMode={editMode}
-                props={{ accountIds, allEntries }}
-              />
-            )}
+              ) : (
+                <DashboardGrid
+                  slot={dashboardStakingSlot}
+                  tab="staking"
+                  editMode={editMode}
+                  props={{ accountIds, allEntries: slimEntries }}
+                />
+              ))}
           </Tabs.Content>
 
           <Tabs.Content value="governance">
-            {allEntries.length === 0 ? (
-              <div className="flex h-full w-full flex-col items-center justify-center">
-                <div className="flex flex-col items-center gap-y-2">
-                  <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
-                  <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+            {activeTab === 'governance' &&
+              (allEntries.length === 0 ? (
+                <div className="flex h-full w-full flex-col items-center justify-center">
+                  <div className="flex flex-col items-center gap-y-2">
+                    <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
+                    <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <DashboardGrid
-                slot={dashboardGovernanceSlot}
-                tab="governance"
-                editMode={editMode}
-                props={{ accountIds, allEntries }}
-              />
-            )}
+              ) : (
+                <DashboardGrid
+                  slot={dashboardGovernanceSlot}
+                  tab="governance"
+                  editMode={editMode}
+                  props={{ accountIds, allEntries: slimEntries }}
+                />
+              ))}
           </Tabs.Content>
 
           <Tabs.Content value="alerts">
