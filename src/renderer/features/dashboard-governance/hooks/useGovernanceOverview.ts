@@ -71,7 +71,11 @@ export const useGovernanceOverview = (accountIds: string[]): GovernanceOverviewR
 
   return {
     ...result,
-    pending: accountIds.length > 0 && ((polkadotData?.pending ?? false) || (kusamaData?.pending ?? false)),
+    pending:
+      accountIds.length > 0 &&
+      ((polkadotData === null && kusamaData === null) ||
+        (polkadotData?.pending ?? false) ||
+        (kusamaData?.pending ?? false)),
     fiatFlag,
     currency,
   };

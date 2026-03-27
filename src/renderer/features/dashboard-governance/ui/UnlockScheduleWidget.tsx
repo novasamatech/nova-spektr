@@ -42,7 +42,10 @@ export const UnlockScheduleWidget = ({ accountIds, allEntries }: Props) => {
     );
   }
 
-  const hasData = events.length > 0 || claimableNowFiat !== '0' || delegatedFiat !== '0';
+  const hasData =
+    events.length > 0 ||
+    (claimableNowFiat != null && claimableNowFiat !== '0') ||
+    (delegatedFiat != null && delegatedFiat !== '0');
 
   return (
     <DashboardWidget colSpan={2}>
