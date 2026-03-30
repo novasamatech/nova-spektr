@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-import { renderer } from './config';
+import { renderer } from './config/index.js';
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -38,7 +38,12 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         // Fix for ERR_CERT_VERIFIER_CHANGED errors
         launchOptions: {
-          args: ['--ignore-certificate-errors', '--ignore-certificate-errors-spki-list'],
+          args: [
+            '--ignore-certificate-errors',
+            '--ignore-certificate-errors-spki-list',
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+          ],
         },
       },
     },

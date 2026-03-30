@@ -20,18 +20,19 @@ const $inputQuery = restore(changeQuery, '').reset(clearSelection);
 // Debounced query for expensive search operations (300ms delay)
 const $query = restore(debounce(changeQuery, 300), '').reset(clearSelection);
 
-const $selectedWallets = createStore<Set<Wallet>>(new Set()).reset(clearSelection);
+const $selectedWallets = createStore<Set<Wallet['id']>>(new Set()).reset(clearSelection);
 
 sample({
   clock: toggleWalletSelection,
   source: $selectedWallets,
   fn: (selected, wallet) => {
     const newSelected = new Set(selected);
+    const walletId = wallet.id;
 
-    if (newSelected.has(wallet)) {
-      newSelected.delete(wallet);
+    if (newSelected.has(walletId)) {
+      newSelected.delete(walletId);
     } else {
-      newSelected.add(wallet);
+      newSelected.add(walletId);
     }
     return newSelected;
   },
@@ -43,10 +44,10 @@ sample({
   source: $selectedWallets,
   fn: (selected, groupWallets) => {
     const newSelected = new Set(selected);
-    const allSelected = groupWallets.every((wallet) => newSelected.has(wallet));
+    const allSelected = groupWallets.every((wallet) => newSelected.has(wallet.id));
 
     for (const wallet of groupWallets) {
-      allSelected ? newSelected.delete(wallet) : newSelected.add(wallet);
+      allSelected ? newSelected.delete(wallet.id) : newSelected.add(wallet.id);
     }
 
     return newSelected;
@@ -58,7 +59,9 @@ sample({
   clock: toggleAllSelection,
   source: { selectedWallets: $selectedWallets, wallets: $hiddenWallets },
   fn: ({ selectedWallets, wallets }) => {
-    return selectedWallets.size === wallets.length ? new Set<Wallet>() : new Set(wallets);
+    return selectedWallets.size === wallets.length
+      ? new Set<Wallet['id']>()
+      : new Set(wallets.map((wallet) => wallet.id));
   },
   target: $selectedWallets,
 });
@@ -68,7 +71,7 @@ const $selectionState = combine($selectedWallets, $hiddenWallets, (selectedWalle
   const selectedCount = selectedWallets.size;
 
   return {
-    selectedWallets: Array.from(selectedWallets), // Convert Set to Array for UI compatibility
+    selectedWalletIds: Array.from(selectedWallets),
     selectedCount,
     totalWallets,
     allSelected: selectedCount > 0 && selectedCount === totalWallets,
@@ -79,14 +82,18 @@ const $selectionState = combine($selectedWallets, $hiddenWallets, (selectedWalle
 
 sample({
   clock: restoreWallets,
-  source: $selectedWallets,
-  fn: (selectedWallets) => Array.from(selectedWallets),
+  source: { selectedWallets: $selectedWallets, hiddenWallets: $hiddenWallets },
+  fn: ({ selectedWallets, hiddenWallets }) => {
+    const selectedIds = new Set(selectedWallets);
+
+    return hiddenWallets.filter((wallet) => selectedIds.has(wallet.id));
+  },
   target: walletModel.restoreWallets,
 });
 
 sample({
   clock: restoreWallets,
-  fn: () => new Set<Wallet>(),
+  fn: () => new Set<Wallet['id']>(),
   target: $selectedWallets,
 });
 
