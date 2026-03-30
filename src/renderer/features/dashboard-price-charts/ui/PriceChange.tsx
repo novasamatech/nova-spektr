@@ -1,10 +1,12 @@
+import { memo } from 'react';
+
 import { cnTw } from '@/shared/lib/utils';
 
 type Props = {
   change: number | undefined;
 };
 
-export const PriceChange = ({ change }: Props) => {
+export const PriceChange = memo(({ change }: Props) => {
   if (change === undefined || change === null) return null;
 
   const isPositive = change >= 0;
@@ -16,4 +18,4 @@ export const PriceChange = ({ change }: Props) => {
       {formatted}
     </span>
   );
-};
+});

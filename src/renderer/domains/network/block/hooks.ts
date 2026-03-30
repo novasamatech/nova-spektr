@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useMemo } from 'react';
 
-import { type NullableMap } from '@/shared/core';
+import { type Chain, type NullableMap } from '@/shared/core';
 import { getCreatedDate, nullable } from '@/shared/lib/utils';
 import { type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { useResource } from '@/shared/query';
@@ -16,17 +16,21 @@ export const useBlock = (api?: ApiPromise | null) => {
   });
 };
 
-export const useBlockTime = (api?: ApiPromise | null) => {
+export const useBlockTime = (api?: ApiPromise | null, chain?: Chain | null) => {
   return useResource(blockTimeResource, {
-    params: api && { api },
+    params: api && chain ? { api, chain } : null,
     defaultValue: null,
     map: (cache, { api }) => cache[api.genesisHash.toHex()],
   });
 };
 
-export const useBlockTimestamp = ({ api, blockHeight }: NullableMap<{ api: ApiPromise; blockHeight: BlockHeight }>) => {
+export const useBlockTimestamp = ({
+  api,
+  blockHeight,
+  chain,
+}: NullableMap<{ api: ApiPromise; blockHeight: BlockHeight; chain: Chain }>) => {
   const { data: currentBlock, pending: pendingCurrentBlock } = useBlock(api);
-  const { data: blockTime, pending: pendingBlockTime } = useBlockTime(api);
+  const { data: blockTime, pending: pendingBlockTime } = useBlockTime(api, chain);
 
   const timestamp = useMemo(() => {
     if (nullable(currentBlock) || nullable(blockHeight) || nullable(blockTime)) return null;

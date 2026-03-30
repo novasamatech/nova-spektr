@@ -45,13 +45,19 @@ export const usePromotionPeriod = () => {
 
 export const usePromotionPeriodDates = () => {
   const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const { data: promotionPeriod } = usePromotionPeriod();
 
   const { data: fromDate, pending: fromDatePending } = useBlockTimestamp({
     api,
     blockHeight: promotionPeriod?.from ?? null,
+    chain,
   });
-  const { data: toDate, pending: toDatePending } = useBlockTimestamp({ api, blockHeight: promotionPeriod?.to ?? null });
+  const { data: toDate, pending: toDatePending } = useBlockTimestamp({
+    api,
+    blockHeight: promotionPeriod?.to ?? null,
+    chain,
+  });
 
   return { data: { from: fromDate, to: toDate }, pending: fromDatePending || toDatePending };
 };

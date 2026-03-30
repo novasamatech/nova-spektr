@@ -111,6 +111,7 @@ describe('claimScheduleService', () => {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
         claimableAt: { block: 1100, type: 'at' },
+        affected: [{ trackId: '1', type: 'track' }],
       },
     ]);
   });
@@ -147,6 +148,10 @@ describe('claimScheduleService', () => {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_TWO,
         claimableAt: { block: 1100, type: 'at' },
+        affected: [
+          { trackId: '0', type: 'track' },
+          { trackId: '0', type: 'vote', referendumId: '0' },
+        ],
       },
     ]);
   });
@@ -473,6 +478,7 @@ describe('claimScheduleService', () => {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
         claimableAt: { type: 'at', block: 1100 },
+        affected: [{ trackId: '2', type: 'track' }],
       },
     ]);
   });
@@ -503,6 +509,7 @@ describe('claimScheduleService', () => {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_TEN,
         claimableAt: { type: 'at', block: 1100 },
+        affected: [{ trackId: '1', type: 'track' }],
       },
     ]);
   });
@@ -584,16 +591,19 @@ describe('claimScheduleService', () => {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
         claimableAt: { type: 'at', block: 1100 },
+        affected: [{ trackId: '0', type: 'vote', referendumId: '0' }],
       },
       {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
         claimableAt: { type: 'at', block: 1200 },
+        affected: [{ trackId: '0', type: 'vote', referendumId: '2' }],
       },
       {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
         claimableAt: { type: 'at', block: 1300 },
+        affected: [{ trackId: '0', type: 'vote', referendumId: '1' }],
       },
     ]);
   });
@@ -653,11 +663,13 @@ describe('claimScheduleService', () => {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_NINE,
         claimableAt: { type: 'at', block: 1500 },
+        affected: [{ trackId: '21', type: 'vote', referendumId: '5' }],
       },
       {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
         claimableAt: { type: 'at', block: 2000 },
+        affected: [{ trackId: '20', type: 'vote', referendumId: '13' }],
       },
     ]);
   });
@@ -690,6 +702,7 @@ describe('claimScheduleService', () => {
         type: UnlockChunkType.PENDING_DELEGATION,
         amount: BN_ONE,
         claimableAt: { type: 'until' },
+        affected: [],
       },
     ]);
   });
@@ -722,11 +735,13 @@ describe('claimScheduleService', () => {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_NINE,
         claimableAt: { type: 'at', block: 1100 },
+        affected: [{ trackId: '0', type: 'track' }],
       },
       {
         type: UnlockChunkType.PENDING_DELEGATION,
         amount: BN_ONE,
         claimableAt: { type: 'until' },
+        affected: [],
       },
     ]);
   });
@@ -764,6 +779,7 @@ describe('claimScheduleService', () => {
         type: UnlockChunkType.PENDING_DELEGATION,
         amount: BN_ONE,
         claimableAt: { type: 'until' },
+        affected: [],
       },
     ]);
   });
@@ -819,12 +835,14 @@ describe('claimScheduleService', () => {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_FOUR,
         claimableAt: { type: 'at', block: 1100 },
+        affected: [{ trackId: '1', type: 'vote', referendumId: '0' }],
       },
       // 1 is delayed indefinitely because of track 1 delegation
       {
         type: UnlockChunkType.PENDING_DELEGATION,
         amount: BN_ONE,
         claimableAt: { type: 'until' },
+        affected: [],
       },
     ]);
   });

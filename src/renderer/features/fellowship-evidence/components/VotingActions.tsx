@@ -11,7 +11,7 @@ import { Box, FilledIconButton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
-import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { evidenceVoting } from '../model/evidenceVoting';
 
 import { EvidenceVotingModal } from './EvidenceVotingModal';
@@ -36,6 +36,7 @@ export const VotingActions = memo(({ evidence, endBlock, transaction, variant, d
     nonNullable(fellowshipMember) && nonNullable(evidence) && fellowshipMember.accountId === evidence.accountId;
 
   const api = useFellowshipApi();
+  const chain = useFellowshipChain();
 
   const { data: account } = useFellowshipAccount();
 
@@ -148,7 +149,9 @@ export const VotingActions = memo(({ evidence, endBlock, transaction, variant, d
         height="92px"
         width="102px"
       >
-        {nonNullable(endBlock) && <PeriodEndTimer api={api} endBlock={endBlock} shortDateFormat />}
+        {nonNullable(endBlock) && nonNullable(chain) && (
+          <PeriodEndTimer api={api} chain={chain} endBlock={endBlock} shortDateFormat />
+        )}
         {buttonNodes}
       </Box>
     );

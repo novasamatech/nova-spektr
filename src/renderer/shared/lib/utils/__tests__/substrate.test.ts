@@ -8,7 +8,9 @@ import { getExpectedBlockTime } from '../substrate';
 describe('shared/lib/onChainUtils/substrate', () => {
   const blockTime = new BN(10_000);
 
-  const getTime = (params: any, chain?: Chain): BN => {
+  const defaultChain = {} as Chain;
+
+  const getTime = (params: any, chain: Chain = defaultChain): BN => {
     const mockApi = params as unknown as ApiPromise;
 
     return getExpectedBlockTime(mockApi, chain);

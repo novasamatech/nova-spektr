@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useDeferredValue, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -21,6 +21,11 @@ export const dashboardStakingSlot = createSlot<{
   allEntries: { accountId: string; name: string; address: string }[];
 }>({ name: 'dashboardStaking' });
 
+export const dashboardGovernanceSlot = createSlot<{
+  accountIds: string[];
+  allEntries: { accountId: string; name: string; address: string }[];
+}>({ name: 'dashboardGovernance' });
+
 const TABS = ['overview', 'staking', 'governance', 'alerts'] as const;
 
 export const Dashboard = () => {
@@ -28,10 +33,11 @@ export const Dashboard = () => {
   const allEntries = useUnit(dashboardModel.$allEntries);
   const selectedIds = useUnit(dashboardModel.$selectedIds);
   const activeTab = useUnit(dashboardModel.$activeTab);
+  const deferredTab = useDeferredValue(activeTab);
   const editMode = useUnit(dashboardModel.$editMode);
   const editModeToggled = useUnit(dashboardModel.editModeToggled);
 
-  const accountIds = useMemo(() => {
+  const accountIdsKey = useMemo(() => {
     const selectedIdSet = new Set(selectedIds);
     const ids = new Set<string>();
     for (const entry of allEntries) {
@@ -40,8 +46,15 @@ export const Dashboard = () => {
       }
     }
 
-    return Array.from(ids);
+    return [...ids].sort().join('\0');
   }, [allEntries, selectedIds]);
+
+  const accountIds = useMemo(() => (accountIdsKey ? accountIdsKey.split('\0') : []), [accountIdsKey]);
+
+  const slimEntries = useMemo(
+    () => allEntries.map((e) => ({ accountId: e.accountId, name: e.name, address: e.address })),
+    [allEntries],
+  );
 
   return (
     <section className="flex h-full flex-col">
@@ -67,46 +80,60 @@ export const Dashboard = () => {
           </div>
 
           <Tabs.Content value="overview">
-            {allEntries.length === 0 ? (
-              <div className="flex h-full w-full flex-col items-center justify-center">
-                <div className="flex flex-col items-center gap-y-2">
-                  <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
-                  <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+            {deferredTab === 'overview' &&
+              (allEntries.length === 0 ? (
+                <div className="flex h-full w-full flex-col items-center justify-center">
+                  <div className="flex flex-col items-center gap-y-2">
+                    <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
+                    <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <DashboardGrid
-                slot={dashboardWidgetsSlot}
-                tab="overview"
-                editMode={editMode}
-                props={{ accountIds, allEntries }}
-              />
-            )}
+              ) : (
+                <DashboardGrid
+                  slot={dashboardWidgetsSlot}
+                  tab="overview"
+                  editMode={editMode}
+                  props={{ accountIds, allEntries: slimEntries }}
+                />
+              ))}
           </Tabs.Content>
 
           <Tabs.Content value="staking">
-            {allEntries.length === 0 ? (
-              <div className="flex h-full w-full flex-col items-center justify-center">
-                <div className="flex flex-col items-center gap-y-2">
-                  <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
-                  <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+            {deferredTab === 'staking' &&
+              (allEntries.length === 0 ? (
+                <div className="flex h-full w-full flex-col items-center justify-center">
+                  <div className="flex flex-col items-center gap-y-2">
+                    <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
+                    <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <DashboardGrid
-                slot={dashboardStakingSlot}
-                tab="staking"
-                editMode={editMode}
-                props={{ accountIds, allEntries }}
-              />
-            )}
+              ) : (
+                <DashboardGrid
+                  slot={dashboardStakingSlot}
+                  tab="staking"
+                  editMode={editMode}
+                  props={{ accountIds, allEntries: slimEntries }}
+                />
+              ))}
           </Tabs.Content>
 
           <Tabs.Content value="governance">
-            <div className="flex h-full w-full flex-col items-center justify-center py-20">
-              <SmallTitleText className="text-text-tertiary">{t('dashboard.tabs.governance')}</SmallTitleText>
-              <BodyText className="text-text-tertiary">{t('dashboard.tabs.comingSoon')}</BodyText>
-            </div>
+            {deferredTab === 'governance' &&
+              (allEntries.length === 0 ? (
+                <div className="flex h-full w-full flex-col items-center justify-center">
+                  <div className="flex flex-col items-center gap-y-2">
+                    <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
+                    <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+                  </div>
+                </div>
+              ) : (
+                <DashboardGrid
+                  slot={dashboardGovernanceSlot}
+                  tab="governance"
+                  editMode={editMode}
+                  props={{ accountIds, allEntries: slimEntries }}
+                />
+              ))}
           </Tabs.Content>
 
           <Tabs.Content value="alerts">

@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
-import { useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { IconButton, TitleText } from '@/shared/ui';
+import { FootnoteText, IconButton } from '@/shared/ui';
 import { useAssetsPrices } from '@/domains/price';
 import { currencySelect } from '@/aggregates/currency-select';
 import { DashboardWidget } from '@/pages/Dashboard';
@@ -23,6 +23,10 @@ export const PriceChartsWidget = () => {
   const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: allPrices, pending } = useAssetsPrices(pricesParams);
   const { trackedAssets } = useTrackedAssets();
+
+  const openTokenSelector = useCallback(() => setShowTokenSelector(true), []);
+  const closeTokenSelector = useCallback(() => setShowTokenSelector(false), []);
+  const closeChart = useCallback(() => setSelectedAsset(null), []);
 
   const prices = useMemo(() => {
     if (!allPrices || !currency) return {};
@@ -46,10 +50,10 @@ export const PriceChartsWidget = () => {
   const currencySymbol = currency.symbol ?? currency.code;
 
   return (
-    <DashboardWidget card={false} className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <TitleText>{t('dashboard.priceCharts.title')}</TitleText>
-        <IconButton name="settingsLite" size={16} onClick={() => setShowTokenSelector(true)} />
+    <DashboardWidget className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <FootnoteText className="text-text-tertiary">{t('dashboard.priceCharts.title')}</FootnoteText>
+        <IconButton name="settingsLite" size={16} onClick={openTokenSelector} />
       </div>
 
       {trackedAssets.length === 0 ? (
@@ -57,14 +61,14 @@ export const PriceChartsWidget = () => {
       ) : (
         <div className="grid grid-cols-5 gap-2">
           {trackedAssets.map((asset, index) => (
-            <PriceTile
+            <PriceTileItem
               key={asset.priceId}
               asset={asset}
               index={index}
               price={prices[asset.priceId] ?? null}
               currencySymbol={currencySymbol}
               pending={pending}
-              onClick={() => setSelectedAsset(asset)}
+              onSelect={setSelectedAsset}
             />
           ))}
         </div>
@@ -75,11 +79,35 @@ export const PriceChartsWidget = () => {
           asset={selectedAsset}
           currency={currency}
           currentPrice={prices[selectedAsset.priceId] ?? null}
-          onClose={() => setSelectedAsset(null)}
+          onClose={closeChart}
         />
       )}
 
-      {showTokenSelector && <TokenSelectionModal onClose={() => setShowTokenSelector(false)} />}
+      {showTokenSelector && <TokenSelectionModal onClose={closeTokenSelector} />}
     </DashboardWidget>
   );
 };
+
+type PriceTileItemProps = {
+  asset: TrackedAssetInfo;
+  index: number;
+  price: { price: number; change: number } | null;
+  currencySymbol: string;
+  pending: boolean;
+  onSelect: (asset: TrackedAssetInfo) => void;
+};
+
+const PriceTileItem = memo(({ asset, index, price, currencySymbol, pending, onSelect }: PriceTileItemProps) => {
+  const handleClick = useCallback(() => onSelect(asset), [onSelect, asset]);
+
+  return (
+    <PriceTile
+      asset={asset}
+      index={index}
+      price={price}
+      currencySymbol={currencySymbol}
+      pending={pending}
+      onClick={handleClick}
+    />
+  );
+});

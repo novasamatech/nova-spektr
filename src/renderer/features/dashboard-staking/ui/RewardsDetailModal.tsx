@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
 
 import { useI18n } from '@/shared/i18n';
@@ -31,71 +31,77 @@ export const RewardsDetailModal = memo(
     const { rows } = useRewardsBreakdown({ rewardsMap, chainSummary, accountIds, allEntries });
     const { formatted, suffix } = formatBalance(chainSummary.totalRewards, chainSummary.precision);
 
-    const totalFiat = rows.reduce((sum, r) => sum + r.fiatValueNum, 0);
-    const chartData = rows
-      .map((row, i) => ({
-        name: row.name || toShortAddress(row.address),
-        value: row.fiatValueNum,
-        percent: totalFiat > 0 ? (row.fiatValueNum / totalFiat) * 100 : 0,
-        index: i,
-        fill: FALLBACK_COLORS[i % FALLBACK_COLORS.length],
-      }))
-      .filter((d) => d.value > 0);
+    const chartData = useMemo(() => {
+      const totalFiat = rows.reduce((sum, r) => sum + r.fiatValueNum, 0);
 
-    const columns: Column<RewardsBreakdownRow>[] = [
-      {
-        key: 'name',
-        title: t('dashboard.totalRewards.rewardsDetail.account'),
-        width: '40%',
-        render: (_, item) => (
-          <div className="flex items-center gap-2">
-            <span
-              className="h-2 w-2 shrink-0 rounded-full"
-              style={{ backgroundColor: FALLBACK_COLORS[item.colorIndex % FALLBACK_COLORS.length] }}
-            />
-            <Identicon address={toAddress(item.address)} />
-            <div className="min-w-0">
-              <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
-              <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
+      return rows
+        .map((row, i) => ({
+          name: row.name || toShortAddress(row.address),
+          value: row.fiatValueNum,
+          percent: totalFiat > 0 ? (row.fiatValueNum / totalFiat) * 100 : 0,
+          index: i,
+          fill: FALLBACK_COLORS[i % FALLBACK_COLORS.length],
+        }))
+        .filter((d) => d.value > 0);
+    }, [rows]);
+
+    const columns: Column<RewardsBreakdownRow>[] = useMemo(
+      () => [
+        {
+          key: 'name',
+          title: t('dashboard.totalRewards.rewardsDetail.account'),
+          width: '40%',
+          render: (_, item) => (
+            <div className="flex items-center gap-2">
+              <span
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ backgroundColor: FALLBACK_COLORS[item.colorIndex % FALLBACK_COLORS.length] }}
+              />
+              <Identicon address={toAddress(item.address)} />
+              <div className="min-w-0">
+                <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
+                <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
+              </div>
             </div>
-          </div>
-        ),
-      },
-      {
-        key: 'rawAmountNum',
-        title: t('dashboard.totalRewards.rewardsDetail.rewards'),
-        sortable: true,
-        width: '27%',
-        render: (_, item) => {
-          const bal = formatBalance(item.rawAmount, item.precision);
-
-          return (
-            <FootnoteText className="tabular-nums">
-              {bal.formatted}
-              {bal.suffix} {item.symbol}
-            </FootnoteText>
-          );
+          ),
         },
-      },
-      {
-        key: 'fiatValueNum',
-        title: t('dashboard.totalRewards.rewardsDetail.value'),
-        sortable: true,
-        width: '20%',
-        render: (_, item) => (
-          <FootnoteText className="tabular-nums">
-            <Price amount={item.fiatValue} currency={currency} />
-          </FootnoteText>
-        ),
-      },
-      {
-        key: 'sharePercent',
-        title: t('dashboard.totalRewards.rewardsDetail.share'),
-        sortable: true,
-        width: '13%',
-        render: (_, item) => <FootnoteText className="tabular-nums">{item.sharePercent.toFixed(1)}%</FootnoteText>,
-      },
-    ];
+        {
+          key: 'rawAmountNum',
+          title: t('dashboard.totalRewards.rewardsDetail.rewards'),
+          sortable: true,
+          width: '27%',
+          render: (_, item) => {
+            const bal = formatBalance(item.rawAmount, item.precision);
+
+            return (
+              <FootnoteText className="tabular-nums">
+                {bal.formatted}
+                {bal.suffix} {item.symbol}
+              </FootnoteText>
+            );
+          },
+        },
+        {
+          key: 'fiatValueNum',
+          title: t('dashboard.totalRewards.rewardsDetail.value'),
+          sortable: true,
+          width: '20%',
+          render: (_, item) => (
+            <FootnoteText className="tabular-nums">
+              <Price amount={item.fiatValue} currency={currency} />
+            </FootnoteText>
+          ),
+        },
+        {
+          key: 'sharePercent',
+          title: t('dashboard.totalRewards.rewardsDetail.share'),
+          sortable: true,
+          width: '13%',
+          render: (_, item) => <FootnoteText className="tabular-nums">{item.sharePercent.toFixed(1)}%</FootnoteText>,
+        },
+      ],
+      [t, currency],
+    );
 
     const showChart = chartData.length > 1;
 
