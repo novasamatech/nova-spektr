@@ -137,7 +137,7 @@ export const EndedReferendumDetailModal = memo(({ referendum, onClose }: Props) 
         {/* End date + locked amount */}
         <div className="flex items-center justify-between px-5 py-2">
           <FootnoteText className="text-text-tertiary">
-            {t('dashboard.referendums.detail.endedDate', { date: formatEndDate(referendum.endedAtMs) })}
+            {t('dashboard.referendums.detail.endedDate', { date: formatEndDate(referendum.endedAtMs, t) })}
           </FootnoteText>
           <FootnoteText className="font-bold tabular-nums">
             {lockedFormatted} {referendum.symbol}

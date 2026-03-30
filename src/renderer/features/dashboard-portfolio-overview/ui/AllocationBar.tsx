@@ -2,6 +2,7 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
+import { ALLOCATION_COLORS } from '@/shared/ui/chart-constants';
 import { Tooltip } from '@/shared/ui-kit';
 import { type RowAllocation } from '../lib/computeRowAllocations';
 
@@ -14,9 +15,9 @@ const SEGMENTS: {
   labelKey: 'assetBalance.transferable' | 'assetBalance.locked' | 'assetBalance.reserved';
   color: string;
 }[] = [
-  { key: 'transferablePct', labelKey: 'assetBalance.transferable', color: '#53A867' },
-  { key: 'lockedPct', labelKey: 'assetBalance.locked', color: '#5A5FE0' },
-  { key: 'reservedPct', labelKey: 'assetBalance.reserved', color: '#F7931A' },
+  { key: 'transferablePct', labelKey: 'assetBalance.transferable', color: ALLOCATION_COLORS.transferable },
+  { key: 'lockedPct', labelKey: 'assetBalance.locked', color: ALLOCATION_COLORS.locked },
+  { key: 'reservedPct', labelKey: 'assetBalance.reserved', color: ALLOCATION_COLORS.reserved },
 ];
 
 export const AllocationBar = memo(({ allocation }: Props) => {

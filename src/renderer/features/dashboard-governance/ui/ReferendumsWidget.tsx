@@ -510,7 +510,9 @@ const EndedTabContent = ({ accountIds, allEntries, chainFilter, searchQuery, onC
         title: t('dashboard.referendums.ended'),
         sortable: true,
         width: '90px',
-        render: (_v, row) => <FootnoteText className="text-text-tertiary">{formatEndDate(row.endedAtMs)}</FootnoteText>,
+        render: (_v, row) => (
+          <FootnoteText className="text-text-tertiary">{formatEndDate(row.endedAtMs, t)}</FootnoteText>
+        ),
       },
       {
         key: 'unlockableAmount',

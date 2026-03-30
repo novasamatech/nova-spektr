@@ -2,6 +2,7 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
+import { ALLOCATION_COLORS } from '@/shared/ui/chart-constants';
 import { type AllocationData } from '../hooks/useBalanceAllocation';
 
 type Props = {
@@ -15,9 +16,9 @@ type BarConfig = {
 };
 
 const BARS: ((allocation: AllocationData) => BarConfig)[] = [
-  (a) => ({ labelKey: 'assetBalance.transferable', color: '#53A867', pct: a.transferablePct }),
-  (a) => ({ labelKey: 'assetBalance.locked', color: '#5A5FE0', pct: a.lockedPct }),
-  (a) => ({ labelKey: 'assetBalance.reserved', color: '#F7931A', pct: a.reservedPct }),
+  (a) => ({ labelKey: 'assetBalance.transferable', color: ALLOCATION_COLORS.transferable, pct: a.transferablePct }),
+  (a) => ({ labelKey: 'assetBalance.locked', color: ALLOCATION_COLORS.locked, pct: a.lockedPct }),
+  (a) => ({ labelKey: 'assetBalance.reserved', color: ALLOCATION_COLORS.reserved, pct: a.reservedPct }),
 ];
 
 export const BalanceAllocationBars = memo(({ allocation }: Props) => {
