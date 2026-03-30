@@ -625,6 +625,77 @@
       "totalStaked": "Total staked",
       "noStaking": "No active staking positions"
     },
+    "governanceOverview": {
+      "title": "Governance Overview",
+      "votingAccounts": "Voting accounts",
+      "unlockable": "Unlockable",
+      "averageConviction": "Avg. conviction",
+      "noGovernance": "No governance activity found",
+      "convictionDisplay": "{value}x"
+    },
+    "referendums": {
+      "activeTab": "Active",
+      "endedTab": "Ended",
+      "outcome": "Outcome",
+      "ended": "Ended",
+      "unlockable": "Unlockable",
+      "locks": "Locks",
+      "noEndedReferendums": "No ended referendums with locks",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled",
+      "timedOut": "Timed out",
+      "killed": "Killed",
+      "unlockableStatus": "Unlockable",
+      "shadowedLock": "Shadowed",
+      "lockedUntil": "Locked until ~{date}",
+      "time": {
+        "today": "Today",
+        "daysAgo_one": "{count}d ago",
+        "daysAgo_other": "{count}d ago"
+      },
+      "detail": {
+        "endedTitle": "Ended Referendum",
+        "lockStatus": "Lock Status",
+        "endedDate": "Ended {date}"
+      }
+    },
+    "unlockSchedule": {
+      "title": "Unlock Schedule",
+      "claimableNow": "Claimable",
+      "pendingLocks": "Pending",
+      "delegated": "Delegated",
+      "upcomingUnlocks": "Upcoming Unlocks",
+      "noLocks": "No governance locks found",
+      "accountCount": "{count} accounts"
+    },
+    "activeReferendums": {
+      "title": "Referendums",
+      "noReferendums": "No active referendums found",
+      "aye": "Aye",
+      "nay": "Nay",
+      "abstain": "Abstain",
+      "split": "Split",
+      "unknownTrack": "Unknown track",
+      "id": "#",
+      "track": "Track",
+      "proposal": "Proposal",
+      "allChains": "All chains",
+      "searchPlaceholder": "Search referendums...",
+      "noResults": "No referendums match your filters",
+      "votes": "Votes",
+      "time": "Time",
+      "tvl": "TVL",
+      "detail": {
+        "title": "Referendum Details",
+        "ourVotes": "Our Votes",
+        "account": "Account",
+        "vote": "Vote",
+        "amount": "Amount",
+        "conviction": "Conviction",
+        "value": "Value (USD)"
+      }
+    },
     "priceCharts": {
       "title": "Price Tracker",
       "manageTokens": "Manage tokens",

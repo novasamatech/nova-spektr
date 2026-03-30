@@ -52,12 +52,16 @@ export const createTxMetadata = async (
   accountId: AccountId,
   api: ApiPromise,
   blockTimeMs?: number,
+  chain?: Chain, // optional because blockTimeMs takes precedence when provided
 ): Promise<TxMetadata> => {
   const chainId = api.genesisHash.toHex();
   const { header, nonce } = await api.derive.tx.signingInfo(accountId);
   assert(header);
 
-  const effectiveBlockTimeMs = blockTimeMs ?? getExpectedBlockTime(api).toNumber();
+  const effectiveBlockTimeMs = blockTimeMs ?? (chain ? getExpectedBlockTime(api, chain).toNumber() : undefined);
+  if (!effectiveBlockTimeMs) {
+    throw new Error('Either blockTimeMs or chain must be provided to createTxMetadata');
+  }
   const mortalLength = Math.ceil(MORTALITY_PERIOD_MS / effectiveBlockTimeMs);
 
   const signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'> = {
@@ -115,8 +119,8 @@ export async function getParachainId(api: ApiPromise): Promise<number> {
   return (parachainId as u32).toNumber();
 }
 
-export const getExpectedBlockTime = (api: ApiPromise, chain?: Chain): BN => {
-  if (chain?.additional?.defaultBlockTime) {
+export const getExpectedBlockTime = (api: ApiPromise, chain: Chain): BN => {
+  if (chain.additional?.defaultBlockTime) {
     return new BN(chain.additional.defaultBlockTime);
   }
 
@@ -145,22 +149,30 @@ export const getCreatedDate = (neededBlock: BlockHeight, currentBlock: BlockHeig
   return Date.now() + (neededBlock - currentBlock) * blockTime;
 };
 
-export const getCreatedDateFromApi = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {
+export const getCreatedDateFromApi = async (
+  neededBlock: BlockHeight,
+  api: ApiPromise,
+  chain: Chain,
+): Promise<number> => {
   const currentBlock = await getCurrentBlockNumber(api);
-  const blockTime = getExpectedBlockTime(api);
+  const blockTime = getExpectedBlockTime(api, chain);
 
   return getCreatedDate(neededBlock, currentBlock, blockTime.toNumber());
 };
 
-export const getTimeToBlock = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {
+export const getTimeToBlock = async (neededBlock: BlockHeight, api: ApiPromise, chain: Chain): Promise<number> => {
   const currentBlock = await getCurrentBlockNumber(api);
-  const blockTime = getExpectedBlockTime(api);
+  const blockTime = getExpectedBlockTime(api, chain);
 
   return (neededBlock - currentBlock) * blockTime.toNumber();
 };
 
-export const getRelativeTimeFromApi = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {
-  const blockTime = getExpectedBlockTime(api);
+export const getRelativeTimeFromApi = async (
+  neededBlock: BlockHeight,
+  api: ApiPromise,
+  chain: Chain,
+): Promise<number> => {
+  const blockTime = getExpectedBlockTime(api, chain);
 
   return neededBlock * blockTime.toNumber();
 };
@@ -173,21 +185,21 @@ export const getRelativeTimeFromApi = async (neededBlock: BlockHeight, api: ApiP
  *
  * @returns A promise that resolves to the block number.
  */
-export const getBlockTimeAgo = async (neededTime: number, api: ApiPromise): Promise<number> => {
+export const getBlockTimeAgo = async (neededTime: number, api: ApiPromise, chain: Chain): Promise<number> => {
   const currentBlock = await getCurrentBlockNumber(api);
-  const blockTime = getExpectedBlockTime(api);
+  const blockTime = getExpectedBlockTime(api, chain);
 
   const completedBlocks = Math.ceil(neededTime / blockTime.toNumber());
 
   return Math.max(0, currentBlock - completedBlocks);
 };
 
-export const getBlockFromTime = async (neededTime: number, api: ApiPromise): Promise<number> => {
+export const getBlockFromTime = async (neededTime: number, api: ApiPromise, chain: Chain): Promise<number> => {
   const timestampMs = new Date(neededTime).getTime();
   const currentTime = Date.now();
   const time = currentTime - timestampMs;
 
-  return getBlockTimeAgo(time, api);
+  return getBlockTimeAgo(time, api, chain);
 };
 
 export const getTypeVersion = (api: ApiPromise, typeName: string): string => {

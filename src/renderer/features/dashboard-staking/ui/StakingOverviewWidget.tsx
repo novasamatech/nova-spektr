@@ -1,5 +1,5 @@
 import { default as BigNumber } from 'bignumber.js';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -23,6 +23,8 @@ export const StakingOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { chains, stakingDataByChain, totalFiat, totalActiveValidators, pending, fiatFlag, currency } =
     useStakingOverview(accountIds);
   const [selectedChainId, setSelectedChainId] = useState<ChainId | null>(null);
+
+  const handleCloseDetail = useCallback(() => setSelectedChainId(null), []);
 
   if (!fiatFlag) return null;
 
@@ -148,7 +150,7 @@ export const StakingOverviewWidget = ({ accountIds, allEntries }: Props) => {
           accountIds={accountIds}
           allEntries={allEntries}
           currency={currency}
-          onClose={() => setSelectedChainId(null)}
+          onClose={handleCloseDetail}
         />
       )}
     </DashboardWidget>

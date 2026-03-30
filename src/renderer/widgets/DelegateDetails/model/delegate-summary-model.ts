@@ -54,8 +54,8 @@ const getReferendumsForVoterFx = createEffect(({ accountId, chain }: RequestPara
   return votingsService.getVotingsForVoter(chain, accountId);
 });
 
-const getMonthBlockFx = createEffect((api: ApiPromise) => {
-  return getBlockTimeAgo(MONTH, api);
+const getMonthBlockFx = createEffect(({ api, chain }: { api: ApiPromise; chain: Chain }) => {
+  return getBlockTimeAgo(MONTH, api, chain);
 });
 
 sample({
@@ -175,7 +175,7 @@ sample({
   clock: $votedReferendums.updates,
   source: networkSelectorModel.$network,
   filter: (network) => nonNullable(network),
-  fn: (network) => network!.api,
+  fn: (network) => ({ api: network!.api, chain: network!.chain }),
   target: getMonthBlockFx,
 });
 

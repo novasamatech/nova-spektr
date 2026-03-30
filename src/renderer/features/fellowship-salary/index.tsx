@@ -44,7 +44,9 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
   if (canSaveToBasket) {
     return (
       <>
-        {currentPeriodExists && <PeriodEndTimer api={input.api} endBlock={currentPeriod.until} shortDateFormat />}
+        {currentPeriodExists && (
+          <PeriodEndTimer api={input.api} chain={input.chain} endBlock={currentPeriod.until} shortDateFormat />
+        )}
         <ButtonCard
           pallet={inBasket ? 'positive' : 'secondary'}
           size="sm"
@@ -58,7 +60,9 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
   } else {
     return (
       <>
-        {currentPeriodExists && <PeriodEndTimer api={input.api} endBlock={currentPeriod.until} shortDateFormat />}
+        {currentPeriodExists && (
+          <PeriodEndTimer api={input.api} chain={input.chain} endBlock={currentPeriod.until} shortDateFormat />
+        )}
         <SalaryRegisterModal>
           <ButtonCard size="sm" disabled={!canVote}>
             {t('fellowship.tasks.task.requestSalary.request')}

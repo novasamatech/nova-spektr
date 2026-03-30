@@ -39,7 +39,7 @@ export const PromotionInfo = memo(() => {
   useEffect(() => {
     if (input?.api && leftToPromotion) {
       if (leftToPromotion > 0) {
-        getRelativeTimeFromApi(leftToPromotion, input.api).then(setTimeLeft);
+        getRelativeTimeFromApi(leftToPromotion, input.api, input.chain ?? undefined).then(setTimeLeft);
       } else {
         setTimeLeft(0);
       }
