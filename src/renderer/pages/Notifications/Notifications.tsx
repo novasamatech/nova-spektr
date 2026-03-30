@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Header, IconButton } from '@/shared/ui';
-import { SearchInput } from '@/shared/ui-kit';
+import { DateRangePicker, SearchInput } from '@/shared/ui-kit';
 import { notificationModel } from '@/entities/notification';
 import {
   EmptyNotifications,
@@ -15,6 +15,7 @@ import {
 export const Notifications = () => {
   const { t } = useI18n();
   const query = useUnit(notificationListModel.$query);
+  const dateRange = useUnit(notificationListModel.$dateRange);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
@@ -30,6 +31,13 @@ export const Notifications = () => {
               value={query}
               placeholder={t('notifications.searchPlaceholder')}
               onChange={notificationListModel.events.queryChanged}
+            />
+          </div>
+          <div className="w-[200px]">
+            <DateRangePicker
+              value={dateRange}
+              placeholder={t('notifications.dateRangePlaceholder')}
+              onChange={notificationListModel.events.dateRangeChanged}
             />
           </div>
           <IconButton name="settingsLite" className="p-1.5" onClick={() => setIsSettingsOpen(true)} />
