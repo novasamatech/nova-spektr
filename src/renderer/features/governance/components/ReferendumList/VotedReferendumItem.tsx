@@ -45,7 +45,12 @@ export const VotedReferendumItem = memo(({ referendum, network, votes, onSelect 
       <div className="flex w-full items-center gap-x-2">
         <VotingStatusBadge referendum={referendum} />
 
-        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} timelineApi={network.timelineApi} />
+        <ReferendumEndTimer
+          status={referendum.status}
+          endBlock={referendum.end}
+          timelineApi={network.timelineApi}
+          chain={network.chain}
+        />
 
         <div className="ml-auto flex text-text-secondary">
           {referendumId && <FootnoteText className="text-inherit">#{referendumId}</FootnoteText>}

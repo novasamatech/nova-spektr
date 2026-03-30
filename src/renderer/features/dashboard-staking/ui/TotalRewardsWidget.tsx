@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -49,6 +49,9 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
   const { chains, rewardsMapByChain, totalFiat, pending, fiatFlag, currency } = useTotalRewards(accountIds, since);
   const [selectedChainId, setSelectedChainId] = useState<ChainId | null>(null);
 
+  const handleSetTimeRange = useCallback((range: RewardsTimeRange) => setTimeRange(range), []);
+  const handleCloseDetail = useCallback(() => setSelectedChainId(null), []);
+
   if (!fiatFlag) return null;
 
   const selectedChain = selectedChainId ? (chains.find((c) => c.chainId === selectedChainId) ?? null) : null;
@@ -83,7 +86,7 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
               key={range}
               type="button"
               className={`${toggleButtonClass} ${timeRange === range ? activeClass : inactiveClass}`}
-              onClick={() => setTimeRange(range)}
+              onClick={() => handleSetTimeRange(range)}
             >
               {rangeLabels[range]}
             </button>
@@ -161,7 +164,7 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
           accountIds={accountIds}
           allEntries={allEntries}
           currency={currency}
-          onClose={() => setSelectedChainId(null)}
+          onClose={handleCloseDetail}
         />
       )}
     </DashboardWidget>

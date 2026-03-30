@@ -53,9 +53,10 @@ function estimateClaimSchedule({
 }: ClaimParams): Chunks[] {
   // step 1 - determine/estimate individual unlocks for all priors and votes
   // result example: [(1500, 1 KSM), (1200, 2 KSM), (1000, 1 KSM)]
+  const referendumMap = new Map(referendums.map((r) => [r.referendumId, r]));
   const claimableLocks = individualClaimableLocks(
     currentBlockNumber,
-    referendums,
+    referendumMap,
     votingByTrack,
     tracks,
     trackLocks,
@@ -79,7 +80,7 @@ function estimateClaimSchedule({
 // Step 1
 function individualClaimableLocks(
   currentBlockNumber: BlockHeight,
-  referendums: Referendum[],
+  referendumMap: Map<string, Referendum>,
   votingByTrack: Record<TrackId, Voting>,
   tracks: Record<TrackId, TrackInfo>,
   trackLocks: Record<TrackId, BN>,
@@ -94,7 +95,7 @@ function individualClaimableLocks(
       return gapLock.concat(
         castingClaimableLocks(
           currentBlockNumber,
-          referendums,
+          referendumMap,
           trackId,
           tracks,
           voting,
@@ -145,7 +146,7 @@ function gapClaimableLock({ trackId, voting, gap, currentBlockNumber }: GapLockP
 
 function castingClaimableLocks(
   currentBlockNumber: BlockHeight,
-  referendums: Referendum[],
+  referendumMap: Map<string, Referendum>,
   trackId: TrackId,
   tracks: Record<TrackId, TrackInfo>,
   voting: CastingVoting,
@@ -168,7 +169,7 @@ function castingClaimableLocks(
       standardVote,
       voteLockingPeriod,
       undecidingTimeout,
-      referendums.find((i) => i.referendumId === referendumId),
+      referendumMap.get(referendumId),
     );
 
     return {
@@ -385,7 +386,7 @@ function constructUnlockSchedule(maxUnlockedByTime: [ClaimTime, ClaimableLock][]
 }
 
 function getClaimTimeSortKey(claimTime: ClaimTime): string {
-  return locksService.isClaimAt(claimTime) ? `at-${claimTime.block}` : 'until';
+  return locksService.isClaimAt(claimTime) ? `at-${String(claimTime.block).padStart(12, '0')}` : 'until';
 }
 
 // Step 4
@@ -419,7 +420,7 @@ function toUnlockChunk(lock: ClaimableLock, currentBlockNumber: BlockHeight): Ch
   }
   const type = locksService.isClaimAt(lock.claimAt) ? UnlockChunkType.PENDING_LOCK : UnlockChunkType.PENDING_DELEGATION;
 
-  return { type: type, amount: lock.amount, claimableAt: lock.claimAt };
+  return { type, amount: lock.amount, claimableAt: lock.claimAt, affected: lock.affected };
 }
 
 function claimableAt(claimAt: ClaimTime, at: BlockHeight): boolean {

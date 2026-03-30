@@ -8,6 +8,10 @@ test.describe('Polkadot Vault onboarding', { tag: '@regress' }, () => {
   });
 
   test('Show camera access denied if no permissions', async ({ loginPage, page }) => {
+    await page.addInitScript(() => {
+      navigator.mediaDevices.getUserMedia = () =>
+        Promise.reject(new DOMException('Permission denied', 'NotAllowedError'));
+    });
     const polkadotVaultOnboardingPage = await loginPage
       .gotoOnboarding()
       .then((onboarding) => onboarding.clickPolkadotVaultButton());

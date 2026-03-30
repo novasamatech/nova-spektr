@@ -66,15 +66,18 @@ export const useRetentionPeriod = () => {
 
 export const useRetentionPeriodDates = () => {
   const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const { data: period } = useRetentionPeriod();
 
   const { data: fromDate, pending: fromPending } = useBlockTimestamp({
     api,
     blockHeight: period?.from ?? null,
+    chain,
   });
   const { data: toDate, pending: toPending } = useBlockTimestamp({
     api,
     blockHeight: period?.to ?? null,
+    chain,
   });
 
   return {
@@ -97,19 +100,20 @@ type RetentionState = {
 
 export const useRetentionState = () => {
   const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const { data: block, pending: blockPending } = useFellowshipBlock();
   const { data: period, pending: periodPending } = useRetentionPeriod();
   const { data: evidence, pending: evidencePending } = useFellowshipMemberEvidence();
   const { data: hasRetentionReferendum, pending: referendumPending } = useMemberRetentionReferendum();
 
   const retentionState = useMemo<RetentionState | null>(() => {
-    if (nullable(api) || nullable(block) || nullable(period)) {
+    if (nullable(api) || nullable(block) || nullable(period) || nullable(chain)) {
       return null;
     }
 
     const leftToEnd = period.to - block;
 
-    const blockTimeMs = getExpectedBlockTime(api).toNumber();
+    const blockTimeMs = getExpectedBlockTime(api, chain).toNumber();
     const msPerDay = 24 * 60 * 60 * 1000;
 
     return {
