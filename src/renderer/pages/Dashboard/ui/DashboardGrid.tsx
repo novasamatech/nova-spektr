@@ -1,7 +1,7 @@
 import { move } from '@dnd-kit/helpers';
 import { DragDropProvider } from '@dnd-kit/react';
 import { useUnit } from 'effector-react';
-import { type ComponentProps, type ComponentType, useCallback, useMemo, useRef, useState } from 'react';
+import { type ComponentProps, type ComponentType, memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import { type SlotIdentifier, type SlotProps } from '@/shared/di/createSlot';
 import { dashboardModel } from '../model/dashboard-model';
@@ -17,7 +17,7 @@ type Props<P extends SlotProps> = {
   editMode: boolean;
 };
 
-export const DashboardGrid = <P extends SlotProps>({ slot, tab, props, editMode }: Props<P>) => {
+const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }: Props<P>) => {
   const handlers = useUnit(slot.$handlers);
   const widgetOrder = useUnit(dashboardModel.$widgetOrder);
   const onOrderChanged = useUnit(dashboardModel.widgetOrderChanged);
@@ -108,3 +108,5 @@ export const DashboardGrid = <P extends SlotProps>({ slot, tab, props, editMode 
     </DragDropProvider>
   );
 };
+
+export const DashboardGrid = memo(DashboardGridInner) as typeof DashboardGridInner;

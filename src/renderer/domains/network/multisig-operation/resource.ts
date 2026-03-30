@@ -51,7 +51,7 @@ async function createOperationFromMultisig({
   const extrinsicIndex = multisig.when.index.toNumber();
   const multisigAccountId = toAccountId(accountId.toString());
 
-  const timestamp = await getCreatedDateFromApi(blockHeight, api);
+  const timestamp = await getCreatedDateFromApi(blockHeight, api, chain);
   const operationId = multisigOperationService.getOperationId(
     chainId,
     callHash,

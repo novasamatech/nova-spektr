@@ -1,22 +1,20 @@
-import { capitalize } from 'lodash';
+import { upperFirst } from 'lodash';
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, formatBalance, toAddress, truncate } from '@/shared/lib/utils';
-import { FootnoteText, Icon, IconButton, InfoLink, TitleText } from '@/shared/ui';
-import { Address } from '@/shared/ui-entities';
+import { cnTw, formatBalance, truncate } from '@/shared/lib/utils';
+import { FootnoteText, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
 import { Box, Copy, Modal } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import {
-  type EvidenceProposal,
   type OngoingReferendum,
   type Proposal,
+  type ProposalCallData,
   type RfcProposal,
   type SpendProposal,
   type UnknownProposal,
   type WhitelistProposal,
   referendumService,
-  trackService,
   useTracks,
 } from '@/domains/collectives';
 import { useFellowshipApi, useFellowshipAsset, useFellowshipChain } from '@/aggregates/fellowship-network';
@@ -37,33 +35,27 @@ export const OnChainData = memo(({ referendum }: Props) => {
   const track = tracks.find(tr => tr.id === referendum.track);
   const isWhitelist = referendum.proposal && referendumService.isWhitelistProposal(referendum.proposal);
 
-  const referendumType = useMemo(() => {
-    if (trackService.isPromotionTrack(referendum.track)) {
-      return t('fellowship.voting.confirmation.promotionTrack');
-    }
-    if (trackService.isRetentionTrack(referendum.track)) {
-      return t('fellowship.voting.confirmation.retentionTrack');
-    }
+  const trackName = useMemo(() => {
     if (track) {
-      return capitalize(track.name);
+      return upperFirst(track.name);
     }
 
     return null;
-  }, [referendum.track, track, t]);
+  }, [track]);
 
   return (
     <Card>
       <Box padding={6} gap={4}>
-        <TitleText>{t('fellowship.onChainData.title')}</TitleText>
+        <SmallTitleText>{t('fellowship.onChainData.title')}</SmallTitleText>
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.origin')}</FootnoteText>
-            <FootnoteText>{referendum.origin}</FootnoteText>
+            <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.referendumId')}</FootnoteText>
+            <FootnoteText>{`#${referendum.id}`}</FootnoteText>
           </div>
-          {referendumType && (
+          {trackName && (
             <div className="flex items-center justify-between">
               <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.call')}</FootnoteText>
-              <FootnoteText>{referendumType}</FootnoteText>
+              <FootnoteText>{trackName}</FootnoteText>
             </div>
           )}
           {referendum.proposal ? (
@@ -87,11 +79,16 @@ export const OnChainData = memo(({ referendum }: Props) => {
 
 const ProposalDetails = ({ proposal }: { proposal: Proposal }) => {
   if (referendumService.isEvidenceProposal(proposal)) {
-    return <EvidenceDetails proposal={proposal} />;
+    return proposal.callData ? <CallDataDetails callData={proposal.callData} /> : null;
   }
 
   if (referendumService.isRfcProposal(proposal)) {
-    return <RfcDetails proposal={proposal} />;
+    return (
+      <>
+        <RfcDetails proposal={proposal} />
+        {proposal.callData && <CallDataDetails callData={proposal.callData} />}
+      </>
+    );
   }
 
   if (referendumService.isWhitelistProposal(proposal)) {
@@ -99,40 +96,31 @@ const ProposalDetails = ({ proposal }: { proposal: Proposal }) => {
   }
 
   if (referendumService.isSpendProposal(proposal)) {
-    return <SpendDetails proposal={proposal} />;
+    return (
+      <>
+        <SpendDetails proposal={proposal} />
+        {proposal.callData && <CallDataDetails callData={proposal.callData} />}
+      </>
+    );
   }
 
   if (referendumService.isUnknownProposal(proposal)) {
-    return <UnknownDetails proposal={proposal} />;
+    return (
+      <>
+        <UnknownDetails proposal={proposal} />
+        {proposal.callData && <CallDataDetails callData={proposal.callData} />}
+      </>
+    );
   }
 
-  return null;
+  return <ParseFailed />;
 };
 
-const EvidenceDetails = ({ proposal }: { proposal: EvidenceProposal }) => {
+const ParseFailed = () => {
   const { t } = useI18n();
-  const chain = useFellowshipChain();
 
   return (
-    <>
-      <div className="flex items-center justify-between">
-        <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.member')}</FootnoteText>
-        <div className="max-w-[60%]">
-          <Address
-            address={toAddress(proposal.accountId, { prefix: chain?.addressPrefix })}
-            variant="truncate"
-            showIcon
-            iconSize={16}
-          />
-        </div>
-      </div>
-      {proposal.rank != null && (
-        <div className="flex items-center justify-between">
-          <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.targetRank')}</FootnoteText>
-          <FootnoteText>{`Rank ${proposal.rank}`}</FootnoteText>
-        </div>
-      )}
-    </>
+    <FootnoteText className="mt-2 text-text-tertiary">{t('fellowship.onChainData.proposalParseFailed')}</FootnoteText>
   );
 };
 
@@ -147,11 +135,13 @@ const RfcDetails = ({ proposal }: { proposal: RfcProposal }) => {
           {`#${proposal.pullRequest}`}
         </InfoLink>
       </div>
-      <div className="flex items-center">
+      <div className="flex items-center gap-x-1">
         <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.documentHash')}</FootnoteText>
         <FootnoteText className="ml-auto text-text-tertiary">{truncate(proposal.documentHash, 7, 7)}</FootnoteText>
         <Copy value={proposal.documentHash} notification={t('fellowship.onChainData.documentHashCopied')}>
-          <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
+          <button type="button" className="shrink-0 cursor-pointer text-icon-default hover:text-icon-hover">
+            <Icon name="copy" size={16} />
+          </button>
         </Copy>
       </div>
     </>
@@ -162,28 +152,36 @@ const InteractionStyle =
   'rounded-sm hover:bg-action-background-hover hover:text-text-primary cursor-pointer py-[3px] px-2 -mr-2';
 
 const WhitelistDetails = ({ proposal }: { proposal: WhitelistProposal }) => {
+  if (!proposal.callData) return null;
+
+  return <CallDataDetails callData={proposal.callData} />;
+};
+
+const CallDataDetails = ({ callData }: { callData: NonNullable<ProposalCallData['callData']> }) => {
   const { t } = useI18n();
   const chain = useFellowshipChain();
 
   const decodeUrl = chain?.nodes[0]
-    ? `https://polkadot.js.org/apps/?rpc=${encodeURIComponent(chain.nodes[0].url)}#/extrinsics/decode/${encodeURIComponent(proposal.proposalHex)}`
+    ? `https://polkadot.js.org/apps/?rpc=${encodeURIComponent(chain.nodes[0].url)}#/extrinsics/decode/${encodeURIComponent(callData.hex)}`
     : null;
 
   return (
     <>
-      <div className="flex items-center">
+      <div className="flex items-center justify-between">
         <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.callHash')}</FootnoteText>
-        <FootnoteText className="ml-auto text-text-tertiary">{truncate(proposal.proposalHash, 7, 7)}</FootnoteText>
-        <Copy value={proposal.proposalHash} notification={t('fellowship.onChainData.callHashCopied')}>
-          <IconButton className="shrink-0 self-center text-icon-default" name="copy" />
+        <Copy value={callData.hash} notification={t('fellowship.onChainData.callHashCopied')}>
+          <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
+            <FootnoteText className="text-inherit">{truncate(callData.hash, 7, 7)}</FootnoteText>
+            <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
+          </button>
         </Copy>
       </div>
       <div className="flex items-center justify-between">
         <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.callData')}</FootnoteText>
         <div className="flex items-center gap-1">
-          <Copy value={proposal.proposalHex} notification={t('fellowship.onChainData.callDataCopied')}>
+          <Copy value={callData.hex} notification={t('fellowship.onChainData.callDataCopied')}>
             <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
-              <FootnoteText className="text-inherit">{truncate(proposal.proposalHex, 7, 8)}</FootnoteText>
+              <FootnoteText className="text-inherit">{truncate(callData.hex, 7, 8)}</FootnoteText>
               <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
             </button>
           </Copy>
@@ -196,7 +194,7 @@ const WhitelistDetails = ({ proposal }: { proposal: WhitelistProposal }) => {
             <Modal.Title close>{t('fellowship.onChainData.viewJson')}</Modal.Title>
             <Modal.Content>
               <Box padding={5}>
-                <JsonArgs value={proposal.proposalJSON} />
+                <JsonArgs value={callData.json} />
               </Box>
             </Modal.Content>
           </Modal>

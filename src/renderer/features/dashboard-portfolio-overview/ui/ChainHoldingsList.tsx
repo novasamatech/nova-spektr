@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 
 import { useI18n } from '@/shared/i18n';
@@ -106,10 +106,12 @@ type RowProps = {
 };
 
 const ChainHoldingRow = memo(({ holding, color, currency, onSelect }: RowProps) => {
+  const handleClick = useCallback(() => onSelect?.(holding), [onSelect, holding]);
+
   return (
     <div
       className="flex cursor-pointer items-center gap-2 rounded py-1 transition-colors hover:bg-hover"
-      onClick={() => onSelect?.(holding)}
+      onClick={handleClick}
     >
       <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
       <img src={holding.chainIcon} alt={holding.chainName} width={28} height={28} className="shrink-0" />

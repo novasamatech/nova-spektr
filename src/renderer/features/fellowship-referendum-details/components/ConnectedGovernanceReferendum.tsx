@@ -159,7 +159,7 @@ export const GovernanceReferendumCard = memo(
           <VotingStatusBadge referendum={governanceReferendum} />
 
           {nonNullable(endBlock) && (
-            <ReferendumEndTimer status={status} endBlock={endBlock} timelineApi={timelineApi} />
+            <ReferendumEndTimer status={status} endBlock={endBlock} timelineApi={timelineApi} chain={chain} />
           )}
           <Button variant="text" className="ml-auto text-sm" onClick={() => onViewClick(governanceReferendum)}>
             {t('governance.referendums.viewReferendum')}

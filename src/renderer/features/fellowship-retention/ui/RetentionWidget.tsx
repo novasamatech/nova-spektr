@@ -324,8 +324,9 @@ const ReferendumCreated = memo(() => {
 const useRetentionData = () => {
   const { t } = useI18n();
   const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const { data: currentBlock } = useFellowshipBlock();
-  const { data: blockTime } = useBlockTime(api);
+  const { data: blockTime } = useBlockTime(api, chain);
   const { data: retentionPeriodDates } = useRetentionPeriodDates();
   const { data: retentionPeriod } = useRetentionPeriod();
 
