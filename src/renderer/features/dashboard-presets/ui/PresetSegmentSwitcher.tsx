@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, includes } from '@/shared/lib/utils';
@@ -27,15 +27,23 @@ export const PresetSegmentSwitcher = () => {
     [overflowPresets, search],
   );
 
-  const handleTabChange = (value: string) => {
+  const handleTabChange = useCallback((value: string) => {
     dashboardPresetsModel.presetActivated(value === ALL_VALUE ? null : value);
-  };
+  }, []);
 
-  const handleOverflowActivate = (id: string) => {
+  const handleOverflowActivate = useCallback((id: string) => {
     dashboardPresetsModel.presetActivated(id);
     setOverflowOpen(false);
     setSearch('');
-  };
+  }, []);
+
+  const handleOpenModal = useCallback(() => {
+    setModalOpen(true);
+    setOverflowOpen(false);
+  }, []);
+
+  const handleCloseModal = useCallback(() => setModalOpen(false), []);
+  const handleOpenSettings = useCallback(() => setModalOpen(true), []);
 
   const tabValue = activePresetId ?? ALL_VALUE;
 
@@ -90,10 +98,7 @@ export const PresetSegmentSwitcher = () => {
                   <button
                     type="button"
                     className="flex w-full items-center gap-x-1.5 rounded px-2 py-1.5 text-left transition-colors hover:bg-action-background-hover"
-                    onClick={() => {
-                      setModalOpen(true);
-                      setOverflowOpen(false);
-                    }}
+                    onClick={handleOpenModal}
                   >
                     <Icon name="settingsLite" size={14} className="text-icon-default" />
                     <FootnoteText className="text-text-secondary">{t('dashboard.presets.manage')}</FootnoteText>
@@ -103,10 +108,10 @@ export const PresetSegmentSwitcher = () => {
             </Popover.Content>
           </Popover>
         ) : (
-          <IconButton name="settingsLite" onClick={() => setModalOpen(true)} />
+          <IconButton name="settingsLite" onClick={handleOpenSettings} />
         )}
       </div>
-      <PresetManagementModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      <PresetManagementModal isOpen={modalOpen} onClose={handleCloseModal} />
     </>
   );
 };

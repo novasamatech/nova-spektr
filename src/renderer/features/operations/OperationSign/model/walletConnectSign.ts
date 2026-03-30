@@ -50,7 +50,7 @@ const setupTransactionFx = createEffect(async (payloads: ExtrinsicSigningPayload
 
   const account = payload.signatory;
 
-  let metadata = await createTxMetadata(account.accountId, payload.api);
+  let metadata = await createTxMetadata(account.accountId, payload.api, undefined, payload.chain);
 
   const result: ReturnType<typeof transactionService.createPayloadWithMetadata>[] = [];
 

@@ -22,3 +22,7 @@ export type { TracksRequestParams } from './tracks/resource';
 export { undecidingTimeoutResource } from './undeciding-timeout/resource';
 export { useUndecidingTimeout } from './undeciding-timeout/hooks';
 export type { UndecidingTimeoutRequestParams } from './undeciding-timeout/resource';
+
+export { trackLocksResource } from './track-locks/resource';
+export { useTrackLocks } from './track-locks/hooks';
+export type { TrackLocksRequestParams } from './track-locks/resource';

@@ -39,3 +39,9 @@ export const getColorByPriceId = (priceId: string, fallbackIndex: number): strin
 
 export const getColorByIndex = (index: number): string =>
   FALLBACK_COLORS[index % FALLBACK_COLORS.length] ?? FALLBACK_COLORS[0];
+
+export const ALLOCATION_COLORS = {
+  transferable: '#53A867',
+  locked: '#5A5FE0',
+  reserved: '#F7931A',
+} as const;

@@ -1,3 +1,5 @@
+import { memo, useCallback } from 'react';
+
 import { useI18n } from '@/shared/i18n';
 import { type PriceHistoryTimeRange } from '@/domains/price';
 
@@ -12,7 +14,7 @@ const inactiveClass = 'text-text-tertiary hover:text-text-secondary';
 
 const RANGES: PriceHistoryTimeRange[] = ['1d', '7d', '30d', '90d'];
 
-export const TimeRangeToggle = ({ value, onChange }: Props) => {
+export const TimeRangeToggle = memo(({ value, onChange }: Props) => {
   const { t } = useI18n();
 
   const labels: Record<PriceHistoryTimeRange, string> = {
@@ -25,14 +27,25 @@ export const TimeRangeToggle = ({ value, onChange }: Props) => {
   return (
     <div className="flex w-fit rounded-md bg-tab-background p-0.5">
       {RANGES.map((range) => (
-        <button
-          key={range}
-          className={`${toggleButtonClass} ${value === range ? activeClass : inactiveClass}`}
-          onClick={() => onChange(range)}
-        >
-          {labels[range]}
-        </button>
+        <RangeButton key={range} range={range} active={value === range} label={labels[range]} onChange={onChange} />
       ))}
     </div>
   );
+});
+
+type RangeButtonProps = {
+  range: PriceHistoryTimeRange;
+  active: boolean;
+  label: string;
+  onChange: (range: PriceHistoryTimeRange) => void;
 };
+
+const RangeButton = memo(({ range, active, label, onChange }: RangeButtonProps) => {
+  const handleClick = useCallback(() => onChange(range), [onChange, range]);
+
+  return (
+    <button className={`${toggleButtonClass} ${active ? activeClass : inactiveClass}`} onClick={handleClick}>
+      {label}
+    </button>
+  );
+});

@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Asset, type Wallet } from '@/shared/core';
+import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { Button, FootnoteText } from '@/shared/ui';
@@ -14,6 +14,7 @@ import { Threshold } from './Threshold';
 
 type Props = {
   timelineApi: ApiPromise;
+  chain: Chain;
   referendum: AggregatedReferendum;
   asset: Asset;
   wallet: Wallet | null;
@@ -26,6 +27,7 @@ type Props = {
 
 export const VotingStatus = ({
   timelineApi,
+  chain,
   referendum,
   asset,
   wallet,
@@ -64,6 +66,7 @@ export const VotingStatus = ({
           status={referendum.status}
           endBlock={referendum.end}
           timelineApi={timelineApi}
+          chain={chain}
           shortDateFormat
         />
       </div>

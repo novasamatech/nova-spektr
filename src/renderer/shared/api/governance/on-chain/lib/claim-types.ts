@@ -72,6 +72,7 @@ export interface PendingChunk {
   type: UnlockChunkType.PENDING_DELEGATION | UnlockChunkType.PENDING_LOCK;
   amount: BN;
   claimableAt: ClaimTime;
+  affected: ClaimAffect[];
 }
 
 export interface PendingChunkWithAccountId extends PendingChunk {

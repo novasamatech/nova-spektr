@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type ChainId, type EraIndex } from '@/shared/core';
+import { type Chain, type ChainId, type EraIndex } from '@/shared/core';
 import { getExpectedBlockTime, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type StakingMap } from '../types';
@@ -139,10 +139,10 @@ export const stakingService = {
     }
   },
 
-  getEraDurationSeconds: (api: ApiPromise, timelineApi: ApiPromise): number => {
+  getEraDurationSeconds: (api: ApiPromise, timelineApi: ApiPromise, chain: Chain): number => {
     const sessionsPerEra = api.consts.staking.sessionsPerEra.toNumber();
     const sessionDuration = timelineApi.consts.babe.epochDuration.toNumber();
-    const expectedBlockTime = getExpectedBlockTime(api).toNumber();
+    const expectedBlockTime = getExpectedBlockTime(api, chain).toNumber();
 
     return (sessionsPerEra * sessionDuration * expectedBlockTime) / 1000;
   },

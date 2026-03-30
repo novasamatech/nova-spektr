@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { getTimeToBlock } from '@/shared/lib/utils';
 import { Timeout } from '@/shared/ui-kit';
-import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 
 const ONE_DAY = 24 * 60 * 60;
 
@@ -27,11 +27,12 @@ type Props = {
 
 export const ReferendumEndTimer = ({ endBlock, shortDateFormat, dateThresholds }: Props) => {
   const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const [endTime, setEndTime] = useState<number>();
 
   useEffect(() => {
-    if (endBlock && api) {
-      getTimeToBlock(endBlock, api).then(date => {
+    if (endBlock && api && chain) {
+      getTimeToBlock(endBlock, api, chain).then(date => {
         setEndTime(date / 1000);
       });
     }

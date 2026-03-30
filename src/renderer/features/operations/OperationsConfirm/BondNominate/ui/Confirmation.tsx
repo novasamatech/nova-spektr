@@ -60,7 +60,8 @@ export const Confirmation = ({
   });
 
   const { getEraDurationSeconds } = stakingService;
-  const eraDurationSeconds = api && timelineApi ? getEraDurationSeconds(api, timelineApi) : undefined;
+  const eraDurationSeconds =
+    api && timelineApi && confirm?.meta.chain ? getEraDurationSeconds(api, timelineApi, confirm.meta.chain) : undefined;
 
   const identities = useStoreMap({
     store: identity.$list,

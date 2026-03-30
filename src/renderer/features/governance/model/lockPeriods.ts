@@ -12,8 +12,8 @@ const $lockPeriods = createStore<Store>({});
 
 const requestLockPeriods = createEvent<RequestParams>();
 
-const requestLockPeriodsFx = createEffect<RequestParams, Record<Conviction, number>>(async ({ api }) => {
-  return locksService.getLockPeriods(api);
+const requestLockPeriodsFx = createEffect<RequestParams, Record<Conviction, number>>(async ({ api, chain }) => {
+  return locksService.getLockPeriods(api, chain);
 });
 
 sample({

@@ -8,6 +8,6 @@ export const useTracks = (params: NullableMap<TracksRequestParams>) => {
   return useResource(tracksResource, {
     params: nonNullableMap(params) ? params : null,
     defaultValue: {},
-    map: (cache, { api }) => cache[api.genesisHash.toHex()] ?? {},
+    map: (cache, { api }) => cache[api.genesisHash.toHex()],
   });
 };
