@@ -36,6 +36,7 @@ env:
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: ⚙️Checkout
@@ -65,3 +66,35 @@ jobs:
           check_name: 'Integration Test Results'
           comment_mode: 'changes'
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare Telegram notification
+        if: always()
+        shell: bash
+        run: |
+          allurectl job-run env >> $GITHUB_ENV
+          COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
+          echo "COMMIT_INFO<<EOF" >> $GITHUB_ENV
+          echo "$COMMIT_INFO" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          if [ "${{ steps.vitest_tests.outcome }}" == "failure" ]; then
+            echo "TEST_STATUS=❌ Failed" >> $GITHUB_ENV
+          elif [ "${{ steps.vitest_tests.outcome }}" == "cancelled" ]; then
+            echo "TEST_STATUS=❌ Failed (timeout reached)" >> $GITHUB_ENV
+          else
+            echo "TEST_STATUS=✅ Passed" >> $GITHUB_ENV
+          fi
+
+      - name: Notify Telegram channel
+        if: always()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
+          message: |
+            📋 Integration Test Report Published
+            ${{ env.COMMIT_INFO }}
+            ${{ env.TEST_STATUS }}
+
+            URL: ${{ env.ALLURE_JOB_RUN_URL }}
+            Test group: tests/integrations/cases
