@@ -2,13 +2,11 @@ import { upperFirst } from 'lodash';
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, formatBalance, toAddress, truncate } from '@/shared/lib/utils';
+import { cnTw, formatBalance, truncate } from '@/shared/lib/utils';
 import { FootnoteText, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
-import { Address } from '@/shared/ui-entities';
 import { Box, Copy, Modal } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import {
-  type EvidenceProposal,
   type OngoingReferendum,
   type Proposal,
   type ProposalCallData,
@@ -81,12 +79,7 @@ export const OnChainData = memo(({ referendum }: Props) => {
 
 const ProposalDetails = ({ proposal }: { proposal: Proposal }) => {
   if (referendumService.isEvidenceProposal(proposal)) {
-    return (
-      <>
-        <EvidenceDetails proposal={proposal} />
-        {proposal.callData && <CallDataDetails callData={proposal.callData} />}
-      </>
-    );
+    return proposal.callData ? <CallDataDetails callData={proposal.callData} /> : null;
   }
 
   if (referendumService.isRfcProposal(proposal)) {
@@ -128,33 +121,6 @@ const ParseFailed = () => {
 
   return (
     <FootnoteText className="mt-2 text-text-tertiary">{t('fellowship.onChainData.proposalParseFailed')}</FootnoteText>
-  );
-};
-
-const EvidenceDetails = ({ proposal }: { proposal: EvidenceProposal }) => {
-  const { t } = useI18n();
-  const chain = useFellowshipChain();
-
-  return (
-    <>
-      <div className="flex items-center justify-between">
-        <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.member')}</FootnoteText>
-        <div className="ml-auto max-w-[60%]">
-          <Address
-            address={toAddress(proposal.accountId, { prefix: chain?.addressPrefix })}
-            variant="short"
-            showIcon
-            iconSize={16}
-          />
-        </div>
-      </div>
-      {proposal.rank != null && (
-        <div className="flex items-center justify-between">
-          <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.targetRank')}</FootnoteText>
-          <FootnoteText>{`Rank ${proposal.rank}`}</FootnoteText>
-        </div>
-      )}
-    </>
   );
 };
 
