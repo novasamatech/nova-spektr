@@ -123,7 +123,7 @@ export const ReferendumDetailModal = memo(({ referendum, onClose }: Props) => {
         width: '20%',
         render: (_, item) => (
           // eslint-disable-next-line i18next/no-literal-string
-          <FootnoteText className="tabular-nums">${parseFloat(item.amountFiat).toLocaleString()}</FootnoteText>
+          <FootnoteText className="tabular-nums">${formatFiatBalance(item.amountFiat).formatted}</FootnoteText>
         ),
       },
     ],

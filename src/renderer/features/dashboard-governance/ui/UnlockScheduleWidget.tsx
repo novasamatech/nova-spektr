@@ -3,7 +3,7 @@ import { memo, useDeferredValue, useMemo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toShortAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
-import { Skeleton } from '@/shared/ui-kit';
+import { ScrollArea, Skeleton } from '@/shared/ui-kit';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { type UnlockEvent, useUnlockSchedule } from '../hooks/useUnlockSchedule';
 
@@ -82,17 +82,21 @@ export const UnlockScheduleWidget = ({ accountIds, allEntries }: Props) => {
         <>
           <div className="my-4 border-t border-divider" />
           <FootnoteText className="mb-2 text-text-tertiary">
-            {t('dashboard.unlockSchedule.upcomingUnlocks')}
+            {t('dashboard.unlockSchedule.upcomingUnlocks')} ({events.length})
           </FootnoteText>
-          <div className="flex max-h-[200px] flex-col gap-2 overflow-y-auto">
-            {events.map((event) => (
-              <UnlockEventRow
-                key={`${event.chainName}-${event.unlockAtMs}`}
-                event={event}
-                currency={currency}
-                accountNameMap={accountNameMap}
-              />
-            ))}
+          <div style={{ maxHeight: 200 }}>
+            <ScrollArea>
+              <div className="flex flex-col gap-2">
+                {events.map((event) => (
+                  <UnlockEventRow
+                    key={`${event.chainName}-${event.unlockAtMs}`}
+                    event={event}
+                    currency={currency}
+                    accountNameMap={accountNameMap}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         </>
       )}
