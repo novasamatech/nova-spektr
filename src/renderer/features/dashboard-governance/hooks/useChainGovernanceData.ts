@@ -1,9 +1,10 @@
 import { BN, BN_ZERO } from '@polkadot/util';
+import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { useMemo, useRef } from 'react';
 
 import { type Chunks, UnlockChunkType } from '@/shared/api/governance';
-import { type ChainId, type VotingMap } from '@/shared/core';
+import { type ChainId, type TrackInfo, type VotingMap } from '@/shared/core';
 import { useThrottledSnapshot } from '@/shared/lib/hooks';
 import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -40,12 +41,15 @@ export type ChainGovernanceData = {
   icon: { monochrome: string; colored: string };
   priceId: string;
   pending: boolean;
+  votingMap: VotingMap;
+  tracks: Record<string, TrackInfo>;
 };
 
 function computeGovernanceStats(votingMap: VotingMap) {
   let activeVotingAccounts = 0;
   let totalLocked = new BN(0);
-  const multipliers: number[] = [];
+  let totalWeight = new BigNumber(0);
+  let weightedConvictionSum = new BigNumber(0);
 
   for (const [, trackVoting] of Object.entries(votingMap)) {
     let accountMaxLock = new BN(0);
@@ -64,7 +68,10 @@ function computeGovernanceStats(votingMap: VotingMap) {
             accountMaxLock = amount;
           }
           const conviction = votingService.getAccountVoteConviction(vote);
-          multipliers.push(votingService.getConvictionMultiplier(conviction));
+          const multiplier = votingService.getConvictionMultiplier(conviction);
+          const weight = new BigNumber(amount.toString());
+          totalWeight = totalWeight.plus(weight);
+          weightedConvictionSum = weightedConvictionSum.plus(weight.times(multiplier));
         }
 
         if (voting.prior && voting.prior.amount && !voting.prior.amount.isZero()) {
@@ -81,7 +88,10 @@ function computeGovernanceStats(votingMap: VotingMap) {
         if (voting.prior && voting.prior.amount && voting.prior.amount.gt(accountMaxLock)) {
           accountMaxLock = voting.prior.amount;
         }
-        multipliers.push(votingService.getConvictionMultiplier(voting.conviction));
+        const multiplier = votingService.getConvictionMultiplier(voting.conviction);
+        const weight = new BigNumber(voting.balance.toString());
+        totalWeight = totalWeight.plus(weight);
+        weightedConvictionSum = weightedConvictionSum.plus(weight.times(multiplier));
       }
     }
 
@@ -91,7 +101,7 @@ function computeGovernanceStats(votingMap: VotingMap) {
     totalLocked = totalLocked.add(accountMaxLock);
   }
 
-  const averageConviction = multipliers.length > 0 ? multipliers.reduce((a, b) => a + b, 0) / multipliers.length : 0;
+  const averageConviction = totalWeight.gt(0) ? weightedConvictionSum.div(totalWeight).toNumber() : 0;
 
   return { activeVotingAccounts, totalLocked, averageConviction };
 }
@@ -245,5 +255,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     icon: asset.icon,
     priceId: asset.priceId,
     pending,
+    votingMap,
+    tracks,
   } satisfies ChainGovernanceData;
 };
