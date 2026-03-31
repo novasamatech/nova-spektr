@@ -1,10 +1,11 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
 import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { authModel, backendConfigurationModel, createOperationDescription } from '@/aggregates/backend-auth';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { multisigService } from '@/features/multisig-wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -222,6 +223,53 @@ sample({
     });
   },
   target: $redirectAfterSubmitPath,
+});
+
+const postDescriptionFx = createEffect(
+  async (params: {
+    baseUrl: string;
+    multisigAccountId: string;
+    chainId: string;
+    callHash: string;
+    blockNumber: number;
+    extrinsicIndex: number;
+    description: string;
+  }) => {
+    const { baseUrl, ...body } = params;
+    await createOperationDescription(baseUrl, body);
+  },
+);
+
+sample({
+  clock: submitModel.done,
+  source: {
+    coreTx: $coreTx,
+    wrappedTx: $tx,
+    multisigAccount: formModel.$multisigAccount,
+    description: formModel.$description,
+    baseUrl: backendConfigurationModel.$backendUrl,
+    isAuthenticated: authModel.$isAuthenticated,
+  },
+  filter: ({ multisigAccount, description, baseUrl, isAuthenticated }, results) =>
+    nonNullable(multisigAccount) &&
+    submitUtils.isSuccessResult(results[0]!.result) &&
+    description.length > 0 &&
+    nonNullable(baseUrl) &&
+    isAuthenticated,
+  fn: ({ coreTx, wrappedTx, multisigAccount, description, baseUrl }, results) => {
+    const { timepoint } = (results[0] as SuccessResult).params;
+
+    return {
+      baseUrl: baseUrl!,
+      multisigAccountId: multisigService.getMultisigAccountId(multisigAccount!),
+      chainId: coreTx!.chainId,
+      callHash: wrappedTx!.args.callHash,
+      blockNumber: timepoint.height,
+      extrinsicIndex: timepoint.index,
+      description,
+    };
+  },
+  target: postDescriptionFx,
 });
 
 sample({

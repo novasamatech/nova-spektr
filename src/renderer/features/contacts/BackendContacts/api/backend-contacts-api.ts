@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { type BackendContact, type Contact, type ContactTag } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
-import { authFetch } from '../../BackendConfiguration/lib/backend-fetch';
+import { authFetch } from '@/aggregates/backend-auth';
 
 export class HttpError extends Error {
   constructor(

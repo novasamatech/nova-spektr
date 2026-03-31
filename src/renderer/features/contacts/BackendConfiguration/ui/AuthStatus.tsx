@@ -4,7 +4,7 @@ import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
-import { authModel } from '../model/auth-model';
+import { authModel } from '@/aggregates/backend-auth';
 
 export const AuthStatus = () => {
   const { t } = useI18n();

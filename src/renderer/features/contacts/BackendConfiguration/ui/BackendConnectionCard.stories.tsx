@@ -1,9 +1,8 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend-auth';
 import { withEffector } from '../../__stories__/withEffector';
-import { authModel } from '../model/auth-model';
-import { backendConfigurationModel } from '../model/backend-configuration-model';
 
 import { BackendConnectionCard } from './BackendConnectionCard';
 

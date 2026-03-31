@@ -3,7 +3,7 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 import { persist } from '@/shared/api/storage';
 import { type Contact } from '@/shared/core';
 import { type BackendError, contactModel } from '@/entities/contact';
-import { authModel, backendConfigurationModel } from '../../BackendConfiguration';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend-auth';
 import { HttpError, fetchAllContacts } from '../api/backend-contacts-api';
 
 function categorizeError(error: Error): BackendError {

@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type PropsWithChildren } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -9,6 +9,7 @@ import { type MultisigOperation, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
+import { operationDescriptionsModel } from '../model/operation-descriptions-model';
 
 type Props = PropsWithChildren<{
   operation: MultisigOperation;
@@ -21,6 +22,11 @@ export const OperationDetails = ({ operation, children }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
   const allAccounts = useUnit(accounts.$list);
+  const description = useStoreMap({
+    store: operationDescriptionsModel.$descriptions,
+    keys: [operation.id],
+    fn: (descriptions, [id]) => descriptions[id] ?? null,
+  });
 
   const depositorSignatory = allAccounts.find(a => a.accountId === operation.depositor);
   const depositorWallet = depositorSignatory && wallets.find(w => w.id === depositorSignatory.walletId);
@@ -58,6 +64,12 @@ export const OperationDetails = ({ operation, children }: Props) => {
         <DetailRow label={t('operation.details.dateTime')}>
           <span>{formatDate(date, 'PPp')}</span>
         </DetailRow>
+
+        {description && (
+          <DetailRow label={t('operation.descriptionLabel')} wrapperClassName="items-start">
+            <FootnoteText className="text-text-secondary">{description}</FootnoteText>
+          </DetailRow>
+        )}
       </div>
     </div>
   );

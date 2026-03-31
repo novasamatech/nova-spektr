@@ -3,8 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
-import { authModel } from '../model/auth-model';
-import { backendConfigurationModel } from '../model/backend-configuration-model';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend-auth';
 
 import { AuthStatus } from './AuthStatus';
 

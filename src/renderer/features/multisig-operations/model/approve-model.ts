@@ -43,6 +43,10 @@ const $weight = createStore<Weight | null>(null);
 const selectSignatory = createEvent<AnyAccount | null>();
 const $signatory = restore<AnyAccount | null>(selectSignatory, null).reset(flow.open);
 
+const setDescription = createEvent<string>();
+const $description = createStore('').reset(flow.open);
+$description.on(setDescription, (_, value) => value);
+
 const $chain = flow.state.map(state => state.chain);
 const $operation = flow.state.map(state => state.operation);
 const $multisigAccount = flow.state.map(state => state.account);
@@ -248,6 +252,8 @@ export const approveModel = {
   $valid,
 
   $signatories,
+  $description,
   selectSignatory,
   selectInitiator,
+  setDescription,
 };

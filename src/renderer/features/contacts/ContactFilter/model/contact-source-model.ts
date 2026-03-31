@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 
 import { contactModel } from '@/entities/contact';
-import { authModel, backendConfigurationModel } from '../../BackendConfiguration';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend-auth';
 
 const sourceTabChanged = createEvent<string>();
 
