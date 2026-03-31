@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { CHART_TOOLTIP_STYLE } from '@/shared/ui/chart-constants';
 import { type PriceHistoryTimeRange } from '@/domains/price';
 
@@ -34,7 +36,7 @@ function formatDate(timestamp: number, timeRange: PriceHistoryTimeRange): string
   }).format(date);
 }
 
-export const ChartTooltip = ({ active, payload, currencySymbol, timeRange }: Props) => {
+export const ChartTooltip = memo(({ active, payload, currencySymbol, timeRange }: Props) => {
   if (!active || !payload?.length) return null;
 
   const item = payload[0];
@@ -51,4 +53,4 @@ export const ChartTooltip = ({ active, payload, currencySymbol, timeRange }: Pro
       <div style={{ color: '#757575' }}>{formatDate(timestamp, timeRange)}</div>
     </div>
   );
-};
+});

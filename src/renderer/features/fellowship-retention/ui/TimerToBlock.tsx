@@ -3,7 +3,7 @@ import { memo, useEffect, useState } from 'react';
 import { getTimeToBlock } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
 import { Timeout } from '@/shared/ui-kit';
-import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 
 type Props = {
   endBlock: number | null;
@@ -17,11 +17,12 @@ type Props = {
 export const TimerToBlock = memo(
   ({ endBlock, shortDateFormat, icon = 'clock', variant = 'idle', passedText, hideIconText }: Props) => {
     const api = useFellowshipApi();
+    const chain = useFellowshipChain();
     const [endTime, setEndTime] = useState<number>();
 
     useEffect(() => {
-      if (endBlock && api) {
-        getTimeToBlock(endBlock, api).then(date => {
+      if (endBlock && api && chain) {
+        getTimeToBlock(endBlock, api, chain).then(date => {
           setEndTime(date / 1000);
         });
       }

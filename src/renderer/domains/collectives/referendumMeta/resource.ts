@@ -3,7 +3,7 @@ import { createStore } from 'effector';
 
 import { polkassemblyApiService } from '@/shared/api/polkassembly';
 import { subsquareApiService } from '@/shared/api/subsquare';
-import { type ChainId } from '@/shared/core';
+import { type Chain, type ChainId } from '@/shared/core';
 import { dictionary, getBlockFromTime, pickNestedValue, setNestedValue, toAccountId } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { createQueryResource } from '@/shared/query';
@@ -15,13 +15,14 @@ import { type ReferendumMeta, type ReferendumMetaProvider } from './types';
 export type ReferendumMetaRequestParams = {
   provider: ReferendumMetaProvider;
   api: ApiPromise;
+  chain: Chain;
   palletType: CollectivePalletsType;
 };
 
 export const referendumMetaResource = createQueryResource<ReferendumMetaRequestParams>({
   key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
 })
-  .request<ReferendumMeta[]>(async ({ api, provider, palletType }) => {
+  .request<ReferendumMeta[]>(async ({ api, chain, provider, palletType }) => {
     const chainId = api.genesisHash.toHex() as ChainId;
     let response: ReferendumMeta[] = [];
     // external providers work only with polkadot collectives chain
@@ -64,7 +65,7 @@ export const referendumMetaResource = createQueryResource<ReferendumMetaRequestP
         const mappedResponses = await Promise.all(
           page.map<Promise<ReferendumMeta>>(async x => {
             const timestamp = new Date(x.created_at).getTime();
-            const blockHeight = await getBlockFromTime(timestamp, api);
+            const blockHeight = await getBlockFromTime(timestamp, api, chain);
 
             return {
               pallet: palletType,
