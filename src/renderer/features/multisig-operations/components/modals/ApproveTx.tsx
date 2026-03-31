@@ -166,6 +166,8 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
           {activeStep === Step.CONFIRMATION && (
             <Confirmation
               operation={operation}
+              multisigAccount={account}
+              initiator={initiator}
               api={api}
               chain={chain}
               fee={fee}

@@ -35,6 +35,7 @@ export { Field } from './Field/Field';
 export { Input } from './Input/Input';
 export { Tabs } from './Tabs/Tabs';
 export { Box } from './Box/Box';
+export { Json } from './Json/Json';
 export { ProgressWithDividers } from './ProgressWithDividers/ProgressWithDividers';
 export { QrCode } from './QrCode/QrCode';
 export { ConfirmModal } from './ConfirmModal/ConfirmModal';
