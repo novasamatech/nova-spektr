@@ -5,11 +5,12 @@ import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText, TitleText } from '@/shared/ui';
-import { CHART_TOOLTIP_STYLE, getColorByPriceId } from '@/shared/ui/chart-constants';
+import { getColorByPriceId } from '@/shared/ui/chart-constants';
 import { Skeleton } from '@/shared/ui-kit';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { type ChainGovernanceSummary, useGovernanceOverview } from '../hooks/useGovernanceOverview';
 
+import { ChartTooltip } from './ChartTooltip';
 import { GovernanceDetailModal } from './GovernanceDetailModal';
 import { Price } from './Price';
 
@@ -146,25 +147,6 @@ const ChainRow = memo(({ chain, currency, t, onClick }: ChainRowProps) => {
           </FootnoteText>
         </div>
       )}
-    </div>
-  );
-});
-
-type ChartTooltipProps = {
-  active?: boolean;
-  payload?: { payload: { name: string; percent: number } }[];
-};
-
-const ChartTooltip = memo(({ active, payload }: ChartTooltipProps) => {
-  if (!active || !payload?.length) return null;
-  const item = payload[0];
-  if (!item) return null;
-
-  return (
-    <div style={CHART_TOOLTIP_STYLE}>
-      <div style={{ fontWeight: 600 }}>{item.payload.name}</div>
-      {/* eslint-disable-next-line i18next/no-literal-string */}
-      <div>{item.payload.percent.toFixed(1)}%</div>
     </div>
   );
 });

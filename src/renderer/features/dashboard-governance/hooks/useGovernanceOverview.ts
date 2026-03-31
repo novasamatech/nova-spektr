@@ -2,7 +2,7 @@ import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type ChainId, type TrackInfo, type VotingMap } from '@/shared/core';
+import { type ChainId, type VotingMap } from '@/shared/core';
 import { getRoundedValue } from '@/shared/lib/utils';
 import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { currencySelect } from '@/aggregates/currency-select';
@@ -19,7 +19,6 @@ export type ChainGovernanceSummary = ChainGovernanceData & {
 export type GovernanceOverviewResult = {
   chains: ChainGovernanceSummary[];
   votingMapByChain: Record<ChainId, VotingMap>;
-  tracksByChain: Record<ChainId, Record<string, TrackInfo>>;
   totalFiat: string | null;
   pending: boolean;
   fiatFlag: boolean | null;
@@ -76,18 +75,9 @@ export const useGovernanceOverview = (accountIds: string[]): GovernanceOverviewR
     return map;
   }, [polkadotData, kusamaData]);
 
-  const tracksByChain = useMemo(() => {
-    const map: Record<ChainId, Record<string, TrackInfo>> = {};
-    if (polkadotData) map[POLKADOT_AH_CHAIN_ID] = polkadotData.tracks;
-    if (kusamaData) map[KUSAMA_AH_CHAIN_ID] = kusamaData.tracks;
-
-    return map;
-  }, [polkadotData, kusamaData]);
-
   return {
     ...result,
     votingMapByChain,
-    tracksByChain,
     pending:
       accountIds.length > 0 &&
       ((polkadotData === null && kusamaData === null) ||

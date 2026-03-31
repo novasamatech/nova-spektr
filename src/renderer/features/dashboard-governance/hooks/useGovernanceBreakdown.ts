@@ -57,7 +57,6 @@ export const useGovernanceBreakdown = ({ votingMap, chainSummary, accountIds, al
     for (const [accountId, trackVoting] of Object.entries(votingMap)) {
       if (!accountIdSet.has(accountId)) continue;
 
-      // Compute max lock and weighted average conviction across all tracks for this account
       let maxLock = BN_ZERO;
       let totalWeight = new BigNumber(0);
       let weightedConvictionSum = new BigNumber(0);

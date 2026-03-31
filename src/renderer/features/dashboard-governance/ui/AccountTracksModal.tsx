@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
 
-import { type TrackId, type VotingMap } from '@/shared/core';
+import { type Conviction, type TrackId, type VotingMap } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, getRoundedValue, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
@@ -46,23 +46,22 @@ type Props = {
 export const AccountTracksModal = memo(
   ({ accountId, accountName, accountAddress, votingMap, chainSummary, currency, onClose }: Props) => {
     const { t } = useI18n();
-    const activeCurrency = useUnit(currencySelect.$activeCurrency);
     const pricesParams = useUnit(currencySelect.$currentPricesParams);
     const { data: prices } = useAssetsPrices(pricesParams);
 
     const rows = useMemo(() => {
-      const trackVoting = votingMap[accountId as keyof typeof votingMap];
+      const typedAccountId = accountId as keyof VotingMap;
+      const trackVoting = votingMap[typedAccountId];
       if (!trackVoting) return [];
 
-      const cur = activeCurrency ?? currency;
-      const priceItem = cur && prices ? prices[chainSummary.priceId]?.[cur.coingeckoId] : null;
+      const priceItem = currency && prices ? prices[chainSummary.priceId]?.[currency.coingeckoId] : null;
 
       const rawRows: TrackBreakdownRow[] = [];
       let totalFiat = new BigNumber(0);
 
       for (const [trackId, voting] of Object.entries(trackVoting)) {
         let lockAmount = BN_ZERO;
-        let conviction = 'None';
+        let conviction: Conviction = 'None';
 
         if (votingService.isCasting(voting)) {
           for (const vote of Object.values(voting.votes)) {
@@ -91,9 +90,7 @@ export const AccountTracksModal = memo(
 
         totalFiat = totalFiat.plus(fiat);
 
-        const multiplier = votingService.getConvictionMultiplier(
-          conviction as Parameters<typeof votingService.getConvictionMultiplier>[0],
-        );
+        const multiplier = votingService.getConvictionMultiplier(conviction);
         const convictionDisplay = conviction === 'None' ? 'None' : `${multiplier}x`;
 
         const trackMeta = getTrackMeta(trackId);
@@ -124,7 +121,7 @@ export const AccountTracksModal = memo(
       }
 
       return rawRows;
-    }, [accountId, votingMap, chainSummary, prices, activeCurrency, currency, t]);
+    }, [accountId, votingMap, chainSummary, prices, currency, t]);
 
     const chartData = useMemo(() => {
       const totalFiat = rows.reduce((sum, r) => sum + r.fiatValueNum, 0);
@@ -208,7 +205,7 @@ export const AccountTracksModal = memo(
           width: '12%',
           render: (_, item) => (
             <FootnoteText className="tabular-nums">
-              {}
+              {/* eslint-disable-next-line i18next/no-literal-string */}
               {item.sharePercent.toFixed(1)}%
             </FootnoteText>
           ),

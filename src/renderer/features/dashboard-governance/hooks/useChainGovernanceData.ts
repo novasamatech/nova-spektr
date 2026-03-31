@@ -1,4 +1,5 @@
 import { BN, BN_ZERO } from '@polkadot/util';
+import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { useMemo, useRef } from 'react';
 
@@ -47,8 +48,8 @@ export type ChainGovernanceData = {
 function computeGovernanceStats(votingMap: VotingMap) {
   let activeVotingAccounts = 0;
   let totalLocked = new BN(0);
-  let totalWeight = new BN(0);
-  let weightedConvictionSum = 0;
+  let totalWeight = new BigNumber(0);
+  let weightedConvictionSum = new BigNumber(0);
 
   for (const [, trackVoting] of Object.entries(votingMap)) {
     let accountMaxLock = new BN(0);
@@ -68,10 +69,9 @@ function computeGovernanceStats(votingMap: VotingMap) {
           }
           const conviction = votingService.getAccountVoteConviction(vote);
           const multiplier = votingService.getConvictionMultiplier(conviction);
-          // Use amount as float weight for weighted average
-          const weight = parseFloat(amount.toString());
-          totalWeight = totalWeight.add(amount);
-          weightedConvictionSum += weight * multiplier;
+          const weight = new BigNumber(amount.toString());
+          totalWeight = totalWeight.plus(weight);
+          weightedConvictionSum = weightedConvictionSum.plus(weight.times(multiplier));
         }
 
         if (voting.prior && voting.prior.amount && !voting.prior.amount.isZero()) {
@@ -89,9 +89,9 @@ function computeGovernanceStats(votingMap: VotingMap) {
           accountMaxLock = voting.prior.amount;
         }
         const multiplier = votingService.getConvictionMultiplier(voting.conviction);
-        const weight = parseFloat(voting.balance.toString());
-        totalWeight = totalWeight.add(voting.balance);
-        weightedConvictionSum += weight * multiplier;
+        const weight = new BigNumber(voting.balance.toString());
+        totalWeight = totalWeight.plus(weight);
+        weightedConvictionSum = weightedConvictionSum.plus(weight.times(multiplier));
       }
     }
 
@@ -101,8 +101,7 @@ function computeGovernanceStats(votingMap: VotingMap) {
     totalLocked = totalLocked.add(accountMaxLock);
   }
 
-  const totalWeightFloat = parseFloat(totalWeight.toString());
-  const averageConviction = totalWeightFloat > 0 ? weightedConvictionSum / totalWeightFloat : 0;
+  const averageConviction = totalWeight.gt(0) ? weightedConvictionSum.div(totalWeight).toNumber() : 0;
 
   return { activeVotingAccounts, totalLocked, averageConviction };
 }
