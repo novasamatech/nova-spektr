@@ -20,6 +20,7 @@ export { ChainIcon } from './ChainIcon/ChainIcon';
 export { ChainSelect } from './ChainSelect/ChainSelect';
 export { CollectiveRank, getRankTitle } from './CollectiveRank/CollectiveRank';
 export { TrackDescription } from './TrackDescription/TrackDescription';
+export { TrackInfo, getTrackMeta } from './TrackInfo/TrackInfo';
 export { WalletAccountIcon } from './WalletAccountIcon/WalletAccountIcon';
 export { CollectiveReferendumVoteChart } from './CollectiveReferendumVoteChart/CollectiveReferendumVoteChart';
 export { SignatorySelect } from './SignatorySelect/SignatorySelect';

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
@@ -18,7 +18,7 @@ type Props = {
   onClick: () => void;
 };
 
-export const PriceTile = ({ asset, index, price, currencySymbol, pending, onClick }: Props) => {
+export const PriceTile = memo(({ asset, index, price, currencySymbol, pending, onClick }: Props) => {
   const accentColor = getColorByPriceId(asset.priceId, index);
 
   const tileStyle = useMemo(
@@ -71,4 +71,4 @@ export const PriceTile = ({ asset, index, price, currencySymbol, pending, onClic
       </div>
     </button>
   );
-};
+});

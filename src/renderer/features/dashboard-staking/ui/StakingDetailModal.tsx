@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
 
 import { useI18n } from '@/shared/i18n';
@@ -41,77 +41,86 @@ export const StakingDetailModal = memo(
     );
     const hasNominations = elected.length > 0 || notElected.length > 0;
 
-    const totalFiat = rows.reduce((sum, r) => sum + r.fiatValueNum, 0);
-    const chartData = rows
-      .map((row, i) => ({
-        name: row.name || toShortAddress(row.address),
-        value: row.fiatValueNum,
-        percent: totalFiat > 0 ? (row.fiatValueNum / totalFiat) * 100 : 0,
-        index: i,
-        fill: FALLBACK_COLORS[i % FALLBACK_COLORS.length],
-      }))
-      .filter((d) => d.value > 0);
+    const chartData = useMemo(() => {
+      const totalFiat = rows.reduce((sum, r) => sum + r.fiatValueNum, 0);
 
-    const columns: Column<StakingBreakdownRow>[] = [
-      {
-        key: 'name',
-        title: t('dashboard.stakingOverview.stakingDetail.account'),
-        width: '33%',
-        render: (_, item) => (
-          <div className="flex items-center gap-2">
-            <span
-              className="h-2 w-2 shrink-0 rounded-full"
-              style={{ backgroundColor: FALLBACK_COLORS[item.colorIndex % FALLBACK_COLORS.length] }}
-            />
-            <Identicon address={toAddress(item.address)} />
-            <div className="min-w-0">
-              <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
-              <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
+      return rows
+        .map((row, i) => ({
+          name: row.name || toShortAddress(row.address),
+          value: row.fiatValueNum,
+          percent: totalFiat > 0 ? (row.fiatValueNum / totalFiat) * 100 : 0,
+          index: i,
+          fill: FALLBACK_COLORS[i % FALLBACK_COLORS.length],
+        }))
+        .filter((d) => d.value > 0);
+    }, [rows]);
+
+    const columns: Column<StakingBreakdownRow>[] = useMemo(
+      () => [
+        {
+          key: 'name',
+          title: t('dashboard.stakingOverview.stakingDetail.account'),
+          width: '33%',
+          render: (_, item) => (
+            <div className="flex items-center gap-2">
+              <span
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ backgroundColor: FALLBACK_COLORS[item.colorIndex % FALLBACK_COLORS.length] }}
+              />
+              <Identicon address={toAddress(item.address)} />
+              <div className="min-w-0">
+                <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
+                <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
+              </div>
             </div>
-          </div>
-        ),
-      },
-      {
-        key: 'rawAmountNum',
-        title: t('dashboard.stakingOverview.stakingDetail.staked'),
-        sortable: true,
-        width: '23%',
-        render: (_, item) => {
-          const bal = formatBalance(item.rawAmount, item.precision);
-
-          return (
-            <FootnoteText className="tabular-nums">
-              {bal.formatted}
-              {bal.suffix} {item.symbol}
-            </FootnoteText>
-          );
+          ),
         },
-      },
-      {
-        key: 'fiatValueNum',
-        title: t('dashboard.stakingOverview.stakingDetail.value'),
-        sortable: true,
-        width: '20%',
-        render: (_, item) => (
-          <FootnoteText className="tabular-nums">
-            <Price amount={item.fiatValue} currency={currency} />
-          </FootnoteText>
-        ),
-      },
-      {
-        key: 'sharePercent',
-        title: t('dashboard.stakingOverview.stakingDetail.share'),
-        sortable: true,
-        width: '16%',
-        render: (_, item) => <FootnoteText className="tabular-nums">{item.sharePercent.toFixed(1)}%</FootnoteText>,
-      },
-      {
-        key: 'accountId',
-        title: '',
-        width: '8%',
-        render: () => <Icon name="right" size={16} className="text-text-tertiary" />,
-      },
-    ];
+        {
+          key: 'rawAmountNum',
+          title: t('dashboard.stakingOverview.stakingDetail.staked'),
+          sortable: true,
+          width: '23%',
+          render: (_, item) => {
+            const bal = formatBalance(item.rawAmount, item.precision);
+
+            return (
+              <FootnoteText className="tabular-nums">
+                {bal.formatted}
+                {bal.suffix} {item.symbol}
+              </FootnoteText>
+            );
+          },
+        },
+        {
+          key: 'fiatValueNum',
+          title: t('dashboard.stakingOverview.stakingDetail.value'),
+          sortable: true,
+          width: '20%',
+          render: (_, item) => (
+            <FootnoteText className="tabular-nums">
+              <Price amount={item.fiatValue} currency={currency} />
+            </FootnoteText>
+          ),
+        },
+        {
+          key: 'sharePercent',
+          title: t('dashboard.stakingOverview.stakingDetail.share'),
+          sortable: true,
+          width: '16%',
+          render: (_, item) => <FootnoteText className="tabular-nums">{item.sharePercent.toFixed(1)}%</FootnoteText>,
+        },
+        {
+          key: 'accountId',
+          title: '',
+          width: '8%',
+          render: () => <Icon name="right" size={16} className="text-text-tertiary" />,
+        },
+      ],
+      [t, currency],
+    );
+
+    const handleRowClick = useCallback((row: StakingBreakdownRow) => setSelectedAccountId(row.accountId), []);
+    const handleClearSelection = useCallback(() => setSelectedAccountId(null), []);
 
     const showChart = chartData.length > 1;
     const showValidatorsModal = selectedAccountId !== null && !pending;
@@ -162,13 +171,13 @@ export const StakingDetailModal = memo(
             )}
 
             <div className="overflow-y-auto px-5 pb-4" style={{ maxHeight: 440 }}>
-              <Table columns={columns} data={rows} onRowClick={(row) => setSelectedAccountId(row.accountId)} />
+              <Table columns={columns} data={rows} onRowClick={handleRowClick} />
             </div>
           </Modal.Content>
         </Modal>
 
         {showLoadingModal && (
-          <Modal isOpen size="sm" onToggle={() => setSelectedAccountId(null)}>
+          <Modal isOpen size="sm" onToggle={handleClearSelection}>
             <Modal.Title close>{t('staking.confirmation.validatorsTitle')}</Modal.Title>
             <Modal.Content>
               <div className="flex items-center justify-center py-10">
@@ -186,12 +195,12 @@ export const StakingDetailModal = memo(
             identities={identities}
             asset={asset}
             chain={chain ?? undefined}
-            onClose={() => setSelectedAccountId(null)}
+            onClose={handleClearSelection}
           />
         )}
 
         {showValidatorsModal && !hasNominations && (
-          <Modal isOpen size="sm" onToggle={() => setSelectedAccountId(null)}>
+          <Modal isOpen size="sm" onToggle={handleClearSelection}>
             <Modal.Title close>{t('staking.confirmation.validatorsTitle')}</Modal.Title>
             <Modal.Content>
               <div className="flex items-center justify-center py-10">
