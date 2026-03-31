@@ -1,7 +1,7 @@
 import { type ReactNode, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, includes, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { cnTw, includes, toShortAddress } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { SearchInput } from '@/shared/ui-kit';
@@ -68,8 +68,8 @@ export const MatchedAccountsPreview = ({ allEntries, filters }: Props) => {
         <div className="max-h-40 overflow-y-auto rounded-sm">
           {visible.map((entry) => (
             <div key={entry.id} className="flex items-center gap-x-2 rounded px-2 py-1.5">
-              <div className="pointer-events-none shrink-0">
-                <Identicon address={toAddress(entry.address)} size={24} canCopy={false} />
+              <div className="shrink-0">
+                <Identicon address={entry.address} size={24} canCopy />
               </div>
               <div className="min-w-0 flex-1">
                 <FootnoteText className="truncate text-text-primary">{entry.name}</FootnoteText>

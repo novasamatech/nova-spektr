@@ -1,8 +1,8 @@
 import { type ReactNode, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, includes, toAddress } from '@/shared/lib/utils';
-import { FootnoteText } from '@/shared/ui';
+import { cnTw, includes, toShortAddress } from '@/shared/lib/utils';
+import { CaptionText, FootnoteText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { Checkbox, Input, SearchInput } from '@/shared/ui-kit';
 import { type DashboardEntry } from '@/pages/Dashboard/model/dashboard-model';
@@ -103,11 +103,12 @@ export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameCha
             onClick={() => toggleEntry(entry.id)}
           >
             <Checkbox checked={selectedSet.has(entry.id)} onChange={() => toggleEntry(entry.id)} />
-            <div className="pointer-events-none shrink-0">
-              <Identicon address={toAddress(entry.address)} size={24} canCopy={false} />
+            <div className="shrink-0">
+              <Identicon address={entry.address} size={24} canCopy />
             </div>
             <div className="min-w-0 flex-1">
               <FootnoteText className="truncate text-text-primary">{entry.name}</FootnoteText>
+              <CaptionText className="text-text-tertiary">{toShortAddress(entry.address, 6)}</CaptionText>
             </div>
             <div className="flex shrink-0 items-center gap-x-1">
               {entry.entityNames && entry.entityNames.length > 0 && (
