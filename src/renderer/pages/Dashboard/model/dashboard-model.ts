@@ -3,6 +3,7 @@ import { persist } from 'effector-storage/local';
 
 import { type ID, type WalletType } from '@/shared/core';
 import { type ContactTag } from '@/shared/core/types/contact';
+import { toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { type PresetFilterCriteria, dashboardPresetsModel } from '@/aggregates/dashboard-presets';
@@ -73,7 +74,7 @@ const $allEntries = combine(
       entries.push({
         id: account.id,
         name: account.name,
-        address: account.accountId,
+        address: toAddress(account.accountId),
         accountId: account.accountId,
         source: 'wallet',
         walletId: account.walletId,

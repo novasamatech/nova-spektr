@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useDeferredValue, useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -28,12 +28,24 @@ export const dashboardGovernanceSlot = createSlot<{
 
 const TABS = ['overview', 'staking', 'governance', 'alerts'] as const;
 
+const EmptyState = ({ t }: { t: (key: string) => string }) => (
+  <div className="flex h-full w-full flex-col items-center justify-center">
+    <div className="flex flex-col items-center gap-y-2">
+      <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
+      <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+    </div>
+  </div>
+);
+
 export const Dashboard = () => {
   const { t } = useI18n();
   const allEntries = useUnit(dashboardModel.$allEntries);
   const selectedIds = useUnit(dashboardModel.$selectedIds);
   const activeTab = useUnit(dashboardModel.$activeTab);
-  const deferredTab = useDeferredValue(activeTab);
+
+  // Mount tabs on first visit, then keep alive — avoids re-mount storm on tab switch
+  const visitedTabs = useRef(new Set<string>([activeTab]));
+  visitedTabs.current.add(activeTab);
   const editMode = useUnit(dashboardModel.$editMode);
   const editModeToggled = useUnit(dashboardModel.editModeToggled);
 
@@ -80,14 +92,9 @@ export const Dashboard = () => {
           </div>
 
           <Tabs.Content value="overview">
-            {deferredTab === 'overview' &&
+            {visitedTabs.current.has('overview') &&
               (allEntries.length === 0 ? (
-                <div className="flex h-full w-full flex-col items-center justify-center">
-                  <div className="flex flex-col items-center gap-y-2">
-                    <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
-                    <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
-                  </div>
-                </div>
+                <EmptyState t={t} />
               ) : (
                 <DashboardGrid
                   slot={dashboardWidgetsSlot}
@@ -99,14 +106,9 @@ export const Dashboard = () => {
           </Tabs.Content>
 
           <Tabs.Content value="staking">
-            {deferredTab === 'staking' &&
+            {visitedTabs.current.has('staking') &&
               (allEntries.length === 0 ? (
-                <div className="flex h-full w-full flex-col items-center justify-center">
-                  <div className="flex flex-col items-center gap-y-2">
-                    <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
-                    <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
-                  </div>
-                </div>
+                <EmptyState t={t} />
               ) : (
                 <DashboardGrid
                   slot={dashboardStakingSlot}
@@ -118,14 +120,9 @@ export const Dashboard = () => {
           </Tabs.Content>
 
           <Tabs.Content value="governance">
-            {deferredTab === 'governance' &&
+            {visitedTabs.current.has('governance') &&
               (allEntries.length === 0 ? (
-                <div className="flex h-full w-full flex-col items-center justify-center">
-                  <div className="flex flex-col items-center gap-y-2">
-                    <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
-                    <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
-                  </div>
-                </div>
+                <EmptyState t={t} />
               ) : (
                 <DashboardGrid
                   slot={dashboardGovernanceSlot}

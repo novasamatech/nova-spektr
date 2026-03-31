@@ -18,6 +18,7 @@ type Props = {
   allEntries: { accountId: string; name: string; address: string }[];
 };
 
+const ALL_CHAINS = '__all__';
 const HOUR = 3_600_000;
 const DAY = 86_400_000;
 
@@ -79,7 +80,10 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
 
   const setActiveTab = useCallback(() => setTab('active'), []);
   const setEndedTab = useCallback(() => setTab('ended'), []);
-  const handleChainFilterChange = useCallback((v: string) => setChainFilter((prev) => (v === prev ? null : v)), []);
+  const handleChainFilterChange = useCallback(
+    (v: string) => setChainFilter(v === ALL_CHAINS ? null : (prev) => (v === prev ? null : v)),
+    [],
+  );
 
   const uniqueChains = useMemo(() => {
     const seen = new Map<string, { chainId: string; chainName: string; chainIcon: string }>();
@@ -210,6 +214,9 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
                   value={chainFilter}
                   onChange={handleChainFilterChange}
                 >
+                  <Select.Item value={ALL_CHAINS}>
+                    <span>{t('dashboard.activeReferendums.allChains')}</span>
+                  </Select.Item>
                   {uniqueChains.map((c) => (
                     <Select.Item key={c.chainId} value={c.chainId}>
                       <div className="flex items-center gap-1.5">

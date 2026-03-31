@@ -118,7 +118,11 @@ const StackedShape = memo(({ barProps, barData }: { barProps: BarShapeProps; bar
 
   for (let i = 0; i < entry.segments.length; i++) {
     const seg = entry.segments[i]!;
-    const segH = i === entry.segments.length - 1 ? h - offsetY : Math.max(Math.round(seg.fraction * h), 2);
+    const segH =
+      i === entry.segments.length - 1 ? h - offsetY : Math.min(Math.max(Math.round(seg.fraction * h), 2), h - offsetY);
+
+    if (segH <= 0) break;
+
     const segY = y + h - offsetY - segH;
     rects.push(<rect key={i} x={x} y={segY} width={w} height={segH} fill={seg.color} />);
     offsetY += segH;

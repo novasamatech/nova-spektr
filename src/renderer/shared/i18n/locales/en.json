@@ -628,7 +628,7 @@
     "governanceOverview": {
       "title": "Governance Overview",
       "votingAccounts": "Voting accounts",
-      "unlockable": "Unlockable",
+      "unlockable": "Claimable",
       "averageConviction": "Avg. conviction",
       "noGovernance": "No governance activity found",
       "convictionDisplay": "{value}x"
