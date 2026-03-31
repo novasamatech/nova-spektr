@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
+import { type Address } from '@/shared/core';
 import { type PresetFilterCriteria } from '@/aggregates/dashboard-presets';
 import { type DashboardEntry, applyPresetFilter } from '../dashboard-model';
 
 const wallet: DashboardEntry = {
   id: 'w1',
   name: 'Main Wallet',
-  address: '0x1',
+  address: '0x1' as Address,
   accountId: '0x1',
   source: 'wallet',
 };
@@ -14,7 +15,7 @@ const wallet: DashboardEntry = {
 const localContact: DashboardEntry = {
   id: 'lc1',
   name: 'Alice Local',
-  address: '0x2',
+  address: '0x2' as Address,
   accountId: '0x2',
   source: 'local-contact',
 };
@@ -22,7 +23,7 @@ const localContact: DashboardEntry = {
 const backendContact: DashboardEntry = {
   id: 'bc1',
   name: 'Bob Backend',
-  address: '0x3',
+  address: '0x3' as Address,
   accountId: '0x3',
   source: 'backend-contact',
   entityNames: ['Parity', 'W3F'],
@@ -33,7 +34,7 @@ const backendContact: DashboardEntry = {
 const backendContact2: DashboardEntry = {
   id: 'bc2',
   name: 'Charlie Backend',
-  address: '0x4',
+  address: '0x4' as Address,
   accountId: '0x4',
   source: 'backend-contact',
   entityNames: ['W3F'],
