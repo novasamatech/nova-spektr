@@ -82,7 +82,7 @@ export const UnlockScheduleWidget = ({ accountIds, allEntries }: Props) => {
         <>
           <div className="my-4 border-t border-divider" />
           <FootnoteText className="mb-2 text-text-tertiary">
-            {t('dashboard.unlockSchedule.upcomingUnlocks')}
+            {t('dashboard.unlockSchedule.upcomingUnlocks')} ({events.length})
           </FootnoteText>
           <div className="flex max-h-[200px] flex-col gap-2 overflow-y-auto">
             {events.map((event) => (

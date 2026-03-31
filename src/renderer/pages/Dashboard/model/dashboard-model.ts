@@ -1,16 +1,18 @@
 import { combine, createEvent, createStore } from 'effector';
 import { persist } from 'effector-storage/local';
 
-import { type ID, type WalletType } from '@/shared/core';
+import { type Address, type ID, type WalletType } from '@/shared/core';
 import { type ContactTag } from '@/shared/core/types/contact';
+import { toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
+import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { type PresetFilterCriteria, dashboardPresetsModel } from '@/aggregates/dashboard-presets';
 
 type DashboardEntry = {
   id: string;
   name: string;
-  address: string;
+  address: Address;
   accountId: string;
   source: 'wallet' | 'local-contact' | 'backend-contact';
   walletId?: ID;
@@ -61,8 +63,9 @@ const $allEntries = combine(
     accountsWithWallets: $accountsWithWallets,
     localContacts: contactModel.$localContacts,
     backendContacts: contactModel.$backendContacts,
+    chains: networkModel.$chains,
   },
-  ({ accountsWithWallets: { accounts, wallets }, localContacts, backendContacts }): DashboardEntry[] => {
+  ({ accountsWithWallets: { accounts, wallets }, localContacts, backendContacts, chains }): DashboardEntry[] => {
     const walletNameById = new Map(wallets.map((w) => [w.id, w.name]));
     const walletTypeById = new Map(wallets.map((w) => [w.id, w.type]));
     const entries: DashboardEntry[] = [];
@@ -70,10 +73,12 @@ const $allEntries = combine(
     for (const account of accounts) {
       if (accountUtils.isMultisigSignatoryAccount(account)) continue;
 
+      const addressPrefix = account.type === 'chain' ? chains[account.chainId]?.addressPrefix : undefined;
+
       entries.push({
         id: account.id,
         name: account.name,
-        address: account.accountId,
+        address: toAddress(account.accountId, { prefix: addressPrefix }),
         accountId: account.accountId,
         source: 'wallet',
         walletId: account.walletId,

@@ -168,6 +168,7 @@ function useChainEndedReferendums(
         },
         trackVoting,
         accountTrackLocks,
+        referendums,
       );
 
       for (const chunk of schedule) {

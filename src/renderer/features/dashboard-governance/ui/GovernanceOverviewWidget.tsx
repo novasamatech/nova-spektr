@@ -1,14 +1,17 @@
-import { memo, useDeferredValue } from 'react';
+import { memo, useCallback, useDeferredValue, useState } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
 
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText, TitleText } from '@/shared/ui';
-import { CHART_TOOLTIP_STYLE, getColorByPriceId } from '@/shared/ui/chart-constants';
+import { getColorByPriceId } from '@/shared/ui/chart-constants';
 import { Skeleton } from '@/shared/ui-kit';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { type ChainGovernanceSummary, useGovernanceOverview } from '../hooks/useGovernanceOverview';
 
+import { ChartTooltip } from './ChartTooltip';
+import { GovernanceDetailModal } from './GovernanceDetailModal';
 import { Price } from './Price';
 
 type Props = {
@@ -16,10 +19,14 @@ type Props = {
   allEntries: { accountId: string; name: string; address: string }[];
 };
 
-export const GovernanceOverviewWidget = ({ accountIds }: Props) => {
+export const GovernanceOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const deferredAccountIds = useDeferredValue(accountIds);
-  const { chains, totalFiat, pending, fiatFlag, currency } = useGovernanceOverview(deferredAccountIds);
+  const { chains, votingMapByChain, totalFiat, pending, fiatFlag, currency } =
+    useGovernanceOverview(deferredAccountIds);
+  const [selectedChainId, setSelectedChainId] = useState<ChainId | null>(null);
+
+  const handleCloseDetail = useCallback(() => setSelectedChainId(null), []);
 
   if (!fiatFlag) return null;
 
@@ -35,6 +42,8 @@ export const GovernanceOverviewWidget = ({ accountIds }: Props) => {
     );
   }
 
+  const selectedChain = selectedChainId ? chains.find((c) => c.chainId === selectedChainId) : null;
+
   return (
     <DashboardWidget colSpan={2}>
       <FootnoteText className="text-text-tertiary">{t('dashboard.governanceOverview.title')}</FootnoteText>
@@ -49,7 +58,13 @@ export const GovernanceOverviewWidget = ({ accountIds }: Props) => {
             <LockAllocationChart chains={chains} />
             <div className="flex flex-1 flex-col gap-3">
               {chains.map((chain) => (
-                <ChainRow key={chain.chainId} chain={chain} currency={currency} t={t} />
+                <ChainRow
+                  key={chain.chainId}
+                  chain={chain}
+                  currency={currency}
+                  t={t}
+                  onClick={() => setSelectedChainId(chain.chainId)}
+                />
               ))}
             </div>
           </div>
@@ -68,6 +83,17 @@ export const GovernanceOverviewWidget = ({ accountIds }: Props) => {
           <Skeleton width="100%" height={10} />
         </div>
       )}
+
+      {selectedChain && (
+        <GovernanceDetailModal
+          chainSummary={selectedChain}
+          votingMap={votingMapByChain[selectedChain.chainId] ?? {}}
+          accountIds={accountIds}
+          allEntries={allEntries}
+          currency={currency}
+          onClose={handleCloseDetail}
+        />
+      )}
     </DashboardWidget>
   );
 };
@@ -76,16 +102,20 @@ type ChainRowProps = {
   chain: ChainGovernanceSummary;
   currency: ReturnType<typeof useGovernanceOverview>['currency'];
   t: ReturnType<typeof useI18n>['t'];
+  onClick: () => void;
 };
 
-const ChainRow = memo(({ chain, currency, t }: ChainRowProps) => {
+const ChainRow = memo(({ chain, currency, t, onClick }: ChainRowProps) => {
   const { formatted, suffix } = formatBalance(chain.totalLocked, chain.precision);
   const { formatted: claimFormatted, suffix: claimSuffix } = formatBalance(chain.claimableAmount, chain.precision);
   const hasClaimable = chain.claimableAmount !== '0';
 
   return (
     <div>
-      <div className="flex items-center justify-between rounded-md px-2 py-1">
+      <div
+        className="flex cursor-pointer items-center justify-between rounded-md px-2 py-1 hover:bg-hover"
+        onClick={onClick}
+      >
         <div className="flex items-center gap-2">
           <img src={chain.icon.colored} alt={chain.chainName} className="h-6 w-6" />
           <div>
@@ -117,25 +147,6 @@ const ChainRow = memo(({ chain, currency, t }: ChainRowProps) => {
           </FootnoteText>
         </div>
       )}
-    </div>
-  );
-});
-
-type ChartTooltipProps = {
-  active?: boolean;
-  payload?: { payload: { name: string; percent: number } }[];
-};
-
-const ChartTooltip = memo(({ active, payload }: ChartTooltipProps) => {
-  if (!active || !payload?.length) return null;
-  const item = payload[0];
-  if (!item) return null;
-
-  return (
-    <div style={CHART_TOOLTIP_STYLE}>
-      <div style={{ fontWeight: 600 }}>{item.payload.name}</div>
-      {/* eslint-disable-next-line i18next/no-literal-string */}
-      <div>{item.payload.percent.toFixed(1)}%</div>
     </div>
   );
 });

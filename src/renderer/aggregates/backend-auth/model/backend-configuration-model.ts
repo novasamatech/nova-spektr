@@ -6,6 +6,10 @@ import { authFetch } from '../lib/backend-fetch';
 
 type UrlReachability = null | 'checking' | 'reachable' | 'unreachable';
 
+function normalizeUrl(url: string): string {
+  return url.trim().replace(/\/+$/, '');
+}
+
 const urlChanged = createEvent<string>();
 const urlSaved = createEvent();
 const urlCleared = createEvent();
@@ -21,10 +25,11 @@ const $draftUrl = createStore('');
 const $isModalOpen = createStore(false);
 
 const $isUrlValid = $draftUrl.map((url) => {
-  if (url.trim().length === 0) return false;
+  const normalized = normalizeUrl(url);
+  if (normalized.length === 0) return false;
 
   try {
-    new URL(url.trim());
+    new URL(normalized);
 
     return true;
   } catch {
@@ -35,7 +40,7 @@ const $isUrlValid = $draftUrl.map((url) => {
 const $hasBackend = $backendUrl.map((url) => url !== null);
 
 const $isDirty = combine($draftUrl, $backendUrl, (draft, saved) => {
-  return draft.trim() !== (saved ?? '');
+  return normalizeUrl(draft) !== (saved ?? '');
 });
 
 $draftUrl.on(urlChanged, (_, url) => url);
@@ -62,7 +67,7 @@ $isModalOpen
 sample({
   clock: urlSaved,
   source: $draftUrl,
-  fn: (url) => url?.trim() ?? null,
+  fn: (url) => (url ? normalizeUrl(url) : null) || null,
   target: $backendUrl,
 });
 
@@ -85,7 +90,7 @@ sample({
   clock: draftUrlDebounced,
   source: $isUrlValid,
   filter: (isValid) => isValid,
-  fn: (_, url) => url,
+  fn: (_, url) => normalizeUrl(url),
   target: checkUrlReachabilityFx,
 });
 
@@ -106,7 +111,7 @@ sample({
 sample({
   clock: checkUrlReachabilityFx.done,
   source: $draftUrl,
-  filter: (draftUrl, { params: checkedUrl }) => draftUrl.trim() === checkedUrl,
+  filter: (draftUrl, { params: checkedUrl }) => normalizeUrl(draftUrl) === checkedUrl,
   fn: (): UrlReachability => 'reachable',
   target: $urlReachable,
 });
@@ -114,7 +119,7 @@ sample({
 sample({
   clock: checkUrlReachabilityFx.fail,
   source: $draftUrl,
-  filter: (draftUrl, { params: checkedUrl }) => draftUrl.trim() === checkedUrl,
+  filter: (draftUrl, { params: checkedUrl }) => normalizeUrl(draftUrl) === checkedUrl,
   fn: (): UrlReachability => 'unreachable',
   target: $urlReachable,
 });

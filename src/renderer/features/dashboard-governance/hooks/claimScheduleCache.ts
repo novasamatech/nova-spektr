@@ -5,6 +5,7 @@ type CacheEntry = {
   block: number;
   votingRef: object;
   trackLocksRef: object;
+  referendumsRef: object;
   result: Chunks[];
 };
 
@@ -20,6 +21,7 @@ export function cachedEstimateClaimSchedule(
   params: Parameters<typeof claimScheduleService.estimateClaimSchedule>[0],
   votingRef: object,
   trackLocksRef: object,
+  referendumsRef: object,
 ): Chunks[] {
   const entry = cache.get(accountId);
 
@@ -27,13 +29,14 @@ export function cachedEstimateClaimSchedule(
     entry &&
     entry.block === params.currentBlockNumber &&
     entry.votingRef === votingRef &&
-    entry.trackLocksRef === trackLocksRef
+    entry.trackLocksRef === trackLocksRef &&
+    entry.referendumsRef === referendumsRef
   ) {
     return entry.result;
   }
 
   const result = claimScheduleService.estimateClaimSchedule(params);
-  cache.set(accountId, { block: params.currentBlockNumber, votingRef, trackLocksRef, result });
+  cache.set(accountId, { block: params.currentBlockNumber, votingRef, trackLocksRef, referendumsRef, result });
 
   return result;
 }
