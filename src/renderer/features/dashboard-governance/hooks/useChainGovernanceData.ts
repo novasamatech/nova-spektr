@@ -1,6 +1,6 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo, useRef } from 'react';
 
 import { type Chunks, UnlockChunkType } from '@/shared/api/governance';
@@ -8,7 +8,14 @@ import { type ChainId, type TrackInfo, type VotingMap } from '@/shared/core';
 import { useThrottledSnapshot } from '@/shared/lib/hooks';
 import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { useReferendums, useTrackLocks, useTracks, useUndecidingTimeout, useVoting } from '@/domains/governance';
+import {
+  $referendumsFullyLoaded,
+  useReferendums,
+  useTrackLocks,
+  useTracks,
+  useUndecidingTimeout,
+  useVoting,
+} from '@/domains/governance';
 import { useBlock, useBlockTime } from '@/domains/network';
 import { locksService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
@@ -160,6 +167,12 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
   }, [rawVotingMap, typedAccountIds]);
 
   const { data: referendums } = useReferendums({ api });
+  const genesisHash = api?.genesisHash.toHex() ?? null;
+  const referendumsFullyLoaded = useStoreMap({
+    store: $referendumsFullyLoaded,
+    keys: [genesisHash],
+    fn: (state, [key]) => (key ? (state[key] ?? false) : false),
+  });
   const { data: undecidingTimeout } = useUndecidingTimeout({ api });
 
   const { data: trackLocks } = useTrackLocks({
@@ -177,7 +190,8 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
       typedAccountIds.length === 0 ||
       Object.keys(votingMap).length === 0 ||
       referendums.length === 0 ||
-      Object.keys(tracks).length === 0
+      Object.keys(tracks).length === 0 ||
+      !referendumsFullyLoaded
     ) {
       return EMPTY_CLAIM;
     }
@@ -206,6 +220,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
         },
         votingByTrack,
         accountTrackLocks,
+        referendums,
       );
 
       collectChunks(schedule, accountId, allChunks);
@@ -220,7 +235,17 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     }
 
     return { claimable: totalClaimable, unlockChunks: allChunks, delegated: totalDelegated };
-  }, [api, currentBlock, typedAccountIds, votingMap, referendums, tracks, trackLocks, undecidingTimeout]);
+  }, [
+    api,
+    currentBlock,
+    typedAccountIds,
+    votingMap,
+    referendums,
+    tracks,
+    trackLocks,
+    undecidingTimeout,
+    referendumsFullyLoaded,
+  ]);
 
   const stats = useMemo(() => computeGovernanceStats(votingMap), [votingMap]);
 
@@ -228,7 +253,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
   // Flip when pending states resolve (not when data appears), so accounts with
   // no governance activity don't get stuck in skeleton.
   const hasEverLoaded = useRef(false);
-  if (api && !tracksPending && !votingPending && currentBlock !== null) {
+  if (api && !tracksPending && !votingPending && currentBlock !== null && referendumsFullyLoaded) {
     hasEverLoaded.current = true;
   }
 
