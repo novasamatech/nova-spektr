@@ -224,6 +224,10 @@ function resolveWalletName({ wallet, accounts, contacts, identities, chains }: R
     return walletAccount.name;
   }
 
+  if (nullable(walletAccount)) {
+    return wallet.name;
+  }
+
   const localContact = contacts.find(c => c.accountId === accountId && isLocalContact(c));
   if (localContact) {
     return localContact.name;

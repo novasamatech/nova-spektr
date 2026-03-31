@@ -17,34 +17,39 @@ export type Deposit = {
   amount: BN;
 };
 
+export type ProposalCallData = {
+  callData?: {
+    hex: HexString;
+    hash: HexString;
+    json: Record<string, AnyJson>;
+  };
+};
+
 export type EvidenceProposal = {
   type: 'Evidence';
   accountId: AccountId;
   rank?: number;
-};
+} & ProposalCallData;
 
 export type RfcProposal = {
   type: 'Rfc';
   pullRequest: string;
   documentHash: string;
-};
+} & ProposalCallData;
 
 export type UnknownProposal = {
   type: 'Unknown';
   description?: string;
-};
+} & ProposalCallData;
 
 export type WhitelistProposal = {
   type: 'Whitelist';
-  proposalHex: HexString;
-  proposalHash: HexString;
-  proposalJSON: Record<string, AnyJson>;
-};
+} & ProposalCallData;
 
 export type SpendProposal = {
   type: 'Spend';
   amount: BN;
-};
+} & ProposalCallData;
 
 export type Proposal = EvidenceProposal | RfcProposal | UnknownProposal | WhitelistProposal | SpendProposal;
 

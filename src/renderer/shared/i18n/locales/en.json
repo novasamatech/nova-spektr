@@ -1470,7 +1470,7 @@
     },
     "onChainData": {
       "amount": "Amount",
-      "call": "Call",
+      "call": "Track",
       "callData": "Call data",
       "callDataCopied": "Call data copied!",
       "callHash": "Call hash",
@@ -1484,6 +1484,8 @@
       "member": "Member",
       "origin": "Origin",
       "proposalNotAvailable": "Proposal data not available",
+      "referendumId": "Referendum ID",
+      "proposalParseFailed": "Failed to parse proposal data",
       "pullRequest": "Pull request",
       "targetRank": "Target rank",
       "title": "On-chain data",
