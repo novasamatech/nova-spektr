@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createStore } from 'effector';
+import { createEvent, createStore, scopeBind } from 'effector';
 
 import { type ChainId, type Referendum } from '@/shared/core';
 import { merge } from '@/shared/lib/utils';
@@ -10,15 +10,28 @@ export type ReferendumSubscriptionParams = {
   api: ApiPromise;
 };
 
+const referendumsFullyLoaded = createEvent<string>();
+
+export const $referendumsFullyLoaded = createStore<Record<string, boolean>>({}).on(
+  referendumsFullyLoaded,
+  (state, key) => (state[key] ? state : { ...state, [key]: true }),
+);
+
 const $sharedReferendumsCache = createStore<Record<ChainId, Referendum[]>>({});
 
 export const subscriptionResource = createSubscriptionResource<ReferendumSubscriptionParams>({
   key: ({ api }) => [api.genesisHash.toHex()],
 })
   .subscribe<Referendum[]>(({ api }, callback) => {
+    const genesisHash = api.genesisHash.toHex();
+    const boundFullyLoaded = scopeBind(referendumsFullyLoaded, { safe: true });
+
     return governanceSubscribeService.subscribeReferendums(api, result => {
       if (result.value) {
         callback(result.value);
+      }
+      if (result.done) {
+        boundFullyLoaded(genesisHash);
       }
     });
   })

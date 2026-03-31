@@ -3,7 +3,7 @@ export { type ReferendumSummary, referendumSummaryResource } from './referendum-
 export { useReferendumSummary } from './referendum-summary/hooks';
 export type { ReferendumSummaryRequestParams } from './referendum-summary/resource';
 
-export { subscriptionResource as referendumSubscriptionResource } from './referendum/resource';
+export { $referendumsFullyLoaded, subscriptionResource as referendumSubscriptionResource } from './referendum/resource';
 export { useReferendums } from './referendum/hooks';
 export type { ReferendumSubscriptionParams } from './referendum/resource';
 
