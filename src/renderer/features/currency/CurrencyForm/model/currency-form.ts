@@ -2,8 +2,8 @@ import { attach, combine, createApi, createEvent, createStore, sample } from 'ef
 import { createForm } from 'effector-forms';
 import { combineEvents, spread } from 'patronum';
 
-import { type CurrencyItem } from '@/shared/api/price-provider';
-import { currencyModel, priceProviderModel } from '@/entities/price';
+import { type CurrencyItem } from '@/domains/price';
+import { currencySelect } from '@/aggregates/currency-select';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -24,13 +24,13 @@ const $currencyForm = createForm({
   validateOn: ['submit'],
 });
 
-const $cryptoCurrencies = currencyModel.$currencyConfig.map((config) => {
+const $cryptoCurrencies = currencySelect.$currencyConfig.map((config) => {
   return config.filter((c) => c.category === 'crypto');
 });
-const $popularFiatCurrencies = currencyModel.$currencyConfig.map((config) => {
+const $popularFiatCurrencies = currencySelect.$currencyConfig.map((config) => {
   return config.filter((c) => c.category === 'fiat' && c.popular);
 });
-const $unpopularFiatCurrencies = currencyModel.$currencyConfig.map((config) => {
+const $unpopularFiatCurrencies = currencySelect.$currencyConfig.map((config) => {
   return config.filter((c) => c.category === 'fiat' && !c.popular);
 });
 
@@ -42,18 +42,13 @@ const $isFormValid = combine(
   ({ isCurrencyDirty, isFiatFlagDirty }) => isFiatFlagDirty || isCurrencyDirty,
 );
 
-type Params = {
-  fiatFlag: boolean | null;
-  currency: CurrencyItem | null;
-};
-
 sample({
-  clock: [priceProviderModel.output.fiatFlagLoaded, currencyModel.output.activeCurrencyLoaded, formInitiated],
+  clock: formInitiated,
   source: {
-    fiatFlag: priceProviderModel.$fiatFlag,
-    currency: currencyModel.$activeCurrency,
+    fiatFlag: currencySelect.$fiatFlag,
+    currency: currencySelect.$activeCurrency,
   },
-  fn: ({ fiatFlag, currency }: Params) => ({ fiatFlag: Boolean(fiatFlag), currency: currency?.id || 0 }),
+  fn: ({ fiatFlag, currency }) => ({ fiatFlag, currency: currency?.id || 0 }),
   target: $currencyForm.setInitialForm,
 });
 
@@ -65,15 +60,15 @@ sample({
   },
   target: spread({
     targets: {
-      fiatFlag: priceProviderModel.events.fiatFlagChanged,
-      currency: currencyModel.events.currencyChanged,
+      fiatFlag: currencySelect.events.fiatFlagChanged,
+      currency: currencySelect.events.currencyChanged,
     },
   }),
 });
 
 sample({
   clock: combineEvents({
-    events: [priceProviderModel.output.fiatFlagChangedDone, currencyModel.output.currencyChangedDone],
+    events: [currencySelect.events.fiatFlagChanged, currencySelect.output.currencyChanged],
   }),
   target: attach({
     source: $callbacks,

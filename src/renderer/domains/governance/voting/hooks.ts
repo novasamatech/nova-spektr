@@ -8,6 +8,6 @@ export const useVoting = (params: NullableMap<VotingSubscriptionParams>) => {
   return useResource(subscriptionResource, {
     params: nonNullableMap(params) ? params : null,
     defaultValue: {},
-    map: (cache, { api }) => cache[api.genesisHash.toHex()] ?? {},
+    map: (cache, { api }) => cache[api.genesisHash.toHex()],
   });
 };

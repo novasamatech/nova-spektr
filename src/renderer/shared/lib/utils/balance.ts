@@ -376,7 +376,7 @@ export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalanc
     value: bnFiatBalance,
     suffix,
     decimalPlaces,
-    formatted: bnFiatBalance + suffix,
+    formatted: (suffix === '' ? formatGroups(bnFiatBalance) : bnFiatBalance) + suffix,
   };
 };
 

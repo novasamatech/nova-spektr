@@ -1,5 +1,5 @@
 import type * as CSS from 'csstype';
-import { type PropsWithChildren, forwardRef, useMemo } from 'react';
+import { type CSSProperties, type PropsWithChildren, forwardRef, useMemo } from 'react';
 
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
@@ -104,7 +104,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
 
     const isHorizontal = direction === 'row' || direction === 'row-reverse';
 
-    const style = useMemo<React.CSSProperties>(
+    const style = useMemo<CSSProperties>(
       () => ({
         width: getBoxSize<CSS.Property.Width>(width),
         height: getBoxSize<CSS.Property.Height>(height),

@@ -1,4 +1,5 @@
 import { differenceInMilliseconds, formatDate, subDays } from 'date-fns';
+import { useUnit } from 'effector-react';
 import { type PropsWithChildren, type ReactNode, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
@@ -9,6 +10,7 @@ import { type TimelineStep, Box, Skeleton } from '@/shared/ui-kit';
 import {
   type Member,
   type Referendum,
+  $ipfsGateways,
   memberService,
   useEvidencesContent,
   votingHistoryService,
@@ -190,12 +192,14 @@ const ReportSubmitted = memo(() => {
   const { data: retentionEvidenceSubmissionDate } = useRetentionEvidenceSubmissionDate();
   const { data: evidence } = useFellowshipMemberEvidence();
 
+  const gateways = useUnit($ipfsGateways);
   const retentionEvidence = nonNullable(evidence) && evidence.wish === 'Retention' ? evidence : null;
 
   const { data: evidenceContent } = useEvidencesContent({
     palletType: 'fellowship',
     chainId: chain?.chainId,
     evidenceHash: retentionEvidence?.hash,
+    gateways,
   });
 
   const submissionDate = useMemo(
@@ -320,8 +324,9 @@ const ReferendumCreated = memo(() => {
 const useRetentionData = () => {
   const { t } = useI18n();
   const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const { data: currentBlock } = useFellowshipBlock();
-  const { data: blockTime } = useBlockTime(api);
+  const { data: blockTime } = useBlockTime(api, chain);
   const { data: retentionPeriodDates } = useRetentionPeriodDates();
   const { data: retentionPeriod } = useRetentionPeriod();
 

@@ -12,17 +12,15 @@ import { Box, Field, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { AssetFiatBalance } from '@/entities/price';
-import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
+import { type ValidationIssue, VestingCsvError, VestingFieldError } from '@/entities/vesting';
+import { walletModel } from '@/entities/wallet';
+import { AssetFiatBalance } from '@/widgets/price';
+import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import {
-  type ValidationIssue,
   CliffMinVestedTransferError,
   MinVestedTransferError,
-  VestingCsvError,
-  VestingFieldError,
   VestingSchedulePreview,
-} from '@/entities/vesting';
-import { walletModel } from '@/entities/wallet';
+} from '@/widgets/vesting-schedule-preview';
 import { formModel } from '../model/form';
 import { vestedTransferUtils } from '../utils';
 

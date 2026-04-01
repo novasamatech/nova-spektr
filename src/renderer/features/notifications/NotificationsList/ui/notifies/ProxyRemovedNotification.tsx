@@ -7,7 +7,7 @@ import { toAddress } from '@/shared/lib/utils';
 import { BodyText } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
-import { ProxyTypeOperation, proxyUtils } from '@/entities/proxy';
+import { proxyUtils } from '@/entities/proxy';
 import { walletUtils } from '@/entities/wallet';
 
 type Props = {
@@ -51,8 +51,6 @@ export const ProxyRemovedNotification = ({ notification, chains, wallets }: Prop
   const proxyWalletType = proxyWallet?.type;
   const proxyAddress = toAddress(notification.proxyAccountId, { prefix: chain?.addressPrefix });
 
-  const proxyTypeTranslation = ProxyTypeOperation[notification.proxyType];
-
   return (
     <div className="flex gap-x-2">
       <div className="relative">
@@ -83,7 +81,7 @@ export const ProxyRemovedNotification = ({ notification, chains, wallets }: Prop
             i18nKey="notifications.details.proxyRemovedDetails"
             values={{
               name: proxyWalletName,
-              operations: proxyTypeTranslation ? t(proxyTypeTranslation) : notification.proxyType,
+              operations: notification.proxyType,
             }}
             components={{
               chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,

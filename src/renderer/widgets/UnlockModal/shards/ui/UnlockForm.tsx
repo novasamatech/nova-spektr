@@ -8,11 +8,11 @@ import { formatBalance, getNativeAsset, toAddress } from '@/shared/lib/utils';
 import { Button, InputHint, MultiSelect } from '@/shared/ui';
 import { type DropdownResult } from '@/shared/ui/Dropdowns/common/types';
 import { Address, AssetBalance } from '@/shared/ui-entities';
-import { FeeWithLabelWithDataLoading, MultisigDepositWithLabel } from '@/entities/transaction';
 import { ProxyWalletAlert, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { networkSelectorModel } from '@/features/governance';
+import { FeeWithLabelWithDataLoading, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { type AccountWithClaim } from '../lib/types';
 import { unlockFormAggregate } from '../model/unlockForm';
 

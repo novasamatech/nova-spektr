@@ -1,0 +1,1 @@
+export { currencySelect } from './model';

@@ -3,7 +3,7 @@ import { type BN } from '@polkadot/util';
 import { createStore } from 'effector';
 import { produce } from 'immer';
 
-import { type ChainId } from '@/shared/core';
+import { type Chain, type ChainId } from '@/shared/core';
 import { getExpectedBlockTime } from '@/shared/lib/utils';
 import { type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { createQueryResource, createSubscriptionResource } from '@/shared/query';
@@ -28,10 +28,10 @@ export const blockResource = createSubscriptionResource<{ api: ApiPromise }>({
   })
   .build();
 
-export const blockTimeResource = createQueryResource<{ api: ApiPromise }>({
+export const blockTimeResource = createQueryResource<{ api: ApiPromise; chain: Chain }>({
   key: ({ api }) => api.genesisHash.toHex(),
 })
-  .request<BN>(({ api }) => getExpectedBlockTime(api))
+  .request<BN>(({ api, chain }) => getExpectedBlockTime(api, chain))
   .retry({ delay: 500, count: 5 })
   .cache<Record<ChainId, BN>>({
     staleAfter: Number.POSITIVE_INFINITY,

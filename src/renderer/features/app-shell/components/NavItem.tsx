@@ -55,7 +55,7 @@ export const NavItem = ({ title, link, icon, badge }: Props) => {
                     </span>
                   )}
                   {folded && badge && (
-                    <span className="absolute top-0 right-0 h-1.5 w-1.5 rounded-full bg-icon-accent" />
+                    <span className="absolute -top-0.5 -right-1.5 h-1.5 w-1.5 rounded-full bg-icon-accent" />
                   )}
                 </div>
                 <BodyText

@@ -1,7 +1,7 @@
 import { attach, combine, createEvent, createStore, restore, sample } from 'effector';
 import { delay, spread } from 'patronum';
 
-import { type PartialProxiedAccount, ProxyVariant } from '@/shared/core';
+import { type PartialProxiedAccount, ProxyTypes, ProxyVariant } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -204,7 +204,7 @@ sample({
       accountId: initiator!.accountId,
       proxiedAccountId: accountId,
       chainId: chain!.chainId,
-      proxyType: 'Any' as const,
+      proxyType: ProxyTypes.ANY,
       delay: 0,
     },
   ],
@@ -228,7 +228,7 @@ sample({
           {
             proxyAccountId: initiator!.accountId,
             delay: 0,
-            proxyType: 'Any',
+            proxyType: ProxyTypes.ANY,
           },
         ],
         proxyVariant: ProxyVariant.PURE,

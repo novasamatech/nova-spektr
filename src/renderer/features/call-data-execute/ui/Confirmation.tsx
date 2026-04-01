@@ -5,11 +5,12 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Button, ButtonWebLink, DetailRow, Icon, LargeTitleText, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
-import { Box, JsonArgs, Modal } from '@/shared/ui-kit';
+import { Box, Modal } from '@/shared/ui-kit';
+import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { transactionService } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
-import { FeeWithLabel } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { confirmModel } from '../model/confirm';
 
 type Props = {

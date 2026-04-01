@@ -1,6 +1,6 @@
-import React from 'react';
+import { type ReactElement, type ReactNode, Fragment, cloneElement, isValidElement } from 'react';
 
-export function highlightText(text: string, query: string, isCurrentMatch: boolean = false): React.ReactNode[] {
+export function highlightText(text: string, query: string, isCurrentMatch: boolean = false): ReactNode[] {
   if (!query?.trim()) {
     return [text];
   }
@@ -8,7 +8,7 @@ export function highlightText(text: string, query: string, isCurrentMatch: boole
   const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const regex = new RegExp(`(${escapedQuery})`, 'gi');
 
-  const parts: React.ReactNode[] = [];
+  const parts: ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
   let matchIndex = 0;
@@ -52,22 +52,18 @@ export function highlightText(text: string, query: string, isCurrentMatch: boole
   return parts.length > 0 ? parts : [text];
 }
 
-export function highlightChildren(
-  children: React.ReactNode,
-  query: string,
-  currentMatchIndex: number = -1,
-): React.ReactNode {
+export function highlightChildren(children: ReactNode, query: string, currentMatchIndex: number = -1): ReactNode {
   if (typeof children === 'string') {
     return highlightText(children, query, false);
   }
 
   if (Array.isArray(children)) {
     return children.map((child, index) => (
-      <React.Fragment key={`child-${index}`}>{highlightChildren(child, query, currentMatchIndex)}</React.Fragment>
+      <Fragment key={`child-${index}`}>{highlightChildren(child, query, currentMatchIndex)}</Fragment>
     ));
   }
 
-  if (React.isValidElement(children)) {
+  if (isValidElement(children)) {
     if (
       children.type === 'span' &&
       children.props &&
@@ -77,11 +73,11 @@ export function highlightChildren(
       return children;
     }
 
-    const props = children.props as { children?: React.ReactNode; [key: string]: unknown };
-    return React.cloneElement(children, {
+    const props = children.props as { children?: ReactNode; [key: string]: unknown };
+    return cloneElement(children, {
       ...props,
       children: highlightChildren(props.children, query, currentMatchIndex),
-    } as unknown as React.ReactElement);
+    } as unknown as ReactElement);
   }
 
   return children;

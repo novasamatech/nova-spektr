@@ -3,7 +3,15 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type Address, type Chain, type Transaction, type Validator, type Wallet } from '@/shared/core';
+import {
+  type Address,
+  type Chain,
+  type FlexibleMultisigAccount,
+  type MultisigAccount,
+  type Transaction,
+  type Validator,
+  type Wallet,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, keys, toAccountId } from '@/shared/lib/utils';
@@ -12,12 +20,12 @@ import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation, identity } from '@/domains/network';
+import { useActiveEra, useValidators } from '@/domains/staking';
 import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { proxyUtils } from '@/entities/proxy';
-import { SelectedValidatorsModal, useValidatorsMap } from '@/entities/staking';
+import { SelectedValidatorsModal } from '@/entities/staking';
 import {
   isAddProxyTransaction,
   isManageProxyTransaction,
@@ -29,23 +37,24 @@ import {
   isXcmTransaction,
 } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { NamedAccount, WalletName } from '@/widgets/NameResolver';
 
 type Props = {
   operation: MultisigOperation;
   account?: AnyAccount;
+  multisigAccount?: MultisigAccount | FlexibleMultisigAccount | null;
   signatory?: AnyAccount;
   chain: Chain;
   api: ApiPromise;
 };
 
-export const Details = ({ api, operation, account, chain, signatory }: Props) => {
+export const Details = ({ api, operation, account, multisigAccount, chain, signatory }: Props) => {
   const { t } = useI18n();
 
-  const activeWallet = useUnit(walletSelect.$selectedWallet);
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
+
+  const multisigWallet = multisigAccount ? wallets.find(w => w.id === multisigAccount.walletId) : undefined;
 
   const payee = operationDetailsUtils.getPayee(operation);
   const spawner = operationDetailsUtils.getSpawner(operation);
@@ -93,7 +102,8 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
 
   const defaultAsset = chain?.assets?.[0];
 
-  const validatorsMap = useValidatorsMap(api);
+  const { data: era } = useActiveEra({ chainId: operation.chainId, api });
+  const { data: validatorsMap } = useValidators({ chainId: operation.chainId, api, era });
 
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
@@ -172,14 +182,15 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
         </>
       )}
 
-      {account && activeWallet && (
+      {account && multisigWallet && (
         <DetailRow label={t('operation.details.multisigWallet')}>
-          <div className="flex max-w-none items-center gap-x-2">
-            <WalletIcon type={activeWallet.type} size={16} />
-            <FootnoteText>
-              <WalletName wallet={activeWallet} />
-            </FootnoteText>
-          </div>
+          <Box direction="row" gap={2}>
+            <WalletIcon type={multisigWallet.type} size={16} />
+            <span>
+              <WalletName wallet={multisigWallet} />
+            </span>
+            {chain && multisigAccount ? <AccountExplorers accountId={multisigAccount.accountId} chain={chain} /> : null}
+          </Box>
         </DetailRow>
       )}
 
@@ -195,7 +206,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
         </DetailRow>
       )}
 
-      {account && (
+      {account && signatory && account.accountId !== signatory.accountId && (
         <DetailRow
           label={t(hasSender ? 'operation.details.sender' : 'operation.details.account')}
           className="text-text-secondary"
@@ -249,9 +260,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
       {isRemovePureProxyTransaction(transaction) && proxyType && spawner && (
         <>
           <DetailRow label={t('operation.details.revokeAccessType')}>
-            <FootnoteText className="text-text-secondary">
-              {t(proxyUtils.getProxyTypeOperation(proxyType))}
-            </FootnoteText>
+            <FootnoteText className="text-text-secondary">{proxyType}</FootnoteText>
           </DetailRow>
           <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
             {spawnerAccountId && <NamedAccount chain={chain} accountId={spawnerAccountId} variant="short" />}
@@ -261,7 +270,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
 
       {isManageProxyTransaction(transaction) && proxyType && (
         <DetailRow label={t('operation.details.accessType')}>
-          <FootnoteText className="text-text-secondary">{t(proxyUtils.getProxyTypeOperation(proxyType))}</FootnoteText>
+          <FootnoteText className="text-text-secondary">{proxyType}</FootnoteText>
         </DetailRow>
       )}
 

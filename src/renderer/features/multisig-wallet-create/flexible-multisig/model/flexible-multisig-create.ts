@@ -6,7 +6,7 @@ import { and, delay, or, spread } from 'patronum';
 
 import { balanceService as deprecatedBalanceService } from '@/shared/api/balances';
 import { proxyService } from '@/shared/api/proxy';
-import { type Asset, type Chain, type Contact, type Transaction, type Wallet } from '@/shared/core';
+import { type Asset, type Chain, type Contact, type Transaction, type Wallet, ProxyTypes } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { Step, TEST_ACCOUNTS, getNativeAsset, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import {
@@ -219,7 +219,7 @@ const $reassignFakeTx = combine(
       multisigAccountId: TEST_ACCOUNTS[0],
       threshold: threshold || 2,
       proxyAccountId: TEST_ACCOUNTS[1],
-      proxyType: 'Any',
+      proxyType: ProxyTypes.ANY,
       pureTopUpAmount,
     });
   },

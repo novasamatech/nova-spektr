@@ -8,7 +8,7 @@ import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { useFellowshipMemberSalary } from '@/aggregates/fellowship-member';
-import { useCurrentSalaryPeriod, useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useCurrentSalaryPeriod, useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { BadgeIcon } from '../TaskBadge';
 
 export const requestSalaryTaskActionSlot = createSlot();
@@ -18,14 +18,15 @@ export const RequestSalary = () => {
   const [periodEnd, setPeriodEnd] = useState(0);
 
   const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const { data: currentPeriod } = useCurrentSalaryPeriod();
   const { data: salary, pending: pendingSalary } = useFellowshipMemberSalary();
 
   const currentPeriodExists = currentPeriod && currentPeriod.type !== 'unknown';
 
   useEffect(() => {
-    if (api && currentPeriodExists) {
-      getCreatedDateFromApi(currentPeriod.until, api).then(setPeriodEnd);
+    if (api && chain && currentPeriodExists) {
+      getCreatedDateFromApi(currentPeriod.until, api, chain).then(setPeriodEnd);
     }
   }, [api, currentPeriod]);
 

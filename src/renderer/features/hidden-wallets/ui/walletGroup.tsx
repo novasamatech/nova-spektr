@@ -8,9 +8,9 @@ import { useI18n } from '@/shared/i18n';
 import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Checkbox } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
-import { FiatBalance } from '@/entities/price';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { FiatBalance } from '@/widgets/price';
 import { hiddenWalletsBalancesModel } from '../model/balances';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
@@ -18,7 +18,7 @@ export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 type Props = {
   walletType: WalletType;
   wallets: Wallet[];
-  selectedWallets: Wallet[];
+  selectedWalletIds: Wallet['id'][];
   onGroupToggle: (wallets: Wallet[]) => void;
   onWalletToggle: (wallet: Wallet) => void;
 };
@@ -37,7 +37,7 @@ const WALLET_TYPE_LABELS = {
 };
 
 export const WalletGroup = (props: Props) => {
-  const { wallets, walletType, selectedWallets, onGroupToggle, onWalletToggle } = props;
+  const { wallets, walletType, selectedWalletIds, onGroupToggle, onWalletToggle } = props;
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
@@ -45,11 +45,11 @@ export const WalletGroup = (props: Props) => {
   const balances = useUnit(hiddenWalletsBalancesModel.$balances);
 
   // Optimized Set for O(1) selection lookups
-  const selectedWalletSet = useMemo(() => new Set(selectedWallets), [selectedWallets]);
+  const selectedWalletSet = useMemo(() => new Set(selectedWalletIds), [selectedWalletIds]);
 
   // Checkbox state logic for multiple select
   const groupCheckboxState = useMemo(() => {
-    const selectedInGroup = wallets.filter((wallet) => selectedWalletSet.has(wallet));
+    const selectedInGroup = wallets.filter((wallet) => selectedWalletSet.has(wallet.id));
 
     if (selectedInGroup.length === 0) {
       return { checked: false, semiChecked: false };
@@ -91,7 +91,7 @@ export const WalletGroup = (props: Props) => {
         <Box gap={1} padding={[1, 0, 0]}>
           {wallets.map((wallet) => {
             const accountId = wallet.accounts.at(0)?.accountId;
-            const isSelected = selectedWalletSet.has(wallet);
+            const isSelected = selectedWalletSet.has(wallet.id);
 
             let chain: Chain | null = null;
             let label: string | null = null;

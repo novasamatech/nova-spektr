@@ -15,7 +15,6 @@ declare module '*.md?raw' {
 }
 
 // Packages with missing/broken type exports (tsgo is stricter about package.json exports)
-declare module 'binary-parser';
 declare module 'units-css';
 declare module 'tailwindcss/dist/lib.mjs' {
   export type { Config } from 'tailwindcss';

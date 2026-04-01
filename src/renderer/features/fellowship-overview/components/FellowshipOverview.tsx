@@ -8,7 +8,7 @@ import { Button, Duration } from '@/shared/ui';
 import { ProgressWithSegments, Skeleton } from '@/shared/ui-kit';
 import { type CoreMember, memberService } from '@/domains/collectives';
 import { useFellowshipMember, useFellowshipMemberLeftToPromotion } from '@/aggregates/fellowship-member';
-import { useFellowshipApi, useFellowshipBlock } from '@/aggregates/fellowship-network';
+import { useFellowshipApi, useFellowshipBlock, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { usePromotionCountdown } from '@/aggregates/fellowship-promotion';
 import { READY_FOR_PROMOTION } from '../model/constants';
 import { modal } from '../model/modal';
@@ -45,6 +45,7 @@ const useTimeToNextRank = () => {
   const [timeToNextRank, setTimeToNextRank] = useState<TimeToNextRank>(null);
 
   const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const { data: currentBlock } = useFellowshipBlock();
   const { data: leftToPromotion } = useFellowshipMemberLeftToPromotion();
   const { data: promotionCountdown } = usePromotionCountdown();
@@ -61,8 +62,8 @@ const useTimeToNextRank = () => {
       return;
     }
 
-    if (nonNullable(leftToPromotion) && currentBlock && api) {
-      getRelativeTimeFromApi(leftToPromotion, api).then(setTimeToNextRank);
+    if (nonNullable(leftToPromotion) && currentBlock && api && chain) {
+      getRelativeTimeFromApi(leftToPromotion, api, chain).then(setTimeToNextRank);
       return;
     }
 

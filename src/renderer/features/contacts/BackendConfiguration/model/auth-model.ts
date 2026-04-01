@@ -3,6 +3,7 @@ import { t } from 'i18next';
 import { interval, once } from 'patronum';
 import { toast } from 'sonner';
 
+import { RelayChains, assert } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -67,7 +68,11 @@ const $signableAccounts = walletModel.$wallets.map((wallets): SignableAccount[] 
     .filter((w) => walletUtils.isPolkadotVaultGroup(w))
     .flatMap((wallet) =>
       wallet.accounts.flatMap((account): SignableAccount[] => {
-        if (accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)) {
+        const isSignable = walletUtils.isSingleShard(wallet)
+          ? accountUtils.isVaultBaseAccount(account)
+          : accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account);
+
+        if (isSignable) {
           return [
             {
               account,
@@ -125,7 +130,7 @@ const logoutFx = createEffect(async (baseUrl: string) => {
 sample({
   clock: connectTriggered,
   source: backendConfigurationModel.$draftUrl,
-  fn: (url) => url?.trim() ?? null,
+  fn: (url) => (url ? url.trim().replace(/\/+$/, '') : null) || null,
   target: backendConfigurationModel.$backendUrl,
 });
 
@@ -203,7 +208,7 @@ sample({
     const signatory = account!.account;
     const messageText = buildSignMessage(challengeData.nonce);
     const message = new TextEncoder().encode(messageText);
-    const chainId = accountService.isChainAccount(signatory) ? signatory.chainId : undefined;
+    const chainId = accountService.isChainAccount(signatory) ? signatory.chainId : RelayChains.POLKADOT;
 
     return { message, signatory, chainId };
   },
@@ -291,6 +296,8 @@ sample({
 
 $authState.on(backendConfigurationModel.events.urlCleared, () => null);
 
+const $isSessionExpired = createStore(false);
+
 // Session recovery: when backend URL is available on start, check session
 const sessionRecoveryTriggered = once({
   source: backendConfigurationModel.$backendUrl.updates,
@@ -306,7 +313,9 @@ sample({
 sample({
   clock: checkSessionFx.doneData,
   source: $signableAccounts,
+  filter: (_accounts, sessionData) => sessionData !== null,
   fn: (accounts, sessionData): AuthState => {
+    assert(sessionData);
     const match = accounts.find((a) => a.accountId === sessionData.accountId);
 
     return {
@@ -318,11 +327,22 @@ sample({
   target: $authState,
 });
 
-// On session check failure, clear auth state silently
-$authState.on(checkSessionFx.fail, () => null);
+sample({
+  clock: checkSessionFx.doneData,
+  filter: (session): session is NonNullable<typeof session> => session !== null,
+  fn: () => false,
+  target: $isSessionExpired,
+});
 
-// Session expiry awareness: periodic health check every 5 minutes
-const $isSessionExpired = createStore(false);
+sample({
+  clock: checkSessionFx.done,
+  source: $authState,
+  filter: (auth, { result }) => result === null && auth !== null,
+  fn: () => true,
+  target: $isSessionExpired,
+});
+
+$authState.on(checkSessionFx.fail, () => null);
 
 const sessionHealthCheck = interval({
   timeout: 5 * 60 * 1000,

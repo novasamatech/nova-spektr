@@ -6,7 +6,7 @@ import { getRelativeTimeFromApi, nonNullable, nullable } from '@/shared/lib/util
 import { Alert, Button, Duration, FootnoteText, IconButton, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { evidenceService, memberService } from '@/domains/collectives';
+import { $primaryIpfsGateway, evidenceService, memberService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipEvidenceFeature } from '../model/feature';
@@ -19,6 +19,7 @@ export const RetentionInfo = memo(() => {
   const [timeLeft, setTimeLeft] = useState(0);
 
   const input = useUnit(fellowshipEvidenceFeature.input);
+  const primaryGateway = useUnit($primaryIpfsGateway);
   const currentMember = useUnit(profile.$member);
   const account = useUnit(profile.$account);
 
@@ -34,7 +35,7 @@ export const RetentionInfo = memo(() => {
   useEffect(() => {
     if (input?.api && leftToDemotion) {
       if (leftToDemotion > 0) {
-        getRelativeTimeFromApi(leftToDemotion, input.api).then(setTimeLeft);
+        getRelativeTimeFromApi(leftToDemotion, input.api, input.chain ?? undefined).then(setTimeLeft);
       } else {
         setTimeLeft(0);
       }
@@ -71,7 +72,7 @@ export const RetentionInfo = memo(() => {
               size={16}
               onClick={() => {
                 if (memberEvidence) {
-                  window.open(evidenceService.getEvidenceIpfsUrl(memberEvidence.hash), '_blank');
+                  window.open(evidenceService.getEvidenceFetchIpfsUrl(memberEvidence.hash, primaryGateway), '_blank');
                 }
               }}
             />

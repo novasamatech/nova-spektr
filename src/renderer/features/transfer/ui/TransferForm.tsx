@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { uniqBy } from 'lodash';
-import { type FormEvent, memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, type ReactNode, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { TEST_IDS } from '@/shared/constants';
@@ -36,11 +36,11 @@ import { accountService, accounts, useAccountName, useAccountsNames } from '@/do
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
@@ -52,13 +52,13 @@ type Props = {
 
 type ComboboxItem = {
   id: string;
-  label: React.ReactNode;
+  label: ReactNode;
   value: { address: string; walletId?: number };
 };
 
 type ComboboxGroup = {
   id: string;
-  label: React.ReactNode;
+  label: ReactNode;
   items: ComboboxItem[];
 };
 

@@ -480,6 +480,253 @@
     "lastYear": "Last year",
     "resetButton": "Reset"
   },
+  "dashboard": {
+    "title": "Dashboard",
+    "tabs": {
+      "overview": "Overview",
+      "staking": "Staking",
+      "governance": "Governance",
+      "alerts": "Alerts",
+      "comingSoon": "Coming soon"
+    },
+    "accountSelector": {
+      "placeholder": "Select accounts",
+      "allAccounts": "All accounts",
+      "walletsGroup": "Your accounts",
+      "localContactsGroup": "My Contacts",
+      "backendContactsGroup": "External Contacts",
+      "selectedCount_one": "{{count}} account selected",
+      "selectedCount_other": "{{count}} accounts selected"
+    },
+    "presets": {
+      "all": "All",
+      "overflow": "+{count} more",
+      "manage": "Manage Presets",
+      "searchPresets": "Search presets...",
+      "modal": {
+        "title": "Manage Presets",
+        "newPreset": "New Preset",
+        "name": "Name",
+        "namePlaceholder": "Preset name",
+        "sourceType": "Source Type",
+        "entity": "Entity",
+        "category": "Category",
+        "tags": "Tags",
+        "anyCategory": "Any category",
+        "anyTags": "Any tags",
+        "matchingAccounts": "Matching Accounts ({count})",
+        "searchAccounts": "Search accounts...",
+        "noMatches": "No accounts match these filters",
+        "matchesAll": "This preset matches all accounts",
+        "moreAccounts": "+{count} more",
+        "delete": "Delete Preset",
+        "deleteConfirmTitle": "Delete Preset",
+        "deleteConfirmDescription": "Are you sure you want to delete \"{name}\"?",
+        "cancel": "Cancel",
+        "save": "Save",
+        "savedToast": "Preset \"{name}\" saved",
+        "createdToast": "Preset \"{name}\" created",
+        "deletedToast": "Preset \"{name}\" deleted",
+        "typeFilter": "Smart Filter",
+        "typeCustom": "Custom Selection",
+        "selectAll": "Select All",
+        "deselectAll": "Deselect All",
+        "selectedCount": "{count} selected"
+      },
+      "sources": {
+        "wallet": "Wallet",
+        "localContact": "My Contacts",
+        "backendContact": "External Source"
+      }
+    },
+    "emptyState": {
+      "title": "No accounts available",
+      "description": "Add a wallet or contact to get started"
+    },
+    "noSelection": {
+      "title": "No accounts selected",
+      "description": "Select accounts above to view your balance"
+    },
+    "portfolioOverview": {
+      "title": "Portfolio Overview",
+      "holdings": "Holdings by Asset",
+      "holdingsByChain": "Holdings by Chain",
+      "byAsset": "By Asset",
+      "byChain": "By Chain",
+      "assetDetail": {
+        "title": "{symbol} Details",
+        "totalHoldings": "Total Holdings",
+        "addressCount_one": "{count} address",
+        "addressCount_other": "{count} addresses",
+        "address": "Address",
+        "amount": "Amount",
+        "value": "Value",
+        "share": "Share"
+      },
+      "priceChange24h": "24h change",
+      "assetAllocation": "Asset Allocation",
+      "chainDetail": {
+        "title": "{chainName} Details",
+        "assetCount_one": "{count} asset",
+        "assetCount_other": "{count} assets",
+        "asset": "Asset",
+        "amount": "Amount",
+        "value": "Value",
+        "share": "Share"
+      }
+    },
+    "totalRewards": {
+      "title": "Total Rewards",
+      "range7d": "7D",
+      "range1m": "1M",
+      "range6m": "6M",
+      "range1y": "1Y",
+      "rangeAll": "Max",
+      "noRewards": "No staking rewards found",
+      "rewardsDetail": {
+        "title": "{chain} Rewards",
+        "account": "Account",
+        "rewards": "Rewards",
+        "value": "Value",
+        "share": "Share",
+        "accountCount_one": "{count} account",
+        "accountCount_other": "{count} accounts"
+      }
+    },
+    "monthlyRewards": {
+      "title": "12-Month Rewards",
+      "dot": "DOT",
+      "ksm": "KSM",
+      "noData": "No rewards data available"
+    },
+    "stakingOverview": {
+      "title": "Staking Positions",
+      "totalStaked": "Total Staked",
+      "noStaking": "No staking positions found",
+      "unstaking": "Unstaking",
+      "redeemable": "Redeemable",
+      "activeValidators_one": "{count} active validator",
+      "activeValidators_other": "{count} active validators",
+      "apy": "{apy}% APY",
+      "stakingDetail": {
+        "title": "{chain} Staking",
+        "account": "Account",
+        "staked": "Staked",
+        "value": "Value",
+        "share": "Share",
+        "accountCount_one": "{count} account",
+        "accountCount_other": "{count} accounts"
+      }
+    },
+    "stakingSummary": {
+      "title": "Staking Overview",
+      "averageApy": "Average APY",
+      "stakingAccounts": "Staking accounts",
+      "totalStaked": "Total staked",
+      "noStaking": "No active staking positions"
+    },
+    "governanceOverview": {
+      "title": "Governance Overview",
+      "votingAccounts": "Voting accounts",
+      "unlockable": "Claimable",
+      "averageConviction": "Avg. conviction",
+      "noGovernance": "No governance activity found",
+      "convictionDisplay": "{value}x",
+      "governanceDetail": {
+        "title": "Governance \u2014 {chain}",
+        "account": "Account",
+        "locked": "Locked",
+        "conviction": "Avg. conviction",
+        "value": "Value",
+        "share": "Share",
+        "accountCount_one": "{count} voting account",
+        "accountCount_other": "{count} voting accounts"
+      },
+      "trackDetail": {
+        "title": "Tracks \u2014 {account}",
+        "track": "Track",
+        "locked": "Locked",
+        "conviction": "Conviction",
+        "value": "Value",
+        "share": "Share"
+      }
+    },
+    "referendums": {
+      "activeTab": "Active",
+      "endedTab": "Ended",
+      "outcome": "Outcome",
+      "ended": "Ended",
+      "unlockable": "Unlockable",
+      "locks": "Locks",
+      "noEndedReferendums": "No ended referendums with locks",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled",
+      "timedOut": "Timed out",
+      "killed": "Killed",
+      "unlockableStatus": "Unlockable",
+      "shadowedLock": "Shadowed",
+      "lockedUntil": "Locked until ~{date}",
+      "time": {
+        "today": "Today",
+        "daysAgo_one": "{count}d ago",
+        "daysAgo_other": "{count}d ago"
+      },
+      "detail": {
+        "endedTitle": "Ended Referendum",
+        "lockStatus": "Lock Status",
+        "endedDate": "Ended {date}"
+      }
+    },
+    "unlockSchedule": {
+      "title": "Unlock Schedule",
+      "claimableNow": "Claimable",
+      "pendingLocks": "Pending",
+      "delegated": "Delegated",
+      "upcomingUnlocks": "Upcoming Unlocks",
+      "noLocks": "No governance locks found",
+      "accountCount": "{count} accounts"
+    },
+    "activeReferendums": {
+      "title": "Referendums",
+      "noReferendums": "No active referendums found",
+      "aye": "Aye",
+      "nay": "Nay",
+      "abstain": "Abstain",
+      "split": "Split",
+      "unknownTrack": "Unknown track",
+      "id": "#",
+      "track": "Track",
+      "proposal": "Proposal",
+      "allChains": "All chains",
+      "searchPlaceholder": "Search referendums...",
+      "noResults": "No referendums match your filters",
+      "votes": "Votes",
+      "time": "Time",
+      "tvl": "TVL",
+      "detail": {
+        "title": "Referendum Details",
+        "ourVotes": "Our Votes",
+        "account": "Account",
+        "vote": "Vote",
+        "amount": "Amount",
+        "conviction": "Conviction",
+        "value": "Value (USD)"
+      }
+    },
+    "priceCharts": {
+      "title": "Price Tracker",
+      "manageTokens": "Manage tokens",
+      "emptyState": "No tokens tracked. Click + to add tokens.",
+      "searchPlaceholder": "Search assets...",
+      "range1d": "24H",
+      "range7d": "7D",
+      "range30d": "30D",
+      "range90d": "90D",
+      "errorMessage": "Failed to load price data",
+      "retry": "Retry"
+    }
+  },
   "delegate": {
     "title": "Delegations"
   },
@@ -1239,6 +1486,29 @@
       "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
     },
+    "onChainData": {
+      "amount": "Amount",
+      "call": "Track",
+      "callData": "Call data",
+      "callDataCopied": "Call data copied!",
+      "callHash": "Call hash",
+      "callHashCopied": "Call hash copied!",
+      "decode": "Decode",
+      "description": "Description",
+      "details": "Details",
+      "documentHash": "Document hash",
+      "documentHashCopied": "Document hash copied!",
+      "governanceNotCreated": "Governance referendum not created yet",
+      "member": "Member",
+      "origin": "Origin",
+      "proposalNotAvailable": "Proposal data not available",
+      "referendumId": "Referendum ID",
+      "proposalParseFailed": "Failed to parse proposal data",
+      "pullRequest": "Pull request",
+      "targetRank": "Target rank",
+      "title": "On-chain data",
+      "viewJson": "View JSON"
+    },
     "whitelist": {
       "aiGenerated": "AI generated",
       "callData": "Call data",
@@ -1797,6 +2067,7 @@
   "navigation": {
     "addressBookLabel": "Address Book",
     "balancesLabel": "Portfolio",
+    "dashboardLabel": "Dashboard",
     "basketLabel": "Basket",
     "callDataLabel": "Add call data",
     "customOperationLabel": "Custom operation",
@@ -1843,7 +2114,8 @@
     "emptySearchDescription": "Update the search or cancel filtering",
     "emptySearchTitle": "Nothing was found",
     "noNotificationsDescription": "You don't have notifications yet",
-    "searchPlaceholder": "Search by wallet or event type",
+    "dateRangePlaceholder": "Filter by date",
+    "searchPlaceholder": "Search notifications",
     "title": "Notifications",
     "toast": {
       "batch": {
@@ -2361,30 +2633,6 @@
       "revokeFor": "Revoke for",
       "sender": "Sender"
     },
-    "names": {
-      "any": "All",
-      "auction": "Auction",
-      "cancelProxy": "Cancel",
-      "governance": "Governance",
-      "identityJudgement": "Judgement",
-      "nominationPools": "Nominations",
-      "nonTransfer": "All, except transfer",
-      "staking": "Staking",
-      "sudoBalances": "Sudo balances",
-      "unknown": "Unknown"
-    },
-    "operations": {
-      "any": "all operations",
-      "auction": "auction operations",
-      "cancelProxy": "cancel operations",
-      "governance": "governance operations",
-      "identityJudgement": "judgement operations",
-      "nominationPools": "nominations operations",
-      "nonTransfer": "all, except transfer operations",
-      "removeProxyTitle": "Revoke delegated authority (proxy) on ",
-      "staking": "staking operations",
-      "sudoBalances": "balances via sudo"
-    },
     "proxyDepositHint": "The deposit stays reserved on your account until the proxy is removed",
     "proxyDepositLabel": "Proxy deposit",
     "proxyTooltip": "Delegated authorities (proxies)",
@@ -2400,18 +2648,7 @@
     "submitInProgress": "Submitting operation...",
     "submitSuccess": "Operation Success",
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
-    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet.",
-    "types": {
-      "Any": "Any",
-      "Auction": "Auction",
-      "CancelProxy": "Cancel",
-      "Governance": "Governance",
-      "IdentityJudgement": "Judgement",
-      "NominationPools": "Nominations",
-      "NonTransfer": "Non Transfer",
-      "Staking": "Staking",
-      "SudoBalances": "Sudo Balances"
-    }
+    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
   },
   "pureProxyRemove": {
     "warning": {

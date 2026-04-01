@@ -1,17 +1,14 @@
 import { sortBy, uniqBy } from 'lodash';
 
-import { type ChainId, type ProxiedAccount, type ProxyAccount, type ProxyType, ProxyVariant } from '@/shared/core';
-import { splitCamelCaseString, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { type ChainId, type ProxiedAccount, type ProxyAccount, ProxyTypeOrder, ProxyVariant } from '@/shared/core';
+import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
-
-import { ProxyTypeOperation } from './constants';
 
 export const proxyUtils = {
   isSameProxy,
   sortAccountsByProxyType,
   getProxiedName,
-  getProxyTypeOperation,
   getProxyAccountsOnChain,
 };
 
@@ -26,18 +23,7 @@ function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount): boolean {
 }
 
 function sortAccountsByProxyType(accounts: ProxyAccount[]): ProxyAccount[] {
-  const typeOrder = [
-    'Any',
-    'NonTransfer',
-    'Staking',
-    'Auction',
-    'CancelProxy',
-    'Governance',
-    'IdentityJudgement',
-    'NominationPools',
-  ];
-
-  return sortBy(accounts, (account) => typeOrder.indexOf(account.proxyType));
+  return sortBy(accounts, (account) => ProxyTypeOrder.indexOf(account.proxyType));
 }
 
 // TODO: Add i18n for wallet name
@@ -54,10 +40,6 @@ function getProxiedName(
   } else {
     return address;
   }
-}
-
-function getProxyTypeOperation(proxyType: ProxyType | string): string {
-  return ProxyTypeOperation[proxyType as ProxyType] || splitCamelCaseString(proxyType);
 }
 
 function getProxyAccountsOnChain(

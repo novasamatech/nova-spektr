@@ -18,7 +18,6 @@ export const useResource = <const Params, Cache, const Value>(
   resource: AnyResource<Params, unknown, Cache>,
   { params, map, filter, defaultValue }: ResourceParams<Params, Cache, Value>,
 ) => {
-  const [resolved, setResolved] = useState(false);
   const key = useMemo(() => (params ? resource.createKey(params) : null), [params, resource]);
 
   const cachedValue = useStoreMap({
@@ -28,6 +27,11 @@ export const useResource = <const Params, Cache, const Value>(
   });
 
   const normalizedValue = cachedValue === empty ? defaultValue : cachedValue;
+
+  // Track which key has been resolved so that switching to an uncached key
+  // correctly reports pending=true rather than immediately showing empty data.
+  const [resolvedKey, setResolvedKey] = useState<typeof key>(null);
+  const resolved = cachedValue !== empty || resolvedKey === key;
   const pending = !resolved;
 
   useEffect(() => {
@@ -42,13 +46,17 @@ export const useResource = <const Params, Cache, const Value>(
   }, [key]);
 
   useEffect(() => {
-    setResolved((v) => v || cachedValue !== empty);
-  }, [cachedValue]);
+    if (cachedValue !== empty) {
+      setResolvedKey((prev) => (prev === key ? prev : key));
+    }
+  }, [cachedValue, key]);
 
   useEffect(() => {
     // eslint-disable-next-line effector/no-watch
-    return resource.push.watch(() => {
-      setResolved(true);
+    return resource.push.watch(({ params: pushedParams }) => {
+      if (resource.createKey(pushedParams) === key) {
+        setResolvedKey(key);
+      }
     });
   }, [key]);
 

@@ -1,11 +1,17 @@
+import { $features } from '@/shared/config/features';
+import { createFeature } from '@/shared/feature';
 import { customOperationsSlot } from '@/features/app-custom-operations';
 
 import { MultiTransferModal } from './components/MultiTransferModal';
-import { multiTransferFeature } from './model/feature';
 
-export { multiTransferFeature };
+const multiTransferFeature = createFeature({
+  name: 'transfer/multi',
+  enable: $features.map(({ multiTransfer }) => multiTransfer),
+});
 
 multiTransferFeature.inject(customOperationsSlot, {
   order: 2,
   render: () => <MultiTransferModal />,
 });
+
+export { multiTransferFeature };

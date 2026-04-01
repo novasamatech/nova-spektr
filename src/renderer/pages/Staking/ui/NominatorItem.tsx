@@ -8,9 +8,9 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Icon, Plate } from '@/shared/ui';
 import { AccountExplorers, AssetBalance } from '@/shared/ui-entities';
 import { Checkbox, Skeleton } from '@/shared/ui-kit';
-import { AssetFiatBalance } from '@/entities/price';
 import { walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { AssetFiatBalance } from '@/widgets/price';
 import { type NominatorInfo } from '../lib/types';
 
 type Props = {
