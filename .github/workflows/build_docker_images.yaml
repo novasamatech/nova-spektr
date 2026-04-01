@@ -6,6 +6,7 @@ on:
       - dev
     tags:
       - 'v*'
+      - 'stage-2-*'
   pull_request:
     types: [labeled]
 
@@ -16,60 +17,59 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  BUILD_TYPE: production
+
 jobs:
-  build-docker-images:
-    if: |
-      github.event_name == 'push' || 
-      (github.event_name == 'pull_request' && contains(github.event.label.name, 'internal-build'))
+  build-dev-image:
+    if: ${{ github.event_name == 'push' && github.ref_type == 'branch' && github.ref_name == 'dev' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    strategy:
+    strategy: &node_js_strategy
       fail-fast: false
       matrix:
         node-js-image-version: [24]
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Log in to Container registry
-        uses: docker/login-action@v3
+      - name: Build and push Docker image
+        uses: ./.github/workflows/build-and-push-docker
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-      - name: Set image label for the dev branch
-        if: ${{ github.ref_type == 'branch' && github.ref_name == 'dev' }}
-        run: |
-          echo "IMAGE_LABEL=latest" >> "$GITHUB_ENV"
-          echo "BUILD_TYPE=development" >> "$GITHUB_ENV"
-      - name: Set image label for release branches
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          echo "IMAGE_LABEL=stage" >> "$GITHUB_ENV"
-      - name: Set image label for a tag or other branches
-        if: ${{ github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name != 'dev' && github.event_name != 'pull_request') }}
-        run: |
-          echo "IMAGE_LABEL=${{ github.ref_name }}" >> "$GITHUB_ENV"
-      - name: Set full name of the Docker image
-        run: |
-          echo "FULL_IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_LABEL }}-nodejs-${{ matrix.node-js-image-version }}" >> "$GITHUB_ENV"
+          image_name: ${{ env.IMAGE_NAME }}
+          node_js_image_version: ${{ matrix.node-js-image-version }}
+          image_label: latest
+          build_type: development
+
+  build-stage-2-image:
+    if: ${{ github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'stage-2-') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy: *node_js_strategy
+    steps:
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: ./.github/workflows/build-and-push-docker
         with:
-          file: docker/Dockerfile.release
-          push: true
-          load: true
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            NODE_JS_IMAGE_VERSION=${{ matrix.node-js-image-version }}-alpine
-            BUILD_TYPE=${{ env.BUILD_TYPE }}
-          tags: ${{ env.FULL_IMAGE_NAME }}
+          registry: ${{ env.REGISTRY }}
+          image_name: ${{ env.IMAGE_NAME }}
+          node_js_image_version: ${{ matrix.node-js-image-version }}
+          image_label: stage-2
+          build_type: development
+          set_version_from_tag_commit: 'true'
+
+  build-release-and-pr-images:
+    if: ${{ (github.event_name == 'push' && github.ref_type == 'tag' && !startsWith(github.ref_name, 'stage-2-')) || (github.event_name == 'pull_request' && contains(github.event.label.name, 'internal-build')) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy: *node_js_strategy
+    steps:
+      - name: Build and push Docker image
+        uses: ./.github/workflows/build-and-push-docker
+        with:
+          registry: ${{ env.REGISTRY }}
+          image_name: ${{ env.IMAGE_NAME }}
+          node_js_image_version: ${{ matrix.node-js-image-version }}
+          image_label: ${{ github.event_name == 'pull_request' && 'stage' || github.ref_name }}
+          build_type: production
