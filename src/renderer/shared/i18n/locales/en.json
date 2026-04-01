@@ -865,8 +865,8 @@
         "promoted": "has been promoted to rank {rank}",
         "proven": "proved his rank {rank}",
         "referendumFallback": "created a referendum <link></link>",
-        "submittedPromotion": "submitted <evidence>evidence</evidence> with a wish to promotion",
-        "submittedRetention": "submitted <evidence>evidence</evidence> with a wish to retention"
+        "submittedPromotion": "submitted <0 /> with a wish to promotion",
+        "submittedRetention": "submitted <0 /> with a wish to retention"
       },
       "referendum": {
         "promote": "created a referendum <link></link> to promote {target} to rank {rank}",

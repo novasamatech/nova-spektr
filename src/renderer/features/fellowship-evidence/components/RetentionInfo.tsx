@@ -6,7 +6,7 @@ import { getRelativeTimeFromApi, nonNullable, nullable } from '@/shared/lib/util
 import { Alert, Button, Duration, FootnoteText, IconButton, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { $primaryIpfsGateway, evidenceService, memberService } from '@/domains/collectives';
+import { $ipfsGateways, evidenceService, memberService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipEvidenceFeature } from '../model/feature';
@@ -19,7 +19,7 @@ export const RetentionInfo = memo(() => {
   const [timeLeft, setTimeLeft] = useState(0);
 
   const input = useUnit(fellowshipEvidenceFeature.input);
-  const primaryGateway = useUnit($primaryIpfsGateway);
+  const gateways = useUnit($ipfsGateways);
   const currentMember = useUnit(profile.$member);
   const account = useUnit(profile.$account);
 
@@ -72,7 +72,11 @@ export const RetentionInfo = memo(() => {
               size={16}
               onClick={() => {
                 if (memberEvidence) {
-                  window.open(evidenceService.getEvidenceFetchIpfsUrl(memberEvidence.hash, primaryGateway), '_blank');
+                  const url = evidenceService.getEvidenceGatewayUrls(memberEvidence.hash, gateways)[0];
+
+                  if (url) {
+                    window.open(url.toString(), '_blank', 'noopener,noreferrer');
+                  }
                 }
               }}
             />
