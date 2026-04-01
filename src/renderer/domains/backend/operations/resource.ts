@@ -1,5 +1,4 @@
 import { createEvent, createStore } from 'effector';
-import { readonly } from 'patronum';
 
 import { createQueryResource } from '@/shared/query';
 
@@ -43,5 +42,4 @@ export const operationDescriptionsResource = {
   ...resource,
   descriptionCreated,
   resetDescriptions,
-  $cache: readonly($cache),
 };

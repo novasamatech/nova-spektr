@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { authFetch } from '@/shared/api/backend-fetch';
+import { authFetch, parseResponse } from '@/shared/api/backend-fetch';
 
 const backendOperationSchema = z.object({
   id: z.string(),
@@ -27,21 +27,7 @@ async function createDescription(
   });
 
   if (!result.ok) {
-    let message = `Request failed with status ${result.status}`;
-    try {
-      const body: unknown = JSON.parse(result.body);
-      if (
-        body &&
-        typeof body === 'object' &&
-        'message' in body &&
-        typeof (body as { message: unknown }).message === 'string'
-      ) {
-        message = (body as { message: string }).message;
-      }
-    } catch {
-      // use default message
-    }
-    throw new Error(message);
+    parseResponse(result, z.never());
   }
 }
 
