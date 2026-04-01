@@ -25,6 +25,9 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
@@ -59,6 +62,7 @@ runs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v6
       with:
+        context: .
         file: docker/Dockerfile.release
         push: true
         load: true
