@@ -1,7 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
-import { authModel } from '@/aggregates/backend-auth';
+import { authModel } from '@/aggregates/backend';
 import { withEffector } from '../../__stories__/withEffector';
 
 import { AuthStatus } from './AuthStatus';

@@ -3,7 +3,7 @@ import { allSettled, fork } from 'effector';
 import { type Contact } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend-auth';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { contactSourceModel } from '../contact-source-model';
 
 const backendContacts: Contact[] = [

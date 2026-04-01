@@ -37,7 +37,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
-import { authModel } from '@/aggregates/backend-auth';
+import { authModel } from '@/aggregates/backend';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';

@@ -4,7 +4,7 @@ import { persist } from '@/shared/api/storage';
 import { pairwise } from '@/shared/effector';
 import { fetchOperationsByIds } from '@/domains/api';
 import { multisigOperation } from '@/domains/network';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend-auth';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 
 const $descriptions = createStore<Record<string, string>>({});
 persist({ store: $descriptions, key: 'operation-descriptions' });

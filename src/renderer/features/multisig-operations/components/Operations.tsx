@@ -7,8 +7,10 @@ import { groupBy } from '@/shared/lib/utils';
 import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText, Loader } from '@/shared/ui';
 import { AsyncItem, Box, ScrollArea } from '@/shared/ui-kit';
+import { useOperationDescriptionsFetch } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { type OperationWithAccount, operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
@@ -37,6 +39,12 @@ export const Operations = () => {
   const isDeepLinkLoading = useUnit(deepLinkModel.$isDeepLinkLoading);
   const isTabDataLoading = useUnit(operationsContextModel.$isTabDataLoading);
   const tab = useUnit(operationsContextModel.$tab);
+  const baseUrl = useUnit(backendConfigurationModel.$backendUrl);
+  const isAuthenticated = useUnit(authModel.$isAuthenticated);
+
+  const operationIds = useMemo(() => filteredOps.map(({ operation }) => operation.id), [filteredOps]);
+
+  useOperationDescriptionsFetch(isAuthenticated ? baseUrl : null, operationIds);
 
   const hasMultisigAccounts = multisigAccounts.length > 0;
 

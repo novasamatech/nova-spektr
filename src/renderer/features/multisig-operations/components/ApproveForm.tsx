@@ -11,7 +11,7 @@ import { Field, TextArea } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
-import { authModel } from '@/aggregates/backend-auth';
+import { authModel } from '@/aggregates/backend';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { approveModel } from '../model/approve-model';
 

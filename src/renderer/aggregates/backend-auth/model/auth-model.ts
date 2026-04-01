@@ -48,12 +48,12 @@ const $error = createStore<string | null>(null);
 const $connectionResult = createStore<ConnectionResult>({ status: 'idle' });
 const $challengeId = createStore<string | null>(null);
 
-const $isAuthenticated = $authState.map((state) => state !== null);
+const $isAuthenticated = $authState.map(state => state !== null);
 
 const $signableAccounts = walletModel.$wallets.map((wallets): SignableAccount[] => {
   const extensionAccounts: SignableAccount[] = wallets
     .filter(polkadotExtensionService.isExtensionWallet)
-    .flatMap((wallet) =>
+    .flatMap(wallet =>
       wallet.accounts.filter(polkadotExtensionService.isExtensionAccount).map(
         (account): SignableAccount => ({
           account,
@@ -65,8 +65,8 @@ const $signableAccounts = walletModel.$wallets.map((wallets): SignableAccount[] 
     );
 
   const vaultAccounts: SignableAccount[] = wallets
-    .filter((w) => walletUtils.isPolkadotVaultGroup(w))
-    .flatMap((wallet) =>
+    .filter(w => walletUtils.isPolkadotVaultGroup(w))
+    .flatMap(wallet =>
       wallet.accounts.flatMap((account): SignableAccount[] => {
         const isSignable = walletUtils.isSingleShard(wallet)
           ? accountUtils.isVaultBaseAccount(account)
@@ -93,7 +93,7 @@ const $signableAccounts = walletModel.$wallets.map((wallets): SignableAccount[] 
 const $selectedAccount = combine($signableAccounts, $selectedAccountId, (accounts, selectedId) => {
   if (!selectedId) return null;
 
-  return accounts.find((a) => a.accountId === selectedId) ?? null;
+  return accounts.find(a => a.accountId === selectedId) ?? null;
 });
 
 // Effects
@@ -130,7 +130,7 @@ const logoutFx = createEffect(async (baseUrl: string) => {
 sample({
   clock: connectTriggered,
   source: backendConfigurationModel.$draftUrl,
-  fn: (url) => (url ? url.trim().replace(/\/+$/, '') : null) || null,
+  fn: url => (url ? url.trim().replace(/\/+$/, '') : null) || null,
   target: backendConfigurationModel.$backendUrl,
 });
 
@@ -196,7 +196,7 @@ sample({
 // Wiring: requestChallengeFx.done → store challengeId + init message signing
 sample({
   clock: requestChallengeFx.doneData,
-  fn: (data) => data.challengeId,
+  fn: data => data.challengeId,
   target: $challengeId,
 });
 
@@ -316,7 +316,7 @@ sample({
   filter: (_accounts, sessionData) => sessionData !== null,
   fn: (accounts, sessionData): AuthState => {
     assert(sessionData);
-    const match = accounts.find((a) => a.accountId === sessionData.accountId);
+    const match = accounts.find(a => a.accountId === sessionData.accountId);
 
     return {
       accountId: sessionData.accountId as AccountId,

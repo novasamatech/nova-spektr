@@ -8,7 +8,7 @@ import { useConfirmContext } from '@/shared/providers/ConfirmContext';
 import { Alert, Button, FootnoteText, Icon, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { Address, Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select, Surface, useNotification } from '@/shared/ui-kit';
-import { type SignableAccount, authModel, backendConfigurationModel } from '@/aggregates/backend-auth';
+import { type SignableAccount, authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { OperationMessageSign } from '@/features/operations/OperationMessageSign';
 
 export const BackendConfigurationModal = () => {
