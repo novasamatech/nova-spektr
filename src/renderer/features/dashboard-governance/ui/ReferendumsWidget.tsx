@@ -467,7 +467,7 @@ type EndedTabContentProps = {
 };
 
 const EndedTabContent = ({ accountIds, allEntries, chainFilter, searchQuery, onCountChange }: EndedTabContentProps) => {
-  const { t } = useI18n();
+  const { t, formatDate } = useI18n();
   const { referendums: endedRefs, pending: endedPending } = useEndedReferendums(accountIds, allEntries);
   const [selectedEnded, setSelectedEnded] = useState<EndedReferendum | null>(null);
 
@@ -518,7 +518,7 @@ const EndedTabContent = ({ accountIds, allEntries, chainFilter, searchQuery, onC
         sortable: true,
         width: '90px',
         render: (_v, row) => (
-          <FootnoteText className="text-text-tertiary">{formatEndDate(row.endedAtMs, t)}</FootnoteText>
+          <FootnoteText className="text-text-tertiary">{formatEndDate(row.endedAtMs, t, formatDate)}</FootnoteText>
         ),
       },
       {

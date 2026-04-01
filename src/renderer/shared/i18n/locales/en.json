@@ -688,7 +688,7 @@
       "accountCount": "{count} accounts"
     },
     "activeReferendums": {
-      "title": "Referendums",
+      "title": "Referenda",
       "noReferendums": "No active referendums found",
       "aye": "Aye",
       "nay": "Nay",

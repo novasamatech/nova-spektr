@@ -14,12 +14,8 @@ type Props = {
   onClose: () => void;
 };
 
-function formatUnlockDate(ms: number): string {
-  return new Date(ms).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
 export const EndedReferendumDetailModal = memo(({ referendum, onClose }: Props) => {
-  const { t } = useI18n();
+  const { t, formatDate } = useI18n();
 
   const { formatted: lockedFormatted } = formatBalance(referendum.totalLockedAmount, referendum.precision);
   const outcomeLabel = t(`dashboard.referendums.${OUTCOME_I18N_KEY[referendum.outcome]}`);
@@ -98,7 +94,7 @@ export const EndedReferendumDetailModal = memo(({ referendum, onClose }: Props) 
           if (item.unlockAtMs) {
             return (
               <FootnoteText className="text-text-warning">
-                {t('dashboard.referendums.lockedUntil', { date: formatUnlockDate(item.unlockAtMs) })}
+                {t('dashboard.referendums.lockedUntil', { date: formatDate(item.unlockAtMs, 'MMM d, yyyy') })}
               </FootnoteText>
             );
           }
@@ -137,7 +133,7 @@ export const EndedReferendumDetailModal = memo(({ referendum, onClose }: Props) 
         {/* End date + locked amount */}
         <div className="flex items-center justify-between px-5 py-2">
           <FootnoteText className="text-text-tertiary">
-            {t('dashboard.referendums.detail.endedDate', { date: formatEndDate(referendum.endedAtMs, t) })}
+            {t('dashboard.referendums.detail.endedDate', { date: formatEndDate(referendum.endedAtMs, t, formatDate) })}
           </FootnoteText>
           <FootnoteText className="font-bold tabular-nums">
             {lockedFormatted} {referendum.symbol}
