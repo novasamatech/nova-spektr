@@ -2,9 +2,9 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { persist } from '@/shared/api/storage';
 import { type Contact } from '@/shared/core';
+import { HttpError, backendContactsService } from '@/domains/backend';
 import { type BackendError, contactModel } from '@/entities/contact';
-import { authModel, backendConfigurationModel } from '../../BackendConfiguration';
-import { HttpError, fetchAllContacts } from '../api/backend-contacts-api';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 
 function categorizeError(error: Error): BackendError {
   if (error instanceof HttpError) {
@@ -30,7 +30,7 @@ persist({ store: $lastSyncTime, key: 'address-book-last-sync-time' });
 const $syncStatus = createStore<SyncStatus>('idle');
 
 const fetchBackendContactsFx = createEffect(async (baseUrl: string): Promise<Contact[]> => {
-  return fetchAllContacts(baseUrl);
+  return backendContactsService.fetchAllContacts(baseUrl);
 });
 
 $isLoading.on(fetchBackendContactsFx, () => true);

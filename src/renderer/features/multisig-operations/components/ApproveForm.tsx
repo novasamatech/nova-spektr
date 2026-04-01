@@ -7,10 +7,11 @@ import { useI18n } from '@/shared/i18n';
 import { transferableAmount } from '@/shared/lib/utils';
 import { Button, Icon, Separator } from '@/shared/ui';
 import { AccountSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
-import { Field } from '@/shared/ui-kit';
+import { Field, TextArea } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
+import { authModel } from '@/aggregates/backend';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { approveModel } from '../model/approve-model';
 
@@ -41,6 +42,8 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, op
 
   const initiator = useUnit(approveModel.$initiator);
   const signatory = useUnit(approveModel.$signatory);
+  const description = useUnit(approveModel.$description);
+  const isAuthenticated = useUnit(authModel.$isAuthenticated);
 
   const signatories = useUnit(approveModel.$signatories);
 
@@ -87,6 +90,18 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, op
         network={network}
         onChange={approveModel.selectSignatory}
       />
+
+      {isAuthenticated && (
+        <Field text={t('operation.descriptionLabel')}>
+          <TextArea
+            value={description}
+            placeholder={t('operation.descriptionPlaceholder')}
+            rows={2}
+            maxLength={500}
+            onChange={approveModel.setDescription}
+          />
+        </Field>
+      )}
 
       <Separator className="my-1 w-full" />
 
