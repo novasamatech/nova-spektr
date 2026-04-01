@@ -3,8 +3,10 @@ import { type Weight } from '@polkadot/types/interfaces';
 import { BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
+import { t } from 'i18next';
+import { toast } from 'sonner';
 
-import { type Chain, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { type Chain, type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { getNativeAsset, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
@@ -13,6 +15,7 @@ import {
   createTxValidator,
   getActionRequiredAmount,
 } from '@/shared/transactions';
+import { createOperationDescription } from '@/domains/api';
 import {
   type AnyAccount,
   type MultisigOperation,
@@ -24,6 +27,7 @@ import {
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { MAX_WEIGHT, getExtrinsic, transactionBuilder } from '@/entities/transaction';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend-auth';
 
 type GetMultisigType = {
   chain: Chain | null;
@@ -235,6 +239,60 @@ const $canSubmit = combine(
   },
 );
 
+// --- Description posting ---
+
+type PostDescriptionParams = {
+  operation: MultisigOperation;
+  chainId: ChainId;
+  description: string;
+};
+
+const postDescription = createEvent<PostDescriptionParams>();
+
+const postDescriptionFx = createEffect(
+  async (params: {
+    baseUrl: string;
+    multisigAccountId: string;
+    chainId: string;
+    callHash: string;
+    blockNumber: number;
+    extrinsicIndex: number;
+    description: string;
+  }) => {
+    const { baseUrl, ...body } = params;
+    await createOperationDescription(baseUrl, body);
+  },
+);
+
+sample({
+  clock: postDescription,
+  source: {
+    baseUrl: backendConfigurationModel.$backendUrl,
+    isAuthenticated: authModel.$isAuthenticated,
+  },
+  filter: ({ baseUrl, isAuthenticated }, { description }) =>
+    nonNullable(baseUrl) && isAuthenticated && description.length > 0,
+  fn: ({ baseUrl }, { operation, chainId, description }) => ({
+    baseUrl: baseUrl!,
+    multisigAccountId: operation.multisigAccountId,
+    chainId,
+    callHash: operation.callHash,
+    blockNumber: operation.blockCreated,
+    extrinsicIndex: operation.indexCreated,
+    description,
+  }),
+  target: postDescriptionFx,
+});
+
+const showDescriptionErrorFx = createEffect((error: Error) => {
+  toast.error(t('operation.descriptionSaveError'), { description: error.message });
+});
+
+sample({
+  clock: postDescriptionFx.failData,
+  target: showDescriptionErrorFx,
+});
+
 export const approveModel = {
   flow,
   $transaction: $tx,
@@ -256,4 +314,5 @@ export const approveModel = {
   selectSignatory,
   selectInitiator,
   setDescription,
+  postDescription,
 };

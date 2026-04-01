@@ -1,8 +1,8 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { debounce } from 'patronum';
 
+import { authFetch } from '@/shared/api/backend-fetch';
 import { persist } from '@/shared/api/storage';
-import { authFetch } from '../lib/backend-fetch';
 
 type UrlReachability = null | 'checking' | 'reachable' | 'unreachable';
 

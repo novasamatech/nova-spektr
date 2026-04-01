@@ -5,11 +5,11 @@ import { toast } from 'sonner';
 
 import { RelayChains, assert } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import * as authApi from '@/domains/api';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { polkadotExtensionService } from '@/features/extension-wallet';
 import { messageSignModel } from '@/features/operations/OperationMessageSign';
-import * as authApi from '../lib/backend-auth-api';
 import { buildSignMessage } from '../lib/backend-auth-sign';
 
 import { backendConfigurationModel } from './backend-configuration-model';

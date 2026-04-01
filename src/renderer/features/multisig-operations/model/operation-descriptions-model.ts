@@ -1,12 +1,19 @@
 import { createEffect, createStore, sample } from 'effector';
-import { debounce } from 'patronum';
 
+import { persist } from '@/shared/api/storage';
+import { pairwise } from '@/shared/effector';
+import { fetchOperationsByIds } from '@/domains/api';
 import { multisigOperation } from '@/domains/network';
-import { authModel, backendConfigurationModel, fetchOperationsByIds } from '@/aggregates/backend-auth';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend-auth';
 
 const $descriptions = createStore<Record<string, string>>({});
+persist({ store: $descriptions, key: 'operation-descriptions' });
+
+// === API fetch ===
 
 const fetchDescriptionsFx = createEffect(async ({ baseUrl, ids }: { baseUrl: string; ids: string[] }) => {
+  if (ids.length === 0) return {};
+
   const operations = await fetchOperationsByIds(baseUrl, ids);
   const map: Record<string, string> = {};
   for (const op of operations) {
@@ -18,24 +25,51 @@ const fetchDescriptionsFx = createEffect(async ({ baseUrl, ids }: { baseUrl: str
   return map;
 });
 
-$descriptions.on(fetchDescriptionsFx.doneData, (_, map) => map);
+$descriptions.on(fetchDescriptionsFx.doneData, (existing, fetched) => {
+  if (Object.keys(fetched).length === 0) return existing;
 
-// Debounce list changes to avoid excessive API calls during rapid updates
-const debouncedList = debounce(multisigOperation.$list, 1000);
+  return { ...existing, ...fetched };
+});
 
-// Refetch whenever the operations list stabilizes
+// === Initial fetch: when both authenticated and operations populated, fetch all missing ===
+
 sample({
-  clock: debouncedList,
+  clock: [authModel.$isAuthenticated, multisigOperation.$populated],
+  source: {
+    url: backendConfigurationModel.$backendUrl,
+    isAuthenticated: authModel.$isAuthenticated,
+    operations: multisigOperation.$list,
+    descriptions: $descriptions,
+  },
+  filter: ({ url, isAuthenticated, operations }) => isAuthenticated && url !== null && operations.length > 0,
+  fn: ({ url, operations, descriptions }) => ({
+    baseUrl: url!,
+    ids: operations.map(op => op.id).filter(id => !(id in descriptions)),
+  }),
+  target: fetchDescriptionsFx,
+});
+
+// === Delta fetch: on list updates, only fetch for new operations ===
+
+const newOperationIds = pairwise(multisigOperation.$list).map(({ prev, current }) => {
+  const prevIds = new Set(prev.map(op => op.id));
+
+  return current.filter(op => !prevIds.has(op.id)).map(op => op.id);
+});
+
+sample({
+  clock: newOperationIds,
   source: {
     url: backendConfigurationModel.$backendUrl,
     isAuthenticated: authModel.$isAuthenticated,
   },
-  filter: ({ url, isAuthenticated }, operations) => url !== null && isAuthenticated && operations.length > 0,
-  fn: ({ url }, operations) => ({ baseUrl: url!, ids: operations.map((op) => op.id) }),
+  filter: ({ url, isAuthenticated }, ids) => url !== null && isAuthenticated && ids.length > 0,
+  fn: ({ url }, ids) => ({ baseUrl: url!, ids }),
   target: fetchDescriptionsFx,
 });
 
-// Clear on URL cleared or sign out
+// === Cleanup (urlCleared → reset stores) ===
+
 $descriptions.on(backendConfigurationModel.events.urlCleared, () => ({}));
 
 export const operationDescriptionsModel = {

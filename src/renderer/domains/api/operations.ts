@@ -1,67 +1,13 @@
 import { z } from 'zod';
 
-import { authFetch, clearCsrfToken, parseResponse } from './backend-fetch';
+import { authFetch } from '@/shared/api/backend-fetch';
 
-export { getCsrfToken } from './backend-fetch';
-
-const challengeResponseSchema = z.object({
-  challengeId: z.string(),
-  nonce: z.string(),
-  expiresAt: z.number(),
+const backendOperationSchema = z.object({
+  id: z.string(),
+  description: z.string().nullable(),
 });
 
-const verifyResponseSchema = z.object({
-  permissions: z.array(z.string()),
-});
-
-const sessionResponseSchema = z.object({
-  accountId: z.string(),
-  permissions: z.array(z.string()),
-});
-
-type ChallengeResponse = z.infer<typeof challengeResponseSchema>;
-type VerifyResponse = z.infer<typeof verifyResponseSchema>;
-type SessionResponse = z.infer<typeof sessionResponseSchema>;
-
-export async function requestChallenge(baseUrl: string, accountId: string): Promise<ChallengeResponse> {
-  const result = await authFetch(`${baseUrl}/auth/challenge`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ accountId }),
-  });
-
-  return parseResponse(result, challengeResponseSchema);
-}
-
-export async function verifySignature(
-  baseUrl: string,
-  params: { accountId: string; challengeId: string; signature: string },
-): Promise<VerifyResponse> {
-  const result = await authFetch(`${baseUrl}/auth/verify`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params),
-  });
-
-  return parseResponse(result, verifyResponseSchema);
-}
-
-export async function checkSession(baseUrl: string): Promise<SessionResponse | null> {
-  const result = await authFetch(`${baseUrl}/auth/me`, {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  });
-
-  if (!result.ok) {
-    return null;
-  }
-
-  try {
-    return parseResponse(result, sessionResponseSchema);
-  } catch {
-    return null;
-  }
-}
+type BackendOperation = z.infer<typeof backendOperationSchema>;
 
 export async function createOperationDescription(
   baseUrl: string,
@@ -84,7 +30,12 @@ export async function createOperationDescription(
     let message = `Request failed with status ${result.status}`;
     try {
       const body: unknown = JSON.parse(result.body);
-      if (body && typeof body === 'object' && 'message' in body && typeof (body as { message: unknown }).message === 'string') {
+      if (
+        body &&
+        typeof body === 'object' &&
+        'message' in body &&
+        typeof (body as { message: unknown }).message === 'string'
+      ) {
         message = (body as { message: string }).message;
       }
     } catch {
@@ -93,13 +44,6 @@ export async function createOperationDescription(
     throw new Error(message);
   }
 }
-
-const backendOperationSchema = z.object({
-  id: z.string(),
-  description: z.string().nullable(),
-});
-
-type BackendOperation = z.infer<typeof backendOperationSchema>;
 
 export async function fetchOperationsByIds(
   baseUrl: string,
@@ -167,9 +111,7 @@ async function fetchOperationsPage(
   return { data: operations, total };
 }
 
-export async function fetchOperations(
-  baseUrl: string,
-): Promise<{ id: string; description: string | null }[]> {
+export async function fetchOperations(baseUrl: string): Promise<{ id: string; description: string | null }[]> {
   const firstPage = await fetchOperationsPage(baseUrl, 1);
 
   if (firstPage.total <= OPERATIONS_PAGE_SIZE) {
@@ -178,20 +120,7 @@ export async function fetchOperations(
 
   const totalPages = Math.ceil(firstPage.total / OPERATIONS_PAGE_SIZE);
   const remainingPages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
-  const remainingResults = await Promise.all(remainingPages.map((page) => fetchOperationsPage(baseUrl, page)));
+  const remainingResults = await Promise.all(remainingPages.map(page => fetchOperationsPage(baseUrl, page)));
 
-  return [firstPage.data, ...remainingResults.map((r) => r.data)].flat();
-}
-
-export async function logout(baseUrl: string): Promise<void> {
-  const result = await authFetch(`${baseUrl}/auth/logout`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-  });
-
-  clearCsrfToken();
-
-  if (!result.ok) {
-    throw new Error(`Logout failed with status ${result.status}`);
-  }
+  return [firstPage.data, ...remainingResults.map(r => r.data)].flat();
 }

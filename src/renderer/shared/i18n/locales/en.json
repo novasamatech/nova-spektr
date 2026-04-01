@@ -2319,6 +2319,7 @@
     "continueButton": "Continue",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Add an optional note for this operation...",
+    "descriptionSaveError": "Failed to store description",
     "createFlexibleMultisig": {
       "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below.",
       "rejectConfirmDescription": "If you reject this operation then you will cancel the creation of the Pure Proxy account and will not create a flexible multisig. The Proxy deposit will be refunded to you. Are you sure you want to reject this operation?",

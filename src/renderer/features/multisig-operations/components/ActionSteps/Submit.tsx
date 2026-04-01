@@ -1,7 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { useUnit } from 'effector-react';
 import { type ComponentProps, useEffect, useState } from 'react';
-import { toast } from 'sonner';
 
 import { type HexString, type Transaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -11,7 +9,7 @@ import { Animation } from '@/shared/ui/Animation/Animation';
 import { ConfirmModal } from '@/shared/ui-kit';
 import { type MultisigOperation, accountSync, transactionService } from '@/domains/network';
 import { getExtrinsic, isProxyTypeTransaction } from '@/entities/transaction';
-import { authModel, backendConfigurationModel, createOperationDescription } from '@/aggregates/backend-auth';
+import { approveModel } from '../../model/approve-model';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 
@@ -28,9 +26,6 @@ type Props = {
 
 export const Submit = ({ api, tx, operation, txPayload, signature, description, isReject, onClose }: Props) => {
   const { t } = useI18n();
-
-  const isAuthenticated = useUnit(authModel.$isAuthenticated);
-  const baseUrl = useUnit(backendConfigurationModel.$backendUrl);
 
   const [inProgress, toggleInProgress] = useToggle(true);
   const [successMessage, toggleSuccessMessage] = useToggle();
@@ -67,16 +62,11 @@ export const Submit = ({ api, tx, operation, txPayload, signature, description, 
         accountSync.syncAccounts();
       }
 
-      if (description && baseUrl && isAuthenticated && operation) {
-        createOperationDescription(baseUrl, {
-          multisigAccountId: operation.multisigAccountId,
+      if (description && operation) {
+        approveModel.postDescription({
+          operation,
           chainId: tx.chainId,
-          callHash: operation.callHash,
-          blockNumber: operation.blockCreated,
-          extrinsicIndex: operation.indexCreated,
           description,
-        }).catch((e: Error) => {
-          toast.error('Failed to store description', { description: e.message });
         });
       }
 

@@ -1,12 +1,14 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { t } from 'i18next';
 import { spread } from 'patronum';
 import { toast } from 'sonner';
 
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
+import { createOperationDescription } from '@/domains/api';
 import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { authModel, backendConfigurationModel, createOperationDescription } from '@/aggregates/backend-auth';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend-auth';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { multisigService } from '@/features/multisig-wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -274,7 +276,7 @@ sample({
 });
 
 const showDescriptionErrorFx = createEffect((error: Error) => {
-  toast.error('Failed to store description', { description: error.message });
+  toast.error(t('operation.descriptionSaveError'), { description: error.message });
 });
 
 sample({
