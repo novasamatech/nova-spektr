@@ -1,5 +1,6 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
+import { toast } from 'sonner';
 
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
@@ -270,6 +271,15 @@ sample({
     };
   },
   target: postDescriptionFx,
+});
+
+const showDescriptionErrorFx = createEffect((error: Error) => {
+  toast.error('Failed to store description', { description: error.message });
+});
+
+sample({
+  clock: postDescriptionFx.failData,
+  target: showDescriptionErrorFx,
 });
 
 sample({

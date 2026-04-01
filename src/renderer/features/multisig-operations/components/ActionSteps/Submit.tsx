@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
 import { type ComponentProps, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 import { type HexString, type Transaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -74,7 +75,9 @@ export const Submit = ({ api, tx, operation, txPayload, signature, description, 
           blockNumber: operation.blockCreated,
           extrinsicIndex: operation.indexCreated,
           description,
-        }).catch(e => console.warn('[OperationDescription] POST failed:', e));
+        }).catch((e: Error) => {
+          toast.error('Failed to store description', { description: e.message });
+        });
       }
 
       toggleSuccessMessage();

@@ -1,4 +1,5 @@
 import { createEffect, createStore, sample } from 'effector';
+import { debounce } from 'patronum';
 
 import { multisigOperation } from '@/domains/network';
 import { authModel, backendConfigurationModel, fetchOperationsByIds } from '@/aggregates/backend-auth';
@@ -19,9 +20,12 @@ const fetchDescriptionsFx = createEffect(async ({ baseUrl, ids }: { baseUrl: str
 
 $descriptions.on(fetchDescriptionsFx.doneData, (_, map) => map);
 
-// Refetch whenever the operations list changes (new ops appear, ops removed, etc.)
+// Debounce list changes to avoid excessive API calls during rapid updates
+const debouncedList = debounce(multisigOperation.$list, 1000);
+
+// Refetch whenever the operations list stabilizes
 sample({
-  clock: multisigOperation.$list,
+  clock: debouncedList,
   source: {
     url: backendConfigurationModel.$backendUrl,
     isAuthenticated: authModel.$isAuthenticated,

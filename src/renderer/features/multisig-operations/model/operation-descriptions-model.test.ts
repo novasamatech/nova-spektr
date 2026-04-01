@@ -37,14 +37,25 @@ const createMockOperation = (callHash = '0xabc123', block = 100, index = 1) => {
 
 const authenticatedState = { accountId: mockAccountId, permissions: [] };
 
+async function updateListAndFlush(scope: ReturnType<typeof fork>, ops: MultisigOperation[]) {
+  // Start allSettled and advance timers concurrently to avoid deadlock:
+  // allSettled waits for all downstream effects (including debounced ones),
+  // but the debounce timer won't fire until we advance fake timers.
+  const settled = allSettled(multisigOperation.__test.$cachedOperations, { scope, params: ops });
+  await vi.advanceTimersByTimeAsync(1100);
+  await settled;
+}
+
 describe('operation-descriptions-model', () => {
   let fetchSpy: MockInstance;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     fetchSpy = vi.spyOn(backendAuth, 'fetchOperationsByIds').mockResolvedValue([]);
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -60,7 +71,7 @@ describe('operation-descriptions-model', () => {
         .set(multisigOperation.__test.$cachedOperations, []),
     });
 
-    await allSettled(multisigOperation.__test.$cachedOperations, { scope, params: [op] });
+    await updateListAndFlush(scope, [op]);
 
     expect(fetchSpy).toHaveBeenCalledWith('https://backend.test', [op.id]);
     expect(scope.getState(operationDescriptionsModel.$descriptions)).toEqual({
@@ -78,7 +89,7 @@ describe('operation-descriptions-model', () => {
         .set(multisigOperation.__test.$cachedOperations, []),
     });
 
-    await allSettled(multisigOperation.__test.$cachedOperations, { scope, params: [op] });
+    await updateListAndFlush(scope, [op]);
 
     expect(fetchSpy).not.toHaveBeenCalled();
   });
@@ -93,7 +104,7 @@ describe('operation-descriptions-model', () => {
         .set(multisigOperation.__test.$cachedOperations, []),
     });
 
-    await allSettled(multisigOperation.__test.$cachedOperations, { scope, params: [op] });
+    await updateListAndFlush(scope, [op]);
 
     expect(fetchSpy).not.toHaveBeenCalled();
   });
@@ -106,7 +117,7 @@ describe('operation-descriptions-model', () => {
         .set(multisigOperation.__test.$cachedOperations, [createMockOperation()]),
     });
 
-    await allSettled(multisigOperation.__test.$cachedOperations, { scope, params: [] });
+    await updateListAndFlush(scope, []);
 
     expect(fetchSpy).not.toHaveBeenCalled();
   });
@@ -137,7 +148,7 @@ describe('operation-descriptions-model', () => {
         .set(multisigOperation.__test.$cachedOperations, []),
     });
 
-    await allSettled(multisigOperation.__test.$cachedOperations, { scope, params: [op1, op2] });
+    await updateListAndFlush(scope, [op1, op2]);
 
     expect(scope.getState(operationDescriptionsModel.$descriptions)).toEqual({
       [op1.id]: 'Has description',
@@ -156,7 +167,7 @@ describe('operation-descriptions-model', () => {
         .set(multisigOperation.__test.$cachedOperations, []),
     });
 
-    await allSettled(multisigOperation.__test.$cachedOperations, { scope, params: [op1, op2, op3] });
+    await updateListAndFlush(scope, [op1, op2, op3]);
 
     expect(fetchSpy).toHaveBeenCalledWith('https://backend.test', [op1.id, op2.id, op3.id]);
   });

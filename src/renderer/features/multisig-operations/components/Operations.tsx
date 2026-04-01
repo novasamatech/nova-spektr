@@ -3,11 +3,10 @@ import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useRef } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { useDeferredList } from '@/shared/lib/hooks';
 import { groupBy } from '@/shared/lib/utils';
 import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText, Loader } from '@/shared/ui';
-import { Box, ScrollArea } from '@/shared/ui-kit';
+import { AsyncItem, Box, ScrollArea } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { type OperationWithAccount, operationsContextModel } from '../model/context';
@@ -41,10 +40,10 @@ export const Operations = () => {
 
   const hasMultisigAccounts = multisigAccounts.length > 0;
 
-  const { list: deferredOps, isLoading: isDeferredLoading } = useDeferredList({
-    list: filteredOps,
-    isLoading: isTabDataLoading,
-  });
+  // Virtualization already limits rendering to visible items + overscan,
+  // so useDeferredList (which defers via useDeferredValue) only adds latency.
+  const isDeferredLoading = isTabDataLoading;
+  const deferredOps = filteredOps;
 
   const sortedOps = useMemo(() => {
     const getDateKey = ({ operation }: OperationWithAccount): string => {
@@ -173,19 +172,21 @@ export const Operations = () => {
                       </div>
                     ) : (
                       <div className="pb-1.5">
-                        <Operation
-                          key={
-                            item.item.operation.id === focusedOperationId
-                              ? `focused-${item.item.operation.id}`
-                              : item.item.operation.id
-                          }
-                          operation={item.item.operation}
-                          multisigAccount={item.item.account}
-                          isDefaultOpen={item.item.operation.id === focusedOperationId}
-                          tab={tab}
-                          chains={chains}
-                          wallets={wallets}
-                        />
+                        <AsyncItem fallback={<div className="h-[68px] rounded bg-block-background-default" />}>
+                          <Operation
+                            key={
+                              item.item.operation.id === focusedOperationId
+                                ? `focused-${item.item.operation.id}`
+                                : item.item.operation.id
+                            }
+                            operation={item.item.operation}
+                            multisigAccount={item.item.account}
+                            isDefaultOpen={item.item.operation.id === focusedOperationId}
+                            tab={tab}
+                            chains={chains}
+                            wallets={wallets}
+                          />
+                        </AsyncItem>
                       </div>
                     )}
                   </div>

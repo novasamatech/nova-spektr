@@ -81,7 +81,16 @@ export async function createOperationDescription(
   });
 
   if (!result.ok) {
-    console.warn('[OperationDescription] Failed to save:', result.status, result.body.slice(0, 300));
+    let message = `Request failed with status ${result.status}`;
+    try {
+      const body: unknown = JSON.parse(result.body);
+      if (body && typeof body === 'object' && 'message' in body && typeof (body as { message: unknown }).message === 'string') {
+        message = (body as { message: string }).message;
+      }
+    } catch {
+      // use default message
+    }
+    throw new Error(message);
   }
 }
 
