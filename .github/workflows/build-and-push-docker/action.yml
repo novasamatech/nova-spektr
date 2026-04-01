@@ -48,7 +48,7 @@ runs:
       if: ${{ inputs.set_version_from_tag_commit == 'true' }}
       shell: bash
       run: |
-        SHORT_SHA="$(git rev-parse --short=12 "$GITHUB_SHA")"
+        export SHORT_SHA="$(git rev-parse --short=12 "$GITHUB_SHA")"
         node -e 'const fs = require("fs"); const path = "package.json"; const pkg = JSON.parse(fs.readFileSync(path, "utf8")); const baseVersion = String(pkg.version || "0.0.0").split("+")[0]; pkg.version = `${baseVersion}+${process.env.SHORT_SHA}`; fs.writeFileSync(path, `${JSON.stringify(pkg, null, 2)}\n`);'
 
     - name: Set full name of the Docker image
