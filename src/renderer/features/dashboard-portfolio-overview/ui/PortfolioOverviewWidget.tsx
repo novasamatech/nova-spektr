@@ -25,7 +25,7 @@ type Props = {
   allEntries: EntryLike[];
 };
 
-const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold transition-colors';
+const toggleButtonClass = 'flex-1 cursor-pointer rounded px-3 py-1 text-footnote font-semibold transition-colors';
 const activeToggleClass = 'bg-white text-text-primary shadow-sm';
 const inactiveToggleClass = 'text-text-tertiary hover:text-text-secondary';
 
