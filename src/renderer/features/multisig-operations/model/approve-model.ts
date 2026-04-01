@@ -15,7 +15,7 @@ import {
   createTxValidator,
   getActionRequiredAmount,
 } from '@/shared/transactions';
-import { createOperationDescription } from '@/domains/api';
+import { operationDescriptionsResource, operationsService } from '@/domains/backend';
 import {
   type AnyAccount,
   type MultisigOperation,
@@ -27,7 +27,7 @@ import {
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { MAX_WEIGHT, getExtrinsic, transactionBuilder } from '@/entities/transaction';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend-auth';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 
 type GetMultisigType = {
   chain: Chain | null;
@@ -260,7 +260,7 @@ const postDescriptionFx = createEffect(
     description: string;
   }) => {
     const { baseUrl, ...body } = params;
-    await createOperationDescription(baseUrl, body);
+    await operationsService.createDescription(baseUrl, body);
   },
 );
 
@@ -291,6 +291,17 @@ const showDescriptionErrorFx = createEffect((error: Error) => {
 sample({
   clock: postDescriptionFx.failData,
   target: showDescriptionErrorFx,
+});
+
+sample({
+  clock: postDescriptionFx.done,
+  source: $operation,
+  filter: (operation): operation is MultisigOperation => nonNullable(operation),
+  fn: (operation, { params }) => ({
+    id: operation!.id,
+    description: params.description,
+  }),
+  target: operationDescriptionsResource.descriptionCreated,
 });
 
 export const approveModel = {
