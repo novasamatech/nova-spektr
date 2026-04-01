@@ -24,7 +24,7 @@ persist({ store: $backendUrl, key: 'address-book-backend-url' });
 const $draftUrl = createStore('');
 const $isModalOpen = createStore(false);
 
-const $isUrlValid = $draftUrl.map((url) => {
+const $isUrlValid = $draftUrl.map(url => {
   const normalized = normalizeUrl(url);
   if (normalized.length === 0) return false;
 
@@ -37,7 +37,7 @@ const $isUrlValid = $draftUrl.map((url) => {
   }
 });
 
-const $hasBackend = $backendUrl.map((url) => url !== null);
+const $hasBackend = $backendUrl.map(url => url !== null);
 
 const $isDirty = combine($draftUrl, $backendUrl, (draft, saved) => {
   return normalizeUrl(draft) !== (saved ?? '');
@@ -54,7 +54,7 @@ sample({
 sample({
   clock: editStarted,
   source: $backendUrl,
-  fn: (url) => url ?? '',
+  fn: url => url ?? '',
   target: $draftUrl,
 });
 
@@ -67,7 +67,7 @@ $isModalOpen
 sample({
   clock: urlSaved,
   source: $draftUrl,
-  fn: (url) => (url ? normalizeUrl(url) : null) || null,
+  fn: url => (url ? normalizeUrl(url) : null) || null,
   target: $backendUrl,
 });
 
@@ -89,7 +89,7 @@ const draftUrlDebounced = debounce({ source: $draftUrl, timeout: 500 });
 sample({
   clock: draftUrlDebounced,
   source: $isUrlValid,
-  filter: (isValid) => isValid,
+  filter: isValid => isValid,
   fn: (_, url) => normalizeUrl(url),
   target: checkUrlReachabilityFx,
 });

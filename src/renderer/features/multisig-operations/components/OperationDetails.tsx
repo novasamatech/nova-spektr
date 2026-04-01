@@ -1,15 +1,15 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { type PropsWithChildren } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { AccountExplorers, WalletIcon } from '@/shared/ui-entities';
+import { useOperationDescription } from '@/domains/backend';
 import { type MultisigOperation, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
-import { operationDescriptionsModel } from '../model/operation-descriptions-model';
 
 type Props = PropsWithChildren<{
   operation: MultisigOperation;
@@ -22,11 +22,7 @@ export const OperationDetails = ({ operation, children }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
   const allAccounts = useUnit(accounts.$list);
-  const description = useStoreMap({
-    store: operationDescriptionsModel.$descriptions,
-    keys: [operation.id],
-    fn: (descriptions, [id]) => descriptions[id] ?? null,
-  });
+  const description = useOperationDescription(operation.id);
 
   const depositorSignatory = allAccounts.find(a => a.accountId === operation.depositor);
   const depositorWallet = depositorSignatory && wallets.find(w => w.id === depositorSignatory.walletId);

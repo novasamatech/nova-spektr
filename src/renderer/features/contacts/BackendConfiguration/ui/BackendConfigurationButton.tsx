@@ -1,6 +1,6 @@
 import { useI18n } from '@/shared/i18n';
 import { Button, Icon } from '@/shared/ui';
-import { backendConfigurationModel } from '@/aggregates/backend-auth';
+import { backendConfigurationModel } from '@/aggregates/backend';
 
 export const BackendConfigurationButton = () => {
   const { t } = useI18n();

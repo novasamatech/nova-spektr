@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+import { authFetch } from '@/shared/api/backend-fetch';
 import { type BackendContact, type Contact, type ContactTag } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
-import { authFetch } from '@/aggregates/backend-auth';
 
 export class HttpError extends Error {
   constructor(
@@ -65,7 +65,7 @@ function mapToContact(raw: RawBackendContact): BackendContact {
     address,
     accountId,
     source: 'backend',
-    entityNames: raw.entities.map((e) => e.name),
+    entityNames: raw.entities.map(e => e.name),
     chainId: raw.chain?.chainId ?? null,
     chainName: raw.chain?.name ?? null,
     categoryName: raw.category?.name ?? null,
@@ -132,7 +132,7 @@ async function fetchContactsPage(
   return { data: contacts, total };
 }
 
-export async function fetchAllContacts(baseUrl: string): Promise<Contact[]> {
+async function fetchAllContacts(baseUrl: string): Promise<Contact[]> {
   const firstPage = await fetchContactsPage(baseUrl, 1, PAGE_SIZE);
 
   if (firstPage.total <= PAGE_SIZE) {
@@ -142,7 +142,9 @@ export async function fetchAllContacts(baseUrl: string): Promise<Contact[]> {
   const totalPages = Math.ceil(firstPage.total / PAGE_SIZE);
   const remainingPages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
 
-  const remainingResults = await Promise.all(remainingPages.map((page) => fetchContactsPage(baseUrl, page, PAGE_SIZE)));
+  const remainingResults = await Promise.all(remainingPages.map(page => fetchContactsPage(baseUrl, page, PAGE_SIZE)));
 
-  return [firstPage.data, ...remainingResults.map((r) => r.data)].flat();
+  return [firstPage.data, ...remainingResults.map(r => r.data)].flat();
 }
+
+export const backendContactsService = { fetchAllContacts };

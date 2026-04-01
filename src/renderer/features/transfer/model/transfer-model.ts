@@ -5,10 +5,10 @@ import { toast } from 'sonner';
 
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
-import { createOperationDescription } from '@/domains/api';
+import { operationDescriptionsResource, operationsService } from '@/domains/backend';
 import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend-auth';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { multisigService } from '@/features/multisig-wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -239,7 +239,7 @@ const postDescriptionFx = createEffect(
     description: string;
   }) => {
     const { baseUrl, ...body } = params;
-    await createOperationDescription(baseUrl, body);
+    await operationsService.createDescription(baseUrl, body);
   },
 );
 
@@ -282,6 +282,26 @@ const showDescriptionErrorFx = createEffect((error: Error) => {
 sample({
   clock: postDescriptionFx.failData,
   target: showDescriptionErrorFx,
+});
+
+sample({
+  clock: postDescriptionFx.done,
+  source: {
+    coreTx: $coreTx,
+    wrappedTx: $tx,
+    multisigAccount: formModel.$multisigAccount,
+    description: formModel.$description,
+  },
+  filter: ({ multisigAccount, description }) => nonNullable(multisigAccount) && description.length > 0,
+  fn: ({ coreTx, wrappedTx, multisigAccount, description }, { params: { blockNumber, extrinsicIndex } }) => {
+    const multisigAccountId = multisigService.getMultisigAccountId(multisigAccount!);
+    // Must match multisigOperationService.getOperationId format:
+    // `${chainId}-${callHash}-${accountId}-${block}-${index}`
+    const id = `${coreTx!.chainId}-${wrappedTx!.args.callHash}-${multisigAccountId}-${blockNumber}-${extrinsicIndex}`;
+
+    return { id, description };
+  },
+  target: operationDescriptionsResource.descriptionCreated,
 });
 
 sample({

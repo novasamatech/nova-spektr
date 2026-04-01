@@ -21,7 +21,7 @@ export type ChallengeResponse = z.infer<typeof challengeResponseSchema>;
 export type VerifyResponse = z.infer<typeof verifyResponseSchema>;
 export type SessionResponse = z.infer<typeof sessionResponseSchema>;
 
-export async function requestChallenge(baseUrl: string, accountId: string): Promise<ChallengeResponse> {
+async function requestChallenge(baseUrl: string, accountId: string): Promise<ChallengeResponse> {
   const result = await authFetch(`${baseUrl}/auth/challenge`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -31,7 +31,7 @@ export async function requestChallenge(baseUrl: string, accountId: string): Prom
   return parseResponse(result, challengeResponseSchema);
 }
 
-export async function verifySignature(
+async function verifySignature(
   baseUrl: string,
   params: { accountId: string; challengeId: string; signature: string },
 ): Promise<VerifyResponse> {
@@ -44,7 +44,7 @@ export async function verifySignature(
   return parseResponse(result, verifyResponseSchema);
 }
 
-export async function checkSession(baseUrl: string): Promise<SessionResponse | null> {
+async function checkSession(baseUrl: string): Promise<SessionResponse | null> {
   const result = await authFetch(`${baseUrl}/auth/me`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
@@ -61,7 +61,7 @@ export async function checkSession(baseUrl: string): Promise<SessionResponse | n
   }
 }
 
-export async function logout(baseUrl: string): Promise<void> {
+async function logout(baseUrl: string): Promise<void> {
   const result = await authFetch(`${baseUrl}/auth/logout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -73,3 +73,5 @@ export async function logout(baseUrl: string): Promise<void> {
     throw new Error(`Logout failed with status ${result.status}`);
   }
 }
+
+export const backendAuthService = { requestChallenge, verifySignature, checkSession, logout };
