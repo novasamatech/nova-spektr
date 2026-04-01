@@ -22,8 +22,13 @@ import { networkModel, useApi } from '@/entities/network';
 
 import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
 
-type ClaimResult = { claimable: BN; unlockChunks: AccountUnlockChunk[]; delegated: BN };
-const EMPTY_CLAIM: ClaimResult = { claimable: BN_ZERO, unlockChunks: [], delegated: BN_ZERO };
+type ClaimResult = {
+  claimable: BN;
+  claimableByAccount: Record<string, BN>;
+  unlockChunks: AccountUnlockChunk[];
+  delegated: BN;
+};
+const EMPTY_CLAIM: ClaimResult = { claimable: BN_ZERO, claimableByAccount: {}, unlockChunks: [], delegated: BN_ZERO };
 
 export type AccountUnlockChunk = {
   accountId: string;
@@ -37,6 +42,7 @@ export type ChainGovernanceData = {
   activeVotingAccounts: number;
   totalLocked: string;
   claimableAmount: string;
+  claimableByAccount: Record<string, string>;
   averageConviction: number;
   unlockChunks: AccountUnlockChunk[];
   delegatedAmount: string;
@@ -199,6 +205,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     const voteLockingPeriod = api.consts.convictionVoting.voteLockingPeriod.toNumber();
     let totalClaimable = BN_ZERO;
     let totalDelegated = BN_ZERO;
+    const claimableByAccount: Record<string, BN> = {};
     const allChunks: AccountUnlockChunk[] = [];
 
     for (const accountId of typedAccountIds) {
@@ -225,16 +232,21 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
 
       collectChunks(schedule, accountId, allChunks);
 
+      let accountClaimable = BN_ZERO;
       for (const chunk of schedule) {
         if (chunk.type === UnlockChunkType.CLAIMABLE && !chunk.amount.isZero()) {
           totalClaimable = totalClaimable.add(chunk.amount);
+          accountClaimable = accountClaimable.add(chunk.amount);
         } else if (chunk.type === UnlockChunkType.PENDING_DELEGATION) {
           totalDelegated = totalDelegated.add(chunk.amount);
         }
       }
+      if (!accountClaimable.isZero()) {
+        claimableByAccount[accountId] = accountClaimable;
+      }
     }
 
-    return { claimable: totalClaimable, unlockChunks: allChunks, delegated: totalDelegated };
+    return { claimable: totalClaimable, claimableByAccount, unlockChunks: allChunks, delegated: totalDelegated };
   }, [
     api,
     currentBlock,
@@ -269,6 +281,9 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     activeVotingAccounts: stats.activeVotingAccounts,
     totalLocked: stats.totalLocked.toString(),
     claimableAmount: claimData.claimable.toString(),
+    claimableByAccount: Object.fromEntries(
+      Object.entries(claimData.claimableByAccount).map(([id, bn]) => [id, bn.toString()]),
+    ),
     averageConviction: stats.averageConviction,
     unlockChunks: claimData.unlockChunks,
     delegatedAmount: claimData.delegated.toString(),

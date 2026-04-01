@@ -1,22 +1,26 @@
-import { memo, useDeferredValue, useMemo } from 'react';
+import { memo, useCallback, useDeferredValue, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toShortAddress } from '@/shared/lib/utils';
+import { cnTw, formatBalance, toShortAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { type UnlockEvent, useUnlockSchedule } from '../hooks/useUnlockSchedule';
 
 import { Price } from './Price';
+import { UnlockBreakdownModal } from './UnlockBreakdownModal';
 
 type Props = {
   accountIds: string[];
   allEntries: { accountId: string; name: string; address: string }[];
 };
 
+type ModalType = 'claimable' | 'pending' | null;
+
 export const UnlockScheduleWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const deferredAccountIds = useDeferredValue(accountIds);
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
 
   const accountNameMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -26,8 +30,19 @@ export const UnlockScheduleWidget = ({ accountIds, allEntries }: Props) => {
 
     return map;
   }, [allEntries]);
-  const { claimableNowFiat, pendingLocksFiat, delegatedFiat, events, pending, fiatFlag, currency } =
-    useUnlockSchedule(deferredAccountIds);
+  const {
+    claimableNowFiat,
+    pendingLocksFiat,
+    delegatedFiat,
+    claimableRows,
+    pendingRows,
+    events,
+    pending,
+    fiatFlag,
+    currency,
+  } = useUnlockSchedule(deferredAccountIds);
+
+  const handleCloseModal = useCallback(() => setActiveModal(null), []);
 
   if (!fiatFlag) return null;
 
@@ -49,67 +64,93 @@ export const UnlockScheduleWidget = ({ accountIds, allEntries }: Props) => {
     (delegatedFiat != null && delegatedFiat !== '0');
 
   return (
-    <DashboardWidget colSpan={2}>
-      <FootnoteText className="text-text-tertiary">{t('dashboard.unlockSchedule.title')}</FootnoteText>
+    <>
+      <DashboardWidget colSpan={2}>
+        <FootnoteText className="text-text-tertiary">{t('dashboard.unlockSchedule.title')}</FootnoteText>
 
-      {hasData && !pending && (
-        <>
-          <div className="my-4 border-t border-divider" />
-          <div className="flex gap-4">
-            <SummaryItem
-              label={t('dashboard.unlockSchedule.claimableNow')}
-              amount={claimableNowFiat}
-              currency={currency}
-              colorClass="text-text-positive"
-            />
-            <SummaryItem
-              label={t('dashboard.unlockSchedule.pendingLocks')}
-              amount={pendingLocksFiat}
-              currency={currency}
-              colorClass="text-text-secondary"
-            />
-            <SummaryItem
-              label={t('dashboard.unlockSchedule.delegated')}
-              amount={delegatedFiat}
-              currency={currency}
-              colorClass="text-text-tertiary"
-            />
-          </div>
-        </>
-      )}
-
-      {hasData && events.length > 0 && !pending && (
-        <>
-          <div className="my-4 border-t border-divider" />
-          <FootnoteText className="mb-2 text-text-tertiary">
-            {t('dashboard.unlockSchedule.upcomingUnlocks')} ({events.length})
-          </FootnoteText>
-          <div className="flex max-h-[200px] flex-col gap-2 overflow-y-auto">
-            {events.map((event) => (
-              <UnlockEventRow
-                key={`${event.chainName}-${event.unlockAtMs}`}
-                event={event}
+        {hasData && !pending && (
+          <>
+            <div className="my-4 border-t border-divider" />
+            <div className="flex gap-4">
+              <SummaryItem
+                label={t('dashboard.unlockSchedule.claimableNow')}
+                amount={claimableNowFiat}
                 currency={currency}
-                accountNameMap={accountNameMap}
+                colorClass="text-text-positive"
+                onClick={claimableRows.length > 0 ? () => setActiveModal('claimable') : undefined}
               />
-            ))}
+              <SummaryItem
+                label={t('dashboard.unlockSchedule.pendingLocks')}
+                amount={pendingLocksFiat}
+                currency={currency}
+                colorClass="text-text-secondary"
+                onClick={pendingRows.length > 0 ? () => setActiveModal('pending') : undefined}
+              />
+              <SummaryItem
+                label={t('dashboard.unlockSchedule.delegated')}
+                amount={delegatedFiat}
+                currency={currency}
+                colorClass="text-text-tertiary"
+              />
+            </div>
+          </>
+        )}
+
+        {hasData && events.length > 0 && !pending && (
+          <>
+            <div className="my-4 border-t border-divider" />
+            <FootnoteText className="mb-2 text-text-tertiary">
+              {t('dashboard.unlockSchedule.upcomingUnlocks')} ({events.length})
+            </FootnoteText>
+            <div className="flex max-h-[200px] flex-col gap-2 overflow-y-auto">
+              {events.map((event) => (
+                <UnlockEventRow
+                  key={`${event.chainName}-${event.unlockAtMs}`}
+                  event={event}
+                  currency={currency}
+                  accountNameMap={accountNameMap}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {!pending && !hasData && (
+          <div className="flex flex-col items-center gap-y-1 py-6">
+            <BodyText className="text-text-tertiary">{t('dashboard.unlockSchedule.noLocks')}</BodyText>
           </div>
-        </>
+        )}
+
+        {pending && !hasData && (
+          <div className="my-4 flex flex-col gap-3">
+            <Skeleton width="100%" height={10} />
+            <Skeleton width="100%" height={10} />
+          </div>
+        )}
+      </DashboardWidget>
+
+      {activeModal === 'claimable' && (
+        <UnlockBreakdownModal
+          title={t('dashboard.unlockSchedule.claimableNow')}
+          totalFiat={claimableNowFiat ?? '0'}
+          rows={claimableRows}
+          allEntries={allEntries}
+          currency={currency}
+          onClose={handleCloseModal}
+        />
       )}
 
-      {!pending && !hasData && (
-        <div className="flex flex-col items-center gap-y-1 py-6">
-          <BodyText className="text-text-tertiary">{t('dashboard.unlockSchedule.noLocks')}</BodyText>
-        </div>
+      {activeModal === 'pending' && (
+        <UnlockBreakdownModal
+          title={t('dashboard.unlockSchedule.pendingLocks')}
+          totalFiat={pendingLocksFiat ?? '0'}
+          rows={pendingRows}
+          allEntries={allEntries}
+          currency={currency}
+          onClose={handleCloseModal}
+        />
       )}
-
-      {pending && !hasData && (
-        <div className="my-4 flex flex-col gap-3">
-          <Skeleton width="100%" height={10} />
-          <Skeleton width="100%" height={10} />
-        </div>
-      )}
-    </DashboardWidget>
+    </>
   );
 };
 
@@ -118,10 +159,17 @@ type SummaryItemProps = {
   amount: string | null;
   currency: ReturnType<typeof useUnlockSchedule>['currency'];
   colorClass: string;
+  onClick?: () => void;
 };
 
-const SummaryItem = memo(({ label, amount, currency, colorClass }: SummaryItemProps) => (
-  <div className="flex flex-1 flex-col items-center gap-1">
+const SummaryItem = memo(({ label, amount, currency, colorClass, onClick }: SummaryItemProps) => (
+  <div
+    className={cnTw(
+      'flex flex-1 flex-col items-center gap-1 rounded-md py-2',
+      onClick && 'cursor-pointer transition-colors hover:bg-action-background-hover',
+    )}
+    onClick={onClick}
+  >
     <FootnoteText className={colorClass}>{label}</FootnoteText>
     <FootnoteText className="text-text-primary">
       <Price amount={amount ?? '0'} currency={currency} />

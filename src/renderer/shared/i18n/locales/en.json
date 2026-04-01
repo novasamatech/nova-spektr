@@ -685,7 +685,14 @@
       "delegated": "Delegated",
       "upcomingUnlocks": "Upcoming Unlocks",
       "noLocks": "No governance locks found",
-      "accountCount": "{count} accounts"
+      "accountCount": "{count} accounts",
+      "breakdown": {
+        "account": "Account",
+        "amount": "Amount",
+        "chain": "Chain",
+        "share": "Share",
+        "accountCount": "{count} accounts"
+      }
     },
     "activeReferendums": {
       "title": "Referenda",
