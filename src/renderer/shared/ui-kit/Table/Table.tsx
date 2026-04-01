@@ -32,7 +32,15 @@ type TableProps<T> = {
   onRowClick?: (item: T, index: number) => void;
 };
 
-const TableComponent = <T,>({ columns, data, className, cellAlign = 'middle', rowTestIdб onSort, onRowClick }: TableProps<T>) => {
+const TableComponent = <T,>({
+  columns,
+  data,
+  className,
+  cellAlign = 'middle',
+  rowTestId,
+  onSort,
+  onRowClick,
+}: TableProps<T>) => {
   const [sortKey, setSortKey] = useState<keyof T | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
