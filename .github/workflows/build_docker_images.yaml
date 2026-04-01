@@ -6,7 +6,7 @@ on:
       - dev
     tags:
       - 'v*'
-      - 'stage-2-*'
+      - 'stage-2-*' # Stage 2 tags used with date postfix, e.g. stage-2-20260401
   pull_request:
     types: [labeled]
 
