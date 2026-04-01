@@ -1,0 +1,22 @@
+// eslint-disable-next-line boundaries/external -- hooks will move to widgets layer in a follow-up task
+import { useStoreMap } from 'effector-react';
+
+import { useResource } from '@/shared/query';
+
+import { operationDescriptionsResource } from './resource';
+
+export const useOperationDescriptionsFetch = (baseUrl: string | null, ids: string[]) => {
+  return useResource(operationDescriptionsResource, {
+    params: baseUrl && ids.length > 0 ? { baseUrl, ids } : null,
+    defaultValue: {},
+    map: cache => cache,
+  });
+};
+
+export const useOperationDescription = (operationId: string): string | null => {
+  return useStoreMap({
+    store: operationDescriptionsResource.$cache,
+    keys: [operationId],
+    fn: (cache, [id]) => cache[id] ?? null,
+  });
+};
