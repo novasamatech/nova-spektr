@@ -90,7 +90,7 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
 
   return (
     <DragDropProvider onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
-      <div className="grid h-full w-full grid-cols-4 items-start gap-4 overflow-y-auto p-4">
+      <div className="grid h-full w-full grid-cols-4 items-start gap-4 overflow-y-auto">
         {displayKeys.map((key, index) => {
           const handler = handlersByKey.get(key);
           if (!handler) return null;

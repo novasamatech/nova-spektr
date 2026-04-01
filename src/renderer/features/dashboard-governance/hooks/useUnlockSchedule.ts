@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
@@ -24,51 +24,70 @@ export type UnlockEvent = {
   tracks: string[];
 };
 
+export type AccountUnlockRow = {
+  accountId: string;
+  amount: string;
+  amountFiat: string;
+  fiatValueNum: number;
+  symbol: string;
+  precision: number;
+  chainName: string;
+  chainIcon: string;
+};
+
 export type UnlockScheduleData = {
   totalLockedFiat: string | null;
   claimableNowFiat: string | null;
   pendingLocksFiat: string | null;
   delegatedFiat: string | null;
+  claimableRows: AccountUnlockRow[];
+  pendingRows: AccountUnlockRow[];
   events: UnlockEvent[];
   pending: boolean;
   fiatFlag: boolean | null;
   currency: CurrencyItem | null;
 };
 
-/**
- * Groups pending locks that fall on the same calendar day (per chain) into a
- * single event, summing their amounts and merging accountIds/tracks.
- */
-function aggregateEventsByDay(
+type AggregateResult = {
+  events: UnlockEvent[];
+  pendingFiat: BigNumber;
+  pendingByAccount: Map<string, BN>;
+};
+
+function aggregatePendingChunks(
   chunks: AccountUnlockChunk[],
   data: ChainGovernanceData,
   now: number,
   toFiat: (amount: string) => string,
-): { events: UnlockEvent[]; pendingFiat: BigNumber } {
+): AggregateResult {
+  const pendingByAccount = new Map<string, BN>();
+  let pendingFiat = new BigNumber(0);
+
   if (data.blockTimeMs === null || data.currentBlock === null) {
-    let pendingFiat = new BigNumber(0);
     for (const chunk of chunks) {
-      if (chunk.type === 'pending_lock') {
-        pendingFiat = pendingFiat.plus(toFiat(chunk.amount));
-      }
+      if (chunk.type !== 'pending_lock') continue;
+      const amountBN = new BN(chunk.amount);
+      pendingFiat = pendingFiat.plus(toFiat(chunk.amount));
+      pendingByAccount.set(chunk.accountId, (pendingByAccount.get(chunk.accountId) ?? BN_ZERO).add(amountBN));
     }
 
-    return { events: [], pendingFiat };
+    return { events: [], pendingFiat, pendingByAccount };
   }
 
   const dayGroups = new Map<number, { amount: BN; accountIds: Set<string>; tracks: Set<string> }>();
-  let pendingFiat = new BigNumber(0);
 
   for (const chunk of chunks) {
     if (chunk.type !== 'pending_lock') continue;
 
+    const amountBN = new BN(chunk.amount);
     pendingFiat = pendingFiat.plus(toFiat(chunk.amount));
+    pendingByAccount.set(chunk.accountId, (pendingByAccount.get(chunk.accountId) ?? BN_ZERO).add(amountBN));
 
     const unlockAtMs = now + (chunk.block - data.currentBlock) * data.blockTimeMs;
     const dayKey = Math.floor(unlockAtMs / MS_PER_DAY);
 
-    const group = dayGroups.get(dayKey) ?? { amount: new BN(0), accountIds: new Set(), tracks: new Set() };
-    group.amount = group.amount.add(new BN(chunk.amount));
+    const group = dayGroups.get(dayKey) ?? { amount: BN_ZERO, accountIds: new Set(), tracks: new Set() };
+    group.amount = group.amount.add(amountBN);
     group.accountIds.add(chunk.accountId);
     for (const t of chunk.tracks) {
       group.tracks.add(t);
@@ -95,7 +114,7 @@ function aggregateEventsByDay(
       };
     });
 
-  return { events, pendingFiat };
+  return { events, pendingFiat, pendingByAccount };
 }
 
 export const useUnlockSchedule = (accountIds: string[]): UnlockScheduleData => {
@@ -114,6 +133,8 @@ export const useUnlockSchedule = (accountIds: string[]): UnlockScheduleData => {
         claimableNowFiat: null,
         pendingLocksFiat: null,
         delegatedFiat: null,
+        claimableRows: [],
+        pendingRows: [],
         events: [],
       };
     }
@@ -125,6 +146,8 @@ export const useUnlockSchedule = (accountIds: string[]): UnlockScheduleData => {
     let grandPending = new BigNumber(0);
     let grandDelegated = new BigNumber(0);
     const allEvents: UnlockEvent[] = [];
+    const allClaimableRows: AccountUnlockRow[] = [];
+    const allPendingRows: AccountUnlockRow[] = [];
     const now = Date.now();
 
     for (const { data } of chainEntries) {
@@ -137,18 +160,45 @@ export const useUnlockSchedule = (accountIds: string[]): UnlockScheduleData => {
       grandClaimable = grandClaimable.plus(toFiat(data.claimableAmount));
       grandDelegated = grandDelegated.plus(toFiat(data.delegatedAmount));
 
-      const { events, pendingFiat } = aggregateEventsByDay(data.unlockChunks, data, now, toFiat);
+      const toRow = (accountId: string, amount: string): AccountUnlockRow => {
+        const fiat = toFiat(amount);
+
+        return {
+          accountId,
+          amount,
+          amountFiat: fiat,
+          fiatValueNum: parseFloat(fiat) || 0,
+          symbol: data.symbol,
+          precision: data.precision,
+          chainName: data.chainName,
+          chainIcon: data.icon.colored,
+        };
+      };
+
+      for (const [accountId, amount] of Object.entries(data.claimableByAccount)) {
+        allClaimableRows.push(toRow(accountId, amount));
+      }
+
+      const { events, pendingFiat, pendingByAccount } = aggregatePendingChunks(data.unlockChunks, data, now, toFiat);
       grandPending = grandPending.plus(pendingFiat);
       allEvents.push(...events);
+
+      for (const [accountId, amount] of pendingByAccount.entries()) {
+        allPendingRows.push(toRow(accountId, amount.toString()));
+      }
     }
 
     allEvents.sort((a, b) => a.unlockAtMs - b.unlockAtMs);
+    allClaimableRows.sort((a, b) => b.fiatValueNum - a.fiatValueNum);
+    allPendingRows.sort((a, b) => b.fiatValueNum - a.fiatValueNum);
 
     return {
       totalLockedFiat: grandTotalLocked.toString(),
       claimableNowFiat: grandClaimable.toString(),
       pendingLocksFiat: grandPending.toString(),
       delegatedFiat: grandDelegated.toString(),
+      claimableRows: allClaimableRows,
+      pendingRows: allPendingRows,
       events: allEvents,
     };
   }, [polkadotData, kusamaData, prices, currency]);

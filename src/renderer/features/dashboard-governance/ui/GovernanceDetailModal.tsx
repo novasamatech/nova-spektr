@@ -15,6 +15,7 @@ import { type ChainGovernanceSummary } from '../hooks/useGovernanceOverview';
 import { AccountTracksModal } from './AccountTracksModal';
 import { ChartTooltip } from './ChartTooltip';
 import { Price } from './Price';
+import { buildChartData } from './buildChartData';
 
 type Props = {
   chainSummary: ChainGovernanceSummary;
@@ -32,19 +33,15 @@ export const GovernanceDetailModal = memo(
     const { formatted, suffix } = formatBalance(chainSummary.totalLocked, chainSummary.precision);
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
 
-    const chartData = useMemo(() => {
-      const totalFiat = rows.reduce((sum, r) => sum + r.fiatValueNum, 0);
-
-      return rows
-        .map((row, i) => ({
-          name: row.name || toShortAddress(row.address),
-          value: row.fiatValueNum,
-          percent: totalFiat > 0 ? (row.fiatValueNum / totalFiat) * 100 : 0,
-          index: i,
-          fill: FALLBACK_COLORS[i % FALLBACK_COLORS.length],
-        }))
-        .filter((d) => d.value > 0);
-    }, [rows]);
+    const chartData = useMemo(
+      () =>
+        buildChartData(
+          rows,
+          (r) => r.name || toShortAddress(r.address),
+          (r) => r.fiatValueNum,
+        ),
+      [rows],
+    );
 
     const columns: Column<GovernanceBreakdownRow>[] = useMemo(
       () => [

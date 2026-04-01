@@ -29,7 +29,7 @@ const SINCE_OFFSETS: Record<Exclude<RewardsTimeRange, 'all'>, number> = {
   '1y': 365 * 24 * 3600,
 };
 
-const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold transition-colors';
+const toggleButtonClass = 'flex-1 cursor-pointer rounded px-3 py-1 text-footnote font-semibold transition-colors';
 const activeClass = 'bg-white text-text-primary shadow-sm';
 const inactiveClass = 'text-text-tertiary hover:text-text-secondary';
 
