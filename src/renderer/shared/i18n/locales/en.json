@@ -1512,7 +1512,7 @@
       "referendumId": "Referendum ID",
       "proposalParseFailed": "Failed to parse proposal data",
       "pullRequest": "Pull request",
-      "referendumNotCreated": "Referendum has not been created on-chain yet",
+      "referendumNotCreated": "Referendum not created yet",
       "targetRank": "Target rank",
       "title": "On-chain data",
       "viewJson": "View JSON"
