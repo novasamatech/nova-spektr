@@ -73,6 +73,14 @@ const deleteContactFx = createEffect(async (contactId: string): Promise<string> 
 });
 
 const syncBackendContactsFx = createEffect(async (contacts: Contact[]): Promise<Contact[]> => {
+  const all = await storageService.contacts.readAll();
+  const oldBackendIds = all.filter((c) => c.source === 'backend').map((c) => c.id);
+  const newIds = new Set(contacts.map((c) => c.id));
+  const staleIds = oldBackendIds.filter((id) => !newIds.has(id));
+
+  if (staleIds.length > 0) {
+    await storageService.contacts.deleteAll(staleIds);
+  }
   await storageService.contacts.insertAll(contacts);
 
   return contacts;
