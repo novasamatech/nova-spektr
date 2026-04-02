@@ -2,7 +2,6 @@ import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { type PropsWithChildren, memo, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
 import { useClock } from '@/shared/lib/hooks';
@@ -10,7 +9,7 @@ import { useDeferredList } from '@/shared/lib/hooks/useDeferredList';
 import { entries, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
 import { Duration, FootnoteText, HelpText, Icon, Separator, SmallTitleText } from '@/shared/ui';
 import { Box, Modal, Select } from '@/shared/ui-kit';
-import { type FeedRecord, $primaryIpfsGateway, evidenceService } from '@/domains/collectives';
+import { type FeedRecord, $ipfsGateways, evidenceService } from '@/domains/collectives';
 import { useMemberFeed } from '../hooks/useMemberFeed';
 import { alertsModel } from '../model/alerts';
 
@@ -72,7 +71,7 @@ const getMessage = (t: TFunction, record: FeedRecord) => {
   return '';
 };
 
-const getLink = (t: TFunction, record: FeedRecord, primaryGateway: string): { text: string; url: string } | null => {
+const getLink = (t: TFunction, record: FeedRecord): { text: string; url: string } | null => {
   if (
     record.type === 'imported' ||
     record.type === 'promoted' ||
@@ -88,7 +87,7 @@ const getLink = (t: TFunction, record: FeedRecord, primaryGateway: string): { te
   if (record.type === 'requested') {
     return {
       text: t('fellowship.profile.activityFeed.viewEvidence'),
-      url: evidenceService.getEvidenceFetchIpfsUrl(record.hash, primaryGateway).toString(),
+      url: '',
     };
   }
 
@@ -97,7 +96,7 @@ const getLink = (t: TFunction, record: FeedRecord, primaryGateway: string): { te
 
 export const ActivityFeed = memo(({ children }: PropsWithChildren) => {
   const { t } = useI18n();
-  const primaryGateway = useUnit($primaryIpfsGateway);
+  const gateways = useUnit($ipfsGateways);
   const { data: list, pending } = useMemberFeed();
   const [filter, setFilter] = useState<FilterType | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -181,7 +180,9 @@ export const ActivityFeed = memo(({ children }: PropsWithChildren) => {
               {deferredList.map(x => {
                 const age = now - x.at.getTime();
                 const isOlderThanMonth = age > ONE_MONTH_MS;
-                const link = getLink(t, x, primaryGateway);
+                const link = getLink(t, x);
+                const isEvidenceLink = x.type === 'requested';
+                const evidenceUrls = isEvidenceLink ? evidenceService.getEvidenceGatewayUrls(x.hash, gateways) : [];
                 const isShowIconLink =
                   x.type === 'imported' || x.type === 'promoted' || x.type === 'demoted' || x.type === 'proven';
 
@@ -193,16 +194,33 @@ export const ActivityFeed = memo(({ children }: PropsWithChildren) => {
                       ) : (
                         <div className="flex flex-col gap-1">
                           <FootnoteText className="grow font-bold">{getMessage(t, x)}</FootnoteText>
-                          {link && (
-                            <Link
-                              className="flex items-center gap-1 font-semibold text-primary-button-background-default"
-                              to={link.url}
-                              target="_blank"
-                            >
-                              {link.text}
-                              {isShowIconLink && <Icon name="link" size={16} className="text-icon-accent" />}
-                            </Link>
-                          )}
+                          {link &&
+                            (isEvidenceLink ? (
+                              <div className="flex flex-col items-start gap-1">
+                                {evidenceUrls.map(url => (
+                                  <a
+                                    key={url.toString()}
+                                    href={url.toString()}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1 font-semibold text-primary-button-background-default"
+                                  >
+                                    {`${link.text} (${url.host})`}
+                                    <Icon name="link" size={16} className="text-icon-accent" />
+                                  </a>
+                                ))}
+                              </div>
+                            ) : (
+                              <a
+                                className="flex items-center gap-1 font-semibold text-primary-button-background-default"
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {link.text}
+                                {isShowIconLink && <Icon name="link" size={16} className="text-icon-accent" />}
+                              </a>
+                            ))}
                         </div>
                       )}
 
