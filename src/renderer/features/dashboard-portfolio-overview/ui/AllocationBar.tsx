@@ -26,7 +26,7 @@ export const AllocationBar = memo(({ allocation }: Props) => {
   return (
     <Tooltip>
       <Tooltip.Trigger>
-        <div className="relative before:absolute before:inset-x-0 before:-inset-y-2 before:content-['']">
+        <div className="relative w-full before:absolute before:inset-x-0 before:-inset-y-2 before:content-['']">
           <div className="bg-input-border-disabled flex h-1.5 w-full overflow-hidden rounded-full">
             {SEGMENTS.map(
               (seg) =>

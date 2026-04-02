@@ -301,7 +301,7 @@ const TabButton = memo(
     <button
       type="button"
       className={cnTw(
-        'flex items-center gap-2 rounded-md px-3 py-1.5 text-footnote font-semibold transition-colors',
+        'flex cursor-pointer items-center gap-2 rounded-md px-3 py-1.5 text-footnote font-semibold transition-colors',
         active ? 'bg-selected-background text-text-primary' : 'text-text-tertiary hover:text-text-secondary',
       )}
       onClick={onClick}
