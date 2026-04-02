@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { InfoLink, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { type Referendum, $primaryIpfsGateway, evidenceService } from '@/domains/collectives';
+import { type Referendum, $ipfsGateways, evidenceService } from '@/domains/collectives';
 
 import { Card } from './Card';
 
@@ -17,7 +17,8 @@ type Props = {
 
 export const AdditionalInfo = memo(({ referendumId, evidenceHash }: Props) => {
   const { t } = useI18n();
-  const primaryGateway = useUnit($primaryIpfsGateway);
+  const gateways = useUnit($ipfsGateways);
+  const evidenceUrls = nonNullable(evidenceHash) ? evidenceService.getEvidenceGatewayUrls(evidenceHash, gateways) : [];
 
   if (nullable(referendumId) && nullable(evidenceHash)) {
     return null;
@@ -48,16 +49,12 @@ export const AdditionalInfo = memo(({ referendumId, evidenceHash }: Props) => {
               {t('fellowship.additional.subsquare')}
             </InfoLink>
           ) : null}
-          {nonNullable(evidenceHash) ? (
-            <InfoLink
-              size="inherit"
-              iconName="embed"
-              url={`${evidenceService.getEvidenceFetchIpfsUrl(evidenceHash, primaryGateway)}`}
-              withLinkIcon
-            >
-              {t('fellowship.additional.evidenceSource')}
-            </InfoLink>
-          ) : null}
+          {nonNullable(evidenceHash) &&
+            evidenceUrls.map(url => (
+              <InfoLink key={url.toString()} size="inherit" iconName="embed" url={url.toString()} withLinkIcon>
+                {`${t('fellowship.additional.evidenceSource')} (${url.host})`}
+              </InfoLink>
+            ))}
         </Box>
       </Box>
     </Card>
