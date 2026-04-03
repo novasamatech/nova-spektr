@@ -293,20 +293,23 @@ const operationChanges = pairwise(multisigOperation.$list)
       newOperations.length > 0 || statusChanges.length > 0 || removedKeys.length > 0 || newEvents.length > 0,
   });
 
+const $allAccounts = accounts.$list;
+
 sample({
   clock: operationChanges,
   source: {
     populated: multisigOperation.$populated,
     anyMultisigAccounts: $anyMultisigAccounts,
+    allAccounts: $allAccounts,
     chains: networkModel.$chains,
   },
   filter: ({ populated }) => populated,
-  fn: ({ anyMultisigAccounts, chains }, { newOperations, statusChanges, removedKeys, newEvents }) => {
+  fn: ({ anyMultisigAccounts, allAccounts, chains }, { newOperations, statusChanges, removedKeys, newEvents }) => {
     // Filter new operations - apply timestamp filter to exclude operations created before account was connected
     const newOperationNotifications = newOperations
       .filter(operation => {
-        // Don't notify the operation creator
-        if (operation.status === 'pending' && anyMultisigAccounts.some(a => a.accountId === operation.depositor)) {
+        // Don't notify the operation creator (depositor is a signatory account, not a multisig account)
+        if (operation.status === 'pending' && allAccounts.some(a => a.accountId === operation.depositor)) {
           return false;
         }
 
