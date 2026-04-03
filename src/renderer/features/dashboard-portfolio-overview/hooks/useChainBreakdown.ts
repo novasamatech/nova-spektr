@@ -107,7 +107,7 @@ export const useChainBreakdown = (chainId: ChainId, accountIds: string[]): Chain
           rawAmountNum: group.totalRaw.toNumber(),
           fiatValue: group.fiatValue.toString(),
           fiatValueNum: fiatNum,
-          sharePercent: Math.round(share * 10) / 10,
+          sharePercent: share,
           colorIndex: 0,
         };
       })
