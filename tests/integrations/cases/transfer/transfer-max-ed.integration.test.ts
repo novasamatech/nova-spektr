@@ -35,9 +35,11 @@ vi.mock('graphql-request', async (importOriginal) => {
   const actual = (await importOriginal()) as object;
   return {
     ...actual,
-    GraphQLClient: vi.fn().mockImplementation(() => ({
-      request: vi.fn().mockResolvedValue({ proxieds: { nodes: [] } }),
-    })),
+    GraphQLClient: vi.fn(function () {
+      return {
+        request: vi.fn().mockResolvedValue({ proxieds: { nodes: [] } }),
+      };
+    }),
   };
 });
 
