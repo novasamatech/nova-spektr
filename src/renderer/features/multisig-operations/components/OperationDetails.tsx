@@ -5,6 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { AccountExplorers, WalletIcon } from '@/shared/ui-entities';
+import { useOperationDescription } from '@/domains/backend';
 import { type MultisigOperation, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -21,6 +22,7 @@ export const OperationDetails = ({ operation, children }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
   const allAccounts = useUnit(accounts.$list);
+  const description = useOperationDescription(operation.id);
 
   const depositorSignatory = allAccounts.find(a => a.accountId === operation.depositor);
   const depositorWallet = depositorSignatory && wallets.find(w => w.id === depositorSignatory.walletId);
@@ -58,6 +60,12 @@ export const OperationDetails = ({ operation, children }: Props) => {
         <DetailRow label={t('operation.details.dateTime')}>
           <span>{formatDate(date, 'PPp')}</span>
         </DetailRow>
+
+        {description && (
+          <DetailRow label={t('operation.descriptionLabel')} wrapperClassName="items-start">
+            <FootnoteText className="text-text-secondary">{description}</FootnoteText>
+          </DetailRow>
+        )}
       </div>
     </div>
   );

@@ -26,7 +26,8 @@ export const dashboardGovernanceSlot = createSlot<{
   allEntries: { accountId: string; name: string; address: string }[];
 }>({ name: 'dashboardGovernance' });
 
-const TABS = ['overview', 'staking', 'governance', 'alerts'] as const;
+// const TABS = ['overview', 'staking', 'governance', 'alerts'] as const;
+const TABS = ['overview', 'staking', 'governance'] as const;
 
 const EmptyState = ({ t }: { t: (key: string) => string }) => (
   <div className="flex h-full w-full flex-col items-center justify-center">
@@ -79,7 +80,7 @@ export const Dashboard = () => {
         )}
       </Header>
 
-      <div className="flex min-h-0 flex-1 flex-col px-4">
+      <div className="flex min-h-0 flex-1 flex-col px-4 pt-2">
         <Tabs value={activeTab} onChange={dashboardModel.tabChanged}>
           <div className="w-fit">
             <Tabs.List>

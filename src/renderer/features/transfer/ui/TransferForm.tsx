@@ -31,12 +31,13 @@ import {
   TransactionValidationError,
   WalletIcon,
 } from '@/shared/ui-entities';
-import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
+import { Box, Combobox, Field, Select, TextArea, Tooltip } from '@/shared/ui-kit';
 import { accountService, accounts, useAccountName, useAccountsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
+import { authModel } from '@/aggregates/backend';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
@@ -93,6 +94,7 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
         <SignatorySelector />
         <Destination />
         <Amount />
+        <DescriptionField />
       </form>
       <div className="flex flex-col gap-y-6">
         <FeeSection />
@@ -625,6 +627,29 @@ const Amount = memo(() => {
         </div>
       )}
     </div>
+  );
+});
+
+const DescriptionField = memo(() => {
+  const { t } = useI18n();
+  const initiator = useUnit(formModel.form.fields.initiator.$value);
+  const isAuthenticated = useUnit(authModel.$isAuthenticated);
+  const description = useUnit(formModel.$description);
+
+  const isMultisig = initiator && accountUtils.isAnyMultisigAccount(initiator);
+
+  if (!isMultisig || !isAuthenticated) return null;
+
+  return (
+    <Field text={t('operation.descriptionLabel')}>
+      <TextArea
+        value={description}
+        placeholder={t('operation.descriptionPlaceholder')}
+        rows={2}
+        maxLength={500}
+        onChange={formModel.setDescription}
+      />
+    </Field>
   );
 });
 

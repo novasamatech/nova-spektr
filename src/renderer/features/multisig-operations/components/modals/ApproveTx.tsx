@@ -39,6 +39,7 @@ type SubmitData = {
   initiator: AnyAccount;
   txPayload: Uint8Array;
   signature: HexString;
+  description: string;
 };
 
 const enum Step {
@@ -72,6 +73,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const multisigDeposit = useUnit(approveModel.$multisigDeposit);
   const signingPayloads = useUnit(approveModel.$signingPayloads);
   const unsignedAccounts = useUnit(approveModel.$unsignedAccounts);
+  const description = useUnit(approveModel.$description);
 
   const transaction = operation.transaction;
   const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(transaction), t, approveTx?.type, operation);
@@ -112,6 +114,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
         initiator,
         txPayload: payload[0]!,
         signature: signature[0]!,
+        description,
       });
     }
   };
@@ -138,6 +141,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
         operation={operation}
         txPayload={submitData.txPayload}
         signature={submitData.signature}
+        description={submitData.description}
         onClose={handleClose}
       />
     );

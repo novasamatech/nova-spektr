@@ -109,6 +109,10 @@ const myselfClicked = createEvent();
 const xcmDestinationSelected = createEvent<AccountId>();
 const xcmDestinationCancelled = createEvent();
 
+const setDescription = createEvent<string>();
+const $description = createStore('').reset(formInitiated);
+$description.on(setDescription, (_, value) => value);
+
 const setAvailable = createEvent<BN | null>();
 const $available = createStore<BN | null>(null)
   .on(setAvailable, (state, payload) => (!state || !payload || !state.eq(payload) ? payload : state))
@@ -1327,6 +1331,8 @@ export const formModel = {
 
   $proxyAccount,
   $multisigAccount,
+  $description,
+  setDescription,
 
   $isMyselfXcmEnabled,
   $isMyselfXcmOpened,

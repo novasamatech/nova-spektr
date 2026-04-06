@@ -29,13 +29,19 @@ function getEvidenceFetchIpfsUrl(evidence: HexString, gateway: string) {
   return new URL(`/ipfs/${getCidByEvidence(evidence)}`, gateway);
 }
 
+function getEvidenceGatewayUrls(evidence: HexString, gateways: string[]) {
+  return gateways.map(gateway => getEvidenceFetchIpfsUrl(evidence, gateway));
+}
+
 let roundRobinIndex = 0;
+
 async function fetchEvidenceFromIpfs(evidence: HexString, gateways: string[]) {
   for (let i = 0; i < gateways.length; i++) {
     const gateway = gateways[(roundRobinIndex + i) % gateways.length]!;
     try {
       const url = getEvidenceFetchIpfsUrl(evidence, gateway);
       const response = await fetch(url.toString());
+
       if (response.ok) {
         roundRobinIndex = (roundRobinIndex + i + 1) % gateways.length;
 
@@ -173,6 +179,7 @@ function isEvidenceTransaction(transaction: Transaction): transaction is Evidenc
 
 export const evidenceService = {
   getEvidenceFetchIpfsUrl,
+  getEvidenceGatewayUrls,
   fetchEvidenceFromIpfs,
   getEvidenceUploadIpfsUrl,
   getCidByEvidence,

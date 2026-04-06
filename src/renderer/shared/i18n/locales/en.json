@@ -685,10 +685,17 @@
       "delegated": "Delegated",
       "upcomingUnlocks": "Upcoming Unlocks",
       "noLocks": "No governance locks found",
-      "accountCount": "{count} accounts"
+      "accountCount": "{count} accounts",
+      "breakdown": {
+        "account": "Account",
+        "amount": "Amount",
+        "chain": "Chain",
+        "share": "Share",
+        "accountCount": "{count} accounts"
+      }
     },
     "activeReferendums": {
-      "title": "Referendums",
+      "title": "Referenda",
       "noReferendums": "No active referendums found",
       "aye": "Aye",
       "nay": "Nay",
@@ -858,8 +865,8 @@
         "promoted": "has been promoted to rank {rank}",
         "proven": "proved his rank {rank}",
         "referendumFallback": "created a referendum <link></link>",
-        "submittedPromotion": "submitted <evidence>evidence</evidence> with a wish to promotion",
-        "submittedRetention": "submitted <evidence>evidence</evidence> with a wish to retention"
+        "submittedPromotion": "submitted <0 /> with a wish to promotion",
+        "submittedRetention": "submitted <0 /> with a wish to retention"
       },
       "referendum": {
         "promote": "created a referendum <link></link> to promote {target} to rank {rank}",
@@ -1505,6 +1512,7 @@
       "referendumId": "Referendum ID",
       "proposalParseFailed": "Failed to parse proposal data",
       "pullRequest": "Pull request",
+      "referendumNotCreated": "Referendum not created yet",
       "targetRank": "Target rank",
       "title": "On-chain data",
       "viewJson": "View JSON"
@@ -2317,6 +2325,9 @@
     "connectionTimeoutTitle": "Connection timeout",
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Add an optional note for this operation...",
+    "descriptionSaveError": "Failed to store description",
     "createFlexibleMultisig": {
       "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below.",
       "rejectConfirmDescription": "If you reject this operation then you will cancel the creation of the Pure Proxy account and will not create a flexible multisig. The Proxy deposit will be refunded to you. Are you sure you want to reject this operation?",

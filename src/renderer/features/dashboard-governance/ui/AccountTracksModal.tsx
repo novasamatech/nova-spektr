@@ -18,6 +18,7 @@ import { type ChainGovernanceSummary } from '../hooks/useGovernanceOverview';
 
 import { ChartTooltip } from './ChartTooltip';
 import { Price } from './Price';
+import { buildChartData } from './buildChartData';
 
 type TrackBreakdownRow = {
   trackId: TrackId;
@@ -123,19 +124,15 @@ export const AccountTracksModal = memo(
       return rawRows;
     }, [accountId, votingMap, chainSummary, prices, currency, t]);
 
-    const chartData = useMemo(() => {
-      const totalFiat = rows.reduce((sum, r) => sum + r.fiatValueNum, 0);
-
-      return rows
-        .map((row, i) => ({
-          name: row.trackName,
-          value: row.fiatValueNum,
-          percent: totalFiat > 0 ? (row.fiatValueNum / totalFiat) * 100 : 0,
-          index: i,
-          fill: FALLBACK_COLORS[i % FALLBACK_COLORS.length],
-        }))
-        .filter((d) => d.value > 0);
-    }, [rows]);
+    const chartData = useMemo(
+      () =>
+        buildChartData(
+          rows,
+          (r) => r.trackName,
+          (r) => r.fiatValueNum,
+        ),
+      [rows],
+    );
 
     const displayName = accountName || toShortAddress(accountAddress);
 

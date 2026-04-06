@@ -1,3 +1,4 @@
+import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 import { Cell, Pie, PieChart, Tooltip } from 'recharts';
@@ -44,7 +45,7 @@ const ChartTooltip = memo(({ active, payload }: { active?: boolean; payload?: To
   return (
     <div style={CHART_TOOLTIP_STYLE}>
       <div style={{ fontWeight: 600 }}>{row.name || toShortAddress(row.address)}</div>
-      <div>{row.sharePercent.toFixed(1)}%</div>
+      <div>{new BigNumber(row.sharePercent).decimalPlaces(1, BigNumber.ROUND_DOWN).toFixed(1)}%</div>
     </div>
   );
 });
@@ -141,7 +142,11 @@ export const AssetDetailModal = memo(({ holding, accountIds, allEntries, currenc
         title: t('dashboard.portfolioOverview.assetDetail.share'),
         sortable: true,
         width: '15%',
-        render: (_, item) => <FootnoteText className="tabular-nums">{item.sharePercent.toFixed(1)}%</FootnoteText>,
+        render: (_, item) => (
+          <FootnoteText className="tabular-nums">
+            {new BigNumber(item.sharePercent).decimalPlaces(1, BigNumber.ROUND_DOWN).toFixed(1)}%
+          </FootnoteText>
+        ),
       },
       {
         key: 'allocation',

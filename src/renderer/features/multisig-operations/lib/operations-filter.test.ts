@@ -38,6 +38,8 @@ const createMockOperation = (overrides?: Partial<MultisigOperation>): MultisigOp
     ...overrides,
   }) as MultisigOperation;
 
+const mockMultisigAccount = { accountId: MOCK_ACCOUNT_ID, accountType: 'multisig', walletId: 1 } as never;
+
 const emptyContext: OperationsFilterContext = {
   filters: {
     account: [],
@@ -48,7 +50,6 @@ const emptyContext: OperationsFilterContext = {
   },
   tab: 'pending',
   hiddenIds: [],
-  multisigAccounts: [],
   multisigWallets: [],
   chains: {},
 };
@@ -247,13 +248,11 @@ describe('operations-filter', () => {
 
   describe('matchesProxyType', () => {
     test('returns true when proxyType list is empty', () => {
-      const op = createMockOperation();
-      expect(matchesProxyType(op, [], [])).toBe(true);
+      expect(matchesProxyType([], mockMultisigAccount)).toBe(true);
     });
 
-    test('returns false when account not in list and proxyType filter is set', () => {
-      const op = createMockOperation();
-      expect(matchesProxyType(op, ['Any'], [])).toBe(false);
+    test('returns false when account is not flexible and proxyType filter is set', () => {
+      expect(matchesProxyType(['Any'], mockMultisigAccount)).toBe(false);
     });
   });
 
@@ -328,35 +327,33 @@ describe('operations-filter', () => {
   describe('matchesSearch', () => {
     test('returns true when searchQuery is empty or undefined', () => {
       const op = createMockOperation();
-      expect(matchesSearch(op, undefined, {}, [], [])).toBe(true);
-      expect(matchesSearch(op, '', {}, [], [])).toBe(true);
-      expect(matchesSearch(op, '   ', {}, [], [])).toBe(true);
+      expect(matchesSearch(op, undefined, {}, mockMultisigAccount, [])).toBe(true);
+      expect(matchesSearch(op, '', {}, mockMultisigAccount, [])).toBe(true);
+      expect(matchesSearch(op, '   ', {}, mockMultisigAccount, [])).toBe(true);
     });
 
     test('returns true when wallet name contains query', () => {
       const op = createMockOperation();
-      const mockAccount = { accountId: MOCK_ACCOUNT_ID, accountType: 'multisig', walletId: 1 } as never;
       const mockWallet = { id: 1, name: 'MyWallet Name' } as never;
-      expect(matchesSearch(op, 'MyWallet', {}, [mockAccount], [mockWallet])).toBe(true);
+      expect(matchesSearch(op, 'MyWallet', {}, mockMultisigAccount, [mockWallet])).toBe(true);
     });
 
     test('returns true when callHash contains query', () => {
       const op = createMockOperation({ callHash: '0xabc123def' });
-      expect(matchesSearch(op, 'abc123', {}, [], [])).toBe(true);
+      expect(matchesSearch(op, 'abc123', {}, mockMultisigAccount, [])).toBe(true);
     });
 
     test('returns false when no field matches query', () => {
       const op = createMockOperation({ callHash: '0xaaa' });
-      const mockAccount = { accountId: MOCK_ACCOUNT_ID, accountType: 'multisig', walletId: 1 } as never;
       const mockWallet = { id: 1, name: 'Wallet' } as never;
-      expect(matchesSearch(op, 'nomatch', {}, [mockAccount], [mockWallet])).toBe(false);
+      expect(matchesSearch(op, 'nomatch', {}, mockMultisigAccount, [mockWallet])).toBe(false);
     });
   });
 
   describe('filterOperation', () => {
     test('returns true when all filters are empty and tab is pending', () => {
       const op = createMockOperation({ status: 'pending' });
-      expect(filterOperation(op, emptyContext)).toBe(true);
+      expect(filterOperation(op, mockMultisigAccount, emptyContext)).toBe(true);
     });
 
     test('returns false when tab is pending but operation is hidden', () => {
@@ -365,12 +362,12 @@ describe('operations-filter', () => {
         ...emptyContext,
         hiddenIds: ['op-1'],
       };
-      expect(filterOperation(op, ctx)).toBe(false);
+      expect(filterOperation(op, mockMultisigAccount, ctx)).toBe(false);
     });
 
     test('returns false when tab is pending but operation status is executed', () => {
       const op = createMockOperation({ status: 'executed' });
-      expect(filterOperation(op, emptyContext)).toBe(false);
+      expect(filterOperation(op, mockMultisigAccount, emptyContext)).toBe(false);
     });
 
     test('returns false when account filter excludes operation', () => {
@@ -381,7 +378,7 @@ describe('operations-filter', () => {
         ...emptyContext,
         filters: { ...emptyContext.filters, account: [MOCK_ACCOUNT_ID] },
       };
-      expect(filterOperation(op, ctx)).toBe(false);
+      expect(filterOperation(op, mockMultisigAccount, ctx)).toBe(false);
     });
 
     test('returns true when all predicates pass', () => {
@@ -399,7 +396,7 @@ describe('operations-filter', () => {
           searchQuery: 'match',
         },
       };
-      expect(filterOperation(op, ctx)).toBe(true);
+      expect(filterOperation(op, mockMultisigAccount, ctx)).toBe(true);
     });
   });
 });

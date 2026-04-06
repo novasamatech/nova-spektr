@@ -33,3 +33,6 @@ export type TProxy = Table<ProxyAccount, ProxyAccount['id']>;
 export type TNotification = Table<Notification, Notification['id']>;
 export type TMetadata = Table<ChainMetadata, ChainMetadata['id']>;
 export type TBasketTransaction = Table<BasketTransaction, BasketTransaction['id']>;
+
+export type OperationDescriptionDS = { id: string; description: string };
+export type TOperationDescription = Table<OperationDescriptionDS, OperationDescriptionDS['id']>;

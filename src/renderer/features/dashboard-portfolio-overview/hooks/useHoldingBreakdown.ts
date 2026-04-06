@@ -104,7 +104,7 @@ export const useHoldingBreakdown = (priceId: string, accountIds: string[], allEn
           rawAmountNum: group.totalRaw.toNumber(),
           fiatValue: group.fiatValue.toString(),
           fiatValueNum: fiatNum,
-          sharePercent: Math.round(share * 10) / 10,
+          sharePercent: share,
           precision: group.precision,
           symbol: group.symbol,
           colorIndex: 0,
