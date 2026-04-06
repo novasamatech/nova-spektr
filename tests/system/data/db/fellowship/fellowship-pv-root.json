@@ -1,0 +1,125 @@
+{
+  "formatName": "dexie",
+  "formatVersion": 1,
+  "data": {
+    "databaseName": "spektr",
+    "databaseVersion": 26,
+    "tables": [
+      {
+        "name": "connections",
+        "schema": "++id",
+        "rowCount": 0
+      },
+      {
+        "name": "wallets",
+        "schema": "++id",
+        "rowCount": 1
+      },
+      {
+        "name": "accounts",
+        "schema": "++id",
+        "rowCount": 0
+      },
+      {
+        "name": "contacts",
+        "schema": "++id",
+        "rowCount": 0
+      },
+      {
+        "name": "multisigTransactions",
+        "schema": "[accountId+chainId+callHash+blockCreated+indexCreated],[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash",
+        "rowCount": 0
+      },
+      {
+        "name": "notifications",
+        "schema": "++id",
+        "rowCount": 0
+      },
+      {
+        "name": "multisigEvents",
+        "schema": "++id,[txAccountId+txChainId+txCallHash+txBlock+txIndex],status,accountId",
+        "rowCount": 0
+      },
+      {
+        "name": "accounts2",
+        "schema": "id",
+        "rowCount": 1
+      }
+    ],
+    "data": [
+      {
+        "tableName": "connections",
+        "inbound": true,
+        "rows": []
+      },
+      {
+        "tableName": "wallets",
+        "inbound": true,
+        "rows": [
+          {
+            "name": "Fellowship Test Vault",
+            "type": "wallet_sps",
+            "signingType": "signing_ps",
+            "id": 1,
+            "accounts": [
+              {
+                "id": "1 0xf0673d30606ee26672707e4fd2bc8b58d3becb7aba2d5f60add64abb5fea4710 universal",
+                "accountId": "0xf0673d30606ee26672707e4fd2bc8b58d3becb7aba2d5f60add64abb5fea4710",
+                "name": "Fellowship Test Vault",
+                "cryptoType": 0,
+                "signingType": "signing_ps",
+                "accountType": "base",
+                "type": "universal",
+                "walletId": 1
+              }
+            ],
+            "$types": {
+              "accounts": "arrayNonindexKeys"
+            }
+          }
+        ]
+      },
+      {
+        "tableName": "accounts",
+        "inbound": true,
+        "rows": []
+      },
+      {
+        "tableName": "contacts",
+        "inbound": true,
+        "rows": []
+      },
+      {
+        "tableName": "multisigTransactions",
+        "inbound": true,
+        "rows": []
+      },
+      {
+        "tableName": "notifications",
+        "inbound": true,
+        "rows": []
+      },
+      {
+        "tableName": "multisigEvents",
+        "inbound": true,
+        "rows": []
+      },
+      {
+        "tableName": "accounts2",
+        "inbound": true,
+        "rows": [
+          {
+            "accountId": "0xf0673d30606ee26672707e4fd2bc8b58d3becb7aba2d5f60add64abb5fea4710",
+            "name": "Fellowship Test Vault",
+            "cryptoType": 0,
+            "signingType": "signing_ps",
+            "accountType": "base",
+            "type": "universal",
+            "walletId": 1,
+            "id": "1 0xf0673d30606ee26672707e4fd2bc8b58d3becb7aba2d5f60add64abb5fea4710 universal"
+          }
+        ]
+      }
+    ]
+  }
+}
