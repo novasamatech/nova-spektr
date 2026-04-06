@@ -142,7 +142,8 @@ const $operationsWithAccounts = combine(
         const key = `${op.proxiedAccountId}:${op.multisigAccountId}`;
         return byAccountId.get(key)?.find(a => accountUtils.isFlexibleMultisigAccount(a));
       }
-      return byMultisigAccountId.get(op.multisigAccountId)?.[0];
+      const candidates = byMultisigAccountId.get(op.multisigAccountId);
+      return candidates?.find(a => accountUtils.isMultisigAccount(a)) ?? candidates?.[0];
     };
 
     const result: OperationWithAccount[] = [];
@@ -164,14 +165,7 @@ const $filteredOperations = combine(
     multisigWallets: $multisigWallets,
     chains: networkModel.$chains,
   },
-  ({
-    operationsWithAccounts,
-    filter,
-    tab,
-    hiddenIds,
-    multisigWallets,
-    chains,
-  }): OperationWithAccount[] => {
+  ({ operationsWithAccounts, filter, tab, hiddenIds, multisigWallets, chains }): OperationWithAccount[] => {
     return operationsWithAccounts.filter(({ operation, account }) =>
       filterOperation(operation, account, {
         filters: filter,
