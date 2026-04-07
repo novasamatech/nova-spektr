@@ -137,7 +137,7 @@ const RfcDetails = ({ proposal }: { proposal: RfcProposal }) => {
       </div>
       <div className="flex items-center gap-x-1">
         <FootnoteText className="text-text-tertiary">{t('fellowship.onChainData.documentHash')}</FootnoteText>
-        <FootnoteText className="ml-auto text-text-tertiary">{truncate(proposal.documentHash, 7, 7)}</FootnoteText>
+        <FootnoteText className="ml-auto">{truncate(proposal.documentHash, 7, 7)}</FootnoteText>
         <Copy value={proposal.documentHash} notification={t('fellowship.onChainData.documentHashCopied')}>
           <button type="button" className="shrink-0 cursor-pointer text-icon-default hover:text-icon-hover">
             <Icon name="copy" size={16} />
