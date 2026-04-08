@@ -43,24 +43,24 @@ function queryGenesisHash(url) {
   return new Promise((resolve, reject) => {
     const ws = new WebSocket(url);
     const timeout = setTimeout(() => {
-      ws.terminate();
+      ws.close();
       reject(new Error('Connection timed out after 10s'));
     }, 10_000);
 
-    ws.on('open', () => {
+    ws.addEventListener('open', () => {
       ws.send(JSON.stringify({ id: 1, jsonrpc: '2.0', method: 'chain_getBlockHash', params: [0] }));
     });
-    ws.on('message', (data) => {
+    ws.addEventListener('message', ({ data }) => {
       clearTimeout(timeout);
       ws.close();
-      const { result, error } = JSON.parse(data.toString());
+      const { result, error } = JSON.parse(data);
       if (error) return reject(new Error(`RPC error: ${JSON.stringify(error)}`));
       if (!result) return reject(new Error('Empty result from chain_getBlockHash'));
       resolve(result);
     });
-    ws.on('error', (err) => {
+    ws.addEventListener('error', (err) => {
       clearTimeout(timeout);
-      reject(err);
+      reject(new Error(err.message ?? 'WebSocket error'));
     });
   });
 }
