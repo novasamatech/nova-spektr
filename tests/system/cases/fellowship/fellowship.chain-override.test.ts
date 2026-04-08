@@ -4,14 +4,14 @@ import { interceptChainsWithCollectivesOverride } from '../../utils/httpIntercep
 // Set CUSTOM_COLLECTIVES_NODE_URL to a running Octopus chopsticks session URL.
 // In CI this is injected automatically by the workflow.
 const CUSTOM_COLLECTIVES_NODE_URL = process.env['CUSTOM_COLLECTIVES_NODE_URL'];
-if (!CUSTOM_COLLECTIVES_NODE_URL) {
-  throw new Error(
-    'CUSTOM_COLLECTIVES_NODE_URL is not set. Provision an Octopus session and export the URL before running fellowship tests.',
-  );
-}
 
 test.describe('Fellowship chain override', { tag: ['@fellowship'] }, () => {
   test.beforeEach(async ({ page }) => {
+    if (!CUSTOM_COLLECTIVES_NODE_URL) {
+      throw new Error(
+        'CUSTOM_COLLECTIVES_NODE_URL is not set. Provision an Octopus session and export the URL before running fellowship tests.',
+      );
+    }
     await interceptChainsWithCollectivesOverride(page, CUSTOM_COLLECTIVES_NODE_URL);
   });
 
