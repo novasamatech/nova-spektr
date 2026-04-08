@@ -8,20 +8,18 @@ import {
   Button,
   CaptionText,
   FootnoteText,
-  HeadlineText,
+  HeaderTitleText,
   HelpText,
   Icon,
   IconButton,
-  Separator,
   SmallTitleText,
-  TitleText,
 } from '@/shared/ui';
 import { Hash, Identicon } from '@/shared/ui-entities';
-import { Accordion, Box, Input, Modal, Select, Tabs } from '@/shared/ui-kit';
+import { Accordion, Modal, Select } from '@/shared/ui-kit';
 
-import { CreateNewButton, InlineChainTitle, MOCK_ADDRESSES, StatusPill, WalletIconWithBadge } from './_shared';
+import { InlineChainTitle, MOCK_ADDRESSES, StatusPill, WalletIconWithBadge } from './_shared';
 
-type VerificationStatus = 'verified' | 'not_verified' | 'not_verified_no_wallet';
+type VerificationStatus = 'verified' | 'not_verified' | 'not_verified_no_wallet' | 'verify_pending';
 
 type Delegation = {
   id: string;
@@ -30,7 +28,14 @@ type Delegation = {
   delegatorWalletType: WalletType | null;
   proxyType: 'Any' | 'NonTransfer' | 'Governance' | 'Staking';
   chainName: 'Polkadot' | 'Kusama';
+  deposit: string;
   status: VerificationStatus;
+  pendingOperation?: {
+    callHash: string;
+    signed: number;
+    threshold: number;
+    createdAt: string;
+  };
   lastOperation: {
     title: string;
     txHash: string;
@@ -47,6 +52,7 @@ const INITIAL_DELEGATIONS: Delegation[] = [
     delegatorWalletType: WalletType.POLKADOT_VAULT,
     proxyType: 'Any',
     chainName: 'Polkadot',
+    deposit: '20.08 DOT',
     status: 'verified',
     lastOperation: {
       title: 'Balance transfer to Bob',
@@ -60,11 +66,12 @@ const INITIAL_DELEGATIONS: Delegation[] = [
     delegatorAddress: MOCK_ADDRESSES.bob,
     delegatorWalletName: 'Bob Multisig 2/3',
     delegatorWalletType: WalletType.MULTISIG,
-    proxyType: 'Governance',
+    proxyType: 'Any',
     chainName: 'Polkadot',
+    deposit: '20.08 DOT',
     status: 'not_verified',
     lastOperation: {
-      title: 'Vote on referendum #1204',
+      title: 'system.remark',
       txHash: '0x1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a8a3f9b2c1d4e5f6a7b8c9d0e',
       timestamp: '2026-04-06 09:18 UTC',
       blockNumber: '24 876 019',
@@ -77,6 +84,7 @@ const INITIAL_DELEGATIONS: Delegation[] = [
     delegatorWalletType: null,
     proxyType: 'Staking',
     chainName: 'Kusama',
+    deposit: '0.668 KSM',
     status: 'not_verified_no_wallet',
     lastOperation: {
       title: 'Nominate validators',
@@ -97,6 +105,15 @@ const StatusBadge = ({ status }: { status: VerificationStatus }) => {
     );
   }
 
+  if (status === 'verify_pending') {
+    return (
+      <span className="inline-flex items-center gap-x-1 rounded-[20px] bg-badge-background px-2 py-0.5">
+        <Icon name="hourglass" size={12} className="text-icon-accent" />
+        <CaptionText className="text-tab-text-accent uppercase">Verify in pending</CaptionText>
+      </span>
+    );
+  }
+
   return (
     <span className="inline-flex items-center gap-x-1 rounded-[20px] bg-badge-background px-2 py-0.5">
       <Icon name="warn" size={12} className="text-icon-warning" />
@@ -108,113 +125,159 @@ const StatusBadge = ({ status }: { status: VerificationStatus }) => {
 const DelegationRow = ({
   delegation,
   onVerify,
-  onEdit,
+  onRemove,
 }: {
   delegation: Delegation;
   onVerify: (id: string) => void;
-  onEdit: (id: string) => void;
+  onRemove: (id: string) => void;
 }) => {
-  const { status, delegatorWalletType, delegatorWalletName, delegatorAddress, proxyType, chainName, lastOperation } =
-    delegation;
+  const {
+    status,
+    delegatorWalletType,
+    delegatorWalletName,
+    delegatorAddress,
+    proxyType,
+    chainName,
+    deposit,
+    lastOperation,
+    pendingOperation,
+  } = delegation;
 
   const hasWallet = status !== 'not_verified_no_wallet';
 
+  const headerRow = (
+    <div className="flex h-[64px] w-full items-center gap-x-3 px-4 py-2">
+      <div className="flex w-[300px] shrink-0 items-center gap-x-2">
+        {hasWallet && delegatorWalletType ? (
+          <WalletIconWithBadge
+            type={delegatorWalletType}
+            badgeColor={
+              status === 'verified'
+                ? 'bg-icon-positive'
+                : status === 'verify_pending'
+                  ? 'bg-icon-accent'
+                  : 'bg-icon-warning'
+            }
+          />
+        ) : (
+          <Identicon address={delegatorAddress} size={32} background={false} />
+        )}
+        <div className="flex min-w-0 flex-col">
+          {hasWallet ? (
+            <BodyText className="truncate text-text-primary">{delegatorWalletName}</BodyText>
+          ) : (
+            <BodyText className="truncate text-text-tertiary italic">Wallet not added locally</BodyText>
+          )}
+          <HelpText className="truncate text-text-tertiary">
+            <Hash value={delegatorAddress} variant="truncate" />
+          </HelpText>
+        </div>
+      </div>
+
+      <div className="flex w-[130px] shrink-0 flex-col">
+        <InlineChainTitle chainName={chainName} />
+        <HelpText className="text-text-tertiary">Deposit {deposit}</HelpText>
+      </div>
+
+      <div className="flex w-[110px] shrink-0 items-center">
+        <span className="inline-flex items-center rounded-[20px] border border-filter-border px-2 py-0.5">
+          <CaptionText className="text-text-secondary uppercase">{proxyType}</CaptionText>
+        </span>
+      </div>
+
+      <div className="flex flex-1 items-center justify-end gap-x-2">
+        <StatusBadge status={status} />
+        <IconButton
+          name="delete"
+          className="text-icon-default opacity-0 group-hover:opacity-100 hover:text-text-negative"
+          onClick={(event) => {
+            event.stopPropagation();
+            onRemove(delegation.id);
+          }}
+        />
+      </div>
+    </div>
+  );
+
   return (
-    <div className="rounded bg-block-background-default hover:shadow-card-shadow">
+    <div className="group rounded bg-block-background-default hover:shadow-card-shadow">
       <Accordion initialOpen={status !== 'verified'}>
-        <Accordion.Trigger>
-          <div className="flex h-[64px] w-full items-center gap-x-3 px-4 py-2">
-            <div className="flex w-[300px] shrink-0 items-center gap-x-2">
-              {hasWallet && delegatorWalletType ? (
-                <WalletIconWithBadge
-                  type={delegatorWalletType}
-                  badgeColor={status === 'verified' ? 'bg-icon-positive' : 'bg-icon-warning'}
-                />
-              ) : (
-                <Identicon address={delegatorAddress} size={32} background={false} />
-              )}
-              <div className="flex min-w-0 flex-col">
-                {hasWallet ? (
-                  <BodyText className="truncate text-text-primary">{delegatorWalletName}</BodyText>
-                ) : (
-                  <BodyText className="truncate text-text-tertiary italic">Wallet not added locally</BodyText>
-                )}
-                <HelpText className="truncate text-text-tertiary">
-                  <Hash value={delegatorAddress} variant="truncate" />
-                </HelpText>
-              </div>
-            </div>
-
-            <div className="flex w-[130px] shrink-0 items-center">
-              <InlineChainTitle chainName={chainName} />
-            </div>
-
-            <div className="flex w-[110px] shrink-0 items-center">
-              <span className="inline-flex items-center rounded-[20px] border border-filter-border px-2 py-0.5">
-                <CaptionText className="text-text-secondary uppercase">{proxyType}</CaptionText>
-              </span>
-            </div>
-
-            <div className="flex flex-1 items-center justify-end gap-x-2">
-              <StatusBadge status={status} />
-              <IconButton
-                name="edit"
-                className="text-icon-default"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onEdit(delegation.id);
-                }}
-              />
-            </div>
-          </div>
-        </Accordion.Trigger>
+        <Accordion.Trigger>{headerRow}</Accordion.Trigger>
 
         <Accordion.Content>
           <div className="border-t border-divider p-4">
             <div className="flex flex-col gap-y-3">
               {status === 'verified' && lastOperation ? (
-                <>
+                <div className="flex flex-col gap-y-2">
                   <div className="flex items-center justify-between">
-                    <SmallTitleText className="text-text-primary">Last operation via delegated wallet</SmallTitleText>
+                    <SmallTitleText className="text-text-primary">Verified by operation</SmallTitleText>
                     <FootnoteText className="text-text-tertiary">from Subquery</FootnoteText>
                   </div>
-                  <Box direction="column" gap={2}>
-                    <div className="flex items-center gap-x-2">
-                      <Icon name="transferConfirm" size={16} className="text-icon-accent" />
-                      <BodyText className="text-text-primary">{lastOperation.title}</BodyText>
+                  <div className="flex items-center gap-x-2">
+                    <Icon name="checkmarkOutline" size={16} className="text-icon-positive" />
+                    <BodyText className="text-text-primary">{lastOperation.title}</BodyText>
+                  </div>
+                  <div className="flex flex-col gap-y-1.5 rounded bg-input-background p-3">
+                    <div className="flex items-center justify-between gap-x-4">
+                      <FootnoteText className="text-text-tertiary">Tx hash</FootnoteText>
+                      <FootnoteText className="truncate text-text-secondary">
+                        <Hash value={lastOperation.txHash} variant="truncate" />
+                      </FootnoteText>
                     </div>
-                    <div className="flex flex-col gap-y-1.5 rounded bg-input-background p-3">
-                      <div className="flex items-center justify-between gap-x-4">
-                        <FootnoteText className="text-text-tertiary">Tx hash</FootnoteText>
-                        <FootnoteText className="truncate text-text-secondary">
-                          <Hash value={lastOperation.txHash} variant="truncate" />
-                        </FootnoteText>
-                      </div>
-                      <div className="flex items-center justify-between gap-x-4">
-                        <FootnoteText className="text-text-tertiary">Block</FootnoteText>
-                        <FootnoteText className="text-text-secondary">#{lastOperation.blockNumber}</FootnoteText>
-                      </div>
-                      <div className="flex items-center justify-between gap-x-4">
-                        <FootnoteText className="text-text-tertiary">Timestamp</FootnoteText>
-                        <FootnoteText className="text-text-secondary">{lastOperation.timestamp}</FootnoteText>
+                    <div className="flex items-center justify-between gap-x-4">
+                      <FootnoteText className="text-text-tertiary">Block</FootnoteText>
+                      <FootnoteText className="text-text-secondary">#{lastOperation.blockNumber}</FootnoteText>
+                    </div>
+                    <div className="flex items-center justify-between gap-x-4">
+                      <FootnoteText className="text-text-tertiary">Time point</FootnoteText>
+                      <div className="flex items-center gap-x-1">
+                        <FootnoteText className="text-text-secondary">{lastOperation.blockNumber}-1</FootnoteText>
+                        <IconButton name="link" className="text-icon-default" onClick={() => {}} />
                       </div>
                     </div>
-                  </Box>
-                  <Separator />
-                </>
-              ) : null}
-
-              {status === 'verified' ? (
-                <div className="flex items-center gap-x-2">
-                  <Icon name="checkmarkOutline" size={16} className="text-icon-positive" />
-                  <FootnoteText className="text-text-secondary">
-                    Operation signature matches this proxy. Delegation is verified.
-                  </FootnoteText>
+                  </div>
+                </div>
+              ) : status === 'verify_pending' && pendingOperation ? (
+                <div className="flex flex-col gap-y-2">
+                  <div className="flex items-center justify-between">
+                    <SmallTitleText className="text-text-primary">Verification in progress</SmallTitleText>
+                    <FootnoteText className="text-text-tertiary">Multisig operation</FootnoteText>
+                  </div>
+                  <div className="flex items-center gap-x-2">
+                    <Icon name="hourglass" size={16} className="text-icon-accent" />
+                    <BodyText className="text-text-primary">system.remark</BodyText>
+                    <span className="ml-1 inline-flex items-center rounded-[20px] bg-badge-background px-2 py-0.5">
+                      <CaptionText className="text-tab-text-accent uppercase">
+                        {pendingOperation.signed} of {pendingOperation.threshold} signed
+                      </CaptionText>
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-y-1.5 rounded bg-input-background p-3">
+                    <div className="flex items-center justify-between gap-x-4">
+                      <FootnoteText className="text-text-tertiary">Call hash</FootnoteText>
+                      <FootnoteText className="truncate text-text-secondary">
+                        <Hash value={pendingOperation.callHash} variant="truncate" />
+                      </FootnoteText>
+                    </div>
+                    <div className="flex items-center justify-between gap-x-4">
+                      <FootnoteText className="text-text-tertiary">Created</FootnoteText>
+                      <FootnoteText className="text-text-secondary">{pendingOperation.createdAt}</FootnoteText>
+                    </div>
+                  </div>
+                  <div className="mt-1 flex items-center gap-x-2">
+                    <Button size="sm" pallet="secondary" variant="fill">
+                      Open in Operations
+                    </Button>
+                    <FootnoteText className="text-text-tertiary">
+                      Status will switch to verified once the multisig threshold is reached and the transaction is
+                      executed on-chain.
+                    </FootnoteText>
+                  </div>
                 </div>
               ) : status === 'not_verified' ? (
-                <div className="flex items-start justify-between gap-x-4">
-                  <div className="flex min-w-0 items-start gap-x-2">
-                    <Icon name="warn" size={16} className="mt-0.5 text-icon-warning" />
+                <div className="flex items-start gap-x-2">
+                  <Icon name="warn" size={16} className="mt-0.5 shrink-0 text-icon-warning" />
+                  <div className="flex flex-col gap-y-1">
                     <FootnoteText className="text-text-secondary">
                       This delegation has not been verified yet. Verify will submit a{' '}
                       <span className="text-text-primary">system.remark</span> transaction signed from this address
@@ -228,16 +291,16 @@ const DelegationRow = ({
                         </>
                       ) : null}
                     </FootnoteText>
-                  </div>
-                  <div className="shrink-0">
-                    <Button
-                      size="sm"
-                      pallet="primary"
-                      prefixElement={<Icon name="checkmark" size={14} className="text-white" />}
-                      onClick={() => onVerify(delegation.id)}
-                    >
-                      <span className="whitespace-nowrap">Verify via proxy</span>
-                    </Button>
+                    <div className="mt-2 flex items-center gap-x-2">
+                      <Button
+                        size="sm"
+                        pallet="primary"
+                        prefixElement={<Icon name="checkmark" size={14} className="text-white" />}
+                        onClick={() => onVerify(delegation.id)}
+                      >
+                        Verify
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -273,266 +336,101 @@ const DelegationRow = ({
   );
 };
 
-const OTHER_MULTISIGS = [
-  { id: 'ms-a', name: 'Treasury Council 3/5' },
-  { id: 'ms-b', name: 'Ops Multisig 2/4' },
-  { id: 'ms-c', name: 'Engineering 4/7' },
-];
-
-type SignatoryDraft = { id: string; name: string; address: Address };
-
-const INITIAL_SIGNATORIES: SignatoryDraft[] = [
-  { id: 's1', name: 'Alice', address: MOCK_ADDRESSES.alice },
-  { id: 's2', name: 'Bob', address: MOCK_ADDRESSES.bob },
-  { id: 's3', name: 'Charlie', address: MOCK_ADDRESSES.charlie },
-];
-
-const EditDelegationModal = ({
-  delegation,
-  isOpen,
-  onClose,
-  onRemove,
-}: {
-  delegation: Delegation | null;
-  isOpen: boolean;
-  onClose: () => void;
-  onRemove: (id: string) => void;
-}) => {
-  const [signatories, setSignatories] = useState(INITIAL_SIGNATORIES);
-  const [threshold, setThreshold] = useState('2');
-  const [replaceWith, setReplaceWith] = useState('');
-
-  if (!delegation) return null;
-
-  const isMultisig = delegation.delegatorWalletType === WalletType.MULTISIG;
-
-  return (
-    <Modal isOpen={isOpen} size="md" onToggle={(open) => !open && onClose()}>
-      <Modal.Title close>Edit delegation</Modal.Title>
-      <Modal.Content>
-        <div className="flex flex-col gap-y-5 px-5 py-4">
-          {/* Header summary */}
-          <div className="flex items-center gap-x-3 rounded bg-block-background-default p-3">
-            {delegation.delegatorWalletType ? (
-              <WalletIconWithBadge type={delegation.delegatorWalletType} badgeColor="bg-icon-accent" />
-            ) : (
-              <Identicon address={delegation.delegatorAddress} size={32} background={false} />
-            )}
-            <div className="flex min-w-0 flex-col">
-              <BodyText className="truncate text-text-primary">
-                {delegation.delegatorWalletName || 'Unnamed wallet'}
-              </BodyText>
-              <HelpText className="truncate text-text-tertiary">
-                <Hash value={delegation.delegatorAddress} variant="truncate" />
-              </HelpText>
-            </div>
-          </div>
-
-          {isMultisig ? (
-            <>
-              {/* Signatories editor */}
-              <div className="flex flex-col gap-y-2">
-                <SmallTitleText className="text-text-primary">Signatories</SmallTitleText>
-                <FootnoteText className="text-text-tertiary">
-                  Add or remove signatories of the delegated multisig wallet.
-                </FootnoteText>
-                <div className="flex flex-col gap-y-2">
-                  {signatories.map((s) => (
-                    <div
-                      key={s.id}
-                      className="flex items-center justify-between gap-x-2 rounded bg-input-background px-3 py-2"
-                    >
-                      <div className="flex min-w-0 items-center gap-x-2">
-                        <Identicon address={s.address} size={20} background={false} />
-                        <BodyText className="truncate text-text-primary">{s.name}</BodyText>
-                        <HelpText className="truncate text-text-tertiary">
-                          <Hash value={s.address} variant="truncate" />
-                        </HelpText>
-                      </div>
-                      <IconButton
-                        name="delete"
-                        className="text-icon-default"
-                        onClick={() => setSignatories((prev) => prev.filter((p) => p.id !== s.id))}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div>
-                  <Button
-                    size="sm"
-                    pallet="secondary"
-                    variant="fill"
-                    prefixElement={<Icon name="add" size={14} className="text-icon-accent" />}
-                    onClick={() =>
-                      setSignatories((prev) => [
-                        ...prev,
-                        {
-                          id: `s${prev.length + 1}`,
-                          name: `Signatory ${prev.length + 1}`,
-                          address: MOCK_ADDRESSES.eve,
-                        },
-                      ])
-                    }
-                  >
-                    Add signatory
-                  </Button>
-                </div>
-              </div>
-
-              {/* Threshold */}
-              <div className="flex flex-col gap-y-2">
-                <SmallTitleText className="text-text-primary">Approval threshold</SmallTitleText>
-                <div className="flex items-center gap-x-2">
-                  <div className="w-[120px]">
-                    <Input value={threshold} placeholder="2" onChange={setThreshold} />
-                  </div>
-                  <FootnoteText className="text-text-tertiary">of {signatories.length} signatories</FootnoteText>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Replace multisig */}
-              <div className="flex flex-col gap-y-2">
-                <SmallTitleText className="text-text-primary">Replace with another multisig</SmallTitleText>
-                <FootnoteText className="text-text-tertiary">
-                  Detach this delegation and bind it to a different multisig wallet from your list.
-                </FootnoteText>
-                <Select placeholder="Select multisig wallet" value={replaceWith} onChange={setReplaceWith}>
-                  {OTHER_MULTISIGS.map((m) => (
-                    <Select.Item key={m.id} value={m.id}>
-                      {m.name}
-                    </Select.Item>
-                  ))}
-                </Select>
-              </div>
-            </>
-          ) : (
-            <FootnoteText className="text-text-secondary">
-              This delegation is bound to a regular wallet. Editing is limited to removing the delegation.
-            </FootnoteText>
-          )}
-
-          <Separator />
-
-          {/* Danger zone */}
-          <div className="flex flex-col gap-y-2 rounded bg-badge-background p-3">
-            <BodyText className="text-text-primary">Remove delegation</BodyText>
-            <FootnoteText className="text-text-secondary">
-              The link between this proxy and the delegator wallet will be removed locally. The on-chain proxy itself is
-              not affected.
-            </FootnoteText>
-            <div>
-              <Button
-                size="sm"
-                pallet="error"
-                variant="fill"
-                prefixElement={<Icon name="delete" size={14} className="text-white" />}
-                onClick={() => {
-                  onRemove(delegation.id);
-                  onClose();
-                }}
-              >
-                Remove delegation
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Modal.Content>
-      <Modal.Footer>
-        <Button pallet="secondary" variant="fill" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button onClick={onClose}>Save changes</Button>
-      </Modal.Footer>
-    </Modal>
-  );
-};
-
 const ProxyWalletDetailsPrototype = () => {
-  const [tab, setTab] = useState('delegations');
   const [delegations, setDelegations] = useState(INITIAL_DELEGATIONS);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [newDelegator, setNewDelegator] = useState('');
   const [newChain, setNewChain] = useState('');
   const [newProxyType, setNewProxyType] = useState('');
 
   const handleVerify = (id: string) => {
-    setDelegations((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'verified' } : d)));
+    setDelegations((prev) =>
+      prev.map((d) => {
+        if (d.id !== id) return d;
+        if (d.delegatorWalletType === WalletType.MULTISIG) {
+          return {
+            ...d,
+            status: 'verify_pending',
+            pendingOperation: {
+              callHash: '0x9b8a7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b',
+              signed: 1,
+              threshold: 2,
+              createdAt: 'Just now',
+            },
+          };
+        }
+        return { ...d, status: 'verified' };
+      }),
+    );
   };
 
   const handleRemove = (id: string) => {
     setDelegations((prev) => prev.filter((d) => d.id !== id));
   };
 
-  const editingDelegation = delegations.find((d) => d.id === editingId) ?? null;
-
-  const proxyAddress = MOCK_ADDRESSES.dave;
   const verifiedCount = delegations.filter((d) => d.status === 'verified').length;
 
   return (
-    <div className="flex min-h-[720px] w-[880px] flex-col bg-main-app-background">
-      {/* Modal header */}
-      <div className="flex items-start justify-between border-b border-container-border bg-top-nav-bar-background px-5 pt-5 pb-4">
-        <div className="flex items-center gap-x-3">
-          <WalletIconWithBadge type={WalletType.PROXIED} badgeColor="bg-icon-accent" />
-          <div className="flex flex-col">
-            <TitleText className="text-text-primary">My Proxy Account</TitleText>
-            <div className="mt-0.5 inline-flex items-center gap-x-1">
-              <Identicon address={proxyAddress} size={14} background={false} />
-              <HelpText className="text-text-tertiary">
-                <Hash value={proxyAddress} variant="truncate" />
-              </HelpText>
-            </div>
+    <div className="flex min-h-[720px] w-[920px] flex-col bg-main-app-background">
+      {/* Modal title bar */}
+      <div className="flex items-center justify-between px-5 pt-5 pb-3">
+        <HeaderTitleText className="text-text-primary">Wallet details</HeaderTitleText>
+        <IconButton name="close" className="text-icon-default" onClick={() => {}} />
+      </div>
+
+      {/* Wallet identity row */}
+      <div className="flex items-center gap-x-3 px-5 pt-1 pb-4">
+        <WalletIconWithBadge type={WalletType.PROXIED} badgeColor="bg-icon-accent" />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex min-w-0 items-center gap-x-2">
+            <SmallTitleText className="truncate text-text-primary">My Proxy Account</SmallTitleText>
+            <IconButton name="rename" className="text-icon-default" onClick={() => {}} />
+            <FootnoteText className="ml-1 text-text-tertiary">$0.006</FootnoteText>
+          </div>
+          <div className="mt-1 inline-flex items-center gap-x-1.5">
+            <Identicon address={MOCK_ADDRESSES.dave} size={16} background={false} />
+            <FootnoteText className="text-text-secondary">
+              <Hash value={MOCK_ADDRESSES.dave} variant="truncate" />
+            </FootnoteText>
+            <IconButton name="copy" className="text-icon-default" onClick={() => {}} />
           </div>
         </div>
-        <div className="flex items-center gap-x-1">
-          <IconButton name="rename" className="text-icon-default" onClick={() => {}} />
-          <IconButton name="close" className="text-icon-default" onClick={() => {}} />
+        <Button pallet="secondary" variant="fill" size="sm">
+          Open overview
+        </Button>
+      </div>
+
+      {/* Action buttons (circular) */}
+      <div className="flex items-start justify-center gap-x-12 border-t border-divider px-5 pt-5 pb-5">
+        <button type="button" className="flex flex-col items-center gap-y-1.5" onClick={() => setCreateOpen(true)}>
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-block-background-default">
+            <Icon name="addDelegationConfirm" size={20} className="text-icon-accent" />
+          </span>
+          <FootnoteText className="text-text-secondary">Delegate</FootnoteText>
+        </button>
+        <button type="button" className="flex flex-col items-center gap-y-1.5">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-block-background-default">
+            <Icon name="createPureProxy" size={20} className="text-icon-accent" />
+          </span>
+          <FootnoteText className="text-text-secondary">Create pure proxy</FootnoteText>
+        </button>
+      </div>
+
+      {/* Combined accounts + delegations */}
+      <div className="flex flex-col gap-y-5 border-t border-divider px-5 py-4">
+        {/* Delegated wallets section */}
+        <div className="flex flex-col gap-y-2">
+          <div className="flex items-center justify-between">
+            <FootnoteText className="text-text-tertiary uppercase">Delegated wallets</FootnoteText>
+            <StatusPill variant="accent" label={`${verifiedCount}/${delegations.length} verified`} />
+          </div>
+
+          <div className="flex flex-col gap-y-2">
+            {delegations.map((d) => (
+              <DelegationRow key={d.id} delegation={d} onVerify={handleVerify} onRemove={handleRemove} />
+            ))}
+          </div>
         </div>
-      </div>
-
-      {/* Proxy info banner */}
-      <div className="mx-5 mt-4 flex items-center gap-x-2 rounded bg-block-background-default px-3 py-2">
-        <Icon name="proxied" size={16} className="text-icon-accent" />
-        <FootnoteText className="text-text-secondary">
-          This proxy controls {delegations.length} delegated {delegations.length === 1 ? 'wallet' : 'wallets'} —{' '}
-          {verifiedCount} verified
-        </FootnoteText>
-      </div>
-
-      {/* Tabs */}
-      <div className="px-5 pt-4">
-        <Tabs value={tab} onChange={setTab}>
-          <Tabs.List>
-            <Tabs.Trigger value="accounts">Accounts</Tabs.Trigger>
-            <Tabs.Trigger value="delegations">Delegations</Tabs.Trigger>
-          </Tabs.List>
-
-          <Tabs.Content value="accounts">
-            <div className="py-6">
-              <FootnoteText className="text-text-tertiary">Accounts list (not in scope of this prototype)</FootnoteText>
-            </div>
-          </Tabs.Content>
-
-          <Tabs.Content value="delegations">
-            <div className="flex flex-col gap-y-3 py-4">
-              <div className="flex items-center justify-between">
-                <HeadlineText className="text-text-primary">Delegated wallets</HeadlineText>
-                <StatusPill variant="accent" label={`${verifiedCount}/${delegations.length} verified`} />
-              </div>
-
-              <div className="flex flex-col gap-y-2">
-                {delegations.map((d) => (
-                  <DelegationRow key={d.id} delegation={d} onVerify={handleVerify} onEdit={setEditingId} />
-                ))}
-              </div>
-
-              <CreateNewButton label="Delegate" onClick={() => setCreateOpen(true)} />
-            </div>
-          </Tabs.Content>
-        </Tabs>
       </div>
 
       <Modal isOpen={createOpen} size="md" onToggle={setCreateOpen}>
@@ -586,13 +484,6 @@ const ProxyWalletDetailsPrototype = () => {
           <Button onClick={() => setCreateOpen(false)}>Continue</Button>
         </Modal.Footer>
       </Modal>
-
-      <EditDelegationModal
-        delegation={editingDelegation}
-        isOpen={editingId !== null}
-        onClose={() => setEditingId(null)}
-        onRemove={handleRemove}
-      />
     </div>
   );
 };

@@ -601,25 +601,19 @@ const DraftRow = ({
           )}
           <div className="flex flex-1 items-center justify-end gap-x-1">
             {!hasCallData ? (
-              readOnly ? (
-                <FootnoteText className="text-text-tertiary italic">Waiting for call data</FootnoteText>
-              ) : (
-                <Button
-                  variant="fill"
-                  pallet="secondary"
-                  size="sm"
-                  prefixElement={<Icon name="add" size={14} className="text-icon-accent" />}
-                  onClick={onAddCallData}
-                >
-                  Add call data
-                </Button>
-              )
+              <Button
+                variant="fill"
+                pallet="secondary"
+                size="sm"
+                prefixElement={<Icon name="add" size={14} className="text-icon-accent" />}
+                onClick={onAddCallData}
+              >
+                Add call data
+              </Button>
             ) : canSign ? (
               <Button variant="fill" size="sm" onClick={onSubmit}>
                 Submit
               </Button>
-            ) : readOnly ? (
-              <FootnoteText className="text-text-tertiary italic">No local signer</FootnoteText>
             ) : (
               <Button
                 variant="fill"
@@ -1147,10 +1141,7 @@ const MultisigOperationsPrototype = ({ role = 'owner' }: { role?: 'owner' | 'sub
     <div className="flex min-h-[600px] w-full flex-col bg-main-app-background">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-container-border bg-top-nav-bar-background px-6 pt-4 pb-[15px]">
-        <div className="flex items-center gap-x-3">
-          <TitleText className="py-[3px] text-text-primary">Multisig Operations</TitleText>
-          {readOnly ? <StatusPill label="Submitter — read only" variant="default" /> : null}
-        </div>
+        <TitleText className="py-[3px] text-text-primary">Multisig Operations</TitleText>
         <div className="w-[230px]">
           <SearchInput value={search} placeholder="Search" onChange={setSearch} />
         </div>
