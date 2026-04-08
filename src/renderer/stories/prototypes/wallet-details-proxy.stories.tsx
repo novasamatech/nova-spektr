@@ -17,9 +17,9 @@ import {
   TitleText,
 } from '@/shared/ui';
 import { Hash, Identicon } from '@/shared/ui-entities';
-import { Accordion, Box, Tabs } from '@/shared/ui-kit';
+import { Accordion, Box, Input, Modal, Select, Tabs } from '@/shared/ui-kit';
 
-import { InlineChainTitle, MOCK_ADDRESSES, StatusPill, WalletIconWithBadge } from './_shared';
+import { CreateNewButton, InlineChainTitle, MOCK_ADDRESSES, StatusPill, WalletIconWithBadge } from './_shared';
 
 type VerificationStatus = 'verified' | 'not_verified' | 'not_verified_no_wallet';
 
@@ -105,7 +105,15 @@ const StatusBadge = ({ status }: { status: VerificationStatus }) => {
   );
 };
 
-const DelegationRow = ({ delegation, onVerify }: { delegation: Delegation; onVerify: (id: string) => void }) => {
+const DelegationRow = ({
+  delegation,
+  onVerify,
+  onEdit,
+}: {
+  delegation: Delegation;
+  onVerify: (id: string) => void;
+  onEdit: (id: string) => void;
+}) => {
   const { status, delegatorWalletType, delegatorWalletName, delegatorAddress, proxyType, chainName, lastOperation } =
     delegation;
 
@@ -147,8 +155,16 @@ const DelegationRow = ({ delegation, onVerify }: { delegation: Delegation; onVer
               </span>
             </div>
 
-            <div className="flex flex-1 items-center justify-end">
+            <div className="flex flex-1 items-center justify-end gap-x-2">
               <StatusBadge status={status} />
+              <IconButton
+                name="edit"
+                className="text-icon-default"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onEdit(delegation.id);
+                }}
+              />
             </div>
           </div>
         </Accordion.Trigger>
@@ -257,13 +273,200 @@ const DelegationRow = ({ delegation, onVerify }: { delegation: Delegation; onVer
   );
 };
 
+const OTHER_MULTISIGS = [
+  { id: 'ms-a', name: 'Treasury Council 3/5' },
+  { id: 'ms-b', name: 'Ops Multisig 2/4' },
+  { id: 'ms-c', name: 'Engineering 4/7' },
+];
+
+type SignatoryDraft = { id: string; name: string; address: Address };
+
+const INITIAL_SIGNATORIES: SignatoryDraft[] = [
+  { id: 's1', name: 'Alice', address: MOCK_ADDRESSES.alice },
+  { id: 's2', name: 'Bob', address: MOCK_ADDRESSES.bob },
+  { id: 's3', name: 'Charlie', address: MOCK_ADDRESSES.charlie },
+];
+
+const EditDelegationModal = ({
+  delegation,
+  isOpen,
+  onClose,
+  onRemove,
+}: {
+  delegation: Delegation | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onRemove: (id: string) => void;
+}) => {
+  const [signatories, setSignatories] = useState(INITIAL_SIGNATORIES);
+  const [threshold, setThreshold] = useState('2');
+  const [replaceWith, setReplaceWith] = useState('');
+
+  if (!delegation) return null;
+
+  const isMultisig = delegation.delegatorWalletType === WalletType.MULTISIG;
+
+  return (
+    <Modal isOpen={isOpen} size="md" onToggle={(open) => !open && onClose()}>
+      <Modal.Title close>Edit delegation</Modal.Title>
+      <Modal.Content>
+        <div className="flex flex-col gap-y-5 px-5 py-4">
+          {/* Header summary */}
+          <div className="flex items-center gap-x-3 rounded bg-block-background-default p-3">
+            {delegation.delegatorWalletType ? (
+              <WalletIconWithBadge type={delegation.delegatorWalletType} badgeColor="bg-icon-accent" />
+            ) : (
+              <Identicon address={delegation.delegatorAddress} size={32} background={false} />
+            )}
+            <div className="flex min-w-0 flex-col">
+              <BodyText className="truncate text-text-primary">
+                {delegation.delegatorWalletName || 'Unnamed wallet'}
+              </BodyText>
+              <HelpText className="truncate text-text-tertiary">
+                <Hash value={delegation.delegatorAddress} variant="truncate" />
+              </HelpText>
+            </div>
+          </div>
+
+          {isMultisig ? (
+            <>
+              {/* Signatories editor */}
+              <div className="flex flex-col gap-y-2">
+                <SmallTitleText className="text-text-primary">Signatories</SmallTitleText>
+                <FootnoteText className="text-text-tertiary">
+                  Add or remove signatories of the delegated multisig wallet.
+                </FootnoteText>
+                <div className="flex flex-col gap-y-2">
+                  {signatories.map((s) => (
+                    <div
+                      key={s.id}
+                      className="flex items-center justify-between gap-x-2 rounded bg-input-background px-3 py-2"
+                    >
+                      <div className="flex min-w-0 items-center gap-x-2">
+                        <Identicon address={s.address} size={20} background={false} />
+                        <BodyText className="truncate text-text-primary">{s.name}</BodyText>
+                        <HelpText className="truncate text-text-tertiary">
+                          <Hash value={s.address} variant="truncate" />
+                        </HelpText>
+                      </div>
+                      <IconButton
+                        name="delete"
+                        className="text-icon-default"
+                        onClick={() => setSignatories((prev) => prev.filter((p) => p.id !== s.id))}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <Button
+                    size="sm"
+                    pallet="secondary"
+                    variant="fill"
+                    prefixElement={<Icon name="add" size={14} className="text-icon-accent" />}
+                    onClick={() =>
+                      setSignatories((prev) => [
+                        ...prev,
+                        {
+                          id: `s${prev.length + 1}`,
+                          name: `Signatory ${prev.length + 1}`,
+                          address: MOCK_ADDRESSES.eve,
+                        },
+                      ])
+                    }
+                  >
+                    Add signatory
+                  </Button>
+                </div>
+              </div>
+
+              {/* Threshold */}
+              <div className="flex flex-col gap-y-2">
+                <SmallTitleText className="text-text-primary">Approval threshold</SmallTitleText>
+                <div className="flex items-center gap-x-2">
+                  <div className="w-[120px]">
+                    <Input value={threshold} placeholder="2" onChange={setThreshold} />
+                  </div>
+                  <FootnoteText className="text-text-tertiary">of {signatories.length} signatories</FootnoteText>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Replace multisig */}
+              <div className="flex flex-col gap-y-2">
+                <SmallTitleText className="text-text-primary">Replace with another multisig</SmallTitleText>
+                <FootnoteText className="text-text-tertiary">
+                  Detach this delegation and bind it to a different multisig wallet from your list.
+                </FootnoteText>
+                <Select placeholder="Select multisig wallet" value={replaceWith} onChange={setReplaceWith}>
+                  {OTHER_MULTISIGS.map((m) => (
+                    <Select.Item key={m.id} value={m.id}>
+                      {m.name}
+                    </Select.Item>
+                  ))}
+                </Select>
+              </div>
+            </>
+          ) : (
+            <FootnoteText className="text-text-secondary">
+              This delegation is bound to a regular wallet. Editing is limited to removing the delegation.
+            </FootnoteText>
+          )}
+
+          <Separator />
+
+          {/* Danger zone */}
+          <div className="flex flex-col gap-y-2 rounded bg-badge-background p-3">
+            <BodyText className="text-text-primary">Remove delegation</BodyText>
+            <FootnoteText className="text-text-secondary">
+              The link between this proxy and the delegator wallet will be removed locally. The on-chain proxy itself is
+              not affected.
+            </FootnoteText>
+            <div>
+              <Button
+                size="sm"
+                pallet="error"
+                variant="fill"
+                prefixElement={<Icon name="delete" size={14} className="text-white" />}
+                onClick={() => {
+                  onRemove(delegation.id);
+                  onClose();
+                }}
+              >
+                Remove delegation
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal.Content>
+      <Modal.Footer>
+        <Button pallet="secondary" variant="fill" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button onClick={onClose}>Save changes</Button>
+      </Modal.Footer>
+    </Modal>
+  );
+};
+
 const ProxyWalletDetailsPrototype = () => {
   const [tab, setTab] = useState('delegations');
   const [delegations, setDelegations] = useState(INITIAL_DELEGATIONS);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newDelegator, setNewDelegator] = useState('');
+  const [newChain, setNewChain] = useState('');
+  const [newProxyType, setNewProxyType] = useState('');
 
   const handleVerify = (id: string) => {
     setDelegations((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'verified' } : d)));
   };
+
+  const handleRemove = (id: string) => {
+    setDelegations((prev) => prev.filter((d) => d.id !== id));
+  };
+
+  const editingDelegation = delegations.find((d) => d.id === editingId) ?? null;
 
   const proxyAddress = MOCK_ADDRESSES.dave;
   const verifiedCount = delegations.filter((d) => d.status === 'verified').length;
@@ -322,13 +525,74 @@ const ProxyWalletDetailsPrototype = () => {
 
               <div className="flex flex-col gap-y-2">
                 {delegations.map((d) => (
-                  <DelegationRow key={d.id} delegation={d} onVerify={handleVerify} />
+                  <DelegationRow key={d.id} delegation={d} onVerify={handleVerify} onEdit={setEditingId} />
                 ))}
               </div>
+
+              <CreateNewButton label="Delegate" onClick={() => setCreateOpen(true)} />
             </div>
           </Tabs.Content>
         </Tabs>
       </div>
+
+      <Modal isOpen={createOpen} size="md" onToggle={setCreateOpen}>
+        <Modal.Title close>Create proxy delegation</Modal.Title>
+        <Modal.Content>
+          <div className="flex flex-col gap-y-5 px-5 py-4">
+            <FootnoteText className="text-text-secondary">
+              Bind another wallet as a delegator for this proxy. This will create a new on-chain proxy relation.
+            </FootnoteText>
+
+            <div className="flex flex-col gap-y-2">
+              <SmallTitleText className="text-text-primary">Delegator wallet</SmallTitleText>
+              <Select placeholder="Select wallet" value={newDelegator} onChange={setNewDelegator}>
+                <Select.Item value="alice">Alice Main Vault</Select.Item>
+                <Select.Item value="bob">Bob Multisig 2/3</Select.Item>
+                <Select.Item value="treasury">Treasury Council 3/5</Select.Item>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-y-2">
+              <SmallTitleText className="text-text-primary">Network</SmallTitleText>
+              <Select placeholder="Select network" value={newChain} onChange={setNewChain}>
+                <Select.Item value="polkadot">Polkadot</Select.Item>
+                <Select.Item value="kusama">Kusama</Select.Item>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-y-2">
+              <SmallTitleText className="text-text-primary">Proxy type</SmallTitleText>
+              <Select placeholder="Select proxy type" value={newProxyType} onChange={setNewProxyType}>
+                <Select.Item value="Any">Any</Select.Item>
+                <Select.Item value="NonTransfer">Non-transfer</Select.Item>
+                <Select.Item value="Governance">Governance</Select.Item>
+                <Select.Item value="Staking">Staking</Select.Item>
+              </Select>
+            </div>
+
+            <div className="flex items-start gap-x-2 rounded bg-block-background-default p-3">
+              <Icon name="info" size={16} className="mt-0.5 shrink-0 text-icon-accent" />
+              <FootnoteText className="text-text-secondary">
+                A proxy deposit will be reserved on the delegator account. You can review the fee and deposit on the
+                next step.
+              </FootnoteText>
+            </div>
+          </div>
+        </Modal.Content>
+        <Modal.Footer>
+          <Button pallet="secondary" variant="fill" onClick={() => setCreateOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={() => setCreateOpen(false)}>Continue</Button>
+        </Modal.Footer>
+      </Modal>
+
+      <EditDelegationModal
+        delegation={editingDelegation}
+        isOpen={editingId !== null}
+        onClose={() => setEditingId(null)}
+        onRemove={handleRemove}
+      />
     </div>
   );
 };

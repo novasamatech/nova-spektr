@@ -61,6 +61,8 @@ type MockOperation = {
   }[];
   canReject?: boolean;
   canApprove?: boolean;
+  createdFromDraft?: boolean;
+  description?: string;
 };
 
 type Draft = {
@@ -68,12 +70,13 @@ type Draft = {
   multisigId: string;
   multisigName: string;
   description: string;
-  callData: string;
+  callData: string; // empty string = call data not added yet
   txType: string;
   chainName: string;
   amount: string;
   dest: string;
   createdAt: string;
+  canSign?: boolean; // default true; false = no local signer wallet
 };
 
 const OPERATIONS: MockOperation[] = [
@@ -237,6 +240,19 @@ const INITIAL_DRAFTS: Draft[] = [
     amount: '',
     dest: '5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MRQg3gKrUYgw6J9i',
     createdAt: '2 hours ago',
+    canSign: false,
+  },
+  {
+    id: 'draft-3',
+    multisigId: '1',
+    multisigName: 'Treasury Multisig',
+    description: 'Quarterly payout — call data pending review',
+    callData: '',
+    txType: 'Pending — call data not added',
+    chainName: 'Polkadot',
+    amount: '',
+    dest: '',
+    createdAt: '5 min ago',
   },
 ];
 
@@ -311,7 +327,15 @@ const OperationRow = ({ op }: { op: MockOperation }) => (
               <Icon name={op.iconName as 'transferMst'} size={20} className="text-white" />
             </div>
             <div className="flex min-w-0 flex-1 flex-col">
-              <FootnoteText className="truncate font-medium text-text-primary">{op.txType}</FootnoteText>
+              <div className="flex min-w-0 items-center gap-x-2">
+                <FootnoteText className="truncate font-medium text-text-primary">{op.txType}</FootnoteText>
+                {op.createdFromDraft ? (
+                  <span className="inline-flex shrink-0 items-center gap-x-1 rounded-[20px] bg-badge-background px-1.5 py-0.5">
+                    <Icon name="document" size={10} className="text-icon-accent" />
+                    <CaptionText className="text-text-secondary uppercase">From draft</CaptionText>
+                  </span>
+                ) : null}
+              </div>
               <HelpText className="truncate text-text-tertiary">{op.chainName}</HelpText>
             </div>
             <div className="flex w-[240px] shrink-0 items-center gap-x-2">
@@ -394,6 +418,15 @@ const OperationRow = ({ op }: { op: MockOperation }) => (
                 <DetailRow label="Date & Time" className="text-text-secondary">
                   <FootnoteText className="text-text-secondary">{op.date}</FootnoteText>
                 </DetailRow>
+                {op.description ? (
+                  <div className="flex flex-col gap-y-1 rounded bg-input-background p-2">
+                    <div className="flex items-center gap-x-1.5">
+                      <Icon name="document" size={12} className="text-icon-accent" />
+                      <HelpText className="text-text-tertiary uppercase">Description (from draft)</HelpText>
+                    </div>
+                    <FootnoteText className="text-text-secondary">{op.description}</FootnoteText>
+                  </div>
+                ) : null}
               </div>
             </div>
 
@@ -513,68 +546,119 @@ const OperationRow = ({ op }: { op: MockOperation }) => (
 
 const DraftRow = ({
   draft,
+  readOnly = false,
   onEdit,
+  onAddCallData,
+  onOverview,
   onDelete,
   onSubmit,
 }: {
   draft: Draft;
+  readOnly?: boolean;
   onEdit: () => void;
+  onAddCallData: () => void;
+  onOverview: () => void;
   onDelete: () => void;
   onSubmit: () => void;
-}) => (
-  <div className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow">
-    <div className="flex h-[52px] w-full items-center px-4 py-2">
-      {/* Icon + description */}
-      <div className="flex min-w-0 flex-1 items-center gap-x-3">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-icon-accent/15">
-          <Icon name="document" size={16} className="text-icon-accent" />
+}) => {
+  const hasCallData = Boolean(draft.callData);
+  const canSign = draft.canSign !== false;
+
+  return (
+    <div className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow">
+      <div className="flex h-[52px] w-full items-center px-4 py-2">
+        {/* Icon + description */}
+        <div className="flex min-w-0 flex-1 items-center gap-x-3">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-icon-accent/15">
+            <Icon name="document" size={16} className="text-icon-accent" />
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <FootnoteText className="truncate font-medium text-text-primary">{draft.description}</FootnoteText>
+            <HelpText className="truncate text-text-tertiary">
+              {draft.multisigName} &middot; {draft.txType}
+              {draft.amount ? ` \u00b7 ${draft.amount}` : ''}
+            </HelpText>
+          </div>
         </div>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <FootnoteText className="truncate font-medium text-text-primary">{draft.description}</FootnoteText>
-          <HelpText className="truncate text-text-tertiary">
-            {draft.multisigName} &middot; {draft.txType}
-            {draft.amount ? ` &middot; ${draft.amount}` : ''}
-          </HelpText>
+
+        {/* Chain + time */}
+        <div className="flex w-[120px] shrink-0 flex-col items-end">
+          <FootnoteText className="text-text-primary">{draft.chainName}</FootnoteText>
+          <HelpText className="text-text-tertiary">{draft.createdAt}</HelpText>
         </div>
-      </div>
 
-      {/* Chain + time */}
-      <div className="flex w-[120px] shrink-0 flex-col items-end">
-        <FootnoteText className="text-text-primary">{draft.chainName}</FootnoteText>
-        <HelpText className="text-text-tertiary">{draft.createdAt}</HelpText>
-      </div>
+        {/* Draft badge */}
+        <div className="mx-3 flex w-[80px] shrink-0 items-center justify-end">
+          <StatusPill label="Draft" variant="accent" />
+        </div>
 
-      {/* Draft badge */}
-      <div className="mx-3 flex w-[80px] shrink-0 items-center justify-end">
-        <StatusPill label="Draft" variant="accent" />
-      </div>
-
-      {/* Actions */}
-      <div className="flex shrink-0 items-center gap-x-1" onClick={(e) => e.stopPropagation()}>
-        <Button variant="text" size="sm" onClick={onEdit}>
-          Edit
-        </Button>
-        <Button variant="fill" size="sm" onClick={onSubmit}>
-          Submit
-        </Button>
-        <IconButton name="delete" className="text-icon-default hover:text-text-negative" onClick={onDelete} />
+        {/* Actions */}
+        <div className="flex w-[300px] shrink-0 items-center justify-end gap-x-1" onClick={(e) => e.stopPropagation()}>
+          {!readOnly && (
+            <Button variant="text" size="sm" onClick={onEdit}>
+              Edit
+            </Button>
+          )}
+          <div className="flex flex-1 items-center justify-end gap-x-1">
+            {!hasCallData ? (
+              readOnly ? (
+                <FootnoteText className="text-text-tertiary italic">Waiting for call data</FootnoteText>
+              ) : (
+                <Button
+                  variant="fill"
+                  pallet="secondary"
+                  size="sm"
+                  prefixElement={<Icon name="add" size={14} className="text-icon-accent" />}
+                  onClick={onAddCallData}
+                >
+                  Add call data
+                </Button>
+              )
+            ) : canSign ? (
+              <Button variant="fill" size="sm" onClick={onSubmit}>
+                Submit
+              </Button>
+            ) : readOnly ? (
+              <FootnoteText className="text-text-tertiary italic">No local signer</FootnoteText>
+            ) : (
+              <Button
+                variant="fill"
+                pallet="secondary"
+                size="sm"
+                prefixElement={<Icon name="add" size={14} className="text-icon-accent" />}
+                onClick={onOverview}
+              >
+                Add account
+              </Button>
+            )}
+          </div>
+          {!readOnly && (
+            <IconButton name="delete" className="text-icon-default hover:text-text-negative" onClick={onDelete} />
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ─── Drafts section (collapsible) ───────────────────────────────────────────
 
 const DraftsSection = ({
   drafts,
+  readOnly = false,
   onCreateDraft,
   onEditDraft,
+  onAddCallDataDraft,
+  onOverviewDraft,
   onDeleteDraft,
   onSubmitDraft,
 }: {
   drafts: Draft[];
+  readOnly?: boolean;
   onCreateDraft: () => void;
   onEditDraft: (draft: Draft) => void;
+  onAddCallDataDraft: (draft: Draft) => void;
+  onOverviewDraft: (draft: Draft) => void;
   onDeleteDraft: (id: string) => void;
   onSubmitDraft: (id: string) => void;
 }) => (
@@ -592,13 +676,16 @@ const DraftsSection = ({
             <DraftRow
               key={draft.id}
               draft={draft}
+              readOnly={readOnly}
               onEdit={() => onEditDraft(draft)}
+              onAddCallData={() => onAddCallDataDraft(draft)}
+              onOverview={() => onOverviewDraft(draft)}
               onDelete={() => onDeleteDraft(draft.id)}
               onSubmit={() => onSubmitDraft(draft.id)}
             />
           ))}
 
-          <CreateNewButton label="Create new draft" onClick={onCreateDraft} />
+          {!readOnly && <CreateNewButton label="Create new draft" onClick={onCreateDraft} />}
         </div>
       </Accordion.Content>
     </Accordion>
@@ -771,13 +858,30 @@ const StepCallData = ({
       </Surface>
     )}
 
+    {!callData && (
+      <div className="flex items-start gap-x-2 rounded bg-block-background-default p-3">
+        <Icon name="info" size={16} className="mt-0.5 shrink-0 text-icon-accent" />
+        <FootnoteText className="text-text-secondary">
+          You can skip this step and add the call data later. The draft will stay in the list with a{' '}
+          <span className="text-text-primary">No call data</span> marker until it is added.
+        </FootnoteText>
+      </div>
+    )}
+
     <div className="flex justify-between pt-2">
       <Button variant="text" onClick={onBack}>
         Back
       </Button>
-      <Button disabled={!isParsed} onClick={onNext}>
-        Continue
-      </Button>
+      <div className="flex items-center gap-x-2">
+        {!callData && (
+          <Button variant="text" onClick={onNext}>
+            Skip for now
+          </Button>
+        )}
+        <Button disabled={Boolean(callData) && !isParsed} onClick={onNext}>
+          Continue
+        </Button>
+      </div>
     </div>
   </Box>
 );
@@ -861,10 +965,13 @@ const StepDescription = ({
 
 // ─── Main prototype ─────────────────────────────────────────────────────────
 
-const MultisigOperationsPrototype = () => {
+const MultisigOperationsPrototype = ({ role = 'owner' }: { role?: 'owner' | 'submitter' }) => {
+  const readOnly = role === 'submitter';
   const [tab, setTab] = useState('pending');
   const [search, setSearch] = useState('');
   const [drafts, setDrafts] = useState<Draft[]>(INITIAL_DRAFTS);
+  const [operations, setOperations] = useState<MockOperation[]>(OPERATIONS);
+  const [overviewDraftId, setOverviewDraftId] = useState<string | null>(null);
 
   // Modal state
   const [isModalOpen, setModalOpen] = useState(false);
@@ -906,6 +1013,8 @@ const MultisigOperationsPrototype = () => {
   };
 
   const handleSave = () => {
+    const hasCallData = Boolean(callData);
+
     if (modalMode === 'edit' && editingDraftId) {
       setDrafts((prev) =>
         prev.map((d) =>
@@ -913,6 +1022,10 @@ const MultisigOperationsPrototype = () => {
             ? {
                 ...d,
                 description,
+                callData,
+                txType: hasCallData ? `${PARSED_CALL_DATA.section}.${PARSED_CALL_DATA.method}` : d.txType,
+                amount: hasCallData ? PARSED_CALL_DATA.value : d.amount,
+                dest: hasCallData ? PARSED_CALL_DATA.dest : d.dest,
                 multisigId: selectedMultisig,
                 multisigName: MULTISIG_WALLETS.find((w) => w.id === selectedMultisig)?.name ?? d.multisigName,
               }
@@ -926,10 +1039,12 @@ const MultisigOperationsPrototype = () => {
         multisigName: MULTISIG_WALLETS.find((w) => w.id === selectedMultisig)?.name ?? '',
         description,
         callData,
-        txType: `${PARSED_CALL_DATA.section}.${PARSED_CALL_DATA.method}`,
+        txType: hasCallData
+          ? `${PARSED_CALL_DATA.section}.${PARSED_CALL_DATA.method}`
+          : 'Pending — call data not added',
         chainName: 'Polkadot',
-        amount: PARSED_CALL_DATA.value,
-        dest: PARSED_CALL_DATA.dest,
+        amount: hasCallData ? PARSED_CALL_DATA.value : '',
+        dest: hasCallData ? PARSED_CALL_DATA.dest : '',
         createdAt: 'Just now',
       };
 
@@ -944,8 +1059,60 @@ const MultisigOperationsPrototype = () => {
     setDrafts((prev) => prev.filter((d) => d.id !== id));
   };
 
-  const pendingOps = OPERATIONS.filter((op) => op.status === 'pending');
-  const historyOps = OPERATIONS.filter((op) => op.status !== 'pending');
+  const openAddCallDataModal = (draft: Draft) => {
+    resetFlow();
+    setModalMode('edit');
+    setEditingDraftId(draft.id);
+    setSelectedMultisig(draft.multisigId);
+    setCallData('');
+    setIsParsed(false);
+    setDescription(draft.description);
+    setStep(2);
+    setModalOpen(true);
+  };
+
+  const handleSubmitDraft = (id: string) => {
+    const draft = drafts.find((d) => d.id === id);
+    if (!draft || !draft.callData) return;
+
+    const wallet = MULTISIG_WALLETS.find((w) => w.id === draft.multisigId);
+
+    const newOp: MockOperation = {
+      id: `op-from-${draft.id}-${Date.now()}`,
+      txType: draft.txType,
+      iconName: 'transferMst',
+      chainName: draft.chainName,
+      amount: draft.amount || undefined,
+      account: {
+        name: wallet?.name ?? draft.multisigName,
+        address: wallet?.address ?? MOCK_ADDRESSES.alice,
+        walletType: WalletType.MULTISIG,
+      },
+      signed: 1,
+      threshold: wallet?.threshold ?? 2,
+      status: 'pending',
+      date: 'Just now',
+      dateGroup: 'Today',
+      callHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      callData: draft.callData,
+      depositor: { name: wallet?.name ?? draft.multisigName, address: wallet?.address ?? MOCK_ADDRESSES.alice },
+      signatories: [
+        { name: 'Polkadot Vault', address: MOCK_ADDRESSES.alice, walletType: WalletType.POLKADOT_VAULT, signed: true },
+        { name: 'Nova Wallet', address: MOCK_ADDRESSES.bob, walletType: WalletType.NOVA_WALLET, signed: false },
+      ],
+      canApprove: false,
+      canReject: true,
+      createdFromDraft: true,
+      description: draft.description,
+    };
+
+    setOperations((prev) => [newOp, ...prev]);
+    setDrafts((prev) => prev.filter((d) => d.id !== id));
+    setTab('pending');
+  };
+
+  const pendingOps = operations.filter((op) => op.status === 'pending');
+  const historyOps = operations.filter((op) => op.status !== 'pending');
   const displayOps = tab === 'pending' ? pendingOps : historyOps;
 
   const filteredOps = displayOps.filter((op) => {
@@ -971,14 +1138,19 @@ const MultisigOperationsPrototype = () => {
       ? 'Draft updated'
       : 'Draft created'
     : modalMode === 'edit'
-      ? 'Edit draft'
+      ? step === 2
+        ? 'Add call data'
+        : 'Edit draft'
       : ['Select multisig', 'Call data', 'Create draft'][step - 1];
 
   return (
     <div className="flex min-h-[600px] w-full flex-col bg-main-app-background">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-container-border bg-top-nav-bar-background px-6 pt-4 pb-[15px]">
-        <TitleText className="py-[3px] text-text-primary">Multisig Operations</TitleText>
+        <div className="flex items-center gap-x-3">
+          <TitleText className="py-[3px] text-text-primary">Multisig Operations</TitleText>
+          {readOnly ? <StatusPill label="Submitter — read only" variant="default" /> : null}
+        </div>
         <div className="w-[230px]">
           <SearchInput value={search} placeholder="Search" onChange={setSearch} />
         </div>
@@ -1005,10 +1177,13 @@ const MultisigOperationsPrototype = () => {
           {tab === 'pending' && (
             <DraftsSection
               drafts={drafts}
+              readOnly={readOnly}
               onCreateDraft={openCreateModal}
               onEditDraft={openEditModal}
+              onAddCallDataDraft={openAddCallDataModal}
+              onOverviewDraft={(d) => setOverviewDraftId(d.id)}
               onDeleteDraft={handleDeleteDraft}
-              onSubmitDraft={handleDeleteDraft}
+              onSubmitDraft={handleSubmitDraft}
             />
           )}
 
@@ -1067,7 +1242,7 @@ const MultisigOperationsPrototype = () => {
                   />
                 )}
 
-                {step === 2 && modalMode === 'create' && (
+                {step === 2 && (
                   <StepCallData
                     callData={callData}
                     isParsed={isParsed}
@@ -1076,7 +1251,7 @@ const MultisigOperationsPrototype = () => {
                       setIsParsed(false);
                     }}
                     onParse={() => setIsParsed(true)}
-                    onBack={() => setStep(1)}
+                    onBack={modalMode === 'edit' ? () => setModalOpen(false) : () => setStep(1)}
                     onNext={() => setStep(3)}
                   />
                 )}
@@ -1096,6 +1271,90 @@ const MultisigOperationsPrototype = () => {
           </div>
         </Modal.Content>
       </Modal>
+
+      {/* Multisig overview modal — when no local signer wallet is available */}
+      <Modal isOpen={overviewDraftId !== null} size="md" onToggle={(o) => !o && setOverviewDraftId(null)}>
+        <Modal.Title close>Multisig overview</Modal.Title>
+        <Modal.Content>
+          {(() => {
+            const draft = drafts.find((d) => d.id === overviewDraftId);
+            if (!draft) return null;
+            const wallet = MULTISIG_WALLETS.find((w) => w.id === draft.multisigId);
+            const overviewSignatories = [
+              { name: 'Alice (team lead)', address: MOCK_ADDRESSES.alice },
+              { name: 'Bob (engineer)', address: MOCK_ADDRESSES.bob },
+              { name: 'Charlie (engineer)', address: MOCK_ADDRESSES.charlie },
+            ];
+
+            return (
+              <div className="flex flex-col gap-y-5 px-5 py-4">
+                {/* Wallet header */}
+                <div className="flex items-center gap-x-3 rounded bg-block-background-default p-3">
+                  <WalletIcon type={WalletType.MULTISIG} size={32} />
+                  <div className="flex min-w-0 flex-col">
+                    <BodyText className="truncate text-text-primary">{wallet?.name ?? draft.multisigName}</BodyText>
+                    <HelpText className="truncate text-text-tertiary">
+                      {wallet?.network} · {wallet?.threshold} of {wallet?.signatories} signatories
+                    </HelpText>
+                    {wallet ? (
+                      <HelpText className="truncate text-text-tertiary">
+                        <Hash value={wallet.address} variant="truncate" />
+                      </HelpText>
+                    ) : null}
+                  </div>
+                </div>
+
+                {/* Warning */}
+                <div className="flex items-start gap-x-2 rounded bg-badge-background p-3">
+                  <Icon name="warn" size={16} className="mt-0.5 shrink-0 text-icon-warning" />
+                  <div className="flex flex-col gap-y-1">
+                    <BodyText className="text-text-primary">No local signer wallet available</BodyText>
+                    <FootnoteText className="text-text-secondary">
+                      None of the signatories of this multisig are currently added to this device. Add at least one
+                      signatory wallet to be able to sign and submit this draft.
+                    </FootnoteText>
+                  </div>
+                </div>
+
+                {/* Signatories */}
+                <div className="flex flex-col gap-y-2">
+                  <SmallTitleText className="text-text-primary">Signatories</SmallTitleText>
+                  <ul className="flex flex-col">
+                    {overviewSignatories.map((s) => (
+                      <SignatoryRow
+                        key={s.address}
+                        icon={<Identicon address={s.address} size={20} background={false} />}
+                        signed={false}
+                      >
+                        <div className="flex min-w-0 flex-1 items-center justify-between gap-x-2">
+                          <div className="flex min-w-0 flex-col">
+                            <FootnoteText className="truncate text-text-secondary">{s.name}</FootnoteText>
+                            <HelpText className="truncate text-text-tertiary">{truncateStr(s.address, 6, 6)}</HelpText>
+                          </div>
+                          <span className="inline-flex shrink-0 items-center rounded-[20px] border border-filter-border px-2 py-0.5">
+                            <CaptionText className="text-text-tertiary uppercase">Not added</CaptionText>
+                          </span>
+                        </div>
+                      </SignatoryRow>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            );
+          })()}
+        </Modal.Content>
+        <Modal.Footer>
+          <Button pallet="secondary" variant="fill" onClick={() => setOverviewDraftId(null)}>
+            Close
+          </Button>
+          <Button
+            prefixElement={<Icon name="add" size={14} className="text-white" />}
+            onClick={() => setOverviewDraftId(null)}
+          >
+            Add account
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
@@ -1113,3 +1372,7 @@ export default meta;
 type Story = StoryObj<typeof MultisigOperationsPrototype>;
 
 export const Default: Story = {};
+
+export const SubmitterRole: Story = {
+  args: { role: 'submitter' },
+};
