@@ -7,6 +7,7 @@ import { createKeyMulti } from '@polkadot/util-crypto';
 import {
   type CallHash,
   type Chain,
+  type DecodedTransaction,
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type NoID,
@@ -14,7 +15,7 @@ import {
   ChainOptions,
   CryptoType,
 } from '@/shared/core';
-import { isEqual, merge, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
+import { isEqual, merge, nonNullable, nullable, toAccountId, validateCallData } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import { transactionService } from '../transaction/service';
@@ -179,6 +180,36 @@ function generateMultisigOperationRelativeLink(params: MultisigOperationDeepLink
   return `${Paths.OPERATIONS}?${searchParams.toString()}`;
 }
 
+/**
+ * Extracts the proxied account ID from a decoded transaction when the outermost
+ * call is proxy.proxy (direct) or utility.batchAll wrapping proxy.proxy calls
+ * (Nova Wallet style).
+ *
+ * For batch calls, only the first transaction is inspected via a recursive
+ * call; nested proxy calls inside arbitrary inner structures are intentionally
+ * ignored.
+ */
+function extractProxiedAccountId(transaction: DecodedTransaction | null): AccountId | undefined {
+  if (nullable(transaction)) return undefined;
+
+  const isDirectProxy = transaction.section === 'proxy' && transaction.method === 'proxy';
+  if (isDirectProxy) {
+    const real: unknown = transaction.args['real'];
+    return typeof real === 'string' ? toAccountId(real) : undefined;
+  }
+
+  const isBatchAll =
+    transaction.section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(transaction.method);
+  if (isBatchAll) {
+    const transactions: unknown = transaction.args['transactions'];
+    if (!Array.isArray(transactions) || transactions.length === 0) return undefined;
+
+    return extractProxiedAccountId(transactions[0] as DecodedTransaction);
+  }
+
+  return undefined;
+}
+
 export const multisigOperationService = {
   getOperationId,
   getEventId,
@@ -186,6 +217,8 @@ export const multisigOperationService = {
   getMultisigAccountId,
 
   mergeMultisigOperations,
+
+  extractProxiedAccountId,
 
   isMultisigSupported,
   getOtherSignatories,

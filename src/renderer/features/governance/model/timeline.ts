@@ -92,22 +92,22 @@ type RequestOnTimelineParams = {
 };
 
 const requestOnChainTimelineFx = createEffect<RequestOnTimelineParams, ReferendumTimelineRecord[]>(
-  ({ api, referendum }) => {
+  ({ api, chain, referendum }) => {
     if (!referendumService.isOngoing(referendum)) {
-      return getCreatedDateFromApi(referendum.since, api).then((time) => [
+      return getCreatedDateFromApi(referendum.since, api, chain).then((time) => [
         { date: new Date(time), status: referendum.type },
       ]);
     }
 
     const requests = Promise.all([
-      getCreatedDateFromApi(referendum.submitted, api).then(
+      getCreatedDateFromApi(referendum.submitted, api, chain).then(
         (time): ReferendumTimelineRecord => ({
           date: new Date(time),
           status: 'Submitted',
         }),
       ),
       referendum.deciding
-        ? getCreatedDateFromApi(referendum.deciding.since, api).then(
+        ? getCreatedDateFromApi(referendum.deciding.since, api, chain).then(
             (time): ReferendumTimelineRecord => ({
               date: new Date(time),
               status: 'Deciding',

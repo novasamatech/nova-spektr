@@ -40,8 +40,9 @@ export const useLeftToPromotion = () => {
 
 export const usePromotionCountdown = () => {
   const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const { data: leftToPromotion, pending: leftPending } = useLeftToPromotion();
-  const { data: blockTime, pending: blockPending } = useBlockTime(api);
+  const { data: blockTime, pending: blockPending } = useBlockTime(api, chain);
 
   const countdown = useMemo<PromotionCountdown | null>(() => {
     if (nullable(leftToPromotion) || nullable(blockTime)) return null;

@@ -3,7 +3,14 @@ import { type BN, BN_ZERO } from '@polkadot/util';
 import { createEffect, createStore, sample } from 'effector';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@/shared/api/governance';
-import { type Referendum, type TrackId, type TrackInfo, type TrackLocks, type VotingMap } from '@/shared/core';
+import {
+  type Chain,
+  type Referendum,
+  type TrackId,
+  type TrackInfo,
+  type TrackLocks,
+  type VotingMap,
+} from '@/shared/core';
 import { entries, getCreatedDateFromApi, getCurrentBlockNumber, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@/entities/governance';
@@ -50,6 +57,7 @@ const $totalUnlock = $claimSchedule.map((claimSchedule) => {
 
 type Props = {
   api: ApiPromise;
+  chain: Chain;
   referendums: Referendum[];
   tracks: Record<TrackId, TrackInfo>;
   trackLocks: TrackLocks;
@@ -57,7 +65,7 @@ type Props = {
 };
 
 const getClaimScheduleFx = createEffect(
-  async ({ api, referendums, tracks, trackLocks, voting }: Props): Promise<UnlockChunk[]> => {
+  async ({ api, chain, referendums, tracks, trackLocks, voting }: Props): Promise<UnlockChunk[]> => {
     const currentBlockNumber = await getCurrentBlockNumber(api);
     const undecidingTimeout = api.consts.referenda.undecidingTimeout.toNumber();
     const voteLockingPeriod = api.consts.convictionVoting.voteLockingPeriod.toNumber();
@@ -79,7 +87,7 @@ const getClaimScheduleFx = createEffect(
     const claimsDates = claims.map((claim) => {
       if (claim.type !== UnlockChunkType.PENDING_LOCK) return claim;
 
-      return getCreatedDateFromApi((claim.claimableAt as ClaimTimeAt).block, api).then((timeToBlock) => ({
+      return getCreatedDateFromApi((claim.claimableAt as ClaimTimeAt).block, api, chain).then((timeToBlock) => ({
         ...claim,
         timeToBlock,
       }));
@@ -127,6 +135,7 @@ sample({
     !totalLock.isZero(),
   fn: ({ network, tracks, trackLocks, voting, referendums }) => ({
     api: network!.api,
+    chain: network!.chain,
     tracks,
     voting,
     trackLocks: trackLocks[network!.chain.chainId]!,

@@ -25,8 +25,34 @@ function getEvidenceFromCid(cid: string): HexString {
   return `0x${Buffer.from(digest).toString('hex')}`;
 }
 
-function getEvidenceIpfsUrl(evidence: HexString) {
-  return new URL(`/ipfs/${getCidByEvidence(evidence)}`, 'https://ipfs.io');
+function getEvidenceFetchIpfsUrl(evidence: HexString, gateway: string) {
+  return new URL(`/ipfs/${getCidByEvidence(evidence)}`, gateway);
+}
+
+function getEvidenceGatewayUrls(evidence: HexString, gateways: string[]) {
+  return gateways.map(gateway => getEvidenceFetchIpfsUrl(evidence, gateway));
+}
+
+let roundRobinIndex = 0;
+
+async function fetchEvidenceFromIpfs(evidence: HexString, gateways: string[]) {
+  for (let i = 0; i < gateways.length; i++) {
+    const gateway = gateways[(roundRobinIndex + i) % gateways.length]!;
+    try {
+      const url = getEvidenceFetchIpfsUrl(evidence, gateway);
+      const response = await fetch(url.toString());
+
+      if (response.ok) {
+        roundRobinIndex = (roundRobinIndex + i + 1) % gateways.length;
+
+        return response;
+      }
+    } catch {
+      // try next gateway
+    }
+  }
+
+  throw new Error('Failed to fetch evidence from IPFS');
 }
 
 function getEvidenceUploadIpfsUrl() {
@@ -152,7 +178,9 @@ function isEvidenceTransaction(transaction: Transaction): transaction is Evidenc
 }
 
 export const evidenceService = {
-  getEvidenceIpfsUrl,
+  getEvidenceFetchIpfsUrl,
+  getEvidenceGatewayUrls,
+  fetchEvidenceFromIpfs,
   getEvidenceUploadIpfsUrl,
   getCidByEvidence,
   getEvidenceFromCid,

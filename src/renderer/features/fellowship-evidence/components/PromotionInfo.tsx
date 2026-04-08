@@ -6,7 +6,7 @@ import { getRelativeTimeFromApi, nonNullable, nullable } from '@/shared/lib/util
 import { Button, CaptionText, Duration, FootnoteText, IconButton, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank, TrackDescription } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { evidenceService, memberService, salaryService } from '@/domains/collectives';
+import { $ipfsGateways, evidenceService, memberService, salaryService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { usePromotionCountdown } from '@/aggregates/fellowship-promotion';
 import { evidenceInfo } from '../model/evidence';
@@ -21,6 +21,7 @@ export const PromotionInfo = memo(() => {
   const [timeLeft, setTimeLeft] = useState(0);
 
   const input = useUnit(fellowshipEvidenceFeature.input);
+  const gateways = useUnit($ipfsGateways);
   const nextTrack = useUnit(evidenceInfo.$nextTrack);
   const evidence = useUnit(evidenceInfo.$memberEvidence);
   const hasPromotionEvidence = useUnit(evidenceInfo.$hasPromotionEvidence);
@@ -38,7 +39,7 @@ export const PromotionInfo = memo(() => {
   useEffect(() => {
     if (input?.api && leftToPromotion) {
       if (leftToPromotion > 0) {
-        getRelativeTimeFromApi(leftToPromotion, input.api).then(setTimeLeft);
+        getRelativeTimeFromApi(leftToPromotion, input.api, input.chain ?? undefined).then(setTimeLeft);
       } else {
         setTimeLeft(0);
       }
@@ -51,7 +52,11 @@ export const PromotionInfo = memo(() => {
 
   const openEvidence = () => {
     if (evidence) {
-      window.open(evidenceService.getEvidenceIpfsUrl(evidence.hash), '_blank');
+      const url = evidenceService.getEvidenceGatewayUrls(evidence.hash, gateways)[0];
+
+      if (url) {
+        window.open(url.toString(), '_blank', 'noopener,noreferrer');
+      }
     }
   };
 

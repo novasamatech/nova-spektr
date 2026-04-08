@@ -74,7 +74,12 @@ export const ReferendumItem = memo(
         <div className="flex w-full items-center gap-x-2">
           <VotingStatusBadge referendum={referendum} />
 
-          <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} timelineApi={timelineApi} />
+          <ReferendumEndTimer
+            status={referendum.status}
+            endBlock={referendum.end}
+            timelineApi={timelineApi}
+            chain={chain}
+          />
 
           <div className="ml-auto flex text-text-secondary">
             {referendumId && (
@@ -82,7 +87,9 @@ export const ReferendumItem = memo(
                 #{referendumId}
               </FootnoteText>
             )}
-            {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
+            {referendumService.isOngoing(referendum) && (
+              <TrackInfo trackId={referendum.track} className="ml-auto flex text-text-secondary" />
+            )}
             <Copy value={referendumLink.href} notification={t('governance.referendums.linkCopied')}>
               <IconButton className="ml-2 shrink-0 p-0 text-icon-default" name="export" />
             </Copy>

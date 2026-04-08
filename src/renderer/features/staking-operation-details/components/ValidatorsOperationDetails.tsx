@@ -7,9 +7,10 @@ import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, getAssetById, keys, toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { type MultisigOperation, identity } from '@/domains/network';
+import { useActiveEra, useValidators } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { ValidatorsModal, useValidatorsMap } from '@/entities/staking';
+import { ValidatorsModal } from '@/entities/staking';
 
 type Props = {
   operation: MultisigOperation;
@@ -30,7 +31,8 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
   const result = [];
 
   const transaction = operationDetailsUtils.getCoreTx(operation);
-  const validatorsMap = useValidatorsMap(api);
+  const { data: era } = useActiveEra({ chainId: operation.chainId, api });
+  const { data: validatorsMap } = useValidators({ chainId: operation.chainId, api, era });
 
   const identities = useStoreMap({
     store: identity.$list,

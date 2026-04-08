@@ -47,12 +47,7 @@ type DataParams = {
 const flow = createGate<BasketTransaction>();
 
 const prepareUnlockDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
-  const { chain, account, fee } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
   assert(chain, 'Chain not found');
 
@@ -85,12 +80,7 @@ const prepareUnlockDataFx = createEffect(async ({ transaction, accounts, chains,
 });
 
 const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chains, apis, balances }: DataParams) => {
-  const { chain, account, fee } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
   assert(chain, 'Chain not found');
 
@@ -103,11 +93,13 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
     balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId),
   );
 
-  const locks = await governanceService.getTrackLocks(apis[chain.chainId]!, [transaction.coreTx.accountId]).then((data) => {
-    const lock = data[transaction.coreTx.accountId]!;
+  const locks = await governanceService
+    .getTrackLocks(apis[chain.chainId]!, [transaction.coreTx.accountId])
+    .then((data) => {
+      const lock = data[transaction.coreTx.accountId]!;
 
-    return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
-  });
+      return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
+    });
 
   const coreTxs = transaction.coreTx.args.transactions || [transaction.coreTx];
 
@@ -154,11 +146,13 @@ const prepareEditDelegationDataFx = createEffect(
       balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId),
     );
 
-    const locks = await governanceService.getTrackLocks(apis[chain.chainId]!, [transaction.coreTx.accountId]).then((data) => {
-      const lock = data[transaction.coreTx.accountId]!;
+    const locks = await governanceService
+      .getTrackLocks(apis[chain.chainId]!, [transaction.coreTx.accountId])
+      .then((data) => {
+        const lock = data[transaction.coreTx.accountId]!;
 
-      return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
-    });
+        return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
+      });
 
     const coreTxs = transaction.coreTx.args.transactions?.filter(
       (t: Transaction) => t.type === TransactionType.DELEGATE,
@@ -252,12 +246,7 @@ const prepareRevokeDelegationDataFx = createEffect(
 const prepareVoteDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const coreTx = basketOperationsService.getCoreTx(transaction);
 
-  const { chain, account } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
   assert(chain, 'Chain not found');
 
@@ -280,12 +269,7 @@ const prepareVoteDataFx = createEffect(async ({ transaction, accounts, chains, a
 const prepareRemoveVoteDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const coreTxs = transaction.coreTx.args.transactions || [transaction.coreTx];
 
-  const { chain, account } = await basketOperationsService.getTransactionData(
-    transaction,
-    apis,
-    chains,
-    accounts,
-  );
+  const { chain, account } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
   assert(chain, 'Chain not found');
 

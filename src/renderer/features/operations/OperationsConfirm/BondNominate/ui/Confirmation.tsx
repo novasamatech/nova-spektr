@@ -8,11 +8,12 @@ import { Button, CaptionText, DetailRow, Duration, FootnoteText, Icon } from '@/
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
+import { stakingService } from '@/domains/staking';
 import { SignButton } from '@/entities/operations';
-import { AssetFiatBalance } from '@/entities/price';
-import { SelectedValidatorsModal, StakingPopover, UnstakingDuration, useStakingData } from '@/entities/staking';
+import { SelectedValidatorsModal, StakingPopover, UnstakingDuration } from '@/entities/staking';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
+import { AssetFiatBalance } from '@/widgets/price';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -58,8 +59,9 @@ export const Confirmation = ({
     fn: (value, [chainId]) => (chainId ? value?.[chainId] : undefined),
   });
 
-  const { getEraDurationSeconds } = useStakingData();
-  const eraDurationSeconds = api && timelineApi ? getEraDurationSeconds(api, timelineApi) : undefined;
+  const { getEraDurationSeconds } = stakingService;
+  const eraDurationSeconds =
+    api && timelineApi && confirm?.meta.chain ? getEraDurationSeconds(api, timelineApi, confirm.meta.chain) : undefined;
 
   const identities = useStoreMap({
     store: identity.$list,

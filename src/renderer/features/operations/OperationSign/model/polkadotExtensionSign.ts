@@ -43,7 +43,7 @@ const setupTransactionFx = createEffect(
 
     const signatory = payload.signatory;
 
-    let metadata = await createTxMetadata(signatory.accountId, payload.api);
+    let metadata = await createTxMetadata(signatory.accountId, payload.api, undefined, payload.chain);
 
     const transactions: ReturnType<typeof transactionService.createPayloadWithMetadata>[] = [];
 

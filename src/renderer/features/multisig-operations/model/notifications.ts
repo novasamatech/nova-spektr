@@ -32,9 +32,7 @@ type NewEvent = {
   event: MultisigEvent;
 };
 
-const $anyMultisigAccounts = accounts.$list.map(accountsList =>
-  accountsList.filter(accountUtils.isAnyMultisigAccount),
-);
+const $anyMultisigAccounts = accounts.$list.map(accountsList => accountsList.filter(accountUtils.isAnyMultisigAccount));
 
 function findAccountForOperation(
   operation: MultisigOperation,
@@ -244,7 +242,13 @@ const createEventNotification = (
 };
 
 const getOperationId = (op: MultisigOperation) =>
-  multisigOperationService.getOperationId(op.chainId, op.callHash, op.multisigAccountId, op.blockCreated, op.indexCreated);
+  multisigOperationService.getOperationId(
+    op.chainId,
+    op.callHash,
+    op.multisigAccountId,
+    op.blockCreated,
+    op.indexCreated,
+  );
 
 const getNotificationKey = (op: MultisigOperation) =>
   `${NotificationType.MULTISIG_OPERATION}-${getOperationId(op)}-${op.status}`;

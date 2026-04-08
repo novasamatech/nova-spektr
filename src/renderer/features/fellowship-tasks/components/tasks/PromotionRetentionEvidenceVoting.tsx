@@ -1,11 +1,12 @@
-import React, { memo, useMemo } from 'react';
+import { type ReactNode, memo, useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toAddress, toRomanNumeral, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
-import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
+import { Box, Skeleton } from '@/shared/ui-kit';
+import { Markdown } from '@/shared/ui-kit/Markdown/Markdown';
 import { type Evidence, useEvidenceSummary, useMember } from '@/domains/collectives';
 import { useFellowshipApi, useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
 import { MemberActivity } from '../MemberActivity';
@@ -15,7 +16,7 @@ import { TaskLabels } from '../TaskLabels';
 export const evidenceDetailsModalSlot = createSlot<{
   evidence: Evidence;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
   transaction: Transaction | null;
 }>();
 export const evidenceVotingTaskActionSlot = createSlot<{

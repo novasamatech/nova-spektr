@@ -101,6 +101,59 @@ describe('contactImportUtils', () => {
 
       expect(result.success).toBe(false);
     });
+
+    it('should sanitize contact names with invisible Unicode characters', async () => {
+      const json = JSON.stringify([{ name: '\u200BAlice\u200B', address: ALICE_ADDRESS }]);
+      const file = new File([json], 'contacts.json', { type: 'application/json' });
+
+      const result = await contactImportUtils.parseJSON(file);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data[0]!.name).toBe('Alice');
+      }
+    });
+
+    it('should trim whitespace from contact names', async () => {
+      const json = JSON.stringify([{ name: '  Alice  ', address: ALICE_ADDRESS }]);
+      const file = new File([json], 'contacts.json', { type: 'application/json' });
+
+      const result = await contactImportUtils.parseJSON(file);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data[0]!.name).toBe('Alice');
+      }
+    });
+
+    it('should skip contacts whose name is only invisible characters, keeping valid ones', async () => {
+      const json = JSON.stringify([
+        { name: '\u200B\uFEFF', address: ALICE_ADDRESS },
+        { name: 'Bob', address: BOB_ADDRESS },
+      ]);
+      const file = new File([json], 'contacts.json', { type: 'application/json' });
+
+      const result = await contactImportUtils.parseJSON(file);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0]!.name).toBe('Bob');
+      }
+    });
+
+    it('should normalize contact names to NFC', async () => {
+      const nfd = 'e\u0301lice'; // e + combining acute = é, NFD form
+      const json = JSON.stringify([{ name: nfd, address: ALICE_ADDRESS }]);
+      const file = new File([json], 'contacts.json', { type: 'application/json' });
+
+      const result = await contactImportUtils.parseJSON(file);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data[0]!.name).toBe('\u00E9lice');
+      }
+    });
   });
 
   describe('detectAccountIdConflicts', () => {
@@ -272,6 +325,39 @@ describe('contactImportUtils', () => {
       const resolved = contactImportUtils.resolveNameConflicts(imported, existing);
 
       expect(resolved[0]!.name).toBe('alice (1)');
+    });
+
+    it('should treat existing name with invisible chars as optically equal to clean imported name', () => {
+      // Existing contact was saved with a zero-width space — visually identical to 'Alice'
+      const imported = [{ name: 'Alice', address: ALICE_ADDRESS }];
+      const existing: Contact[] = [
+        localContact({
+          id: 'test-uuid-1',
+          name: 'Alice\u200B',
+          address: toAddress(BOB_ADDRESS),
+          accountId: toAccountId(BOB_ADDRESS),
+        }),
+      ];
+
+      const resolved = contactImportUtils.resolveNameConflicts(imported, existing);
+
+      expect(resolved[0]!.name).toBe('Alice (1)');
+    });
+
+    it('should treat existing name with BOM as optically equal to clean imported name', () => {
+      const imported = [{ name: 'Bob', address: BOB_ADDRESS }];
+      const existing: Contact[] = [
+        localContact({
+          id: 'test-uuid-1',
+          name: '\uFEFFBob',
+          address: toAddress(ALICE_ADDRESS),
+          accountId: toAccountId(ALICE_ADDRESS),
+        }),
+      ];
+
+      const resolved = contactImportUtils.resolveNameConflicts(imported, existing);
+
+      expect(resolved[0]!.name).toBe('Bob (1)');
     });
   });
 });

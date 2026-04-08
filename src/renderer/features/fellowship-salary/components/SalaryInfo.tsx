@@ -64,7 +64,7 @@ export const SalaryInfo = memo(() => {
 
   useEffect(() => {
     if (input?.api && currentPeriod && currentPeriod.type !== 'unknown') {
-      getRelativeTimeFromApi(currentPeriod.left, input.api).then(setTimeLeft);
+      getRelativeTimeFromApi(currentPeriod.left, input.api, input.chain ?? undefined).then(setTimeLeft);
     }
   }, [input?.api, currentPeriod]);
 

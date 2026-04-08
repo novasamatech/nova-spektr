@@ -2,7 +2,6 @@ import { type BN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 import { concat, keyBy, orderBy, sortBy } from 'lodash';
 
-import { type PriceObject } from '@/shared/api/price-provider';
 import {
   type AssetBalance,
   type Balance,
@@ -13,6 +12,8 @@ import {
 } from '@/shared/core';
 import { CHAINS_CONFIG_URL, RelayChains, ZERO_BALANCE, getRelaychainAsset, totalAmount } from '@/shared/lib/utils';
 import { isKusama, isNameStartsWithNumber, isPolkadot, isTestnet } from '../lib/utils';
+
+type PriceObject = Record<string, Record<string, { price: number; change: number }>>;
 
 type ChainWithFiatBalance = Chain & {
   fiatBalance: string;

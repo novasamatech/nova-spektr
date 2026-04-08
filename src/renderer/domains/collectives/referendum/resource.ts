@@ -41,6 +41,12 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
   try {
     const struct = api.registry.createType('Proposal', proposalHex);
 
+    const callData = {
+      hex: proposalHex,
+      hash: blake2AsHex(proposalHex),
+      json: struct.toHuman(),
+    };
+
     // parsing "who" and rank (atRank/toRank) for promote/retain
     if (struct.method === 'promote' || struct.method === 'promoteFast' || struct.method === 'approve') {
       const accountIdParsed = pjsSchema.accountId.safeParse(struct.args.at(0));
@@ -51,6 +57,7 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
           type: 'Evidence',
           accountId: accountIdParsed.data,
           ...(rankParsed.success ? { rank: rankParsed.data } : {}),
+          callData,
         };
       }
     }
@@ -59,9 +66,7 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
       //todo learn how to read arguments (multilocation chainId and call)
       return {
         type: 'Whitelist',
-        proposalHex,
-        proposalHash: blake2AsHex(proposalHex),
-        proposalJSON: struct.toHuman(),
+        callData,
       };
     }
 
@@ -77,6 +82,7 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
       return {
         type: 'Spend',
         amount: amountBN.data,
+        callData,
       };
     }
 
@@ -93,6 +99,7 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
       return {
         type: 'Spend',
         amount: amountBN.data,
+        callData,
       };
     }
 
@@ -111,12 +118,14 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
               type: 'Rfc',
               pullRequest,
               documentHash,
+              callData,
             };
           }
         } else {
           return {
             type: 'Unknown',
             description: parsed.data,
+            callData,
           };
         }
       }
@@ -124,6 +133,7 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
 
     return {
       type: 'Unknown',
+      callData,
     };
   } catch (e) {
     console.error(e);

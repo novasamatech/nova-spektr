@@ -7,14 +7,15 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, ButtonWebLink, DetailRow, FootnoteText, Icon, LargeTitleText, Separator } from '@/shared/ui';
 import { AccountSelect, SignatorySelect, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
-import { Box, Field, JsonArgs, Modal, ScrollArea } from '@/shared/ui-kit';
+import { Box, Field, Modal, ScrollArea } from '@/shared/ui-kit';
+import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { transactionService } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
-import { Fee, FeeWithLabel } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { OperationSign } from '@/features/operations';
 import { NamedAccount } from '@/widgets/NameResolver';
+import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { confirmModel } from '../model/confirm';
 import { Step, formModel } from '../model/form';
 

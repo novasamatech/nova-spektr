@@ -7,7 +7,8 @@ import { Button, DetailRow } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { type VestingScheduleRaw, VestingSchedulePreview } from '@/entities/vesting';
+import { type VestingScheduleRaw } from '@/entities/vesting';
+import { VestingSchedulePreview } from '@/widgets/vesting-schedule-preview';
 
 type Props = {
   operation: MultisigOperation;

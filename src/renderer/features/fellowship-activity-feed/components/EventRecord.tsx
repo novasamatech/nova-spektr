@@ -1,3 +1,4 @@
+import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { memo } from 'react';
 import { Trans } from 'react-i18next';
@@ -7,10 +8,9 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { referendaPallet } from '@/shared/pallet/referenda';
-import { Duration, FootnoteText, HelpText } from '@/shared/ui';
+import { Duration, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import { evidenceService } from '@/domains/collectives';
-import { type FeedRecord } from '@/domains/collectives';
+import { type FeedRecord, $ipfsGateways, evidenceService } from '@/domains/collectives';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { type ReferendumDetails } from '../types';
 
@@ -72,6 +72,8 @@ type EventRecordBodyProps = {
 
 const EventRecordBody = ({ event, description, referendumDetails }: EventRecordBodyProps) => {
   const { t } = useI18n();
+  const gateways = useUnit($ipfsGateways);
+  const evidenceUrls = event.type === 'requested' ? evidenceService.getEvidenceGatewayUrls(event.hash, gateways) : [];
 
   if (event.type === 'referendum') {
     if (referendumDetails) {
@@ -112,16 +114,26 @@ const EventRecordBody = ({ event, description, referendumDetails }: EventRecordB
               ? 'fellowship.activityFeed.record.submittedPromotion'
               : 'fellowship.activityFeed.record.submittedRetention'
           }
-          components={{
-            evidence: (
-              <a
-                href={evidenceService.getEvidenceIpfsUrl(event.hash).toString()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="cursor-pointer font-semibold text-primary-button-background-default"
-              />
-            ),
-          }}
+          components={[
+            <span key="evidence-links">
+              evidence (
+              {evidenceUrls.map((url, index) => (
+                <span key={url.toString()}>
+                  {index > 0 && ', '}
+                  <a
+                    href={url.toString()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 font-semibold text-primary-button-background-default"
+                  >
+                    {url.host}
+                    <Icon name="link" size={16} className="text-icon-accent" />
+                  </a>
+                </span>
+              ))}
+              )
+            </span>,
+          ]}
         />
       </FootnoteText>
     );

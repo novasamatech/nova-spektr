@@ -3,7 +3,8 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
-import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
+import { Box, Skeleton } from '@/shared/ui-kit';
+import { Markdown } from '@/shared/ui-kit/Markdown/Markdown';
 import { type Evidence, type Referendum, trackService } from '@/domains/collectives';
 import { useEvidenceContent } from '../hooks/useEvidenceContent';
 import { useMetadata } from '../hooks/useMetadata';
@@ -11,7 +12,6 @@ import { useMetadata } from '../hooks/useMetadata';
 import { AdditionalContext } from './AdditionalContext';
 import { Card } from './Card';
 import { ConnectedGovernanceReferendum } from './ConnectedGovernanceReferendum';
-
 type Props = {
   referendum: Referendum | null;
   evidence: Evidence | null;
@@ -52,6 +52,7 @@ export const ReferendumDescription = memo(({ referendum, evidence }: Props) => {
       {shouldRenderEvidenceAlert ? <NoEvidence /> : null}
 
       {nonNullable(referendum) && <ConnectedGovernanceReferendum referendum={referendum} />}
+
       <div className="flex-1">
         <AdditionalContext referendum={referendum} />
       </div>

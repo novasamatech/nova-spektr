@@ -1,7 +1,7 @@
-import { createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { attach, createEffect, createEvent, createStore, restore, sample } from 'effector';
 
 import { type HexString } from '@/shared/core';
-import { evidenceService } from '@/domains/collectives';
+import { $ipfsGateways, evidenceService } from '@/domains/collectives';
 
 type IPFSParams = {
   hash: string;
@@ -20,27 +20,23 @@ type IPFSPendingData = {
   content?: string;
 };
 
-const fetchIPFSContentFx = createEffect(async ({ hash }: IPFSParams) => {
-  let cid = hash;
+const fetchIPFSContentFx = attach({
+  source: $ipfsGateways,
+  async effect(gateways, { hash }: IPFSParams) {
+    let cid = hash;
 
-  if (hash.startsWith('http://') || hash.startsWith('https://')) {
-    const url = new URL(hash);
-    const pathParts = url.pathname.split('/');
-    cid = pathParts[pathParts.length - 1]!;
-  }
+    if (hash.startsWith('http://') || hash.startsWith('https://')) {
+      const url = new URL(hash);
+      const pathParts = url.pathname.split('/');
+      cid = pathParts[pathParts.length - 1]!;
+    }
 
-  const evidence = evidenceService.getEvidenceFromCid(cid);
-  const ipfsUrl = evidenceService.getEvidenceIpfsUrl(evidence);
+    const evidence = evidenceService.getEvidenceFromCid(cid);
+    const response = await evidenceService.fetchEvidenceFromIpfs(evidence, gateways);
+    const content = await response.text();
 
-  const response = await fetch(ipfsUrl.toString());
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch evidence from IPFS');
-  }
-
-  const content = await response.text();
-
-  return { evidence, content };
+    return { evidence, content };
+  },
 });
 
 const uploadFileToIPFSFx = createEffect(async ({ file }: FileUploadParams) => {

@@ -1,3 +1,4 @@
+import { $ipfsGateways } from './ipfsGateway';
 import {
   evidenceContentResource,
   evidencePeriodResource,
@@ -12,4 +13,5 @@ export const evidence = {
   evidencePeriodResource,
   evidenceSummaryResource,
   evidenceToReferendumRelationsResource,
+  $ipfsGateways,
 };

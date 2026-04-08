@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { type ReactNode, memo, useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
@@ -6,7 +6,8 @@ import { useI18n } from '@/shared/i18n';
 import { toAddress, toRomanNumeral, toShortAddress } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
-import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
+import { Box, Skeleton } from '@/shared/ui-kit';
+import { Markdown } from '@/shared/ui-kit/Markdown/Markdown';
 import {
   type OngoingReferendum,
   referendumService,
@@ -31,7 +32,7 @@ type Props = {
 
 export const promotionRetentionReferendumVotingSlot = createSlot<{
   referendumId: ReferendumId;
-  children: React.ReactNode;
+  children: ReactNode;
 }>();
 
 export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, transaction }: Props) => {

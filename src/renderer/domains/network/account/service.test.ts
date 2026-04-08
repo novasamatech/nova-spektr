@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { type Chain, type Contact, AccountNameType, CryptoType, SigningType } from '@/shared/core';
+import { type BackendContact, type Chain, type Contact, AccountNameType, CryptoType, SigningType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import {
   createAccountId,
+  createPolkadotWallet,
   createSingleShardWallet,
   kusamaChain,
   kusamaChainId,
@@ -50,6 +51,23 @@ const universalAccount: UniversalAccount = {
   cryptoType: CryptoType.SR25519,
   createdAt: Date.now(),
 };
+
+const createBackendContact = (
+  overrides: Pick<BackendContact, 'id' | 'accountId' | 'name' | 'address'>,
+): BackendContact => ({
+  source: 'backend',
+  entityNames: [],
+  chainId: null,
+  chainName: null,
+  categoryName: null,
+  contactTypeName: null,
+  derivationPath: null,
+  ownerAccountId: null,
+  signatories: null,
+  threshold: null,
+  tags: [],
+  ...overrides,
+});
 
 describe('account service', () => {
   afterEach(() => {
@@ -461,6 +479,100 @@ describe('account service', () => {
 
       expect(result).toMatch(/^[A-Za-z0-9]{5}\.\.\.[A-Za-z0-9]{5}$/);
     });
+
+    it('should prioritize custom name over local contact', () => {
+      const customAccountId = createAccountId('test');
+      const customAccount: ChainAccount = {
+        ...chainAccount,
+        accountId: customAccountId,
+        nameType: AccountNameType.CUSTOM,
+        name: 'Custom Account Name',
+      };
+
+      const contacts: Contact[] = [
+        {
+          id: 'test-uuid-1',
+          accountId: customAccountId,
+          name: 'Local Contact Name',
+          address: toAddress(customAccountId, { prefix: polkadotChain.addressPrefix }),
+          source: 'local',
+        },
+      ];
+
+      const result = accountService.resolveAccountName({
+        accountId: customAccountId,
+        chain: polkadotChain,
+        accounts: [customAccount],
+        contacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('Custom Account Name');
+    });
+
+    it('should prioritize local contact over backend contact', () => {
+      const contacts: Contact[] = [
+        createBackendContact({
+          id: 'test-uuid-backend',
+          accountId,
+          name: 'Backend Contact Name',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+        }),
+        {
+          id: 'test-uuid-local',
+          accountId,
+          name: 'Local Contact Name',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+          source: 'local',
+        },
+      ];
+
+      const result = accountService.resolveAccountName({
+        accountId,
+        chain: polkadotChain,
+        accounts,
+        contacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('Local Contact Name');
+    });
+
+    it('should prioritize backend contact over identity', () => {
+      const contacts: Contact[] = [
+        createBackendContact({
+          id: 'test-uuid-backend',
+          accountId,
+          name: 'Backend Contact Name',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+        }),
+      ];
+
+      const identities: IdentityMap = {
+        [polkadotChainId]: {
+          [accountId]: {
+            chainId: polkadotChainId,
+            accountId,
+            name: 'Identity Name',
+            email: '',
+            image: '',
+          },
+        },
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId,
+        chain: polkadotChain,
+        accounts,
+        contacts,
+        identities,
+        chains,
+      });
+
+      expect(result).toBe('Backend Contact Name');
+    });
   });
 
   describe('resolveWalletName', () => {
@@ -616,6 +728,188 @@ describe('account service', () => {
       });
 
       expect(result).toMatch(/^[A-Za-z0-9]{5}\.\.\.[A-Za-z0-9]{5}$/);
+    });
+
+    it('should prioritize custom name over local contact', () => {
+      const wallet = createSingleShardWallet(walletId, {
+        rootAccountId: accountId,
+        name: 'Wallet Name',
+      });
+
+      const walletAccount: ChainAccount = {
+        ...chainAccount,
+        accountId,
+        walletId,
+        nameType: AccountNameType.CUSTOM,
+        name: 'Custom Wallet Name',
+      };
+
+      const contacts: Contact[] = [
+        {
+          id: 'test-uuid-1',
+          accountId,
+          name: 'Local Contact Name',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+          source: 'local',
+        },
+      ];
+
+      const result = accountService.resolveWalletName({
+        wallet,
+        accounts: [walletAccount],
+        contacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('Custom Wallet Name');
+    });
+
+    it('should prioritize local contact over backend contact', () => {
+      const wallet = createSingleShardWallet(walletId, {
+        rootAccountId: accountId,
+        name: 'Wallet Name',
+      });
+
+      const walletAccount: ChainAccount = {
+        ...chainAccount,
+        accountId,
+        walletId,
+        nameType: AccountNameType.GENERATED,
+        name: 'Generated Name',
+      };
+
+      const contacts: Contact[] = [
+        createBackendContact({
+          id: 'test-uuid-backend',
+          accountId,
+          name: 'Backend Contact Name',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+        }),
+        {
+          id: 'test-uuid-local',
+          accountId,
+          name: 'Local Contact Name',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+          source: 'local',
+        },
+      ];
+
+      const result = accountService.resolveWalletName({
+        wallet,
+        accounts: [walletAccount],
+        contacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('Local Contact Name');
+    });
+
+    it('should prioritize backend contact over identity', () => {
+      const wallet = createSingleShardWallet(walletId, {
+        rootAccountId: accountId,
+        name: 'Wallet Name',
+      });
+
+      const walletAccount: ChainAccount = {
+        ...chainAccount,
+        accountId,
+        walletId,
+        nameType: AccountNameType.GENERATED,
+        name: 'Generated Name',
+      };
+
+      const contacts: Contact[] = [
+        createBackendContact({
+          id: 'test-uuid-backend',
+          accountId,
+          name: 'Backend Contact Name',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+        }),
+      ];
+
+      const identities: IdentityMap = {
+        [polkadotChainId]: {
+          [accountId]: {
+            chainId: polkadotChainId,
+            accountId,
+            name: 'Identity Name',
+            email: '',
+            image: '',
+          },
+        },
+      };
+
+      const result = accountService.resolveWalletName({
+        wallet,
+        accounts: [walletAccount],
+        contacts,
+        identities,
+        chains,
+      });
+
+      expect(result).toBe('Backend Contact Name');
+    });
+
+    it('should return wallet name when no account matches rootAccountId (key-set vault)', () => {
+      const rootAccountId = createAccountId('root');
+      const wallet = createPolkadotWallet(walletId, {
+        rootAccountId,
+        name: 'My Vault Wallet',
+      });
+
+      // Derived chain accounts have different accountIds than rootAccountId
+      const derivedAccount: ChainAccount = {
+        ...chainAccount,
+        accountId: createAccountId('derived1'),
+        walletId,
+      };
+
+      const result = accountService.resolveWalletName({
+        wallet,
+        accounts: [derivedAccount],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('My Vault Wallet');
+    });
+
+    it('should return wallet name over local contact when no account matches rootAccountId', () => {
+      const rootAccountId = createAccountId('root');
+      const wallet = createPolkadotWallet(walletId, {
+        rootAccountId,
+        name: 'My Vault Wallet',
+      });
+
+      const derivedAccount: ChainAccount = {
+        ...chainAccount,
+        accountId: createAccountId('derived1'),
+        walletId,
+      };
+
+      // Contact exists for rootAccountId, but wallet name should take precedence
+      const contacts: Contact[] = [
+        {
+          id: 'test-uuid-1',
+          accountId: rootAccountId,
+          name: 'Contact Name',
+          address: toAddress(rootAccountId, { prefix: polkadotChain.addressPrefix }),
+          source: 'local',
+        },
+      ];
+
+      const result = accountService.resolveWalletName({
+        wallet,
+        accounts: [derivedAccount],
+        contacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('My Vault Wallet');
     });
   });
 });

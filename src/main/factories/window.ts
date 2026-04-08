@@ -8,6 +8,15 @@ import { ENVIRONMENT } from '../shared/constants/environment';
 
 import { buildMenuTemplate } from './menu';
 
+function isViteRendererDocumentUrl(url: string): boolean {
+  try {
+    const base = renderer.server.origin ?? `${renderer.server.protocol}${renderer.server.host}:${renderer.server.port}`;
+    return new URL(url).origin === new URL(base).origin;
+  } catch {
+    return false;
+  }
+}
+
 export function createWindow(): BrowserWindow {
   const mainWindowState = windowStateKeeper({
     defaultWidth: main.window.width,
@@ -46,6 +55,29 @@ export function createWindow(): BrowserWindow {
     details.requestHeaders['User-Agent'] = 'Nova Spektr';
     delete details.requestHeaders['Origin'];
     callback({ requestHeaders: details.requestHeaders });
+  });
+
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    // Only attach CSP to document (navigation) responses.
+    // Adding headers to WebSocket upgrade (101) responses breaks the handshake in Electron.
+    if (details.resourceType === 'mainFrame' || details.resourceType === 'subFrame') {
+      if (isViteRendererDocumentUrl(details.url)) {
+        callback({ cancel: false });
+
+        return;
+      }
+
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          'Content-Security-Policy': [
+            "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' data: wss: ws: https: http:; font-src 'self' data:; worker-src 'self' blob:; object-src 'none'; frame-src 'none'",
+          ],
+        },
+      });
+    } else {
+      callback({ cancel: false });
+    }
   });
 
   // Open urls in the user's browser

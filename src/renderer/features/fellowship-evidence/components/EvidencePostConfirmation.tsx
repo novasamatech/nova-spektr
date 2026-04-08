@@ -1,12 +1,13 @@
 import { type BN } from '@polkadot/util';
+import { useUnit } from 'effector-react';
 
 import { type Asset, type Chain, type HexString, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatAsset } from '@/shared/lib/utils';
-import { ButtonWebLink, DetailRow, Icon, Separator } from '@/shared/ui';
+import { DetailRow, Icon, Separator } from '@/shared/ui';
 import { Hash, TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { evidenceService } from '@/domains/collectives';
+import { $ipfsGateways, evidenceService } from '@/domains/collectives';
 import { type AnyAccount } from '@/domains/network';
 
 type Props = {
@@ -31,8 +32,8 @@ export const EvidencePostConfirmation = ({
   rank,
 }: Props) => {
   const { t } = useI18n();
-
-  const ipfsUrl = evidenceService.getEvidenceIpfsUrl(evidence);
+  const gateways = useUnit($ipfsGateways);
+  const evidenceUrls = evidenceService.getEvidenceGatewayUrls(evidence, gateways);
 
   return (
     <Box>
@@ -42,15 +43,22 @@ export const EvidencePostConfirmation = ({
       <TransactionDetails wallets={wallets} chain={chain} initiators={[account]} signatory={account}>
         <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.evidenceType')}>{evidenceType}</DetailRow>
         <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.evidence')}>
-          <ButtonWebLink
-            size="sm"
-            variant="text"
-            target="_blank"
-            href={ipfsUrl.toString()}
-            className="w-full overflow-hidden p-0 text-right"
-          >
+          <div className="ml-auto flex flex-col items-end gap-2">
             <Hash variant="truncate" value={evidence} />
-          </ButtonWebLink>
+            <div className="flex flex-wrap justify-end gap-2">
+              {evidenceUrls.map(url => (
+                <a
+                  key={url.toString()}
+                  href={url.toString()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-button-small font-medium text-primary-button-background-default"
+                >
+                  {`${t('fellowship.salary.submitEvidenceConfirm.evidence')} (${url.host})`}
+                </a>
+              ))}
+            </div>
+          </div>
         </DetailRow>
         <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.rank')}>
           <span className="uppercase">{rank}</span>

@@ -6,7 +6,8 @@ import { cnTw, getNativeAsset, truncate } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance } from '@/shared/ui-entities';
-import { Box, Copy, Json, Modal, Tooltip, useNotification } from '@/shared/ui-kit';
+import { Box, Copy, Modal, Tooltip, useNotification } from '@/shared/ui-kit';
+import { Json } from '@/shared/ui-kit/Json/Json';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel, useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
@@ -125,7 +126,7 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
                   <Modal.Title close>{t('operation.viewJSON.label')}</Modal.Title>
                   <Modal.Content>
                     <Box padding={5}>
-                      <Json value={jsonArgs} name="operation" />
+                      <Json value={jsonArgs} name="operation" expandDepth={3} />
                     </Box>
                   </Modal.Content>
                 </Modal>

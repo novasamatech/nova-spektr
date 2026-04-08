@@ -16,7 +16,7 @@ import {
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { filterOperation, findAccountForOperation } from '../lib/operations-filter';
+import { filterOperation } from '../lib/operations-filter';
 
 export type OperationWithAccount = {
   operation: MultisigOperation;
@@ -117,9 +117,38 @@ const $operationsWithAccounts = combine(
   ({ operations, multisigAccounts, accountsPopulated }): OperationWithAccount[] => {
     if (!accountsPopulated) return [];
 
+    // Build lookup maps for O(1) account resolution instead of O(m) linear scan per operation
+    const byAccountId = new Map<string, (MultisigAccount | FlexibleMultisigAccount)[]>();
+    const byMultisigAccountId = new Map<string, (MultisigAccount | FlexibleMultisigAccount)[]>();
+    for (const acc of multisigAccounts) {
+      if (accountUtils.isFlexibleMultisigAccount(acc)) {
+        const key = `${acc.accountId}:${acc.multisigAccountId}`;
+        const list = byAccountId.get(key) ?? [];
+        list.push(acc);
+        byAccountId.set(key, list);
+
+        const mList = byMultisigAccountId.get(acc.multisigAccountId) ?? [];
+        mList.push(acc);
+        byMultisigAccountId.set(acc.multisigAccountId, mList);
+      } else if (accountUtils.isMultisigAccount(acc)) {
+        const list = byMultisigAccountId.get(acc.accountId) ?? [];
+        list.push(acc);
+        byMultisigAccountId.set(acc.accountId, list);
+      }
+    }
+
+    const findAccount = (op: MultisigOperation) => {
+      if (op.proxiedAccountId) {
+        const key = `${op.proxiedAccountId}:${op.multisigAccountId}`;
+        return byAccountId.get(key)?.find(a => accountUtils.isFlexibleMultisigAccount(a));
+      }
+      const candidates = byMultisigAccountId.get(op.multisigAccountId);
+      return candidates?.find(a => accountUtils.isMultisigAccount(a)) ?? candidates?.[0];
+    };
+
     const result: OperationWithAccount[] = [];
     for (const op of operations) {
-      const account = findAccountForOperation(op, multisigAccounts);
+      const account = findAccount(op);
       if (account) result.push({ operation: op, account });
     }
 
@@ -133,25 +162,15 @@ const $filteredOperations = combine(
     filter: $filter,
     tab: $tab,
     hiddenIds: $hiddenOperationIds,
-    multisigAccounts: $multisigAccounts,
     multisigWallets: $multisigWallets,
     chains: networkModel.$chains,
   },
-  ({
-    operationsWithAccounts,
-    filter,
-    tab,
-    hiddenIds,
-    multisigAccounts,
-    multisigWallets,
-    chains,
-  }): OperationWithAccount[] => {
-    return operationsWithAccounts.filter(({ operation }) =>
-      filterOperation(operation, {
+  ({ operationsWithAccounts, filter, tab, hiddenIds, multisigWallets, chains }): OperationWithAccount[] => {
+    return operationsWithAccounts.filter(({ operation, account }) =>
+      filterOperation(operation, account, {
         filters: filter,
         tab,
         hiddenIds,
-        multisigAccounts,
         multisigWallets,
         chains,
       }),

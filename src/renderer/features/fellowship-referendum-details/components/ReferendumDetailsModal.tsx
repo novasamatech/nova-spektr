@@ -9,11 +9,13 @@ import { type Evidence, type Referendum, referendumService, trackService } from 
 import { useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
 import { useEvidence } from '../hooks/useEvidence';
 import { useEvidenceHash } from '../hooks/useEvidenceHash';
+import { useMetadata } from '../hooks/useMetadata';
 import { useProposer } from '../hooks/useProposer';
 import { useReferendum } from '../hooks/useReferendum';
 
 import { AdditionalInfo } from './AdditionalInfo';
 import { MemberProfile } from './MemberProfile';
+import { OnChainData } from './OnChainData';
 import { ReferendumDescription } from './ReferendumDescription';
 
 export const referendumAdditionalHighPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
@@ -42,6 +44,7 @@ export const ReferendumDetailsModal = memo(({ referendumId, children, title, isC
   const { data: evidence } = useEvidence(proposer?.accountId ?? null);
   const { data: evidenceHash } = useEvidenceHash({ referendum, evidence });
   const { data: identity } = useFellowshipIdentity(proposer?.accountId ?? null);
+  const { data: meta } = useMetadata(referendum);
 
   const modalTitle = useMemo(() => {
     if (title) {
@@ -68,8 +71,12 @@ export const ReferendumDetailsModal = memo(({ referendumId, children, title, isC
       }
     }
 
+    if (meta?.title) {
+      return meta.title;
+    }
+
     return t('governance.referendums.referendumTitle', { index: referendumId });
-  }, [title, referendum, proposer, identity, chain, t, referendumId]);
+  }, [title, referendum, proposer, identity, chain, t, referendumId, meta]);
 
   const handleToggle = (open: boolean) => {
     setIsOpen(open);
@@ -96,6 +103,8 @@ export const ReferendumDetailsModal = memo(({ referendumId, children, title, isC
             {referendum && <Slot id={referendumAdditionalInfoSlot} props={{ referendum: referendum }} />}
 
             {!isCurrentUser && <Slot id={referendumActionsSlot} props={{ referendum, evidence, onClose }} />}
+
+            {referendum && referendumService.isOngoing(referendum) && <OnChainData referendum={referendum} />}
 
             <AdditionalInfo referendumId={referendumId} evidenceHash={evidenceHash} />
           </Box>
