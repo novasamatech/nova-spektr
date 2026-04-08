@@ -5,7 +5,6 @@
 // Phase 1: polls Octopus API until session status is "running" (max 2 min)
 // Phase 2: verifies chopsticks WS responds to chain_getBlockHash (max 1 min)
 
-import { WebSocket } from 'ws';
 
 const SESSION_ID = process.argv[2];
 const WS_URL = process.argv[3];
