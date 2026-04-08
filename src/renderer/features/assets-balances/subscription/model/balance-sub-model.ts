@@ -199,7 +199,8 @@ sample({
 });
 
 sample({
-  clock: walletSelect.$selectedWallet,
+  clock: [walletSelect.$selectedWallet, walletModel.$availableAccounts],
+  source: walletSelect.$selectedWallet,
   filter: nonNullable,
   target: subscribeWallet,
 });
