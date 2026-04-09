@@ -19,7 +19,6 @@ export const substrateChains = [
   { name: 'Phala' },
   { name: 'Bifrost Polkadot' },
   { name: 'Heima' },
-  { name: 'Rococo Testnet' },
   { name: 'Pendulum' },
   { name: 'Bittensor' },
   { name: 'Vara' },
