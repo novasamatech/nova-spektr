@@ -15,6 +15,7 @@ import { type OperationWithAccount, operationsContextModel } from '../model/cont
 import { deepLinkModel } from '../model/deep-link';
 
 import { ChainSyncStatus } from './ChainSyncStatus';
+import { DraftsSection } from './DraftsSection';
 import { EmptyOperations } from './EmptyOperations';
 import { Operation } from './Operation';
 import { AccountNotFoundModal } from './modals/AccountNotFoundModal';
@@ -40,6 +41,7 @@ export const Operations = () => {
   const isTabDataLoading = useUnit(operationsContextModel.$isTabDataLoading);
   const tab = useUnit(operationsContextModel.$tab);
   const baseUrl = useUnit(backendConfigurationModel.$backendUrl);
+  const hasBackend = useUnit(backendConfigurationModel.$hasBackend);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
 
   const operationIds = useMemo(() => filteredOps.map(({ operation }) => operation.id), [filteredOps]);
@@ -136,6 +138,8 @@ export const Operations = () => {
 
       {hasMultisigAccounts && (
         <ScrollArea viewportRef={scrollRef}>
+          {tab === 'pending' && hasBackend && <DraftsSection />}
+
           {(isDeferredLoading || isDeepLinkLoading) && (
             <div className="mt-4 flex w-full items-center justify-center gap-x-3">
               <Loader color="primary" size={25} />
