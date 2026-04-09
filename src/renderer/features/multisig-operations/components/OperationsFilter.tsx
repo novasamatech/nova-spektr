@@ -21,8 +21,12 @@ export const OperationsFilter = memo(() => {
   const isFiltersSelected = useUnit(operationsContextModel.$isFiltersSelected);
   const chains = useUnit(networkModel.$chains);
   const chainsList = useUnit(networkModel.$chainsList);
-  const multisigAccounts = useUnit(operationsContextModel.$multisigAccounts);
+  const multisigAccounts = useUnit(operationsContextModel.$presetScopedMultisigAccounts);
   const multisigWallets = useUnit(operationsContextModel.$multisigWallets);
+
+  // When an active preset narrows the account list down to 0 or 1, the account multi-select
+  // becomes redundant — hide it entirely so the preset is the single source of account scope.
+  const showAccountFilter = multisigAccounts.length > 1;
 
   const resolvedWallets = useWalletsNames(multisigWallets);
 
@@ -144,15 +148,17 @@ export const OperationsFilter = memo(() => {
           onChange={range => operationsContextModel.setFilter({ dateRange: range })}
         />
       </div>
-      <MultiSelect
-        showSelectAll
-        className="w-[136px]"
-        placeholder={t('operations.filters.accountPlaceholder')}
-        selectedIds={selectedOptions.account}
-        options={[...filtersOptions.account]}
-        onChange={value => operationsContextModel.setFilter({ account: value.map(v => v.id) })}
-        onSearch={setAccountSearchQuery}
-      />
+      {showAccountFilter && (
+        <MultiSelect
+          showSelectAll
+          className="w-[136px]"
+          placeholder={t('operations.filters.accountPlaceholder')}
+          selectedIds={selectedOptions.account}
+          options={[...filtersOptions.account]}
+          onChange={value => operationsContextModel.setFilter({ account: value.map(({ id }) => id) })}
+          onSearch={setAccountSearchQuery}
+        />
+      )}
       <MultiSelect
         showSelectAll
         className="w-[136px]"

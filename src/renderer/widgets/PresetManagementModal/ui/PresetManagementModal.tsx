@@ -12,9 +12,8 @@ import {
   type PresetFilterCriteria,
   type PresetType,
   EMPTY_FILTERS,
-  dashboardPresetsModel,
-} from '@/aggregates/dashboard-presets';
-import { dashboardModel } from '@/pages/Dashboard/model/dashboard-model';
+  accountPresetsModel,
+} from '@/aggregates/account-presets';
 
 import { CustomAccountSelector } from './CustomAccountSelector';
 import { MatchedAccountsPreview } from './MatchedAccountsPreview';
@@ -29,8 +28,8 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { toast } = useNotification();
 
-  const presets = useUnit(dashboardPresetsModel.$presets);
-  const allEntries = useUnit(dashboardModel.$allEntries);
+  const presets = useUnit(accountPresetsModel.$presets);
+  const allEntries = useUnit(accountPresetsModel.$allEntries);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
@@ -104,7 +103,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
 
   const handleDragEnd = useCallback(() => {
     if (dragIdsRef.current) {
-      dashboardPresetsModel.presetsReordered(dragIdsRef.current);
+      accountPresetsModel.presetsReordered(dragIdsRef.current);
     }
     setDragIds(null);
   }, []);
@@ -121,11 +120,11 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
     };
 
     if (selectedId === null) {
-      dashboardPresetsModel.presetCreated(payload);
+      accountPresetsModel.presetCreated(payload);
       setPendingSelectNew(true);
       toast.success(t('dashboard.presets.modal.createdToast', { name: trimmedName }));
     } else {
-      dashboardPresetsModel.presetUpdated({ id: selectedId, ...payload });
+      accountPresetsModel.presetUpdated({ id: selectedId, ...payload });
       toast.success(t('dashboard.presets.modal.savedToast', { name: trimmedName }));
     }
   };
@@ -137,7 +136,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
     if (!deletedPreset) return;
 
     const deletedIndex = presets.findIndex((p) => p.id === selectedId);
-    dashboardPresetsModel.presetDeleted(selectedId);
+    accountPresetsModel.presetDeleted(selectedId);
 
     toast.success(t('dashboard.presets.modal.deletedToast', { name: deletedPreset.name }));
 
