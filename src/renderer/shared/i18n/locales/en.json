@@ -2296,6 +2296,7 @@
     "accountNotFoundDescription": "Your account is not listed as a signatory in this multisig.\nPlease add account to sign operation.",
     "accountNotFoundTitle": "No account to sign operation",
     "addCallDataButton": "Add call data",
+    "addWalletButton": "Add wallet",
     "addedToBasket": "Added to basket",
     "addToBasket": "Add to basket",
     "advanced": "Advanced",
@@ -2604,6 +2605,11 @@
   },
   "portfolilo": {
     "selectNetworkLabel": "Select network"
+  },
+  "presets": {
+    "all": "All",
+    "searchPresets": "Search presets...",
+    "manage": "Manage Presets"
   },
   "price": {
     "withCode": "{ amount } { code }",

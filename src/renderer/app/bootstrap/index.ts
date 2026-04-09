@@ -9,6 +9,7 @@ import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
+import { dashboardAccountSelectorFeature, operationsAccountSelectorFeature } from '@/features/account-selector';
 import { assetsSettingsModel, portfolioModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
@@ -17,7 +18,6 @@ import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { dashboardGovernanceFeature } from '@/features/dashboard-governance';
 import { dashboardNavigationFeature } from '@/features/dashboard-navigation';
 import { dashboardPortfolioOverviewFeature } from '@/features/dashboard-portfolio-overview';
-import { dashboardPresetsFeature } from '@/features/dashboard-presets';
 import { dashboardPriceChartsFeature } from '@/features/dashboard-price-charts';
 import { dashboardStakingFeature } from '@/features/dashboard-staking';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
@@ -70,7 +70,8 @@ export const bootstrap = () => {
     config,
 
     dashboardNavigationFeature,
-    dashboardPresetsFeature,
+    dashboardAccountSelectorFeature,
+    operationsAccountSelectorFeature,
     dashboardPortfolioOverviewFeature,
     dashboardPriceChartsFeature,
     dashboardGovernanceFeature,

@@ -6,7 +6,7 @@ import { cnTw } from '@/shared/lib/utils';
 import { MultiSelect } from '@/shared/ui';
 import { Input } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
-import { type PresetFilterCriteria } from '@/aggregates/dashboard-presets';
+import { type PresetFilterCriteria } from '@/aggregates/account-presets';
 
 type Props = {
   name: string;

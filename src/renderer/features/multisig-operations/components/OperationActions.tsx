@@ -5,9 +5,10 @@ import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/cor
 import { useI18n } from '@/shared/i18n';
 import { validateCallData } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { type MultisigOperation, accountService, accounts } from '@/domains/network';
+import { type MultisigOperation, accountService, accounts, isContactMultisigAccount } from '@/domains/network';
 import { useNetworkData } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
+import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 
 import { ApproveTxModal } from './modals/ApproveTx';
 import { CallDataModal } from './modals/CallDataModal';
@@ -22,6 +23,18 @@ export const OperationActions = memo(({ operation, account }: Props) => {
   const { t } = useI18n();
   const { api, chain } = useNetworkData(operation.chainId);
   const allAccounts = useUnit(accounts.$list);
+
+  // Contact-backed (external) multisig: the user has no signatory keys, so
+  // instead of Approve/Reject we show the "Add wallet" trigger. When the
+  // added wallet contains a signatory, account-sync dedupes the synthetic
+  // record and the row flips to signable automatically.
+  if (isContactMultisigAccount(account)) {
+    return (
+      <div className="flex w-[150px] shrink-0 justify-end" onClick={e => e.stopPropagation()}>
+        <WalletPairingOperationTrigger />
+      </div>
+    );
+  }
 
   const hasRejectAccount = allAccounts.some(a => {
     const isDepositor = a.accountId === operation.depositor;

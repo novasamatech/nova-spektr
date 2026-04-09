@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { Box, Tabs } from '@/shared/ui-kit';
@@ -10,6 +11,8 @@ import {
   Search,
   operationsContextModel,
 } from '@/features/multisig-operations';
+
+export const operationsPresetSwitcherSlot = createSlot({ name: 'operationsPresetSwitcher' });
 
 export const Operations = () => {
   const { t } = useI18n();
@@ -23,9 +26,12 @@ export const Operations = () => {
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
       <Header title={t('operations.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-        <Box width="230px">
-          <Search />
-        </Box>
+        <div className="flex items-center gap-x-2">
+          <Box width="230px">
+            <Search />
+          </Box>
+          <Slot id={operationsPresetSwitcherSlot} />
+        </div>
       </Header>
 
       <div className="mx-auto flex min-h-0 w-full max-w-[1084px] flex-1 flex-col">

@@ -1,1 +1,1 @@
-export { Operations } from './Operations';
+export { Operations, operationsPresetSwitcherSlot } from './Operations';

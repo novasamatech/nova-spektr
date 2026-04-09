@@ -5,11 +5,11 @@ import { cnTw, includes, toShortAddress } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { Checkbox, Input, SearchInput } from '@/shared/ui-kit';
-import { type DashboardEntry } from '@/pages/Dashboard/model/dashboard-model';
+import { type AccountEntry } from '@/aggregates/account-presets';
 
 type Props = {
   name: string;
-  allEntries: DashboardEntry[];
+  allEntries: AccountEntry[];
   selectedIds: string[];
   onNameChange: (name: string) => void;
   onSelectedIdsChange: (ids: string[]) => void;
@@ -111,7 +111,7 @@ export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameCha
               <CaptionText className="text-text-tertiary">{toShortAddress(entry.address, 6)}</CaptionText>
             </div>
             <div className="flex shrink-0 items-center gap-x-1">
-              {entry.entityNames && entry.entityNames.length > 0 && (
+              {entry.source === 'backend-contact' && entry.entityNames.length > 0 && (
                 <Badge className={ENTITY_BADGE}>{entry.entityNames[0]}</Badge>
               )}
               <Badge className={SOURCE_BADGE_COLORS[entry.source]}>{SOURCE_LABELS[entry.source] ?? entry.source}</Badge>
