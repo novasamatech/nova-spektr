@@ -1,3 +1,4 @@
+import { type Store } from 'effector';
 import { useUnit } from 'effector-react';
 import { useCallback, useMemo, useState } from 'react';
 
@@ -5,16 +6,29 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, includes } from '@/shared/lib/utils';
 import { FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { Popover, SearchInput, Tabs } from '@/shared/ui-kit';
-import { dashboardPresetsModel } from '@/aggregates/dashboard-presets';
+import { accountPresetsModel } from '@/aggregates/account-presets';
 import { PresetManagementModal } from '@/widgets/PresetManagementModal';
 
 const ALL_VALUE = '__all__';
 
-export const PresetSegmentSwitcher = () => {
+type Props = {
+  $activePresetId: Store<string | null>;
+  onActivate: (id: string | null) => void;
+};
+
+/**
+ * WARNING — this component is injected into DI slots via `feature.inject(..., {
+ * render: ... })`. The DI slot renderer invokes `render(props)` as a function,
+ * not as JSX, so wrapping this (or any of its slot-injected wrappers such as
+ * `DashboardAccountSelector` / `OperationsAccountSelector`) in `memo()` will
+ * break the slot call path (`TypeError: render is not a function`). Memoize
+ * child components instead if needed.
+ */
+export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) => {
   const { t } = useI18n();
-  const activePresetId = useUnit(dashboardPresetsModel.$activePresetId);
-  const segmentPresets = useUnit(dashboardPresetsModel.$segmentPresets);
-  const overflowPresets = useUnit(dashboardPresetsModel.$overflowPresets);
+  const activePresetId = useUnit($activePresetId);
+  const segmentPresets = useUnit(accountPresetsModel.$segmentPresets);
+  const overflowPresets = useUnit(accountPresetsModel.$overflowPresets);
 
   const [overflowOpen, setOverflowOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -27,15 +41,21 @@ export const PresetSegmentSwitcher = () => {
     [overflowPresets, search],
   );
 
-  const handleTabChange = useCallback((value: string) => {
-    dashboardPresetsModel.presetActivated(value === ALL_VALUE ? null : value);
-  }, []);
+  const handleTabChange = useCallback(
+    (value: string) => {
+      onActivate(value === ALL_VALUE ? null : value);
+    },
+    [onActivate],
+  );
 
-  const handleOverflowActivate = useCallback((id: string) => {
-    dashboardPresetsModel.presetActivated(id);
-    setOverflowOpen(false);
-    setSearch('');
-  }, []);
+  const handleOverflowActivate = useCallback(
+    (id: string) => {
+      onActivate(id);
+      setOverflowOpen(false);
+      setSearch('');
+    },
+    [onActivate],
+  );
 
   const handleOpenModal = useCallback(() => {
     setModalOpen(true);
@@ -53,7 +73,7 @@ export const PresetSegmentSwitcher = () => {
         <div className="[&_[role=tablist]]:mb-0">
           <Tabs value={tabValue} onChange={handleTabChange}>
             <Tabs.List>
-              <Tabs.Trigger value={ALL_VALUE}>{t('dashboard.presets.all')}</Tabs.Trigger>
+              <Tabs.Trigger value={ALL_VALUE}>{t('presets.all')}</Tabs.Trigger>
               {segmentPresets.map((preset) => (
                 <Tabs.Trigger key={preset.id} value={preset.id}>
                   {preset.name}
@@ -70,14 +90,13 @@ export const PresetSegmentSwitcher = () => {
                 type="button"
                 className="rounded-md bg-tab-background px-3 py-1.5 text-footnote text-text-secondary transition-colors hover:bg-action-background-hover"
               >
-                {/* eslint-disable-next-line i18next/no-literal-string */}
                 {'▾ ' + String(overflowPresets.length)}
               </button>
             </Popover.Trigger>
             <Popover.Content>
               <div className="w-[220px] p-1">
                 <div className="px-2 pt-2 pb-1">
-                  <SearchInput value={search} placeholder={t('dashboard.presets.searchPresets')} onChange={setSearch} />
+                  <SearchInput value={search} placeholder={t('presets.searchPresets')} onChange={setSearch} />
                 </div>
                 <div className="mt-1 max-h-48 overflow-y-auto">
                   {filteredOverflow.map((preset) => (
@@ -101,7 +120,7 @@ export const PresetSegmentSwitcher = () => {
                     onClick={handleOpenModal}
                   >
                     <Icon name="settingsLite" size={14} className="text-icon-default" />
-                    <FootnoteText className="text-text-secondary">{t('dashboard.presets.manage')}</FootnoteText>
+                    <FootnoteText className="text-text-secondary">{t('presets.manage')}</FootnoteText>
                   </button>
                 </div>
               </div>

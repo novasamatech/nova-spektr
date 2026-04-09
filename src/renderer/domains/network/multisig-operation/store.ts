@@ -5,7 +5,14 @@ import { uniqBy } from 'lodash';
 import { and, once, readonly } from 'patronum';
 
 import { type Done, persist } from '@/shared/api/storage';
-import { type CallData, type Chain, type ChainId, type DecodedTransaction, type HexString } from '@/shared/core';
+import {
+  type CallData,
+  type Chain,
+  type ChainId,
+  type DecodedTransaction,
+  type HexString,
+  AccountType,
+} from '@/shared/core';
 import { series } from '@/shared/effector';
 import { entries, groupBy, keys, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -481,6 +488,41 @@ $trackedCallHashes.on(deleteAccountIds, (state, ids) =>
     }
   }),
 );
+
+// Evict cached operations whose multisigAccountId no longer matches a live
+// multisig account. The explicit delete handler above only catches in-session
+// deletions; this covers cross-session orphans (the cache outliving the owning
+// wallet — e.g. wallet removed on another device or under an older build).
+// Triggered both on account list updates and on initial cache hydration so
+// whichever arrives second reconciles the other.
+sample({
+  clock: [accounts.$list, cachedOperationsLoaded],
+  source: { cached: $cachedOperations, allAccounts: accounts.$list },
+  fn: ({ cached, allAccounts }) => {
+    if (cached.length === 0) return cached;
+
+    // Domain `AnyAccount` doesn't declare `accountType` (shared/core's narrower
+    // multisig types extend it). Runtime narrowing via the `in` operator keeps
+    // us off explicit type casts.
+    const live = new Set<string>();
+    for (const account of allAccounts) {
+      if (!('accountType' in account)) continue;
+      const type = account.accountType;
+      if (type === AccountType.MULTISIG) {
+        live.add(account.accountId);
+      } else if (type === AccountType.FLEX_MULTISIG && 'multisigAccountId' in account) {
+        const inner = account.multisigAccountId;
+        if (typeof inner === 'string') live.add(inner);
+      }
+    }
+
+    const kept = cached.filter(op => live.has(op.multisigAccountId));
+    // Same-reference return when nothing is evicted prevents a no-op write
+    // from propagating through persist and downstream combines.
+    return kept.length === cached.length ? cached : kept;
+  },
+  target: $cachedOperations,
+});
 
 export const multisigOperation = {
   $list: $allOperations,
