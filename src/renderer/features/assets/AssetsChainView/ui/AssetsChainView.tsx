@@ -9,7 +9,7 @@ import { Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { useAssetsPrices } from '@/domains/price';
-import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
+import { EmptyAssetsState } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
@@ -21,9 +21,8 @@ type Props = {
   query: string;
   visibleAccounts: AnyAccount[];
   hideZeroBalances: boolean;
-  assetsView: AssetsListView;
 };
-export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, assetsView }: Props) => {
+export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances }: Props) => {
   const activeWallet = useUnit(walletSelect.$selectedWallet);
   const activeWalletAccounts = useUnit(walletSelect.$selectedAccounts);
   const balances = useUnit(balanceModel.$balanceMap);
@@ -41,7 +40,7 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, asse
   const { list, isLoading } = useDeferredList({ list: filteredChains, forceFirstRender: true });
 
   useEffect(() => {
-    if (assetsView !== AssetsListView.CHAIN_CENTRIC || !visibleAccounts.length) return;
+    if (!visibleAccounts.length) return;
 
     const visibleAccountIds = new Set(visibleAccounts.map((a) => a.accountId));
 
@@ -67,7 +66,7 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, asse
     );
 
     setSortedChains(sortedChains);
-  }, [activeWalletAccounts, balances, assetsPrices, assetsView, connections, visibleAccounts]);
+  }, [activeWalletAccounts, balances, assetsPrices, connections, visibleAccounts]);
 
   useEffect(() => {
     let filteredChains: Chain[] = [];
@@ -106,7 +105,7 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, asse
     }
   }, [sortedChains, query]);
 
-  if (assetsView !== AssetsListView.CHAIN_CENTRIC || !visibleAccounts.length) {
+  if (!visibleAccounts.length) {
     return null;
   }
 

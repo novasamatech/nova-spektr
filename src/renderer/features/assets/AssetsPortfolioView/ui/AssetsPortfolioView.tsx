@@ -6,7 +6,7 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
+import { EmptyAssetsState } from '@/entities/asset';
 import { walletUtils } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -29,10 +29,8 @@ const getColStyle = (wallet: Wallet | null): string => {
 export const AssetsPortfolioView = () => {
   const { t } = useI18n();
 
-  const activeView = useUnit(portfolioModel.$activeView);
   const sortedTokens = useUnit(portfolioModel.$sortedTokens);
   const tokensPopulated = useUnit(portfolioModel.$tokensPopulated);
-  const accounts = useUnit(portfolioModel.$accounts);
   const fiatFlag = useUnit(currencySelect.$fiatFlag);
   const wallet = useUnit(walletSelect.$selectedWallet);
 
@@ -41,10 +39,6 @@ export const AssetsPortfolioView = () => {
     isLoading: !tokensPopulated,
     forceFirstRender: true,
   });
-
-  if (activeView !== AssetsListView.TOKEN_CENTRIC || accounts.length === 0) {
-    return null;
-  }
 
   return (
     <div className="flex min-h-full w-full flex-col items-center gap-y-2 py-4">
