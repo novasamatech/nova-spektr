@@ -7,8 +7,6 @@ const feature = 'Validations';
 const story = 'Validations tests';
 
 test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => {
-  test.describe.configure({ mode: 'serial' });
-
   test.beforeEach(async () => {
     await setupTestMetadata(feature, story);
   });
