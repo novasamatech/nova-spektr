@@ -2,7 +2,7 @@ import { useSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { Button, Icon } from '@/shared/ui';
-import { Dropdown } from '@/shared/ui-kit';
+import { Dropdown, Tooltip } from '@/shared/ui-kit';
 
 import { walletPairingDropdownOptionsSlot } from './WalletPairingSelect';
 
@@ -23,17 +23,24 @@ export const WalletPairingOperationTrigger = () => {
   const dropdownOptions = useSlot(walletPairingDropdownOptionsSlot, { props: { t } });
 
   return (
-    <Dropdown open={isOpen} keepOpen onToggle={toggleIsOpen}>
-      <Dropdown.Trigger>
-        <Button
-          size="sm"
-          className="flex-1 justify-center border-0 bg-badge-background text-tab-text-accent hover:bg-badge-background-hover"
-          suffixElement={<Icon name={isOpen ? 'up' : 'down'} size={14} className="text-inherit" />}
-        >
-          {t('operation.addWalletButton')}
-        </Button>
-      </Dropdown.Trigger>
-      <Dropdown.Content>{dropdownOptions}</Dropdown.Content>
-    </Dropdown>
+    <Tooltip open={isOpen ? false : undefined}>
+      <Tooltip.Trigger>
+        <div>
+          <Dropdown open={isOpen} keepOpen onToggle={toggleIsOpen}>
+            <Dropdown.Trigger>
+              <Button
+                size="sm"
+                className="flex-1 justify-center border-0 bg-badge-background text-tab-text-accent hover:bg-badge-background-hover"
+                suffixElement={<Icon name={isOpen ? 'up' : 'down'} size={14} className="text-inherit" />}
+              >
+                {t('operation.addWalletButton')}
+              </Button>
+            </Dropdown.Trigger>
+            <Dropdown.Content>{dropdownOptions}</Dropdown.Content>
+          </Dropdown>
+        </div>
+      </Tooltip.Trigger>
+      <Tooltip.Content>{t('operation.addWalletTooltip')}</Tooltip.Content>
+    </Tooltip>
   );
 };

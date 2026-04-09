@@ -69,7 +69,7 @@ export const operationTitleTransformer = createTransformer<
 
 const AccountInfoCell = memo(
   ({ icon, title, accountAddress }: { icon: ReactNode; title: string; accountAddress: Address }) => (
-    <div className="flex w-[240px] items-center gap-x-2">
+    <div className="flex min-w-[200px] flex-1 items-center gap-x-2">
       {icon}
       <div className="flex min-w-0 flex-col items-start gap-y-0.5">
         <FootnoteText className="w-full truncate text-text-primary">{title}</FootnoteText>
@@ -136,7 +136,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
       <Accordion isDefaultOpen={isDefaultOpen}>
         <Accordion.Button buttonClass="px-4 py-2">
           <div className="flex h-[52px] w-full items-center gap-x-2 overflow-hidden">
-            <div className="flex w-[450px] min-w-0 items-center gap-x-2">
+            <div className="flex min-w-[350px] flex-1 items-center gap-x-2">
               <OperationIcon operation={operation} account={multisigAccount} />
 
               <div className="flex flex-1 flex-col justify-center gap-y-0.5 overflow-hidden">
@@ -176,7 +176,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                   accountAddress={accountAddress}
                 />
               ) : (
-                <div className="w-[240px]" />
+                <div className="min-w-[200px] flex-1" />
               )}
 
               <OperationTitleStatus operation={operation} account={multisigAccount} />

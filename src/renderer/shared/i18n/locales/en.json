@@ -2297,6 +2297,7 @@
     "accountNotFoundTitle": "No account to sign operation",
     "addCallDataButton": "Add call data",
     "addWalletButton": "Add wallet",
+    "addWalletTooltip": "You don't have a wallet with a signatory key for this multisig. Add one to sign transactions.",
     "addedToBasket": "Added to basket",
     "addToBasket": "Add to basket",
     "advanced": "Advanced",

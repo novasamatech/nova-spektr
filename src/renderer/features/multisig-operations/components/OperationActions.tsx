@@ -24,68 +24,69 @@ export const OperationActions = memo(({ operation, account }: Props) => {
   const { api, chain } = useNetworkData(operation.chainId);
   const allAccounts = useUnit(accounts.$list);
 
-  // Contact-backed (external) multisig: the user has no signatory keys, so
-  // instead of Approve/Reject we show the "Add wallet" trigger. When the
-  // added wallet contains a signatory, account-sync dedupes the synthetic
-  // record and the row flips to signable automatically.
-  if (isContactMultisigAccount(account)) {
-    return (
-      <div className="flex w-[150px] shrink-0 justify-end" onClick={e => e.stopPropagation()}>
-        <WalletPairingOperationTrigger />
-      </div>
-    );
-  }
+  const isContact = isContactMultisigAccount(account);
 
-  const hasRejectAccount = allAccounts.some(a => {
-    const isDepositor = a.accountId === operation.depositor;
-    const isOnChain = chain ? accountService.isAccountAvailableOnChain(a, chain) : false;
+  if (isContact && operation.status !== 'pending') return null;
 
-    return isDepositor && isOnChain && !accountUtils.isWatchOnlyAccount(a);
-  });
+  const hasRejectAccount =
+    !isContact &&
+    allAccounts.some(a => {
+      const isDepositor = a.accountId === operation.depositor;
+      const isOnChain = chain ? accountService.isAccountAvailableOnChain(a, chain) : false;
 
-  const hasApproveAccount = allAccounts.some(a => {
-    const isSignatory = account.signatories.some(
-      s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true),
-    );
-    const isOnChain = chain ? accountService.isAccountAvailableOnChain(a, chain) : false;
-    const hasNotSigned = !operation.events.some(e => e.accountId === a.accountId);
+      return isDepositor && isOnChain && !accountUtils.isWatchOnlyAccount(a);
+    });
 
-    return isSignatory && isOnChain && hasNotSigned && !accountUtils.isWatchOnlyAccount(a);
-  });
+  const hasApproveAccount =
+    !isContact &&
+    allAccounts.some(a => {
+      const isSignatory = account.signatories.some(
+        s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true),
+      );
+      const isOnChain = chain ? accountService.isAccountAvailableOnChain(a, chain) : false;
+      const hasNotSigned = !operation.events.some(e => e.accountId === a.accountId);
+
+      return isSignatory && isOnChain && hasNotSigned && !accountUtils.isWatchOnlyAccount(a);
+    });
 
   const isRejectAvailable = operation.status === 'pending' && hasRejectAccount;
 
-  const isFinalSigning = account && operation.events.length === account.threshold - 1;
+  const isFinalSigning = operation.events.length === account.threshold - 1;
   const hasValidCallData = operation.callData && validateCallData(operation.callData, operation.callHash);
   const isApproveAvailable =
     operation.status === 'pending' && hasApproveAccount && (!isFinalSigning || hasValidCallData);
 
   const needsCallData = operation.status === 'pending' && hasApproveAccount && isFinalSigning && !hasValidCallData;
 
-  if (!chain) return null;
+  if (!chain && !isContact) return null;
 
   return (
-    <div className="flex w-[150px] shrink-0 gap-x-2" onClick={e => e.stopPropagation()}>
+    <div className="flex w-[230px] shrink-0 justify-center gap-x-2" onClick={e => e.stopPropagation()}>
       {api && chain && isRejectAvailable && (
         <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
-          <Button pallet="error" variant="fill" size="sm" className="flex-1">
+          <Button pallet="error" variant="fill" size="sm" className="max-w-1/2 flex-1">
             {t('operation.rejectButton')}
           </Button>
         </RejectTxModal>
       )}
       {api && chain && isApproveAvailable && (
         <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
-          <Button size="sm" className="flex-1">
+          <Button size="sm" className="max-w-1/2 flex-1">
             {t('operation.approveButton')}
           </Button>
         </ApproveTxModal>
       )}
       {api && chain && needsCallData && (
         <CallDataModal api={api} operation={operation} chain={chain}>
-          <Button size="sm" variant="chip" className="shrink-0 whitespace-nowrap">
+          <Button size="sm" variant="chip" className="max-w-1/2 flex-1 whitespace-nowrap">
             {t('operation.callData.addCallDataButton')}
           </Button>
         </CallDataModal>
+      )}
+      {isContact && (
+        <div className="max-w-1/2 flex-1">
+          <WalletPairingOperationTrigger />
+        </div>
       )}
     </div>
   );
