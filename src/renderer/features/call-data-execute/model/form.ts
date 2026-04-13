@@ -30,9 +30,10 @@ import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
 import { balanceSubModel } from '@/features/assets-balances';
+import { builderModel } from '@/features/extrinsic-builder';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { Step } from '../lib/types';
+import { InputMode, Step } from '../lib/types';
 
 import { type ConfirmInput, confirmModel } from './confirm';
 
@@ -49,6 +50,11 @@ const stepChanged = createEvent<Step>();
 const flowStarted = createEvent();
 const flowFinished = createEvent();
 const $step = readonly(restore(stepChanged, Step.NONE));
+
+// input mode (paste vs build)
+
+const inputModeChanged = createEvent<InputMode>();
+const $inputMode = readonly(restore(inputModeChanged, InputMode.PASTE));
 
 const form: Form<FormData> = createForm<FormData>({
   fields: {
@@ -250,6 +256,17 @@ sample({
   target: [stepChanged, form.reset],
 });
 
+sample({
+  clock: flowFinished,
+  target: builderModel.resetBuilder,
+});
+
+sample({
+  clock: flowFinished,
+  fn: () => InputMode.PASTE,
+  target: inputModeChanged,
+});
+
 const $allChains = networkModel.$chainsList;
 
 const $availableChains = combine(
@@ -280,6 +297,38 @@ const $showSignatories = combine(
 sample({
   clock: $signatories,
   target: balanceSubModel.fetchAccounts,
+});
+
+// builder integration
+
+// Push API to builder when chain changes
+sample({
+  clock: $api,
+  target: builderModel.setApi,
+});
+
+// When builder produces call data and we're in BUILD mode, push it to the form
+sample({
+  clock: builderModel.$builtCallData,
+  source: $inputMode,
+  filter: (mode) => mode === InputMode.BUILD,
+  fn: (_, callData) => callData ?? '',
+  target: form.fields.callData.change,
+});
+
+// When switching to Build tab, parse existing callData into builder
+sample({
+  clock: inputModeChanged,
+  source: form.fields.callData.$value,
+  filter: (callData, mode) => mode === InputMode.BUILD && callData.length > 0 && callData.startsWith('0x'),
+  fn: (callData) => callData,
+  target: builderModel.populateFromCallData,
+});
+
+// Reset builder on chain change
+sample({
+  clock: form.fields.chain.change,
+  target: builderModel.resetBuilder,
 });
 
 // flow setup
@@ -452,6 +501,7 @@ export const formModel = {
   $fee,
   $pendingFee,
   $errors,
+  $inputMode,
 
   $allChains: $allChains,
   $availableChains: $availableChains,
@@ -461,4 +511,5 @@ export const formModel = {
   stepChanged,
   flowStarted,
   flowFinished,
+  inputModeChanged,
 };
