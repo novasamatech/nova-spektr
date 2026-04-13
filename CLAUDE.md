@@ -58,42 +58,79 @@ Nova Spektr is a Polkadot & Kusama ecosystem Enterprise Desktop application buil
 
 ## Development Commands
 
-For full command reference, see [docs/onboarding/getting-started.mdx](docs/content/docs/onboarding/getting-started.mdx).
+### Development
+- `pnpm start` - Start Electron app in dev mode (also accessible via browser)
+- `pnpm start:renderer` - Start only renderer without Electron (not recommended)
+- `pnpm preview` - Start Electron in staging mode with browser access
 
-Key commands not in docs:
+### Build
+- `pnpm build` - Build app in production mode
+- `pnpm build:dev` - Build app in development mode
+- `pnpm build:staging` - Build app in staging mode
+- `pnpm staging:sequence` - Full staging build sequence (clean, build, postbuild, dist)
+- `pnpm prod:sequence` - Full production build sequence (clean, build, postbuild, dist)
+
+### Testing
+- `pnpm test` - Run unit tests (Vitest)
 - `pnpm test:watch` - Run tests in watch mode
+- `pnpm test:ui` - Run tests with UI
+- `pnpm test:coverage` - Run tests with coverage report
+- `pnpm test:system` - Run end-to-end tests (Playwright)
 - `pnpm test tests/integrations` - Run integration tests
-- `pnpm types:go` - TypeScript type checking with tsgo (~6x faster, preferred)
-- `pnpm fmt:check` - Check formatting without auto-fixing
-- `pnpm fmt:fix` - Auto-fix formatting
-- `pnpm build:dev` / `pnpm build:staging` - Non-production builds
 
-### Integration Tests
-Integration tests live in `tests/integrations/` and test feature model logic (Effector stores/events), storage persistence (IndexedDB), state management workflows, validation rules, and transaction building.
+#### Integration Tests
+Integration tests live in `tests/integrations/` and test feature model logic (Effector stores/events), storage persistence (IndexedDB), state management workflows, validation rules, and transaction building. They use a custom FeatureTestBuilder/FeatureTestEnvironment framework with fake IndexedDB and isolated Effector scopes.
 
 **When to use**: Multi-step business logic spanning stores, events, and storage. Not for UI rendering (component tests), pure functions (unit tests), or full user flows (E2E/Playwright).
 
 See [`tests/integrations/CLAUDE.md`](tests/integrations/CLAUDE.md) for the complete framework reference.
 
+### Code Quality
+- `pnpm lint` - Run ESLint on source code
+- `pnpm lint:fix` - Run linter and auto-fix issues
+- `pnpm types` - Run TypeScript type checking (tsc)
+- `pnpm types:go` - Run TypeScript type checking with tsgo (~6x faster, preferred)
+- `pnpm fmt:check` - Check code formatting with Prettier
+- `pnpm fmt:fix` - Auto-fix code formatting
+
 ## Architecture
 
-For project structure, folder layout, domain/aggregate/feature patterns, and store/service conventions, see [docs/onboarding/project-structure.mdx](docs/content/docs/onboarding/project-structure.mdx).
+Detailed folder layouts, domain/aggregate/feature conventions, and store/service patterns: [docs/onboarding/project-structure.mdx](docs/content/docs/onboarding/project-structure.mdx).
+Naming conventions: [docs/code/style/naming.md](docs/content/docs/code/style/naming.md).
+Effector patterns (sample minimization, effects vs events, attach): [docs/code/style/effector.md](docs/content/docs/code/style/effector.md).
 
-For naming conventions, see [docs/code/style/naming.md](docs/content/docs/code/style/naming.md).
+### Main Application Structure
+- **Electron Main Process** (`src/main/`) - Application lifecycle, window management, system integration
+- **Electron Preload** (`src/main/preload.ts`) - Secure bridge between main and renderer processes
+- **Renderer Process** (`src/renderer/`) - React-based UI application
 
-For Effector patterns (sample minimization, effects vs events, attach), see [docs/code/style/effector.md](docs/content/docs/code/style/effector.md).
+### Frontend Architecture (Feature-Sliced Design)
+The renderer follows a modified Feature-Sliced Design methodology:
 
-### Patterns Not Covered in Docs
+- **`app/`** - Application initialization, routing, and global providers
+- **`pages/`** - Route-level components (Assets, Governance, Staking, etc.)
+- **`widgets/`** - UI components that access data via hooks (useUnit, useStoreMap, etc.), not whole features — just hook-consuming UI
+- **`features/`** - Business logic units (wallet management, transactions, governance)
+- **`sdk/`** - Simple way to integrate features and domains
+- **`entities/`** - **DEPRECATED.** Never create new modules here. When touching existing entity code, migrate: models/services → `domains/`, hook-consuming UI → `widgets/`
+- **`shared/`** - Reusable code across layers
 
-**Dependency Injection** (`shared/di/`):
-- **Slots**: Page creates `createSlot<Props>({ name })`, renders `<Slot id={slot} props={...} />`. Features inject via `feature.inject(slot, { order, render: Component })`.
-- **Pipelines**: Data transformation chains (`createPipeline<Value>`). Features inject via `feature.inject(pipeline, (value) => transform(value))`.
+### Key Architectural Patterns
+- **Effector** - State management with stores, events, and effects
+- **Dependency Injection** - Custom DI system in `shared/di/`
+  - **Slots**: Page creates `createSlot<Props>({ name })`, renders `<Slot id={slot} props={...} />`. Features inject via `feature.inject(slot, { order, render: Component })`.
+  - **Pipelines**: Data transformation chains (`createPipeline<Value>`). Features inject via `feature.inject(pipeline, (value) => transform(value))`.
+- **Feature file layout**: `ui/` contains React components only. Hooks (custom React hooks) live in a dedicated `hooks/` subfolder within the feature, not in `ui/`. Shared chart/visual constants belong in `shared/ui/chart-constants.ts`.
+- **Resource Management** - Data fetching abstractions in `shared/resource/`
+- **Query Resources** - Standard data-fetching pattern using `createQueryResource` + `useResource` from `shared/query/`. Reference implementations: `domains/governance/tracks/resource.ts` and `hooks.ts`. Prefer this over hand-rolled Effector effects with manual cache stores.
+- **Feature Flags** - Dynamic feature toggling system in `shared/config/features/`
 
-**Feature file layout**: `ui/` contains React components only. Hooks (custom React hooks) live in a dedicated `hooks/` subfolder within the feature, not in `ui/`. Shared chart/visual constants belong in `shared/ui/chart-constants.ts`.
-
-**Query Resources**: Standard data-fetching pattern using `createQueryResource` + `useResource` from `shared/query/`. Reference implementations: `domains/governance/tracks/resource.ts` and `hooks.ts`. Prefer this over hand-rolled Effector effects with manual cache stores.
-
-**Feature Flags**: Dynamic feature toggling system in `shared/config/features/`.
+### Domain Structure
+- **`domains/`** - Pure business logic: Effector models, services, types, constants, resources. No `effector-react` imports allowed.
+  - **`domains/network/`** - Blockchain network interactions (accounts, transactions, multisig operations)
+  - **`domains/collectives/`** - Polkadot Fellowship and governance-related logic
+  - **Naming**: Service exports must be named `somethingService` (e.g. `stakingService`), not `somethingUtils`.
+- **`aggregates/`** - User-preference stores and orchestration logic that combine multiple domains. Domains stay pure for data-fetching; if a model needs a user preference or cross-domain combine, it belongs in an aggregate.
 
 ### Balance Subscription System
 - `balanceSubModel.fetchAccounts` (`features/assets-balances`) accepts `AnyAccount[]` — wallet account objects only. It uses `accountService.isAccountAvailableOnChain` to filter chains per account.
