@@ -133,6 +133,11 @@ function codecToValue(value: any): unknown {
     return value.toString();
   }
 
+  // Call / RuntimeCall — convert to hex for nested builder restoration
+  if (value.callIndex && value.toHex && typeof value.section === 'string' && typeof value.method === 'string') {
+    return value.toHex();
+  }
+
   // Option — must check before enum since Option is also an enum internally
   if (typeof value.isSome === 'boolean' && typeof value.isNone === 'boolean') {
     return value.isSome ? { enabled: true, inner: codecToValue(value.unwrap()) } : { enabled: false, inner: '' };
