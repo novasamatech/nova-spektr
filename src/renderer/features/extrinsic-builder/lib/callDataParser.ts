@@ -1,5 +1,4 @@
 import { type ApiPromise } from '@polkadot/api';
-
 import BigNumber from 'bignumber.js';
 
 import { getCallMeta } from './palletIntrospection';
