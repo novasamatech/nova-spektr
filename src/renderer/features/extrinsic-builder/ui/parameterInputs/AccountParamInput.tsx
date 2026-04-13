@@ -18,7 +18,8 @@ type Props = {
 
 export const AccountParamInput = memo(({ value, onChange }: Props) => {
   const { t } = useI18n();
-  const [query, setQuery] = useState('');
+  const [inputText, setInputText] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
 
   const contacts = useUnit(contactModel.$contacts);
   const accountsList = useUnit(walletModel.$availableAccounts);
@@ -26,14 +27,28 @@ export const AccountParamInput = memo(({ value, onChange }: Props) => {
 
   const chain = useMemo(() => {
     if (!api) return null;
-    // Get chain info from the API's genesis hash
-    const chainId = api.genesisHash.toHex();
     const prefix = api.registry.chainSS58;
 
-    return { chainId, prefix: prefix ?? undefined };
+    return { prefix: prefix ?? undefined };
   }, [api]);
 
   const resolvedAccounts = useAccountsNames(accountsList, null);
+
+  // Collect all known addresses for selection detection
+  const knownAddresses = useMemo(() => {
+    if (!chain) return new Set<string>();
+    const addresses = new Set<string>();
+    for (const account of resolvedAccounts) {
+      addresses.add(toAddress(account.accountId, { prefix: chain.prefix }));
+    }
+    for (const contact of contacts) {
+      addresses.add(toAddress(contact.accountId, { prefix: chain.prefix }));
+    }
+
+    return addresses;
+  }, [chain, resolvedAccounts, contacts]);
+
+  const searchQuery = isEditing ? inputText : '';
 
   const accountOptions = useMemo(() => {
     if (!chain) return [];
@@ -41,9 +56,8 @@ export const AccountParamInput = memo(({ value, onChange }: Props) => {
     return resolvedAccounts
       .filter((account) => {
         const address = toAddress(account.accountId, { prefix: chain.prefix });
-        const queryPass = !query || includesMultiple([account.name, address], query);
 
-        return queryPass;
+        return !searchQuery || includesMultiple([account.name, address], searchQuery);
       })
       .slice(0, 20)
       .map((account) => {
@@ -51,13 +65,13 @@ export const AccountParamInput = memo(({ value, onChange }: Props) => {
 
         return { id: address, name: account.name, address };
       });
-  }, [query, chain, resolvedAccounts]);
+  }, [searchQuery, chain, resolvedAccounts]);
 
   const contactOptions = useMemo(() => {
-    if (!query || validateAddress(query)) return [];
+    if (!searchQuery || validateAddress(searchQuery)) return [];
 
     const filtered = performSearch({
-      query,
+      query: searchQuery,
       records: contacts,
       weights: { name: 1, address: 0.5 },
     });
@@ -67,7 +81,9 @@ export const AccountParamInput = memo(({ value, onChange }: Props) => {
 
       return { id: contact.name, name: contact.name, address };
     });
-  }, [query, contacts, chain]);
+  }, [searchQuery, contacts, chain]);
+
+  const displayValue = isEditing ? inputText : value;
 
   const prefixElement = value ? (
     <Identicon size={20} address={toAddress(value, { prefix: chain?.prefix })} background={false} />
@@ -75,20 +91,39 @@ export const AccountParamInput = memo(({ value, onChange }: Props) => {
 
   const handleChange = useCallback(
     (val: string) => {
-      onChange(val);
-      setQuery('');
+      if (knownAddresses.has(val)) {
+        // Selected from list
+        onChange(val);
+        setIsEditing(false);
+        setInputText('');
+      } else {
+        setInputText(val);
+      }
     },
-    [onChange],
+    [knownAddresses, onChange],
   );
+
+  const handleBlur = useCallback(() => {
+    // Commit whatever was typed as the value
+    if (isEditing && inputText) {
+      onChange(inputText);
+    }
+    setIsEditing(false);
+    setInputText('');
+  }, [isEditing, inputText, onChange]);
 
   return (
     <Combobox
       placeholder={t('extrinsicBuilder.accountPlaceholder')}
-      value={value}
+      value={displayValue}
       prefixElement={prefixElement}
       height="sm"
+      onBlur={handleBlur}
       onChange={handleChange}
-      onInput={setQuery}
+      onInput={(v) => {
+        setIsEditing(true);
+        setInputText(v);
+      }}
     >
       {accountOptions.length > 0 && (
         <Combobox.Group

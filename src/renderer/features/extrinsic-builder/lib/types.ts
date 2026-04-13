@@ -58,4 +58,4 @@ export type CallMeta = {
 };
 
 export const MAX_BUILDER_DEPTH = 3;
-export const MAX_TYPE_RESOLUTION_DEPTH = 8;
+export const MAX_TYPE_RESOLUTION_DEPTH = 11;

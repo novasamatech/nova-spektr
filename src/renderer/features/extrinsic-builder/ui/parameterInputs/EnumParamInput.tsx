@@ -19,25 +19,34 @@ type Props = {
 
 export const EnumParamInput = memo(({ typeDef, value, onChange, depth }: Props) => {
   const { t } = useI18n();
-  const [query, setQuery] = useState('');
+  const [inputText, setInputText] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
 
   const variants = typeDef.variants ?? [];
+  const variantNames = useMemo(() => variants.map((v) => v.name), [variants]);
 
   const filteredVariants = useMemo(() => {
-    if (!query) return variants;
-    const lower = query.toLowerCase();
+    if (!isEditing || !inputText) return variants;
+    const lower = inputText.toLowerCase();
 
     return variants.filter((v) => v.name.toLowerCase().includes(lower));
-  }, [variants, query]);
+  }, [variants, inputText, isEditing]);
 
   const selectedVariant = useMemo(() => variants.find((v) => v.name === value.variant), [variants, value.variant]);
 
-  const handleVariantChange = useCallback(
+  const displayValue = isEditing ? inputText : value.variant;
+
+  const handleChange = useCallback(
     (variantName: string) => {
-      onChange({ variant: variantName, values: {} });
-      setQuery('');
+      if (variantNames.includes(variantName)) {
+        onChange({ variant: variantName, values: {} });
+        setIsEditing(false);
+        setInputText('');
+      } else {
+        setInputText(variantName);
+      }
     },
-    [onChange],
+    [variantNames, onChange],
   );
 
   const handleFieldChange = useCallback(
@@ -54,9 +63,16 @@ export const EnumParamInput = memo(({ typeDef, value, onChange, depth }: Props) 
     <div className="flex flex-col gap-y-2">
       <Combobox
         placeholder={t('extrinsicBuilder.enumPlaceholder')}
-        value={value.variant}
-        onChange={handleVariantChange}
-        onInput={setQuery}
+        value={displayValue}
+        onBlur={() => {
+          setIsEditing(false);
+          setInputText('');
+        }}
+        onChange={handleChange}
+        onInput={(v) => {
+          setIsEditing(true);
+          setInputText(v);
+        }}
       >
         {filteredVariants.map((v) => (
           <Combobox.Item key={v.name} value={v.name}>

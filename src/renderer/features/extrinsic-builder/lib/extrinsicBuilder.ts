@@ -319,13 +319,40 @@ function mapSiType(api: ApiPromise, siType: any, name: string, depth: number): P
     return { kind: 'unknown', typeName: name };
   }
 
-  const def = siType.def;
   const displayName = name;
 
   // Check special names first
   if (isAccountType(displayName)) return { kind: 'accountId', typeName: displayName };
   if (isCallType(displayName)) return { kind: 'call', typeName: displayName };
   if (isBalanceType(displayName)) return { kind: 'balance', typeName: displayName };
+
+  const result = mapSiTypeInner(api, siType, displayName, depth);
+
+  // If displayName is a numeric lookup ID, replace with a derived readable name
+  if (/^\d+$/.test(displayName) && result.typeName === displayName) {
+    return { ...result, typeName: deriveTypeName(result) };
+  }
+
+  return result;
+}
+
+function deriveTypeName(td: ParameterTypeDef): string {
+  switch (td.kind) {
+    case 'compact':
+      return `Compact<${td.inner?.typeName ?? '?'}>`;
+    case 'vec':
+      return `Vec<${td.inner?.typeName ?? '?'}>`;
+    case 'option':
+      return `Option<${td.inner?.typeName ?? '?'}>`;
+    case 'tuple':
+      return `(${td.fields?.map((f) => f.typeDef.typeName).join(', ') ?? ''})`;
+    default:
+      return td.typeName;
+  }
+}
+
+function mapSiTypeInner(api: ApiPromise, siType: any, displayName: string, depth: number): ParameterTypeDef {
+  const def = siType.def;
 
   if (def.isComposite) {
     // Struct
@@ -417,11 +444,12 @@ function mapSiType(api: ApiPromise, siType: any, name: string, depth: number): P
 
   if (def.isPrimitive) {
     const primStr = def.asPrimitive.toString().toLowerCase();
-    if (primStr === 'bool') return { kind: 'primitive', typeName: displayName, primitiveType: 'bool' };
-    if (primStr === 'str') return { kind: 'primitive', typeName: displayName, primitiveType: 'string' };
+    const primName = primStr === 'str' ? 'string' : primStr;
+    if (primStr === 'bool') return { kind: 'primitive', typeName: primName, primitiveType: 'bool' };
+    if (primStr === 'str') return { kind: 'primitive', typeName: primName, primitiveType: 'string' };
 
     const prim = parsePrimitiveType(primStr);
-    if (prim) return { kind: 'primitive', typeName: displayName, primitiveType: prim };
+    if (prim) return { kind: 'primitive', typeName: primName, primitiveType: prim };
 
     return { kind: 'unknown', typeName: displayName };
   }

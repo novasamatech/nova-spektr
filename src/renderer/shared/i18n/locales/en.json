@@ -331,7 +331,7 @@
       "build": "Build"
     },
     "placeholder": "Paste the call data here",
-    "title": "Add call data"
+    "title": "Build an operation"
   },
   "common": {
     "continue": "Continue",
@@ -2099,7 +2099,7 @@
     "balancesLabel": "Portfolio",
     "dashboardLabel": "Dashboard",
     "basketLabel": "Basket",
-    "callDataLabel": "Add call data",
+    "callDataLabel": "Build an operation",
     "customOperationLabel": "Custom operation",
     "fellowship": "Fellowship",
     "governance": "Governance",

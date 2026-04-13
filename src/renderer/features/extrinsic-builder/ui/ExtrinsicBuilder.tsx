@@ -23,19 +23,21 @@ export const ExtrinsicBuilder = memo(() => {
   return (
     <Box direction="column" gap={3}>
       <PalletSelect />
-      <div className="flex items-center gap-x-2">
+      <div className="flex items-end gap-x-2">
         <div className="flex-1">
           <CallSelect />
         </div>
         {selectedCall && callDocs.length > 0 && (
-          <Tooltip side="right">
-            <Tooltip.Trigger>
-              <div tabIndex={0}>
-                <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
-              </div>
-            </Tooltip.Trigger>
-            <Tooltip.Content>{callDocs.join(' ')}</Tooltip.Content>
-          </Tooltip>
+          <div className="mb-2">
+            <Tooltip side="right">
+              <Tooltip.Trigger>
+                <div tabIndex={0}>
+                  <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                </div>
+              </Tooltip.Trigger>
+              <Tooltip.Content>{callDocs.join(' ')}</Tooltip.Content>
+            </Tooltip>
+          </div>
         )}
       </div>
 

@@ -50,10 +50,14 @@ export const CallDataForm = () => {
               <Tabs.Trigger value={InputMode.BUILD}>{t('callData.mode.build')}</Tabs.Trigger>
             </Tabs.List>
             <Tabs.Content value={InputMode.PASTE}>
-              <CallDataInput />
+              <div className="p-0.5">
+                <CallDataInput />
+              </div>
             </Tabs.Content>
             <Tabs.Content value={InputMode.BUILD}>
-              <ExtrinsicBuilder />
+              <div className="p-0.5">
+                <ExtrinsicBuilder />
+              </div>
             </Tabs.Content>
           </Tabs>
         </form>
