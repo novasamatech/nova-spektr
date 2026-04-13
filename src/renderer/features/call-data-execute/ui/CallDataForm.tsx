@@ -25,6 +25,12 @@ export const CallDataForm = () => {
   const showSignatories = useUnit(formModel.$showSignatories);
   const inputMode = useUnit(formModel.$inputMode);
   const inputModeChanged = useUnit(formModel.inputModeChanged);
+  const builderCallDataChanged = useUnit(formModel.builderCallDataChanged);
+  const api = useUnit(formModel.$api);
+  const callDataValue = useUnit(formModel.form.fields.callData.$value);
+
+  // Pass callData to builder when in Build mode (for tab switch + remount after Confirm)
+  const builderInitialCallData = inputMode === InputMode.BUILD ? callDataValue : undefined;
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -54,7 +60,11 @@ export const CallDataForm = () => {
                 <CallDataInput />
               </Tabs.Content>
               <Tabs.Content value={InputMode.BUILD}>
-                <ExtrinsicBuilder />
+                <ExtrinsicBuilder
+                  api={api}
+                  initialCallData={builderInitialCallData}
+                  onCallDataChange={builderCallDataChanged}
+                />
               </Tabs.Content>
             </Tabs>
           </div>

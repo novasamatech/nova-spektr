@@ -30,7 +30,6 @@ import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
 import { balanceSubModel } from '@/features/assets-balances';
-import { builderModel } from '@/features/extrinsic-builder';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { InputMode, Step } from '../lib/types';
@@ -258,11 +257,6 @@ sample({
 
 sample({
   clock: flowFinished,
-  target: builderModel.resetBuilder,
-});
-
-sample({
-  clock: flowFinished,
   fn: () => InputMode.PASTE,
   target: inputModeChanged,
 });
@@ -299,36 +293,15 @@ sample({
   target: balanceSubModel.fetchAccounts,
 });
 
-// builder integration
+// builder integration — ExtrinsicBuilder component pushes call data via this event
+const builderCallDataChanged = createEvent<string | null>();
 
-// Push API to builder when chain changes
 sample({
-  clock: $api,
-  target: builderModel.setApi,
-});
-
-// When builder produces call data and we're in BUILD mode, push it to the form
-sample({
-  clock: builderModel.$builtCallData,
+  clock: builderCallDataChanged,
   source: $inputMode,
   filter: (mode) => mode === InputMode.BUILD,
   fn: (_, callData) => callData ?? '',
   target: form.fields.callData.change,
-});
-
-// When switching to Build tab, parse existing callData into builder
-sample({
-  clock: inputModeChanged,
-  source: form.fields.callData.$value,
-  filter: (callData, mode) => mode === InputMode.BUILD && callData.length > 0 && callData.startsWith('0x'),
-  fn: (callData) => callData,
-  target: builderModel.populateFromCallData,
-});
-
-// Reset builder on chain change
-sample({
-  clock: form.fields.chain.change,
-  target: builderModel.resetBuilder,
 });
 
 // flow setup
@@ -512,4 +485,5 @@ export const formModel = {
   flowStarted,
   flowFinished,
   inputModeChanged,
+  builderCallDataChanged,
 };

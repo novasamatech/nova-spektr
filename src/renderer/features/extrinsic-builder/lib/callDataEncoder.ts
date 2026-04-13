@@ -136,6 +136,58 @@ function convertArgForEncoding(arg: unknown, def: ParameterTypeDef | undefined, 
     }
 
     default:
-      return arg;
+      // For 'unknown' and other unhandled kinds — try heuristic conversion by value shape
+      return convertUnknownArg(arg, precision);
   }
+}
+
+/**
+ * Heuristic conversion for values where type info is missing (depth limit
+ * exceeded). Converts UI-format objects to API-compatible format based on value
+ * shape.
+ */
+function convertUnknownArg(arg: unknown, precision: number): unknown {
+  if (arg === undefined || arg === null) return arg;
+  if (typeof arg !== 'object') return arg;
+
+  // Enum-like: { variant: "Name", values: {...} }
+  if ('variant' in arg && 'values' in arg) {
+    const enumVal = arg as { variant: string; values: Record<string, unknown> };
+    const convertedValues = Object.entries(enumVal.values).map(([, v]) => convertUnknownArg(v, precision));
+
+    if (convertedValues.length === 0) {
+      return enumVal.variant;
+    }
+
+    if (convertedValues.length === 1) {
+      return { [enumVal.variant]: convertedValues[0] };
+    }
+
+    const namedValues: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(enumVal.values)) {
+      namedValues[k] = convertUnknownArg(v, precision);
+    }
+
+    return { [enumVal.variant]: namedValues };
+  }
+
+  // Option-like: { enabled: bool, inner: ... }
+  if ('enabled' in arg && 'inner' in arg) {
+    const optVal = arg as { enabled: boolean; inner: unknown };
+
+    return optVal.enabled ? convertUnknownArg(optVal.inner, precision) : null;
+  }
+
+  // Array → convert each item
+  if (Array.isArray(arg)) {
+    return arg.map((item) => convertUnknownArg(item, precision));
+  }
+
+  // Plain object → convert each value recursively
+  const result: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(arg as Record<string, unknown>)) {
+    result[k] = convertUnknownArg(v, precision);
+  }
+
+  return result;
 }

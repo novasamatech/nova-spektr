@@ -88,17 +88,32 @@ function codecToValue(value: any): unknown {
   if (value.type && typeof value.type === 'string' && `is${value.type}` in value) {
     const variantName = value.type;
 
-    // Enum with inner value (single unnamed field)
-    if (value.inner) {
-      return { variant: variantName, values: { '0': codecToValue(value.inner) } };
+    // Try enum value accessors: .as${Variant} (most reliable), then .inner
+    const asAccessor = value[`as${variantName}`];
+    const innerValue = asAccessor !== undefined && asAccessor !== null ? asAccessor : value.inner;
+
+    if (innerValue && innerValue !== value) {
+      // Array-like (Vec) — must check BEFORE struct, since Vec also has .entries()
+      if (
+        innerValue.length !== undefined &&
+        typeof innerValue.map === 'function' &&
+        typeof innerValue.length === 'number'
+      ) {
+        return { variant: variantName, values: { '0': codecToValue(innerValue) } };
+      }
+
+      // Struct with named fields
+      if (typeof innerValue.entries === 'function' && typeof innerValue.defKeys !== 'undefined') {
+        return { variant: variantName, values: { '0': codecStructToValues(innerValue) } };
+      }
+
+      return { variant: variantName, values: { '0': codecToValue(innerValue) } };
     }
 
-    // Enum with `.value` (alternative accessor for inner data)
+    // Fallback: try .value accessor
     if (value.value && typeof value.value === 'object' && value.value !== value) {
       if (value.value.defKeys || (value.value.toJSON && typeof value.value.entries === 'function')) {
-        const fields = codecStructToValues(value.value);
-
-        return { variant: variantName, values: fields };
+        return { variant: variantName, values: { '0': codecStructToValues(value.value) } };
       }
 
       return { variant: variantName, values: { '0': codecToValue(value.value) } };
@@ -118,9 +133,17 @@ function codecToValue(value: any): unknown {
   }
 
   // Vec<u8> — detect by checking if all elements are small numbers (bytes)
+  // Guard: reject complex codec types (enums have .type, structs have .defKeys)
+  // whose .toNumber() returns a variant index, not an actual byte value
   if (value.toHex && value.length !== undefined && typeof value.map === 'function' && value.length > 0) {
     const first = value[0];
-    if (typeof first?.toNumber === 'function' && first.toNumber() >= 0 && first.toNumber() <= 255) {
+    if (
+      typeof first?.toNumber === 'function' &&
+      first.toNumber() >= 0 &&
+      first.toNumber() <= 255 &&
+      !first.type &&
+      !first.defKeys
+    ) {
       return value.toHex();
     }
   }

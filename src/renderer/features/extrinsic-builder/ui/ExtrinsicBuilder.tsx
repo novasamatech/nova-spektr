@@ -1,33 +1,39 @@
-import { useUnit } from 'effector-react';
+import { type ApiPromise } from '@polkadot/api';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { Box, Tooltip } from '@/shared/ui-kit';
-import { builderModel } from '../model/builder';
+import { useExtrinsicBuilder } from '../hooks/useExtrinsicBuilder';
 
 import { CallSelect } from './CallSelect';
 import { PalletSelect } from './PalletSelect';
 import { ParameterField } from './ParameterField';
 
-export const ExtrinsicBuilder = memo(() => {
+type Props = {
+  api: ApiPromise | null;
+  onCallDataChange?: (callData: string | null) => void;
+  initialCallData?: string;
+};
+
+export const ExtrinsicBuilder = memo(({ api, onCallDataChange, initialCallData }: Props) => {
   const { t } = useI18n();
 
-  const callArgDefs = useUnit(builderModel.$callArgDefs);
-  const callDocs = useUnit(builderModel.$callDocs);
-  const paramValues = useUnit(builderModel.$paramValues);
-  const encodingError = useUnit(builderModel.$encodingError);
-  const paramValueChanged = useUnit(builderModel.paramValueChanged);
-  const selectedCall = useUnit(builderModel.$call);
+  const builder = useExtrinsicBuilder({ api, onCallDataChange, initialCallData });
 
   return (
     <Box direction="column" gap={3}>
-      <PalletSelect />
+      <PalletSelect options={builder.palletOptions} value={builder.pallet} onChange={builder.handlePalletChange} />
       <div className="flex items-end gap-x-2">
         <div className="flex-1">
-          <CallSelect />
+          <CallSelect
+            options={builder.callOptions}
+            value={builder.call}
+            disabled={!builder.pallet}
+            onChange={builder.handleCallChange}
+          />
         </div>
-        {selectedCall && callDocs.length > 0 && (
+        {builder.call && builder.callDocs.length > 0 && (
           <div className="mb-2">
             <Tooltip side="right">
               <Tooltip.Trigger>
@@ -35,28 +41,29 @@ export const ExtrinsicBuilder = memo(() => {
                   <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
                 </div>
               </Tooltip.Trigger>
-              <Tooltip.Content>{callDocs.join(' ')}</Tooltip.Content>
+              <Tooltip.Content>{builder.callDocs.join(' ')}</Tooltip.Content>
             </Tooltip>
           </div>
         )}
       </div>
 
-      {callArgDefs.length > 0 && (
+      {builder.callArgDefs.length > 0 && (
         <Box direction="column" gap={2}>
-          {callArgDefs.map((arg) => (
+          {builder.callArgDefs.map((arg) => (
             <ParameterField
               key={arg.name}
               name={arg.name}
               typeDef={arg.typeDef}
-              value={paramValues[arg.name]}
+              value={builder.paramValues[arg.name]}
               depth={0}
-              onChange={(value) => paramValueChanged({ name: arg.name, value })}
+              api={api}
+              onChange={(value) => builder.handleParamChange(arg.name, value)}
             />
           ))}
         </Box>
       )}
 
-      {encodingError && (
+      {builder.encodingError && (
         <FootnoteText className="text-text-negative">{t('extrinsicBuilder.encodingError')}</FootnoteText>
       )}
     </Box>

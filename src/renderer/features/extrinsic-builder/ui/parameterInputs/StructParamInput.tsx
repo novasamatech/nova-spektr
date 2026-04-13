@@ -1,3 +1,4 @@
+import { type ApiPromise } from '@polkadot/api';
 import { memo, useCallback } from 'react';
 
 import { Box } from '@/shared/ui-kit';
@@ -9,9 +10,10 @@ type Props = {
   value: Record<string, unknown>;
   onChange: (value: Record<string, unknown>) => void;
   depth: number;
+  api: ApiPromise | null;
 };
 
-export const StructParamInput = memo(({ typeDef, value, onChange, depth }: Props) => {
+export const StructParamInput = memo(({ typeDef, value, onChange, depth, api }: Props) => {
   const fields = typeDef.fields ?? [];
 
   const handleFieldChange = useCallback(
@@ -30,6 +32,7 @@ export const StructParamInput = memo(({ typeDef, value, onChange, depth }: Props
           typeDef={field.typeDef}
           value={value[field.name]}
           depth={depth}
+          api={api}
           onChange={(val) => handleFieldChange(field.name, val)}
         />
       ))}

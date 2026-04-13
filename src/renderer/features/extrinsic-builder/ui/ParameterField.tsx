@@ -1,12 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
-import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { Field, TextArea } from '@/shared/ui-kit';
 import { type ParameterTypeDef } from '../lib/types';
-import { builderModel } from '../model/builder';
 
 import { AccountParamInput } from './parameterInputs/AccountParamInput';
 import { BalanceParamInput } from './parameterInputs/BalanceParamInput';
@@ -26,7 +24,7 @@ type Props = {
   value: unknown;
   onChange: (value: unknown) => void;
   depth: number;
-  api?: ApiPromise | null;
+  api: ApiPromise | null;
 };
 
 type OptionValue = { enabled: boolean; inner: unknown };
@@ -49,10 +47,8 @@ const KIND_HINTS: Record<string, string> = {
   accountId: 'extrinsicBuilder.accountHint',
 };
 
-export const ParameterField = memo(({ name, typeDef, value, onChange, depth, api: apiProp }: Props) => {
+export const ParameterField = memo(({ name, typeDef, value, onChange, depth, api }: Props) => {
   const { t } = useI18n();
-  const apiFromModel = useUnit(builderModel.$api);
-  const api = apiProp ?? apiFromModel;
 
   const hintKey = KIND_HINTS[typeDef.kind];
   const kindHint = hintKey ? ` (${t(hintKey)})` : '';
@@ -90,10 +86,10 @@ const ParameterInput = memo(({ typeDef, value, onChange, depth, api }: InputProp
     }
 
     case 'accountId':
-      return <AccountParamInput value={String(value ?? '')} onChange={onChange} />;
+      return <AccountParamInput value={String(value ?? '')} api={api} onChange={onChange} />;
 
     case 'balance':
-      return <BalanceParamInput value={String(value ?? '')} onChange={onChange} />;
+      return <BalanceParamInput value={String(value ?? '')} api={api} onChange={onChange} />;
 
     case 'compact':
       if (typeDef.inner) {
@@ -108,13 +104,20 @@ const ParameterInput = memo(({ typeDef, value, onChange, depth, api }: InputProp
           typeDef={typeDef}
           value={isOptionValue(value) ? value : { enabled: false, inner: '' }}
           depth={depth}
+          api={api}
           onChange={onChange}
         />
       );
 
     case 'vec':
       return (
-        <VecParamInput typeDef={typeDef} value={Array.isArray(value) ? value : []} depth={depth} onChange={onChange} />
+        <VecParamInput
+          typeDef={typeDef}
+          value={Array.isArray(value) ? value : []}
+          depth={depth}
+          api={api}
+          onChange={onChange}
+        />
       );
 
     case 'enum':
@@ -123,18 +126,31 @@ const ParameterInput = memo(({ typeDef, value, onChange, depth, api }: InputProp
           typeDef={typeDef}
           value={isEnumValue(value) ? value : { variant: '', values: {} }}
           depth={depth}
+          api={api}
           onChange={onChange}
         />
       );
 
     case 'struct':
       return (
-        <StructParamInput typeDef={typeDef} value={isRecord(value) ? value : {}} depth={depth} onChange={onChange} />
+        <StructParamInput
+          typeDef={typeDef}
+          value={isRecord(value) ? value : {}}
+          depth={depth}
+          api={api}
+          onChange={onChange}
+        />
       );
 
     case 'tuple':
       return (
-        <TupleParamInput typeDef={typeDef} value={isRecord(value) ? value : {}} depth={depth} onChange={onChange} />
+        <TupleParamInput
+          typeDef={typeDef}
+          value={isRecord(value) ? value : {}}
+          depth={depth}
+          api={api}
+          onChange={onChange}
+        />
       );
 
     case 'call':

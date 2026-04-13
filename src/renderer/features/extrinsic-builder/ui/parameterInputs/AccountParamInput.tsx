@@ -1,3 +1,4 @@
+import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
 import { memo, useCallback, useMemo, useState } from 'react';
 
@@ -9,21 +10,20 @@ import { Combobox } from '@/shared/ui-kit';
 import { useAccountsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { walletModel } from '@/entities/wallet';
-import { builderModel } from '../../model/builder';
 
 type Props = {
   value: string;
+  api: ApiPromise | null;
   onChange: (value: string) => void;
 };
 
-export const AccountParamInput = memo(({ value, onChange }: Props) => {
+export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
   const { t } = useI18n();
   const [inputText, setInputText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
   const contacts = useUnit(contactModel.$contacts);
   const accountsList = useUnit(walletModel.$availableAccounts);
-  const api = useUnit(builderModel.$api);
 
   const chain = useMemo(() => {
     if (!api) return null;

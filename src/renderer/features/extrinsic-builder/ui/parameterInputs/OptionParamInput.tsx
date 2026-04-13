@@ -1,3 +1,4 @@
+import { type ApiPromise } from '@polkadot/api';
 import { memo, useCallback } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -11,9 +12,10 @@ type Props = {
   value: { enabled: boolean; inner: unknown };
   onChange: (value: { enabled: boolean; inner: unknown }) => void;
   depth: number;
+  api: ApiPromise | null;
 };
 
-export const OptionParamInput = memo(({ typeDef, value, onChange, depth }: Props) => {
+export const OptionParamInput = memo(({ typeDef, value, onChange, depth, api }: Props) => {
   const { t } = useI18n();
 
   const toggleEnabled = useCallback(
@@ -44,6 +46,7 @@ export const OptionParamInput = memo(({ typeDef, value, onChange, depth }: Props
           typeDef={typeDef.inner}
           value={value.inner}
           depth={depth}
+          api={api}
           onChange={handleInnerChange}
         />
       )}

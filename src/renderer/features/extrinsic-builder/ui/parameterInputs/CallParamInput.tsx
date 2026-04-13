@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { Box, Combobox, Input } from '@/shared/ui-kit';
+import { useComboboxFilter } from '../../hooks/useComboboxFilter';
 import { encodeCallData, getCallMeta, getCallNames, getPalletNames, parseCallData } from '../../lib/extrinsicBuilder';
 import { type CallMeta, MAX_BUILDER_DEPTH } from '../../lib/types';
 import { ParameterField } from '../ParameterField';
@@ -75,24 +76,38 @@ const NestedBuilder = memo(({ api, value: hexValue, depth, onChange }: NestedBui
 
   const handleParamChange = useCallback(
     (name: string, paramValue: unknown) => {
-      const updated = { ...paramValues, [name]: paramValue };
-      setParamValues(updated);
+      setParamValues((prev) => {
+        const updated = { ...prev, [name]: paramValue };
 
-      if (api && pallet && call && callMeta) {
-        const args = callMeta.args.map((def) => updated[def.name]);
-        const encoded = encodeCallData(api, pallet, call, args, callMeta.args);
-        if (encoded) {
-          onChange(encoded);
+        if (api && pallet && call && callMeta) {
+          const args = callMeta.args.map((def) => updated[def.name]);
+          const encoded = encodeCallData(api, pallet, call, args, callMeta.args);
+          if (encoded) {
+            onChange(encoded);
+          }
         }
-      }
+
+        return updated;
+      });
     },
-    [api, pallet, call, callMeta, paramValues, onChange],
+    [api, pallet, call, callMeta, onChange],
   );
 
   return (
     <div className="border-border-default flex flex-col gap-y-2 rounded-md border p-3">
-      <NestedPalletSelect options={palletOptions} value={pallet} onChange={handlePalletChange} />
-      <NestedCallSelect options={callOptions} value={call} disabled={!pallet} onChange={handleCallChange} />
+      <NestedCombobox
+        options={palletOptions}
+        value={pallet}
+        placeholder="extrinsicBuilder.palletPlaceholder"
+        onChange={handlePalletChange}
+      />
+      <NestedCombobox
+        options={callOptions}
+        value={call}
+        disabled={!pallet}
+        placeholder="extrinsicBuilder.callPlaceholder"
+        onChange={handleCallChange}
+      />
 
       {callMeta?.args.map((arg) => (
         <ParameterField
@@ -109,106 +124,32 @@ const NestedBuilder = memo(({ api, value: hexValue, depth, onChange }: NestedBui
   );
 });
 
-type NestedSelectProps = {
+type NestedComboboxProps = {
   options: string[];
   value: string | null;
   disabled?: boolean;
+  placeholder: string;
   onChange: (value: string) => void;
 };
 
-const NestedPalletSelect = memo(({ options, value, onChange }: NestedSelectProps) => {
+const NestedCombobox = memo(({ options, value, disabled, placeholder, onChange }: NestedComboboxProps) => {
   const { t } = useI18n();
-  const [inputText, setInputText] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-
-  const filtered = useMemo(() => {
-    if (!isEditing || !inputText) return options;
-    const lower = inputText.toLowerCase();
-
-    return options.filter((name) => name.toLowerCase().includes(lower));
-  }, [options, inputText, isEditing]);
-
-  const displayValue = isEditing ? inputText : (value ?? '');
-
-  const handleChange = useCallback(
-    (v: string) => {
-      if (options.includes(v)) {
-        onChange(v);
-        setIsEditing(false);
-        setInputText('');
-      } else {
-        setInputText(v);
-      }
-    },
-    [options, onChange],
+  const { filteredOptions, displayValue, handleChange, handleBlur, handleInput } = useComboboxFilter(
+    options,
+    value,
+    onChange,
   );
 
   return (
     <Combobox
-      placeholder={t('extrinsicBuilder.palletPlaceholder')}
-      value={displayValue}
-      onBlur={() => {
-        setIsEditing(false);
-        setInputText('');
-      }}
-      onChange={handleChange}
-      onInput={(v) => {
-        setIsEditing(true);
-        setInputText(v);
-      }}
-    >
-      {filtered.map((name) => (
-        <Combobox.Item key={name} value={name}>
-          {name}
-        </Combobox.Item>
-      ))}
-    </Combobox>
-  );
-});
-
-const NestedCallSelect = memo(({ options, value, disabled, onChange }: NestedSelectProps) => {
-  const { t } = useI18n();
-  const [inputText, setInputText] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-
-  const filtered = useMemo(() => {
-    if (!isEditing || !inputText) return options;
-    const lower = inputText.toLowerCase();
-
-    return options.filter((name) => name.toLowerCase().includes(lower));
-  }, [options, inputText, isEditing]);
-
-  const displayValue = isEditing ? inputText : (value ?? '');
-
-  const handleChange = useCallback(
-    (v: string) => {
-      if (options.includes(v)) {
-        onChange(v);
-        setIsEditing(false);
-        setInputText('');
-      } else {
-        setInputText(v);
-      }
-    },
-    [options, onChange],
-  );
-
-  return (
-    <Combobox
-      placeholder={t('extrinsicBuilder.callPlaceholder')}
+      placeholder={t(placeholder)}
       value={displayValue}
       disabled={disabled}
-      onBlur={() => {
-        setIsEditing(false);
-        setInputText('');
-      }}
+      onBlur={handleBlur}
       onChange={handleChange}
-      onInput={(v) => {
-        setIsEditing(true);
-        setInputText(v);
-      }}
+      onInput={handleInput}
     >
-      {filtered.map((name) => (
+      {filteredOptions.map((name) => (
         <Combobox.Item key={name} value={name}>
           {name}
         </Combobox.Item>

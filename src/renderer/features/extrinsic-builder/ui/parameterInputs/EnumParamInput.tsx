@@ -1,7 +1,9 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { type ApiPromise } from '@polkadot/api';
+import { memo, useCallback, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Combobox } from '@/shared/ui-kit';
+import { useComboboxFilter } from '../../hooks/useComboboxFilter';
 import { type ParameterTypeDef } from '../../lib/types';
 import { ParameterField } from '../ParameterField';
 
@@ -15,39 +17,36 @@ type Props = {
   value: EnumValue;
   onChange: (value: EnumValue) => void;
   depth: number;
+  api: ApiPromise | null;
 };
 
-export const EnumParamInput = memo(({ typeDef, value, onChange, depth }: Props) => {
+export const EnumParamInput = memo(({ typeDef, value, onChange, depth, api }: Props) => {
   const { t } = useI18n();
-  const [inputText, setInputText] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
 
   const variants = typeDef.variants ?? [];
   const variantNames = useMemo(() => variants.map((v) => v.name), [variants]);
-
-  const filteredVariants = useMemo(() => {
-    if (!isEditing || !inputText) return variants;
-    const lower = inputText.toLowerCase();
-
-    return variants.filter((v) => v.name.toLowerCase().includes(lower));
-  }, [variants, inputText, isEditing]);
-
   const selectedVariant = useMemo(() => variants.find((v) => v.name === value.variant), [variants, value.variant]);
 
-  const displayValue = isEditing ? inputText : value.variant;
-
-  const handleChange = useCallback(
+  const handleVariantChange = useCallback(
     (variantName: string) => {
-      if (variantNames.includes(variantName)) {
-        onChange({ variant: variantName, values: {} });
-        setIsEditing(false);
-        setInputText('');
-      } else {
-        setInputText(variantName);
-      }
+      onChange({ variant: variantName, values: {} });
     },
-    [variantNames, onChange],
+    [onChange],
   );
+
+  const {
+    filteredOptions: filteredVariants,
+    displayValue,
+    handleChange,
+    handleBlur,
+    handleInput,
+  } = useComboboxFilter(variantNames, value.variant, handleVariantChange);
+
+  const filteredVariantDefs = useMemo(() => {
+    const filtered = new Set(filteredVariants);
+
+    return variants.filter((v) => filtered.has(v.name));
+  }, [variants, filteredVariants]);
 
   const handleFieldChange = useCallback(
     (fieldName: string, fieldValue: unknown) => {
@@ -64,17 +63,11 @@ export const EnumParamInput = memo(({ typeDef, value, onChange, depth }: Props) 
       <Combobox
         placeholder={t('extrinsicBuilder.enumPlaceholder')}
         value={displayValue}
-        onBlur={() => {
-          setIsEditing(false);
-          setInputText('');
-        }}
+        onBlur={handleBlur}
         onChange={handleChange}
-        onInput={(v) => {
-          setIsEditing(true);
-          setInputText(v);
-        }}
+        onInput={handleInput}
       >
-        {filteredVariants.map((v) => (
+        {filteredVariantDefs.map((v) => (
           <Combobox.Item key={v.name} value={v.name}>
             {v.name}
           </Combobox.Item>
@@ -89,7 +82,8 @@ export const EnumParamInput = memo(({ typeDef, value, onChange, depth }: Props) 
               name={field.name}
               typeDef={field.typeDef}
               value={value.values[field.name]}
-              depth={depth}
+              depth={depth + 1}
+              api={api}
               onChange={(val) => handleFieldChange(field.name, val)}
             />
           ))}

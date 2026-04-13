@@ -1,3 +1,4 @@
+import { type ApiPromise } from '@polkadot/api';
 import { memo, useCallback } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -11,9 +12,10 @@ type Props = {
   value: unknown[];
   onChange: (value: unknown[]) => void;
   depth: number;
+  api: ApiPromise | null;
 };
 
-export const VecParamInput = memo(({ typeDef, value, onChange, depth }: Props) => {
+export const VecParamInput = memo(({ typeDef, value, onChange, depth, api }: Props) => {
   const { t } = useI18n();
 
   const addItem = useCallback(() => {
@@ -50,6 +52,7 @@ export const VecParamInput = memo(({ typeDef, value, onChange, depth }: Props) =
               typeDef={typeDef.inner!}
               value={item}
               depth={depth}
+              api={api}
               onChange={(val) => updateItem(index, val)}
             />
           </div>

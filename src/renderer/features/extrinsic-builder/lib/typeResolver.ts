@@ -119,7 +119,15 @@ function mapSiTypeDef(api: ApiPromise, siType: any, displayName: string, depth: 
   const def = siType.def;
 
   if (def.isComposite) {
-    const fields = def.asComposite.fields.map((field: any) => {
+    const compositeFields = def.asComposite.fields;
+
+    // Single unnamed field = newtype wrapper (e.g. Xcm<Call>(Vec<Instruction>))
+    // Codec flattens these, so the type tree should be transparent too
+    if (compositeFields.length === 1 && !compositeFields[0].name?.isSome) {
+      return resolveTypeDef(api, compositeFields[0].type.toString(), depth + 1);
+    }
+
+    const fields = compositeFields.map((field: any) => {
       const fieldName = field.name?.isSome ? field.name.unwrap().toString() : (field.typeName?.toString() ?? '0');
 
       return { name: fieldName, typeDef: resolveTypeDef(api, field.type.toString(), depth + 1) };

@@ -226,6 +226,68 @@ describe('resolveTypeDef', () => {
     expect(result.typeName).toBe('MultiAddress');
   });
 
+  it('should resolve single-unnamed-field composite as transparent (newtype wrapper)', () => {
+    // E.g. Xcm<Call> is a composite with a single unnamed field pointing to Vec<Instruction>.
+    // The resolver should "see through" the wrapper and return the inner type directly.
+    const api = createMockApiWithSiTypes({
+      100: {
+        ...makeSiType({
+          isComposite: true,
+          asComposite: {
+            fields: [
+              {
+                name: { isSome: false },
+                type: { toString: () => '30' },
+              },
+            ],
+          },
+        }),
+        _name: 'XcmV3Xcm',
+      },
+      // The inner type: Vec<Instruction> → sequence of non-u8
+      30: makeSiType({
+        isSequence: true,
+        asSequence: { type: { toString: () => '1' } },
+      }),
+      1: makeSiType({ isPrimitive: true, asPrimitive: { toString: () => 'U32' } }),
+    });
+
+    const result = resolveTypeDef(api, '100');
+
+    // Should NOT be a struct with one field — should be transparent to the inner vec
+    expect(result.kind).toBe('vec');
+    expect(result.inner?.kind).toBe('primitive');
+    expect(result.inner?.primitiveType).toBe('u32');
+  });
+
+  it('should NOT flatten composite with single NAMED field (not a newtype wrapper)', () => {
+    const api = createMockApiWithSiTypes({
+      100: {
+        ...makeSiType({
+          isComposite: true,
+          asComposite: {
+            fields: [
+              {
+                name: { isSome: true, unwrap: () => ({ toString: () => 'value' }) },
+                type: { toString: () => '1' },
+              },
+            ],
+          },
+        }),
+        _name: 'Wrapper',
+      },
+      1: makeSiType({ isPrimitive: true, asPrimitive: { toString: () => 'U32' } }),
+    });
+
+    const result = resolveTypeDef(api, '100');
+
+    // Single named field → should remain a struct, not be flattened
+    expect(result.kind).toBe('struct');
+    expect(result.typeName).toBe('Wrapper');
+    expect(result.fields).toHaveLength(1);
+    expect(result.fields?.[0]?.name).toBe('value');
+  });
+
   it('should return unknown for max depth', () => {
     const api = createMockApiWithSiTypes({});
 
