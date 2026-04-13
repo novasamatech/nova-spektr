@@ -1,5 +1,17 @@
 import { allSettled } from 'effector';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('graphql-request', async (importOriginal) => {
+  const actual = (await importOriginal()) as object;
+  return {
+    ...actual,
+    GraphQLClient: vi.fn(function () {
+      return {
+        request: vi.fn().mockResolvedValue({ proxieds: { nodes: [] } }),
+      };
+    }),
+  };
+});
 
 import { ConnectionStatus, TransactionType } from '@/shared/core';
 import { accounts } from '@/domains/network';
