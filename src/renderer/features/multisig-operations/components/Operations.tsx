@@ -11,11 +11,11 @@ import { useOperationDescriptionsFetch } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { DraftsSection } from '@/features/drafts';
 import { type OperationWithAccount, operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
 import { ChainSyncStatus } from './ChainSyncStatus';
-import { DraftsSection } from './DraftsSection';
 import { EmptyOperations } from './EmptyOperations';
 import { Operation } from './Operation';
 import { AccountNotFoundModal } from './modals/AccountNotFoundModal';

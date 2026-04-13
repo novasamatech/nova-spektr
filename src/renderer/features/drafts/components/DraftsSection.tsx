@@ -40,7 +40,7 @@ import {
 } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import { PERMISSIONS, draftsService } from '@/domains/backend';
-import { useWalletsNames } from '@/domains/network';
+import { accounts, useWalletsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
 import {
@@ -50,12 +50,10 @@ import {
   transactionService,
   useTransactionAsset,
 } from '@/entities/transaction';
-import { accountUtils } from '@/entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
-import { operationsContextModel } from '../model/context';
+import { operationTitleTransformer } from '@/features/multisig-operations';
 import { type Draft, draftsModel } from '../model/drafts-model';
-
-import { operationTitleTransformer } from './Operation';
 
 const enum Step {
   SELECT_MULTISIG,
@@ -85,7 +83,7 @@ const DraftRow = ({
 
   const chain = chains[draft.chainId as ChainId];
   const chainName = chain?.name;
-  const contact = backendContacts.find(c => c.accountId === draft.multisigAccountId);
+  const contact = backendContacts.find((c) => c.accountId === draft.multisigAccountId);
 
   const api = useApi(draft.chainId as ChainId);
 
@@ -176,7 +174,7 @@ const DraftRow = ({
         </div>
 
         {/* Actions */}
-        <div className="flex shrink-0 items-center gap-x-1" onClick={e => e.stopPropagation()}>
+        <div className="flex shrink-0 items-center gap-x-1" onClick={(e) => e.stopPropagation()}>
           {canWrite && (
             <Button size="sm" variant="text" onClick={() => onEdit(draft)}>
               {t('operations.drafts.editButton')}
@@ -216,7 +214,7 @@ const EditDraftSummary = ({ draft }: { draft: Draft }) => {
   const backendContacts = useUnit(contactModel.$backendContacts);
 
   const chain = chains[draft.chainId as ChainId];
-  const contact = backendContacts.find(c => c.accountId === draft.multisigAccountId);
+  const contact = backendContacts.find((c) => c.accountId === draft.multisigAccountId);
   const api = useApi(draft.chainId as ChainId);
 
   const decodedTransaction = useMemo(() => {
@@ -318,16 +316,18 @@ export const DraftsSection = () => {
   const callDataError =
     deferredCallData.length > 0 && !isHex(deferredCallData) ? t('operations.drafts.callDataErrorHex') : null;
 
-  const allMultisigAccounts = useUnit(operationsContextModel.$multisigAccounts);
-  const multisigWallets = useUnit(operationsContextModel.$multisigWallets);
+  const allAccounts = useUnit(accounts.$list);
+  const allMultisigAccounts = useMemo(() => allAccounts.filter(accountUtils.isAnyMultisigAccount), [allAccounts]);
+  const allWallets = useUnit(walletModel.$wallets);
+  const multisigWallets = useMemo(() => allWallets.filter(walletUtils.isAnyMultisig), [allWallets]);
   const chains = useUnit(networkModel.$chains);
   const chainsList = useUnit(networkModel.$chainsList);
   const backendContacts = useUnit(contactModel.$backendContacts);
 
   const multisigAccounts = useMemo(() => {
-    const backendAccountIds = new Set(backendContacts.map(c => c.accountId));
+    const backendAccountIds = new Set(backendContacts.map((c) => c.accountId));
 
-    return allMultisigAccounts.filter(account => backendAccountIds.has(account.accountId));
+    return allMultisigAccounts.filter((account) => backendAccountIds.has(account.accountId));
   }, [allMultisigAccounts, backendContacts]);
 
   const resolvedWallets = useWalletsNames(multisigWallets);
@@ -341,8 +341,8 @@ export const DraftsSection = () => {
 
   const accountOptions = useMemo(() => {
     return multisigAccounts
-      .map(account => {
-        const wallet = resolvedWallets.find(w => w.id === account.walletId);
+      .map((account) => {
+        const wallet = resolvedWallets.find((w) => w.id === account.walletId);
         if (!wallet) return null;
 
         const addressPrefix = accountUtils.isFlexibleMultisigAccount(account)
@@ -431,7 +431,7 @@ export const DraftsSection = () => {
   };
 
   const handleAccountChange = (accountId: string) => {
-    const found = multisigAccounts.find(a => a.accountId === accountId) ?? null;
+    const found = multisigAccounts.find((a) => a.accountId === accountId) ?? null;
     setSelectedAccount(found);
 
     if (found && !accountUtils.isFlexibleMultisigAccount(found)) {
@@ -497,7 +497,7 @@ export const DraftsSection = () => {
   const selectedAddress = selectedAccount
     ? toAddress(selectedAccount.accountId, { prefix: selectedAddressPrefix })
     : null;
-  const selectedWallet = selectedAccount ? resolvedWallets.find(w => w.id === selectedAccount.walletId) : null;
+  const selectedWallet = selectedAccount ? resolvedWallets.find((w) => w.id === selectedAccount.walletId) : null;
 
   return (
     <div className="mb-6">
@@ -514,7 +514,7 @@ export const DraftsSection = () => {
         </Accordion.Trigger>
         <Accordion.Content>
           <div className="mt-1 flex flex-col gap-y-1.5">
-            {drafts.map(draft => (
+            {drafts.map((draft) => (
               <DraftRow
                 key={draft.id}
                 canDelete={canDelete}
@@ -740,7 +740,7 @@ export const DraftsSection = () => {
               <div className="flex w-full items-center justify-between">
                 <div>
                   {activeStep > Step.SELECT_MULTISIG && (
-                    <Button variant="text" onClick={() => setActiveStep(s => s - 1)}>
+                    <Button variant="text" onClick={() => setActiveStep((s) => s - 1)}>
                       {t('operations.drafts.backButton')}
                     </Button>
                   )}
@@ -751,7 +751,7 @@ export const DraftsSection = () => {
                     (activeStep === Step.CALL_DATA && (callData.length === 0 || callDataError !== null))
                   }
                   isLoading={isSubmitting}
-                  onClick={activeStep === Step.CONFIRM ? handleCreateDraft : () => setActiveStep(s => s + 1)}
+                  onClick={activeStep === Step.CONFIRM ? handleCreateDraft : () => setActiveStep((s) => s + 1)}
                 >
                   {activeStep === Step.CONFIRM
                     ? t('operations.drafts.createDraftButton')
@@ -767,7 +767,7 @@ export const DraftsSection = () => {
         <Modal
           size="md"
           isOpen={isEditModalOpen}
-          onToggle={open => {
+          onToggle={(open) => {
             setIsEditModalOpen(open);
             if (!open) setEditingDraft(null);
           }}
