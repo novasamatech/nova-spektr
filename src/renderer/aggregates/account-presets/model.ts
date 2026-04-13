@@ -1,5 +1,6 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { persist } from 'effector-storage/local';
+import { uniqBy } from 'lodash';
 
 import { toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
@@ -196,7 +197,7 @@ const $allEntries = combine(
       });
     }
 
-    return entries;
+    return uniqBy(entries, 'accountId');
   },
 );
 
