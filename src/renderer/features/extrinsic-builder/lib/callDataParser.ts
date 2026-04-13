@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { fromPrecision } from '@/shared/lib/utils';
+import BigNumber from 'bignumber.js';
 
 import { getCallMeta } from './palletIntrospection';
 
@@ -36,7 +36,7 @@ export function parseCallData(api: ApiPromise, callDataHex: string): ParsedCallD
         typeof converted === 'string' &&
         /^\d+$/.test(converted)
       ) {
-        converted = fromPrecision(converted, precision);
+        converted = new BigNumber(converted).div(new BigNumber(10).pow(precision)).toFixed();
       }
 
       args[key] = converted;
