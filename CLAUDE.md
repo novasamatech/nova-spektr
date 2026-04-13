@@ -56,6 +56,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Nova Spektr is a Polkadot & Kusama ecosystem Enterprise Desktop application built with Electron, React, and TypeScript. It's a multi-wallet application supporting hardware wallets (Polkadot Vault), multisig accounts, staking, and cross-chain transfers.
 
+<!-- SYNC MAP: Sections below mirror content from docs/. When editing either side, update the other.
+  - "Development Commands" ↔ docs/content/docs/onboarding/getting-started.mdx
+  - "Frontend Architecture" + "Domain Structure" ↔ docs/content/docs/onboarding/project-structure.mdx
+  - "Code Style Requirements" (naming parts) ↔ docs/content/docs/code/style/naming.md
+  - "Key Architectural Patterns" (Effector) ↔ docs/content/docs/code/style/effector.md
+-->
+
 ## Development Commands
 
 ### Development
