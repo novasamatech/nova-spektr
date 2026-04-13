@@ -16,10 +16,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - One task per subagent for focused execution
 
 ### 3. Self-Improvement Loop
-- After ANY correction from the user: update 'tasks/lessons.md' with the pattern
+- After ANY correction from the user: save the pattern to Claude Code memory
 - Write rules for yourself that prevent the same mistake
 - Ruthlessly iterate on these lessons until mistake rate drops
-- Review lessons at session start for relevant project
 
 ### 4. Verification Before Done
 - Never mark a task complete without proving it works
@@ -40,12 +39,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Go fix failing CI tests without being told how
 
 ## Task Management
-1. Plan First: Write plan to 'tasks/todo.md' with checkable items
+1. Plan First: Use plan mode or TaskCreate for checkable items
 2. Verify Plan: Check in before starting implementation
 3. Track Progress: Mark items complete as you go
 4. Explain Changes: High-level summary at each step
-5. Document Results: Add review to 'tasks/todo.md'
-6. Capture Lessons: Update 'tasks/lessons.md' after corrections
 
 ## Core Principles
 - Simplicity First: Make every change as simple as possible. Impact minimal code.
@@ -173,6 +170,12 @@ The renderer follows a modified Feature-Sliced Design methodology:
   ```tsx
   {/* eslint-disable-next-line i18next/no-literal-string */}
   ```
+
+### Custom ESLint Rules
+- **`enforce-di-naming-convention`** — DI identifiers must match their creator: `createSlot` → `*Slot`, `createPipeline` → `*Pipeline`, `createAsyncPipeline` → `*AsyncPipeline`, `createAnyOf` → `*AnyOf`, `createCombine` → `*Combine`, `createTransformer` → `*Transformer`.
+- **`no-self-import`** — Can't import your own package through aliases or index files; use relative paths.
+- **`no-relative-import-from-root`** — Can't use relative imports that escape package boundaries.
+- **`boundaries/entry-point`** — Most layers only export through `index.ts` barrel files. Exceptions: `shared/` and `pages/` allow all imports; `features/operations`, `features/governance`, `features/wallets` allow deep imports.
 
 ### Code Style Requirements
 - **Import boundaries**: Features must import from domain barrel files (`@/domains/network`), never deep paths (`@/domains/network/price-history/resource`). The `boundaries/entry-point` lint rule enforces this.
