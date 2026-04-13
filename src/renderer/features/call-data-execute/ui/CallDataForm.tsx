@@ -44,22 +44,20 @@ export const CallDataForm = () => {
           <InitiatorSelect />
           {showSignatories && <SignatorySelect />}
 
-          <Tabs value={inputMode} onChange={(value) => inputModeChanged(value as InputMode)}>
-            <Tabs.List>
-              <Tabs.Trigger value={InputMode.PASTE}>{t('callData.mode.paste')}</Tabs.Trigger>
-              <Tabs.Trigger value={InputMode.BUILD}>{t('callData.mode.build')}</Tabs.Trigger>
-            </Tabs.List>
-            <Tabs.Content value={InputMode.PASTE}>
-              <div className="p-0.5">
+          <div className="-mb-2">
+            <Tabs value={inputMode} onChange={(value) => inputModeChanged(value as InputMode)}>
+              <Tabs.List>
+                <Tabs.Trigger value={InputMode.PASTE}>{t('callData.mode.paste')}</Tabs.Trigger>
+                <Tabs.Trigger value={InputMode.BUILD}>{t('callData.mode.build')}</Tabs.Trigger>
+              </Tabs.List>
+              <Tabs.Content value={InputMode.PASTE}>
                 <CallDataInput />
-              </div>
-            </Tabs.Content>
-            <Tabs.Content value={InputMode.BUILD}>
-              <div className="p-0.5">
+              </Tabs.Content>
+              <Tabs.Content value={InputMode.BUILD}>
                 <ExtrinsicBuilder />
-              </div>
-            </Tabs.Content>
-          </Tabs>
+              </Tabs.Content>
+            </Tabs>
+          </div>
         </form>
 
         <Separator />

@@ -1,10 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { Box, Combobox, Input } from '@/shared/ui-kit';
-import { encodeCallData, getCallMeta, getCallNames, getPalletNames } from '../../lib/extrinsicBuilder';
+import { encodeCallData, getCallMeta, getCallNames, getPalletNames, parseCallData } from '../../lib/extrinsicBuilder';
 import { type CallMeta, MAX_BUILDER_DEPTH } from '../../lib/types';
 import { ParameterField } from '../ParameterField';
 
@@ -37,10 +37,23 @@ type NestedBuilderProps = {
   depth: number;
 };
 
-const NestedBuilder = memo(({ api, value: _value, depth, onChange }: NestedBuilderProps) => {
+const NestedBuilder = memo(({ api, value: hexValue, depth, onChange }: NestedBuilderProps) => {
   const [pallet, setPallet] = useState<string | null>(null);
   const [call, setCall] = useState<string | null>(null);
   const [paramValues, setParamValues] = useState<Record<string, unknown>>({});
+  const [restored, setRestored] = useState(false);
+
+  // Restore nested builder state from hex on remount (e.g. back from Confirm)
+  useEffect(() => {
+    if (restored || !api || !hexValue || !hexValue.startsWith('0x')) return;
+    setRestored(true);
+    const parsed = parseCallData(api, hexValue);
+    if (parsed) {
+      setPallet(parsed.pallet);
+      setCall(parsed.call);
+      setParamValues(parsed.args);
+    }
+  }, [api, hexValue, restored]);
 
   const palletOptions = useMemo(() => (api ? getPalletNames(api) : []), [api]);
   const callOptions = useMemo(() => (api && pallet ? getCallNames(api, pallet) : []), [api, pallet]);

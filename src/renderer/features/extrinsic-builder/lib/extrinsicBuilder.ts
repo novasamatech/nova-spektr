@@ -124,14 +124,43 @@ function codecToValue(value: any): unknown {
   if (typeof value.isTrue === 'boolean') return value.isTrue;
   if (typeof value.valueOf() === 'boolean') return value.valueOf();
 
-  // AccountId / MultiAddress — extract plain address string
-  // MultiAddress is an enum with variants like Id(AccountId32). We want the raw SS58 address.
+  // AccountId / MultiAddress with Id variant — extract plain address string
   if (value.type === 'Id' && value.inner?.toString) {
     return value.inner.toString();
   }
   // Direct AccountId32
   if (value.constructor?.name === 'AccountId32' || value.constructor?.name === 'GenericAccountId') {
     return value.toString();
+  }
+
+  // Option — must check before enum since Option is also an enum internally
+  if (typeof value.isSome === 'boolean' && typeof value.isNone === 'boolean') {
+    return value.isSome ? { enabled: true, inner: codecToValue(value.unwrap()) } : { enabled: false, inner: '' };
+  }
+
+  // Enum detection: has `.type` (active variant name) and `is${Type}` boolean property
+  if (value.type && typeof value.type === 'string' && `is${value.type}` in value) {
+    const variantName = value.type;
+
+    // Enum with inner value (single unnamed field)
+    if (value.inner) {
+      return { variant: variantName, values: { '0': codecToValue(value.inner) } };
+    }
+
+    // Enum with `.value` (alternative accessor for inner data)
+    if (value.value && typeof value.value === 'object' && value.value !== value) {
+      // Check if value.value is a struct with named fields
+      if (value.value.defKeys || (value.value.toJSON && typeof value.value.entries === 'function')) {
+        const fields = codecStructToValues(value.value);
+
+        return { variant: variantName, values: fields };
+      }
+
+      return { variant: variantName, values: { '0': codecToValue(value.value) } };
+    }
+
+    // Enum variant with no fields (like "Here", "Any")
+    return { variant: variantName, values: {} };
   }
 
   // Number types — convert to string for input fields
@@ -143,21 +172,10 @@ function codecToValue(value: any): unknown {
     }
   }
 
-  // Enum (variants)
-  if (value.type && typeof value.type === 'string' && value.inner) {
-    return { variant: value.type, values: { '0': codecToValue(value.inner) } };
-  }
-
-  // Option
-  if (typeof value.isSome === 'boolean') {
-    return value.isSome ? { enabled: true, inner: codecToValue(value.unwrap()) } : { enabled: false, inner: '' };
-  }
-
   // Vec<u8> — detect by checking if all elements are small numbers (bytes)
   if (value.toHex && value.length !== undefined && typeof value.map === 'function' && value.length > 0) {
     const first = value[0];
     if (typeof first?.toNumber === 'function' && first.toNumber() >= 0 && first.toNumber() <= 255) {
-      // Likely Vec<u8>, convert to hex
       return value.toHex();
     }
   }
@@ -171,21 +189,90 @@ function codecToValue(value: any): unknown {
     }
   }
 
-  // Struct-like
+  // Struct-like: iterate codec entries to preserve nested types
+  if (typeof value.entries === 'function' && typeof value.defKeys !== 'undefined') {
+    return codecStructToValues(value);
+  }
+
+  // Fallback struct via toJSON — recursively process nested values
   if (value.toJSON && typeof value.toJSON === 'function') {
     const json = value.toJSON();
     if (typeof json === 'object' && json !== null && !Array.isArray(json)) {
-      const result: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(json)) {
-        result[k] = typeof v === 'number' || typeof v === 'bigint' ? String(v) : v;
-      }
-
-      return result;
+      return jsonToUiValues(json);
     }
   }
 
   // Default: toString for hex, addresses, etc.
   return value.toString();
+}
+
+/**
+ * Convert a codec Struct to UI values by iterating its entries (preserves
+ * nested codec types).
+ */
+function codecStructToValues(struct: any): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  try {
+    for (const [key, val] of struct.entries()) {
+      result[key] = codecToValue(val);
+    }
+  } catch {
+    // Fallback to toJSON
+    const json = struct.toJSON?.();
+    if (typeof json === 'object' && json !== null) {
+      return jsonToUiValues(json);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Recursively convert a JSON object (from toJSON) to UI-compatible values.
+ * Detects enum-like objects { VariantName: value } and converts them.
+ */
+function jsonToUiValues(json: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(json)) {
+    result[k] = jsonValueToUi(v);
+  }
+
+  return result;
+}
+
+function jsonValueToUi(val: unknown): unknown {
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'number' || typeof val === 'bigint') return String(val);
+  if (typeof val === 'string') return val;
+  if (typeof val === 'boolean') return val;
+
+  if (Array.isArray(val)) {
+    return val.map(jsonValueToUi);
+  }
+
+  if (typeof val === 'object') {
+    const entries = Object.entries(val as Record<string, unknown>);
+
+    // Detect enum-like pattern: single key with PascalCase name → { variant, values }
+    if (entries.length === 1) {
+      const [key, inner] = entries[0]!;
+      if (/^[A-Z]/.test(key)) {
+        if (inner === null || inner === undefined) {
+          return { variant: key, values: {} };
+        }
+        if (typeof inner === 'object' && !Array.isArray(inner)) {
+          return { variant: key, values: jsonToUiValues(inner as Record<string, unknown>) };
+        }
+
+        return { variant: key, values: { '0': jsonValueToUi(inner) } };
+      }
+    }
+
+    // Regular struct
+    return jsonToUiValues(val as Record<string, unknown>);
+  }
+
+  return String(val);
 }
 
 /**
@@ -208,16 +295,122 @@ export function encodeCallData(
 
     const precision = api.registry.chainDecimals[0] ?? 10;
     const convertedArgs = args.map((arg, i) => {
-      if (argDefs?.[i]?.typeDef.kind === 'balance' && typeof arg === 'string' && arg !== '') {
-        return formatAmount(arg, precision);
-      }
+      const def = argDefs?.[i]?.typeDef;
 
-      return arg;
+      return convertArgForEncoding(arg, def, precision);
     });
 
     return callFn(...convertedArgs).method.toHex();
   } catch {
     return null;
+  }
+}
+
+/**
+ * Recursively convert UI-format arg values to Polkadot.js API-compatible
+ * format.
+ *
+ * - Enum { variant, values } → { VariantName: innerValue } or just "VariantName"
+ * - Option { enabled, inner } → inner value or null
+ * - Balance string → formatAmount planck string
+ * - Struct/Tuple objects → recursively convert fields
+ * - Vec arrays → recursively convert items
+ */
+function convertArgForEncoding(arg: unknown, def: ParameterTypeDef | undefined, precision: number): unknown {
+  if (arg === undefined || arg === null) return arg;
+  if (!def) return arg;
+
+  switch (def.kind) {
+    case 'balance': {
+      if (typeof arg === 'string' && arg !== '') {
+        return formatAmount(arg, precision);
+      }
+
+      return arg;
+    }
+
+    case 'enum': {
+      if (typeof arg === 'object' && arg !== null && 'variant' in arg) {
+        const enumVal = arg as { variant: string; values: Record<string, unknown> };
+        const variant = def.variants?.find((v) => v.name === enumVal.variant);
+
+        if (!variant || variant.fields.length === 0) {
+          // Simple enum variant with no fields → just the variant name
+          return enumVal.variant;
+        }
+
+        if (variant.fields.length === 1 && variant.fields[0]) {
+          // Single-field variant → { VariantName: convertedValue }
+          const field = variant.fields[0];
+          const innerValue = convertArgForEncoding(enumVal.values[field.name], field.typeDef, precision);
+
+          return { [enumVal.variant]: innerValue };
+        }
+
+        // Multi-field variant → { VariantName: { field1: val1, field2: val2 } }
+        const converted: Record<string, unknown> = {};
+        for (const field of variant.fields) {
+          converted[field.name] = convertArgForEncoding(enumVal.values[field.name], field.typeDef, precision);
+        }
+
+        return { [enumVal.variant]: converted };
+      }
+
+      return arg;
+    }
+
+    case 'option': {
+      if (typeof arg === 'object' && arg !== null && 'enabled' in arg) {
+        const optVal = arg as { enabled: boolean; inner: unknown };
+        if (!optVal.enabled) return null;
+
+        return convertArgForEncoding(optVal.inner, def.inner, precision);
+      }
+
+      return arg;
+    }
+
+    case 'struct': {
+      if (typeof arg === 'object' && arg !== null && !Array.isArray(arg) && def.fields) {
+        const converted: Record<string, unknown> = {};
+        for (const field of def.fields) {
+          converted[field.name] = convertArgForEncoding(
+            (arg as Record<string, unknown>)[field.name],
+            field.typeDef,
+            precision,
+          );
+        }
+
+        return converted;
+      }
+
+      return arg;
+    }
+
+    case 'tuple': {
+      if (typeof arg === 'object' && arg !== null && !Array.isArray(arg) && def.fields) {
+        return def.fields.map((field) =>
+          convertArgForEncoding((arg as Record<string, unknown>)[field.name], field.typeDef, precision),
+        );
+      }
+
+      return arg;
+    }
+
+    case 'vec': {
+      if (Array.isArray(arg) && def.inner) {
+        return arg.map((item) => convertArgForEncoding(item, def.inner, precision));
+      }
+
+      return arg;
+    }
+
+    case 'compact': {
+      return def.inner ? convertArgForEncoding(arg, def.inner, precision) : arg;
+    }
+
+    default:
+      return arg;
   }
 }
 
