@@ -838,6 +838,8 @@
     "optionSome": "Some",
     "optionNone": "None",
     "accounts": "Accounts",
+    "accountHint": "Account",
+    "balanceHint": "Balance",
     "contacts": "Contacts",
     "encodingError": "Failed to encode call data. Check parameters.",
     "depthLimitReached": "Nested call builder is limited to 3 levels. Enter call data as hex."

@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { includesMultiple, performSearch, toAddress, validateAddress } from '@/shared/lib/utils';
@@ -69,14 +69,17 @@ export const AccountParamInput = memo(({ value, onChange }: Props) => {
     });
   }, [query, contacts, chain]);
 
-  const prefixElement = (
+  const prefixElement = value ? (
     <Identicon size={20} address={toAddress(value, { prefix: chain?.prefix })} background={false} />
-  );
+  ) : undefined;
 
-  const handleChange = (val: string) => {
-    onChange(val);
-    setQuery('');
-  };
+  const handleChange = useCallback(
+    (val: string) => {
+      onChange(val);
+      setQuery('');
+    },
+    [onChange],
+  );
 
   return (
     <Combobox

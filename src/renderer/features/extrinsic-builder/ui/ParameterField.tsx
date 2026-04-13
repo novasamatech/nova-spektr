@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { Field, TextArea } from '@/shared/ui-kit';
 import { type ParameterTypeDef } from '../lib/types';
@@ -28,11 +29,33 @@ type Props = {
   api?: ApiPromise | null;
 };
 
+type OptionValue = { enabled: boolean; inner: unknown };
+type EnumValue = { variant: string; values: Record<string, unknown> };
+
+function isOptionValue(val: unknown): val is OptionValue {
+  return typeof val === 'object' && val !== null && 'enabled' in val;
+}
+
+function isEnumValue(val: unknown): val is EnumValue {
+  return typeof val === 'object' && val !== null && 'variant' in val;
+}
+
+function isRecord(val: unknown): val is Record<string, unknown> {
+  return typeof val === 'object' && val !== null && !Array.isArray(val);
+}
+
+const KIND_HINTS: Record<string, string> = {
+  balance: 'extrinsicBuilder.balanceHint',
+  accountId: 'extrinsicBuilder.accountHint',
+};
+
 export const ParameterField = memo(({ name, typeDef, value, onChange, depth, api: apiProp }: Props) => {
+  const { t } = useI18n();
   const apiFromModel = useUnit(builderModel.$api);
   const api = apiProp ?? apiFromModel;
 
-  const kindHint = typeDef.kind === 'balance' ? ' (Balance)' : typeDef.kind === 'accountId' ? ' (Account)' : '';
+  const hintKey = KIND_HINTS[typeDef.kind];
+  const kindHint = hintKey ? ` (${t(hintKey)})` : '';
   const label = `${name}: ${typeDef.typeName}${kindHint}`;
 
   return (
@@ -83,7 +106,7 @@ const ParameterInput = memo(({ typeDef, value, onChange, depth, api }: InputProp
       return (
         <OptionParamInput
           typeDef={typeDef}
-          value={(value as { enabled: boolean; inner: unknown }) ?? { enabled: false, inner: '' }}
+          value={isOptionValue(value) ? value : { enabled: false, inner: '' }}
           depth={depth}
           onChange={onChange}
         />
@@ -98,7 +121,7 @@ const ParameterInput = memo(({ typeDef, value, onChange, depth, api }: InputProp
       return (
         <EnumParamInput
           typeDef={typeDef}
-          value={(value as { variant: string; values: Record<string, unknown> }) ?? { variant: '', values: {} }}
+          value={isEnumValue(value) ? value : { variant: '', values: {} }}
           depth={depth}
           onChange={onChange}
         />
@@ -106,22 +129,12 @@ const ParameterInput = memo(({ typeDef, value, onChange, depth, api }: InputProp
 
     case 'struct':
       return (
-        <StructParamInput
-          typeDef={typeDef}
-          value={(value as Record<string, unknown>) ?? {}}
-          depth={depth}
-          onChange={onChange}
-        />
+        <StructParamInput typeDef={typeDef} value={isRecord(value) ? value : {}} depth={depth} onChange={onChange} />
       );
 
     case 'tuple':
       return (
-        <TupleParamInput
-          typeDef={typeDef}
-          value={(value as Record<string, unknown>) ?? {}}
-          depth={depth}
-          onChange={onChange}
-        />
+        <TupleParamInput typeDef={typeDef} value={isRecord(value) ? value : {}} depth={depth} onChange={onChange} />
       );
 
     case 'call':
