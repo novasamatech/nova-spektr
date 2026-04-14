@@ -2547,7 +2547,10 @@
       "discardTitle": "Unsaved changes",
       "discardDescription": "You have unsaved changes. Discard them?",
       "discardConfirm": "Discard",
-      "discardCancel": "Keep editing"
+      "discardCancel": "Keep editing",
+      "submitTitle": "Submit Draft",
+      "submitSignatory": "Signatory",
+      "noCallDataToSubmit": "Add call data before submitting"
     },
     "callData": {
       "adding": "Adding call data...",

@@ -62,6 +62,9 @@ import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
 import { type OperationTitle, operationTitleTransformer } from '@/features/multisig-operations';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { type Draft, draftsModel } from '../model/drafts-model';
+import { submitDraftModel } from '../model/submit-draft-model';
+
+import { SubmitDraftModal } from './SubmitDraftModal';
 
 const enum Step {
   SELECT_MULTISIG,
@@ -93,12 +96,14 @@ const DraftRow = ({
   canDelete,
   onDelete,
   onEdit,
+  onSubmit,
 }: {
   draft: Draft;
   canWrite: boolean;
   canDelete: boolean;
   onDelete: (id: string) => void;
   onEdit: (draft: Draft) => void;
+  onSubmit: (draft: Draft) => void;
 }) => {
   const { t, formatDate } = useI18n();
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
@@ -175,7 +180,7 @@ const DraftRow = ({
               {destinationAddress && ` · ${truncate(destinationAddress, 4, 4)}`}
               {titleData?.amount && (
                 <>
-                  {/* eslint-disable-next-line i18next/no-literal-string */}
+                  {}
                   {' · '}
                   <AssetBalance
                     value={titleData.amount.value}
@@ -210,13 +215,20 @@ const DraftRow = ({
               {t('operations.drafts.editButton')}
             </Button>
           )}
-          <Tooltip open={isAuthenticated ? false : undefined}>
+          <Tooltip open={isAuthenticated && draft.callData ? false : undefined}>
             <Tooltip.Trigger>
-              <Button size="sm" variant="fill" disabled={!isAuthenticated}>
+              <Button
+                size="sm"
+                variant="fill"
+                disabled={!isAuthenticated || !draft.callData}
+                onClick={() => onSubmit(draft)}
+              >
                 {t('operations.drafts.submitButton')}
               </Button>
             </Tooltip.Trigger>
-            <Tooltip.Content>{t('operations.drafts.connectToSubmit')}</Tooltip.Content>
+            <Tooltip.Content>
+              {!isAuthenticated ? t('operations.drafts.connectToSubmit') : t('operations.drafts.noCallDataToSubmit')}
+            </Tooltip.Content>
           </Tooltip>
           {canDelete && (
             <ConfirmModal
@@ -432,6 +444,7 @@ export const DraftsSection = () => {
   const canWrite = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_WRITE) ?? false);
   const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);
 
+  const [submittingDraft, setSubmittingDraft] = useState<Draft | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showDiscardCreate, setShowDiscardCreate] = useState(false);
@@ -566,6 +579,19 @@ export const DraftsSection = () => {
     setIsEditModalOpen(true);
   };
 
+  const handleSubmitDraft = (draft: Draft) => {
+    if (!draft.callData || !draft.multisigAccountId) return;
+
+    const chain = chains[draft.chainId as ChainId];
+    if (!chain) return;
+
+    const initiatorAccount = allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId);
+    if (!initiatorAccount) return;
+
+    setSubmittingDraft(draft);
+    submitDraftModel.flowStarted({ draft, initiator: initiatorAccount, chain });
+  };
+
   const handleSaveEdit = async () => {
     if (!backendUrl || !editingDraft) return;
 
@@ -698,6 +724,7 @@ export const DraftsSection = () => {
                 draft={draft}
                 onDelete={handleDeleteDraft}
                 onEdit={handleEditDraft}
+                onSubmit={handleSubmitDraft}
               />
             ))}
 
@@ -753,7 +780,7 @@ export const DraftsSection = () => {
                         !isCompleted && !isCurrent && 'bg-input-background-disabled text-text-tertiary',
                       )}
                     >
-                      {/* eslint-disable-next-line i18next/no-literal-string */}
+                      {}
                       {isCompleted ? '\u2713' : step}
                     </div>
                     {i < 2 && <div className={cnTw('h-0.5 w-8', isCompleted ? 'bg-icon-positive' : 'bg-divider')} />}
@@ -815,7 +842,7 @@ export const DraftsSection = () => {
                           <span className="text-body text-text-primary">{selectedWallet?.name}</span>
                           <span className="text-footnote text-text-tertiary">
                             {effectiveChain.name}
-                            {/* eslint-disable-next-line i18next/no-literal-string */}
+                            {}
                             {' · '}
                             {selectedAccount.threshold}/{selectedAccount.signatories.length}
                           </span>
@@ -979,6 +1006,8 @@ export const DraftsSection = () => {
         onCancel={() => setShowDiscardEdit(false)}
         onConfirm={handleDiscardEdit}
       />
+
+      {submittingDraft && <SubmitDraftModal onClose={() => setSubmittingDraft(null)} />}
     </div>
   );
 };
