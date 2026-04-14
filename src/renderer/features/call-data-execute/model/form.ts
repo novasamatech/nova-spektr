@@ -32,7 +32,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { Step } from '../lib/types';
+import { InputMode, Step } from '../lib/types';
 
 import { type ConfirmInput, confirmModel } from './confirm';
 
@@ -49,6 +49,11 @@ const stepChanged = createEvent<Step>();
 const flowStarted = createEvent();
 const flowFinished = createEvent();
 const $step = readonly(restore(stepChanged, Step.NONE));
+
+// input mode (paste vs build)
+
+const inputModeChanged = createEvent<InputMode>();
+const $inputMode = readonly(restore(inputModeChanged, InputMode.PASTE));
 
 const form: Form<FormData> = createForm<FormData>({
   fields: {
@@ -250,6 +255,12 @@ sample({
   target: [stepChanged, form.reset],
 });
 
+sample({
+  clock: flowFinished,
+  fn: () => InputMode.PASTE,
+  target: inputModeChanged,
+});
+
 const $allChains = networkModel.$chainsList;
 
 const $availableChains = combine(
@@ -280,6 +291,17 @@ const $showSignatories = combine(
 sample({
   clock: $signatories,
   target: balanceSubModel.fetchAccounts,
+});
+
+// builder integration — ExtrinsicBuilder component pushes call data via this event
+const builderCallDataChanged = createEvent<string | null>();
+
+sample({
+  clock: builderCallDataChanged,
+  source: $inputMode,
+  filter: (mode) => mode === InputMode.BUILD,
+  fn: (_, callData) => callData ?? '',
+  target: form.fields.callData.change,
 });
 
 // flow setup
@@ -452,6 +474,7 @@ export const formModel = {
   $fee,
   $pendingFee,
   $errors,
+  $inputMode,
 
   $allChains: $allChains,
   $availableChains: $availableChains,
@@ -461,4 +484,6 @@ export const formModel = {
   stepChanged,
   flowStarted,
   flowFinished,
+  inputModeChanged,
+  builderCallDataChanged,
 };

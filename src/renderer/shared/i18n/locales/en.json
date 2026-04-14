@@ -325,8 +325,13 @@
     "isCorrect": "Make sure the operation is correct",
     "noDecodedTxDescription": "Operation details will appear here after call data parsed",
     "noDecodedTxTitle": "No data available",
+    "copyCallData": "Copy call data",
+    "mode": {
+      "paste": "Paste",
+      "build": "Build"
+    },
     "placeholder": "Paste the call data here",
-    "title": "Add call data"
+    "title": "Build an operation"
   },
   "common": {
     "continue": "Continue",
@@ -821,6 +826,23 @@
     "createMultisig": "Create a new multisig wallet",
     "createOrImportAccount": "Create a new account or import an existing one",
     "searchEmpty": "Nothing was found for the \"{query}\""
+  },
+  "extrinsicBuilder": {
+    "pallet": "Pallet",
+    "palletPlaceholder": "Select pallet...",
+    "call": "Call",
+    "callPlaceholder": "Select call...",
+    "accountPlaceholder": "Enter account address",
+    "enumPlaceholder": "Select variant...",
+    "addItem": "Add item",
+    "optionSome": "Some",
+    "optionNone": "None",
+    "accounts": "Accounts",
+    "accountHint": "Account",
+    "balanceHint": "Balance",
+    "contacts": "Contacts",
+    "encodingError": "Failed to encode call data. Check parameters.",
+    "depthLimitReached": "Nested call builder is limited to 3 levels. Enter call data as hex."
   },
   "fallbackScreen": {
     "message": "Sorry, something went wrong",
@@ -2077,7 +2099,7 @@
     "balancesLabel": "Portfolio",
     "dashboardLabel": "Dashboard",
     "basketLabel": "Basket",
-    "callDataLabel": "Add call data",
+    "callDataLabel": "Build an operation",
     "customOperationLabel": "Custom operation",
     "fellowship": "Fellowship",
     "governance": "Governance",
