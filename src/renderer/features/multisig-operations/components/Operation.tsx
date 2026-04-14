@@ -15,10 +15,11 @@ import {
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod, toAddress, toShortAddress } from '@/shared/lib/utils';
-import { Accordion, FootnoteText, HelpText } from '@/shared/ui';
+import { Accordion, CaptionText, FootnoteText, HelpText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance, AssetIcon, Identicon, WalletAccountIcon } from '@/shared/ui-entities';
 import { AsyncItem, Copy, Tooltip } from '@/shared/ui-kit';
+import { useOperationDescription } from '@/domains/backend';
 import { type MultisigOperation, useWalletName } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { OperationTitleStatus } from '@/entities/operations';
@@ -93,6 +94,7 @@ const OperationWalletInfo = memo(({ wallet, accountAddress }: { wallet: Wallet; 
 
 export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false, tab, chains, wallets }: Props) => {
   const { t } = useI18n();
+  const description = useOperationDescription(operation.id);
 
   const wallet = useMemo(
     () => wallets.find(w => w.id === multisigAccount.walletId),
@@ -179,7 +181,23 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                 <div className="min-w-[200px] flex-1" />
               )}
 
-              <OperationTitleStatus operation={operation} account={multisigAccount} />
+              <div className="flex shrink-0 items-center gap-x-2">
+                <div className="w-[70px]">
+                  {description && (
+                    <Tooltip>
+                      <Tooltip.Trigger>
+                        <div className="inline-flex items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
+                          <CaptionText className="text-icon-accent uppercase">
+                            {t('operations.drafts.badge')}
+                          </CaptionText>
+                        </div>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>{description}</Tooltip.Content>
+                    </Tooltip>
+                  )}
+                </div>
+                <OperationTitleStatus operation={operation} account={multisigAccount} />
+              </div>
 
               <OperationActions operation={operation} account={multisigAccount} />
             </div>
