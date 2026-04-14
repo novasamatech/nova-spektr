@@ -34,6 +34,7 @@ import {
   Modal,
   Select,
   Surface,
+  Tabs,
   TextArea,
   Tooltip,
   useNotification,
@@ -52,6 +53,7 @@ import {
 } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
 import { operationTitleTransformer } from '@/features/multisig-operations';
 import { type Draft, draftsModel } from '../model/drafts-model';
 
@@ -311,6 +313,7 @@ export const DraftsSection = () => {
   const [decodedCallData, setDecodedCallData] = useState<object | null>(null);
   const [decodedTransaction, setDecodedTransaction] = useState<DecodedTransaction | null>(null);
   const [description, setDescription] = useState('');
+  const [inputMode, setInputMode] = useState<'paste' | 'build'>('paste');
 
   const deferredCallData = useDeferredValue(callData);
   const callDataError =
@@ -366,6 +369,7 @@ export const DraftsSection = () => {
       setDescription('');
       setActiveStep(Step.SELECT_MULTISIG);
       setIsSubmitting(false);
+      setInputMode('paste');
     }
   };
 
@@ -655,18 +659,35 @@ export const DraftsSection = () => {
 
               {activeStep === Step.CALL_DATA && (
                 <div className="flex flex-col gap-4 p-4">
-                  <Field text={t('operations.drafts.callDataLabel')}>
-                    <Input
-                      height="md"
-                      placeholder={t('operations.drafts.callDataPlaceholder')}
-                      value={callData}
-                      invalid={callDataError !== null}
-                      onChange={setCallData}
-                    />
-                    <InputHint variant="error" active={callDataError !== null}>
-                      {callDataError}
-                    </InputHint>
-                  </Field>
+                  <Tabs value={inputMode} onChange={(value) => setInputMode(value as 'paste' | 'build')}>
+                    <Tabs.List>
+                      <Tabs.Trigger value="paste">{t('callData.mode.paste')}</Tabs.Trigger>
+                      <Tabs.Trigger value="build">{t('callData.mode.build')}</Tabs.Trigger>
+                    </Tabs.List>
+                    <Tabs.Content value="paste">
+                      <Field text={t('operations.drafts.callDataLabel')}>
+                        <Input
+                          height="md"
+                          placeholder={t('operations.drafts.callDataPlaceholder')}
+                          value={callData}
+                          invalid={callDataError !== null}
+                          onChange={setCallData}
+                        />
+                        <InputHint variant="error" active={callDataError !== null}>
+                          {callDataError}
+                        </InputHint>
+                      </Field>
+                    </Tabs.Content>
+                    <Tabs.Content value="build">
+                      <ExtrinsicBuilder
+                        api={api}
+                        initialCallData={inputMode === 'build' ? callData : undefined}
+                        onCallDataChange={(hex) => {
+                          if (inputMode === 'build') setCallData(hex ?? '');
+                        }}
+                      />
+                    </Tabs.Content>
+                  </Tabs>
 
                   {decodedCallData && (
                     <div className="flex flex-col gap-y-2">
