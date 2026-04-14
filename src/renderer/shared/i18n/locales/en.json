@@ -2543,7 +2543,11 @@
       "deleteCancel": "Cancel",
       "deleteConfirm": "Delete",
       "deleteSuccess": "Draft deleted successfully",
-      "deleteError": "Failed to delete draft"
+      "deleteError": "Failed to delete draft",
+      "discardTitle": "Unsaved changes",
+      "discardDescription": "You have unsaved changes. Discard them?",
+      "discardConfirm": "Discard",
+      "discardCancel": "Keep editing"
     },
     "callData": {
       "adding": "Adding call data...",

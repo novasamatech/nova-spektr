@@ -12,7 +12,7 @@ import {
 } from '@/shared/core';
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, formatSectionAndMethod, getNativeAssetId, toAddress } from '@/shared/lib/utils';
+import { cnTw, formatSectionAndMethod, getNativeAssetId, toAccountId, toAddress, truncate } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   Button,
@@ -28,7 +28,9 @@ import {
 import { AssetBalance, ChainSelect, Hash, Identicon, WalletAccountIcon } from '@/shared/ui-entities';
 import {
   Accordion,
+  Box,
   ConfirmModal,
+  Copy,
   Field,
   Input,
   Modal,
@@ -48,13 +50,17 @@ import {
   decodeCallData,
   findCoreTransaction,
   getTransactionAmount,
+  getXcmTransactionBeneficiary,
+  isTransferTransaction,
+  isXcmTransaction,
   transactionService,
   useTransactionAsset,
 } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
-import { operationTitleTransformer } from '@/features/multisig-operations';
+import { type OperationTitle, operationTitleTransformer } from '@/features/multisig-operations';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { type Draft, draftsModel } from '../model/drafts-model';
 
 const enum Step {
@@ -64,6 +70,22 @@ const enum Step {
 }
 
 type MultisigAcc = MultisigAccount | FlexibleMultisigAccount;
+
+const getDestinationAccountId = (coreTx: DecodedTransaction | null): AccountId | null => {
+  if (!coreTx) return null;
+
+  if (isXcmTransaction(coreTx)) {
+    return getXcmTransactionBeneficiary(coreTx) ?? null;
+  }
+
+  if (!isTransferTransaction(coreTx) || !coreTx.args?.dest) return null;
+
+  try {
+    return toAccountId(coreTx.args.dest);
+  } catch {
+    return null;
+  }
+};
 
 const DraftRow = ({
   draft,
@@ -107,6 +129,7 @@ const DraftRow = ({
   }, [draft.callData, draft.multisigAccountId, api, chain]);
 
   const coreTx = findCoreTransaction(decodedTransaction);
+  const destinationAccountId = useMemo(() => getDestinationAccountId(coreTx), [coreTx]);
   const txAsset = useTransactionAsset(coreTx, draft.chainId as ChainId);
   const externalTitle = useTransformer(operationTitleTransformer, {
     operation: decodedTransaction ? ({ transaction: decodedTransaction, chainId: draft.chainId } as never) : null,
@@ -128,6 +151,10 @@ const DraftRow = ({
     };
   }, [externalTitle, coreTx, txAsset, chain]);
 
+  const destinationAddress = destinationAccountId
+    ? toAddress(destinationAccountId, { prefix: chain?.addressPrefix })
+    : null;
+
   return (
     <div className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow">
       <div className="flex h-[52px] w-full items-center px-4 py-2">
@@ -145,6 +172,7 @@ const DraftRow = ({
             <HelpText className="flex items-center truncate text-text-tertiary">
               {contact?.name || <span className="text-text-negative">{t('operations.drafts.unknownMultisig')}</span>}
               {titleData?.title && ` · ${titleData.title}`}
+              {destinationAddress && ` · ${truncate(destinationAddress, 4, 4)}`}
               {titleData?.amount && (
                 <>
                   {/* eslint-disable-next-line i18next/no-literal-string */}
@@ -210,6 +238,115 @@ const DraftRow = ({
   );
 };
 
+type DraftSummaryProps = {
+  multisigName: string;
+  multisigAccountId?: AccountId;
+  threshold?: string;
+  chain: Chain | null;
+  titleData: OperationTitle | null;
+  destinationAccountId: AccountId | null;
+  callData?: string;
+  jsonArgs?: object | null;
+};
+
+const DraftSummary = ({
+  multisigName,
+  multisigAccountId,
+  threshold,
+  chain,
+  titleData,
+  destinationAccountId,
+  callData,
+  jsonArgs,
+}: DraftSummaryProps) => {
+  const { t } = useI18n();
+  const multisigAddress = multisigAccountId
+    ? toAddress(multisigAccountId, { prefix: chain?.addressPrefix })
+    : undefined;
+
+  return (
+    <Surface elevation={1} className="p-4">
+      <div className="flex flex-col gap-3">
+        <CaptionText className="text-text-tertiary uppercase">{t('operations.drafts.summaryTitle')}</CaptionText>
+        <Separator />
+        <div className="flex flex-col gap-1.5">
+          <div className="flex justify-between">
+            <HelpText className="text-text-tertiary">{t('operations.drafts.summaryMultisig')}</HelpText>
+            <div className="flex items-center gap-x-2">
+              {multisigAddress && <Identicon address={multisigAddress} size={20} />}
+              <FootnoteText className="text-text-primary">{multisigName}</FootnoteText>
+            </div>
+          </div>
+          {chain?.name && (
+            <div className="flex justify-between">
+              <HelpText className="text-text-tertiary">{t('operations.drafts.summaryNetwork')}</HelpText>
+              <FootnoteText className="text-text-primary">{chain.name}</FootnoteText>
+            </div>
+          )}
+          {threshold && (
+            <div className="flex justify-between">
+              <HelpText className="text-text-tertiary">{t('operations.drafts.summaryThreshold')}</HelpText>
+              <FootnoteText className="text-text-primary">{threshold}</FootnoteText>
+            </div>
+          )}
+          {titleData?.title && (
+            <div className="flex justify-between">
+              <HelpText className="text-text-tertiary">{t('operations.drafts.summaryOperation')}</HelpText>
+              <FootnoteText className="text-text-primary">{titleData.title}</FootnoteText>
+            </div>
+          )}
+          {titleData?.amount && (
+            <div className="flex justify-between">
+              <HelpText className="text-text-tertiary">{t('operations.drafts.summaryAmount')}</HelpText>
+              <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} className="text-footnote" />
+            </div>
+          )}
+          {destinationAccountId && chain && (
+            <div className="flex justify-between">
+              <HelpText className="text-text-tertiary">{t('operation.details.recipient')}</HelpText>
+              <NamedAccount accountId={destinationAccountId} variant="short" chain={chain} />
+            </div>
+          )}
+          {callData && (
+            <div className="flex justify-between">
+              <HelpText className="text-text-tertiary">{t('operation.details.callData')}</HelpText>
+              <div className="flex items-center gap-1">
+                <Copy value={callData}>
+                  <button
+                    type="button"
+                    className="group -mr-2 flex cursor-pointer items-center gap-x-1 rounded-sm px-2 py-[3px] hover:bg-action-background-hover hover:text-text-primary"
+                  >
+                    <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
+                    <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
+                  </button>
+                </Copy>
+                {jsonArgs && (
+                  <Modal size="lg" height="fit">
+                    <Modal.Trigger>
+                      <button
+                        type="button"
+                        className="group cursor-pointer rounded-sm px-2 py-[3px] hover:bg-action-background-hover"
+                      >
+                        <Icon name="details" size={16} className="group-hover:text-icon-hover" />
+                      </button>
+                    </Modal.Trigger>
+                    <Modal.Title close>{t('operation.viewJSON.label')}</Modal.Title>
+                    <Modal.Content>
+                      <Box padding={5}>
+                        <Json value={jsonArgs} name="callData" expandDepth={3} />
+                      </Box>
+                    </Modal.Content>
+                  </Modal>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </Surface>
+  );
+};
+
 const EditDraftSummary = ({ draft }: { draft: Draft }) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
@@ -237,6 +374,7 @@ const EditDraftSummary = ({ draft }: { draft: Draft }) => {
   }, [draft.callData, draft.multisigAccountId, api, chain]);
 
   const coreTx = findCoreTransaction(decodedTransaction);
+  const destinationAccountId = useMemo(() => getDestinationAccountId(coreTx), [coreTx]);
   const txAsset = useTransactionAsset(coreTx, draft.chainId as ChainId);
   const externalTitle = useTransformer(operationTitleTransformer, {
     operation: decodedTransaction ? ({ transaction: decodedTransaction, chainId: draft.chainId } as never) : null,
@@ -258,35 +396,28 @@ const EditDraftSummary = ({ draft }: { draft: Draft }) => {
     };
   }, [externalTitle, coreTx, txAsset, chain]);
 
+  const jsonArgs = useMemo(() => {
+    if (!draft.callData || !api || !chain) return null;
+
+    try {
+      const call = transactionService.createCallFromCallData(draft.callData as CallData, api);
+
+      return call ? transactionService.formatCall(call, chain) : null;
+    } catch {
+      return null;
+    }
+  }, [draft.callData, api, chain]);
+
   return (
-    <Surface elevation={1} className="p-4">
-      <div className="flex flex-col gap-3">
-        <CaptionText className="text-text-tertiary uppercase">{t('operations.drafts.summaryTitle')}</CaptionText>
-        <Separator />
-        <div className="flex flex-col gap-1.5">
-          <div className="flex justify-between">
-            <HelpText className="text-text-tertiary">{t('operations.drafts.summaryMultisig')}</HelpText>
-            <FootnoteText className="text-text-primary">{contact?.name ?? draft.multisigAccountId}</FootnoteText>
-          </div>
-          <div className="flex justify-between">
-            <HelpText className="text-text-tertiary">{t('operations.drafts.summaryNetwork')}</HelpText>
-            <FootnoteText className="text-text-primary">{chain?.name ?? draft.chainId}</FootnoteText>
-          </div>
-          {titleData?.title && (
-            <div className="flex justify-between">
-              <HelpText className="text-text-tertiary">{t('operations.drafts.summaryOperation')}</HelpText>
-              <FootnoteText className="text-text-primary">{titleData.title}</FootnoteText>
-            </div>
-          )}
-          {titleData?.amount && (
-            <div className="flex justify-between">
-              <HelpText className="text-text-tertiary">{t('operations.drafts.summaryAmount')}</HelpText>
-              <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} className="text-footnote" />
-            </div>
-          )}
-        </div>
-      </div>
-    </Surface>
+    <DraftSummary
+      multisigName={contact?.name ?? draft.multisigAccountId ?? ''}
+      multisigAccountId={draft.multisigAccountId as AccountId | undefined}
+      chain={chain ?? null}
+      titleData={titleData}
+      destinationAccountId={destinationAccountId}
+      callData={draft.callData ?? undefined}
+      jsonArgs={jsonArgs}
+    />
   );
 };
 
@@ -303,6 +434,8 @@ export const DraftsSection = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showDiscardCreate, setShowDiscardCreate] = useState(false);
+  const [showDiscardEdit, setShowDiscardEdit] = useState(false);
   const [editingDraft, setEditingDraft] = useState<Draft | null>(null);
   const [editDescription, setEditDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -358,19 +491,37 @@ export const DraftsSection = () => {
       .filter((o): o is NonNullable<typeof o> => o !== null);
   }, [multisigAccounts, resolvedWallets, chains]);
 
+  const isCreateDirty = selectedAccount !== null || callData.length > 0 || description.length > 0;
+
+  const resetCreateState = () => {
+    setSelectedAccount(null);
+    setSelectedChain(null);
+    setCallData('');
+    setDecodedCallData(null);
+    setDecodedTransaction(null);
+    setDescription('');
+    setActiveStep(Step.SELECT_MULTISIG);
+    setIsSubmitting(false);
+    setInputMode('paste');
+  };
+
   const handleToggle = (open: boolean) => {
+    if (!open && isCreateDirty) {
+      setShowDiscardCreate(true);
+
+      return;
+    }
+
     setIsModalOpen(open);
     if (!open) {
-      setSelectedAccount(null);
-      setSelectedChain(null);
-      setCallData('');
-      setDecodedCallData(null);
-      setDecodedTransaction(null);
-      setDescription('');
-      setActiveStep(Step.SELECT_MULTISIG);
-      setIsSubmitting(false);
-      setInputMode('paste');
+      resetCreateState();
     }
+  };
+
+  const handleDiscardCreate = () => {
+    setShowDiscardCreate(false);
+    setIsModalOpen(false);
+    resetCreateState();
   };
 
   const handleCreateDraft = async () => {
@@ -386,7 +537,8 @@ export const DraftsSection = () => {
       });
       draftsModel.events.draftCreated(response);
       toast.success(t('operations.drafts.createSuccess'));
-      handleToggle(false);
+      setIsModalOpen(false);
+      resetCreateState();
     } catch (e) {
       const message = e instanceof Error ? e.message : t('operations.drafts.createError');
       toast.error(t('operations.drafts.createError'), { description: message });
@@ -434,6 +586,25 @@ export const DraftsSection = () => {
     }
   };
 
+  const isEditDirty = editingDraft !== null && editDescription !== (editingDraft.description ?? '');
+
+  const handleEditToggle = (open: boolean) => {
+    if (!open && isEditDirty) {
+      setShowDiscardEdit(true);
+
+      return;
+    }
+
+    setIsEditModalOpen(open);
+    if (!open) setEditingDraft(null);
+  };
+
+  const handleDiscardEdit = () => {
+    setShowDiscardEdit(false);
+    setIsEditModalOpen(false);
+    setEditingDraft(null);
+  };
+
   const handleAccountChange = (accountId: string) => {
     const found = multisigAccounts.find((a) => a.accountId === accountId) ?? null;
     setSelectedAccount(found);
@@ -471,6 +642,7 @@ export const DraftsSection = () => {
 
   // Use the same title pipeline as the operations list
   const coreTx = findCoreTransaction(decodedTransaction);
+  const destinationAccountId = useMemo(() => getDestinationAccountId(coreTx), [coreTx]);
   const txAsset = useTransactionAsset(coreTx, effectiveChain?.chainId ?? ('0x00' as ChainId));
   const externalTitle = useTransformer(operationTitleTransformer, {
     operation: decodedTransaction
@@ -711,48 +883,18 @@ export const DraftsSection = () => {
                     />
                   </Field>
 
-                  <Surface elevation={1} className="p-4">
-                    <div className="flex flex-col gap-3">
-                      <CaptionText className="text-text-tertiary uppercase">
-                        {t('operations.drafts.summaryTitle')}
-                      </CaptionText>
-                      <Separator />
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex justify-between">
-                          <HelpText className="text-text-tertiary">{t('operations.drafts.summaryMultisig')}</HelpText>
-                          <div className="flex items-center gap-x-2">
-                            {selectedAddress && <Identicon address={selectedAddress} size={20} />}
-                            <FootnoteText className="text-text-primary">{selectedWallet?.name}</FootnoteText>
-                          </div>
-                        </div>
-                        <div className="flex justify-between">
-                          <HelpText className="text-text-tertiary">{t('operations.drafts.summaryThreshold')}</HelpText>
-                          {/* eslint-disable-next-line i18next/no-literal-string */}
-                          <FootnoteText className="text-text-primary">
-                            {selectedAccount?.threshold}/{selectedAccount?.signatories.length}
-                          </FootnoteText>
-                        </div>
-                        {titleData?.title && (
-                          <div className="flex justify-between">
-                            <HelpText className="text-text-tertiary">
-                              {t('operations.drafts.summaryOperation')}
-                            </HelpText>
-                            <FootnoteText className="text-text-primary">{titleData.title}</FootnoteText>
-                          </div>
-                        )}
-                        {titleData?.amount && (
-                          <div className="flex justify-between">
-                            <HelpText className="text-text-tertiary">{t('operations.drafts.summaryAmount')}</HelpText>
-                            <AssetBalance
-                              value={titleData.amount.value}
-                              asset={titleData.amount.asset}
-                              className="text-footnote"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </Surface>
+                  <DraftSummary
+                    multisigName={selectedWallet?.name ?? ''}
+                    multisigAccountId={selectedAccount?.accountId}
+                    threshold={
+                      selectedAccount ? `${selectedAccount.threshold}/${selectedAccount.signatories.length}` : undefined
+                    }
+                    chain={effectiveChain}
+                    titleData={titleData}
+                    destinationAccountId={destinationAccountId}
+                    callData={callData || undefined}
+                    jsonArgs={decodedCallData}
+                  />
                 </div>
               )}
             </Modal.Content>
@@ -785,14 +927,7 @@ export const DraftsSection = () => {
       </Accordion>
 
       {editingDraft && (
-        <Modal
-          size="md"
-          isOpen={isEditModalOpen}
-          onToggle={(open) => {
-            setIsEditModalOpen(open);
-            if (!open) setEditingDraft(null);
-          }}
-        >
+        <Modal size="md" isOpen={isEditModalOpen} onToggle={handleEditToggle}>
           <Modal.Title close>{t('operations.drafts.editDraftTitle')}</Modal.Title>
           <Modal.Content>
             <div className="flex flex-col gap-4 p-4">
@@ -810,13 +945,7 @@ export const DraftsSection = () => {
           </Modal.Content>
           <Modal.Footer>
             <div className="flex w-full items-center justify-between">
-              <Button
-                variant="text"
-                onClick={() => {
-                  setIsEditModalOpen(false);
-                  setEditingDraft(null);
-                }}
-              >
+              <Button variant="text" onClick={() => handleEditToggle(false)}>
                 {t('operations.drafts.backButton')}
               </Button>
               <Button isLoading={isSubmitting} onClick={handleSaveEdit}>
@@ -826,6 +955,30 @@ export const DraftsSection = () => {
           </Modal.Footer>
         </Modal>
       )}
+
+      <ConfirmModal
+        title={t('operations.drafts.discardTitle')}
+        description={t('operations.drafts.discardDescription')}
+        cancelText={t('operations.drafts.discardCancel')}
+        confirmText={t('operations.drafts.discardConfirm')}
+        type="warning"
+        isOpen={showDiscardCreate}
+        onToggle={setShowDiscardCreate}
+        onCancel={() => setShowDiscardCreate(false)}
+        onConfirm={handleDiscardCreate}
+      />
+
+      <ConfirmModal
+        title={t('operations.drafts.discardTitle')}
+        description={t('operations.drafts.discardDescription')}
+        cancelText={t('operations.drafts.discardCancel')}
+        confirmText={t('operations.drafts.discardConfirm')}
+        type="warning"
+        isOpen={showDiscardEdit}
+        onToggle={setShowDiscardEdit}
+        onCancel={() => setShowDiscardEdit(false)}
+        onConfirm={handleDiscardEdit}
+      />
     </div>
   );
 };

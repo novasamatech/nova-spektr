@@ -1,3 +1,4 @@
+import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
@@ -41,9 +42,13 @@ multisigOperationsSDK(transferOperationDetailFeature, {
 
     if (isTransferTransaction(transaction)) {
       const amount = transaction ? getTransactionAmount(transaction) : null;
+      const titleKey =
+        transaction?.type === TransactionType.TRANSFER_ALL
+          ? 'operations.titles.transferAll'
+          : 'operations.titles.transfer';
 
       return {
-        title: t('operations.titles.transfer', { asset: asset.symbol }),
+        title: t(titleKey, { asset: asset.symbol }),
         amount: asset && amount ? { value: amount, asset } : undefined,
         sourceChainId: operation.chainId,
       };
@@ -70,8 +75,13 @@ multisigOperationsSDK(transferOperationDetailFeature, {
     const amount = transaction ? getTransactionAmount(transaction) : null;
 
     if (isTransferTransaction(transaction)) {
+      const titleKey =
+        transaction?.type === TransactionType.TRANSFER_ALL
+          ? 'operations.titles.transferAll'
+          : 'operations.titles.transfer';
+
       return (
-        <TransactionTitle className="overflow-hidden" title={t('operations.titles.transfer', { asset: asset?.symbol })}>
+        <TransactionTitle className="overflow-hidden" title={t(titleKey, { asset: asset?.symbol })}>
           {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
         </TransactionTitle>
       );
