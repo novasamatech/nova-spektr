@@ -1,6 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-
-import { fromPrecision } from '@/shared/lib/utils';
+import BigNumber from 'bignumber.js';
 
 import { getCallMeta } from './palletIntrospection';
 
@@ -30,13 +29,13 @@ export function parseCallData(api: ApiPromise, callDataHex: string): ParsedCallD
     for (const [key, value] of extrinsicCall.argsEntries as Iterable<[string, any]>) {
       let converted = codecToValue(value);
 
-      // Convert raw planck to human-readable for balance params
+      // Convert raw planck to human-readable for balance params (full precision, no truncation)
       if (
         callMeta?.args[argIndex]?.typeDef.kind === 'balance' &&
         typeof converted === 'string' &&
         /^\d+$/.test(converted)
       ) {
-        converted = fromPrecision(converted, precision);
+        converted = new BigNumber(converted).shiftedBy(-precision).toFixed();
       }
 
       args[key] = converted;

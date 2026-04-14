@@ -811,6 +811,122 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
     });
   });
 
+  describe('parseCallData — balance precision', () => {
+    function createBalanceParseApi(balanceCodecValue: bigint, precision: number): ApiPromise {
+      const api = {
+        tx: {},
+        registry: {
+          chainDecimals: [precision],
+          chainTokens: ['KSM'],
+          chainSS58: 2,
+          lookup: { getSiType: () => null, getName: () => null, getTypeDef: () => null, types: [] },
+          createType: () => null,
+          findMetaCall: () => ({ method: 'transferKeepAlive', section: 'balances' }),
+        },
+        createType: (_typeName: string, _hex: string) => {
+          const destValue = {
+            type: 'Id',
+            inner: { toString: () => '5GrwvaEF...' },
+          };
+
+          const amountValue = {
+            toBigInt: () => balanceCodecValue,
+            toString: () => balanceCodecValue.toString(),
+          };
+
+          return {
+            argsEntries: [
+              ['dest', destValue],
+              ['value', amountValue],
+            ],
+            callIndex: new Uint8Array([0, 0]),
+          };
+        },
+      } as unknown as ApiPromise;
+
+      (api.tx as any).balances = {
+        transferKeepAlive: Object.assign((..._args: unknown[]) => ({ method: { toHex: () => '0x' } }), {
+          meta: {
+            args: [
+              {
+                name: { toString: () => 'dest' },
+                type: { toString: () => 'MultiAddress' },
+                typeName: { isSome: false },
+              },
+              {
+                name: { toString: () => 'value' },
+                type: { toString: () => 'Compact<u128>' },
+                typeName: { isSome: true, unwrap: () => ({ toString: () => 'BalanceOf<T>' }) },
+              },
+            ],
+            docs: [],
+          },
+        }),
+      };
+
+      return api;
+    }
+
+    it('should preserve full planck precision for balance values with trailing digits', () => {
+      // 1200000000123 planks with 12 decimals = 1.200000000123 KSM
+      const api = createBalanceParseApi(1200000000123n, 12);
+
+      const result = parseCallData(api, '0xabcd');
+
+      expect(result).not.toBeNull();
+      expect(result!.args.value).toBe('1.200000000123');
+    });
+
+    it('should preserve precision for values with many trailing zeros and small suffix', () => {
+      // 10000000000001 planks with 12 decimals = 10.000000000001
+      const api = createBalanceParseApi(10000000000001n, 12);
+
+      const result = parseCallData(api, '0xabcd');
+
+      expect(result).not.toBeNull();
+      expect(result!.args.value).toBe('10.000000000001');
+    });
+
+    it('should handle exact whole number balances without trailing decimal', () => {
+      // 1200000000000 planks with 12 decimals = 1.2 KSM (no precision loss possible)
+      const api = createBalanceParseApi(1200000000000n, 12);
+
+      const result = parseCallData(api, '0xabcd');
+
+      expect(result).not.toBeNull();
+      expect(result!.args.value).toBe('1.2');
+    });
+
+    it('should handle sub-planck precision (value < 1 token)', () => {
+      // 123 planks with 12 decimals = 0.000000000123
+      const api = createBalanceParseApi(123n, 12);
+
+      const result = parseCallData(api, '0xabcd');
+
+      expect(result).not.toBeNull();
+      expect(result!.args.value).toBe('0.000000000123');
+    });
+
+    it('should handle very large balances beyond JS Number.MAX_SAFE_INTEGER', () => {
+      // 99999999999999999999 planks (> 2^53) with 12 decimals = 99999999.999999999999
+      const api = createBalanceParseApi(99999999999999999999n, 12);
+
+      const result = parseCallData(api, '0xabcd');
+
+      expect(result).not.toBeNull();
+      expect(result!.args.value).toBe('99999999.999999999999');
+    });
+
+    it('should handle zero balance', () => {
+      const api = createBalanceParseApi(0n, 12);
+
+      const result = parseCallData(api, '0xabcd');
+
+      expect(result).not.toBeNull();
+      expect(result!.args.value).toBe('0');
+    });
+  });
+
   describe('parseCallData', () => {
     it('should return null for invalid hex', () => {
       const api = createMockApi({});
