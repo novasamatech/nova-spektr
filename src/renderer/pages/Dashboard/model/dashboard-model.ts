@@ -1,43 +1,9 @@
 import { combine, createEvent, createStore } from 'effector';
 import { persist } from 'effector-storage/local';
 
-import { type Address, type ID, type WalletType } from '@/shared/core';
-import { type ContactTag } from '@/shared/core/types/contact';
-import { toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
-import { networkModel } from '@/entities/network';
-import { accountUtils, walletModel } from '@/entities/wallet';
-import { type PresetFilterCriteria, dashboardPresetsModel } from '@/aggregates/dashboard-presets';
-
-type DashboardEntry = {
-  id: string;
-  name: string;
-  address: Address;
-  accountId: string;
-  source: 'wallet' | 'local-contact' | 'backend-contact';
-  walletId?: ID;
-  walletName?: string;
-  walletType?: WalletType;
-  entityNames?: string[];
-  categoryName?: string | null;
-  tags?: ContactTag[];
-};
-
-function applyPresetFilter(filters: PresetFilterCriteria, entries: DashboardEntry[]): DashboardEntry[] {
-  const { sources, entityNames, categoryNames, tags } = filters;
-
-  return entries.filter(
-    (entry) =>
-      (sources.length === 0 || sources.includes(entry.source)) &&
-      (entityNames.length === 0 || (entry.entityNames?.some((e) => entityNames.includes(e)) ?? false)) &&
-      (categoryNames.length === 0 || (entry.categoryName != null && categoryNames.includes(entry.categoryName))) &&
-      (tags.length === 0 ||
-        tags.every(
-          (t) =>
-            entry.tags?.some((et) => et.tagName === t.tagName && t.values.some((v) => et.values.includes(v))) ?? false,
-        )),
-  );
-}
+import { walletModel } from '@/entities/wallet';
+import { accountPresetsModel } from '@/aggregates/account-presets';
 
 const tabChanged = createEvent<string>();
 const widgetOrderChanged = createEvent<{ tab: string; order: string[] }>();
@@ -53,77 +19,8 @@ $widgetOrder.on(widgetOrderChanged, (state, { tab, order }) => ({ ...state, [tab
 
 $activeTab.on(tabChanged, (_, tab) => tab);
 
-const $accountsWithWallets = combine(walletModel.$availableAccounts, walletModel.$wallets, (accounts, wallets) => ({
-  accounts,
-  wallets,
-}));
-
-const $allEntries = combine(
-  {
-    accountsWithWallets: $accountsWithWallets,
-    localContacts: contactModel.$localContacts,
-    backendContacts: contactModel.$backendContacts,
-    chains: networkModel.$chains,
-  },
-  ({ accountsWithWallets: { accounts, wallets }, localContacts, backendContacts, chains }): DashboardEntry[] => {
-    const walletNameById = new Map(wallets.map((w) => [w.id, w.name]));
-    const walletTypeById = new Map(wallets.map((w) => [w.id, w.type]));
-    const entries: DashboardEntry[] = [];
-
-    for (const account of accounts) {
-      if (accountUtils.isMultisigSignatoryAccount(account)) continue;
-
-      const addressPrefix = account.type === 'chain' ? chains[account.chainId]?.addressPrefix : undefined;
-
-      entries.push({
-        id: account.id,
-        name: account.name,
-        address: toAddress(account.accountId, { prefix: addressPrefix }),
-        accountId: account.accountId,
-        source: 'wallet',
-        walletId: account.walletId,
-        walletName: walletNameById.get(account.walletId),
-        walletType: walletTypeById.get(account.walletId),
-      });
-    }
-
-    for (const contact of localContacts) {
-      entries.push({
-        id: contact.id,
-        name: contact.name,
-        address: contact.address,
-        accountId: contact.accountId,
-        source: 'local-contact',
-      });
-    }
-
-    for (const contact of backendContacts) {
-      entries.push({
-        id: contact.id,
-        name: contact.name,
-        address: contact.address,
-        accountId: contact.accountId,
-        source: 'backend-contact',
-        entityNames: contact.entityNames,
-        categoryName: contact.categoryName,
-        tags: contact.tags,
-      });
-    }
-
-    return entries;
-  },
-);
-
-const $matchedEntries = combine(dashboardPresetsModel.$activePreset, $allEntries, (preset, entries) => {
-  if (!preset) return entries;
-
-  if (preset.type === 'custom') {
-    const selected = new Set(preset.selectedIds);
-    return entries.filter((e) => selected.has(e.id));
-  }
-
-  return applyPresetFilter(preset.filters, entries);
-});
+const $allEntries = accountPresetsModel.$allEntries;
+const $matchedEntries = accountPresetsModel.$matchedDashboardEntries;
 
 const $validSelectedIdsRaw = combine($matchedEntries, $allEntries, (matchedEntries, allEntries) => {
   const selectedAccountIds = new Set(matchedEntries.map((e) => e.accountId));
@@ -147,9 +44,8 @@ const $validSelectedIds = createStore<string[]>([], {
 });
 $validSelectedIds.on($validSelectedIdsRaw, (_, ids) => ids);
 
-const $selectedAccounts = combine($validSelectedIds, $accountsWithWallets, (selectedIds, { accounts }) => {
+const $selectedAccounts = combine($validSelectedIds, walletModel.$availableAccounts, (selectedIds, accounts) => {
   const idSet = new Set(selectedIds);
-
   return accounts.filter((a) => idSet.has(a.id));
 });
 
@@ -171,6 +67,3 @@ export const dashboardModel = {
   widgetOrderChanged,
   editModeToggled,
 };
-
-export { applyPresetFilter };
-export type { DashboardEntry };

@@ -80,7 +80,7 @@ export const Dashboard = () => {
         )}
       </Header>
 
-      <div className="flex min-h-0 flex-1 flex-col px-4 pt-2">
+      <div className="flex min-h-0 flex-1 flex-col px-4 pt-4">
         <Tabs value={activeTab} onChange={dashboardModel.tabChanged}>
           <div className="w-fit">
             <Tabs.List>

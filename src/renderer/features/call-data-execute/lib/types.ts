@@ -5,3 +5,8 @@ export const enum Step {
   SIGN,
   SUBMIT,
 }
+
+export const enum InputMode {
+  PASTE = 'paste',
+  BUILD = 'build',
+}

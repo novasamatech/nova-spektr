@@ -4,14 +4,17 @@ import { type FormEvent } from 'react';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
-import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
+import { Button, FootnoteText, Icon, Separator, SmallTitleText } from '@/shared/ui';
 import { TransactionValidationError } from '@/shared/ui-entities';
-import { Box, Field, Input, Modal, ScrollArea } from '@/shared/ui-kit';
+import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { walletModel } from '@/entities/wallet';
+import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
 import { Fee } from '@/widgets/transaction-fee';
+import { InputMode } from '../lib/types';
 import { formModel } from '../model/form';
 
+import { CallDataInput } from './CallDataInput';
 import { InitiatorSelect } from './InitiatorSelect';
 import { NetworkSelect } from './NetworkSelect';
 import { SignatorySelect } from './SignatorySelect';
@@ -20,6 +23,14 @@ export const CallDataForm = () => {
   const { t } = useI18n();
   const { submit } = useForm(formModel.form);
   const showSignatories = useUnit(formModel.$showSignatories);
+  const inputMode = useUnit(formModel.$inputMode);
+  const inputModeChanged = useUnit(formModel.inputModeChanged);
+  const builderCallDataChanged = useUnit(formModel.builderCallDataChanged);
+  const api = useUnit(formModel.$api);
+  const callDataValue = useUnit(formModel.form.fields.callData.$value);
+
+  // Pass callData to builder when in Build mode (for tab switch + remount after Confirm)
+  const builderInitialCallData = inputMode === InputMode.BUILD ? callDataValue : undefined;
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -32,17 +43,35 @@ export const CallDataForm = () => {
 
   return (
     <>
-      <form id="call-data-form" className="flex flex-col gap-y-4 px-5 pb-4" onSubmit={submitForm}>
-        <TransactionValidationError errors={errors} wallets={wallets} />
-        <NetworkSelect />
-        <InitiatorSelect />
-        {showSignatories && <SignatorySelect />}
-        <CallDataInput />
-      </form>
-
-      <Separator />
-
       <ScrollArea>
+        <form id="call-data-form" className="flex flex-col gap-y-4 px-5 pb-4" onSubmit={submitForm}>
+          <TransactionValidationError errors={errors} wallets={wallets} />
+          <NetworkSelect />
+          <InitiatorSelect />
+          {showSignatories && <SignatorySelect />}
+
+          <div className="-mb-2">
+            <Tabs value={inputMode} onChange={(value) => inputModeChanged(value as InputMode)}>
+              <Tabs.List>
+                <Tabs.Trigger value={InputMode.PASTE}>{t('callData.mode.paste')}</Tabs.Trigger>
+                <Tabs.Trigger value={InputMode.BUILD}>{t('callData.mode.build')}</Tabs.Trigger>
+              </Tabs.List>
+              <Tabs.Content value={InputMode.PASTE}>
+                <CallDataInput />
+              </Tabs.Content>
+              <Tabs.Content value={InputMode.BUILD}>
+                <ExtrinsicBuilder
+                  api={api}
+                  initialCallData={builderInitialCallData}
+                  onCallDataChange={builderCallDataChanged}
+                />
+              </Tabs.Content>
+            </Tabs>
+          </div>
+        </form>
+
+        <Separator />
+
         <Box padding={[4, 5]}>
           {nonNullable(args) && (
             <div className="flex flex-col gap-y-3">
@@ -62,23 +91,6 @@ export const CallDataForm = () => {
 
       <ActionsSection />
     </>
-  );
-};
-
-const CallDataInput = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { callData },
-  } = useForm(formModel.form);
-
-  return (
-    <Field text={t('callData.callData')}>
-      <Input height="md" value={callData.value} placeholder={t('callData.placeholder')} onChange={callData.onChange} />
-      <InputHint variant="error" active={callData.hasError}>
-        {t(callData.errorMessage)}
-      </InputHint>
-    </Field>
   );
 };
 

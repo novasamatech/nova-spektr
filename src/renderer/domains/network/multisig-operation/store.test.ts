@@ -1,10 +1,13 @@
-import { allSettled, fork } from 'effector';
+import { allSettled, createEvent, fork, sample } from 'effector';
 import { describe, expect, it } from 'vitest';
 
-import { type ChainId } from '@/shared/core';
+import { type ChainId, AccountType } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { accounts } from '../account/store';
 
 import { fetchOffchainResource, initialOnChainFetch } from './resource';
 import { multisigOperation } from './store';
+import { type MultisigOperation } from './types';
 
 describe('multisigOperation store', () => {
   const mockChainId1 = '0x123' as ChainId;
@@ -132,5 +135,93 @@ describe('multisigOperation store', () => {
     await allSettled(multisigOperation.unsubscribeFromAccounts, { scope });
 
     expect(scope.getState(multisigOperation.$initialLoadingComplete)).toBe(false);
+  });
+
+  describe('orphan cached-operation eviction', () => {
+    const ORPHAN_ID = '0xorphan' as AccountId;
+    const LIVE_ID = '0xlive' as AccountId;
+    const FLEX_INNER_ID = '0xflexinner' as AccountId;
+
+    const orphanOp = { id: 'o1', multisigAccountId: ORPHAN_ID, status: 'pending' } as unknown as MultisigOperation;
+    const liveOp = { id: 'l1', multisigAccountId: LIVE_ID, status: 'pending' } as unknown as MultisigOperation;
+    const flexOp = { id: 'f1', multisigAccountId: FLEX_INNER_ID, status: 'pending' } as unknown as MultisigOperation;
+
+    const plainMultisig = {
+      id: 'acc-1',
+      type: 'universal',
+      accountType: AccountType.MULTISIG,
+      accountId: LIVE_ID,
+      walletId: 1,
+      name: 'live',
+    } as any;
+
+    const flexMultisig = {
+      id: 'acc-2',
+      type: 'chain',
+      accountType: AccountType.FLEX_MULTISIG,
+      accountId: '0xflexproxy' as AccountId,
+      multisigAccountId: FLEX_INNER_ID,
+      walletId: 2,
+      name: 'flex',
+    } as any;
+
+    const nukeAccounts = createEvent<(typeof plainMultisig)[]>();
+    sample({ clock: nukeAccounts, target: accounts.__test.$list });
+
+    it('evicts cached ops whose multisigAccountId has no matching live multisig account', async () => {
+      const scope = fork({
+        values: new Map<any, any>([
+          [multisigOperation.__test.$cachedOperations, [orphanOp, liveOp]],
+          [accounts.__test.$list, []],
+        ]),
+      });
+
+      // Fire an accounts update so the cleanup sample runs
+      await allSettled(nukeAccounts, { scope, params: [plainMultisig] });
+
+      const cached = scope.getState(multisigOperation.__test.$cachedOperations);
+      expect(cached).toEqual([liveOp]);
+    });
+
+    it('preserves flexible-multisig cached ops when the flex wallet is still present', async () => {
+      const scope = fork({
+        values: new Map<any, any>([
+          [multisigOperation.__test.$cachedOperations, [flexOp, orphanOp]],
+          [accounts.__test.$list, []],
+        ]),
+      });
+
+      await allSettled(nukeAccounts, { scope, params: [flexMultisig] });
+
+      const cached = scope.getState(multisigOperation.__test.$cachedOperations);
+      expect(cached).toEqual([flexOp]);
+    });
+
+    it('drops every cached op when zero multisig accounts remain', async () => {
+      const scope = fork({
+        values: new Map<any, any>([
+          [multisigOperation.__test.$cachedOperations, [orphanOp, liveOp, flexOp]],
+          [accounts.__test.$list, []],
+        ]),
+      });
+
+      await allSettled(nukeAccounts, { scope, params: [] });
+
+      expect(scope.getState(multisigOperation.__test.$cachedOperations)).toEqual([]);
+    });
+
+    it('keeps the same array reference when nothing is evicted (no-op update)', async () => {
+      const original = [liveOp];
+      const scope = fork({
+        values: new Map<any, any>([
+          [multisigOperation.__test.$cachedOperations, original],
+          [accounts.__test.$list, []],
+        ]),
+      });
+
+      await allSettled(nukeAccounts, { scope, params: [plainMultisig] });
+
+      expect(scope.getState(multisigOperation.__test.$cachedOperations)).toBe(original);
+    });
   });
 });
