@@ -93,6 +93,7 @@ const { $tx: $wrappedTx } = createWrappedTxStore({
 });
 
 const $wrappedExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null).reset(flowFinished);
+const $wrappedTxError = createStore(false).reset(flowFinished, flowStarted);
 
 const createWrappedExtrinsicFx = createQueuedEffect(
   ({ transaction, api }: { transaction: AnyTransaction | null; api: ApiPromise | null }) => {
@@ -116,6 +117,12 @@ sample({
   clock: createWrappedExtrinsicFx.fail,
   fn: () => null,
   target: $wrappedExtrinsic,
+});
+
+sample({
+  clock: createWrappedExtrinsicFx.fail,
+  fn: () => true,
+  target: $wrappedTxError,
 });
 
 const { $: $fee } = createFeeCalculator({
@@ -397,6 +404,7 @@ export const submitDraftModel = {
   $fee,
   $wrappedTx,
   $wrappedExtrinsic,
+  $wrappedTxError,
 
   flowStarted,
   flowFinished,

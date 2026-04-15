@@ -1,6 +1,4 @@
 ## TODO
-- [ ] Surface call data decode errors to user (currently silent catch)
-- [ ] Surface wrapped extrinsic creation failures in confirm step
 
 ## Feedback
 - [ ] **UI text polish** — Some text is inconsistent / not finalized (Storybook was for flow demo only). Review all user-facing strings and align with app conventions.

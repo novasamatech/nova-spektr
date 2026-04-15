@@ -2552,7 +2552,8 @@
       "submitSignatory": "Signatory",
       "noCallDataToSubmit": "Add call data before submitting",
       "syncError": "Failed to sync draft status",
-      "syncRetry": "Try again"
+      "syncRetry": "Try again",
+      "extrinsicError": "Failed to process call data. The call data may be invalid or incompatible with this chain."
     },
     "callData": {
       "adding": "Adding call data...",

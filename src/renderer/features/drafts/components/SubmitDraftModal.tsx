@@ -66,6 +66,7 @@ const ConfirmStep = () => {
   const selectedSignatory = useUnit(submitDraftModel.$signatoryStore);
   const fee = useUnit(submitDraftModel.$fee);
   const wrappedExtrinsic = useUnit(submitDraftModel.$wrappedExtrinsic);
+  const wrappedTxError = useUnit(submitDraftModel.$wrappedTxError);
   const wallets = useUnit(walletModel.$wallets);
   const draft = useUnit(submitDraftModel.$draft);
 
@@ -113,6 +114,15 @@ const ConfirmStep = () => {
   const showSignatorySelect = signatories.length > 1;
 
   if (!confirm) {
+    if (wrappedTxError) {
+      return (
+        <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
+          <Icon className="text-icon-negative" name="warnCutout" size={60} />
+          <FootnoteText className="text-text-tertiary">{t('operations.drafts.extrinsicError')}</FootnoteText>
+        </Box>
+      );
+    }
+
     return (
       <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
         <Loader color="primary" />
