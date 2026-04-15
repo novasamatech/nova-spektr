@@ -439,10 +439,12 @@ export const DraftsSection = () => {
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const authState = useUnit(authModel.$authState);
-  const { data: drafts } = useDrafts(backendUrl);
 
+  const canRead = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_READ) ?? false);
   const canWrite = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_WRITE) ?? false);
   const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);
+
+  const { data: drafts } = useDrafts(canRead ? backendUrl : null);
 
   const [submittingDraft, setSubmittingDraft] = useState<Draft | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -700,6 +702,8 @@ export const DraftsSection = () => {
     ? toAddress(selectedAccount.accountId, { prefix: selectedAddressPrefix })
     : null;
   const selectedWallet = selectedAccount ? resolvedWallets.find((w) => w.id === selectedAccount.walletId) : null;
+
+  if (!canRead) return null;
 
   return (
     <div className="mb-6">
