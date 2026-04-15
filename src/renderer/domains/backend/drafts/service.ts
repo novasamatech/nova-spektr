@@ -14,7 +14,9 @@ const backendDraftSchema = z.object({
   updatedAt: z.string(),
 });
 
-type BackendDraft = z.infer<typeof backendDraftSchema>;
+export type Draft = z.infer<typeof backendDraftSchema>;
+
+type BackendDraft = Draft;
 
 const listResponseSchema = z.object({
   data: z.array(backendDraftSchema),

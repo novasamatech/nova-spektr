@@ -9,3 +9,6 @@ export { useOperationDescription, useOperationDescriptionsFetch } from './operat
 export { HttpError, backendContactsService } from './contacts/service';
 
 export { draftsService } from './drafts/service';
+export { type Draft } from './drafts/service';
+export { draftsResource } from './drafts/resource';
+export { useDrafts } from './drafts/hooks';

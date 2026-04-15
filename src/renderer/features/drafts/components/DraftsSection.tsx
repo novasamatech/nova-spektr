@@ -42,7 +42,7 @@ import {
   useNotification,
 } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
-import { PERMISSIONS, draftsService } from '@/domains/backend';
+import { type Draft, PERMISSIONS, draftsResource, draftsService, useDrafts } from '@/domains/backend';
 import { accounts, useWalletsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
@@ -61,7 +61,7 @@ import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
 import { type OperationTitle, operationTitleTransformer } from '@/features/multisig-operations';
 import { NamedAccount } from '@/widgets/NameResolver';
-import { type Draft, draftsModel } from '../model/drafts-model';
+import '../model/drafts-model'; // side-effect: orchestration wiring
 import { submitDraftModel } from '../model/submit-draft-model';
 
 import { SubmitDraftModal } from './SubmitDraftModal';
@@ -439,7 +439,7 @@ export const DraftsSection = () => {
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const authState = useUnit(authModel.$authState);
-  const drafts = useUnit(draftsModel.$drafts);
+  const { data: drafts } = useDrafts(backendUrl);
 
   const canWrite = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_WRITE) ?? false);
   const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);
@@ -548,7 +548,7 @@ export const DraftsSection = () => {
         callData: callData || undefined,
         description: description || undefined,
       });
-      draftsModel.events.draftCreated(response);
+      draftsResource.draftCreated(response);
       toast.success(t('operations.drafts.createSuccess'));
       setIsModalOpen(false);
       resetCreateState();
@@ -565,7 +565,7 @@ export const DraftsSection = () => {
 
     try {
       await draftsService.deleteDraft(backendUrl, id);
-      draftsModel.events.draftDeleted(id);
+      draftsResource.draftDeleted(id);
       toast.success(t('operations.drafts.deleteSuccess'));
     } catch (e) {
       const message = e instanceof Error ? e.message : t('operations.drafts.deleteError');
@@ -600,7 +600,7 @@ export const DraftsSection = () => {
       const response = await draftsService.updateDraft(backendUrl, editingDraft.id, {
         description: editDescription,
       });
-      draftsModel.events.draftUpdated(response);
+      draftsResource.draftUpdated(response);
       toast.success(t('operations.drafts.editSuccess'));
       setIsEditModalOpen(false);
       setEditingDraft(null);

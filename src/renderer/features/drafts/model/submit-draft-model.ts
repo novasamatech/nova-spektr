@@ -14,7 +14,7 @@ import {
 } from '@/shared/transactions';
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
-import { draftsService, operationDescriptionsResource, operationsService } from '@/domains/backend';
+import { type Draft, draftsResource, draftsService, operationDescriptionsResource, operationsService } from '@/domains/backend';
 import { type AnyAccount, type AnyTransaction, type EncodedTransaction, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -22,7 +22,7 @@ import { backendConfigurationModel } from '@/aggregates/backend';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 
-import { type Draft, draftsModel } from './drafts-model';
+import './drafts-model'; // side-effect: orchestration wiring
 
 enum Step {
   NONE,
@@ -343,7 +343,7 @@ sample({
 sample({
   clock: postSubmitFx.doneData,
   fn: ({ draftId }) => draftId,
-  target: draftsModel.events.draftDeleted,
+  target: draftsResource.draftDeleted,
 });
 
 sample({
