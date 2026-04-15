@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { persist } from 'effector-storage/local';
 import { t } from 'i18next';
 import { readonly } from 'patronum';
 import { toast } from 'sonner';
@@ -16,13 +17,7 @@ import {
 } from '@/shared/transactions';
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
-import {
-  type Draft,
-  draftsResource,
-  draftsService,
-  operationDescriptionsResource,
-  operationsService,
-} from '@/domains/backend';
+import { type Draft, operationDescriptionsResource, operationsService } from '@/domains/backend';
 import {
   type AnyAccount,
   type AnyTransaction,
@@ -286,7 +281,7 @@ sample({
   target: submitModel.init,
 });
 
-// --- Post-submit: create operation + delete draft ---
+// --- Post-submit: create operation description ---
 
 const postSubmitFx = createEffect(
   async ({
@@ -311,12 +306,10 @@ const postSubmitFx = createEffect(
       description: draft.description ?? '',
     });
 
-    await draftsService.deleteDraft(baseUrl, draft.id);
-
     const multisigAccountId = draft.multisigAccountId ?? initiator.accountId;
     const operationId = `${draft.chainId}-${callHash}-${multisigAccountId}-${timepoint.height}-${timepoint.index}`;
 
-    return { draftId: draft.id, operationId, description: draft.description ?? '' };
+    return { operationId, description: draft.description ?? '' };
   },
 );
 
@@ -363,14 +356,14 @@ sample({
 
 sample({
   clock: postSubmitFx.doneData,
-  fn: ({ draftId }) => draftId,
-  target: draftsResource.draftDeleted,
+  fn: ({ operationId, description }) => ({ id: operationId, description }),
+  target: operationDescriptionsResource.descriptionCreated,
 });
 
 sample({
   clock: postSubmitFx.doneData,
-  fn: ({ operationId, description }) => ({ id: operationId, description }),
-  target: operationDescriptionsResource.descriptionCreated,
+  fn: ({ operationId }) => operationId,
+  target: operationDescriptionsResource.draftLinked,
 });
 
 // --- Post-submit success toast ---
@@ -385,33 +378,59 @@ sample({
   target: showSubmitSuccessToastFx,
 });
 
-// --- Submitted draft (transitional badge until operation appears) ---
+// --- Persisted draft→operation map (hide draft once operation exists) ---
 
-const $submittedDraft = createStore<Draft | null>(null).reset(flowStarted);
-const $submittedOperationId = createStore<string | null>(null).reset(flowStarted);
+// draftId → operationId, persisted across sessions
+const $submittedDraftOperations = createStore<Record<string, string>>({});
+persist({ key: 'submittedDraftOperations', store: $submittedDraftOperations, sync: true });
+
+// Session bridge: hides draft immediately after submit, before postSubmitFx completes
+const $justSubmittedDraftId = createStore<string | null>(null).reset(flowStarted);
 
 sample({
   clock: submitModel.done,
   source: $draft,
   filter: (draft, results) => nonNullable(draft) && results.some((r) => r.result === ExtrinsicResult.SUCCESS),
-  fn: (draft) => draft!,
-  target: $submittedDraft,
+  fn: (draft) => draft!.id,
+  target: $justSubmittedDraftId,
+});
+
+// When postSubmitFx completes, persist the mapping and clear session bridge
+sample({
+  clock: postSubmitFx.doneData,
+  source: { draft: $draft, existing: $submittedDraftOperations },
+  filter: ({ draft }) => nonNullable(draft),
+  fn: ({ draft, existing }, { operationId }) => ({ ...existing, [draft!.id]: operationId }),
+  target: $submittedDraftOperations,
 });
 
 sample({
   clock: postSubmitFx.doneData,
-  fn: ({ operationId }) => operationId,
-  target: $submittedOperationId,
+  fn: () => null,
+  target: $justSubmittedDraftId,
 });
 
-// Clear submitted draft when the operation appears in the list
-sample({
-  clock: multisigOperation.$list,
-  source: $submittedOperationId,
-  filter: (operationId, operations) => nonNullable(operationId) && operations.some((op) => op.id === operationId),
-  fn: () => null,
-  target: [$submittedDraft, $submittedOperationId],
-});
+// Derived: set of draft IDs that should be hidden
+const $hiddenDraftIds = combine(
+  { draftOps: $submittedDraftOperations, justSubmitted: $justSubmittedDraftId, operations: multisigOperation.$list },
+  ({ draftOps, justSubmitted, operations }) => {
+    const hidden = new Set<string>();
+
+    // Hide drafts whose linked operation exists in the operations list
+    for (const [draftId, operationId] of Object.entries(draftOps)) {
+      if (operations.some((op) => op.id === operationId)) {
+        hidden.add(draftId);
+      }
+    }
+
+    // Session bridge: hide immediately after submit
+    if (justSubmitted) {
+      hidden.add(justSubmitted);
+    }
+
+    return hidden;
+  },
+);
 
 // --- Post-submit sync error: toast with retry ---
 
@@ -451,7 +470,7 @@ export const submitDraftModel = {
   $wrappedTx,
   $wrappedExtrinsic,
   $wrappedTxError,
-  $submittedDraft,
+  $hiddenDraftIds,
 
   flowStarted,
   flowFinished,

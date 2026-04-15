@@ -1,4 +1,5 @@
 import { createEvent, createStore } from 'effector';
+import { persist } from 'effector-storage/local';
 
 import { createQueryResource } from '@/shared/query';
 
@@ -38,8 +39,18 @@ $cache.on(descriptionCreated, (state, { id, description }) => ({ ...state, [id]:
 const resetDescriptions = createEvent();
 $cache.on(resetDescriptions, () => ({}));
 
+// --- Draft-linked operations (persisted: survives refresh) ---
+
+const $draftLinkedOperationIds = createStore<Record<string, true>>({});
+persist({ key: 'draftLinkedOperationIds', store: $draftLinkedOperationIds, sync: true });
+
+const draftLinked = createEvent<string>();
+$draftLinkedOperationIds.on(draftLinked, (state, operationId) => ({ ...state, [operationId]: true as const }));
+
 export const operationDescriptionsResource = {
   ...resource,
   descriptionCreated,
   resetDescriptions,
+  $draftLinkedOperationIds,
+  draftLinked,
 };

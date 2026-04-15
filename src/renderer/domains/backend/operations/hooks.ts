@@ -23,3 +23,11 @@ export const useOperationDescription = (operationId: string): string | null => {
     fn: (cache, [id]) => cache[id] ?? null,
   });
 };
+
+export const useIsDraftLinkedOperation = (operationId: string): boolean => {
+  return useStoreMap({
+    store: operationDescriptionsResource.$draftLinkedOperationIds,
+    keys: [operationId],
+    fn: (linked, [id]) => id in linked,
+  });
+};

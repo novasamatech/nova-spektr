@@ -2531,6 +2531,7 @@
       "unknownMultisig": "Unknown multisig",
       "unknownChain": "Unknown chain",
       "badge": "Draft",
+      "operationBadge": "From draft",
       "editButton": "Edit",
       "submitButton": "Submit",
       "editDraftTitle": "Edit draft",

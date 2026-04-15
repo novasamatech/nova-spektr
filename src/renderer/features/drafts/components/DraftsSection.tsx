@@ -390,7 +390,7 @@ export const DraftsSection = () => {
   const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);
 
   const { data: drafts } = useDrafts(canRead ? backendUrl : null);
-  const submittedDraft = useUnit(submitDraftModel.$submittedDraft);
+  const hiddenDraftIds = useUnit(submitDraftModel.$hiddenDraftIds);
 
   const [submittingDraft, setSubmittingDraft] = useState<Draft | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -703,30 +703,20 @@ export const DraftsSection = () => {
         </Accordion.Trigger>
         <Accordion.Content>
           <div className="mt-1 flex flex-col gap-y-1.5">
-            {drafts.map((draft) => (
-              <DraftRow
-                key={draft.id}
-                canDelete={canDelete}
-                canWrite={canWrite}
-                isSubmitted={submittedDraft?.id === draft.id}
-                draft={draft}
-                onDelete={handleDeleteDraft}
-                onEdit={handleEditDraft}
-                onSubmit={handleSubmitDraft}
-              />
-            ))}
-            {submittedDraft && !drafts.some((d) => d.id === submittedDraft.id) && (
-              <DraftRow
-                key={submittedDraft.id}
-                canDelete={false}
-                canWrite={false}
-                isSubmitted
-                draft={submittedDraft}
-                onDelete={handleDeleteDraft}
-                onEdit={handleEditDraft}
-                onSubmit={handleSubmitDraft}
-              />
-            )}
+            {drafts
+              .filter((draft) => !hiddenDraftIds.has(draft.id))
+              .map((draft) => (
+                <DraftRow
+                  key={draft.id}
+                  canDelete={canDelete}
+                  canWrite={canWrite}
+                  isSubmitted={false}
+                  draft={draft}
+                  onDelete={handleDeleteDraft}
+                  onEdit={handleEditDraft}
+                  onSubmit={handleSubmitDraft}
+                />
+              ))}
 
             <Tooltip open={canWrite ? false : undefined}>
               <Tooltip.Trigger>
