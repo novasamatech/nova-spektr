@@ -127,6 +127,10 @@ export const NotificationProvider = ({ children }: PropsWithChildren) => {
         }}
         toastOptions={{
           classNames: {
+            toast: 'pointer-events-auto',
+            actionButton: 'pointer-events-auto',
+            cancelButton: 'pointer-events-auto',
+            closeButton: 'pointer-events-auto',
             icon: 'self-start mt-0.5',
           },
         }}
