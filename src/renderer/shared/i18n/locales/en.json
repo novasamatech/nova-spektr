@@ -2550,7 +2550,9 @@
       "discardCancel": "Keep editing",
       "submitTitle": "Submit Draft",
       "submitSignatory": "Signatory",
-      "noCallDataToSubmit": "Add call data before submitting"
+      "noCallDataToSubmit": "Add call data before submitting",
+      "syncError": "Failed to sync draft status",
+      "syncRetry": "Try again"
     },
     "callData": {
       "adding": "Adding call data...",

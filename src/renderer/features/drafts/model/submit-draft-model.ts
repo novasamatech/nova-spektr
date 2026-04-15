@@ -1,7 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { t } from 'i18next';
 import { readonly } from 'patronum';
+import { toast } from 'sonner';
 
 import { type CallData, type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
@@ -14,7 +16,13 @@ import {
 } from '@/shared/transactions';
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
-import { type Draft, draftsResource, draftsService, operationDescriptionsResource, operationsService } from '@/domains/backend';
+import {
+  type Draft,
+  draftsResource,
+  draftsService,
+  operationDescriptionsResource,
+  operationsService,
+} from '@/domains/backend';
 import { type AnyAccount, type AnyTransaction, type EncodedTransaction, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -281,7 +289,6 @@ const postSubmitFx = createEffect(
     timepoint: { height: number; index: number };
     baseUrl: string;
   }) => {
-    // Create operation description in backend
     await operationsService.createDescription(baseUrl, {
       multisigAccountId: draft.multisigAccountId ?? initiator.accountId,
       chainId: draft.chainId,
@@ -291,10 +298,12 @@ const postSubmitFx = createEffect(
       description: draft.description ?? '',
     });
 
-    // Delete the draft
     await draftsService.deleteDraft(baseUrl, draft.id);
 
-    return { draftId: draft.id, callHash, description: draft.description ?? '' };
+    const multisigAccountId = draft.multisigAccountId ?? initiator.accountId;
+    const operationId = `${draft.chainId}-${callHash}-${multisigAccountId}-${timepoint.height}-${timepoint.index}`;
+
+    return { draftId: draft.id, operationId, description: draft.description ?? '' };
   },
 );
 
@@ -320,7 +329,6 @@ sample({
     // Compute callHash from the original call data
     let callHash = '';
     if (s.wrappedExtrinsic && s.api) {
-      // The wrapped extrinsic's inner call hash
       try {
         callHash = s.api.createType('Call', s.draft!.callData).hash.toHex();
       } catch {
@@ -348,8 +356,33 @@ sample({
 
 sample({
   clock: postSubmitFx.doneData,
-  fn: ({ callHash, description }) => ({ id: callHash, description }),
+  fn: ({ operationId, description }) => ({ id: operationId, description }),
   target: operationDescriptionsResource.descriptionCreated,
+});
+
+// --- Post-submit sync error: toast with retry ---
+
+const showSyncErrorToastFx = createEffect(
+  (params: {
+    draft: Draft;
+    initiator: AnyAccount;
+    callHash: string;
+    timepoint: { height: number; index: number };
+    baseUrl: string;
+  }) => {
+    toast.error(t('operations.drafts.syncError'), {
+      action: {
+        label: t('operations.drafts.syncRetry'),
+        onClick: () => postSubmitFx(params),
+      },
+    });
+  },
+);
+
+sample({
+  clock: postSubmitFx.fail,
+  fn: ({ params }) => params,
+  target: showSyncErrorToastFx,
 });
 
 // --- Exports ---
