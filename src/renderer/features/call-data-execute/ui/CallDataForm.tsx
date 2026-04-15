@@ -10,6 +10,7 @@ import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { walletModel } from '@/entities/wallet';
 import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
+import { OperationTemplatesToolbar } from '@/features/operation-templates';
 import { Fee } from '@/widgets/transaction-fee';
 import { InputMode } from '../lib/types';
 import { formModel } from '../model/form';
@@ -26,11 +27,15 @@ export const CallDataForm = () => {
   const inputMode = useUnit(formModel.$inputMode);
   const inputModeChanged = useUnit(formModel.inputModeChanged);
   const builderCallDataChanged = useUnit(formModel.builderCallDataChanged);
+  const templateApplied = useUnit(formModel.templateApplied);
   const api = useUnit(formModel.$api);
   const callDataValue = useUnit(formModel.form.fields.callData.$value);
+  const chain = useUnit(formModel.form.fields.chain.$value);
 
   // Pass callData to builder when in Build mode (for tab switch + remount after Confirm)
   const builderInitialCallData = inputMode === InputMode.BUILD ? callDataValue : undefined;
+
+  const specVersion = api?.runtimeVersion.specVersion.toNumber() ?? null;
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -69,6 +74,16 @@ export const CallDataForm = () => {
             </Tabs>
           </div>
         </form>
+
+        {nonNullable(chain) && (
+          <OperationTemplatesToolbar
+            api={api}
+            chainId={chain.chainId}
+            callData={callDataValue}
+            specVersion={specVersion}
+            onApply={templateApplied}
+          />
+        )}
 
         <Separator />
 

@@ -3472,6 +3472,28 @@
     "walletConnectLabel": "WalletConnect",
     "watchOnlyLabel": "Watch-only"
   },
+  "operationTemplates": {
+    "saveButton": "Save as template",
+    "panelTitle": "Templates",
+    "apply": "Apply",
+    "delete": "Delete template",
+    "renameHint": "Rename template",
+    "renameTitle": "Rename template",
+    "renameSave": "Save",
+    "staleTooltip": "Chain runtime was updated since this template was saved. It may fail to parse — re-save to refresh.",
+    "emptyListDescription": "Save an operation as a template to reuse its call data later.",
+    "otherChains": "In other networks ({num})",
+    "crossChainDisabled": "Switch network to apply",
+    "viewDetails": "View details",
+    "toggleDetails": "Toggle details",
+    "copyCallData": "Copy call data",
+    "parseFailed": "Unable to parse call data with current runtime.",
+    "toastCreated": "Template saved",
+    "toastRemoved": "Template deleted",
+    "toastApplied": "Template applied",
+    "toastCallDataCopied": "Call data copied",
+    "undo": "Undo"
+  },
   "welcome": {
     "addLedgerButton": "Coming soon",
     "addLedgerComingSoonLabel": "Add Ledger wallet (coming soon)",
