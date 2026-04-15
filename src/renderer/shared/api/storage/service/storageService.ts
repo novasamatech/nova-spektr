@@ -149,4 +149,5 @@ export const storageService = {
   balances: new StorageService(dexieStorage.balances2),
   basketTransactions: new StorageService(dexieStorage.basketTransactions),
   operationDescriptions: new StorageService(dexieStorage.operationDescriptions),
+  operationTemplates: new StorageService(dexieStorage.operationTemplates),
 };
