@@ -7,8 +7,6 @@ const feature = 'Transfers';
 const story = 'Transfers tests';
 
 test.describe('XCM transfers', { tag: ['@xcm-transfers', '@regress'] }, () => {
-  test.describe.configure({ mode: 'serial' });
-
   test.beforeEach(async () => {
     await setupTestMetadata(feature, story);
   });
