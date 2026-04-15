@@ -14,6 +14,49 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
   - **Basket** — action is queued; all basket items are signed together in one QR ceremony
 - Active membership status can be **Active** or **Passive** (affects salary rates only — it does **not** restrict voting eligibility; voting is gated by account signing permissions and rank threshold)
 - Fellowship network: **Polkadot Collectives** (chainId: `0x46ee89aa...`)
+- Test chain: **Chopsticks** fork of Polkadot Collectives, providing deterministic referenda, member state, and salary periods for automated testing (see [Test Environment](#test-environment) below)
+
+### Automation Classification
+
+Each use case is tagged with one of:
+
+| Tag | Meaning |
+|---|---|
+| `[Chopsticks]` | Fully automatable — chain state + UI flow verifiable; chopsticks session required |
+| `[Chopsticks → signing]` | Automatable up to the QR screen — verify correct tx details/fee; broadcast requires physical PV device |
+| `[DB only]` | Automatable with wallet DB import alone — no active node needed |
+| `[Manual]` | Requires physical Polkadot Vault device or is not automatable |
+
+---
+
+## Test Environment
+
+### Chopsticks Chain State Mock
+
+A Chopsticks fork of Polkadot Collectives is provisioned at a known block, providing a deterministic and controllable chain state. The node URL is injected into the app via `interceptChainsWithCollectivesOverride` (see `tests/system/utils/httpInterception.ts`), which intercepts the chains config request and replaces the Polkadot Collectives node URL with the Chopsticks session URL.
+
+**Environment variable:** `CUSTOM_COLLECTIVES_NODE_URL` — set to the Chopsticks session WebSocket URL. In CI this is injected automatically; locally it must be exported before running fellowship tests.
+
+### What the Chopsticks snapshot provides
+
+The snapshot is taken at a block where the following state exists:
+
+- **Fellowship member account** — Alice (Rank V, Active status) with a Polkadot Vault root key matching `tests/system/data/db/fellowship/fellowship-pv-root.json`
+- **Active referenda** — at least one promotion referendum (track 1), one retention referendum, one RFC/whitelist referendum, in the `Deciding` phase with non-zero tally
+- **Completed referenda** — referenda in various terminal states: Approved, Rejected, TimedOut — with Alice's vote recorded on at least one
+- **Salary period** — a registration period is active; Alice is inducted but has not yet requested salary for the current period
+- **Other members** — a set of members across ranks I–VI to populate the Members table
+
+### What is and isn't testable automatically
+
+| Capability | Notes |
+|---|---|
+| Chain state loads (referenda, member info, salary) | ✅ Full auto |
+| UI flows up to the QR signing screen | ✅ Full auto — verify correct tx details and fee |
+| Transaction broadcast and on-chain state change | ⚠️ Requires Chopsticks block production + a dev account or pre-signed tx |
+| QR code scan with physical Polkadot Vault | ❌ Manual only |
+
+> **Note on broadcast:** For now, tests verify that the correct transaction is constructed (confirmation modal shows the right details, fee is non-zero). Actual broadcast verification is tracked separately once a dev/test account key is wired into the CI environment.
 
 ---
 
@@ -29,12 +72,15 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 **Expected:** Fellowship page loads; the tasks panel (content area, left column) and sidebar (right column) are visible. If the connected wallet has no fellowship member account, the no-account state is shown.
 
 **Signing:** None
+**Automation:** `[DB only]`
 
 ---
 
 ### UC-1.2 Page load — wallet without fellowship account
 **Actor:** Alice on a fresh wallet that is not a fellowship member
 **Expected:** The tasks panel shows an empty-state message indicating no fellowship account was found for the current network. The right-column overview widget is hidden.
+
+**Automation:** `[DB only]`
 
 ---
 
@@ -47,6 +93,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 - "Completed" group is visible (async-loaded) with referenda Alice already voted on
 - Right sidebar shows the Fellowship Overview widget with her rank progress bar and "View Details" button
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-1.4 Navigate to invalid fellowship route — redirect to default chain
@@ -54,11 +102,15 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 **Precondition:** User navigates to `/fellowship/invalid-chain-id` manually or via stale link
 **Expected:** App detects the unrecognised `chainId` parameter and redirects to the default Polkadot Collectives chain URL. The fellowship page loads normally. No error screen is shown.
 
+**Automation:** `[DB only]`
+
 ---
 
 ### UC-1.5 Account exists but not a fellowship member (NoProfile state)
 **Actor:** Alice — has an account on Polkadot Collectives chain, but her address is not in the members registry
 **Expected:** The profile card in the right sidebar shows a "Not a member" placeholder with a tooltip explaining she has no fellowship profile. Tasks panel shows the no-account empty state. Voting/salary actions are unavailable.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
@@ -68,6 +120,7 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 **Expected:** The fellowship page shows the no-account empty state. The app does not attempt to use the relay chain key on the Collectives chain. No silent failure or crash occurs. A hint is shown explaining that a Collectives-specific derived key is required.
 
 **Signing:** None
+**Automation:** `[DB only]`
 
 ---
 
@@ -77,6 +130,7 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 **Expected:** The fellowship page correctly identifies the Collectives-derived key and loads Alice's fellowship account. Tasks panel and overview widget are shown as normal. The relay chain key is not used for fellowship operations.
 
 **Signing:** None
+**Automation:** `[Chopsticks]`
 
 ---
 
@@ -90,6 +144,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** A segmented progress bar showing ranks I–VI; Alice's current rank (V) is filled; the current-rank segment shows partial fill reflecting her promotion progress percentage. Below the bar: countdown to next rank or "Ready for promotion" label.
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-2.2 Open Overview modal — Ranks tab
@@ -99,6 +155,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 2. Modal opens on the Ranks tab by default
 
 **Expected:** Modal is visible with the title "Fellowship". Three tabs: Ranks, Members, (Codex if feature-flagged). The Ranks tab shows rank cards (I–VI) with requirements.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
@@ -111,6 +169,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** Table loads member rows (sorted by rank descending by default). Each row shows rank badge, account name/address, active/passive status indicator, and salary amount. Alice's own row is marked with "You".
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-2.4 Search members by name or address
@@ -120,6 +180,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 2. Type a partial name or address in the search input
 
 **Expected:** Table filters in real time, showing only matching members. Clearing the search restores the full list.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
@@ -131,6 +193,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** Table sorts ascending on first click, descending on second click. Sort indicator arrow updates accordingly.
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-2.6 Sort members by account / status / salary
@@ -140,6 +204,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 2. Click the "Account", "Status", then "Salary" column headers in turn
 
 **Expected:** Each column header click sorts the table by that column ascending; a second click sorts descending. Sort indicator moves to the active column. Alice's "You" row remains correctly identified regardless of sort order.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
@@ -151,6 +217,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** Table shows only Rank III members. Row count updates. Clearing or changing the filter restores the appropriate set.
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-2.8 Filter members by active / passive status
@@ -160,6 +228,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 2. Open the status dropdown and select "Passive"
 
 **Expected:** Table shows only passive members. Count badge updates.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
@@ -171,6 +241,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** All filters, sort overrides, and search query are reset. Full member list is restored.
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-2.10 Members tab — empty results after filtering
@@ -179,6 +251,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 1. Enter a search string that matches no member (e.g., `zzzzz`)
 
 **Expected:** The `MembersEmptyState` component is shown with a "no matches" message. The table body is empty; no rows appear.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
@@ -189,6 +263,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 2. Click the vote count / tally area to open the Voting History modal
 
 **Expected:** `VotesModal` opens showing the full voter list for the referendum, split into Aye and Nay tabs with counts.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
@@ -205,24 +281,28 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 - Search filters the active tab's list in real time
 - When no results match, an empty-results state is shown
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ## 3. Voting on Referenda
 
 ### UC-3.1 Open referendum details — Promotion/Retention type
 **Actor:** Alice
-**Precondition:** At least one promotion or retention referendum is active
+**Precondition:** Chopsticks snapshot includes an active promotion referendum (track 1) in the Deciding phase
 **Steps:**
 1. In the "Active" task group, find a promotion referendum item (shows a rank badge)
 2. Click anywhere on the item body
 
 **Expected:** Referendum Details modal opens. Shows member name + rank in the title (e.g. "Promote Bob to Rank III"). Left column: description and evidence summary. Right column: member profile card, voting actions (Aye / Nay buttons), and additional info (end block, IPFS link).
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-3.2 Vote Aye on a promotion referendum — Direct signing (Polkadot Vault)
 **Actor:** Alice (basket disabled or account not basket-capable)
-**Precondition:** Alice is eligible to vote (has required rank for the track, account has signing permissions, has not yet voted)
+**Precondition:** Chopsticks snapshot includes an active promotion referendum Alice has not yet voted on; Alice's rank meets the track threshold
 **Steps:**
 1. Open referendum details for a promotion referendum (UC-3.1)
 2. Click "Aye" (Good) button in the voting actions card
@@ -235,6 +315,7 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 **Expected:** Transaction is submitted. On success: the referendum item in the tasks list shows a "voted" indicator; the Aye button becomes checked/highlighted.
 
 **Signing method:** Polkadot Vault (direct)
+**Automation:** `[Chopsticks → signing]` — automate steps 1–5 (verify confirmation modal, referendum ID, non-zero fee); QR scan is manual
 
 ---
 
@@ -244,11 +325,13 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** Same as UC-3.2 but with Nay vote recorded.
 
+**Automation:** `[Chopsticks → signing]`
+
 ---
 
 ### UC-3.4 Vote on an RFC referendum — Direct signing
 **Actor:** Alice
-**Precondition:** An RFC (Request for Comments) or whitelisting referendum is in the Active group
+**Precondition:** Chopsticks snapshot includes an active whitelist/RFC referendum (WhitelistProposal type) in the Active group
 **Steps:**
 1. Click RFC task item (shows document icon, no rank badge)
 2. Referendum details modal opens (title: "Referendum #N")
@@ -257,11 +340,13 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** Vote is recorded for the RFC referendum.
 
+**Automation:** `[Chopsticks → signing]` — automate steps 1–3 (verify modal opens, correct type shown, fee non-zero); QR scan is manual
+
 ---
 
 ### UC-3.5 Vote on multiple referenda using the basket (primary flow)
 **Actor:** Alice — has 5+ active referenda to vote on
-**Precondition:** Alice's account supports basket (Polkadot Vault root or derived key)
+**Precondition:** Chopsticks snapshot includes multiple active referenda; Alice's account supports basket (Polkadot Vault root or derived key)
 **Steps:**
 1. Click first referendum item → Details modal opens
 2. Click "Aye" — because basket is available, the vote is added to the basket; modal closes automatically
@@ -276,12 +361,13 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 **Expected:** All votes submitted in a single signing ceremony. Voted referenda move from "Active" to "Completed" group.
 
 **Signing method:** Polkadot Vault (basket batch)
+**Automation:** `[Chopsticks → signing]` — automate steps 1–7 (basket accumulation, counter, review screen); QR scan is manual
 
 ---
 
 ### UC-3.6 Remove a vote from the basket before signing
 **Actor:** Alice
-**Precondition:** At least one vote is queued in the basket
+**Precondition:** At least one vote is queued in the basket (build on UC-3.5 state)
 **Steps:**
 1. Open basket review
 2. Click the remove/delete icon on a specific vote item
@@ -289,51 +375,61 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** Only the removed vote is cleared; all other basket items remain.
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-3.7 Referendum already voted — verify voted state display
 **Actor:** Alice
-**Precondition:** Alice previously voted on referendum #N
+**Precondition:** Chopsticks snapshot includes at least one completed referendum with Alice's vote on record
 **Steps:**
 1. The referendum appears in the "Completed" group
 2. Click on it to open details
 
 **Expected:** Details modal shows VotingButtonsCompleted component; Aye or Nay is displayed as already-voted (checked state). No ability to change vote.
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-3.8 Basket mutation — change Aye vote to Nay before signing
 **Actor:** Alice
-**Precondition:** Alice added an Aye vote on referendum #N to the basket; has not signed yet
+**Precondition:** Alice added an Aye vote on an active referendum to the basket; has not signed yet
 **Steps:**
-1. Open the same referendum #N details
+1. Open the same referendum details
 2. Click "Nay"
 
-**Expected:** The existing Aye entry in the basket is replaced by a Nay entry. Basket count stays the same. Basket review shows Nay for referendum #N.
+**Expected:** The existing Aye entry in the basket is replaced by a Nay entry. Basket count stays the same. Basket review shows Nay for that referendum.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
 ### UC-3.9 Basket mutation — click same vote again removes it from basket
 **Actor:** Alice
-**Precondition:** Alice added an Aye vote on referendum #N to the basket; has not signed yet
+**Precondition:** Alice added an Aye vote on an active referendum to the basket; has not signed yet
 **Steps:**
-1. Open referendum #N details; the Aye button is shown as checked (basket state)
+1. Open the referendum details; the Aye button is shown as checked (basket state)
 2. Click "Aye" again
 
-**Expected:** The basket entry for referendum #N is removed. Basket count decreases by one. Both buttons return to unselected state.
+**Expected:** The basket entry is removed. Basket count decreases by one. Both buttons return to unselected state.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
 ### UC-3.10 Self-vote suppression — proposer cannot vote on own referendum
 **Actor:** Alice
-**Precondition:** Alice is the proposer of referendum #N (e.g., she submitted evidence that triggered a referendum)
-**Expected:** When Alice opens referendum #N details, the voting action buttons (Aye / Nay) are **not rendered**. She cannot vote on her own referendum. The VotingActions component returns null for `isCurrentUser === true`.
+**Precondition:** Chopsticks snapshot includes a referendum that Alice proposed (she is the submitter)
+**Expected:** When Alice opens the referendum details, the voting action buttons (Aye / Nay) are **not rendered**. She cannot vote on her own referendum. The VotingActions component returns null for `isCurrentUser === true`.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
 ### UC-3.11 Whitelist referendum — connected governance card
 **Actor:** Alice
-**Precondition:** An active whitelist referendum is in the Active group (WhitelistProposal type)
+**Precondition:** Chopsticks snapshot includes an active whitelist referendum (WhitelistProposal type) with a linked governance referendum ID
 **Steps:**
 1. Open the whitelist referendum details modal
 2. Observe the connected governance summary card
@@ -346,11 +442,13 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 - Below the separator: call hash is displayed (truncated), with a copy button
 - "View JSON" opens a modal with formatted `proposalJSON` call data
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-3.12 Completed referendum — terminal status labels
 **Actor:** Alice
-**Precondition:** The "Completed" task group contains referenda in various terminal states
+**Precondition:** Chopsticks snapshot includes completed referenda in at least Approved, Rejected, and TimedOut terminal states
 **Expected:** Each completed referendum item in the tasks list shows the correct status label and icon:
 - **Approved** → checkmark icon + "Approved" label
 - **Rejected** → checkmark icon + "Rejected" label
@@ -358,12 +456,16 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 - **Cancelled** → checkmark icon + "Cancelled" label
 - **Killed** → checkmark icon + "Killed" label
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-3.13 Referendum in queue (inQueue state)
 **Actor:** Alice
-**Precondition:** A referendum exists but has not yet entered the deciding phase
+**Precondition:** Chopsticks snapshot includes a referendum that is queued but not yet in the Deciding phase
 **Expected:** The referendum item is visible in the Active group. The details modal shows the referendum without a tally section (no aye/nay counts yet). The status indicator or end-block timer reflects the queued state.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
@@ -371,7 +473,7 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 ### UC-4.1 Submit promotion evidence — from scratch
 **Actor:** Alice (eligible for promotion to Rank VI)
-**Precondition:** Alice has reached the minimum time at Rank V; "Request Promotion" task appears in the Personal group
+**Precondition:** Chopsticks snapshot has Alice at Rank V with sufficient time served; "Request Promotion" task appears in the Personal group
 **Steps:**
 1. In the "Personal" task group, click the action button on the "Request Promotion" task
 2. Evidence popover/modal opens with wish type "Promotion" pre-selected
@@ -386,6 +488,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** Evidence is submitted on-chain. Alice's personal task for promotion is updated (shows "Edit" and "View" buttons instead of "Submit").
 
+**Automation:** `[Chopsticks → signing]` — automate steps 1–9 (form fill, preview, confirmation details); QR scan is manual
+
 ---
 
 ### UC-4.2 Submit promotion evidence — via IPFS CID or URL
@@ -398,6 +502,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 5. Submit; confirmation modal appears; sign via Polkadot Vault (direct) or add to basket
 
 **Expected:** Evidence is submitted on-chain.
+
+**Automation:** `[Chopsticks → signing]`
 
 ---
 
@@ -412,6 +518,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** The file content is read; preview renders correctly. Evidence submitted with the file's content hash.
 
+**Automation:** `[Chopsticks → signing]`
+
 ---
 
 ### UC-4.4 IPFS/upload preview step — navigate back before submitting
@@ -421,6 +529,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 2. Click "Back"
 
 **Expected:** User returns to the upload/input step. Previously entered CID or selected file is preserved (or cleared, per implementation). Alice can modify and re-preview before submitting.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
@@ -432,6 +542,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 2. In the `EvidencePostModal` confirmation step, click "Add to basket" instead of "Sign"
 
 **Expected:** Evidence transaction is added to the basket. Success toast shows "Added to basket". Basket counter increments. Evidence flow closes.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
@@ -446,6 +558,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** Updated evidence is posted on-chain, replacing the previous submission.
 
+**Automation:** `[Chopsticks → signing]`
+
 ---
 
 ### UC-4.7 View submitted evidence
@@ -455,11 +569,13 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** Markdown preview modal opens with the full evidence content rendered.
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-4.8 Submit retention evidence
 **Actor:** Alice (retention deadline is approaching; "Request Retention" task appears)
-**Precondition:** The retention period end date is visible in the task item
+**Precondition:** Chopsticks snapshot has Alice's demotion period nearing expiry so the "Request Retention" task appears in the Personal group
 **Steps:**
 1. Click action button on "Request Retention" task
 2. Select wish type "Retention" (pre-selected)
@@ -468,15 +584,19 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** Retention evidence submitted; demotion timer is reset. Task item updates.
 
+**Automation:** `[Chopsticks → signing]`
+
 ---
 
 ### UC-4.9 Vote on another member's evidence
 **Actor:** Alice
-**Precondition:** Another member has submitted evidence and a task appears in the Active group
+**Precondition:** Chopsticks snapshot includes a promotion referendum for another member (Bob) that Alice is eligible to vote on
 **Steps:**
 1. In the "Active" group, click a "Promote Bob to Rank III" evidence item
 2. Details modal opens (left: evidence summary; right: VotingActionsCard with Aye/Nay)
 3. Vote Aye or add to basket
+
+**Automation:** `[Chopsticks → signing]`
 
 ---
 
@@ -486,32 +606,40 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** All evidence votes queued and signed in a single Polkadot Vault ceremony.
 
+**Automation:** `[Chopsticks → signing]`
+
 ---
 
 ### UC-4.11 Self-vote suppression — proposer cannot vote on own evidence
 **Actor:** Alice
-**Precondition:** Alice submitted her own promotion evidence
+**Precondition:** Chopsticks snapshot has Alice's own promotion evidence already submitted and the resulting referendum active
 **Expected:** When Alice views her own evidence task or the resulting referendum, the Aye/Nay voting buttons are **not rendered** for her. The `VotingActions` component hides actions when `isCurrentUser === true`.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
 ### UC-4.12 Evidence conflict alert — promotion while retention referendum exists
 **Actor:** Alice
-**Precondition:** A retention referendum for Alice is already active or in progress
+**Precondition:** Chopsticks snapshot has an active retention referendum for Alice
 **Steps:**
 1. Alice tries to submit promotion evidence
 
 **Expected:** A warning alert is shown in the evidence form (via `EvidenceWarningAlerts`) indicating a promotion evidence cannot be submitted while a retention referendum exists. The submit action is blocked or disabled.
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-4.13 Evidence conflict alert — retention while promotion referendum exists
 **Actor:** Alice
-**Precondition:** A promotion referendum for Alice is already active
+**Precondition:** Chopsticks snapshot has an active promotion referendum for Alice
 **Steps:**
 1. Alice tries to submit retention evidence
 
 **Expected:** A warning alert is shown indicating a retention request cannot be submitted while a promotion referendum exists.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
@@ -550,7 +678,7 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 ### UC-5.1 Toggle Active status to Passive
 **Actor:** Alice (currently Active, going on leave)
-**Precondition:** Alice's profile card is visible in the right sidebar
+**Precondition:** Chopsticks snapshot has Alice with Active status
 **Steps:**
 1. Find the Active/Inactive toggle in the right sidebar profile card
 2. Click toggle to switch from Active → Passive
@@ -559,6 +687,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** Alice's membership status changes to Passive. The profile card reflects "Passive" status. Her salary rate switches to the passive rate.
 
+**Automation:** `[Chopsticks → signing]`
+
 ---
 
 ### UC-5.2 Toggle Passive status back to Active
@@ -566,6 +696,8 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 **Steps:** Same as UC-5.1 but toggling Passive → Active.
 
 **Expected:** Status changes to Active; active salary rate applies.
+
+**Automation:** `[Chopsticks → signing]`
 
 ---
 
@@ -576,12 +708,16 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 2. Basket counter increments
 3. Sign with the batch at the end of the session
 
+**Automation:** `[Chopsticks]`
+
 ---
 
 ### UC-5.4 Profile status-switch — button disabled for no-permission accounts
 **Actor:** Alice using a watch-only wallet
 **Precondition:** The selected account does not have signing permissions (e.g., watch-only)
 **Expected:** The "Set Active / Set Passive" button in `ProfileModal` is disabled. No confirmation modal opens. A tooltip or visual cue indicates the account cannot perform this action.
+
+**Automation:** `[DB only]`
 
 ---
 
@@ -646,7 +782,7 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 ### UC-6.1 Register (induct) into the salary system
 **Actor:** Alice (new member not yet enrolled in salary)
-**Precondition:** "Register for Salary" task appears in Personal group
+**Precondition:** Chopsticks snapshot has Alice as a fellowship member not yet inducted into salary; "Register for Salary" task appears in Personal group
 **Steps:**
 1. Click the action button on "Register for Salary" task
 2. Confirmation modal shows `salaryInduct` transaction
@@ -654,11 +790,13 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** Alice is inducted into the salary system. The "Register for Salary" task disappears; "Request Salary" task may appear.
 
+**Automation:** `[Chopsticks → signing]`
+
 ---
 
 ### UC-6.2 Request salary for the current period
 **Actor:** Alice
-**Precondition:** "Request Salary" task is visible; a salary registration period is active
+**Precondition:** Chopsticks snapshot is in a salary registration period; Alice is inducted but has not yet requested for this period
 **Steps:**
 1. Click action button on "Request Salary" task
 2. Task shows current period end date and salary amount
@@ -667,17 +805,21 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 **Expected:** Salary registration for the current period is submitted. Task updates to reflect "requested" state. The SalaryInfo card shows time to next payout and a success indicator.
 
+**Automation:** `[Chopsticks → signing]`
+
 ---
 
 ### UC-6.3 Claim salary payout
 **Actor:** Alice
-**Precondition:** Current period has ended; "Claim Payout" task is visible (payout period active)
+**Precondition:** Chopsticks snapshot is in a payout period; Alice has an unclaimed payout available
 **Steps:**
 1. Click action button on "Claim Payout" task
 2. Confirmation shows payout amount and fee
 3. Sign via Polkadot Vault or add to basket
 
 **Expected:** Payout transaction submitted. Funds transferred to Alice's beneficiary account.
+
+**Automation:** `[Chopsticks → signing]`
 
 ---
 
@@ -834,21 +976,28 @@ Her preferred flow: **accumulate multiple actions into the basket, then sign the
 
 ### UC-10.1 No fellowship connection — inactive network
 **Actor:** Alice
-**Precondition:** Polkadot Collectives node is disconnected
+**Precondition:** Polkadot Collectives node is disconnected (do not start the Chopsticks session, or intercept with an unreachable URL)
 **Expected:** The tasks panel shows a loader, then the `InactiveNetwork` overlay replaces the content area. Alice cannot perform any actions until the connection is restored.
+
+**Automation:** `[DB only]` — import wallet DB, intercept chains config with an unreachable node URL
 
 ---
 
 ### UC-10.2 Insufficient rank to vote
 **Actor:** Alice attempts to vote on a referendum that requires a higher rank than she holds
+**Precondition:** Chopsticks snapshot includes a referendum on a track that requires rank higher than Alice's (e.g. a rank VI track when Alice is rank V)
 **Expected:** Aye/Nay buttons are disabled. A footnote below the buttons reads the rank threshold error message. The buttons are visually dimmed. Note: Active/Passive status does **not** affect this gate — only rank and account signing permissions are checked.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
 ### UC-10.3 Already voted — attempt to vote again (direct, non-basket)
 **Actor:** Alice
-**Precondition:** Alice already voted Aye on referendum #55 directly (not via basket)
+**Precondition:** Chopsticks snapshot includes an active referendum with Alice's on-chain vote already recorded (Aye)
 **Expected:** In the referendum details modal, the Aye button is shown as checked/active. Clicking Aye again does nothing (same-vote guard: `if (alreadyThatVote) return`). Nay is available to cast a different vote.
+
+**Automation:** `[Chopsticks]`
 
 ---
 
@@ -952,33 +1101,43 @@ These use cases apply across all direct-signing flows (voting, evidence, salary,
 
 ## Summary Matrix
 
-| Use Case | Transaction Type | Signing Method | Basket-compatible |
+| Use Case | Transaction Type | Signing Method | Basket-compatible | Automation |
+|---|---|---|---|---|
+| UC-3.2/3.3 Vote Aye/Nay (direct) | `COLLECTIVE_VOTE` | Polkadot Vault direct | Yes | Chopsticks → signing |
+| UC-3.4 Vote RFC | `COLLECTIVE_VOTE` | Polkadot Vault direct | Yes | Chopsticks → signing |
+| UC-3.5 Batch votes | `COLLECTIVE_VOTE` ×N | Polkadot Vault basket | Yes | Chopsticks → signing |
+| UC-3.8 Replace Aye→Nay in basket | `COLLECTIVE_VOTE` | Polkadot Vault basket | Yes | Chopsticks |
+| UC-4.1/4.3 Submit promotion evidence | `COLLECTIVE_SUBMIT_EVIDENCE` | Polkadot Vault direct/basket | **Yes** | Chopsticks → signing |
+| UC-4.8 Submit retention evidence | `COLLECTIVE_SUBMIT_EVIDENCE` | Polkadot Vault direct/basket | **Yes** | Chopsticks → signing |
+| UC-4.9/4.10 Vote on evidence | `COLLECTIVE_EVIDENCE_VOTE` | Polkadot Vault basket | Yes | Chopsticks → signing |
+| UC-5.1/5.2 Set Active/Passive | `COLLECTIVE_SET_ACTIVE` | Polkadot Vault direct/basket | Yes | Chopsticks → signing |
+| UC-6.1 Salary induct | `COLLECTIVE_SALARY_INDUCT` | Polkadot Vault direct/basket | Yes | Chopsticks → signing |
+| UC-6.2 Request salary | `COLLECTIVE_SALARY_REQUEST` | Polkadot Vault direct/basket | Yes | Chopsticks → signing |
+| UC-6.3 Claim payout | `COLLECTIVE_SALARY_PAYOUT` | Polkadot Vault direct/basket | Yes | Chopsticks → signing |
+| UC-8.1 Full session batch | Mixed ×7 | Polkadot Vault basket | Yes | Chopsticks → signing |
+| UC-11.1 Direct signing — old PV app | Any | Polkadot Vault direct (legacy QR) | No | Manual |
+| UC-11.2 Direct signing — new PV app | Any | Polkadot Vault direct (new QR) | No | Manual |
+| UC-11.3 Basket batch — old PV app | Mixed ×N | Polkadot Vault basket (legacy QR) | Yes | Manual |
+| UC-11.4 Basket batch — new PV app | Mixed ×N | Polkadot Vault basket (new QR) | Yes | Manual |
+
+### Read-only & Edge Cases (no transaction)
+
+| Use Case | Scenario | Automation | Jira |
 |---|---|---|---|
-| UC-3.2/3.3 Vote Aye/Nay (direct) | `COLLECTIVE_VOTE` | Polkadot Vault direct | Yes |
-| UC-3.5 Batch votes | `COLLECTIVE_VOTE` ×N | Polkadot Vault basket | Yes |
-| UC-3.4 Vote RFC | `COLLECTIVE_VOTE` | Polkadot Vault direct | Yes |
-| UC-3.8 Replace Aye→Nay in basket | `COLLECTIVE_VOTE` | Polkadot Vault basket | Yes |
-| UC-4.1/4.3 Submit promotion evidence | `COLLECTIVE_SUBMIT_EVIDENCE` | Polkadot Vault direct/basket | **Yes** |
-| UC-4.8 Submit retention evidence | `COLLECTIVE_SUBMIT_EVIDENCE` | Polkadot Vault direct/basket | **Yes** |
-| UC-4.9/4.10 Vote on evidence | `COLLECTIVE_EVIDENCE_VOTE` | Polkadot Vault basket | Yes |
-| UC-5.1/5.2 Set Active/Passive | `COLLECTIVE_SET_ACTIVE` | Polkadot Vault direct/basket | Yes |
-| UC-6.1 Salary induct | `COLLECTIVE_SALARY_INDUCT` | Polkadot Vault direct/basket | Yes |
-| UC-6.2 Request salary | `COLLECTIVE_SALARY_REQUEST` | Polkadot Vault direct/basket | Yes |
-| UC-6.3 Claim payout | `COLLECTIVE_SALARY_PAYOUT` | Polkadot Vault direct/basket | Yes |
-| UC-8.1 Full session batch | Mixed ×7 | Polkadot Vault basket | Yes |
-| UC-11.1 Direct signing — old PV app | Any | Polkadot Vault direct (legacy QR) | No |
-| UC-11.2 Direct signing — new PV app | Any | Polkadot Vault direct (new QR) | No |
-| UC-11.3 Basket batch — old PV app | Mixed ×N | Polkadot Vault basket (legacy QR) | Yes |
-| UC-11.4 Basket batch — new PV app | Mixed ×N | Polkadot Vault basket (new QR) | Yes |
-
-### Error & Edge Cases (no transaction)
-
-| Use Case | Scenario | Jira |
-|---|---|---|
-| UC-1.6 | Relay key only — no fellowship account | SPEK-176 |
-| UC-1.7 | Collectives-derived key — account discovered | SPEK-176 |
-| UC-4.14 | IPFS fetch timeout — empty preview | SPEK-173, SPEK-230 |
-| UC-4.15 | IPFS primary gateway fails, fallback succeeds | SPEK-230 |
-| UC-4.16 | Evidence submitted, referendum not yet created | SPEK-174 |
-| UC-10.5 | Referendum external description fails to load | SPEK-173 |
-| UC-10.6 | Metadata unavailable but technical call data visible | SPEK-174 |
+| UC-1.2 | Wallet without fellowship account | DB only | — |
+| UC-1.4 | Invalid route redirect | DB only | — |
+| UC-1.6 | Relay key only — no fellowship account | DB only | SPEK-176 |
+| UC-1.7 | Collectives-derived key — account discovered | Chopsticks | SPEK-176 |
+| UC-3.7 | Completed referendum — voted state display | Chopsticks | — |
+| UC-3.10 | Self-vote suppression | Chopsticks | — |
+| UC-3.11 | Whitelist referendum — connected governance card | Chopsticks | — |
+| UC-3.12 | Completed referendum — terminal status labels | Chopsticks | — |
+| UC-4.12/4.13 | Evidence conflict alerts | Chopsticks | — |
+| UC-10.1 | No node connection — inactive network overlay | DB only | — |
+| UC-10.2 | Insufficient rank — voting buttons disabled | Chopsticks | — |
+| UC-10.3 | Already voted — checked state, no re-vote | Chopsticks | — |
+| UC-4.14 | IPFS fetch timeout — empty preview | Chopsticks | SPEK-173, SPEK-230 |
+| UC-4.15 | IPFS primary gateway fails, fallback succeeds | Chopsticks | SPEK-230 |
+| UC-4.16 | Evidence submitted, referendum not yet created | Chopsticks | SPEK-174 |
+| UC-10.5 | Referendum external description fails to load | Chopsticks | SPEK-173 |
+| UC-10.6 | Metadata unavailable but technical call data visible | Chopsticks | SPEK-174 |
