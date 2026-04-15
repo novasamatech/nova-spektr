@@ -23,7 +23,13 @@ import {
   operationDescriptionsResource,
   operationsService,
 } from '@/domains/backend';
-import { type AnyAccount, type AnyTransaction, type EncodedTransaction, transactionService } from '@/domains/network';
+import {
+  type AnyAccount,
+  type AnyTransaction,
+  type EncodedTransaction,
+  multisigOperation,
+  transactionService,
+} from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
@@ -367,6 +373,46 @@ sample({
   target: operationDescriptionsResource.descriptionCreated,
 });
 
+// --- Post-submit success toast ---
+
+const showSubmitSuccessToastFx = createEffect(() => {
+  toast.success(t('operations.drafts.submitSuccess'));
+});
+
+sample({
+  clock: submitModel.done,
+  filter: (results) => results.some((r) => r.result === ExtrinsicResult.SUCCESS),
+  target: showSubmitSuccessToastFx,
+});
+
+// --- Submitted draft (transitional badge until operation appears) ---
+
+const $submittedDraft = createStore<Draft | null>(null).reset(flowStarted);
+const $submittedOperationId = createStore<string | null>(null).reset(flowStarted);
+
+sample({
+  clock: submitModel.done,
+  source: $draft,
+  filter: (draft, results) => nonNullable(draft) && results.some((r) => r.result === ExtrinsicResult.SUCCESS),
+  fn: (draft) => draft!,
+  target: $submittedDraft,
+});
+
+sample({
+  clock: postSubmitFx.doneData,
+  fn: ({ operationId }) => operationId,
+  target: $submittedOperationId,
+});
+
+// Clear submitted draft when the operation appears in the list
+sample({
+  clock: multisigOperation.$list,
+  source: $submittedOperationId,
+  filter: (operationId, operations) => nonNullable(operationId) && operations.some((op) => op.id === operationId),
+  fn: () => null,
+  target: [$submittedDraft, $submittedOperationId],
+});
+
 // --- Post-submit sync error: toast with retry ---
 
 const showSyncErrorToastFx = createEffect(
@@ -405,6 +451,7 @@ export const submitDraftModel = {
   $wrappedTx,
   $wrappedExtrinsic,
   $wrappedTxError,
+  $submittedDraft,
 
   flowStarted,
   flowFinished,

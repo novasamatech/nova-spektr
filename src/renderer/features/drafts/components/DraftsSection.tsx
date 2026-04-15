@@ -95,6 +95,7 @@ const DraftRow = ({
   draft,
   canWrite,
   canDelete,
+  isSubmitted,
   onDelete,
   onEdit,
   onSubmit,
@@ -102,6 +103,7 @@ const DraftRow = ({
   draft: Draft;
   canWrite: boolean;
   canDelete: boolean;
+  isSubmitted: boolean;
   onDelete: (id: string) => void;
   onEdit: (draft: Draft) => void;
   onSubmit: (draft: Draft) => void;
@@ -211,40 +213,56 @@ const DraftRow = ({
 
         {/* Actions */}
         <div className="flex shrink-0 items-center gap-x-1" onClick={(e) => e.stopPropagation()}>
-          {canWrite && (
-            <Button size="sm" variant="text" onClick={() => onEdit(draft)}>
-              {t('operations.drafts.editButton')}
-            </Button>
-          )}
-          <Tooltip open={isAuthenticated && draft.callData ? false : undefined}>
-            <Tooltip.Trigger>
-              <Button
-                size="sm"
-                variant="fill"
-                disabled={!isAuthenticated || !draft.callData}
-                onClick={() => onSubmit(draft)}
-              >
-                {t('operations.drafts.submitButton')}
+          <div className="flex w-[40px] shrink-0 items-center justify-center">
+            {canWrite && !isSubmitted && (
+              <Button size="sm" variant="text" onClick={() => onEdit(draft)}>
+                {t('operations.drafts.editButton')}
               </Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content>
-              {!isAuthenticated ? t('operations.drafts.connectToSubmit') : t('operations.drafts.noCallDataToSubmit')}
-            </Tooltip.Content>
-          </Tooltip>
-          {canDelete && (
-            <ConfirmModal
-              cancelText={t('operations.drafts.deleteCancel')}
-              confirmText={t('operations.drafts.deleteConfirm')}
-              description={t('operations.drafts.deleteDescription')}
-              title={t('operations.drafts.deleteTitle')}
-              type="warning"
-              onConfirm={() => onDelete(draft.id)}
-            >
-              <ConfirmModal.Trigger>
-                <IconButton name="delete" className="text-icon-default hover:text-text-negative" />
-              </ConfirmModal.Trigger>
-            </ConfirmModal>
-          )}
+            )}
+          </div>
+          <div className="flex w-[65px] shrink-0 items-center justify-center">
+            {isSubmitted ? (
+              <div className="flex items-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">
+                <CaptionText className="text-icon-positive uppercase">
+                  {t('operations.drafts.submittedBadge')}
+                </CaptionText>
+              </div>
+            ) : (
+              <Tooltip open={isAuthenticated && draft.callData ? false : undefined}>
+                <Tooltip.Trigger>
+                  <Button
+                    size="sm"
+                    variant="fill"
+                    disabled={!isAuthenticated || !draft.callData}
+                    onClick={() => onSubmit(draft)}
+                  >
+                    {t('operations.drafts.submitButton')}
+                  </Button>
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  {!isAuthenticated
+                    ? t('operations.drafts.connectToSubmit')
+                    : t('operations.drafts.noCallDataToSubmit')}
+                </Tooltip.Content>
+              </Tooltip>
+            )}
+          </div>
+          <div className="flex w-[35px] shrink-0 items-center justify-center">
+            {canDelete && !isSubmitted && (
+              <ConfirmModal
+                cancelText={t('operations.drafts.deleteCancel')}
+                confirmText={t('operations.drafts.deleteConfirm')}
+                description={t('operations.drafts.deleteDescription')}
+                title={t('operations.drafts.deleteTitle')}
+                type="warning"
+                onConfirm={() => onDelete(draft.id)}
+              >
+                <ConfirmModal.Trigger>
+                  <IconButton name="delete" className="text-icon-default hover:text-text-negative" />
+                </ConfirmModal.Trigger>
+              </ConfirmModal>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -372,6 +390,7 @@ export const DraftsSection = () => {
   const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);
 
   const { data: drafts } = useDrafts(canRead ? backendUrl : null);
+  const submittedDraft = useUnit(submitDraftModel.$submittedDraft);
 
   const [submittingDraft, setSubmittingDraft] = useState<Draft | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -689,12 +708,25 @@ export const DraftsSection = () => {
                 key={draft.id}
                 canDelete={canDelete}
                 canWrite={canWrite}
+                isSubmitted={submittedDraft?.id === draft.id}
                 draft={draft}
                 onDelete={handleDeleteDraft}
                 onEdit={handleEditDraft}
                 onSubmit={handleSubmitDraft}
               />
             ))}
+            {submittedDraft && !drafts.some((d) => d.id === submittedDraft.id) && (
+              <DraftRow
+                key={submittedDraft.id}
+                canDelete={false}
+                canWrite={false}
+                isSubmitted
+                draft={submittedDraft}
+                onDelete={handleDeleteDraft}
+                onEdit={handleEditDraft}
+                onSubmit={handleSubmitDraft}
+              />
+            )}
 
             <Tooltip open={canWrite ? false : undefined}>
               <Tooltip.Trigger>
