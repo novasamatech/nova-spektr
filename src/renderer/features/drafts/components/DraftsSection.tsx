@@ -391,6 +391,7 @@ export const DraftsSection = () => {
 
   const { data: drafts } = useDrafts(canRead ? backendUrl : null);
   const hiddenDraftIds = useUnit(submitDraftModel.$hiddenDraftIds);
+  const submittedDraftIds = useUnit(submitDraftModel.$submittedDraftIds);
 
   const [submittingDraft, setSubmittingDraft] = useState<Draft | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -710,7 +711,7 @@ export const DraftsSection = () => {
                   key={draft.id}
                   canDelete={canDelete}
                   canWrite={canWrite}
-                  isSubmitted={false}
+                  isSubmitted={submittedDraftIds.has(draft.id)}
                   draft={draft}
                   onDelete={handleDeleteDraft}
                   onEdit={handleEditDraft}

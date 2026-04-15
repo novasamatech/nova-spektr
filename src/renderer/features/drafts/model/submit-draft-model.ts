@@ -384,7 +384,7 @@ sample({
 const $submittedDraftOperations = createStore<Record<string, string>>({});
 persist({ key: 'submittedDraftOperations', store: $submittedDraftOperations, sync: true });
 
-// Session bridge: hides draft immediately after submit, before postSubmitFx completes
+// Session-only: draft was submitted successfully, waiting for postSubmitFx / operation to appear
 const $justSubmittedDraftId = createStore<string | null>(null).reset(flowStarted);
 
 sample({
@@ -410,22 +410,38 @@ sample({
   target: $justSubmittedDraftId,
 });
 
-// Derived: set of draft IDs that should be hidden
-const $hiddenDraftIds = combine(
+// Derived: drafts that are submitted but operation hasn't appeared yet (show with isSubmitted badge)
+const $submittedDraftIds = combine(
   { draftOps: $submittedDraftOperations, justSubmitted: $justSubmittedDraftId, operations: multisigOperation.$list },
   ({ draftOps, justSubmitted, operations }) => {
+    const submitted = new Set<string>();
+
+    // Persisted submitted drafts whose operation hasn't appeared yet
+    for (const [draftId, operationId] of Object.entries(draftOps)) {
+      if (!operations.some((op) => op.id === operationId)) {
+        submitted.add(draftId);
+      }
+    }
+
+    // Session bridge: submitted but postSubmitFx hasn't completed yet
+    if (justSubmitted) {
+      submitted.add(justSubmitted);
+    }
+
+    return submitted;
+  },
+);
+
+// Derived: drafts whose linked operation exists — hide completely
+const $hiddenDraftIds = combine(
+  { draftOps: $submittedDraftOperations, operations: multisigOperation.$list },
+  ({ draftOps, operations }) => {
     const hidden = new Set<string>();
 
-    // Hide drafts whose linked operation exists in the operations list
     for (const [draftId, operationId] of Object.entries(draftOps)) {
       if (operations.some((op) => op.id === operationId)) {
         hidden.add(draftId);
       }
-    }
-
-    // Session bridge: hide immediately after submit
-    if (justSubmitted) {
-      hidden.add(justSubmitted);
     }
 
     return hidden;
@@ -471,6 +487,7 @@ export const submitDraftModel = {
   $wrappedExtrinsic,
   $wrappedTxError,
   $hiddenDraftIds,
+  $submittedDraftIds,
 
   flowStarted,
   flowFinished,
