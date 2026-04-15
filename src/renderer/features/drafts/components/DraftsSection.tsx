@@ -60,6 +60,7 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
 import { type OperationTitle, operationTitleTransformer } from '@/features/multisig-operations';
+import { OperationTemplatesToolbar } from '@/features/operation-templates';
 import { NamedAccount } from '@/widgets/NameResolver';
 import '../model/drafts-model'; // side-effect: orchestration wiring
 import { submitDraftModel } from '../model/submit-draft-model';
@@ -359,80 +360,6 @@ const DraftSummary = ({
   );
 };
 
-const EditDraftSummary = ({ draft }: { draft: Draft }) => {
-  const { t } = useI18n();
-  const chains = useUnit(networkModel.$chains);
-  const backendContacts = useUnit(contactModel.$backendContacts);
-
-  const chain = chains[draft.chainId as ChainId];
-  const contact = backendContacts.find((c) => c.accountId === draft.multisigAccountId);
-  const api = useApi(draft.chainId as ChainId);
-
-  const decodedTransaction = useMemo(() => {
-    if (!draft.callData || !isHex(draft.callData) || !api || !chain) return null;
-
-    try {
-      const nativeAssetId = getNativeAssetId(chain.assets);
-
-      return decodeCallData(
-        api,
-        (draft.multisigAccountId ?? '') as AccountId,
-        draft.callData as CallData,
-        nativeAssetId,
-      );
-    } catch {
-      return null;
-    }
-  }, [draft.callData, draft.multisigAccountId, api, chain]);
-
-  const coreTx = findCoreTransaction(decodedTransaction);
-  const destinationAccountId = useMemo(() => getDestinationAccountId(coreTx), [coreTx]);
-  const txAsset = useTransactionAsset(coreTx, draft.chainId as ChainId);
-  const externalTitle = useTransformer(operationTitleTransformer, {
-    operation: decodedTransaction ? ({ transaction: decodedTransaction, chainId: draft.chainId } as never) : null,
-    chains,
-    asset: txAsset,
-    t,
-  });
-
-  const titleData = useMemo(() => {
-    if (externalTitle?.title) return externalTitle;
-    if (!coreTx) return null;
-
-    const amount = getTransactionAmount(coreTx);
-    const asset = txAsset ?? chain?.assets[0] ?? null;
-
-    return {
-      title: formatSectionAndMethod(coreTx.section, coreTx.method),
-      amount: asset && amount ? { value: amount, asset } : undefined,
-    };
-  }, [externalTitle, coreTx, txAsset, chain]);
-
-  const jsonArgs = useMemo(() => {
-    if (!draft.callData || !api || !chain) return null;
-
-    try {
-      const call = transactionService.createCallFromCallData(draft.callData as CallData, api);
-
-      return call ? transactionService.formatCall(call, chain) : null;
-    } catch {
-      return null;
-    }
-  }, [draft.callData, api, chain]);
-
-  return (
-    <DraftSummary
-      multisigName={contact?.name ?? draft.multisigAccountId ?? ''}
-      multisigAccountId={draft.multisigAccountId as AccountId | undefined}
-      chain={chain ?? null}
-      titleData={titleData}
-      destinationAccountId={destinationAccountId}
-      callData={draft.callData ?? undefined}
-      jsonArgs={jsonArgs}
-    />
-  );
-};
-
 export const DraftsSection = () => {
   const { t } = useI18n();
   const { toast } = useNotification();
@@ -453,6 +380,8 @@ export const DraftsSection = () => {
   const [showDiscardEdit, setShowDiscardEdit] = useState(false);
   const [editingDraft, setEditingDraft] = useState<Draft | null>(null);
   const [editDescription, setEditDescription] = useState('');
+  const [editCallData, setEditCallData] = useState('');
+  const [editInputMode, setEditInputMode] = useState<'paste' | 'build'>('paste');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeStep, setActiveStep] = useState<Step>(Step.SELECT_MULTISIG);
   const [selectedAccount, setSelectedAccount] = useState<MultisigAcc | null>(null);
@@ -489,6 +418,11 @@ export const DraftsSection = () => {
       : selectedChain;
 
   const api = useApi(effectiveChain?.chainId ?? ('0x00' as ChainId));
+  const specVersion = api?.runtimeVersion.specVersion.toNumber() ?? null;
+
+  const handleTemplateApply = (templateCallData: string) => {
+    setCallData(templateCallData);
+  };
 
   const accountOptions = useMemo(() => {
     return multisigAccounts
@@ -578,7 +512,34 @@ export const DraftsSection = () => {
   const handleEditDraft = (draft: Draft) => {
     setEditingDraft(draft);
     setEditDescription(draft.description ?? '');
+    setEditCallData(draft.callData ?? '');
+    setEditInputMode('paste');
     setIsEditModalOpen(true);
+  };
+
+  // Edit-mode derived state for callData editing
+  const editChain = editingDraft ? (chains[editingDraft.chainId as ChainId] ?? null) : null;
+  const editApi = useApi((editingDraft?.chainId as ChainId) ?? ('0x00' as ChainId));
+  const editSpecVersion = editApi?.runtimeVersion.specVersion.toNumber() ?? null;
+
+  const deferredEditCallData = useDeferredValue(editCallData);
+  const editCallDataError =
+    deferredEditCallData.length > 0 && !isHex(deferredEditCallData) ? t('operations.drafts.callDataErrorHex') : null;
+
+  const editDecodedCallData = useMemo(() => {
+    if (!deferredEditCallData || !isHex(deferredEditCallData) || !editApi || !editChain) return null;
+
+    try {
+      const call = transactionService.createCallFromCallData(deferredEditCallData as CallData, editApi);
+
+      return call ? transactionService.formatCall(call, editChain) : null;
+    } catch {
+      return null;
+    }
+  }, [deferredEditCallData, editApi, editChain]);
+
+  const handleEditTemplateApply = (templateCallData: string) => {
+    setEditCallData(templateCallData);
   };
 
   const handleSubmitDraft = (draft: Draft) => {
@@ -601,6 +562,7 @@ export const DraftsSection = () => {
     try {
       const response = await draftsService.updateDraft(backendUrl, editingDraft.id, {
         description: editDescription,
+        callData: editCallData || undefined,
       });
       draftsResource.draftUpdated(response);
       toast.success(t('operations.drafts.editSuccess'));
@@ -614,7 +576,9 @@ export const DraftsSection = () => {
     }
   };
 
-  const isEditDirty = editingDraft !== null && editDescription !== (editingDraft.description ?? '');
+  const isEditDirty =
+    editingDraft !== null &&
+    (editDescription !== (editingDraft.description ?? '') || editCallData !== (editingDraft.callData ?? ''));
 
   const handleEditToggle = (open: boolean) => {
     if (!open && isEditDirty) {
@@ -892,6 +856,16 @@ export const DraftsSection = () => {
                     </Tabs.Content>
                   </Tabs>
 
+                  {effectiveChain && (
+                    <OperationTemplatesToolbar
+                      api={api}
+                      chainId={effectiveChain.chainId}
+                      callData={callData}
+                      specVersion={specVersion}
+                      onApply={handleTemplateApply}
+                    />
+                  )}
+
                   {decodedCallData && (
                     <div className="flex flex-col gap-y-2">
                       <SmallTitleText>{t('operation.callData.preview')}</SmallTitleText>
@@ -942,7 +916,7 @@ export const DraftsSection = () => {
                 <Button
                   disabled={
                     (activeStep === Step.SELECT_MULTISIG && (!selectedAccount || !effectiveChain)) ||
-                    (activeStep === Step.CALL_DATA && (callData.length === 0 || callDataError !== null))
+                    (activeStep === Step.CALL_DATA && callDataError !== null)
                   }
                   isLoading={isSubmitting}
                   onClick={activeStep === Step.CONFIRM ? handleCreateDraft : () => setActiveStep((s) => s + 1)}
@@ -962,6 +936,55 @@ export const DraftsSection = () => {
           <Modal.Title close>{t('operations.drafts.editDraftTitle')}</Modal.Title>
           <Modal.Content>
             <div className="flex flex-col gap-4 p-4">
+              <Tabs value={editInputMode} onChange={(value) => setEditInputMode(value as 'paste' | 'build')}>
+                <Tabs.List>
+                  <Tabs.Trigger value="paste">{t('callData.mode.paste')}</Tabs.Trigger>
+                  <Tabs.Trigger value="build">{t('callData.mode.build')}</Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="paste">
+                  <Field text={t('operations.drafts.callDataLabel')}>
+                    <Input
+                      height="md"
+                      placeholder={t('operations.drafts.callDataPlaceholder')}
+                      value={editCallData}
+                      invalid={editCallDataError !== null}
+                      onChange={setEditCallData}
+                    />
+                    <InputHint variant="error" active={editCallDataError !== null}>
+                      {editCallDataError}
+                    </InputHint>
+                  </Field>
+                </Tabs.Content>
+                <Tabs.Content value="build">
+                  <ExtrinsicBuilder
+                    api={editApi}
+                    initialCallData={editInputMode === 'build' ? editCallData : undefined}
+                    onCallDataChange={(hex) => {
+                      if (editInputMode === 'build') setEditCallData(hex ?? '');
+                    }}
+                  />
+                </Tabs.Content>
+              </Tabs>
+
+              {editChain && (
+                <OperationTemplatesToolbar
+                  api={editApi}
+                  chainId={editChain.chainId}
+                  callData={editCallData}
+                  specVersion={editSpecVersion}
+                  onApply={handleEditTemplateApply}
+                />
+              )}
+
+              {editDecodedCallData && (
+                <div className="flex flex-col gap-y-2">
+                  <SmallTitleText>{t('operation.callData.preview')}</SmallTitleText>
+                  <div className="max-h-[300px] overflow-auto rounded-md border border-filter-border bg-block-background p-4 break-all">
+                    <Json value={editDecodedCallData} name="call" />
+                  </div>
+                </div>
+              )}
+
               <Field text={t('operations.drafts.descriptionLabel')}>
                 <TextArea
                   placeholder={t('operations.drafts.descriptionPlaceholder')}
@@ -970,8 +993,6 @@ export const DraftsSection = () => {
                   onChange={setEditDescription}
                 />
               </Field>
-
-              <EditDraftSummary draft={editingDraft} />
             </div>
           </Modal.Content>
           <Modal.Footer>
@@ -979,7 +1000,7 @@ export const DraftsSection = () => {
               <Button variant="text" onClick={() => handleEditToggle(false)}>
                 {t('operations.drafts.backButton')}
               </Button>
-              <Button isLoading={isSubmitting} onClick={handleSaveEdit}>
+              <Button disabled={editCallDataError !== null} isLoading={isSubmitting} onClick={handleSaveEdit}>
                 {t('operations.drafts.saveButton')}
               </Button>
             </div>
