@@ -1,7 +1,6 @@
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { Slot } from '@/shared/di';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
@@ -11,10 +10,10 @@ import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { walletModel } from '@/entities/wallet';
 import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
+import { OperationTemplatesToolbar } from '@/features/operation-templates';
 import { Fee } from '@/widgets/transaction-fee';
 import { InputMode } from '../lib/types';
 import { formModel } from '../model/form';
-import { extrinsicBuilderToolbarSlot } from '../slots';
 
 import { CallDataInput } from './CallDataInput';
 import { InitiatorSelect } from './InitiatorSelect';
@@ -77,15 +76,12 @@ export const CallDataForm = () => {
         </form>
 
         {nonNullable(chain) && (
-          <Slot
-            id={extrinsicBuilderToolbarSlot}
-            props={{
-              api,
-              chainId: chain.chainId,
-              callData: callDataValue,
-              specVersion,
-              onApply: templateApplied,
-            }}
+          <OperationTemplatesToolbar
+            api={api}
+            chainId={chain.chainId}
+            callData={callDataValue}
+            specVersion={specVersion}
+            onApply={templateApplied}
           />
         )}
 

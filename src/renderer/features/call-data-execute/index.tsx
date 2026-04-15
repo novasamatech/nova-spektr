@@ -15,4 +15,3 @@ callDataExecuteFeature.inject(customOperationsSlot, {
 });
 
 export { callDataExecuteFeature };
-export { type ExtrinsicBuilderToolbarSlotProps, extrinsicBuilderToolbarSlot } from './slots';

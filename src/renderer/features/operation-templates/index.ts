@@ -1,1 +1,1 @@
-export { operationTemplatesFeature } from './model/feature';
+export { OperationTemplatesToolbar } from './ui/OperationTemplatesToolbar';

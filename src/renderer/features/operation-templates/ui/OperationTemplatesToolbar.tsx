@@ -1,26 +1,29 @@
+import { type ApiPromise } from '@polkadot/api';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { useNotification } from '@/shared/ui-kit/NotificationContext';
 import { useTheme } from '@/shared/ui-kit/Theme/useTheme';
 import { type OperationTemplate } from '@/domains/operation-templates';
-import { type ExtrinsicBuilderToolbarSlotProps } from '@/features/call-data-execute';
 
 import { TemplatesPanel } from './TemplatesPanel';
 
 const MODAL_HALF = '13.75rem'; // w-modal / 2 — see tailwind.config.ts
 const PANEL_WIDTH = '22rem';
 
-export const OperationTemplatesToolbar = ({
-  api,
-  chainId,
-  callData,
-  specVersion,
-  onApply,
-}: ExtrinsicBuilderToolbarSlotProps) => {
+type Props = {
+  api: ApiPromise | null;
+  chainId: ChainId;
+  callData: string;
+  specVersion: number | null;
+  onApply: (callData: string) => void;
+};
+
+export const OperationTemplatesToolbar = ({ api, chainId, callData, specVersion, onApply }: Props) => {
   const { t } = useI18n();
   const { toast } = useNotification();
   const { portalContainer } = useTheme();
