@@ -1,10 +1,20 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
-import { Button, ButtonWebLink, DetailRow, FootnoteText, Icon, LargeTitleText, Loader, Separator } from '@/shared/ui';
+import {
+  Alert,
+  Button,
+  ButtonWebLink,
+  DetailRow,
+  FootnoteText,
+  Icon,
+  LargeTitleText,
+  Loader,
+  Separator,
+} from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box, Field, Modal, Select } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
@@ -12,7 +22,10 @@ import { transactionService } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
 import { transactionService as entityTransactionService } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
+import { EmptyAccountMessage } from '@/features/emptyList';
 import { OperationSign, OperationSubmit } from '@/features/operations';
+import { WalletDetails } from '@/features/wallet-details';
 import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { submitDraftModel } from '../model/submit-draft-model';
 
@@ -69,6 +82,9 @@ const ConfirmStep = () => {
   const wrappedTxError = useUnit(submitDraftModel.$wrappedTxError);
   const wallets = useUnit(walletModel.$wallets);
   const draft = useUnit(submitDraftModel.$draft);
+  const activeWallet = useUnit(walletSelect.$selectedWallet);
+
+  const [showWalletDetails, setShowWalletDetails] = useState(false);
 
   const confirm = confirms.at(0) ?? null;
 
@@ -112,6 +128,35 @@ const ConfirmStep = () => {
   }, [signatories, wallets]);
 
   const showSignatorySelect = signatories.length > 1;
+  const noSignatories = signatories.length === 0;
+  const canAddAccount = walletUtils.isPolkadotVault(activeWallet);
+
+  if (noSignatories) {
+    return (
+      <>
+        <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
+          <Icon className="text-icon-warning" name="warnCutout" size={60} />
+          <Alert active title={t('emptyState.accountDescription')} variant="warn">
+            <EmptyAccountMessage walletType={activeWallet?.type} />
+          </Alert>
+        </Box>
+
+        {canAddAccount && (
+          <Modal.Footer>
+            <Button className="ml-auto" onClick={() => setShowWalletDetails(true)}>
+              {t('emptyState.addAccountButton')}
+            </Button>
+          </Modal.Footer>
+        )}
+
+        <WalletDetails
+          isOpen={showWalletDetails}
+          wallet={activeWallet ?? null}
+          onClose={() => setShowWalletDetails(false)}
+        />
+      </>
+    );
+  }
 
   if (!confirm) {
     if (wrappedTxError) {

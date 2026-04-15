@@ -42,7 +42,7 @@ enum Step {
 
 type FlowInput = {
   draft: Draft;
-  initiator: AnyAccount;
+  initiator: AnyAccount | null;
   chain: Chain;
 };
 
@@ -411,35 +411,24 @@ sample({
 });
 
 // Derived: drafts that are submitted but operation hasn't appeared yet (show with isSubmitted badge)
-const $submittedDraftIds = combine(
-  { draftOps: $submittedDraftOperations, justSubmitted: $justSubmittedDraftId, operations: multisigOperation.$list },
-  ({ draftOps, justSubmitted, operations }) => {
-    const submitted = new Set<string>();
+// Only uses session-only $justSubmittedDraftId to avoid flash on page load
+// (persisted map + empty operations list would briefly mark all past submissions as "submitted")
+const $submittedDraftIds = $justSubmittedDraftId.map((id) => {
+  const submitted = new Set<string>();
+  if (id) submitted.add(id);
 
-    // Persisted submitted drafts whose operation hasn't appeared yet
-    for (const [draftId, operationId] of Object.entries(draftOps)) {
-      if (!operations.some((op) => op.id === operationId)) {
-        submitted.add(draftId);
-      }
-    }
+  return submitted;
+});
 
-    // Session bridge: submitted but postSubmitFx hasn't completed yet
-    if (justSubmitted) {
-      submitted.add(justSubmitted);
-    }
-
-    return submitted;
-  },
-);
-
-// Derived: drafts whose linked operation exists — hide completely
+// Derived: hide all persisted submitted drafts, except the one just submitted this session
+// (that one shows with "submitted" badge until the operation appears)
 const $hiddenDraftIds = combine(
-  { draftOps: $submittedDraftOperations, operations: multisigOperation.$list },
-  ({ draftOps, operations }) => {
+  { draftOps: $submittedDraftOperations, justSubmitted: $justSubmittedDraftId },
+  ({ draftOps, justSubmitted }) => {
     const hidden = new Set<string>();
 
-    for (const [draftId, operationId] of Object.entries(draftOps)) {
-      if (operations.some((op) => op.id === operationId)) {
+    for (const draftId of Object.keys(draftOps)) {
+      if (draftId !== justSubmitted) {
         hidden.add(draftId);
       }
     }
@@ -447,6 +436,21 @@ const $hiddenDraftIds = combine(
     return hidden;
   },
 );
+
+// When the operation for the just-submitted draft appears, clear the session bridge
+sample({
+  clock: multisigOperation.$list,
+  source: { justSubmitted: $justSubmittedDraftId, draftOps: $submittedDraftOperations },
+  filter: ({ justSubmitted, draftOps }, operations) => {
+    if (!justSubmitted) return false;
+    const operationId = draftOps[justSubmitted];
+    if (!operationId) return false;
+
+    return operations.some((op) => op.id === operationId);
+  },
+  fn: () => null,
+  target: $justSubmittedDraftId,
+});
 
 // --- Post-submit sync error: toast with retry ---
 

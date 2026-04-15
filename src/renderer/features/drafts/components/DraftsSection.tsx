@@ -9,6 +9,7 @@ import {
   type DecodedTransaction,
   type FlexibleMultisigAccount,
   type MultisigAccount,
+  type WalletType,
 } from '@/shared/core';
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -17,6 +18,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   Button,
   CaptionText,
+  DetailRow,
   FootnoteText,
   HelpText,
   Icon,
@@ -25,7 +27,15 @@ import {
   Separator,
   SmallTitleText,
 } from '@/shared/ui';
-import { AssetBalance, ChainSelect, Hash, Identicon, WalletAccountIcon } from '@/shared/ui-entities';
+import {
+  Account,
+  AssetBalance,
+  ChainIcon,
+  ChainSelect,
+  Hash,
+  WalletAccountIcon,
+  WalletIcon,
+} from '@/shared/ui-entities';
 import {
   Accordion,
   Box,
@@ -35,7 +45,6 @@ import {
   Input,
   Modal,
   Select,
-  Surface,
   Tabs,
   TextArea,
   Tooltip,
@@ -61,6 +70,7 @@ import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
 import { type OperationTitle, operationTitleTransformer } from '@/features/multisig-operations';
 import { OperationTemplatesToolbar } from '@/features/operation-templates';
+import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { NamedAccount } from '@/widgets/NameResolver';
 import '../model/drafts-model'; // side-effect: orchestration wiring
 import { submitDraftModel } from '../model/submit-draft-model';
@@ -96,6 +106,7 @@ const DraftRow = ({
   canWrite,
   canDelete,
   isSubmitted,
+  hasInitiator,
   onDelete,
   onEdit,
   onSubmit,
@@ -104,6 +115,7 @@ const DraftRow = ({
   canWrite: boolean;
   canDelete: boolean;
   isSubmitted: boolean;
+  hasInitiator: boolean;
   onDelete: (id: string) => void;
   onEdit: (draft: Draft) => void;
   onSubmit: (draft: Draft) => void;
@@ -220,13 +232,15 @@ const DraftRow = ({
               </Button>
             )}
           </div>
-          <div className="flex w-[65px] shrink-0 items-center justify-center">
+          <div className="flex shrink-0 items-center justify-center">
             {isSubmitted ? (
               <div className="flex items-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">
                 <CaptionText className="text-icon-positive uppercase">
                   {t('operations.drafts.submittedBadge')}
                 </CaptionText>
               </div>
+            ) : !hasInitiator ? (
+              <WalletPairingOperationTrigger />
             ) : (
               <Tooltip open={isAuthenticated && draft.callData ? false : undefined}>
                 <Tooltip.Trigger>
@@ -274,8 +288,9 @@ type DraftSummaryProps = {
   multisigAccountId?: AccountId;
   threshold?: string;
   chain: Chain | null;
-  titleData: OperationTitle | null;
-  destinationAccountId: AccountId | null;
+  walletType?: WalletType;
+  titleData?: OperationTitle | null;
+  destinationAccountId?: AccountId | null;
   callData?: string;
   jsonArgs?: object | null;
 };
@@ -285,96 +300,92 @@ const DraftSummary = ({
   multisigAccountId,
   threshold,
   chain,
+  walletType,
   titleData,
   destinationAccountId,
   callData,
   jsonArgs,
 }: DraftSummaryProps) => {
   const { t } = useI18n();
-  const multisigAddress = multisigAccountId
-    ? toAddress(multisigAccountId, { prefix: chain?.addressPrefix })
-    : undefined;
 
   return (
-    <Surface elevation={1} className="p-4">
-      <div className="flex flex-col gap-3">
-        <CaptionText className="text-text-tertiary uppercase">{t('operations.drafts.summaryTitle')}</CaptionText>
-        <Separator />
-        <div className="flex flex-col gap-1.5">
-          <div className="flex justify-between">
-            <HelpText className="text-text-tertiary">{t('operations.drafts.summaryMultisig')}</HelpText>
-            <div className="flex items-center gap-x-2">
-              {multisigAddress && <Identicon address={multisigAddress} size={20} />}
-              <FootnoteText className="text-text-primary">{multisigName}</FootnoteText>
-            </div>
-          </div>
-          {chain?.name && (
-            <div className="flex justify-between">
-              <HelpText className="text-text-tertiary">{t('operations.drafts.summaryNetwork')}</HelpText>
-              <FootnoteText className="text-text-primary">{chain.name}</FootnoteText>
-            </div>
-          )}
-          {threshold && (
-            <div className="flex justify-between">
-              <HelpText className="text-text-tertiary">{t('operations.drafts.summaryThreshold')}</HelpText>
-              <FootnoteText className="text-text-primary">{threshold}</FootnoteText>
-            </div>
-          )}
-          {titleData?.title && (
-            <div className="flex justify-between">
-              <HelpText className="text-text-tertiary">{t('operations.drafts.summaryOperation')}</HelpText>
-              <FootnoteText className="text-text-primary">{titleData.title}</FootnoteText>
-            </div>
-          )}
-          {titleData?.amount && (
-            <div className="flex justify-between">
-              <HelpText className="text-text-tertiary">{t('operations.drafts.summaryAmount')}</HelpText>
-              <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} className="text-footnote" />
-            </div>
-          )}
-          {destinationAccountId && chain && (
-            <div className="flex justify-between">
-              <HelpText className="text-text-tertiary">{t('operation.details.recipient')}</HelpText>
-              <NamedAccount accountId={destinationAccountId} variant="short" chain={chain} />
-            </div>
-          )}
-          {callData && (
-            <div className="flex justify-between">
-              <HelpText className="text-text-tertiary">{t('operation.details.callData')}</HelpText>
-              <div className="flex items-center gap-1">
-                <Copy value={callData}>
+    <dl className="flex flex-col gap-y-4 text-footnote">
+      {chain?.name && (
+        <DetailRow label={t('transfer.networkLabel')} className="flex gap-x-2">
+          <ChainIcon chain={chain} size={16} />
+          <FootnoteText>{chain.name}</FootnoteText>
+        </DetailRow>
+      )}
+      {walletType && (
+        <DetailRow label={t('transaction.details.wallet')} className="flex gap-x-2">
+          <WalletIcon type={walletType} size={16} />
+          <FootnoteText>{multisigName}</FootnoteText>
+        </DetailRow>
+      )}
+      {!walletType && (
+        <DetailRow label={t('transaction.details.wallet')}>
+          <FootnoteText>{multisigName}</FootnoteText>
+        </DetailRow>
+      )}
+      {multisigAccountId && chain && (
+        <DetailRow label={t('transaction.details.account')}>
+          <Account variant="short" accountId={multisigAccountId} chain={chain} title={multisigName} />
+        </DetailRow>
+      )}
+      {threshold && (
+        <DetailRow label={t('createMultisigAccount.thresholdName')}>
+          <FootnoteText>{threshold}</FootnoteText>
+        </DetailRow>
+      )}
+      {titleData?.title && (
+        <DetailRow label={t('operations.drafts.summaryOperation')}>
+          <FootnoteText>{titleData.title}</FootnoteText>
+        </DetailRow>
+      )}
+      {titleData?.amount && (
+        <DetailRow label={t('operations.drafts.summaryAmount')}>
+          <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} className="text-footnote" />
+        </DetailRow>
+      )}
+      {destinationAccountId && chain && (
+        <DetailRow label={t('operation.details.recipient')}>
+          <NamedAccount accountId={destinationAccountId} variant="short" chain={chain} />
+        </DetailRow>
+      )}
+      {callData && (
+        <DetailRow label={t('operation.details.callData')}>
+          <div className="flex items-center gap-1">
+            <Copy value={callData}>
+              <button
+                type="button"
+                className="group -mr-2 flex cursor-pointer items-center gap-x-1 rounded-sm px-2 py-[3px] hover:bg-action-background-hover hover:text-text-primary"
+              >
+                <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
+                <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
+              </button>
+            </Copy>
+            {jsonArgs && (
+              <Modal size="lg" height="fit">
+                <Modal.Trigger>
                   <button
                     type="button"
-                    className="group -mr-2 flex cursor-pointer items-center gap-x-1 rounded-sm px-2 py-[3px] hover:bg-action-background-hover hover:text-text-primary"
+                    className="group cursor-pointer rounded-sm px-2 py-[3px] hover:bg-action-background-hover"
                   >
-                    <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
-                    <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
+                    <Icon name="details" size={16} className="group-hover:text-icon-hover" />
                   </button>
-                </Copy>
-                {jsonArgs && (
-                  <Modal size="lg" height="fit">
-                    <Modal.Trigger>
-                      <button
-                        type="button"
-                        className="group cursor-pointer rounded-sm px-2 py-[3px] hover:bg-action-background-hover"
-                      >
-                        <Icon name="details" size={16} className="group-hover:text-icon-hover" />
-                      </button>
-                    </Modal.Trigger>
-                    <Modal.Title close>{t('operation.viewJSON.label')}</Modal.Title>
-                    <Modal.Content>
-                      <Box padding={5}>
-                        <Json value={jsonArgs} name="callData" expandDepth={3} />
-                      </Box>
-                    </Modal.Content>
-                  </Modal>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </Surface>
+                </Modal.Trigger>
+                <Modal.Title close>{t('operation.viewJSON.label')}</Modal.Title>
+                <Modal.Content>
+                  <Box padding={5}>
+                    <Json value={jsonArgs} name="callData" expandDepth={3} />
+                  </Box>
+                </Modal.Content>
+              </Modal>
+            )}
+          </div>
+        </DetailRow>
+      )}
+    </dl>
   );
 };
 
@@ -392,6 +403,7 @@ export const DraftsSection = () => {
   const { data: drafts } = useDrafts(canRead ? backendUrl : null);
   const hiddenDraftIds = useUnit(submitDraftModel.$hiddenDraftIds);
   const submittedDraftIds = useUnit(submitDraftModel.$submittedDraftIds);
+  const visibleDrafts = useMemo(() => drafts.filter((d) => !hiddenDraftIds.has(d.id)), [drafts, hiddenDraftIds]);
 
   const [submittingDraft, setSubmittingDraft] = useState<Draft | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -537,8 +549,12 @@ export const DraftsSection = () => {
     setIsEditModalOpen(true);
   };
 
-  // Edit-mode derived state for callData editing
+  // Edit-mode derived state
   const editChain = editingDraft ? (chains[editingDraft.chainId as ChainId] ?? null) : null;
+  const editAccount = editingDraft
+    ? (allMultisigAccounts.find((a) => a.accountId === editingDraft.multisigAccountId) ?? null)
+    : null;
+  const editWallet = editAccount ? (resolvedWallets.find((w) => w.id === editAccount.walletId) ?? null) : null;
   const editApi = useApi((editingDraft?.chainId as ChainId) ?? ('0x00' as ChainId));
   const editSpecVersion = editApi?.runtimeVersion.specVersion.toNumber() ?? null;
 
@@ -568,8 +584,7 @@ export const DraftsSection = () => {
     const chain = chains[draft.chainId as ChainId];
     if (!chain) return;
 
-    const initiatorAccount = allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId);
-    if (!initiatorAccount) return;
+    const initiatorAccount = allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null;
 
     setSubmittingDraft(draft);
     submitDraftModel.flowStarted({ draft, initiator: initiatorAccount, chain });
@@ -678,13 +693,6 @@ export const DraftsSection = () => {
     };
   }, [externalTitle, coreTx, txAsset, effectiveChain]);
 
-  const selectedAddressPrefix =
-    selectedAccount && accountUtils.isFlexibleMultisigAccount(selectedAccount)
-      ? chains[selectedAccount.chainId]?.addressPrefix
-      : effectiveChain?.addressPrefix;
-  const selectedAddress = selectedAccount
-    ? toAddress(selectedAccount.accountId, { prefix: selectedAddressPrefix })
-    : null;
   const selectedWallet = selectedAccount ? resolvedWallets.find((w) => w.id === selectedAccount.walletId) : null;
 
   if (!canRead) return null;
@@ -695,29 +703,28 @@ export const DraftsSection = () => {
         <Accordion.Trigger sticky>
           <div className="flex items-center gap-2 py-2">
             <FootnoteText className="font-medium text-text-secondary">{t('operations.drafts.title')}</FootnoteText>
-            {drafts.length > 0 && (
+            {visibleDrafts.length > 0 && (
               <div className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-icon-accent/15 px-2">
-                <CaptionText className="font-medium text-icon-accent">{drafts.length}</CaptionText>
+                <CaptionText className="font-medium text-icon-accent">{visibleDrafts.length}</CaptionText>
               </div>
             )}
           </div>
         </Accordion.Trigger>
         <Accordion.Content>
           <div className="mt-1 flex flex-col gap-y-1.5">
-            {drafts
-              .filter((draft) => !hiddenDraftIds.has(draft.id))
-              .map((draft) => (
-                <DraftRow
-                  key={draft.id}
-                  canDelete={canDelete}
-                  canWrite={canWrite}
-                  isSubmitted={submittedDraftIds.has(draft.id)}
-                  draft={draft}
-                  onDelete={handleDeleteDraft}
-                  onEdit={handleEditDraft}
-                  onSubmit={handleSubmitDraft}
-                />
-              ))}
+            {visibleDrafts.map((draft) => (
+              <DraftRow
+                key={draft.id}
+                canDelete={canDelete}
+                canWrite={canWrite}
+                isSubmitted={submittedDraftIds.has(draft.id)}
+                hasInitiator={allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)}
+                draft={draft}
+                onDelete={handleDeleteDraft}
+                onEdit={handleEditDraft}
+                onSubmit={handleSubmitDraft}
+              />
+            ))}
 
             <Tooltip open={canWrite ? false : undefined}>
               <Tooltip.Trigger>
@@ -757,24 +764,39 @@ export const DraftsSection = () => {
           <Modal size="md" isOpen={isModalOpen} onToggle={handleToggle}>
             <Modal.Title close>{t('operations.drafts.createNew')}</Modal.Title>
             <div className="flex items-center justify-center gap-2">
-              {[1, 2, 3].map((step, i) => {
+              {[
+                { step: 1, label: t('operations.drafts.stepMultisig') },
+                { step: 2, label: t('operations.drafts.stepCallData') },
+                { step: 3, label: t('operations.drafts.stepConfirm') },
+              ].map(({ step, label }, i) => {
                 const isCompleted = activeStep > i;
                 const isCurrent = activeStep === i;
 
                 return (
                   <div key={step} className="flex items-center gap-2">
-                    <div
-                      className={cnTw(
-                        'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
-                        isCompleted && 'bg-icon-positive text-white',
-                        isCurrent && 'bg-icon-accent text-white',
-                        !isCompleted && !isCurrent && 'bg-input-background-disabled text-text-tertiary',
-                      )}
-                    >
-                      {}
-                      {isCompleted ? '\u2713' : step}
+                    <div className="flex flex-col items-center gap-1">
+                      <div
+                        className={cnTw(
+                          'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
+                          isCompleted && 'bg-icon-positive text-white',
+                          isCurrent && 'bg-icon-accent text-white',
+                          !isCompleted && !isCurrent && 'bg-input-background-disabled text-text-tertiary',
+                        )}
+                      >
+                        {isCompleted ? '\u2713' : step}
+                      </div>
+                      <CaptionText
+                        className={cnTw(
+                          'transition-colors',
+                          isCurrent || isCompleted ? 'text-text-secondary' : 'text-text-tertiary',
+                        )}
+                      >
+                        {label}
+                      </CaptionText>
                     </div>
-                    {i < 2 && <div className={cnTw('h-0.5 w-8', isCompleted ? 'bg-icon-positive' : 'bg-divider')} />}
+                    {i < 2 && (
+                      <div className={cnTw('mb-5 h-0.5 w-8', isCompleted ? 'bg-icon-positive' : 'bg-divider')} />
+                    )}
                   </div>
                 );
               })}
@@ -823,26 +845,6 @@ export const DraftsSection = () => {
                         onChange={setSelectedChain}
                       />
                     </Field>
-                  )}
-
-                  {selectedAccount && effectiveChain && selectedAddress && (
-                    <div className="relative rounded-md border border-token-container-border bg-block-background-default p-4 shadow-shadow-2">
-                      <div className="flex gap-x-3">
-                        <Identicon address={selectedAddress} size={40} />
-                        <div className="flex min-w-0 flex-col">
-                          <span className="text-body text-text-primary">{selectedWallet?.name}</span>
-                          <span className="text-footnote text-text-tertiary">
-                            {effectiveChain.name}
-                            {}
-                            {' · '}
-                            {selectedAccount.threshold}/{selectedAccount.signatories.length}
-                          </span>
-                          <span className="text-help-text text-text-tertiary">
-                            <Hash value={selectedAddress} variant="truncate" />
-                          </span>
-                        </div>
-                      </div>
-                    </div>
                   )}
                 </div>
               )}
@@ -914,8 +916,14 @@ export const DraftsSection = () => {
                   <DraftSummary
                     multisigName={selectedWallet?.name ?? ''}
                     multisigAccountId={selectedAccount?.accountId}
+                    walletType={selectedWallet?.type}
                     threshold={
-                      selectedAccount ? `${selectedAccount.threshold}/${selectedAccount.signatories.length}` : undefined
+                      selectedAccount
+                        ? t('createMultisigAccount.thresholdOutOf', {
+                            threshold: selectedAccount.threshold,
+                            signatoriesLength: selectedAccount.signatories.length,
+                          })
+                        : undefined
                     }
                     chain={effectiveChain}
                     titleData={titleData}
@@ -927,28 +935,26 @@ export const DraftsSection = () => {
               )}
             </Modal.Content>
 
-            <Modal.Footer>
-              <div className="flex w-full items-center justify-between">
-                <div>
-                  {activeStep > Step.SELECT_MULTISIG && (
-                    <Button variant="text" onClick={() => setActiveStep((s) => s - 1)}>
-                      {t('operations.drafts.backButton')}
-                    </Button>
-                  )}
-                </div>
-                <Button
-                  disabled={
-                    (activeStep === Step.SELECT_MULTISIG && (!selectedAccount || !effectiveChain)) ||
-                    (activeStep === Step.CALL_DATA && callDataError !== null)
-                  }
-                  isLoading={isSubmitting}
-                  onClick={activeStep === Step.CONFIRM ? handleCreateDraft : () => setActiveStep((s) => s + 1)}
-                >
-                  {activeStep === Step.CONFIRM
-                    ? t('operations.drafts.createDraftButton')
-                    : t('operations.callData.continueButton')}
-                </Button>
+            <Modal.Footer align="between">
+              <div>
+                {activeStep > Step.SELECT_MULTISIG && (
+                  <Button variant="text" onClick={() => setActiveStep((s) => s - 1)}>
+                    {t('operations.drafts.backButton')}
+                  </Button>
+                )}
               </div>
+              <Button
+                disabled={
+                  (activeStep === Step.SELECT_MULTISIG && (!selectedAccount || !effectiveChain)) ||
+                  (activeStep === Step.CALL_DATA && callDataError !== null)
+                }
+                isLoading={isSubmitting}
+                onClick={activeStep === Step.CONFIRM ? handleCreateDraft : () => setActiveStep((s) => s + 1)}
+              >
+                {activeStep === Step.CONFIRM
+                  ? t('operations.drafts.createDraftButton')
+                  : t('operations.callData.continueButton')}
+              </Button>
             </Modal.Footer>
           </Modal>
         </Accordion.Content>
@@ -1016,17 +1022,32 @@ export const DraftsSection = () => {
                   onChange={setEditDescription}
                 />
               </Field>
+
+              <Separator />
+
+              <DraftSummary
+                multisigName={editWallet?.name ?? ''}
+                multisigAccountId={editAccount?.accountId}
+                walletType={editWallet?.type}
+                threshold={
+                  editAccount
+                    ? t('createMultisigAccount.thresholdOutOf', {
+                        threshold: editAccount.threshold,
+                        signatoriesLength: editAccount.signatories.length,
+                      })
+                    : undefined
+                }
+                chain={editChain}
+              />
             </div>
           </Modal.Content>
-          <Modal.Footer>
-            <div className="flex w-full items-center justify-between">
-              <Button variant="text" onClick={() => handleEditToggle(false)}>
-                {t('operations.drafts.backButton')}
-              </Button>
-              <Button disabled={editCallDataError !== null} isLoading={isSubmitting} onClick={handleSaveEdit}>
-                {t('operations.drafts.saveButton')}
-              </Button>
-            </div>
+          <Modal.Footer align="between">
+            <Button variant="text" onClick={() => handleEditToggle(false)}>
+              {t('operations.drafts.backButton')}
+            </Button>
+            <Button disabled={editCallDataError !== null} isLoading={isSubmitting} onClick={handleSaveEdit}>
+              {t('operations.drafts.saveButton')}
+            </Button>
           </Modal.Footer>
         </Modal>
       )}
