@@ -167,6 +167,7 @@ export const bootstrap = () => {
     import('@/features/fellowship-retention').then(({ fellowshipRetentionFeature }) => fellowshipRetentionFeature),
     import('@/features/assethub-migration-modal').then(({ assethubMigrationModalFeature }) => assethubMigrationModalFeature),
     import('@/features/dapp-browser').then(({ dappBrowserFeature }) => dappBrowserFeature),
+    import('@/features/operation-templates').then(({ operationTemplatesFeature }) => operationTemplatesFeature),
   ]);
 
   populate();

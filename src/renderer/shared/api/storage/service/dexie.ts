@@ -11,6 +11,7 @@ import {
   type TMetadata,
   type TNotification,
   type TOperationDescription,
+  type TOperationTemplate,
   type TProxy,
   type TWallet,
 } from '../lib/types';
@@ -53,6 +54,7 @@ class DexieStorage extends Dexie {
   proxies: TProxy;
   basketTransactions: TBasketTransaction;
   operationDescriptions: TOperationDescription;
+  operationTemplates: TOperationTemplate;
 
   constructor() {
     super('spektr');
@@ -169,6 +171,8 @@ class DexieStorage extends Dexie {
 
     this.version(49).stores({ operationDescriptions: 'id' });
 
+    this.version(50).stores({ operationTemplates: '++id, chainId' });
+
     this.connections = this.table('connections');
     this.balances2 = this.table('balances2');
     this.wallets = this.table('wallets');
@@ -180,6 +184,7 @@ class DexieStorage extends Dexie {
     this.proxies = this.table('proxies');
     this.basketTransactions = this.table('basketTransactions');
     this.operationDescriptions = this.table('operationDescriptions');
+    this.operationTemplates = this.table('operationTemplates');
   }
 }
 
@@ -223,4 +228,5 @@ export const dexieStorage = {
   balances2: dexie.balances2,
   basketTransactions: dexie.basketTransactions,
   operationDescriptions: dexie.operationDescriptions,
+  operationTemplates: dexie.operationTemplates,
 };
