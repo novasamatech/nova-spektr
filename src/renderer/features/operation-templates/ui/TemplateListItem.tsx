@@ -1,7 +1,6 @@
 import { useStoreMap } from 'effector-react';
 import { useMemo, useState } from 'react';
 
-import { type CallData } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Icon, IconButton, SmallTitleText } from '@/shared/ui';
@@ -44,7 +43,7 @@ export const TemplateListItem = ({ template, currentSpecVersion, disabled = fals
 
   const parsed = useMemo(() => {
     if (!detailsOpen || !api || !chain) return null;
-    const call = transactionService.createCallFromCallData(template.callData as CallData, api);
+    const call = transactionService.createCallFromCallData(template.callData, api);
     if (!call) return null;
     return transactionService.formatCall(call, chain);
   }, [detailsOpen, api, chain, template.callData]);

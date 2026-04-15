@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { isHex } from '@/shared/lib/utils';
 import { Button, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Accordion, ScrollArea } from '@/shared/ui-kit';
 import { useNotification } from '@/shared/ui-kit/NotificationContext';
@@ -43,15 +44,15 @@ export const TemplatesPanel = ({ api, chainId, callData, specVersion, onApply }:
     return { current, byOtherChain };
   }, [allTemplates, chainId]);
 
-  const canSave = callData.startsWith('0x') && specVersion !== null;
+  const canSave = isHex(callData) && specVersion !== null;
 
   const handleSave = async () => {
-    if (!canSave || specVersion === null) return;
+    if (specVersion === null || !isHex(callData)) return;
 
     await save({
       name: generateTemplateName(api, callData),
       chainId,
-      callData: callData as `0x${string}`,
+      callData,
       specVersion,
     });
     toast.success(t('operationTemplates.toastCreated'));

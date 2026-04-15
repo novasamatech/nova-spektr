@@ -3,9 +3,12 @@ import { type ApiPromise } from '@polkadot/api';
 const capitalize = (s: string) => (s.length === 0 ? s : s[0]!.toUpperCase() + s.slice(1));
 
 const humanize = (s: string) => {
-  const spaced = s.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/_/g, ' ');
-
-  return capitalize(spaced);
+  return s
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .split(/[_\s]+/)
+    .filter(Boolean)
+    .map(capitalize)
+    .join(' ');
 };
 
 export const generateTemplateName = (api: ApiPromise | null, callData: string): string => {
