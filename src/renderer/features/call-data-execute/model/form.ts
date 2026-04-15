@@ -304,6 +304,14 @@ sample({
   target: form.fields.callData.change,
 });
 
+// template integration — unconditional callData replacement regardless of Paste/Build tab
+const templateApplied = createEvent<string>();
+
+sample({
+  clock: templateApplied,
+  target: form.fields.callData.change,
+});
+
 // flow setup
 
 // Preselect initiator on form open
@@ -486,4 +494,5 @@ export const formModel = {
   flowFinished,
   inputModeChanged,
   builderCallDataChanged,
+  templateApplied,
 };
