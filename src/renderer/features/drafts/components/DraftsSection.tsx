@@ -850,7 +850,7 @@ export const DraftsSection = () => {
               )}
 
               {activeStep === Step.CALL_DATA && (
-                <div className="flex flex-col gap-4 p-4">
+                <div className="flex min-h-[500px] flex-col gap-4 p-4">
                   <Tabs value={inputMode} onChange={(value) => setInputMode(value as 'paste' | 'build')}>
                     <Tabs.List>
                       <Tabs.Trigger value="paste">{t('callData.mode.paste')}</Tabs.Trigger>

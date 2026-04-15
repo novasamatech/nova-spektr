@@ -404,12 +404,6 @@ sample({
   target: $submittedDraftOperations,
 });
 
-sample({
-  clock: postSubmitFx.doneData,
-  fn: () => null,
-  target: $justSubmittedDraftId,
-});
-
 // Derived: drafts that are submitted but operation hasn't appeared yet (show with isSubmitted badge)
 // Only uses session-only $justSubmittedDraftId to avoid flash on page load
 // (persisted map + empty operations list would briefly mark all past submissions as "submitted")
