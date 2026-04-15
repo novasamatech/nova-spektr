@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { getRelativeTimeFromApi, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, Duration } from '@/shared/ui';
@@ -26,7 +27,13 @@ const FellowshipHeader = ({ isLoading }: { isLoading: boolean }) => {
       {isLoading ? (
         <Skeleton width="80px" height="20px" />
       ) : (
-        <Button variant="text" pallet="primary" size="sm" onClick={openModal}>
+        <Button
+          variant="text"
+          pallet="primary"
+          size="sm"
+          testId={TEST_IDS.FELLOWSHIP.VIEW_DETAILS_BUTTON}
+          onClick={openModal}
+        >
           {t('fellowship.overview.viewDetails')}
         </Button>
       )}
@@ -160,7 +167,10 @@ export const FellowshipOverview = () => {
   }
 
   return (
-    <div className="flex w-full flex-col rounded-xl border border-filter-border bg-card-background">
+    <div
+      className="flex w-full flex-col rounded-xl border border-filter-border bg-card-background"
+      data-testid={TEST_IDS.FELLOWSHIP.OVERVIEW_WIDGET}
+    >
       <FellowshipHeader isLoading={pendingMember} />
       <div className="rounded-b-xl">{pendingMember ? <FellowshipContentSkeleton /> : <FellowshipProgress />}</div>
     </div>

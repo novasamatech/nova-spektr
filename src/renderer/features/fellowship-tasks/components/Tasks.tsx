@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { groupBy, nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
@@ -31,7 +32,10 @@ export const Tasks = () => {
 
   if (!pendingAccount && !hasAccount) {
     return (
-      <div className="flex h-full flex-col items-stretch justify-stretch overflow-hidden rounded-xl border border-filter-border">
+      <div
+        className="flex h-full flex-col items-stretch justify-stretch overflow-hidden rounded-xl border border-filter-border"
+        data-testid={TEST_IDS.FELLOWSHIP.NO_ACCOUNT_STATE}
+      >
         <AccountNotFound />
       </div>
     );
@@ -46,7 +50,10 @@ export const Tasks = () => {
   }
 
   return (
-    <div className="flex h-full flex-col items-stretch justify-stretch overflow-hidden rounded-xl border border-filter-border">
+    <div
+      className="flex h-full flex-col items-stretch justify-stretch overflow-hidden rounded-xl border border-filter-border"
+      data-testid={TEST_IDS.FELLOWSHIP.TASKS_PANEL}
+    >
       <Title count={tasksCount} />
       {hasAccount && activeTasks.length ? (
         <ScrollArea>

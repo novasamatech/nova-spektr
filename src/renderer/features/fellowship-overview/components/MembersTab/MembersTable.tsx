@@ -1,5 +1,6 @@
 import { memo, useMemo } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { BodyText } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
@@ -144,7 +145,12 @@ export const MembersTable = memo(({ members }: MembersTableProps) => {
     <div className="min-h-0 flex-1 overflow-hidden">
       <ScrollArea>
         <div className="px-5 pb-5">
-          <Table columns={columns} data={data} className="w-full rounded-lg" />
+          <Table
+            columns={columns}
+            data={data}
+            className="w-full rounded-lg"
+            rowTestId={TEST_IDS.FELLOWSHIP.MEMBER_ROW}
+          />
         </div>
       </ScrollArea>
     </div>
