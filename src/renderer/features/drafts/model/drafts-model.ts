@@ -7,7 +7,7 @@ import { pairwise } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import { deepLinkService } from '@/domains/app';
-import { type Draft, draftsResource } from '@/domains/backend';
+import { type Draft, draftsResource, operationDescriptionsResource } from '@/domains/backend';
 import { notificationModel } from '@/entities/notification';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 
@@ -15,13 +15,21 @@ import { draftDeepLinkModel } from './draft-deep-link';
 
 deepLinkService.registerHandler(draftDeepLinkModel.handler);
 
-// Auto-fetch drafts on authentication
+// Auto-fetch drafts + all operation descriptions on authentication
 sample({
   clock: authModel.$authState,
   source: backendConfigurationModel.$backendUrl,
   filter: (url, authState): url is string => url !== null && authState !== null,
   fn: (baseUrl: string) => ({ baseUrl }),
   target: draftsResource.start,
+});
+
+sample({
+  clock: authModel.$authState,
+  source: backendConfigurationModel.$backendUrl,
+  filter: (url, authState): url is string => url !== null && authState !== null,
+  fn: (baseUrl: string) => baseUrl,
+  target: operationDescriptionsResource.fetchAllFx,
 });
 
 // Poll drafts periodically while authenticated
@@ -37,6 +45,14 @@ sample({
   filter: (url): url is string => url !== null,
   fn: (baseUrl: string) => ({ baseUrl }),
   target: draftsResource.start,
+});
+
+sample({
+  clock: draftsPolling.tick,
+  source: backendConfigurationModel.$backendUrl,
+  filter: (url): url is string => url !== null,
+  fn: (baseUrl: string) => baseUrl,
+  target: operationDescriptionsResource.fetchAllFx,
 });
 
 // Clear on disconnect
@@ -65,6 +81,9 @@ type DraftDiff = {
 };
 
 const draftChanges = pairwise(draftsResource.$cache).map(({ prev, current }): DraftDiff => {
+  // Skip initial population (first fetch or reconnect after resetDrafts)
+  if (prev.length === 0) return { added: [], removed: [], updated: [] };
+
   const prevMap = new Map(prev.map((d) => [d.id, d]));
   const currentMap = new Map(current.map((d) => [d.id, d]));
 

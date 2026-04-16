@@ -473,15 +473,18 @@ export const DraftsSection = () => {
   const { data: drafts } = useDrafts(canRead ? backendUrl : null);
   const submittedDraftIds = useUnit(submitDraftModel.$submittedDraftIds);
   const linkedDraftIds = useUnit(operationDescriptionsResource.$linkedDraftIds);
+  const operationsLoaded = useUnit(operationDescriptionsResource.$operationsLoaded);
 
   const visibleDrafts = useMemo(() => {
+    if (!operationsLoaded) return [];
+
     return drafts.filter((d) => {
       if (linkedDraftIds.has(d.id)) return false;
       if (submittedDraftIds.has(d.id)) return true;
 
       return true;
     });
-  }, [drafts, submittedDraftIds, linkedDraftIds]);
+  }, [drafts, submittedDraftIds, linkedDraftIds, operationsLoaded]);
 
   // Deep link: scroll-to and highlight
   const highlightedRef = useRef<HTMLDivElement | null>(null);
