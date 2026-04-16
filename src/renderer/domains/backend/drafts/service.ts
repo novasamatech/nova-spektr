@@ -15,6 +15,7 @@ const backendDraftSchema = z.object({
   createdByContact: z.object({ name: z.string(), accountId: z.string() }).nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
+
 });
 
 export type Draft = z.infer<typeof backendDraftSchema>;

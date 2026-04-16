@@ -2557,14 +2557,20 @@
       "extrinsicError": "Call data is invalid or incompatible with this chain",
       "submitSuccess": "Draft submitted",
       "submittedBadge": "Submitted",
-      "viewDraft": "View draft",
       "stepMultisig": "Account",
       "stepCallData": "Call data",
       "stepConfirm": "Confirm",
       "linkCopied": "Draft link copied!",
       "shareDraftTooltip": "Share draft link with signatories",
       "selectMultisigForProxy": "Multisig for proxy",
-      "proxyLabel": "Proxy"
+      "proxyLabel": "Proxy",
+      "viewDraft": "View draft",
+      "notifications": {
+        "added": "New draft added",
+        "updated": "Draft updated",
+        "removed": "Draft removed",
+        "batch": "Draft changes"
+      }
     },
     "callData": {
       "adding": "Adding call data...",

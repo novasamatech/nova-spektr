@@ -59,7 +59,14 @@ import {
   useNotification,
 } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
-import { type Draft, PERMISSIONS, draftsResource, draftsService, useDrafts } from '@/domains/backend';
+import {
+  type Draft,
+  PERMISSIONS,
+  draftsResource,
+  draftsService,
+  operationDescriptionsResource,
+  useDrafts,
+} from '@/domains/backend';
 import { type AnyAccount, accounts, contactMultisigsModel, useWalletsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
@@ -494,9 +501,17 @@ export const DraftsSection = () => {
   const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);
 
   const { data: drafts } = useDrafts(canRead ? backendUrl : null);
-  const hiddenDraftIds = useUnit(submitDraftModel.$hiddenDraftIds);
   const submittedDraftIds = useUnit(submitDraftModel.$submittedDraftIds);
-  const visibleDrafts = useMemo(() => drafts.filter((d) => !hiddenDraftIds.has(d.id)), [drafts, hiddenDraftIds]);
+  const linkedDraftIds = useUnit(operationDescriptionsResource.$linkedDraftIds);
+
+  const visibleDrafts = useMemo(() => {
+    return drafts.filter((d) => {
+      if (linkedDraftIds.has(d.id)) return false;
+      if (submittedDraftIds.has(d.id)) return true;
+
+      return true;
+    });
+  }, [drafts, submittedDraftIds, linkedDraftIds]);
 
   // Deep link: scroll-to and highlight
   const highlightedRef = useRef<HTMLDivElement | null>(null);

@@ -1,5 +1,4 @@
 import { createEvent, createStore } from 'effector';
-import { persist } from 'effector-storage/local';
 
 import { createQueryResource } from '@/shared/query';
 
@@ -10,7 +9,12 @@ type DescriptionsParams = {
   ids: string[];
 };
 
-const $cache = createStore<Record<string, string>>({});
+type CachedOperation = {
+  description: string | null;
+  draftId: string | null;
+};
+
+const $cache = createStore<Record<string, CachedOperation>>({});
 
 const resource = createQueryResource<DescriptionsParams>({
   key: ({ baseUrl, ids }) => [baseUrl, ids.toSorted().join(',')],
@@ -23,9 +27,10 @@ const resource = createQueryResource<DescriptionsParams>({
     map: (state, results, _params) => {
       const next = { ...state };
       for (const op of results) {
-        if (op.description) {
-          next[op.id] = op.description;
-        }
+        next[op.id] = {
+          description: op.description,
+          draftId: op.draftId ?? null,
+        };
       }
 
       return next;
@@ -33,24 +38,30 @@ const resource = createQueryResource<DescriptionsParams>({
   })
   .build();
 
-const descriptionCreated = createEvent<{ id: string; description: string }>();
-$cache.on(descriptionCreated, (state, { id, description }) => ({ ...state, [id]: description }));
+const descriptionCreated = createEvent<{ id: string; description: string; draftId?: string }>();
+$cache.on(descriptionCreated, (state, { id, description, draftId }) => ({
+  ...state,
+  [id]: { description, draftId: draftId ?? null },
+}));
 
 const resetDescriptions = createEvent();
 $cache.on(resetDescriptions, () => ({}));
 
-// --- Draft-linked operations (persisted: survives refresh) ---
+// Derived: set of draftIds that have a linked operation (from backend data)
+const $linkedDraftIds = $cache.map((cache) => {
+  const set = new Set<string>();
+  for (const op of Object.values(cache)) {
+    if (op.draftId) {
+      set.add(op.draftId);
+    }
+  }
 
-const $draftLinkedOperationIds = createStore<Record<string, true>>({});
-persist({ key: 'draftLinkedOperationIds', store: $draftLinkedOperationIds, sync: true });
-
-const draftLinked = createEvent<string>();
-$draftLinkedOperationIds.on(draftLinked, (state, operationId) => ({ ...state, [operationId]: true as const }));
+  return set;
+});
 
 export const operationDescriptionsResource = {
   ...resource,
   descriptionCreated,
   resetDescriptions,
-  $draftLinkedOperationIds,
-  draftLinked,
+  $linkedDraftIds,
 };

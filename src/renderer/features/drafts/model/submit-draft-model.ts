@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { persist } from 'effector-storage/local';
 import { t } from 'i18next';
 import { readonly } from 'patronum';
 import { toast } from 'sonner';
@@ -9,7 +8,6 @@ import { toast } from 'sonner';
 import { type CallData, type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Paths } from '@/shared/routes';
 import {
   type ExtrinsicConfirmInfo,
   createExtrinsicConfirmStore,
@@ -19,17 +17,10 @@ import {
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
 import { type Draft, operationDescriptionsResource, operationsService } from '@/domains/backend';
-import {
-  type AnyAccount,
-  type AnyTransaction,
-  type EncodedTransaction,
-  multisigOperation,
-  transactionService,
-} from '@/domains/network';
+import { type AnyAccount, type AnyTransaction, type EncodedTransaction, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
-import { navigationModel } from '@/features/navigation';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 
@@ -306,12 +297,13 @@ const postSubmitFx = createEffect(
       blockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
       description: draft.description ?? '',
+      draftId: draft.id,
     });
 
     const multisigAccountId = draft.multisigAccountId ?? initiator.accountId;
     const operationId = `${draft.chainId}-${callHash}-${multisigAccountId}-${timepoint.height}-${timepoint.index}`;
 
-    return { operationId, description: draft.description ?? '' };
+    return { operationId, description: draft.description ?? '', draftId: draft.id };
   },
 );
 
@@ -358,27 +350,14 @@ sample({
 
 sample({
   clock: postSubmitFx.doneData,
-  fn: ({ operationId, description }) => ({ id: operationId, description }),
+  fn: ({ operationId, description, draftId }) => ({ id: operationId, description, draftId }),
   target: operationDescriptionsResource.descriptionCreated,
-});
-
-sample({
-  clock: postSubmitFx.doneData,
-  fn: ({ operationId }) => operationId,
-  target: operationDescriptionsResource.draftLinked,
 });
 
 // --- Post-submit success toast ---
 
-const showSubmitSuccessToastFx = createEffect((draftId: string) => {
-  toast.success(t('operations.drafts.submitSuccess'), {
-    action: {
-      label: t('operations.drafts.viewDraft'),
-      onClick: () => {
-        navigationModel.events.navigateTo(`${Paths.OPERATIONS}?draftId=${draftId}`);
-      },
-    },
-  });
+const showSubmitSuccessToastFx = createEffect(() => {
+  toast.success(t('operations.drafts.submitSuccess'));
 });
 
 sample({
@@ -389,72 +368,16 @@ sample({
   target: showSubmitSuccessToastFx,
 });
 
-// --- Persisted draft→operation map (hide draft once operation exists) ---
+// --- Session-only: track drafts submitted this session (show "Submitted" badge until backend confirms) ---
 
-// draftId → operationId, persisted across sessions
-const $submittedDraftOperations = createStore<Record<string, string>>({});
-persist({ key: 'submittedDraftOperations', store: $submittedDraftOperations, sync: true });
-
-// Session-only: draft was submitted successfully, waiting for postSubmitFx / operation to appear
-const $justSubmittedDraftId = createStore<string | null>(null).reset(flowStarted);
+const $submittedDraftIds = createStore<Set<string>>(new Set());
 
 sample({
   clock: submitModel.done,
-  source: $draft,
-  filter: (draft, results) => nonNullable(draft) && results.some((r) => r.result === ExtrinsicResult.SUCCESS),
-  fn: (draft) => draft!.id,
-  target: $justSubmittedDraftId,
-});
-
-// When postSubmitFx completes, persist the mapping and clear session bridge
-sample({
-  clock: postSubmitFx.doneData,
-  source: { draft: $draft, existing: $submittedDraftOperations },
-  filter: ({ draft }) => nonNullable(draft),
-  fn: ({ draft, existing }, { operationId }) => ({ ...existing, [draft!.id]: operationId }),
-  target: $submittedDraftOperations,
-});
-
-// Derived: drafts that are submitted but operation hasn't appeared yet (show with isSubmitted badge)
-// Only uses session-only $justSubmittedDraftId to avoid flash on page load
-// (persisted map + empty operations list would briefly mark all past submissions as "submitted")
-const $submittedDraftIds = $justSubmittedDraftId.map((id) => {
-  const submitted = new Set<string>();
-  if (id) submitted.add(id);
-
-  return submitted;
-});
-
-// Derived: hide all persisted submitted drafts, except the one just submitted this session
-// (that one shows with "submitted" badge until the operation appears)
-const $hiddenDraftIds = combine(
-  { draftOps: $submittedDraftOperations, justSubmitted: $justSubmittedDraftId },
-  ({ draftOps, justSubmitted }) => {
-    const hidden = new Set<string>();
-
-    for (const draftId of Object.keys(draftOps)) {
-      if (draftId !== justSubmitted) {
-        hidden.add(draftId);
-      }
-    }
-
-    return hidden;
-  },
-);
-
-// When the operation for the just-submitted draft appears, clear the session bridge
-sample({
-  clock: multisigOperation.$list,
-  source: { justSubmitted: $justSubmittedDraftId, draftOps: $submittedDraftOperations },
-  filter: ({ justSubmitted, draftOps }, operations) => {
-    if (!justSubmitted) return false;
-    const operationId = draftOps[justSubmitted];
-    if (!operationId) return false;
-
-    return operations.some((op) => op.id === operationId);
-  },
-  fn: () => null,
-  target: $justSubmittedDraftId,
+  source: { draft: $draft, current: $submittedDraftIds },
+  filter: ({ draft }, results) => nonNullable(draft) && results.some((r) => r.result === ExtrinsicResult.SUCCESS),
+  fn: ({ draft, current }) => new Set([...current, draft!.id]),
+  target: $submittedDraftIds,
 });
 
 // --- Post-submit sync error: toast with retry ---
@@ -495,7 +418,6 @@ export const submitDraftModel = {
   $wrappedTx,
   $wrappedExtrinsic,
   $wrappedTxError,
-  $hiddenDraftIds,
   $submittedDraftIds,
 
   flowStarted,

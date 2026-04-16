@@ -20,14 +20,14 @@ export const useOperationDescription = (operationId: string): string | null => {
   return useStoreMap({
     store: operationDescriptionsResource.$cache,
     keys: [operationId],
-    fn: (cache, [id]) => cache[id] ?? null,
+    fn: (cache, [id]) => cache[id]?.description ?? null,
   });
 };
 
 export const useIsDraftLinkedOperation = (operationId: string): boolean => {
   return useStoreMap({
-    store: operationDescriptionsResource.$draftLinkedOperationIds,
+    store: operationDescriptionsResource.$cache,
     keys: [operationId],
-    fn: (linked, [id]) => id in linked,
+    fn: (cache, [id]) => cache[id]?.draftId != null,
   });
 };
