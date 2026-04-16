@@ -90,10 +90,7 @@ const draftChanges = pairwise(draftsResource.$cache).map(({ prev, current }): Dr
   return { added, removed, updated };
 });
 
-function createDraftNotification(
-  draft: Draft,
-  titleKey: string,
-): CreateDraftNotificationParams {
+function createDraftNotification(draft: Draft, titleKey: string): CreateDraftNotificationParams {
   const draftLink = `${Paths.OPERATIONS}?draftId=${draft.id}`;
 
   return {
