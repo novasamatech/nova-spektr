@@ -18,8 +18,8 @@ describe('operationDescriptionsResource', () => {
 
   it('should store descriptions from fetch results', async () => {
     fetchSpy.mockResolvedValue([
-      { id: 'op-1', description: 'Test description' },
-      { id: 'op-2', description: null },
+      { id: 'op-1', description: 'Test description', draftId: null },
+      { id: 'op-2', description: null, draftId: null },
     ]);
 
     const scope = fork();
@@ -30,12 +30,13 @@ describe('operationDescriptionsResource', () => {
     });
 
     expect(scope.getState(operationDescriptionsResource.$cache)).toEqual({
-      'op-1': 'Test description',
+      'op-1': { description: 'Test description', draftId: null },
+      'op-2': { description: null, draftId: null },
     });
   });
 
   it('should merge descriptions from multiple fetches', async () => {
-    fetchSpy.mockResolvedValueOnce([{ id: 'op-1', description: 'First' }]);
+    fetchSpy.mockResolvedValueOnce([{ id: 'op-1', description: 'First', draftId: null }]);
 
     const scope = fork();
 
@@ -44,7 +45,7 @@ describe('operationDescriptionsResource', () => {
       params: { baseUrl: 'https://backend.test', ids: ['op-1'] },
     });
 
-    fetchSpy.mockResolvedValueOnce([{ id: 'op-2', description: 'Second' }]);
+    fetchSpy.mockResolvedValueOnce([{ id: 'op-2', description: 'Second', draftId: 'draft-1' }]);
 
     await allSettled(operationDescriptionsResource.start, {
       scope,
@@ -52,8 +53,8 @@ describe('operationDescriptionsResource', () => {
     });
 
     expect(scope.getState(operationDescriptionsResource.$cache)).toEqual({
-      'op-1': 'First',
-      'op-2': 'Second',
+      'op-1': { description: 'First', draftId: null },
+      'op-2': { description: 'Second', draftId: 'draft-1' },
     });
   });
 
@@ -66,8 +67,26 @@ describe('operationDescriptionsResource', () => {
     });
 
     expect(scope.getState(operationDescriptionsResource.$cache)).toEqual({
-      'op-new': 'Optimistic',
+      'op-new': { description: 'Optimistic', draftId: null },
     });
+  });
+
+  it('should track linked draft ids', async () => {
+    fetchSpy.mockResolvedValue([
+      { id: 'op-10', description: 'desc', draftId: 'draft-abc' },
+      { id: 'op-20', description: null, draftId: null },
+    ]);
+
+    const scope = fork();
+
+    await allSettled(operationDescriptionsResource.start, {
+      scope,
+      params: { baseUrl: 'https://backend.test', ids: ['op-10', 'op-20'] },
+    });
+
+    const linkedDraftIds = scope.getState(operationDescriptionsResource.$linkedDraftIds);
+    expect(linkedDraftIds.has('draft-abc')).toBe(true);
+    expect(linkedDraftIds.size).toBe(1);
   });
 
   it('should clear cache on resetDescriptions', async () => {
@@ -77,7 +96,9 @@ describe('operationDescriptionsResource', () => {
       scope,
       params: { id: 'op-1', description: 'desc' },
     });
-    expect(scope.getState(operationDescriptionsResource.$cache)).toEqual({ 'op-1': 'desc' });
+    expect(scope.getState(operationDescriptionsResource.$cache)).toEqual({
+      'op-1': { description: 'desc', draftId: null },
+    });
 
     await allSettled(operationDescriptionsResource.resetDescriptions, { scope });
 
@@ -91,7 +112,9 @@ describe('operationDescriptionsResource', () => {
       scope,
       params: { id: 'op-1', description: 'desc' },
     });
-    expect(scope.getState(operationDescriptionsResource.$cache)).toEqual({ 'op-1': 'desc' });
+    expect(scope.getState(operationDescriptionsResource.$cache)).toEqual({
+      'op-1': { description: 'desc', draftId: null },
+    });
 
     await allSettled(backendConfigurationModel.events.urlCleared, { scope });
 

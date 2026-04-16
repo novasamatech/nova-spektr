@@ -48,6 +48,7 @@ const notificationTypeLabels: Record<NotificationType, string> = {
   [NotificationType.PROXY_REMOVED]: 'proxy removed',
   [NotificationType.MULTISIG_OPERATION]: 'multisig operation',
   [NotificationType.MULTISIG_EVENT]: 'multisig event',
+  [NotificationType.DRAFT_CHANGE]: 'draft',
 };
 
 type NotificationMeta = {

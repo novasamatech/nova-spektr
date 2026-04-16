@@ -16,7 +16,7 @@ const resource = createQueryResource<DraftsParams>({
   .request(async ({ baseUrl }) => draftsService.fetchDrafts(baseUrl))
   .cache({
     store: $cache,
-    staleAfter: 5 * 60 * 1000,
+    staleAfter: 20_000,
     map: (_state, drafts) => drafts,
   })
   .build();

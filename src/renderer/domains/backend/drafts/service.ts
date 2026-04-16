@@ -12,6 +12,7 @@ const backendDraftSchema = z.object({
   createdBy: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
+
 });
 
 export type Draft = z.infer<typeof backendDraftSchema>;
