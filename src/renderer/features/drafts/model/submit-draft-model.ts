@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 import { type CallData, type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Paths } from '@/shared/routes';
 import {
   type ExtrinsicConfirmInfo,
   createExtrinsicConfirmStore,
@@ -18,16 +17,10 @@ import {
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
 import { type Draft, operationDescriptionsResource, operationsService } from '@/domains/backend';
-import {
-  type AnyAccount,
-  type AnyTransaction,
-  type EncodedTransaction,
-  transactionService,
-} from '@/domains/network';
+import { type AnyAccount, type AnyTransaction, type EncodedTransaction, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
-import { navigationModel } from '@/features/navigation';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 
@@ -363,15 +356,8 @@ sample({
 
 // --- Post-submit success toast ---
 
-const showSubmitSuccessToastFx = createEffect((draftId: string) => {
-  toast.success(t('operations.drafts.submitSuccess'), {
-    action: {
-      label: t('operations.drafts.viewDraft'),
-      onClick: () => {
-        navigationModel.events.navigateTo(`${Paths.OPERATIONS}?draftId=${draftId}`);
-      },
-    },
-  });
+const showSubmitSuccessToastFx = createEffect(() => {
+  toast.success(t('operations.drafts.submitSuccess'));
 });
 
 sample({
