@@ -1,4 +1,4 @@
-import { createStore, sample } from 'effector';
+import { createStore, merge, sample } from 'effector';
 import { t } from 'i18next';
 import { interval } from 'patronum';
 
@@ -36,7 +36,7 @@ sample({
 const draftsPolling = interval({
   timeout: 30_000,
   start: authModel.events.signInSucceeded,
-  stop: backendConfigurationModel.events.urlCleared,
+  stop: merge([authModel.events.signOutClicked, backendConfigurationModel.events.urlCleared]),
 });
 
 sample({
