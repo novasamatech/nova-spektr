@@ -3,12 +3,11 @@ import { useUnit } from 'effector-react';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+  type Address,
   type CallData,
   type Chain,
   type ChainId,
   type DecodedTransaction,
-  type FlexibleMultisigAccount,
-  type MultisigAccount,
   type WalletType,
   CryptoType,
 } from '@/shared/core';
@@ -94,7 +93,16 @@ const enum Step {
   CONFIRM,
 }
 
-type MultisigAcc = MultisigAccount | FlexibleMultisigAccount;
+type DraftAccountOption = {
+  accountId: AccountId;
+  name: string;
+  chainId?: ChainId;
+  signatories?: AccountId[];
+  threshold?: number;
+  ownerAccountId?: string;
+  walletType: WalletType | null;
+  address: Address;
+};
 
 const getDestinationAccountId = (coreTx: DecodedTransaction | null): AccountId | null => {
   if (!coreTx) return null;
@@ -145,6 +153,9 @@ const DraftRow = ({
   const chain = chains[draft.chainId as ChainId];
   const chainName = chain?.name;
   const contact = backendContacts.find((c) => c.accountId === draft.multisigAccountId);
+  const creatorName =
+    draft.createdByContact?.name ?? backendContacts.find((c) => c.accountId === draft.createdBy)?.name;
+  const creatorAddress = draft.createdBy ? toAddress(draft.createdBy, { prefix: chain?.addressPrefix }) : null;
 
   const overviewAccount = useMemo<AnyAccount | null>(() => {
     if (multisigAccount) return multisigAccount;
@@ -229,6 +240,12 @@ const DraftRow = ({
             </FootnoteText>
             <HelpText className="flex items-center truncate text-text-tertiary">
               {contact?.name || <span className="text-text-negative">{t('operations.drafts.unknownMultisig')}</span>}
+              {draft.proxyAccountId &&
+                (() => {
+                  const proxyContact = backendContacts.find((c) => c.accountId === draft.proxyAccountId);
+                  const proxyAddr = toAddress(draft.proxyAccountId, { prefix: chain?.addressPrefix });
+                  return ` via ${proxyContact?.name ?? truncate(proxyAddr, 4, 4)}`;
+                })()}
               {titleData?.title && ` · ${titleData.title}`}
               {destinationAddress && ` · ${truncate(destinationAddress, 4, 4)}`}
               {titleData?.amount && (
@@ -251,7 +268,11 @@ const DraftRow = ({
           <FootnoteText className="text-text-primary">
             {chainName || <span className="text-text-negative">{t('operations.drafts.unknownChain')}</span>}
           </FootnoteText>
-          <HelpText className="text-text-tertiary">{formatDate(new Date(draft.createdAt), 'PP')}</HelpText>
+          <HelpText className="truncate text-text-tertiary">
+            {creatorName ?? (creatorAddress ? truncate(creatorAddress, 4, 4) : null)}
+            {creatorAddress && ` · ${formatDate(new Date(draft.createdAt), 'PP')}`}
+            {!creatorAddress && formatDate(new Date(draft.createdAt), 'PP')}
+          </HelpText>
         </div>
 
         {/* Draft badge */}
@@ -348,6 +369,8 @@ const DraftRow = ({
 type DraftSummaryProps = {
   multisigName: string;
   multisigAccountId?: AccountId;
+  proxyName?: string;
+  proxyAccountId?: AccountId;
   threshold?: string;
   chain: Chain | null;
   walletType?: WalletType;
@@ -360,6 +383,8 @@ type DraftSummaryProps = {
 const DraftSummary = ({
   multisigName,
   multisigAccountId,
+  proxyName,
+  proxyAccountId,
   threshold,
   chain,
   walletType,
@@ -392,6 +417,11 @@ const DraftSummary = ({
       {multisigAccountId && chain && (
         <DetailRow label={t('transaction.details.account')}>
           <Account variant="short" accountId={multisigAccountId} chain={chain} title={multisigName} />
+        </DetailRow>
+      )}
+      {proxyAccountId && chain && (
+        <DetailRow label={t('operations.drafts.proxyLabel')}>
+          <Account variant="short" accountId={proxyAccountId} chain={chain} title={proxyName} />
         </DetailRow>
       )}
       {threshold && (
@@ -506,7 +536,8 @@ export const DraftsSection = () => {
   const [editInputMode, setEditInputMode] = useState<'paste' | 'build'>('paste');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeStep, setActiveStep] = useState<Step>(Step.SELECT_MULTISIG);
-  const [selectedAccount, setSelectedAccount] = useState<MultisigAcc | null>(null);
+  const [selectedAccount, setSelectedAccount] = useState<DraftAccountOption | null>(null);
+  const [selectedMultisigForProxy, setSelectedMultisigForProxy] = useState<DraftAccountOption | null>(null);
   const [selectedChain, setSelectedChain] = useState<Chain | null>(null);
   const [callData, setCallData] = useState('');
   const [decodedCallData, setDecodedCallData] = useState<object | null>(null);
@@ -526,18 +557,46 @@ export const DraftsSection = () => {
   const chainsList = useUnit(networkModel.$chainsList);
   const backendContacts = useUnit(contactModel.$backendContacts);
 
-  const multisigAccounts = useMemo(() => {
-    const backendAccountIds = new Set(backendContacts.map((c) => c.accountId));
-
-    return allMultisigAccounts.filter((account) => backendAccountIds.has(account.accountId));
-  }, [allMultisigAccounts, backendContacts]);
-
   const resolvedWallets = useWalletsNames(multisigWallets);
 
-  const effectiveChain =
-    selectedAccount && accountUtils.isFlexibleMultisigAccount(selectedAccount)
-      ? (chains[selectedAccount.chainId] ?? null)
-      : selectedChain;
+  const draftAccountOptions = useMemo<DraftAccountOption[]>(() => {
+    return backendContacts
+      .filter((c) => (c.signatories?.length && c.threshold) || c.ownerAccountId)
+      .map((c) => {
+        const localAccount = allMultisigAccounts.find((a) => a.accountId === c.accountId);
+        const wallet = localAccount ? resolvedWallets.find((w) => w.id === localAccount.walletId) : null;
+        const contactChainId = c.chainId as ChainId | null;
+        const addressPrefix = contactChainId ? chains[contactChainId]?.addressPrefix : undefined;
+
+        return {
+          accountId: c.accountId as AccountId,
+          name: wallet?.name ?? c.name,
+          chainId: contactChainId ?? undefined,
+          signatories: c.signatories?.map((s) => toAccountId(s)),
+          threshold: c.threshold ?? undefined,
+          ownerAccountId: c.ownerAccountId ?? undefined,
+          walletType: wallet?.type ?? null,
+          address: toAddress(c.accountId, { prefix: addressPrefix }),
+        };
+      });
+  }, [backendContacts, allMultisigAccounts, resolvedWallets, chains]);
+
+  const isProxySelected = selectedAccount
+    ? !!selectedAccount.ownerAccountId && !selectedAccount.signatories?.length
+    : false;
+
+  const multisigOptionsForProxy = useMemo(() => {
+    if (!selectedAccount?.ownerAccountId) return [];
+
+    const ownerNormalized = toAccountId(selectedAccount.ownerAccountId);
+
+    return draftAccountOptions.filter((o) => o.signatories?.length && o.threshold && o.accountId === ownerNormalized);
+  }, [draftAccountOptions, selectedAccount]);
+
+  const draftMultisig = isProxySelected ? selectedMultisigForProxy : selectedAccount;
+  const draftProxy = isProxySelected ? selectedAccount : null;
+
+  const effectiveChain = selectedAccount?.chainId ? (chains[selectedAccount.chainId] ?? null) : selectedChain;
 
   const api = useApi(effectiveChain?.chainId ?? ('0x00' as ChainId));
   const specVersion = api?.runtimeVersion.specVersion.toNumber() ?? null;
@@ -546,26 +605,11 @@ export const DraftsSection = () => {
     setCallData(templateCallData);
   };
 
-  const accountOptions = useMemo(() => {
-    return multisigAccounts
-      .map((account) => {
-        const wallet = resolvedWallets.find((w) => w.id === account.walletId);
-        if (!wallet) return null;
-
-        const addressPrefix = accountUtils.isFlexibleMultisigAccount(account)
-          ? chains[account.chainId]?.addressPrefix
-          : undefined;
-        const address = toAddress(account.accountId, { prefix: addressPrefix });
-
-        return { account, wallet, address };
-      })
-      .filter((o): o is NonNullable<typeof o> => o !== null);
-  }, [multisigAccounts, resolvedWallets, chains]);
-
   const isCreateDirty = selectedAccount !== null || callData.length > 0 || description.length > 0;
 
   const resetCreateState = () => {
     setSelectedAccount(null);
+    setSelectedMultisigForProxy(null);
     setSelectedChain(null);
     setCallData('');
     setDecodedCallData(null);
@@ -602,7 +646,8 @@ export const DraftsSection = () => {
     try {
       const response = await draftsService.createDraft(backendUrl, {
         chainId: effectiveChain.chainId,
-        multisigAccountId: selectedAccount.accountId,
+        multisigAccountId: (draftMultisig ?? selectedAccount).accountId,
+        proxyAccountId: draftProxy?.accountId,
         callData: callData || undefined,
         description: description || undefined,
       });
@@ -723,10 +768,20 @@ export const DraftsSection = () => {
   };
 
   const handleAccountChange = (accountId: string) => {
-    const found = multisigAccounts.find((a) => a.accountId === accountId) ?? null;
+    const found = draftAccountOptions.find((o) => o.accountId === accountId) ?? null;
     setSelectedAccount(found);
 
-    if (found && !accountUtils.isFlexibleMultisigAccount(found)) {
+    if (found?.ownerAccountId) {
+      const ownerNormalized = toAccountId(found.ownerAccountId);
+      const matchingMultisigs = draftAccountOptions.filter(
+        (o) => o.signatories?.length && o.threshold && o.accountId === ownerNormalized,
+      );
+      setSelectedMultisigForProxy(matchingMultisigs.length === 1 ? (matchingMultisigs[0] ?? null) : null);
+    } else {
+      setSelectedMultisigForProxy(null);
+    }
+
+    if (found && !found.chainId) {
       setSelectedChain(chainsList[0] ?? null);
     } else {
       setSelectedChain(null);
@@ -782,8 +837,6 @@ export const DraftsSection = () => {
       amount: asset && amount ? { value: amount, asset } : undefined,
     };
   }, [externalTitle, coreTx, txAsset, effectiveChain]);
-
-  const selectedWallet = selectedAccount ? resolvedWallets.find((w) => w.id === selectedAccount.walletId) : null;
 
   if (!canRead) return null;
 
@@ -903,7 +956,7 @@ export const DraftsSection = () => {
             <Modal.Content>
               {activeStep === Step.SELECT_MULTISIG && (
                 <div className="flex flex-col gap-4 p-4">
-                  {accountOptions.length === 0 ? (
+                  {draftAccountOptions.length === 0 ? (
                     <div className="flex flex-col items-center gap-2 py-6">
                       <Icon name="document" size={32} className="text-icon-default" />
                       <FootnoteText className="text-center text-text-tertiary">
@@ -918,14 +971,19 @@ export const DraftsSection = () => {
                         value={selectedAccount?.accountId ?? null}
                         onChange={handleAccountChange}
                       >
-                        {accountOptions.map(({ account, wallet, address }) => (
-                          <Select.Item key={account.accountId} value={account.accountId}>
+                        {draftAccountOptions.map((opt) => (
+                          <Select.Item key={opt.accountId} value={opt.accountId}>
                             <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
-                              <WalletAccountIcon address={address} type={wallet.type} size={24} iconSize={12} />
+                              <WalletAccountIcon
+                                address={opt.address}
+                                type={opt.walletType ?? ('Multisig' as WalletType)}
+                                size={24}
+                                iconSize={12}
+                              />
                               <span className="flex w-full flex-col overflow-hidden">
-                                <span className="w-fit max-w-full truncate">{wallet.name}</span>
+                                <span className="w-fit max-w-full truncate">{opt.name}</span>
                                 <span className="w-full text-help-text text-text-tertiary">
-                                  <Hash value={address} variant="truncate" />
+                                  <Hash value={opt.address} variant="truncate" />
                                 </span>
                               </span>
                             </span>
@@ -935,7 +993,40 @@ export const DraftsSection = () => {
                     </Field>
                   )}
 
-                  {selectedAccount && !accountUtils.isFlexibleMultisigAccount(selectedAccount) && (
+                  {isProxySelected && (
+                    <Field text={t('operations.drafts.selectMultisigForProxy')}>
+                      <Select
+                        height="md"
+                        placeholder={t('operations.drafts.selectMultisigForProxy')}
+                        value={selectedMultisigForProxy?.accountId ?? null}
+                        onChange={(accountId: string) => {
+                          const found = multisigOptionsForProxy.find((o) => o.accountId === accountId) ?? null;
+                          setSelectedMultisigForProxy(found);
+                        }}
+                      >
+                        {multisigOptionsForProxy.map((opt) => (
+                          <Select.Item key={opt.accountId} value={opt.accountId}>
+                            <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
+                              <WalletAccountIcon
+                                address={opt.address}
+                                type={opt.walletType ?? ('Multisig' as WalletType)}
+                                size={24}
+                                iconSize={12}
+                              />
+                              <span className="flex w-full flex-col overflow-hidden">
+                                <span className="w-fit max-w-full truncate">{opt.name}</span>
+                                <span className="w-full text-help-text text-text-tertiary">
+                                  <Hash value={opt.address} variant="truncate" />
+                                </span>
+                              </span>
+                            </span>
+                          </Select.Item>
+                        ))}
+                      </Select>
+                    </Field>
+                  )}
+
+                  {selectedAccount && !selectedAccount.chainId && (
                     <Field text={t('operations.drafts.selectNetwork')}>
                       <ChainSelect
                         placeholder={t('operations.drafts.selectNetwork')}
@@ -1013,14 +1104,16 @@ export const DraftsSection = () => {
                   </Field>
 
                   <DraftSummary
-                    multisigName={selectedWallet?.name ?? ''}
-                    multisigAccountId={selectedAccount?.accountId}
-                    walletType={selectedWallet?.type}
+                    multisigName={draftMultisig?.name ?? selectedAccount?.name ?? ''}
+                    multisigAccountId={draftMultisig?.accountId ?? selectedAccount?.accountId}
+                    walletType={draftMultisig?.walletType ?? selectedAccount?.walletType ?? undefined}
+                    proxyName={draftProxy?.name}
+                    proxyAccountId={draftProxy?.accountId}
                     threshold={
-                      selectedAccount
+                      draftMultisig?.threshold && draftMultisig?.signatories
                         ? t('createMultisigAccount.thresholdOutOf', {
-                            threshold: selectedAccount.threshold,
-                            signatoriesLength: selectedAccount.signatories.length,
+                            threshold: draftMultisig.threshold,
+                            signatoriesLength: draftMultisig.signatories.length,
                           })
                         : undefined
                     }
@@ -1044,7 +1137,8 @@ export const DraftsSection = () => {
               </div>
               <Button
                 disabled={
-                  (activeStep === Step.SELECT_MULTISIG && (!selectedAccount || !effectiveChain)) ||
+                  (activeStep === Step.SELECT_MULTISIG &&
+                    (!selectedAccount || !effectiveChain || (isProxySelected && !selectedMultisigForProxy))) ||
                   (activeStep === Step.CALL_DATA && callDataError !== null)
                 }
                 isLoading={isSubmitting}

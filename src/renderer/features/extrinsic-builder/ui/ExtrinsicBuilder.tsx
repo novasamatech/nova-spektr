@@ -35,7 +35,7 @@ export const ExtrinsicBuilder = memo(({ api, onCallDataChange, initialCallData }
         </div>
         {builder.call && builder.callDocs.length > 0 && (
           <div className="mb-2">
-            <Tooltip side="right">
+            <Tooltip side="left">
               <Tooltip.Trigger>
                 <div tabIndex={0}>
                   <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />

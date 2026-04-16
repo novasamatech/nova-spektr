@@ -5,11 +5,14 @@ import { authFetch, parseResponse } from '@/shared/api/backend-fetch';
 const backendDraftSchema = z.object({
   id: z.string(),
   multisigAccountId: z.string().nullable(),
+  proxyAccountId: z.string().nullable().optional(),
+  proxyContact: z.object({ name: z.string(), accountId: z.string() }).nullable().optional(),
   chainId: z.string(),
   callData: z.string().nullable(),
   decodedCallData: z.unknown().optional(),
   description: z.string().nullable(),
   createdBy: z.string(),
+  createdByContact: z.object({ name: z.string(), accountId: z.string() }).nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -28,6 +31,7 @@ async function createDraft(
   params: {
     chainId: string;
     multisigAccountId?: string;
+    proxyAccountId?: string;
     callData?: string;
     description?: string;
   },
@@ -56,6 +60,7 @@ async function updateDraft(
     callData?: string;
     chainId?: string;
     multisigAccountId?: string;
+    proxyAccountId?: string;
   },
 ): Promise<BackendDraft> {
   const result = await authFetch(`${baseUrl}/draft-operations/${id}`, {
