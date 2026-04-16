@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-import { authFetch, parseResponse } from '@/shared/api/backend-fetch';
+import { authFetch } from '@/shared/api/backend-fetch';
+import { HttpError } from '../contacts/service';
 
 const backendOperationSchema = z.object({
   id: z.string(),
@@ -27,7 +28,7 @@ async function createDescription(
   });
 
   if (!result.ok) {
-    parseResponse(result, z.never());
+    throw new HttpError(result.status, result.body);
   }
 }
 
