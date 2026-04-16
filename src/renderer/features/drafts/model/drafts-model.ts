@@ -166,10 +166,26 @@ sample({
   target: notificationModel.events.notificationsAdded,
 });
 
-// Clear locally-mutated IDs after the diff has been processed
-// (the backend fetch replaced the cache, so local mutations are now reflected)
+// Remove from locally-mutated IDs only those that appeared in the diff
+// (the backend confirmed the change, so we no longer need to suppress them)
 sample({
   clock: draftChanges,
-  fn: () => new Set<string>(),
+  source: $locallyMutatedIds,
+  fn: (localIds, diff) => {
+    const confirmed = new Set([
+      ...diff.added.map((d) => d.id),
+      ...diff.removed.map((d) => d.id),
+      ...diff.updated.map((d) => d.id),
+    ]);
+
+    if (confirmed.size === 0) return localIds;
+
+    const next = new Set(localIds);
+    for (const id of confirmed) {
+      next.delete(id);
+    }
+
+    return next;
+  },
   target: $locallyMutatedIds,
 });
