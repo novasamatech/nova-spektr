@@ -1,6 +1,6 @@
 import { isHex } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   type CallData,
@@ -10,10 +10,19 @@ import {
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type WalletType,
+  CryptoType,
 } from '@/shared/core';
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, formatSectionAndMethod, getNativeAssetId, toAccountId, toAddress, truncate } from '@/shared/lib/utils';
+import {
+  cnTw,
+  formatSectionAndMethod,
+  getNativeAssetId,
+  isEthereumAccountId,
+  toAccountId,
+  toAddress,
+  truncate,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   Button,
@@ -52,7 +61,7 @@ import {
 } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import { type Draft, PERMISSIONS, draftsResource, draftsService, useDrafts } from '@/domains/backend';
-import { accounts, useWalletsNames } from '@/domains/network';
+import { type AnyAccount, accounts, contactMultisigsModel, useWalletsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
 import {
@@ -67,11 +76,13 @@ import {
 } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { AccountsStructureModal } from '@/features/accounts-structure';
 import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
 import { type OperationTitle, operationTitleTransformer } from '@/features/multisig-operations';
 import { OperationTemplatesToolbar } from '@/features/operation-templates';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { NamedAccount } from '@/widgets/NameResolver';
+import { draftDeepLinkModel } from '../model/draft-deep-link';
 import '../model/drafts-model'; // side-effect: orchestration wiring
 import { submitDraftModel } from '../model/submit-draft-model';
 
@@ -107,6 +118,9 @@ const DraftRow = ({
   canDelete,
   isSubmitted,
   hasInitiator,
+  isHighlighted,
+  multisigAccount,
+  rowRef,
   onDelete,
   onEdit,
   onSubmit,
@@ -116,6 +130,9 @@ const DraftRow = ({
   canDelete: boolean;
   isSubmitted: boolean;
   hasInitiator: boolean;
+  isHighlighted: boolean;
+  multisigAccount: AnyAccount | null;
+  rowRef?: (el: HTMLDivElement | null) => void;
   onDelete: (id: string) => void;
   onEdit: (draft: Draft) => void;
   onSubmit: (draft: Draft) => void;
@@ -128,6 +145,20 @@ const DraftRow = ({
   const chain = chains[draft.chainId as ChainId];
   const chainName = chain?.name;
   const contact = backendContacts.find((c) => c.accountId === draft.multisigAccountId);
+
+  const overviewAccount = useMemo<AnyAccount | null>(() => {
+    if (multisigAccount) return multisigAccount;
+    if (!contact?.signatories || !contact.threshold) return null;
+
+    return contactMultisigsModel.toSyntheticMultisigAccount({
+      accountId: contact.accountId,
+      name: contact.name,
+      signatories: contact.signatories.map((s) => toAccountId(s)),
+      threshold: contact.threshold,
+      cryptoType: isEthereumAccountId(contact.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
+      contactIds: [contact.id],
+    });
+  }, [multisigAccount, contact]);
 
   const api = useApi(draft.chainId as ChainId);
 
@@ -176,7 +207,14 @@ const DraftRow = ({
     : null;
 
   return (
-    <div className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow">
+    <div
+      ref={rowRef}
+      className={cnTw(
+        'mx-0.5 bg-block-background-default',
+        'rounded transition-shadow hover:shadow-card-shadow',
+        isHighlighted && 'ring-2 ring-icon-accent',
+      )}
+    >
       <div className="flex h-[52px] w-full items-center px-4 py-2">
         {/* Icon + description */}
         <div className="flex min-w-0 flex-1 items-center gap-x-3">
@@ -225,6 +263,18 @@ const DraftRow = ({
 
         {/* Actions */}
         <div className="flex shrink-0 items-center gap-x-1" onClick={(e) => e.stopPropagation()}>
+          {overviewAccount && (
+            <div className="flex shrink-0 items-center justify-center">
+              <AccountsStructureModal
+                walletAccounts={[overviewAccount]}
+                trigger={
+                  <Button size="sm" variant="text">
+                    {t('operations.drafts.overviewButton')}
+                  </Button>
+                }
+              />
+            </div>
+          )}
           <div className="flex w-[40px] shrink-0 items-center justify-center">
             {canWrite && !isSubmitted && (
               <Button size="sm" variant="text" onClick={() => onEdit(draft)}>
@@ -261,6 +311,17 @@ const DraftRow = ({
               </Tooltip>
             )}
           </div>
+          <Tooltip>
+            <Tooltip.Trigger>
+              <Copy
+                value={draftDeepLinkModel.generateDraftDeepLink(draft.id)}
+                notification={t('operations.drafts.linkCopied')}
+              >
+                <IconButton className="shrink-0 text-icon-default" name="share" />
+              </Copy>
+            </Tooltip.Trigger>
+            <Tooltip.Content>{t('operations.drafts.shareDraftTooltip')}</Tooltip.Content>
+          </Tooltip>
           <div className="flex w-[35px] shrink-0 items-center justify-center">
             {canDelete && !isSubmitted && (
               <ConfirmModal
@@ -395,6 +456,7 @@ export const DraftsSection = () => {
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const authState = useUnit(authModel.$authState);
+  const focusedDraftId = useUnit(draftDeepLinkModel.$focusedDraftId);
 
   const canRead = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_READ) ?? false);
   const canWrite = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_WRITE) ?? false);
@@ -404,6 +466,33 @@ export const DraftsSection = () => {
   const hiddenDraftIds = useUnit(submitDraftModel.$hiddenDraftIds);
   const submittedDraftIds = useUnit(submitDraftModel.$submittedDraftIds);
   const visibleDrafts = useMemo(() => drafts.filter((d) => !hiddenDraftIds.has(d.id)), [drafts, hiddenDraftIds]);
+
+  // Deep link: scroll-to and highlight
+  const highlightedRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!focusedDraftId || !highlightedRef.current) return;
+
+    const timer = setTimeout(() => {
+      highlightedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [focusedDraftId]);
+
+  useEffect(() => {
+    if (!focusedDraftId) return;
+
+    const clear = () => draftDeepLinkModel.focusCleared();
+    const timer = setTimeout(() => {
+      document.addEventListener('click', clear, { once: true });
+    }, 200);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', clear);
+    };
+  }, [focusedDraftId]);
 
   const [submittingDraft, setSubmittingDraft] = useState<Draft | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -699,7 +788,7 @@ export const DraftsSection = () => {
 
   return (
     <div className="mb-6">
-      <Accordion>
+      <Accordion open={focusedDraftId ? true : undefined}>
         <Accordion.Trigger sticky>
           <div className="flex items-center gap-2 py-2">
             <FootnoteText className="font-medium text-text-secondary">{t('operations.drafts.title')}</FootnoteText>
@@ -719,6 +808,15 @@ export const DraftsSection = () => {
                 canWrite={canWrite}
                 isSubmitted={submittedDraftIds.has(draft.id)}
                 hasInitiator={allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)}
+                isHighlighted={focusedDraftId === draft.id}
+                multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
+                rowRef={
+                  focusedDraftId === draft.id
+                    ? (el) => {
+                        highlightedRef.current = el;
+                      }
+                    : undefined
+                }
                 draft={draft}
                 onDelete={handleDeleteDraft}
                 onEdit={handleEditDraft}

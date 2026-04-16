@@ -2532,6 +2532,7 @@
       "unknownChain": "Unknown chain",
       "badge": "Draft",
       "operationBadge": "From draft",
+      "overviewButton": "Overview",
       "editButton": "Edit",
       "submitButton": "Submit",
       "editDraftTitle": "Edit draft",
@@ -2558,7 +2559,9 @@
       "submittedBadge": "Submitted",
       "stepMultisig": "Account",
       "stepCallData": "Call data",
-      "stepConfirm": "Confirm"
+      "stepConfirm": "Confirm",
+      "linkCopied": "Draft link copied!",
+      "shareDraftTooltip": "Share draft link with signatories"
     },
     "callData": {
       "adding": "Adding call data...",

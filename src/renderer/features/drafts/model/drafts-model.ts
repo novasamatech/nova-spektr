@@ -1,7 +1,12 @@
 import { sample } from 'effector';
 
+import { deepLinkService } from '@/domains/app';
 import { draftsResource } from '@/domains/backend';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+
+import { draftDeepLinkModel } from './draft-deep-link';
+
+deepLinkService.registerHandler(draftDeepLinkModel.handler);
 
 // Auto-fetch drafts on authentication
 sample({

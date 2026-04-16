@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { type CallData, type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import {
   type ExtrinsicConfirmInfo,
   createExtrinsicConfirmStore,
@@ -28,6 +29,7 @@ import {
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
+import { navigationModel } from '@/features/navigation';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 
@@ -368,13 +370,22 @@ sample({
 
 // --- Post-submit success toast ---
 
-const showSubmitSuccessToastFx = createEffect(() => {
-  toast.success(t('operations.drafts.submitSuccess'));
+const showSubmitSuccessToastFx = createEffect((draftId: string) => {
+  toast.success(t('operations.drafts.submitSuccess'), {
+    action: {
+      label: t('operations.drafts.viewDraft'),
+      onClick: () => {
+        navigationModel.events.navigateTo(`${Paths.OPERATIONS}?draftId=${draftId}`);
+      },
+    },
+  });
 });
 
 sample({
   clock: submitModel.done,
-  filter: (results) => results.some((r) => r.result === ExtrinsicResult.SUCCESS),
+  source: $draft,
+  filter: (draft, results) => nonNullable(draft) && results.some((r) => r.result === ExtrinsicResult.SUCCESS),
+  fn: (draft) => draft!.id,
   target: showSubmitSuccessToastFx,
 });
 
