@@ -124,7 +124,7 @@ function createDraftNotification(draft: Draft, titleKey: string): CreateDraftNot
       path: draftLink,
     },
     batch: {
-      title: 'operations.drafts.notifications.batch',
+      title: t('operations.drafts.notifications.batch'),
       link: {
         title: t('operations.drafts.viewDraft'),
         path: Paths.OPERATIONS,
