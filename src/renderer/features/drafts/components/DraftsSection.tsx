@@ -267,6 +267,7 @@ const DraftRow = ({
             <div className="flex shrink-0 items-center justify-center">
               <AccountsStructureModal
                 walletAccounts={[overviewAccount]}
+                initialChainId={draft.chainId}
                 trigger={
                   <Button size="sm" variant="text">
                     {t('operations.drafts.overviewButton')}
