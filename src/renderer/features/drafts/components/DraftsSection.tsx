@@ -8,8 +8,6 @@ import {
   type Chain,
   type ChainId,
   type DecodedTransaction,
-  type FlexibleMultisigAccount,
-  type MultisigAccount,
   type WalletType,
   CryptoType,
 } from '@/shared/core';
@@ -577,12 +575,6 @@ export const DraftsSection = () => {
   const chainsList = useUnit(networkModel.$chainsList);
   const backendContacts = useUnit(contactModel.$backendContacts);
 
-  const multisigAccounts = useMemo(() => {
-    const backendAccountIds = new Set(backendContacts.map((c) => c.accountId));
-
-    return allMultisigAccounts.filter((account) => backendAccountIds.has(account.accountId));
-  }, [allMultisigAccounts, backendContacts]);
-
   const resolvedWallets = useWalletsNames(multisigWallets);
 
   const draftAccountOptions = useMemo<DraftAccountOption[]>(() => {
@@ -630,22 +622,6 @@ export const DraftsSection = () => {
   const handleTemplateApply = (templateCallData: string) => {
     setCallData(templateCallData);
   };
-
-  const accountOptions = useMemo(() => {
-    return multisigAccounts
-      .map((account) => {
-        const wallet = resolvedWallets.find((w) => w.id === account.walletId);
-        if (!wallet) return null;
-
-        const addressPrefix = accountUtils.isFlexibleMultisigAccount(account)
-          ? chains[account.chainId]?.addressPrefix
-          : undefined;
-        const address = toAddress(account.accountId, { prefix: addressPrefix });
-
-        return { account, wallet, address };
-      })
-      .filter((o): o is NonNullable<typeof o> => o !== null);
-  }, [multisigAccounts, resolvedWallets, chains]);
 
   const isCreateDirty = selectedAccount !== null || callData.length > 0 || description.length > 0;
 
@@ -879,8 +855,6 @@ export const DraftsSection = () => {
       amount: asset && amount ? { value: amount, asset } : undefined,
     };
   }, [externalTitle, coreTx, txAsset, effectiveChain]);
-
-  const selectedWallet = selectedAccount ? resolvedWallets.find((w) => w.id === selectedAccount.walletId) : null;
 
   if (!canRead) return null;
 
