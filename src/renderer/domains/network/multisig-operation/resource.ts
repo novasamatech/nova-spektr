@@ -13,6 +13,7 @@ import {
   entries,
   getCreatedDateFromApi,
   getNativeAssetId,
+  isSubstrateAccountId,
   nonNullable,
   nullable,
   toAccountId,
@@ -303,10 +304,12 @@ export const initialOnChainFetch = createQueryResource<OnChainRequestParams>({
     const callHashesByAccount: Record<AccountId, HexString[]> = {};
     const onChainData: Record<AccountId, Record<HexString, MultisigOperation>> = {};
 
+    const substrateAccountIds = accountIds.filter(isSubstrateAccountId);
+
     // Phase 1: Fetch all keys for all accounts in parallel (N parallel RPC calls)
     // Using keys() instead of entries() - we'll batch the value fetches in phase 2
     const keysResults = await Promise.allSettled(
-      accountIds.map(async accountId => {
+      substrateAccountIds.map(async accountId => {
         const keys = await api.query.multisig.multisigs.keys(accountId);
         return { accountId, keys };
       }),
