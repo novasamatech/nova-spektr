@@ -26,7 +26,7 @@ const backendContactSchema = z.object({
     .array(
       z.object({
         fieldOption: z.object({ value: z.string() }),
-        field: z.object({ name: z.string() }),
+        field: z.object({ name: z.string() }).nullish(),
       }),
     )
     .optional()
@@ -62,7 +62,7 @@ function groupTagOptions(raw: RawBackendContact): ContactTag[] {
 }
 
 function extractFieldValues(raw: RawBackendContact, fieldName: string): string[] {
-  return raw.contactFieldOptions.filter(cfo => cfo.field.name === fieldName).map(cfo => cfo.fieldOption.value);
+  return raw.contactFieldOptions.filter(cfo => cfo.field?.name === fieldName).map(cfo => cfo.fieldOption.value);
 }
 
 function mapToContact(raw: RawBackendContact): BackendContact {
