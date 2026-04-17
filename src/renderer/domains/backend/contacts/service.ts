@@ -26,7 +26,7 @@ const backendContactSchema = z.object({
     .array(
       z.object({
         fieldOption: z.object({ value: z.string() }),
-        field: z.object({ name: z.string() }),
+        field: z.object({ name: z.string() }).nullish(),
       }),
     )
     .optional()
@@ -62,7 +62,7 @@ function groupTagOptions(raw: RawBackendContact): ContactTag[] {
 }
 
 function extractFieldValues(raw: RawBackendContact, fieldName: string): string[] {
-  return raw.contactFieldOptions.filter(cfo => cfo.field.name === fieldName).map(cfo => cfo.fieldOption.value);
+  return raw.contactFieldOptions.filter(cfo => cfo.field?.name === fieldName).map(cfo => cfo.fieldOption.value);
 }
 
 function mapToContact(raw: RawBackendContact): BackendContact {
@@ -99,8 +99,8 @@ function extractContacts(body: unknown): { raw: unknown[]; total: number } {
   if (typeof body === 'object' && body !== null) {
     const obj = body as Record<string, unknown>;
 
-    const items = obj.data ?? obj.items ?? obj.contacts ?? obj.results;
-    const total = obj.total ?? obj.count ?? obj.totalCount;
+    const items = obj['data'] ?? obj['items'] ?? obj['contacts'] ?? obj['results'];
+    const total = obj['total'] ?? obj['count'] ?? obj['totalCount'];
 
     if (Array.isArray(items)) {
       return { raw: items, total: typeof total === 'number' ? total : items.length };
