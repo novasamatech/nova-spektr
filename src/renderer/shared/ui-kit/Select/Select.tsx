@@ -92,8 +92,10 @@ const Root = <T extends string>({
   const { theme } = useTheme();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [searchValue, setSearchValue] = useState('');
-  const [selectedItemContent, setSelectedItemContent] = useState<ReactNode>(null);
-  const [registeredItems, setRegisteredItems] = useState<Map<string, ReactNode>>(new Map());
+  const registeredItemsRef = useRef<Map<string, ReactNode>>(new Map());
+  const [selectedItemContent, setSelectedItemContent] = useState<ReactNode>(() =>
+    value ? (registeredItemsRef.current.get(value) ?? null) : null,
+  );
   const [isOpen, setIsOpen] = useState(false);
 
   const onOpenChange = (requestedOpen: boolean) => {
@@ -125,23 +127,25 @@ const Root = <T extends string>({
   }, [open]);
 
   useEffect(() => {
-    if (value && registeredItems.has(value)) {
-      setSelectedItemContent(registeredItems.get(value));
+    if (value && registeredItemsRef.current.has(value)) {
+      setSelectedItemContent(registeredItemsRef.current.get(value));
     } else if (!value) {
       setSelectedItemContent(null);
     }
-  }, [value, registeredItems]);
+  }, [value]);
 
-  const registerItem = useCallback((value: string, content: ReactNode) => {
-    setRegisteredItems(prev => new Map(prev.set(value, content)));
-  }, []);
+  const registerItem = useCallback(
+    (val: string, content: ReactNode) => {
+      registeredItemsRef.current.set(val, content);
+      if (val === value) {
+        setSelectedItemContent(content);
+      }
+    },
+    [value],
+  );
 
-  const unregisterItem = useCallback((value: string) => {
-    setRegisteredItems(prev => {
-      const newMap = new Map(prev);
-      newMap.delete(value);
-      return newMap;
-    });
+  const unregisterItem = useCallback((val: string) => {
+    registeredItemsRef.current.delete(val);
   }, []);
 
   const contextValue = useMemo(
@@ -246,7 +250,7 @@ const Root = <T extends string>({
           data-theme={theme}
         >
           {children}
-          {registeredItems.size === 0 && (
+          {registeredItemsRef.current.size === 0 && (
             <div className="flex flex-col items-center justify-center gap-2 px-2 py-6">
               <Graphics name="emptyList" size={64} />
               <FootnoteText className="text-text-tertiary">
@@ -277,7 +281,7 @@ const Item = memo(({ value, itemTestId, indent = 0, children }: PropsWithChildre
   const { registerItem, unregisterItem, onItemSelect } = useContext(Context);
   const { theme } = useTheme();
 
-  // Register this item on mount and update when children change
+  // Register this item's content for display when selected
   useEffect(() => {
     registerItem(value, children);
     return () => unregisterItem(value);

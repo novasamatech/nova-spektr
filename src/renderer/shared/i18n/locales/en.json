@@ -2562,6 +2562,8 @@
       "stepConfirm": "Confirm",
       "linkCopied": "Draft link copied!",
       "shareDraftTooltip": "Share draft link with signatories",
+      "selectMultisigForProxy": "Multisig for proxy",
+      "proxyLabel": "Proxy",
       "viewDraft": "View draft",
       "notifications": {
         "added": "New draft added",
