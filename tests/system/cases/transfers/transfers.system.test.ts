@@ -11,8 +11,6 @@ const feature = 'Transfers';
 const story = 'Transfers tests';
 
 test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, () => {
-  test.describe.configure({ mode: 'serial' });
-
   test.beforeEach(async () => {
     await setupTestMetadata(feature, story);
   });
