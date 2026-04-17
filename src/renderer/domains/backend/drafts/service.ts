@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { authFetch, parseResponse } from '@/shared/api/backend-fetch';
+import { HttpError } from '../contacts/service';
 
 const backendDraftSchema = z.object({
   id: z.string(),
@@ -12,7 +13,6 @@ const backendDraftSchema = z.object({
   createdBy: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
-
 });
 
 export type Draft = z.infer<typeof backendDraftSchema>;
@@ -38,6 +38,10 @@ async function createDraft(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
   });
+
+  if (!result.ok) {
+    throw new HttpError(result.status, result.body);
+  }
 
   return parseResponse(result, backendDraftSchema);
 }

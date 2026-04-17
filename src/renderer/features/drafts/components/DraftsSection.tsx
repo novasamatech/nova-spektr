@@ -62,6 +62,7 @@ import {
 import { Json } from '@/shared/ui-kit/Json/Json';
 import {
   type Draft,
+  HttpError,
   PERMISSIONS,
   draftsResource,
   draftsService,
@@ -629,8 +630,13 @@ export const DraftsSection = () => {
       setIsModalOpen(false);
       resetCreateState();
     } catch (e) {
-      const message = e instanceof Error ? e.message : t('operations.drafts.createError');
-      toast.error(t('operations.drafts.createError'), { description: message });
+      const description =
+        e instanceof HttpError && e.status === 403
+          ? t('addressBook.sources.errorForbidden')
+          : e instanceof Error
+            ? e.message
+            : t('operations.drafts.createError');
+      toast.error(t('operations.drafts.createError'), { description });
     } finally {
       setIsSubmitting(false);
     }
