@@ -17,14 +17,20 @@ const backendContactSchema = z.object({
   id: z.string(),
   name: z.string(),
   accountId: z.string(),
-  entities: z.array(z.object({ id: z.string(), name: z.string() })),
   chain: z.object({ chainId: z.string(), name: z.string() }).nullish(),
-  category: z.object({ id: z.string(), name: z.string() }).nullish(),
-  contactType: z.object({ id: z.string(), name: z.string() }).nullish(),
   derivationPath: z.string().nullish(),
   ownerAccountId: z.string().nullish(),
   signatories: z.array(z.string()).nullish(),
   threshold: z.number().nullish(),
+  contactFieldOptions: z
+    .array(
+      z.object({
+        fieldOption: z.object({ value: z.string() }),
+        field: z.object({ name: z.string() }),
+      }),
+    )
+    .optional()
+    .default([]),
   contactTagOptions: z
     .array(
       z.object({
@@ -55,9 +61,16 @@ function groupTagOptions(raw: RawBackendContact): ContactTag[] {
   return Array.from(tagMap, ([tagName, values]) => ({ tagName, values }));
 }
 
+function extractFieldValues(raw: RawBackendContact, fieldName: string): string[] {
+  return raw.contactFieldOptions.filter(cfo => cfo.field.name === fieldName).map(cfo => cfo.fieldOption.value);
+}
+
 function mapToContact(raw: RawBackendContact): BackendContact {
   const accountId = toAccountId(raw.accountId);
   const address = toAddress(raw.accountId);
+
+  const categoryValues = extractFieldValues(raw, 'Category');
+  const contactTypeValues = extractFieldValues(raw, 'Contact Type');
 
   return {
     id: raw.id,
@@ -65,11 +78,11 @@ function mapToContact(raw: RawBackendContact): BackendContact {
     address,
     accountId,
     source: 'backend',
-    entityNames: raw.entities.map(e => e.name),
+    entityNames: extractFieldValues(raw, 'Entity'),
     chainId: raw.chain?.chainId ?? null,
     chainName: raw.chain?.name ?? null,
-    categoryName: raw.category?.name ?? null,
-    contactTypeName: raw.contactType?.name ?? null,
+    categoryName: categoryValues[0] ?? null,
+    contactTypeName: contactTypeValues[0] ?? null,
     derivationPath: raw.derivationPath ?? null,
     ownerAccountId: raw.ownerAccountId ?? null,
     signatories: raw.signatories ?? null,
