@@ -99,8 +99,8 @@ function extractContacts(body: unknown): { raw: unknown[]; total: number } {
   if (typeof body === 'object' && body !== null) {
     const obj = body as Record<string, unknown>;
 
-    const items = obj.data ?? obj.items ?? obj.contacts ?? obj.results;
-    const total = obj.total ?? obj.count ?? obj.totalCount;
+    const items = obj['data'] ?? obj['items'] ?? obj['contacts'] ?? obj['results'];
+    const total = obj['total'] ?? obj['count'] ?? obj['totalCount'];
 
     if (Array.isArray(items)) {
       return { raw: items, total: typeof total === 'number' ? total : items.length };
