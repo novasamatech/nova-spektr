@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
-import { operationDescriptionsResource, operationsService } from '@/domains/backend';
+import { HttpError, operationDescriptionsResource, operationsService } from '@/domains/backend';
 import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
@@ -276,7 +276,9 @@ sample({
 });
 
 const showDescriptionErrorFx = createEffect((error: Error) => {
-  toast.error(t('operation.descriptionSaveError'), { description: error.message });
+  const description =
+    error instanceof HttpError && error.status === 403 ? t('addressBook.sources.errorForbidden') : error.message;
+  toast.error(t('operation.descriptionSaveError'), { description });
 });
 
 sample({

@@ -1,4 +1,4 @@
-import { createEvent, createStore } from 'effector';
+import { createEffect, createEvent, createStore } from 'effector';
 
 import { createQueryResource } from '@/shared/query';
 
@@ -48,7 +48,7 @@ const resetDescriptions = createEvent();
 $cache.on(resetDescriptions, () => ({}));
 
 // Derived: set of draftIds that have a linked operation (from backend data)
-const $linkedDraftIds = $cache.map((cache) => {
+const $linkedDraftIds = $cache.map(cache => {
   const set = new Set<string>();
   for (const op of Object.values(cache)) {
     if (op.draftId) {
@@ -59,9 +59,29 @@ const $linkedDraftIds = $cache.map((cache) => {
   return set;
 });
 
+const fetchAllFx = createEffect(async (baseUrl: string) => {
+  return operationsService.fetchAllDescriptions(baseUrl);
+});
+
+$cache.on(fetchAllFx.doneData, (state, results) => {
+  const next = { ...state };
+  for (const op of results) {
+    next[op.id] = { description: op.description, draftId: op.draftId ?? null };
+  }
+
+  return next;
+});
+
+// True after the first fetchAllFx completes (drafts should wait for this before rendering)
+const $operationsLoaded = createStore(false)
+  .on(fetchAllFx.done, () => true)
+  .on(resetDescriptions, () => false);
+
 export const operationDescriptionsResource = {
   ...resource,
   descriptionCreated,
   resetDescriptions,
   $linkedDraftIds,
+  $operationsLoaded,
+  fetchAllFx,
 };

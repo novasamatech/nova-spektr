@@ -1,4 +1,4 @@
-import { createStore, sample } from 'effector';
+import { createStore, merge, sample } from 'effector';
 import { t } from 'i18next';
 import { interval } from 'patronum';
 
@@ -7,7 +7,7 @@ import { pairwise } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import { deepLinkService } from '@/domains/app';
-import { type Draft, draftsResource } from '@/domains/backend';
+import { type Draft, draftsResource, operationDescriptionsResource } from '@/domains/backend';
 import { notificationModel } from '@/entities/notification';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 
@@ -15,7 +15,7 @@ import { draftDeepLinkModel } from './draft-deep-link';
 
 deepLinkService.registerHandler(draftDeepLinkModel.handler);
 
-// Auto-fetch drafts on authentication
+// Auto-fetch drafts + all operation descriptions on authentication
 sample({
   clock: authModel.$authState,
   source: backendConfigurationModel.$backendUrl,
@@ -24,11 +24,19 @@ sample({
   target: draftsResource.start,
 });
 
+sample({
+  clock: authModel.$authState,
+  source: backendConfigurationModel.$backendUrl,
+  filter: (url, authState): url is string => url !== null && authState !== null,
+  fn: (baseUrl: string) => baseUrl,
+  target: operationDescriptionsResource.fetchAllFx,
+});
+
 // Poll drafts periodically while authenticated
 const draftsPolling = interval({
   timeout: 30_000,
   start: authModel.events.signInSucceeded,
-  stop: backendConfigurationModel.events.urlCleared,
+  stop: merge([authModel.events.signOutClicked, backendConfigurationModel.events.urlCleared]),
 });
 
 sample({
@@ -37,6 +45,14 @@ sample({
   filter: (url): url is string => url !== null,
   fn: (baseUrl: string) => ({ baseUrl }),
   target: draftsResource.start,
+});
+
+sample({
+  clock: draftsPolling.tick,
+  source: backendConfigurationModel.$backendUrl,
+  filter: (url): url is string => url !== null,
+  fn: (baseUrl: string) => baseUrl,
+  target: operationDescriptionsResource.fetchAllFx,
 });
 
 // Clear on disconnect
@@ -65,6 +81,9 @@ type DraftDiff = {
 };
 
 const draftChanges = pairwise(draftsResource.$cache).map(({ prev, current }): DraftDiff => {
+  // Skip initial population (first fetch or reconnect after resetDrafts)
+  if (prev.length === 0) return { added: [], removed: [], updated: [] };
+
   const prevMap = new Map(prev.map((d) => [d.id, d]));
   const currentMap = new Map(current.map((d) => [d.id, d]));
 
@@ -105,7 +124,7 @@ function createDraftNotification(draft: Draft, titleKey: string): CreateDraftNot
       path: draftLink,
     },
     batch: {
-      title: 'operations.drafts.notifications.batch',
+      title: t('operations.drafts.notifications.batch'),
       link: {
         title: t('operations.drafts.viewDraft'),
         path: Paths.OPERATIONS,
@@ -147,10 +166,26 @@ sample({
   target: notificationModel.events.notificationsAdded,
 });
 
-// Clear locally-mutated IDs after the diff has been processed
-// (the backend fetch replaced the cache, so local mutations are now reflected)
+// Remove from locally-mutated IDs only those that appeared in the diff
+// (the backend confirmed the change, so we no longer need to suppress them)
 sample({
   clock: draftChanges,
-  fn: () => new Set<string>(),
+  source: $locallyMutatedIds,
+  fn: (localIds, diff) => {
+    const confirmed = new Set([
+      ...diff.added.map((d) => d.id),
+      ...diff.removed.map((d) => d.id),
+      ...diff.updated.map((d) => d.id),
+    ]);
+
+    if (confirmed.size === 0) return localIds;
+
+    const next = new Set(localIds);
+    for (const id of confirmed) {
+      next.delete(id);
+    }
+
+    return next;
+  },
   target: $locallyMutatedIds,
 });
