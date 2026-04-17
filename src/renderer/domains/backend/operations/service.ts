@@ -6,6 +6,7 @@ import { HttpError } from '../contacts/service';
 const backendOperationSchema = z.object({
   id: z.string(),
   description: z.string().nullable(),
+  draftId: z.string().nullable().optional(),
 });
 
 type BackendOperation = z.infer<typeof backendOperationSchema>;
@@ -19,6 +20,7 @@ async function createDescription(
     blockNumber: number;
     extrinsicIndex: number;
     description: string;
+    draftId?: string;
   },
 ): Promise<void> {
   const result = await authFetch(`${baseUrl}/operations`, {
@@ -32,10 +34,7 @@ async function createDescription(
   }
 }
 
-async function fetchDescriptionsByIds(
-  baseUrl: string,
-  ids: string[],
-): Promise<{ id: string; description: string | null }[]> {
+async function fetchDescriptionsByIds(baseUrl: string, ids: string[]): Promise<BackendOperation[]> {
   if (ids.length === 0) return [];
 
   const result = await authFetch(`${baseUrl}/operations/by-ids`, {
@@ -61,4 +60,24 @@ async function fetchDescriptionsByIds(
   return operations;
 }
 
-export const operationsService = { createDescription, fetchDescriptionsByIds };
+async function fetchAllDescriptions(baseUrl: string): Promise<BackendOperation[]> {
+  const result = await authFetch(`${baseUrl}/operations`, { method: 'GET' });
+
+  if (!result.ok) {
+    throw new Error(`Failed to fetch all operations: ${result.status}`);
+  }
+
+  const body: unknown = JSON.parse(result.body);
+  const items = Array.isArray(body) ? body : [];
+  const operations: BackendOperation[] = [];
+  for (const item of items) {
+    const parsed = backendOperationSchema.safeParse(item);
+    if (parsed.success) {
+      operations.push(parsed.data);
+    }
+  }
+
+  return operations;
+}
+
+export const operationsService = { createDescription, fetchDescriptionsByIds, fetchAllDescriptions };
