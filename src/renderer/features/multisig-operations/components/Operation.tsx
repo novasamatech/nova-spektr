@@ -15,10 +15,11 @@ import {
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod, toAddress, toShortAddress } from '@/shared/lib/utils';
-import { Accordion, FootnoteText, HelpText } from '@/shared/ui';
+import { Accordion, CaptionText, FootnoteText, HelpText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance, AssetIcon, Identicon, WalletAccountIcon } from '@/shared/ui-entities';
 import { AsyncItem, Copy, Tooltip } from '@/shared/ui-kit';
+import { useIsDraftLinkedOperation, useOperationDescription } from '@/domains/backend';
 import { type MultisigOperation, useWalletName } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { OperationTitleStatus } from '@/entities/operations';
@@ -69,7 +70,7 @@ export const operationTitleTransformer = createTransformer<
 
 const AccountInfoCell = memo(
   ({ icon, title, accountAddress }: { icon: ReactNode; title: string; accountAddress: Address }) => (
-    <div className="flex min-w-[200px] flex-1 items-center gap-x-2">
+    <div className="flex min-w-[140px] flex-1 items-center gap-x-2">
       {icon}
       <div className="flex min-w-0 flex-col items-start gap-y-0.5">
         <FootnoteText className="w-full truncate text-text-primary">{title}</FootnoteText>
@@ -93,6 +94,8 @@ const OperationWalletInfo = memo(({ wallet, accountAddress }: { wallet: Wallet; 
 
 export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false, tab, chains, wallets }: Props) => {
   const { t } = useI18n();
+  const description = useOperationDescription(operation.id);
+  const isDraftLinked = useIsDraftLinkedOperation(operation.id);
 
   const wallet = useMemo(
     () => wallets.find(w => w.id === multisigAccount.walletId),
@@ -136,7 +139,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
       <Accordion isDefaultOpen={isDefaultOpen}>
         <Accordion.Button buttonClass="px-4 py-2">
           <div className="flex h-[52px] w-full items-center gap-x-2 overflow-hidden">
-            <div className="flex min-w-[350px] flex-1 items-center gap-x-2">
+            <div className="flex w-[450px] items-center gap-x-2">
               <OperationIcon operation={operation} account={multisigAccount} />
 
               <div className="flex flex-1 flex-col justify-center gap-y-0.5 overflow-hidden">
@@ -150,7 +153,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
               </div>
 
               {titleData.amount && (
-                <div className="flex w-[240px] shrink-0 items-center gap-x-2">
+                <div className="flex w-[200px] shrink-0 items-center gap-x-2">
                   <AssetIcon asset={titleData.amount.asset} size={32} />
                   <div className="flex flex-col items-start gap-y-0.5">
                     <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />
@@ -179,7 +182,28 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                 <div className="min-w-[200px] flex-1" />
               )}
 
-              <OperationTitleStatus operation={operation} account={multisigAccount} />
+              <div className="flex shrink-0 items-center gap-x-2">
+                <div className="w-[100px]">
+                  {isDraftLinked &&
+                    (description ? (
+                      <Tooltip>
+                        <Tooltip.Trigger>
+                          <div className="inline-flex items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
+                            <CaptionText className="text-icon-accent uppercase">
+                              {t('operations.drafts.operationBadge')}
+                            </CaptionText>
+                          </div>
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>{description}</Tooltip.Content>
+                      </Tooltip>
+                    ) : (
+                      <CaptionText className="text-icon-accent uppercase">
+                        {t('operations.drafts.operationBadge')}
+                      </CaptionText>
+                    ))}
+                </div>
+                <OperationTitleStatus operation={operation} account={multisigAccount} />
+              </div>
 
               <OperationActions operation={operation} account={multisigAccount} />
             </div>

@@ -2,7 +2,7 @@ import { memo } from 'react';
 
 import { type Chain, type ChainId, type Notification, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText } from '@/shared/ui';
+import { BodyText, FootnoteText, Icon } from '@/shared/ui';
 import { notificationUtils } from '@/entities/notification';
 
 import { FlexibleMultisigNotification } from './notifies/FlexibleMultisigNotification';
@@ -36,6 +36,14 @@ const NotificationContent = ({ notification, chains, wallets }: Props) => {
   }
   if (notificationUtils.isProxyRemoval(notification)) {
     return <ProxyRemovedNotification notification={notification} chains={chains} wallets={wallets} />;
+  }
+  if (notificationUtils.isDraftNotification(notification)) {
+    return (
+      <div className="flex gap-x-2">
+        <Icon name="document" size={20} className="text-icon-accent" />
+        <BodyText>{notification.title}</BodyText>
+      </div>
+    );
   }
 
   return null;

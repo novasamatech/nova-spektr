@@ -65,12 +65,14 @@ export type { PartialProxiedAccount, PartialProxyAccount, ProxyAccount, ProxyTyp
 export { ProxyTypeOrder, ProxyTypes, ProxyVariant } from './types/proxy';
 
 export type {
+  CreateDraftNotificationParams,
   CreateFlexibleMultisigOperationParams,
   CreateMultisigCreatedParams,
   CreateMultisigEventParams,
   CreateMultisigOperationParams,
   CreateNotificationParams,
   CreateProxyActionParams,
+  DraftNotification,
   FlexibleMultisigOperationNotification,
   MultisigCreated,
   MultisigEventNotification,
