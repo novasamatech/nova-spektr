@@ -2,20 +2,47 @@ import { TransactionType } from '@/shared/core';
 import { ProxyTypes } from '@/shared/core/types/proxy';
 import { toAccountId } from '@/shared/lib/utils';
 import { RelayChains } from '@/shared/lib/utils/constants';
-import { VERIFIABLE_PROXY_TYPES, buildVerifyRemark, isVerifiableProxyType } from '../build-verify-proxy';
+import { VERIFIABLE_PROXY_TYPES, buildVerifyProxyCall, isVerifiableProxyType } from '../build-verify-proxy';
 
 const chainId = RelayChains.POLKADOT;
-const signatory = toAccountId('0xaaaaaaaa');
+const delegate = toAccountId('0xaaaaaaaa');
+const pure = toAccountId('0xbbbbbbbb');
 
 describe('features/proxy-verify/lib/build-verify-proxy', () => {
-  describe('buildVerifyRemark', () => {
-    test('emits a plain system.remark attributed to the signatory; the wrap pipeline handles any proxy/asMulti layering', () => {
-      expect(buildVerifyRemark({ chainId, accountId: signatory })).toEqual({
+  describe('buildVerifyProxyCall', () => {
+    test('wraps system.remark in proxy.proxy attributed to the delegate; asMulti is layered by the wrap pipeline', () => {
+      expect(
+        buildVerifyProxyCall({
+          chainId,
+          delegateAccountId: delegate,
+          pureProxyAccountId: pure,
+          proxyType: ProxyTypes.ANY,
+        }),
+      ).toEqual({
         chainId,
-        accountId: signatory,
-        type: TransactionType.REMARK,
-        args: { remark: '0x' },
+        accountId: delegate,
+        type: TransactionType.PROXY,
+        args: {
+          real: pure,
+          forceProxyType: ProxyTypes.ANY,
+          transaction: {
+            chainId,
+            accountId: pure,
+            type: TransactionType.REMARK,
+            args: { remark: '0x' },
+          },
+        },
       });
+    });
+
+    test('preserves the clicked proxyType in forceProxyType so dispatch picks the right delegation', () => {
+      const call = buildVerifyProxyCall({
+        chainId,
+        delegateAccountId: delegate,
+        pureProxyAccountId: pure,
+        proxyType: ProxyTypes.NON_TRANSFER,
+      });
+      expect(call.args.forceProxyType).toBe(ProxyTypes.NON_TRANSFER);
     });
   });
 

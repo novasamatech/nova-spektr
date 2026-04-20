@@ -7,4 +7,4 @@ export const proxyVerifyFeature = {
 };
 
 export { VerifyProxy, verifyProxyModel };
-export { VERIFIABLE_PROXY_TYPES, buildVerifyRemark, isVerifiableProxyType } from './lib/build-verify-proxy';
+export { VERIFIABLE_PROXY_TYPES, buildVerifyProxyCall, isVerifiableProxyType } from './lib/build-verify-proxy';

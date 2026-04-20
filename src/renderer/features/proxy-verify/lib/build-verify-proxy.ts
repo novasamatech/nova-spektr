@@ -4,13 +4,37 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const VERIFIABLE_PROXY_TYPES: ReadonlySet<ProxyType> = new Set([ProxyTypes.ANY, ProxyTypes.NON_TRANSFER]);
 
-export function buildVerifyRemark({ chainId, accountId }: { chainId: ChainId; accountId: AccountId }): Transaction {
+/**
+ * Builds the proxy.proxy(real=pure, call=system.remark) core tx that the
+ * _clicked delegate_ will dispatch. The outer asMulti wrap is added by
+ * createComplexTxStore's wrapLegacy pipeline based on the delegate's type.
+ */
+export function buildVerifyProxyCall({
+  chainId,
+  delegateAccountId,
+  pureProxyAccountId,
+  proxyType,
+}: {
+  chainId: ChainId;
+  delegateAccountId: AccountId;
+  pureProxyAccountId: AccountId;
+  proxyType: ProxyType;
+}): Transaction {
+  const remark: Transaction = {
+    chainId,
+    accountId: pureProxyAccountId,
+    type: TransactionType.REMARK,
+    args: { remark: '0x' },
+  };
+
   return {
     chainId,
-    accountId,
-    type: TransactionType.REMARK,
+    accountId: delegateAccountId,
+    type: TransactionType.PROXY,
     args: {
-      remark: '0x',
+      real: pureProxyAccountId,
+      forceProxyType: proxyType,
+      transaction: remark,
     },
   };
 }

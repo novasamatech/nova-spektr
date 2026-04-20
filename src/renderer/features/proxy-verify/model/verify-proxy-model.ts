@@ -24,7 +24,7 @@ import {
   confirmModel,
 } from '@/features/operations/OperationsConfirm/VerifyProxy/model/confirm-model';
 import { verifyProxyValidator } from '@/features/operations/OperationsValidation';
-import { VERIFIABLE_PROXY_TYPES, buildVerifyRemark } from '../lib/build-verify-proxy';
+import { VERIFIABLE_PROXY_TYPES, buildVerifyProxyCall } from '../lib/build-verify-proxy';
 
 export enum Step {
   NONE,
@@ -39,7 +39,7 @@ export type VerifyGuardFailure =
   | 'delay_nonzero'
   | 'chain_missing'
   | 'chain_unsupported'
-  | 'pure_proxy_not_found';
+  | 'delegate_account_not_loaded';
 
 export type VerifyProxyRef = {
   id: string;
@@ -64,6 +64,7 @@ type VerifyStore = {
 
 type ResolveCtx = {
   chains: ReturnType<typeof networkModel.$chains.getState>;
+  allAccounts: AnyAccount[];
 };
 
 type ResolveResult = { ok: true; store: VerifyStore } | { ok: false; reason: VerifyGuardFailure };
@@ -72,7 +73,7 @@ type FormParams = {
   signatory: AnyAccount | null;
 };
 
-function resolveVerifyStore({ chains }: ResolveCtx, input: VerifyFlowInput): ResolveResult {
+function resolveVerifyStore({ chains, allAccounts }: ResolveCtx, input: VerifyFlowInput): ResolveResult {
   const { wallet, proxy } = input;
 
   if (!VERIFIABLE_PROXY_TYPES.has(proxy.proxyType)) return { ok: false, reason: 'proxy_type_restricted' };
@@ -82,17 +83,21 @@ function resolveVerifyStore({ chains }: ResolveCtx, input: VerifyFlowInput): Res
   if (!chain) return { ok: false, reason: 'chain_missing' };
   if (!networkUtils.isProxySupported(chain.options)) return { ok: false, reason: 'chain_unsupported' };
 
-  // Initiator is the pure proxy whose delegation we're verifying. We pick it from the
-  // wallet's own accounts so that findRoute/wrapLegacy can layer proxy.proxy and asMulti
-  // on top of a plain system.remark — same pipeline any transfer would use.
+  // Initiator is the clicked delegate (the multisig that dispatches proxy.proxy).
+  // Routing through the delegate's own account graph yields its signatories, which
+  // is what must sign the verification. Using the proxied wallet's route would
+  // always hit that wallet's inner multisig and verify the wrong row.
+  //
+  // Delegates are resolved from accounts.$list (spans all loaded wallets) because a
+  // delegate often lives in a different wallet than the one showing the proxy row.
   const initiator =
-    wallet.accounts.find(
+    allAccounts.find(
       (account) =>
-        account.accountId === proxy.pureProxyAccountId && accountService.isAccountAvailableOnChain(account, chain),
+        account.accountId === proxy.proxyAccountId && accountService.isAccountAvailableOnChain(account, chain),
     ) ?? null;
 
   if (!initiator) {
-    return { ok: false, reason: 'pure_proxy_not_found' };
+    return { ok: false, reason: 'delegate_account_not_loaded' };
   }
 
   return {
@@ -125,6 +130,7 @@ const resolved = sample({
   clock: flowStarted,
   source: {
     chains: networkModel.$chains,
+    allAccounts: accounts.$list,
   },
   fn: (ctx, input) => ({ input, result: resolveVerifyStore(ctx, input) }),
 });
@@ -238,9 +244,11 @@ const $coreTx = combine(
   ({ signatory, data }) => {
     if (!signatory || !data) return null;
 
-    return buildVerifyRemark({
+    return buildVerifyProxyCall({
       chainId: data.chain.chainId,
-      accountId: signatory.accountId,
+      delegateAccountId: data.proxy.proxyAccountId,
+      pureProxyAccountId: data.proxy.pureProxyAccountId,
+      proxyType: data.proxy.proxyType,
     });
   },
 );
