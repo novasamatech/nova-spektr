@@ -2536,6 +2536,8 @@
       "editButton": "Edit",
       "submitButton": "Submit",
       "addCallDataButton": "Add call data",
+      "initiateButton": "Save as draft",
+      "initiateDisabledTooltip": "Fill in all transaction details to save as draft",
       "editDraftTitle": "Edit draft",
       "editSuccess": "Draft updated",
       "editError": "Failed to update draft",

@@ -38,7 +38,6 @@ import { draftDeepLinkModel } from '../model/draft-deep-link';
 import '../model/drafts-model'; // side-effect: orchestration wiring
 import { submitDraftModel } from '../model/submit-draft-model';
 
-import { CreateDraftModal } from './CreateDraftModal';
 import { DraftRow } from './DraftRow';
 import { DraftSummary } from './DraftSummary';
 import { SubmitDraftModal } from './SubmitDraftModal';
@@ -298,8 +297,6 @@ export const DraftsSection = () => {
               </Tooltip.Content>
             </Tooltip>
           </div>
-
-          <CreateDraftModal />
         </Accordion.Content>
       </Accordion>
 
