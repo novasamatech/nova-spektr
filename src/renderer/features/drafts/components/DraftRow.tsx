@@ -159,7 +159,9 @@ export const DraftRow = ({
                   return truncate(toAddress(draft.proxyAccountId, { prefix: chain?.addressPrefix }), 4, 4);
                 }
 
-                return contact?.name || <span className="text-text-negative">{t('operations.drafts.unknownMultisig')}</span>;
+                return (
+                  contact?.name || <span className="text-text-negative">{t('operations.drafts.unknownMultisig')}</span>
+                );
               })()}
               {titleData?.title && ` · ${titleData.title}`}
               {destinationAddress && ` · ${truncate(destinationAddress, 4, 4)}`}
