@@ -239,8 +239,9 @@ const $canSubmit = and($valid, form.$isValid, not($pendingFee));
 
 sample({
   clock: $signatories,
-  filter: (signatories) => signatories.length < 2,
-  fn: (signatories) => signatories.at(0)! ?? null,
+  source: form.fields.signatory.$value,
+  filter: (current, signatories) => !current && signatories.length > 0,
+  fn: (_current, signatories) => signatories[0]!,
   target: form.fields.signatory.change,
 });
 
@@ -510,6 +511,11 @@ sample({
   clock: flowFinished,
   fn: () => Step.NONE,
   target: stepChanged,
+});
+
+sample({
+  clock: flowFinished,
+  target: form.reset,
 });
 
 sample({

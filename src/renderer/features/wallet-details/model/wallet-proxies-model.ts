@@ -11,7 +11,7 @@ import { createSubscriptionResource, deriveFromResources } from '@/shared/resour
 import { type AnyAccount, accountService, accountSync, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 
-export type Proxy = Omit<ProxyAccount, 'id' | 'delay'>;
+export type Proxy = Omit<ProxyAccount, 'id'>;
 type ChainProxies = { proxies: Proxy[]; deposit: BN | null };
 type WalletProxiesByChain = Record<ChainId, ChainProxies>;
 
@@ -63,6 +63,7 @@ const walletProxiesSubscription = createSubscriptionResource<WalletProxiesSubscr
             proxiedAccountId: account,
             chainId: chain.chainId,
             proxyType: proxy.proxyType.toString() as ProxyType,
+            delay: proxy.delay?.toNumber() ?? 0,
           }));
 
           allProxies.push(...(mappedProxies ?? []));
