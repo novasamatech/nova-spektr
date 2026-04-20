@@ -20,11 +20,6 @@ type Props = {
   onGoBack?: () => void;
 };
 
-/**
- * Lives in this feature so we can subscribe to `verifyProxyModel` directly
- * (same tick as `$confirmMeta`) and avoid empty confirm UI when
- * `confirmModel.$confirmStore` is still waiting on wallet resolution.
- */
 export const VerifyProxyConfirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);

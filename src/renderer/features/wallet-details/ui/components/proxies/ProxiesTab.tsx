@@ -23,11 +23,6 @@ const { VerifyProxy } = proxyVerifyFeature;
 
 type Props = {
   wallet: Wallet;
-  /**
-   * Closes the surrounding wallet-details modal. Invoked when a "View
-   * operation" action navigates to the multisig operations page so the user
-   * isn't left with the modal covering the destination.
-   */
   onCloseWalletDetails?: () => void;
 };
 

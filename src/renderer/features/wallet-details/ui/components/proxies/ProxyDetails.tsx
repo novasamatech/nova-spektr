@@ -17,18 +17,8 @@ import {
 
 type Props = {
   proxy: WalletProxy;
-  /**
-   * Rendered in the action row when verification is available (e.g. Verify via
-   * proxy).
-   */
   verifyAction: ReactNode | null;
-  /** Opens remove-proxy flow for this proxy row (same as former overflow menu). */
   onRemove?: (proxy: WalletProxy) => void;
-  /**
-   * Closes the wallet-details modal before navigating to the operations page,
-   * so the modal doesn't cover the deep-linked operation the user clicked to
-   * view.
-   */
   onCloseWalletDetails?: () => void;
 };
 
@@ -204,7 +194,6 @@ export const ProxyDetails = ({ proxy, verifyAction, onRemove, onCloseWalletDetai
     );
   }
 
-  // not_verified (with wallet)
   if (!verifyAction) {
     const multisigExplanationKey =
       proxy.delay > 0 ? 'walletDetails.proxies.cannotAutoVerifyDelay' : 'walletDetails.proxies.cannotAutoVerify';

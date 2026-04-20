@@ -60,8 +60,6 @@ describe('features/proxy-verify/lib/build-verify-proxy', () => {
       });
 
       expect(tx.type).toBe(TransactionType.PROXY);
-      // Sanity: the inner call must be a raw REMARK, not utility.batch* or
-      // asDerivative. Changing this breaks verified-status detection.
       expect(tx.args).toHaveProperty('transaction.type', TransactionType.REMARK);
     });
   });

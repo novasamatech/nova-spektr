@@ -41,7 +41,6 @@ export type VerifyGuardFailure =
   | 'chain_unsupported'
   | 'proxy_not_multisig';
 
-/** Proxy row fields required for the verify flow. */
 export type VerifyProxyRef = {
   id: string;
   chainId: ChainId;
@@ -117,10 +116,8 @@ const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: nul
 const $step = restore(stepChanged, Step.NONE);
 const $verifyStore = createStore<VerifyStore | null>(null);
 
-/** Proxy row id for the flow that opened verify (INIT step). */
 const $activeProxyId = createStore<string | null>(null);
 
-/** Confirm payload when the shared confirm list has not resolved wallets yet. */
 const $confirmMeta = createStore<VerifyProxyConfirm | null>(null);
 const $lastGuardFailure = restore(
   guardRejected.map(({ reason }) => reason),

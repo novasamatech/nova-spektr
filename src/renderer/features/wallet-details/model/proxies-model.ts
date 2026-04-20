@@ -16,13 +16,6 @@ import { multisigService } from '@/features/multisig-wallet';
 
 import { walletProxiesModel } from './wallet-proxies-model';
 
-/**
- * Proxy types whose runtime filter accepts `system.remark`. Used to decide
- * whether the Verify-via-proxy action should be exposed for a proxy row.
- *
- * `Any` permits any call; `NonTransfer` rejects only balance transfers. All
- * other types (Governance, Staking, etc.) reject System pallet calls.
- */
 export const VERIFIABLE_PROXY_TYPES: ReadonlySet<ProxyType> = new Set([ProxyTypes.ANY, ProxyTypes.NON_TRANSFER]);
 
 export type WalletProxyStatus = 'verified' | 'not_verified' | 'pending_addition' | 'not_verified_no_wallet';
@@ -57,47 +50,15 @@ export type WalletProxy = {
   proxyType: ProxyType;
   delay: number;
   status: WalletProxyStatus;
-  /**
-   * Verify-via-proxy action eligibility. Multisig proxy account, proxy type
-   * permits `system.remark`, and delay is zero. Fee sufficiency is re-checked
-   * inside the verify modal because it requires chain data the list does not
-   * load.
-   */
   verifiable: boolean;
   lastOperation: WalletProxyLastOperation | null;
   pendingOperation: PendingMultisigOperationRef | null;
-  /**
-   * When a pending multisig op whose decoded call is `proxy.removeProxy`
-   * targets this on-chain proxy row, this points at that operation so the UI
-   * can disable Revoke and deep-link to the operations page. Never set on a
-   * `pending_addition` row — that row doesn't exist on chain yet.
-   */
   pendingRemovalOperation: PendingMultisigOperationRef | null;
-  /**
-   * When a pending multisig op is a Verify-via-proxy call (`proxy.proxy(real,
-   * forceProxyType, system.remark)`) targeting this row, this points at that
-   * operation so the UI can replace the "Verify via proxy" button with "View
-   * operation" while signatories sign.
-   */
   pendingVerificationOperation: PendingMultisigOperationRef | null;
 };
 
 type ProxyDelegationArgs = { proxy: AccountId; proxyType: ProxyType; delay: number };
 
-/**
- * Shared `(delegate, proxyType, delay)` arg extractor. `proxy.addProxy`,
- * `proxy.addProxyWithDelay`, and `proxy.removeProxy` all take the same tuple.
- *
- * Unwrap convention: `proxy.proxy` stores the raw hex of the inner call at
- * `args.call` and the recursively decoded inner call at `args.transaction`
- * ([callDataDecoder.ts:134-135](src/renderer/entities/transaction/lib/callDataDecoder.ts#L134-L135)).
- * We read `args.transaction` — reading `args.call` silently fails because it is
- * a string, not a DecodedTransaction.
- *
- * Mirrors `extractProxiedAccountId`'s shape assumptions intentionally — new
- * shapes must be supported here and there together or pending rows drift from
- * verified ones.
- */
 function extractProxyDelegationArgs(
   tx: DecodedTransaction | null | undefined,
   matchesLeaf: (tx: DecodedTransaction) => boolean,
@@ -138,28 +99,12 @@ function extractAddProxyArgs(tx: DecodedTransaction | null | undefined): ProxyDe
   );
 }
 
-/**
- * `proxy.removeProxies` (no args, removes all) is intentionally unsupported —
- * matching it to specific rows would require enumerating every existing proxy
- * on the current wallet, and the user-facing affordance ("this specific proxy
- * is pending removal") is clearer when left to `removeProxy`.
- */
 function extractRemoveProxyArgs(tx: DecodedTransaction | null | undefined): ProxyDelegationArgs | null {
   return extractProxyDelegationArgs(tx, t => t.section === 'proxy' && t.method === 'removeProxy');
 }
 
 type ProxyExecutionArgs = { real: AccountId; proxyType: ProxyType };
 
-/**
- * Reads `(real, forceProxyType)` off a bare `proxy.proxy` call. Any inner call
- * counts as proof the proxy is reachable — verification doesn't require
- * `system.remark` specifically — so the inner call is intentionally ignored.
- *
- * Batch wrappers are not unwrapped here on purpose: a batched call also won't
- * match `extractProxiedAccountId` for executed-op detection, so accepting them
- * here would mark a row as verification-pending that can never flip to
- * verified, leaving the row stuck.
- */
 function extractProxyExecutionArgs(tx: DecodedTransaction | null | undefined): ProxyExecutionArgs | null {
   if (nullable(tx)) return null;
   if (tx.section !== 'proxy' || tx.method !== 'proxy') return null;
@@ -187,8 +132,6 @@ function resolveProxy(wallets: Wallet[], proxyAccountId: AccountId, chainId: Cha
     walletFn: w => !walletUtils.isWatchOnly(w),
     accountFn: account => {
       if (account.accountId === proxyAccountId) return true;
-      // Flexible multisig wallets register the inner multisig key on chain as
-      // the proxy account, not the pure proxy that represents the wallet.
       if (accountUtils.isFlexibleMultisigAccount(account) && account.multisigAccountId === proxyAccountId) {
         return account.chainId === chainId;
       }
@@ -346,16 +289,6 @@ const $proxies = combine(
 
     const pendingProxies: WalletProxy[] = [];
 
-    // Synthesise pending_addition rows from pending multisig addProxy ops
-    // targeting any signer multisig of this wallet, and annotate on-chain rows
-    // with a pendingRemovalOperation for pending removeProxy ops. Dedupe
-    // additions against on-chain rows so an addProxy that landed before the op
-    // list refreshed doesn't double up.
-    // Signer multisigs are exactly the multisigs already resolved as on-chain
-    // proxies of this wallet's pure proxy. Built per-row by `resolveProxy`, so
-    // it covers Flex's built-in inner multisig AND any extra multisig proxies
-    // added later through addProxy. Earlier per-wallet-type heuristics missed
-    // the latter for Flex wallets.
     const signerMultisigIds = new Set<AccountId>();
     for (const row of onChainProxies) {
       if (row.proxyMultisigAccountId) signerMultisigIds.add(row.proxyMultisigAccountId);
@@ -386,10 +319,6 @@ const $proxies = combine(
           indexCreated: op.indexCreated,
         };
 
-        // Any pending `proxy.proxy(real, forceProxyType, …)` from this signer
-        // multisig proves the proxy is reachable, so stamp the matching row
-        // independently of whether the inner call also triggers an
-        // addProxy/removeProxy classification.
         const executionArgs = extractProxyExecutionArgs(op.transaction);
         if (executionArgs) {
           const row = onChainProxies.find(

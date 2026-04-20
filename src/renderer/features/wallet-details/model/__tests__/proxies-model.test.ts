@@ -98,8 +98,6 @@ describe('features/wallet-details/model/proxies-model', () => {
         proxyType: ProxyTypes.STAKING,
         delay: 0,
       });
-      // callDataDecoder stores the raw hex at args.call and the decoded inner
-      // call at args.transaction. The unwrap must read `transaction`.
       const outer = decodedTx('proxy', 'proxy', { call: '0xdeadbeef', transaction: inner });
 
       expect(extractAddProxyArgs(outer)).toMatchObject({
@@ -146,10 +144,8 @@ describe('features/wallet-details/model/proxies-model', () => {
     });
 
     test('returns null when addProxy args have the wrong shape', () => {
-      // delegate missing
       expect(extractAddProxyArgs(decodedTx('proxy', 'addProxy', { proxyType: ProxyTypes.ANY, delay: 0 }))).toBeNull();
 
-      // proxyType missing
       expect(extractAddProxyArgs(decodedTx('proxy', 'addProxy', { delegate: '0xaa', delay: 0 }))).toBeNull();
     });
   });
@@ -305,15 +301,7 @@ describe('features/wallet-details/model/proxies-model', () => {
     });
   });
 
-  // Reproduces the user-reported bug: a single on-chain pure proxy F controlled
-  // by multisig M is registered in Spektr as both a Proxied wallet (PW) and a
-  // Flexible Multisig wallet (FMW). A pending verification op (proxy.proxy via
-  // M targeting F) should stamp the proxy row in BOTH wallet views, not just
-  // PW. The on-chain row is identical in both views.
   describe('$proxies pending verification stamping (PW vs FMW parity)', () => {
-    // Real 32-byte hex — extractProxiedAccountId runs the value through
-    // decodeAddress (via toAccountId), which collapses any non-decodable input
-    // to '0x00' and silently breaks pureProxyAccountIds.has(...).
     const F = ('0x' + 'aa'.repeat(32)) as AccountId;
     const M = ('0x' + 'bb'.repeat(32)) as AccountId;
     const verifyChainId = '0x01' as ChainId;
@@ -348,8 +336,6 @@ describe('features/wallet-details/model/proxies-model', () => {
       proxyType: ProxyTypes.ANY,
     } as any;
 
-    // Standalone Multisig wallet for M is required for PW's signerMultisigIds
-    // lookup, which matches accounts by accountId === connection.proxyAccountId.
     const mwAccount = {
       id: 'mw-acc',
       walletId: 3,
@@ -360,9 +346,6 @@ describe('features/wallet-details/model/proxies-model', () => {
       threshold: 2,
     } as any;
 
-    // The gate stores the wallet object directly; downstream code reads
-    // wallet.accounts. In the real app these are projected from walletModel.$wallets,
-    // which combines $rawWallets with accounts.$list. We bake accounts in here.
     const pwWallet = {
       id: 1,
       name: 'PW',
@@ -455,10 +438,6 @@ describe('features/wallet-details/model/proxies-model', () => {
       expect(proxies[0]?.pendingVerificationOperation?.operationId).toBe('op-verify');
     });
 
-    // Spektr's flex-multisig creation flow doesn't separately register a
-    // standalone Multisig wallet for the inner key M — the flex wallet packages
-    // it. A Proxied wallet pointing at the same pure proxy F should still
-    // detect the verification op via the flex wallet acting as M's controller.
     test('Proxied wallet view detects verification when only Flex Multisig represents M (no standalone Multisig)', async () => {
       const scope = fork({
         values: new Map<any, any>([
@@ -493,10 +472,6 @@ describe('features/wallet-details/model/proxies-model', () => {
       expect(proxies[0]?.pendingVerificationOperation).not.toBeNull();
     });
 
-    // Regression: a Flex Multisig wallet's pure proxy can have additional
-    // multisig proxies registered on chain (added via addProxy) beyond the
-    // wallet's built-in inner multisig. A verification op signed by such an
-    // extra multisig must stamp its row in the Flex view too.
     test('Flex Multisig view detects verification op signed by an additional multisig proxy', async () => {
       const M2 = ('0x' + 'cc'.repeat(32)) as AccountId;
       const mw2Account = {
