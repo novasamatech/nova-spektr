@@ -4,7 +4,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, toAccountId } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import {
   Accordion,
@@ -140,7 +140,23 @@ export const DraftsSection = () => {
   const editAccount = editingDraft
     ? (allMultisigAccounts.find((a) => a.accountId === editingDraft.multisigAccountId) ?? null)
     : null;
-  const editWallet = editAccount ? (resolvedWallets.find((w) => w.id === editAccount.walletId) ?? null) : null;
+  const editFlexWallet = useMemo(() => {
+    if (!editingDraft?.proxyAccountId || !allWallets.length) return null;
+
+    return walletUtils.getWalletFilteredAccounts(allWallets, {
+      walletFn: (w) => walletUtils.isFlexibleMultisig(w),
+      accountFn: (a) =>
+        accountUtils.isFlexibleMultisigAccount(a) &&
+        a.accountId === editingDraft.proxyAccountId &&
+        a.multisigAccountId === editingDraft.multisigAccountId,
+    });
+  }, [editingDraft, allWallets]);
+  const isEditFlex = !!editFlexWallet;
+  const editWallet = isEditFlex
+    ? (resolvedWallets.find((w) => w.id === editFlexWallet.id) ?? editFlexWallet)
+    : editAccount
+      ? (resolvedWallets.find((w) => w.id === editAccount.walletId) ?? null)
+      : null;
   const editApi = useApi((editingDraft?.chainId as ChainId) ?? ('0x00' as ChainId));
   const editSpecVersion = editApi?.runtimeVersion.specVersion.toNumber() ?? null;
 
@@ -388,8 +404,12 @@ export const DraftsSection = () => {
 
               <DraftSummary
                 multisigName={editWallet?.name ?? ''}
-                multisigAccountId={editAccount?.accountId}
+                multisigAccountId={isEditFlex ? editFlexWallet?.accounts[0]?.accountId : editAccount?.accountId}
                 walletType={editWallet?.type}
+                proxyName={isEditFlex ? undefined : (editingDraft?.proxyContact?.name ?? undefined)}
+                proxyAccountId={
+                  !isEditFlex && editingDraft?.proxyAccountId ? toAccountId(editingDraft.proxyAccountId) : undefined
+                }
                 threshold={
                   editAccount
                     ? t('createMultisigAccount.thresholdOutOf', {
