@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useEffect, useRef } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -24,6 +25,12 @@ type Props = {
    * with internal checks.
    */
   disabled?: boolean;
+  /**
+   * Fired after the draft has been successfully saved from the flow initiated
+   * by this button. Typically used by the initiating modal to close itself so
+   * the user isn't left in a stale flow.
+   */
+  onDraftCreated?: () => void;
 };
 
 /**
@@ -41,10 +48,35 @@ export const InitiateDraftButton = ({
   inputMode = 'paste',
   source,
   disabled,
+  onDraftCreated,
 }: Props) => {
   const { t } = useI18n();
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const authState = useUnit(authModel.$authState);
+
+  // Tracks whether this button instance started the currently-open draft flow.
+  // Only the initiator should fire onDraftCreated — prevents unrelated draft
+  // saves (from another flow) from closing this modal.
+  const initiatedRef = useRef(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line effector/no-watch
+    const unsubCreated = createDraftModel.draftCreated.watch(() => {
+      if (initiatedRef.current) {
+        initiatedRef.current = false;
+        onDraftCreated?.();
+      }
+    });
+    // eslint-disable-next-line effector/no-watch
+    const unsubClosed = createDraftModel.modalClosed.watch(() => {
+      initiatedRef.current = false;
+    });
+
+    return () => {
+      unsubCreated();
+      unsubClosed();
+    };
+  }, [onDraftCreated]);
 
   const canWrite = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_WRITE) ?? false);
 
@@ -56,6 +88,7 @@ export const InitiateDraftButton = ({
 
   const handleClick = () => {
     if (!ready) return;
+    initiatedRef.current = true;
     createDraftModel.createDraftRequested({
       callData: callData ?? undefined,
       chainId: chainId ?? undefined,

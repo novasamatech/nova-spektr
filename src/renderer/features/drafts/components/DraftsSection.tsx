@@ -4,7 +4,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, toAccountId } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import {
   Accordion,
@@ -140,7 +140,23 @@ export const DraftsSection = () => {
   const editAccount = editingDraft
     ? (allMultisigAccounts.find((a) => a.accountId === editingDraft.multisigAccountId) ?? null)
     : null;
-  const editWallet = editAccount ? (resolvedWallets.find((w) => w.id === editAccount.walletId) ?? null) : null;
+  const editFlexWallet = useMemo(() => {
+    if (!editingDraft?.proxyAccountId || !allWallets.length) return null;
+
+    return walletUtils.getWalletFilteredAccounts(allWallets, {
+      walletFn: (w) => walletUtils.isFlexibleMultisig(w),
+      accountFn: (a) =>
+        accountUtils.isFlexibleMultisigAccount(a) &&
+        a.accountId === editingDraft.proxyAccountId &&
+        a.multisigAccountId === editingDraft.multisigAccountId,
+    });
+  }, [editingDraft, allWallets]);
+  const isEditFlex = !!editFlexWallet;
+  const editWallet = isEditFlex
+    ? (resolvedWallets.find((w) => w.id === editFlexWallet.id) ?? editFlexWallet)
+    : editAccount
+      ? (resolvedWallets.find((w) => w.id === editAccount.walletId) ?? null)
+      : null;
   const editApi = useApi((editingDraft?.chainId as ChainId) ?? ('0x00' as ChainId));
   const editSpecVersion = editApi?.runtimeVersion.specVersion.toNumber() ?? null;
 
@@ -175,10 +191,18 @@ export const DraftsSection = () => {
     const chain = chains[draft.chainId as ChainId];
     if (!chain) return;
 
-    const initiatorAccount = allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null;
+    // For flex drafts, the routing initiator is the proxied (pure proxy) account,
+    // but the display initiator is the flex multisig account
+    const initiatorAccount = draft.proxyAccountId
+      ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
+      : (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null);
+
+    const displayInitiator = draft.proxyAccountId
+      ? (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null)
+      : undefined;
 
     setSubmittingDraft(draft);
-    submitDraftModel.flowStarted({ draft, initiator: initiatorAccount, chain });
+    submitDraftModel.flowStarted({ draft, initiator: initiatorAccount, displayInitiator, chain });
   };
 
   const handleSaveEdit = async () => {
@@ -246,7 +270,11 @@ export const DraftsSection = () => {
                 canDelete={canDelete}
                 canWrite={canWrite}
                 isSubmitted={submittedDraftIds.has(draft.id)}
-                hasInitiator={allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)}
+                hasInitiator={
+                  draft.proxyAccountId
+                    ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
+                    : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
+                }
                 isHighlighted={focusedDraftId === draft.id}
                 multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
                 rowRef={
@@ -367,14 +395,21 @@ export const DraftsSection = () => {
                   value={editDescription}
                   onChange={setEditDescription}
                 />
+                <InputHint variant="error" active={!editDescription.trim()}>
+                  {t('operations.drafts.descriptionRequired')}
+                </InputHint>
               </Field>
 
               <Separator />
 
               <DraftSummary
                 multisigName={editWallet?.name ?? ''}
-                multisigAccountId={editAccount?.accountId}
+                multisigAccountId={isEditFlex ? editFlexWallet?.accounts[0]?.accountId : editAccount?.accountId}
                 walletType={editWallet?.type}
+                proxyName={isEditFlex ? undefined : (editingDraft?.proxyContact?.name ?? undefined)}
+                proxyAccountId={
+                  !isEditFlex && editingDraft?.proxyAccountId ? toAccountId(editingDraft.proxyAccountId) : undefined
+                }
                 threshold={
                   editAccount
                     ? t('createMultisigAccount.thresholdOutOf', {
@@ -391,7 +426,11 @@ export const DraftsSection = () => {
             <Button variant="text" onClick={() => handleEditToggle(false)}>
               {t('operations.drafts.backButton')}
             </Button>
-            <Button disabled={editCallDataError !== null} isLoading={isSavingEdit} onClick={handleSaveEdit}>
+            <Button
+              disabled={editCallDataError !== null || !editDescription.trim()}
+              isLoading={isSavingEdit}
+              onClick={handleSaveEdit}
+            >
               {t('operations.drafts.saveButton')}
             </Button>
           </Modal.Footer>

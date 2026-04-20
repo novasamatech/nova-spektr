@@ -45,6 +45,7 @@ import { InitiateDraftButton } from '@/features/drafts';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
+import { transferModel } from '../model/transfer-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
 import { TokenSelectorModal } from './TokenSelector';
@@ -803,7 +804,12 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
           {t('operation.goBackButton')}
         </Button>
         <div className="flex items-center gap-3">
-          <InitiateDraftButton callData={draftCallData} chainId={network?.chain.chainId} source="transfer" />
+          <InitiateDraftButton
+            callData={draftCallData}
+            chainId={network?.chain.chainId}
+            source="transfer"
+            onDraftCreated={() => transferModel.output.flowFinished()}
+          />
           <Button form="transfer-form" type="submit" disabled={!canSubmit || hasErrors} isLoading={isLoading}>
             {t('transfer.continueButton')}
           </Button>

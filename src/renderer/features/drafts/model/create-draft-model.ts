@@ -39,6 +39,7 @@ export type DraftSeed = {
 
 const createDraftRequested = createEvent<DraftSeed | void>();
 const modalClosed = createEvent();
+const draftCreated = createEvent();
 const stepAdvanced = createEvent();
 const stepReverted = createEvent();
 const skipPressed = createEvent();
@@ -161,6 +162,7 @@ const $canSkip = combine($activeStep, $effectiveChain, (step, chain) => step ===
 export const createDraftModel = {
   createDraftRequested,
   modalClosed,
+  draftCreated,
   stepAdvanced,
   stepReverted,
   skipPressed,

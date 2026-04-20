@@ -82,7 +82,12 @@ export const VoteModal = ({ referendum, asset, chain, onClose, onSuccess }: Prop
                       {t('operation.addToBasket')}
                     </Button>
                   )}
-                  <InitiateDraftButton callData={draftCallData} chainId={chain.chainId} source="governance.vote" />
+                  <InitiateDraftButton
+                    callData={draftCallData}
+                    chainId={chain.chainId}
+                    source="governance.vote"
+                    onDraftCreated={onClose}
+                  />
                 </>
               }
               onGoBack={() => voteModal.events.setStep(Step.INIT)}

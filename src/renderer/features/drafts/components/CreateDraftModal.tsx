@@ -2,7 +2,7 @@ import { isHex } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useDeferredValue, useMemo, useState } from 'react';
 
-import { type CallData, type ChainId, type DecodedTransaction, type WalletType } from '@/shared/core';
+import { type CallData, type ChainId, type DecodedTransaction, WalletType } from '@/shared/core';
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatSectionAndMethod, getNativeAssetId, toAccountId, toAddress } from '@/shared/lib/utils';
@@ -129,6 +129,7 @@ export const CreateDraftModal = () => {
 
   const draftMultisig = isProxySelected ? selectedMultisigForProxy : selectedAccount;
   const draftProxy = isProxySelected ? selectedAccount : null;
+  const isFlex = isProxySelected && selectedAccount?.walletType === WalletType.FLEXIBLE_MULTISIG;
 
   const api = useApi(effectiveChain?.chainId ?? ('0x00' as ChainId));
   const specVersion = api?.runtimeVersion.specVersion.toNumber() ?? null;
@@ -243,6 +244,7 @@ export const CreateDraftModal = () => {
         description: description || undefined,
       });
       draftsResource.draftCreated(response);
+      createDraftModel.draftCreated();
       toast.success(t('operations.drafts.createSuccess'));
       createDraftModel.modalClosed();
     } catch (e) {
@@ -463,11 +465,19 @@ export const CreateDraftModal = () => {
               </Field>
 
               <DraftSummary
-                multisigName={draftMultisig?.name ?? selectedAccount?.name ?? ''}
-                multisigAccountId={draftMultisig?.accountId ?? selectedAccount?.accountId}
-                walletType={draftMultisig?.walletType ?? selectedAccount?.walletType ?? undefined}
-                proxyName={draftProxy?.name}
-                proxyAccountId={draftProxy?.accountId}
+                multisigName={
+                  isFlex ? (selectedAccount?.name ?? '') : (draftMultisig?.name ?? selectedAccount?.name ?? '')
+                }
+                multisigAccountId={
+                  isFlex ? selectedAccount?.accountId : (draftMultisig?.accountId ?? selectedAccount?.accountId)
+                }
+                walletType={
+                  isFlex
+                    ? (selectedAccount?.walletType ?? undefined)
+                    : (draftMultisig?.walletType ?? selectedAccount?.walletType ?? undefined)
+                }
+                proxyName={isFlex ? undefined : draftProxy?.name}
+                proxyAccountId={isFlex ? undefined : draftProxy?.accountId}
                 threshold={
                   draftMultisig?.threshold && draftMultisig?.signatories
                     ? t('createMultisigAccount.thresholdOutOf', {
