@@ -243,6 +243,7 @@ export const CreateDraftModal = () => {
         description: description || undefined,
       });
       draftsResource.draftCreated(response);
+      createDraftModel.draftCreated();
       toast.success(t('operations.drafts.createSuccess'));
       createDraftModel.modalClosed();
     } catch (e) {
