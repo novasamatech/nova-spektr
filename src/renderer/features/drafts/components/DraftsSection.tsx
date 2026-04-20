@@ -175,13 +175,18 @@ export const DraftsSection = () => {
     const chain = chains[draft.chainId as ChainId];
     if (!chain) return;
 
-    // For flex drafts, the initiator is the proxied (pure proxy) account
+    // For flex drafts, the routing initiator is the proxied (pure proxy) account,
+    // but the display initiator is the flex multisig account
     const initiatorAccount = draft.proxyAccountId
       ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
       : (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null);
 
+    const displayInitiator = draft.proxyAccountId
+      ? (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null)
+      : undefined;
+
     setSubmittingDraft(draft);
-    submitDraftModel.flowStarted({ draft, initiator: initiatorAccount, chain });
+    submitDraftModel.flowStarted({ draft, initiator: initiatorAccount, displayInitiator, chain });
   };
 
   const handleSaveEdit = async () => {
