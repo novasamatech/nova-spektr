@@ -113,6 +113,12 @@ function extractProxyExecutionArgs(tx: DecodedTransaction | null | undefined): P
   const rawProxyType = tx.args['forceProxyType'];
   if (typeof rawReal !== 'string' || typeof rawProxyType !== 'string') return null;
 
+  // Flex-delegated ops nest one proxy.proxy inside another (flex routes through its own
+  // pure before reaching the target). The innermost proxy.proxy is the one we're acting
+  // as, so unwrap before returning.
+  const inner = extractProxyExecutionArgs(tx.args['transaction'] as DecodedTransaction | undefined);
+  if (inner) return inner;
+
   return { real: toAccountId(rawReal), proxyType: rawProxyType as ProxyType };
 }
 
@@ -306,7 +312,10 @@ const $proxies = combine(
         if (op.status !== 'pending') continue;
         if (!signerMultisigIds.has(op.multisigAccountId)) continue;
 
-        const targetPureProxy = multisigOperationService.extractProxiedAccountId(op.transaction);
+        // Prefer the innermost proxy.proxy real — for flex-delegated ops the outer
+        // proxy.proxy is just the flex routing through its own pure and isn't the target.
+        const executionArgs = extractProxyExecutionArgs(op.transaction);
+        const targetPureProxy = executionArgs?.real ?? multisigOperationService.extractProxiedAccountId(op.transaction);
         if (!targetPureProxy) continue;
         if (!pureProxyAccountIds.has(targetPureProxy)) continue;
 
@@ -319,7 +328,6 @@ const $proxies = combine(
           indexCreated: op.indexCreated,
         };
 
-        const executionArgs = extractProxyExecutionArgs(op.transaction);
         if (executionArgs) {
           const row = onChainProxies.find(
             r =>

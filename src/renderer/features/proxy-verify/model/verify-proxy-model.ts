@@ -13,7 +13,7 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
-import { type AnyAccount, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
@@ -24,7 +24,7 @@ import {
   confirmModel,
 } from '@/features/operations/OperationsConfirm/VerifyProxy/model/confirm-model';
 import { verifyProxyValidator } from '@/features/operations/OperationsValidation';
-import { VERIFIABLE_PROXY_TYPES, buildVerifyProxyCore } from '../lib/build-verify-proxy';
+import { VERIFIABLE_PROXY_TYPES, buildVerifyRemark } from '../lib/build-verify-proxy';
 
 export enum Step {
   NONE,
@@ -39,7 +39,7 @@ export type VerifyGuardFailure =
   | 'delay_nonzero'
   | 'chain_missing'
   | 'chain_unsupported'
-  | 'proxy_not_multisig';
+  | 'pure_proxy_not_found';
 
 export type VerifyProxyRef = {
   id: string;
@@ -64,7 +64,6 @@ type VerifyStore = {
 
 type ResolveCtx = {
   chains: ReturnType<typeof networkModel.$chains.getState>;
-  allAccounts: AnyAccount[];
 };
 
 type ResolveResult = { ok: true; store: VerifyStore } | { ok: false; reason: VerifyGuardFailure };
@@ -73,7 +72,7 @@ type FormParams = {
   signatory: AnyAccount | null;
 };
 
-function resolveVerifyStore({ chains, allAccounts }: ResolveCtx, input: VerifyFlowInput): ResolveResult {
+function resolveVerifyStore({ chains }: ResolveCtx, input: VerifyFlowInput): ResolveResult {
   const { wallet, proxy } = input;
 
   if (!VERIFIABLE_PROXY_TYPES.has(proxy.proxyType)) return { ok: false, reason: 'proxy_type_restricted' };
@@ -83,19 +82,17 @@ function resolveVerifyStore({ chains, allAccounts }: ResolveCtx, input: VerifyFl
   if (!chain) return { ok: false, reason: 'chain_missing' };
   if (!networkUtils.isProxySupported(chain.options)) return { ok: false, reason: 'chain_unsupported' };
 
+  // Initiator is the pure proxy whose delegation we're verifying. We pick it from the
+  // wallet's own accounts so that findRoute/wrapLegacy can layer proxy.proxy and asMulti
+  // on top of a plain system.remark — same pipeline any transfer would use.
   const initiator =
-    allAccounts.find((account) => {
-      if (!accountUtils.isAnyMultisigAccount(account)) return false;
+    wallet.accounts.find(
+      (account) =>
+        account.accountId === proxy.pureProxyAccountId && accountService.isAccountAvailableOnChain(account, chain),
+    ) ?? null;
 
-      if (accountUtils.isFlexibleMultisigAccount(account)) {
-        return account.chainId === proxy.chainId && account.multisigAccountId === proxy.proxyAccountId;
-      }
-
-      return account.accountId === proxy.proxyAccountId;
-    }) ?? null;
-
-  if (!initiator || !accountUtils.isAnyMultisigAccount(initiator)) {
-    return { ok: false, reason: 'proxy_not_multisig' };
+  if (!initiator) {
+    return { ok: false, reason: 'pure_proxy_not_found' };
   }
 
   return {
@@ -128,7 +125,6 @@ const resolved = sample({
   clock: flowStarted,
   source: {
     chains: networkModel.$chains,
-    allAccounts: accounts.$list,
   },
   fn: (ctx, input) => ({ input, result: resolveVerifyStore(ctx, input) }),
 });
@@ -237,17 +233,14 @@ const form: Form<FormParams> = createForm<FormParams>({
 const $coreTx = combine(
   {
     signatory: form.fields.signatory.$value,
-    initiator: $initiatorStore,
     data: $verifyStore,
   },
-  ({ signatory, initiator, data }) => {
-    if (!signatory || !data || !initiator) return null;
+  ({ signatory, data }) => {
+    if (!signatory || !data) return null;
 
-    return buildVerifyProxyCore({
+    return buildVerifyRemark({
       chainId: data.chain.chainId,
-      proxyAccountId: data.proxy.proxyAccountId,
-      pureProxyAccountId: data.proxy.pureProxyAccountId,
-      proxyType: data.proxy.proxyType,
+      accountId: signatory.accountId,
     });
   },
 );

@@ -218,6 +218,25 @@ describe('features/wallet-details/model/proxies-model', () => {
       const noProxyType = decodedTx('proxy', 'proxy', { real: '0xpure', transaction: remark });
       expect(extractProxyExecutionArgs(noProxyType)).toBeNull();
     });
+
+    test('unwraps nested proxy.proxy — flex delegates route through their pure before reaching the target', () => {
+      const remark = decodedTx('system', 'remark', { remark: '0x' });
+      const innerProxy = decodedTx('proxy', 'proxy', {
+        real: '0xtarget',
+        forceProxyType: ProxyTypes.NON_TRANSFER,
+        transaction: remark,
+      });
+      const outerFlexHop = decodedTx('proxy', 'proxy', {
+        real: '0xflexpure',
+        forceProxyType: ProxyTypes.ANY,
+        transaction: innerProxy,
+      });
+
+      expect(extractProxyExecutionArgs(outerFlexHop)).toMatchObject({
+        proxyType: ProxyTypes.NON_TRANSFER,
+      });
+      expect(extractProxyExecutionArgs(outerFlexHop)?.real).toBeDefined();
+    });
   });
 
   describe('findLatestExecutedOperation', () => {

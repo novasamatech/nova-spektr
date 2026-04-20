@@ -2,65 +2,20 @@ import { TransactionType } from '@/shared/core';
 import { ProxyTypes } from '@/shared/core/types/proxy';
 import { toAccountId } from '@/shared/lib/utils';
 import { RelayChains } from '@/shared/lib/utils/constants';
-import {
-  VERIFIABLE_PROXY_TYPES,
-  buildVerifyProxyCore,
-  buildVerifyRemark,
-  isVerifiableProxyType,
-} from '../build-verify-proxy';
+import { VERIFIABLE_PROXY_TYPES, buildVerifyRemark, isVerifiableProxyType } from '../build-verify-proxy';
 
 const chainId = RelayChains.POLKADOT;
-const proxy = toAccountId('0xaaaaaaaa');
-const pureProxy = toAccountId('0xbbbbbbbb');
+const signatory = toAccountId('0xaaaaaaaa');
 
 describe('features/proxy-verify/lib/build-verify-proxy', () => {
   describe('buildVerifyRemark', () => {
-    test('emits an empty-bytes REMARK attributed to the proxy account', () => {
-      expect(buildVerifyRemark({ chainId, accountId: proxy })).toEqual({
+    test('emits a plain system.remark attributed to the signatory; the wrap pipeline handles any proxy/asMulti layering', () => {
+      expect(buildVerifyRemark({ chainId, accountId: signatory })).toEqual({
         chainId,
-        accountId: proxy,
+        accountId: signatory,
         type: TransactionType.REMARK,
         args: { remark: '0x' },
       });
-    });
-  });
-
-  describe('buildVerifyProxyCore', () => {
-    test('wraps system.remark in proxy.proxy with the proxy account as signer', () => {
-      const tx = buildVerifyProxyCore({
-        chainId,
-        proxyAccountId: proxy,
-        pureProxyAccountId: pureProxy,
-        proxyType: ProxyTypes.ANY,
-      });
-
-      expect(tx).toEqual({
-        chainId,
-        accountId: proxy,
-        type: TransactionType.PROXY,
-        args: {
-          real: pureProxy,
-          forceProxyType: ProxyTypes.ANY,
-          transaction: {
-            chainId,
-            accountId: proxy,
-            type: TransactionType.REMARK,
-            args: { remark: '0x' },
-          },
-        },
-      });
-    });
-
-    test('does not batch or apply asDerivative — the indexer only detects bare proxy.proxy or the first batch element', () => {
-      const tx = buildVerifyProxyCore({
-        chainId,
-        proxyAccountId: proxy,
-        pureProxyAccountId: pureProxy,
-        proxyType: ProxyTypes.NON_TRANSFER,
-      });
-
-      expect(tx.type).toBe(TransactionType.PROXY);
-      expect(tx.args).toHaveProperty('transaction.type', TransactionType.REMARK);
     });
   });
 
