@@ -3474,7 +3474,7 @@
       "statusNotVerified": "Not verified",
       "statusAwaitingSignatures": "Awaiting signatures",
       "verifyFormResolvingAccounts": "Resolving proxy account…",
-      "verifyViaProxy": "Verify via proxy",
+      "verifyViaProxy": "Verify proxy",
       "notVerifiedHeadline": "This proxy is not verified yet.",
       "verifyDescription": "Verify submits a minimal `system.remark` via the proxy so we can confirm it on-chain. Because the proxy is a multisig, it's submitted as a multisig proposal—signatories must approve it before it executes.",
       "cannotAutoVerify": "Test verification isn't supported for this proxy type. This row will be marked Verified the first time the proxy is used.",
