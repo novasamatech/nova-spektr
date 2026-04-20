@@ -210,6 +210,7 @@ sample({
     chain: $chain,
     initiator: $initiator,
     signatory: $signatoryStore,
+    route: $route,
   },
   filter: (s) =>
     nonNullable(s.draft) &&
@@ -226,7 +227,7 @@ sample({
         transaction: s.wrappedTx!,
         initiator: s.initiator!,
         signatory: s.signatory || s.initiator!,
-        route: [s.signatory || s.initiator!],
+        route: s.route.length > 0 ? s.route : [s.signatory || s.initiator!],
         fee: s.fee!,
         draft: s.draft!,
       },

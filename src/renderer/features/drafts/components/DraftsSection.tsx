@@ -175,7 +175,10 @@ export const DraftsSection = () => {
     const chain = chains[draft.chainId as ChainId];
     if (!chain) return;
 
-    const initiatorAccount = allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null;
+    // For flex drafts, the initiator is the proxied (pure proxy) account
+    const initiatorAccount = draft.proxyAccountId
+      ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
+      : (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null);
 
     setSubmittingDraft(draft);
     submitDraftModel.flowStarted({ draft, initiator: initiatorAccount, chain });
@@ -246,7 +249,11 @@ export const DraftsSection = () => {
                 canDelete={canDelete}
                 canWrite={canWrite}
                 isSubmitted={submittedDraftIds.has(draft.id)}
-                hasInitiator={allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)}
+                hasInitiator={
+                  draft.proxyAccountId
+                    ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
+                    : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
+                }
                 isHighlighted={focusedDraftId === draft.id}
                 multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
                 rowRef={
