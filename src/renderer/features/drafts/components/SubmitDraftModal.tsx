@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { getNativeAsset, nullable } from '@/shared/lib/utils';
+import { getNativeAsset, nullable, toAddress } from '@/shared/lib/utils';
 import {
   Alert,
   Button,
@@ -15,13 +15,13 @@ import {
   Loader,
   Separator,
 } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
+import { Account, Address, WalletIcon } from '@/shared/ui-entities';
 import { Box, Field, Modal, Select } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
-import { transactionService } from '@/domains/network';
+import { transactionService, useAccountName } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
 import { transactionService as entityTransactionService } from '@/entities/transaction';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { OperationSign, OperationSubmit } from '@/features/operations';
@@ -127,9 +127,35 @@ const ConfirmStep = () => {
     });
   }, [signatories, wallets]);
 
+  const initiatorWallet = useMemo(() => {
+    if (!draft || !wallets.length) return null;
+
+    if (draft.proxyAccountId) {
+      return walletUtils.getWalletFilteredAccounts(wallets, {
+        walletFn: (w) => walletUtils.isFlexibleMultisig(w),
+        accountFn: (a) =>
+          accountUtils.isFlexibleMultisigAccount(a) &&
+          a.accountId === draft.proxyAccountId &&
+          a.multisigAccountId === draft.multisigAccountId,
+      });
+    }
+
+    return walletUtils.getWalletFilteredAccounts(wallets, {
+      walletFn: (w) => walletUtils.isAnyMultisig(w),
+      accountFn: (a) => a.accountId === draft.multisigAccountId,
+    });
+  }, [draft, wallets]);
+
   const showSignatorySelect = signatories.length > 1;
   const noSignatories = signatories.length === 0;
   const canAddAccount = walletUtils.isPolkadotVault(activeWallet);
+
+  // For proxy drafts, show the proxy address with its contact name.
+  // For regular multisig drafts, show the multisig account from the wallet.
+  const isProxyDraft = !!draft?.proxyAccountId;
+  const multisigAccountId = confirm?.initiator.accountId ?? null;
+  const multisigChain = confirm?.chain ?? null;
+  const multisigName = useAccountName({ accountId: isProxyDraft ? null : multisigAccountId, chain: multisigChain });
 
   if (noSignatories) {
     return (
@@ -176,7 +202,7 @@ const ConfirmStep = () => {
     );
   }
 
-  const { chain, initiator, signatory } = confirm;
+  const { chain, initiator } = confirm;
   const asset = getNativeAsset(chain.assets);
   const node = chain.nodes.at(0);
   const decodedLink = node && callData ? getPolkadotAppDecodedUrl(node.url, callData) : null;
@@ -215,7 +241,42 @@ const ConfirmStep = () => {
       )}
 
       <Box padding={[4, 5]}>
-        <TransactionDetails chain={chain} wallets={wallets} initiators={[initiator]} signatory={signatory}>
+        <dl className="flex w-full flex-col gap-y-4 text-footnote">
+          {initiatorWallet && (
+            <DetailRow label={t('transaction.details.wallet')}>
+              <div className="flex items-center gap-x-2">
+                <WalletIcon type={initiatorWallet.type} size={16} />
+                <FootnoteText>{initiatorWallet.name}</FootnoteText>
+              </div>
+            </DetailRow>
+          )}
+          <DetailRow label={t('transaction.details.account')}>
+            {draft?.proxyAccountId ? (
+              <div className="flex w-max max-w-full min-w-0 items-center gap-2">
+                <Address
+                  showIcon
+                  variant="short"
+                  address={toAddress(draft.proxyAccountId, { prefix: chain.addressPrefix })}
+                  title={draft.proxyContact?.name}
+                />
+              </div>
+            ) : (
+              <Account variant="short" accountId={initiator.accountId} chain={chain} title={multisigName} />
+            )}
+          </DetailRow>
+          <Separator className="border-filter-border" />
+          <DetailRow label={t('transaction.details.sinatoryWallet')}>
+            <div className="flex items-center gap-x-2">
+              <WalletIcon type={confirm.signatoryWallet.type} size={16} />
+              <FootnoteText>{confirm.signatoryWallet.name}</FootnoteText>
+            </div>
+          </DetailRow>
+          {selectedSignatory && (
+            <DetailRow label={t('transaction.details.sinatoryAccount')}>
+              <Account variant="short" accountId={selectedSignatory.accountId} chain={chain} />
+            </DetailRow>
+          )}
+          <Separator className="border-filter-border" />
           {draft?.description && (
             <DetailRow label={t('operations.drafts.descriptionLabel')}>
               <FootnoteText className="text-text-primary">{draft.description}</FootnoteText>
@@ -247,7 +308,7 @@ const ConfirmStep = () => {
           )}
           <Separator className="w-full pr-2" />
           <FeeWithLabel asset={asset} fee={fee} />
-        </TransactionDetails>
+        </dl>
       </Box>
 
       <Modal.Footer align="between">

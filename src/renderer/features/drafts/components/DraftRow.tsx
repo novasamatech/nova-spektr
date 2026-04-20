@@ -151,13 +151,18 @@ export const DraftRow = ({
               )}
             </FootnoteText>
             <HelpText className="flex items-center truncate text-text-tertiary">
-              {contact?.name || <span className="text-text-negative">{t('operations.drafts.unknownMultisig')}</span>}
-              {draft.proxyAccountId &&
-                (() => {
+              {(() => {
+                if (draft.proxyAccountId) {
                   const proxyContact = backendContacts.find((c) => c.accountId === draft.proxyAccountId);
-                  const proxyAddr = toAddress(draft.proxyAccountId, { prefix: chain?.addressPrefix });
-                  return ` via ${proxyContact?.name ?? truncate(proxyAddr, 4, 4)}`;
-                })()}
+                  if (proxyContact?.name) return proxyContact.name;
+
+                  return truncate(toAddress(draft.proxyAccountId, { prefix: chain?.addressPrefix }), 4, 4);
+                }
+
+                return (
+                  contact?.name || <span className="text-text-negative">{t('operations.drafts.unknownMultisig')}</span>
+                );
+              })()}
               {titleData?.title && ` · ${titleData.title}`}
               {destinationAddress && ` · ${truncate(destinationAddress, 4, 4)}`}
               {titleData?.amount && (
