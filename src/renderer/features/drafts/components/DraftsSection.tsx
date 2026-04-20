@@ -379,6 +379,9 @@ export const DraftsSection = () => {
                   value={editDescription}
                   onChange={setEditDescription}
                 />
+                <InputHint variant="error" active={!editDescription.trim()}>
+                  {t('operations.drafts.descriptionRequired')}
+                </InputHint>
               </Field>
 
               <Separator />
@@ -403,7 +406,11 @@ export const DraftsSection = () => {
             <Button variant="text" onClick={() => handleEditToggle(false)}>
               {t('operations.drafts.backButton')}
             </Button>
-            <Button disabled={editCallDataError !== null} isLoading={isSavingEdit} onClick={handleSaveEdit}>
+            <Button
+              disabled={editCallDataError !== null || !editDescription.trim()}
+              isLoading={isSavingEdit}
+              onClick={handleSaveEdit}
+            >
               {t('operations.drafts.saveButton')}
             </Button>
           </Modal.Footer>
