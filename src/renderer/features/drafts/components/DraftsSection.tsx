@@ -2,57 +2,16 @@ import { isHex } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 
-import {
-  type Address,
-  type CallData,
-  type Chain,
-  type ChainId,
-  type DecodedTransaction,
-  type WalletType,
-  CryptoType,
-} from '@/shared/core';
-import { useTransformer } from '@/shared/di';
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import {
-  cnTw,
-  formatSectionAndMethod,
-  getNativeAssetId,
-  isEthereumAccountId,
-  toAccountId,
-  toAddress,
-  truncate,
-} from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import {
-  Button,
-  CaptionText,
-  DetailRow,
-  FootnoteText,
-  HelpText,
-  Icon,
-  IconButton,
-  InputHint,
-  Separator,
-  SmallTitleText,
-} from '@/shared/ui';
-import {
-  Account,
-  AssetBalance,
-  ChainIcon,
-  ChainSelect,
-  Hash,
-  WalletAccountIcon,
-  WalletIcon,
-} from '@/shared/ui-entities';
+import { cnTw, toAccountId } from '@/shared/lib/utils';
+import { Button, CaptionText, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import {
   Accordion,
-  Box,
   ConfirmModal,
-  Copy,
   Field,
   Input,
   Modal,
-  Select,
   Tabs,
   TextArea,
   Tooltip,
@@ -61,433 +20,27 @@ import {
 import { Json } from '@/shared/ui-kit/Json/Json';
 import {
   type Draft,
-  HttpError,
   PERMISSIONS,
   draftsResource,
   draftsService,
   operationDescriptionsResource,
   useDrafts,
 } from '@/domains/backend';
-import { type AnyAccount, accounts, contactMultisigsModel, useWalletsNames } from '@/domains/network';
-import { contactModel } from '@/entities/contact';
+import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel, useApi } from '@/entities/network';
-import {
-  decodeCallData,
-  findCoreTransaction,
-  getTransactionAmount,
-  getXcmTransactionBeneficiary,
-  isTransferTransaction,
-  isXcmTransaction,
-  transactionService,
-  useTransactionAsset,
-} from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
-import { AccountsStructureModal } from '@/features/accounts-structure';
 import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
-import { type OperationTitle, operationTitleTransformer } from '@/features/multisig-operations';
 import { OperationTemplatesToolbar } from '@/features/operation-templates';
-import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
-import { NamedAccount } from '@/widgets/NameResolver';
+import { tryDecodeCallData } from '../lib/decode-call-data';
+import { createDraftModel } from '../model/create-draft-model';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
 import '../model/drafts-model'; // side-effect: orchestration wiring
 import { submitDraftModel } from '../model/submit-draft-model';
 
+import { DraftRow } from './DraftRow';
+import { DraftSummary } from './DraftSummary';
 import { SubmitDraftModal } from './SubmitDraftModal';
-
-const enum Step {
-  SELECT_MULTISIG,
-  CALL_DATA,
-  CONFIRM,
-}
-
-type DraftAccountOption = {
-  accountId: AccountId;
-  name: string;
-  chainId?: ChainId;
-  signatories?: AccountId[];
-  threshold?: number;
-  ownerAccountId?: string;
-  walletType: WalletType | null;
-  address: Address;
-};
-
-const getDestinationAccountId = (coreTx: DecodedTransaction | null): AccountId | null => {
-  if (!coreTx) return null;
-
-  if (isXcmTransaction(coreTx)) {
-    return getXcmTransactionBeneficiary(coreTx) ?? null;
-  }
-
-  if (!isTransferTransaction(coreTx) || !coreTx.args?.dest) return null;
-
-  try {
-    return toAccountId(coreTx.args.dest);
-  } catch {
-    return null;
-  }
-};
-
-const DraftRow = ({
-  draft,
-  canWrite,
-  canDelete,
-  isSubmitted,
-  hasInitiator,
-  isHighlighted,
-  multisigAccount,
-  rowRef,
-  onDelete,
-  onEdit,
-  onSubmit,
-}: {
-  draft: Draft;
-  canWrite: boolean;
-  canDelete: boolean;
-  isSubmitted: boolean;
-  hasInitiator: boolean;
-  isHighlighted: boolean;
-  multisigAccount: AnyAccount | null;
-  rowRef?: (el: HTMLDivElement | null) => void;
-  onDelete: (id: string) => void;
-  onEdit: (draft: Draft) => void;
-  onSubmit: (draft: Draft) => void;
-}) => {
-  const { t, formatDate } = useI18n();
-  const isAuthenticated = useUnit(authModel.$isAuthenticated);
-  const chains = useUnit(networkModel.$chains);
-  const backendContacts = useUnit(contactModel.$backendContacts);
-
-  const chain = chains[draft.chainId as ChainId];
-  const chainName = chain?.name;
-  const contact = backendContacts.find((c) => c.accountId === draft.multisigAccountId);
-  const creatorName =
-    draft.createdByContact?.name ?? backendContacts.find((c) => c.accountId === draft.createdBy)?.name;
-  const creatorAddress = draft.createdBy ? toAddress(draft.createdBy, { prefix: chain?.addressPrefix }) : null;
-
-  const overviewAccount = useMemo<AnyAccount | null>(() => {
-    if (multisigAccount) return multisigAccount;
-    if (!contact?.signatories || !contact.threshold) return null;
-
-    return contactMultisigsModel.toSyntheticMultisigAccount({
-      accountId: contact.accountId,
-      name: contact.name,
-      signatories: contact.signatories.map((s) => toAccountId(s)),
-      threshold: contact.threshold,
-      cryptoType: isEthereumAccountId(contact.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
-      contactIds: [contact.id],
-    });
-  }, [multisigAccount, contact]);
-
-  const api = useApi(draft.chainId as ChainId);
-
-  const decodedTransaction = useMemo(() => {
-    if (!draft.callData || !isHex(draft.callData) || !api || !chain) return null;
-
-    try {
-      const nativeAssetId = getNativeAssetId(chain.assets);
-
-      return decodeCallData(
-        api,
-        (draft.multisigAccountId ?? '') as AccountId,
-        draft.callData as CallData,
-        nativeAssetId,
-      );
-    } catch {
-      return null;
-    }
-  }, [draft.callData, draft.multisigAccountId, api, chain]);
-
-  const coreTx = findCoreTransaction(decodedTransaction);
-  const destinationAccountId = useMemo(() => getDestinationAccountId(coreTx), [coreTx]);
-  const txAsset = useTransactionAsset(coreTx, draft.chainId as ChainId);
-  const externalTitle = useTransformer(operationTitleTransformer, {
-    operation: decodedTransaction ? ({ transaction: decodedTransaction, chainId: draft.chainId } as never) : null,
-    chains,
-    asset: txAsset,
-    t,
-  });
-
-  const titleData = useMemo(() => {
-    if (externalTitle?.title) return externalTitle;
-    if (!coreTx) return null;
-
-    const amount = getTransactionAmount(coreTx);
-    const asset = txAsset ?? chain?.assets[0] ?? null;
-
-    return {
-      title: formatSectionAndMethod(coreTx.section, coreTx.method),
-      amount: asset && amount ? { value: amount, asset } : undefined,
-    };
-  }, [externalTitle, coreTx, txAsset, chain]);
-
-  const destinationAddress = destinationAccountId
-    ? toAddress(destinationAccountId, { prefix: chain?.addressPrefix })
-    : null;
-
-  return (
-    <div
-      ref={rowRef}
-      className={cnTw(
-        'mx-0.5 bg-block-background-default',
-        'rounded transition-shadow hover:shadow-card-shadow',
-        isHighlighted && 'ring-2 ring-icon-accent',
-      )}
-    >
-      <div className="flex h-[52px] w-full items-center px-4 py-2">
-        {/* Icon + description */}
-        <div className="flex min-w-0 flex-1 items-center gap-x-3">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-icon-accent/15">
-            <Icon name="document" size={16} className="text-icon-accent" />
-          </div>
-          <div className="flex min-w-0 flex-1 flex-col">
-            <FootnoteText className="truncate font-medium text-text-primary">
-              {draft.description || (
-                <span className="text-text-tertiary italic">{t('operations.drafts.noDescription')}</span>
-              )}
-            </FootnoteText>
-            <HelpText className="flex items-center truncate text-text-tertiary">
-              {contact?.name || <span className="text-text-negative">{t('operations.drafts.unknownMultisig')}</span>}
-              {draft.proxyAccountId &&
-                (() => {
-                  const proxyContact = backendContacts.find((c) => c.accountId === draft.proxyAccountId);
-                  const proxyAddr = toAddress(draft.proxyAccountId, { prefix: chain?.addressPrefix });
-                  return ` via ${proxyContact?.name ?? truncate(proxyAddr, 4, 4)}`;
-                })()}
-              {titleData?.title && ` · ${titleData.title}`}
-              {destinationAddress && ` · ${truncate(destinationAddress, 4, 4)}`}
-              {titleData?.amount && (
-                <>
-                  {}
-                  {' · '}
-                  <AssetBalance
-                    value={titleData.amount.value}
-                    asset={titleData.amount.asset}
-                    className="!text-help-text !text-text-tertiary"
-                  />
-                </>
-              )}
-            </HelpText>
-          </div>
-        </div>
-
-        {/* Chain + date */}
-        <div className="flex w-[120px] shrink-0 flex-col items-end">
-          <FootnoteText className="text-text-primary">
-            {chainName || <span className="text-text-negative">{t('operations.drafts.unknownChain')}</span>}
-          </FootnoteText>
-          <HelpText className="truncate text-text-tertiary">
-            {creatorName ?? (creatorAddress ? truncate(creatorAddress, 4, 4) : null)}
-            {creatorAddress && ` · ${formatDate(new Date(draft.createdAt), 'PP')}`}
-            {!creatorAddress && formatDate(new Date(draft.createdAt), 'PP')}
-          </HelpText>
-        </div>
-
-        {/* Draft badge */}
-        <div className="mx-3 flex w-[80px] shrink-0 items-center justify-end">
-          <div className="flex shrink-0 items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
-            <CaptionText className="text-icon-accent uppercase">{t('operations.drafts.badge')}</CaptionText>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex shrink-0 items-center gap-x-1" onClick={(e) => e.stopPropagation()}>
-          {overviewAccount && (
-            <div className="flex shrink-0 items-center justify-center">
-              <AccountsStructureModal
-                walletAccounts={[overviewAccount]}
-                initialChainId={draft.chainId}
-                trigger={
-                  <Button size="sm" variant="text">
-                    {t('operations.drafts.overviewButton')}
-                  </Button>
-                }
-              />
-            </div>
-          )}
-          <div className="flex w-[40px] shrink-0 items-center justify-center">
-            {canWrite && !isSubmitted && (
-              <Button size="sm" variant="text" onClick={() => onEdit(draft)}>
-                {t('operations.drafts.editButton')}
-              </Button>
-            )}
-          </div>
-          <div className="flex shrink-0 items-center justify-center">
-            {isSubmitted ? (
-              <div className="flex items-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">
-                <CaptionText className="text-icon-positive uppercase">
-                  {t('operations.drafts.submittedBadge')}
-                </CaptionText>
-              </div>
-            ) : !hasInitiator ? (
-              <WalletPairingOperationTrigger />
-            ) : (
-              <Tooltip open={isAuthenticated && draft.callData ? false : undefined}>
-                <Tooltip.Trigger>
-                  <Button
-                    size="sm"
-                    variant="fill"
-                    disabled={!isAuthenticated || !draft.callData}
-                    onClick={() => onSubmit(draft)}
-                  >
-                    {t('operations.drafts.submitButton')}
-                  </Button>
-                </Tooltip.Trigger>
-                <Tooltip.Content>
-                  {!isAuthenticated
-                    ? t('operations.drafts.connectToSubmit')
-                    : t('operations.drafts.noCallDataToSubmit')}
-                </Tooltip.Content>
-              </Tooltip>
-            )}
-          </div>
-          <Tooltip>
-            <Tooltip.Trigger>
-              <Copy
-                value={draftDeepLinkModel.generateDraftDeepLink(draft.id)}
-                notification={t('operations.drafts.linkCopied')}
-              >
-                <IconButton className="shrink-0 text-icon-default" name="share" />
-              </Copy>
-            </Tooltip.Trigger>
-            <Tooltip.Content>{t('operations.drafts.shareDraftTooltip')}</Tooltip.Content>
-          </Tooltip>
-          <div className="flex w-[35px] shrink-0 items-center justify-center">
-            {canDelete && !isSubmitted && (
-              <ConfirmModal
-                cancelText={t('operations.drafts.deleteCancel')}
-                confirmText={t('operations.drafts.deleteConfirm')}
-                description={t('operations.drafts.deleteDescription')}
-                title={t('operations.drafts.deleteTitle')}
-                type="warning"
-                onConfirm={() => onDelete(draft.id)}
-              >
-                <ConfirmModal.Trigger>
-                  <IconButton name="delete" className="text-icon-default hover:text-text-negative" />
-                </ConfirmModal.Trigger>
-              </ConfirmModal>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-type DraftSummaryProps = {
-  multisigName: string;
-  multisigAccountId?: AccountId;
-  proxyName?: string;
-  proxyAccountId?: AccountId;
-  threshold?: string;
-  chain: Chain | null;
-  walletType?: WalletType;
-  titleData?: OperationTitle | null;
-  destinationAccountId?: AccountId | null;
-  callData?: string;
-  jsonArgs?: object | null;
-};
-
-const DraftSummary = ({
-  multisigName,
-  multisigAccountId,
-  proxyName,
-  proxyAccountId,
-  threshold,
-  chain,
-  walletType,
-  titleData,
-  destinationAccountId,
-  callData,
-  jsonArgs,
-}: DraftSummaryProps) => {
-  const { t } = useI18n();
-
-  return (
-    <dl className="flex flex-col gap-y-4 text-footnote">
-      {chain?.name && (
-        <DetailRow label={t('transfer.networkLabel')} className="flex gap-x-2">
-          <ChainIcon chain={chain} size={16} />
-          <FootnoteText>{chain.name}</FootnoteText>
-        </DetailRow>
-      )}
-      {walletType && (
-        <DetailRow label={t('transaction.details.wallet')} className="flex gap-x-2">
-          <WalletIcon type={walletType} size={16} />
-          <FootnoteText>{multisigName}</FootnoteText>
-        </DetailRow>
-      )}
-      {!walletType && (
-        <DetailRow label={t('transaction.details.wallet')}>
-          <FootnoteText>{multisigName}</FootnoteText>
-        </DetailRow>
-      )}
-      {multisigAccountId && chain && (
-        <DetailRow label={t('transaction.details.account')}>
-          <Account variant="short" accountId={multisigAccountId} chain={chain} title={multisigName} />
-        </DetailRow>
-      )}
-      {proxyAccountId && chain && (
-        <DetailRow label={t('operations.drafts.proxyLabel')}>
-          <Account variant="short" accountId={proxyAccountId} chain={chain} title={proxyName} />
-        </DetailRow>
-      )}
-      {threshold && (
-        <DetailRow label={t('createMultisigAccount.thresholdName')}>
-          <FootnoteText>{threshold}</FootnoteText>
-        </DetailRow>
-      )}
-      {titleData?.title && (
-        <DetailRow label={t('operations.drafts.summaryOperation')}>
-          <FootnoteText>{titleData.title}</FootnoteText>
-        </DetailRow>
-      )}
-      {titleData?.amount && (
-        <DetailRow label={t('operations.drafts.summaryAmount')}>
-          <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} className="text-footnote" />
-        </DetailRow>
-      )}
-      {destinationAccountId && chain && (
-        <DetailRow label={t('operation.details.recipient')}>
-          <NamedAccount accountId={destinationAccountId} variant="short" chain={chain} />
-        </DetailRow>
-      )}
-      {callData && (
-        <DetailRow label={t('operation.details.callData')}>
-          <div className="flex items-center gap-1">
-            <Copy value={callData}>
-              <button
-                type="button"
-                className="group -mr-2 flex cursor-pointer items-center gap-x-1 rounded-sm px-2 py-[3px] hover:bg-action-background-hover hover:text-text-primary"
-              >
-                <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
-                <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
-              </button>
-            </Copy>
-            {jsonArgs && (
-              <Modal size="lg" height="fit">
-                <Modal.Trigger>
-                  <button
-                    type="button"
-                    className="group cursor-pointer rounded-sm px-2 py-[3px] hover:bg-action-background-hover"
-                  >
-                    <Icon name="details" size={16} className="group-hover:text-icon-hover" />
-                  </button>
-                </Modal.Trigger>
-                <Modal.Title close>{t('operation.viewJSON.label')}</Modal.Title>
-                <Modal.Content>
-                  <Box padding={5}>
-                    <Json value={jsonArgs} name="callData" expandDepth={3} />
-                  </Box>
-                </Modal.Content>
-              </Modal>
-            )}
-          </div>
-        </DetailRow>
-      )}
-    </dl>
-  );
-};
 
 export const DraftsSection = () => {
   const { t } = useI18n();
@@ -545,147 +98,21 @@ export const DraftsSection = () => {
   }, [focusedDraftId]);
 
   const [submittingDraft, setSubmittingDraft] = useState<Draft | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [showDiscardCreate, setShowDiscardCreate] = useState(false);
   const [showDiscardEdit, setShowDiscardEdit] = useState(false);
   const [editingDraft, setEditingDraft] = useState<Draft | null>(null);
   const [editDescription, setEditDescription] = useState('');
   const [editCallData, setEditCallData] = useState('');
   const [editInputMode, setEditInputMode] = useState<'paste' | 'build'>('paste');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeStep, setActiveStep] = useState<Step>(Step.SELECT_MULTISIG);
-  const [selectedAccount, setSelectedAccount] = useState<DraftAccountOption | null>(null);
-  const [selectedMultisigForProxy, setSelectedMultisigForProxy] = useState<DraftAccountOption | null>(null);
-  const [selectedChain, setSelectedChain] = useState<Chain | null>(null);
-  const [callData, setCallData] = useState('');
-  const [decodedCallData, setDecodedCallData] = useState<object | null>(null);
-  const [decodedTransaction, setDecodedTransaction] = useState<DecodedTransaction | null>(null);
-  const [description, setDescription] = useState('');
-  const [inputMode, setInputMode] = useState<'paste' | 'build'>('paste');
-
-  const deferredCallData = useDeferredValue(callData);
-  const callDataError =
-    deferredCallData.length > 0 && !isHex(deferredCallData) ? t('operations.drafts.callDataErrorHex') : null;
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const allAccounts = useUnit(accounts.$list);
   const allMultisigAccounts = useMemo(() => allAccounts.filter(accountUtils.isAnyMultisigAccount), [allAccounts]);
   const allWallets = useUnit(walletModel.$wallets);
   const multisigWallets = useMemo(() => allWallets.filter(walletUtils.isAnyMultisig), [allWallets]);
   const chains = useUnit(networkModel.$chains);
-  const chainsList = useUnit(networkModel.$chainsList);
-  const backendContacts = useUnit(contactModel.$backendContacts);
 
   const resolvedWallets = useWalletsNames(multisigWallets);
-
-  const draftAccountOptions = useMemo<DraftAccountOption[]>(() => {
-    return backendContacts
-      .filter((c) => (c.signatories?.length && c.threshold) || c.ownerAccountId)
-      .map((c) => {
-        const localAccount = allMultisigAccounts.find((a) => a.accountId === c.accountId);
-        const wallet = localAccount ? resolvedWallets.find((w) => w.id === localAccount.walletId) : null;
-        const contactChainId = c.chainId as ChainId | null;
-        const addressPrefix = contactChainId ? chains[contactChainId]?.addressPrefix : undefined;
-
-        return {
-          accountId: c.accountId as AccountId,
-          name: wallet?.name ?? c.name,
-          chainId: contactChainId ?? undefined,
-          signatories: c.signatories?.map((s) => toAccountId(s)),
-          threshold: c.threshold ?? undefined,
-          ownerAccountId: c.ownerAccountId ?? undefined,
-          walletType: wallet?.type ?? null,
-          address: toAddress(c.accountId, { prefix: addressPrefix }),
-        };
-      });
-  }, [backendContacts, allMultisigAccounts, resolvedWallets, chains]);
-
-  const isProxySelected = selectedAccount
-    ? !!selectedAccount.ownerAccountId && !selectedAccount.signatories?.length
-    : false;
-
-  const multisigOptionsForProxy = useMemo(() => {
-    if (!selectedAccount?.ownerAccountId) return [];
-
-    const ownerNormalized = toAccountId(selectedAccount.ownerAccountId);
-
-    return draftAccountOptions.filter((o) => o.signatories?.length && o.threshold && o.accountId === ownerNormalized);
-  }, [draftAccountOptions, selectedAccount]);
-
-  const draftMultisig = isProxySelected ? selectedMultisigForProxy : selectedAccount;
-  const draftProxy = isProxySelected ? selectedAccount : null;
-
-  const effectiveChain = selectedAccount?.chainId ? (chains[selectedAccount.chainId] ?? null) : selectedChain;
-
-  const api = useApi(effectiveChain?.chainId ?? ('0x00' as ChainId));
-  const specVersion = api?.runtimeVersion.specVersion.toNumber() ?? null;
-
-  const handleTemplateApply = (templateCallData: string) => {
-    setCallData(templateCallData);
-  };
-
-  const isCreateDirty = selectedAccount !== null || callData.length > 0 || description.length > 0;
-
-  const resetCreateState = () => {
-    setSelectedAccount(null);
-    setSelectedMultisigForProxy(null);
-    setSelectedChain(null);
-    setCallData('');
-    setDecodedCallData(null);
-    setDecodedTransaction(null);
-    setDescription('');
-    setActiveStep(Step.SELECT_MULTISIG);
-    setIsSubmitting(false);
-    setInputMode('paste');
-  };
-
-  const handleToggle = (open: boolean) => {
-    if (!open && isCreateDirty) {
-      setShowDiscardCreate(true);
-
-      return;
-    }
-
-    setIsModalOpen(open);
-    if (!open) {
-      resetCreateState();
-    }
-  };
-
-  const handleDiscardCreate = () => {
-    setShowDiscardCreate(false);
-    setIsModalOpen(false);
-    resetCreateState();
-  };
-
-  const handleCreateDraft = async () => {
-    if (!backendUrl || !selectedAccount || !effectiveChain) return;
-
-    setIsSubmitting(true);
-    try {
-      const response = await draftsService.createDraft(backendUrl, {
-        chainId: effectiveChain.chainId,
-        multisigAccountId: (draftMultisig ?? selectedAccount).accountId,
-        proxyAccountId: draftProxy?.accountId,
-        callData: callData || undefined,
-        description: description || undefined,
-      });
-      draftsResource.draftCreated(response);
-      toast.success(t('operations.drafts.createSuccess'));
-      setIsModalOpen(false);
-      resetCreateState();
-    } catch (e) {
-      const description =
-        e instanceof HttpError && e.status === 403
-          ? t('addressBook.sources.errorForbidden')
-          : e instanceof Error
-            ? e.message
-            : t('operations.drafts.createError');
-      toast.error(t('operations.drafts.createError'), { description });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleDeleteDraft = async (id: string) => {
     if (!backendUrl) return;
@@ -713,25 +140,46 @@ export const DraftsSection = () => {
   const editAccount = editingDraft
     ? (allMultisigAccounts.find((a) => a.accountId === editingDraft.multisigAccountId) ?? null)
     : null;
-  const editWallet = editAccount ? (resolvedWallets.find((w) => w.id === editAccount.walletId) ?? null) : null;
+  const editFlexWallet = useMemo(() => {
+    if (!editingDraft?.proxyAccountId || !allWallets.length) return null;
+
+    return walletUtils.getWalletFilteredAccounts(allWallets, {
+      walletFn: (w) => walletUtils.isFlexibleMultisig(w),
+      accountFn: (a) =>
+        accountUtils.isFlexibleMultisigAccount(a) &&
+        a.accountId === editingDraft.proxyAccountId &&
+        a.multisigAccountId === editingDraft.multisigAccountId,
+    });
+  }, [editingDraft, allWallets]);
+  const isEditFlex = !!editFlexWallet;
+  const editWallet = isEditFlex
+    ? (resolvedWallets.find((w) => w.id === editFlexWallet.id) ?? editFlexWallet)
+    : editAccount
+      ? (resolvedWallets.find((w) => w.id === editAccount.walletId) ?? null)
+      : null;
   const editApi = useApi((editingDraft?.chainId as ChainId) ?? ('0x00' as ChainId));
   const editSpecVersion = editApi?.runtimeVersion.specVersion.toNumber() ?? null;
 
   const deferredEditCallData = useDeferredValue(editCallData);
-  const editCallDataError =
-    deferredEditCallData.length > 0 && !isHex(deferredEditCallData) ? t('operations.drafts.callDataErrorHex') : null;
 
-  const editDecodedCallData = useMemo(() => {
-    if (!deferredEditCallData || !isHex(deferredEditCallData) || !editApi || !editChain) return null;
+  const editDecodedCallData = useMemo(
+    () => tryDecodeCallData(deferredEditCallData, editApi, editChain),
+    [deferredEditCallData, editApi, editChain],
+  );
 
-    try {
-      const call = transactionService.createCallFromCallData(deferredEditCallData as CallData, editApi);
+  const isEditCallDataUndecodable =
+    deferredEditCallData.length > 0 && isHex(deferredEditCallData) && !!editApi && !!editChain && !editDecodedCallData;
 
-      return call ? transactionService.formatCall(call, editChain) : null;
-    } catch {
-      return null;
+  const editCallDataError = (() => {
+    if (deferredEditCallData.length > 0 && !isHex(deferredEditCallData)) {
+      return t('operations.drafts.callDataErrorHex');
     }
-  }, [deferredEditCallData, editApi, editChain]);
+    if (isEditCallDataUndecodable) {
+      return t('operations.drafts.extrinsicError');
+    }
+
+    return null;
+  })();
 
   const handleEditTemplateApply = (templateCallData: string) => {
     setEditCallData(templateCallData);
@@ -743,16 +191,24 @@ export const DraftsSection = () => {
     const chain = chains[draft.chainId as ChainId];
     if (!chain) return;
 
-    const initiatorAccount = allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null;
+    // For flex drafts, the routing initiator is the proxied (pure proxy) account,
+    // but the display initiator is the flex multisig account
+    const initiatorAccount = draft.proxyAccountId
+      ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
+      : (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null);
+
+    const displayInitiator = draft.proxyAccountId
+      ? (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null)
+      : undefined;
 
     setSubmittingDraft(draft);
-    submitDraftModel.flowStarted({ draft, initiator: initiatorAccount, chain });
+    submitDraftModel.flowStarted({ draft, initiator: initiatorAccount, displayInitiator, chain });
   };
 
   const handleSaveEdit = async () => {
     if (!backendUrl || !editingDraft) return;
 
-    setIsSubmitting(true);
+    setIsSavingEdit(true);
     try {
       const response = await draftsService.updateDraft(backendUrl, editingDraft.id, {
         description: editDescription,
@@ -766,7 +222,7 @@ export const DraftsSection = () => {
       const message = e instanceof Error ? e.message : t('operations.drafts.editError');
       toast.error(t('operations.drafts.editError'), { description: message });
     } finally {
-      setIsSubmitting(false);
+      setIsSavingEdit(false);
     }
   };
 
@@ -791,77 +247,6 @@ export const DraftsSection = () => {
     setEditingDraft(null);
   };
 
-  const handleAccountChange = (accountId: string) => {
-    const found = draftAccountOptions.find((o) => o.accountId === accountId) ?? null;
-    setSelectedAccount(found);
-
-    if (found?.ownerAccountId) {
-      const ownerNormalized = toAccountId(found.ownerAccountId);
-      const matchingMultisigs = draftAccountOptions.filter(
-        (o) => o.signatories?.length && o.threshold && o.accountId === ownerNormalized,
-      );
-      setSelectedMultisigForProxy(matchingMultisigs.length === 1 ? (matchingMultisigs[0] ?? null) : null);
-    } else {
-      setSelectedMultisigForProxy(null);
-    }
-
-    if (found && !found.chainId) {
-      setSelectedChain(chainsList[0] ?? null);
-    } else {
-      setSelectedChain(null);
-    }
-  };
-
-  // Auto-decode call data when it changes (same pipeline as operations list)
-  useEffect(() => {
-    if (!deferredCallData || !isHex(deferredCallData) || !api || !effectiveChain || !selectedAccount) {
-      setDecodedCallData(null);
-      setDecodedTransaction(null);
-
-      return;
-    }
-
-    try {
-      // JSON preview via entity transactionService
-      const call = transactionService.createCallFromCallData(deferredCallData as CallData, api);
-      setDecodedCallData(call ? transactionService.formatCall(call, effectiveChain) : null);
-
-      // Proper DecodedTransaction via the same decoder the operations list uses
-      const nativeAssetId = getNativeAssetId(effectiveChain.assets);
-      const decoded = decodeCallData(api, selectedAccount.accountId, deferredCallData as CallData, nativeAssetId);
-      setDecodedTransaction(decoded);
-    } catch {
-      setDecodedCallData(null);
-      setDecodedTransaction(null);
-    }
-  }, [deferredCallData, api, effectiveChain, selectedAccount]);
-
-  // Use the same title pipeline as the operations list
-  const coreTx = findCoreTransaction(decodedTransaction);
-  const destinationAccountId = useMemo(() => getDestinationAccountId(coreTx), [coreTx]);
-  const txAsset = useTransactionAsset(coreTx, effectiveChain?.chainId ?? ('0x00' as ChainId));
-  const externalTitle = useTransformer(operationTitleTransformer, {
-    operation: decodedTransaction
-      ? ({ transaction: decodedTransaction, chainId: effectiveChain?.chainId } as never)
-      : null,
-    chains,
-    asset: txAsset,
-    t,
-  });
-
-  const titleData = useMemo(() => {
-    if (externalTitle?.title) return externalTitle;
-    if (!coreTx) return null;
-
-    const amount = getTransactionAmount(coreTx);
-    const asset = txAsset ?? effectiveChain?.assets[0] ?? null;
-
-    return {
-      title: formatSectionAndMethod(coreTx.section, coreTx.method),
-      amount: asset && amount ? { value: amount, asset } : undefined,
-    };
-  }, [externalTitle, coreTx, txAsset, effectiveChain]);
-
   if (!canRead) return null;
 
   return (
@@ -885,7 +270,11 @@ export const DraftsSection = () => {
                 canDelete={canDelete}
                 canWrite={canWrite}
                 isSubmitted={submittedDraftIds.has(draft.id)}
-                hasInitiator={allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)}
+                hasInitiator={
+                  draft.proxyAccountId
+                    ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
+                    : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
+                }
                 isHighlighted={focusedDraftId === draft.id}
                 multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
                 rowRef={
@@ -914,7 +303,7 @@ export const DraftsSection = () => {
                     )}
                     disabled={!canWrite}
                     type="button"
-                    onClick={() => canWrite && setIsModalOpen(true)}
+                    onClick={() => canWrite && createDraftModel.createDraftRequested()}
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-dashed border-shade-12 transition-colors group-hover:border-icon-accent group-hover:bg-icon-accent/10">
@@ -936,244 +325,6 @@ export const DraftsSection = () => {
               </Tooltip.Content>
             </Tooltip>
           </div>
-
-          <Modal size="md" isOpen={isModalOpen} onToggle={handleToggle}>
-            <Modal.Title close>{t('operations.drafts.createNew')}</Modal.Title>
-            <div className="flex items-center justify-center gap-2">
-              {[
-                { step: 1, label: t('operations.drafts.stepMultisig') },
-                { step: 2, label: t('operations.drafts.stepCallData') },
-                { step: 3, label: t('operations.drafts.stepConfirm') },
-              ].map(({ step, label }, i) => {
-                const isCompleted = activeStep > i;
-                const isCurrent = activeStep === i;
-
-                return (
-                  <div key={step} className="flex items-center gap-2">
-                    <div className="flex flex-col items-center gap-1">
-                      <div
-                        className={cnTw(
-                          'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
-                          isCompleted && 'bg-icon-positive text-white',
-                          isCurrent && 'bg-icon-accent text-white',
-                          !isCompleted && !isCurrent && 'bg-input-background-disabled text-text-tertiary',
-                        )}
-                      >
-                        {isCompleted ? '\u2713' : step}
-                      </div>
-                      <CaptionText
-                        className={cnTw(
-                          'transition-colors',
-                          isCurrent || isCompleted ? 'text-text-secondary' : 'text-text-tertiary',
-                        )}
-                      >
-                        {label}
-                      </CaptionText>
-                    </div>
-                    {i < 2 && (
-                      <div className={cnTw('mb-5 h-0.5 w-8', isCompleted ? 'bg-icon-positive' : 'bg-divider')} />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <Modal.Content>
-              {activeStep === Step.SELECT_MULTISIG && (
-                <div className="flex flex-col gap-4 p-4">
-                  {draftAccountOptions.length === 0 ? (
-                    <div className="flex flex-col items-center gap-2 py-6">
-                      <Icon name="document" size={32} className="text-icon-default" />
-                      <FootnoteText className="text-center text-text-tertiary">
-                        {t('operations.drafts.noMultisigsInAddressBook')}
-                      </FootnoteText>
-                    </div>
-                  ) : (
-                    <Field text={t('operations.drafts.selectMultisig')}>
-                      <Select
-                        height="md"
-                        placeholder={t('operations.drafts.selectMultisig')}
-                        value={selectedAccount?.accountId ?? null}
-                        onChange={handleAccountChange}
-                      >
-                        {draftAccountOptions.map((opt) => (
-                          <Select.Item key={opt.accountId} value={opt.accountId}>
-                            <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
-                              <WalletAccountIcon
-                                address={opt.address}
-                                type={opt.walletType ?? ('Multisig' as WalletType)}
-                                size={24}
-                                iconSize={12}
-                              />
-                              <span className="flex w-full flex-col overflow-hidden">
-                                <span className="w-fit max-w-full truncate">{opt.name}</span>
-                                <span className="w-full text-help-text text-text-tertiary">
-                                  <Hash value={opt.address} variant="truncate" />
-                                </span>
-                              </span>
-                            </span>
-                          </Select.Item>
-                        ))}
-                      </Select>
-                    </Field>
-                  )}
-
-                  {isProxySelected && (
-                    <Field text={t('operations.drafts.selectMultisigForProxy')}>
-                      <Select
-                        height="md"
-                        placeholder={t('operations.drafts.selectMultisigForProxy')}
-                        value={selectedMultisigForProxy?.accountId ?? null}
-                        onChange={(accountId: string) => {
-                          const found = multisigOptionsForProxy.find((o) => o.accountId === accountId) ?? null;
-                          setSelectedMultisigForProxy(found);
-                        }}
-                      >
-                        {multisigOptionsForProxy.map((opt) => (
-                          <Select.Item key={opt.accountId} value={opt.accountId}>
-                            <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
-                              <WalletAccountIcon
-                                address={opt.address}
-                                type={opt.walletType ?? ('Multisig' as WalletType)}
-                                size={24}
-                                iconSize={12}
-                              />
-                              <span className="flex w-full flex-col overflow-hidden">
-                                <span className="w-fit max-w-full truncate">{opt.name}</span>
-                                <span className="w-full text-help-text text-text-tertiary">
-                                  <Hash value={opt.address} variant="truncate" />
-                                </span>
-                              </span>
-                            </span>
-                          </Select.Item>
-                        ))}
-                      </Select>
-                    </Field>
-                  )}
-
-                  {selectedAccount && !selectedAccount.chainId && (
-                    <Field text={t('operations.drafts.selectNetwork')}>
-                      <ChainSelect
-                        placeholder={t('operations.drafts.selectNetwork')}
-                        value={selectedChain}
-                        options={chainsList}
-                        onChange={setSelectedChain}
-                      />
-                    </Field>
-                  )}
-                </div>
-              )}
-
-              {activeStep === Step.CALL_DATA && (
-                <div className="flex min-h-[500px] flex-col gap-4 p-4">
-                  <Tabs value={inputMode} onChange={(value) => setInputMode(value as 'paste' | 'build')}>
-                    <Tabs.List>
-                      <Tabs.Trigger value="paste">{t('callData.mode.paste')}</Tabs.Trigger>
-                      <Tabs.Trigger value="build">{t('callData.mode.build')}</Tabs.Trigger>
-                    </Tabs.List>
-                    <Tabs.Content value="paste">
-                      <Field text={t('operations.drafts.callDataLabel')}>
-                        <Input
-                          height="md"
-                          placeholder={t('operations.drafts.callDataPlaceholder')}
-                          value={callData}
-                          invalid={callDataError !== null}
-                          onChange={setCallData}
-                        />
-                        <InputHint variant="error" active={callDataError !== null}>
-                          {callDataError}
-                        </InputHint>
-                      </Field>
-                    </Tabs.Content>
-                    <Tabs.Content value="build">
-                      <ExtrinsicBuilder
-                        api={api}
-                        initialCallData={inputMode === 'build' ? callData : undefined}
-                        onCallDataChange={(hex) => {
-                          if (inputMode === 'build') setCallData(hex ?? '');
-                        }}
-                      />
-                    </Tabs.Content>
-                  </Tabs>
-
-                  {effectiveChain && (
-                    <OperationTemplatesToolbar
-                      api={api}
-                      chainId={effectiveChain.chainId}
-                      callData={callData}
-                      specVersion={specVersion}
-                      onApply={handleTemplateApply}
-                    />
-                  )}
-
-                  {decodedCallData && (
-                    <div className="flex flex-col gap-y-2">
-                      <SmallTitleText>{t('operation.callData.preview')}</SmallTitleText>
-                      <div className="max-h-[300px] overflow-auto rounded-md border border-filter-border bg-block-background p-4 break-all">
-                        <Json value={decodedCallData} name="call" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {activeStep === Step.CONFIRM && (
-                <div className="flex flex-col gap-4 p-4">
-                  <Field text={t('operations.drafts.descriptionLabel')}>
-                    <TextArea
-                      placeholder={t('operations.drafts.descriptionPlaceholder')}
-                      value={description}
-                      rows={3}
-                      onChange={setDescription}
-                    />
-                  </Field>
-
-                  <DraftSummary
-                    multisigName={draftMultisig?.name ?? selectedAccount?.name ?? ''}
-                    multisigAccountId={draftMultisig?.accountId ?? selectedAccount?.accountId}
-                    walletType={draftMultisig?.walletType ?? selectedAccount?.walletType ?? undefined}
-                    proxyName={draftProxy?.name}
-                    proxyAccountId={draftProxy?.accountId}
-                    threshold={
-                      draftMultisig?.threshold && draftMultisig?.signatories
-                        ? t('createMultisigAccount.thresholdOutOf', {
-                            threshold: draftMultisig.threshold,
-                            signatoriesLength: draftMultisig.signatories.length,
-                          })
-                        : undefined
-                    }
-                    chain={effectiveChain}
-                    titleData={titleData}
-                    destinationAccountId={destinationAccountId}
-                    callData={callData || undefined}
-                    jsonArgs={decodedCallData}
-                  />
-                </div>
-              )}
-            </Modal.Content>
-
-            <Modal.Footer align="between">
-              <div>
-                {activeStep > Step.SELECT_MULTISIG && (
-                  <Button variant="text" onClick={() => setActiveStep((s) => s - 1)}>
-                    {t('operations.drafts.backButton')}
-                  </Button>
-                )}
-              </div>
-              <Button
-                disabled={
-                  (activeStep === Step.SELECT_MULTISIG &&
-                    (!selectedAccount || !effectiveChain || (isProxySelected && !selectedMultisigForProxy))) ||
-                  (activeStep === Step.CALL_DATA && callDataError !== null)
-                }
-                isLoading={isSubmitting}
-                onClick={activeStep === Step.CONFIRM ? handleCreateDraft : () => setActiveStep((s) => s + 1)}
-              >
-                {activeStep === Step.CONFIRM
-                  ? t('operations.drafts.createDraftButton')
-                  : t('operations.callData.continueButton')}
-              </Button>
-            </Modal.Footer>
-          </Modal>
         </Accordion.Content>
       </Accordion>
 
@@ -1212,6 +363,12 @@ export const DraftsSection = () => {
                 </Tabs.Content>
               </Tabs>
 
+              {editCallDataError && editInputMode === 'build' && (
+                <InputHint variant="error" active>
+                  {editCallDataError}
+                </InputHint>
+              )}
+
               {editChain && (
                 <OperationTemplatesToolbar
                   api={editApi}
@@ -1238,14 +395,21 @@ export const DraftsSection = () => {
                   value={editDescription}
                   onChange={setEditDescription}
                 />
+                <InputHint variant="error" active={!editDescription.trim()}>
+                  {t('operations.drafts.descriptionRequired')}
+                </InputHint>
               </Field>
 
               <Separator />
 
               <DraftSummary
                 multisigName={editWallet?.name ?? ''}
-                multisigAccountId={editAccount?.accountId}
+                multisigAccountId={isEditFlex ? editFlexWallet?.accounts[0]?.accountId : editAccount?.accountId}
                 walletType={editWallet?.type}
+                proxyName={isEditFlex ? undefined : (editingDraft?.proxyContact?.name ?? undefined)}
+                proxyAccountId={
+                  !isEditFlex && editingDraft?.proxyAccountId ? toAccountId(editingDraft.proxyAccountId) : undefined
+                }
                 threshold={
                   editAccount
                     ? t('createMultisigAccount.thresholdOutOf', {
@@ -1262,24 +426,16 @@ export const DraftsSection = () => {
             <Button variant="text" onClick={() => handleEditToggle(false)}>
               {t('operations.drafts.backButton')}
             </Button>
-            <Button disabled={editCallDataError !== null} isLoading={isSubmitting} onClick={handleSaveEdit}>
+            <Button
+              disabled={editCallDataError !== null || !editDescription.trim()}
+              isLoading={isSavingEdit}
+              onClick={handleSaveEdit}
+            >
               {t('operations.drafts.saveButton')}
             </Button>
           </Modal.Footer>
         </Modal>
       )}
-
-      <ConfirmModal
-        title={t('operations.drafts.discardTitle')}
-        description={t('operations.drafts.discardDescription')}
-        cancelText={t('operations.drafts.discardCancel')}
-        confirmText={t('operations.drafts.discardConfirm')}
-        type="warning"
-        isOpen={showDiscardCreate}
-        onToggle={setShowDiscardCreate}
-        onCancel={() => setShowDiscardCreate(false)}
-        onConfirm={handleDiscardCreate}
-      />
 
       <ConfirmModal
         title={t('operations.drafts.discardTitle')}

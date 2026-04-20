@@ -36,6 +36,8 @@ enum Step {
 type FlowInput = {
   draft: Draft;
   initiator: AnyAccount | null;
+  /** Account shown in the confirm UI (flex multisig or regular multisig). Falls back to initiator. */
+  displayInitiator?: AnyAccount | null;
   chain: Chain;
 };
 
@@ -55,6 +57,7 @@ const $step = readonly(restore(stepChanged, Step.NONE));
 const $draft = createStore<Draft | null>(null).reset(flowFinished);
 const $chain = createStore<Chain | null>(null).reset(flowFinished);
 const $initiator = createStore<AnyAccount | null>(null).reset(flowFinished);
+const $displayInitiator = createStore<AnyAccount | null>(null).reset(flowFinished);
 const $signatory = createEvent<AnyAccount | null>();
 const $signatoryStore = createStore<AnyAccount | null>(null).reset(flowFinished);
 
@@ -163,6 +166,12 @@ sample({
 
 sample({
   clock: flowStarted,
+  fn: ({ displayInitiator, initiator }) => displayInitiator ?? initiator,
+  target: $displayInitiator,
+});
+
+sample({
+  clock: flowStarted,
   fn: () => Step.CONFIRM,
   target: stepChanged,
 });
@@ -209,7 +218,9 @@ sample({
     api: $api,
     chain: $chain,
     initiator: $initiator,
+    displayInitiator: $displayInitiator,
     signatory: $signatoryStore,
+    route: $route,
   },
   filter: (s) =>
     nonNullable(s.draft) &&
@@ -219,14 +230,16 @@ sample({
     nonNullable(s.chain) &&
     nonNullable(s.initiator),
   fn: (s) => {
+    const uiInitiator = s.displayInitiator ?? s.initiator!;
+
     return [
       {
         api: s.api!,
         chain: s.chain!,
         transaction: s.wrappedTx!,
-        initiator: s.initiator!,
-        signatory: s.signatory || s.initiator!,
-        route: [s.signatory || s.initiator!],
+        initiator: uiInitiator,
+        signatory: s.signatory || uiInitiator,
+        route: s.route.length > 0 ? s.route : [s.signatory || uiInitiator],
         fee: s.fee!,
         draft: s.draft!,
       },

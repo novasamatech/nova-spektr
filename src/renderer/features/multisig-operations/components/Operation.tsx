@@ -184,23 +184,18 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
               <div className="flex shrink-0 items-center gap-x-2">
                 <div className="w-[100px]">
-                  {isDraftLinked &&
-                    (description ? (
-                      <Tooltip>
-                        <Tooltip.Trigger>
-                          <div className="inline-flex items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
-                            <CaptionText className="text-icon-accent uppercase">
-                              {t('operations.drafts.operationBadge')}
-                            </CaptionText>
-                          </div>
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>{description}</Tooltip.Content>
-                      </Tooltip>
-                    ) : (
-                      <CaptionText className="text-icon-accent uppercase">
-                        {t('operations.drafts.operationBadge')}
-                      </CaptionText>
-                    ))}
+                  {isDraftLinked && (
+                    <Tooltip open={description ? undefined : false}>
+                      <Tooltip.Trigger>
+                        <div className="inline-flex items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
+                          <CaptionText className="text-icon-accent uppercase">
+                            {t('operations.drafts.operationBadge')}
+                          </CaptionText>
+                        </div>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>{description}</Tooltip.Content>
+                    </Tooltip>
+                  )}
                 </div>
                 <OperationTitleStatus operation={operation} account={multisigAccount} />
               </div>
