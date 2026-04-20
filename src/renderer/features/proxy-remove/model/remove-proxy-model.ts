@@ -347,38 +347,54 @@ const confirmEvent = sample({
     multisigDeposit: $multisigDeposit,
     removeProxyStore: $removeProxyStore,
     route: $route,
+    isPureProxiedNeedToBeKilled: $isPureProxiedNeedToBeKilled,
   },
   fn: (source, clock) => {
     return { ...source, ...clock };
   },
-}).filterMap(({ tx, coreTx, chain, initiator, fee, multisigDeposit, removeProxyStore, route, signatory }) => {
-  if (
-    nonNullable(tx) &&
-    nonNullable(chain) &&
-    nonNullable(initiator) &&
-    nonNullable(removeProxyStore) &&
-    nonNullable(signatory) &&
-    nonNullable(fee) &&
-    nonNullable(coreTx)
-  ) {
-    return [
-      {
+}).filterMap(
+  ({
+    tx,
+    coreTx,
+    chain,
+    initiator,
+    fee,
+    multisigDeposit,
+    removeProxyStore,
+    route,
+    signatory,
+    isPureProxiedNeedToBeKilled,
+  }) => {
+    if (
+      nonNullable(tx) &&
+      nonNullable(chain) &&
+      nonNullable(initiator) &&
+      nonNullable(removeProxyStore) &&
+      nonNullable(signatory) &&
+      nonNullable(fee) &&
+      nonNullable(coreTx)
+    ) {
+      const base = {
         id: 0,
-        initiator: initiator,
-        signatory: signatory,
+        initiator,
+        signatory,
         route,
-        chain: chain,
+        chain,
         tx,
         coreTx,
-        spawner: removeProxyStore.spawner ? toAccountId(removeProxyStore.spawner) : undefined,
-        delegate: toAccountId(removeProxyStore.proxyAccount.accountId),
         proxyType: removeProxyStore.proxyType,
         fee: fee.toString(),
         multisigDeposit: multisigDeposit.toString(),
-      } satisfies RemoveProxyConfirm,
-    ];
-  }
-});
+      };
+
+      const confirm: RemoveProxyConfirm = isPureProxiedNeedToBeKilled
+        ? { ...base, spawner: toAccountId(removeProxyStore.spawner) }
+        : { ...base, delegate: toAccountId(removeProxyStore.proxyAccount.accountId) };
+
+      return [confirm];
+    }
+  },
+);
 
 sample({
   clock: confirmEvent,
