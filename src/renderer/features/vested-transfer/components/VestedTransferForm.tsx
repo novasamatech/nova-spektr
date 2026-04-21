@@ -12,8 +12,10 @@ import { Box, Field, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { transactionService } from '@/entities/transaction';
 import { type ValidationIssue, VestingCsvError, VestingFieldError } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
+import { InitiateDraftButton } from '@/features/drafts';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import {
@@ -38,6 +40,10 @@ export const VestedTransferForm = () => {
 
   const wallets = useUnit(walletModel.$wallets);
   const txErrors = useUnit(formModel.$txErrors);
+  const chain = useUnit(formModel.$chain);
+  const api = useUnit(formModel.$api);
+  const coreTx = useUnit(formModel.$coreTx);
+  const draftCallData = transactionService.getCallDataHex(coreTx, api);
 
   return (
     <>
@@ -55,9 +61,17 @@ export const VestedTransferForm = () => {
         </form>
       </ScrollArea>
       <Modal.Footer>
-        <Button form="vested-transfer-form" type="submit" disabled={!canSubmit}>
-          {t('transfer.continueButton')}
-        </Button>
+        <div className="flex items-center gap-3">
+          <InitiateDraftButton
+            callData={draftCallData}
+            chainId={chain?.chainId}
+            source="vested-transfer"
+            onDraftCreated={() => formModel.flowFinished()}
+          />
+          <Button form="vested-transfer-form" type="submit" disabled={!canSubmit}>
+            {t('transfer.continueButton')}
+          </Button>
+        </div>
       </Modal.Footer>
     </>
   );
