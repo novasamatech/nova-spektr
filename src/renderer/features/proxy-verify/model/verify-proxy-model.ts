@@ -63,7 +63,7 @@ type VerifyStore = {
 };
 
 type ResolveCtx = {
-  chains: ReturnType<typeof networkModel.$chains.getState>;
+  chains: ReturnType<Record<ChainId, Chain>>;
   allAccounts: AnyAccount[];
 };
 
