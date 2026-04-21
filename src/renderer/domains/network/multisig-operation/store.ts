@@ -31,6 +31,7 @@ import {
   subscribeNewMultisigEventsResource,
   subscribeOnchainResource,
 } from './resource';
+import { multisigOperationService } from './service';
 import { type MultisigOperation } from './types';
 
 const subscribeToAccounts = createEvent<{
@@ -401,7 +402,9 @@ const $liveOperations = combine(
     offChain: $offChainOperations,
   },
   ({ onChain, completedLiveOperations, offChain }) => {
-    return uniqBy(onChain.concat(completedLiveOperations).concat(offChain), o => o.id);
+    // Merge: on-chain is authoritative for status/events but falls back to off-chain for
+    // null method/section/callData (indexer has decoded these; on-chain fetch may return null).
+    return multisigOperationService.mergeMultisigOperations(offChain, onChain.concat(completedLiveOperations));
   },
 );
 
