@@ -63,7 +63,7 @@ type VerifyStore = {
 };
 
 type ResolveCtx = {
-  chains: ReturnType<Record<ChainId, Chain>>;
+  chains: Record<ChainId, Chain>;
   allAccounts: AnyAccount[];
 };
 
@@ -83,13 +83,6 @@ function resolveVerifyStore({ chains, allAccounts }: ResolveCtx, input: VerifyFl
   if (!chain) return { ok: false, reason: 'chain_missing' };
   if (!networkUtils.isProxySupported(chain.options)) return { ok: false, reason: 'chain_unsupported' };
 
-  // Initiator is the clicked delegate (the multisig that dispatches proxy.proxy).
-  // Routing through the delegate's own account graph yields its signatories, which
-  // is what must sign the verification. Using the proxied wallet's route would
-  // always hit that wallet's inner multisig and verify the wrong row.
-  //
-  // Delegates are resolved from accounts.$list (spans all loaded wallets) because a
-  // delegate often lives in a different wallet than the one showing the proxy row.
   const initiator =
     allAccounts.find(
       (account) =>
