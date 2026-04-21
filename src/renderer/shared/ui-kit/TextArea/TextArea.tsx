@@ -29,7 +29,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
         className={cnTw(
           'w-full rounded-sm px-3 py-2',
           'resize-none text-footnote text-text-primary',
-          'bg-input-background outline-1 outline-filter-border outline-solid placeholder:text-text-secondary',
+          'bg-input-background outline-1 outline-filter-border outline-solid placeholder:text-text-tertiary',
           {
             'outline-filter-border-negative': invalid,
             'focus-within:outline-active-container-border hover:shadow-card-shadow focus:outline-1': !disabled,

@@ -2514,7 +2514,7 @@
       "callDataPlaceholder": "0x...",
       "callDataErrorHex": "Call data must be valid hex starting with 0x",
       "descriptionLabel": "Description",
-      "descriptionPlaceholder": "Note for signatories (optional)",
+      "descriptionPlaceholder": "Note for signatories (max 500 characters)",
       "descriptionRequired": "Description is required",
       "summaryTitle": "Summary",
       "summaryMultisig": "Multisig",
