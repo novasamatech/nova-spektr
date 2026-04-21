@@ -148,12 +148,13 @@ const $canContinue = combine(
     account: $selectedAccount,
     proxyMultisig: $selectedMultisigForProxy,
     isProxy: $isProxySelected,
+    description: $description,
   },
-  ({ step, chain, callData, errorKey, account, proxyMultisig, isProxy }) => {
+  ({ step, chain, callData, errorKey, account, proxyMultisig, isProxy, description }) => {
     if (step === 'call-data') return !!chain && callData.length > 0 && errorKey === null;
     if (step === 'select-multisig') return !!account && (!isProxy || !!proxyMultisig);
 
-    return step === 'confirm';
+    return step === 'confirm' && description.trim().length > 0;
   },
 );
 

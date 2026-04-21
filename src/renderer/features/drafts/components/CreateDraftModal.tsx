@@ -251,8 +251,8 @@ export const CreateDraftModal = () => {
       const errorDescription =
         e instanceof HttpError && e.status === 403
           ? t('addressBook.sources.errorForbidden')
-          : e instanceof Error
-            ? e.message
+          : e instanceof HttpError && e.status === 422
+            ? t('operations.drafts.descriptionRequired')
             : t('operations.drafts.createError');
       toast.error(t('operations.drafts.createError'), { description: errorDescription });
     } finally {
@@ -455,7 +455,13 @@ export const CreateDraftModal = () => {
 
           {activeStep === 'confirm' && (
             <div className="flex flex-col gap-4 p-4">
-              <Field text={t('operations.drafts.descriptionLabel')}>
+              <Field
+                text={
+                  <>
+                    {t('operations.drafts.descriptionLabel')} <span className="text-text-negative">*</span>
+                  </>
+                }
+              >
                 <TextArea
                   placeholder={t('operations.drafts.descriptionPlaceholder')}
                   value={description}
