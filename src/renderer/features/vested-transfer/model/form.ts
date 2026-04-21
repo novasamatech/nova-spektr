@@ -575,6 +575,7 @@ export const formModel = {
   $canSubmit,
   $step,
   $api,
+  $coreTx,
   $fee,
   $pendingFee,
   $multisigDeposit,

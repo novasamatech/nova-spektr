@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
+import { uniqBy } from 'lodash';
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -32,7 +33,8 @@ export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
     return { prefix: prefix ?? undefined };
   }, [api]);
 
-  const resolvedAccounts = useAccountsNames(accountsList, null);
+  const uniqueAccountsList = useMemo(() => uniqBy(accountsList, 'accountId'), [accountsList]);
+  const resolvedAccounts = useAccountsNames(uniqueAccountsList, null);
 
   // Collect all known addresses for selection detection
   const knownAddresses = useMemo(() => {
