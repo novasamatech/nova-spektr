@@ -396,24 +396,50 @@ export const CreateDraftModal = () => {
                     value={selectedAccount?.accountId ?? null}
                     onChange={handleAccountChange}
                   >
-                    {draftAccountOptions.map((opt) => (
-                      <Select.Item key={opt.accountId} value={opt.accountId}>
-                        <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
-                          <WalletAccountIcon
-                            address={opt.address}
-                            type={opt.walletType ?? ('Multisig' as WalletType)}
-                            size={24}
-                            iconSize={12}
-                          />
-                          <span className="flex w-full flex-col overflow-hidden">
-                            <span className="w-fit max-w-full truncate">{opt.name}</span>
-                            <span className="w-full text-help-text text-text-tertiary">
-                              <Hash value={opt.address} variant="truncate" />
+                    <Select.Group title={t('operations.drafts.multisigsGroup')}>
+                      {draftAccountOptions
+                        .filter((o) => !o.isProxy)
+                        .map((opt) => (
+                          <Select.Item key={opt.accountId} value={opt.accountId}>
+                            <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
+                              <WalletAccountIcon
+                                address={opt.address}
+                                type={opt.walletType ?? ('Multisig' as WalletType)}
+                                size={24}
+                                iconSize={12}
+                              />
+                              <span className="flex w-full flex-col overflow-hidden">
+                                <span className="w-fit max-w-full truncate">{opt.name}</span>
+                                <span className="w-full text-help-text text-text-tertiary">
+                                  <Hash value={opt.address} variant="truncate" />
+                                </span>
+                              </span>
                             </span>
-                          </span>
-                        </span>
-                      </Select.Item>
-                    ))}
+                          </Select.Item>
+                        ))}
+                    </Select.Group>
+                    <Select.Group title={t('operations.drafts.proxiedAccountsGroup')}>
+                      {draftAccountOptions
+                        .filter((o) => o.isProxy)
+                        .map((opt) => (
+                          <Select.Item key={opt.accountId} value={opt.accountId}>
+                            <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
+                              <WalletAccountIcon
+                                address={opt.address}
+                                type={opt.walletType ?? ('Multisig' as WalletType)}
+                                size={24}
+                                iconSize={12}
+                              />
+                              <span className="flex w-full flex-col overflow-hidden">
+                                <span className="w-fit max-w-full truncate">{opt.name}</span>
+                                <span className="w-full text-help-text text-text-tertiary">
+                                  <Hash value={opt.address} variant="truncate" />
+                                </span>
+                              </span>
+                            </span>
+                          </Select.Item>
+                        ))}
+                    </Select.Group>
                   </Select>
                 </Field>
               )}
