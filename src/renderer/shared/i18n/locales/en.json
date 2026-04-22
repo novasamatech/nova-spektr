@@ -3495,6 +3495,7 @@
       "verifiedDateLabel": "Executed at",
       "verifiedOperationUnknown": "Unknown call",
       "viewOperation": "View operation",
+      "shareOperation": "Share",
       "pendingAdditionDescription": "An add-proxy operation is waiting for multisig signatures.",
       "pendingRemovalDescription": "A remove-proxy operation is waiting for multisig signatures.",
       "pendingVerificationHeadline": "Verification awaiting signatures",
