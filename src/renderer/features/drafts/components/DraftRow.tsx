@@ -229,7 +229,7 @@ export const DraftRow = ({
                 </CaptionText>
               </div>
             ) : !hasInitiator ? (
-              <WalletPairingOperationTrigger />
+              <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
             ) : !draft.callData ? (
               <Tooltip open={canWrite && isAuthenticated ? false : undefined}>
                 <Tooltip.Trigger>

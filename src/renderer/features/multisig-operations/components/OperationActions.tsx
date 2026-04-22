@@ -85,7 +85,7 @@ export const OperationActions = memo(({ operation, account }: Props) => {
       )}
       {isContact && (
         <div className="max-w-1/2 flex-1">
-          <WalletPairingOperationTrigger />
+          <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
         </div>
       )}
     </div>

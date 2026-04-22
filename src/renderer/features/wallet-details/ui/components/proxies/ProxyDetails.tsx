@@ -9,6 +9,7 @@ import { Box, Copy } from '@/shared/ui-kit';
 import { multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { findCoreTransaction } from '@/entities/transaction';
+import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import {
   type PendingMultisigOperationRef,
   type WalletProxy,
@@ -165,6 +166,7 @@ export const ProxyDetails = ({ proxy, verifyAction, onRemove, onCloseWalletDetai
               {t('walletDetails.proxies.noWalletCopyAddress')}
             </Button>
           </Copy>
+          <WalletPairingOperationTrigger tooltipContent={t('walletDetails.proxies.addWalletTooltip')} />
           {pendingRemovalAction}
           {revokeButton}
         </ProxyDetailActions>
