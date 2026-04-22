@@ -1,5 +1,6 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+import { expect, userEvent, within } from 'storybook/test';
 
 import { TEST_ACCOUNTS, toAddress } from '@/shared/lib/utils';
 import { Address } from '@/shared/ui-entities';
@@ -42,7 +43,54 @@ export default meta;
 
 type Story = StoryObj<typeof Select>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = await canvas.findByTestId('Select');
+    expect(trigger).toHaveTextContent('Select a fruit');
+  },
+};
+
+export const SelectItem: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Open dropdown and select "Orange"
+    const trigger = await canvas.findByTestId('Select');
+    await userEvent.click(trigger);
+    const orange = await canvas.findByText('Orange');
+    await userEvent.click(orange);
+
+    // Trigger should now display "Orange"
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const closedTrigger = await canvas.findByTestId('Select');
+    expect(closedTrigger).toHaveTextContent('Orange');
+  },
+};
+
+export const SelectDifferentItems: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Select "Apple"
+    await userEvent.click(await canvas.findByTestId('Select'));
+    await userEvent.click(await canvas.findByText('Apple'));
+    await new Promise(resolve => setTimeout(resolve, 100));
+    expect(await canvas.findByTestId('Select')).toHaveTextContent('Apple');
+
+    // Select "Cherry" — should show "Cherry", not "Apple"
+    await userEvent.click(await canvas.findByTestId('Select'));
+    await userEvent.click(await canvas.findByText('Cherry'));
+    await new Promise(resolve => setTimeout(resolve, 100));
+    expect(await canvas.findByTestId('Select')).toHaveTextContent('Cherry');
+
+    // Select "Watermelon" — should update again
+    await userEvent.click(await canvas.findByTestId('Select'));
+    await userEvent.click(await canvas.findByText('Watermelon'));
+    await new Promise(resolve => setTimeout(resolve, 100));
+    expect(await canvas.findByTestId('Select')).toHaveTextContent('Watermelon');
+  },
+};
 
 export const RichContent: Story = {
   render: args => {
