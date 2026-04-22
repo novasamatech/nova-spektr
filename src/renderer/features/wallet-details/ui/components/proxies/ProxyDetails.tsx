@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod, toAddress } from '@/shared/lib/utils';
-import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
+import { Button, FootnoteText, Icon } from '@/shared/ui';
 import { Box, Copy, Tooltip } from '@/shared/ui-kit';
 import { multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -151,10 +151,14 @@ export const ProxyDetails = ({ proxy, verifyAction, onRemove, onCloseWalletDetai
           </FootnoteText>
           {lastOp && (
             <div className="flex flex-col gap-1">
-              <DetailRow label={t('walletDetails.proxies.verifiedOperationLabel')}>{operationTitle}</DetailRow>
-              <DetailRow label={t('walletDetails.proxies.verifiedDateLabel')}>
-                {formatDate(new Date(lastOp.timestamp), 'PPp')}
-              </DetailRow>
+              <FootnoteText className="inline-flex flex-wrap items-baseline gap-2">
+                <span className="shrink-0 text-text-tertiary">{t('walletDetails.proxies.verifiedOperationLabel')}</span>
+                <span className="min-w-0 text-text-primary">{operationTitle}</span>
+              </FootnoteText>
+              <FootnoteText className="inline-flex flex-wrap items-baseline gap-2">
+                <span className="shrink-0 text-text-tertiary">{t('walletDetails.proxies.verifiedDateLabel')}</span>
+                <span className="min-w-0 text-text-primary">{formatDate(new Date(lastOp.timestamp), 'PPp')}</span>
+              </FootnoteText>
             </div>
           )}
           {pendingRemovalNote}
