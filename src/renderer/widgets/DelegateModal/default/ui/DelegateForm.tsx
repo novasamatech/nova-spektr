@@ -12,8 +12,10 @@ import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
+import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
+import { InitiateDraftButton } from '@/features/drafts';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { ConvictionSelect } from '@/widgets/VoteModal';
 import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
@@ -255,15 +257,27 @@ const ActionsSection = ({ onGoBack }: { onGoBack: () => void }) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const coreTx = useUnit(formModel.$coreTx);
+  const api = useUnit(formModel.$api);
+  const network = useUnit(formModel.$networkStore);
+  const draftCallData = transactionService.getCallDataHex(coreTx, api);
 
   return (
     <div className="flex w-full items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="transfer-form" type="submit" disabled={!canSubmit}>
-        {t('transfer.continueButton')}
-      </Button>
+      <div className="flex items-center gap-3">
+        <InitiateDraftButton
+          callData={draftCallData}
+          chainId={network?.chain.chainId}
+          source="delegate"
+          onDraftCreated={onGoBack}
+        />
+        <Button form="transfer-form" type="submit" disabled={!canSubmit}>
+          {t('transfer.continueButton')}
+        </Button>
+      </div>
     </div>
   );
 };

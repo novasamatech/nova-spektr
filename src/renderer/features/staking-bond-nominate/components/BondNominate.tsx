@@ -6,13 +6,15 @@ import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit/Modal/Modal';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
-import { OperationResult } from '@/entities/transaction';
+import { OperationResult, transactionService } from '@/entities/transaction';
+import { InitiateDraftButton } from '@/features/drafts';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { BondNominateConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
 import { Validators } from '@/features/staking';
 import { Step } from '../lib/types';
 import { bondNominateUtils } from '../lib/utils';
 import { bondNominateFlow } from '../model/flow';
+import { formModel } from '../model/form-model';
 
 import { BondForm } from './BondForm';
 
@@ -22,6 +24,10 @@ export const BondNominate = () => {
   const step = useUnit(bondNominateFlow.$step);
   const walletData = useUnit(bondNominateFlow.$walletData);
   const initiatorWallet = useUnit(bondNominateFlow.$initiatorWallet);
+  const coreTx = useUnit(formModel.$coreTx);
+  const api = useUnit(formModel.$api);
+  const network = useUnit(formModel.$networkStore);
+  const draftCallData = transactionService.getCallDataHex(coreTx, api);
 
   const [isModalOpen, closeModal] = useModalClose(!bondNominateUtils.isNoneStep(step), bondNominateFlow.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
@@ -72,12 +78,19 @@ export const BondNominate = () => {
         {bondNominateUtils.isConfirmStep(step) && (
           <Confirmation
             secondaryActionButton={
-              initiatorWallet &&
-              basketUtils.isBasketAvailable(initiatorWallet) && (
-                <Button pallet="secondary" onClick={() => bondNominateFlow.txSaved()}>
-                  {t('operation.addToBasket')}
-                </Button>
-              )
+              <>
+                {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
+                  <Button pallet="secondary" onClick={() => bondNominateFlow.txSaved()}>
+                    {t('operation.addToBasket')}
+                  </Button>
+                )}
+                <InitiateDraftButton
+                  callData={draftCallData}
+                  chainId={network?.chain.chainId}
+                  source="staking-bond-nominate"
+                  onDraftCreated={closeModal}
+                />
+              </>
             }
             onGoBack={() => bondNominateFlow.stepChanged(Step.VALIDATORS)}
           />

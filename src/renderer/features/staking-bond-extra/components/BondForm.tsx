@@ -9,8 +9,10 @@ import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entitie
 import { Tooltip } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
+import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
+import { InitiateDraftButton } from '@/features/drafts';
 import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
 
@@ -186,15 +188,27 @@ const ActionsSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const coreTx = useUnit(formModel.$coreTx);
+  const api = useUnit(formModel.$api);
+  const network = useUnit(formModel.$networkStore);
+  const draftCallData = transactionService.getCallDataHex(coreTx, api);
 
   return (
     <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="transfer-form" type="submit" disabled={!canSubmit}>
-        {t('transfer.continueButton')}
-      </Button>
+      <div className="flex items-center gap-3">
+        <InitiateDraftButton
+          callData={draftCallData}
+          chainId={network?.chain.chainId}
+          source="staking-bond-extra"
+          onDraftCreated={onGoBack}
+        />
+        <Button form="transfer-form" type="submit" disabled={!canSubmit}>
+          {t('transfer.continueButton')}
+        </Button>
+      </div>
     </div>
   );
 };

@@ -292,6 +292,7 @@ export const formModel = {
   $isMultisig,
   $isProxy,
   $api,
+  $coreTx,
   $networkStore,
   $tx,
   $canSubmit,
