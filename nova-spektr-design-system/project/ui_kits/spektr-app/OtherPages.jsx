@@ -13,7 +13,7 @@ const FellowshipPage = () => (
         <NSIcon src="../../assets/icons/chevron/down.svg" size={11} style={{ opacity: 0.5 }} />
       </button>
     } search={false} />
-    <div style={{ flex: 1, overflow: 'auto', padding: '0 24px 24px' }}>
+    <div style={{ flex: 1, overflow: 'auto', paddingLeft: 'clamp(16px, 4vw, 64px)', paddingRight: 'clamp(16px, 4vw, 64px)', paddingBottom: 24 }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 16, maxWidth: 1100, margin: '0 auto' }}>
         <NSPlate padding="0" style={{ minHeight: 540, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
           <img src="../../assets/document.svg" style={{ width: 60, opacity: 0.55 }} onError={e => e.target.style.display = 'none'} />
@@ -70,7 +70,7 @@ const AddressBookPage = () => {
           <NSButton variant="primary">Import</NSButton>
         </>
       } />
-      <div style={{ flex: 1, overflow: 'auto', padding: '0 24px 24px' }}>
+      <div style={{ flex: 1, overflow: 'auto', paddingLeft: 'clamp(16px, 4vw, 64px)', paddingRight: 'clamp(16px, 4vw, 64px)', paddingBottom: 24 }}>
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
           <div style={{ display: 'flex', gap: 4, background: 'rgba(69,69,137,0.06)', padding: 2, borderRadius: 8, marginBottom: 16 }}>
             {[['mine', 'My Contacts', CONTACTS.length], ['ext', 'External source', 0]].map(([id, label, count]) => (
@@ -121,7 +121,7 @@ const MultisigPage = () => {
   return (
     <>
       <Header title="Multisig Operations" />
-      <div style={{ flex: 1, overflow: 'auto', padding: '0 24px 24px' }}>
+      <div style={{ flex: 1, overflow: 'auto', paddingLeft: 'clamp(16px, 4vw, 64px)', paddingRight: 'clamp(16px, 4vw, 64px)', paddingBottom: 24 }}>
         <div style={{ maxWidth: 1060, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
             <div style={{ display: 'inline-flex', gap: 4, background: 'rgba(69,69,137,0.06)', padding: 2, borderRadius: 8 }}>
@@ -221,7 +221,7 @@ const NotificationsPage = () => (
         boxShadow: 'var(--card-shadow)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5, color: '#79797D',
       }}>Filter by date<NSIcon src="../../assets/icons/chevron/down.svg" size={10} style={{ opacity: 0.5 }} /></button>
     } />
-    <div style={{ flex: 1, overflow: 'auto', padding: '0 24px 24px' }}>
+    <div style={{ flex: 1, overflow: 'auto', paddingLeft: 'clamp(16px, 4vw, 64px)', paddingRight: 'clamp(16px, 4vw, 64px)', paddingBottom: 24 }}>
       <div style={{ maxWidth: 700, margin: '0 auto' }}>
         <div style={{
           font: '600 10px Inter', letterSpacing: '0.75px', textTransform: 'uppercase',
@@ -283,7 +283,7 @@ const SettingsPage = () => {
   return (
     <>
       <Header title="Settings" search={false} />
-      <div style={{ flex: 1, overflow: 'auto', padding: '0 24px 24px' }}>
+      <div style={{ flex: 1, overflow: 'auto', paddingLeft: 'clamp(16px, 4vw, 64px)', paddingRight: 'clamp(16px, 4vw, 64px)', paddingBottom: 24 }}>
         <div style={{ maxWidth: 560, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
           <Section title="General">
             {rows.map(r => (

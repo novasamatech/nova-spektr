@@ -86,7 +86,7 @@ const AssetsPage = () => {
   return (
     <>
       <Header title="Portfolio" />
-      <div style={{ flex: 1, overflow: 'auto', padding: '0 24px 24px' }}>
+      <div style={{ flex: 1, overflow: 'auto', paddingLeft: 'clamp(16px, 4vw, 64px)', paddingRight: 'clamp(16px, 4vw, 64px)', paddingBottom: 24 }}>
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           <div style={{
             display: 'grid', gridTemplateColumns: '18px 1fr 140px 140px 80px',

@@ -116,7 +116,9 @@ const SideNav = ({ current, onNavigate, collapsed, onToggleCollapse }) => (
 
 const Header = ({ title, right, search = true, filter = true }) => (
   <header style={{
-    height: 56, padding: '0 24px',
+    height: 56,
+    paddingLeft: 'clamp(16px, 4vw, 64px)',
+    paddingRight: 'clamp(16px, 4vw, 64px)',
     display: 'flex', alignItems: 'center', gap: 16,
     background: '#F8F8FA',
   }}>

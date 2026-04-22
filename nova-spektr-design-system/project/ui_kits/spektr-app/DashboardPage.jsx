@@ -35,6 +35,16 @@ const DASH_WALLETS = [
       { id: 'wc-ksm', name: 'KSM account', addr: '15oF…kH2Lm', weight: 0.05 },
     ],
   },
+  {
+    id: 'address-book', name: 'Address book', type: 'Watch-only',
+    icon: '../../assets/icons/nav/address-book.svg',
+    watchOnly: true,
+    accounts: [
+      { id: 'ab-novasama',  name: 'Novasama',  addr: '15UHvP…GPM3p9', weight: 0.10 },
+      { id: 'ab-solocrack', name: 'solocrack', addr: '13mAjF…KVtfaq', weight: 0.04 },
+      { id: 'ab-alice',     name: 'Alice',     addr: '5HZ3qP…aBcD4',  weight: 0.00 },
+    ],
+  },
 ];
 const DASH_ALL_ACCOUNT_IDS = DASH_WALLETS.flatMap(w => w.accounts.map(a => a.id));
 const ACCOUNT_BY_ID = Object.fromEntries(
@@ -110,11 +120,17 @@ const WalletFilterProvider = ({ children }) => {
     .map(id => ({ ...ACCOUNT_BY_ID[id], color: colorForAccount(id) }));
   const isAll = selectedCount === DASH_ALL_ACCOUNT_IDS.length;
   const isNone = selectedCount === 0;
+  const hasWatchOnly = walletsWithAny.some(w => w.watchOnly);
+  const isWatchOnlyAccount = (id) => {
+    const acc = ACCOUNT_BY_ID[id];
+    return !!(acc && acc.wallet && acc.wallet.watchOnly);
+  };
 
   const value = {
     presets: allPresets, activePreset, activePresetId, setActivePresetId,
     upsertPreset, deletePreset,
     selected, selectedAccounts, scale, selectedCount, walletsWithAny, isAll, isNone,
+    hasWatchOnly, isWatchOnlyAccount,
     totalAccounts: DASH_ALL_ACCOUNT_IDS.length,
   };
   return <WalletFilterContext.Provider value={value}>{children}</WalletFilterContext.Provider>;
@@ -664,17 +680,19 @@ const CHAIN_STAKES = [
     chainId: 'polkadot-ah', chain: 'Polkadot Asset Hub', token: 'DOT',
     price: 1.29, apy: 17.4, nextEra: '2h 12m',
     positions: [
-      { accountId: 'v-stash',    staked: 900.0, activeStake: 900.0, validators: 12, elected: 10, rewards: 60.1, status: 'Active' },
-      { accountId: 'l-main',     staked: 322.0, activeStake: 322.0, validators: 8,  elected: 8,  rewards: 21.4, status: 'Active' },
-      { accountId: 'ms-treasury', staked: 58.5, activeStake:  51.0, validators: 6,  elected: 5,  rewards: 4.7,  status: 'Active' },
+      { accountId: 'v-stash',     staked: 900.0,  activeStake: 900.0,  validators: 12, elected: 10, rewards: 60.1, status: 'Active' },
+      { accountId: 'l-main',      staked: 322.0,  activeStake: 322.0,  validators: 8,  elected: 8,  rewards: 21.4, status: 'Active' },
+      { accountId: 'ms-treasury', staked: 58.5,   activeStake:  51.0,  validators: 6,  elected: 5,  rewards: 4.7,  status: 'Active' },
+      { accountId: 'ab-novasama', staked: 2500.0, activeStake: 2500.0, validators: 16, elected: 16, rewards: 164.3, status: 'Active' },
     ],
   },
   {
     chainId: 'kusama-ah', chain: 'Kusama Asset Hub', token: 'KSM',
     price: 4.79, apy: 14.9, nextEra: '0h 42m',
     positions: [
-      { accountId: 'v-stash', staked: 3.1, activeStake: 3.1, validators: 8, elected: 7, rewards: 0.22, status: 'Active' },
-      { accountId: 'wc-ksm',  staked: 1.7, activeStake: 1.7, validators: 6, elected: 6, rewards: 0.19, status: 'Active' },
+      { accountId: 'v-stash',      staked: 3.1,  activeStake: 3.1,  validators: 8,  elected: 7,  rewards: 0.22, status: 'Active' },
+      { accountId: 'wc-ksm',       staked: 1.7,  activeStake: 1.7,  validators: 6,  elected: 6,  rewards: 0.19, status: 'Active' },
+      { accountId: 'ab-solocrack', staked: 82.3, activeStake: 82.3, validators: 16, elected: 15, rewards: 5.2,  status: 'Active' },
     ],
   },
 ];
@@ -952,60 +970,331 @@ const RewardsBars = ({ data, asset, bucket, accounts, width = 520, height = 140 
   );
 };
 
-const RewardsCard = ({ scale = 1 }) => {
-  const [asset, setAsset] = React.useState('DOT');
-  const [period, setPeriod] = React.useState('7D');
-  const { selectedAccounts, isNone } = useWalletFilter();
-  const periodCfg = REWARD_PERIODS.find(p => p.id === period);
-  const raw = React.useMemo(() => buildRewards(asset, period, scale), [asset, period, scale]);
-  const data = React.useMemo(() => bucketForBars(raw, periodCfg, 30), [raw, period]);
-  const total = data.reduce((s, d) => s + d.amount, 0);
-  const price = REWARD_ASSETS[asset].price;
-  const ticks = pickAxisTicks(data.length, Math.min(7, data.length));
-  const digits = asset === 'KSM' ? 4 : 2;
+// Multi-series chart used when 2 assets are selected, or when mode is "cumulative".
+// - Bars mode: grouped bars (one per asset per bucket), values expressed in fiat to normalise scales.
+// - Cumulative mode: per-asset area/line of running fiat total.
+const RewardsMultiChart = ({ series, mode, bucket, height = 140 }) => {
+  const wrapRef = React.useRef(null);
+  const [width, setWidth] = React.useState(520);
+  React.useEffect(() => {
+    if (!wrapRef.current || typeof ResizeObserver === 'undefined') return;
+    const el = wrapRef.current;
+    const ro = new ResizeObserver(([entry]) => {
+      const w = Math.round(entry.contentRect.width);
+      if (w > 0) setWidth(w);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
-  const PillGroup = ({ items, value, onChange }) => (
-    <div style={{ display: 'inline-flex', gap: 2, background: 'rgba(69,69,137,0.06)', padding: 2, borderRadius: 6 }}>
-      {items.map(it => {
-        const id = typeof it === 'string' ? it : it.id;
-        const active = value === id;
-        return (
-          <button key={id} onClick={() => onChange(id)} style={{
-            font: '600 10px Inter, system-ui', padding: '3px 8px', border: 0, borderRadius: 4, cursor: 'pointer',
-            background: active ? '#fff' : 'transparent',
-            boxShadow: active ? 'var(--card-shadow)' : 'none',
-            color: '#363643',
-            display: 'inline-flex', alignItems: 'center', gap: 4,
-          }}>
-            {typeof it === 'string' ? it : (
-              <>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: it.dot, display: 'inline-block' }} />
-                {it.label}
-              </>
+  const padTop = 16, padBottom = 16, padX = 6;
+  const innerH = height - padTop - padBottom;
+  const innerW = width - padX * 2;
+  const n = series[0]?.entries.length || 0;
+
+  const processed = series.map(s => {
+    const price = REWARD_ASSETS[s.asset].price;
+    const fiats = s.entries.map(e => e.amount * price);
+    const tokens = s.entries.map(e => e.amount);
+    let acc = 0, tacc = 0;
+    const cumFiat = fiats.map(v => (acc += v));
+    const cumTok  = tokens.map(v => (tacc += v));
+    return { ...s, price, fiats, tokens, cumFiat, cumTok };
+  });
+
+  const values = processed.map(s => mode === 'cumulative' ? s.cumFiat : s.fiats);
+  const max = Math.max(0.00001, ...values.flat());
+
+  const barGap = Math.max(1, Math.min(4, Math.floor(innerW / Math.max(1, n) / 6)));
+  const groupW = n === 0 ? innerW : (innerW - barGap * (n - 1)) / n;
+  const innerBarGap = 1;
+  const barW = processed.length === 1
+    ? groupW
+    : Math.max(2, (groupW - innerBarGap * (processed.length - 1)) / processed.length);
+
+  const [hover, setHover] = React.useState(null);
+  const svgRef = React.useRef(null);
+
+  // X position helpers. In bars mode we center within each group's slot; in
+  // cumulative mode we stretch points across the full inner width so the
+  // first/last nodes touch the chart edges.
+  const groupCenter = (idx) => padX + idx * (groupW + barGap) + groupW / 2;
+  const cumX = (idx) => (n <= 1 ? padX + innerW / 2 : padX + (idx / (n - 1)) * innerW);
+
+  const onMove = (e) => {
+    const rect = svgRef.current.getBoundingClientRect();
+    const xPx = e.clientX - rect.left;
+    const xSvg = (xPx / rect.width) * width;
+    if (mode === 'cumulative') {
+      const relX = xSvg - padX;
+      const idx = Math.max(0, Math.min(n - 1, Math.round((relX / Math.max(1, innerW)) * (n - 1))));
+      setHover(idx);
+    } else {
+      const relX = xSvg - padX;
+      const idx = Math.max(0, Math.min(n - 1, Math.floor(relX / (groupW + barGap))));
+      setHover(idx);
+    }
+  };
+  const onLeave = () => setHover(null);
+
+  const hoverX = (idx) => mode === 'cumulative' ? cumX(idx) : groupCenter(idx);
+
+  const tip = hover != null && n > 0 ? (() => {
+    const entries = processed.map(s => ({
+      asset: s.asset,
+      color: s.color,
+      amountTok: mode === 'cumulative' ? s.cumTok[hover]  : s.tokens[hover],
+      amountFiat: mode === 'cumulative' ? s.cumFiat[hover] : s.fiats[hover],
+    }));
+    const leftRatio = hoverX(hover) / width;
+    return { date: series[0].entries[hover].date, entries, leftRatio };
+  })() : null;
+
+  const paths = mode === 'cumulative' ? processed.map(s => {
+    const pts = s.cumFiat.map((v, idx) => [
+      cumX(idx),
+      padTop + innerH - (v / max) * innerH,
+    ]);
+    const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ');
+    const area = `${line} L ${pts[pts.length - 1][0]} ${padTop + innerH} L ${pts[0][0]} ${padTop + innerH} Z`;
+    return { asset: s.asset, color: s.color, line, area, pts };
+  }) : [];
+
+  return (
+    <div ref={wrapRef} style={{ position: 'relative', width: '100%' }}>
+      <svg
+        ref={svgRef}
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        onMouseMove={onMove}
+        onMouseLeave={onLeave}
+        shapeRendering="geometricPrecision"
+        style={{ display: 'block', cursor: 'crosshair' }}
+      >
+        <defs>
+          {processed.map(s => (
+            <linearGradient key={s.asset} id={`multi-grad-${s.asset}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={s.color} stopOpacity="0.28" />
+              <stop offset="100%" stopColor={s.color} stopOpacity="0" />
+            </linearGradient>
+          ))}
+        </defs>
+
+        {mode === 'cumulative' ? (
+          <>
+            {paths.map(p => (
+              <path key={`area-${p.asset}`} d={p.area} fill={`url(#multi-grad-${p.asset})`} />
+            ))}
+            {paths.map(p => (
+              <path
+                key={`line-${p.asset}`}
+                d={p.line}
+                fill="none"
+                stroke={p.color}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ))}
+            {paths.map(p => p.pts.map((pt, idx) => {
+              const isHover = hover === idx;
+              return (
+                <circle
+                  key={`${p.asset}-pt-${idx}`}
+                  cx={pt[0]} cy={pt[1]}
+                  r={isHover ? 3.5 : 2.5}
+                  fill={isHover ? '#fff' : p.color}
+                  stroke={isHover ? p.color : 'none'}
+                  strokeWidth={isHover ? 1.5 : 0}
+                />
+              );
+            }))}
+            {hover != null && (
+              <line
+                x1={cumX(hover)} x2={cumX(hover)}
+                y1={padTop} y2={padTop + innerH}
+                stroke="#363643" strokeOpacity="0.2" strokeWidth="1" strokeDasharray="3 3"
+              />
             )}
-          </button>
-        );
-      })}
+          </>
+        ) : (
+          Array.from({ length: n }).map((_, idx) => {
+            const groupX = padX + idx * (groupW + barGap);
+            const isHover = hover === idx;
+            return (
+              <g key={idx}>
+                {isHover && (
+                  <rect
+                    x={groupX - barGap / 2} y={padTop}
+                    width={groupW + barGap} height={innerH}
+                    fill="rgba(0,0,0,0.04)" rx="4"
+                  />
+                )}
+                {processed.map((s, si) => {
+                  const h = (s.fiats[idx] / max) * innerH;
+                  const x = processed.length === 1
+                    ? groupX
+                    : groupX + si * (barW + innerBarGap);
+                  return (
+                    <rect
+                      key={s.asset}
+                      x={x}
+                      y={padTop + innerH - h}
+                      width={barW}
+                      height={Math.max(h, 0.5)}
+                      fill={s.color}
+                      rx={Math.min(2, barW / 3)}
+                      opacity={isHover || hover == null ? 1 : 0.8}
+                    />
+                  );
+                })}
+              </g>
+            );
+          })
+        )}
+      </svg>
+
+      {tip && (
+        <div style={{
+          position: 'absolute',
+          left: `${tip.leftRatio * 100}%`,
+          top: 4,
+          transform: `translate(${tip.leftRatio > 0.75 ? 'calc(-100% - 10px)' : '10px'}, 0)`,
+          background: '#fff',
+          border: '1px solid #e2e2e2',
+          borderRadius: 8,
+          padding: '8px 10px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          pointerEvents: 'none',
+          whiteSpace: 'nowrap',
+          zIndex: 2,
+          minWidth: 180,
+        }}>
+          <div style={{ font: '500 10px Inter, system-ui', color: '#79797D', marginBottom: 4 }}>
+            {fmtRewardDate(tip.date, bucket)}
+            {mode === 'cumulative' && <span> · cumulative</span>}
+          </div>
+          {tip.entries.map(e => (
+            <div key={e.asset} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 0' }}>
+              <span style={{ width: 8, height: 8, borderRadius: 2, background: e.color, display: 'inline-block' }} />
+              <span style={{ font: '500 11px Inter, system-ui', color: '#79797D', flex: 1 }}>{e.asset}</span>
+              <span style={{ font: '600 11px Inter, system-ui', color: '#363643' }}>
+                {fmtRewardAmount(e.amountTok, e.asset)}
+              </span>
+              <span style={{ font: '500 11px Inter, system-ui', color: '#79797D' }}>
+                {fmtFiat(e.amountFiat)}
+              </span>
+            </div>
+          ))}
+          {tip.entries.length > 1 && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0 0',
+              marginTop: 4, borderTop: '0.5px solid rgba(69,69,137,0.08)',
+            }}>
+              <span style={{ font: '600 11px Inter, system-ui', color: '#363643', flex: 1 }}>Total</span>
+              <span style={{ font: '700 12px Manrope', color: '#363643' }}>
+                {fmtFiat(tip.entries.reduce((s, e) => s + e.amountFiat, 0))}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
+};
+
+const RewardsCard = ({ scale = 1 }) => {
+  const [assets, setAssets] = React.useState(() => new Set(['DOT']));
+  const [period, setPeriod] = React.useState('7D');
+  const [mode, setMode]     = React.useState('bars'); // 'bars' | 'cumulative'
+  const { selectedAccounts, isNone } = useWalletFilter();
+  const periodCfg = REWARD_PERIODS.find(p => p.id === period);
+
+  const toggleAsset = (a) => {
+    setAssets(prev => {
+      const next = new Set(prev);
+      if (next.has(a)) {
+        if (next.size > 1) next.delete(a);  // keep at least one
+      } else next.add(a);
+      return next;
+    });
+  };
+
+  const seriesAll = React.useMemo(() => (
+    Array.from(assets).map(a => {
+      const raw = buildRewards(a, period, scale);
+      return {
+        asset: a,
+        color: REWARD_ASSETS[a].color,
+        entries: bucketForBars(raw, periodCfg, 30),
+      };
+    })
+  ), [assets, period, scale]);
+
+  const singleAssetId = assets.size === 1 ? Array.from(assets)[0] : null;
+  const singleSeries = singleAssetId ? seriesAll[0] : null;
+
+  // Totals — for header.
+  const perAssetTotals = seriesAll.map(s => {
+    const tok = s.entries.reduce((a, e) => a + e.amount, 0);
+    const fiat = tok * REWARD_ASSETS[s.asset].price;
+    return { asset: s.asset, tok, fiat };
+  });
+  const totalFiat = perAssetTotals.reduce((a, p) => a + p.fiat, 0);
+
+  const firstSeriesData = singleSeries ? singleSeries.entries : (seriesAll[0]?.entries || []);
+  const ticks = pickAxisTicks(firstSeriesData.length, Math.min(7, firstSeriesData.length));
+
+  // Use the existing per-account stacked bar chart only when exactly 1 asset AND Bars mode
+  // — otherwise fall back to the multi-series chart.
+  const useStackedBars = mode === 'bars' && singleAssetId && selectedAccounts.length > 0;
 
   return (
     <NSPlate padding="16px 18px">
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12, gap: 8 }}>
-        <div style={{ font: '500 11px Inter, system-ui', color: '#79797D', flex: 1 }}>
-          Rewards ({periodCfg.label})
+      <div style={{
+        display: 'flex', alignItems: 'center', marginBottom: 12, gap: 8, flexWrap: 'wrap',
+      }}>
+        <div style={{ font: '500 11px Inter, system-ui', color: '#79797D', flex: 1, minWidth: 140 }}>
+          Rewards ({periodCfg.label}){mode === 'cumulative' && ' · cumulative'}
         </div>
-        <PillGroup
-          items={Object.keys(REWARD_ASSETS).map(a => ({ id: a, label: a, dot: REWARD_ASSETS[a].color }))}
-          value={asset}
-          onChange={setAsset}
+        <RewardsPillGroup
+          items={[{ id: 'bars', label: 'Bars' }, { id: 'cumulative', label: 'Cumulative' }]}
+          value={mode}
+          onChange={setMode}
         />
-        <PillGroup items={REWARD_PERIODS.map(p => p.id)} value={period} onChange={setPeriod} />
+        <RewardsMultiPillGroup
+          items={Object.keys(REWARD_ASSETS).map(a => ({
+            id: a, label: a, dot: REWARD_ASSETS[a].color,
+          }))}
+          value={assets}
+          onToggle={toggleAsset}
+        />
+        <RewardsPillGroup
+          items={REWARD_PERIODS.map(p => ({ id: p.id, label: p.id }))}
+          value={period}
+          onChange={setPeriod}
+        />
       </div>
+
       <div style={{ font: '700 22px Manrope', letterSpacing: '-0.02em' }}>
-        {total.toFixed(digits)} {asset}{' '}
-        <span style={{ font: '500 13px Inter, system-ui', color: '#79797D' }}>· {fmtFiat(total * price)}</span>
+        {singleAssetId ? (
+          <>
+            {perAssetTotals[0].tok.toFixed(singleAssetId === 'KSM' ? 4 : 2)} {singleAssetId}
+            <span style={{ font: '500 13px Inter, system-ui', color: '#79797D' }}>
+              {' '}· {fmtFiat(perAssetTotals[0].fiat)}
+            </span>
+          </>
+        ) : (
+          <>
+            {fmtFiat(totalFiat)}
+            <span style={{ font: '500 13px Inter, system-ui', color: '#79797D' }}>
+              {' '}· {perAssetTotals.map(p => fmtRewardAmount(p.tok, p.asset)).join(' + ')}
+            </span>
+          </>
+        )}
       </div>
+
       {isNone ? (
         <div style={{
           height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1013,31 +1302,82 @@ const RewardsCard = ({ scale = 1 }) => {
         }}>
           No accounts selected
         </div>
-      ) : (
+      ) : useStackedBars ? (
         <RewardsBars
-          data={data}
-          asset={asset}
+          data={singleSeries.entries}
+          asset={singleAssetId}
           bucket={periodCfg.bucket}
           accounts={selectedAccounts}
           width={520}
           height={140}
         />
+      ) : (
+        <RewardsMultiChart
+          series={seriesAll}
+          mode={mode}
+          bucket={periodCfg.bucket}
+          height={140}
+        />
       )}
+
       <div style={{ display: 'flex', justifyContent: 'space-between', font: '500 10px Inter', color: '#A4A4AD', padding: '0 4px' }}>
-        {data.length > 0 && ticks.map(i => (
-          <span key={i}>{fmtRewardDate(data[i].date, periodCfg.bucket)}</span>
+        {firstSeriesData.length > 0 && ticks.map(i => (
+          <span key={i}>{fmtRewardDate(firstSeriesData[i].date, periodCfg.bucket)}</span>
         ))}
       </div>
     </NSPlate>
   );
 };
 
+// Single-select pill group.
+const RewardsPillGroup = ({ items, value, onChange }) => (
+  <div style={{ display: 'inline-flex', gap: 2, background: 'rgba(69,69,137,0.06)', padding: 2, borderRadius: 6 }}>
+    {items.map(it => {
+      const active = value === it.id;
+      return (
+        <button key={it.id} onClick={() => onChange(it.id)} style={{
+          font: '600 10px Inter, system-ui', padding: '3px 8px', border: 0, borderRadius: 4, cursor: 'pointer',
+          background: active ? '#fff' : 'transparent',
+          boxShadow: active ? 'var(--card-shadow)' : 'none',
+          color: '#363643',
+          display: 'inline-flex', alignItems: 'center', gap: 4,
+        }}>{it.label}</button>
+      );
+    })}
+  </div>
+);
+
+// Multi-select pill group (at least one required — `onToggle` enforces the min upstream).
+const RewardsMultiPillGroup = ({ items, value, onToggle }) => (
+  <div style={{ display: 'inline-flex', gap: 2, background: 'rgba(69,69,137,0.06)', padding: 2, borderRadius: 6 }}>
+    {items.map(it => {
+      const active = value.has(it.id);
+      return (
+        <button key={it.id} onClick={() => onToggle(it.id)} style={{
+          font: '600 10px Inter, system-ui', padding: '3px 8px', border: 0, borderRadius: 4, cursor: 'pointer',
+          background: active ? '#fff' : 'transparent',
+          boxShadow: active ? 'var(--card-shadow)' : 'none',
+          color: active ? '#363643' : '#A4A4AD',
+          display: 'inline-flex', alignItems: 'center', gap: 4,
+        }}>
+          <span style={{
+            width: 6, height: 6, borderRadius: '50%', background: it.dot,
+            display: 'inline-block', opacity: active ? 1 : 0.35,
+          }} />
+          {it.label}
+        </button>
+      );
+    })}
+  </div>
+);
+
 const UNBONDING_ITEMS = [
-  { id: 'u-ready-dot', num: 100.0, sym: 'DOT', chainId: 'polkadot-ah', accountId: 'v-stash',     ready: true,  era: 1498, digits: 1 },
-  { id: 'u-ready-ksm', num: 0.8,   sym: 'KSM', chainId: 'kusama-ah',   accountId: 'v-stash',     ready: true,  era: 6720, digits: 2 },
-  { id: 'u-wait-1',    num: 45.0,  sym: 'DOT', chainId: 'polkadot-ah', accountId: 'v-stash',     ready: false, era: 1547, leftDays: 24, digits: 1 },
-  { id: 'u-wait-2',    num: 12.5,  sym: 'DOT', chainId: 'polkadot-ah', accountId: 'l-main',      ready: false, era: 1521, leftDays: 8,  digits: 1 },
-  { id: 'u-wait-3',    num: 0.4,   sym: 'KSM', chainId: 'kusama-ah',   accountId: 'wc-ksm',      ready: false, era: 6802, leftDays: 6,  digits: 2 },
+  { id: 'u-ready-dot',  num: 100.0, sym: 'DOT', chainId: 'polkadot-ah', accountId: 'v-stash',     ready: true,  era: 1498, digits: 1 },
+  { id: 'u-ready-ksm',  num: 0.8,   sym: 'KSM', chainId: 'kusama-ah',   accountId: 'v-stash',     ready: true,  era: 6720, digits: 2 },
+  { id: 'u-ready-ab',   num: 180.0, sym: 'DOT', chainId: 'polkadot-ah', accountId: 'ab-novasama', ready: true,  era: 1495, digits: 1 },
+  { id: 'u-wait-1',     num: 45.0,  sym: 'DOT', chainId: 'polkadot-ah', accountId: 'v-stash',     ready: false, era: 1547, leftDays: 24, digits: 1 },
+  { id: 'u-wait-2',     num: 12.5,  sym: 'DOT', chainId: 'polkadot-ah', accountId: 'l-main',      ready: false, era: 1521, leftDays: 8,  digits: 1 },
+  { id: 'u-wait-3',     num: 0.4,   sym: 'KSM', chainId: 'kusama-ah',   accountId: 'wc-ksm',      ready: false, era: 6802, leftDays: 6,  digits: 2 },
 ];
 
 const UnbondingCard = ({ onWithdraw }) => {
@@ -1048,18 +1388,9 @@ const UnbondingCard = ({ onWithdraw }) => {
       if (a.ready !== b.ready) return a.ready ? -1 : 1;  // ready first
       return (a.leftDays || 0) - (b.leftDays || 0);
     });
-  const readyItems = items.filter(u => u.ready);
-
   return (
     <NSPlate padding="16px 18px">
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12, gap: 8 }}>
-        <div style={{ font: '500 11px Inter, system-ui', color: '#79797D', flex: 1 }}>Unbonding</div>
-        {readyItems.length > 0 && (
-          <NSButton variant="primary" size="sm" onClick={() => onWithdraw(readyItems)}>
-            Withdraw all · {readyItems.length}
-          </NSButton>
-        )}
-      </div>
+      <div style={{ font: '500 11px Inter, system-ui', color: '#79797D', marginBottom: 12 }}>Unbonding</div>
       {items.length === 0 ? (
         <div style={{ font: '500 12px Inter, system-ui', color: '#79797D', padding: '8px 0' }}>
           Nothing unbonding for the selected accounts.
@@ -1079,7 +1410,7 @@ const UnbondingCard = ({ onWithdraw }) => {
                 </div>
                 {u.ready ? (
                   <NSButton variant="primary" size="sm" onClick={() => onWithdraw([u])}>
-                    Withdraw
+                    {f.isWatchOnlyAccount(u.accountId) ? 'Draft' : 'Withdraw'}
                   </NSButton>
                 ) : (
                   <NSBadge tone="orange">Unbonding</NSBadge>
@@ -1100,6 +1431,11 @@ const WithdrawModal = ({ ctx, onClose }) => {
   const [submitted, setSubmitted] = React.useState(false);
   React.useEffect(() => { if (ctx) setSubmitted(false); }, [ctx]);
   if (!ctx) return null;
+
+  const draftMode = ctx.items.some(it => {
+    const acc = ACCOUNT_BY_ID[it.accountId];
+    return acc && acc.wallet && acc.wallet.watchOnly;
+  });
 
   // Group items by chainId to show clean per-chain fees.
   const byChain = new Map();
@@ -1126,7 +1462,9 @@ const WithdrawModal = ({ ctx, onClose }) => {
       </span>
       <span style={{ flex: 1 }} />
       <NSButton variant="secondary" onClick={onClose}>Cancel</NSButton>
-      <NSButton variant="primary" onClick={() => setSubmitted(true)}>Sign and submit</NSButton>
+      <NSButton variant="primary" onClick={() => setSubmitted(true)}>
+        {draftMode ? 'Create a draft' : 'Sign and submit'}
+      </NSButton>
     </div>
   );
 
@@ -1134,9 +1472,11 @@ const WithdrawModal = ({ ctx, onClose }) => {
     <NSModal
       open={!!ctx}
       onClose={onClose}
-      title={submitted ? 'Withdrawal submitted' : 'Withdraw'}
+      title={submitted ? (draftMode ? 'Draft created' : 'Withdrawal submitted') : 'Withdraw'}
       subtitle={submitted
-        ? 'Your funds will appear in the transferable balance shortly.'
+        ? (draftMode
+          ? 'Share the draft with the signer to complete this operation.'
+          : 'Your funds will appear in the transferable balance shortly.')
         : 'Move unbonded funds back to your transferable balance.'}
       width={480}
       footer={footer}
@@ -1149,9 +1489,12 @@ const WithdrawModal = ({ ctx, onClose }) => {
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             font: '700 24px Manrope', margin: '0 auto 14px',
           }}>✓</div>
-          <div style={{ font: '700 18px Manrope', letterSpacing: '-0.02em', color: '#363643' }}>Operation signed</div>
+          <div style={{ font: '700 18px Manrope', letterSpacing: '-0.02em', color: '#363643' }}>
+            {draftMode ? 'Draft created' : 'Operation signed'}
+          </div>
           <div style={{ font: '500 12px Inter', color: '#79797D', marginTop: 6 }}>
-            Withdrawing {ctx.items.length} {ctx.items.length === 1 ? 'position' : 'positions'} totalling ${grandFiat.toFixed(2)}.
+            {draftMode ? 'Draft prepared for ' : 'Withdrawing '}
+            {ctx.items.length} {ctx.items.length === 1 ? 'position' : 'positions'} totalling ${grandFiat.toFixed(2)}.
           </div>
         </div>
       ) : (
@@ -1296,10 +1639,325 @@ const StakingView = () => {
 
 const TABLE_COLS = '24px 1fr 80px 140px 140px 70px 90px';
 
+const STAKE_ACTIONS = [
+  { id: 'stake-more',  label: 'Stake more' },
+  { id: 'unstake',     label: 'Unstake' },
+  { id: 'reward-dest', label: 'Reward destination' },
+];
+
+const StakeActionMenu = ({ status, onSelect }) => {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    if (!open) return;
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: 'relative', justifySelf: 'end' }}>
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen(o => !o); }}
+        style={{
+          font: '600 10px Inter, system-ui', letterSpacing: '.75px', textTransform: 'uppercase',
+          padding: '3px 6px 3px 8px', borderRadius: 4,
+          background: '#DAF1E1', color: '#01A63E',
+          border: 0, cursor: 'pointer',
+          display: 'inline-flex', alignItems: 'center', gap: 4,
+        }}
+      >
+        {status}
+        <NSIcon src="../../assets/icons/chevron/down.svg" size={8} style={{ filter: 'invert(49%) sepia(75%) saturate(2100%) hue-rotate(113deg) brightness(90%)', opacity: 0.8 }} />
+      </button>
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 4px)', right: 0, zIndex: 20,
+          width: 180, background: '#fff', borderRadius: 10,
+          boxShadow: '0 8px 24px rgba(24,24,45,0.14)',
+          border: '0.5px solid rgba(69,69,137,0.08)',
+          padding: 4,
+        }}>
+          {STAKE_ACTIONS.map(item => (
+            <ActionMenuItem key={item.id} label={item.label}
+              onClick={(e) => { e.stopPropagation(); setOpen(false); onSelect(item.id); }} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ActionMenuItem = ({ label, onClick }) => {
+  const [hover, setHover] = React.useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: 'block', width: '100%', padding: '8px 10px',
+        background: hover ? 'rgba(69,69,137,0.04)' : 'transparent',
+        border: 0, cursor: 'pointer', borderRadius: 6, textAlign: 'left',
+        font: '500 12px Inter, system-ui', color: '#363643',
+      }}
+    >{label}</button>
+  );
+};
+
+const REWARD_DESTINATIONS = [
+  { id: 'staked',  label: 'Stake (auto-compound)', desc: 'Rewards are added back to the bonded amount.' },
+  { id: 'stash',   label: 'Stash',                 desc: 'Rewards go to the stash account as free balance.' },
+  { id: 'account', label: 'Other account',         desc: 'Rewards go to a specific address.' },
+];
+
+const AccountActionModal = ({ ctx, onClose }) => {
+  const [amount, setAmount] = React.useState('');
+  const [dest, setDest] = React.useState('staked');
+  const [submitted, setSubmitted] = React.useState(false);
+  React.useEffect(() => {
+    if (ctx) { setAmount(''); setDest('staked'); setSubmitted(false); }
+  }, [ctx]);
+  if (!ctx) return null;
+
+  const { action, chain, position, account } = ctx;
+  const draftMode = !!(account.wallet && account.wallet.watchOnly);
+  const fee = FEE[chain.token] || 0;
+
+  const titleMap = {
+    'stake-more':  'Stake more',
+    'unstake':     'Unstake',
+    'reward-dest': 'Reward destination',
+  };
+  const subtitleMap = {
+    'stake-more':  'Add more bonded stake to this position.',
+    'unstake':     'Start the unbonding timer on part of your stake.',
+    'reward-dest': 'Choose where era rewards are paid to.',
+  };
+
+  const amountNum = parseFloat(amount) || 0;
+  const digits = chain.token === 'KSM' ? 4 : 2;
+  let available = 0, tooLow = false, tooHigh = false, amountValid = false;
+
+  if (action === 'stake-more') {
+    available = availableBalance(position.accountId, chain.chainId);
+    tooHigh = amountNum + fee > available;
+    amountValid = amountNum > 0 && !tooHigh;
+  } else if (action === 'unstake') {
+    available = position.activeStake;
+    tooHigh = amountNum > available;
+    amountValid = amountNum > 0 && !tooHigh;
+  }
+
+  const canSubmit = action === 'reward-dest' ? true : amountValid;
+  const pctButton = (pct) => {
+    const limit = action === 'stake-more' ? Math.max(0, available - fee) : available;
+    setAmount((limit * pct / 100).toFixed(digits));
+  };
+
+  const primaryLabel = draftMode ? 'Create a draft' : ({
+    'stake-more': 'Stake more',
+    'unstake':    'Unstake',
+    'reward-dest':'Save destination',
+  }[action]);
+
+  const footer = submitted ? (
+    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <NSButton variant="primary" onClick={onClose}>Done</NSButton>
+    </div>
+  ) : (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <span style={{ flex: 1 }} />
+      <NSButton variant="secondary" onClick={onClose}>Cancel</NSButton>
+      <NSButton variant="primary" onClick={() => setSubmitted(true)} disabled={!canSubmit}>
+        {primaryLabel}
+      </NSButton>
+    </div>
+  );
+
+  const AmountField = (
+    <NSField
+      label="Amount"
+      right={
+        <span style={{ font: '500 11px Inter, system-ui', color: '#79797D' }}>
+          {action === 'stake-more' ? 'Available: ' : 'Active stake: '}
+          {available.toLocaleString('en-US', { maximumFractionDigits: digits })} {chain.token}
+        </span>
+      }
+      error={tooHigh
+        ? (action === 'stake-more' ? 'Not enough balance' : `Cannot exceed ${available} ${chain.token}`)
+        : null}
+    >
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
+        background: '#fff', borderRadius: 10,
+        boxShadow: tooHigh ? 'inset 0 0 0 1.5px #F52163' : 'inset 0 0 0 1px rgba(69,69,137,0.08)',
+      }}>
+        <input
+          value={amount}
+          onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+          placeholder="0.00"
+          inputMode="decimal"
+          style={{
+            border: 0, outline: 0, background: 'transparent', flex: 1,
+            font: '700 18px Manrope', letterSpacing: '-0.01em', color: '#363643',
+          }}
+        />
+        <span style={{ font: '600 13px Inter', color: '#79797D' }}>{chain.token}</span>
+      </div>
+      <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
+        {[25, 50, 75, 100].map(pct => (
+          <button key={pct} onClick={() => pctButton(pct)} style={{
+            flex: 1, padding: '5px 0', border: 0, borderRadius: 6, cursor: 'pointer',
+            background: 'rgba(69,69,137,0.06)', color: '#363643',
+            font: '600 11px Inter, system-ui',
+          }}>{pct === 100 ? 'Max' : `${pct}%`}</button>
+        ))}
+      </div>
+    </NSField>
+  );
+
+  const InfoPlate = (rows) => (
+    <NSPlate padding="0">
+      {rows.map(([k, v], i) => (
+        <div key={k} style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '10px 14px',
+          borderTop: i === 0 ? 'none' : '0.5px solid rgba(69,69,137,0.06)',
+        }}>
+          <div style={{ font: '500 12px Inter, system-ui', color: '#79797D', flex: 1 }}>{k}</div>
+          <div style={{ font: '600 12px Inter, system-ui', color: '#363643' }}>{v}</div>
+        </div>
+      ))}
+    </NSPlate>
+  );
+
+  const HeaderPlate = (
+    <NSPlate padding="10px 12px">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <ChainIcon chain={chain.chain} size={24} />
+        <div style={{ flex: 1 }}>
+          <div style={{ font: '600 12px Inter' }}>{chain.chain}</div>
+          <div style={{ font: '500 11px Inter', color: '#79797D' }}>{account.wallet.name} · {account.name}</div>
+        </div>
+        <img src={account.wallet.icon} style={{ width: 22, height: 22, borderRadius: 5 }} />
+      </div>
+    </NSPlate>
+  );
+
+  const stakeMorePreview = InfoPlate([
+    ['Current stake',  `${position.staked.toFixed(2)} ${chain.token}`],
+    ['After this op',  amountNum > 0
+      ? `${(position.staked + amountNum).toFixed(2)} ${chain.token}`
+      : '—'],
+    ['Estimated APY',  `${chain.apy}%`],
+    ['Network fee',    `${fee} ${chain.token}`],
+  ]);
+
+  const unstakePreview = InfoPlate([
+    ['Current stake',  `${position.staked.toFixed(2)} ${chain.token}`],
+    ['After unbond',   amountNum > 0
+      ? `${Math.max(0, position.staked - amountNum).toFixed(2)} ${chain.token}`
+      : '—'],
+    ['Unbonding period', chain.token === 'KSM' ? '7 days' : '28 days'],
+    ['Network fee',    `${fee} ${chain.token}`],
+  ]);
+
+  const rewardDestBody = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {REWARD_DESTINATIONS.map(d => {
+        const active = dest === d.id;
+        return (
+          <div
+            key={d.id}
+            onClick={() => setDest(d.id)}
+            style={{
+              display: 'flex', alignItems: 'flex-start', gap: 10,
+              padding: '12px 14px', background: '#fff', borderRadius: 10, cursor: 'pointer',
+              border: `1.5px solid ${active ? '#4649F6' : 'rgba(69,69,137,0.08)'}`,
+              boxShadow: active ? '0 0 0 3px rgba(70,73,246,0.12)' : 'none',
+            }}
+          >
+            <span style={{
+              width: 16, height: 16, borderRadius: '50%', marginTop: 2, flexShrink: 0,
+              background: '#fff', boxShadow: `inset 0 0 0 1.5px ${active ? '#4649F6' : 'rgba(69,69,137,0.24)'}`,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {active && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#4649F6' }} />}
+            </span>
+            <div>
+              <div style={{ font: '600 13px Inter', color: '#363643' }}>{d.label}</div>
+              <div style={{ font: '500 11px Inter', color: '#79797D', marginTop: 2 }}>{d.desc}</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const body =
+    action === 'stake-more' ? (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {HeaderPlate}
+        {AmountField}
+        {stakeMorePreview}
+      </div>
+    ) : action === 'unstake' ? (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {HeaderPlate}
+        {AmountField}
+        {unstakePreview}
+      </div>
+    ) : (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {HeaderPlate}
+        {rewardDestBody}
+      </div>
+    );
+
+  const successMessage = (() => {
+    if (action === 'stake-more') return `${amountNum.toFixed(digits)} ${chain.token} added to your stake on ${chain.chain}.`;
+    if (action === 'unstake')    return `${amountNum.toFixed(digits)} ${chain.token} is now unbonding. Withdraw after the unbonding period.`;
+    const label = REWARD_DESTINATIONS.find(d => d.id === dest).label;
+    return `Reward destination set to "${label}".`;
+  })();
+
+  const submittedTitle = draftMode
+    ? 'Draft created'
+    : ({ 'stake-more': 'Stake increased', 'unstake': 'Unbonding started', 'reward-dest': 'Destination saved' }[action]);
+
+  return (
+    <NSModal
+      open={!!ctx}
+      onClose={onClose}
+      title={submitted ? submittedTitle : titleMap[action]}
+      subtitle={submitted
+        ? (draftMode ? 'Share the draft with the signer to complete this operation.' : null)
+        : subtitleMap[action]}
+      width={480}
+      footer={footer}
+    >
+      {submitted ? (
+        <div style={{ textAlign: 'center', padding: '20px 10px 10px' }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: '50%',
+            background: '#DAF1E1', color: '#01A63E',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            font: '700 24px Manrope', margin: '0 auto 14px',
+          }}>✓</div>
+          <div style={{ font: '700 18px Manrope', letterSpacing: '-0.02em', color: '#363643' }}>{submittedTitle}</div>
+          <div style={{ font: '500 12px Inter', color: '#79797D', marginTop: 6 }}>{successMessage}</div>
+        </div>
+      ) : body}
+    </NSModal>
+  );
+};
+
 const StakeByNetworkTable = () => {
   const f = useWalletFilter();
   const [expanded, setExpanded] = React.useState(() => new Set(['polkadot-ah']));
   const [validatorsCtx, setValidatorsCtx] = React.useState(null); // { chain, position, account }
+  const [actionCtx, setActionCtx] = React.useState(null); // { action, chain, position, account }
   const [startFlowOpen, setStartFlowOpen] = React.useState(false);
 
   const toggleChain = (id) => setExpanded(prev => {
@@ -1492,7 +2150,15 @@ const StakeByNetworkTable = () => {
                               {p.elected}/{p.validators}
                               <NSIcon src="../../assets/icons/chevron/right.svg" size={9} style={{ opacity: 0.6 }} />
                             </button>
-                            <NSBadge tone="green" style={{ justifySelf: 'end' }}>{p.status}</NSBadge>
+                            <StakeActionMenu
+                              status={p.status}
+                              onSelect={(action) => setActionCtx({
+                                action,
+                                chain: c,
+                                position: p,
+                                account: ACCOUNT_BY_ID[p.accountId],
+                              })}
+                            />
                           </div>
                         );
                       })}
@@ -1507,6 +2173,7 @@ const StakeByNetworkTable = () => {
 
       <ValidatorsModal ctx={validatorsCtx} onClose={() => setValidatorsCtx(null)} />
       <StartStakingFlow open={startFlowOpen} onClose={() => setStartFlowOpen(false)} />
+      <AccountActionModal ctx={actionCtx} onClose={() => setActionCtx(null)} />
     </>
   );
 };
@@ -2164,11 +2831,18 @@ const getUnclaimedRewards = (selectedIds) => {
 
 const UnclaimedRewardsModal = ({ open, onClose }) => {
   const f = useWalletFilter();
-  const [claimed, setClaimed] = React.useState(() => new Set());
   const rows = React.useMemo(() => (open ? getUnclaimedRewards(f.selected) : []), [open, f.selected]);
-  React.useEffect(() => { if (open) setClaimed(new Set()); }, [open]);
+  const [processed, setProcessed] = React.useState(() => new Map()); // id -> 'claimed' | 'drafted'
+  const [selected, setSelected] = React.useState(() => new Set());
+  const [payerOpen, setPayerOpen] = React.useState(false);
 
-  const remaining = rows.filter(r => !claimed.has(r.id));
+  React.useEffect(() => {
+    if (!open) return;
+    setProcessed(new Map());
+    setSelected(new Set(rows.map(r => r.id)));
+    setPayerOpen(false);
+  }, [open, rows]);
+
   const chainGroups = React.useMemo(() => {
     const map = new Map();
     for (const r of rows) {
@@ -2178,9 +2852,10 @@ const UnclaimedRewardsModal = ({ open, onClose }) => {
     return Array.from(map.values());
   }, [rows]);
 
+  const selectedRows = rows.filter(r => selected.has(r.id) && !processed.has(r.id));
   const totalsByToken = {};
   let totalFiat = 0;
-  for (const r of remaining) {
+  for (const r of selectedRows) {
     totalsByToken[r.chain.token] = (totalsByToken[r.chain.token] || 0) + r.amount;
     totalFiat += r.amount * r.chain.price;
   }
@@ -2188,26 +2863,226 @@ const UnclaimedRewardsModal = ({ open, onClose }) => {
     .map(([t, v]) => `${v.toFixed(t === 'KSM' ? 4 : 3)} ${t}`)
     .join(' · ');
 
-  const claimOne = (id) => setClaimed(prev => new Set(prev).add(id));
-  const claimAll = () => setClaimed(new Set(rows.map(r => r.id)));
+  const toggleRow = (id) => {
+    if (processed.has(id)) return;
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleChain = (items) => {
+    const unproc = items.filter(r => !processed.has(r.id));
+    if (unproc.length === 0) return;
+    const allOn = unproc.every(r => selected.has(r.id));
+    setSelected(prev => {
+      const next = new Set(prev);
+      for (const r of unproc) {
+        if (allOn) next.delete(r.id);
+        else next.add(r.id);
+      }
+      return next;
+    });
+  };
+
+  const claimOne = (r) => {
+    const kind = f.isWatchOnlyAccount(r.accountId) ? 'drafted' : 'claimed';
+    setProcessed(prev => {
+      const next = new Map(prev);
+      next.set(r.id, kind);
+      return next;
+    });
+    setSelected(prev => {
+      const next = new Set(prev);
+      next.delete(r.id);
+      return next;
+    });
+  };
+
+  const submitBatch = (payerAccountId) => {
+    const payer = ACCOUNT_BY_ID[payerAccountId];
+    const kind = payer && payer.wallet && payer.wallet.watchOnly ? 'drafted' : 'claimed';
+    setProcessed(prev => {
+      const next = new Map(prev);
+      for (const id of selected) if (!next.has(id)) next.set(id, kind);
+      return next;
+    });
+    setSelected(new Set());
+    setPayerOpen(false);
+  };
 
   const subtitle = rows.length === 0
     ? 'No unclaimed rewards for the selected accounts.'
-    : remaining.length === 0
-      ? 'All rewards claimed.'
-      : `${totalsLabel} · $${totalFiat.toFixed(2)} · ${remaining.length} ${remaining.length === 1 ? 'payout' : 'payouts'}`;
+    : selectedRows.length === 0
+      ? `${processed.size} of ${rows.length} processed`
+      : `${totalsLabel} · $${totalFiat.toFixed(2)} · ${selectedRows.length} ${selectedRows.length === 1 ? 'payout' : 'payouts'}`;
 
   const footer = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <span style={{ font: '500 11px Inter, system-ui', color: '#79797D' }}>
-        {remaining.length === 0
-          ? 'Nothing to claim.'
-          : `${rows.length - remaining.length} of ${rows.length} claimed`}
+        {rows.length === 0
+          ? '—'
+          : `${selectedRows.length} selected · ${processed.size} processed`}
       </span>
       <span style={{ flex: 1 }} />
       <NSButton variant="secondary" onClick={onClose}>Close</NSButton>
-      <NSButton variant="primary" onClick={claimAll} disabled={remaining.length === 0}>
-        Claim all{remaining.length > 0 ? ` · ${remaining.length}` : ''}
+      <NSButton
+        variant="primary"
+        onClick={() => setPayerOpen(true)}
+        disabled={selectedRows.length === 0}
+      >
+        Claim · {selectedRows.length}
+      </NSButton>
+    </div>
+  );
+
+  return (
+    <>
+      <NSModal
+        open={open}
+        onClose={onClose}
+        title="Claim rewards"
+        subtitle={subtitle}
+        width={600}
+        footer={footer}
+      >
+        {rows.length === 0 ? (
+          <div style={{
+            padding: '24px 16px', textAlign: 'center',
+            font: '500 12px Inter, system-ui', color: '#79797D',
+          }}>
+            No unclaimed rewards for the currently selected accounts. Try another preset.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {chainGroups.map(({ chain, items }) => {
+              const chainRemaining = items.filter(r => !processed.has(r.id));
+              const chainRemainingTotal = chainRemaining
+                .filter(r => selected.has(r.id))
+                .reduce((s, r) => s + r.amount, 0);
+              const chainAllOn = chainRemaining.length > 0 && chainRemaining.every(r => selected.has(r.id));
+              const chainNoneOn = chainRemaining.every(r => !selected.has(r.id));
+              const chainState =
+                chainRemaining.length === 0 ? 'unchecked'
+                : chainAllOn ? 'checked'
+                : chainNoneOn ? 'unchecked'
+                : 'indeterminate';
+
+              return (
+                <NSPlate key={chain.chainId} padding="0">
+                  <button
+                    onClick={() => toggleChain(items)}
+                    disabled={chainRemaining.length === 0}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+                      padding: '10px 14px', borderBottom: '0.5px solid rgba(69,69,137,0.06)',
+                      background: 'rgba(69,69,137,0.02)',
+                      border: 0, textAlign: 'left',
+                      cursor: chainRemaining.length === 0 ? 'default' : 'pointer',
+                    }}
+                  >
+                    <FilterCheckbox state={chainState} />
+                    <ChainIcon chain={chain.chain} size={20} />
+                    <div style={{ font: '600 12px Inter, system-ui', color: '#363643', flex: 1 }}>
+                      {chain.chain}
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ font: '600 12px Inter, system-ui', color: '#363643' }}>
+                        {chainRemainingTotal.toFixed(chain.token === 'KSM' ? 4 : 3)} {chain.token}
+                      </div>
+                      <div style={{ font: '500 10px Inter, system-ui', color: '#79797D' }}>
+                        ${(chainRemainingTotal * chain.price).toFixed(2)}
+                      </div>
+                    </div>
+                  </button>
+                  {items.map((r, i) => {
+                    const status = processed.get(r.id);
+                    const isProcessed = !!status;
+                    const isOn = selected.has(r.id);
+                    return (
+                      <div
+                        key={r.id}
+                        onClick={() => !isProcessed && toggleRow(r.id)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          padding: '10px 14px',
+                          borderTop: i === 0 ? 'none' : '0.5px solid rgba(69,69,137,0.04)',
+                          opacity: isProcessed ? 0.5 : 1,
+                          cursor: isProcessed ? 'default' : 'pointer',
+                        }}
+                      >
+                        <FilterCheckbox state={isProcessed ? 'unchecked' : isOn ? 'checked' : 'unchecked'} />
+                        <Identicon seed={r.validator.id} size={22} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{
+                              font: '600 12px Inter, system-ui', color: '#363643',
+                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                            }}>{r.validator.name}</span>
+                            <ValidatorMarks v={r.validator} />
+                          </div>
+                          <div style={{ font: '500 11px Inter, system-ui', color: '#79797D' }}>
+                            {r.account.wallet.name} · {r.account.name} · Era {r.eraList.join(', ')}
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ font: '600 12px Inter, system-ui', color: '#363643' }}>
+                            {r.amount.toFixed(chain.token === 'KSM' ? 4 : 3)} {chain.token}
+                          </div>
+                          <div style={{ font: '500 11px Inter, system-ui', color: '#79797D' }}>
+                            ${(r.amount * chain.price).toFixed(2)}
+                          </div>
+                        </div>
+                        {isProcessed ? (
+                          <NSBadge tone="green">{status === 'drafted' ? 'Drafted' : 'Claimed'}</NSBadge>
+                        ) : (
+                          <NSButton
+                            variant="secondary"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); claimOne(r); }}
+                          >
+                            {f.isWatchOnlyAccount(r.accountId) ? 'Draft' : 'Claim'}
+                          </NSButton>
+                        )}
+                      </div>
+                    );
+                  })}
+                </NSPlate>
+              );
+            })}
+          </div>
+        )}
+      </NSModal>
+      <ClaimPayerModal
+        open={payerOpen}
+        onClose={() => setPayerOpen(false)}
+        count={selectedRows.length}
+        totalsLabel={totalsLabel}
+        totalFiat={totalFiat}
+        onSubmit={submitBatch}
+      />
+    </>
+  );
+};
+
+const ClaimPayerModal = ({ open, onClose, count, totalsLabel, totalFiat, onSubmit }) => {
+  const [payerId, setPayerId] = React.useState(null);
+  React.useEffect(() => { if (open) setPayerId(null); }, [open]);
+
+  const payer = payerId ? ACCOUNT_BY_ID[payerId] : null;
+  const isDraft = !!(payer && payer.wallet && payer.wallet.watchOnly);
+
+  const footer = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <span style={{ font: '500 11px Inter, system-ui', color: '#79797D' }}>
+        {payer
+          ? (isDraft ? 'Draft will be prepared for the signer.' : 'Fees paid by the selected account.')
+          : 'Select a payer account.'}
+      </span>
+      <span style={{ flex: 1 }} />
+      <NSButton variant="secondary" onClick={onClose}>Back</NSButton>
+      <NSButton variant="primary" disabled={!payer} onClick={() => onSubmit(payerId)}>
+        {isDraft ? `Create draft · ${count}` : `Claim · ${count}`}
       </NSButton>
     </div>
   );
@@ -2216,92 +3091,60 @@ const UnclaimedRewardsModal = ({ open, onClose }) => {
     <NSModal
       open={open}
       onClose={onClose}
-      title="Claim rewards"
-      subtitle={subtitle}
-      width={560}
+      title="Choose payer account"
+      subtitle={count > 0
+        ? `${count} ${count === 1 ? 'payout' : 'payouts'} · ${totalsLabel} · $${totalFiat.toFixed(2)}`
+        : undefined}
+      width={520}
       footer={footer}
     >
-      {rows.length === 0 ? (
-        <div style={{
-          padding: '24px 16px', textAlign: 'center',
-          font: '500 12px Inter, system-ui', color: '#79797D',
-        }}>
-          No unclaimed rewards for the currently selected accounts. Try another preset.
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {chainGroups.map(({ chain, items }) => {
-            const chainRemainingTotal = items
-              .filter(r => !claimed.has(r.id))
-              .reduce((s, r) => s + r.amount, 0);
-            return (
-              <NSPlate key={chain.chainId} padding="0">
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '10px 14px', borderBottom: '0.5px solid rgba(69,69,137,0.06)',
-                  background: 'rgba(69,69,137,0.02)',
-                }}>
-                  <ChainIcon chain={chain.chain} size={20} />
-                  <div style={{ font: '600 12px Inter, system-ui', color: '#363643', flex: 1 }}>
-                    {chain.chain}
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ font: '600 12px Inter, system-ui', color: '#363643' }}>
-                      {chainRemainingTotal.toFixed(chain.token === 'KSM' ? 4 : 3)} {chain.token}
-                    </div>
-                    <div style={{ font: '500 10px Inter, system-ui', color: '#79797D' }}>
-                      ${(chainRemainingTotal * chain.price).toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-                {items.map((r, i) => {
-                  const isClaimed = claimed.has(r.id);
-                  return (
-                    <div
-                      key={r.id}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        padding: '10px 14px',
-                        borderTop: i === 0 ? 'none' : '0.5px solid rgba(69,69,137,0.04)',
-                        opacity: isClaimed ? 0.5 : 1,
-                      }}
-                    >
-                      <Identicon seed={r.validator.id} size={22} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{
-                            font: '600 12px Inter, system-ui', color: '#363643',
-                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                          }}>{r.validator.name}</span>
-                          <ValidatorMarks v={r.validator} />
-                        </div>
-                        <div style={{ font: '500 11px Inter, system-ui', color: '#79797D' }}>
-                          {r.account.wallet.name} · {r.account.name} · Era {r.eraList.join(', ')}
-                        </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {DASH_WALLETS.map(w => (
+          <div key={w.id}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              font: '600 10px Inter, system-ui', color: '#A4A4AD',
+              letterSpacing: '.5px', textTransform: 'uppercase',
+              padding: '0 2px 6px',
+            }}>
+              <img src={w.icon} style={{ width: 14, height: 14, borderRadius: 3 }} />
+              <span>{w.name}</span>
+              {w.watchOnly && (
+                <NSBadge tone="purple" style={{ marginLeft: 2 }}>Draft only</NSBadge>
+              )}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {w.accounts.map(a => {
+                const active = payerId === a.id;
+                return (
+                  <button
+                    key={a.id}
+                    onClick={() => setPayerId(a.id)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
+                      background: '#fff', borderRadius: 10, cursor: 'pointer',
+                      textAlign: 'left',
+                      border: `1.5px solid ${active ? '#4649F6' : 'rgba(69,69,137,0.08)'}`,
+                      boxShadow: active ? '0 0 0 3px rgba(70,73,246,0.12)' : 'none',
+                    }}
+                  >
+                    <Identicon seed={a.id} size={22} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ font: '600 12px Inter, system-ui', color: '#363643' }}>
+                        {a.name}
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ font: '600 12px Inter, system-ui', color: '#363643' }}>
-                          {r.amount.toFixed(chain.token === 'KSM' ? 4 : 3)} {chain.token}
-                        </div>
-                        <div style={{ font: '500 11px Inter, system-ui', color: '#79797D' }}>
-                          ${(r.amount * chain.price).toFixed(2)}
-                        </div>
+                      <div style={{ font: '500 11px JetBrains Mono, monospace', color: '#79797D' }}>
+                        {a.addr}
                       </div>
-                      {isClaimed ? (
-                        <NSBadge tone="green">Claimed</NSBadge>
-                      ) : (
-                        <NSButton variant="secondary" size="sm" onClick={() => claimOne(r.id)}>
-                          Claim
-                        </NSButton>
-                      )}
                     </div>
-                  );
-                })}
-              </NSPlate>
-            );
-          })}
-        </div>
-      )}
+                    {w.watchOnly && <NSBadge tone="purple">Address book</NSBadge>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
     </NSModal>
   );
 };
@@ -2493,12 +3336,11 @@ const ValidatorFilterPopover = ({ value, onChange, activeCount }) => {
         />
         {activeCount > 0 && (
           <span style={{
-            position: 'absolute', top: 2, right: 2,
-            minWidth: 12, height: 12, padding: '0 3px', borderRadius: 6,
-            background: '#F52163', color: '#fff',
-            font: '700 9px Inter, system-ui', lineHeight: 1,
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          }}>{activeCount}</span>
+            position: 'absolute', top: 4, right: 4,
+            width: 6, height: 6, borderRadius: '50%',
+            background: '#F52163',
+            boxShadow: '0 0 0 1.5px #fff',
+          }} />
         )}
       </button>
 
@@ -2676,6 +3518,7 @@ const StartStakingFlow = ({ open, onClose }) => {
 
   const chain = chainId ? CHAIN_STAKES.find(c => c.chainId === chainId) : null;
   const account = accountId ? ACCOUNT_BY_ID[accountId] : null;
+  const draftMode = !!(account && account.wallet && account.wallet.watchOnly);
   const balance = accountId && chainId ? availableBalance(accountId, chainId) : 0;
   const amountNum = parseFloat(amount) || 0;
   const fee = chain ? FEE[chain.token] : 0;
@@ -3053,10 +3896,13 @@ const StartStakingFlow = ({ open, onClose }) => {
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         font: '700 24px Manrope', margin: '0 auto 14px',
       }}>✓</div>
-      <div style={{ font: '700 18px Manrope', letterSpacing: '-0.02em', color: '#363643' }}>Staking transaction signed</div>
+      <div style={{ font: '700 18px Manrope', letterSpacing: '-0.02em', color: '#363643' }}>
+        {draftMode ? 'Draft created' : 'Staking transaction signed'}
+      </div>
       <div style={{ font: '500 12px Inter', color: '#79797D', marginTop: 6 }}>
-        You are now staking {amountNum.toLocaleString('en-US', { maximumFractionDigits: 3 })} {chain.token} on {chain.chain}
-        {' '}with {finalValidators.length} validators.
+        {draftMode
+          ? `Draft prepared: stake ${amountNum.toLocaleString('en-US', { maximumFractionDigits: 3 })} ${chain.token} on ${chain.chain} with ${finalValidators.length} validators. Share the draft with the signer to complete this operation.`
+          : `You are now staking ${amountNum.toLocaleString('en-US', { maximumFractionDigits: 3 })} ${chain.token} on ${chain.chain} with ${finalValidators.length} validators.`}
       </div>
     </div>
   );
@@ -3064,7 +3910,7 @@ const StartStakingFlow = ({ open, onClose }) => {
   const primaryLabel =
     step === 1 ? 'Continue' :
     step === 2 ? 'Continue' :
-    'Start staking';
+    draftMode ? 'Create a draft' : 'Start staking';
 
   const footer = submitted ? (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -3247,8 +4093,17 @@ const DashboardPage = () => {
   return (
     <WalletFilterProvider>
       <Header title="Dashboard" search={false} filter={false} right={<DashHeaderControls />} />
-      <div style={{ flex: 1, overflow: 'auto', padding: '0 24px 24px' }}>
-        <div style={{ maxWidth: 1060, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{
+        flex: 1, overflow: 'auto',
+        paddingLeft: 'clamp(16px, 4vw, 64px)',
+        paddingRight: 'clamp(16px, 4vw, 64px)',
+        paddingBottom: 24,
+      }}>
+        <div style={{
+          maxWidth: 1400,
+          margin: '0 auto',
+          display: 'flex', flexDirection: 'column', gap: 16,
+        }}>
           <DashTabs tab={tab} setTab={setTab} />
           {tab === 'Overview'   && <OverviewView />}
           {tab === 'Staking'    && <StakingView />}

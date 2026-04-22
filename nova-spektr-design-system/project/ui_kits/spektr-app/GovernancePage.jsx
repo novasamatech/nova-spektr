@@ -105,7 +105,7 @@ const ReferendumRow = ({ r }) => (
 const GovernancePage = () => (
   <>
     <Header title="Governance" />
-    <div style={{ flex: 1, overflow: 'auto', padding: '0 24px 24px' }}>
+    <div style={{ flex: 1, overflow: 'auto', paddingLeft: 'clamp(16px, 4vw, 64px)', paddingRight: 'clamp(16px, 4vw, 64px)', paddingBottom: 24 }}>
       <div style={{ maxWidth: 736, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'flex', gap: 12 }}>
           <NetworkCard />
