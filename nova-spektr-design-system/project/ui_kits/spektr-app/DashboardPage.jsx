@@ -1554,14 +1554,130 @@ const StakingPositionsModal = ({ open, onClose }) => {
 };
 
 // ============================ TOTAL REWARDS DRILLDOWN ============================
-// AGENT: replace this placeholder with a donut + period switcher + per-chain legend.
-const TotalRewardsModal = ({ open, onClose }) => (
-  <NSModal open={open} onClose={onClose} title="Total rewards" width={520}>
-    <div style={{ padding: '32px 16px', textAlign: 'center', font: '500 12px Inter, system-ui', color: '#79797D' }}>
-      Total rewards drilldown — TBD.
+const TOTAL_REWARDS_PERIODS = [
+  { id: '7D',  days: 7,   label: '7D'  },
+  { id: '1M',  days: 30,  label: '1M'  },
+  { id: '6M',  days: 182, label: '6M'  },
+  { id: '1Y',  days: 365, label: '1Y'  },
+  { id: 'Max', days: 730, label: 'Max' },
+];
+
+const TotalRewardsModal = ({ open, onClose }) => {
+  const f = useWalletFilter();
+  const [period, setPeriod] = React.useState('1Y');
+
+  const periodCfg = TOTAL_REWARDS_PERIODS.find(p => p.id === period);
+
+  const chains = React.useMemo(() => (
+    CHAIN_STAKES
+      .map(c => {
+        const selectedCount = c.positions.filter(p => f.selected.has(p.accountId)).length;
+        const cfg = REWARD_ASSETS[c.token];
+        // Deterministic per-chain total: dailyMean × days × number of selected accounts.
+        const totalToken = cfg ? cfg.dailyMean * periodCfg.days * selectedCount : 0;
+        const totalFiat = totalToken * c.price;
+        return {
+          chainId: c.chainId,
+          chain: c.chain,
+          token: c.token,
+          price: c.price,
+          color: STAKING_CHAIN_COLORS[c.chainId] || '#4649F6',
+          selectedCount,
+          totalToken,
+          totalFiat,
+        };
+      })
+      .filter(c => c.selectedCount > 0 && c.totalToken > 0)
+  ), [f.selected, period]);
+
+  const grandFiat = chains.reduce((s, c) => s + c.totalFiat, 0);
+  const donutItems = chains.map(c => ({ pct: c.totalFiat, color: c.color }));
+
+  const PeriodPills = () => (
+    <div style={{ display: 'inline-flex', gap: 2, background: 'rgba(69,69,137,0.06)', padding: 2, borderRadius: 6 }}>
+      {TOTAL_REWARDS_PERIODS.map(p => {
+        const active = period === p.id;
+        return (
+          <button
+            key={p.id}
+            onClick={() => setPeriod(p.id)}
+            style={{
+              font: '600 10px Inter, system-ui', padding: '3px 10px', border: 0, borderRadius: 4, cursor: 'pointer',
+              background: active ? '#fff' : 'transparent',
+              boxShadow: active ? 'var(--card-shadow)' : 'none',
+              color: '#363643',
+            }}
+          >
+            {p.label}
+          </button>
+        );
+      })}
     </div>
-  </NSModal>
-);
+  );
+
+  return (
+    <NSModal open={open} onClose={onClose} title="Total rewards" width={560}>
+      {chains.length === 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <div style={{ font: '800 28px Manrope', letterSpacing: '-0.02em', color: '#363643' }}>$0.00</div>
+            <PeriodPills />
+          </div>
+          <div style={{
+            padding: '36px 18px', textAlign: 'center',
+            font: '500 12px Inter, system-ui', color: '#79797D',
+          }}>
+            No reward data for the selected accounts.
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <div style={{ font: '800 28px Manrope', letterSpacing: '-0.02em', color: '#363643' }}>
+              ${grandFiat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <PeriodPills />
+          </div>
+
+          <div style={{
+            display: 'grid', gridTemplateColumns: '160px 1fr', gap: 20, alignItems: 'center',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Donut items={donutItems} size={150} thickness={28} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {chains.map(c => (
+                <div
+                  key={c.chainId}
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}
+                >
+                  <span style={{
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: c.color, marginTop: 5, flexShrink: 0,
+                  }} />
+                  <ChainIcon chain={c.chain} size={20} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ font: '600 12px Inter, system-ui', color: '#363643' }}>
+                      {c.chain}
+                    </div>
+                    <div style={{ font: '500 11px Inter, system-ui', color: '#79797D', marginTop: 2 }}>
+                      {c.totalToken.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: c.token === 'KSM' ? 4 : 2 })} {c.token}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ font: '600 12px Inter, system-ui', color: '#363643' }}>
+                      ${c.totalFiat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </NSModal>
+  );
+};
 
 // ============================ CLAIM REWARDS FLOW ============================
 
