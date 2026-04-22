@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, useEffect, useState } from 'react';
+import { type PropsWithChildren, useEffect, useRef, useState } from 'react';
 
 import { type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -20,12 +20,27 @@ import { AddProxyForm } from './AddProxyForm';
 type Props = PropsWithChildren<{
   wallet: Wallet;
   onClose?: () => void;
+  launchOpen?: boolean;
+  hideTrigger?: boolean;
 }>;
 
-export const AddProxy = ({ wallet, onClose, children }: Props) => {
+export const AddProxy = ({ wallet, onClose, children, launchOpen, hideTrigger }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const walletRef = useRef(wallet);
+  walletRef.current = wallet;
+
+  const hasStartedRef = useRef(false);
+  const hasClosedRef = useRef(false);
+
+  useEffect(() => {
+    if (!launchOpen) return;
+
+    hasClosedRef.current = false;
+    setIsModalOpen(true);
+    addProxyModel.events.flowStarted(walletRef.current);
+  }, [launchOpen, wallet.id]);
 
   const step = useUnit(addProxyModel.$step);
   const chain = useUnit(addProxyModel.$chain);
@@ -37,19 +52,33 @@ export const AddProxy = ({ wallet, onClose, children }: Props) => {
   );
 
   const closeModal = () => {
+    if (hasClosedRef.current) return;
+    hasClosedRef.current = true;
+    hasStartedRef.current = false;
     setIsModalOpen(false);
     addProxyModel.output.flowClosed();
     onClose?.();
   };
 
   useEffect(() => {
-    if (step === Step.NONE) {
-      setIsModalOpen(false);
+    if (step !== Step.NONE) {
+      hasStartedRef.current = true;
+      return;
+    }
+
+    if (!hasStartedRef.current) return;
+
+    hasStartedRef.current = false;
+    setIsModalOpen(false);
+    if (launchOpen && !hasClosedRef.current) {
+      hasClosedRef.current = true;
+      onClose?.();
     }
   }, [step]);
 
   const onToggle = (isOpen: boolean) => {
     if (isOpen) {
+      hasClosedRef.current = false;
       setIsModalOpen(true);
       addProxyModel.events.flowStarted(wallet);
       return;
@@ -84,7 +113,7 @@ export const AddProxy = ({ wallet, onClose, children }: Props) => {
 
   return (
     <Modal size="md" height="fit" isOpen={isModalOpen} onToggle={onToggle}>
-      <Modal.Trigger>{children}</Modal.Trigger>
+      {!hideTrigger && <Modal.Trigger>{children}</Modal.Trigger>}
       <Modal.Title close>{getModalTitle(step, chain)}</Modal.Title>
       <Modal.Content>
         {addProxyUtils.isInitStep(step) && <AddProxyForm />}
