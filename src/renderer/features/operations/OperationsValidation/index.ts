@@ -25,6 +25,7 @@ export { type DryRunResult, TransferRules, transferValidator } from './lib/trans
 export { AddProxyRules, addProxyValidator } from './lib/add-proxy-rules';
 export { AddPureProxiedRules, addPureProxiedValidator } from './lib/add-pure-proxied-rules';
 export { RemoveProxyRules, removeProxyValidator } from './lib/remove-proxy-rules';
+export { verifyProxyValidator } from './lib/verify-proxy-rules';
 export { voteValidator } from './lib/vote-rules';
 export { removeVoteValidator } from './lib/remove-vote-rules';
 export { RemovePureProxiedRules } from './lib/remove-pure-proxied-rules';

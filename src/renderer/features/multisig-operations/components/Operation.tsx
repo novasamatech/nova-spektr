@@ -128,7 +128,9 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
       title:
         coreTx?.section && coreTx?.method
           ? formatSectionAndMethod(coreTx.section, coreTx.method)
-          : t('operations.titles.unknown'),
+          : operation.section && operation.method
+            ? formatSectionAndMethod(operation.section, operation.method)
+            : t('operations.titles.unknown'),
       amount: asset && amount ? { value: amount, asset } : undefined,
       sourceChainId: operation.chainId,
     };

@@ -251,8 +251,8 @@ export const CreateDraftModal = () => {
       const errorDescription =
         e instanceof HttpError && e.status === 403
           ? t('addressBook.sources.errorForbidden')
-          : e instanceof Error
-            ? e.message
+          : e instanceof HttpError && e.status === 422
+            ? t('operations.drafts.descriptionRequired')
             : t('operations.drafts.createError');
       toast.error(t('operations.drafts.createError'), { description: errorDescription });
     } finally {
@@ -396,24 +396,50 @@ export const CreateDraftModal = () => {
                     value={selectedAccount?.accountId ?? null}
                     onChange={handleAccountChange}
                   >
-                    {draftAccountOptions.map((opt) => (
-                      <Select.Item key={opt.accountId} value={opt.accountId}>
-                        <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
-                          <WalletAccountIcon
-                            address={opt.address}
-                            type={opt.walletType ?? ('Multisig' as WalletType)}
-                            size={24}
-                            iconSize={12}
-                          />
-                          <span className="flex w-full flex-col overflow-hidden">
-                            <span className="w-fit max-w-full truncate">{opt.name}</span>
-                            <span className="w-full text-help-text text-text-tertiary">
-                              <Hash value={opt.address} variant="truncate" />
+                    <Select.Group title={t('operations.drafts.multisigsGroup')}>
+                      {draftAccountOptions
+                        .filter((o) => !o.isProxy)
+                        .map((opt) => (
+                          <Select.Item key={opt.accountId} value={opt.accountId}>
+                            <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
+                              <WalletAccountIcon
+                                address={opt.address}
+                                type={opt.walletType ?? ('Multisig' as WalletType)}
+                                size={24}
+                                iconSize={12}
+                              />
+                              <span className="flex w-full flex-col overflow-hidden">
+                                <span className="w-fit max-w-full truncate">{opt.name}</span>
+                                <span className="w-full text-help-text text-text-tertiary">
+                                  <Hash value={opt.address} variant="truncate" />
+                                </span>
+                              </span>
                             </span>
-                          </span>
-                        </span>
-                      </Select.Item>
-                    ))}
+                          </Select.Item>
+                        ))}
+                    </Select.Group>
+                    <Select.Group title={t('operations.drafts.proxiedAccountsGroup')}>
+                      {draftAccountOptions
+                        .filter((o) => o.isProxy)
+                        .map((opt) => (
+                          <Select.Item key={opt.accountId} value={opt.accountId}>
+                            <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
+                              <WalletAccountIcon
+                                address={opt.address}
+                                type={opt.walletType ?? ('Multisig' as WalletType)}
+                                size={24}
+                                iconSize={12}
+                              />
+                              <span className="flex w-full flex-col overflow-hidden">
+                                <span className="w-fit max-w-full truncate">{opt.name}</span>
+                                <span className="w-full text-help-text text-text-tertiary">
+                                  <Hash value={opt.address} variant="truncate" />
+                                </span>
+                              </span>
+                            </span>
+                          </Select.Item>
+                        ))}
+                    </Select.Group>
                   </Select>
                 </Field>
               )}
@@ -455,7 +481,13 @@ export const CreateDraftModal = () => {
 
           {activeStep === 'confirm' && (
             <div className="flex flex-col gap-4 p-4">
-              <Field text={t('operations.drafts.descriptionLabel')}>
+              <Field
+                text={
+                  <>
+                    {t('operations.drafts.descriptionLabel')} <span className="text-text-negative">*</span>
+                  </>
+                }
+              >
                 <TextArea
                   placeholder={t('operations.drafts.descriptionPlaceholder')}
                   value={description}

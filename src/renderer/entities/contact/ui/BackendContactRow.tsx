@@ -2,6 +2,7 @@ import { Fragment } from 'react';
 
 import { type BackendContact, type Contact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, IconButton, Plate } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Copy, Label, Tooltip } from '@/shared/ui-kit';
@@ -55,7 +56,7 @@ export const BackendContactRow = ({ contact, onSendTo }: Props) => {
           {contact.categoryName && <Label variant="blue">{contact.categoryName}</Label>}
           {contact.contactTypeName && <Label variant="gray">{contact.contactTypeName}</Label>}
           {contact.chainName && <Label variant="lightBlue">{contact.chainName}</Label>}
-          {contact.threshold !== null && contact.signatories !== null && (
+          {!nullable(contact.threshold) && !nullable(contact.signatories) && (
             <Label variant="darkGray">
               {contact.threshold}/{contact.signatories.length}
             </Label>
