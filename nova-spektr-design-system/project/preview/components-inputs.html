@@ -1,0 +1,16 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:#fff}
+  .wrap{padding:22px 24px;display:flex;flex-direction:column;gap:12px;max-width:420px}
+  label{font:var(--type-footnote);color:var(--text-secondary)}
+  .field{display:flex;flex-direction:column;gap:6px}
+  input,select{font:var(--type-body);border:1px solid rgba(69,69,137,.06);border-radius:8px;padding:10px 12px;background:#fff;outline:none;color:var(--text-primary)}
+  input:focus{border-color:rgba(70,73,246,.4);box-shadow:0 0 0 2px rgba(36,99,235,.16)}
+  .err{border-color:#F52163}
+  .hint{font:var(--type-help-text);color:var(--text-tertiary)}
+  .errhint{color:#F52163}
+</style></head><body><div class="wrap">
+  <div class="field"><label>Recipient address</label><input value="5Grw…8sVY" /></div>
+  <div class="field"><label>Amount</label><input value="12.3456 DOT" /><div class="hint">Available: 45.8910 DOT</div></div>
+  <div class="field"><label>Memo</label><input class="err" value="" placeholder="Optional" /><div class="hint errhint">Memo too long — max 32 chars.</div></div>
+</div></body></html>

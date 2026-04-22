@@ -451,6 +451,94 @@ const Donut = ({ items, size = 150, thickness = 28 }) => {
   );
 };
 
+// Annular-slice path: outer arc → radial line → inner arc (reverse) → close.
+const annularSlicePath = (cx, cy, R, r, startDeg, endDeg) => {
+  const toRad = (d) => ((d - 90) * Math.PI) / 180;
+  const x1o = cx + R * Math.cos(toRad(startDeg));
+  const y1o = cy + R * Math.sin(toRad(startDeg));
+  const x2o = cx + R * Math.cos(toRad(endDeg));
+  const y2o = cy + R * Math.sin(toRad(endDeg));
+  const x1i = cx + r * Math.cos(toRad(startDeg));
+  const y1i = cy + r * Math.sin(toRad(startDeg));
+  const x2i = cx + r * Math.cos(toRad(endDeg));
+  const y2i = cy + r * Math.sin(toRad(endDeg));
+  const large = endDeg - startDeg > 180 ? 1 : 0;
+  return [
+    `M ${x1o} ${y1o}`,
+    `A ${R} ${R} 0 ${large} 1 ${x2o} ${y2o}`,
+    `L ${x2i} ${y2i}`,
+    `A ${r} ${r} 0 ${large} 0 ${x1i} ${y1i}`,
+    'Z',
+  ].join(' ');
+};
+
+// Full annulus (for when there's a single 100% slice — an arc from 0° to 360° is ambiguous).
+const fullAnnulusPath = (cx, cy, R, r) =>
+  `M ${cx - R},${cy} A ${R},${R} 0 1,1 ${cx + R},${cy} A ${R},${R} 0 1,1 ${cx - R},${cy} ` +
+  `M ${cx - r},${cy} A ${r},${r} 0 1,0 ${cx + r},${cy} A ${r},${r} 0 1,0 ${cx - r},${cy} Z`;
+
+// Items: { id, pct, color, label, valueFiat, valueToken?, share? }
+// renderCenter: () => ReactNode shown when nothing is hovered.
+const HoverableDonut = ({ items, size = 150, thickness = 28, renderCenter }) => {
+  const [hover, setHover] = React.useState(null);
+  const cx = size / 2, cy = size / 2;
+  const R = size / 2;
+  const inner = R - thickness;
+  const total = items.reduce((s, i) => s + i.pct, 0) || 1;
+  const gap = items.length > 1 ? 0.8 : 0; // small deg gap between slices
+
+  let acc = 0;
+  const slices = items.map((it, i) => {
+    const frac = it.pct / total;
+    const start = (acc / total) * 360 + gap / 2;
+    acc += it.pct;
+    const end = (acc / total) * 360 - gap / 2;
+    const path = items.length === 1
+      ? fullAnnulusPath(cx, cy, R, inner)
+      : annularSlicePath(cx, cy, R, inner, start, end);
+    return { path, color: it.color, frac, item: it, singleFull: items.length === 1 };
+  });
+
+  const hovered = hover != null ? slices[hover] : null;
+
+  return (
+    <div style={{ position: 'relative', width: size, height: size }}>
+      <svg width={size} height={size} onMouseLeave={() => setHover(null)}>
+        {items.length === 1 && (
+          <path
+            d={slices[0].path}
+            fill={slices[0].color}
+            fillRule="evenodd"
+            onMouseEnter={() => setHover(0)}
+            style={{ cursor: 'pointer' }}
+          />
+        )}
+        {items.length > 1 && slices.map((s, i) => (
+          <path
+            key={i}
+            d={s.path}
+            fill={s.color}
+            onMouseEnter={() => setHover(i)}
+            style={{
+              cursor: 'pointer',
+              opacity: hover == null || hover === i ? 1 : 0.35,
+              transition: 'opacity 0.1s',
+            }}
+          />
+        ))}
+      </svg>
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        textAlign: 'center', padding: 8,
+      }}>
+        {renderCenter ? renderCenter() : null}
+      </div>
+    </div>
+  );
+};
+
 const OverviewView = () => {
   const [view, setView] = React.useState('Asset');
   const { scale } = useWalletFilter();
@@ -944,18 +1032,211 @@ const RewardsCard = ({ scale = 1 }) => {
   );
 };
 
+const UNBONDING_ITEMS = [
+  { id: 'u-ready-dot', num: 100.0, sym: 'DOT', chainId: 'polkadot-ah', accountId: 'v-stash',     ready: true,  era: 1498, digits: 1 },
+  { id: 'u-ready-ksm', num: 0.8,   sym: 'KSM', chainId: 'kusama-ah',   accountId: 'v-stash',     ready: true,  era: 6720, digits: 2 },
+  { id: 'u-wait-1',    num: 45.0,  sym: 'DOT', chainId: 'polkadot-ah', accountId: 'v-stash',     ready: false, era: 1547, leftDays: 24, digits: 1 },
+  { id: 'u-wait-2',    num: 12.5,  sym: 'DOT', chainId: 'polkadot-ah', accountId: 'l-main',      ready: false, era: 1521, leftDays: 8,  digits: 1 },
+  { id: 'u-wait-3',    num: 0.4,   sym: 'KSM', chainId: 'kusama-ah',   accountId: 'wc-ksm',      ready: false, era: 6802, leftDays: 6,  digits: 2 },
+];
+
+const UnbondingCard = ({ onWithdraw }) => {
+  const f = useWalletFilter();
+  const items = UNBONDING_ITEMS
+    .filter(u => f.selected.has(u.accountId))
+    .sort((a, b) => {
+      if (a.ready !== b.ready) return a.ready ? -1 : 1;  // ready first
+      return (a.leftDays || 0) - (b.leftDays || 0);
+    });
+  const readyItems = items.filter(u => u.ready);
+
+  return (
+    <NSPlate padding="16px 18px">
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12, gap: 8 }}>
+        <div style={{ font: '500 11px Inter, system-ui', color: '#79797D', flex: 1 }}>Unbonding</div>
+        {readyItems.length > 0 && (
+          <NSButton variant="primary" size="sm" onClick={() => onWithdraw(readyItems)}>
+            Withdraw all · {readyItems.length}
+          </NSButton>
+        )}
+      </div>
+      {items.length === 0 ? (
+        <div style={{ font: '500 12px Inter, system-ui', color: '#79797D', padding: '8px 0' }}>
+          Nothing unbonding for the selected accounts.
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {items.map(u => {
+            const acc = ACCOUNT_BY_ID[u.accountId];
+            return (
+              <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ font: '600 13px Inter' }}>{u.num.toFixed(u.digits)} {u.sym}</div>
+                  <div style={{ font: '500 11px Inter', color: '#79797D' }}>
+                    Era {u.era.toLocaleString('en-US')} · {u.ready ? 'Ready' : `${u.leftDays} days left`}
+                    {acc && <> · {acc.wallet.name}</>}
+                  </div>
+                </div>
+                {u.ready ? (
+                  <NSButton variant="primary" size="sm" onClick={() => onWithdraw([u])}>
+                    Withdraw
+                  </NSButton>
+                ) : (
+                  <NSBadge tone="orange">Unbonding</NSBadge>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </NSPlate>
+  );
+};
+
+const UNBOND_FEES = { DOT: 0.015, KSM: 0.0008 };
+const CHAIN_BY_ID = Object.fromEntries(CHAIN_STAKES.map(c => [c.chainId, c]));
+
+const WithdrawModal = ({ ctx, onClose }) => {
+  const [submitted, setSubmitted] = React.useState(false);
+  React.useEffect(() => { if (ctx) setSubmitted(false); }, [ctx]);
+  if (!ctx) return null;
+
+  // Group items by chainId to show clean per-chain fees.
+  const byChain = new Map();
+  for (const it of ctx.items) {
+    if (!byChain.has(it.chainId)) byChain.set(it.chainId, []);
+    byChain.get(it.chainId).push(it);
+  }
+  const groups = Array.from(byChain.entries()).map(([chainId, items]) => ({
+    chain: CHAIN_BY_ID[chainId],
+    items,
+    total: items.reduce((s, i) => s + i.num, 0),
+    fee: UNBOND_FEES[items[0].sym] || 0,
+  }));
+  const grandFiat = groups.reduce((s, g) => s + g.total * g.chain.price, 0);
+
+  const footer = submitted ? (
+    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <NSButton variant="primary" onClick={onClose}>Done</NSButton>
+    </div>
+  ) : (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <span style={{ font: '500 11px Inter, system-ui', color: '#79797D' }}>
+        {ctx.items.length} {ctx.items.length === 1 ? 'payout' : 'payouts'} · ${grandFiat.toFixed(2)}
+      </span>
+      <span style={{ flex: 1 }} />
+      <NSButton variant="secondary" onClick={onClose}>Cancel</NSButton>
+      <NSButton variant="primary" onClick={() => setSubmitted(true)}>Sign and submit</NSButton>
+    </div>
+  );
+
+  return (
+    <NSModal
+      open={!!ctx}
+      onClose={onClose}
+      title={submitted ? 'Withdrawal submitted' : 'Withdraw'}
+      subtitle={submitted
+        ? 'Your funds will appear in the transferable balance shortly.'
+        : 'Move unbonded funds back to your transferable balance.'}
+      width={480}
+      footer={footer}
+    >
+      {submitted ? (
+        <div style={{ textAlign: 'center', padding: '20px 10px 10px' }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: '50%',
+            background: '#DAF1E1', color: '#01A63E',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            font: '700 24px Manrope', margin: '0 auto 14px',
+          }}>✓</div>
+          <div style={{ font: '700 18px Manrope', letterSpacing: '-0.02em', color: '#363643' }}>Operation signed</div>
+          <div style={{ font: '500 12px Inter', color: '#79797D', marginTop: 6 }}>
+            Withdrawing {ctx.items.length} {ctx.items.length === 1 ? 'position' : 'positions'} totalling ${grandFiat.toFixed(2)}.
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {groups.map(g => (
+            <NSPlate key={g.chain.chainId} padding="0">
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '12px 14px', borderBottom: '0.5px solid rgba(69,69,137,0.06)',
+              }}>
+                <ChainIcon chain={g.chain.chain} size={22} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ font: '600 13px Inter, system-ui', color: '#363643' }}>{g.chain.chain}</div>
+                  <div style={{ font: '500 11px Inter, system-ui', color: '#79797D' }}>
+                    {g.items.length} {g.items.length === 1 ? 'payout' : 'payouts'} · fee {g.fee} {g.chain.token}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ font: '700 14px Manrope', letterSpacing: '-0.01em', color: '#363643' }}>
+                    {g.total.toFixed(g.items[0].digits)} {g.chain.token}
+                  </div>
+                  <div style={{ font: '500 11px Inter, system-ui', color: '#79797D' }}>
+                    ${(g.total * g.chain.price).toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                  </div>
+                </div>
+              </div>
+              {g.items.map((u, i) => {
+                const acc = ACCOUNT_BY_ID[u.accountId];
+                return (
+                  <div
+                    key={u.id}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 14px',
+                      borderTop: i === 0 ? 'none' : '0.5px solid rgba(69,69,137,0.04)',
+                    }}
+                  >
+                    <img src={acc.wallet.icon} style={{ width: 22, height: 22, borderRadius: 5 }} />
+                    <Identicon seed={u.accountId} size={20} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ font: '600 12px Inter, system-ui', color: '#363643' }}>
+                        {acc.wallet.name} · {acc.name}
+                      </div>
+                      <div style={{ font: '500 11px JetBrains Mono, monospace', color: '#79797D' }}>{acc.addr}</div>
+                    </div>
+                    <div style={{ font: '600 12px Inter, system-ui', color: '#363643' }}>
+                      {u.num.toFixed(u.digits)} {u.sym}
+                    </div>
+                  </div>
+                );
+              })}
+            </NSPlate>
+          ))}
+        </div>
+      )}
+    </NSModal>
+  );
+};
+
 const StakingView = () => {
-  const { scale } = useWalletFilter();
+  const f = useWalletFilter();
+  const { scale } = f;
   const rewardsScale = scale;
   const [claimOpen, setClaimOpen] = React.useState(false);
   const [drilldown, setDrilldown] = React.useState(null); // 'positions' | 'rewards' | null
-  const fmtTok = (v, unit) => `${v.toLocaleString('en-US', { maximumFractionDigits: v < 10 ? 2 : 1 })} ${unit}`;
+  const [withdrawCtx, setWithdrawCtx] = React.useState(null); // { items: [...] }
   const fmtUsd = (v) => `$${v.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+
+  // Plate fiat totals are derived from the wallet filter so they match the drilldown modals.
+  const activeChains = CHAIN_STAKES.map(c => {
+    const sel = c.positions.filter(p => f.selected.has(p.accountId));
+    const stakedTok = sel.reduce((a, p) => a + p.staked, 0);
+    return { chain: c, sel, stakedTok, stakedFiat: stakedTok * c.price };
+  }).filter(c => c.sel.length > 0);
+  const totalStakedFiat = activeChains.reduce((s, c) => s + c.stakedFiat, 0);
+  const totalRewardsFiat = totalStakedFiat * 2.56;   // lifetime placeholder
+  const unclaimedFiat    = totalStakedFiat * 0.067;
+  const netCount = activeChains.length;
+  const netLabel = netCount === 0 ? '—' : netCount === 1 ? activeChains[0].chain.chain : `across ${netCount} networks`;
+
   const plates = [
-    { key: 'Total staked',      v: fmtTok(1285.3 * scale, 'DOT'), sub: fmtUsd(1658.04 * scale), drilldown: 'positions' },
-    { key: 'Total rewards',     v: fmtTok(3290 * scale,   'DOT'), sub: fmtUsd(4244 * scale),    drilldown: 'rewards' },
-    { key: 'Unclaimed rewards', v: fmtTok(86.6 * scale,   'DOT'), sub: fmtUsd(111.71 * scale),  claim: true },
-    { key: 'Average APY',       v: '16.2%',                        sub: 'last 30 days' },
+    { key: 'Total staked',      v: fmtUsd(totalStakedFiat),   sub: netLabel,         drilldown: 'positions' },
+    { key: 'Total rewards',     v: fmtUsd(totalRewardsFiat),  sub: 'lifetime',       drilldown: 'rewards' },
+    { key: 'Unclaimed rewards', v: fmtUsd(unclaimedFiat),     sub: 'ready to claim', claim: true },
+    { key: 'Average APY',       v: '16.2%',                   sub: 'last 30 days' },
   ];
   return (
   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -1002,24 +1283,8 @@ const StakingView = () => {
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16 }}>
       <RewardsCard scale={rewardsScale} />
 
-      <NSPlate padding="16px 18px">
-        <div style={{ font: '500 11px Inter, system-ui', color: '#79797D', marginBottom: 12 }}>Unbonding</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {[
-            { num: 45.0, sym: 'DOT', left: '24 days', era: 'Era 1,547', digits: 1 },
-            { num: 12.5, sym: 'DOT', left: '8 days',  era: 'Era 1,521', digits: 1 },
-            { num: 0.4,  sym: 'KSM', left: '6 days',  era: 'Era 6,802', digits: 2 },
-          ].map((u, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ font: '600 13px Inter' }}>{(u.num * scale).toFixed(u.digits)} {u.sym}</div>
-                <div style={{ font: '500 11px Inter', color: '#79797D' }}>{u.era} · {u.left} left</div>
-              </div>
-              <NSBadge tone="orange">Unbonding</NSBadge>
-            </div>
-          ))}
-        </div>
-      </NSPlate>
+      <UnbondingCard onWithdraw={(items) => setWithdrawCtx({ items })} />
+      <WithdrawModal ctx={withdrawCtx} onClose={() => setWithdrawCtx(null)} />
     </div>
 
     <StakeByNetworkTable />
@@ -1447,11 +1712,6 @@ const STAKING_CHAIN_COLORS = {
   'polkadot-ah': '#E6007A',
   'kusama-ah': '#000000',
 };
-// Small deterministic hint of redeemable amount per chain — keeps the "Redeemable 0.1 KSM"
-// style subtitle visible on one of the rows without introducing new data shape.
-const STAKING_REDEEMABLE = {
-  'kusama-ah': 0.1,
-};
 const StakingPositionsModal = ({ open, onClose }) => {
   const f = useWalletFilter();
   const chains = React.useMemo(() => (
@@ -1470,7 +1730,6 @@ const StakingPositionsModal = ({ open, onClose }) => {
           totalValue: totalStaked * c.price,
           activeValidators,
           accountsCount: positions.length,
-          redeemable: STAKING_REDEEMABLE[c.chainId] || 0,
           color: STAKING_CHAIN_COLORS[c.chainId] || '#4649F6',
         };
       })
@@ -1479,7 +1738,14 @@ const StakingPositionsModal = ({ open, onClose }) => {
 
   const grandValue = chains.reduce((s, c) => s + c.totalValue, 0);
   const grandValidators = chains.reduce((s, c) => s + c.activeValidators, 0);
-  const donutItems = chains.map(c => ({ pct: c.totalValue, color: c.color }));
+  const donutItems = chains.map(c => ({
+    id: c.chainId,
+    pct: c.totalValue,
+    color: c.color,
+    label: c.chain,
+    valueFiat: c.totalValue,
+    valueToken: `${c.totalStaked.toLocaleString('en-US', { maximumFractionDigits: 2 })} ${c.token}`,
+  }));
 
   return (
     <NSModal open={open} onClose={onClose} title="Staking positions" width={560}>
@@ -1507,7 +1773,22 @@ const StakingPositionsModal = ({ open, onClose }) => {
             display: 'grid', gridTemplateColumns: '160px 1fr', gap: 20, alignItems: 'center',
           }}>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Donut items={donutItems} size={150} thickness={28} />
+              <HoverableDonut
+                items={donutItems}
+                size={150}
+                thickness={28}
+                renderCenter={() => (
+                  <>
+                    <div style={{ font: '500 10px Inter, system-ui', color: '#79797D' }}>Total</div>
+                    <div style={{ font: '700 14px Manrope', letterSpacing: '-0.01em', color: '#363643' }}>
+                      ${grandValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                    </div>
+                    <div style={{ font: '500 10px Inter, system-ui', color: '#79797D', marginTop: 1 }}>
+                      {grandValidators} {grandValidators === 1 ? 'validator' : 'validators'}
+                    </div>
+                  </>
+                )}
+              />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {chains.map(c => (
@@ -1537,11 +1818,6 @@ const StakingPositionsModal = ({ open, onClose }) => {
                     <div style={{ font: '600 12px Inter, system-ui', color: '#363643' }}>
                       ${c.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
-                    {c.redeemable > 0 && (
-                      <div style={{ font: '500 10px Inter, system-ui', color: '#79797D', marginTop: 2 }}>
-                        Redeemable {c.redeemable} {c.token}
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
@@ -1565,6 +1841,7 @@ const TOTAL_REWARDS_PERIODS = [
 const TotalRewardsModal = ({ open, onClose }) => {
   const f = useWalletFilter();
   const [period, setPeriod] = React.useState('1Y');
+  const [chainDrill, setChainDrill] = React.useState(null);
 
   const periodCfg = TOTAL_REWARDS_PERIODS.find(p => p.id === period);
 
@@ -1591,7 +1868,14 @@ const TotalRewardsModal = ({ open, onClose }) => {
   ), [f.selected, period]);
 
   const grandFiat = chains.reduce((s, c) => s + c.totalFiat, 0);
-  const donutItems = chains.map(c => ({ pct: c.totalFiat, color: c.color }));
+  const donutItems = chains.map(c => ({
+    id: c.chainId,
+    pct: c.totalFiat,
+    color: c.color,
+    label: c.chain,
+    valueFiat: c.totalFiat,
+    valueToken: `${c.totalToken.toLocaleString('en-US', { maximumFractionDigits: c.token === 'KSM' ? 4 : 2 })} ${c.token}`,
+  }));
 
   const PeriodPills = () => (
     <div style={{ display: 'inline-flex', gap: 2, background: 'rgba(69,69,137,0.06)', padding: 2, borderRadius: 6 }}>
@@ -1643,13 +1927,33 @@ const TotalRewardsModal = ({ open, onClose }) => {
             display: 'grid', gridTemplateColumns: '160px 1fr', gap: 20, alignItems: 'center',
           }}>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Donut items={donutItems} size={150} thickness={28} />
+              <HoverableDonut
+                items={donutItems}
+                size={150}
+                thickness={28}
+                renderCenter={() => (
+                  <>
+                    <div style={{ font: '500 10px Inter, system-ui', color: '#79797D' }}>{periodCfg.label}</div>
+                    <div style={{ font: '700 14px Manrope', letterSpacing: '-0.01em', color: '#363643' }}>
+                      ${grandFiat.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                    </div>
+                    <div style={{ font: '500 10px Inter, system-ui', color: '#79797D', marginTop: 1 }}>total</div>
+                  </>
+                )}
+              />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {chains.map(c => (
-                <div
+                <button
                   key={c.chainId}
-                  style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}
+                  onClick={() => setChainDrill(c)}
+                  style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 10,
+                    padding: '8px 8px', borderRadius: 8, border: 0, background: 'transparent',
+                    textAlign: 'left', cursor: 'pointer', width: '100%',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(69,69,137,0.04)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
                   <span style={{
                     width: 8, height: 8, borderRadius: '50%',
@@ -1669,12 +1973,159 @@ const TotalRewardsModal = ({ open, onClose }) => {
                       ${c.totalFiat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                   </div>
-                </div>
+                  <NSIcon src="../../assets/icons/chevron/right.svg" size={10} style={{ opacity: 0.4, marginTop: 4 }} />
+                </button>
               ))}
             </div>
           </div>
         </div>
       )}
+      <RewardsByChainModal chain={chainDrill} period={period} onClose={() => setChainDrill(null)} />
+    </NSModal>
+  );
+};
+
+const RewardsByChainModal = ({ chain, period, onClose }) => {
+  const f = useWalletFilter();
+  const [sort, setSort] = React.useState({ key: 'rewards', dir: 'desc' });
+  if (!chain) return null;
+
+  const periodCfg = TOTAL_REWARDS_PERIODS.find(p => p.id === period);
+  const cfg = REWARD_ASSETS[chain.token];
+  const chainRaw = CHAIN_STAKES.find(c => c.chainId === chain.chainId);
+  const positions = chainRaw ? chainRaw.positions.filter(p => f.selected.has(p.accountId)) : [];
+  const totalStake = positions.reduce((s, p) => s + p.staked, 0) || 1;
+  const totalRewards = cfg ? cfg.dailyMean * periodCfg.days * positions.length : 0;
+
+  const rows = positions.map(p => {
+    const acc = ACCOUNT_BY_ID[p.accountId];
+    const share = p.staked / totalStake;
+    const rewards = totalRewards * share;
+    const value = rewards * chain.price;
+    return { id: p.accountId, acc, rewards, value, share };
+  });
+
+  const sorted = rows.slice().sort((a, b) => {
+    if (!sort.key) return 0;
+    const mul = sort.dir === 'asc' ? 1 : -1;
+    const av = a[sort.key] ?? 0, bv = b[sort.key] ?? 0;
+    return (av < bv ? -1 : av > bv ? 1 : 0) * mul;
+  });
+
+  const grandToken = rows.reduce((s, r) => s + r.rewards, 0);
+  const grandValue = rows.reduce((s, r) => s + r.value, 0);
+
+  const donutItems = rows.map(r => ({
+    id: r.id,
+    pct: r.value,
+    color: colorForAccount(r.id),
+    label: `${r.acc.wallet.name} · ${r.acc.name}`,
+    valueFiat: r.value,
+    valueToken: `${r.rewards.toFixed(chain.token === 'KSM' ? 4 : 2)} ${chain.token}`,
+  }));
+
+  const COL = '1fr 140px 120px 80px';
+  const tokenDigits = chain.token === 'KSM' ? 4 : 2;
+
+  return (
+    <NSModal open={!!chain} onClose={onClose} title={`${chain.chain} Rewards`} width={580}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '12px 14px',
+          background: '#fff', borderRadius: 10,
+          boxShadow: 'inset 0 -0.5px 0 rgba(69,69,137,0.12)',
+        }}>
+          <ChainIcon chain={chain.chain} size={22} />
+          <div style={{ flex: 1 }}>
+            <div style={{ font: '600 13px Inter, system-ui', color: '#363643' }}>{chain.chain}</div>
+            <div style={{ font: '500 11px Inter, system-ui', color: '#79797D' }}>
+              {rows.length} {rows.length === 1 ? 'account' : 'accounts'}
+            </div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ font: '700 14px Manrope', letterSpacing: '-0.01em', color: '#363643' }}>
+              {grandToken.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: tokenDigits })} {chain.token}
+            </div>
+            <div style={{ font: '500 11px Inter, system-ui', color: '#79797D' }}>
+              ${grandValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+            </div>
+          </div>
+        </div>
+
+        {rows.length === 0 ? (
+          <div style={{
+            padding: '28px 14px', textAlign: 'center',
+            font: '500 12px Inter, system-ui', color: '#79797D',
+          }}>
+            No reward data for this chain.
+          </div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 0 8px' }}>
+              <HoverableDonut
+                items={donutItems}
+                size={170}
+                thickness={32}
+                renderCenter={() => (
+                  <>
+                    <div style={{ font: '500 10px Inter, system-ui', color: '#79797D' }}>{periodCfg.label}</div>
+                    <div style={{ font: '700 14px Manrope', letterSpacing: '-0.01em', color: '#363643' }}>
+                      ${grandValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                    </div>
+                    <div style={{ font: '500 10px Inter, system-ui', color: '#79797D', marginTop: 1 }}>total</div>
+                  </>
+                )}
+              />
+            </div>
+
+            <div style={{
+              display: 'grid', gridTemplateColumns: COL, gap: 10,
+              padding: '8px 4px', borderBottom: '0.5px solid rgba(69,69,137,0.06)',
+              alignItems: 'center',
+            }}>
+              <span style={{
+                font: '600 10px Inter, system-ui', color: '#A4A4AD',
+                letterSpacing: '.5px', textTransform: 'uppercase',
+              }}>Account</span>
+              <SortableHeader label="Rewards" tooltip="Rewards earned in the selected period" sortKey="rewards" sort={sort} onChange={setSort} />
+              <SortableHeader label="Value"   tooltip="Fiat value at current price"           sortKey="value"   sort={sort} onChange={setSort} />
+              <SortableHeader label="Share"   tooltip="Share of chain rewards"                sortKey="share"   sort={sort} onChange={setSort} />
+            </div>
+
+            {sorted.map((r, i) => (
+              <div
+                key={r.id}
+                style={{
+                  display: 'grid', gridTemplateColumns: COL, gap: 10,
+                  padding: '10px 4px', alignItems: 'center',
+                  borderTop: i === 0 ? 'none' : '0.5px solid rgba(69,69,137,0.04)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: colorForAccount(r.id), flexShrink: 0 }} />
+                  <img src={r.acc.wallet.icon} style={{ width: 20, height: 20, borderRadius: 5, flexShrink: 0 }} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ font: '600 12px Inter, system-ui', color: '#363643' }}>
+                      {r.acc.wallet.name} · {r.acc.name}
+                    </div>
+                    <div style={{ font: '500 11px JetBrains Mono, monospace', color: '#79797D' }}>{r.acc.addr}</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', font: '600 12px Inter, system-ui' }}>
+                  {r.rewards.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: tokenDigits })} {chain.token}
+                </div>
+                <div style={{ textAlign: 'right', font: '500 12px Inter, system-ui', color: '#79797D' }}>
+                  ${r.value.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                </div>
+                <div style={{ textAlign: 'right', font: '600 12px Inter, system-ui' }}>
+                  {(r.share * 100).toFixed(1)}%
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
     </NSModal>
   );
 };

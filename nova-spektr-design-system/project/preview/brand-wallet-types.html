@@ -1,0 +1,42 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; background: #fff; color: var(--text-primary); }
+  .wrap { padding: 20px 24px; display: flex; flex-direction: column; gap: 24px; }
+  h3 { font: var(--type-small-title); color: var(--text-secondary); margin: 0; letter-spacing: -0.01em; }
+  .row { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+  .tile { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 84px; }
+  .tile img { width: 56px; height: 56px; border-radius: 12px; display: block; }
+  .tile .lab { font: var(--type-footnote); color: var(--text-primary); text-align: center; }
+  .badge { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border-radius: 999px; background: #F4F4F8; }
+  .badge img { width: 22px; height: 22px; border-radius: 6px; display: block; }
+  .badge span { font: var(--type-footnote); color: var(--text-primary); }
+  .mini { display: flex; flex-wrap: wrap; gap: 8px; }
+</style></head><body>
+<div class="wrap">
+
+  <section>
+    <h3 style="margin-bottom:12px">Tiles — 56×56 (onboarding)</h3>
+    <div class="row">
+      <div class="tile"><img src="../assets/icons/wallet/novaWalletColor.svg"/><div class="lab">Nova Wallet</div></div>
+      <div class="tile"><img src="../assets/icons/wallet/vaultColor.svg"/><div class="lab">Polkadot Vault</div></div>
+      <div class="tile"><img src="../assets/icons/wallet/walletConnectColor.svg"/><div class="lab">WalletConnect</div></div>
+      <div class="tile"><img src="../assets/icons/wallet/polkadotExtensionColor.svg"/><div class="lab">Polkadot-js</div></div>
+      <div class="tile"><img src="../assets/icons/wallet/talismanExtensionColor.svg"/><div class="lab">Talisman</div></div>
+      <div class="tile"><img src="../assets/icons/wallet/subWalletExtensionColor.svg"/><div class="lab">SubWallet</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h3 style="margin-bottom:12px">Badge — inline row</h3>
+    <div class="mini">
+      <div class="badge"><img src="../assets/icons/wallet/novaWalletColor.svg"/><span>Nova Wallet</span></div>
+      <div class="badge"><img src="../assets/icons/wallet/vaultColor.svg"/><span>Polkadot Vault</span></div>
+      <div class="badge"><img src="../assets/icons/wallet/walletConnectColor.svg"/><span>WalletConnect</span></div>
+      <div class="badge"><img src="../assets/icons/wallet/polkadotExtensionColor.svg"/><span>Polkadot-js</span></div>
+      <div class="badge"><img src="../assets/icons/wallet/talismanExtensionColor.svg"/><span>Talisman</span></div>
+      <div class="badge"><img src="../assets/icons/wallet/subWalletExtensionColor.svg"/><span>SubWallet</span></div>
+    </div>
+  </section>
+
+</div></body></html>
