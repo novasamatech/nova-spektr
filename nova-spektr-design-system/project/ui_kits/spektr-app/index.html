@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nova Spektr — UI kit</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  html, body { margin: 0; height: 100%; background: var(--main-app-background); font: var(--type-body); color: var(--text-primary); }
+  #app { display: flex; height: 100vh; min-width: 1100px; }
+  main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #F8F8FA; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="app"></div>
+<script type="text/babel" src="Primitives.jsx"></script>
+<script type="text/babel" src="Flows.jsx"></script>
+<script type="text/babel" src="Chrome.jsx"></script>
+<script type="text/babel" src="AssetsPage.jsx"></script>
+<script type="text/babel" src="GovernancePage.jsx"></script>
+<script type="text/babel" src="StakingPage.jsx"></script>
+<script type="text/babel" src="DashboardPage.jsx"></script>
+<script type="text/babel" src="OtherPages.jsx"></script>
+<script type="text/babel">
+  const App = () => {
+    const [page, setPage] = React.useState(() => localStorage.getItem('spektr-page') || 'assets');
+    const [collapsed, setCollapsed] = React.useState(() => localStorage.getItem('spektr-collapsed') === '1');
+    React.useEffect(() => localStorage.setItem('spektr-page', page), [page]);
+    React.useEffect(() => localStorage.setItem('spektr-collapsed', collapsed ? '1' : '0'), [collapsed]);
+    const Pages = {
+      assets:        <AssetsPage />,
+      governance:    <GovernancePage />,
+      staking:       <StakingPage />,
+      fellowship:    <FellowshipPage />,
+      addressbook:   <AddressBookPage />,
+      dashboard:     <DashboardPage />,
+      multisig:      <MultisigPage />,
+      notifications: <NotificationsPage />,
+      settings:      <SettingsPage />,
+    };
+    return (
+      <>
+        <SideNav current={page} onNavigate={setPage} collapsed={collapsed} onToggleCollapse={() => setCollapsed(c => !c)} />
+        <main>{Pages[page] || <Empty title={page} />}</main>
+      </>
+    );
+  };
+  const Empty = ({ title }) => (
+    <>
+      <Header title={title.charAt(0).toUpperCase() + title.slice(1)} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+        <img src="../../assets/empty-list.webp" style={{ width: 160, opacity: .8 }} />
+        <div style={{ font: 'var(--type-medium-title)', color: 'var(--text-primary)' }}>Nothing here yet</div>
+        <div style={{ font: 'var(--type-footnote)', color: 'var(--text-secondary)' }}>This surface is not part of the UI-kit demo.</div>
+      </div>
+    </>
+  );
+  ReactDOM.createRoot(document.getElementById('app')).render(<App />);
+</script>
+</body>
+</html>
