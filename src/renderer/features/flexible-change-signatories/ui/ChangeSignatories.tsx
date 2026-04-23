@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type ComponentProps, type PropsWithChildren, useMemo, useState } from 'react';
+import { type ComponentProps, type PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -33,12 +33,23 @@ const MODAL_SIZE: Record<string, Pick<ComponentProps<typeof Modal>, 'size' | 'he
 type Props = PropsWithChildren<{
   wallet: Wallet;
   onClose?: () => void;
+  launchOpen?: boolean;
+  hideTrigger?: boolean;
 }>;
 
-export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
+export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideTrigger }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const walletRef = useRef(wallet);
+  walletRef.current = wallet;
+
+  useEffect(() => {
+    if (!launchOpen) return;
+
+    setIsModalOpen(true);
+    changeSignatoriesModel.flow.open({ wallet: walletRef.current });
+  }, [launchOpen, wallet.id]);
 
   const step = useUnit(changeSignatoriesModel.$step);
   const canSubmit = useUnit(changeSignatoriesModel.$canSubmit);
@@ -106,7 +117,7 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
 
   return (
     <Modal isOpen={isModalOpen} size={MODAL_SIZE[step]!.size} height={MODAL_SIZE[step]!.height} onToggle={onToggle}>
-      <Modal.Trigger>{children}</Modal.Trigger>
+      {!hideTrigger && <Modal.Trigger>{children}</Modal.Trigger>}
 
       <Modal.Title close>
         {chain && <OperationTitle title={t('flexibleMultisig.editTitleOn')} chainId={chain.chainId} />}
