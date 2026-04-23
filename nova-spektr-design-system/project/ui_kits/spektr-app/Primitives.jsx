@@ -263,8 +263,24 @@ const truncate = (addr, head = 4, tail = 4) =>
   addr.length <= head + tail + 2 ? addr : `${addr.slice(0, head)}…${addr.slice(-tail)}`;
 
 // Full-screen modal
-const NSModal = ({ open, onClose, title, subtitle, width = 440, children, footer }) => {
+const NSModal = ({ open, onClose, title, subtitle, width = 440, children, footer, resizable = false, initialHeight }) => {
   if (!open) return null;
+  const boxStyle = resizable
+    ? {
+        background: '#F8F8FA',
+        width, height: initialHeight || 560,
+        minWidth: 480, minHeight: 320,
+        maxWidth: '96vw', maxHeight: '96vh',
+        borderRadius: 16,
+        boxShadow: '0 30px 60px -12px rgba(24,24,45,0.35)',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        resize: 'both',
+      }
+    : {
+        background: '#F8F8FA', width, maxHeight: '88vh', borderRadius: 16,
+        boxShadow: '0 30px 60px -12px rgba(24,24,45,0.35)',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+      };
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 50,
@@ -272,11 +288,7 @@ const NSModal = ({ open, onClose, title, subtitle, width = 440, children, footer
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       backdropFilter: 'blur(2px)',
     }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{
-        background: '#F8F8FA', width, maxHeight: '88vh', borderRadius: 16,
-        boxShadow: '0 30px 60px -12px rgba(24,24,45,0.35)',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-      }}>
+      <div onClick={e => e.stopPropagation()} style={boxStyle}>
         <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px 12px', gap: 10 }}>
           <div style={{ flex: 1 }}>
             <div style={{ font: 'var(--type-title)', color: '#363643', letterSpacing: '-0.016em' }}>{title}</div>

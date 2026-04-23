@@ -45,12 +45,23 @@ const DASH_WALLETS = [
       { id: 'ab-alice',     name: 'Alice',     addr: '5HZ3qP…aBcD4',  weight: 0.00 },
     ],
   },
+  {
+    id: 'readonly-wallet', name: 'External', type: 'Read-only',
+    icon: '../../assets/icons/wallet/vaultColor.svg',
+    readOnly: true,
+    accounts: [
+      { id: 'ro-obs', name: 'DOT observer', addr: '16qBpn…XrmVFw', weight: 0.06 },
+    ],
+  },
 ];
 const DASH_ALL_ACCOUNT_IDS = DASH_WALLETS.flatMap(w => w.accounts.map(a => a.id));
 const ACCOUNT_BY_ID = Object.fromEntries(
   DASH_WALLETS.flatMap(w => w.accounts.map(a => [a.id, { ...a, walletId: w.id, wallet: w }])),
 );
-const ACCOUNT_COLORS = ['#4649F6', '#E6007A', '#2795B6', '#01A63E', '#F68F07', '#7B29FF'];
+// Per-account palette — used in stacked reward bars, donut slices, chain-by-account dots.
+// Kept intentionally muted so 6 stacked segments don't "vibrate"; distinct in hue so
+// neighbouring accounts stay readable. Brand pinks/blacks are reserved for DOT/KSM legends.
+const ACCOUNT_COLORS = ['#6D7DD8', '#5AA8BD', '#7FB583', '#E3A366', '#A78BCF', '#D87FA0'];
 const colorForAccount = (accountId) => {
   const idx = DASH_ALL_ACCOUNT_IDS.indexOf(accountId);
   return ACCOUNT_COLORS[(idx < 0 ? 0 : idx) % ACCOUNT_COLORS.length];
@@ -120,21 +131,30 @@ const WalletFilterProvider = ({ children }) => {
     .map(id => ({ ...ACCOUNT_BY_ID[id], color: colorForAccount(id) }));
   const isAll = selectedCount === DASH_ALL_ACCOUNT_IDS.length;
   const isNone = selectedCount === 0;
-  const hasWatchOnly = walletsWithAny.some(w => w.watchOnly);
+  const isReadOnlyAccount = (id) => {
+    const acc = ACCOUNT_BY_ID[id];
+    return !!(acc && ((acc.wallet && acc.wallet.readOnly) || acc.readOnly));
+  };
   const isWatchOnlyAccount = (id) => {
+    if (isReadOnlyAccount(id)) return false;
     const acc = ACCOUNT_BY_ID[id];
     return !!(acc && acc.wallet && acc.wallet.watchOnly);
   };
+  const hasWatchOnly = walletsWithAny.some(w => w.watchOnly && !w.readOnly);
+  const hasReadOnly = walletsWithAny.some(w => w.readOnly);
 
   const value = {
     presets: allPresets, activePreset, activePresetId, setActivePresetId,
     upsertPreset, deletePreset,
     selected, selectedAccounts, scale, selectedCount, walletsWithAny, isAll, isNone,
     hasWatchOnly, isWatchOnlyAccount,
+    hasReadOnly, isReadOnlyAccount,
     totalAccounts: DASH_ALL_ACCOUNT_IDS.length,
   };
   return <WalletFilterContext.Provider value={value}>{children}</WalletFilterContext.Provider>;
 };
+
+const readOnlyTip = (addr) => `Add account ${addr} to perform that operation`;
 
 const FilterCheckbox = ({ state }) => {
   const bg = state === 'unchecked' ? '#fff' : '#4649F6';
@@ -684,6 +704,7 @@ const CHAIN_STAKES = [
       { accountId: 'l-main',      staked: 322.0,  activeStake: 322.0,  validators: 8,  elected: 8,  rewards: 21.4, status: 'Active' },
       { accountId: 'ms-treasury', staked: 58.5,   activeStake:  51.0,  validators: 6,  elected: 5,  rewards: 4.7,  status: 'Active' },
       { accountId: 'ab-novasama', staked: 2500.0, activeStake: 2500.0, validators: 16, elected: 16, rewards: 164.3, status: 'Active' },
+      { accountId: 'ro-obs',      staked: 1200.0, activeStake: 1200.0, validators: 14, elected: 12, rewards: 78.0,  status: 'Active' },
     ],
   },
   {
@@ -1208,6 +1229,7 @@ const RewardsCard = ({ scale = 1 }) => {
   const [assets, setAssets] = React.useState(() => new Set(['DOT']));
   const [period, setPeriod] = React.useState('7D');
   const [mode, setMode]     = React.useState('bars'); // 'bars' | 'cumulative'
+  const [expanded, setExpanded] = React.useState(false);
   const { selectedAccounts, isNone } = useWalletFilter();
   const periodCfg = REWARD_PERIODS.find(p => p.id === period);
 
@@ -1250,82 +1272,173 @@ const RewardsCard = ({ scale = 1 }) => {
   // — otherwise fall back to the multi-series chart.
   const useStackedBars = mode === 'bars' && singleAssetId && selectedAccounts.length > 0;
 
-  return (
-    <NSPlate padding="16px 18px">
-      <div style={{
-        display: 'flex', alignItems: 'center', marginBottom: 12, gap: 8, flexWrap: 'wrap',
-      }}>
-        <div style={{ font: '500 11px Inter, system-ui', color: '#79797D', flex: 1, minWidth: 140 }}>
-          Rewards ({periodCfg.label}){mode === 'cumulative' && ' · cumulative'}
-        </div>
-        <RewardsPillGroup
-          items={[{ id: 'bars', label: 'Bars' }, { id: 'cumulative', label: 'Cumulative' }]}
-          value={mode}
-          onChange={setMode}
-        />
-        <RewardsMultiPillGroup
-          items={Object.keys(REWARD_ASSETS).map(a => ({
-            id: a, label: a, dot: REWARD_ASSETS[a].color,
-          }))}
-          value={assets}
-          onToggle={toggleAsset}
-        />
-        <RewardsPillGroup
-          items={REWARD_PERIODS.map(p => ({ id: p.id, label: p.id }))}
-          value={period}
-          onChange={setPeriod}
-        />
-      </div>
+  const renderTotals = () => (
+    <div style={{ font: '700 22px Manrope', letterSpacing: '-0.02em' }}>
+      {singleAssetId ? (
+        <>
+          {perAssetTotals[0].tok.toFixed(singleAssetId === 'KSM' ? 4 : 2)} {singleAssetId}
+          <span style={{ font: '500 13px Inter, system-ui', color: '#79797D' }}>
+            {' '}· {fmtFiat(perAssetTotals[0].fiat)}
+          </span>
+        </>
+      ) : (
+        <>
+          {fmtFiat(totalFiat)}
+          <span style={{ font: '500 13px Inter, system-ui', color: '#79797D' }}>
+            {' '}· {perAssetTotals.map(p => fmtRewardAmount(p.tok, p.asset)).join(' + ')}
+          </span>
+        </>
+      )}
+    </div>
+  );
 
-      <div style={{ font: '700 22px Manrope', letterSpacing: '-0.02em' }}>
-        {singleAssetId ? (
-          <>
-            {perAssetTotals[0].tok.toFixed(singleAssetId === 'KSM' ? 4 : 2)} {singleAssetId}
-            <span style={{ font: '500 13px Inter, system-ui', color: '#79797D' }}>
-              {' '}· {fmtFiat(perAssetTotals[0].fiat)}
-            </span>
-          </>
-        ) : (
-          <>
-            {fmtFiat(totalFiat)}
-            <span style={{ font: '500 13px Inter, system-ui', color: '#79797D' }}>
-              {' '}· {perAssetTotals.map(p => fmtRewardAmount(p.tok, p.asset)).join(' + ')}
-            </span>
-          </>
-        )}
-      </div>
+  const renderControls = () => (
+    <>
+      <RewardsPillGroup
+        items={[{ id: 'bars', label: 'Bars' }, { id: 'cumulative', label: 'Cumulative' }]}
+        value={mode}
+        onChange={setMode}
+      />
+      <RewardsMultiPillGroup
+        items={Object.keys(REWARD_ASSETS).map(a => ({
+          id: a, label: a, dot: REWARD_ASSETS[a].color,
+        }))}
+        value={assets}
+        onToggle={toggleAsset}
+      />
+      <RewardsPillGroup
+        items={REWARD_PERIODS.map(p => ({ id: p.id, label: p.id }))}
+        value={period}
+        onChange={setPeriod}
+      />
+    </>
+  );
 
-      {isNone ? (
+  const renderChart = (chartHeight, chartWidth) => {
+    if (isNone) {
+      return (
         <div style={{
-          height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          height: chartHeight, display: 'flex', alignItems: 'center', justifyContent: 'center',
           font: '500 12px Inter, system-ui', color: '#A4A4AD',
         }}>
           No accounts selected
         </div>
-      ) : useStackedBars ? (
+      );
+    }
+    if (useStackedBars) {
+      return (
         <RewardsBars
           data={singleSeries.entries}
           asset={singleAssetId}
           bucket={periodCfg.bucket}
           accounts={selectedAccounts}
-          width={520}
-          height={140}
+          width={chartWidth}
+          height={chartHeight}
         />
-      ) : (
-        <RewardsMultiChart
-          series={seriesAll}
-          mode={mode}
-          bucket={periodCfg.bucket}
-          height={140}
-        />
-      )}
+      );
+    }
+    return (
+      <RewardsMultiChart
+        series={seriesAll}
+        mode={mode}
+        bucket={periodCfg.bucket}
+        height={chartHeight}
+      />
+    );
+  };
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', font: '500 10px Inter', color: '#A4A4AD', padding: '0 4px' }}>
+  const renderTicks = (trailing) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 4px' }}>
+      <div style={{
+        flex: 1, display: 'flex', justifyContent: 'space-between',
+        font: '500 10px Inter', color: '#A4A4AD',
+      }}>
         {firstSeriesData.length > 0 && ticks.map(i => (
           <span key={i}>{fmtRewardDate(firstSeriesData[i].date, periodCfg.bucket)}</span>
         ))}
       </div>
-    </NSPlate>
+      {trailing}
+    </div>
+  );
+
+  const ExpandBtn = () => (
+    <button
+      onClick={() => setExpanded(true)}
+      title="Expand"
+      style={{
+        width: 22, height: 22, border: 0, borderRadius: 5,
+        background: 'rgba(69,69,137,0.06)', cursor: 'pointer',
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
+      }}
+    >
+      <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+        <path d="M1 6V1H6" stroke="#363643" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M15 10V15H10" stroke="#363643" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+
+  return (
+    <>
+      <NSPlate padding="16px 18px">
+        <div style={{
+          display: 'flex', alignItems: 'center', marginBottom: 12, gap: 8, flexWrap: 'wrap',
+        }}>
+          <div style={{ font: '500 11px Inter, system-ui', color: '#79797D', flex: 1, minWidth: 140 }}>
+            Rewards ({periodCfg.label}){mode === 'cumulative' && ' · cumulative'}
+          </div>
+          {renderControls()}
+        </div>
+
+        {renderTotals()}
+        {renderChart(140, 520)}
+        {renderTicks(<ExpandBtn />)}
+      </NSPlate>
+
+      <NSModal
+        open={expanded}
+        onClose={() => setExpanded(false)}
+        title="Rewards"
+        subtitle={`${periodCfg.label}${mode === 'cumulative' ? ' · cumulative' : ''}`}
+        width={960}
+        initialHeight={620}
+        resizable
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18, height: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            {renderTotals()}
+            <span style={{ flex: 1 }} />
+            {renderControls()}
+          </div>
+          <ResizingChartArea renderChart={renderChart} />
+          {renderTicks()}
+        </div>
+      </NSModal>
+    </>
+  );
+};
+
+// Observes its own box and forwards the current pixel size to the chart renderer,
+// so the expanded Rewards modal grows its chart as the user resizes the modal.
+const ResizingChartArea = ({ renderChart }) => {
+  const ref = React.useRef(null);
+  const [size, setSize] = React.useState({ w: 900, h: 380 });
+  React.useEffect(() => {
+    if (!ref.current || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) {
+        setSize({ w: Math.max(400, Math.round(width)), h: Math.max(160, Math.round(height)) });
+      }
+    });
+    ro.observe(ref.current);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div ref={ref} style={{ flex: 1, minHeight: 200 }}>
+      {renderChart(size.h, size.w)}
+    </div>
   );
 };
 
@@ -1375,6 +1488,7 @@ const UNBONDING_ITEMS = [
   { id: 'u-ready-dot',  num: 100.0, sym: 'DOT', chainId: 'polkadot-ah', accountId: 'v-stash',     ready: true,  era: 1498, digits: 1 },
   { id: 'u-ready-ksm',  num: 0.8,   sym: 'KSM', chainId: 'kusama-ah',   accountId: 'v-stash',     ready: true,  era: 6720, digits: 2 },
   { id: 'u-ready-ab',   num: 180.0, sym: 'DOT', chainId: 'polkadot-ah', accountId: 'ab-novasama', ready: true,  era: 1495, digits: 1 },
+  { id: 'u-ready-ro',   num: 60.0,  sym: 'DOT', chainId: 'polkadot-ah', accountId: 'ro-obs',      ready: true,  era: 1497, digits: 1 },
   { id: 'u-wait-1',     num: 45.0,  sym: 'DOT', chainId: 'polkadot-ah', accountId: 'v-stash',     ready: false, era: 1547, leftDays: 24, digits: 1 },
   { id: 'u-wait-2',     num: 12.5,  sym: 'DOT', chainId: 'polkadot-ah', accountId: 'l-main',      ready: false, era: 1521, leftDays: 8,  digits: 1 },
   { id: 'u-wait-3',     num: 0.4,   sym: 'KSM', chainId: 'kusama-ah',   accountId: 'wc-ksm',      ready: false, era: 6802, leftDays: 6,  digits: 2 },
@@ -1408,12 +1522,16 @@ const UnbondingCard = ({ onWithdraw }) => {
                     {acc && <> · {acc.wallet.name}</>}
                   </div>
                 </div>
-                {u.ready ? (
+                {!u.ready ? (
+                  <NSBadge tone="orange">Unbonding</NSBadge>
+                ) : f.isReadOnlyAccount(u.accountId) ? (
+                  <InfoTooltip content={readOnlyTip(acc ? acc.addr : '')} width={240}>
+                    <NSBadge tone="gray">Read-only</NSBadge>
+                  </InfoTooltip>
+                ) : (
                   <NSButton variant="primary" size="sm" onClick={() => onWithdraw([u])}>
                     {f.isWatchOnlyAccount(u.accountId) ? 'Draft' : 'Withdraw'}
                   </NSButton>
-                ) : (
-                  <NSBadge tone="orange">Unbonding</NSBadge>
                 )}
               </div>
             );
@@ -1645,7 +1763,7 @@ const STAKE_ACTIONS = [
   { id: 'reward-dest', label: 'Reward destination' },
 ];
 
-const StakeActionMenu = ({ status, onSelect }) => {
+const StakeActionMenu = ({ status, onSelect, readOnly = false, readOnlyAddr = '' }) => {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef(null);
   React.useEffect(() => {
@@ -1654,6 +1772,16 @@ const StakeActionMenu = ({ status, onSelect }) => {
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, [open]);
+
+  if (readOnly) {
+    return (
+      <div style={{ justifySelf: 'end' }}>
+        <InfoTooltip content={readOnlyTip(readOnlyAddr)} width={240}>
+          <NSBadge tone="gray">Read-only</NSBadge>
+        </InfoTooltip>
+      </div>
+    );
+  }
 
   return (
     <div ref={ref} style={{ position: 'relative', justifySelf: 'end' }}>
@@ -2152,6 +2280,8 @@ const StakeByNetworkTable = () => {
                             </button>
                             <StakeActionMenu
                               status={p.status}
+                              readOnly={f.isReadOnlyAccount(p.accountId)}
+                              readOnlyAddr={acc.addr}
                               onSelect={(action) => setActionCtx({
                                 action,
                                 chain: c,
@@ -3109,23 +3239,30 @@ const ClaimPayerModal = ({ open, onClose, count, totalsLabel, totalFiat, onSubmi
             }}>
               <img src={w.icon} style={{ width: 14, height: 14, borderRadius: 3 }} />
               <span>{w.name}</span>
-              {w.watchOnly && (
+              {w.readOnly ? (
+                <NSBadge tone="gray" style={{ marginLeft: 2 }}>Read-only</NSBadge>
+              ) : w.watchOnly ? (
                 <NSBadge tone="purple" style={{ marginLeft: 2 }}>Draft only</NSBadge>
-              )}
+              ) : null}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {w.accounts.map(a => {
                 const active = payerId === a.id;
-                return (
+                const isReadOnly = !!(w.readOnly || a.readOnly);
+                const btn = (
                   <button
                     key={a.id}
-                    onClick={() => setPayerId(a.id)}
+                    disabled={isReadOnly}
+                    onClick={() => { if (!isReadOnly) setPayerId(a.id); }}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
-                      background: '#fff', borderRadius: 10, cursor: 'pointer',
+                      background: '#fff', borderRadius: 10,
+                      cursor: isReadOnly ? 'not-allowed' : 'pointer',
                       textAlign: 'left',
                       border: `1.5px solid ${active ? '#4649F6' : 'rgba(69,69,137,0.08)'}`,
                       boxShadow: active ? '0 0 0 3px rgba(70,73,246,0.12)' : 'none',
+                      opacity: isReadOnly ? 0.55 : 1,
+                      width: '100%',
                     }}
                   >
                     <Identicon seed={a.id} size={22} />
@@ -3137,9 +3274,15 @@ const ClaimPayerModal = ({ open, onClose, count, totalsLabel, totalFiat, onSubmi
                         {a.addr}
                       </div>
                     </div>
-                    {w.watchOnly && <NSBadge tone="purple">Address book</NSBadge>}
+                    {isReadOnly
+                      ? <NSBadge tone="gray">Read-only</NSBadge>
+                      : w.watchOnly ? <NSBadge tone="purple">Address book</NSBadge>
+                      : null}
                   </button>
                 );
+                return isReadOnly
+                  ? <InfoTooltip key={a.id} content={readOnlyTip(a.addr)} width={240} block>{btn}</InfoTooltip>
+                  : btn;
               })}
             </div>
           </div>
@@ -3153,7 +3296,7 @@ const ClaimPayerModal = ({ open, onClose, count, totalsLabel, totalFiat, onSubmi
 
 // Dark tooltip rendered into document.body via portal so it always paints
 // on top of scroll containers and modals, regardless of overflow clipping.
-const InfoTooltip = ({ content, children, side = 'top', width = 220 }) => {
+const InfoTooltip = ({ content, children, side = 'top', width = 220, block = false }) => {
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef(null);
   const [rect, setRect] = React.useState(null);
@@ -3171,6 +3314,10 @@ const InfoTooltip = ({ content, children, side = 'top', width = 220 }) => {
     return { left: cx, top: cy };
   })() : null;
 
+  const wrapStyle = block
+    ? { display: 'block' }
+    : { display: 'inline-flex', alignItems: 'center' };
+
   return (
     <>
       <span
@@ -3179,7 +3326,7 @@ const InfoTooltip = ({ content, children, side = 'top', width = 220 }) => {
         onMouseLeave={hide}
         onFocus={show}
         onBlur={hide}
-        style={{ display: 'inline-flex', alignItems: 'center' }}
+        style={wrapStyle}
       >
         {children}
       </span>
@@ -3630,17 +3777,20 @@ const StartStakingFlow = ({ open, onClose }) => {
             {DASH_WALLETS.flatMap(w => w.accounts.map(a => ({ ...a, wallet: w }))).map(a => {
               const bal = availableBalance(a.id, chainId);
               const active = accountId === a.id;
-              const disabled = bal < (MIN_BOND[chainId] + FEE[chain.token]);
-              return (
+              const isReadOnly = !!(a.wallet.readOnly || a.readOnly);
+              const lowBal = bal < (MIN_BOND[chainId] + FEE[chain.token]);
+              const disabled = isReadOnly || lowBal;
+              const btn = (
                 <button
                   key={a.id}
                   disabled={disabled}
-                  onClick={() => setAccountId(a.id)}
+                  onClick={() => { if (!disabled) setAccountId(a.id); }}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
                     background: '#fff', borderRadius: 10, cursor: disabled ? 'not-allowed' : 'pointer',
                     textAlign: 'left', border: `1.5px solid ${active ? '#4649F6' : 'rgba(69,69,137,0.08)'}`,
                     opacity: disabled ? 0.45 : 1,
+                    width: '100%',
                   }}
                 >
                   <img src={a.wallet.icon} style={{ width: 22, height: 22, borderRadius: 5 }} />
@@ -3651,12 +3801,16 @@ const StartStakingFlow = ({ open, onClose }) => {
                     </div>
                     <div style={{ font: '500 11px JetBrains Mono, monospace', color: '#79797D' }}>{a.addr}</div>
                   </div>
+                  {isReadOnly && <NSBadge tone="gray">Read-only</NSBadge>}
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ font: '600 12px Inter' }}>{bal.toLocaleString('en-US', { maximumFractionDigits: 3 })} {chain.token}</div>
                     <div style={{ font: '500 10px Inter', color: '#79797D' }}>available</div>
                   </div>
                 </button>
               );
+              return isReadOnly
+                ? <InfoTooltip key={a.id} content={readOnlyTip(a.addr)} width={240} block>{btn}</InfoTooltip>
+                : btn;
             })}
           </div>
         </div>
