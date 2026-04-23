@@ -36,7 +36,8 @@ enum Step {
 type FlowInput = {
   draft: Draft;
   initiator: AnyAccount | null;
-  /** Account shown in the confirm UI (flex multisig or regular multisig). Falls back to initiator. */
+  /** Account shown in the confirm UI (flex multisig or regular multisig). Falls
+back to initiator. */
   displayInitiator?: AnyAccount | null;
   chain: Chain;
 };
@@ -416,6 +417,19 @@ sample({
   clock: postSubmitFx.fail,
   fn: ({ params }) => params,
   target: showSyncErrorToastFx,
+});
+
+// Remove draft from submitted set on sync failure so it stays visible and retryable
+sample({
+  clock: postSubmitFx.fail,
+  source: $submittedDraftIds,
+  fn: (current, { params }) => {
+    const next = new Set(current);
+    next.delete(params.draft.id);
+
+    return next;
+  },
+  target: $submittedDraftIds,
 });
 
 // --- Exports ---
