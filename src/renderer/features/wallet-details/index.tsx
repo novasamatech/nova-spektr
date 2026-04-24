@@ -1,4 +1,4 @@
-import { useGate } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type ReactNode, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
@@ -8,7 +8,8 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { type IconNames, Icon, IconButton } from '@/shared/ui';
 import { Dropdown } from '@/shared/ui-kit';
-import { permissionUtils, walletUtils } from '@/entities/wallet';
+import { networkModel, networkUtils } from '@/entities/network';
+import { accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
 import { walletActionsSlot as extensionActionsSlot } from '@/features/extension-wallet';
 import { ChangeSignatories } from '@/features/flexible-change-signatories';
 import { walletActionsSlot as multisigActionsSlot } from '@/features/multisig-wallet';
@@ -88,7 +89,14 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
   const [isWalletDetailsOpen, setIsWalletDetailsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  const chains = useUnit(networkModel.$chains);
   const { t } = useI18n();
+
+  const flexibleMultisigAccount = wallet.accounts.find(accountUtils.isFlexibleMultisigAccount);
+  const chain = flexibleMultisigAccount ? chains[flexibleMultisigAccount.chainId] : undefined;
+  const canUseVerifiedPath =
+    (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) &&
+    networkUtils.isProxySupported(chain?.options);
 
   const createModalCloseHandler = (modalCloseFn?: () => void) => () => {
     modalCloseFn?.();
@@ -151,7 +159,7 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
   if (walletUtils.isFlexibleMultisig(wallet)) {
     items.push({
       component: (
-        <ChangeSignatories wallet={wallet} onClose={createModalCloseHandler()}>
+        <ChangeSignatories wallet={wallet} canUseVerifiedPath={canUseVerifiedPath} onClose={createModalCloseHandler()}>
           <Dropdown.Item>
             <div className="flex items-center gap-2">
               <Icon name="changeSignatories" size={20} className="text-icon-accent" />
