@@ -7,7 +7,7 @@ import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatSectionAndMethod, getNativeAssetId, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Button, CaptionText, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
+import { Button, CaptionText, FootnoteText, Icon, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { ChainSelect, Hash, WalletAccountIcon } from '@/shared/ui-entities';
 import { ConfirmModal, Field, Input, Modal, Select, Tabs, TextArea, Tooltip, useNotification } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
@@ -15,7 +15,6 @@ import { HttpError, draftsResource, draftsService } from '@/domains/backend';
 import { accounts, useWalletsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
-import { proxyModel } from '@/entities/proxy';
 import { decodeCallData, findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
@@ -24,6 +23,7 @@ import { operationTitleTransformer } from '@/features/multisig-operations';
 import { OperationTemplatesToolbar } from '@/features/operation-templates';
 import { tryDecodeCallData } from '../lib/decode-call-data';
 import { getDestinationAccountId } from '../lib/get-destination-account-id';
+import { contactProxiesModel } from '../model/contact-proxies-model';
 import { type DraftAccountOption, STEPS_ORDER, createDraftModel } from '../model/create-draft-model';
 
 import { DraftSummary } from './DraftSummary';
@@ -60,7 +60,8 @@ export const CreateDraftModal = () => {
   const chains = useUnit(networkModel.$chains);
   const chainsList = useUnit(networkModel.$chainsList);
   const backendContacts = useUnit(contactModel.$backendContacts);
-  const proxies = useUnit(proxyModel.$proxies);
+  const proxies = useUnit(contactProxiesModel.$contactProxyMap);
+  const isLoadingContactProxies = useUnit(contactProxiesModel.$isLoading);
 
   const resolvedWallets = useWalletsNames(multisigWallets);
 
@@ -389,7 +390,23 @@ export const CreateDraftModal = () => {
                   </FootnoteText>
                 </div>
               ) : (
-                <Field text={t('operations.drafts.selectMultisig')}>
+                <Field
+                  text={
+                    <span className="inline-flex items-center gap-x-1.5">
+                      {t('operations.drafts.selectMultisig')}
+                      {isLoadingContactProxies && (
+                        <Tooltip>
+                          <Tooltip.Trigger>
+                            <span className="inline-flex">
+                              <Loader size={12} color="primary" />
+                            </span>
+                          </Tooltip.Trigger>
+                          <Tooltip.Content>{t('operations.drafts.syncingAccounts')}</Tooltip.Content>
+                        </Tooltip>
+                      )}
+                    </span>
+                  }
+                >
                   <Select
                     height="md"
                     placeholder={t('operations.drafts.selectMultisig')}

@@ -1,9 +1,10 @@
-import { createEffect, createStore, sample } from 'effector';
+import { combine, createEffect, createStore, sample } from 'effector';
+import { persist } from 'effector-storage/local';
 import { GraphQLClient, gql } from 'graphql-request';
 import { z } from 'zod';
 
 import { type NoID, type ProxyAccount, type ProxyType } from '@/shared/core';
-import { isHex } from '@/shared/lib/utils';
+import { entries, isHex } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { INDEXER_URL } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
@@ -64,6 +65,46 @@ const $contactProxiedIds = createStore<Set<AccountId>>(new Set());
 
 const fetchContactProxiesFx = createEffect(fetchContactProxies);
 
+// Cache the slow subquery response in localStorage so subsequent sessions can render
+// the proxy list immediately, before the fresh fetch completes.
+const $cachedContactProxies = createStore<NoID<ProxyAccount>[]>([]);
+
+persist({
+  key: 'spektr_contact_proxies_v1',
+  store: $cachedContactProxies,
+  sync: true,
+});
+
+$cachedContactProxies.on(fetchContactProxiesFx.doneData, (_, proxies) => proxies);
+$cachedContactProxies.reset(backendConfigurationModel.events.urlCleared);
+
+// Live proxies (from IndexedDB / fresh fetch) take precedence; cached entries fill in
+// for proxiedIds that haven't been hydrated yet.
+const $contactProxyMap = combine(
+  proxyModel.$proxies,
+  $cachedContactProxies,
+  (live, cached): Record<AccountId, NoID<ProxyAccount>[]> => {
+    const result: Record<AccountId, NoID<ProxyAccount>[]> = {};
+
+    for (const proxy of cached) {
+      const bucket = result[proxy.proxiedAccountId];
+      if (bucket) {
+        bucket.push(proxy);
+      } else {
+        result[proxy.proxiedAccountId] = [proxy];
+      }
+    }
+
+    for (const [id, liveBucket] of entries(live)) {
+      if (liveBucket.length > 0) {
+        result[id] = liveBucket;
+      }
+    }
+
+    return result;
+  },
+);
+
 // When backend contacts change, fetch proxy relationships for non-multisig contacts.
 // Non-multisig contacts are candidates for being "flexible multisigs" (pure proxy + multisig pair).
 sample({
@@ -119,3 +160,8 @@ sample({
 });
 
 $contactProxiedIds.on(backendConfigurationModel.events.urlCleared, () => new Set());
+
+export const contactProxiesModel = {
+  $isLoading: fetchContactProxiesFx.pending,
+  $contactProxyMap,
+};
