@@ -2572,6 +2572,7 @@
       "syncRetry": "Try again",
       "extrinsicError": "Call data is invalid or incompatible with this chain",
       "submitSuccess": "Draft submitted",
+      "initiatorUnavailable": "The initiator is no longer a signatory of this multisig. Please pick another.",
       "submittedBadge": "Submitted",
       "stepMultisig": "Account",
       "stepCallData": "Call data",

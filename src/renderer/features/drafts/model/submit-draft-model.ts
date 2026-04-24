@@ -36,7 +36,10 @@ enum Step {
 type FlowInput = {
   draft: Draft;
   initiator: AnyAccount | null;
-  /** Account shown in the confirm UI (flex multisig or regular multisig). Falls back to initiator. */
+  /**
+   * Account shown in the confirm UI (flex multisig or regular multisig). Falls
+   * back to initiator.
+   */
   displayInitiator?: AnyAccount | null;
   chain: Chain;
 };
@@ -130,6 +133,30 @@ const $signatories = createSignatoriesStore({
   chain: $chain,
   accounts: walletModel.$availableAccounts,
   initiator: $initiator,
+});
+
+// --- Initiator rehydration from signingPath ---
+
+/**
+ * True iff the draft has an initiatorAccountId but that account is no longer
+ * among the current signatories (so the user must pick a replacement). False
+ * when the draft has no initiatorAccountId or when the account is present.
+ */
+const $initiatorUnavailable = combine($draft, $signatories, (draft, signatories) => {
+  if (!draft?.initiatorAccountId) return false;
+  if (signatories.length === 0) return false;
+
+  return !signatories.some((s) => s.accountId === draft.initiatorAccountId);
+});
+
+// Pre-select the stored initiator when it is still a valid signatory
+sample({
+  clock: $signatories,
+  source: $draft,
+  filter: (draft, signatories) =>
+    nonNullable(draft?.initiatorAccountId) && signatories.some((s) => s.accountId === draft!.initiatorAccountId),
+  fn: (draft, signatories) => signatories.find((s) => s.accountId === draft!.initiatorAccountId) ?? null,
+  target: $signatory,
 });
 
 // --- Confirm model ---
@@ -427,6 +454,7 @@ export const submitDraftModel = {
   $initiator,
   $signatoryStore,
   $signatories,
+  $initiatorUnavailable,
   $fee,
   $wrappedTx,
   $wrappedExtrinsic,
