@@ -12,7 +12,6 @@ import { OperationTemplatesToolbar } from '@/features/operation-templates';
 export type StepTransactionProps = {
   chains: Chain[];
   selectedChain: Chain | null;
-  effectiveChain: Chain | null;
   inputMode: 'paste' | 'build';
   callData: string;
   callDataError: string | null;
@@ -28,7 +27,6 @@ export type StepTransactionProps = {
 export const StepTransaction = ({
   chains,
   selectedChain,
-  effectiveChain,
   inputMode,
   callData,
   callDataError,
@@ -47,13 +45,13 @@ export const StepTransaction = ({
       <Field text={t('operations.drafts.selectNetwork')}>
         <ChainSelect
           placeholder={t('operations.drafts.selectNetwork')}
-          value={selectedChain ?? effectiveChain}
+          value={selectedChain}
           options={chains}
           onChange={onChainSelected}
         />
       </Field>
 
-      {effectiveChain && (
+      {selectedChain && (
         <>
           <Tabs value={inputMode} onChange={(value) => onInputModeChanged(value as 'paste' | 'build')}>
             <Tabs.List>
@@ -93,7 +91,7 @@ export const StepTransaction = ({
 
           <OperationTemplatesToolbar
             api={api}
-            chainId={effectiveChain.chainId}
+            chainId={selectedChain.chainId}
             callData={callData}
             specVersion={specVersion}
             onApply={onTemplateApply}

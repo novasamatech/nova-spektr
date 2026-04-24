@@ -12,7 +12,7 @@ import {
   isEthereumAccountId,
   toAccountId,
   toAddress,
-  truncate,
+  toShortAddress,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, CaptionText, FootnoteText, HelpText, Icon, IconButton } from '@/shared/ui';
@@ -160,7 +160,7 @@ export const DraftRow = ({
                   const proxyContact = backendContacts.find((c) => c.accountId === draft.proxyAccountId);
                   label = proxyContact?.name
                     ? proxyContact.name
-                    : truncate(toAddress(draft.proxyAccountId, { prefix: chain?.addressPrefix }), 4, 4);
+                    : toShortAddress(toAddress(draft.proxyAccountId, { prefix: chain?.addressPrefix }), 4);
                 } else {
                   label = contact?.name || (
                     <span className="text-text-negative">{t('operations.drafts.unknownMultisig')}</span>
@@ -170,7 +170,7 @@ export const DraftRow = ({
                 if (draft.initiatorAccountId) {
                   const initiatorName =
                     contactNameByAccountId[draft.initiatorAccountId] ??
-                    truncate(toAddress(draft.initiatorAccountId, { prefix: chain?.addressPrefix }), 4, 4);
+                    toShortAddress(toAddress(draft.initiatorAccountId, { prefix: chain?.addressPrefix }), 4);
 
                   return (
                     <>
@@ -184,7 +184,7 @@ export const DraftRow = ({
                 return label;
               })()}
               {titleData?.title && ` · ${titleData.title}`}
-              {destinationAddress && ` · ${truncate(destinationAddress, 4, 4)}`}
+              {destinationAddress && ` · ${toShortAddress(destinationAddress, 4)}`}
               {titleData?.amount && (
                 <>
                   {}
@@ -206,7 +206,7 @@ export const DraftRow = ({
             {chainName || <span className="text-text-negative">{t('operations.drafts.unknownChain')}</span>}
           </FootnoteText>
           <HelpText className="truncate text-text-tertiary">
-            {creatorName ?? (creatorAddress ? truncate(creatorAddress, 4, 4) : null)}
+            {creatorName ?? (creatorAddress ? toShortAddress(creatorAddress, 4) : null)}
             {creatorAddress && ` · ${formatDate(new Date(draft.createdAt), 'PP')}`}
             {!creatorAddress && formatDate(new Date(draft.createdAt), 'PP')}
           </HelpText>

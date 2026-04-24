@@ -1,10 +1,7 @@
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { CaptionText } from '@/shared/ui';
-
-export type Step = 'call-data' | 'select-path' | 'confirm';
-
-export const STEPS_ORDER: Step[] = ['call-data', 'select-path', 'confirm'];
+import { type Step, STEPS_ORDER } from '../../model/create-draft-model';
 
 type Props = {
   step: Step;

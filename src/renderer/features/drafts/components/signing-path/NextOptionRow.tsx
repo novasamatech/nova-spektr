@@ -40,7 +40,6 @@ export const NextOptionRow = ({ option, selected, onClick, trailing }: NextOptio
       <WalletAccountIcon address={address} type={walletType} size={32} iconSize={12} />
       <div className="flex min-w-0 flex-1 flex-col">
         <BodyText className="truncate text-text-primary">{option.name}</BodyText>
-        {/* eslint-disable-next-line i18next/no-literal-string */}
         <HelpText className="truncate text-text-tertiary">{subtitle}</HelpText>
       </div>
       {trailing}

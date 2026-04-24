@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { type PathNode } from '@/domains/backend';
 import { graphModel } from '../../model/graph-model';
 
@@ -74,10 +75,11 @@ const buildBreadcrumbElements = (
 };
 
 export const PathBreadcrumb = ({ path, size = 'sm', onNodeClick }: Props) => {
+  const { t } = useI18n();
   const nameByAccountId = useUnit(graphModel.$contactNameByAccountId);
 
   const views = path
-    .map((node, i) => nodeView(node, nameByAccountId, i))
+    .map((node, i) => nodeView(node, nameByAccountId, i, t))
     .filter((v): v is NonNullable<typeof v> => v !== null);
 
   if (views.length === 0) {

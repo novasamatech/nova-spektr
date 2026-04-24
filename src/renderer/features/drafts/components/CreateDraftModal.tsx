@@ -1,11 +1,10 @@
-import { isHex } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import { type CallData, type ChainId, type DecodedTransaction } from '@/shared/core';
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { formatSectionAndMethod, getNativeAssetId } from '@/shared/lib/utils';
+import { formatSectionAndMethod, getNativeAssetId, isHex } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { ConfirmModal, Modal, Tooltip, useNotification } from '@/shared/ui-kit';
@@ -26,6 +25,20 @@ import { StepTransaction } from '../steps/StepTransaction';
 
 import { StepIndicator } from './signing-path/StepIndicator';
 
+const HTTP_ERROR_KEYS: Record<number, string> = {
+  403: 'addressBook.sources.errorForbidden',
+  404: 'operations.drafts.multisigNotFound',
+  422: 'operations.drafts.validationError',
+};
+
+const getSubmitErrorKey = (e: unknown, t: (key: string) => string): string => {
+  if (e instanceof HttpError && HTTP_ERROR_KEYS[e.status]) {
+    return t(HTTP_ERROR_KEYS[e.status]!);
+  }
+
+  return t('operations.drafts.createError');
+};
+
 export const CreateDraftModal = () => {
   const { t } = useI18n();
   const { toast } = useNotification();
@@ -37,7 +50,6 @@ export const CreateDraftModal = () => {
   const isOpen = useUnit(createDraftModel.$isOpen);
   const activeStep = useUnit(createDraftModel.$activeStep);
   const selectedChain = useUnit(createDraftModel.$selectedChain);
-  const effectiveChain = useUnit(createDraftModel.$effectiveChain);
   const callData = useUnit(createDraftModel.$callData);
   const description = useUnit(createDraftModel.$description);
   const inputMode = useUnit(createDraftModel.$inputMode);
@@ -53,33 +65,33 @@ export const CreateDraftModal = () => {
   const chains = useUnit(networkModel.$chains);
   const chainsList = useUnit(networkModel.$chainsList);
 
-  const api = useApi(effectiveChain?.chainId ?? ('0x00' as ChainId));
+  const api = useApi(selectedChain?.chainId ?? ('0x00' as ChainId));
   const specVersion = api?.runtimeVersion.specVersion.toNumber() ?? null;
 
   const multisigHopAccountId = useMemo(() => deriveMultisigAccountId(path), [path]);
 
   const decodedTransaction = useMemo<DecodedTransaction | null>(() => {
-    if (!deferredCallData || !isHex(deferredCallData) || !api || !effectiveChain || !multisigHopAccountId) {
+    if (!deferredCallData || !isHex(deferredCallData) || !api || !selectedChain || !multisigHopAccountId) {
       return null;
     }
     try {
-      const nativeAssetId = getNativeAssetId(effectiveChain.assets);
+      const nativeAssetId = getNativeAssetId(selectedChain.assets);
 
       return decodeCallData(api, multisigHopAccountId as never, deferredCallData as CallData, nativeAssetId);
     } catch {
       return null;
     }
-  }, [deferredCallData, api, effectiveChain, multisigHopAccountId]);
+  }, [deferredCallData, api, selectedChain, multisigHopAccountId]);
 
   const decodedCallData = useMemo(
-    () => tryDecodeCallData(deferredCallData, api, effectiveChain),
-    [deferredCallData, api, effectiveChain],
+    () => tryDecodeCallData(deferredCallData, api, selectedChain),
+    [deferredCallData, api, selectedChain],
   );
 
   // Backend rejects call data that doesn't decode for the provided chainId (422).
   // Mirror that check client-side so Continue is blocked and the user sees a clear hint.
   const isCallDataUndecodable =
-    deferredCallData.length > 0 && isHex(deferredCallData) && !!api && !!effectiveChain && !decodedCallData;
+    deferredCallData.length > 0 && isHex(deferredCallData) && !!api && !!selectedChain && !decodedCallData;
 
   const callDataError = callDataErrorKey
     ? t(callDataErrorKey)
@@ -91,11 +103,11 @@ export const CreateDraftModal = () => {
 
   const coreTx = findCoreTransaction(decodedTransaction);
   const destinationAccountId = useMemo(() => getDestinationAccountId(coreTx), [coreTx]);
-  const txAsset = useTransactionAsset(coreTx, effectiveChain?.chainId ?? ('0x00' as ChainId));
+  const txAsset = useTransactionAsset(coreTx, selectedChain?.chainId ?? ('0x00' as ChainId));
 
   const externalTitle = useTransformer(operationTitleTransformer, {
     operation: decodedTransaction
-      ? ({ transaction: decodedTransaction, chainId: effectiveChain?.chainId } as never)
+      ? ({ transaction: decodedTransaction, chainId: selectedChain?.chainId } as never)
       : null,
     chains,
     asset: txAsset,
@@ -107,13 +119,13 @@ export const CreateDraftModal = () => {
     if (!coreTx) return null;
 
     const amount = getTransactionAmount(coreTx);
-    const asset = txAsset ?? effectiveChain?.assets[0] ?? null;
+    const asset = txAsset ?? selectedChain?.assets[0] ?? null;
 
     return {
       title: formatSectionAndMethod(coreTx.section, coreTx.method),
       amount: asset && amount ? { value: amount, asset } : undefined,
     };
-  }, [externalTitle, coreTx, txAsset, effectiveChain]);
+  }, [externalTitle, coreTx, txAsset, selectedChain?.chainId]);
 
   const handleTemplateApply = (templateCallData: string) => {
     createDraftModel.callDataChanged(templateCallData);
@@ -141,7 +153,7 @@ export const CreateDraftModal = () => {
   };
 
   const handleCreateDraft = async () => {
-    if (!backendUrl || !effectiveChain) return;
+    if (!backendUrl || !selectedChain) return;
 
     const validation = isValidPath(path);
     if (!validation.ok) {
@@ -156,7 +168,7 @@ export const CreateDraftModal = () => {
     setIsSubmitting(true);
     try {
       const response = await draftsService.createDraft(backendUrl, {
-        chainId: effectiveChain.chainId,
+        chainId: selectedChain.chainId,
         multisigAccountId,
         signingPath: path,
         initiatorAccountId,
@@ -168,14 +180,7 @@ export const CreateDraftModal = () => {
       toast.success(t('operations.drafts.createSuccess'));
       createDraftModel.modalClosed();
     } catch (e) {
-      const errDescription =
-        e instanceof HttpError && e.status === 403
-          ? t('addressBook.sources.errorForbidden')
-          : e instanceof HttpError && e.status === 422
-            ? t('operations.drafts.validationError')
-            : e instanceof HttpError && e.status === 404
-              ? t('operations.drafts.multisigNotFound')
-              : t('operations.drafts.createError');
+      const errDescription = getSubmitErrorKey(e, t);
       toast.error(t('operations.drafts.createError'), { description: errDescription });
     } finally {
       setIsSubmitting(false);
@@ -194,7 +199,6 @@ export const CreateDraftModal = () => {
             <StepTransaction
               chains={chainsList}
               selectedChain={selectedChain}
-              effectiveChain={effectiveChain}
               inputMode={inputMode}
               callData={callData}
               callDataError={callDataError}
@@ -207,11 +211,11 @@ export const CreateDraftModal = () => {
               onTemplateApply={handleTemplateApply}
             />
           )}
-          {activeStep === 'select-path' && effectiveChain && <StepPath chainId={effectiveChain.chainId} />}
-          {activeStep === 'confirm' && effectiveChain && (
+          {activeStep === 'select-path' && selectedChain && <StepPath chainId={selectedChain.chainId} />}
+          {activeStep === 'confirm' && selectedChain && (
             <StepReview
               path={path}
-              chain={effectiveChain}
+              chain={selectedChain}
               callData={callData}
               decodedCallData={decodedCallData as object | null}
               titleData={titleData}

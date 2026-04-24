@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { type WalletType } from '@/shared/core';
+import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText, HelpText, Icon } from '@/shared/ui';
@@ -44,7 +44,7 @@ export const PathReviewPopover = ({ path }: Props) => {
           </div>
           <div className="flex flex-col">
             {path.map((node, idx) => {
-              const v = nodeView(node, nameByAccountId, idx);
+              const v = nodeView(node, nameByAccountId, idx, t);
               if (!v) return null;
               const isLast = idx === path.length - 1;
 
@@ -62,7 +62,7 @@ export const PathReviewPopover = ({ path }: Props) => {
                       {v.address && (
                         <WalletAccountIcon
                           address={toAddress(v.address)}
-                          type={(v.walletType ?? 'Multisig') as WalletType}
+                          type={v.walletType ?? WalletType.MULTISIG}
                           size={22}
                           iconSize={10}
                         />

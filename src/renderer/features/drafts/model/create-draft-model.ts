@@ -1,7 +1,7 @@
-import { isHex } from '@polkadot/util';
 import { combine, createEvent, createStore, sample } from 'effector';
 
 import { type Chain, type ChainId } from '@/shared/core';
+import { isHex } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 
 import { pathModel } from './path-model';
@@ -28,7 +28,6 @@ const callDataChanged = createEvent<string>();
 const inputModeChanged = createEvent<'paste' | 'build'>();
 const chainSelected = createEvent<Chain | null>();
 const descriptionChanged = createEvent<string>();
-const submitClicked = createEvent();
 
 const advance = (s: Step) => STEPS_ORDER[Math.min(STEPS_ORDER.indexOf(s) + 1, STEPS_ORDER.length - 1)] ?? s;
 const revert = (s: Step) => STEPS_ORDER[Math.max(STEPS_ORDER.indexOf(s) - 1, 0)] ?? s;
@@ -62,7 +61,6 @@ const $description = createStore<string>('')
   .on(descriptionChanged, (_, d) => d)
   .reset(modalClosed);
 
-// Seed wiring
 sample({
   clock: createDraftRequested,
   filter: (seed): seed is DraftSeed => !!seed && seed.callData !== undefined,
@@ -92,11 +90,12 @@ sample({
   target: $inputMode,
 });
 
-// Reset path on chain change or modal close
-sample({ clock: [chainSelected, modalClosed], target: pathModel.pathReset });
-
-// Derived stores
-const $effectiveChain = $selectedChain;
+sample({
+  clock: [chainSelected, modalClosed],
+  source: pathModel.$path,
+  filter: (path) => path.length > 0,
+  target: pathModel.pathReset,
+});
 
 const $callDataErrorKey = $callData.map((hex) =>
   hex.length > 0 && !isHex(hex) ? ('operations.drafts.callDataErrorHex' as const) : null,
@@ -111,7 +110,7 @@ const $isDirty = combine(
 const $canContinue = combine(
   {
     step: $activeStep,
-    chain: $effectiveChain,
+    chain: $selectedChain,
     callData: $callData,
     errorKey: $callDataErrorKey,
     pathComplete: pathModel.$isComplete,
@@ -125,10 +124,9 @@ const $canContinue = combine(
   },
 );
 
-const $canSkip = combine($activeStep, $effectiveChain, (step, chain) => step === 'call-data' && !!chain);
+const $canSkip = combine($activeStep, $selectedChain, (step, chain) => step === 'call-data' && !!chain);
 
 export const createDraftModel = {
-  // events
   createDraftRequested,
   modalClosed,
   draftCreated,
@@ -139,15 +137,12 @@ export const createDraftModel = {
   inputModeChanged,
   chainSelected,
   descriptionChanged,
-  submitClicked,
-  // stores
   $isOpen,
   $activeStep,
   $callData,
   $inputMode,
   $selectedChain,
   $description,
-  $effectiveChain,
   $callDataErrorKey,
   $isDirty,
   $canContinue,

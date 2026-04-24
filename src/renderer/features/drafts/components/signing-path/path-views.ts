@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 
 import { type WalletType } from '@/shared/core';
-import { truncate } from '@/shared/lib/utils';
+import { toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
 
@@ -15,61 +15,51 @@ export type PathNodeView = {
   walletType?: WalletType | null;
 };
 
-/**
- * Converts a PathNode into a PathNodeView for display.
- *
- * @param node - The path node to convert
- * @param nameByAccountId - Map from account ID to contact name
- * @param position - Zero-based index in the path
- */
+type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
+
 export const nodeView = (
   node: PathNode,
   nameByAccountId: Record<string, string>,
   position: number,
+  t: TranslateFn,
 ): PathNodeView | null => {
-  if (node.kind === 'proxied') {
-    const name = nameByAccountId[node.accountId] ?? truncate(node.accountId, 6, 6);
+  const name = nameByAccountId[node.accountId] ?? toShortAddress(node.accountId);
+  const address = node.accountId as AccountId;
 
+  if (node.kind === 'proxied') {
     return {
-      label: 'Source',
+      label: t('operations.drafts.signingPath.label.source'),
       title: name,
-      subtitle: node.proxyType ? `Proxied · ${node.proxyType}` : 'Proxied',
-      address: node.accountId as AccountId,
+      subtitle: node.proxyType
+        ? t('operations.drafts.signingPath.label.proxiedWithType', { type: node.proxyType })
+        : t('operations.drafts.signingPath.label.proxied'),
+      address,
       walletType: null,
     };
   }
 
   if (node.kind === 'multisig') {
-    const name = nameByAccountId[node.accountId] ?? truncate(node.accountId, 6, 6);
-
     return {
-      label: position === 0 ? 'Source' : 'via Multisig',
+      label:
+        position === 0
+          ? t('operations.drafts.signingPath.label.source')
+          : t('operations.drafts.signingPath.label.viaMultisig'),
       title: name,
-      subtitle: 'Multisig',
-      address: node.accountId as AccountId,
+      subtitle: t('operations.drafts.signingPath.label.multisig'),
+      address,
       walletType: null,
     };
   }
 
-  // kind === 'signer'
-  const name = nameByAccountId[node.accountId] ?? truncate(node.accountId, 6, 6);
-
   return {
-    label: 'Initiator',
+    label: t('operations.drafts.signingPath.label.initiator'),
     title: name,
-    subtitle: truncate(node.accountId, 6, 6),
-    address: node.accountId as AccountId,
+    subtitle: toShortAddress(node.accountId),
+    address,
     walletType: null,
   };
 };
 
-/**
- * Maps PathNodeView[] into breadcrumb card elements, automatically collapsing
- * middle hops into an EllipsisCard when more than 3 views are present.
- *
- * Accepts card/arrow/ellipsis factory functions so it stays free of React
- * imports (the factories live in PathBreadcrumb.tsx which does import React).
- */
 export type BreadcrumbCardFactories = {
   renderCard: (view: PathNodeView, index: number, total: number, onClick?: () => void) => ReactNode;
   renderArrow: (key: string) => ReactNode;

@@ -7,7 +7,6 @@ const pathReset = createEvent();
 const pathNodeAppended = createEvent<PathNode>();
 const pathTruncatedTo = createEvent<number>();
 const pathSeeded = createEvent<PathNode[]>();
-const pathAppendRejected = createEvent<{ reason: string; attempted: PathNode }>();
 
 const $path = createStore<PathNode[]>([])
   .on(pathReset, () => [])
@@ -34,7 +33,6 @@ export const pathModel = {
   pathNodeAppended,
   pathTruncatedTo,
   pathSeeded,
-  pathAppendRejected,
   $path,
   $isComplete,
   $lastNode,

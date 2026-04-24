@@ -47,14 +47,10 @@ export function isCycleFreeAppend(path: PathNode[], next: PathNode): boolean {
 }
 
 export function deriveMultisigAccountId(path: PathNode[]): string | null {
-  for (let i = path.length - 1; i >= 0; i--) {
-    if (path[i]!.kind === 'multisig') return path[i]!.accountId;
-  }
-  return null;
+  return path.findLast((n) => n.kind === 'multisig')?.accountId ?? null;
 }
 
 export function deriveInitiatorAccountId(path: PathNode[]): string | null {
-  if (path.length === 0) return null;
-  const last = path[path.length - 1]!;
-  return last.kind === 'signer' ? last.accountId : null;
+  const last = path.at(-1);
+  return last?.kind === 'signer' ? last.accountId : null;
 }

@@ -1,8 +1,9 @@
-import { combine, createStore } from 'effector';
+import { type Store, combine, createStore } from 'effector';
 
 import { type ChainId, type WalletType } from '@/shared/core';
 import { type BackendContact } from '@/shared/core/types/contact';
 import { type ProxyAccount } from '@/shared/core/types/proxy';
+import { dictionary } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
 import { contactModel } from '@/entities/contact';
@@ -88,7 +89,6 @@ function buildNextOptions(
       });
   }
 
-  // node.kind === 'multisig'
   const nodeAccountId = node.accountId as AccountId;
   const multisigContact = contactByAccountId.get(nodeAccountId);
 
@@ -96,8 +96,6 @@ function buildNextOptions(
 
   const signatories = multisigContact.signatories ?? [];
 
-  // Signatories in BackendContact are stored as the same accountId strings as contact.accountId.
-  // Use direct lookup to avoid SS58 decoding issues with non-standard addresses in tests.
   return signatories.map((sigId) => {
     const sigAccountId = sigId as AccountId;
     const sigContact = contactByAccountId.get(sigAccountId);
@@ -120,26 +118,38 @@ function buildNextOptions(
   });
 }
 
-function $sourcesFor(chainId: ChainId) {
-  return combine(contactModel.$backendContacts, proxyModel.$proxies, (contacts, proxies) =>
+const sourcesForCache = new Map<ChainId, Store<PathSource[]>>();
+
+function $sourcesFor(chainId: ChainId): Store<PathSource[]> {
+  const $cached = sourcesForCache.get(chainId);
+  if ($cached) return $cached;
+
+  const $store = combine(contactModel.$backendContacts, proxyModel.$proxies, (contacts, proxies) =>
     buildSources(contacts, proxies as Record<AccountId, ProxyAccount[] | undefined>, chainId),
   );
+  sourcesForCache.set(chainId, $store);
+
+  return $store;
 }
 
-function $nextOptionsForNode(node: PathNode, chainId: ChainId) {
-  return combine(contactModel.$backendContacts, proxyModel.$proxies, (contacts, proxies) =>
+const nextOptionsCache = new Map<string, Store<PathNextOption[]>>();
+
+function $nextOptionsForNode(node: PathNode, chainId: ChainId): Store<PathNextOption[]> {
+  const key = `${node.kind}:${node.accountId}:${chainId}`;
+  const $cached = nextOptionsCache.get(key);
+  if ($cached) return $cached;
+
+  const $store = combine(contactModel.$backendContacts, proxyModel.$proxies, (contacts, proxies) =>
     buildNextOptions(node, contacts, proxies as Record<AccountId, ProxyAccount[] | undefined>, chainId),
   );
+  nextOptionsCache.set(key, $store);
+
+  return $store;
 }
 
-const $contactNameByAccountId = contactModel.$backendContacts.map<Record<string, string>>((contacts) => {
-  const map: Record<string, string> = {};
-  for (const c of contacts) {
-    map[c.accountId] = c.name;
-  }
-
-  return map;
-});
+const $contactNameByAccountId = contactModel.$backendContacts.map<Record<string, string>>((contacts) =>
+  dictionary(contacts, 'accountId', (c) => c.name),
+);
 
 const $empty = createStore<PathNextOption[]>([]);
 

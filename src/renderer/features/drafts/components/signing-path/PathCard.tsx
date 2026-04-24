@@ -1,6 +1,6 @@
 import { type KeyboardEvent } from 'react';
 
-import { type WalletType } from '@/shared/core';
+import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { BodyText, CaptionText, HelpText } from '@/shared/ui';
@@ -38,7 +38,7 @@ export const PathCard = ({ view, size = 'md', onClick, position = 0 }: Props) =>
         {view.address && (
           <WalletAccountIcon
             address={toAddress(view.address)}
-            type={(view.walletType ?? 'Multisig') as WalletType}
+            type={view.walletType ?? WalletType.MULTISIG}
             size={size === 'md' ? 28 : 22}
             iconSize={12}
           />
@@ -55,8 +55,7 @@ export const PathCard = ({ view, size = 'md', onClick, position = 0 }: Props) =>
     return (
       <button
         type="button"
-        // eslint-disable-next-line i18next/no-literal-string
-        aria-label={t('operations.drafts.editHop', { step: position + 1, defaultValue: `Edit hop ${position + 1}` })}
+        aria-label={t('operations.drafts.editHop', { step: position + 1 })}
         className="flex min-w-0 flex-1"
         onClick={onClick}
         onKeyDown={handleKeyDown}
