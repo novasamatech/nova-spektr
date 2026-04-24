@@ -15,7 +15,7 @@ import {
   SmallTitleText,
 } from '@/shared/ui';
 import { ChainIcon, Identicon } from '@/shared/ui-entities';
-import { Box, Input, Modal, Popover, Select, Tabs, Tooltip } from '@/shared/ui-kit';
+import { Box, Input, Modal, Popover, Select, Tabs } from '@/shared/ui-kit';
 
 import {
   AccountIdenticon,
@@ -99,7 +99,7 @@ const MULTISIGS = {
   'security-council': {
     id: 'security-council',
     name: 'Security Council',
-    address: '5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy' as Address,
+    address: '5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK1iQ7qUsSWFc' as Address,
     threshold: 3,
     signatories: [SIGNATORIES.alice, SIGNATORIES.bob, SIGNATORIES.charlie, SIGNATORIES.dave],
   },
@@ -113,21 +113,21 @@ const MULTISIGS = {
   'dev-team': {
     id: 'dev-team',
     name: 'Dev Team',
-    address: '5CQBC8iA7qzW3GVofEaXiDzKcAnEpXiEdJhoVXNvpjoMNVqc' as Address,
+    address: '5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL' as Address,
     threshold: 2,
     signatories: [SIGNATORIES.alice, SIGNATORIES.eve, SIGNATORIES.charlie, SIGNATORIES.dave],
   },
   'vault-guardians': {
     id: 'vault-guardians',
     name: 'Vault Guardians',
-    address: '5DVgN8ENgz5GqYyU3xEAMHYjN6VgkqXr2YvJzPW7sRZmGpMt' as Address,
+    address: MOCK_ADDRESSES.alice,
     threshold: 1,
     signatories: [SIGNATORIES.alice, SIGNATORIES.eve],
   },
   'founders-council': {
     id: 'founders-council',
     name: 'Founders Council',
-    address: '5HmgN7tKXjN2p8vWqhCzY6fJfRsDvX3E1bXn2wS8mVgkpNkR' as Address,
+    address: MOCK_ADDRESSES.bob,
     threshold: 2,
     signatories: [SIGNATORIES.eve],
     nestedMultisigIds: ['vault-guardians'],
@@ -138,7 +138,7 @@ const SOURCES = {
   'treasury-proxy': {
     id: 'treasury-proxy',
     name: 'Treasury Pure Proxy',
-    address: '5ExL8sRKSrCqbtcvVhzkpB4JDQ2B8JP7uJwyhZWz9iUGRLNW' as Address,
+    address: '5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy' as Address,
     kind: 'proxied',
     walletType: WalletType.PROXIED,
     proxyType: 'Any',
@@ -147,7 +147,7 @@ const SOURCES = {
   'ops-proxy': {
     id: 'ops-proxy',
     name: 'Ops Pure Proxy',
-    address: '5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMax' as Address,
+    address: MOCK_ADDRESSES.eve,
     kind: 'proxied',
     walletType: WalletType.PROXIED,
     proxyType: 'Non-transfer',
@@ -156,7 +156,7 @@ const SOURCES = {
   'founders-proxy': {
     id: 'founders-proxy',
     name: 'Founders Pure Proxy',
-    address: '5GeqKpKmYBr8n2PJVhXz7wFsKqY4jWxqxJsH9tZkgp2vR8Nm' as Address,
+    address: MOCK_ADDRESSES.charlie,
     kind: 'proxied',
     walletType: WalletType.PROXIED,
     proxyType: 'Any',
@@ -525,17 +525,9 @@ const StepTransaction = ({
   );
 
   return (
-    <Box direction="column" gap={6}>
-      <div className="flex flex-col gap-y-3">
-        <div className="flex items-center gap-1.5">
-          <HeadlineText className="text-text-primary">Network</HeadlineText>
-          <Tooltip>
-            <Tooltip.Trigger>
-              <IconButton name="info" className="text-icon-default" />
-            </Tooltip.Trigger>
-            <Tooltip.Content>The chain the draft will execute on</Tooltip.Content>
-          </Tooltip>
-        </div>
+    <Box direction="column" gap={4}>
+      <div className="flex flex-col gap-y-1.5">
+        <FootnoteText className="text-text-secondary">Network</FootnoteText>
         <Select placeholder="Select a network" value={chainId} onChange={setChainId}>
           {CHAIN_OPTIONS.map((opt) => (
             <Select.Item key={opt.id} value={opt.id}>
@@ -548,51 +540,51 @@ const StepTransaction = ({
         </Select>
       </div>
 
-      <div className="flex flex-col gap-y-3">
-        <div className="flex items-center justify-between">
-          <HeadlineText className="text-text-primary">Call data</HeadlineText>
-          <HelpText className="text-text-tertiary">Paste a hex blob or build inline</HelpText>
+      <Tabs value={mode} onChange={(v) => setMode(v as 'paste' | 'build')}>
+        <Tabs.List>
+          <Tabs.Trigger value="paste">Paste</Tabs.Trigger>
+          <Tabs.Trigger value="build">Build</Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content value="paste">
+          <div className="flex flex-col gap-y-1.5 pt-3">
+            <FootnoteText className="text-text-secondary">Call data</FootnoteText>
+            <Input
+              placeholder="Paste the call data here"
+              value={callData}
+              height="md"
+              width="full"
+              onChange={setCallData}
+            />
+          </div>
+        </Tabs.Content>
+        <Tabs.Content value="build">
+          <div className="flex flex-col gap-y-1.5 pt-3">
+            <FootnoteText className="text-text-secondary">Call data</FootnoteText>
+            <div className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-shade-12 bg-white py-10">
+              <Icon name="magic" size={20} className="text-icon-default" />
+              <FootnoteText className="text-text-tertiary">Interactive builder coming up…</FootnoteText>
+            </div>
+          </div>
+        </Tabs.Content>
+      </Tabs>
+
+      {decodedJson ? (
+        <div className="flex flex-col gap-y-1.5">
+          <div className="flex items-center justify-between">
+            <FootnoteText className="text-text-secondary">Call preview</FootnoteText>
+            <CopyableIconButton value={decodedJson} tooltip="Copy JSON" />
+          </div>
+          <pre className="overflow-x-auto rounded-md border border-container-border bg-input-background px-3 py-2 font-mono text-help-text text-text-secondary">
+            {decodedJson}
+          </pre>
         </div>
-        <Tabs value={mode} onChange={(v) => setMode(v as 'paste' | 'build')}>
-          <Tabs.List>
-            <Tabs.Trigger value="paste">
-              <div className="flex items-center gap-1.5">
-                <Icon name="copy" size={14} />
-                <span>Paste hex</span>
-              </div>
-            </Tabs.Trigger>
-            <Tabs.Trigger value="build">
-              <div className="flex items-center gap-1.5">
-                <Icon name="magic" size={14} />
-                <span>Build inline</span>
-              </div>
-            </Tabs.Trigger>
-          </Tabs.List>
-          <Tabs.Content value="paste">
-            <div className="flex flex-col gap-y-3 pt-4">
-              <Input placeholder="0x…" value={callData} height="md" width="full" onChange={setCallData} />
-              {decodedJson && (
-                <div className="flex flex-col gap-y-2">
-                  <div className="flex items-center justify-between">
-                    <CaptionText className="text-text-tertiary uppercase">Call preview</CaptionText>
-                    <CopyableIconButton value={decodedJson} tooltip="Copy JSON" />
-                  </div>
-                  <pre className="overflow-x-auto rounded-md border border-container-border bg-input-background px-3.5 py-2.5 font-mono text-help-text text-text-secondary">
-                    {decodedJson}
-                  </pre>
-                </div>
-              )}
-            </div>
-          </Tabs.Content>
-          <Tabs.Content value="build">
-            <div className="mt-4 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-shade-12 bg-white py-12">
-              <Icon name="magic" size={24} className="text-icon-accent" />
-              <FootnoteText className="text-text-secondary">Interactive builder coming up…</FootnoteText>
-              <HelpText className="text-text-tertiary">Pick a pallet and method from a searchable list</HelpText>
-            </div>
-          </Tabs.Content>
-        </Tabs>
-      </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center gap-2 py-10">
+          <Icon name="document" size={40} className="text-icon-default" />
+          <BodyText className="text-text-primary">No data available</BodyText>
+          <HelpText className="text-text-tertiary">Operation details will appear here after call data parsed</HelpText>
+        </div>
+      )}
     </Box>
   );
 };
@@ -691,7 +683,6 @@ const NextOptionRow = ({
     return (
       <RowPickerButton
         address={sig.address}
-        walletType={sig.walletType}
         title={sig.name}
         subtitle={truncateStr(sig.address, 8, 8)}
         selected={selected}
