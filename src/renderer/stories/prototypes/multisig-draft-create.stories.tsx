@@ -762,7 +762,7 @@ const StepPath = ({ path, setPath }: { path: PathNode[]; setPath: (p: PathNode[]
   const activeStepKey = complete ? 'complete' : `step-${path.length}`;
 
   return (
-    <Box direction="column" gap={4}>
+    <div className="flex min-h-[520px] flex-col gap-y-4">
       <style>{STEP_ANIM_KEYFRAMES}</style>
 
       {path.length > 0 && <PathBreadcrumb path={path} onNodeClick={truncateTo} />}
@@ -833,7 +833,7 @@ const StepPath = ({ path, setPath }: { path: PathNode[]; setPath: (p: PathNode[]
           )
         )}
       </div>
-    </Box>
+    </div>
   );
 };
 
