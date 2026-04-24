@@ -635,13 +635,11 @@ const Amount = memo(() => {
 
 const DescriptionField = memo(() => {
   const { t } = useI18n();
-  const initiator = useUnit(formModel.form.fields.initiator.$value);
+  const multisigAccount = useUnit(formModel.$multisigAccount);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const description = useUnit(formModel.$description);
 
-  const isMultisig = initiator && accountUtils.isAnyMultisigAccount(initiator);
-
-  if (!isMultisig || !isAuthenticated) return null;
+  if (!multisigAccount || !isAuthenticated) return null;
 
   return (
     <Field text={t('operation.descriptionLabel')}>
