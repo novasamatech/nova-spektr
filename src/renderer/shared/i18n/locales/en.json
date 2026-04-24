@@ -2593,6 +2593,12 @@
         "batch": "Draft changes"
       },
       "signingPath": {
+        "signingPath": "Signing path",
+        "hopsCount": "{count} hops",
+        "openOverview": "Open overview",
+        "fullSigningPath": "Full signing path",
+        "notSignedYet": "This does not sign yet",
+        "notSignedYetHint": "A draft goes into the pending list so co-signers can review before anything is broadcast.",
         "sourceAccount": "Source account",
         "sourceAccountDescription": "The account that executes the transaction",
         "selectSource": "Select a source account",
