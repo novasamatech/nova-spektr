@@ -37,6 +37,12 @@ $isLoading.on(fetchBackendContactsFx, () => true);
 $isLoading.on(fetchBackendContactsFx.finally, () => false);
 $error.on(fetchBackendContactsFx, () => null);
 $error.on(fetchBackendContactsFx.failData, (_, error) => categorizeError(error));
+
+sample({
+  clock: fetchBackendContactsFx.failData,
+  filter: (error) => error instanceof HttpError && error.status === 401,
+  target: authModel.events.sessionExpiryDetected,
+});
 $syncStatus.on(fetchBackendContactsFx, () => 'syncing');
 $syncStatus.on(fetchBackendContactsFx.done, () => 'done');
 $syncStatus.on(fetchBackendContactsFx.fail, () => 'error');

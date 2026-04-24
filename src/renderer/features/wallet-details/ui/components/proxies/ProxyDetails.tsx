@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod, toAddress } from '@/shared/lib/utils';
-import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Box, Copy } from '@/shared/ui-kit';
+import { Button, FootnoteText, Icon } from '@/shared/ui';
+import { Box, Copy, Tooltip } from '@/shared/ui-kit';
 import { multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { findCoreTransaction } from '@/entities/transaction';
+import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import {
   type PendingMultisigOperationRef,
   type WalletProxy,
@@ -61,15 +62,53 @@ export const ProxyDetails = ({ proxy, verifyAction, onRemove, onCloseWalletDetai
     navigate(link);
   };
 
+  const getOperationDeepLink = (ref: PendingMultisigOperationRef | WalletProxyLastOperation) =>
+    'operationId' in ref
+      ? multisigOperationService.generateMultisigOperationDeepLink({
+          chainId: ref.chainId,
+          callHash: ref.callHash,
+          multisigAccountId: ref.multisigAccountId,
+          blockCreated: ref.blockCreated,
+          indexCreated: ref.indexCreated,
+        })
+      : multisigOperationService.generateMultisigOperationDeepLink({
+          chainId: proxy.chainId,
+          callHash: ref.callHash,
+          multisigAccountId: ref.multisigAccountId,
+          blockCreated: ref.blockNumber,
+          indexCreated: ref.indexCreated,
+        });
+
+  const shareOperationDeepLinkButton = (deepLink: string) => (
+    <Tooltip>
+      <Tooltip.Trigger>
+        <Copy value={deepLink} notification={t('general.notifications.operationLinkCopied')}>
+          <Button
+            size="sm"
+            variant="fill"
+            pallet="secondary"
+            prefixElement={<Icon name="share" size={16} className="text-inherit" />}
+          >
+            {t('walletDetails.proxies.shareOperation')}
+          </Button>
+        </Copy>
+      </Tooltip.Trigger>
+      <Tooltip.Content>{t('operations.shareOperationTooltip')}</Tooltip.Content>
+    </Tooltip>
+  );
+
   const pendingRemovalAction = proxy.pendingRemovalOperation ? (
-    <Button
-      size="sm"
-      variant="fill"
-      pallet="secondary"
-      onClick={() => proxy.pendingRemovalOperation && goToOperation(proxy.pendingRemovalOperation)}
-    >
-      {t('walletDetails.proxies.viewOperation')}
-    </Button>
+    <div className="flex items-center gap-2">
+      <Button
+        size="sm"
+        variant="fill"
+        pallet="secondary"
+        onClick={() => proxy.pendingRemovalOperation && goToOperation(proxy.pendingRemovalOperation)}
+      >
+        {t('walletDetails.proxies.viewOperation')}
+      </Button>
+      {shareOperationDeepLinkButton(getOperationDeepLink(proxy.pendingRemovalOperation))}
+    </div>
   ) : null;
 
   const pendingRemovalNote = proxy.pendingRemovalOperation ? (
@@ -77,14 +116,17 @@ export const ProxyDetails = ({ proxy, verifyAction, onRemove, onCloseWalletDetai
   ) : null;
 
   const pendingVerificationAction = proxy.pendingVerificationOperation ? (
-    <Button
-      size="sm"
-      variant="fill"
-      pallet="secondary"
-      onClick={() => proxy.pendingVerificationOperation && goToOperation(proxy.pendingVerificationOperation)}
-    >
-      {t('walletDetails.proxies.viewOperation')}
-    </Button>
+    <div className="flex items-center gap-2">
+      <Button
+        size="sm"
+        variant="fill"
+        pallet="secondary"
+        onClick={() => proxy.pendingVerificationOperation && goToOperation(proxy.pendingVerificationOperation)}
+      >
+        {t('walletDetails.proxies.viewOperation')}
+      </Button>
+      {shareOperationDeepLinkButton(getOperationDeepLink(proxy.pendingVerificationOperation))}
+    </div>
   ) : null;
 
   if (proxy.status === 'verified') {
@@ -109,19 +151,26 @@ export const ProxyDetails = ({ proxy, verifyAction, onRemove, onCloseWalletDetai
           </FootnoteText>
           {lastOp && (
             <div className="flex flex-col gap-1">
-              <DetailRow label={t('walletDetails.proxies.verifiedOperationLabel')}>{operationTitle}</DetailRow>
-              <DetailRow label={t('walletDetails.proxies.verifiedDateLabel')}>
-                {formatDate(new Date(lastOp.timestamp), 'PPp')}
-              </DetailRow>
+              <FootnoteText className="inline-flex flex-wrap items-baseline gap-2">
+                <span className="shrink-0 text-text-tertiary">{t('walletDetails.proxies.verifiedOperationLabel')}</span>
+                <span className="min-w-0 text-text-primary">{operationTitle}</span>
+              </FootnoteText>
+              <FootnoteText className="inline-flex flex-wrap items-baseline gap-2">
+                <span className="shrink-0 text-text-tertiary">{t('walletDetails.proxies.verifiedDateLabel')}</span>
+                <span className="min-w-0 text-text-primary">{formatDate(new Date(lastOp.timestamp), 'PPp')}</span>
+              </FootnoteText>
             </div>
           )}
           {pendingRemovalNote}
         </ProxyDetailExplanation>
         <ProxyDetailActions>
           {lastOp && (
-            <Button size="sm" variant="fill" pallet="secondary" onClick={handleGoToOperation}>
-              {t('walletDetails.proxies.viewOperation')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="fill" pallet="secondary" onClick={handleGoToOperation}>
+                {t('walletDetails.proxies.viewOperation')}
+              </Button>
+              {shareOperationDeepLinkButton(getOperationDeepLink(lastOp))}
+            </div>
           )}
           {pendingRemovalAction}
           {revokeButton}
@@ -144,9 +193,14 @@ export const ProxyDetails = ({ proxy, verifyAction, onRemove, onCloseWalletDetai
           </FootnoteText>
         </ProxyDetailExplanation>
         <ProxyDetailActions>
-          <Button size="sm" variant="fill" pallet="secondary" onClick={handleGoToOperation}>
-            {t('walletDetails.proxies.viewOperation')}
-          </Button>
+          {proxy.pendingOperation && (
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="fill" pallet="secondary" onClick={handleGoToOperation}>
+                {t('walletDetails.proxies.viewOperation')}
+              </Button>
+              {shareOperationDeepLinkButton(getOperationDeepLink(proxy.pendingOperation))}
+            </div>
+          )}
         </ProxyDetailActions>
       </Box>
     );
@@ -165,6 +219,7 @@ export const ProxyDetails = ({ proxy, verifyAction, onRemove, onCloseWalletDetai
               {t('walletDetails.proxies.noWalletCopyAddress')}
             </Button>
           </Copy>
+          <WalletPairingOperationTrigger tooltipContent={t('walletDetails.proxies.addWalletTooltip')} />
           {pendingRemovalAction}
           {revokeButton}
         </ProxyDetailActions>
