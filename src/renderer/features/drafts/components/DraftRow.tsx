@@ -1,6 +1,6 @@
 import { isHex } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import { type CallData, type ChainId, CryptoType } from '@/shared/core';
 import { useTransformer } from '@/shared/di';
@@ -29,6 +29,7 @@ import { operationTitleTransformer } from '@/features/multisig-operations';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { getDestinationAccountId } from '../lib/get-destination-account-id';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
+import { graphModel } from '../model/graph-model';
 
 type DraftRowProps = {
   draft: Draft;
@@ -61,6 +62,7 @@ export const DraftRow = ({
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const chains = useUnit(networkModel.$chains);
   const backendContacts = useUnit(contactModel.$backendContacts);
+  const contactNameByAccountId = useUnit(graphModel.$contactNameByAccountId);
 
   const chain = chains[draft.chainId as ChainId];
   const chainName = chain?.name;
@@ -152,16 +154,34 @@ export const DraftRow = ({
             </FootnoteText>
             <HelpText className="flex items-center truncate text-text-tertiary">
               {(() => {
+                let label: ReactNode;
+
                 if (draft.proxyAccountId) {
                   const proxyContact = backendContacts.find((c) => c.accountId === draft.proxyAccountId);
-                  if (proxyContact?.name) return proxyContact.name;
-
-                  return truncate(toAddress(draft.proxyAccountId, { prefix: chain?.addressPrefix }), 4, 4);
+                  label = proxyContact?.name
+                    ? proxyContact.name
+                    : truncate(toAddress(draft.proxyAccountId, { prefix: chain?.addressPrefix }), 4, 4);
+                } else {
+                  label = contact?.name || (
+                    <span className="text-text-negative">{t('operations.drafts.unknownMultisig')}</span>
+                  );
                 }
 
-                return (
-                  contact?.name || <span className="text-text-negative">{t('operations.drafts.unknownMultisig')}</span>
-                );
+                if (draft.initiatorAccountId) {
+                  const initiatorName =
+                    contactNameByAccountId[draft.initiatorAccountId] ??
+                    truncate(toAddress(draft.initiatorAccountId, { prefix: chain?.addressPrefix }), 4, 4);
+
+                  return (
+                    <>
+                      {label}
+                      {' → '}
+                      {initiatorName}
+                    </>
+                  );
+                }
+
+                return label;
               })()}
               {titleData?.title && ` · ${titleData.title}`}
               {destinationAddress && ` · ${truncate(destinationAddress, 4, 4)}`}

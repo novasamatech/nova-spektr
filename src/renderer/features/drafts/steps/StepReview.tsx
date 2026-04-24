@@ -85,6 +85,7 @@ export const StepReview = ({
         callData={callData || undefined}
         jsonArgs={decodedCallData}
         threshold={threshold}
+        signingPath={path}
       />
 
       {!callData && (
