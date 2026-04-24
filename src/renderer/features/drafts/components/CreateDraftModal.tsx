@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { type TFunction } from 'i18next';
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import { type CallData, type ChainId, type DecodedTransaction } from '@/shared/core';
@@ -31,12 +32,10 @@ const HTTP_ERROR_KEYS: Record<number, string> = {
   422: 'operations.drafts.validationError',
 };
 
-const getSubmitErrorKey = (e: unknown, t: (key: string) => string): string => {
-  if (e instanceof HttpError && HTTP_ERROR_KEYS[e.status]) {
-    return t(HTTP_ERROR_KEYS[e.status]!);
-  }
+const getSubmitErrorMessage = (e: unknown, t: TFunction): string => {
+  const key = e instanceof HttpError ? HTTP_ERROR_KEYS[e.status] : undefined;
 
-  return t('operations.drafts.createError');
+  return t(key ?? 'operations.drafts.createError');
 };
 
 export const CreateDraftModal = () => {
@@ -180,7 +179,7 @@ export const CreateDraftModal = () => {
       toast.success(t('operations.drafts.createSuccess'));
       createDraftModel.modalClosed();
     } catch (e) {
-      const errDescription = getSubmitErrorKey(e, t);
+      const errDescription = getSubmitErrorMessage(e, t);
       toast.error(t('operations.drafts.createError'), { description: errDescription });
     } finally {
       setIsSubmitting(false);

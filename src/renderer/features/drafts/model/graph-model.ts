@@ -1,4 +1,4 @@
-import { type Store, combine, createStore } from 'effector';
+import { type Store, combine, createEffect, createEvent, createStore, sample } from 'effector';
 
 import { type ChainId, type WalletType } from '@/shared/core';
 import { type BackendContact } from '@/shared/core/types/contact';
@@ -23,52 +23,49 @@ export type PathNextOption =
 const isMultisigContact = (c: BackendContact): boolean =>
   Array.isArray(c.signatories) && c.signatories.length > 0 && typeof c.threshold === 'number' && c.threshold >= 1;
 
+type ContactsByAccountId = Map<AccountId, BackendContact>;
+
+const $contactByAccountId = contactModel.$backendContacts.map<ContactsByAccountId>(
+  (contacts) => new Map(contacts.map((c) => [c.accountId, c])),
+);
+
 function buildSources(
-  contacts: BackendContact[],
+  contactByAccountId: ContactsByAccountId,
   proxies: Record<AccountId, ProxyAccount[] | undefined>,
   chainId: ChainId,
 ): PathSource[] {
-  const multisigAccountIds = new Set(contacts.filter(isMultisigContact).map((c) => c.accountId));
+  const sources: PathSource[] = [];
 
-  const getSignerMultisigIds = (contactAccountId: AccountId): AccountId[] => {
-    const signers = proxies[contactAccountId] ?? [];
+  for (const contact of contactByAccountId.values()) {
+    if (isMultisigContact(contact)) {
+      sources.push({ accountId: contact.accountId, name: contact.name, isProxy: false, walletType: null });
+      continue;
+    }
 
-    return signers
-      .filter((p) => p.chainId === chainId)
-      .map((p) => p.accountId)
-      .filter((id) => multisigAccountIds.has(id));
-  };
+    const signers = proxies[contact.accountId] ?? [];
+    const hasMultisigSigner = signers.some(
+      (p) => p.chainId === chainId && isMultisigContact(contactByAccountId.get(p.accountId) ?? (null as never)),
+    );
 
-  return contacts
-    .filter((c) => {
-      if (isMultisigContact(c)) return true;
+    if (hasMultisigSigner) {
+      sources.push({ accountId: contact.accountId, name: contact.name, isProxy: true, walletType: null });
+    }
+  }
 
-      return getSignerMultisigIds(c.accountId).length > 0;
-    })
-    .map((c) => {
-      const isProxy = !isMultisigContact(c);
-
-      return {
-        accountId: c.accountId,
-        name: c.name,
-        isProxy,
-        walletType: null,
-      };
-    });
+  return sources;
 }
 
 function buildNextOptions(
   node: PathNode,
-  contacts: BackendContact[],
+  contactByAccountId: ContactsByAccountId,
   proxies: Record<AccountId, ProxyAccount[] | undefined>,
   chainId: ChainId,
 ): PathNextOption[] {
   if (node.kind === 'signer') return [];
 
-  const contactByAccountId = new Map<AccountId, BackendContact>(contacts.map((c) => [c.accountId, c]));
+  const nodeAccountId = node.accountId as AccountId;
 
   if (node.kind === 'proxied') {
-    const nodeAccountId = node.accountId as AccountId;
     const signers = proxies[nodeAccountId] ?? [];
 
     return signers
@@ -89,14 +86,10 @@ function buildNextOptions(
       });
   }
 
-  const nodeAccountId = node.accountId as AccountId;
   const multisigContact = contactByAccountId.get(nodeAccountId);
-
   if (!multisigContact || !isMultisigContact(multisigContact)) return [];
 
-  const signatories = multisigContact.signatories ?? [];
-
-  return signatories.map((sigId) => {
+  return (multisigContact.signatories ?? []).map((sigId) => {
     const sigAccountId = sigId as AccountId;
     const sigContact = contactByAccountId.get(sigAccountId);
 
@@ -124,8 +117,8 @@ function $sourcesFor(chainId: ChainId): Store<PathSource[]> {
   const $cached = sourcesForCache.get(chainId);
   if ($cached) return $cached;
 
-  const $store = combine(contactModel.$backendContacts, proxyModel.$proxies, (contacts, proxies) =>
-    buildSources(contacts, proxies as Record<AccountId, ProxyAccount[] | undefined>, chainId),
+  const $store = combine($contactByAccountId, proxyModel.$proxies, (contactByAccountId, proxies) =>
+    buildSources(contactByAccountId, proxies as Record<AccountId, ProxyAccount[] | undefined>, chainId),
   );
   sourcesForCache.set(chainId, $store);
 
@@ -139,8 +132,8 @@ function $nextOptionsForNode(node: PathNode, chainId: ChainId): Store<PathNextOp
   const $cached = nextOptionsCache.get(key);
   if ($cached) return $cached;
 
-  const $store = combine(contactModel.$backendContacts, proxyModel.$proxies, (contacts, proxies) =>
-    buildNextOptions(node, contacts, proxies as Record<AccountId, ProxyAccount[] | undefined>, chainId),
+  const $store = combine($contactByAccountId, proxyModel.$proxies, (contactByAccountId, proxies) =>
+    buildNextOptions(node, contactByAccountId, proxies as Record<AccountId, ProxyAccount[] | undefined>, chainId),
   );
   nextOptionsCache.set(key, $store);
 
@@ -153,9 +146,16 @@ const $contactNameByAccountId = contactModel.$backendContacts.map<Record<string,
 
 const $empty = createStore<PathNextOption[]>([]);
 
+const cachesCleared = createEvent();
+const clearCachesFx = createEffect(() => {
+  nextOptionsCache.clear();
+});
+sample({ clock: cachesCleared, target: clearCachesFx });
+
 export const graphModel = {
   $sourcesFor,
   $nextOptionsForNode,
   $contactNameByAccountId,
   $empty,
+  cachesCleared,
 };

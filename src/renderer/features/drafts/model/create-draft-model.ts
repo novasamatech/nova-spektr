@@ -4,6 +4,7 @@ import { type Chain, type ChainId } from '@/shared/core';
 import { isHex } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 
+import { graphModel } from './graph-model';
 import { pathModel } from './path-model';
 
 export type Step = 'call-data' | 'select-path' | 'confirm';
@@ -96,6 +97,8 @@ sample({
   filter: (path) => path.length > 0,
   target: pathModel.pathReset,
 });
+
+sample({ clock: modalClosed, target: graphModel.cachesCleared });
 
 const $callDataErrorKey = $callData.map((hex) =>
   hex.length > 0 && !isHex(hex) ? ('operations.drafts.callDataErrorHex' as const) : null,

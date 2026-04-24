@@ -1,3 +1,4 @@
+import { type TFunction } from 'i18next';
 import { type ReactNode } from 'react';
 
 import { type WalletType } from '@/shared/core';
@@ -15,13 +16,11 @@ export type PathNodeView = {
   walletType?: WalletType | null;
 };
 
-type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
-
 export const nodeView = (
   node: PathNode,
   nameByAccountId: Record<string, string>,
   position: number,
-  t: TranslateFn,
+  t: TFunction,
 ): PathNodeView | null => {
   const name = nameByAccountId[node.accountId] ?? toShortAddress(node.accountId);
   const address = node.accountId as AccountId;
