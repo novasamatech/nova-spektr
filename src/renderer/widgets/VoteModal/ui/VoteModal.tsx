@@ -36,9 +36,9 @@ export const VoteModal = ({ referendum, asset, chain, onClose, onSuccess }: Prop
   const step = useUnit(voteModal.$step);
   const voteSuccess = useUnit(voteModal.$voteSuccess);
   const initiatorWallet = useUnit(voteForm.$initiatorWallet);
-  const tx = useUnit(voteForm.$tx);
+  const coreTx = useUnit(voteForm.$coreTx);
   const chainApi = useUnit(networkSelectorModel.$governanceChainApi);
-  const draftCallData = transactionService.getCallDataHex(tx, chainApi);
+  const draftCallData = transactionService.getCallDataHex(coreTx, chainApi);
 
   const [isModalOpen, closeModal] = useModalClose(step !== Step.NONE, onClose);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(step === Step.BASKET, onClose);
