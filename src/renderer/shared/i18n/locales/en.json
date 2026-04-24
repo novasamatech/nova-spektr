@@ -2591,6 +2591,17 @@
         "updated": "Draft updated",
         "removed": "Draft removed",
         "batch": "Draft changes"
+      },
+      "signingPath": {
+        "sourceAccount": "Source account",
+        "sourceAccountDescription": "The account that executes the transaction",
+        "selectSource": "Select a source account",
+        "pickMultisigForProxy": "Pick a multisig to sign via",
+        "pickInitiator": "Pick an initiator",
+        "pickInitiatorOrNested": "Pick an initiator or nested multisig",
+        "pathComplete": "Path complete",
+        "pathCompleteHint": "Click any hop above to edit, or Back to change the last one",
+        "noOptions": "No options available for this hop"
       }
     },
     "callData": {
