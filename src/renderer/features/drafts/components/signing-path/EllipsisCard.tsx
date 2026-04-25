@@ -1,4 +1,3 @@
-import { WalletType } from '@/shared/core';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText, HelpText } from '@/shared/ui';
 import { WalletAccountIcon } from '@/shared/ui-entities';
@@ -43,7 +42,7 @@ export const EllipsisCard = ({ hiddenViews, size = 'sm' }: Props) => {
                 {v.address && (
                   <WalletAccountIcon
                     address={toAddress(v.address)}
-                    type={v.walletType ?? WalletType.MULTISIG}
+                    type={v.walletType ?? null}
                     size={24}
                     iconSize={10}
                   />

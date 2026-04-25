@@ -1,7 +1,7 @@
 import { type TFunction } from 'i18next';
 import { type ReactNode } from 'react';
 
-import { type WalletType } from '@/shared/core';
+import { WalletType } from '@/shared/core';
 import { toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
@@ -33,7 +33,7 @@ export const nodeView = (
         ? t('operations.drafts.signingPath.label.proxiedWithType', { type: node.proxyType })
         : t('operations.drafts.signingPath.label.proxied'),
       address,
-      walletType: null,
+      walletType: WalletType.PROXIED,
     };
   }
 
@@ -46,7 +46,7 @@ export const nodeView = (
       title: name,
       subtitle: t('operations.drafts.signingPath.label.multisig'),
       address,
-      walletType: null,
+      walletType: WalletType.MULTISIG,
     };
   }
 

@@ -41,7 +41,7 @@ export const StepTransaction = ({
   const { t } = useI18n();
 
   return (
-    <div className="flex min-h-[500px] flex-col gap-4 p-4">
+    <div className="flex min-h-[500px] flex-col gap-4">
       <Field text={t('operations.drafts.selectNetwork')}>
         <ChainSelect
           placeholder={t('operations.drafts.selectNetwork')}

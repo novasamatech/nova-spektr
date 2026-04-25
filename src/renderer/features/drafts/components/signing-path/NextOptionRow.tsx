@@ -23,7 +23,7 @@ export const NextOptionRow = ({ option, selected, onClick, trailing }: NextOptio
         : 'Multisig'
       : toShortAddress(address, 8);
 
-  const walletType = option.kind === 'multisig' ? WalletType.MULTISIG : WalletType.POLKADOT_VAULT;
+  const walletType = option.kind === 'multisig' ? WalletType.MULTISIG : null;
 
   return (
     <button

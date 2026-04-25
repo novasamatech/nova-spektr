@@ -42,9 +42,9 @@ export const StepReview = ({
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-5">
       {path.length > 0 && (
-        <div className="flex flex-col gap-y-3 rounded-lg bg-block-background-default p-4">
+        <section className="flex flex-col gap-y-2">
           <div className="flex items-center justify-between">
             <CaptionText className="text-text-tertiary uppercase">
               {t('operations.drafts.signingPath.signingPath')}
@@ -57,7 +57,7 @@ export const StepReview = ({
             </div>
           </div>
           <PathBreadcrumb path={path} size="sm" />
-        </div>
+        </section>
       )}
 
       <Field
@@ -85,7 +85,6 @@ export const StepReview = ({
         callData={callData || undefined}
         jsonArgs={decodedCallData}
         threshold={threshold}
-        signingPath={path}
       />
 
       {!callData && (

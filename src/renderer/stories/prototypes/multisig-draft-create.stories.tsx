@@ -479,11 +479,7 @@ const PathBreadcrumb = ({
     );
   }
 
-  return (
-    <div className="flex items-stretch gap-2 rounded-lg bg-block-background-default p-3">
-      {renderBreadcrumbCards(views, size, onNodeClick)}
-    </div>
-  );
+  return <div className="flex items-stretch gap-2">{renderBreadcrumbCards(views, size, onNodeClick)}</div>;
 };
 
 // ─── Step 1: Transaction ─────────────────────────────────────────────────────

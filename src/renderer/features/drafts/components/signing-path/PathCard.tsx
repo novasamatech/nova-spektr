@@ -1,6 +1,5 @@
 import { type KeyboardEvent } from 'react';
 
-import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { BodyText, CaptionText, HelpText } from '@/shared/ui';
@@ -38,7 +37,7 @@ export const PathCard = ({ view, size = 'md', onClick, position = 0 }: Props) =>
         {view.address && (
           <WalletAccountIcon
             address={toAddress(view.address)}
-            type={view.walletType ?? WalletType.MULTISIG}
+            type={view.walletType ?? null}
             size={size === 'md' ? 28 : 22}
             iconSize={12}
           />

@@ -142,7 +142,7 @@ export const DraftRow = ({
     >
       <div className="flex h-[52px] w-full items-center px-4 py-2">
         {/* Icon + description */}
-        <div className="flex min-w-0 flex-1 items-center gap-x-3">
+        <div className="flex min-w-0 flex-[3] items-center gap-x-3">
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-icon-accent/15">
             <Icon name="document" size={16} className="text-icon-accent" />
           </div>
@@ -152,7 +152,7 @@ export const DraftRow = ({
                 <span className="text-text-tertiary italic">{t('operations.drafts.noDescription')}</span>
               )}
             </FootnoteText>
-            <HelpText className="flex items-center truncate text-text-tertiary">
+            <HelpText className="block truncate text-text-tertiary">
               {(() => {
                 let label: ReactNode;
 
@@ -201,15 +201,19 @@ export const DraftRow = ({
         </div>
 
         {/* Chain + date */}
-        <div className="flex w-[120px] shrink-0 flex-col items-end">
-          <FootnoteText className="text-text-primary">
+        <div className="flex min-w-[160px] flex-1 flex-col">
+          <FootnoteText className="truncate text-right text-text-primary">
             {chainName || <span className="text-text-negative">{t('operations.drafts.unknownChain')}</span>}
           </FootnoteText>
-          <HelpText className="truncate text-text-tertiary">
-            {creatorName ?? (creatorAddress ? toShortAddress(creatorAddress, 4) : null)}
-            {creatorAddress && ` · ${formatDate(new Date(draft.createdAt), 'PP')}`}
-            {!creatorAddress && formatDate(new Date(draft.createdAt), 'PP')}
-          </HelpText>
+          <div className="flex min-w-0 items-baseline justify-end gap-x-1 text-help-text text-text-tertiary">
+            {(creatorName || creatorAddress) && (
+              <>
+                <span className="min-w-0 truncate">{creatorName ?? creatorAddress}</span>
+                <span className="shrink-0">·</span>
+              </>
+            )}
+            <span className="shrink-0">{formatDate(new Date(draft.createdAt), 'PP')}</span>
+          </div>
         </div>
 
         {/* Draft badge */}

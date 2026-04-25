@@ -6,11 +6,8 @@ import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AssetBalance, ChainIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Copy, Modal } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
-import { type PathNode } from '@/domains/backend';
 import { type OperationTitle } from '@/features/multisig-operations';
 import { NamedAccount } from '@/widgets/NameResolver';
-
-import { PathBreadcrumb } from './signing-path/PathBreadcrumb';
 
 type DraftSummaryProps = {
   multisigName: string;
@@ -24,7 +21,6 @@ type DraftSummaryProps = {
   destinationAccountId?: AccountId | null;
   callData?: string;
   jsonArgs?: object | null;
-  signingPath?: PathNode[];
 };
 
 export const DraftSummary = ({
@@ -39,13 +35,11 @@ export const DraftSummary = ({
   destinationAccountId,
   callData,
   jsonArgs,
-  signingPath = [],
 }: DraftSummaryProps) => {
   const { t } = useI18n();
 
   return (
     <dl className="flex flex-col gap-y-4 text-footnote">
-      {signingPath.length > 0 && <PathBreadcrumb path={signingPath} size="sm" />}
       {chain?.name && (
         <DetailRow label={t('transfer.networkLabel')} className="flex gap-x-2">
           <ChainIcon chain={chain} size={16} />

@@ -1,6 +1,5 @@
 import { useUnit } from 'effector-react';
 
-import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText, HelpText, Icon } from '@/shared/ui';
@@ -62,7 +61,7 @@ export const PathReviewPopover = ({ path }: Props) => {
                       {v.address && (
                         <WalletAccountIcon
                           address={toAddress(v.address)}
-                          type={v.walletType ?? WalletType.MULTISIG}
+                          type={v.walletType ?? null}
                           size={22}
                           iconSize={10}
                         />

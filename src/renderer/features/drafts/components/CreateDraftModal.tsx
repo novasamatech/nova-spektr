@@ -194,37 +194,39 @@ export const CreateDraftModal = () => {
         <Modal.Title close>{t('operations.drafts.createNew')}</Modal.Title>
         <StepIndicator step={activeStep} />
         <Modal.Content>
-          {activeStep === 'call-data' && (
-            <StepTransaction
-              chains={chainsList}
-              selectedChain={selectedChain}
-              inputMode={inputMode}
-              callData={callData}
-              callDataError={callDataError}
-              decodedCallData={decodedCallData}
-              api={api}
-              specVersion={specVersion}
-              onChainSelected={createDraftModel.chainSelected}
-              onInputModeChanged={(v) => createDraftModel.inputModeChanged(v)}
-              onCallDataChanged={createDraftModel.callDataChanged}
-              onTemplateApply={handleTemplateApply}
-            />
-          )}
-          {activeStep === 'select-path' && selectedChain && <StepPath chainId={selectedChain.chainId} />}
-          {activeStep === 'confirm' && selectedChain && (
-            <StepReview
-              path={path}
-              chain={selectedChain}
-              callData={callData}
-              decodedCallData={decodedCallData as object | null}
-              titleData={titleData}
-              destinationAccountId={destinationAccountId}
-              description={description}
-              multisigName={multisigName}
-              multisigAccountId={multisigHopAccountId as AccountId | undefined}
-              onDescriptionChanged={createDraftModel.descriptionChanged}
-            />
-          )}
+          <div className="flex flex-col px-5 pt-4 pb-5">
+            {activeStep === 'call-data' && (
+              <StepTransaction
+                chains={chainsList}
+                selectedChain={selectedChain}
+                inputMode={inputMode}
+                callData={callData}
+                callDataError={callDataError}
+                decodedCallData={decodedCallData}
+                api={api}
+                specVersion={specVersion}
+                onChainSelected={createDraftModel.chainSelected}
+                onInputModeChanged={(v) => createDraftModel.inputModeChanged(v)}
+                onCallDataChanged={createDraftModel.callDataChanged}
+                onTemplateApply={handleTemplateApply}
+              />
+            )}
+            {activeStep === 'select-path' && selectedChain && <StepPath chainId={selectedChain.chainId} />}
+            {activeStep === 'confirm' && selectedChain && (
+              <StepReview
+                path={path}
+                chain={selectedChain}
+                callData={callData}
+                decodedCallData={decodedCallData as object | null}
+                titleData={titleData}
+                destinationAccountId={destinationAccountId}
+                description={description}
+                multisigName={multisigName}
+                multisigAccountId={multisigHopAccountId as AccountId | undefined}
+                onDescriptionChanged={createDraftModel.descriptionChanged}
+              />
+            )}
+          </div>
         </Modal.Content>
 
         <Modal.Footer align="between">
