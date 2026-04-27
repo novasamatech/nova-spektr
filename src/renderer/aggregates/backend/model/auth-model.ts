@@ -3,7 +3,8 @@ import { t } from 'i18next';
 import { interval, once } from 'patronum';
 import { toast } from 'sonner';
 
-import { RelayChains, assert } from '@/shared/lib/utils';
+import { persist } from '@/shared/api/storage';
+import { RelayChains, assert, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { backendAuthService } from '@/domains/backend';
 import { type AnyAccount, accountService } from '@/domains/network';
@@ -39,6 +40,7 @@ const signConfirmed = createEvent();
 const connectTriggered = createEvent();
 const modalClosed = createEvent();
 const signingCancelled = createEvent();
+const sessionExpiryDetected = createEvent();
 
 // Stores
 const $authState = createStore<AuthState | null>(null);
@@ -47,6 +49,9 @@ const $selectedAccountId = createStore<AccountId | null>(null);
 const $error = createStore<string | null>(null);
 const $connectionResult = createStore<ConnectionResult>({ status: 'idle' });
 const $challengeId = createStore<string | null>(null);
+
+const $lastAuthedAccountId = createStore<AccountId | null>(null);
+persist({ store: $lastAuthedAccountId, key: 'address-book-last-authed-account-id' });
 
 const $isAuthenticated = $authState.map(state => state !== null);
 
@@ -150,12 +155,21 @@ $authStep.on(signInClicked, () => 'selectAccount');
 $selectedAccountId.on(signInClicked, () => null);
 $error.on(signInClicked, () => null);
 
-// Auto-select first available account when nothing is selected
 sample({
   clock: [signInClicked, backendConfigurationModel.events.modalOpened, backendConfigurationModel.events.editStarted],
-  source: { accounts: $signableAccounts, selectedId: $selectedAccountId },
+  source: {
+    accounts: $signableAccounts,
+    selectedId: $selectedAccountId,
+    authState: $authState,
+    lastAuthedId: $lastAuthedAccountId,
+  },
   filter: ({ accounts, selectedId }) => accounts.length > 0 && selectedId === null,
-  fn: ({ accounts }) => accounts[0]!.accountId,
+  fn: ({ accounts, authState, lastAuthedId }) => {
+    const priorId = authState?.accountId ?? lastAuthedId;
+    const prior = priorId ? accounts.find(a => a.accountId === priorId) : undefined;
+
+    return (prior ?? accounts[0]!).accountId;
+  },
   target: accountSelected,
 });
 
@@ -286,6 +300,15 @@ sample({
 
 $authState.on(logoutFx.finally, () => null);
 
+sample({
+  clock: $authState,
+  filter: state => state !== null,
+  fn: state => state!.accountId,
+  target: $lastAuthedAccountId,
+});
+
+$lastAuthedAccountId.on([logoutFx.finally, backendConfigurationModel.events.urlCleared], () => null);
+
 // Wiring: urlCleared → clear auth state + logout
 sample({
   clock: backendConfigurationModel.events.urlCleared,
@@ -316,10 +339,11 @@ sample({
   filter: (_accounts, sessionData) => sessionData !== null,
   fn: (accounts, sessionData): AuthState => {
     assert(sessionData);
-    const match = accounts.find(a => a.accountId === sessionData.accountId);
+    const accountId = toAccountId(sessionData.accountId);
+    const match = accounts.find(a => a.accountId === accountId);
 
     return {
-      accountId: sessionData.accountId as AccountId,
+      accountId,
       accountName: match?.name ?? '',
       permissions: sessionData.permissions,
     };
@@ -358,6 +382,7 @@ sample({
 });
 
 $isSessionExpired.on(checkSessionFx.fail, () => true);
+$isSessionExpired.on(sessionExpiryDetected, () => true);
 $isSessionExpired.on(
   [verifySignatureFx.done, signOutClicked, backendConfigurationModel.events.urlCleared],
   () => false,
@@ -400,6 +425,7 @@ export const authModel = {
     connectTriggered,
     modalClosed,
     sessionExpired,
+    sessionExpiryDetected,
     signingCancelled,
   },
 
