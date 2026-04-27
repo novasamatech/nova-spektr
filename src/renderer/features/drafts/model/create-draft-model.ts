@@ -1,33 +1,15 @@
-import { isHex } from '@polkadot/util';
 import { combine, createEvent, createStore, sample } from 'effector';
 
-import { type Address, type Chain, type ChainId, type WalletType } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type Chain, type ChainId } from '@/shared/core';
+import { isHex } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 
-export type Step = 'call-data' | 'select-multisig' | 'confirm';
+import { graphModel } from './graph-model';
+import { pathModel } from './path-model';
 
-export const STEPS_ORDER: Step[] = ['call-data', 'select-multisig', 'confirm'];
+export type Step = 'call-data' | 'select-path' | 'confirm';
 
-export type DraftAccountOption = {
-  accountId: AccountId;
-  name: string;
-  chainId?: ChainId;
-  signatories?: AccountId[];
-  threshold?: number;
-  walletType: WalletType | null;
-  address: Address;
-  /**
-   * True when this contact is not a multisig itself, but at least one multisig
-   * can sign on its behalf (proxy relationship).
-   */
-  isProxy: boolean;
-  /**
-   * AccountIds of multisigs (present in address book) that can sign for this
-   * contact via proxy.
-   */
-  signerMultisigIds?: AccountId[];
-};
+export const STEPS_ORDER: Step[] = ['call-data', 'select-path', 'confirm'];
 
 export type DraftSeed = {
   callData?: string;
@@ -46,8 +28,6 @@ const skipPressed = createEvent();
 const callDataChanged = createEvent<string>();
 const inputModeChanged = createEvent<'paste' | 'build'>();
 const chainSelected = createEvent<Chain | null>();
-const accountSelected = createEvent<DraftAccountOption | null>();
-const proxyMultisigSelected = createEvent<DraftAccountOption | null>();
 const descriptionChanged = createEvent<string>();
 
 const advance = (s: Step) => STEPS_ORDER[Math.min(STEPS_ORDER.indexOf(s) + 1, STEPS_ORDER.length - 1)] ?? s;
@@ -76,17 +56,6 @@ const $inputMode = createStore<'paste' | 'build'>('paste')
 
 const $selectedChain = createStore<Chain | null>(null)
   .on(chainSelected, (_, c) => c)
-  .reset(modalClosed);
-
-const $selectedAccount = createStore<DraftAccountOption | null>(null)
-  .on(accountSelected, (_, a) => a)
-  .on(chainSelected, () => null)
-  .reset(modalClosed);
-
-const $selectedMultisigForProxy = createStore<DraftAccountOption | null>(null)
-  .on(proxyMultisigSelected, (_, a) => a)
-  .on(accountSelected, () => null)
-  .on(chainSelected, () => null)
   .reset(modalClosed);
 
 const $description = createStore<string>('')
@@ -122,43 +91,43 @@ sample({
   target: $inputMode,
 });
 
-const $effectiveChain = combine(
-  { account: $selectedAccount, chain: $selectedChain, chains: networkModel.$chains },
-  ({ account, chain, chains }) => (account?.chainId ? (chains[account.chainId] ?? null) : chain),
-);
+sample({
+  clock: [chainSelected, modalClosed],
+  source: pathModel.$path,
+  filter: (path) => path.length > 0,
+  target: pathModel.pathReset,
+});
 
-const $isProxySelected = $selectedAccount.map((acc) => !!acc?.isProxy);
+sample({ clock: modalClosed, target: graphModel.cachesCleared });
 
 const $callDataErrorKey = $callData.map((hex) =>
   hex.length > 0 && !isHex(hex) ? ('operations.drafts.callDataErrorHex' as const) : null,
 );
 
 const $isDirty = combine(
-  { chain: $selectedChain, account: $selectedAccount, callData: $callData, description: $description },
-  ({ chain, account, callData, description }) =>
-    chain !== null || account !== null || callData.length > 0 || description.length > 0,
+  { chain: $selectedChain, path: pathModel.$path, callData: $callData, description: $description },
+  ({ chain, path, callData, description }) =>
+    chain !== null || path.length > 0 || callData.length > 0 || description.length > 0,
 );
 
 const $canContinue = combine(
   {
     step: $activeStep,
-    chain: $effectiveChain,
+    chain: $selectedChain,
     callData: $callData,
     errorKey: $callDataErrorKey,
-    account: $selectedAccount,
-    proxyMultisig: $selectedMultisigForProxy,
-    isProxy: $isProxySelected,
+    pathComplete: pathModel.$isComplete,
     description: $description,
   },
-  ({ step, chain, callData, errorKey, account, proxyMultisig, isProxy, description }) => {
+  ({ step, chain, callData, errorKey, pathComplete, description }) => {
     if (step === 'call-data') return !!chain && callData.length > 0 && errorKey === null;
-    if (step === 'select-multisig') return !!account && (!isProxy || !!proxyMultisig);
+    if (step === 'select-path') return pathComplete;
 
     return step === 'confirm' && description.trim().length > 0;
   },
 );
 
-const $canSkip = combine($activeStep, $effectiveChain, (step, chain) => step === 'call-data' && !!chain);
+const $canSkip = combine($activeStep, $selectedChain, (step, chain) => step === 'call-data' && !!chain);
 
 export const createDraftModel = {
   createDraftRequested,
@@ -170,19 +139,13 @@ export const createDraftModel = {
   callDataChanged,
   inputModeChanged,
   chainSelected,
-  accountSelected,
-  proxyMultisigSelected,
   descriptionChanged,
   $isOpen,
   $activeStep,
   $callData,
   $inputMode,
   $selectedChain,
-  $selectedAccount,
-  $selectedMultisigForProxy,
   $description,
-  $effectiveChain,
-  $isProxySelected,
   $callDataErrorKey,
   $isDirty,
   $canContinue,

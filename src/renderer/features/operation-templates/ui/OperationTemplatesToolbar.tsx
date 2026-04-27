@@ -47,7 +47,7 @@ export const OperationTemplatesToolbar = ({ api, chainId, callData, specVersion,
           transform: open ? `translate(${PANEL_WIDTH}, -50%)` : 'translate(0, -50%)',
         }}
         className={cnTw(
-          'pointer-events-auto fixed top-1/2 z-[55] flex flex-col items-center justify-center gap-y-1.5',
+          'pointer-events-auto absolute top-1/2 z-[55] flex flex-col items-center justify-center gap-y-1.5',
           'h-24 w-5 rounded-r-md border border-l-0 border-container-border bg-white py-2 text-icon-default shadow-modal',
           'transition-[transform,background-color,color] duration-200 ease-out outline-none',
           'hover:bg-block-background-hover hover:text-icon-hover',
@@ -63,7 +63,7 @@ export const OperationTemplatesToolbar = ({ api, chainId, callData, specVersion,
 
       <div
         style={{ left: `calc(50% + ${MODAL_HALF})` }}
-        className="pointer-events-none fixed top-0 right-0 bottom-0 z-[54] overflow-hidden"
+        className="pointer-events-none absolute top-0 right-0 bottom-0 z-[54] overflow-hidden"
       >
         <div
           style={{
