@@ -316,7 +316,6 @@ const rootValidateFileFx = createEffect<ValidateFileParams, ValidateFileResults,
 
 const validateFileFx = attach({
   source: {
-    chain: form.fields.chain.$value,
     minStartingBlock: $minStartingBlock,
     minVestedTransfer: $minVestedTransfer,
     maxVestingSchedules: $maxVestingSchedules,
@@ -324,10 +323,9 @@ const validateFileFx = attach({
   },
   mapParams: (
     parsedFile: VestingScheduleRaw[],
-    { chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules },
+    { minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules },
   ) => {
     assert(parsedFile);
-    assert(chain);
     assert(minStartingBlock);
     assert(minVestedTransfer);
     assert(maxVestingSchedules);
@@ -336,7 +334,6 @@ const validateFileFx = attach({
     return {
       parsedFile,
       validationSchemaOptions: {
-        chain,
         minStartingBlock,
         minVestedTransfer,
         maxVestingSchedules,
