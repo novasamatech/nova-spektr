@@ -135,19 +135,19 @@ export const DraftRow = ({
     <div
       ref={rowRef}
       className={cnTw(
-        'mx-0.5 bg-block-background-default',
+        'mx-0.5 overflow-hidden bg-block-background-default',
         'rounded transition-shadow hover:shadow-card-shadow',
         isHighlighted && 'ring-2 ring-icon-accent',
       )}
     >
-      <div className="flex h-[52px] w-full items-center px-4 py-2">
+      <div className="flex min-h-[52px] w-full min-w-0 items-start px-4 py-2">
         {/* Icon + description */}
-        <div className="flex min-w-0 flex-[3] items-center gap-x-3">
+        <div className="flex min-w-0 flex-[3] items-start gap-x-3">
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-icon-accent/15">
             <Icon name="document" size={16} className="text-icon-accent" />
           </div>
           <div className="flex min-w-0 flex-1 flex-col">
-            <FootnoteText className="truncate font-medium text-text-primary">
+            <FootnoteText className="max-w-[350px] font-medium break-words text-text-primary">
               {draft.description || (
                 <span className="text-text-tertiary italic">{t('operations.drafts.noDescription')}</span>
               )}
