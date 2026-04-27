@@ -144,10 +144,15 @@ export const StepPath = ({ chainId }: Props) => {
               ) : (
                 nextOptions.map((opt, idx) => (
                   <NextOptionRow
-                    key={`${opt.kind}-${opt.accountId}-${idx}`}
+                    key={`${opt.kind}-${opt.accountId}-${opt.kind === 'multisig' ? (opt.proxyType ?? '') : ''}-${idx}`}
                     option={opt}
                     selected={false}
-                    onClick={() => pathModel.pathNodeAppended({ kind: opt.kind, accountId: opt.accountId })}
+                    onClick={() => {
+                      if (opt.kind === 'multisig' && opt.proxyType && lastNode?.kind === 'proxied') {
+                        pathModel.pathSourceProxyTypeSet(opt.proxyType);
+                      }
+                      pathModel.pathNodeAppended({ kind: opt.kind, accountId: opt.accountId });
+                    }}
                   />
                 ))
               )}

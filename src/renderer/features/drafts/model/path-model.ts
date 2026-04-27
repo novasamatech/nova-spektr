@@ -7,6 +7,7 @@ const pathReset = createEvent();
 const pathNodeAppended = createEvent<PathNode>();
 const pathTruncatedTo = createEvent<number>();
 const pathSeeded = createEvent<PathNode[]>();
+const pathSourceProxyTypeSet = createEvent<string>();
 
 const $path = createStore<PathNode[]>([])
   .on(pathReset, () => [])
@@ -20,6 +21,11 @@ const $path = createStore<PathNode[]>([])
     if (path.length >= MAX_PATH_DEPTH) return path;
     if (!isCycleFreeAppend(path, next)) return path;
     return [...path, next];
+  })
+  .on(pathSourceProxyTypeSet, (path, proxyType) => {
+    const first = path[0];
+    if (!first || first.kind !== 'proxied') return path;
+    return [{ ...first, proxyType }, ...path.slice(1)];
   });
 
 const $isComplete = $path.map((path) => path.length > 0 && path[path.length - 1]!.kind === 'signer');
@@ -33,6 +39,7 @@ export const pathModel = {
   pathNodeAppended,
   pathTruncatedTo,
   pathSeeded,
+  pathSourceProxyTypeSet,
   $path,
   $isComplete,
   $lastNode,

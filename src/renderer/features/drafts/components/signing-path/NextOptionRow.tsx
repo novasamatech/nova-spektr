@@ -25,6 +25,8 @@ export const NextOptionRow = ({ option, selected, onClick, trailing }: NextOptio
 
   const walletType = option.kind === 'multisig' ? WalletType.MULTISIG : null;
 
+  const proxyType = option.kind === 'multisig' ? option.proxyType : undefined;
+
   return (
     <button
       type="button"
@@ -42,6 +44,11 @@ export const NextOptionRow = ({ option, selected, onClick, trailing }: NextOptio
         <BodyText className="truncate text-text-primary">{option.name}</BodyText>
         <HelpText className="truncate text-text-tertiary">{subtitle}</HelpText>
       </div>
+      {proxyType && (
+        <span className="shrink-0 rounded-full border border-icon-accent/30 bg-icon-accent/8 px-2 py-0.5 text-help-text text-icon-accent">
+          {proxyType}
+        </span>
+      )}
       {trailing}
       <div
         className={cnTw(

@@ -12,7 +12,7 @@ import { type OperationTemplate } from '@/domains/operation-templates';
 
 import { TemplatesPanel } from './TemplatesPanel';
 
-const MODAL_HALF = '13.75rem'; // w-modal / 2 — see tailwind.config.ts
+const DEFAULT_MODAL_WIDTH = '27.5rem'; // w-modal — see tailwind.config.ts
 const PANEL_WIDTH = '22rem';
 
 type Props = {
@@ -21,9 +21,19 @@ type Props = {
   callData: string;
   specVersion: number | null;
   onApply: (callData: string) => void;
+  /** Width of the parent modal (must match its Tailwind width). Defaults to the
+`md` modal width. */
+  modalWidth?: string;
 };
 
-export const OperationTemplatesToolbar = ({ api, chainId, callData, specVersion, onApply }: Props) => {
+export const OperationTemplatesToolbar = ({
+  api,
+  chainId,
+  callData,
+  specVersion,
+  onApply,
+  modalWidth = DEFAULT_MODAL_WIDTH,
+}: Props) => {
   const { t } = useI18n();
   const { toast } = useNotification();
   const { portalContainer } = useTheme();
@@ -43,7 +53,7 @@ export const OperationTemplatesToolbar = ({ api, chainId, callData, specVersion,
         type="button"
         aria-label={t('operationTemplates.panelTitle')}
         style={{
-          left: `calc(50% + ${MODAL_HALF})`,
+          left: `calc(50% + ${modalWidth} / 2)`,
           transform: open ? `translate(${PANEL_WIDTH}, -50%)` : 'translate(0, -50%)',
         }}
         className={cnTw(
@@ -62,7 +72,7 @@ export const OperationTemplatesToolbar = ({ api, chainId, callData, specVersion,
       </button>
 
       <div
-        style={{ left: `calc(50% + ${MODAL_HALF})` }}
+        style={{ left: `calc(50% + ${modalWidth} / 2)` }}
         className="pointer-events-none absolute top-0 right-0 bottom-0 z-[54] overflow-hidden"
       >
         <div

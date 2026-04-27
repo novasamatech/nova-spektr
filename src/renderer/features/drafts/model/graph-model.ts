@@ -2,7 +2,7 @@ import { type Store, combine, createEffect, createEvent, createStore, sample } f
 
 import { type ChainId, type WalletType } from '@/shared/core';
 import { type BackendContact } from '@/shared/core/types/contact';
-import { type ProxyAccount } from '@/shared/core/types/proxy';
+import { type ProxyAccount, type ProxyType } from '@/shared/core/types/proxy';
 import { dictionary } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
@@ -17,7 +17,14 @@ export type PathSource = {
 };
 
 export type PathNextOption =
-  | { kind: 'multisig'; accountId: AccountId; name: string; threshold?: number; signatoriesCount?: number }
+  | {
+      kind: 'multisig';
+      accountId: AccountId;
+      name: string;
+      threshold?: number;
+      signatoriesCount?: number;
+      proxyType?: ProxyType;
+    }
   | { kind: 'signer'; accountId: AccountId; name: string };
 
 const isMultisigContact = (c: BackendContact): boolean =>
@@ -67,12 +74,17 @@ function buildNextOptions(
 
   if (node.kind === 'proxied') {
     const signers = proxies[nodeAccountId] ?? [];
+    const seen = new Set<string>();
 
     return signers
       .filter((p) => p.chainId === chainId)
       .flatMap((p) => {
         const contact = contactByAccountId.get(p.accountId);
         if (!contact || !isMultisigContact(contact)) return [];
+
+        const dedupKey = `${contact.accountId}|${p.proxyType}|${p.delay}`;
+        if (seen.has(dedupKey)) return [];
+        seen.add(dedupKey);
 
         return [
           {
@@ -81,6 +93,7 @@ function buildNextOptions(
             name: contact.name,
             threshold: contact.threshold ?? undefined,
             signatoriesCount: contact.signatories?.length ?? undefined,
+            proxyType: p.proxyType,
           },
         ];
       });

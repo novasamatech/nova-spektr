@@ -94,6 +94,7 @@ export const StepTransaction = ({
             chainId={selectedChain.chainId}
             callData={callData}
             specVersion={specVersion}
+            modalWidth="37rem"
             onApply={onTemplateApply}
           />
 
