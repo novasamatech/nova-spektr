@@ -10,7 +10,7 @@ type SectionCardProps = {
 };
 
 export const SectionCard = ({ number, title, description, children }: SectionCardProps) => (
-  <div className="flex flex-col gap-y-4 rounded-lg border border-container-border bg-white p-5">
+  <div className="flex flex-col gap-y-3 rounded-lg border border-container-border bg-white p-3">
     <div className="flex items-start gap-3">
       <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-icon-accent/12">
         <CaptionText className="text-icon-accent">{number}</CaptionText>

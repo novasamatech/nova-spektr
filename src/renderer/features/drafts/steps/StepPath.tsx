@@ -73,7 +73,7 @@ export const StepPath = ({ chainId }: Props) => {
 
   return (
     <div className="flex min-h-[520px] flex-col gap-y-4">
-      {path.length > 0 && <PathBreadcrumb path={path} onNodeClick={(i) => pathModel.pathTruncatedTo(i)} />}
+      {path.length > 0 && <PathBreadcrumb path={path} onNodeClick={(i) => pathModel.pathTruncatedTo(i - 1)} />}
 
       {path.length === 0 ? (
         <SectionCard

@@ -190,7 +190,7 @@ export const CreateDraftModal = () => {
 
   return (
     <>
-      <Modal size="md" isOpen={isOpen} onToggle={handleToggle}>
+      <Modal size="mdlg" isOpen={isOpen} onToggle={handleToggle}>
         <Modal.Title close>{t('operations.drafts.createNew')}</Modal.Title>
         <StepIndicator step={activeStep} />
         <Modal.Content>

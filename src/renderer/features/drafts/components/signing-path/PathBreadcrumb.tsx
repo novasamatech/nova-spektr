@@ -87,7 +87,7 @@ export const PathBreadcrumb = ({ path, size = 'sm', onNodeClick }: Props) => {
   }
 
   return (
-    <div className="flex items-stretch gap-2 rounded-lg bg-block-background-default p-3">
+    <div className="flex items-stretch gap-2 rounded-lg bg-block-background-default">
       {buildBreadcrumbElements(views, size, onNodeClick)}
     </div>
   );
