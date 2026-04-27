@@ -2532,6 +2532,7 @@
       "summaryMultisig": "Multisig",
       "summaryThreshold": "Threshold",
       "summaryOperation": "Operation",
+      "summaryTransaction": "Transaction",
       "summaryAmount": "Amount",
       "createDraftButton": "Create",
       "createSuccess": "Draft created",

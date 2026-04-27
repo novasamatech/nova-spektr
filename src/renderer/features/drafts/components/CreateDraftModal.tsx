@@ -13,7 +13,7 @@ import { HttpError, draftsResource, draftsService } from '@/domains/backend';
 import { networkModel, useApi } from '@/entities/network';
 import { decodeCallData, findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { backendConfigurationModel } from '@/aggregates/backend';
-import { operationTitleTransformer } from '@/features/multisig-operations';
+import { operationIconTransformer, operationTitleTransformer } from '@/features/multisig-operations';
 import { tryDecodeCallData } from '../lib/decode-call-data';
 import { getDestinationAccountId } from '../lib/get-destination-account-id';
 import { deriveInitiatorAccountId, deriveMultisigAccountId, isValidPath } from '../lib/path-validation';
@@ -111,6 +111,12 @@ export const CreateDraftModal = () => {
     chains,
     asset: txAsset,
     t,
+  });
+
+  const operationIcon = useTransformer(operationIconTransformer, {
+    operation: (decodedTransaction
+      ? { transaction: decodedTransaction, chainId: selectedChain?.chainId }
+      : { transaction: null, chainId: selectedChain?.chainId }) as never,
   });
 
   const titleData = useMemo(() => {
@@ -219,6 +225,7 @@ export const CreateDraftModal = () => {
                 callData={callData}
                 decodedCallData={decodedCallData as object | null}
                 titleData={titleData}
+                operationIcon={operationIcon ?? null}
                 destinationAccountId={destinationAccountId}
                 description={description}
                 multisigName={multisigName}

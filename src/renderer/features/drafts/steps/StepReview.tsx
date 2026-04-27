@@ -1,7 +1,7 @@
 import { type Chain, type WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { CaptionText, FootnoteText, HelpText, Icon } from '@/shared/ui';
+import { type IconNames, CaptionText, FootnoteText, HelpText, Icon, Separator, SmallTitleText } from '@/shared/ui';
 import { Field, TextArea } from '@/shared/ui-kit';
 import { type PathNode } from '@/domains/backend';
 import { type OperationTitle } from '@/features/multisig-operations';
@@ -15,6 +15,7 @@ type Props = {
   callData: string;
   decodedCallData: object | null;
   titleData: OperationTitle | null;
+  operationIcon: IconNames | null;
   destinationAccountId: AccountId | null;
   description: string;
   onDescriptionChanged: (v: string) => void;
@@ -31,6 +32,7 @@ export const StepReview = ({
   callData,
   decodedCallData,
   titleData,
+  operationIcon,
   destinationAccountId,
   description,
   onDescriptionChanged,
@@ -40,6 +42,9 @@ export const StepReview = ({
   threshold,
 }: Props) => {
   const { t } = useI18n();
+
+  // Render the operation title as a pill in the card header — strip it from the body rows.
+  const summaryTitleData = titleData ? { ...titleData, title: undefined } : null;
 
   return (
     <div className="flex flex-col gap-5">
@@ -75,17 +80,31 @@ export const StepReview = ({
         />
       </Field>
 
-      <DraftSummary
-        multisigName={multisigName ?? ''}
-        multisigAccountId={multisigAccountId}
-        walletType={walletType ?? undefined}
-        chain={chain}
-        titleData={titleData}
-        destinationAccountId={destinationAccountId}
-        callData={callData || undefined}
-        jsonArgs={decodedCallData}
-        threshold={threshold}
-      />
+      <div className="flex flex-col rounded-lg border border-container-border bg-white">
+        <div className="flex items-center justify-between gap-3 px-4 py-3.5">
+          <SmallTitleText className="text-text-primary">{t('operations.drafts.summaryTransaction')}</SmallTitleText>
+          {titleData?.title && (
+            <div className="flex min-w-0 items-center gap-1.5 rounded-full bg-icon-accent/8 px-2.5 py-1">
+              <Icon name={operationIcon ?? 'unknownMst'} size={12} className="shrink-0 text-icon-accent" />
+              <CaptionText className="truncate text-icon-accent uppercase">{titleData.title}</CaptionText>
+            </div>
+          )}
+        </div>
+        <Separator />
+        <div className="px-4 py-3">
+          <DraftSummary
+            multisigName={multisigName ?? ''}
+            multisigAccountId={multisigAccountId}
+            walletType={walletType ?? undefined}
+            chain={chain}
+            titleData={summaryTitleData}
+            destinationAccountId={destinationAccountId}
+            callData={callData || undefined}
+            jsonArgs={decodedCallData}
+            threshold={threshold}
+          />
+        </div>
+      </div>
 
       {!callData && (
         <FootnoteText className="text-center text-text-tertiary">
