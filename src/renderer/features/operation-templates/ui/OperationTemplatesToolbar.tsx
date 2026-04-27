@@ -21,8 +21,10 @@ type Props = {
   callData: string;
   specVersion: number | null;
   onApply: (callData: string) => void;
-  /** Width of the parent modal (must match its Tailwind width). Defaults to the
-`md` modal width. */
+  /**
+   * Width of the parent modal (must match its Tailwind width). Defaults to the
+   * `md` modal width.
+   */
   modalWidth?: string;
 };
 

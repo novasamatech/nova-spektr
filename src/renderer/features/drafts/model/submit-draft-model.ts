@@ -22,6 +22,7 @@ import {
   type AnyTransaction,
   type EncodedTransaction,
   accountService,
+  multisigOperationService,
   transactionService,
 } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -150,10 +151,8 @@ const $signatories = createSignatoriesStore({
  * account, independent of the wallet's account-graph traversal.
  */
 const $initiatorUnavailable = combine(
-  $draft,
-  $signatories,
-  walletModel.$availableAccounts,
-  (draft, signatories, availableAccounts) => {
+  { draft: $draft, signatories: $signatories, availableAccounts: walletModel.$availableAccounts },
+  ({ draft, signatories, availableAccounts }) => {
     if (!draft?.initiatorAccountId) return false;
 
     if (Array.isArray(draft.signingPath) && draft.signingPath.length > 0) {
@@ -193,13 +192,10 @@ sample({
     Array.isArray(draft.signingPath) &&
     draft.signingPath.length > 0 &&
     nonNullable(draft.initiatorAccountId) &&
-    accounts.some(
-      (a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a),
-    ),
+    accounts.some((a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a)),
   fn: (draft, accounts) =>
-    accounts.find(
-      (a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a),
-    ) ?? null,
+    accounts.find((a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a)) ??
+    null,
   target: $signatory,
 });
 
@@ -410,13 +406,20 @@ sample({
     const successResult = results.find((r) => r.result === ExtrinsicResult.SUCCESS) as SuccessResult;
     const timepoint = successResult.params.timepoint;
 
-    // Compute callHash from the original call data
+    // The multisig event records the hash of as_multi's `call` argument — i.e.
+    // the multisig's *child* call. For plain multisig drafts that's the bare
+    // call data; for flex/proxy drafts that's `proxy.proxy(real, callData)`.
+    // Find the child via the wrapped extrinsic so flex matches correctly.
     let callHash = '';
     if (s.wrappedExtrinsic && s.api) {
       try {
-        callHash = s.api.createType('Call', s.draft!.callData).hash.toHex();
+        const innerCall = multisigOperationService.findInnerExtrinsicCall(s.wrappedExtrinsic);
+        if (innerCall) {
+          callHash = innerCall.hash.toHex();
+        } else {
+          callHash = s.api.createType('Call', s.draft!.callData).hash.toHex();
+        }
       } catch {
-        // fallback: use extrinsic hash
         callHash = successResult.params.extrinsicHash;
       }
     }
