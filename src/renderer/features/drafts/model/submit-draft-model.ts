@@ -492,6 +492,19 @@ sample({
   target: showSyncErrorToastFx,
 });
 
+// Remove draft from submitted set on sync failure so it stays visible and retryable
+sample({
+  clock: postSubmitFx.fail,
+  source: $submittedDraftIds,
+  fn: (current, { params }) => {
+    const next = new Set(current);
+    next.delete(params.draft.id);
+
+    return next;
+  },
+  target: $submittedDraftIds,
+});
+
 // --- Exports ---
 
 export const submitDraftModel = {

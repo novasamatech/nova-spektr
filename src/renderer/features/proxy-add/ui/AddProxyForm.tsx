@@ -34,10 +34,14 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { ProxyPopover } from '@/entities/proxy';
+import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts → accounts-structure → wallet-details → proxy-add
+import { InitiateDraftButton } from '@/features/drafts/components/InitiateDraftButton';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/widgets/transaction-fee';
+import { addProxyModel } from '../model/add-proxy-model';
 import { formModel } from '../model/form-model';
 
 const { services, constants } = walletSelectFeature;
@@ -525,9 +529,22 @@ const ActionSection = () => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const coreTx = useUnit(formModel.$coreTx);
+  const api = useUnit(formModel.$api);
+  const {
+    fields: { chain },
+  } = useForm(formModel.form);
+
+  const draftCallData = transactionService.getCallDataHex(coreTx, api);
 
   return (
-    <div className="mt-4 flex items-center justify-end">
+    <div className="mt-4 flex items-center justify-end gap-3">
+      <InitiateDraftButton
+        callData={draftCallData}
+        chainId={chain.value?.chainId}
+        source="proxy-add"
+        onDraftCreated={addProxyModel.output.flowFinished}
+      />
       <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
         {t('operation.continueButton')}
       </Button>
