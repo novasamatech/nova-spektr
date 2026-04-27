@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { type ChainId, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -23,6 +23,8 @@ export const StepPath = ({ chainId }: Props) => {
   const path = useUnit(pathModel.$path);
   const isComplete = useUnit(pathModel.$isComplete);
   const lastNode = useUnit(pathModel.$lastNode);
+
+  const [autoOpenSource, setAutoOpenSource] = useState(false);
 
   const sourcesStore = useMemo(() => graphModel.$sourcesFor(chainId), [chainId]);
   const sources = useUnit(sourcesStore);
@@ -73,7 +75,15 @@ export const StepPath = ({ chainId }: Props) => {
 
   return (
     <div className="flex min-h-[520px] flex-col gap-y-4">
-      {path.length > 0 && <PathBreadcrumb path={path} onNodeClick={(i) => pathModel.pathTruncatedTo(i - 1)} />}
+      {path.length > 0 && (
+        <PathBreadcrumb
+          path={path}
+          onNodeClick={(i) => {
+            if (i === 0) setAutoOpenSource(true);
+            pathModel.pathTruncatedTo(i - 1);
+          }}
+        />
+      )}
 
       {path.length === 0 ? (
         <SectionCard
@@ -84,6 +94,7 @@ export const StepPath = ({ chainId }: Props) => {
           <Select
             placeholder={t('operations.drafts.signingPath.selectSource')}
             value={selectedSourceId}
+            defaultOpen={autoOpenSource}
             onChange={handleSourceChange}
           >
             {sources.map((source) => {
