@@ -3,6 +3,16 @@ import { z } from 'zod';
 import { authFetch, parseResponse } from '@/shared/api/backend-fetch';
 import { HttpError } from '../contacts/service';
 
+export const pathNodeKindSchema = z.enum(['proxied', 'multisig', 'signer']);
+
+export const pathNodeSchema = z.object({
+  kind: pathNodeKindSchema,
+  accountId: z.string(),
+  proxyType: z.string().optional(),
+});
+
+export type PathNode = z.infer<typeof pathNodeSchema>;
+
 const backendDraftSchema = z.object({
   id: z.string(),
   multisigAccountId: z.string().nullable(),
@@ -16,6 +26,8 @@ const backendDraftSchema = z.object({
   createdByContact: z.object({ name: z.string(), accountId: z.string() }).nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  signingPath: z.array(pathNodeSchema).default([]),
+  initiatorAccountId: z.string().nullable().optional().default(null),
 });
 
 export type Draft = z.infer<typeof backendDraftSchema>;
@@ -33,6 +45,8 @@ async function createDraft(
     chainId: string;
     multisigAccountId?: string;
     proxyAccountId?: string;
+    signingPath?: PathNode[];
+    initiatorAccountId?: string;
     callData?: string;
     description?: string;
   },
@@ -66,6 +80,8 @@ async function updateDraft(
     chainId?: string;
     multisigAccountId?: string;
     proxyAccountId?: string;
+    signingPath?: PathNode[];
+    initiatorAccountId?: string;
   },
 ): Promise<BackendDraft> {
   const result = await authFetch(`${baseUrl}/draft-operations/${id}`, {

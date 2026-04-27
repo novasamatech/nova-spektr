@@ -398,6 +398,8 @@ export const revokeDelegationModel = {
   $initiatorWallet: walletSelect.$selectedWallet,
   $chain: networkSelectorModel.$governanceChain,
   $tx,
+  $coreTx,
+  $api,
   $signatories,
   $signatory,
   $network: networkSelectorModel.$network,

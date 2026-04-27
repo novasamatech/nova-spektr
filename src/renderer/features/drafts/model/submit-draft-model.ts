@@ -17,7 +17,14 @@ import {
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
 import { type Draft, operationDescriptionsResource, operationsService } from '@/domains/backend';
-import { type AnyAccount, type AnyTransaction, type EncodedTransaction, transactionService } from '@/domains/network';
+import {
+  type AnyAccount,
+  type AnyTransaction,
+  type EncodedTransaction,
+  accountService,
+  multisigOperationService,
+  transactionService,
+} from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
@@ -36,8 +43,10 @@ enum Step {
 type FlowInput = {
   draft: Draft;
   initiator: AnyAccount | null;
-  /** Account shown in the confirm UI (flex multisig or regular multisig). Falls
-back to initiator. */
+  /**
+   * Account shown in the confirm UI (flex multisig or regular multisig). Falls
+   * back to initiator.
+   */
   displayInitiator?: AnyAccount | null;
   chain: Chain;
 };
@@ -131,6 +140,63 @@ const $signatories = createSignatoriesStore({
   chain: $chain,
   accounts: walletModel.$availableAccounts,
   initiator: $initiator,
+});
+
+// --- Initiator rehydration from signingPath ---
+
+/**
+ * True iff the draft has an initiatorAccountId but the user can no longer sign
+ * with it (so they must pick a replacement). For path-driven drafts, the
+ * canonical signer is the path's leaf — accept it if it matches any wallet
+ * account, independent of the wallet's account-graph traversal.
+ */
+const $initiatorUnavailable = combine(
+  { draft: $draft, signatories: $signatories, availableAccounts: walletModel.$availableAccounts },
+  ({ draft, signatories, availableAccounts }) => {
+    if (!draft?.initiatorAccountId) return false;
+
+    if (Array.isArray(draft.signingPath) && draft.signingPath.length > 0) {
+      return !availableAccounts.some(
+        (a) => a.accountId === draft.initiatorAccountId && accountService.hasPermissionToMakeActions(a),
+      );
+    }
+
+    if (signatories.length === 0) return false;
+
+    return !signatories.some((s) => s.accountId === draft.initiatorAccountId);
+  },
+);
+
+// Pre-select the stored initiator when it is still a valid signatory
+sample({
+  clock: $signatories,
+  source: $draft,
+  filter: (draft, signatories) =>
+    nonNullable(draft?.initiatorAccountId) && signatories.some((s) => s.accountId === draft!.initiatorAccountId),
+  fn: (draft, signatories) => signatories.find((s) => s.accountId === draft!.initiatorAccountId) ?? null,
+  target: $signatory,
+});
+
+// Path-driven drafts: pre-select the signatory directly from the wallet, so
+// the user can sign even if the wallet's account-graph traversal doesn't
+// surface this leaf (e.g., proxy hop topology differs from the saved path).
+// Filter to accounts that can actually sign — `$availableAccounts` includes
+// watch-only entries, and a duplicate accountId imported under a watch-only
+// wallet would otherwise be picked first and route the flow to the watch-only
+// dead-end UI.
+sample({
+  clock: walletModel.$availableAccounts,
+  source: $draft,
+  filter: (draft, accounts) =>
+    nonNullable(draft) &&
+    Array.isArray(draft.signingPath) &&
+    draft.signingPath.length > 0 &&
+    nonNullable(draft.initiatorAccountId) &&
+    accounts.some((a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a)),
+  fn: (draft, accounts) =>
+    accounts.find((a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a)) ??
+    null,
+  target: $signatory,
 });
 
 // --- Confirm model ---
@@ -340,13 +406,20 @@ sample({
     const successResult = results.find((r) => r.result === ExtrinsicResult.SUCCESS) as SuccessResult;
     const timepoint = successResult.params.timepoint;
 
-    // Compute callHash from the original call data
+    // The multisig event records the hash of as_multi's `call` argument — i.e.
+    // the multisig's *child* call. For plain multisig drafts that's the bare
+    // call data; for flex/proxy drafts that's `proxy.proxy(real, callData)`.
+    // Find the child via the wrapped extrinsic so flex matches correctly.
     let callHash = '';
     if (s.wrappedExtrinsic && s.api) {
       try {
-        callHash = s.api.createType('Call', s.draft!.callData).hash.toHex();
+        const innerCall = multisigOperationService.findInnerExtrinsicCall(s.wrappedExtrinsic);
+        if (innerCall) {
+          callHash = innerCall.hash.toHex();
+        } else {
+          callHash = s.api.createType('Call', s.draft!.callData).hash.toHex();
+        }
       } catch {
-        // fallback: use extrinsic hash
         callHash = successResult.params.extrinsicHash;
       }
     }
@@ -441,6 +514,7 @@ export const submitDraftModel = {
   $initiator,
   $signatoryStore,
   $signatories,
+  $initiatorUnavailable,
   $fee,
   $wrappedTx,
   $wrappedExtrinsic,

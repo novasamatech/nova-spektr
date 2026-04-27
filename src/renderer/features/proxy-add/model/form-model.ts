@@ -564,6 +564,7 @@ export const formModel = {
   $route,
 
   flowStarted,
+  $coreTx,
   $api,
   $isMultisig,
   $isChainConnected,
