@@ -169,12 +169,14 @@ export const CreateDraftModal = () => {
 
     const multisigAccountId = deriveMultisigAccountId(path) ?? undefined;
     const initiatorAccountId = deriveInitiatorAccountId(path) ?? undefined;
+    const proxyAccountId = path[0]?.kind === 'proxied' ? path[0].accountId : undefined;
 
     setIsSubmitting(true);
     try {
       const response = await draftsService.createDraft(backendUrl, {
         chainId: selectedChain.chainId,
         multisigAccountId,
+        proxyAccountId,
         signingPath: path,
         initiatorAccountId,
         callData: callData || undefined,

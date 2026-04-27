@@ -17,7 +17,13 @@ import {
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
 import { type Draft, operationDescriptionsResource, operationsService } from '@/domains/backend';
-import { type AnyAccount, type AnyTransaction, type EncodedTransaction, transactionService } from '@/domains/network';
+import {
+  type AnyAccount,
+  type AnyTransaction,
+  type EncodedTransaction,
+  accountService,
+  transactionService,
+} from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
@@ -138,16 +144,29 @@ const $signatories = createSignatoriesStore({
 // --- Initiator rehydration from signingPath ---
 
 /**
- * True iff the draft has an initiatorAccountId but that account is no longer
- * among the current signatories (so the user must pick a replacement). False
- * when the draft has no initiatorAccountId or when the account is present.
+ * True iff the draft has an initiatorAccountId but the user can no longer sign
+ * with it (so they must pick a replacement). For path-driven drafts, the
+ * canonical signer is the path's leaf — accept it if it matches any wallet
+ * account, independent of the wallet's account-graph traversal.
  */
-const $initiatorUnavailable = combine($draft, $signatories, (draft, signatories) => {
-  if (!draft?.initiatorAccountId) return false;
-  if (signatories.length === 0) return false;
+const $initiatorUnavailable = combine(
+  $draft,
+  $signatories,
+  walletModel.$availableAccounts,
+  (draft, signatories, availableAccounts) => {
+    if (!draft?.initiatorAccountId) return false;
 
-  return !signatories.some((s) => s.accountId === draft.initiatorAccountId);
-});
+    if (Array.isArray(draft.signingPath) && draft.signingPath.length > 0) {
+      return !availableAccounts.some(
+        (a) => a.accountId === draft.initiatorAccountId && accountService.hasPermissionToMakeActions(a),
+      );
+    }
+
+    if (signatories.length === 0) return false;
+
+    return !signatories.some((s) => s.accountId === draft.initiatorAccountId);
+  },
+);
 
 // Pre-select the stored initiator when it is still a valid signatory
 sample({
@@ -156,6 +175,31 @@ sample({
   filter: (draft, signatories) =>
     nonNullable(draft?.initiatorAccountId) && signatories.some((s) => s.accountId === draft!.initiatorAccountId),
   fn: (draft, signatories) => signatories.find((s) => s.accountId === draft!.initiatorAccountId) ?? null,
+  target: $signatory,
+});
+
+// Path-driven drafts: pre-select the signatory directly from the wallet, so
+// the user can sign even if the wallet's account-graph traversal doesn't
+// surface this leaf (e.g., proxy hop topology differs from the saved path).
+// Filter to accounts that can actually sign — `$availableAccounts` includes
+// watch-only entries, and a duplicate accountId imported under a watch-only
+// wallet would otherwise be picked first and route the flow to the watch-only
+// dead-end UI.
+sample({
+  clock: walletModel.$availableAccounts,
+  source: $draft,
+  filter: (draft, accounts) =>
+    nonNullable(draft) &&
+    Array.isArray(draft.signingPath) &&
+    draft.signingPath.length > 0 &&
+    nonNullable(draft.initiatorAccountId) &&
+    accounts.some(
+      (a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a),
+    ),
+  fn: (draft, accounts) =>
+    accounts.find(
+      (a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a),
+    ) ?? null,
   target: $signatory,
 });
 
