@@ -45,7 +45,7 @@ const nextFromSelectController = createEvent();
 const signingPathConfirmed = createEvent<PathNode[]>();
 const confirmGoBack = createEvent();
 
-const $step = restore(stepChanged, Step.SELECT_CONTROLLER).reset(flow.close);
+const $step = restore(stepChanged, Step.SELECT_CONTROLLER).reset(flow.open).reset(flow.close);
 const $selectedTarget = restore<SelectedTarget | null>(targetSelected, null).reset(flow.open).reset(flow.close);
 const $executionMode = restore<ExecutionMode>(executionModeChanged, 'verified').reset(flow.open).reset(flow.close);
 const $signingPath = restore<PathNode[]>(signingPathConfirmed, []).reset(flow.open).reset(flow.close);
@@ -114,6 +114,18 @@ sample({
   clock: $signatories,
   filter: (signatories) => signatories.length === 1,
   fn: (signatories) => signatories.at(0) ?? null,
+  target: $signatory,
+});
+
+// Interim: when SigningPathStep is still a stub (real path-driven signatory
+// selection is part of follow-up work), default $signatory to the first
+// available signatory once the path is confirmed. This unblocks
+// multi-signatory wallets which otherwise stall silently on Step 3.
+sample({
+  clock: signingPathConfirmed,
+  source: { signatory: $signatory, signatories: $signatories },
+  filter: ({ signatory, signatories }) => nullable(signatory) && signatories.length > 0,
+  fn: ({ signatories }) => signatories.at(0) ?? null,
   target: $signatory,
 });
 
