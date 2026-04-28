@@ -34,6 +34,7 @@ const BannerSide = ({ label, address, signatories, threshold, expanded, onToggle
     <FootnoteText className="text-text-tertiary uppercase">{label}</FootnoteText>
     <button
       type="button"
+      aria-expanded={expanded}
       className="flex w-full cursor-pointer items-center gap-2 text-left hover:opacity-80"
       onClick={onToggle}
     >

@@ -1,8 +1,8 @@
-import { type Decorator, type Meta, type StoryObj } from '@storybook/react-vite';
-import { type StoreWritable, fork } from 'effector';
-import { Provider } from 'effector-react';
+import { type Meta, type StoryObj } from '@storybook/react-vite';
+import { type StoreWritable } from 'effector';
 
 import { type Address } from '@/shared/core';
+import { withEffector } from '@/shared/mocks/withEffector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { changeSignatoriesModel } from '../../../model/change-signatories-model';
 import { PersistentBanner } from '../PersistentBanner';
@@ -24,19 +24,13 @@ const TARGET_SIGNATORIES: AccountId[] = [
   '5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy' as AccountId,
 ];
 
-// ─── withEffector decorator ───────────────────────────────────────────────────
+const EXISTING_TARGET_ADDRESS = '5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqQwDiVDNn4qZ' as Address;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function withEffector(values: [StoreWritable<any>, any][]): Decorator {
-  return (Story) => {
-    const scope = fork({ values });
-    return (
-      <Provider value={scope}>
-        <Story />
-      </Provider>
-    );
-  };
-}
+const EXISTING_TARGET_SIGNATORIES: AccountId[] = [
+  '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' as AccountId,
+  '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as AccountId,
+  '5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy' as AccountId,
+];
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
@@ -71,6 +65,33 @@ export const WithModifyTarget: Story = {
           derivedAddress: TARGET_ADDRESS,
           signatories: TARGET_SIGNATORIES,
           threshold: 2,
+        },
+      ],
+    ]),
+  ],
+};
+
+export const WithExistingTarget: Story = {
+  args: {
+    currentControllerAddress: CONTROLLER_ADDRESS,
+    currentSignatories: CURRENT_SIGNATORIES,
+    currentThreshold: 2,
+  },
+  decorators: [
+    withEffector([
+      [
+        changeSignatoriesModel.$selectedTarget as StoreWritable<unknown>,
+        {
+          kind: 'existing',
+          candidate: {
+            source: 'wallet',
+            walletId: 1,
+            name: 'Treasury Operations',
+            address: EXISTING_TARGET_ADDRESS,
+            accountId: '0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d' as AccountId,
+            signatories: EXISTING_TARGET_SIGNATORIES,
+            threshold: 2,
+          },
         },
       ],
     ]),
