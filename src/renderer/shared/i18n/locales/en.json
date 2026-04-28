@@ -1563,12 +1563,32 @@
     "editController": {
       "banner": {
         "notSelected": "Modify the current multisig or pick one from the list",
+        "scope": {
+          "openOverview": "Open overview"
+        },
         "stateAddressBook": "From address book",
         "stateModify": "New address",
         "stateNoChanges": "No changes yet",
         "stateWallet": "From your wallets",
         "was": "Current",
-        "willBecome": "New"
+        "willBecome": "New",
+        "willBeRemoved": "Will be removed"
+      },
+      "confirm": {
+        "submitterWallet": "Submitter wallet",
+        "signDisabled": {
+          "loading": "Loading transaction details — please wait.",
+          "validating": "Validating transaction…",
+          "pendingOperation": "An edit operation for this multisig is already pending. Wait for it to finish before submitting another.",
+          "sameMultisig": "The new controller is identical to the current one. Pick different signatories or a threshold to continue.",
+          "balance": "The signer doesn't have enough balance to cover the deposits and fee.",
+          "invalid": "Transaction is incomplete. Go back and review your selection."
+        }
+      },
+      "loader": {
+        "fetchingMultisigs": "Fetching your multisigs…",
+        "findingConnections": "Resolving on-chain connections…",
+        "planningEdit": "Planning the edit…"
       },
       "editButton": "Edit",
       "modifyCurrent": {
@@ -1583,14 +1603,19 @@
         "thresholdLabel": "Threshold"
       },
       "mode": {
-        "trustedBullet1": "Atomic — new controller is added and old one is removed in one transaction",
+        "sectionTitle": "Execution mode",
+        "trustedBullet1": "Atomic - new controller is added and old one is removed in one transaction",
         "trustedBullet2": "Cannot be undone if the proxied account has no other active proxy",
         "trustedBullet3": "Do not use if you want to verify the new controller first",
-        "trustedTitle": "Trusted flow",
+        "trustedHint": "Old controller is removed in the same transaction",
+        "trustedShort": "One-shot",
+        "trustedTitle": "One-shot",
         "verifiedBullet1": "New controller is added; old one stays",
         "verifiedBullet2": "Verify the new controller before retiring the old one",
         "verifiedBullet3": "Recommended",
-        "verifiedTitle": "Verified flow (default)"
+        "verifiedHint": "Add the new controller; old one stays until you remove it",
+        "verifiedShort": "Step-by-step",
+        "verifiedTitle": "Step-by-step"
       },
       "picker": {
         "fromAddressBook": "From address book",

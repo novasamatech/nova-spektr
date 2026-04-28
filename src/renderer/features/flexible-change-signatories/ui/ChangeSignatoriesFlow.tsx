@@ -14,8 +14,9 @@ type Props = PropsWithChildren<{
  * trigger-renders-children contract used by callers (FlexibleWalletDetails,
  * wallet-details dropdown).
  *
- * The previous front-of-flow trust-vs-verified picker has been removed — that
- * decision now lives on the Confirm step via <ExecutionModeToggle>.
+ * The trust-vs-verified picker now lives on the SELECT_CONTROLLER step via
+ * <ExecutionModeToggle>; the Confirm step shows it read-only via
+ * <ExecutionModeSummary>.
  */
 export const ChangeSignatoriesFlow = ({ wallet, onClose, children }: Props) => {
   const [open, setOpen] = useState(false);

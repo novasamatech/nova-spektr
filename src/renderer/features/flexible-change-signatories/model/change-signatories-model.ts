@@ -59,6 +59,19 @@ const $walletAccounts = combine($initiatorWallet, accounts.$list, (wallet, accou
 
 const $flexibleMultisigAccount = $walletAccounts.map((acc) => acc.find(accountUtils.isFlexibleMultisigAccount) ?? null);
 
+// The flexible multisig stores the pure proxy as a sister `ProxiedAccount`
+// (proxyVariant === PURE) under a separate auto-generated wallet. The graph
+// in `accounts-structure` selects whichever account is passed first as the
+// focal node, so resolving it here lets the overview center on the proxy.
+const $pureProxyAccount = combine($flexibleMultisigAccount, accounts.$list, (flex, accountList) => {
+  if (!flex) return null;
+  return (
+    accountList.find(
+      (a) => accountUtils.isPureProxiedAccount(a) && a.accountId === flex.accountId && a.chainId === flex.chainId,
+    ) ?? null
+  );
+});
+
 const $chainId = $flexibleMultisigAccount.map((acc) => acc?.chainId ?? null);
 const $chain = combine($chainId, networkModel.$chains, (chainId, chains) =>
   chainId ? (chains[chainId] ?? null) : null,
@@ -140,7 +153,7 @@ const $signatoryBalance = combine(
 
 // deposits
 
-const { $: $proxiesInfo } = createStoreFromEffect({
+const { $: $proxiesInfo, $pending: $pendingProxies } = createStoreFromEffect({
   fn: ({ api, accountId }: { api: ApiPromise; accountId: AccountId }) => {
     return proxyService.getProxiesForAccount(api, accountId);
   },
@@ -153,11 +166,35 @@ const { $: $proxiesInfo } = createStoreFromEffect({
 
 const $existentialDeposit = $signatoryBalance.map((b) => (b ? b.ed : BN_ZERO));
 
-const $proxyDeposit = combine(formModel.$api, $proxiesInfo, (api, proxiesInfo) => {
-  if (nullable(proxiesInfo) || nullable(api)) return null;
+// Net change in proxy slots for this operation:
+//   verified → +1 (we add a delegate; the old one stays until a separate cleanup tx)
+//   trusted  → 0  (batchAll adds and removes in the same tx)
+const $proxyCountDelta = $executionMode.map((mode) => (mode === 'verified' ? 1 : 0));
 
-  return proxyService.getProxyDepositDelta(api, proxiesInfo.deposit, proxiesInfo.accounts.length + 1);
-});
+// Display value: the *total* proxy deposit that will be reserved for the proxied
+// account after this operation. Always non-zero whenever there is at least one
+// proxy slot in the post-state (proxyDepositBase + proxyDepositFactor × count),
+// so the row reads as a real chain-derived figure rather than the zero-delta
+// of a net-zero swap.
+const $proxyDeposit = combine(
+  { api: formModel.$api, proxiesInfo: $proxiesInfo, countDelta: $proxyCountDelta },
+  ({ api, proxiesInfo, countDelta }) => {
+    if (nullable(proxiesInfo) || nullable(api)) return null;
+
+    return proxyService.getProxyDepositRequired(api, proxiesInfo.accounts.length + countDelta);
+  },
+);
+
+// Math value: how much *additional* deposit the user must lock now.
+// Used by $totalDeposit / balance validation (must reflect this operation's cost only).
+const $proxyDepositDelta = combine(
+  { api: formModel.$api, proxiesInfo: $proxiesInfo, countDelta: $proxyCountDelta },
+  ({ api, proxiesInfo, countDelta }) => {
+    if (nullable(proxiesInfo) || nullable(api)) return null;
+
+    return proxyService.getProxyDepositDelta(api, proxiesInfo.deposit, proxiesInfo.accounts.length + countDelta);
+  },
+);
 
 // Effective threshold + signatories of the *new* controller, derived from $selectedTarget.
 // Replaces the old form-model-driven path. For 'modify' we use the inline editor's values;
@@ -195,13 +232,13 @@ const { $multisigDeposit, $pending: $pendingMultisigDeposit } = createMultisigDe
 const $totalDeposit = combine(
   {
     existentialDeposit: $existentialDeposit,
-    proxyDeposit: $proxyDeposit,
+    proxyDepositDelta: $proxyDepositDelta,
     multisigDeposit: $multisigDeposit,
   },
-  ({ existentialDeposit, proxyDeposit, multisigDeposit }) => {
-    if (nullable(proxyDeposit)) return null;
+  ({ existentialDeposit, proxyDepositDelta, multisigDeposit }) => {
+    if (nullable(proxyDepositDelta)) return null;
 
-    return existentialDeposit.add(proxyDeposit).add(multisigDeposit);
+    return existentialDeposit.add(proxyDepositDelta).add(multisigDeposit);
   },
 );
 
@@ -256,7 +293,11 @@ const $controllerEditTx = combine(
   },
 );
 
-const { $tx: $flexibleTx, $route } = createComplexTxStore({
+const {
+  $tx: $flexibleTx,
+  $route,
+  $pendingWrapping: $pendingFlexibleTxWrap,
+} = createComplexTxStore({
   api: formModel.$api,
   initiator: $flexibleMultisigAccount,
   signatory: $signatory,
@@ -313,7 +354,12 @@ const $coreTx = combine(
 );
 
 // transaction with remark executed from the signatory without flex wrap
-const { $tx, $fee, $pendingFee } = createComplexTxStore({
+const {
+  $tx,
+  $fee,
+  $pendingFee,
+  $pendingWrapping: $pendingTxWrap,
+} = createComplexTxStore({
   api: formModel.$api,
   initiator: $signatory,
   signatory: $signatory,
@@ -347,7 +393,12 @@ const validator = createTxValidator<{ proxyDeposit: BN }>({
   ],
 });
 
-const { $errors, $valid } = createTxValidationStore({
+const {
+  $errors,
+  $valid,
+  $pending: $validationPending,
+  $validationDone,
+} = createTxValidationStore({
   validator,
   params: {
     api: formModel.$api,
@@ -355,7 +406,7 @@ const { $errors, $valid } = createTxValidationStore({
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
-    proxyDeposit: $proxyDeposit,
+    proxyDeposit: $proxyDepositDelta,
   },
 });
 
@@ -388,7 +439,12 @@ const $isEditOperationAlreadyExists = combine(
   },
 );
 
-const $isLoading = or($pendingFee, $pendingMultisigDeposit);
+const $isLoading = or($pendingFee, $pendingMultisigDeposit, $pendingProxies, $pendingFlexibleTxWrap, $pendingTxWrap);
+
+// Tx is "ready to submit" when the outer wrap has produced a non-null transaction.
+// Used to gate Step-2 / Step-3 submission so a click doesn't get silently dropped
+// by the formSubmitted filter when $tx is still null.
+const $isTxReady = $tx.map(nonNullable);
 
 // "Can proceed from confirm step" — gated on a fully-resolved new controller, no loading,
 // no conflict with existing edit operation, and no self-target.
@@ -585,17 +641,23 @@ export const changeSignatoriesModel = {
   $signatories,
   $initiatorWallet,
   $flexibleMultisigAccount,
+  $pureProxyAccount,
   $proxyDeposit,
   $multisigDeposit,
   $totalDeposit,
   $isEditOperationAlreadyExists,
+  $isTheSameMultisig,
   $chain,
   $canSubmit,
   $canProceedFromForm,
   $route,
   $errors,
+  $valid,
+  $validationPending,
+  $validationDone,
   $fee,
   $isLoading,
+  $isTxReady,
   $selectedTarget,
   $executionMode,
   $signingPath,

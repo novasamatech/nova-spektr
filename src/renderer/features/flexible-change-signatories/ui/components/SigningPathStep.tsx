@@ -309,10 +309,12 @@ const StubPickerSection = ({ path, onStubFinish }: { path: PathNode[]; onStubFin
 
 type Props = {
   currentController: { address: Address; name: string };
+  isLoading?: boolean;
+  onBack: () => void;
   onConfirm: (path: PathNode[]) => void;
 };
 
-export const SigningPathStep = ({ currentController, onConfirm }: Props) => {
+export const SigningPathStep = ({ currentController, isLoading, onBack, onConfirm }: Props) => {
   const { t } = useI18n();
 
   const [path, setPath] = useState<PathNode[]>([
@@ -340,9 +342,14 @@ export const SigningPathStep = ({ currentController, onConfirm }: Props) => {
 
       {complete ? <PathCompleteBanner /> : last && <StubPickerSection path={path} onStubFinish={setPath} />}
 
-      <Button size="md" className="self-end" disabled={!complete} onClick={() => onConfirm(path)}>
-        {t('flexibleMultisig.editController.signingPath.next')}
-      </Button>
+      <div className="flex items-center justify-between">
+        <Button variant="text" onClick={onBack}>
+          {t('createMultisigAccount.backButton')}
+        </Button>
+        <Button size="md" disabled={!complete || isLoading} isLoading={isLoading} onClick={() => onConfirm(path)}>
+          {t('flexibleMultisig.editController.signingPath.next')}
+        </Button>
+      </div>
     </div>
   );
 };

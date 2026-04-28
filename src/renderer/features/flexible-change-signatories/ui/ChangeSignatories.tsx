@@ -12,6 +12,8 @@ import { OperationSubmitWithAction } from '@/features/operations/OperationSubmit
 import { changeSignatoriesModel } from '../model/change-signatories-model';
 
 import { ConfirmationStep } from './ConfirmationStep';
+import { ExecutionModeToggle } from './components/ExecutionModeToggle';
+import { InitializingBody } from './components/InitializingBody';
 import { PersistentBanner } from './components/PersistentBanner';
 import { SigningPathStep } from './components/SigningPathStep';
 import { UnifiedPicker } from './components/UnifiedPicker';
@@ -34,12 +36,35 @@ type Props = PropsWithChildren<{
 export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideTrigger }: Props) => {
   const { t } = useI18n();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Initialize from `launchOpen` so the Modal renders open on the very first
+  // render — saves the previous mount → effect → setState → re-render cycle
+  // that delayed the modal from appearing on click.
+  const [isModalOpen, setIsModalOpen] = useState(launchOpen ?? false);
   const walletRef = useRef(wallet);
   walletRef.current = wallet;
 
+  // Two-phase mount:
+  //   1. First render commits Modal shell + <InitializingBody> only — fast.
+  //      Browser paints the loader so the user gets immediate feedback.
+  //   2. After paint, `bodyReady` flips and the heavy step bodies (PersistentBanner,
+  //      UnifiedPicker, ExecutionModeToggle, ConfirmationStep, …) actually mount.
+  //   The loader stays on screen during the heavy second render because JS blocks
+  //   the browser from painting again until React commits the new tree.
+  const [bodyReady, setBodyReady] = useState(false);
+  useEffect(() => {
+    const handle = requestAnimationFrame(() => setBodyReady(true));
+
+    return () => cancelAnimationFrame(handle);
+  }, []);
+
+  // Open the model gate after the first paint so the Effector cascade
+  // (populateSignatories, getSignatoriesBalance, populateForm, …) runs against
+  // an already-visible modal instead of blocking the first render.
+  const launchedRef = useRef(false);
   useEffect(() => {
     if (!launchOpen) return;
+    if (launchedRef.current) return;
+    launchedRef.current = true;
 
     setIsModalOpen(true);
     changeSignatoriesModel.flow.open({ wallet: walletRef.current });
@@ -49,6 +74,8 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
   const chain = useUnit(changeSignatoriesModel.$chain);
   const flexibleAccount = useUnit(changeSignatoriesModel.$flexibleMultisigAccount);
   const selectedTarget = useUnit(changeSignatoriesModel.$selectedTarget);
+  const isLoading = useUnit(changeSignatoriesModel.$isLoading);
+  const isTxReady = useUnit(changeSignatoriesModel.$isTxReady);
   const nextFromSelectController = useUnit(changeSignatoriesModel.nextFromSelectController);
   const signingPathConfirmed = useUnit(changeSignatoriesModel.signingPathConfirmed);
 
@@ -94,6 +121,13 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
     );
   }
 
+  // Render the loader-only body when:
+  // - bodyReady hasn't flipped yet (first paint), OR
+  // - Effector hasn't resolved $chain / current controller yet
+  // - and the active step actually has a body (SIGN/SUBMIT have their own UI)
+  const showInitializingBody =
+    (!bodyReady || !chain || !currentControllerAddress) && !isStep(step, Step.SIGN) && !isStep(step, Step.SUBMIT);
+
   return (
     <Modal
       isOpen={isModalOpen}
@@ -104,24 +138,32 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
       {!hideTrigger && <Modal.Trigger>{children}</Modal.Trigger>}
 
       <Modal.Title close>
-        {chain && <OperationTitle title={t('flexibleMultisig.editTitleOn')} chainId={chain.chainId} />}
+        {chain ? (
+          <OperationTitle title={t('flexibleMultisig.editTitleOn')} chainId={chain.chainId} />
+        ) : (
+          t('flexibleMultisig.editTitleOn')
+        )}
       </Modal.Title>
 
-      {isStep(step, Step.CONFIRM) && (
+      {showInitializingBody && (
+        <Modal.Content>
+          <InitializingBody />
+        </Modal.Content>
+      )}
+
+      {!showInitializingBody && isStep(step, Step.CONFIRM) && chain && currentControllerAddress && (
         <ConfirmationStep
           banner={
-            chain && currentControllerAddress ? (
-              <PersistentBanner
-                currentControllerAddress={currentControllerAddress}
-                currentSignatories={currentSignatories}
-                currentThreshold={currentThreshold}
-              />
-            ) : null
+            <PersistentBanner
+              currentControllerAddress={currentControllerAddress}
+              currentSignatories={currentSignatories}
+              currentThreshold={currentThreshold}
+            />
           }
         />
       )}
 
-      {isStep(step, Step.SELECT_CONTROLLER) && chain && currentControllerAddress && (
+      {!showInitializingBody && isStep(step, Step.SELECT_CONTROLLER) && chain && currentControllerAddress && (
         <>
           <Modal.Content>
             <div className="flex h-full flex-col gap-y-4 px-5 pt-4 pb-6">
@@ -130,6 +172,7 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
                 currentSignatories={currentSignatories}
                 currentThreshold={currentThreshold}
               />
+              <ExecutionModeToggle />
               <UnifiedPicker
                 chain={chain}
                 currentControllerAddress={currentControllerAddress}
@@ -139,7 +182,11 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
           </Modal.Content>
           <Modal.Footer>
             <Box fitContainer direction="row" horizontalAlign="end" verticalAlign="center">
-              <Button disabled={!selectedTarget} onClick={() => nextFromSelectController()}>
+              <Button
+                disabled={!selectedTarget || isLoading}
+                isLoading={isLoading}
+                onClick={() => nextFromSelectController()}
+              >
                 {t('flexibleMultisig.editController.picker.next')}
               </Button>
             </Box>
@@ -147,7 +194,7 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
         </>
       )}
 
-      {isStep(step, Step.SIGNING_PATH) && chain && currentControllerAddress && (
+      {!showInitializingBody && isStep(step, Step.SIGNING_PATH) && chain && currentControllerAddress && (
         <Modal.Content>
           <div className="flex h-full flex-col gap-y-4 px-5 pt-4 pb-6">
             <PersistentBanner
@@ -160,6 +207,8 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
                 address: currentControllerAddress,
                 name: wallet.name,
               }}
+              isLoading={isLoading || !isTxReady}
+              onBack={() => changeSignatoriesModel.stepChanged(Step.SELECT_CONTROLLER)}
               onConfirm={(path) => signingPathConfirmed(path)}
             />
           </div>

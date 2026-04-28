@@ -2,89 +2,79 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
+import { HelpText } from '@/shared/ui';
 import { changeSignatoriesModel } from '../../model/change-signatories-model';
 import { type ExecutionMode } from '../../types';
 
+import { ExecutionModeInfoPopover } from './ExecutionModeInfoPopover';
+
+const HINTS: Record<ExecutionMode, string> = {
+  verified: 'flexibleMultisig.editController.mode.verifiedHint',
+  trusted: 'flexibleMultisig.editController.mode.trustedHint',
+};
+
 export const ExecutionModeToggle = () => {
+  const { t } = useI18n();
   const [mode, setMode] = useUnit([changeSignatoriesModel.$executionMode, changeSignatoriesModel.executionModeChanged]);
 
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <ModeCard
-        kind="verified"
-        selected={mode === 'verified'}
-        codeBlock={'proxy.addProxy(new)\n// removeProxy later'}
-        titleKey="flexibleMultisig.editController.mode.verifiedTitle"
-        bulletKeys={[
-          'flexibleMultisig.editController.mode.verifiedBullet1',
-          'flexibleMultisig.editController.mode.verifiedBullet2',
-          'flexibleMultisig.editController.mode.verifiedBullet3',
-        ]}
-        onClick={() => setMode('verified')}
-      />
-      <ModeCard
-        kind="trusted"
-        selected={mode === 'trusted'}
-        codeBlock={'batchAll([\n  addProxy(new),\n  removeProxy(old),\n])'}
-        titleKey="flexibleMultisig.editController.mode.trustedTitle"
-        bulletKeys={[
-          'flexibleMultisig.editController.mode.trustedBullet1',
-          'flexibleMultisig.editController.mode.trustedBullet2',
-          'flexibleMultisig.editController.mode.trustedBullet3',
-        ]}
-        onClick={() => setMode('trusted')}
-      />
-    </div>
+    <section className="flex flex-col items-start gap-y-1.5">
+      <div className="flex items-center gap-x-2">
+        <div
+          role="tablist"
+          aria-label={t('flexibleMultisig.editController.mode.sectionTitle')}
+          className="inline-flex rounded-md border border-container-border bg-block-background-default p-0.5"
+        >
+          <PillButton
+            active={mode === 'verified'}
+            tone="positive"
+            icon="✓"
+            label={t('flexibleMultisig.editController.mode.verifiedShort')}
+            onClick={() => setMode('verified')}
+          />
+          <PillButton
+            active={mode === 'trusted'}
+            tone="warning"
+            icon="⚠"
+            label={t('flexibleMultisig.editController.mode.trustedShort')}
+            onClick={() => setMode('trusted')}
+          />
+        </div>
+        <ExecutionModeInfoPopover />
+      </div>
+      <HelpText className="text-text-tertiary">{t(HINTS[mode])}</HelpText>
+    </section>
   );
 };
 
-type ModeCardProps = {
-  kind: ExecutionMode;
-  selected: boolean;
+type PillButtonProps = {
+  active: boolean;
+  tone: 'positive' | 'warning';
+  icon: string;
+  label: string;
   onClick: () => void;
-  codeBlock: string;
-  titleKey: string;
-  bulletKeys: string[];
 };
 
-const ModeCard = ({ kind, selected, onClick, codeBlock, titleKey, bulletKeys }: ModeCardProps) => {
-  const { t } = useI18n();
-
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
+const PillButton = ({ active, tone, icon, label, onClick }: PillButtonProps) => (
+  <button
+    type="button"
+    role="tab"
+    aria-selected={active}
+    className={cnTw(
+      'flex items-center gap-x-1.5 rounded px-2.5 py-1 text-footnote font-medium transition-colors',
+      active ? 'bg-main-app-background text-text-primary shadow-sm' : 'text-text-secondary hover:text-text-primary',
+    )}
+    onClick={onClick}
+  >
+    <span
+      aria-hidden="true"
       className={cnTw(
-        'flex w-full flex-col gap-y-3 rounded-lg p-3 text-left transition-colors',
-        selected
-          ? 'border border-transparent bg-block-background-default ring-2 ring-icon-accent ring-inset'
-          : 'border border-container-border bg-block-background-default hover:bg-action-background-hover',
+        active && tone === 'positive' && 'text-icon-positive',
+        active && tone === 'warning' && 'text-text-warning',
       )}
-      onClick={onClick}
     >
-      <p className="text-footnote font-semibold text-text-primary">{t(titleKey)}</p>
-
-      <pre
-        aria-hidden="true"
-        className="rounded bg-main-app-background px-2 py-1.5 font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-text-secondary"
-      >
-        {codeBlock}
-      </pre>
-
-      <ul className="flex flex-col gap-y-1">
-        {bulletKeys.map((key, index) => (
-          <li
-            key={key}
-            className={cnTw(
-              'flex items-start gap-x-1.5 text-help-text',
-              kind === 'trusted' && index === 1 ? 'text-text-warning' : 'text-text-secondary',
-            )}
-          >
-            <span className="mt-px shrink-0">{kind === 'verified' ? '✓' : '⚠'}</span>
-            <span>{t(key)}</span>
-          </li>
-        ))}
-      </ul>
-    </button>
-  );
-};
+      {icon}
+    </span>
+    {label}
+  </button>
+);
