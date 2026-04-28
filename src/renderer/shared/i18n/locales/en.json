@@ -2847,6 +2847,15 @@
         "unknownName": "(unknown)"
       }
     },
+    "verifyProxy": {
+      "title": "Verification for wallet",
+      "tag": "Verification",
+      "tooltip": "Signer is proving control of the proxied wallet via a marker remark",
+      "details": {
+        "targetSection": "Verifying wallet",
+        "openProxyDetails": "Open wallet details"
+      }
+    },
     "viewOperation": "View operation"
   },
   "portfolilo": {

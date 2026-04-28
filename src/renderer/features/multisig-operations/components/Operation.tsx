@@ -32,9 +32,11 @@ import {
 import { accountUtils } from '@/entities/wallet';
 import { AssetFiatBalance } from '@/widgets/price';
 import { parseProxyEditOperation } from '../lib/proxy-edit';
+import { parseVerifyProxyOperation } from '../lib/verify-proxy-op';
 import { type TabFilter } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 import { EditControllerOperationCard } from '../ui/EditControllerOperationCard';
+import { VerifyProxyOperationCard } from '../ui/VerifyProxyOperationCard';
 
 import { OperationActions } from './OperationActions';
 import { OperationFullInfo } from './OperationFullInfo';
@@ -107,6 +109,10 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(multisigAccount);
   const coreTx = isFlexibleMultisigAccount ? findCoreTransaction(operation.transaction) : operation.transaction;
   const proxyEdit = useMemo(() => parseProxyEditOperation(operation), [operation]);
+  // verify-proxy and edit-flexible-controller are mutually exclusive — proxyEdit has priority
+  // because its detection is stricter (batch + addProxy match), so we only test for the
+  // verify-proxy ping when the edit detector returned null.
+  const verifyProxy = useMemo(() => (proxyEdit ? null : parseVerifyProxyOperation(operation)), [operation, proxyEdit]);
   const addressPrefix = isFlexibleMultisigAccount ? chains[multisigAccount.chainId]?.addressPrefix : undefined;
   const accountAddress = toAddress(multisigAccount.accountId, { prefix: addressPrefix });
   const asset = useTransactionAsset(coreTx, operation.chainId);
@@ -146,6 +152,12 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
           <div className="flex h-[52px] w-full items-center gap-x-2 overflow-hidden">
             {proxyEdit ? (
               <EditControllerOperationCard info={proxyEdit} chain={chains[operation.chainId]} />
+            ) : verifyProxy ? (
+              <VerifyProxyOperationCard
+                info={verifyProxy}
+                chain={chains[operation.chainId]}
+                status={operation.status}
+              />
             ) : (
               <div className="flex w-[450px] items-center gap-x-2">
                 <OperationIcon operation={operation} account={multisigAccount} />
