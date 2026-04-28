@@ -14,3 +14,6 @@ export { type TabFilter, operationsContextModel } from './model/context';
 export { multisigOperationsFeature } from './model/feature';
 export { deepLinkModel } from './model/deep-link';
 export { exportModel } from './model/export';
+
+// Side-effect import: registers the proxy-edit details panel into operationDetailsSlot.
+import './model/proxy-edit-details-feature';

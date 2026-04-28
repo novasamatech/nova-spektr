@@ -2751,6 +2751,23 @@
       "vestedTransfer": "Vested transfer",
       "vote": "Vote"
     },
+    "editController": {
+      "title": "Add proxy controller \"{{name}}\"",
+      "trustedTag": "Trusted flow — old controller removed in same tx",
+      "unknownName": "(new controller)",
+      "details": {
+        "headerLabel": "Controller change",
+        "targetSection": "New controller",
+        "threshold": "{{threshold}} of {{total}}",
+        "modeSection": "Execution mode",
+        "trustedDescription": "Trusted (atomic): old controller will be removed in the same transaction.",
+        "verifiedDescription": "Verified (add-only): old controller will be removed later, after verification.",
+        "pathSection": "Signing path",
+        "pathStub": "Signed via {{controller}}",
+        "openProxyDetails": "Open proxy details",
+        "unknownName": "(unknown)"
+      }
+    },
     "viewOperation": "View operation"
   },
   "portfolilo": {

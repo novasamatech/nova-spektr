@@ -31,8 +31,10 @@ import {
 } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { AssetFiatBalance } from '@/widgets/price';
+import { parseProxyEditOperation } from '../lib/proxy-edit';
 import { type TabFilter } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
+import { EditControllerOperationCard } from '../ui/EditControllerOperationCard';
 
 import { OperationActions } from './OperationActions';
 import { OperationFullInfo } from './OperationFullInfo';
@@ -104,6 +106,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
   const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(multisigAccount);
   const coreTx = isFlexibleMultisigAccount ? findCoreTransaction(operation.transaction) : operation.transaction;
+  const proxyEdit = useMemo(() => parseProxyEditOperation(operation), [operation]);
   const addressPrefix = isFlexibleMultisigAccount ? chains[multisigAccount.chainId]?.addressPrefix : undefined;
   const accountAddress = toAddress(multisigAccount.accountId, { prefix: addressPrefix });
   const asset = useTransactionAsset(coreTx, operation.chainId);
@@ -141,35 +144,39 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
       <Accordion isDefaultOpen={isDefaultOpen}>
         <Accordion.Button buttonClass="px-4 py-2">
           <div className="flex h-[52px] w-full items-center gap-x-2 overflow-hidden">
-            <div className="flex w-[450px] items-center gap-x-2">
-              <OperationIcon operation={operation} account={multisigAccount} />
+            {proxyEdit ? (
+              <EditControllerOperationCard info={proxyEdit} chain={chains[operation.chainId]} wallets={wallets} />
+            ) : (
+              <div className="flex w-[450px] items-center gap-x-2">
+                <OperationIcon operation={operation} account={multisigAccount} />
 
-              <div className="flex flex-1 flex-col justify-center gap-y-0.5 overflow-hidden">
-                {titleData.title && <TransactionTitle title={titleData.title} />}
-                {titleData.sourceChainId &&
-                  (titleData.destinationChainId ? (
-                    <XcmChains chainIdFrom={titleData.sourceChainId} chainIdTo={titleData.destinationChainId} />
-                  ) : (
-                    <ChainTitle chainId={titleData.sourceChainId} fontClass="text-help-text text-text-tertiary" />
-                  ))}
-              </div>
-
-              {titleData.amount && (
-                <div className="flex w-[200px] shrink-0 items-center gap-x-2">
-                  <AssetIcon asset={titleData.amount.asset} size={32} />
-                  <div className="flex flex-col items-start gap-y-0.5">
-                    <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />
-                    <AsyncItem strategy="idle" fallback={<div className="h-[18px]" />}>
-                      <AssetFiatBalance
-                        asset={titleData.amount.asset}
-                        amount={titleData.amount.value}
-                        className="text-help-text text-text-tertiary"
-                      />
-                    </AsyncItem>
-                  </div>
+                <div className="flex flex-1 flex-col justify-center gap-y-0.5 overflow-hidden">
+                  {titleData.title && <TransactionTitle title={titleData.title} />}
+                  {titleData.sourceChainId &&
+                    (titleData.destinationChainId ? (
+                      <XcmChains chainIdFrom={titleData.sourceChainId} chainIdTo={titleData.destinationChainId} />
+                    ) : (
+                      <ChainTitle chainId={titleData.sourceChainId} fontClass="text-help-text text-text-tertiary" />
+                    ))}
                 </div>
-              )}
-            </div>
+
+                {titleData.amount && (
+                  <div className="flex w-[200px] shrink-0 items-center gap-x-2">
+                    <AssetIcon asset={titleData.amount.asset} size={32} />
+                    <div className="flex flex-col items-start gap-y-0.5">
+                      <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />
+                      <AsyncItem strategy="idle" fallback={<div className="h-[18px]" />}>
+                        <AssetFiatBalance
+                          asset={titleData.amount.asset}
+                          amount={titleData.amount.value}
+                          className="text-help-text text-text-tertiary"
+                        />
+                      </AsyncItem>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="flex min-w-0 flex-1 items-center justify-between">
               {wallet && accountAddress ? (
