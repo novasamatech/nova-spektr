@@ -4,6 +4,6 @@ import { type MultisigCandidate } from './types';
 
 const $candidates = createStore<MultisigCandidate[]>([]);
 
-export const multisigCandidatesAggregate = {
+export const multisigCandidates = {
   $candidates,
 };
