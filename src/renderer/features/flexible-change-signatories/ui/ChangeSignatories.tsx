@@ -74,8 +74,6 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
   const chain = useUnit(changeSignatoriesModel.$chain);
   const flexibleAccount = useUnit(changeSignatoriesModel.$flexibleMultisigAccount);
   const selectedTarget = useUnit(changeSignatoriesModel.$selectedTarget);
-  const isLoading = useUnit(changeSignatoriesModel.$isLoading);
-  const isTxReady = useUnit(changeSignatoriesModel.$isTxReady);
   const nextFromSelectController = useUnit(changeSignatoriesModel.nextFromSelectController);
   const signingPathConfirmed = useUnit(changeSignatoriesModel.signingPathConfirmed);
 
@@ -182,11 +180,7 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
           </Modal.Content>
           <Modal.Footer>
             <Box fitContainer direction="row" horizontalAlign="end" verticalAlign="center">
-              <Button
-                disabled={!selectedTarget || isLoading}
-                isLoading={isLoading}
-                onClick={() => nextFromSelectController()}
-              >
+              <Button disabled={!selectedTarget} onClick={() => nextFromSelectController()}>
                 {t('flexibleMultisig.editController.picker.next')}
               </Button>
             </Box>
@@ -207,7 +201,6 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
                 address: currentControllerAddress,
                 name: wallet.name,
               }}
-              isLoading={isLoading || !isTxReady}
               onBack={() => changeSignatoriesModel.stepChanged(Step.SELECT_CONTROLLER)}
               onConfirm={(path) => signingPathConfirmed(path)}
             />

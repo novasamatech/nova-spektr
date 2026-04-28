@@ -3,11 +3,14 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { type Address, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { performSearch, toAddress } from '@/shared/lib/utils';
+import { performSearch, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HelpText } from '@/shared/ui';
 import { AccountExplorers, Address as AddressDisplay, Identicon } from '@/shared/ui-entities';
 import { Field, Select, Tabs } from '@/shared/ui-kit';
+import { accountService, accounts as accountsStore, identity } from '@/domains/network';
+import { contactModel } from '@/entities/contact';
+import { networkModel } from '@/entities/network';
 import {
   type ContactCandidate,
   type MultisigCandidate,
@@ -31,6 +34,10 @@ type Mode = 'modify' | 'replace';
 export const UnifiedPicker = ({ chain, currentControllerAddress, currentThreshold }: Props) => {
   const { t } = useI18n();
   const candidates = useUnit(multisigCandidates.$candidates);
+  const allAccounts = useUnit(accountsStore.$list);
+  const allContacts = useUnit(contactModel.$contacts);
+  const allIdentities = useUnit(identity.$list);
+  const allChains = useUnit(networkModel.$chains);
   const [target, targetSelected] = useUnit([
     changeSignatoriesModel.$selectedTarget,
     changeSignatoriesModel.targetSelected,
@@ -38,9 +45,32 @@ export const UnifiedPicker = ({ chain, currentControllerAddress, currentThreshol
   const [mode, setMode] = useState<Mode>('modify');
   const [query, setQuery] = useState('');
 
+  // Use the canonical resolver (custom wallet name → local contact → backend contact
+  // → identity → short address) so the picker matches wallet-details. resolveAccountName
+  // falls back to a 5-char truncated address when nothing matches; in that case we
+  // prefer the candidate's own name (wallet.name or backend contact name from
+  // merge-candidates) since it's friendlier than `1UTUu...6tZDp`.
+  const shortAddressFor = useCallback(
+    (accountId: AccountId) => toShortAddress(toAddress(accountId, { prefix: chain.addressPrefix }), 5),
+    [chain.addressPrefix],
+  );
+
   const selectableCandidates = useMemo(
-    () => candidates.filter((c) => c.address !== currentControllerAddress),
-    [candidates, currentControllerAddress],
+    () =>
+      candidates
+        .filter((c) => c.address !== currentControllerAddress)
+        .map((c) => {
+          const resolved = accountService.resolveAccountName({
+            accountId: c.accountId,
+            chain,
+            accounts: allAccounts,
+            contacts: allContacts,
+            identities: allIdentities,
+            chains: allChains,
+          });
+          return { ...c, name: resolved === shortAddressFor(c.accountId) ? c.name : resolved };
+        }),
+    [candidates, currentControllerAddress, chain, allAccounts, allContacts, allIdentities, allChains, shortAddressFor],
   );
 
   const filtered = useMemo(

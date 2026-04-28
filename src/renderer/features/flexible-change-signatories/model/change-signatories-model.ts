@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
-import { combine, createEvent, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { and, delay, not, or, spread } from 'patronum';
 
@@ -485,11 +485,31 @@ sample({
   target: stepChanged,
 });
 
-// Step 2 → Step 3 (confirm). When the path picker confirms, we kick off confirmModel.init
-// with the resolved tx/route plus advance the step.
-const formSubmitted = sample({
+// Step 2 → Step 3 (confirm). The step transition fires immediately on click,
+// regardless of tx-wrap state — Step 3's UI shows its own loading state for fees /
+// validation, so we don't gate the transition on tx readiness. Otherwise a slow
+// wrap would silently swallow the click and leave the user stuck on Step 2.
+sample({
   clock: signingPathConfirmed,
+  fn: () => Step.CONFIRM,
+  target: stepChanged,
+});
+
+// Track whether the user has confirmed the path so confirmModel.init can fire as
+// soon as the wrapped tx becomes available — even if the user clicked Confirm
+// before the wrap finished. Resets when the flow opens/closes so a re-entry
+// doesn't replay the previous intent.
+const $confirmIntent = createStore(false).reset(flow.open).reset(flow.close);
+sample({ clock: signingPathConfirmed, fn: () => true, target: $confirmIntent });
+
+// Drive confirmModel.init off both the intent and tx updates so it fires when:
+//   (a) intent flips true while tx is already ready, or
+//   (b) tx becomes ready after intent was already set.
+// Once fired, $confirmIntent is reset so subsequent tx updates don't re-init.
+const formSubmitted = sample({
+  clock: [$confirmIntent, $tx.updates],
   source: {
+    intent: $confirmIntent,
     tx: $tx,
     coreTx: $coreTx,
     route: $route,
@@ -497,7 +517,8 @@ const formSubmitted = sample({
     signatory: $signatory,
     chain: $chain,
   },
-}).filterMap(({ chain, tx, coreTx, route, initiator, signatory }) => {
+}).filterMap(({ intent, chain, tx, coreTx, route, initiator, signatory }) => {
+  if (!intent) return undefined;
   if (
     nonNullable(coreTx) &&
     nonNullable(chain) &&
@@ -505,32 +526,12 @@ const formSubmitted = sample({
     nonNullable(signatory) &&
     nonNullable(tx)
   ) {
-    return [
-      {
-        tx,
-        coreTx,
-        route,
-        signatory,
-        initiator,
-        chain,
-      },
-    ];
+    return [{ tx, coreTx, route, signatory, initiator, chain }];
   }
 });
 
-sample({
-  clock: formSubmitted,
-  fn: (event) => {
-    return {
-      event,
-      step: Step.CONFIRM,
-    };
-  },
-  target: spread({
-    event: confirmModel.init,
-    step: stepChanged,
-  }),
-});
+sample({ clock: formSubmitted, target: confirmModel.init });
+sample({ clock: formSubmitted, fn: () => false, target: $confirmIntent });
 
 // Confirm → back to Step 2 (the path picker). $signingPath is preserved so the user
 // doesn't lose their picked path on backtrack.
