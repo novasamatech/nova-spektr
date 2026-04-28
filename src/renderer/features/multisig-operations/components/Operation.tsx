@@ -145,7 +145,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
         <Accordion.Button buttonClass="px-4 py-2">
           <div className="flex h-[52px] w-full items-center gap-x-2 overflow-hidden">
             {proxyEdit ? (
-              <EditControllerOperationCard info={proxyEdit} chain={chains[operation.chainId]} wallets={wallets} />
+              <EditControllerOperationCard info={proxyEdit} chain={chains[operation.chainId]} />
             ) : (
               <div className="flex w-[450px] items-center gap-x-2">
                 <OperationIcon operation={operation} account={multisigAccount} />

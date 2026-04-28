@@ -1,14 +1,16 @@
 import { useStoreMap, useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { toAddress, toShortAddress } from '@/shared/lib/utils';
+import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
 import { multisigCandidates } from '@/aggregates/multisig-candidates';
+import { WalletDetails } from '@/features/wallet-details';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { parseProxyEditOperation } from '../lib/proxy-edit';
 
@@ -26,6 +28,8 @@ export const EditControllerOperationDetails = ({ operation }: Props) => {
   });
 
   const candidates = useUnit(multisigCandidates.$candidates);
+  const wallets = useUnit(walletModel.$wallets);
+  const allAccounts = useUnit(accounts.$list);
 
   const info = parseProxyEditOperation(operation);
 
@@ -34,21 +38,20 @@ export const EditControllerOperationDetails = ({ operation }: Props) => {
     return candidates.find(c => c.accountId === info.newControllerAccountId) ?? null;
   }, [candidates, info]);
 
-  const oldControllerName = useMemo(() => {
-    if (!info) return '';
-    const fromCandidate = candidates.find(c => c.accountId === info.oldControllerAccountId);
-    if (fromCandidate) return fromCandidate.name;
+  const proxiedWallet = useMemo(() => {
+    const accountId = operation.proxiedAccountId ?? operation.multisigAccountId;
+    if (!accountId) return null;
+    const account = allAccounts.find(a => a.accountId === accountId);
+    if (!account) return null;
+    return wallets.find(w => w.id === account.walletId) ?? null;
+  }, [allAccounts, wallets, operation.proxiedAccountId, operation.multisigAccountId]);
 
-    return toShortAddress(toAddress(info.oldControllerAccountId, { prefix: chain?.addressPrefix }), 6);
-  }, [candidates, info, chain?.addressPrefix]);
+  const [isOverviewOpen, setIsOverviewOpen] = useState(false);
 
   if (!info) return null;
 
   const oldAddress = toAddress(info.oldControllerAccountId, { prefix: chain?.addressPrefix });
   const newAddress = toAddress(info.newControllerAccountId, { prefix: chain?.addressPrefix });
-
-  const newControllerName =
-    newControllerCandidate?.name || toShortAddress(newAddress, 6) || t('operations.editController.details.unknownName');
 
   const newSignatories = newControllerCandidate?.signatories ?? null;
   const newThreshold = newControllerCandidate?.threshold ?? null;
@@ -59,15 +62,14 @@ export const EditControllerOperationDetails = ({ operation }: Props) => {
       <SmallTitleText>{t('operations.editController.details.headerLabel')}</SmallTitleText>
 
       <div className="flex items-center gap-x-2">
-        <span className="opacity-40 grayscale">
-          <Identicon address={oldAddress} size={28} background={false} canCopy={false} />
-        </span>
+        <Identicon address={oldAddress} size={28} background={false} canCopy={false} />
         <span aria-hidden="true" className="text-text-tertiary">
           →
         </span>
         <Identicon address={newAddress} size={28} background={false} canCopy={false} />
-
-        <FootnoteText className="ml-2 truncate text-text-primary">{newControllerName}</FootnoteText>
+        {newControllerCandidate?.name && (
+          <FootnoteText className="ml-2 truncate text-text-primary">{newControllerCandidate.name}</FootnoteText>
+        )}
       </div>
 
       <div className="flex flex-col gap-y-2">
@@ -109,21 +111,15 @@ export const EditControllerOperationDetails = ({ operation }: Props) => {
         </FootnoteText>
       </div>
 
-      <div className="flex flex-col gap-y-1">
-        <SmallTitleText>{t('operations.editController.details.pathSection')}</SmallTitleText>
-        <FootnoteText className="text-text-secondary">
-          {t('operations.editController.details.pathStub', {
-            controller: oldControllerName || t('operations.editController.details.unknownName'),
-          })}
-        </FootnoteText>
-      </div>
+      {proxiedWallet && (
+        <>
+          <Button className="self-start p-0" size="sm" variant="text" onClick={() => setIsOverviewOpen(true)}>
+            {t('operations.editController.details.openOverview')}
+          </Button>
 
-      {/* TODO(edit-flexible-controller): route to the proxied wallet's wallet-details modal.
-          Wallet details is opened via walletSelectModel + a modal feature, not by URL — wiring
-          that up is out of scope for Task 13. The link is rendered as a visual stub. */}
-      <Button className="self-start p-0" size="sm" variant="text" onClick={() => {}}>
-        {t('operations.editController.details.openProxyDetails')}
-      </Button>
+          <WalletDetails isOpen={isOverviewOpen} wallet={proxiedWallet} onClose={() => setIsOverviewOpen(false)} />
+        </>
+      )}
     </div>
   );
 };

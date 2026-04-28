@@ -1,24 +1,21 @@
-import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
-import { type Chain, type Wallet } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAddress, toShortAddress } from '@/shared/lib/utils';
+import { toAddress } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
-import { accounts } from '@/domains/network';
+import { Tooltip } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { type ProxyEditInfo } from '../lib/proxy-edit';
 
 type Props = {
   info: ProxyEditInfo;
   chain: Chain | undefined;
-  wallets: Wallet[];
 };
 
-export const EditControllerOperationCard = memo(({ info, chain, wallets }: Props) => {
+export const EditControllerOperationCard = memo(({ info, chain }: Props) => {
   const { t } = useI18n();
-  const allAccounts = useUnit(accounts.$list);
 
   const addressPrefix = chain?.addressPrefix;
 
@@ -31,27 +28,26 @@ export const EditControllerOperationCard = memo(({ info, chain, wallets }: Props
     [info.newControllerAccountId, addressPrefix],
   );
 
-  const newControllerName = useMemo(() => {
-    const account = allAccounts.find(a => a.accountId === info.newControllerAccountId);
-    if (account) {
-      const wallet = wallets.find(w => w.id === account.walletId);
-      if (wallet?.name) return wallet.name;
-      if (account.name) return account.name;
-    }
+  const title = info.isTrustedFlow
+    ? t('operations.editController.trustedTitle')
+    : t('operations.editController.verifiedTitle');
 
-    return toShortAddress(newAddress, 6);
-  }, [allAccounts, wallets, info.newControllerAccountId, newAddress]);
+  const tagLabel = info.isTrustedFlow
+    ? t('operations.editController.trustedTag')
+    : t('operations.editController.verifiedTag');
 
-  const title = t('operations.editController.title', {
-    name: newControllerName || t('operations.editController.unknownName'),
-  });
+  const tagTooltip = info.isTrustedFlow
+    ? t('operations.editController.trustedTooltip')
+    : t('operations.editController.verifiedTooltip');
+
+  const tagPalette = info.isTrustedFlow
+    ? 'border-icon-warning/30 bg-icon-warning/8 text-icon-warning'
+    : 'border-icon-positive/30 bg-icon-positive/8 text-icon-positive';
 
   return (
     <div className="flex w-[450px] items-center gap-x-3">
       <div className="flex shrink-0 items-center gap-x-1">
-        <span className="opacity-40 grayscale">
-          <Identicon address={oldAddress} size={28} background={false} canCopy={false} />
-        </span>
+        <Identicon address={oldAddress} size={28} background={false} canCopy={false} />
         <span aria-hidden="true" className="text-text-tertiary">
           →
         </span>
@@ -62,13 +58,14 @@ export const EditControllerOperationCard = memo(({ info, chain, wallets }: Props
         <FootnoteText className="truncate text-text-primary">{title}</FootnoteText>
         <div className="flex items-center gap-x-2">
           {chain && <ChainTitle chainId={chain.chainId} fontClass="text-help-text text-text-tertiary" />}
-          {info.isTrustedFlow && (
-            <div className="inline-flex items-center rounded-[20px] border border-icon-warning/30 bg-icon-warning/8 px-2.5 py-1">
-              <CaptionText className="text-icon-warning uppercase">
-                {t('operations.editController.trustedTag')}
-              </CaptionText>
-            </div>
-          )}
+          <Tooltip>
+            <Tooltip.Trigger>
+              <div className={`inline-flex items-center rounded-[20px] border px-2.5 py-1 ${tagPalette}`}>
+                <CaptionText className="text-inherit uppercase">{tagLabel}</CaptionText>
+              </div>
+            </Tooltip.Trigger>
+            <Tooltip.Content>{tagTooltip}</Tooltip.Content>
+          </Tooltip>
         </div>
       </div>
     </div>

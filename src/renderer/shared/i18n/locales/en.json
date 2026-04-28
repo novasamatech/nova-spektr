@@ -2793,19 +2793,20 @@
       "vote": "Vote"
     },
     "editController": {
-      "title": "Add proxy controller \"{{name}}\"",
-      "trustedTag": "Trusted flow — old controller removed in same tx",
-      "unknownName": "(new controller)",
+      "trustedTag": "Trusted flow",
+      "trustedTooltip": "Old controller is removed in the same transaction",
+      "trustedTitle": "Add proxy",
+      "verifiedTag": "Verified flow",
+      "verifiedTooltip": "New controller is added; the old one is removed later, after verification",
+      "verifiedTitle": "Edit multisig in proxy",
       "details": {
         "headerLabel": "Controller change",
         "targetSection": "New controller",
-        "threshold": "{{threshold}} of {{total}}",
+        "threshold": "{threshold} of {total}",
         "modeSection": "Execution mode",
         "trustedDescription": "Trusted (atomic): old controller will be removed in the same transaction.",
         "verifiedDescription": "Verified (add-only): old controller will be removed later, after verification.",
-        "pathSection": "Signing path",
-        "pathStub": "Signed via {{controller}}",
-        "openProxyDetails": "Open proxy details",
+        "openOverview": "Open overview",
         "unknownName": "(unknown)"
       }
     },
