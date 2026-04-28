@@ -84,7 +84,12 @@ const submitExtrinsicFx = createEffect((payloads: SubmitInput) => {
     Array.from(payloads.entries()).map(([index, { api, extrinsic, signatory, signature, payload }]) => {
       return transactionService.submitExtrinsic(extrinsic, signature, payload, signatory, api).then((result) => {
         if (result.executed) {
-          boundExtrinsicSucceeded({ id: index, signatory, params: result.params });
+          const dispatchError = result.params.proxyError || result.params.multisigError;
+          if (dispatchError) {
+            boundExtrinsicFailed({ id: index, signatory, params: dispatchError });
+          } else {
+            boundExtrinsicSucceeded({ id: index, signatory, params: result.params });
+          }
         } else {
           boundExtrinsicFailed({ id: index, signatory, params: result.error });
         }

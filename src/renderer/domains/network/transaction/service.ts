@@ -291,26 +291,29 @@ async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise): Promise<Ex
   return [extrinsic];
 }
 
-function getBatchWrappedCallsFromExtrinsic(extrinsic: Extrinsic): Call[] {
-  if (isBatchExtrinsic(extrinsic)) {
-    const callsArg = extrinsic.args.at(0);
-    const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
+const INNER_CALL_RECURSION_LIMIT = 16;
 
-    return calls.flatMap(call => getBatchWrappedCallsFromCall(call));
+function getInnerCallsFromCall(call: Call, depth = 0): Call[] {
+  if (depth >= INNER_CALL_RECURSION_LIMIT) return [call];
+
+  const next = depth + 1;
+
+  if (call.section === 'utility') {
+    if (['batchAll', 'batch', 'forceBatch'].includes(call.method)) {
+      const callsArg = call.args?.at?.(0) || call.args?.[0];
+      const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
+
+      return calls.flatMap(nested => getInnerCallsFromCall(nested, next));
+    }
+    if (call.method === 'withWeight') {
+      return getInnerCallsFromCall(call.args[0] as unknown as Call, next);
+    }
+    if (call.method === 'dispatchAs' || call.method === 'asDerivative') {
+      return getInnerCallsFromCall(call.args[1] as unknown as Call, next);
+    }
   }
 
-  return [extrinsic.method as Call];
-}
-
-function getBatchWrappedCallsFromCall(call: Call): Call[] {
-  if (call.section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(call.method)) {
-    const callsArg = call.args?.at?.(0) || call.args?.[0];
-    const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
-
-    return calls.flatMap(nestedCall => getBatchWrappedCallsFromCall(nestedCall));
-  }
-
-  return [call as Call];
+  return [call];
 }
 
 const decodeDispatchError = (error: DispatchError | SpRuntimeDispatchError, registry: Registry): string => {
@@ -356,6 +359,7 @@ async function submitExtrinsic(
           const extrinsicIndex = txIndex;
           let isFinalApprove = false;
           let multisigError = '';
+          let proxyError = '';
 
           if (internalError) {
             resolve({
@@ -389,6 +393,10 @@ async function submitExtrinsic(
                 multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, extrinsic.registry) : '';
               }
 
+              if (api.events.proxy?.ProxyExecuted?.is(event) && !proxyError && event.data[0].isErr) {
+                proxyError = decodeDispatchError(event.data[0].asErr, extrinsic.registry);
+              }
+
               if (api.events.system.ExtrinsicSuccess.is(event)) {
                 resolve({
                   executed: true,
@@ -401,6 +409,7 @@ async function submitExtrinsic(
                     extrinsicHash: actualTxHash,
                     isFinalApprove,
                     multisigError,
+                    proxyError,
                   },
                 });
               }
@@ -450,8 +459,7 @@ export const transactionService = {
   getExtrinsicWeight,
   getTransactionWeight,
 
-  getBatchWrappedCallsFromExtrinsic,
-  getBatchWrappedCallsFromCall,
+  getInnerCallsFromCall,
 
   splitExtrinsic,
   submitExtrinsic,
