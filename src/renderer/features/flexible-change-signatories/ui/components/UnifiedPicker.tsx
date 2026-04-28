@@ -34,7 +34,10 @@ export const UnifiedPicker = ({ chain, currentControllerAddress, currentSignator
     changeSignatoriesModel.targetSelected,
   ]);
   const [search, setSearch] = useState('');
-  const [modifyExpanded, setModifyExpanded] = useState<boolean>(target?.kind === 'modify');
+  // Local UI state — kept independent of $selectedTarget on purpose. Clicking
+  // the toggle reveals/hides the modify form; selection is driven by the
+  // form's onChange (or by selecting an existing candidate below).
+  const [modifyExpanded, setModifyExpanded] = useState(false);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -57,7 +60,6 @@ export const UnifiedPicker = ({ chain, currentControllerAddress, currentSignator
         </FootnoteText>
         <button
           aria-expanded={modifyExpanded}
-          aria-pressed={target?.kind === 'modify'}
           className={cnTw(
             'flex w-full items-center rounded-lg p-3 text-left transition-colors',
             target?.kind === 'modify'
