@@ -5,9 +5,9 @@ import { createGate } from 'effector-react';
 import { and, delay, not, or, spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
-import { type CreateFlexibleMultisigOperationParams, type Wallet, NotificationType } from '@/shared/core';
+import { type CreateFlexibleMultisigOperationParams, type Wallet, CryptoType, NotificationType } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
-import { Step, assert, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
+import { Step, assert, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import {
@@ -19,7 +19,7 @@ import {
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts, balanceService, multisigOperation } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { networkModel } from '@/entities/network';
+import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { isEditFlexibleTransaction, transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
@@ -28,6 +28,7 @@ import { multisigService } from '@/features/multisig-wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
+import { type PathNode } from '../lib/path';
 import { type ExecutionMode, type SelectedTarget } from '../types';
 
 import { confirmModel } from './confirm-model';
@@ -38,14 +39,16 @@ const flow = createGate<{ wallet: Wallet | null }>();
 
 const stepChanged = createEvent<Step>();
 const selectSignatory = createEvent<AnyAccount | null>();
-const signerConfirmed = createEvent();
-const confirmGoBack = createEvent();
 const targetSelected = createEvent<SelectedTarget>();
 const executionModeChanged = createEvent<ExecutionMode>();
+const nextFromSelectController = createEvent();
+const signingPathConfirmed = createEvent<PathNode[]>();
+const confirmGoBack = createEvent();
 
-const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.close);
+const $step = restore(stepChanged, Step.SELECT_CONTROLLER).reset(flow.close);
 const $selectedTarget = restore<SelectedTarget | null>(targetSelected, null).reset(flow.open).reset(flow.close);
 const $executionMode = restore<ExecutionMode>(executionModeChanged, 'verified').reset(flow.open).reset(flow.close);
+const $signingPath = restore<PathNode[]>(signingPathConfirmed, []).reset(flow.open).reset(flow.close);
 
 const $initiatorWallet = flow.state.map((state) => state.wallet ?? null);
 
@@ -144,8 +147,36 @@ const $proxyDeposit = combine(formModel.$api, $proxiesInfo, (api, proxiesInfo) =
   return proxyService.getProxyDepositDelta(api, proxiesInfo.deposit, proxiesInfo.accounts.length + 1);
 });
 
+// Effective threshold + signatories of the *new* controller, derived from $selectedTarget.
+// Replaces the old form-model-driven path. For 'modify' we use the inline editor's values;
+// for 'existing' we use the candidate's own threshold/signatories.
+const $effectiveThreshold = $selectedTarget.map<number | null>((target) => {
+  if (nullable(target)) return null;
+  return target.kind === 'existing' ? target.candidate.threshold : target.threshold;
+});
+
+const $effectiveSignatories = $selectedTarget.map<AccountId[]>((target) => {
+  if (nullable(target)) return [];
+  return target.kind === 'existing' ? target.candidate.signatories : target.signatories;
+});
+
+const $newControllerAccountId = combine(
+  {
+    target: $selectedTarget,
+    chain: $chain,
+  },
+  ({ target, chain }) => {
+    if (nullable(target) || nullable(chain)) return null;
+    if (target.kind === 'existing') return target.candidate.accountId;
+
+    const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
+
+    return accountUtils.getMultisigAccountId(target.signatories, target.threshold, cryptoType);
+  },
+);
+
 const { $multisigDeposit, $pending: $pendingMultisigDeposit } = createMultisigDeposit({
-  $threshold: formModel.$threshold,
+  $threshold: $effectiveThreshold,
   $api: formModel.$api,
 });
 
@@ -164,6 +195,9 @@ const $totalDeposit = combine(
 
 // form management
 
+// formModel.populateForm seeds $chain (still consumed by formModel.$api / $asset which
+// drive several stores in this file). The form-model's signatories/threshold are no
+// longer the source of truth for the new controller — that lives in $selectedTarget.
 sample({
   clock: flow.open,
   source: $chain,
@@ -171,31 +205,39 @@ sample({
   target: formModel.populateForm,
 });
 
-sample({
-  clock: flow.open,
-  source: $flexibleMultisigAccount,
-  fn: (acc) => acc?.threshold ?? null,
-  target: formModel.thresholdChanged,
-});
-
 // transactions
 
-const $reassignTx = combine(
+const $controllerEditTx = combine(
   {
     chain: $chain,
     multisigAccount: $flexibleMultisigAccount,
     signer: $signatory,
-    newMultisigAccountId: formModel.$newMultisigAccountId,
+    newControllerAccountId: $newControllerAccountId,
+    executionMode: $executionMode,
   },
-  ({ chain, newMultisigAccountId, multisigAccount, signer }) => {
-    if (nullable(multisigAccount) || nullable(signer) || nullable(chain) || nullable(newMultisigAccountId)) {
+  ({ chain, multisigAccount, signer, newControllerAccountId, executionMode }) => {
+    if (nullable(multisigAccount) || nullable(signer) || nullable(chain) || nullable(newControllerAccountId)) {
       return null;
     }
 
+    const oldAccountId = multisigService.getMultisigAccountId(multisigAccount);
+
+    if (executionMode === 'verified') {
+      // Verified path: only addProxy. The user removes the old delegate themselves
+      // after verifying the new controller.
+      return transactionBuilder.buildAddProxy({
+        chain,
+        accountId: oldAccountId,
+        delegateAccountId: newControllerAccountId,
+        type: multisigAccount.proxyType,
+      });
+    }
+
+    // Trusted path: batchAll(addProxy + removeProxy).
     return transactionBuilder.buildProxyReassign({
       chain,
-      oldAccountId: multisigService.getMultisigAccountId(multisigAccount),
-      newAccountId: newMultisigAccountId,
+      oldAccountId,
+      newAccountId: newControllerAccountId,
       signerAccountId: signer.accountId,
       proxyType: multisigAccount.proxyType,
     });
@@ -208,24 +250,37 @@ const { $tx: $flexibleTx, $route } = createComplexTxStore({
   signatory: $signatory,
   accounts: accounts.$list,
   chain: $chain,
-  transaction: $reassignTx,
+  transaction: $controllerEditTx,
 });
+
+// Whether the *new* controller multisig already exists locally (so we can skip the remark).
+const $isNewControllerMultisigKnown = combine(
+  {
+    accounts: accounts.$list,
+    newControllerAccountId: $newControllerAccountId,
+  },
+  ({ accounts, newControllerAccountId }) => {
+    if (nullable(newControllerAccountId)) return false;
+
+    return accounts.some(
+      (a) => accountUtils.isAnyMultisigAccount(a) && multisigService.getMultisigAccountId(a) === newControllerAccountId,
+    );
+  },
+);
 
 const $coreTx = combine(
   {
     chain: $chain,
     signer: $signatory,
-    signatories: signatoryModel.$signatories,
-    threshold: formModel.$threshold,
-    isMultisigExists: formModel.$isMultisigExists,
+    effectiveSignatories: $effectiveSignatories,
+    threshold: $effectiveThreshold,
+    isMultisigExists: $isNewControllerMultisigKnown,
     flexibleTx: $flexibleTx,
   },
-  ({ chain, threshold, signatories, signer, isMultisigExists, flexibleTx }) => {
+  ({ chain, threshold, effectiveSignatories, signer, isMultisigExists, flexibleTx }) => {
     if (nullable(signer) || nullable(chain) || nullable(threshold) || nullable(flexibleTx)) {
       return null;
     }
-
-    const signatoriesWrapped = signatories.filter((a) => a.address !== '').map((s) => toAccountId(s.address));
 
     let transactions;
     if (isMultisigExists) {
@@ -235,7 +290,7 @@ const $coreTx = combine(
         chainId: chain.chainId,
         accountId: signer.accountId,
         threshold,
-        signatories: signatoriesWrapped,
+        signatories: effectiveSignatories,
       });
 
       transactions = [remarkTx, flexibleTx];
@@ -294,13 +349,13 @@ const { $errors, $valid } = createTxValidationStore({
 
 const $isTheSameMultisig = combine(
   {
-    newMultisigAccountId: formModel.$newMultisigAccountId,
+    newControllerAccountId: $newControllerAccountId,
     multisigAccount: $flexibleMultisigAccount,
   },
-  ({ multisigAccount, newMultisigAccountId }) => {
-    if (!newMultisigAccountId || !multisigAccount) return false;
+  ({ multisigAccount, newControllerAccountId }) => {
+    if (!newControllerAccountId || !multisigAccount) return false;
 
-    return newMultisigAccountId === multisigService.getMultisigAccountId(multisigAccount);
+    return newControllerAccountId === multisigService.getMultisigAccountId(multisigAccount);
   },
 );
 
@@ -323,38 +378,34 @@ const $isEditOperationAlreadyExists = combine(
 
 const $isLoading = or($pendingFee, $pendingMultisigDeposit);
 
+// "Can proceed from confirm step" — gated on a fully-resolved new controller, no loading,
+// no conflict with existing edit operation, and no self-target.
 const $canProceedFromForm = and(
-  formModel.$threshold.map((threshold) => nonNullable(threshold) && threshold > 0),
+  $newControllerAccountId.map((id) => nonNullable(id)),
+  $effectiveThreshold.map((t) => nonNullable(t) && t > 0),
   not($isLoading),
   not($isTheSameMultisig),
   not($isEditOperationAlreadyExists),
-  not(signatoryModel.$hasEmptySignatories),
-  not(signatoryModel.$hasDuplicateSignatories),
 );
 
 const $canSubmit = and($valid, $canProceedFromForm);
 
-// submit
+// step transitions
 
-const $shouldShowSignerSelection = $signatories.map((s) => s.length > 1);
-
+// Step 1 → Step 2: requires a non-null $selectedTarget. The UI keeps the Next button
+// disabled until that's true; this filter is a defence-in-depth guard.
 sample({
-  clock: formModel.formSubmit,
-  source: $shouldShowSignerSelection,
-  filter: Boolean,
-  fn: () => Step.SIGNER_SELECTION,
+  clock: nextFromSelectController,
+  source: $selectedTarget,
+  filter: nonNullable,
+  fn: () => Step.SIGNING_PATH,
   target: stepChanged,
 });
 
-sample({
-  clock: formModel.formSubmit,
-  source: $shouldShowSignerSelection,
-  filter: (show) => !show,
-  target: signerConfirmed,
-});
-
+// Step 2 → Step 3 (confirm). When the path picker confirms, we kick off confirmModel.init
+// with the resolved tx/route plus advance the step.
 const formSubmitted = sample({
-  clock: signerConfirmed,
+  clock: signingPathConfirmed,
   source: {
     tx: $tx,
     coreTx: $coreTx,
@@ -398,10 +449,11 @@ sample({
   }),
 });
 
+// Confirm → back to Step 2 (the path picker). $signingPath is preserved so the user
+// doesn't lose their picked path on backtrack.
 sample({
   clock: confirmGoBack,
-  source: $shouldShowSignerSelection,
-  fn: (show) => (show ? Step.SIGNER_SELECTION : Step.SIGNATORIES_THRESHOLD),
+  fn: () => Step.SIGNING_PATH,
   target: stepChanged,
 });
 
@@ -469,7 +521,7 @@ sample({
 
 sample({
   clock: delay(flow.close, 2000),
-  fn: () => Step.SIGNATORIES_THRESHOLD,
+  fn: () => Step.SELECT_CONTROLLER,
   target: stepChanged,
 });
 
@@ -483,13 +535,13 @@ sample({
   source: {
     multisigAccount: $flexibleMultisigAccount,
     initiatorWallet: $initiatorWallet,
-    signatories: signatoryModel.$signatories,
-    threshold: formModel.$threshold,
+    effectiveSignatories: $effectiveSignatories,
+    threshold: $effectiveThreshold,
     chainId: $chainId,
   },
   filter: ({ multisigAccount, initiatorWallet, threshold, chainId }) =>
     nonNullable(multisigAccount) && nonNullable(initiatorWallet) && nonNullable(threshold) && nonNullable(chainId),
-  fn: ({ multisigAccount, initiatorWallet, signatories, threshold, chainId }) => {
+  fn: ({ multisigAccount, initiatorWallet, effectiveSignatories, threshold, chainId }) => {
     const notification: CreateFlexibleMultisigOperationParams = {
       key: `${NotificationType.FLEXIBLE_MULTISIG_EDITED}:${multisigAccount!.accountId}`,
       walletId: initiatorWallet!.id,
@@ -497,12 +549,12 @@ sample({
       status: 'info',
       issuer: multisigAccount!.accountId,
       title: 'Flexible multisig wallet edited',
-      description: `${threshold}/${signatories.length} threshold`,
+      description: `${threshold}/${effectiveSignatories.length} threshold`,
       chainId: chainId!,
       multisigAccountId: multisigAccount!.accountId,
       accountId: multisigAccount!.accountId,
       accountName: multisigAccount!.name,
-      signatories: signatories.map((signatory) => toAccountId(signatory.address)),
+      signatories: effectiveSignatories,
       threshold: threshold!,
       batch: {
         title: 'notifications.toast.batch.flexibleMultisigWalletsEdited',
@@ -520,6 +572,7 @@ export const changeSignatoriesModel = {
   $signer: $signatory,
   $signatories,
   $initiatorWallet,
+  $flexibleMultisigAccount,
   $proxyDeposit,
   $multisigDeposit,
   $totalDeposit,
@@ -533,12 +586,17 @@ export const changeSignatoriesModel = {
   $isLoading,
   $selectedTarget,
   $executionMode,
+  $signingPath,
+  $effectiveThreshold,
+  $effectiveSignatories,
+  $newControllerAccountId,
   stepChanged,
   selectSignatory,
-  signerConfirmed,
   confirmGoBack,
   viewOperation,
   targetSelected,
   executionModeChanged,
+  nextFromSelectController,
+  signingPathConfirmed,
   flow,
 };

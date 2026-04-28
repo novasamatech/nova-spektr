@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset } from '@/shared/lib/utils';
@@ -11,12 +12,21 @@ import { NamedAccount } from '@/widgets/NameResolver';
 import { Fee, FeeWithLabel, MultisigDepositFee, ProxyDepositLabel } from '@/widgets/transaction-fee';
 import { changeSignatoriesModel } from '../model/change-signatories-model';
 import { confirmModel } from '../model/confirm-model';
-import { formModel } from '../model/form-model';
 import { signatoryModel } from '../model/signatory-model';
 
+import { ExecutionModeToggle } from './components/ExecutionModeToggle';
 import { SelectedSignatoriesModal } from './components/SelectedSignatoriesModal';
 
-export const ConfirmationStep = () => {
+type Props = {
+  /**
+   * Optional banner slot rendered at the top of the review block. Currently
+   * used to mount <PersistentBanner> on the Confirm step so the user can still
+   * see the was → will-become summary while reviewing the transaction.
+   */
+  banner?: ReactNode;
+};
+
+export const ConfirmationStep = ({ banner }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
@@ -25,11 +35,17 @@ export const ConfirmationStep = () => {
   const chain = useUnit(changeSignatoriesModel.$chain);
   const initiatorWallet = useUnit(changeSignatoriesModel.$initiatorWallet);
 
-  const threshold = useUnit(formModel.$threshold);
+  const threshold = useUnit(changeSignatoriesModel.$effectiveThreshold);
+  const effectiveSignatories = useUnit(changeSignatoriesModel.$effectiveSignatories);
   const multisigDeposit = useUnit(changeSignatoriesModel.$multisigDeposit);
   const proxyDeposit = useUnit(changeSignatoriesModel.$proxyDeposit);
 
-  const signatories = useUnit(signatoryModel.$signatories);
+  // Mirror effective signatories into the SelectedSignatoriesModal-friendly shape.
+  // The modal expects {address, walletId} but currently we only have AccountIds.
+  // Reuse signatoryModel.$signatories which is populated from the *current* controller
+  // signatories on flow.open — fine for the existing UI; the new "will-become"
+  // panel is the PersistentBanner / details section above.
+  const signatoriesForModal = useUnit(signatoryModel.$signatories);
 
   const signerWallet = wallets.find((wallet) => wallet.id === signer?.walletId);
 
@@ -42,16 +58,20 @@ export const ConfirmationStep = () => {
       <Modal.Content>
         <section className="relative flex h-full w-modal flex-1 flex-col px-5">
           <div className="flex max-h-full flex-1 flex-col gap-y-4">
+            {banner ? <div className="-mx-1 mb-2">{banner}</div> : null}
+
+            <ExecutionModeToggle />
+
             <div className="mb-2 flex flex-col items-center">
               <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />
             </div>
             <DetailRow label={t('createMultisigAccount.walletName')}>{initiatorWallet.name}</DetailRow>
             <DetailRow label={t('createMultisigAccount.signatoriesLabel')}>
               {chain && (
-                <SelectedSignatoriesModal signatories={signatories} chain={chain}>
+                <SelectedSignatoriesModal signatories={signatoriesForModal} chain={chain}>
                   <div className="flex items-center">
                     <Counter className="mr-2" variant="neutral">
-                      {signatories.length}
+                      {effectiveSignatories.length}
                     </Counter>
                     <IconButton name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
                   </div>
@@ -60,8 +80,8 @@ export const ConfirmationStep = () => {
             </DetailRow>
             <DetailRow label={t('createMultisigAccount.thresholdName')}>
               {t('createMultisigAccount.thresholdOutOf', {
-                threshold: threshold,
-                signatoriesLength: signatories.length,
+                threshold: threshold ?? 0,
+                signatoriesLength: effectiveSignatories.length,
               })}
             </DetailRow>
             <Separator className="border-filter-border" />

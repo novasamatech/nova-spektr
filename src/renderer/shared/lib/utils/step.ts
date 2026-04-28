@@ -14,6 +14,9 @@ export const enum Step {
   NAME_NETWORK,
   SIGNATORIES_THRESHOLD,
   SIGNER_SELECTION,
+  // Edit flexible-multisig controller
+  SELECT_CONTROLLER,
+  SIGNING_PATH,
 }
 
 /**
