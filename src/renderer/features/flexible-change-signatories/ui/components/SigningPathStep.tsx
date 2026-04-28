@@ -19,19 +19,20 @@ type PathNodeView = {
 
 /**
  * Map a PathNode to display-only data. Because PathNode already carries address
- *
- * - Name, no lookup is needed.
+ * and name, no lookup table is needed.
  */
+// Subtitle row (e.g. threshold "3 of 4", proxy type) deferred until PathNode
+// carries walletType / threshold / proxyType — wired during real picker integration.
 const toNodeView = (node: PathNode): PathNodeView => {
-  const labelMap: Record<PathNode['kind'], string> = {
-    source: 'Source',
-    multisig: 'via Multisig',
-    proxied: 'via Proxy',
-    signer: 'Signer',
+  const labelKeyMap: Record<PathNode['kind'], string> = {
+    source: 'flexibleMultisig.editController.signingPath.label.source',
+    multisig: 'flexibleMultisig.editController.signingPath.label.multisig',
+    proxied: 'flexibleMultisig.editController.signingPath.label.proxied',
+    signer: 'flexibleMultisig.editController.signingPath.label.signer',
   };
 
   return {
-    label: labelMap[node.kind],
+    label: labelKeyMap[node.kind],
     title: node.name,
     address: node.address,
     // walletType is intentionally omitted — PathNode doesn't carry it yet.
@@ -50,6 +51,8 @@ type PathCardProps = {
 };
 
 const PathCard = ({ view, size = 'md', onClick }: PathCardProps) => {
+  const { t } = useI18n();
+
   const inner = (
     <div
       className={cnTw(
@@ -58,7 +61,7 @@ const PathCard = ({ view, size = 'md', onClick }: PathCardProps) => {
         onClick && 'cursor-pointer transition-colors hover:bg-action-background-hover',
       )}
     >
-      <CaptionText className="text-text-tertiary uppercase">{view.label}</CaptionText>
+      <CaptionText className="text-text-tertiary uppercase">{t(view.label)}</CaptionText>
       <div className="flex min-w-0 items-center gap-2">
         <NodeIdenticon address={view.address} walletType={view.walletType} size={size === 'md' ? 28 : 22} />
         <div className="flex min-w-0 flex-col">
@@ -112,43 +115,47 @@ const PathArrow = () => (
 
 // ─── EllipsisCard ─────────────────────────────────────────────────────────────
 
-const EllipsisCard = ({ hiddenViews, size = 'sm' }: { hiddenViews: PathNodeView[]; size?: PathCardSize }) => (
-  <Popover>
-    <Popover.Trigger>
-      <button
-        type="button"
-        className={cnTw(
-          'flex shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-container-border bg-white transition-colors hover:bg-action-background-hover',
-          size === 'md' ? 'min-w-[68px] px-3 py-4' : 'min-w-[52px] px-3 py-2.5',
-        )}
-      >
-        <CaptionText className="text-text-tertiary uppercase">+{hiddenViews.length}</CaptionText>
-        <div className="flex items-center gap-0.5">
-          <div className="h-1 w-1 rounded-full bg-text-tertiary" />
-          <div className="h-1 w-1 rounded-full bg-text-tertiary" />
-          <div className="h-1 w-1 rounded-full bg-text-tertiary" />
-        </div>
-      </button>
-    </Popover.Trigger>
-    <Popover.Content>
-      <div className="flex w-[300px] flex-col gap-y-2 p-3">
-        {/* eslint-disable-next-line i18next/no-literal-string */}
-        <CaptionText className="text-text-tertiary uppercase">Full path</CaptionText>
-        <div className="flex flex-col gap-y-2">
-          {hiddenViews.map((v, i) => (
-            <div key={`${v.label}-${i}`} className="flex items-center gap-2.5">
-              <NodeIdenticon address={v.address} walletType={v.walletType} size={24} badgeSize={10} />
-              <div className="flex min-w-0 flex-col">
-                <CaptionText className="text-text-tertiary uppercase">{v.label}</CaptionText>
-                <FootnoteText className="truncate text-text-primary">{v.title}</FootnoteText>
+const EllipsisCard = ({ hiddenViews, size = 'sm' }: { hiddenViews: PathNodeView[]; size?: PathCardSize }) => {
+  const { t } = useI18n();
+
+  return (
+    <Popover>
+      <Popover.Trigger>
+        <button
+          type="button"
+          className={cnTw(
+            'flex shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-container-border bg-white transition-colors hover:bg-action-background-hover',
+            size === 'md' ? 'min-w-[68px] px-3 py-4' : 'min-w-[52px] px-3 py-2.5',
+          )}
+        >
+          <CaptionText className="text-text-tertiary uppercase">+{hiddenViews.length}</CaptionText>
+          <div className="flex items-center gap-0.5">
+            <div className="h-1 w-1 rounded-full bg-text-tertiary" />
+            <div className="h-1 w-1 rounded-full bg-text-tertiary" />
+            <div className="h-1 w-1 rounded-full bg-text-tertiary" />
+          </div>
+        </button>
+      </Popover.Trigger>
+      <Popover.Content>
+        <div className="flex w-[300px] flex-col gap-y-2 p-3">
+          {/* eslint-disable-next-line i18next/no-literal-string */}
+          <CaptionText className="text-text-tertiary uppercase">Full path</CaptionText>
+          <div className="flex flex-col gap-y-2">
+            {hiddenViews.map((v, i) => (
+              <div key={`${v.label}-${i}`} className="flex items-center gap-2.5">
+                <NodeIdenticon address={v.address} walletType={v.walletType} size={24} badgeSize={10} />
+                <div className="flex min-w-0 flex-col">
+                  <CaptionText className="text-text-tertiary uppercase">{t(v.label)}</CaptionText>
+                  <FootnoteText className="truncate text-text-primary">{v.title}</FootnoteText>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
-    </Popover.Content>
-  </Popover>
-);
+      </Popover.Content>
+    </Popover>
+  );
+};
 
 // ─── renderBreadcrumbCards ────────────────────────────────────────────────────
 
@@ -317,7 +324,12 @@ export const SigningPathStep = ({ currentController, onConfirm }: Props) => {
   const complete = isComplete(path);
   const last = path[path.length - 1];
 
-  const truncateTo = (index: number) => setPath(path.slice(0, index + 1));
+  const truncateTo = (index: number) => {
+    // Clicking a breadcrumb keeps the clicked node and removes everything after.
+    // Differs from prototype which removes the clicked node — production behaviour
+    // reads more naturally as "branch from here".
+    setPath(path.slice(0, index + 1));
+  };
 
   return (
     <div className="flex flex-col gap-y-4">
