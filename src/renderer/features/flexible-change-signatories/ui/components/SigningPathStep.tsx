@@ -2,7 +2,7 @@ import { type ReactNode, useState } from 'react';
 
 import { type Address, type WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, isDev } from '@/shared/lib/utils';
 import { BodyText, Button, CaptionText, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
 import { Popover } from '@/shared/ui-kit';
@@ -288,16 +288,19 @@ const StubPickerSection = ({ path, onStubFinish }: { path: PathNode[]; onStubFin
         {/* TODO: real path picker — wire wallet/proxy data in follow-up task */}
         (real path picker — wired in follow-up)
       </FootnoteText>
-      {/* DEV-ONLY stub affordance: lets downstream tasks exercise the flow */}
-      {/* eslint-disable i18next/no-literal-string */}
-      <button
-        type="button"
-        className="self-start rounded-md bg-icon-accent/12 px-3 py-1.5 text-footnote text-icon-accent transition-colors hover:bg-icon-accent/20"
-        onClick={handleStubFinish}
-      >
-        [DEV] Skip to mock signer
-      </button>
-      {/* eslint-enable i18next/no-literal-string */}
+      {/* DEV-ONLY stub affordance: lets the flow be exercised before the real
+          path picker is wired. Hidden in staging/production builds. */}
+      {isDev() && (
+        /* eslint-disable i18next/no-literal-string */
+        <button
+          type="button"
+          className="self-start rounded-md bg-icon-accent/12 px-3 py-1.5 text-footnote text-icon-accent transition-colors hover:bg-icon-accent/20"
+          onClick={handleStubFinish}
+        >
+          [DEV] Skip to mock signer
+        </button>
+        /* eslint-enable i18next/no-literal-string */
+      )}
     </div>
   );
 };

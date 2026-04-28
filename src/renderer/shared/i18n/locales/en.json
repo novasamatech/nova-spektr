@@ -1561,7 +1561,48 @@
       "verifiedUnavailable": "Adding a proxy is not available for this wallet or network, so the verified path cannot be used."
     },
     "editController": {
-      "editButton": "Edit"
+      "banner": {
+        "notSelected": "Not selected yet",
+        "was": "Was",
+        "willBecome": "Will become"
+      },
+      "editButton": "Edit",
+      "modifyCurrent": {
+        "addSignatory": "Add",
+        "derivedNote": "derived",
+        "removeSignatory": "Remove signatory",
+        "signatoriesLabel": "Signatories",
+        "thresholdLabel": "Threshold"
+      },
+      "mode": {
+        "trustedBullet1": "Atomic — new controller is added and old one is removed in one transaction",
+        "trustedBullet2": "Cannot be undone if the proxied account has no other active proxy",
+        "trustedBullet3": "Do not use if you want to verify the new controller first",
+        "trustedTitle": "Trusted flow",
+        "verifiedBullet1": "New controller is added; old one stays",
+        "verifiedBullet2": "Verify the new controller before retiring the old one",
+        "verifiedBullet3": "Recommended",
+        "verifiedTitle": "Verified flow (default)"
+      },
+      "picker": {
+        "fromAddressBook": "From address book",
+        "modifySection": "Modify",
+        "modifyTitle": "Modify current multisig",
+        "myWallets": "My multisig wallets",
+        "next": "Next",
+        "search": "Search wallets and address book…"
+      },
+      "signingPath": {
+        "complete": "Continue",
+        "completeHint": "Pick the wallet that will sign this operation",
+        "label": {
+          "multisig": "Multisig",
+          "proxied": "Proxied",
+          "signer": "Signer",
+          "source": "Source"
+        },
+        "next": "Next"
+      }
     },
     "editSubtitle": "Change the signatories and set the signatory threshold for your flexible multisig.",
     "editTitleOn": "Edit flexible multisig on",

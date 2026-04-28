@@ -19,6 +19,7 @@ import {
   isRemovePureProxyTransaction,
 } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
+import { isProxyEditOperation } from '@/features/multisig-operations';
 import { NamedAccount } from '@/widgets/NameResolver';
 
 export const proxyOperationDetailFeature = createFeature({
@@ -73,6 +74,12 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const chains = useUnit(networkModel.$chains);
     const chain = chains[operation.chainId];
+
+    // Proxy-edit operations get a richer custom panel via multisig-operations/proxy-edit-details.
+    // Skip the generic delegate/revoke rows here to avoid duplicate content in the slot.
+    if (isProxyEditOperation(operation)) {
+      return null;
+    }
 
     const result = [];
 

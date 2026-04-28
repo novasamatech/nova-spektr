@@ -15,5 +15,7 @@ export { multisigOperationsFeature } from './model/feature';
 export { deepLinkModel } from './model/deep-link';
 export { exportModel } from './model/export';
 
+export { type ProxyEditInfo, isProxyEditOperation, parseProxyEditOperation } from './lib/proxy-edit';
+
 // Side-effect import: registers the proxy-edit details panel into operationDetailsSlot.
 import './model/proxy-edit-details-feature';

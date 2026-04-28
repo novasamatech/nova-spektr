@@ -94,9 +94,6 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
     );
   }
 
-  const showBanner =
-    isStep(step, Step.SELECT_CONTROLLER) || isStep(step, Step.SIGNING_PATH) || isStep(step, Step.CONFIRM);
-
   return (
     <Modal
       isOpen={isModalOpen}
@@ -113,7 +110,7 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
       {isStep(step, Step.CONFIRM) && (
         <ConfirmationStep
           banner={
-            showBanner && chain && currentControllerAddress ? (
+            chain && currentControllerAddress ? (
               <PersistentBanner
                 currentControllerAddress={currentControllerAddress}
                 currentSignatories={currentSignatories}
