@@ -22,19 +22,37 @@ const isRemoveProxy = (tx: DecodedTransaction): boolean => tx.section === 'proxy
 // `system.remarkWithEvent`, and we deliberately don't conflate the two.
 const isPlainRemark = (tx: DecodedTransaction): boolean => tx.section === 'system' && tx.method === 'remark';
 
-const unwrapProxy = (tx: DecodedTransaction | null): DecodedTransaction | null => {
+// Locate the inner batch that defines an edit-flexible op.
+//
+// Production shape is `proxy.proxy(real, call=batchAll([addProxy, removeProxy|marker]))`.
+// When the new-controller multisig isn't known locally, the producer wraps that proxy.proxy
+// in an outer batchAll alongside a `system.remarkWithEvent` carrying new-ctrl metadata
+// (see `change-signatories-model.ts > $coreTx`). We accept either shape:
+//   - A batch that directly contains addProxy is treated as the edit batch.
+//   - A batch with no addProxy at this level is recursed into: any proxy.proxy child
+//     gets unwrapped and its inner batch is returned.
+const findEditFlexibleBatch = (tx: DecodedTransaction | null): DecodedTransaction[] | null => {
   if (nullable(tx)) return null;
-  if (tx.section === 'proxy' && tx.method === 'proxy') {
-    const inner = tx.args['transaction'];
-    return unwrapProxy((inner as DecodedTransaction | null) ?? null);
-  }
-  return tx;
-};
 
-const getBatchedTxs = (tx: DecodedTransaction): DecodedTransaction[] | null => {
-  if (tx.section !== 'utility' || !BATCH_METHODS.has(tx.method)) return null;
-  const txs = tx.args['transactions'];
-  return Array.isArray(txs) ? (txs as DecodedTransaction[]) : null;
+  if (tx.section === 'proxy' && tx.method === 'proxy') {
+    const inner = (tx.args['transaction'] as DecodedTransaction | null) ?? null;
+    return findEditFlexibleBatch(inner);
+  }
+
+  if (tx.section === 'utility' && BATCH_METHODS.has(tx.method)) {
+    const txs = tx.args['transactions'];
+    if (!Array.isArray(txs)) return null;
+    const arr = txs as DecodedTransaction[];
+    // Direct hit: this batch is the edit batch itself.
+    if (arr.some(isAddProxy)) return arr;
+    // Otherwise walk children — supports the outer-wrap-with-metadata-remark shape.
+    for (const child of arr) {
+      const found = findEditFlexibleBatch(child);
+      if (found) return found;
+    }
+  }
+
+  return null;
 };
 
 type ProxyArgs = { delegate: AccountId; proxyType: ProxyType };
@@ -58,11 +76,10 @@ const findMarker = (txs: DecodedTransaction[]): EditControllerMarkerPayload | nu
 };
 
 export const parseProxyEditOperation = (operation: MultisigOperation): ProxyEditInfo | null => {
-  const inner = unwrapProxy(operation.transaction);
-  if (nullable(inner)) return null;
-
-  // Bare `add_proxy` (no batch) is a plain proxy addition — not our edit-flexible flow.
-  const batched = getBatchedTxs(inner);
+  // Bare `add_proxy` (no batch) is a plain proxy addition — not our edit-flexible flow,
+  // so we deliberately require the proxy.proxy → batchAll structure (handled by
+  // findEditFlexibleBatch).
+  const batched = findEditFlexibleBatch(operation.transaction);
   if (!batched) return null;
 
   const addTx = batched.find(isAddProxy);

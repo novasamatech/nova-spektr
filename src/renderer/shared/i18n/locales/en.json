@@ -2829,12 +2829,11 @@
       "vote": "Vote"
     },
     "editController": {
+      "title": "Edit flexible multisig",
       "trustedTag": "Trusted flow",
       "trustedTooltip": "Old controller is removed in the same transaction",
-      "trustedTitle": "Add proxy",
       "verifiedTag": "Verified flow",
       "verifiedTooltip": "New controller is added; the old one is removed later, after verification",
-      "verifiedTitle": "Edit multisig in proxy",
       "details": {
         "headerLabel": "Controller change",
         "previousSection": "Old controller",
@@ -3607,7 +3606,7 @@
       "proxyVia": "via",
       "removeButton": "Remove",
       "removeMessage": "Are you sure you want to remove { walletName }?",
-      "removeProxyAction": "Revoke authority",
+      "removeProxyAction": "Delete",
       "removeTitle": "Remove wallet",
       "removeWalletDesc": "Are you sure you want to remove {walletName}?",
       "removeWalletTitle": "Remove wallet",

@@ -17,6 +17,7 @@ import { AddPureProxied } from '@/features/proxied-add-pure';
 import { walletActionsSlot as proxiedActionsSlot } from '@/features/proxied-wallet';
 import { AddProxy } from '@/features/proxy-add';
 import { walletActionsSlot as walletConnectActionsSlot } from '@/features/wallet-connect-wallet';
+import { walletSelectUI } from '@/features/wallet-select';
 import { ExportKeysModal } from '@/features/wallets/ExportKeys';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
@@ -24,8 +25,9 @@ import { walletActionsSlot as watchOnlyActionsSlot } from '@/features/watch-only
 
 export { walletDetailsUtils } from './lib/utils';
 
+import { viewDetailsModel } from './model/view-details-model';
 import { walletConnectForget } from './model/walletConnectForgot';
-import { WalletDetails } from './ui/components';
+import { ViewDetailsMount, WalletDetails } from './ui/components';
 
 export { overviewSlot as simpleOverviewSlot } from './ui/wallets/SimpleWalletDetails';
 export { overviewSlot as vaultOverviewSlot } from './ui/wallets/VaultWalletDetails';
@@ -35,7 +37,7 @@ export { overviewSlot as walletConnectOverviewSlot } from './ui/wallets/WalletCo
 export { overviewSlot as watchOnlyOverviewSlot } from './ui/wallets/WatchOnlyWalletDetails';
 export { overviewSlot as flexibleOverviewSlot } from './ui/wallets/FlexibleWalletDetails';
 
-export { WalletDetails };
+export { ViewDetailsMount, WalletDetails };
 
 /**
  * The reason for the existence of this feature is WalletDetails component
@@ -85,7 +87,6 @@ const DropdownItem = (props: DropdownItemProps) => {
 
 walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
   useGate(walletConnectForget.flow, { accounts: wallet.accounts });
-  const [isWalletDetailsOpen, setIsWalletDetailsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const { t } = useI18n();
@@ -100,7 +101,13 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
       icon: 'info',
       title: t('walletDetails.common.viewDetails'),
       testId: TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ITEM_VIEW_DETAILS,
-      onClick: () => setIsWalletDetailsOpen(true),
+      // Open via a model so the modal lives at app root (see ViewDetailsMount).
+      // Closing the wallet-selector Popover unmounts this slot, which would also
+      // unmount a locally-stored modal — keeping it at root sidesteps that.
+      onClick: () => {
+        viewDetailsModel.requested(wallet);
+        walletSelectUI.closed();
+      },
     },
     {
       component: (
@@ -209,23 +216,15 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
   }
 
   return (
-    <>
-      <Dropdown keepOpen avoidCollisions open={isDropdownOpen} onToggle={setIsDropdownOpen}>
-        <Dropdown.Trigger>
-          <IconButton testId={TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ACTIONS} name="more" />
-        </Dropdown.Trigger>
-        <Dropdown.Content>
-          {items.map((item, index) => (
-            <DropdownItem key={item.title || `item-${index}`} {...item} />
-          ))}
-        </Dropdown.Content>
-      </Dropdown>
-
-      <WalletDetails
-        wallet={wallet}
-        isOpen={isWalletDetailsOpen}
-        onClose={createModalCloseHandler(() => setIsWalletDetailsOpen(false))}
-      />
-    </>
+    <Dropdown keepOpen avoidCollisions open={isDropdownOpen} onToggle={setIsDropdownOpen}>
+      <Dropdown.Trigger>
+        <IconButton testId={TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ACTIONS} name="more" />
+      </Dropdown.Trigger>
+      <Dropdown.Content>
+        {items.map((item, index) => (
+          <DropdownItem key={item.title || `item-${index}`} {...item} />
+        ))}
+      </Dropdown.Content>
+    </Dropdown>
   );
 });

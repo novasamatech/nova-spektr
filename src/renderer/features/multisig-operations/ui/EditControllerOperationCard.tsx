@@ -28,9 +28,7 @@ export const EditControllerOperationCard = memo(({ info, chain }: Props) => {
     [info.newControllerAccountId, addressPrefix],
   );
 
-  const title = info.isTrustedFlow
-    ? t('operations.editController.trustedTitle')
-    : t('operations.editController.verifiedTitle');
+  const title = t('operations.editController.title');
 
   const tagLabel = info.isTrustedFlow
     ? t('operations.editController.trustedTag')

@@ -219,4 +219,59 @@ describe('parseProxyEditOperation', () => {
       isTrustedFlow: false,
     });
   });
+
+  test('unwraps proxy.proxy and recognizes trusted flow inside', () => {
+    // Production shape for trusted flow: the batch sits inside a proxy.proxy wrapper.
+    const inner = batchAll([addProxy(), removeProxy()]);
+    const wrapped = tx({
+      section: 'proxy',
+      method: 'proxy',
+      args: { real: oldController, forceProxyType: 'Any', transaction: inner },
+    });
+    expect(parseProxyEditOperation(operation(wrapped))).toMatchObject({
+      newControllerAccountId: newController,
+      oldControllerAccountId: oldController,
+      isTrustedFlow: true,
+    });
+  });
+
+  test('handles outer batchAll wrap (multisig-new path) for trusted flow', () => {
+    // When the new-controller multisig isn't known locally, $coreTx wraps the proxy.proxy
+    // in an outer batchAll with a metadata REMARK_WITH_EVENT alongside.
+    const newCtrlMetadata = JSON.stringify({ signatories: [newController], threshold: 1 });
+    const proxyWrap = tx({
+      section: 'proxy',
+      method: 'proxy',
+      args: {
+        real: oldController,
+        forceProxyType: 'Any',
+        transaction: batchAll([addProxy(), removeProxy()]),
+      },
+    });
+    const op = operation(batchAll([remarkWithEvent(newCtrlMetadata), proxyWrap]));
+    expect(parseProxyEditOperation(op)).toMatchObject({
+      newControllerAccountId: newController,
+      oldControllerAccountId: oldController,
+      isTrustedFlow: true,
+    });
+  });
+
+  test('handles outer batchAll wrap (multisig-new path) for verified flow', () => {
+    const newCtrlMetadata = JSON.stringify({ signatories: [newController], threshold: 1 });
+    const proxyWrap = tx({
+      section: 'proxy',
+      method: 'proxy',
+      args: {
+        real: oldController,
+        forceProxyType: 'Any',
+        transaction: batchAll([addProxy(), remark(markerPayload)]),
+      },
+    });
+    const op = operation(batchAll([remarkWithEvent(newCtrlMetadata), proxyWrap]));
+    expect(parseProxyEditOperation(op)).toMatchObject({
+      newControllerAccountId: newController,
+      oldControllerAccountId: oldController,
+      isTrustedFlow: false,
+    });
+  });
 });

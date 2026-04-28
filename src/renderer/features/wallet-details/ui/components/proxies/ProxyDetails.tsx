@@ -43,9 +43,14 @@ export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onClos
   const canRevoke = Boolean(onRemove) && proxy.status !== 'pending_addition' && proxy.pendingRemovalOperation === null;
 
   const revokeButton = canRevoke ? (
-    <Button size="sm" variant="fill" pallet="error" onClick={() => onRemove?.(proxy)}>
-      {t('walletDetails.common.removeProxyAction')}
-    </Button>
+    <Tooltip>
+      <Tooltip.Trigger>
+        <Button size="sm" variant="fill" pallet="error" onClick={() => onRemove?.(proxy)}>
+          <Icon name="delete" size={16} className="text-inherit" />
+        </Button>
+      </Tooltip.Trigger>
+      <Tooltip.Content>{t('walletDetails.common.removeProxyAction')}</Tooltip.Content>
+    </Tooltip>
   ) : null;
 
   const goToOperation = (ref: PendingMultisigOperationRef | WalletProxyLastOperation) => {
@@ -143,40 +148,50 @@ export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onClos
       goToOperation(lastOp);
     };
 
+    // No pending-removal op → fold proxy-level actions (Edit/Delete) into the verified-op
+    // button row for a compact one-line layout. With pending removal, keep each op as its
+    // own description+buttons block and put proxy-level actions on a dedicated row so the
+    // two "View operation / Share" pairs don't read ambiguously side-by-side.
+    const hasPendingRemoval = Boolean(proxy.pendingRemovalOperation);
+
     return (
       <Box direction="column" gap={4} padding={[4, 5]}>
-        {(lastOp || pendingRemovalNote) && (
-          <ProxyDetailExplanation>
-            {lastOp && (
-              <div className="flex flex-col gap-1">
-                <FootnoteText className="inline-flex flex-wrap items-baseline gap-2">
-                  <span className="shrink-0 text-text-tertiary">
-                    {t('walletDetails.proxies.verifiedOperationLabel')}
-                  </span>
-                  <span className="min-w-0 text-text-primary">{operationTitle}</span>
-                </FootnoteText>
-                <FootnoteText className="inline-flex flex-wrap items-baseline gap-2">
-                  <span className="shrink-0 text-text-tertiary">{t('walletDetails.proxies.verifiedDateLabel')}</span>
-                  <span className="min-w-0 text-text-primary">{formatDate(new Date(lastOp.timestamp), 'PPp')}</span>
-                </FootnoteText>
-              </div>
-            )}
-            {pendingRemovalNote}
-          </ProxyDetailExplanation>
-        )}
-        <ProxyDetailActions>
-          {lastOp && (
-            <div className="flex items-center gap-2">
+        {lastOp && (
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
+              <FootnoteText className="inline-flex flex-wrap items-baseline gap-2">
+                <span className="shrink-0 text-text-tertiary">{t('walletDetails.proxies.verifiedOperationLabel')}</span>
+                <span className="min-w-0 text-text-primary">{operationTitle}</span>
+              </FootnoteText>
+              <FootnoteText className="inline-flex flex-wrap items-baseline gap-2">
+                <span className="shrink-0 text-text-tertiary">{t('walletDetails.proxies.verifiedDateLabel')}</span>
+                <span className="min-w-0 text-text-primary">{formatDate(new Date(lastOp.timestamp), 'PPp')}</span>
+              </FootnoteText>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
               <Button size="sm" variant="fill" pallet="secondary" onClick={handleGoToOperation}>
                 {t('walletDetails.proxies.viewOperation')}
               </Button>
               {shareOperationDeepLinkButton(getOperationDeepLink(lastOp))}
+              {!hasPendingRemoval && editAction}
+              {!hasPendingRemoval && revokeButton}
             </div>
-          )}
-          {editAction}
-          {pendingRemovalAction}
-          {revokeButton}
-        </ProxyDetailActions>
+          </div>
+        )}
+
+        {hasPendingRemoval && (
+          <div className="flex flex-col gap-2">
+            {pendingRemovalNote}
+            {pendingRemovalAction}
+          </div>
+        )}
+
+        {hasPendingRemoval && (editAction || revokeButton) && (
+          <ProxyDetailActions>
+            {editAction}
+            {revokeButton}
+          </ProxyDetailActions>
+        )}
       </Box>
     );
   }
