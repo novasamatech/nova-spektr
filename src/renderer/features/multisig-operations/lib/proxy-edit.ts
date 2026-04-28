@@ -1,6 +1,7 @@
 import { type DecodedTransaction, type ProxyType } from '@/shared/core';
 import { nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type EditControllerMarkerPayload, parseEditControllerMarker } from '@/shared/transactions';
 import { type MultisigOperation } from '@/domains/network';
 
 export type ProxyEditInfo = {
@@ -16,6 +17,10 @@ const isAddProxy = (tx: DecodedTransaction): boolean =>
   tx.section === 'proxy' && (tx.method === 'addProxy' || tx.method === 'addProxyWithDelay');
 
 const isRemoveProxy = (tx: DecodedTransaction): boolean => tx.section === 'proxy' && tx.method === 'removeProxy';
+
+// Plain `system.remark` only — the outer new-controller metadata wrap uses
+// `system.remarkWithEvent`, and we deliberately don't conflate the two.
+const isPlainRemark = (tx: DecodedTransaction): boolean => tx.section === 'system' && tx.method === 'remark';
 
 const unwrapProxy = (tx: DecodedTransaction | null): DecodedTransaction | null => {
   if (nullable(tx)) return null;
@@ -41,36 +46,50 @@ const extractProxyArgs = (tx: DecodedTransaction): ProxyArgs | null => {
   return { delegate: toAccountId(delegate), proxyType: proxyType as ProxyType };
 };
 
+const findMarker = (txs: DecodedTransaction[]): EditControllerMarkerPayload | null => {
+  for (const tx of txs) {
+    if (!isPlainRemark(tx)) continue;
+    const remark = tx.args['remark'];
+    if (typeof remark !== 'string') continue;
+    const payload = parseEditControllerMarker(remark);
+    if (payload) return payload;
+  }
+  return null;
+};
+
 export const parseProxyEditOperation = (operation: MultisigOperation): ProxyEditInfo | null => {
   const inner = unwrapProxy(operation.transaction);
   if (nullable(inner)) return null;
 
-  if (isAddProxy(inner)) {
-    const args = extractProxyArgs(inner);
-    if (nullable(args)) return null;
+  // Bare `add_proxy` (no batch) is a plain proxy addition — not our edit-flexible flow.
+  const batched = getBatchedTxs(inner);
+  if (!batched) return null;
+
+  const addTx = batched.find(isAddProxy);
+  if (!addTx) return null;
+  const addArgs = extractProxyArgs(addTx);
+  if (nullable(addArgs)) return null;
+
+  const removeTx = batched.find(isRemoveProxy);
+  if (removeTx) {
+    const removeArgs = extractProxyArgs(removeTx);
+    if (nullable(removeArgs)) return null;
     return {
-      newControllerAccountId: args.delegate,
-      oldControllerAccountId: operation.multisigAccountId,
-      proxyType: args.proxyType,
-      isTrustedFlow: false,
+      newControllerAccountId: addArgs.delegate,
+      oldControllerAccountId: removeArgs.delegate,
+      proxyType: addArgs.proxyType,
+      isTrustedFlow: true,
     };
   }
 
-  const batched = getBatchedTxs(inner);
-  if (batched && batched.length === 2) {
-    const addTx = batched.find(isAddProxy);
-    const removeTx = batched.find(isRemoveProxy);
-    if (addTx && removeTx) {
-      const addArgs = extractProxyArgs(addTx);
-      const removeArgs = extractProxyArgs(removeTx);
-      if (nullable(addArgs) || nullable(removeArgs)) return null;
-      return {
-        newControllerAccountId: addArgs.delegate,
-        oldControllerAccountId: removeArgs.delegate,
-        proxyType: addArgs.proxyType,
-        isTrustedFlow: true,
-      };
-    }
+  const marker = findMarker(batched);
+  if (marker) {
+    return {
+      newControllerAccountId: addArgs.delegate,
+      oldControllerAccountId: marker.oldControllerAccountId,
+      proxyType: addArgs.proxyType,
+      isTrustedFlow: false,
+    };
   }
 
   return null;

@@ -11,6 +11,7 @@ import { Step, assert, nonNullable, nullable, toAddress } from '@/shared/lib/uti
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import {
+  buildEditControllerMarkerTx,
   createComplexTxStore,
   createMultisigDeposit,
   createSignatoriesStore,
@@ -272,13 +273,27 @@ const $controllerEditTx = combine(
     const oldAccountId = multisigService.getMultisigAccountId(multisigAccount);
 
     if (executionMode === 'verified') {
-      // Verified path: only addProxy. The user removes the old delegate themselves
-      // after verifying the new controller.
-      return transactionBuilder.buildAddProxy({
+      // Verified path: addProxy + a marker `system.remark` so this op can be told
+      // apart from a plain `proxy.addProxy` later (the trusted path is identifiable
+      // by its `removeProxy` half). The marker carries the old controller's accountId
+      // for downstream cleanup.
+      const addProxyTx = transactionBuilder.buildAddProxy({
         chain,
         accountId: oldAccountId,
         delegateAccountId: newControllerAccountId,
         type: multisigAccount.proxyType,
+      });
+
+      const markerTx = buildEditControllerMarkerTx({
+        chainId: chain.chainId,
+        accountId: oldAccountId,
+        oldControllerAccountId: oldAccountId,
+      });
+
+      return transactionBuilder.buildBatchAll({
+        chain,
+        accountId: signer.accountId,
+        transactions: [addProxyTx, markerTx],
       });
     }
 

@@ -25,11 +25,11 @@ type Props = {
 };
 
 const ProxyDetailExplanation = ({ children }: { children: ReactNode }) => (
-  <div className="flex flex-col gap-2">{children}</div>
+  <div className="flex flex-col gap-3">{children}</div>
 );
 
 const ProxyDetailActions = ({ children }: { children: ReactNode }) => (
-  <div className="flex flex-wrap items-center gap-2">{children}</div>
+  <div className="flex flex-wrap items-center gap-3">{children}</div>
 );
 
 export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onCloseWalletDetails }: Props) => {
@@ -144,26 +144,26 @@ export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onClos
     };
 
     return (
-      <Box direction="column" gap={3} padding={[3, 4]}>
-        <ProxyDetailExplanation>
-          <FootnoteText className="inline-flex items-center gap-1 text-text-positive">
-            <Icon name="checkmarkOutline" size={14} className="text-icon-positive" />
-            {t('walletDetails.proxies.verifiedHeadline')}
-          </FootnoteText>
-          {lastOp && (
-            <div className="flex flex-col gap-1">
-              <FootnoteText className="inline-flex flex-wrap items-baseline gap-2">
-                <span className="shrink-0 text-text-tertiary">{t('walletDetails.proxies.verifiedOperationLabel')}</span>
-                <span className="min-w-0 text-text-primary">{operationTitle}</span>
-              </FootnoteText>
-              <FootnoteText className="inline-flex flex-wrap items-baseline gap-2">
-                <span className="shrink-0 text-text-tertiary">{t('walletDetails.proxies.verifiedDateLabel')}</span>
-                <span className="min-w-0 text-text-primary">{formatDate(new Date(lastOp.timestamp), 'PPp')}</span>
-              </FootnoteText>
-            </div>
-          )}
-          {pendingRemovalNote}
-        </ProxyDetailExplanation>
+      <Box direction="column" gap={4} padding={[4, 5]}>
+        {(lastOp || pendingRemovalNote) && (
+          <ProxyDetailExplanation>
+            {lastOp && (
+              <div className="flex flex-col gap-1">
+                <FootnoteText className="inline-flex flex-wrap items-baseline gap-2">
+                  <span className="shrink-0 text-text-tertiary">
+                    {t('walletDetails.proxies.verifiedOperationLabel')}
+                  </span>
+                  <span className="min-w-0 text-text-primary">{operationTitle}</span>
+                </FootnoteText>
+                <FootnoteText className="inline-flex flex-wrap items-baseline gap-2">
+                  <span className="shrink-0 text-text-tertiary">{t('walletDetails.proxies.verifiedDateLabel')}</span>
+                  <span className="min-w-0 text-text-primary">{formatDate(new Date(lastOp.timestamp), 'PPp')}</span>
+                </FootnoteText>
+              </div>
+            )}
+            {pendingRemovalNote}
+          </ProxyDetailExplanation>
+        )}
         <ProxyDetailActions>
           {lastOp && (
             <div className="flex items-center gap-2">
@@ -188,7 +188,7 @@ export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onClos
     };
 
     return (
-      <Box direction="column" gap={3} padding={[3, 4]}>
+      <Box direction="column" gap={4} padding={[4, 5]}>
         <ProxyDetailExplanation>
           <FootnoteText className="text-text-secondary">
             {t('walletDetails.proxies.pendingAdditionDescription')}
@@ -210,7 +210,7 @@ export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onClos
 
   if (proxy.status === 'not_verified_no_wallet') {
     return (
-      <Box direction="column" gap={3} padding={[3, 4]}>
+      <Box direction="column" gap={4} padding={[4, 5]}>
         <ProxyDetailExplanation>
           <FootnoteText className="text-text-secondary">{t('walletDetails.proxies.noWalletDescription')}</FootnoteText>
           {pendingRemovalNote}
@@ -231,10 +231,10 @@ export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onClos
 
   if (proxy.pendingVerificationOperation) {
     return (
-      <Box direction="column" gap={3} padding={[3, 4]}>
+      <Box direction="column" gap={4} padding={[4, 5]}>
         <ProxyDetailExplanation>
-          <FootnoteText className="inline-flex items-center gap-1 text-text-secondary">
-            <Icon name="loader" size={14} className="text-icon-accent" />
+          <FootnoteText className="inline-flex items-center gap-1.5 text-text-secondary">
+            <Icon name="loader" size={16} className="text-icon-accent" />
             {t('walletDetails.proxies.pendingVerificationHeadline')}
           </FootnoteText>
           <FootnoteText className="text-text-secondary">
@@ -261,7 +261,7 @@ export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onClos
     );
 
     return (
-      <Box direction="column" gap={3} padding={[3, 4]}>
+      <Box direction="column" gap={4} padding={[4, 5]}>
         <ProxyDetailExplanation>
           {explanation}
           {pendingRemovalNote}
@@ -278,12 +278,8 @@ export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onClos
   }
 
   return (
-    <Box direction="column" gap={3} padding={[3, 4]}>
+    <Box direction="column" gap={4} padding={[4, 5]}>
       <ProxyDetailExplanation>
-        <FootnoteText className="inline-flex items-center gap-1 text-text-warning">
-          <Icon name="warnCutout" size={14} className="text-icon-warning" />
-          {t('walletDetails.proxies.notVerifiedHeadline')}
-        </FootnoteText>
         <FootnoteText className="text-text-secondary">{t('walletDetails.proxies.verifyDescription')}</FootnoteText>
         {pendingRemovalNote}
       </ProxyDetailExplanation>

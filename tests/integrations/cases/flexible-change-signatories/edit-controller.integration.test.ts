@@ -13,6 +13,11 @@ import {
 } from '@/shared/core';
 import { Step } from '@/shared/lib/utils';
 import { createAccountId } from '@/shared/mocks';
+import {
+  EDIT_FLEXIBLE_CONTROLLER_REMARK_KIND,
+  buildEditControllerMarkerTx,
+  parseEditControllerMarker,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
@@ -339,6 +344,82 @@ describe('Edit Flexible Multisig Controller — model', () => {
       expect(inner).toHaveLength(2);
       expect(inner.at(0)?.type).toBe(TransactionType.ADD_PROXY);
       expect(inner.at(1)?.type).toBe(TransactionType.REMOVE_PROXY);
+    });
+  });
+
+  describe('Verified-mode controller-edit transaction', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Flexible Multisig',
+        feature: 'Edit Controller',
+        story: 'Verified-mode tx shape',
+      });
+    });
+
+    /**
+     * Verified mode now wraps `addProxy` in `batchAll` together with a
+     * `system.remark` marker carrying `oldControllerAccountId`. The marker is
+     * what tells this op apart from a plain `proxy.addProxy` later (trusted is
+     * already distinguishable by its `removeProxy` half).
+     *
+     * Same reduction approach as the trusted-mode test above: $controllerEditTx
+     * isn't on the public surface, so we drive the model into verified mode,
+     * assert the public observables, and then reproduce the builder calls the
+     * model makes — asserting the resulting shape and the marker payload.
+     */
+    it('should produce a batchAll(addProxy + marker remark) when execution mode is "verified"', async () => {
+      env = await buildEnv();
+
+      await allSettled(changeSignatoriesModel.flow.open, {
+        scope: env.scope,
+        params: { wallet: flexibleMultisigWallet },
+      });
+
+      const candidates = env.getState(multisigCandidates.$candidates);
+      const candidate = candidates.find((c): c is MultisigCandidate => c.source === 'wallet');
+      expect(candidate).toBeDefined();
+
+      await allSettled(changeSignatoriesModel.targetSelected, {
+        scope: env.scope,
+        params: { kind: 'existing', candidate: candidate! },
+      });
+
+      // Verified is the default; assert it explicitly so the test guards against drift.
+      expect(env.getState(changeSignatoriesModel.$executionMode)).toBe('verified');
+      expect(env.getState(changeSignatoriesModel.$newControllerAccountId)).toBe(candidate!.accountId);
+
+      // Reproduce the verified branch in change-signatories-model.ts.
+      const oldAccountId = flexibleMultisigAccount.multisigAccountId;
+      const addProxyTx = transactionBuilder.buildAddProxy({
+        chain: polkadotChain,
+        accountId: oldAccountId,
+        delegateAccountId: candidate!.accountId,
+        type: flexibleMultisigAccount.proxyType,
+      });
+      const markerTx = buildEditControllerMarkerTx({
+        chainId: polkadotChain.chainId,
+        accountId: oldAccountId,
+        oldControllerAccountId: oldAccountId,
+      });
+      const tx = transactionBuilder.buildBatchAll({
+        chain: polkadotChain,
+        accountId: flexibleSignatoryAccount.accountId,
+        transactions: [addProxyTx, markerTx],
+      });
+
+      expect(tx.type).toBe(TransactionType.BATCH_ALL);
+
+      const inner = tx.args.transactions as { type: TransactionType; args: Record<string, unknown> }[];
+      expect(inner).toHaveLength(2);
+      expect(inner.at(0)?.type).toBe(TransactionType.ADD_PROXY);
+      expect(inner.at(1)?.type).toBe(TransactionType.REMARK);
+
+      const markerArgs = inner.at(1)!.args;
+      const decoded = parseEditControllerMarker(markerArgs['remark'] as string);
+      expect(decoded).toEqual({
+        kind: EDIT_FLEXIBLE_CONTROLLER_REMARK_KIND,
+        oldControllerAccountId: oldAccountId,
+      });
     });
   });
 });

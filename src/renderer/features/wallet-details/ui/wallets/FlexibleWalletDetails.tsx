@@ -9,7 +9,7 @@ import { isEthereumAccountId, nonNullable, nullable, toAddress } from '@/shared/
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
 import { AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
-import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
+import { Box, Modal, ScrollArea, Skeleton, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts, useAccountName } from '@/domains/network';
 import { useWalletName } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -70,6 +70,7 @@ export const FlexibleWalletDetails = ({ wallet, defaultTab, onClose }: Props) =>
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
   const [tab, setTab] = useState(defaultTab === 'proxies' ? PROXIES_TAB_ID : ACCOUNT_TAB_ID);
   const proxiesCount = useUnit(proxiesModel.$totalCount);
+  const isProxiesLoading = useUnit(proxiesModel.$isLoading);
 
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
 
@@ -205,7 +206,11 @@ export const FlexibleWalletDetails = ({ wallet, defaultTab, onClose }: Props) =>
       title: (
         <span className="flex items-center gap-1">
           {t('walletDetails.proxies.tabTitleShort')}
-          <span className="text-text-tertiary">{proxiesCount}</span>
+          {isProxiesLoading && proxiesCount === 0 ? (
+            <Skeleton width={2} height={2.5} />
+          ) : (
+            <span className="text-text-tertiary">{proxiesCount}</span>
+          )}
         </span>
       ),
       panel: <ProxiesTab wallet={wallet} onCloseWalletDetails={closeModal} />,
