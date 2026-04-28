@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { type TFunction } from 'i18next';
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import { type CallData, type ChainId, type DecodedTransaction } from '@/shared/core';
@@ -9,7 +8,7 @@ import { formatSectionAndMethod, getNativeAssetId, isHex } from '@/shared/lib/ut
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { ConfirmModal, Modal, Tooltip, useNotification } from '@/shared/ui-kit';
-import { HttpError, draftsResource, draftsService } from '@/domains/backend';
+import { draftsResource, draftsService } from '@/domains/backend';
 import { networkModel, useApi } from '@/entities/network';
 import { decodeCallData, findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { backendConfigurationModel } from '@/aggregates/backend';
@@ -25,18 +24,6 @@ import { StepReview } from '../steps/StepReview';
 import { StepTransaction } from '../steps/StepTransaction';
 
 import { StepIndicator } from './signing-path/StepIndicator';
-
-const HTTP_ERROR_KEYS: Record<number, string> = {
-  403: 'addressBook.sources.errorForbidden',
-  404: 'operations.drafts.multisigNotFound',
-  422: 'operations.drafts.validationError',
-};
-
-const getSubmitErrorMessage = (e: unknown, t: TFunction): string => {
-  const key = e instanceof HttpError ? HTTP_ERROR_KEYS[e.status] : undefined;
-
-  return t(key ?? 'operations.drafts.createError');
-};
 
 export const CreateDraftModal = () => {
   const { t } = useI18n();
@@ -187,8 +174,8 @@ export const CreateDraftModal = () => {
       toast.success(t('operations.drafts.createSuccess'));
       createDraftModel.modalClosed();
     } catch (e) {
-      const errDescription = getSubmitErrorMessage(e, t);
-      toast.error(t('operations.drafts.createError'), { description: errDescription });
+      const message = e instanceof Error ? e.message : t('operations.drafts.createError');
+      toast.error(t('operations.drafts.createError'), { description: message });
     } finally {
       setIsSubmitting(false);
     }

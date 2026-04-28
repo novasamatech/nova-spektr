@@ -2574,8 +2574,6 @@
       "syncRetry": "Try again",
       "extrinsicError": "Call data is invalid or incompatible with this chain",
       "internalPathError": "Signing path is invalid",
-      "validationError": "The server rejected the draft",
-      "multisigNotFound": "Multisig not found on the server",
       "submitSuccess": "Draft submitted",
       "initiatorUnavailable": "The initiator is no longer a signatory of this multisig. Please pick another.",
       "submittedBadge": "Submitted",
