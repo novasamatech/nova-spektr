@@ -7,13 +7,6 @@ import { ChangeSignatories } from './ChangeSignatories';
 type Props = PropsWithChildren<{
   wallet: Wallet;
   onClose?: () => void;
-  /**
-   * Reserved for future use — Task 11 (ProxyDetails entry-point) may pass
-   * `false` when the user has no permission to use the verified proxy path.
-   * Currently unused; the front-of-flow mode picker has been removed and the
-   * execution mode is selected on the Confirm step instead.
-   */
-  canUseVerifiedPath?: boolean;
 }>;
 
 /**

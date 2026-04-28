@@ -14,11 +14,12 @@ import { ProxyStatusBadge } from './ProxyStatusBadge';
 type Props = {
   proxy: WalletProxy;
   verifyAction: ReactNode | null;
+  editAction?: ReactNode | null;
   onRemove?: (proxy: WalletProxy) => void;
   onCloseWalletDetails?: () => void;
 };
 
-export const ProxyRow = ({ proxy, verifyAction, onRemove, onCloseWalletDetails }: Props) => {
+export const ProxyRow = ({ proxy, verifyAction, editAction, onRemove, onCloseWalletDetails }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const chain = chains[proxy.chainId] ?? null;
 
@@ -53,6 +54,7 @@ export const ProxyRow = ({ proxy, verifyAction, onRemove, onCloseWalletDetails }
           <ProxyDetails
             proxy={proxy}
             verifyAction={verifyAction}
+            editAction={editAction}
             onRemove={onRemove}
             onCloseWalletDetails={onCloseWalletDetails}
           />

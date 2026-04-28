@@ -19,6 +19,7 @@ import {
 type Props = {
   proxy: WalletProxy;
   verifyAction: ReactNode | null;
+  editAction?: ReactNode | null;
   onRemove?: (proxy: WalletProxy) => void;
   onCloseWalletDetails?: () => void;
 };
@@ -31,7 +32,7 @@ const ProxyDetailActions = ({ children }: { children: ReactNode }) => (
   <div className="flex flex-wrap items-center gap-2">{children}</div>
 );
 
-export const ProxyDetails = ({ proxy, verifyAction, onRemove, onCloseWalletDetails }: Props) => {
+export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onCloseWalletDetails }: Props) => {
   const { t, formatDate } = useI18n();
   const navigate = useNavigate();
   const chains = useUnit(networkModel.$chains);
@@ -172,6 +173,7 @@ export const ProxyDetails = ({ proxy, verifyAction, onRemove, onCloseWalletDetai
               {shareOperationDeepLinkButton(getOperationDeepLink(lastOp))}
             </div>
           )}
+          {editAction}
           {pendingRemovalAction}
           {revokeButton}
         </ProxyDetailActions>
@@ -264,8 +266,9 @@ export const ProxyDetails = ({ proxy, verifyAction, onRemove, onCloseWalletDetai
           {explanation}
           {pendingRemovalNote}
         </ProxyDetailExplanation>
-        {(pendingRemovalAction || revokeButton) && (
+        {(editAction || pendingRemovalAction || revokeButton) && (
           <ProxyDetailActions>
+            {editAction}
             {pendingRemovalAction}
             {revokeButton}
           </ProxyDetailActions>
@@ -286,6 +289,7 @@ export const ProxyDetails = ({ proxy, verifyAction, onRemove, onCloseWalletDetai
       </ProxyDetailExplanation>
       <ProxyDetailActions>
         {verifyAction}
+        {editAction}
         {pendingRemovalAction}
         {revokeButton}
       </ProxyDetailActions>

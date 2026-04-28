@@ -1560,6 +1560,9 @@
       "verifiedTitle": "With verification",
       "verifiedUnavailable": "Adding a proxy is not available for this wallet or network, so the verified path cannot be used."
     },
+    "editController": {
+      "editButton": "Edit"
+    },
     "editSubtitle": "Change the signatories and set the signatory threshold for your flexible multisig.",
     "editTitleOn": "Edit flexible multisig on",
     "thresholdDescription": "Minimum signatories needed to approve."

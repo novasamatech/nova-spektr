@@ -4,10 +4,12 @@ import { memo, useCallback } from 'react';
 import { type ProxiedAccount, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { FootnoteText } from '@/shared/ui';
+import { Button, FootnoteText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { walletUtils } from '@/entities/wallet';
+import { ChangeSignatories } from '@/features/flexible-change-signatories';
 import { proxyRemoveFeature } from '@/features/proxy-remove';
 import { proxyVerifyFeature } from '@/features/proxy-verify';
 import { type WalletProxy, proxiesModel } from '../../../model/proxies-model';
@@ -83,11 +85,26 @@ export const ProxiesTab = memo(({ wallet, onCloseWalletDetails }: Props) => {
                 <VerifyProxy wallet={wallet} proxy={proxy} />
               ) : null;
 
+            const canEdit =
+              walletUtils.isFlexibleMultisig(wallet) &&
+              (proxy.status === 'verified' || proxy.status === 'not_verified') &&
+              !proxy.pendingRemovalOperation &&
+              !proxy.pendingVerificationOperation;
+
+            const editAction = canEdit ? (
+              <ChangeSignatories wallet={wallet}>
+                <Button size="sm" variant="fill" pallet="secondary">
+                  {t('flexibleMultisig.editController.editButton')}
+                </Button>
+              </ChangeSignatories>
+            ) : null;
+
             return (
               <ProxyRow
                 key={proxy.id}
                 proxy={proxy}
                 verifyAction={verifyAction}
+                editAction={editAction}
                 onRemove={handleRemove}
                 onCloseWalletDetails={onCloseWalletDetails}
               />

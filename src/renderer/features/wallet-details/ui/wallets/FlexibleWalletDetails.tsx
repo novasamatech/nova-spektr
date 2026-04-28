@@ -101,7 +101,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const actions: WalletAction[] = [
     {
       component: (
-        <ChangeSignatories wallet={wallet} canUseVerifiedPath={canCreateProxy}>
+        <ChangeSignatories wallet={wallet}>
           <Action title={t('walletDetails.multisig.changeSignatories')} icon="changeSignatories" />
         </ChangeSignatories>
       ),
