@@ -8,7 +8,7 @@ type Props = {
   address: Address | undefined;
   size?: number;
   iconSize?: number;
-  type: WalletType;
+  type: WalletType | null;
   theme?: IdenticonIconTheme;
 };
 
@@ -17,10 +17,12 @@ export const WalletAccountIcon = ({ address, size = 32, iconSize = 16, type, the
 
   return (
     <div className="relative" style={{ width: `${size}px`, height: `${size}px` }}>
-      {<Identicon address={deferredAddress || null} size={size} background={false} theme={theme} />}
-      <div className="pointer-events-none absolute -right-1 -bottom-1 rounded-full border-2 border-white bg-white">
-        <WalletIcon type={type} size={iconSize} />
-      </div>
+      <Identicon address={deferredAddress || null} size={size} background={false} theme={theme} />
+      {type !== null && (
+        <div className="pointer-events-none absolute -right-1 -bottom-1 rounded-full border-2 border-white bg-white">
+          <WalletIcon type={type} size={iconSize} />
+        </div>
+      )}
     </div>
   );
 };

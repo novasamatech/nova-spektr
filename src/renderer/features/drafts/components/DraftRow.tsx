@@ -1,6 +1,6 @@
 import { isHex } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import { type CallData, type ChainId, CryptoType } from '@/shared/core';
 import { useTransformer } from '@/shared/di';
@@ -12,7 +12,7 @@ import {
   isEthereumAccountId,
   toAccountId,
   toAddress,
-  truncate,
+  toShortAddress,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, CaptionText, FootnoteText, HelpText, Icon, IconButton } from '@/shared/ui';
@@ -29,6 +29,7 @@ import { operationTitleTransformer } from '@/features/multisig-operations';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { getDestinationAccountId } from '../lib/get-destination-account-id';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
+import { graphModel } from '../model/graph-model';
 
 type DraftRowProps = {
   draft: Draft;
@@ -61,6 +62,7 @@ export const DraftRow = ({
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const chains = useUnit(networkModel.$chains);
   const backendContacts = useUnit(contactModel.$backendContacts);
+  const contactNameByAccountId = useUnit(graphModel.$contactNameByAccountId);
 
   const chain = chains[draft.chainId as ChainId];
   const chainName = chain?.name;
@@ -133,38 +135,56 @@ export const DraftRow = ({
     <div
       ref={rowRef}
       className={cnTw(
-        'mx-0.5 bg-block-background-default',
+        'mx-0.5 overflow-hidden bg-block-background-default',
         'rounded transition-shadow hover:shadow-card-shadow',
         isHighlighted && 'ring-2 ring-icon-accent',
       )}
     >
-      <div className="flex h-[52px] w-full items-center px-4 py-2">
+      <div className="flex min-h-[52px] w-full min-w-0 items-start px-4 py-2">
         {/* Icon + description */}
-        <div className="flex min-w-0 flex-1 items-center gap-x-3">
+        <div className="flex min-w-0 flex-[3] items-start gap-x-3">
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-icon-accent/15">
             <Icon name="document" size={16} className="text-icon-accent" />
           </div>
           <div className="flex min-w-0 flex-1 flex-col">
-            <FootnoteText className="truncate font-medium text-text-primary">
+            <FootnoteText className="max-w-[350px] font-medium break-words text-text-primary">
               {draft.description || (
                 <span className="text-text-tertiary italic">{t('operations.drafts.noDescription')}</span>
               )}
             </FootnoteText>
-            <HelpText className="flex items-center truncate text-text-tertiary">
+            <HelpText className="block truncate text-text-tertiary">
               {(() => {
+                let label: ReactNode;
+
                 if (draft.proxyAccountId) {
                   const proxyContact = backendContacts.find((c) => c.accountId === draft.proxyAccountId);
-                  if (proxyContact?.name) return proxyContact.name;
-
-                  return truncate(toAddress(draft.proxyAccountId, { prefix: chain?.addressPrefix }), 4, 4);
+                  label = proxyContact?.name
+                    ? proxyContact.name
+                    : toShortAddress(toAddress(draft.proxyAccountId, { prefix: chain?.addressPrefix }), 4);
+                } else {
+                  label = contact?.name || (
+                    <span className="text-text-negative">{t('operations.drafts.unknownMultisig')}</span>
+                  );
                 }
 
-                return (
-                  contact?.name || <span className="text-text-negative">{t('operations.drafts.unknownMultisig')}</span>
-                );
+                if (draft.initiatorAccountId) {
+                  const initiatorName =
+                    contactNameByAccountId[draft.initiatorAccountId] ??
+                    toShortAddress(toAddress(draft.initiatorAccountId, { prefix: chain?.addressPrefix }), 4);
+
+                  return (
+                    <>
+                      {label}
+                      {' → '}
+                      {initiatorName}
+                    </>
+                  );
+                }
+
+                return label;
               })()}
               {titleData?.title && ` · ${titleData.title}`}
-              {destinationAddress && ` · ${truncate(destinationAddress, 4, 4)}`}
+              {destinationAddress && ` · ${toShortAddress(destinationAddress, 4)}`}
               {titleData?.amount && (
                 <>
                   {}
@@ -181,15 +201,19 @@ export const DraftRow = ({
         </div>
 
         {/* Chain + date */}
-        <div className="flex w-[120px] shrink-0 flex-col items-end">
-          <FootnoteText className="text-text-primary">
+        <div className="flex min-w-[160px] flex-1 flex-col">
+          <FootnoteText className="truncate text-right text-text-primary">
             {chainName || <span className="text-text-negative">{t('operations.drafts.unknownChain')}</span>}
           </FootnoteText>
-          <HelpText className="truncate text-text-tertiary">
-            {creatorName ?? (creatorAddress ? truncate(creatorAddress, 4, 4) : null)}
-            {creatorAddress && ` · ${formatDate(new Date(draft.createdAt), 'PP')}`}
-            {!creatorAddress && formatDate(new Date(draft.createdAt), 'PP')}
-          </HelpText>
+          <div className="flex min-w-0 items-baseline justify-end gap-x-1 text-help-text text-text-tertiary">
+            {(creatorName || creatorAddress) && (
+              <>
+                <span className="min-w-0 truncate">{creatorName ?? creatorAddress}</span>
+                <span className="shrink-0">·</span>
+              </>
+            )}
+            <span className="shrink-0">{formatDate(new Date(draft.createdAt), 'PP')}</span>
+          </div>
         </div>
 
         {/* Draft badge */}

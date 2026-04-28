@@ -191,6 +191,12 @@ async function getExtrinsicFee(extrinsic: Extrinsic) {
   return partialFee.toBn();
 }
 
+async function getSplitExtrinsicFee(extrinsic: Extrinsic, api: ApiPromise) {
+  const parts = await splitExtrinsic(extrinsic, api);
+  const fees = await Promise.all(parts.map(getExtrinsicFee));
+  return fees.reduce((acc, fee) => acc.add(fee), BN_ZERO);
+}
+
 async function getTransactionFee(transaction: AnyTransaction, signatory: AccountId, api: ApiPromise) {
   const extrinsic = createExtrinsic(transaction, api);
   const { partialFee } = await extrinsic.paymentInfo(signatory);
@@ -525,6 +531,7 @@ export const transactionService = {
   createExtrinsic,
 
   getExtrinsicFee,
+  getSplitExtrinsicFee,
   getTransactionFee,
   getExtrinsicWeight,
   getTransactionWeight,
