@@ -1562,16 +1562,24 @@
     },
     "editController": {
       "banner": {
-        "notSelected": "Not selected yet",
-        "was": "Was",
-        "willBecome": "Will become"
+        "notSelected": "Modify the current multisig or pick one from the list",
+        "stateAddressBook": "From address book",
+        "stateModify": "New address",
+        "stateNoChanges": "No changes yet",
+        "stateWallet": "From your wallets",
+        "was": "Current",
+        "willBecome": "New"
       },
       "editButton": "Edit",
       "modifyCurrent": {
-        "addSignatory": "Add",
-        "derivedNote": "derived",
+        "addSignatory": "Add new signatory",
+        "duplicateSignatories": "Some signatories are duplicated",
+        "emptySignatories": "Some signatories are empty",
+        "notEnoughSignatories": "Add at least 2 signatories",
         "removeSignatory": "Remove signatory",
         "signatoriesLabel": "Signatories",
+        "thresholdHint": "{ threshold } of { total } signatories",
+        "thresholdOf": "of { total } signatories",
         "thresholdLabel": "Threshold"
       },
       "mode": {
@@ -1586,11 +1594,14 @@
       },
       "picker": {
         "fromAddressBook": "From address book",
-        "modifySection": "Modify",
-        "modifyTitle": "Modify current multisig",
         "myWallets": "My multisig wallets",
         "next": "Next",
-        "search": "Search wallets and address book…"
+        "search": "Replace with",
+        "searchPlaceholder": "Search wallets and address book…",
+        "tabs": {
+          "modify": "Modify current",
+          "replace": "Replace with existing"
+        }
       },
       "signingPath": {
         "complete": "Continue",

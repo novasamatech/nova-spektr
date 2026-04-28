@@ -20,7 +20,7 @@ const MODAL_SIZE: Record<number, Pick<ComponentProps<typeof Modal>, 'size' | 'he
   [Step.SELECT_CONTROLLER]: { size: 'mdlg', height: 'full' },
   [Step.SIGNING_PATH]: { size: 'mdlg', height: 'full' },
   [Step.SIGN]: { size: 'md', height: 'fit' },
-  [Step.CONFIRM]: { size: 'md', height: 'fit' },
+  [Step.CONFIRM]: { size: 'mdlg', height: 'fit' },
   [Step.SUBMIT]: { size: 'md', height: 'fit' },
 };
 
@@ -133,7 +133,6 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
               <UnifiedPicker
                 chain={chain}
                 currentControllerAddress={currentControllerAddress}
-                currentSignatories={currentSignatories}
                 currentThreshold={currentThreshold}
               />
             </div>

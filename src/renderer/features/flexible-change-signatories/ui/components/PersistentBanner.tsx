@@ -1,12 +1,13 @@
 import { useUnit } from 'effector-react';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { type Address } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
+import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { FootnoteText, HelpText } from '@/shared/ui';
+import { FootnoteText, HelpText, StatusLabel } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
+import { useAddressName } from '../../lib/use-address-name';
 import { changeSignatoriesModel } from '../../model/change-signatories-model';
 
 type Props = {
@@ -15,57 +16,122 @@ type Props = {
   currentThreshold: number;
 };
 
+type Tone = 'muted' | 'neutral' | 'accent';
+
 type SideProps = {
   label: string;
+  state?: ReactNode;
   address: Address;
   signatories: AccountId[];
   threshold: number;
   expanded: boolean;
   onToggle: () => void;
+  tone: Tone;
 };
 
-const truncateAddress = (address: string): string => {
+const containerToneStyle: Record<Tone, string> = {
+  muted: 'border-container-border bg-block-background-default/70',
+  neutral: 'border-container-border bg-block-background-default',
+  accent: 'border-icon-accent/40 bg-block-background-default shadow-card-shadow',
+};
+
+const truncate = (address: string) => {
   if (address.length <= 14) return address;
   return `${address.slice(0, 6)}…${address.slice(-6)}`;
 };
 
-const BannerSide = ({ label, address, signatories, threshold, expanded, onToggle }: SideProps) => (
-  <div className="flex min-w-0 flex-1 flex-col gap-y-2 rounded-lg border border-container-border bg-block-background-default p-3">
-    <FootnoteText className="text-text-tertiary uppercase">{label}</FootnoteText>
-    <button
-      type="button"
-      aria-expanded={expanded}
-      className="flex w-full cursor-pointer items-center gap-2 text-left hover:opacity-80"
-      onClick={onToggle}
+const BannerSide = ({ label, state, address, signatories, threshold, expanded, onToggle, tone }: SideProps) => {
+  const chain = useUnit(changeSignatoriesModel.$chain);
+  const name = useAddressName(address, chain);
+
+  return (
+    <div
+      className={cnTw(
+        'flex min-h-[96px] min-w-0 flex-1 flex-col gap-y-2 rounded-lg border p-3',
+        containerToneStyle[tone],
+      )}
     >
-      <Identicon address={address} size={24} background={false} />
-      <div className="flex min-w-0 flex-col">
-        <FootnoteText className="truncate text-text-primary">{truncateAddress(address)}</FootnoteText>
-        <HelpText className="text-text-tertiary">
-          {threshold}/{signatories.length}
-        </HelpText>
+      <div className="flex h-5 items-center justify-between gap-2">
+        <FootnoteText className="text-text-tertiary uppercase">{label}</FootnoteText>
+        {state}
       </div>
-    </button>
-    {expanded && signatories.length > 0 && (
-      <ul className="flex flex-col gap-y-1 border-t border-divider pt-2">
-        {signatories.map((accountId) => {
-          const addr = toAddress(accountId);
-          return (
-            <li key={accountId} className="flex items-center gap-1.5">
-              <Identicon address={addr} size={16} background={false} />
-              <HelpText className="truncate font-mono text-text-secondary">{truncateAddress(addr)}</HelpText>
-            </li>
-          );
-        })}
-      </ul>
-    )}
-  </div>
-);
+      <button
+        type="button"
+        aria-expanded={expanded}
+        className="flex w-full cursor-pointer items-center gap-2 text-left hover:opacity-80"
+        onClick={onToggle}
+      >
+        <Identicon address={address} size={20} background={false} />
+        <div className="flex min-w-0 flex-1 flex-col">
+          {name ? (
+            <>
+              <FootnoteText className="truncate text-text-primary">{name}</FootnoteText>
+              <HelpText className="truncate text-text-tertiary">{truncate(address)}</HelpText>
+            </>
+          ) : (
+            <FootnoteText className="truncate text-text-primary">{truncate(address)}</FootnoteText>
+          )}
+        </div>
+        <FootnoteText className="shrink-0 font-semibold text-text-primary">
+          {threshold}/{signatories.length}
+        </FootnoteText>
+      </button>
+      {expanded && signatories.length > 0 && <ExpandedSignatories signatories={signatories} />}
+    </div>
+  );
+};
+
+const ExpandedSignatories = ({ signatories }: { signatories: AccountId[] }) => {
+  const chain = useUnit(changeSignatoriesModel.$chain);
+
+  return (
+    <ul className="flex flex-col gap-y-1 border-t border-divider pt-2">
+      {signatories.map((accountId) => {
+        const addr = toAddress(accountId, { prefix: chain?.addressPrefix });
+        return (
+          <li key={accountId}>
+            <SignatoryRow address={addr} />
+          </li>
+        );
+      })}
+    </ul>
+  );
+};
+
+const SignatoryRow = ({ address }: { address: Address }) => {
+  const chain = useUnit(changeSignatoriesModel.$chain);
+  const name = useAddressName(address, chain);
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <Identicon address={address} size={16} background={false} />
+      {name ? (
+        <FootnoteText className="truncate text-text-secondary">{name}</FootnoteText>
+      ) : (
+        <HelpText className="truncate font-mono text-text-secondary">{address}</HelpText>
+      )}
+    </div>
+  );
+};
 
 export const PersistentBanner = ({ currentControllerAddress, currentSignatories, currentThreshold }: Props) => {
   const { t } = useI18n();
   const target = useUnit(changeSignatoriesModel.$selectedTarget);
   const [expanded, setExpanded] = useState<'left' | 'right' | null>(null);
+
+  const newStateLabel = (() => {
+    if (!target) {
+      return <StatusLabel variant="waiting" title={t('flexibleMultisig.editController.banner.stateNoChanges')} />;
+    }
+    if (target.kind === 'modify') {
+      return <StatusLabel variant="success" title={t('flexibleMultisig.editController.banner.stateModify')} />;
+    }
+    const titleKey =
+      target.candidate.source === 'wallet'
+        ? 'flexibleMultisig.editController.banner.stateWallet'
+        : 'flexibleMultisig.editController.banner.stateAddressBook';
+    return <StatusLabel variant="success" title={t(titleKey)} />;
+  })();
 
   const targetView = (() => {
     if (!target) return null;
@@ -89,6 +155,7 @@ export const PersistentBanner = ({ currentControllerAddress, currentSignatories,
   return (
     <div className="flex items-start gap-2">
       <BannerSide
+        tone="muted"
         label={t('flexibleMultisig.editController.banner.was')}
         address={currentControllerAddress}
         signatories={currentSignatories}
@@ -103,6 +170,8 @@ export const PersistentBanner = ({ currentControllerAddress, currentSignatories,
 
       {targetView ? (
         <BannerSide
+          tone="accent"
+          state={newStateLabel}
           label={t('flexibleMultisig.editController.banner.willBecome')}
           address={targetView.address}
           signatories={targetView.signatories}
@@ -111,7 +180,13 @@ export const PersistentBanner = ({ currentControllerAddress, currentSignatories,
           onToggle={toggleRight}
         />
       ) : (
-        <div className="flex min-w-0 flex-1 items-center justify-center rounded-lg border border-dashed border-container-border bg-block-background-default p-3">
+        <div className="flex min-h-[96px] min-w-0 flex-1 flex-col gap-y-2 rounded-lg border border-dashed border-icon-accent/40 bg-block-background-default p-3">
+          <div className="flex h-5 items-center justify-between gap-2">
+            <FootnoteText className="text-text-tertiary uppercase">
+              {t('flexibleMultisig.editController.banner.willBecome')}
+            </FootnoteText>
+            {newStateLabel}
+          </div>
           <FootnoteText className="text-text-tertiary italic">
             {t('flexibleMultisig.editController.banner.notSelected')}
           </FootnoteText>

@@ -1,133 +1,140 @@
-import { useState } from 'react';
+import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
 import { type Address, type Chain, CryptoType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Button, FootnoteText, IconButton } from '@/shared/ui';
-import { Address as AddressDisplay, Identicon } from '@/shared/ui-entities';
+import { toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { Button, FootnoteText, Icon, InputHint } from '@/shared/ui';
+import { Box, Field, Select } from '@/shared/ui-kit';
 import { networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
+import { signatoryModel } from '../../model/signatory-model';
 import { type SelectedTarget } from '../../types';
 
+import { Signatory } from './Signatory';
+
 type Props = {
+  active: boolean;
   chain: Chain;
-  initialSignatories: AccountId[];
+  currentControllerAddress: Address;
   initialThreshold: number;
   onChange: (target: Extract<SelectedTarget, { kind: 'modify' }> | null) => void;
 };
 
-export const ModifyCurrentForm = ({ chain, initialSignatories, initialThreshold, onChange }: Props) => {
+export const ModifyCurrentForm = ({ active, chain, currentControllerAddress, initialThreshold, onChange }: Props) => {
   const { t } = useI18n();
-  const [signatories, setSignatories] = useState<AccountId[]>(initialSignatories);
+  const signatories = useUnit(signatoryModel.$signatories);
+  const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
+  const hasDuplicates = useUnit(signatoryModel.$hasDuplicateSignatories);
+  const hasEmpty = useUnit(signatoryModel.$hasEmptySignatories);
   const [threshold, setThreshold] = useState<number>(initialThreshold);
 
   const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
-  function propagate(s: AccountId[], th: number) {
-    const valid = s.length >= 2 && th >= 1 && th <= s.length;
-    if (!valid) return onChange(null);
-    const id = accountUtils.getMultisigAccountId(s, th, cryptoType);
-    onChange({
-      kind: 'modify',
-      signatories: s,
-      threshold: th,
-      derivedAddress: toAddress(id, { prefix: chain.addressPrefix }),
-    });
-  }
+  // Clamp threshold when number of signatories shrinks below it
+  useEffect(() => {
+    if (signatories.length === 0) return;
+    if (threshold > signatories.length) setThreshold(signatories.length);
+    if (threshold < 1) setThreshold(1);
+  }, [signatories.length, threshold]);
 
-  const handleRemoveSignatory = (index: number) => {
-    const next = signatories.filter((_, i) => i !== index);
-    const clampedThreshold = Math.min(threshold, Math.max(1, next.length));
-    setSignatories(next);
-    setThreshold(clampedThreshold);
-    propagate(next, clampedThreshold);
-  };
+  // Sync derived target up to parent. Effector store changes flow asynchronously
+  // through events from the Signatory component, so a useEffect bridge is the
+  // right place to reflect those changes back as a parent callback invocation.
+  // Skip when the tab isn't active so we don't clobber a Replace-tab selection.
+  useEffect(() => {
+    if (!active) return;
+    const allValid = !hasDuplicates && !hasEmpty && signatories.every((s) => validateAddress(s.address, chain));
+    const enoughSignatories = signatories.length >= 2;
+    const validThreshold = threshold >= 1 && threshold <= signatories.length;
 
-  const handleThresholdChanged = (next: number) => {
-    setThreshold(next);
-    propagate(signatories, next);
-  };
+    if (!allValid || !enoughSignatories || !validThreshold) {
+      onChange(null);
+      return;
+    }
 
-  const isValid = signatories.length >= 2 && threshold >= 1 && threshold <= signatories.length;
-  const derivedAddress: Address | null = isValid
-    ? toAddress(accountUtils.getMultisigAccountId(signatories, threshold, cryptoType), {
-        prefix: chain.addressPrefix,
-      })
-    : null;
+    const accountIds = signatories.map((s) => toAccountId(s.address));
+    const id = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
+    const derivedAddress: Address = toAddress(id, { prefix: chain.addressPrefix });
+
+    // Don't propagate when nothing actually changed — derived multisig matches
+    // the current one. Keeps the banner in its empty hint state and disables Next.
+    if (toAccountId(derivedAddress) === toAccountId(currentControllerAddress)) {
+      onChange(null);
+      return;
+    }
+
+    onChange({ kind: 'modify', signatories: accountIds, threshold, derivedAddress });
+  }, [active, signatories, threshold, hasDuplicates, hasEmpty, chain, cryptoType, currentControllerAddress, onChange]);
+
+  const minThreshold = signatories.length >= 2 ? 2 : 1;
+  const thresholdDisabled = signatories.length < 2;
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Signatories section */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         <FootnoteText className="text-text-secondary">
           {t('flexibleMultisig.editController.modifyCurrent.signatoriesLabel')}
         </FootnoteText>
 
-        <div className="flex flex-col gap-1">
-          {signatories.map((accountId, index) => {
-            const displayAddress = toAddress(accountId, { prefix: chain.addressPrefix });
+        {signatories.map((signatory, index) => (
+          <Signatory
+            key={index}
+            isDuplicate={duplicateSignatories[toAccountId(signatory.address)]?.includes(index) ?? false}
+            isInvalidAddress={signatory.address.length > 0 && !validateAddress(signatory.address, chain)}
+            signatoryIndex={index}
+            signatory={signatory}
+            onDelete={signatories.length > 2 ? signatoryModel.deleteSignatory : undefined}
+          />
+        ))}
 
-            return (
-              <div
-                key={accountId}
-                className="flex items-center justify-between rounded-md bg-input-background px-3 py-2"
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-2">
-                  <Identicon address={displayAddress} size={20} background={false} />
-                  <AddressDisplay address={displayAddress} variant="short" />
-                </div>
-
-                <IconButton
-                  name="delete"
-                  size={16}
-                  ariaLabel={t('flexibleMultisig.editController.modifyCurrent.removeSignatory')}
-                  onClick={() => handleRemoveSignatory(index)}
-                />
-              </div>
-            );
-          })}
-        </div>
-
-        {/* TODO: wire up signatory picker (Task 7+) */}
-        <Button variant="text" size="sm" onClick={() => {}}>
+        <Button
+          size="md"
+          variant="text"
+          className="h-8.5 w-max justify-center gap-x-1 pl-0"
+          suffixElement={<Icon className="text-icon-primary" name="add" size={16} />}
+          onClick={() => signatoryModel.addSignatory({ address: '', walletId: '' })}
+        >
           {t('flexibleMultisig.editController.modifyCurrent.addSignatory')}
         </Button>
       </div>
 
-      {/* Threshold section */}
-      <div className="flex flex-col gap-2">
-        <FootnoteText className="text-text-secondary">
-          {t('flexibleMultisig.editController.modifyCurrent.thresholdLabel')}
-        </FootnoteText>
-
-        <input
-          type="number"
-          className="w-20 rounded-md border border-divider bg-input-background px-3 py-1.5 text-text-primary focus:border-active-container-border focus:outline-none"
-          min={1}
-          max={signatories.length}
-          value={threshold}
-          onChange={(e) => {
-            const val = parseInt(e.target.value, 10);
-            if (!isNaN(val)) handleThresholdChanged(val);
-          }}
-        />
-      </div>
-
-      {/* Derived address preview */}
       <div className="flex flex-col gap-1">
-        <FootnoteText className="text-text-secondary">
-          {t('flexibleMultisig.editController.modifyCurrent.derivedNote')}
-        </FootnoteText>
-
-        {derivedAddress ? (
-          <div className="flex items-center gap-2 rounded-md bg-input-background px-3 py-2">
-            <Identicon address={derivedAddress} size={20} background={false} />
-            <AddressDisplay address={derivedAddress} variant="short" />
-          </div>
-        ) : (
-          <FootnoteText className="text-text-tertiary">—</FootnoteText>
-        )}
+        <Box width="232px">
+          <Field text={t('flexibleMultisig.editController.modifyCurrent.thresholdLabel')}>
+            <Select
+              placeholder={t('flexibleMultisig.editController.modifyCurrent.thresholdLabel')}
+              value={threshold ? threshold.toString() : ''}
+              disabled={thresholdDisabled}
+              height="md"
+              onChange={(value) => setThreshold(Number(value))}
+            >
+              {Array.from({ length: Math.max(0, signatories.length - 1) }, (_, i) => {
+                const value = i + minThreshold;
+                return (
+                  <Select.Item key={value} value={value.toString()}>
+                    {value}
+                  </Select.Item>
+                );
+              })}
+            </Select>
+          </Field>
+        </Box>
+        <InputHint active={!thresholdDisabled && threshold >= 1} variant="hint">
+          {t('flexibleMultisig.editController.modifyCurrent.thresholdHint', {
+            threshold,
+            total: signatories.length,
+          })}
+        </InputHint>
+        <InputHint active={thresholdDisabled} variant="hint">
+          {t('flexibleMultisig.editController.modifyCurrent.notEnoughSignatories')}
+        </InputHint>
+        <InputHint active={hasDuplicates} variant="error">
+          {t('flexibleMultisig.editController.modifyCurrent.duplicateSignatories')}
+        </InputHint>
+        <InputHint active={hasEmpty && !thresholdDisabled} variant="error">
+          {t('flexibleMultisig.editController.modifyCurrent.emptySignatories')}
+        </InputHint>
       </div>
     </div>
   );

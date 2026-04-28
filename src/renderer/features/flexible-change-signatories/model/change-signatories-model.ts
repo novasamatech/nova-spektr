@@ -39,7 +39,7 @@ const flow = createGate<{ wallet: Wallet | null }>();
 
 const stepChanged = createEvent<Step>();
 const selectSignatory = createEvent<AnyAccount | null>();
-const targetSelected = createEvent<SelectedTarget>();
+const targetSelected = createEvent<SelectedTarget | null>();
 const executionModeChanged = createEvent<ExecutionMode>();
 const nextFromSelectController = createEvent();
 const signingPathConfirmed = createEvent<PathNode[]>();
