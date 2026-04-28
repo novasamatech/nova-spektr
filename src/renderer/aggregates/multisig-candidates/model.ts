@@ -1,8 +1,11 @@
-import { createStore } from 'effector';
+import { combine } from 'effector';
 
-import { type MultisigCandidate } from './types';
+import { contactModel } from '@/entities/contact';
+import { walletModel } from '@/entities/wallet';
 
-const $candidates = createStore<MultisigCandidate[]>([]);
+import { mergeMultisigCandidates } from './lib/merge-candidates';
+
+const $candidates = combine(walletModel.$wallets, contactModel.$contacts, mergeMultisigCandidates);
 
 export const multisigCandidates = {
   $candidates,
