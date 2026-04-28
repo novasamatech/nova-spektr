@@ -79,9 +79,9 @@ export const ModifyCurrentForm = ({ chain, initialSignatories, initialThreshold,
                 </div>
 
                 <IconButton
-                  name="close"
+                  name="delete"
                   size={16}
-                  aria-label={t('flexibleMultisig.editController.modifyCurrent.removeSignatory')}
+                  ariaLabel={t('flexibleMultisig.editController.modifyCurrent.removeSignatory')}
                   onClick={() => handleRemoveSignatory(index)}
                 />
               </div>
