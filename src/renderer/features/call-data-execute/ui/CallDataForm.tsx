@@ -9,6 +9,7 @@ import { TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { walletModel } from '@/entities/wallet';
+import { InitiateDraftButton } from '@/features/drafts';
 import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
 import { OperationTemplatesToolbar } from '@/features/operation-templates';
 import { Fee } from '@/widgets/transaction-fee';
@@ -117,6 +118,7 @@ const ActionsSection = () => {
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
   const chain = useUnit(formModel.form.fields.chain.$value);
+  const callData = useUnit(formModel.form.fields.callData.$value);
   const asset = chain ? getNativeAsset(chain.assets) : null;
 
   return (
@@ -128,6 +130,12 @@ const ActionsSection = () => {
         </Box>
       )}
 
+      <InitiateDraftButton
+        callData={callData}
+        chainId={chain?.chainId}
+        source="call-data-execute"
+        onDraftCreated={formModel.flowFinished}
+      />
       <Button form="call-data-form" type="submit" disabled={!canSubmit}>
         {t('transfer.continueButton')}
       </Button>

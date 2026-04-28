@@ -8,7 +8,8 @@ import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
-import { OperationResult } from '@/entities/transaction';
+import { OperationResult, transactionService } from '@/entities/transaction';
+import { InitiateDraftButton } from '@/features/drafts';
 import { SignatorySelectModal } from '@/features/multisig-operations';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { RevokeDelegationConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
@@ -24,6 +25,10 @@ export const RevokeDelegation = () => {
   const signatory = useUnit(revokeDelegationModel.$signatory);
   const signatories = useUnit(revokeDelegationModel.$signatories);
   const network = useUnit(revokeDelegationModel.$network);
+  const coreTx = useUnit(revokeDelegationModel.$coreTx);
+  const api = useUnit(revokeDelegationModel.$api);
+
+  const draftCallData = transactionService.getCallDataHex(coreTx, api);
 
   const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), revokeDelegationModel.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
@@ -85,13 +90,21 @@ export const RevokeDelegation = () => {
             config={{ withFormatAmount: false }}
             hideSignButton={shouldPickSignatory}
             secondaryActionButton={
-              !shouldPickSignatory &&
-              nonNullable(initiatorWallet) &&
-              basketUtils.isBasketAvailable(initiatorWallet) && (
-                <Button pallet="secondary" onClick={() => revokeDelegationModel.txSaved()}>
-                  {t('operation.addToBasket')}
-                </Button>
-              )
+              <>
+                {!shouldPickSignatory &&
+                  nonNullable(initiatorWallet) &&
+                  basketUtils.isBasketAvailable(initiatorWallet) && (
+                    <Button pallet="secondary" onClick={() => revokeDelegationModel.txSaved()}>
+                      {t('operation.addToBasket')}
+                    </Button>
+                  )}
+                <InitiateDraftButton
+                  callData={draftCallData}
+                  chainId={network?.chain.chainId}
+                  source="revoke-delegation"
+                  onDraftCreated={closeModal}
+                />
+              </>
             }
             onGoBack={() => revokeDelegationModel.stepChanged(Step.NONE)}
           />
