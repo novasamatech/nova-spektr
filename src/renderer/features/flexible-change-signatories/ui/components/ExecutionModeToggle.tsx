@@ -6,7 +6,7 @@ import { changeSignatoriesModel } from '../../model/change-signatories-model';
 import { type ExecutionMode } from '../../types';
 
 export const ExecutionModeToggle = () => {
-  const mode = useUnit(changeSignatoriesModel.$executionMode);
+  const [mode, setMode] = useUnit([changeSignatoriesModel.$executionMode, changeSignatoriesModel.executionModeChanged]);
 
   return (
     <div className="grid grid-cols-2 gap-3">
@@ -20,7 +20,7 @@ export const ExecutionModeToggle = () => {
           'flexibleMultisig.editController.mode.verifiedBullet2',
           'flexibleMultisig.editController.mode.verifiedBullet3',
         ]}
-        onClick={() => changeSignatoriesModel.executionModeChanged('verified')}
+        onClick={() => setMode('verified')}
       />
       <ModeCard
         kind="trusted"
@@ -32,7 +32,7 @@ export const ExecutionModeToggle = () => {
           'flexibleMultisig.editController.mode.trustedBullet2',
           'flexibleMultisig.editController.mode.trustedBullet3',
         ]}
-        onClick={() => changeSignatoriesModel.executionModeChanged('trusted')}
+        onClick={() => setMode('trusted')}
       />
     </div>
   );
@@ -57,14 +57,17 @@ const ModeCard = ({ kind, selected, onClick, codeBlock, titleKey, bulletKeys }: 
       className={cnTw(
         'flex w-full flex-col gap-y-3 rounded-lg p-3 text-left transition-colors',
         selected
-          ? 'border-2 border-icon-accent bg-block-background-default'
+          ? 'border border-transparent bg-block-background-default ring-2 ring-icon-accent ring-inset'
           : 'border border-container-border bg-block-background-default hover:bg-action-background-hover',
       )}
       onClick={onClick}
     >
       <p className="text-footnote font-semibold text-text-primary">{t(titleKey)}</p>
 
-      <pre className="rounded bg-main-app-background px-2 py-1.5 font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-text-secondary">
+      <pre
+        aria-hidden="true"
+        className="rounded bg-main-app-background px-2 py-1.5 font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-text-secondary"
+      >
         {codeBlock}
       </pre>
 
