@@ -44,8 +44,8 @@ const targetSelected = createEvent<SelectedTarget>();
 const executionModeChanged = createEvent<ExecutionMode>();
 
 const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.close);
-const $selectedTarget = restore<SelectedTarget | null>(targetSelected, null).reset(flow.close);
-const $executionMode = restore<ExecutionMode>(executionModeChanged, 'verified').reset(flow.close);
+const $selectedTarget = restore<SelectedTarget | null>(targetSelected, null).reset(flow.open).reset(flow.close);
+const $executionMode = restore<ExecutionMode>(executionModeChanged, 'verified').reset(flow.open).reset(flow.close);
 
 const $initiatorWallet = flow.state.map((state) => state.wallet ?? null);
 
