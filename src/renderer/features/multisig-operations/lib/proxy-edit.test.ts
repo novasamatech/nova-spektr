@@ -92,6 +92,16 @@ describe('parseEditControllerMarker', () => {
     });
   });
 
+  test('parses a hex-encoded marker payload (on-chain decode shape)', () => {
+    // `system.remark` args come back from the polkadot.js Bytes decoder as a 0x-prefixed
+    // hex string. Convert the JSON string to its hex form and verify round-trip.
+    const hex = '0x' + Buffer.from(markerPayload, 'utf8').toString('hex');
+    expect(parseEditControllerMarker(hex)).toEqual({
+      kind: EDIT_FLEXIBLE_CONTROLLER_REMARK_KIND,
+      oldControllerAccountId: oldController,
+    });
+  });
+
   test('returns null for the new-controller metadata remark (different shape)', () => {
     const newCtrlMetadata = JSON.stringify({ signatories: [oldController], threshold: 1 });
     expect(parseEditControllerMarker(newCtrlMetadata)).toBeNull();

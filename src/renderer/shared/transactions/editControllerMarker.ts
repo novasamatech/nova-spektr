@@ -1,3 +1,5 @@
+import { hexToU8a, u8aToString } from '@polkadot/util';
+
 import { type ChainId, type Transaction, TransactionType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -39,9 +41,20 @@ export const buildEditControllerMarkerTx = ({
 };
 
 export const parseEditControllerMarker = (remark: string): EditControllerMarkerPayload | null => {
+  // On-chain `system.remark` args come through the callDataDecoder as a 0x-prefixed
+  // hex string (polkadot.js Bytes → toString()). The local-build path stores the
+  // payload as the original JSON string. Accept both: hex → UTF-8 first, then JSON.
+  let jsonStr = remark;
+  if (remark.startsWith('0x')) {
+    try {
+      jsonStr = u8aToString(hexToU8a(remark));
+    } catch {
+      return null;
+    }
+  }
   let parsed: unknown;
   try {
-    parsed = JSON.parse(remark);
+    parsed = JSON.parse(jsonStr);
   } catch {
     return null;
   }
