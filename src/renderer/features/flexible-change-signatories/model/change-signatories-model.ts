@@ -28,6 +28,7 @@ import { multisigService } from '@/features/multisig-wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
+import { type ExecutionMode, type SelectedTarget } from '../types';
 
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
@@ -39,8 +40,12 @@ const stepChanged = createEvent<Step>();
 const selectSignatory = createEvent<AnyAccount | null>();
 const signerConfirmed = createEvent();
 const confirmGoBack = createEvent();
+const targetSelected = createEvent<SelectedTarget>();
+const executionModeChanged = createEvent<ExecutionMode>();
 
 const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.close);
+const $selectedTarget = restore<SelectedTarget | null>(targetSelected, null).reset(flow.close);
+const $executionMode = restore<ExecutionMode>(executionModeChanged, 'verified').reset(flow.close);
 
 const $initiatorWallet = flow.state.map((state) => state.wallet ?? null);
 
@@ -526,10 +531,14 @@ export const changeSignatoriesModel = {
   $errors,
   $fee,
   $isLoading,
+  $selectedTarget,
+  $executionMode,
   stepChanged,
   selectSignatory,
   signerConfirmed,
   confirmGoBack,
   viewOperation,
+  targetSelected,
+  executionModeChanged,
   flow,
 };
