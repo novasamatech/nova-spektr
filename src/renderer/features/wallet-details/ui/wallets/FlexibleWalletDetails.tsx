@@ -45,12 +45,16 @@ const SignatoryContactItem = ({ accountId, chain, children }: SignatoryContactIt
 
 type Props = {
   wallet: MultisigWallet | FlexibleMultisigWallet;
+  defaultTab?: 'accounts' | 'proxies';
   onClose: () => void;
 };
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
-export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
+const ACCOUNT_TAB_ID = '1';
+const PROXIES_TAB_ID = '3';
+
+export const FlexibleWalletDetails = ({ wallet, defaultTab, onClose }: Props) => {
   useGate(multisigWalletDetailsModel.flow, { wallet });
   useGate(walletDetailsModel.flow, { wallet });
   useGate(walletProxiesModel.flow, { wallet });
@@ -64,7 +68,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
-  const [tab, setTab] = useState('1');
+  const [tab, setTab] = useState(defaultTab === 'proxies' ? PROXIES_TAB_ID : ACCOUNT_TAB_ID);
   const proxiesCount = useUnit(proxiesModel.$totalCount);
 
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
@@ -140,7 +144,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const TabItems: { id: string; title: ReactNode; panel: ReactNode }[] = [];
 
   const TabAccount = {
-    id: '1',
+    id: ACCOUNT_TAB_ID,
     title: t('walletDetails.multisig.accountTab'),
     panel: (
       <div>
@@ -197,7 +201,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (canCreateProxy) {
     const TabProxies = {
-      id: '3',
+      id: PROXIES_TAB_ID,
       title: (
         <span className="flex items-center gap-1">
           {t('walletDetails.proxies.tabTitleShort')}

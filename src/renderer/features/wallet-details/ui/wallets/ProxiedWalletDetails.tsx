@@ -53,10 +53,11 @@ const ProxiedAccountItem = ({ chain, accountId }: { chain: Chain; accountId: Acc
 
 type Props = {
   wallet: ProxiedWallet;
+  defaultTab?: 'accounts' | 'proxies';
   onClose: () => void;
 };
 
-export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
+export const ProxiedWalletDetails = ({ wallet, defaultTab, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
   useGate(walletProxiesModel.flow, { wallet });
 
@@ -68,7 +69,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
 
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
-  const [tab, setTab] = useState<'accounts' | 'proxies'>('accounts');
+  const [tab, setTab] = useState<'accounts' | 'proxies'>(defaultTab === 'proxies' ? 'proxies' : 'accounts');
   const proxiesCount = useUnit(proxiesModel.$totalCount);
   const handleTabChange = (value: string) => {
     if (value === 'accounts' || value === 'proxies') setTab(value);

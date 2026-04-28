@@ -2801,12 +2801,13 @@
       "verifiedTitle": "Edit multisig in proxy",
       "details": {
         "headerLabel": "Controller change",
+        "previousSection": "Old controller",
         "targetSection": "New controller",
         "threshold": "{threshold} of {total}",
         "modeSection": "Execution mode",
         "trustedDescription": "Trusted (atomic): old controller will be removed in the same transaction.",
         "verifiedDescription": "Verified (add-only): old controller will be removed later, after verification.",
-        "openOverview": "Open overview",
+        "openProxyDetails": "Open proxy details",
         "unknownName": "(unknown)"
       }
     },

@@ -60,6 +60,29 @@ export const getTxFromCallData = (api: ApiPromise, callData: CallData): Submitta
   return getDataFromCallData(api, callData).decoded;
 };
 
+/**
+ * Extracts only the outer pallet/method names from raw callData. Unlike
+ * `decodeCallData`, this never builds the SubmittableExtrinsic and never
+ * recurses into batch/proxy children — so a missing inner-call type or a
+ * runtime metadata mismatch on a nested call does not poison the result.
+ *
+ * Returns null only when the local API genuinely doesn't know the outer
+ * pallet/call index (e.g. callData was emitted under a different runtime).
+ */
+export const extractSectionMethodFromCallData = (
+  api: ApiPromise,
+  callData: CallData,
+): { section: string; method: string } | null => {
+  try {
+    const call = api.createType('Call', callData);
+    const { method, section } = api.registry.findMetaCall(call.callIndex);
+
+    return { section, method };
+  } catch {
+    return null;
+  }
+};
+
 export const decodeCallData = (
   api: ApiPromise,
   accountId: AccountId,

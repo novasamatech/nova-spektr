@@ -56,17 +56,18 @@ export const EditControllerOperationCard = memo(({ info, chain }: Props) => {
 
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-y-0.5 overflow-hidden">
         <FootnoteText className="truncate text-text-primary">{title}</FootnoteText>
-        <div className="flex items-center gap-x-2">
-          {chain && <ChainTitle chainId={chain.chainId} fontClass="text-help-text text-text-tertiary" />}
-          <Tooltip>
-            <Tooltip.Trigger>
-              <div className={`inline-flex items-center rounded-[20px] border px-2.5 py-1 ${tagPalette}`}>
-                <CaptionText className="text-inherit uppercase">{tagLabel}</CaptionText>
-              </div>
-            </Tooltip.Trigger>
-            <Tooltip.Content>{tagTooltip}</Tooltip.Content>
-          </Tooltip>
-        </div>
+        {chain && <ChainTitle chainId={chain.chainId} fontClass="text-help-text text-text-tertiary" />}
+      </div>
+
+      <div className="flex w-[200px] shrink-0 items-center">
+        <Tooltip>
+          <Tooltip.Trigger>
+            <div className={`inline-flex items-center rounded-[20px] border px-2.5 py-1 ${tagPalette}`}>
+              <CaptionText className="text-inherit uppercase">{tagLabel}</CaptionText>
+            </div>
+          </Tooltip.Trigger>
+          <Tooltip.Content>{tagTooltip}</Tooltip.Content>
+        </Tooltip>
       </div>
     </div>
   );
