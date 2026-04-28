@@ -29,6 +29,8 @@ import { WalletDetails } from '@/features/wallet-details';
 import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { submitDraftModel } from '../model/submit-draft-model';
 
+import { PathBreadcrumb } from './signing-path/PathBreadcrumb';
+
 type Props = {
   onClose: () => void;
 };
@@ -83,6 +85,7 @@ const ConfirmStep = () => {
   const wallets = useUnit(walletModel.$wallets);
   const draft = useUnit(submitDraftModel.$draft);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
+  const initiatorUnavailable = useUnit(submitDraftModel.$initiatorUnavailable);
 
   const [showWalletDetails, setShowWalletDetails] = useState(false);
 
@@ -212,8 +215,23 @@ const ConfirmStep = () => {
     submitDraftModel.signatoryChanged(found);
   };
 
+  const signingPath = draft?.signingPath ?? [];
+
   return (
     <>
+      {signingPath.length > 0 && (
+        <div className="mx-5 mt-4">
+          <PathBreadcrumb path={signingPath} size="sm" />
+        </div>
+      )}
+
+      {initiatorUnavailable && (
+        <div className="mx-5 mt-3 flex items-start gap-2 rounded-lg border border-icon-warning/20 bg-icon-warning/8 px-3 py-2">
+          <Icon className="mt-0.5 shrink-0 text-icon-warning" name="warnCutout" size={16} />
+          <FootnoteText className="text-text-secondary">{t('operations.drafts.initiatorUnavailable')}</FootnoteText>
+        </div>
+      )}
+
       <div className="mb-2 flex flex-col items-center gap-y-3 px-5 py-4">
         <Icon className="text-icon-default" name="unknownConfirm" size={60} />
         <LargeTitleText className="font-manrope">{t('operations.drafts.submitTitle')}</LargeTitleText>
