@@ -1549,17 +1549,6 @@
     }
   },
   "flexibleMultisig": {
-    "changeSignatoriesMode": {
-      "pickerSubtitle": "Choose how you want to update signatories.",
-      "pickerTitle": "Change signatories",
-      "trustDescription": "Submit one batch transaction that adds the new multisig proxy and removes the old one. Fastest path. The tradeoff is that signers are approving the whole change at once, with no intermediate ‘test then remove’ step.",
-      "trustTagline": "Single step",
-      "trustTitle": "Trust-based",
-      "verifiedDescription": "Add a new multisig as a delegated authority (proxy), verify it from the Proxies tab (via system remark), then remove the old proxy when you are ready. Safer because you add and verify the new proxy before removing the old one.",
-      "verifiedTagline": "Multi-step",
-      "verifiedTitle": "With verification",
-      "verifiedUnavailable": "Adding a proxy is not available for this wallet or network, so the verified path cannot be used."
-    },
     "editProxy": {
       "banner": {
         "notSelected": "Modify the current multisig or pick one from the list",
@@ -1608,14 +1597,14 @@
         "trustedBullet2": "Cannot be undone if the proxied account has no other active proxy",
         "trustedBullet3": "Do not use if you want to verify the new proxy first",
         "trustedHint": "Old proxy is removed in the same transaction",
-        "trustedShort": "One-shot",
-        "trustedTitle": "One-shot",
+        "trustedShort": "Atomic swap",
+        "trustedTitle": "Atomic swap",
         "verifiedBullet1": "New proxy is added; old one stays",
         "verifiedBullet2": "Verify the new proxy before retiring the old one",
         "verifiedBullet3": "Recommended",
         "verifiedHint": "Add the new proxy; old one stays until you remove it",
-        "verifiedShort": "Step-by-step",
-        "verifiedTitle": "Step-by-step"
+        "verifiedShort": "Verified swap",
+        "verifiedTitle": "Verified swap"
       },
       "picker": {
         "fromAddressBook": "From address book",
@@ -2794,9 +2783,9 @@
     },
     "editProxy": {
       "title": "Edit flexible multisig",
-      "trustedTag": "Trusted flow",
+      "trustedTag": "Atomic swap",
       "trustedTooltip": "Old proxy is removed in the same transaction",
-      "verifiedTag": "Verified flow",
+      "verifiedTag": "Verified swap",
       "verifiedTooltip": "New proxy is added; the old one is removed later, after verification",
       "details": {
         "headerLabel": "Proxy change",
