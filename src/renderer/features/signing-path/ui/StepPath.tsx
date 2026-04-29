@@ -55,7 +55,7 @@ export const StepPath = ({ chainId }: Props) => {
 
     if (lastNode.kind === 'proxied') {
       return {
-        title: t('operations.drafts.signingPath.pickMultisigForProxy'),
+        title: t('signingPath.pickMultisigForProxy'),
       };
     }
 
@@ -63,9 +63,7 @@ export const StepPath = ({ chainId }: Props) => {
       const hasNested = nextOptions.some((opt) => opt.kind === 'multisig');
 
       return {
-        title: hasNested
-          ? t('operations.drafts.signingPath.pickInitiatorOrNested')
-          : t('operations.drafts.signingPath.pickInitiator'),
+        title: hasNested ? t('signingPath.pickInitiatorOrNested') : t('signingPath.pickInitiator'),
       };
     }
 
@@ -89,11 +87,11 @@ export const StepPath = ({ chainId }: Props) => {
       {path.length === 0 ? (
         <SectionCard
           number={1}
-          title={t('operations.drafts.signingPath.sourceAccount')}
-          description={t('operations.drafts.signingPath.sourceAccountDescription')}
+          title={t('signingPath.sourceAccount')}
+          description={t('signingPath.sourceAccountDescription')}
         >
           <Select
-            placeholder={t('operations.drafts.signingPath.selectSource')}
+            placeholder={t('signingPath.selectSource')}
             value={selectedSourceId}
             defaultOpen={autoOpenSource}
             onChange={handleSourceChange}
@@ -127,8 +125,8 @@ export const StepPath = ({ chainId }: Props) => {
             <Icon name="checkmark" size={16} className="text-white" />
           </div>
           <div className="flex flex-col gap-y-0.5">
-            <BodyText className="text-text-primary">{t('operations.drafts.signingPath.pathComplete')}</BodyText>
-            <HelpText className="text-text-secondary">{t('operations.drafts.signingPath.pathCompleteHint')}</HelpText>
+            <BodyText className="text-text-primary">{t('signingPath.pathComplete')}</BodyText>
+            <HelpText className="text-text-secondary">{t('signingPath.pathCompleteHint')}</HelpText>
           </div>
         </div>
       ) : (
@@ -138,9 +136,7 @@ export const StepPath = ({ chainId }: Props) => {
             <div className="flex flex-col gap-y-1.5">
               {nextOptions.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-shade-12 px-3 py-4 text-center">
-                  <FootnoteText className="text-text-tertiary">
-                    {t('operations.drafts.signingPath.noOptions')}
-                  </FootnoteText>
+                  <FootnoteText className="text-text-tertiary">{t('signingPath.noOptions')}</FootnoteText>
                 </div>
               ) : (
                 nextOptions.map((opt, idx) => (

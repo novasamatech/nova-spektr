@@ -26,20 +26,14 @@ export const PathReviewPopover = ({ path }: Props) => {
           className="flex cursor-pointer items-center gap-1.5 rounded-full border border-container-border bg-white px-2.5 py-1 transition-colors hover:bg-action-background-hover"
         >
           <Icon name="details" size={12} className="text-icon-accent" />
-          <CaptionText className="text-icon-accent uppercase">
-            {t('operations.drafts.signingPath.openOverview')}
-          </CaptionText>
+          <CaptionText className="text-icon-accent uppercase">{t('signingPath.openOverview')}</CaptionText>
         </button>
       </Popover.Trigger>
       <Popover.Content>
         <div className="flex w-[340px] flex-col gap-y-3 p-4">
           <div className="flex items-center justify-between">
-            <CaptionText className="text-text-tertiary uppercase">
-              {t('operations.drafts.signingPath.fullSigningPath')}
-            </CaptionText>
-            <HelpText className="text-text-tertiary">
-              {t('operations.drafts.signingPath.hopsCount', { count: path.length })}
-            </HelpText>
+            <CaptionText className="text-text-tertiary uppercase">{t('signingPath.fullSigningPath')}</CaptionText>
+            <HelpText className="text-text-tertiary">{t('signingPath.hopsCount', { count: path.length })}</HelpText>
           </div>
           <div className="flex flex-col">
             {path.map((node, idx) => {
