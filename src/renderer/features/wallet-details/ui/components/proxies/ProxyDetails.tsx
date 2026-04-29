@@ -43,14 +43,9 @@ export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onClos
   const canRevoke = Boolean(onRemove) && proxy.status !== 'pending_addition' && proxy.pendingRemovalOperation === null;
 
   const revokeButton = canRevoke ? (
-    <Tooltip>
-      <Tooltip.Trigger>
-        <Button size="sm" variant="fill" pallet="error" onClick={() => onRemove?.(proxy)}>
-          <Icon name="delete" size={16} className="text-inherit" />
-        </Button>
-      </Tooltip.Trigger>
-      <Tooltip.Content>{t('walletDetails.common.removeProxyAction')}</Tooltip.Content>
-    </Tooltip>
+    <Button size="sm" variant="fill" pallet="error" onClick={() => onRemove?.(proxy)}>
+      {t('walletDetails.proxies.revokeAuthority')}
+    </Button>
   ) : null;
 
   const goToOperation = (ref: PendingMultisigOperationRef | WalletProxyLastOperation) => {
