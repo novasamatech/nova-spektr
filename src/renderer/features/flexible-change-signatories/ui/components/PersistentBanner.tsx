@@ -7,7 +7,7 @@ import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText, HelpText, StatusLabel } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
-import { useAddressName } from '../../lib/use-address-name';
+import { useAddressName } from '../../hooks/use-address-name';
 import { changeSignatoriesModel } from '../../model/change-signatories-model';
 
 import { BannerScopeStrip } from './BannerScopeStrip';

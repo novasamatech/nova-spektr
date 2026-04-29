@@ -12,7 +12,7 @@ import { Box, Select } from '@/shared/ui-kit';
 import { accountService, useAccountsNames, useWalletsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { useAddressName } from '../../lib/use-address-name';
+import { useAddressName } from '../../hooks/use-address-name';
 import { changeSignatoriesModel } from '../../model/change-signatories-model';
 import { signatoryModel } from '../../model/signatory-model';
 import { type SignatoryInfo } from '../../types';

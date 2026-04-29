@@ -17,7 +17,7 @@ import {
   type WalletCandidate,
   multisigCandidates,
 } from '@/aggregates/multisig-candidates';
-import { useAddressName } from '../../lib/use-address-name';
+import { useAddressName } from '../../hooks/use-address-name';
 import { changeSignatoriesModel } from '../../model/change-signatories-model';
 import { type SelectedTarget } from '../../types';
 
@@ -103,7 +103,7 @@ export const UnifiedPicker = ({ chain, currentControllerAddress, currentThreshol
   const selectedCandidate = target?.kind === 'existing' ? target.candidate : null;
 
   return (
-    <Tabs value={mode} onChange={(v) => setMode(v as Mode)}>
+    <Tabs value={mode} onChange={setMode}>
       <Tabs.List>
         <Tabs.Trigger value="modify">{t('flexibleMultisig.editController.picker.tabs.modify')}</Tabs.Trigger>
         <Tabs.Trigger value="replace">{t('flexibleMultisig.editController.picker.tabs.replace')}</Tabs.Trigger>
