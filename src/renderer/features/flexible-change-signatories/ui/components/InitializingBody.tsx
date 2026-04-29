@@ -4,9 +4,9 @@ import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Loader } from '@/shared/ui';
 
 const MESSAGE_KEYS = [
-  'flexibleMultisig.editController.loader.fetchingMultisigs',
-  'flexibleMultisig.editController.loader.findingConnections',
-  'flexibleMultisig.editController.loader.planningEdit',
+  'flexibleMultisig.editProxy.loader.fetchingMultisigs',
+  'flexibleMultisig.editProxy.loader.findingConnections',
+  'flexibleMultisig.editProxy.loader.planningEdit',
 ];
 
 const ROTATE_MS = 1200;

@@ -1,7 +1,7 @@
 import { createEvent, createStore } from 'effector';
 
 import { type PathNode } from '@/domains/backend';
-import { MAX_PATH_DEPTH, isCycleFreeAppend, isValidPath } from '../lib/path-validation';
+import { MAX_PATH_DEPTH, isCycleFreeAppend, isValidPathPrefix } from '../lib/path-validation';
 
 const pathReset = createEvent();
 const pathNodeAppended = createEvent<PathNode>();
@@ -16,7 +16,7 @@ const $path = createStore<PathNode[]>([])
     if (index >= path.length) return path;
     return path.slice(0, index + 1);
   })
-  .on(pathSeeded, (prev, next) => (isValidPath(next).ok ? next : prev))
+  .on(pathSeeded, (prev, next) => (isValidPathPrefix(next).ok ? next : prev))
   .on(pathNodeAppended, (path, next) => {
     if (path.length >= MAX_PATH_DEPTH) return path;
     if (!isCycleFreeAppend(path, next)) return path;

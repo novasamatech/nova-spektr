@@ -12,7 +12,7 @@ export const ExecutionModeInfoPopover = () => {
       <Popover.Trigger>
         <button
           type="button"
-          aria-label={t('flexibleMultisig.editController.mode.sectionTitle')}
+          aria-label={t('flexibleMultisig.editProxy.mode.sectionTitle')}
           className="flex h-5 w-5 items-center justify-center rounded text-icon-default hover:text-icon-hover"
         >
           <Icon name="questionOutline" size={16} />
@@ -20,27 +20,27 @@ export const ExecutionModeInfoPopover = () => {
       </Popover.Trigger>
       <Popover.Content>
         <div className="flex w-[360px] flex-col gap-y-4 p-4">
-          <SmallTitleText>{t('flexibleMultisig.editController.mode.sectionTitle')}</SmallTitleText>
+          <SmallTitleText>{t('flexibleMultisig.editProxy.mode.sectionTitle')}</SmallTitleText>
 
           <ModeInfoBlock
             kind="verified"
-            titleKey="flexibleMultisig.editController.mode.verifiedTitle"
+            titleKey="flexibleMultisig.editProxy.mode.verifiedTitle"
             codeBlock={'proxy.addProxy(new)\n// removeProxy later'}
             bulletKeys={[
-              'flexibleMultisig.editController.mode.verifiedBullet1',
-              'flexibleMultisig.editController.mode.verifiedBullet2',
-              'flexibleMultisig.editController.mode.verifiedBullet3',
+              'flexibleMultisig.editProxy.mode.verifiedBullet1',
+              'flexibleMultisig.editProxy.mode.verifiedBullet2',
+              'flexibleMultisig.editProxy.mode.verifiedBullet3',
             ]}
           />
 
           <ModeInfoBlock
             kind="trusted"
-            titleKey="flexibleMultisig.editController.mode.trustedTitle"
+            titleKey="flexibleMultisig.editProxy.mode.trustedTitle"
             codeBlock={'batchAll([\n  addProxy(new),\n  removeProxy(old),\n])'}
             bulletKeys={[
-              'flexibleMultisig.editController.mode.trustedBullet1',
-              'flexibleMultisig.editController.mode.trustedBullet2',
-              'flexibleMultisig.editController.mode.trustedBullet3',
+              'flexibleMultisig.editProxy.mode.trustedBullet1',
+              'flexibleMultisig.editProxy.mode.trustedBullet2',
+              'flexibleMultisig.editProxy.mode.trustedBullet3',
             ]}
           />
         </div>

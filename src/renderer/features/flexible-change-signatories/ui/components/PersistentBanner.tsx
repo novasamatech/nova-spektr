@@ -145,20 +145,20 @@ export const PersistentBanner = ({ currentControllerAddress, currentSignatories,
   const isTrustedFlow = executionMode === 'trusted';
 
   const currentStateLabel = isTrustedFlow ? (
-    <StatusLabel variant="warn" title={t('flexibleMultisig.editController.banner.willBeRemoved')} />
+    <StatusLabel variant="warn" title={t('flexibleMultisig.editProxy.banner.willBeRemoved')} />
   ) : undefined;
 
   const newStateLabel = (() => {
     if (!target) {
-      return <StatusLabel variant="waiting" title={t('flexibleMultisig.editController.banner.stateNoChanges')} />;
+      return <StatusLabel variant="waiting" title={t('flexibleMultisig.editProxy.banner.stateNoChanges')} />;
     }
     if (target.kind === 'modify') {
-      return <StatusLabel variant="success" title={t('flexibleMultisig.editController.banner.stateModify')} />;
+      return <StatusLabel variant="success" title={t('flexibleMultisig.editProxy.banner.stateModify')} />;
     }
     const titleKey =
       target.candidate.source === 'wallet'
-        ? 'flexibleMultisig.editController.banner.stateWallet'
-        : 'flexibleMultisig.editController.banner.stateAddressBook';
+        ? 'flexibleMultisig.editProxy.banner.stateWallet'
+        : 'flexibleMultisig.editProxy.banner.stateAddressBook';
     return <StatusLabel variant="success" title={t(titleKey)} />;
   })();
 
@@ -200,7 +200,7 @@ export const PersistentBanner = ({ currentControllerAddress, currentSignatories,
             <Suspense
               fallback={
                 <Button disabled pallet="secondary" size="sm" variant="fill">
-                  {t('flexibleMultisig.editController.banner.scope.openOverview')}
+                  {t('flexibleMultisig.editProxy.banner.scope.openOverview')}
                 </Button>
               }
             >
@@ -208,7 +208,7 @@ export const PersistentBanner = ({ currentControllerAddress, currentSignatories,
                 initialChainId={chain.chainId}
                 trigger={
                   <Button pallet="secondary" size="sm" variant="fill">
-                    {t('flexibleMultisig.editController.banner.scope.openOverview')}
+                    {t('flexibleMultisig.editProxy.banner.scope.openOverview')}
                   </Button>
                 }
                 walletAccounts={
@@ -224,7 +224,7 @@ export const PersistentBanner = ({ currentControllerAddress, currentSignatories,
         <BannerSide
           tone={isTrustedFlow ? 'removed' : 'muted'}
           state={currentStateLabel}
-          label={t('flexibleMultisig.editController.banner.was')}
+          label={t('flexibleMultisig.editProxy.banner.was')}
           address={currentControllerAddress}
           signatories={currentSignatories}
           threshold={currentThreshold}
@@ -240,7 +240,7 @@ export const PersistentBanner = ({ currentControllerAddress, currentSignatories,
           <BannerSide
             tone="accent"
             state={newStateLabel}
-            label={t('flexibleMultisig.editController.banner.willBecome')}
+            label={t('flexibleMultisig.editProxy.banner.willBecome')}
             address={targetView.address}
             signatories={targetView.signatories}
             threshold={targetView.threshold}
@@ -251,12 +251,12 @@ export const PersistentBanner = ({ currentControllerAddress, currentSignatories,
           <div className="flex min-h-[96px] min-w-0 flex-1 flex-col gap-y-2 rounded-lg border border-dashed border-icon-accent/40 bg-block-background-default p-3">
             <div className="flex h-5 items-center justify-between gap-2">
               <FootnoteText className="text-text-tertiary uppercase">
-                {t('flexibleMultisig.editController.banner.willBecome')}
+                {t('flexibleMultisig.editProxy.banner.willBecome')}
               </FootnoteText>
               {newStateLabel}
             </div>
             <FootnoteText className="text-text-tertiary italic">
-              {t('flexibleMultisig.editController.banner.notSelected')}
+              {t('flexibleMultisig.editProxy.banner.notSelected')}
             </FootnoteText>
           </div>
         )}

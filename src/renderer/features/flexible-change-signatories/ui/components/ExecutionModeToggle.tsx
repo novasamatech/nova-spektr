@@ -9,8 +9,8 @@ import { type ExecutionMode } from '../../types';
 import { ExecutionModeInfoPopover } from './ExecutionModeInfoPopover';
 
 const HINTS: Record<ExecutionMode, string> = {
-  verified: 'flexibleMultisig.editController.mode.verifiedHint',
-  trusted: 'flexibleMultisig.editController.mode.trustedHint',
+  verified: 'flexibleMultisig.editProxy.mode.verifiedHint',
+  trusted: 'flexibleMultisig.editProxy.mode.trustedHint',
 };
 
 export const ExecutionModeToggle = () => {
@@ -22,21 +22,21 @@ export const ExecutionModeToggle = () => {
       <div className="flex items-center gap-x-2">
         <div
           role="tablist"
-          aria-label={t('flexibleMultisig.editController.mode.sectionTitle')}
+          aria-label={t('flexibleMultisig.editProxy.mode.sectionTitle')}
           className="inline-flex rounded-md border border-container-border bg-block-background-default p-0.5"
         >
           <PillButton
             active={mode === 'verified'}
             tone="positive"
             icon="✓"
-            label={t('flexibleMultisig.editController.mode.verifiedShort')}
+            label={t('flexibleMultisig.editProxy.mode.verifiedShort')}
             onClick={() => setMode('verified')}
           />
           <PillButton
             active={mode === 'trusted'}
             tone="warning"
             icon="⚠"
-            label={t('flexibleMultisig.editController.mode.trustedShort')}
+            label={t('flexibleMultisig.editProxy.mode.trustedShort')}
             onClick={() => setMode('trusted')}
           />
         </div>

@@ -13,15 +13,15 @@ export const ExecutionModeSummary = () => {
 
   const isVerified = mode === 'verified';
   const titleKey = isVerified
-    ? 'flexibleMultisig.editController.mode.verifiedTitle'
-    : 'flexibleMultisig.editController.mode.trustedTitle';
+    ? 'flexibleMultisig.editProxy.mode.verifiedTitle'
+    : 'flexibleMultisig.editProxy.mode.trustedTitle';
 
   return (
     <DetailRow
       label={
         <span className="flex items-center gap-x-1.5">
           <FootnoteText as="span" className="text-text-tertiary">
-            {t('flexibleMultisig.editController.mode.sectionTitle')}
+            {t('flexibleMultisig.editProxy.mode.sectionTitle')}
           </FootnoteText>
           <ExecutionModeInfoPopover />
         </span>

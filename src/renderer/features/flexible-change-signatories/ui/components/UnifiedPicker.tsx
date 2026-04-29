@@ -104,8 +104,8 @@ export const UnifiedPicker = ({ chain, currentControllerAddress, currentThreshol
   return (
     <Tabs value={mode} onChange={setMode}>
       <Tabs.List>
-        <Tabs.Trigger value="modify">{t('flexibleMultisig.editController.picker.tabs.modify')}</Tabs.Trigger>
-        <Tabs.Trigger value="replace">{t('flexibleMultisig.editController.picker.tabs.replace')}</Tabs.Trigger>
+        <Tabs.Trigger value="modify">{t('flexibleMultisig.editProxy.picker.tabs.modify')}</Tabs.Trigger>
+        <Tabs.Trigger value="replace">{t('flexibleMultisig.editProxy.picker.tabs.replace')}</Tabs.Trigger>
       </Tabs.List>
 
       <Tabs.Content value="modify">
@@ -120,11 +120,11 @@ export const UnifiedPicker = ({ chain, currentControllerAddress, currentThreshol
 
       <Tabs.Content value="replace">
         <div className="flex flex-col gap-4">
-          <Field text={t('flexibleMultisig.editController.picker.search')}>
+          <Field text={t('flexibleMultisig.editProxy.picker.search')}>
             <div className="flex items-center gap-2">
               <div className="min-w-0 flex-1">
                 <Select
-                  placeholder={t('flexibleMultisig.editController.picker.searchPlaceholder')}
+                  placeholder={t('flexibleMultisig.editProxy.picker.searchPlaceholder')}
                   value={selectedCandidate?.address ?? null}
                   valueNode={selectedCandidate ? <CandidateRow candidate={selectedCandidate} /> : null}
                   height="md"
@@ -132,7 +132,7 @@ export const UnifiedPicker = ({ chain, currentControllerAddress, currentThreshol
                   onSearch={setQuery}
                 >
                   {wallets.length > 0 && (
-                    <Select.Group title={t('flexibleMultisig.editController.picker.myWallets')}>
+                    <Select.Group title={t('flexibleMultisig.editProxy.picker.myWallets')}>
                       {wallets.map((c) => (
                         <Select.Item key={c.address} value={c.address}>
                           <CandidateRow candidate={c} />
@@ -141,7 +141,7 @@ export const UnifiedPicker = ({ chain, currentControllerAddress, currentThreshol
                     </Select.Group>
                   )}
                   {contacts.length > 0 && (
-                    <Select.Group title={t('flexibleMultisig.editController.picker.fromAddressBook')}>
+                    <Select.Group title={t('flexibleMultisig.editProxy.picker.fromAddressBook')}>
                       {contacts.map((c) => (
                         <Select.Item key={c.address} value={c.address}>
                           <CandidateRow candidate={c} />
@@ -184,7 +184,7 @@ const CandidateDetails = ({ candidate, chain }: CandidateDetailsProps) => {
     <div className="flex flex-col gap-3 rounded-lg border border-container-border bg-block-background-default/60 p-3">
       <div className="flex flex-col gap-2">
         <FootnoteText className="text-text-tertiary">
-          {t('flexibleMultisig.editController.modifyCurrent.signatoriesLabel')}
+          {t('flexibleMultisig.editProxy.modifyCurrent.signatoriesLabel')}
         </FootnoteText>
         <ul className="flex flex-col gap-y-1.5">
           {candidate.signatories.map((accountId) => (

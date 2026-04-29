@@ -1,24 +1,17 @@
 import { type PropsWithChildren, cloneElement, isValidElement, useState } from 'react';
 
 import { type Wallet } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { ChangeSignatories } from './ChangeSignatories';
 
 type Props = PropsWithChildren<{
   wallet: Wallet;
+  currentControllerAccountId?: AccountId | null;
   onClose?: () => void;
 }>;
 
-/**
- * Wrapper around <ChangeSignatories> that preserves the
- * trigger-renders-children contract used by callers (FlexibleWalletDetails,
- * wallet-details dropdown).
- *
- * The trust-vs-verified picker now lives on the SELECT_CONTROLLER step via
- * <ExecutionModeToggle>; the Confirm step shows it read-only via
- * <ExecutionModeSummary>.
- */
-export const ChangeSignatoriesFlow = ({ wallet, onClose, children }: Props) => {
+export const ChangeSignatoriesFlow = ({ wallet, currentControllerAccountId, onClose, children }: Props) => {
   const [open, setOpen] = useState(false);
   const [flowKey, setFlowKey] = useState(0);
 
@@ -32,10 +25,6 @@ export const ChangeSignatoriesFlow = ({ wallet, onClose, children }: Props) => {
     setOpen(true);
   };
 
-  // We render the consumer-supplied trigger element here and inject our `onClick`
-  // — same pattern the old picker used. If a consumer passes a non-element child
-  // (string / null / fragment), we just render it as-is and rely on `launchOpen`
-  // never firing.
   const trigger = isValidElement<{ onClick?: () => void }>(children)
     ? cloneElement(children, { onClick: handleOpen })
     : children;
@@ -44,7 +33,14 @@ export const ChangeSignatoriesFlow = ({ wallet, onClose, children }: Props) => {
     <>
       {trigger}
       {open && (
-        <ChangeSignatories key={flowKey} wallet={wallet} hideTrigger launchOpen onClose={handleClose}>
+        <ChangeSignatories
+          key={flowKey}
+          wallet={wallet}
+          currentControllerAccountId={currentControllerAccountId}
+          hideTrigger
+          launchOpen
+          onClose={handleClose}
+        >
           {null}
         </ChangeSignatories>
       )}

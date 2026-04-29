@@ -1,22 +1,27 @@
 import { useUnit } from 'effector-react';
+import { useCallback } from 'react';
 
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { Popover } from '@/shared/ui-kit';
 import { type PathNode } from '@/domains/backend';
-import { graphModel } from '../../model/graph-model';
+import { graphModel } from '../model/graph-model';
 
 import { nodeView } from './path-views';
 
 type Props = {
   path: PathNode[];
+  chainId: ChainId;
 };
 
-export const PathReviewPopover = ({ path }: Props) => {
+export const PathReviewPopover = ({ path, chainId }: Props) => {
   const { t } = useI18n();
-  const nameByAccountId = useUnit(graphModel.$contactNameByAccountId);
+  const resolveName = useUnit(graphModel.$nameResolver);
+  const boundResolve = useCallback((accountId: AccountId) => resolveName(accountId, chainId), [resolveName, chainId]);
 
   return (
     <Popover>
@@ -26,24 +31,18 @@ export const PathReviewPopover = ({ path }: Props) => {
           className="flex cursor-pointer items-center gap-1.5 rounded-full border border-container-border bg-white px-2.5 py-1 transition-colors hover:bg-action-background-hover"
         >
           <Icon name="details" size={12} className="text-icon-accent" />
-          <CaptionText className="text-icon-accent uppercase">
-            {t('operations.drafts.signingPath.openOverview')}
-          </CaptionText>
+          <CaptionText className="text-icon-accent uppercase">{t('signingPath.openOverview')}</CaptionText>
         </button>
       </Popover.Trigger>
       <Popover.Content>
         <div className="flex w-[340px] flex-col gap-y-3 p-4">
           <div className="flex items-center justify-between">
-            <CaptionText className="text-text-tertiary uppercase">
-              {t('operations.drafts.signingPath.fullSigningPath')}
-            </CaptionText>
-            <HelpText className="text-text-tertiary">
-              {t('operations.drafts.signingPath.hopsCount', { count: path.length })}
-            </HelpText>
+            <CaptionText className="text-text-tertiary uppercase">{t('signingPath.fullSigningPath')}</CaptionText>
+            <HelpText className="text-text-tertiary">{t('signingPath.hopsCount', { count: path.length })}</HelpText>
           </div>
           <div className="flex flex-col">
             {path.map((node, idx) => {
-              const v = nodeView(node, nameByAccountId, idx, t);
+              const v = nodeView(node, boundResolve, idx, t);
               if (!v) return null;
               const isLast = idx === path.length - 1;
 
