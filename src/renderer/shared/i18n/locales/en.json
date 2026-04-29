@@ -1627,7 +1627,8 @@
           "modify": "Modify current",
           "replace": "Replace with existing"
         }
-      }
+      },
+      "signingPathProxyTypeDisabled": "This proxy type can't add or remove proxies. Pick a delegate with the “Any” proxy type."
     },
     "editSubtitle": "Change the signatories and set the signatory threshold for your flexible multisig.",
     "editTitleOn": "Edit flexible multisig on",

@@ -9,6 +9,7 @@ import { accountService, accounts, identity } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
+import { accountUtils } from '@/entities/wallet';
 
 export type PathSource = {
   accountId: AccountId;
@@ -25,16 +26,70 @@ export type PathNextOption =
       threshold?: number;
       signatoriesCount?: number;
       proxyType?: ProxyType;
+      /**
+       * Set when the option is shown but cannot be picked — e.g. a proxy
+       * delegate whose proxyType doesn't allow the operation we're building. UI
+       * should render the row but disable the click and explain why.
+       */
+      disabled?: boolean;
+      disabledReason?: string;
     }
   | { kind: 'signer'; accountId: AccountId; name: string };
 
 const isMultisigContact = (c: BackendContact): boolean =>
   Array.isArray(c.signatories) && c.signatories.length > 0 && typeof c.threshold === 'number' && c.threshold >= 1;
 
+type MultisigInfo = {
+  signatories: AccountId[];
+  threshold: number;
+};
+
+type MultisigByAccountId = Map<AccountId, MultisigInfo>;
 type ContactsByAccountId = Map<AccountId, BackendContact>;
 
+// Backend-contact lookup is still used by buildSources to surface external
+// proxied accounts (non-multisig contacts whose proxy graph leads to a
+// multisig signer). Multisig metadata is now sourced from $multisigByAccountId
+// — see below — which merges contacts with own multisig wallets.
 const $contactByAccountId = contactModel.$backendContacts.map<ContactsByAccountId>(
   (contacts) => new Map(contacts.map((c) => [c.accountId, c])),
+);
+
+// Unified "is this accountId a multisig and what are its signatories?" lookup
+// merging two sources: backend contacts (richer multisig metadata, including
+// for multisigs the user doesn't own) and accounts.$list (own multisig
+// wallets, which may not have a corresponding contact entry — e.g. an Assets
+// proxy delegate). Without this merge, an own multisig that isn't synced as
+// a contact wouldn't surface in the picker at all.
+//
+// When both sources have the same accountId, contact data wins because it's
+// the canonical multisig structure and stays in sync with the backend.
+const $multisigByAccountId = combine(
+  contactModel.$backendContacts,
+  accounts.$list,
+  (contacts, accountList): MultisigByAccountId => {
+    const result = new Map<AccountId, MultisigInfo>();
+
+    for (const account of accountList) {
+      if (accountUtils.isAnyMultisigAccount(account)) {
+        result.set(account.accountId, {
+          signatories: account.signatories.map((s) => s.accountId),
+          threshold: account.threshold,
+        });
+      }
+    }
+
+    for (const contact of contacts) {
+      if (isMultisigContact(contact)) {
+        result.set(contact.accountId, {
+          signatories: (contact.signatories ?? []) as AccountId[],
+          threshold: contact.threshold!,
+        });
+      }
+    }
+
+    return result;
+  },
 );
 
 // AccountIds the user actually owns and that can sign (i.e. the leaf set
@@ -74,15 +129,15 @@ const $nameResolver = combine(
 );
 
 /**
- * Build a memoized "can a path that traverses contacts starting at `id` reach
- * an own signer?" predicate. Walks the contact graph DFS through nested
- * multisig signatories, with cycle protection.
+ * Build a memoized "can a path that traverses multisigs starting at `id` reach
+ * an own signer?" predicate. Walks the multisig graph DFS through nested
+ * signatories, with cycle protection.
  *
  * `allowedSet` is treated as terminal: any accountId in the set short-circuits
- * to true, no matter whether it has a contact entry. Non-multisig contacts and
- * unknown accountIds outside the set return false (dead end).
+ * to true, no matter whether it has a multisig entry. Non-multisig accountIds
+ * outside the set return false (dead end).
  */
-function makeReachabilityChecker(contactByAccountId: ContactsByAccountId, allowedSet: Set<AccountId>) {
+function makeReachabilityChecker(multisigByAccountId: MultisigByAccountId, allowedSet: Set<AccountId>) {
   const memo = new Map<AccountId, boolean>();
 
   const check = (id: AccountId, visiting: Set<AccountId>): boolean => {
@@ -97,10 +152,10 @@ function makeReachabilityChecker(contactByAccountId: ContactsByAccountId, allowe
     }
 
     visiting.add(id);
-    const contact = contactByAccountId.get(id);
+    const multisig = multisigByAccountId.get(id);
     let result = false;
-    if (contact && isMultisigContact(contact)) {
-      result = (contact.signatories ?? []).some((sig) => check(sig as AccountId, visiting));
+    if (multisig) {
+      result = multisig.signatories.some((sig) => check(sig, visiting));
     }
     visiting.delete(id);
     memo.set(id, result);
@@ -113,35 +168,46 @@ function makeReachabilityChecker(contactByAccountId: ContactsByAccountId, allowe
 
 function buildSources(
   contactByAccountId: ContactsByAccountId,
+  multisigByAccountId: MultisigByAccountId,
   proxies: Record<AccountId, ProxyAccount[] | undefined>,
   chainId: ChainId,
   allowedSet: Set<AccountId> | null,
   resolveName: AccountNameResolver,
 ): PathSource[] {
   const sources: PathSource[] = [];
-  const canReach = allowedSet ? makeReachabilityChecker(contactByAccountId, allowedSet) : null;
+  const seenAccounts = new Set<AccountId>();
+  const canReach = allowedSet ? makeReachabilityChecker(multisigByAccountId, allowedSet) : null;
 
+  // 1. Direct multisig sources — anything in the merged lookup (own +
+  //    backend contacts). Iterating the unified map means own multisigs
+  //    surface here even when the user hasn't synced them as a contact.
+  for (const accountId of multisigByAccountId.keys()) {
+    if (canReach && !canReach(accountId)) continue;
+    seenAccounts.add(accountId);
+    sources.push({
+      accountId,
+      name: resolveName(accountId, chainId),
+      isProxy: false,
+      walletType: null,
+    });
+  }
+
+  // 2. Proxied sources — non-multisig contacts whose proxy graph leads to
+  //    a multisig signer (so the path can continue). Iterating contacts
+  //    here matches the historical semantics for drafts: surfaces external
+  //    proxied accounts the user wants to write drafts for.
   for (const contact of contactByAccountId.values()) {
-    if (isMultisigContact(contact)) {
-      if (canReach && !canReach(contact.accountId)) continue;
-      sources.push({
-        accountId: contact.accountId,
-        name: resolveName(contact.accountId, chainId),
-        isProxy: false,
-        walletType: null,
-      });
-      continue;
-    }
+    if (seenAccounts.has(contact.accountId)) continue;
+    if (isMultisigContact(contact)) continue;
 
     const signers = proxies[contact.accountId] ?? [];
     const hasMultisigSigner = signers.some((p) => {
       if (p.chainId !== chainId) return false;
-      const signerContact = contactByAccountId.get(p.accountId);
-      if (!signerContact || !isMultisigContact(signerContact)) return false;
+      if (!multisigByAccountId.has(p.accountId)) return false;
       // restrictToOwn: only count the proxy as a viable source if its signing
       // multisig leads to one of the user's own signers — otherwise the user
       // could pick the source but never complete the path.
-      if (canReach && !canReach(signerContact.accountId)) return false;
+      if (canReach && !canReach(p.accountId)) return false;
 
       return true;
     });
@@ -161,15 +227,17 @@ function buildSources(
 
 function buildNextOptions(
   node: PathNode,
-  contactByAccountId: ContactsByAccountId,
+  multisigByAccountId: MultisigByAccountId,
   proxies: Record<AccountId, ProxyAccount[] | undefined>,
   chainId: ChainId,
   allowedSet: Set<AccountId> | null,
+  allowedProxyTypes: ReadonlySet<string> | null,
+  disabledProxyReason: string | null,
   resolveName: AccountNameResolver,
 ): PathNextOption[] {
   if (node.kind === 'signer') return [];
 
-  const canReach = allowedSet ? makeReachabilityChecker(contactByAccountId, allowedSet) : null;
+  const canReach = allowedSet ? makeReachabilityChecker(multisigByAccountId, allowedSet) : null;
   const nodeAccountId = node.accountId as AccountId;
 
   if (node.kind === 'proxied') {
@@ -179,43 +247,57 @@ function buildNextOptions(
     return signers
       .filter((p) => p.chainId === chainId)
       .flatMap((p) => {
-        const contact = contactByAccountId.get(p.accountId);
-        if (!contact || !isMultisigContact(contact)) return [];
-        if (canReach && !canReach(contact.accountId)) return [];
+        const multisig = multisigByAccountId.get(p.accountId);
+        if (!multisig) return [];
 
-        const dedupKey = `${contact.accountId}|${p.proxyType}|${p.delay}`;
+        const dedupKey = `${p.accountId}|${p.proxyType}|${p.delay}`;
         if (seen.has(dedupKey)) return [];
         seen.add(dedupKey);
+
+        // Surface delegates whose proxyType doesn't match the requested set
+        // as disabled rows rather than hiding them — the user should see
+        // that the delegate exists but understand why they can't pick it.
+        const isProxyTypeAllowed = !allowedProxyTypes || allowedProxyTypes.has(p.proxyType);
+
+        // Reachability still hides delegates that can't possibly complete a
+        // path (no own signer downstream); proxyType-mismatch is a softer
+        // disable that needs to be visible.
+        if (canReach && isProxyTypeAllowed && !canReach(p.accountId)) return [];
 
         return [
           {
             kind: 'multisig' as const,
-            accountId: contact.accountId,
-            name: resolveName(contact.accountId, chainId),
-            threshold: contact.threshold ?? undefined,
-            signatoriesCount: contact.signatories?.length ?? undefined,
+            accountId: p.accountId,
+            name: resolveName(p.accountId, chainId),
+            threshold: multisig.threshold,
+            signatoriesCount: multisig.signatories.length,
             proxyType: p.proxyType,
+            ...(isProxyTypeAllowed
+              ? {}
+              : {
+                  disabled: true,
+                  disabledReason: disabledProxyReason ?? undefined,
+                }),
           },
         ];
       });
   }
 
-  const multisigContact = contactByAccountId.get(nodeAccountId);
-  if (!multisigContact || !isMultisigContact(multisigContact)) return [];
+  const multisig = multisigByAccountId.get(nodeAccountId);
+  if (!multisig) return [];
 
-  return (multisigContact.signatories ?? []).flatMap<PathNextOption>((sigId) => {
-    const sigAccountId = sigId as AccountId;
+  return multisig.signatories.flatMap<PathNextOption>((sigAccountId) => {
     if (canReach && !canReach(sigAccountId)) return [];
-    const sigContact = contactByAccountId.get(sigAccountId);
+    const nestedMultisig = multisigByAccountId.get(sigAccountId);
 
-    if (sigContact && isMultisigContact(sigContact)) {
+    if (nestedMultisig) {
       return [
         {
           kind: 'multisig',
           accountId: sigAccountId,
           name: resolveName(sigAccountId, chainId),
-          threshold: sigContact.threshold ?? undefined,
-          signatoriesCount: sigContact.signatories?.length ?? undefined,
+          threshold: nestedMultisig.threshold,
+          signatoriesCount: nestedMultisig.signatories.length,
         },
       ];
     }
@@ -238,13 +320,35 @@ export type GraphOptions = {
    * leave off for proposal flows where someone else may sign (e.g. drafts).
    */
   restrictToOwn?: boolean;
+  /**
+   * When set, multisig delegates whose proxyType isn't in this list are still
+   * surfaced in the picker but marked `disabled` with `disabledReason` — users
+   * see the delegate exists, with a tooltip explaining why they can't pick it.
+   * Use for flows that target a specific extrinsic (e.g. edit flexible multisig
+   * builds `proxy.addProxy`, which only "Any" allows).
+   */
+  allowedProxyTypes?: readonly string[];
+  /**
+   * Tooltip copy attached to disabled options when their proxyType isn't in
+   * `allowedProxyTypes`. Caller-provided so the message can reference the
+   * specific operation ("can't add new proxies", "can't transfer", …).
+   */
+  disabledProxyReason?: string;
 };
 
 const sourcesForCache = new Map<string, Store<PathSource[]>>();
 
+const optsCacheSegment = (opts?: GraphOptions): string => {
+  const restrict = opts?.restrictToOwn ? 'own' : 'all';
+  const allowed = opts?.allowedProxyTypes ? `[${[...opts.allowedProxyTypes].sort().join(',')}]` : '*';
+  // disabledProxyReason is display-only and doesn't affect what's returned,
+  // so it's intentionally excluded from the cache key.
+  return `${restrict}:${allowed}`;
+};
+
 function $sourcesFor(chainId: ChainId, opts?: GraphOptions): Store<PathSource[]> {
   const restrictToOwn = opts?.restrictToOwn ?? false;
-  const cacheKey = `${chainId}:${restrictToOwn ? 'own' : 'all'}`;
+  const cacheKey = `${chainId}:${optsCacheSegment(opts)}`;
   const $cached = sourcesForCache.get(cacheKey);
   if ($cached) return $cached;
 
@@ -252,13 +356,15 @@ function $sourcesFor(chainId: ChainId, opts?: GraphOptions): Store<PathSource[]>
     ? combine(
         {
           contactByAccountId: $contactByAccountId,
+          multisigByAccountId: $multisigByAccountId,
           proxies: proxyModel.$proxies,
           allowed: $ownSignerAccountIds,
           resolveName: $nameResolver,
         },
-        ({ contactByAccountId, proxies, allowed, resolveName }) =>
+        ({ contactByAccountId, multisigByAccountId, proxies, allowed, resolveName }) =>
           buildSources(
             contactByAccountId,
+            multisigByAccountId,
             proxies as Record<AccountId, ProxyAccount[] | undefined>,
             chainId,
             allowed,
@@ -266,10 +372,16 @@ function $sourcesFor(chainId: ChainId, opts?: GraphOptions): Store<PathSource[]>
           ),
       )
     : combine(
-        { contactByAccountId: $contactByAccountId, proxies: proxyModel.$proxies, resolveName: $nameResolver },
-        ({ contactByAccountId, proxies, resolveName }) =>
+        {
+          contactByAccountId: $contactByAccountId,
+          multisigByAccountId: $multisigByAccountId,
+          proxies: proxyModel.$proxies,
+          resolveName: $nameResolver,
+        },
+        ({ contactByAccountId, multisigByAccountId, proxies, resolveName }) =>
           buildSources(
             contactByAccountId,
+            multisigByAccountId,
             proxies as Record<AccountId, ProxyAccount[] | undefined>,
             chainId,
             null,
@@ -285,37 +397,43 @@ const nextOptionsCache = new Map<string, Store<PathNextOption[]>>();
 
 function $nextOptionsForNode(node: PathNode, chainId: ChainId, opts?: GraphOptions): Store<PathNextOption[]> {
   const restrictToOwn = opts?.restrictToOwn ?? false;
-  const key = `${node.kind}:${node.accountId}:${chainId}:${restrictToOwn ? 'own' : 'all'}`;
+  const allowedProxyTypes = opts?.allowedProxyTypes ? new Set(opts.allowedProxyTypes) : null;
+  const disabledProxyReason = opts?.disabledProxyReason ?? null;
+  const key = `${node.kind}:${node.accountId}:${chainId}:${optsCacheSegment(opts)}`;
   const $cached = nextOptionsCache.get(key);
   if ($cached) return $cached;
 
   const $store = restrictToOwn
     ? combine(
         {
-          contactByAccountId: $contactByAccountId,
+          multisigByAccountId: $multisigByAccountId,
           proxies: proxyModel.$proxies,
           allowed: $ownSignerAccountIds,
           resolveName: $nameResolver,
         },
-        ({ contactByAccountId, proxies, allowed, resolveName }) =>
+        ({ multisigByAccountId, proxies, allowed, resolveName }) =>
           buildNextOptions(
             node,
-            contactByAccountId,
+            multisigByAccountId,
             proxies as Record<AccountId, ProxyAccount[] | undefined>,
             chainId,
             allowed,
+            allowedProxyTypes,
+            disabledProxyReason,
             resolveName,
           ),
       )
     : combine(
-        { contactByAccountId: $contactByAccountId, proxies: proxyModel.$proxies, resolveName: $nameResolver },
-        ({ contactByAccountId, proxies, resolveName }) =>
+        { multisigByAccountId: $multisigByAccountId, proxies: proxyModel.$proxies, resolveName: $nameResolver },
+        ({ multisigByAccountId, proxies, resolveName }) =>
           buildNextOptions(
             node,
-            contactByAccountId,
+            multisigByAccountId,
             proxies as Record<AccountId, ProxyAccount[] | undefined>,
             chainId,
             null,
+            allowedProxyTypes,
+            disabledProxyReason,
             resolveName,
           ),
       );
