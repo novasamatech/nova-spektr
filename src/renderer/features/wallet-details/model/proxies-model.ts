@@ -20,7 +20,12 @@ import { walletProxiesModel } from './wallet-proxies-model';
 
 export const VERIFIABLE_PROXY_TYPES: ReadonlySet<ProxyType> = new Set([ProxyTypes.ANY, ProxyTypes.NON_TRANSFER]);
 
-export type WalletProxyStatus = 'verified' | 'not_verified' | 'pending_addition' | 'not_verified_no_wallet';
+export type WalletProxyStatus =
+  | 'verified'
+  | 'not_verified'
+  | 'pending_verification'
+  | 'pending_addition'
+  | 'not_verified_no_wallet';
 
 export type WalletProxyLastOperation = {
   txHash: HexString;
@@ -225,17 +230,18 @@ function sortProxiesInBucket(a: WalletProxy, b: WalletProxy): number {
 function bucketRank(proxy: WalletProxy): number {
   if (proxy.status === 'pending_addition') return 0;
   if (proxy.status === 'not_verified' && proxy.verifiable) return 1;
+  if (proxy.status === 'pending_verification') return 2;
   if (
     proxy.status === 'not_verified' &&
     proxy.proxyWallet !== null &&
     accountUtils.isAnyMultisigAccount(proxy.proxyAccount ?? ({} as AnyAccount)) &&
     !proxy.verifiable
   ) {
-    return 2;
+    return 3;
   }
-  if (proxy.status === 'not_verified_no_wallet') return 3;
-  if (proxy.status === 'not_verified') return 4;
-  return 5; // verified
+  if (proxy.status === 'not_verified_no_wallet') return 4;
+  if (proxy.status === 'not_verified') return 5;
+  return 6; // verified
 }
 
 const $proxies = combine(
@@ -360,6 +366,9 @@ const $proxies = combine(
           );
           if (row && !row.pendingVerificationOperation) {
             row.pendingVerificationOperation = pendingRef;
+            if (row.status === 'not_verified') {
+              row.status = 'pending_verification';
+            }
           }
         }
 

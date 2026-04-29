@@ -6,6 +6,7 @@ import { type WalletProxyStatus } from '../../../model/proxies-model';
 const STATUS_TO_LABEL_VARIANT: Record<WalletProxyStatus, LabelVariant> = {
   verified: 'green',
   not_verified: 'orange',
+  pending_verification: 'blue',
   pending_addition: 'lightBlue',
   not_verified_no_wallet: 'gray',
 };
@@ -13,7 +14,8 @@ const STATUS_TO_LABEL_VARIANT: Record<WalletProxyStatus, LabelVariant> = {
 const STATUS_I18N_KEYS: Record<WalletProxyStatus, string> = {
   verified: 'walletDetails.proxies.statusVerified',
   not_verified: 'walletDetails.proxies.statusNotVerified',
-  pending_addition: 'walletDetails.proxies.statusAwaitingSignatures',
+  pending_verification: 'walletDetails.proxies.statusPendingVerification',
+  pending_addition: 'walletDetails.proxies.statusPendingDelegation',
   not_verified_no_wallet: 'walletDetails.proxies.statusNotVerified',
 };
 
