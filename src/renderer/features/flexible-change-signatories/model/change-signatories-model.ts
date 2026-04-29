@@ -121,22 +121,17 @@ const $signatories = createSignatoriesStore({
 
 const $signatory = restore<AnyAccount | null>(selectSignatory, null).reset(flow.close);
 
+// Interim: drives `$signatory` from data alone, not from user actions. Real
+// path-driven signatory selection will come from the drafts signing-path
+// integration — at that point the path leaf will dispatch `selectSignatory`,
+// overriding this default. Until then, auto-picking the first available
+// signatory unblocks multi-signatory wallets without surprising the user with
+// a silent change on click.
 sample({
   clock: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
-  target: $signatory,
-});
-
-// Interim: real path-driven signatory selection will come from the drafts
-// signing-path integration. Until then, default $signatory to the first
-// available signatory when the user advances from SELECT_CONTROLLER. This
-// unblocks multi-signatory wallets which otherwise stall silently on Confirm.
-sample({
-  clock: nextFromSelectController,
-  source: { signatory: $signatory, signatories: $signatories },
-  filter: ({ signatory, signatories }) => nullable(signatory) && signatories.length > 0,
-  fn: ({ signatories }) => signatories.at(0) ?? null,
+  source: $signatory,
+  filter: (signatory, signatories) => nullable(signatory) && signatories.length > 0,
+  fn: (_, signatories) => signatories.at(0) ?? null,
   target: $signatory,
 });
 

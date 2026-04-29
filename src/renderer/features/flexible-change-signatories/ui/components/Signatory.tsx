@@ -136,7 +136,7 @@ export const Signatory = ({ signatoryIndex, isDuplicate, isInvalidAddress, signa
     });
   };
 
-  const resolvedName = useAddressName(signatoryAddress ? (signatoryAddress as AccountAddress) : null, chain);
+  const resolvedName = useAddressName(signatoryAddress ? toAccountId(signatoryAddress) : null, chain);
   const displayAddress = signatoryAddress ? toAddress(signatoryAddress, { prefix: chain?.addressPrefix }) : null;
   const valueNode = displayAddress ? (
     <Address

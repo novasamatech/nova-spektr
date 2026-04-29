@@ -11,7 +11,7 @@ import {
   TransactionType,
   WalletType,
 } from '@/shared/core';
-import { Step } from '@/shared/lib/utils';
+import { Step, toAddress } from '@/shared/lib/utils';
 import { createAccountId } from '@/shared/mocks';
 import {
   EDIT_FLEXIBLE_CONTROLLER_REMARK_KIND,
@@ -20,7 +20,7 @@ import {
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { transactionBuilder } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { type MultisigCandidate, multisigCandidates } from '@/aggregates/multisig-candidates';
 import { changeSignatoriesModel } from '@/features/flexible-change-signatories/model/change-signatories-model';
 import { multisigAccount, multisigWallet, polkadotChain, polkadotChainId, vaultWallet } from '../../fixtures/index';
@@ -46,9 +46,20 @@ import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from 
 // build a minimal one here. The plan instructs not to add to the global barrel.
 
 const flexibleMultisigWalletId = 100;
-const flexibleMultisigAccountId = createAccountId('fm-multisig-account');
 const flexibleProxyAccountId = createAccountId('fm-proxy-account');
 const flexibleSignatoryAccountId = createAccountId('fm-signatory-1');
+
+// Derive `multisigAccountId` from the fixture's signatories+threshold so that
+// equality checks against `accountUtils.getMultisigAccountId(...)` (used in
+// `$isTheSameMultisig` derivation) have real signal — the alternative of an
+// arbitrary id desyncs from any deterministic derivation and silently fails.
+const flexibleSignatories = [flexibleSignatoryAccountId];
+const flexibleThreshold = 1;
+const flexibleMultisigAccountId = accountUtils.getMultisigAccountId(
+  flexibleSignatories,
+  flexibleThreshold,
+  CryptoType.SR25519,
+);
 
 const flexibleMultisigAccount: FlexibleMultisigAccount = {
   id: 'flex-multisig-1',
@@ -62,7 +73,7 @@ const flexibleMultisigAccount: FlexibleMultisigAccount = {
   accountType: AccountType.FLEX_MULTISIG,
   multisigAccountId: flexibleMultisigAccountId,
   signatories: [{ accountId: flexibleSignatoryAccountId, name: 'FM Signatory 1' }],
-  threshold: 1,
+  threshold: flexibleThreshold,
   proxyType: 'Any',
   deposit: '100000000000',
   entropyBlockNumber: 12345,
@@ -168,6 +179,69 @@ describe('Edit Flexible Multisig Controller — model', () => {
       expect(env.getState(changeSignatoriesModel.$step)).toBe(Step.CONFIRM);
     });
 
+    it('should resolve $effective* observables from a "modify" target', async () => {
+      env = await buildEnv();
+
+      await allSettled(changeSignatoriesModel.flow.open, {
+        scope: env.scope,
+        params: { wallet: flexibleMultisigWallet },
+      });
+
+      const newSignatories = [createAccountId('mod-sig-1'), createAccountId('mod-sig-2')];
+      const newThreshold = 2;
+      const derivedAccountId = accountUtils.getMultisigAccountId(newSignatories, newThreshold, CryptoType.SR25519);
+      const derivedAddress = toAddress(derivedAccountId, { prefix: polkadotChain.addressPrefix });
+
+      await allSettled(changeSignatoriesModel.targetSelected, {
+        scope: env.scope,
+        params: {
+          kind: 'modify',
+          signatories: newSignatories,
+          threshold: newThreshold,
+          derivedAddress,
+        },
+      });
+
+      expect(env.getState(changeSignatoriesModel.$effectiveThreshold)).toBe(newThreshold);
+      expect(env.getState(changeSignatoriesModel.$effectiveSignatories)).toEqual(newSignatories);
+      // For 'modify' the new controller account id is derived from signatories+threshold,
+      // not taken from a candidate. Reproducing the same util the model uses keeps this
+      // assertion grounded in the real branching logic rather than a hard-coded value.
+      expect(env.getState(changeSignatoriesModel.$newControllerAccountId)).toBe(derivedAccountId);
+    });
+
+    it('should flag $isTheSameMultisig when the picked target equals the current controller', async () => {
+      env = await buildEnv();
+
+      await allSettled(changeSignatoriesModel.flow.open, {
+        scope: env.scope,
+        params: { wallet: flexibleMultisigWallet },
+      });
+
+      // Build a 'modify' target whose derived accountId equals the current controller.
+      // The current flexible's controller is identified by `multisigAccountId`, so a
+      // target reproducing the same signatories+threshold under SR25519 must collide.
+      const sameAccountId = flexibleMultisigAccount.multisigAccountId;
+      const sameSignatories = flexibleMultisigAccount.signatories.map((s) => s.accountId);
+      const sameThreshold = flexibleMultisigAccount.threshold;
+      const derivedAddress = toAddress(sameAccountId, { prefix: polkadotChain.addressPrefix });
+
+      await allSettled(changeSignatoriesModel.targetSelected, {
+        scope: env.scope,
+        params: {
+          kind: 'modify',
+          signatories: sameSignatories,
+          threshold: sameThreshold,
+          derivedAddress,
+        },
+      });
+
+      // Sanity: the model derives the same id we expect, so the equality check below has signal.
+      expect(env.getState(changeSignatoriesModel.$newControllerAccountId)).toBe(sameAccountId);
+      expect(env.getState(changeSignatoriesModel.$isTheSameMultisig)).toBe(true);
+      expect(env.getState(changeSignatoriesModel.$canProceedFromForm)).toBe(false);
+    });
+
     it('should resolve $newControllerAccountId from the selected target', async () => {
       env = await buildEnv();
 
@@ -188,6 +262,37 @@ describe('Edit Flexible Multisig Controller — model', () => {
       // For an 'existing' target, the new controller account id is exactly the candidate's.
       expect(env.getState(changeSignatoriesModel.$newControllerAccountId)).toBe(candidate!.accountId);
       expect(env.getState(changeSignatoriesModel.$effectiveThreshold)).toBe(candidate!.threshold);
+    });
+
+    it('should reset $selectedTarget and $executionMode on flow.open', async () => {
+      env = await buildEnv();
+
+      // Drive into a non-default state first.
+      await allSettled(changeSignatoriesModel.flow.open, {
+        scope: env.scope,
+        params: { wallet: flexibleMultisigWallet },
+      });
+      const candidates = env.getState(multisigCandidates.$candidates);
+      const candidate = candidates.find((c): c is MultisigCandidate => c.source === 'wallet');
+      await allSettled(changeSignatoriesModel.targetSelected, {
+        scope: env.scope,
+        params: { kind: 'existing', candidate: candidate! },
+      });
+      await allSettled(changeSignatoriesModel.executionModeChanged, {
+        scope: env.scope,
+        params: 'trusted',
+      });
+
+      expect(env.getState(changeSignatoriesModel.$selectedTarget)).not.toBeNull();
+      expect(env.getState(changeSignatoriesModel.$executionMode)).toBe('trusted');
+
+      // Re-open: both should reset.
+      await allSettled(changeSignatoriesModel.flow.open, {
+        scope: env.scope,
+        params: { wallet: flexibleMultisigWallet },
+      });
+      expect(env.getState(changeSignatoriesModel.$selectedTarget)).toBeNull();
+      expect(env.getState(changeSignatoriesModel.$executionMode)).toBe('verified');
     });
 
     it('should reset $step to SELECT_CONTROLLER on flow.open', async () => {

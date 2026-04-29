@@ -223,7 +223,8 @@ function bucketRank(proxy: WalletProxy): number {
   if (
     proxy.status === 'not_verified' &&
     proxy.proxyWallet !== null &&
-    accountUtils.isAnyMultisigAccount(proxy.proxyAccount ?? ({} as AnyAccount)) &&
+    proxy.proxyAccount !== null &&
+    accountUtils.isAnyMultisigAccount(proxy.proxyAccount) &&
     !proxy.verifiable
   ) {
     return 2;
