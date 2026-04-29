@@ -217,7 +217,13 @@ export const ChangeSignatories = ({
         <>
           <Modal.Content>
             <div className="flex h-full flex-col gap-y-4 px-5 pt-4 pb-6">
-              <StepPath chainId={chain.chainId} lockedSourceCount={1} restrictToOwnAccounts />
+              <StepPath
+                chainId={chain.chainId}
+                lockedSourceCount={1}
+                restrictToOwnAccounts
+                allowedProxyTypes={['Any']}
+                disabledProxyReason={t('flexibleMultisig.editController.signingPathProxyTypeDisabled')}
+              />
             </div>
           </Modal.Content>
           <Modal.Footer>

@@ -30,9 +30,28 @@ type Props = {
    * sign (e.g. drafts) — those want to see the full graph.
    */
   restrictToOwnAccounts?: boolean;
+  /**
+   * Whitelist of proxy types that can perform the operation being built.
+   * Delegates with a non-matching proxyType still appear in the picker, but
+   * disabled with a tooltip — users see they exist and learn why they can't
+   * pick them. Example: edit-flexible-multisig builds `proxy.addProxy`, which
+   * only "Any" allows.
+   */
+  allowedProxyTypes?: readonly string[];
+  /**
+   * Tooltip copy attached to disabled options when their proxyType is outside
+   * `allowedProxyTypes`.
+   */
+  disabledProxyReason?: string;
 };
 
-export const StepPath = ({ chainId, lockedSourceCount = 0, restrictToOwnAccounts = false }: Props) => {
+export const StepPath = ({
+  chainId,
+  lockedSourceCount = 0,
+  restrictToOwnAccounts = false,
+  allowedProxyTypes,
+  disabledProxyReason,
+}: Props) => {
   const { t } = useI18n();
 
   const path = useUnit(pathModel.$path);
@@ -42,17 +61,21 @@ export const StepPath = ({ chainId, lockedSourceCount = 0, restrictToOwnAccounts
   const [autoOpenSource, setAutoOpenSource] = useState(false);
 
   const sourcesStore = useMemo(
-    () => graphModel.$sourcesFor(chainId, { restrictToOwn: restrictToOwnAccounts }),
-    [chainId, restrictToOwnAccounts],
+    () => graphModel.$sourcesFor(chainId, { restrictToOwn: restrictToOwnAccounts, allowedProxyTypes }),
+    [chainId, restrictToOwnAccounts, allowedProxyTypes],
   );
   const sources = useUnit(sourcesStore);
 
   const nextOptionsStore = useMemo(
     () =>
       lastNode
-        ? graphModel.$nextOptionsForNode(lastNode, chainId, { restrictToOwn: restrictToOwnAccounts })
+        ? graphModel.$nextOptionsForNode(lastNode, chainId, {
+            restrictToOwn: restrictToOwnAccounts,
+            allowedProxyTypes,
+            disabledProxyReason,
+          })
         : graphModel.$empty,
-    [lastNode, chainId, restrictToOwnAccounts],
+    [lastNode, chainId, restrictToOwnAccounts, allowedProxyTypes, disabledProxyReason],
   );
   const nextOptions = useUnit(nextOptionsStore);
 
