@@ -50,13 +50,9 @@ export const StepReview = ({
       {path.length > 0 && (
         <section className="flex flex-col gap-y-2">
           <div className="flex items-center justify-between">
-            <CaptionText className="text-text-tertiary uppercase">
-              {t('operations.drafts.signingPath.signingPath')}
-            </CaptionText>
+            <CaptionText className="text-text-tertiary uppercase">{t('signingPath.signingPath')}</CaptionText>
             <div className="flex items-center gap-3">
-              <HelpText className="text-text-tertiary">
-                {t('operations.drafts.signingPath.hopsCount', { count: path.length })}
-              </HelpText>
+              <HelpText className="text-text-tertiary">{t('signingPath.hopsCount', { count: path.length })}</HelpText>
               <PathReviewPopover path={path} />
             </div>
           </div>
@@ -114,8 +110,8 @@ export const StepReview = ({
       <div className="flex items-start gap-3 rounded-lg border border-icon-warning/20 bg-icon-warning/8 p-4">
         <Icon name="warn" size={16} className="mt-0.5 shrink-0 text-icon-warning" />
         <div className="flex flex-col gap-y-1">
-          <FootnoteText className="text-text-primary">{t('operations.drafts.signingPath.notSignedYet')}</FootnoteText>
-          <HelpText className="text-text-secondary">{t('operations.drafts.signingPath.notSignedYetHint')}</HelpText>
+          <FootnoteText className="text-text-primary">{t('signingPath.notSignedYet')}</FootnoteText>
+          <HelpText className="text-text-secondary">{t('signingPath.notSignedYetHint')}</HelpText>
         </div>
       </div>
     </div>

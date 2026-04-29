@@ -27,11 +27,11 @@ export const nodeView = (
 
   if (node.kind === 'proxied') {
     return {
-      label: t('operations.drafts.signingPath.label.source'),
+      label: t('signingPath.label.source'),
       title: name,
       subtitle: node.proxyType
-        ? t('operations.drafts.signingPath.label.proxiedWithType', { type: node.proxyType })
-        : t('operations.drafts.signingPath.label.proxied'),
+        ? t('signingPath.label.proxiedWithType', { type: node.proxyType })
+        : t('signingPath.label.proxied'),
       address,
       walletType: WalletType.PROXIED,
     };
@@ -39,19 +39,16 @@ export const nodeView = (
 
   if (node.kind === 'multisig') {
     return {
-      label:
-        position === 0
-          ? t('operations.drafts.signingPath.label.source')
-          : t('operations.drafts.signingPath.label.viaMultisig'),
+      label: position === 0 ? t('signingPath.label.source') : t('signingPath.label.viaMultisig'),
       title: name,
-      subtitle: t('operations.drafts.signingPath.label.multisig'),
+      subtitle: t('signingPath.label.multisig'),
       address,
       walletType: WalletType.MULTISIG,
     };
   }
 
   return {
-    label: t('operations.drafts.signingPath.label.initiator'),
+    label: t('signingPath.label.initiator'),
     title: name,
     subtitle: toShortAddress(node.accountId),
     address,
