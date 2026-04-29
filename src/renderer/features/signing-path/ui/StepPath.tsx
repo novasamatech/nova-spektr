@@ -16,9 +16,23 @@ import { SectionCard } from './SectionCard';
 
 type Props = {
   chainId: ChainId;
+  /**
+   * When > 0, the first N nodes of the path are treated as fixed: the source
+   * dropdown is hidden and clicks on those breadcrumb cards do not truncate the
+   * path. Use when the consumer pre-seeds the path (e.g. edit flexible multisig
+   * knows its proxy + multisig up front).
+   */
+  lockedSourceCount?: number;
+  /**
+   * Restrict the picker to paths that terminate at one of the user's own
+   * signing accounts. Use for "I'm signing this myself" flows (e.g. edit
+   * flexible multisig). Leave off for proposal flows where someone else may
+   * sign (e.g. drafts) — those want to see the full graph.
+   */
+  restrictToOwnAccounts?: boolean;
 };
 
-export const StepPath = ({ chainId }: Props) => {
+export const StepPath = ({ chainId, lockedSourceCount = 0, restrictToOwnAccounts = false }: Props) => {
   const { t } = useI18n();
 
   const path = useUnit(pathModel.$path);
@@ -27,12 +41,18 @@ export const StepPath = ({ chainId }: Props) => {
 
   const [autoOpenSource, setAutoOpenSource] = useState(false);
 
-  const sourcesStore = useMemo(() => graphModel.$sourcesFor(chainId), [chainId]);
+  const sourcesStore = useMemo(
+    () => graphModel.$sourcesFor(chainId, { restrictToOwn: restrictToOwnAccounts }),
+    [chainId, restrictToOwnAccounts],
+  );
   const sources = useUnit(sourcesStore);
 
   const nextOptionsStore = useMemo(
-    () => (lastNode ? graphModel.$nextOptionsForNode(lastNode, chainId) : graphModel.$empty),
-    [lastNode, chainId],
+    () =>
+      lastNode
+        ? graphModel.$nextOptionsForNode(lastNode, chainId, { restrictToOwn: restrictToOwnAccounts })
+        : graphModel.$empty,
+    [lastNode, chainId, restrictToOwnAccounts],
   );
   const nextOptions = useUnit(nextOptionsStore);
 
@@ -72,19 +92,17 @@ export const StepPath = ({ chainId }: Props) => {
 
   const pickerInfo = getPickerTitle();
 
+  const handleBreadcrumbClick = (i: number) => {
+    if (i < lockedSourceCount) return;
+    if (i === 0) setAutoOpenSource(true);
+    pathModel.pathTruncatedTo(i - 1);
+  };
+
   return (
     <div className="flex min-h-[520px] flex-col gap-y-4">
-      {path.length > 0 && (
-        <PathBreadcrumb
-          path={path}
-          onNodeClick={(i) => {
-            if (i === 0) setAutoOpenSource(true);
-            pathModel.pathTruncatedTo(i - 1);
-          }}
-        />
-      )}
+      {path.length > 0 && <PathBreadcrumb path={path} chainId={chainId} onNodeClick={handleBreadcrumbClick} />}
 
-      {path.length === 0 ? (
+      {path.length === 0 && lockedSourceCount === 0 ? (
         <SectionCard
           number={1}
           title={t('signingPath.sourceAccount')}
@@ -108,9 +126,7 @@ export const StepPath = ({ chainId }: Props) => {
                     <span className="flex w-full flex-col overflow-hidden">
                       <FootnoteText className="w-fit max-w-full truncate text-text-primary">{source.name}</FootnoteText>
                       <HelpText className="truncate text-text-tertiary">
-                        {source.isProxy
-                          ? t('operations.drafts.proxiedAccountsGroup')
-                          : t('operations.drafts.multisigsGroup')}
+                        {source.isProxy ? t('signingPath.proxiedAccountsGroup') : t('signingPath.multisigsGroup')}
                       </HelpText>
                     </span>
                   </span>

@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useMemo, useState } from 'react';
 
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { getNativeAsset, nullable, toAddress } from '@/shared/lib/utils';
@@ -218,9 +219,9 @@ const ConfirmStep = () => {
 
   return (
     <>
-      {signingPath.length > 0 && (
+      {signingPath.length > 0 && draft && (
         <div className="mx-5 mt-4">
-          <PathBreadcrumb path={signingPath} size="sm" />
+          <PathBreadcrumb path={signingPath} chainId={draft.chainId as ChainId} size="sm" />
         </div>
       )}
 

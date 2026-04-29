@@ -29,19 +29,28 @@ import { multisigService } from '@/features/multisig-wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
+import { pathModel } from '@/features/signing-path';
 import { type ExecutionMode, type SelectedTarget } from '../types';
 
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
 import { signatoryModel } from './signatory-model';
 
-const flow = createGate<{ wallet: Wallet | null }>();
+// `controllerOverride` lets a caller pin "the multisig being edited" to a
+// specific delegate accountId — needed when a flex has multiple multisig
+// delegates on its pure proxy and the user clicks Edit on a non-primary one.
+// Without it, the flow always treats `flex.multisigAccountId` (the recorded
+// controller) as the current, so editing from a non-recorded delegate would
+// silently mis-target the tx and the "currently shown controller" banner.
+const flow = createGate<{ wallet: Wallet | null; controllerOverride?: AccountId | null }>();
 
 const stepChanged = createEvent<Step>();
 const selectSignatory = createEvent<AnyAccount | null>();
 const targetSelected = createEvent<SelectedTarget | null>();
 const executionModeChanged = createEvent<ExecutionMode>();
 const nextFromSelectController = createEvent();
+const nextFromSigningPath = createEvent();
+const signingPathGoBack = createEvent();
 const confirmGoBack = createEvent();
 
 const $step = restore(stepChanged, Step.SELECT_CONTROLLER).reset(flow.open).reset(flow.close);
@@ -56,6 +65,54 @@ const $walletAccounts = combine($initiatorWallet, accounts.$list, (wallet, accou
 });
 
 const $flexibleMultisigAccount = $walletAccounts.map((acc) => acc.find(accountUtils.isFlexibleMultisigAccount) ?? null);
+
+// The clicked delegate's accountId, or null if the caller didn't pin one.
+// Falls through to flex.multisigAccountId in $currentControllerAccountId.
+const $controllerOverride = flow.state.map((state) => state?.controllerOverride ?? null);
+
+// "Which multisig are we editing?" — bundles accountId + signatories +
+// threshold so PersistentBanner / tx building / same-multisig guard all read
+// from one source. When the caller pins an override (ProxiesTab passes the
+// row's delegate), we look up its own MultisigAccount in accounts.$list to
+// recover signatories/threshold; falling back to flex.multisigAccountId
+// (the flex's recorded controller) when no override is set.
+const $currentController = combine(
+  {
+    override: $controllerOverride,
+    flex: $flexibleMultisigAccount,
+    accountList: accounts.$list,
+  },
+  ({ override, flex, accountList }) => {
+    if (override) {
+      const candidate = accountList.find((a) => a.accountId === override);
+      if (candidate && accountUtils.isAnyMultisigAccount(candidate)) {
+        return {
+          accountId: override,
+          signatories: candidate.signatories.map((s) => s.accountId),
+          threshold: candidate.threshold,
+        };
+      }
+
+      // Override targets a delegate the user doesn't own as a multisig
+      // wallet — surface the accountId so the banner address is right, and
+      // leave signatories/threshold null so the UI can show a placeholder
+      // rather than misattribute flex's.
+      return { accountId: override, signatories: null, threshold: null };
+    }
+
+    if (flex) {
+      return {
+        accountId: flex.multisigAccountId,
+        signatories: flex.signatories.map((s) => s.accountId),
+        threshold: flex.threshold,
+      };
+    }
+
+    return null;
+  },
+);
+
+const $currentControllerAccountId = $currentController.map((c) => c?.accountId ?? null);
 
 // The flexible multisig stores the pure proxy as a sister `ProxiedAccount`
 // (proxyVariant === PURE) under a separate auto-generated wallet. The graph
@@ -121,17 +178,29 @@ const $signatories = createSignatoriesStore({
 
 const $signatory = restore<AnyAccount | null>(selectSignatory, null).reset(flow.close);
 
-// Interim: drives `$signatory` from data alone, not from user actions. Real
-// path-driven signatory selection will come from the drafts signing-path
-// integration — at that point the path leaf will dispatch `selectSignatory`,
-// overriding this default. Until then, auto-picking the first available
-// signatory unblocks multi-signatory wallets without surprising the user with
-// a silent change on click.
+// Path-driven signatory selection. The picker is rendered on the SIGNING_PATH
+// step (between SELECT_CONTROLLER and CONFIRM); when the user clicks the
+// signer leaf, that dispatches into pathModel and the leaf's accountId is
+// matched against accounts.$list to resolve the AnyAccount we need for
+// signing. We use the broader account list rather than $signatories because
+// the latter depends on DI-pipeline handlers that aren't always available in
+// integration tests — the path picker (graphModel) is what enforces "user
+// can actually sign with this leaf" before it ever reaches us here.
+//
+// pathModel is a singleton shared with the drafts modal, so this sample also
+// fires when drafts mutates the path. In practice only one of the two flows
+// is open at a time (and we reset the path on flow.open/close), so the
+// concurrent-modal scenario is theoretical, but keep the filter strict so a
+// stray non-signer path append doesn't clobber $signatory.
 sample({
-  clock: $signatories,
-  source: $signatory,
-  filter: (signatory, signatories) => nullable(signatory) && signatories.length > 0,
-  fn: (_, signatories) => signatories.at(0) ?? null,
+  clock: pathModel.$path,
+  source: accounts.$list,
+  filter: (_accountList, path) => path.length > 0 && path[path.length - 1]!.kind === 'signer',
+  fn: (accountList, path) => {
+    const leafAccountId = path[path.length - 1]!.accountId;
+
+    return accountList.find((a) => a.accountId === leafAccountId) ?? null;
+  },
   target: $signatory,
 });
 
@@ -255,14 +324,21 @@ const $controllerEditTx = combine(
     multisigAccount: $flexibleMultisigAccount,
     signer: $signatory,
     newControllerAccountId: $newControllerAccountId,
+    currentControllerAccountId: $currentControllerAccountId,
     executionMode: $executionMode,
   },
-  ({ chain, multisigAccount, signer, newControllerAccountId, executionMode }) => {
-    if (nullable(multisigAccount) || nullable(signer) || nullable(chain) || nullable(newControllerAccountId)) {
+  ({ chain, multisigAccount, signer, newControllerAccountId, currentControllerAccountId, executionMode }) => {
+    if (
+      nullable(multisigAccount) ||
+      nullable(signer) ||
+      nullable(chain) ||
+      nullable(newControllerAccountId) ||
+      nullable(currentControllerAccountId)
+    ) {
       return null;
     }
 
-    const oldAccountId = multisigService.getMultisigAccountId(multisigAccount);
+    const oldAccountId = currentControllerAccountId;
 
     if (executionMode === 'verified') {
       // Verified path: addProxy + a marker `system.remark` so this op can be told
@@ -420,12 +496,12 @@ const {
 const $isTheSameMultisig = combine(
   {
     newControllerAccountId: $newControllerAccountId,
-    multisigAccount: $flexibleMultisigAccount,
+    currentControllerAccountId: $currentControllerAccountId,
   },
-  ({ multisigAccount, newControllerAccountId }) => {
-    if (!newControllerAccountId || !multisigAccount) return false;
+  ({ currentControllerAccountId, newControllerAccountId }) => {
+    if (!newControllerAccountId || !currentControllerAccountId) return false;
 
-    return newControllerAccountId === multisigService.getMultisigAccountId(multisigAccount);
+    return newControllerAccountId === currentControllerAccountId;
   },
 );
 
@@ -467,25 +543,63 @@ const $canSubmit = and($valid, $canProceedFromForm);
 
 // step transitions
 
-// SELECT_CONTROLLER → CONFIRM. Requires a non-null $selectedTarget; the UI
-// keeps the Next button disabled until that's true and this filter is a
-// defence-in-depth guard. The transition is not gated on $tx readiness —
-// the Confirm step's UI shows its own loading state for fees / validation,
-// so a slow wrap doesn't silently swallow the click.
+// SELECT_CONTROLLER → SIGNING_PATH. Requires a non-null $selectedTarget; the
+// UI keeps the Next button disabled until that's true and this filter is a
+// defence-in-depth guard.
 sample({
   clock: nextFromSelectController,
   source: $selectedTarget,
   filter: nonNullable,
+  fn: () => Step.SIGNING_PATH,
+  target: stepChanged,
+});
+
+// Seed the path picker the first time the user lands on SIGNING_PATH. We
+// only fix the source (the flexible's pure proxy) — the multisig hop stays
+// pickable so users with multiple delegates on the same proxy can choose
+// which one signs. Without this, a user with two "Any"-type controllers on
+// the same flex would only see whichever is recorded as
+// flex.multisigAccountId and couldn't sign through the other.
+//
+// Seed runs once per flow.open — re-entering the step (e.g. via
+// confirmGoBack) preserves the previous selection.
+sample({
+  clock: stepChanged,
+  source: { flexible: $flexibleMultisigAccount, path: pathModel.$path },
+  filter: ({ flexible, path }, step) => step === Step.SIGNING_PATH && nonNullable(flexible) && path.length === 0,
+  fn: ({ flexible }) => [{ kind: 'proxied' as const, accountId: flexible!.accountId }],
+  target: pathModel.pathSeeded,
+});
+
+// SIGNING_PATH → CONFIRM. Gated on $isComplete so the user can't advance
+// before picking a signer (the UI also disables the button until then).
+sample({
+  clock: nextFromSigningPath,
+  source: pathModel.$isComplete,
+  filter: (isComplete) => isComplete,
   fn: () => Step.CONFIRM,
   target: stepChanged,
 });
+
+// SIGNING_PATH → SELECT_CONTROLLER (back). Path is preserved so the user
+// keeps their picked signer if they re-advance.
+sample({
+  clock: signingPathGoBack,
+  fn: () => Step.SELECT_CONTROLLER,
+  target: stepChanged,
+});
+
+// Reset the path whenever the flow is (re)opened or closed so a fresh entry
+// doesn't inherit stale state from a prior session. Mirrors the reset
+// pattern used for $step / $selectedTarget above.
+sample({ clock: [flow.open, flow.close], target: pathModel.pathReset });
 
 // Track whether the user has advanced to Confirm so confirmModel.init can
 // fire as soon as the wrapped tx becomes available — even if the user
 // clicked Next before the wrap finished. Resets when the flow opens/closes
 // so a re-entry doesn't replay the previous intent.
 const $confirmIntent = createStore(false).reset(flow.open).reset(flow.close);
-sample({ clock: nextFromSelectController, fn: () => true, target: $confirmIntent });
+sample({ clock: nextFromSigningPath, fn: () => true, target: $confirmIntent });
 
 // Drive confirmModel.init off both the intent and tx updates so it fires when:
 //   (a) intent flips true while tx is already ready, or
@@ -518,11 +632,11 @@ const formSubmitted = sample({
 sample({ clock: formSubmitted, target: confirmModel.init });
 sample({ clock: formSubmitted, fn: () => false, target: $confirmIntent });
 
-// Confirm → back to SELECT_CONTROLLER. $selectedTarget is preserved so the
-// user doesn't lose their picked controller on backtrack.
+// Confirm → back to SIGNING_PATH. $selectedTarget and the path are preserved
+// so the user doesn't lose their picks on backtrack.
 sample({
   clock: confirmGoBack,
-  fn: () => Step.SELECT_CONTROLLER,
+  fn: () => Step.SIGNING_PATH,
   target: stepChanged,
 });
 
@@ -648,6 +762,8 @@ export const changeSignatoriesModel = {
   $totalDeposit,
   $isEditOperationAlreadyExists,
   $isTheSameMultisig,
+  $currentControllerAccountId,
+  $currentController,
   $chain,
   $canSubmit,
   $canProceedFromForm,
@@ -671,5 +787,7 @@ export const changeSignatoriesModel = {
   targetSelected,
   executionModeChanged,
   nextFromSelectController,
+  nextFromSigningPath,
+  signingPathGoBack,
   flow,
 };

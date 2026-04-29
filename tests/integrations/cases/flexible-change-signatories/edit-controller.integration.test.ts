@@ -23,6 +23,7 @@ import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { type MultisigCandidate, multisigCandidates } from '@/aggregates/multisig-candidates';
 import { changeSignatoriesModel } from '@/features/flexible-change-signatories/model/change-signatories-model';
+import { pathModel } from '@/features/signing-path';
 import { multisigAccount, multisigWallet, polkadotChain, polkadotChainId, vaultWallet } from '../../fixtures/index';
 import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
 
@@ -150,7 +151,7 @@ describe('Edit Flexible Multisig Controller — model', () => {
       });
     });
 
-    it('should walk SELECT_CONTROLLER → CONFIRM on happy path', async () => {
+    it('should walk SELECT_CONTROLLER → SIGNING_PATH → CONFIRM on happy path', async () => {
       env = await buildEnv();
 
       await allSettled(changeSignatoriesModel.flow.open, {
@@ -175,8 +176,109 @@ describe('Edit Flexible Multisig Controller — model', () => {
         candidate,
       });
 
+      // SELECT_CONTROLLER → SIGNING_PATH. The model auto-seeds the path with
+      // just the proxy source. The user must pick the multisig (so that flows
+      // with multiple proxy delegates surface all options) and the signer.
       await allSettled(changeSignatoriesModel.nextFromSelectController, { scope: env.scope });
+      expect(env.getState(changeSignatoriesModel.$step)).toBe(Step.SIGNING_PATH);
+      expect(env.getState(pathModel.$path)).toEqual([{ kind: 'proxied', accountId: flexibleProxyAccountId }]);
+
+      // Append the controller multisig hop, then the signer leaf. The signer
+      // append both completes the path and resolves $signer via the sample
+      // wired in change-signatories-model.
+      await allSettled(pathModel.pathNodeAppended, {
+        scope: env.scope,
+        params: { kind: 'multisig', accountId: flexibleMultisigAccountId },
+      });
+      await allSettled(pathModel.pathNodeAppended, {
+        scope: env.scope,
+        params: { kind: 'signer', accountId: flexibleSignatoryAccountId },
+      });
+      expect(env.getState(pathModel.$isComplete)).toBe(true);
+      expect(env.getState(changeSignatoriesModel.$signer)?.accountId).toBe(flexibleSignatoryAccountId);
+
+      // SIGNING_PATH → CONFIRM.
+      await allSettled(changeSignatoriesModel.nextFromSigningPath, { scope: env.scope });
       expect(env.getState(changeSignatoriesModel.$step)).toBe(Step.CONFIRM);
+    });
+
+    it('should not advance from SIGNING_PATH while the path is incomplete', async () => {
+      env = await buildEnv();
+
+      await allSettled(changeSignatoriesModel.flow.open, {
+        scope: env.scope,
+        params: { wallet: flexibleMultisigWallet },
+      });
+      const candidates = env.getState(multisigCandidates.$candidates);
+      const candidate = candidates.find((c): c is MultisigCandidate => c.source === 'wallet');
+      await allSettled(changeSignatoriesModel.targetSelected, {
+        scope: env.scope,
+        params: { kind: 'existing', candidate: candidate! },
+      });
+
+      await allSettled(changeSignatoriesModel.nextFromSelectController, { scope: env.scope });
+      expect(env.getState(changeSignatoriesModel.$step)).toBe(Step.SIGNING_PATH);
+      expect(env.getState(pathModel.$isComplete)).toBe(false);
+
+      // Path is seeded but no signer picked yet → next is gated.
+      await allSettled(changeSignatoriesModel.nextFromSigningPath, { scope: env.scope });
+      expect(env.getState(changeSignatoriesModel.$step)).toBe(Step.SIGNING_PATH);
+    });
+
+    it('should pin $currentControllerAccountId to the controllerOverride when provided', async () => {
+      env = await buildEnv();
+
+      // Flex's recorded controller is `flexibleMultisigAccountId` (derived from
+      // the fixture). Pretend the user clicked Edit on a different delegate row.
+      const otherDelegateId = createAccountId('fm-alt-controller');
+
+      await allSettled(changeSignatoriesModel.flow.open, {
+        scope: env.scope,
+        params: { wallet: flexibleMultisigWallet, controllerOverride: otherDelegateId },
+      });
+
+      // Override wins over flex.multisigAccountId — banner / tx / same-multisig
+      // guard now treat the clicked delegate as the current controller.
+      expect(env.getState(changeSignatoriesModel.$currentControllerAccountId)).toBe(otherDelegateId);
+      expect(env.getState(changeSignatoriesModel.$currentControllerAccountId)).not.toBe(flexibleMultisigAccountId);
+    });
+
+    it('should fall back to flex.multisigAccountId when no controllerOverride is provided', async () => {
+      env = await buildEnv();
+
+      await allSettled(changeSignatoriesModel.flow.open, {
+        scope: env.scope,
+        params: { wallet: flexibleMultisigWallet },
+      });
+
+      expect(env.getState(changeSignatoriesModel.$currentControllerAccountId)).toBe(flexibleMultisigAccountId);
+    });
+
+    it('should drive $isTheSameMultisig off the controllerOverride, not flex', async () => {
+      env = await buildEnv();
+
+      // Pick a candidate so we have a real multisig accountId to use both as
+      // the override and as the new target.
+      const candidates = env.getState(multisigCandidates.$candidates);
+      const candidate = candidates.find((c): c is MultisigCandidate => c.source === 'wallet');
+      expect(candidate).toBeDefined();
+
+      // Open with override pinned to the candidate's accountId. If the model
+      // were still using flex.multisigAccountId (different from candidate), the
+      // same-multisig guard would not trip — so a `true` here proves the
+      // comparison is wired through the override.
+      await allSettled(changeSignatoriesModel.flow.open, {
+        scope: env.scope,
+        params: { wallet: flexibleMultisigWallet, controllerOverride: candidate!.accountId },
+      });
+      await allSettled(changeSignatoriesModel.targetSelected, {
+        scope: env.scope,
+        params: { kind: 'existing', candidate: candidate! },
+      });
+
+      expect(env.getState(changeSignatoriesModel.$currentControllerAccountId)).toBe(candidate!.accountId);
+      expect(env.getState(changeSignatoriesModel.$newControllerAccountId)).toBe(candidate!.accountId);
+      expect(env.getState(changeSignatoriesModel.$isTheSameMultisig)).toBe(true);
     });
 
     it('should resolve $effective* observables from a "modify" target', async () => {
@@ -310,7 +412,7 @@ describe('Edit Flexible Multisig Controller — model', () => {
         params: { kind: 'existing', candidate: candidate! },
       });
       await allSettled(changeSignatoriesModel.nextFromSelectController, { scope: env.scope });
-      expect(env.getState(changeSignatoriesModel.$step)).toBe(Step.CONFIRM);
+      expect(env.getState(changeSignatoriesModel.$step)).toBe(Step.SIGNING_PATH);
 
       // Re-open the gate; step should reset back to SELECT_CONTROLLER.
       await allSettled(changeSignatoriesModel.flow.open, {

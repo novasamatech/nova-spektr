@@ -68,6 +68,13 @@ describe('path-model', () => {
     expect(scope.getState(pathModel.$path)).toEqual([]);
   });
 
+  it('pathSeeded accepts a valid prefix (proxied → multisig)', async () => {
+    const scope = fork();
+    await allSettled(pathModel.pathSeeded, { scope, params: [proxied(1), multisig(2)] });
+    expect(scope.getState(pathModel.$path)).toEqual([proxied(1), multisig(2)]);
+    expect(scope.getState(pathModel.$isComplete)).toBe(false);
+  });
+
   it('depth cap — refuses to append past MAX_PATH_DEPTH', async () => {
     const scope = fork({
       values: new Map([

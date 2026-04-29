@@ -112,7 +112,10 @@ export const ProxiesTab = memo(({ wallet, onCloseWalletDetails }: Props) => {
               editableProxyWallet &&
               (proxy.status === 'verified' || proxy.status === 'not_verified') &&
               !proxy.pendingRemovalOperation ? (
-                <ChangeSignatories wallet={editableProxyWallet}>
+                <ChangeSignatories
+                  wallet={editableProxyWallet}
+                  currentControllerAccountId={proxy.proxyMultisigAccountId}
+                >
                   <Button size="sm" variant="fill" pallet="secondary">
                     {t('flexibleMultisig.editController.editButton')}
                   </Button>

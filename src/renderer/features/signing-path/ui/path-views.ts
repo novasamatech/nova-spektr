@@ -18,12 +18,15 @@ export type PathNodeView = {
 
 export const nodeView = (
   node: PathNode,
-  nameByAccountId: Record<string, string>,
+  resolveName: (accountId: AccountId) => string,
   position: number,
   t: TFunction,
 ): PathNodeView | null => {
-  const name = nameByAccountId[node.accountId] ?? toShortAddress(node.accountId);
-  const address = node.accountId as AccountId;
+  const accountId = node.accountId as AccountId;
+  // resolveAccountName already falls back to a 5-char truncated address when
+  // it has nothing else, so no extra fallback needed here.
+  const name = resolveName(accountId);
+  const address = accountId;
 
   if (node.kind === 'proxied') {
     return {

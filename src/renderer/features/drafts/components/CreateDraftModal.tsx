@@ -62,7 +62,7 @@ export const CreateDraftModal = () => {
   const canSkip = useUnit(createDraftModel.$canSkip);
 
   const path = useUnit(pathModel.$path);
-  const nameByAccountId = useUnit(graphModel.$contactNameByAccountId);
+  const resolveName = useUnit(graphModel.$nameResolver);
 
   const deferredCallData = useDeferredValue(callData);
   const chains = useUnit(networkModel.$chains);
@@ -198,7 +198,8 @@ export const CreateDraftModal = () => {
     }
   };
 
-  const multisigName = multisigHopAccountId ? (nameByAccountId[multisigHopAccountId] ?? '') : '';
+  const multisigName =
+    multisigHopAccountId && selectedChain ? resolveName(multisigHopAccountId as AccountId, selectedChain.chainId) : '';
 
   return (
     <>
