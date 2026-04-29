@@ -31,6 +31,7 @@ export const syncAccountsFx = attach({
       apis: Record<ChainId, ApiPromise>;
       accounts: AnyAccount[];
     }) => {
+      console.log('syncAccountsFx');
       const chainsToSync: Record<ChainId, AccountProviderChain> = {};
 
       for (const [chainId, chain] of entries(chains)) {

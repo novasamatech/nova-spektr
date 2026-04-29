@@ -73,6 +73,25 @@ const $pending = createStore(false)
   .on(requestAllIdentitiesFx.fail, () => false)
   .on(accountsSynced, () => false);
 
+// Auto-sync on every wallet connect/disconnect so we don't depend on each
+// feature to wire its own trigger (e.g. walletConnectForgot was missing one).
+//
+// Loop-safety: both signals only fire from user-initiated single-wallet flows
+// (createWalletFx / removeWalletFx). Sync creates derived wallets (proxieds,
+// multisigs, flex multisigs) through createWalletsFx (batch) and removes
+// wallets through walletsRemoved (batch) — neither of those fires
+// walletCreatedDone or walletRemovedSuccess, so sync cannot re-trigger
+// itself. ForgetWallet's batch path keeps its own explicit sync trigger.
+sample({
+  clock: walletModel.events.walletCreatedDone,
+  target: accountSync.syncAccounts,
+});
+
+sample({
+  clock: walletModel.events.walletRemovedSuccess,
+  target: accountSync.syncAccounts,
+});
+
 // TODO
 // all code bellow should be moved to specific features
 
@@ -106,13 +125,14 @@ type VerifyProxiedDeletionParams = {
   apis: Record<ChainId, ApiPromise>;
 };
 
-// Guards against false deletions caused by indexer lag: only remove a proxied wallet
-// after confirming on-chain that the proxy relationship is gone. Missing API = skip deletion.
+// A proxied wallet is ours only as long as one of its on-chain delegates is a
+// local account we own — i.e. we have signing power for it. Indexer absence
+// alone is not a removal signal (it can lag), but on-chain absence of any
+// matching delegate is authoritative: keep on indexer-lag, delete on real loss.
 const verifyProxiedDeletionFx = createEffect(
   async ({ candidateWalletIds, allAccounts, apis }: VerifyProxiedDeletionParams): Promise<number[]> => {
     if (candidateWalletIds.length === 0) return [];
 
-    // Find the proxied accounts that correspond to the candidate wallet IDs
     const candidates = allAccounts
       .filter(accountUtils.isProxiedAccount)
       .filter((a) => candidateWalletIds.includes(a.walletId));
@@ -121,6 +141,7 @@ const verifyProxiedDeletionFx = createEffect(
     // the original list to avoid silently swallowing deletions.
     if (candidates.length === 0) return candidateWalletIds;
 
+    const localAccountIds = new Set(allAccounts.map((a) => a.accountId));
     const byChain = groupBy(candidates, (a) => a.chainId);
     const confirmedDeleteWalletIds = new Set<number>();
 
@@ -139,16 +160,14 @@ const verifyProxiedDeletionFx = createEffect(
         const onChainData = await proxyPallet.storage.proxies(api, accountIds);
 
         for (const { account: accountId, value } of onChainData) {
-          // A proxied account with zero on-chain proxies is truly gone.
-          const stillExistsOnChain = value.proxies.length > 0;
+          const hasLocalSource = value.proxies.some((p) => localAccountIds.has(p.delegate));
 
-          if (!stillExistsOnChain) {
+          if (!hasLocalSource) {
             const candidate = chainCandidates.find((c) => c.accountId === accountId);
             if (candidate) {
               confirmedDeleteWalletIds.add(candidate.walletId);
             }
           }
-          // If still present on-chain the indexer was just lagging — keep the wallet.
         }
       } catch (e) {
         // On any RPC error be conservative: skip deletion for this chain.
@@ -350,6 +369,12 @@ sample({
   target: walletModel.walletsRemoved,
 });
 
+// Reconcile proxy entries against the indexer's response for our connected
+// accounts: keep matches, add missing, delete what's not returned. Indexer
+// queries are scoped to our accountIds, so absence is authoritative for the
+// lightweight metadata stored in proxyModel — and any false removal heals on
+// the next successful sync. The proxied-wallet path above is the heavy one
+// that gets the on-chain safety net.
 sample({
   clock: accountsSynced,
   source: {
