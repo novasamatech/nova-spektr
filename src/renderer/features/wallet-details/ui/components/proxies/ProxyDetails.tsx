@@ -245,11 +245,6 @@ export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onClos
   }
 
   if (proxy.pendingVerificationOperation) {
-    // Edit (= change signatories) spawns its own add-proxy + remarkWithEvent
-    // flow that's independent of the in-flight verify op, so we surface the
-    // action here rather than gating it on verification completing. Without
-    // this, a user editing signatories of a flex multisig would have to
-    // wait for an unrelated verification proposal to clear.
     return (
       <Box direction="column" gap={4} padding={[4, 5]}>
         <ProxyDetailExplanation>

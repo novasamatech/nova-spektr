@@ -16,32 +16,9 @@ import { SectionCard } from './SectionCard';
 
 type Props = {
   chainId: ChainId;
-  /**
-   * When > 0, the first N nodes of the path are treated as fixed: the source
-   * dropdown is hidden and clicks on those breadcrumb cards do not truncate the
-   * path. Use when the consumer pre-seeds the path (e.g. edit flexible multisig
-   * knows its proxy + multisig up front).
-   */
   lockedSourceCount?: number;
-  /**
-   * Restrict the picker to paths that terminate at one of the user's own
-   * signing accounts. Use for "I'm signing this myself" flows (e.g. edit
-   * flexible multisig). Leave off for proposal flows where someone else may
-   * sign (e.g. drafts) — those want to see the full graph.
-   */
   restrictToOwnAccounts?: boolean;
-  /**
-   * Whitelist of proxy types that can perform the operation being built.
-   * Delegates with a non-matching proxyType still appear in the picker, but
-   * disabled with a tooltip — users see they exist and learn why they can't
-   * pick them. Example: edit-flexible-multisig builds `proxy.addProxy`, which
-   * only "Any" allows.
-   */
   allowedProxyTypes?: readonly string[];
-  /**
-   * Tooltip copy attached to disabled options when their proxyType is outside
-   * `allowedProxyTypes`.
-   */
   disabledProxyReason?: string;
 };
 

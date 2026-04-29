@@ -23,8 +23,6 @@ export const nodeView = (
   t: TFunction,
 ): PathNodeView | null => {
   const accountId = node.accountId as AccountId;
-  // resolveAccountName already falls back to a 5-char truncated address when
-  // it has nothing else, so no extra fallback needed here.
   const name = resolveName(accountId);
   const address = accountId;
 

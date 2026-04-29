@@ -51,10 +51,6 @@ const ProxiedAccountItem = ({ chain, accountId }: { chain: Chain; accountId: Acc
   );
 };
 
-// Renders a single "via <delegate name>" pill. Uses the canonical name
-// resolver (useAccountName) so an address-book entry overrides the
-// auto-generated wallet name (e.g. "Multisig 15Auw…") that would otherwise
-// surface as a truncated address.
 const ProxyDelegateName = ({ accountId, chain }: { accountId: AccountId; chain: Chain | null }) => {
   const resolved = useAccountName({ accountId, chain });
 

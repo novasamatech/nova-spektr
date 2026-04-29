@@ -29,14 +29,6 @@ const MODAL_SIZE: Record<number, Pick<ComponentProps<typeof Modal>, 'size' | 'he
 
 type Props = PropsWithChildren<{
   wallet: Wallet;
-  /**
-   * Override which delegate is treated as the "current controller" being
-   * edited. When the flex's pure proxy has multiple multisig delegates (e.g.
-   * the recorded controller plus a not-yet-verified addition), pass the clicked
-   * row's accountId so the banner, the same-multisig guard, and the on-chain tx
-   * all target the right one. If omitted, falls back to
-   * `flex.multisigAccountId`.
-   */
   currentControllerAccountId?: AccountId | null;
   onClose?: () => void;
   launchOpen?: boolean;
@@ -53,20 +45,10 @@ export const ChangeSignatories = ({
 }: Props) => {
   const { t } = useI18n();
 
-  // Initialize from `launchOpen` so the Modal renders open on the very first
-  // render — saves the previous mount → effect → setState → re-render cycle
-  // that delayed the modal from appearing on click.
   const [isModalOpen, setIsModalOpen] = useState(launchOpen ?? false);
   const walletRef = useRef(wallet);
   walletRef.current = wallet;
 
-  // Two-phase mount:
-  //   1. First render commits Modal shell + <InitializingBody> only — fast.
-  //      Browser paints the loader so the user gets immediate feedback.
-  //   2. After paint, `bodyReady` flips and the heavy step bodies (PersistentBanner,
-  //      UnifiedPicker, ExecutionModeToggle, ConfirmationStep, …) actually mount.
-  //   The loader stays on screen during the heavy second render because JS blocks
-  //   the browser from painting again until React commits the new tree.
   const [bodyReady, setBodyReady] = useState(false);
   useEffect(() => {
     const handle = requestAnimationFrame(() => setBodyReady(true));
@@ -74,9 +56,6 @@ export const ChangeSignatories = ({
     return () => cancelAnimationFrame(handle);
   }, []);
 
-  // Open the model gate after the first paint so Effector derivations
-  // (banner data, fee/validation, path seeding) run against an already-visible
-  // modal instead of blocking the first render.
   const overrideRef = useRef(currentControllerAccountId ?? null);
   overrideRef.current = currentControllerAccountId ?? null;
 
@@ -107,10 +86,6 @@ export const ChangeSignatories = ({
     return toAddress(currentController.accountId, { prefix: chain.addressPrefix });
   }, [currentController, chain]);
 
-  // Signatories / threshold come straight from $currentController so we never
-  // misattribute flex's data to a pinned delegate. If an override targets a
-  // delegate the user doesn't own as a wallet, $currentController returns
-  // signatories=null and we render an empty list rather than borrowing flex's.
   const currentSignatories = currentController?.signatories ?? [];
   const currentThreshold = currentController?.threshold ?? 0;
 
@@ -144,10 +119,6 @@ export const ChangeSignatories = ({
     );
   }
 
-  // Render the loader-only body when:
-  // - bodyReady hasn't flipped yet (first paint), OR
-  // - Effector hasn't resolved $chain / current controller yet
-  // - and the active step actually has a body (SIGN/SUBMIT have their own UI)
   const showInitializingBody =
     (!bodyReady || !chain || !currentControllerAddress) && !isStep(step, Step.SIGN) && !isStep(step, Step.SUBMIT);
 

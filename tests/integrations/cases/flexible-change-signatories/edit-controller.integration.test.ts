@@ -176,16 +176,10 @@ describe('Edit Flexible Multisig Controller — model', () => {
         candidate,
       });
 
-      // SELECT_CONTROLLER → SIGNING_PATH. The model auto-seeds the path with
-      // just the proxy source. The user must pick the multisig (so that flows
-      // with multiple proxy delegates surface all options) and the signer.
       await allSettled(changeSignatoriesModel.nextFromSelectController, { scope: env.scope });
       expect(env.getState(changeSignatoriesModel.$step)).toBe(Step.SIGNING_PATH);
       expect(env.getState(pathModel.$path)).toEqual([{ kind: 'proxied', accountId: flexibleProxyAccountId }]);
 
-      // Append the controller multisig hop, then the signer leaf. The signer
-      // append both completes the path and resolves $signer via the sample
-      // wired in change-signatories-model.
       await allSettled(pathModel.pathNodeAppended, {
         scope: env.scope,
         params: { kind: 'multisig', accountId: flexibleMultisigAccountId },
@@ -257,16 +251,10 @@ describe('Edit Flexible Multisig Controller — model', () => {
     it('should drive $isTheSameMultisig off the controllerOverride, not flex', async () => {
       env = await buildEnv();
 
-      // Pick a candidate so we have a real multisig accountId to use both as
-      // the override and as the new target.
       const candidates = env.getState(multisigCandidates.$candidates);
       const candidate = candidates.find((c): c is MultisigCandidate => c.source === 'wallet');
       expect(candidate).toBeDefined();
 
-      // Open with override pinned to the candidate's accountId. If the model
-      // were still using flex.multisigAccountId (different from candidate), the
-      // same-multisig guard would not trip — so a `true` here proves the
-      // comparison is wired through the override.
       await allSettled(changeSignatoriesModel.flow.open, {
         scope: env.scope,
         params: { wallet: flexibleMultisigWallet, controllerOverride: candidate!.accountId },
