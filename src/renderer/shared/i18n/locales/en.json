@@ -131,6 +131,12 @@
         "replaceButton": "Replace",
         "title": "Import options"
       },
+      "duplicates": {
+        "closeButton": "Close",
+        "description": "Some addresses appear more than once in the file. Remove the duplicates and try again.",
+        "namesLabel": "Names in file:",
+        "title": "Duplicate addresses found"
+      },
       "errors": {
         "description": "Certain contacts don't match required format. Check guidelines on Wiki, update your file, and try uploading again.",
         "emptyList": "File has no accounts to import",

@@ -28,6 +28,9 @@ const validateFileSizeFx = createEffect((file: File) => {
 // Parse file effect - returns ContactImport[] | null, never throws
 const parseFileFx = createEffect(contactImportUtils.parseJSON);
 
+// Detect duplicate accountIds within the imported file
+const findDuplicateAccountIdsFx = createEffect(contactImportUtils.findDuplicateAccountIds);
+
 // Detect accountId conflicts effect
 const detectAccountIdConflictsFx = attach({
   source: contactModel.$localContacts,
@@ -137,6 +140,11 @@ $importState
 
     return state;
   })
+  .on(findDuplicateAccountIdsFx.doneData, (state, duplicates) => {
+    if (duplicates.length > 0) return { status: 'duplicates', duplicates } satisfies ImportState;
+
+    return state;
+  })
   .on(detectAccountIdConflictsFx.doneData, (state, conflicts) => {
     if (conflicts.length > 0 && state.status === 'loading') {
       // We need parsed contacts from the store — they'll be set via the sample below
@@ -185,7 +193,16 @@ sample({
   clock: parseFileFx.doneData,
   filter: (result) => result.success && result.data.length > 0,
   fn: (result) => (result.success ? result.data : []),
-  target: [$parsedContacts, detectAccountIdConflictsFx],
+  target: [$parsedContacts, findDuplicateAccountIdsFx],
+});
+
+// If the file has no internal duplicates, continue to existing-contact conflict detection
+sample({
+  clock: findDuplicateAccountIdsFx.doneData,
+  source: $parsedContacts,
+  filter: (parsed, duplicates) => duplicates.length === 0 && parsed !== null,
+  fn: (parsed) => parsed ?? [],
+  target: detectAccountIdConflictsFx,
 });
 
 // Set conflicts state with data when conflicts are detected
@@ -237,6 +254,7 @@ export const importContactsModel = {
   },
   effects: {
     parseFileFx,
+    findDuplicateAccountIdsFx,
     detectAccountIdConflictsFx,
     replaceContactsFx,
     importNonConflictingFx,

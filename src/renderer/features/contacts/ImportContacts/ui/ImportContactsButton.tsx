@@ -7,6 +7,7 @@ import { Tooltip, useNotification } from '@/shared/ui-kit';
 import { importContactsModel } from '../model/import-contacts-model';
 
 import { ImportConflictsModal } from './ImportConflictsModal';
+import { ImportDuplicatesModal } from './ImportDuplicatesModal';
 
 const LOADING_TOAST_DELAY = 500;
 
@@ -132,6 +133,7 @@ export const ImportContactsButton = () => {
       />
 
       {importState.status === 'conflicts' && <ImportConflictsModal onClose={handleCloseDialog} />}
+      {importState.status === 'duplicates' && <ImportDuplicatesModal onClose={handleCloseDialog} />}
     </>
   );
 };
