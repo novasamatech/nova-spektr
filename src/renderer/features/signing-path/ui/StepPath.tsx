@@ -7,7 +7,7 @@ import { cnTw, performSearch, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { Select } from '@/shared/ui-kit';
-import { type PathSource, graphModel } from '../model/graph-model';
+import { type PathNextOption, type PathSource, graphModel } from '../model/graph-model';
 import { pathModel } from '../model/path-model';
 
 import { NextOptionRow } from './NextOptionRow';
@@ -24,6 +24,14 @@ type Props = {
    * a specific subset (e.g. drafts only allow address-book multisigs).
    */
   sources?: PathSource[];
+  /**
+   * Optional predicate applied to every next-step option. Return false to hide
+   * the option entirely. Use to keep the picker constrained to a known scope —
+   * e.g. drafts hide multisig delegates that aren't in the address book. Source
+   * candidates are already controlled via the `sources` prop; this keeps the
+   * same policy in scope for subsequent hops.
+   */
+  filterNextOption?: (option: PathNextOption) => boolean;
   /**
    * When > 0, the first N nodes of the path are treated as fixed: the source
    * dropdown is hidden and clicks on those breadcrumb cards do not truncate the
@@ -56,6 +64,7 @@ type Props = {
 export const StepPath = ({
   chainId,
   sources: externalSources,
+  filterNextOption,
   lockedSourceCount = 0,
   restrictToOwnAccounts = false,
   allowedProxyTypes,
@@ -99,7 +108,11 @@ export const StepPath = ({
         : graphModel.$empty,
     [lastNode, chainId, restrictToOwnAccounts, allowedProxyTypes, disabledProxyReason],
   );
-  const nextOptions = useUnit(nextOptionsStore);
+  const allNextOptions = useUnit(nextOptionsStore);
+  const nextOptions = useMemo(
+    () => (filterNextOption ? allNextOptions.filter(filterNextOption) : allNextOptions),
+    [allNextOptions, filterNextOption],
+  );
 
   const selectedSourceId = path.length > 0 ? path[0]!.accountId : null;
 
