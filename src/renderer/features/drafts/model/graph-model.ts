@@ -50,9 +50,12 @@ function buildSources(
     }
 
     const signers = proxies[contact.accountId] ?? [];
-    const hasMultisigSigner = signers.some(
-      (p) => p.chainId === chainId && isMultisigContact(contactByAccountId.get(p.accountId) ?? (null as never)),
-    );
+    const hasMultisigSigner = signers.some((p) => {
+      if (p.chainId !== chainId) return false;
+      const signerContact = contactByAccountId.get(p.accountId);
+
+      return signerContact !== undefined && isMultisigContact(signerContact);
+    });
 
     if (hasMultisigSigner) {
       sources.push({ accountId: contact.accountId, name: contact.name, isProxy: true, walletType: null });
