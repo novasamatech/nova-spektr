@@ -117,7 +117,7 @@ export const ProxiesTab = memo(({ wallet, onCloseWalletDetails }: Props) => {
                   currentControllerAccountId={proxy.proxyMultisigAccountId}
                 >
                   <Button size="sm" variant="fill" pallet="secondary">
-                    {t('flexibleMultisig.editController.editButton')}
+                    {t('flexibleMultisig.editProxy.editButton')}
                   </Button>
                 </ChangeSignatories>
               ) : null;

@@ -68,7 +68,7 @@ export const EditControllerOperationDetails = ({ operation }: Props) => {
         {signatories && threshold !== null && total !== null && (
           <>
             <FootnoteText className="text-text-tertiary">
-              {t('operations.editController.details.threshold', { threshold, total })}
+              {t('operations.editProxy.details.threshold', { threshold, total })}
             </FootnoteText>
 
             <ul className="flex flex-col gap-y-1.5">
@@ -90,30 +90,30 @@ export const EditControllerOperationDetails = ({ operation }: Props) => {
     <div className="flex flex-col gap-y-3">
       {info.isTrustedFlow &&
         renderControllerSection(
-          t('operations.editController.details.previousSection'),
+          t('operations.editProxy.details.previousSection'),
           info.oldControllerAccountId,
           oldControllerCandidate,
         )}
 
       {renderControllerSection(
-        t('operations.editController.details.targetSection'),
+        t('operations.editProxy.details.targetSection'),
         info.newControllerAccountId,
         newControllerCandidate,
       )}
 
       <div className="flex flex-col gap-y-1">
-        <SmallTitleText>{t('operations.editController.details.modeSection')}</SmallTitleText>
+        <SmallTitleText>{t('operations.editProxy.details.modeSection')}</SmallTitleText>
         <FootnoteText className={info.isTrustedFlow ? 'text-icon-warning' : 'text-text-positive'}>
           {info.isTrustedFlow
-            ? t('operations.editController.details.trustedDescription')
-            : t('operations.editController.details.verifiedDescription')}
+            ? t('operations.editProxy.details.trustedDescription')
+            : t('operations.editProxy.details.verifiedDescription')}
         </FootnoteText>
       </div>
 
       {proxiedWallet && (
         <>
           <Button className="self-start p-0" size="sm" variant="text" onClick={() => setIsOverviewOpen(true)}>
-            {t('operations.editController.details.openProxyDetails')}
+            {t('operations.editProxy.details.openProxyDetails')}
           </Button>
 
           <WalletDetails

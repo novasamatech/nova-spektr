@@ -28,15 +28,13 @@ export const EditControllerOperationCard = memo(({ info, chain }: Props) => {
     [info.newControllerAccountId, addressPrefix],
   );
 
-  const title = t('operations.editController.title');
+  const title = t('operations.editProxy.title');
 
-  const tagLabel = info.isTrustedFlow
-    ? t('operations.editController.trustedTag')
-    : t('operations.editController.verifiedTag');
+  const tagLabel = info.isTrustedFlow ? t('operations.editProxy.trustedTag') : t('operations.editProxy.verifiedTag');
 
   const tagTooltip = info.isTrustedFlow
-    ? t('operations.editController.trustedTooltip')
-    : t('operations.editController.verifiedTooltip');
+    ? t('operations.editProxy.trustedTooltip')
+    : t('operations.editProxy.verifiedTooltip');
 
   const tagPalette = info.isTrustedFlow
     ? 'border-icon-warning/30 bg-icon-warning/8 text-icon-warning'

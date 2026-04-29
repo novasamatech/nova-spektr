@@ -206,7 +206,7 @@ export const ChangeSignatories = ({
           <Modal.Footer>
             <Box fitContainer direction="row" horizontalAlign="end" verticalAlign="center">
               <Button disabled={!selectedTarget} onClick={() => nextFromSelectController()}>
-                {t('flexibleMultisig.editController.picker.next')}
+                {t('flexibleMultisig.editProxy.picker.next')}
               </Button>
             </Box>
           </Modal.Footer>
@@ -222,7 +222,7 @@ export const ChangeSignatories = ({
                 lockedSourceCount={1}
                 restrictToOwnAccounts
                 allowedProxyTypes={['Any']}
-                disabledProxyReason={t('flexibleMultisig.editController.signingPathProxyTypeDisabled')}
+                disabledProxyReason={t('flexibleMultisig.editProxy.signingPathProxyTypeDisabled')}
               />
             </div>
           </Modal.Content>
@@ -232,7 +232,7 @@ export const ChangeSignatories = ({
                 {t('createMultisigAccount.backButton')}
               </Button>
               <Button disabled={!isPathComplete} onClick={() => nextFromSigningPath()}>
-                {t('flexibleMultisig.editController.picker.next')}
+                {t('flexibleMultisig.editProxy.picker.next')}
               </Button>
             </Box>
           </Modal.Footer>
