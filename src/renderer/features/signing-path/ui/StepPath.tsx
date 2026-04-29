@@ -7,7 +7,7 @@ import { cnTw, performSearch, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { Select } from '@/shared/ui-kit';
-import { type PathSource, graphModel } from '../model/graph-model';
+import { type PathNextOption, type PathSource, graphModel } from '../model/graph-model';
 import { pathModel } from '../model/path-model';
 
 import { NextOptionRow } from './NextOptionRow';
@@ -17,6 +17,7 @@ import { SectionCard } from './SectionCard';
 type Props = {
   chainId: ChainId;
   sources?: PathSource[];
+  filterNextOption?: (option: PathNextOption) => boolean;
   lockedSourceCount?: number;
   restrictToOwnAccounts?: boolean;
   allowedProxyTypes?: readonly string[];
@@ -26,6 +27,7 @@ type Props = {
 export const StepPath = ({
   chainId,
   sources: externalSources,
+  filterNextOption,
   lockedSourceCount = 0,
   restrictToOwnAccounts = false,
   allowedProxyTypes,
@@ -69,7 +71,11 @@ export const StepPath = ({
         : graphModel.$empty,
     [lastNode, chainId, restrictToOwnAccounts, allowedProxyTypes, disabledProxyReason],
   );
-  const nextOptions = useUnit(nextOptionsStore);
+  const allNextOptions = useUnit(nextOptionsStore);
+  const nextOptions = useMemo(
+    () => (filterNextOption ? allNextOptions.filter(filterNextOption) : allNextOptions),
+    [allNextOptions, filterNextOption],
+  );
 
   const selectedSourceId = path.length > 0 ? path[0]!.accountId : null;
 

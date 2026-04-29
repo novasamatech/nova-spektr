@@ -16,6 +16,7 @@ import { decodeCallData, findCoreTransaction, getTransactionAmount, useTransacti
 import { backendConfigurationModel } from '@/aggregates/backend';
 import { operationIconTransformer, operationTitleTransformer } from '@/features/multisig-operations';
 import {
+  type PathNextOption,
   type PathSource,
   StepPath,
   deriveInitiatorAccountId,
@@ -71,12 +72,13 @@ export const CreateDraftModal = () => {
   const chains = useUnit(networkModel.$chains);
   const chainsList = useUnit(networkModel.$chainsList);
 
-  // Drafts restrict the signing-path source picker to address-book entries —
-  // multisigs and proxied accounts the user has imported as backend contacts.
-  // Own multisig wallets are excluded unless they're also in the address book.
-  // We lean on graphModel for source derivation (proxy-reachability, name
-  // resolution) and filter the result to the address-book set; the ownership
-  // policy lives here in the consumer rather than in the graph.
+  // Drafts restrict the signing-path picker to address-book entries — both
+  // initial sources and downstream multisig hops. We lean on graphModel for
+  // derivation (proxy-reachability, name resolution) and filter the result to
+  // the address-book set; the ownership policy lives here in the consumer
+  // rather than in the graph.
+  const addressBookIds = useMemo(() => new Set(backendContacts.map((c) => c.accountId)), [backendContacts]);
+
   const sourcesStore = useMemo(
     () => graphModel.$sourcesFor(selectedChain?.chainId ?? ('0x00' as ChainId)),
     [selectedChain?.chainId],
@@ -84,10 +86,17 @@ export const CreateDraftModal = () => {
   const allSources = useUnit(sourcesStore);
   const draftPathSources = useMemo<PathSource[]>(() => {
     if (!selectedChain) return [];
-    const addressBookIds = new Set(backendContacts.map((c) => c.accountId));
 
     return allSources.filter((s) => addressBookIds.has(s.accountId));
-  }, [allSources, backendContacts, selectedChain]);
+  }, [allSources, addressBookIds, selectedChain]);
+
+  // Multisig hops past the source must also be address-book entries. Signers
+  // (leaf signatories of a multisig) are left unfiltered — they're not picked
+  // by name, just by being signatories of a known multisig.
+  const filterDraftPathOption = useMemo<(option: PathNextOption) => boolean>(
+    () => (option) => option.kind !== 'multisig' || addressBookIds.has(option.accountId),
+    [addressBookIds],
+  );
 
   const api = useApi(selectedChain?.chainId ?? ('0x00' as ChainId));
   const specVersion = api?.runtimeVersion.specVersion.toNumber() ?? null;
@@ -246,7 +255,11 @@ export const CreateDraftModal = () => {
               />
             )}
             {activeStep === 'select-path' && selectedChain && (
-              <StepPath chainId={selectedChain.chainId} sources={draftPathSources} />
+              <StepPath
+                chainId={selectedChain.chainId}
+                sources={draftPathSources}
+                filterNextOption={filterDraftPathOption}
+              />
             )}
             {activeStep === 'confirm' && selectedChain && (
               <StepReview
