@@ -28,9 +28,9 @@ rename is a follow-up.
 - `PathNode` stays in `@/domains/backend` — it's part of the Draft API contract.
 - StepIndicator was misfiled in `components/signing-path/`; moved to `components/` because it knows about `Step` from `create-draft-model`.
 
-### Deferred (not in this PR)
-- [ ] Rename i18n keys from `operations.drafts.signingPath.*` to a neutral namespace
-- [ ] Wire `signing-path` into `flexible-change-signatories` (path leaf dispatches `selectSignatory`)
+### Done in follow-up PRs
+- [x] **i18n rename** — moved `operations.drafts.signingPath.*` → top-level `signingPath.*`; also relocated `multisigsGroup`/`proxiedAccountsGroup` from `operations.drafts.*` since they're consumed only by signing-path.
+- [x] **Wire signing-path into flexible-change-signatories** — added new `SIGNING_PATH` step between `SELECT_CONTROLLER` and `CONFIRM`. Path is auto-seeded with `[proxied(flexible.accountId), multisig(flexible.multisigAccountId)]`; user picks the signer leaf; the path leaf resolves `$signer` via `accounts.$list` lookup. Replaced the auto-pick fallback. Added `lockedSourceCount` prop to `StepPath` so the breadcrumb doesn't allow truncating past the seeded source. Relaxed `pathSeeded` to accept valid prefixes (added `isValidPathPrefix`). Integration test updated to walk the new flow.
 
 ## Feedback
 - [ ] **UI text polish** — Some text is inconsistent / not finalized (Storybook was for flow demo only). Review all user-facing strings and align with app conventions.

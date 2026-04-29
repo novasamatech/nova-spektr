@@ -62,7 +62,7 @@ export const DraftRow = ({
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const chains = useUnit(networkModel.$chains);
   const backendContacts = useUnit(contactModel.$backendContacts);
-  const contactNameByAccountId = useUnit(graphModel.$contactNameByAccountId);
+  const resolveName = useUnit(graphModel.$nameResolver);
 
   const chain = chains[draft.chainId as ChainId];
   const chainName = chain?.name;
@@ -168,9 +168,7 @@ export const DraftRow = ({
                 }
 
                 if (draft.initiatorAccountId) {
-                  const initiatorName =
-                    contactNameByAccountId[draft.initiatorAccountId] ??
-                    toShortAddress(toAddress(draft.initiatorAccountId, { prefix: chain?.addressPrefix }), 4);
+                  const initiatorName = resolveName(draft.initiatorAccountId as AccountId, draft.chainId as ChainId);
 
                   return (
                     <>

@@ -1,11 +1,18 @@
 import { type PropsWithChildren, cloneElement, isValidElement, useState } from 'react';
 
 import { type Wallet } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { ChangeSignatories } from './ChangeSignatories';
 
 type Props = PropsWithChildren<{
   wallet: Wallet;
+  /**
+   * Optional controller-override propagated to `<ChangeSignatories>`. Use when
+   * the trigger lives next to a specific delegate row so the modal opens on
+   * that delegate rather than `flex.multisigAccountId`.
+   */
+  currentControllerAccountId?: AccountId | null;
   onClose?: () => void;
 }>;
 
@@ -18,7 +25,7 @@ type Props = PropsWithChildren<{
  * <ExecutionModeToggle>; the Confirm step shows it read-only via
  * <ExecutionModeSummary>.
  */
-export const ChangeSignatoriesFlow = ({ wallet, onClose, children }: Props) => {
+export const ChangeSignatoriesFlow = ({ wallet, currentControllerAccountId, onClose, children }: Props) => {
   const [open, setOpen] = useState(false);
   const [flowKey, setFlowKey] = useState(0);
 
@@ -44,7 +51,14 @@ export const ChangeSignatoriesFlow = ({ wallet, onClose, children }: Props) => {
     <>
       {trigger}
       {open && (
-        <ChangeSignatories key={flowKey} wallet={wallet} hideTrigger launchOpen onClose={handleClose}>
+        <ChangeSignatories
+          key={flowKey}
+          wallet={wallet}
+          currentControllerAccountId={currentControllerAccountId}
+          hideTrigger
+          launchOpen
+          onClose={handleClose}
+        >
           {null}
         </ChangeSignatories>
       )}

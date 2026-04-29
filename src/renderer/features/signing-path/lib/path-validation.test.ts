@@ -9,6 +9,7 @@ import {
   deriveMultisigAccountId,
   isCycleFreeAppend,
   isValidPath,
+  isValidPathPrefix,
 } from './path-validation';
 
 const acc = (n: number): AccountId => `1${'0'.repeat(46)}${n}`.slice(0, 48) as AccountId;
@@ -80,6 +81,57 @@ describe('path-validation', () => {
         { kind: 'signer', accountId: acc(3) },
       ];
       expect(isValidPath(path).ok).toBe(true);
+    });
+  });
+
+  describe('isValidPathPrefix', () => {
+    it('empty path is valid', () => {
+      expect(isValidPathPrefix([]).ok).toBe(true);
+    });
+
+    it('accepts a single proxied node', () => {
+      expect(isValidPathPrefix([{ kind: 'proxied', accountId: acc(1) }]).ok).toBe(true);
+    });
+
+    it('accepts a single multisig node', () => {
+      expect(isValidPathPrefix([{ kind: 'multisig', accountId: acc(1) }]).ok).toBe(true);
+    });
+
+    it('rejects single signer', () => {
+      expect(isValidPathPrefix([{ kind: 'signer', accountId: acc(1) }]).ok).toBe(false);
+    });
+
+    it('accepts proxied → multisig (incomplete prefix)', () => {
+      const path: PathNode[] = [
+        { kind: 'proxied', accountId: acc(1) },
+        { kind: 'multisig', accountId: acc(2) },
+      ];
+      expect(isValidPathPrefix(path).ok).toBe(true);
+    });
+
+    it('accepts a complete path', () => {
+      const path: PathNode[] = [
+        { kind: 'proxied', accountId: acc(1) },
+        { kind: 'multisig', accountId: acc(2) },
+        { kind: 'signer', accountId: acc(3) },
+      ];
+      expect(isValidPathPrefix(path).ok).toBe(true);
+    });
+
+    it('rejects proxied → signer (no multisig)', () => {
+      const path: PathNode[] = [
+        { kind: 'proxied', accountId: acc(1) },
+        { kind: 'signer', accountId: acc(2) },
+      ];
+      expect(isValidPathPrefix(path).ok).toBe(false);
+    });
+
+    it('rejects cycles', () => {
+      const path: PathNode[] = [
+        { kind: 'proxied', accountId: acc(1) },
+        { kind: 'multisig', accountId: acc(1) },
+      ];
+      expect(isValidPathPrefix(path).ok).toBe(false);
     });
   });
 

@@ -1,7 +1,10 @@
 import { useUnit } from 'effector-react';
+import { useCallback } from 'react';
 
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { Popover } from '@/shared/ui-kit';
@@ -12,11 +15,13 @@ import { nodeView } from './path-views';
 
 type Props = {
   path: PathNode[];
+  chainId: ChainId;
 };
 
-export const PathReviewPopover = ({ path }: Props) => {
+export const PathReviewPopover = ({ path, chainId }: Props) => {
   const { t } = useI18n();
-  const nameByAccountId = useUnit(graphModel.$contactNameByAccountId);
+  const resolveName = useUnit(graphModel.$nameResolver);
+  const boundResolve = useCallback((accountId: AccountId) => resolveName(accountId, chainId), [resolveName, chainId]);
 
   return (
     <Popover>
@@ -37,7 +42,7 @@ export const PathReviewPopover = ({ path }: Props) => {
           </div>
           <div className="flex flex-col">
             {path.map((node, idx) => {
-              const v = nodeView(node, nameByAccountId, idx, t);
+              const v = nodeView(node, boundResolve, idx, t);
               if (!v) return null;
               const isLast = idx === path.length - 1;
 

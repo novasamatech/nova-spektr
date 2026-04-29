@@ -51,6 +51,16 @@ const ProxiedAccountItem = ({ chain, accountId }: { chain: Chain; accountId: Acc
   );
 };
 
+// Renders a single "via <delegate name>" pill. Uses the canonical name
+// resolver (useAccountName) so an address-book entry overrides the
+// auto-generated wallet name (e.g. "Multisig 15Auw…") that would otherwise
+// surface as a truncated address.
+const ProxyDelegateName = ({ accountId, chain }: { accountId: AccountId; chain: Chain | null }) => {
+  const resolved = useAccountName({ accountId, chain });
+
+  return <FootnoteText className="truncate">{resolved}</FootnoteText>;
+};
+
 type Props = {
   wallet: ProxiedWallet;
   defaultTab?: 'accounts' | 'proxies';
@@ -165,8 +175,10 @@ export const ProxiedWalletDetails = ({ wallet, defaultTab, onClose }: Props) => 
             )}
           </div>
 
-          {proxyWallets.map(
-            ({ connection, proxyWallet }) =>
+          {proxyWallets.map(({ connection, proxyWallet }) => {
+            const proxyChain = wallet.accounts[0] ? chains[wallet.accounts[0].chainId] : null;
+
+            return (
               proxyWallet && (
                 <div className="flex items-center pl-4" key={`${connection.proxyType}-${connection.proxyAccountId}`}>
                   <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
@@ -174,14 +186,15 @@ export const ProxiedWalletDetails = ({ wallet, defaultTab, onClose }: Props) => 
                   <span className="mx-1">
                     <WalletIcon type={proxyWallet.type} size={16} />
                   </span>
-                  <FootnoteText className="truncate">{proxyWallet.name}</FootnoteText>
+                  <ProxyDelegateName accountId={connection.proxyAccountId} chain={proxyChain ?? null} />
                   &nbsp;
                   <FootnoteText className="whitespace-nowrap">{t('walletDetails.common.proxyToControl')}</FootnoteText>
                   &nbsp;
                   <FootnoteText className="whitespace-nowrap">{connection.proxyType}</FootnoteText>
                 </div>
-              ),
-          )}
+              )
+            );
+          })}
         </div>
 
         <WalletActions actions={actions} />

@@ -16,6 +16,7 @@ export const enum Step {
   SIGNER_SELECTION,
   // Edit flexible-multisig controller
   SELECT_CONTROLLER,
+  SIGNING_PATH,
 }
 
 /**

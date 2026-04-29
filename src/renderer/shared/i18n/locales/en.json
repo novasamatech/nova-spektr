@@ -2660,9 +2660,6 @@
       "linkCopied": "Draft link copied!",
       "shareDraftTooltip": "Share draft link with signatories",
       "selectMultisigForProxy": "Proxy multisig",
-      "syncingAccounts": "Syncing accounts",
-      "multisigsGroup": "Multisigs",
-      "proxiedAccountsGroup": "Proxied accounts",
       "proxyLabel": "Proxy",
       "viewDraft": "View draft",
       "notifications": {
@@ -3075,6 +3072,8 @@
   },
   "signingPath": {
     "signingPath": "Signing path",
+    "multisigsGroup": "Multisigs",
+    "proxiedAccountsGroup": "Proxied accounts",
     "hopsCount": "{count} hops",
     "openOverview": "Open overview",
     "fullSigningPath": "Full signing path",

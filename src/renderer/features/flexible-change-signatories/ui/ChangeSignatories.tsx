@@ -4,11 +4,13 @@ import { type ComponentProps, type PropsWithChildren, useEffect, useMemo, useRef
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Step, isStep, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { OperationSign } from '@/features/operations';
 import { OperationSubmitWithAction } from '@/features/operations/OperationSubmit';
+import { StepPath, pathModel } from '@/features/signing-path';
 import { changeSignatoriesModel } from '../model/change-signatories-model';
 
 import { ConfirmationStep } from './ConfirmationStep';
@@ -19,6 +21,7 @@ import { UnifiedPicker } from './components/UnifiedPicker';
 
 const MODAL_SIZE: Record<number, Pick<ComponentProps<typeof Modal>, 'size' | 'height'>> = {
   [Step.SELECT_CONTROLLER]: { size: 'mdlg', height: 'full' },
+  [Step.SIGNING_PATH]: { size: 'mdlg', height: 'full' },
   [Step.SIGN]: { size: 'md', height: 'fit' },
   [Step.CONFIRM]: { size: 'mdlg', height: 'fit' },
   [Step.SUBMIT]: { size: 'md', height: 'fit' },
@@ -26,12 +29,28 @@ const MODAL_SIZE: Record<number, Pick<ComponentProps<typeof Modal>, 'size' | 'he
 
 type Props = PropsWithChildren<{
   wallet: Wallet;
+  /**
+   * Override which delegate is treated as the "current controller" being
+   * edited. When the flex's pure proxy has multiple multisig delegates (e.g.
+   * the recorded controller plus a not-yet-verified addition), pass the clicked
+   * row's accountId so the banner, the same-multisig guard, and the on-chain tx
+   * all target the right one. If omitted, falls back to
+   * `flex.multisigAccountId`.
+   */
+  currentControllerAccountId?: AccountId | null;
   onClose?: () => void;
   launchOpen?: boolean;
   hideTrigger?: boolean;
 }>;
 
-export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideTrigger }: Props) => {
+export const ChangeSignatories = ({
+  wallet,
+  currentControllerAccountId,
+  onClose,
+  children,
+  launchOpen,
+  hideTrigger,
+}: Props) => {
   const { t } = useI18n();
 
   // Initialize from `launchOpen` so the Modal renders open on the very first
@@ -55,9 +74,12 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
     return () => cancelAnimationFrame(handle);
   }, []);
 
-  // Open the model gate after the first paint so the Effector cascade
-  // (populateSignatories, getSignatoriesBalance, populateForm, …) runs against
-  // an already-visible modal instead of blocking the first render.
+  // Open the model gate after the first paint so Effector derivations
+  // (banner data, fee/validation, path seeding) run against an already-visible
+  // modal instead of blocking the first render.
+  const overrideRef = useRef(currentControllerAccountId ?? null);
+  overrideRef.current = currentControllerAccountId ?? null;
+
   const launchedRef = useRef(false);
   useEffect(() => {
     if (!launchOpen) return;
@@ -65,26 +87,32 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
     launchedRef.current = true;
 
     setIsModalOpen(true);
-    changeSignatoriesModel.flow.open({ wallet: walletRef.current });
+    changeSignatoriesModel.flow.open({
+      wallet: walletRef.current,
+      controllerOverride: overrideRef.current,
+    });
   }, [launchOpen, wallet.id]);
 
   const step = useUnit(changeSignatoriesModel.$step);
   const chain = useUnit(changeSignatoriesModel.$chain);
-  const flexibleAccount = useUnit(changeSignatoriesModel.$flexibleMultisigAccount);
+  const currentController = useUnit(changeSignatoriesModel.$currentController);
   const selectedTarget = useUnit(changeSignatoriesModel.$selectedTarget);
+  const isPathComplete = useUnit(pathModel.$isComplete);
   const nextFromSelectController = useUnit(changeSignatoriesModel.nextFromSelectController);
+  const nextFromSigningPath = useUnit(changeSignatoriesModel.nextFromSigningPath);
+  const signingPathGoBack = useUnit(changeSignatoriesModel.signingPathGoBack);
 
   const currentControllerAddress = useMemo(() => {
-    if (!flexibleAccount || !chain) return null;
-    return toAddress(flexibleAccount.multisigAccountId, { prefix: chain.addressPrefix });
-  }, [flexibleAccount, chain]);
+    if (!currentController || !chain) return null;
+    return toAddress(currentController.accountId, { prefix: chain.addressPrefix });
+  }, [currentController, chain]);
 
-  const currentSignatories = useMemo(() => {
-    if (!flexibleAccount) return [];
-    return flexibleAccount.signatories.map((s) => s.accountId);
-  }, [flexibleAccount]);
-
-  const currentThreshold = flexibleAccount?.threshold ?? 0;
+  // Signatories / threshold come straight from $currentController so we never
+  // misattribute flex's data to a pinned delegate. If an override targets a
+  // delegate the user doesn't own as a wallet, $currentController returns
+  // signatories=null and we render an empty list rather than borrowing flex's.
+  const currentSignatories = currentController?.signatories ?? [];
+  const currentThreshold = currentController?.threshold ?? 0;
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -95,7 +123,7 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
   const onToggle = (isOpen: boolean) => {
     if (isOpen) {
       setIsModalOpen(true);
-      changeSignatoriesModel.flow.open({ wallet });
+      changeSignatoriesModel.flow.open({ wallet, controllerOverride: currentControllerAccountId ?? null });
     } else {
       closeModal();
     }
@@ -178,6 +206,26 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
           <Modal.Footer>
             <Box fitContainer direction="row" horizontalAlign="end" verticalAlign="center">
               <Button disabled={!selectedTarget} onClick={() => nextFromSelectController()}>
+                {t('flexibleMultisig.editController.picker.next')}
+              </Button>
+            </Box>
+          </Modal.Footer>
+        </>
+      )}
+
+      {!showInitializingBody && isStep(step, Step.SIGNING_PATH) && chain && (
+        <>
+          <Modal.Content>
+            <div className="flex h-full flex-col gap-y-4 px-5 pt-4 pb-6">
+              <StepPath chainId={chain.chainId} lockedSourceCount={1} restrictToOwnAccounts />
+            </div>
+          </Modal.Content>
+          <Modal.Footer>
+            <Box fitContainer direction="row" horizontalAlign="space-between" verticalAlign="center">
+              <Button variant="text" onClick={() => signingPathGoBack()}>
+                {t('createMultisigAccount.backButton')}
+              </Button>
+              <Button disabled={!isPathComplete} onClick={() => nextFromSigningPath()}>
                 {t('flexibleMultisig.editController.picker.next')}
               </Button>
             </Box>
