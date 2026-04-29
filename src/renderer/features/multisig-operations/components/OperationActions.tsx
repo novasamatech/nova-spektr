@@ -61,7 +61,7 @@ export const OperationActions = memo(({ operation, account }: Props) => {
   if (!chain && !isContact) return null;
 
   return (
-    <div className="flex w-[230px] shrink-0 justify-center gap-x-2" onClick={e => e.stopPropagation()}>
+    <div className="flex w-[220px] shrink-0 justify-center gap-x-2" onClick={e => e.stopPropagation()}>
       {api && chain && isRejectAvailable && (
         <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
           <Button pallet="error" variant="fill" size="sm" className="max-w-1/2 flex-1">
@@ -85,7 +85,7 @@ export const OperationActions = memo(({ operation, account }: Props) => {
       )}
       {isContact && (
         <div className="max-w-1/2 flex-1">
-          <WalletPairingOperationTrigger />
+          <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
         </div>
       )}
     </div>

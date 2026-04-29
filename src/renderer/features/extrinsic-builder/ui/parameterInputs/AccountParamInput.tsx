@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
+import { uniqBy } from 'lodash';
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -32,7 +33,8 @@ export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
     return { prefix: prefix ?? undefined };
   }, [api]);
 
-  const resolvedAccounts = useAccountsNames(accountsList, null);
+  const uniqueAccountsList = useMemo(() => uniqBy(accountsList, 'accountId'), [accountsList]);
+  const resolvedAccounts = useAccountsNames(uniqueAccountsList, null);
 
   // Collect all known addresses for selection detection
   const knownAddresses = useMemo(() => {
@@ -68,13 +70,11 @@ export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
   }, [searchQuery, chain, resolvedAccounts]);
 
   const contactOptions = useMemo(() => {
-    if (!searchQuery || validateAddress(searchQuery)) return [];
+    if (searchQuery && validateAddress(searchQuery)) return [];
 
-    const filtered = performSearch({
-      query: searchQuery,
-      records: contacts,
-      weights: { name: 1, address: 0.5 },
-    });
+    const filtered = searchQuery
+      ? performSearch({ query: searchQuery, records: contacts, weights: { name: 1, address: 0.5 } })
+      : contacts;
 
     return filtered.slice(0, 10).map((contact) => {
       const address = toAddress(contact.accountId, { prefix: chain?.prefix });
@@ -149,7 +149,7 @@ export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
           }
         >
           {contactOptions.map((opt) => (
-            <Combobox.Item key={opt.id} value={opt.address}>
+            <Combobox.Item key={`contact-${opt.id}`} value={opt.address}>
               <Address showIcon title={opt.name} address={opt.address} />
             </Combobox.Item>
           ))}

@@ -116,16 +116,11 @@ const { $: $existingVestingSchedules } = createStoreFromEffect({
   params: { api: $api },
   fn: async ({ api }) => {
     const vestingSchedules = await vestingService.getExistingVestingSchedules(api);
-    const accountIds = Object.keys(vestingSchedules);
 
     const existingVestingSchedules: ValidationSchemaOptions['existingVestingSchedules'] = {};
 
-    for (const accountId of accountIds) {
-      if (nullable(existingVestingSchedules[accountId as AccountId])) {
-        existingVestingSchedules[accountId as AccountId] = 1;
-      } else {
-        existingVestingSchedules[accountId as AccountId]! += 1;
-      }
+    for (const [accountId, schedules] of Object.entries(vestingSchedules)) {
+      existingVestingSchedules[accountId as AccountId] = schedules.length;
     }
 
     return existingVestingSchedules;
@@ -316,7 +311,6 @@ const rootValidateFileFx = createEffect<ValidateFileParams, ValidateFileResults,
 
 const validateFileFx = attach({
   source: {
-    chain: form.fields.chain.$value,
     minStartingBlock: $minStartingBlock,
     minVestedTransfer: $minVestedTransfer,
     maxVestingSchedules: $maxVestingSchedules,
@@ -324,10 +318,9 @@ const validateFileFx = attach({
   },
   mapParams: (
     parsedFile: VestingScheduleRaw[],
-    { chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules },
+    { minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules },
   ) => {
     assert(parsedFile);
-    assert(chain);
     assert(minStartingBlock);
     assert(minVestedTransfer);
     assert(maxVestingSchedules);
@@ -336,7 +329,6 @@ const validateFileFx = attach({
     return {
       parsedFile,
       validationSchemaOptions: {
-        chain,
         minStartingBlock,
         minVestedTransfer,
         maxVestingSchedules,
@@ -575,6 +567,7 @@ export const formModel = {
   $canSubmit,
   $step,
   $api,
+  $coreTx,
   $fee,
   $pendingFee,
   $multisigDeposit,

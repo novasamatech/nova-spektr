@@ -29,6 +29,7 @@ export const BackendConfigurationModal = () => {
   const selectedAccountId = useUnit(authModel.$selectedAccountId);
   const signableAccounts = useUnit(authModel.$signableAccounts);
   const error = useUnit(authModel.$error);
+  const isSessionExpired = useUnit(authModel.$isSessionExpired);
 
   useEffect(() => {
     // eslint-disable-next-line effector/no-watch
@@ -41,10 +42,10 @@ export const BackendConfigurationModal = () => {
   const isError = authStep === 'error';
   const showUrlError = draftUrl.trim().length > 0 && !isValid;
 
-  const urlUnchanged = isAuthenticated && !isDirty;
+  const urlUnchanged = isAuthenticated && !isDirty && !isSessionExpired;
 
   const showAccountSelector = isValid && !urlUnchanged && !isSigning;
-  const showConnectedAccount = urlUnchanged && authState;
+  const showConnectedAccount = urlUnchanged && authState && !isSigning;
 
   const canConnect = isValid && selectedAccountId !== null && !isSigning;
 

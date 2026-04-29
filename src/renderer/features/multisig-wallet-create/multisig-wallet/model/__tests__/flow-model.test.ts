@@ -121,6 +121,7 @@ describe.skip('Create multisig wallet flow-model', () => {
             extrinsicHash: '0x00',
             isFinalApprove: true,
             multisigError: '',
+            proxyError: '',
           },
         },
       ],

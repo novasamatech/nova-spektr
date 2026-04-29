@@ -9,7 +9,9 @@ import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
-import { OperationResult } from '@/entities/transaction';
+import { OperationResult, transactionService } from '@/entities/transaction';
+import { InitiateDraftButton } from '@/features/drafts';
+import { networkSelectorModel } from '@/features/governance';
 import { type AggregatedReferendum } from '@/features/governance';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { VoteConfirmation } from '@/features/operations/OperationsConfirm';
@@ -34,6 +36,9 @@ export const VoteModal = ({ referendum, asset, chain, onClose, onSuccess }: Prop
   const step = useUnit(voteModal.$step);
   const voteSuccess = useUnit(voteModal.$voteSuccess);
   const initiatorWallet = useUnit(voteForm.$initiatorWallet);
+  const coreTx = useUnit(voteForm.$coreTx);
+  const chainApi = useUnit(networkSelectorModel.$governanceChainApi);
+  const draftCallData = transactionService.getCallDataHex(coreTx, chainApi);
 
   const [isModalOpen, closeModal] = useModalClose(step !== Step.NONE, onClose);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(step === Step.BASKET, onClose);
@@ -71,12 +76,19 @@ export const VoteModal = ({ referendum, asset, chain, onClose, onSuccess }: Prop
           {isStep(step, Step.CONFIRM) && (
             <VoteConfirmation
               secondaryActionButton={
-                initiatorWallet &&
-                basketUtils.isBasketAvailable(initiatorWallet) && (
-                  <Button pallet="secondary" onClick={() => voteModal.events.txSaved()}>
-                    {t('operation.addToBasket')}
-                  </Button>
-                )
+                <>
+                  {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
+                    <Button pallet="secondary" onClick={() => voteModal.events.txSaved()}>
+                      {t('operation.addToBasket')}
+                    </Button>
+                  )}
+                  <InitiateDraftButton
+                    callData={draftCallData}
+                    chainId={chain.chainId}
+                    source="governance.vote"
+                    onDraftCreated={onClose}
+                  />
+                </>
               }
               onGoBack={() => voteModal.events.setStep(Step.INIT)}
             />

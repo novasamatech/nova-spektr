@@ -20,12 +20,12 @@ import { AddProxy } from '@/features/proxy-add';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
+import { proxiesModel } from '../../model/proxies-model';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { walletProxiesModel } from '../../model/wallet-proxies-model';
 import { WalletFiatBalance } from '../components';
-import { ProxiesCount } from '../components/ProxiesCount';
-import { ProxiesList } from '../components/ProxiesList';
 import { type WalletAction, Action, WalletActions } from '../components/WalletActions';
+import { ProxiesTab } from '../components/proxies';
 
 type SignatoryContactItemProps = {
   accountId: AccountId;
@@ -59,14 +59,13 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const walletName = useWalletName(wallet);
 
   const chains = useUnit(networkModel.$chains);
-  const hasProxies = useUnit(walletProxiesModel.$hasWalletProxies);
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
   const accountList = useUnit(accounts.$list);
-  const proxiesCount = useUnit(walletProxiesModel.$walletProxiesCount);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
   const [tab, setTab] = useState('1');
+  const proxiesCount = useUnit(proxiesModel.$totalCount);
 
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
 
@@ -102,7 +101,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const actions: WalletAction[] = [
     {
       component: (
-        <ChangeSignatories wallet={wallet}>
+        <ChangeSignatories wallet={wallet} canUseVerifiedPath={canCreateProxy}>
           <Action title={t('walletDetails.multisig.changeSignatories')} icon="changeSignatories" />
         </ChangeSignatories>
       ),
@@ -197,22 +196,22 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   TabItems.push(TabAccount);
 
   if (canCreateProxy) {
-    const TabProxy = {
+    const TabProxies = {
       id: '3',
       title: (
         <span className="flex items-center gap-1">
-          {t('walletDetails.common.proxiesTabTitleShort')}
-          <ProxiesCount count={proxiesCount} />
+          {t('walletDetails.proxies.tabTitleShort')}
+          <span className="text-text-tertiary">{proxiesCount}</span>
         </span>
       ),
-      panel: <ProxiesList wallet={wallet} hasProxies={hasProxies} canCreateProxy={canCreateProxy} />,
+      panel: <ProxiesTab wallet={wallet} onCloseWalletDetails={closeModal} />,
     };
 
-    TabItems.push(TabProxy);
+    TabItems.push(TabProxies);
   }
 
   return (
-    <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
+    <Modal size="lg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
         <div className="mb-6 flex flex-col gap-y-2.5 px-5">

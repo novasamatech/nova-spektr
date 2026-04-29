@@ -202,95 +202,44 @@ describe('Transaction service', () => {
     });
   });
 
-  describe('wrapped calls extraction', () => {
-    it('should extract calls from batchAll extrinsic', async () => {
+  describe('transactionService.getInnerCallsFromCall', () => {
+    it('should extract calls from batchAll', async () => {
       const api = await createMockApi();
 
       const transfer1 = createTransferExtrinsic(api, TEST_ADDRESS_1, TRANSFER_AMOUNT_1);
       const transfer2 = createTransferExtrinsic(api, TEST_ADDRESS_2, TRANSFER_AMOUNT_2);
-      const batchExtrinsic = api.tx.utility.batchAll([transfer1, transfer2]);
+      const batchCall = api.tx.utility.batchAll([transfer1, transfer2]);
 
-      const wrappedCalls = transactionService.getBatchWrappedCallsFromExtrinsic(batchExtrinsic);
+      const wrappedCalls = transactionService.getInnerCallsFromCall(batchCall.method as Call);
 
       expect(wrappedCalls).toHaveLength(2);
       expect(wrappedCalls?.[0]?.section).toBe('balances');
       expect(wrappedCalls?.[1]?.section).toBe('balances');
     });
 
-    it('should return single call for non-batch extrinsic', async () => {
-      const api = await createMockApi();
-
-      const transferExtrinsic = createTransferExtrinsic(api, TEST_ADDRESS_1, TRANSFER_AMOUNT_1);
-
-      const wrappedCalls = transactionService.getBatchWrappedCallsFromExtrinsic(transferExtrinsic);
-
-      expect(wrappedCalls).toHaveLength(1);
-      expect(wrappedCalls?.[0]?.section).toBe('balances');
-      expect(wrappedCalls?.[0]?.method).toBe('transferKeepAlive');
-    });
-
-    it('should handle empty batch extrinsic', async () => {
-      const api = await createMockApi();
-
-      const batchExtrinsic = api.tx.utility.batch([]);
-
-      const wrappedCalls = transactionService.getBatchWrappedCallsFromExtrinsic(batchExtrinsic);
-
-      expect(wrappedCalls).toHaveLength(0);
-    });
-
-    it('should extract nested calls from batch within batch', async () => {
-      const api = await createMockApi();
-
-      const transfer1 = createTransferExtrinsic(api, TEST_ADDRESS_1, TRANSFER_AMOUNT_1);
-      const transfer2 = createTransferExtrinsic(api, TEST_ADDRESS_2, TRANSFER_AMOUNT_2);
-      const innerBatch = api.tx.utility.batch([transfer1, transfer2]);
-      const outerBatch = api.tx.utility.batch([innerBatch]);
-
-      const wrappedCalls = transactionService.getBatchWrappedCallsFromExtrinsic(outerBatch);
-
-      expect(wrappedCalls).toHaveLength(2);
-      expect(wrappedCalls?.[0]?.section).toBe('balances');
-      expect(wrappedCalls?.[1]?.section).toBe('balances');
-    });
-  });
-
-  describe('transactionService.getWrappedCallsFromCall', () => {
-    it('should extract calls from batchAll call', async () => {
-      const api = await createMockApi();
-
-      const transfer1 = createTransferExtrinsic(api, TEST_ADDRESS_1, TRANSFER_AMOUNT_1);
-      const batchCall = api.tx.utility.batchAll([transfer1]);
-
-      const wrappedCalls = transactionService.getBatchWrappedCallsFromCall(batchCall.method as any);
-
-      expect(wrappedCalls).toHaveLength(1);
-      expect(wrappedCalls?.[0]?.section).toBe('balances');
-    });
-
-    it('should return single call for non-batch call', async () => {
+    it('should return single call for non-wrapper call', async () => {
       const api = await createMockApi();
 
       const transferCall = createTransferExtrinsic(api, TEST_ADDRESS_1, TRANSFER_AMOUNT_1);
 
-      const wrappedCalls = transactionService.getBatchWrappedCallsFromCall(transferCall.method as any);
+      const wrappedCalls = transactionService.getInnerCallsFromCall(transferCall.method as Call);
 
       expect(wrappedCalls).toHaveLength(1);
       expect(wrappedCalls?.[0]?.section).toBe('balances');
       expect(wrappedCalls?.[0]?.method).toBe('transferKeepAlive');
     });
 
-    it('should handle empty batch call', async () => {
+    it('should handle empty batch', async () => {
       const api = await createMockApi();
 
-      const batchCall = api.tx.utility.batchAll([]);
+      const batchCall = api.tx.utility.batch([]);
 
-      const wrappedCalls = transactionService.getBatchWrappedCallsFromCall(batchCall.method as Call);
+      const wrappedCalls = transactionService.getInnerCallsFromCall(batchCall.method as Call);
 
       expect(wrappedCalls).toHaveLength(0);
     });
 
-    it('should extract deeply nested calls', async () => {
+    it('should extract deeply nested calls from batch within batch', async () => {
       const api = await createMockApi();
 
       const transfer1 = createTransferExtrinsic(api, TEST_ADDRESS_1, TRANSFER_AMOUNT_1);
@@ -298,7 +247,7 @@ describe('Transaction service', () => {
       const innerBatch = api.tx.utility.batchAll([transfer1]);
       const outerBatch = api.tx.utility.batchAll([innerBatch, transfer2]);
 
-      const wrappedCalls = transactionService.getBatchWrappedCallsFromCall(outerBatch.method as Call);
+      const wrappedCalls = transactionService.getInnerCallsFromCall(outerBatch.method as Call);
 
       expect(wrappedCalls).toHaveLength(2);
       expect(wrappedCalls?.[0]?.section).toBe('balances');

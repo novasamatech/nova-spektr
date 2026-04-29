@@ -95,6 +95,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         extrinsicHash: '0x00',
         isFinalApprove: true,
         multisigError: '',
+        proxyError: '',
       },
     });
 

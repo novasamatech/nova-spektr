@@ -65,11 +65,14 @@ function findInnerExtrinsicCall(extrinsic: GenericExtrinsic<AnyTuple>) {
   const findAsMulti = (method: any): any => {
     if (!method) return null;
 
-    if (method.toHuman().method === 'asMulti' && method.toHuman().section === 'multisig') {
+    const human = method.toHuman?.();
+    if (!human) return null;
+
+    if (human.method === 'asMulti' && human.section === 'multisig') {
       return method.args[MULTISIG_EXTRINSIC_CALL_INDEX];
     }
 
-    if (method.toHuman().method === 'batchAll') {
+    if (human.method === 'batchAll') {
       for (const arg of method.args[0]) {
         const result = findAsMulti(arg);
         if (nonNullable(result)) {

@@ -88,10 +88,30 @@ const releaseAccountNode = createEvent();
 const $hoveredAccountNode = restore(enterAccountNode, null).reset(leaveAccountNode, releaseAccountNode);
 const $heldAccountNode = restore(holdAccountNode, null).reset(releaseAccountNode);
 
+// Merge wallet accounts with externally-passed accounts (e.g. synthetic
+// multisigs built from backend contacts that aren't in the local wallet store).
+const $mergedAccounts = combine(
+  walletModel.$availableAccounts,
+  $allAccounts,
+  (walletAccounts, passedAccounts) => {
+    if (!passedAccounts?.length) return walletAccounts;
+
+    const merged = [...(walletAccounts ?? [])];
+    const existingIds = new Set(merged.map((a) => a.id));
+    for (const account of passedAccounts) {
+      if (!existingIds.has(account.id)) {
+        merged.push(account);
+      }
+    }
+
+    return merged;
+  },
+);
+
 const $highlightedNodes = combine(
   {
     selectedAccount: $selectedAccount,
-    accountList: walletModel.$availableAccounts,
+    accountList: $mergedAccounts,
     selectedChain: $selectedChain,
     hoveredAccountNode: $hoveredAccountNode,
     heldAccountNode: $heldAccountNode,
@@ -150,7 +170,7 @@ function findNodesRelatedToAccount(
 
 const $graph = combine(
   {
-    accounts: walletModel.$availableAccounts,
+    accounts: $mergedAccounts,
     selectedAccount: $selectedAccount,
     selectedChain: $selectedChain,
   },

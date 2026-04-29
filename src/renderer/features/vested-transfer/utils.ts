@@ -3,7 +3,7 @@ import { parse } from 'csv-parse/sync';
 import { cloneDeep } from 'lodash';
 import { z } from 'zod';
 
-import { downloadFiles, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { downloadFiles, nonNullable, nullable, toAccountId, validateSubstrateAddress } from '@/shared/lib/utils';
 import {
   type ValidationIssue,
   type VestingScheduleRaw,
@@ -87,7 +87,6 @@ function createTransformSchema() {
 
 function createValidationSchema(options: ValidationSchemaOptions) {
   const {
-    chain,
     minStartingBlock,
     minVestedTransfer,
     maxVestingSchedules,
@@ -99,7 +98,7 @@ function createValidationSchema(options: ValidationSchemaOptions) {
     .object({
       target: z
         .string()
-        .refine((value) => validateAddress(value, chain), VestingFieldError.INVALID_SS58_ADDRESS)
+        .refine(validateSubstrateAddress, VestingFieldError.INVALID_SS58_ADDRESS)
         .transform(toAccountId)
         .refine((accountId) => {
           const existingSchedulesCount = existingVestingSchedules[accountId] ?? 0;

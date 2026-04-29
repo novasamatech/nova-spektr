@@ -14,7 +14,7 @@ export const OperationTitleStatus = ({ operation, account }: Props) => {
   const approvals = events.filter((e) => e.status === 'approve');
 
   return (
-    <div className="mx-3 flex w-[120px] shrink-0 justify-end">
+    <div className="mx-3 flex w-[110px] shrink-0 justify-end">
       <Status status={operation.status} signed={approvals.length} threshold={account?.threshold || 0} />
     </div>
   );

@@ -51,6 +51,11 @@ export const createAbstractIdentifier = <
     target: $handlers,
   });
 
+  sample({
+    clock: $handlers,
+    target: forceUpdate,
+  });
+
   const identifier: ResultIdentifier = {
     type,
     identifierName: name,

@@ -10,9 +10,13 @@ import { Field } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { PureProxyPopover } from '@/entities/proxy';
+import { transactionService } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts → accounts-structure → wallet-details → proxied-add-pure
+import { InitiateDraftButton } from '@/features/drafts/components/InitiateDraftButton';
 import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/widgets/transaction-fee';
+import { addPureProxiedModel } from '../model/add-pure-proxied-model';
 import { formModel } from '../model/form-model';
 
 export const AddPureProxiedForm = () => {
@@ -203,9 +207,22 @@ const ButtonsSection = () => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const coreTx = useUnit(formModel.$coreTx);
+  const api = useUnit(formModel.$api);
+  const {
+    fields: { chain },
+  } = useForm(formModel.form);
+
+  const draftCallData = transactionService.getCallDataHex(coreTx, api);
 
   return (
-    <div className="mt-4 flex items-center justify-end">
+    <div className="mt-4 flex items-center justify-end gap-3">
+      <InitiateDraftButton
+        callData={draftCallData}
+        chainId={chain.value?.chainId}
+        source="add-pure-proxy"
+        onDraftCreated={addPureProxiedModel.output.flowFinished}
+      />
       <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
         {t('operation.continueButton')}
       </Button>

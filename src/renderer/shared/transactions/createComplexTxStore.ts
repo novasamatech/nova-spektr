@@ -120,6 +120,7 @@ export const createComplexTxStore = <T extends Transaction>({
   const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
     active,
     extrinsic: $mergedExtrinsic,
+    api,
   });
 
   return {

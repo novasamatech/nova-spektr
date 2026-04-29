@@ -1,4 +1,5 @@
 import {
+  type DraftNotification,
   type FlexibleMultisigOperationNotification,
   type MultisigCreated,
   type MultisigEventNotification,
@@ -16,6 +17,7 @@ export const notificationUtils = {
   isFlexibleMultisigNotification,
   isProxyCreation,
   isProxyRemoval,
+  isDraftNotification,
 };
 
 function isMultisigInvite(notification: Notification): notification is MultisigCreated {
@@ -56,4 +58,8 @@ function isProxyCreation(notification: Notification): notification is ProxyActio
 
 function isProxyRemoval(notification: Notification): notification is ProxyAction {
   return notification.type === NotificationType.PROXY_REMOVED;
+}
+
+function isDraftNotification(notification: Notification): notification is DraftNotification {
+  return notification.type === NotificationType.DRAFT_CHANGE;
 }

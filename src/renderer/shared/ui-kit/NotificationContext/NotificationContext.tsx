@@ -23,7 +23,7 @@ type NotificationContextProps = {
   toast: typeof toast;
 };
 
-const NotificationContext = createContext<NotificationContextProps>({} as NotificationContextProps);
+const NotificationContext = createContext<NotificationContextProps>({ modal: noop, toast });
 
 const DEFAULT_NOTIFICATION_DURATION = 3000;
 const NO_AUTO_DISMISS = 0;
