@@ -7,11 +7,12 @@ import { toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { Select } from '@/shared/ui-kit';
-import { NextOptionRow } from '../components/signing-path/NextOptionRow';
-import { PathBreadcrumb } from '../components/signing-path/PathBreadcrumb';
-import { SectionCard } from '../components/signing-path/SectionCard';
 import { graphModel } from '../model/graph-model';
 import { pathModel } from '../model/path-model';
+
+import { NextOptionRow } from './NextOptionRow';
+import { PathBreadcrumb } from './PathBreadcrumb';
+import { SectionCard } from './SectionCard';
 
 type Props = {
   chainId: ChainId;

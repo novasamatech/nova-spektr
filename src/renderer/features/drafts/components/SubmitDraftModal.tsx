@@ -25,11 +25,10 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { OperationSign, OperationSubmit } from '@/features/operations';
+import { PathBreadcrumb } from '@/features/signing-path';
 import { WalletDetails } from '@/features/wallet-details';
 import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { submitDraftModel } from '../model/submit-draft-model';
-
-import { PathBreadcrumb } from './signing-path/PathBreadcrumb';
 
 type Props = {
   onClose: () => void;

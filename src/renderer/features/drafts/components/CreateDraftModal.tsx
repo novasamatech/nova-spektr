@@ -14,17 +14,21 @@ import { networkModel, useApi } from '@/entities/network';
 import { decodeCallData, findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { backendConfigurationModel } from '@/aggregates/backend';
 import { operationIconTransformer, operationTitleTransformer } from '@/features/multisig-operations';
+import {
+  StepPath,
+  deriveInitiatorAccountId,
+  deriveMultisigAccountId,
+  graphModel,
+  isValidPath,
+  pathModel,
+} from '@/features/signing-path';
 import { tryDecodeCallData } from '../lib/decode-call-data';
 import { getDestinationAccountId } from '../lib/get-destination-account-id';
-import { deriveInitiatorAccountId, deriveMultisigAccountId, isValidPath } from '../lib/path-validation';
 import { createDraftModel } from '../model/create-draft-model';
-import { graphModel } from '../model/graph-model';
-import { pathModel } from '../model/path-model';
-import { StepPath } from '../steps/StepPath';
 import { StepReview } from '../steps/StepReview';
 import { StepTransaction } from '../steps/StepTransaction';
 
-import { StepIndicator } from './signing-path/StepIndicator';
+import { StepIndicator } from './StepIndicator';
 
 const HTTP_ERROR_KEYS: Record<number, string> = {
   403: 'addressBook.sources.errorForbidden',

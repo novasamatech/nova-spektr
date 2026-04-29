@@ -1,7 +1,7 @@
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { CaptionText, Icon } from '@/shared/ui';
-import { type Step, STEPS_ORDER } from '../../model/create-draft-model';
+import { type Step, STEPS_ORDER } from '../model/create-draft-model';
 
 type Props = {
   step: Step;
