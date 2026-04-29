@@ -5,7 +5,7 @@ import { and, not } from 'patronum';
 
 import { chainsService } from '@/shared/api/network';
 import { proxyService } from '@/shared/api/proxy';
-import { type Address, type Chain, type ProxyType, type Transaction, type Wallet, ProxyTypes } from '@/shared/core';
+import { type Chain, type ProxyType, type Transaction, type Wallet, ProxyTypes } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import {
@@ -39,7 +39,7 @@ import { proxiesUtils } from '@/features/proxies';
 
 type ProxyAccounts = {
   accounts: {
-    address: Address;
+    accountId: AccountId;
     proxyType: ProxyType;
   }[];
   deposit: string;
@@ -200,7 +200,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             }
 
             const sameProxyExist = activeProxies.some((proxy) => {
-              return proxy.proxyType === form.proxyType && proxy.address === delegate;
+              return proxy.proxyType === form.proxyType && proxy.accountId === toAccountId(delegate);
             });
             if (sameProxyExist) {
               return { message: 'proxy.addProxy.proxyTypeExistError' };
