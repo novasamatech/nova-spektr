@@ -3,11 +3,11 @@ import { type ReactNode, Suspense, lazy, useState } from 'react';
 
 import { type Address } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, toAddress } from '@/shared/lib/utils';
+import { cnTw, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText, HelpText, StatusLabel } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
-import { useAddressName } from '../../hooks/use-address-name';
+import { useAccountName } from '@/domains/network';
 import { changeSignatoriesModel } from '../../model/change-signatories-model';
 
 import { BannerScopeStrip } from './BannerScopeStrip';
@@ -51,7 +51,7 @@ const truncate = (address: string) => {
 
 const BannerSide = ({ label, state, address, signatories, threshold, expanded, onToggle, tone }: SideProps) => {
   const chain = useUnit(changeSignatoriesModel.$chain);
-  const name = useAddressName(address, chain);
+  const name = useAccountName({ accountId: toAccountId(address), chain });
   const isRemoved = tone === 'removed';
 
   return (
@@ -119,7 +119,7 @@ const ExpandedSignatories = ({ signatories }: { signatories: AccountId[] }) => {
 
 const SignatoryRow = ({ address }: { address: Address }) => {
   const chain = useUnit(changeSignatoriesModel.$chain);
-  const name = useAddressName(address, chain);
+  const name = useAccountName({ accountId: toAccountId(address), chain });
 
   return (
     <div className="flex items-center gap-1.5">

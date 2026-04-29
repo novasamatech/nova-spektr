@@ -9,10 +9,9 @@ import { includesMultiple, performSearch, toAccountId, toAddress, validateAddres
 import { FootnoteText, IconButton } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Select } from '@/shared/ui-kit';
-import { accountService, useAccountsNames, useWalletsNames } from '@/domains/network';
+import { accountService, useAccountName, useAccountsNames, useWalletsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { useAddressName } from '../../hooks/use-address-name';
 import { changeSignatoriesModel } from '../../model/change-signatories-model';
 import { signatoryModel } from '../../model/signatory-model';
 import { type SignatoryInfo } from '../../types';
@@ -136,16 +135,13 @@ export const Signatory = ({ signatoryIndex, isDuplicate, isInvalidAddress, signa
     });
   };
 
-  const resolvedName = useAddressName(signatoryAddress ? toAccountId(signatoryAddress) : null, chain);
+  const resolvedName = useAccountName({
+    accountId: signatoryAddress ? toAccountId(signatoryAddress) : null,
+    chain,
+  });
   const displayAddress = signatoryAddress ? toAddress(signatoryAddress, { prefix: chain?.addressPrefix }) : null;
   const valueNode = displayAddress ? (
-    <Address
-      iconSize={20}
-      showIcon
-      title={resolvedName ?? undefined}
-      address={displayAddress}
-      variant={resolvedName ? 'truncate' : 'short'}
-    />
+    <Address iconSize={20} showIcon title={resolvedName} address={displayAddress} variant="truncate" />
   ) : null;
 
   return (

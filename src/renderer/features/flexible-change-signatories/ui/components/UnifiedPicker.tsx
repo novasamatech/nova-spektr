@@ -8,7 +8,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HelpText } from '@/shared/ui';
 import { AccountExplorers, Address as AddressDisplay, Identicon } from '@/shared/ui-entities';
 import { Field, Select, Tabs } from '@/shared/ui-kit';
-import { accountService, accounts as accountsStore, identity } from '@/domains/network';
+import { accountService, accounts as accountsStore, identity, useAccountName } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import {
@@ -17,7 +17,6 @@ import {
   type WalletCandidate,
   multisigCandidates,
 } from '@/aggregates/multisig-candidates';
-import { useAddressName } from '../../hooks/use-address-name';
 import { changeSignatoriesModel } from '../../model/change-signatories-model';
 import { type SelectedTarget } from '../../types';
 
@@ -201,16 +200,12 @@ const CandidateDetails = ({ candidate, chain }: CandidateDetailsProps) => {
 
 const SignatoryReadOnlyRow = ({ accountId, chain }: { accountId: AccountId; chain: Chain }) => {
   const address = toAddress(accountId, { prefix: chain.addressPrefix });
-  const name = useAddressName(address, chain);
+  const name = useAccountName({ accountId, chain });
   return (
     <div className="flex items-center gap-2">
       <Identicon canCopy address={address} size={20} background={false} />
       <div className="min-w-0 flex-1">
-        {name ? (
-          <AddressDisplay title={name} address={address} variant="truncate" />
-        ) : (
-          <AddressDisplay address={address} variant="short" />
-        )}
+        <AddressDisplay title={name} address={address} variant="truncate" />
       </div>
       <AccountExplorers accountId={accountId} chain={chain} />
     </div>
