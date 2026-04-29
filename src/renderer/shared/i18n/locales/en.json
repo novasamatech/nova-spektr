@@ -2591,6 +2591,7 @@
       "linkCopied": "Draft link copied!",
       "shareDraftTooltip": "Share draft link with signatories",
       "selectMultisigForProxy": "Proxy multisig",
+      "syncingAccounts": "Syncing accounts",
       "multisigsGroup": "Multisigs",
       "proxiedAccountsGroup": "Proxied accounts",
       "proxyLabel": "Proxy",
