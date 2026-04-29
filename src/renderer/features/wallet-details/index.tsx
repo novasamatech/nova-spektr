@@ -9,6 +9,7 @@ import { useI18n } from '@/shared/i18n';
 import { type IconNames, Icon, IconButton } from '@/shared/ui';
 import { Dropdown } from '@/shared/ui-kit';
 import { permissionUtils, walletUtils } from '@/entities/wallet';
+import { modalsSlot } from '@/features/app-shell';
 import { walletActionsSlot as extensionActionsSlot } from '@/features/extension-wallet';
 import { ChangeSignatories } from '@/features/flexible-change-signatories';
 import { walletActionsSlot as multisigActionsSlot } from '@/features/multisig-wallet';
@@ -37,7 +38,7 @@ export { overviewSlot as walletConnectOverviewSlot } from './ui/wallets/WalletCo
 export { overviewSlot as watchOnlyOverviewSlot } from './ui/wallets/WatchOnlyWalletDetails';
 export { overviewSlot as flexibleOverviewSlot } from './ui/wallets/FlexibleWalletDetails';
 
-export { ViewDetailsMount, WalletDetails };
+export { WalletDetails };
 
 /**
  * The reason for the existence of this feature is WalletDetails component
@@ -48,6 +49,8 @@ export { ViewDetailsMount, WalletDetails };
 export const walletDetailsFeature = createFeature({
   name: 'wallet/details',
 });
+
+walletDetailsFeature.inject(modalsSlot, ViewDetailsMount);
 
 const walletActionSlot = combineIdentifiers(
   walletConnectActionsSlot,

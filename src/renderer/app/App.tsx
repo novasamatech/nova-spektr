@@ -6,7 +6,6 @@ import { logger } from '@/shared/config/utils';
 import { ConfirmDialogProvider } from '@/shared/providers';
 import { deepLinkService } from '@/domains/app';
 import { navigationModel } from '@/features/navigation';
-import { ViewDetailsMount } from '@/features/wallet-details';
 import { ROUTES_CONFIG } from '@/pages/index';
 
 import { bootstrap } from './bootstrap';
@@ -41,7 +40,6 @@ export const App = () => {
     <ConfirmDialogProvider>
       <StatusModalProvider>
         <GraphqlProvider>{appRoutes}</GraphqlProvider>
-        <ViewDetailsMount />
       </StatusModalProvider>
     </ConfirmDialogProvider>
   );
