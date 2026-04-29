@@ -3,12 +3,13 @@ import { attach, createEffect, createEvent, createStore, sample } from 'effector
 import { type Contact, type LocalContact } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
-import { type ImportState } from '../lib/types';
+import { type DuplicateResolutions, type ImportState } from '../lib/types';
 import { contactImportUtils } from '../lib/utils';
 import { type ContactImport } from '../lib/validation';
 
 const fileSelected = createEvent<File>();
 const closeModal = createEvent();
+const resolveDuplicates = createEvent<DuplicateResolutions>();
 const replaceConflicts = createEvent();
 const keepCurrent = createEvent();
 const resetState = createEvent();
@@ -145,6 +146,11 @@ $importState
 
     return state;
   })
+  .on(resolveDuplicates, (state) => {
+    if (state.status === 'duplicates') return { status: 'loading' } satisfies ImportState;
+
+    return state;
+  })
   .on(detectAccountIdConflictsFx.doneData, (state, conflicts) => {
     if (conflicts.length > 0 && state.status === 'loading') {
       // We need parsed contacts from the store — they'll be set via the sample below
@@ -205,6 +211,16 @@ sample({
   target: detectAccountIdConflictsFx,
 });
 
+// When the user resolves duplicates, replace parsed contacts with the chosen subset
+// and continue to existing-contact conflict detection
+sample({
+  clock: resolveDuplicates,
+  source: $parsedContacts,
+  filter: (parsed) => parsed !== null,
+  fn: (parsed, resolutions) => contactImportUtils.applyDuplicateResolutions(parsed ?? [], resolutions),
+  target: [$parsedContacts, detectAccountIdConflictsFx],
+});
+
 // Set conflicts state with data when conflicts are detected
 sample({
   clock: detectAccountIdConflictsFx.doneData,
@@ -248,6 +264,7 @@ export const importContactsModel = {
   events: {
     fileSelected,
     closeModal,
+    resolveDuplicates,
     replaceConflicts,
     keepCurrent,
     resetState,

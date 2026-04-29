@@ -11,6 +11,8 @@ export type DuplicateGroup = {
   names: string[];
 };
 
+export type DuplicateResolutions = Record<string, string | null>;
+
 export type ImportState =
   | { status: 'idle' }
   | { status: 'loading' }

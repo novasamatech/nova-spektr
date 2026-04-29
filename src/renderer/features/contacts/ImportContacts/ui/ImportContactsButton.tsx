@@ -7,7 +7,7 @@ import { Tooltip, useNotification } from '@/shared/ui-kit';
 import { importContactsModel } from '../model/import-contacts-model';
 
 import { ImportConflictsModal } from './ImportConflictsModal';
-import { ImportDuplicatesModal } from './ImportDuplicatesModal';
+import { ImportDuplicatesResolutionModal } from './ImportDuplicatesResolutionModal';
 
 const LOADING_TOAST_DELAY = 500;
 
@@ -62,7 +62,7 @@ export const ImportContactsButton = () => {
 
     toast.error(t('addressBook.importContacts.errors.title'), { description });
     importContactsModel.events.resetState();
-  }, [importState.status, toast, t]);
+  }, [importState, toast, t]);
 
   useEffect(() => {
     if (importState.status === 'success' && !hasShownSuccess) {
@@ -132,8 +132,8 @@ export const ImportContactsButton = () => {
         onChange={handleFileChange}
       />
 
+      {importState.status === 'duplicates' && <ImportDuplicatesResolutionModal onClose={handleCloseDialog} />}
       {importState.status === 'conflicts' && <ImportConflictsModal onClose={handleCloseDialog} />}
-      {importState.status === 'duplicates' && <ImportDuplicatesModal onClose={handleCloseDialog} />}
     </>
   );
 };

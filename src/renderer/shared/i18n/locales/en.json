@@ -132,10 +132,9 @@
         "title": "Import options"
       },
       "duplicates": {
-        "closeButton": "Close",
-        "description": "Some addresses appear more than once in the file. Remove the duplicates and try again.",
-        "namesLabel": "Names in file:",
-        "title": "Duplicate addresses found"
+        "cancelButton": "Cancel",
+        "description": "Pick which entry you want to import for this address.",
+        "title": "Resolve duplicate addresses"
       },
       "errors": {
         "description": "Certain contacts don't match required format. Check guidelines on Wiki, update your file, and try uploading again.",
