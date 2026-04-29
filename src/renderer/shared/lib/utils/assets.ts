@@ -63,10 +63,14 @@ export const getAssetByTypeExtras = (api: ApiPromise, assets: Asset[], assetId: 
         return asset.typeExtras.assetId === assetId;
       }
 
-      const id = api.createType(asset.typeExtras.currencyIdType, asset.typeExtras.currencyIdScale).toJSON();
-      const currencyId = api.createType(asset.typeExtras.currencyIdType, assetId).toJSON();
+      try {
+        const id = api.createType(asset.typeExtras.currencyIdType, asset.typeExtras.currencyIdScale).toJSON();
+        const currencyId = api.createType(asset.typeExtras.currencyIdType, assetId).toJSON();
 
-      return id === currencyId;
+        return id === currencyId;
+      } catch {
+        return false;
+      }
     }) ?? null
   );
 };

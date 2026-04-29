@@ -8,7 +8,7 @@ export const validationConstants = {
   },
   inactiveAccountValidation: {
     chainName: 'Polkadot Asset Hub',
-    xcmChainName: 'Bifrost Polkadot',
+    xcmChainName: 'Acala',
     assetId: 0,
     walletName: 'Nova Autotest-1',
     validationAmount: '0.00001',

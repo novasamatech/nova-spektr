@@ -5,6 +5,7 @@ export * from './AddProxy';
 export * from './AddPureProxied';
 export * from './RemoveProxy';
 export * from './RemoveProxy';
+export * from './VerifyProxy';
 
 export * from './BondNominate';
 export * from './Nominate';

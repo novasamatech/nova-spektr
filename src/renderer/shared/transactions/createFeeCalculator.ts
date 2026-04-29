@@ -1,25 +1,32 @@
+import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types/submittable';
 import { type BN } from '@polkadot/util';
 import { type Store, type UnitValue, createEffect, createStore, sample } from 'effector';
 
 import { takeLast } from '@/shared/effector';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { transactionService } from '@/domains/network';
 
 type Params = {
   active?: Store<boolean>;
   extrinsic: Store<SubmittableExtrinsic<'promise'> | null>;
+  api?: Store<ApiPromise | null>;
 };
 
 type FeeCalculationRequest = {
   extrinsic: SubmittableExtrinsic<'promise'>;
+  api: ApiPromise | null;
 };
 
-export const createFeeCalculator = ({ active = createStore(true), extrinsic }: Params) => {
+export const createFeeCalculator = ({ active = createStore(true), extrinsic, api }: Params) => {
   const $fee = createStore<BN | null>(null);
+  const $api = api ?? createStore<ApiPromise | null>(null);
 
   const fetchFeeFx = takeLast({
-    fn: async ({ extrinsic }: FeeCalculationRequest): Promise<BN | null> => {
+    fn: async ({ extrinsic, api }: FeeCalculationRequest): Promise<BN | null> => {
+      if (nonNullable(api)) {
+        return await transactionService.getSplitExtrinsicFee(extrinsic, api);
+      }
       return await transactionService.getExtrinsicFee(extrinsic);
     },
     key: () => 'feeCalculation',
@@ -44,12 +51,12 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
   });
 
   const feeRequested = sample({
-    clock: [extrinsic.updates, active.updates],
-    source: { active, extrinsic },
-  }).filterMap(({ active, extrinsic }) => {
+    clock: [extrinsic.updates, active.updates, $api.updates],
+    source: { active, extrinsic, api: $api },
+  }).filterMap(({ active, extrinsic, api }) => {
     if (!active) return undefined;
     if (extrinsic) {
-      return { extrinsic };
+      return { extrinsic, api };
     }
   });
 

@@ -7,7 +7,9 @@ import { nullable } from '@/shared/lib/utils';
 import { Button, DetailRow } from '@/shared/ui';
 import { AssetBalance, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
+import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { InitiateDraftButton } from '@/features/drafts';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form';
@@ -26,6 +28,10 @@ export const MultiTransferForm = memo(({ formId }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
   const wallets = useUnit(walletModel.$wallets);
   const txErrors = useUnit(formModel.$txErrors);
+  const chain = useUnit(formModel.$chain);
+  const api = useUnit(formModel.$api);
+  const coreTx = useUnit(formModel.$coreTx);
+  const draftCallData = transactionService.getCallDataHex(coreTx, api);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -47,9 +53,17 @@ export const MultiTransferForm = memo(({ formId }: Props) => {
       </ScrollArea>
 
       <Modal.Footer>
-        <Button form={formId} type="submit" disabled={!canSubmit}>
-          {t('transfer.continueButton')}
-        </Button>
+        <div className="flex items-center gap-3">
+          <InitiateDraftButton
+            callData={draftCallData}
+            chainId={chain?.chainId}
+            source="multi-transfer"
+            onDraftCreated={() => formModel.flowFinished()}
+          />
+          <Button form={formId} type="submit" disabled={!canSubmit}>
+            {t('transfer.continueButton')}
+          </Button>
+        </div>
       </Modal.Footer>
     </>
   );

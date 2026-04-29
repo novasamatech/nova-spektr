@@ -36,13 +36,16 @@ import { accountService, accounts, useAccountName, useAccountsNames } from '@/do
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
+import { transactionService } from '@/entities/transaction';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { authModel } from '@/aggregates/backend';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
+import { InitiateDraftButton } from '@/features/drafts';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
+import { transferModel } from '../model/transfer-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
 import { TokenSelectorModal } from './TokenSelector';
@@ -632,13 +635,11 @@ const Amount = memo(() => {
 
 const DescriptionField = memo(() => {
   const { t } = useI18n();
-  const initiator = useUnit(formModel.form.fields.initiator.$value);
+  const multisigAccount = useUnit(formModel.$multisigAccount);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const description = useUnit(formModel.$description);
 
-  const isMultisig = initiator && accountUtils.isAnyMultisigAccount(initiator);
-
-  if (!isMultisig || !isAuthenticated) return null;
+  if (!multisigAccount || !isAuthenticated) return null;
 
   return (
     <Field text={t('operation.descriptionLabel')}>
@@ -787,6 +788,10 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
   const isPreparingTransaction = useUnit(formModel.$isPreparingTransaction);
   const errors = useUnit(formModel.$errors);
+  const tx = useUnit(formModel.$coreTx);
+  const api = useUnit(formModel.$api);
+  const network = useUnit(formModel.$networkStore);
+  const draftCallData = transactionService.getCallDataHex(tx, api);
   const hasErrors = errors.length > 0;
   const isLoading = isPreparingTransaction && !hasErrors;
 
@@ -796,9 +801,17 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>
-        <Button form="transfer-form" type="submit" disabled={!canSubmit || hasErrors} isLoading={isLoading}>
-          {t('transfer.continueButton')}
-        </Button>
+        <div className="flex items-center gap-3">
+          <InitiateDraftButton
+            callData={draftCallData}
+            chainId={network?.chain.chainId}
+            source="transfer"
+            onDraftCreated={() => transferModel.output.flowFinished()}
+          />
+          <Button form="transfer-form" type="submit" disabled={!canSubmit || hasErrors} isLoading={isLoading}>
+            {t('transfer.continueButton')}
+          </Button>
+        </div>
       </div>
     </div>
   );

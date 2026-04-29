@@ -39,20 +39,29 @@ async function getProxiesForAccount(api: ApiPromise, account: AccountId): Promis
   return { accounts, deposit: firstRecord.deposit.toString() };
 }
 
-/**
- * Calculate deposit delta for new proxy connection based on existing proxied
- */
-function getProxyDepositDelta(api: ApiPromise, existingDeposit: string, proxyNumber: number) {
-  const { proxyDepositFactor, proxyDepositBase } = api.consts.proxy;
-  const proxyDeposit = proxyDepositFactor.muln(proxyNumber).add(proxyDepositBase);
+function proxyDepositRequired(api: ApiPromise, numProxies: number): BN {
+  const proxyCount = Math.max(0, Math.floor(Number(numProxies)));
 
-  return proxyDeposit.sub(new BN(existingDeposit));
+  if (proxyCount === 0) {
+    return new BN(0);
+  }
+
+  const { proxyDepositFactor, proxyDepositBase } = api.consts.proxy;
+
+  return new BN(proxyDepositFactor.toString()).muln(proxyCount).add(new BN(proxyDepositBase.toString()));
+}
+
+function getProxyDepositDelta(api: ApiPromise, existingDeposit: string, newProxyCount: number) {
+  const required = proxyDepositRequired(api, newProxyCount);
+  const existing = new BN(existingDeposit || '0', 10);
+  const delta = required.sub(existing);
+
+  return delta.isNeg() ? new BN(0) : delta;
 }
 
 /**
  * Calculate pure proxy deposit, that will be locked on spawner
  */
 function getPureProxyDeposit(api: ApiPromise) {
-  const { proxyDepositFactor, proxyDepositBase } = api.consts.proxy;
-  return proxyDepositFactor.add(proxyDepositBase);
+  return proxyDepositRequired(api, 1);
 }

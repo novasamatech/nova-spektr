@@ -64,13 +64,14 @@ export async function authFetch(url: string, init?: RequestInit): Promise<FetchR
 }
 
 const errorResponseSchema = z.object({
-  message: z.string().optional(),
+  message: z.union([z.string(), z.array(z.string())]).optional(),
 });
 
 export function parseResponse<T>(result: FetchResult, schema: z.ZodType<T>): T {
   if (!result.ok) {
     const parsed = errorResponseSchema.parse(JSON.parse(result.body));
-    throw new Error(parsed.message ?? `Request failed with status ${result.status}`);
+    const message = Array.isArray(parsed.message) ? parsed.message.join(', ') : parsed.message;
+    throw new Error(message ?? `Request failed with status ${result.status}`);
   }
 
   return schema.parse(JSON.parse(result.body));

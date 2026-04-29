@@ -18,15 +18,18 @@ const AccountsStructure = lazy(() =>
 
 type Props = {
   walletAccounts: AnyAccount[];
+  initialChainId?: string;
   trigger?: ReactNode;
   onClose?: () => void;
 };
 
-export const AccountsStructureModal = ({ walletAccounts, trigger, onClose }: Props) => {
+export const AccountsStructureModal = ({ walletAccounts, initialChainId, trigger, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const pathType = useUnit(accountsStructureModel.$pathType);
   const edgeType = useUnit(accountsStructureModel.$edgeType);
+
+  const allChainsMap = useUnit(accountsStructureModel.$allChainsMap);
 
   useEffect(() => {
     if (isOpen) {
@@ -38,6 +41,15 @@ export const AccountsStructureModal = ({ walletAccounts, trigger, onClose }: Pro
       }
     };
   }, [walletAccounts, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !initialChainId) return;
+
+    const chain = allChainsMap.get(initialChainId as never) ?? null;
+    if (chain) {
+      accountsStructureModel.selectChain(chain);
+    }
+  }, [isOpen, initialChainId, allChainsMap]);
 
   const onToggle = useCallback(
     (value: boolean) => {
