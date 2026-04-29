@@ -8,6 +8,8 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
+import { transactionService } from '@/entities/transaction';
+import { InitiateDraftButton } from '@/features/drafts';
 import { OperationSign } from '@/features/operations';
 import { OperationSubmitWithAction } from '@/features/operations/OperationSubmit';
 import { StepPath, pathModel } from '@/features/signing-path';
@@ -77,9 +79,13 @@ export const ChangeSignatories = ({
   const currentController = useUnit(changeSignatoriesModel.$currentController);
   const selectedTarget = useUnit(changeSignatoriesModel.$selectedTarget);
   const isPathComplete = useUnit(pathModel.$isComplete);
+  const draftTx = useUnit(changeSignatoriesModel.$draftTx);
+  const api = useUnit(changeSignatoriesModel.$api);
   const nextFromSelectController = useUnit(changeSignatoriesModel.nextFromSelectController);
   const nextFromSigningPath = useUnit(changeSignatoriesModel.nextFromSigningPath);
   const signingPathGoBack = useUnit(changeSignatoriesModel.signingPathGoBack);
+
+  const draftCallData = transactionService.getCallDataHex(draftTx, api);
 
   const currentControllerAddress = useMemo(() => {
     if (!currentController || !chain) return null;
@@ -175,7 +181,13 @@ export const ChangeSignatories = ({
             </div>
           </Modal.Content>
           <Modal.Footer>
-            <Box fitContainer direction="row" horizontalAlign="end" verticalAlign="center">
+            <Box fitContainer direction="row" horizontalAlign="end" verticalAlign="center" gap={3}>
+              <InitiateDraftButton
+                callData={draftCallData}
+                chainId={chain.chainId}
+                source="flexible-change-signatories"
+                onDraftCreated={closeModal}
+              />
               <Button disabled={!selectedTarget} onClick={() => nextFromSelectController()}>
                 {t('flexibleMultisig.editProxy.picker.next')}
               </Button>
