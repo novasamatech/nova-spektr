@@ -2113,6 +2113,7 @@
         "invalidDataDescription": "File couldn’t be read. Please check data formatting and try again.",
         "invalidDataRow": "Row {row}",
         "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
+        "tooManyRowsDescription": "File exceeds the {maxRows} row limit. Please split the file into smaller batches and upload again.",
         "issueLine": "Row {row} - {path}: {message}",
         "issuesTitle": "Found {count} errors",
         "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",

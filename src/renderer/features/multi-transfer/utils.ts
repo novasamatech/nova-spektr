@@ -21,7 +21,7 @@ import { type ValidationSchemaOptions, Step } from './types';
 const MAX_U128 = new BN(2).pow(new BN(128));
 const CSV_HEADERS = ['recipient', 'amount'];
 const CSV_FIELDS = ['recipient', 'amount'];
-const MAX_CSV_ROWS = 1000;
+export const MAX_CSV_ROWS = 1000;
 
 export const multiTransferUtils = {
   isNoneStep,
@@ -94,8 +94,12 @@ async function parseCSV(file: File): Promise<ParseResult> {
       comment: '#',
       trim: true,
       from: 2,
-      to: MAX_CSV_ROWS + 1,
+      to: MAX_CSV_ROWS + 2,
     });
+
+    if (rawData.length > MAX_CSV_ROWS) {
+      return { success: false, error: MultiTransferCsvError.TOO_MANY_ROWS };
+    }
 
     const data: MultiTransferRowSerialized[] = rawData.map((row) => ({
       recipient: {

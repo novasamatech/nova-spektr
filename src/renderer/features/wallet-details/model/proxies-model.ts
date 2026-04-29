@@ -7,8 +7,10 @@ import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type VerifyProxyMarkerPayload, parseVerifyProxyMarker } from '@/shared/transactions';
 import {
   type AnyAccount,
+  type ContactMultisig,
   type MultisigOperation,
   accounts,
+  contactMultisigsModel,
   multisigOperation,
   multisigOperationService,
 } from '@/domains/network';
@@ -132,9 +134,15 @@ type ProxyResolution = {
   account: AnyAccount | null;
   multisigAccountId: AccountId | null;
   isMultisig: boolean;
+  contactMultisig: ContactMultisig | null;
 };
 
-function resolveProxy(wallets: Wallet[], proxyAccountId: AccountId, chainId: ChainId): ProxyResolution {
+function resolveProxy(
+  wallets: Wallet[],
+  contactMultisigs: ContactMultisig[],
+  proxyAccountId: AccountId,
+  chainId: ChainId,
+): ProxyResolution {
   const matched = walletUtils.getWalletFilteredAccounts(wallets, {
     walletFn: w => !walletUtils.isWatchOnly(w),
     accountFn: account => {
@@ -146,13 +154,25 @@ function resolveProxy(wallets: Wallet[], proxyAccountId: AccountId, chainId: Cha
     },
   });
 
+  const contactMultisig = contactMultisigs.find(cm => cm.accountId === proxyAccountId) ?? null;
+
   if (!matched) {
-    return { wallet: null, account: null, multisigAccountId: null, isMultisig: false };
+    if (contactMultisig) {
+      return {
+        wallet: null,
+        account: contactMultisigsModel.toSyntheticMultisigAccount(contactMultisig),
+        multisigAccountId: contactMultisig.accountId,
+        isMultisig: true,
+        contactMultisig,
+      };
+    }
+
+    return { wallet: null, account: null, multisigAccountId: null, isMultisig: false, contactMultisig: null };
   }
 
   const account = matched.accounts[0] ?? null;
   if (!account) {
-    return { wallet: matched, account: null, multisigAccountId: null, isMultisig: false };
+    return { wallet: matched, account: null, multisigAccountId: null, isMultisig: false, contactMultisig };
   }
 
   if (accountUtils.isAnyMultisigAccount(account)) {
@@ -161,10 +181,11 @@ function resolveProxy(wallets: Wallet[], proxyAccountId: AccountId, chainId: Cha
       account,
       multisigAccountId: multisigService.getMultisigAccountId(account),
       isMultisig: true,
+      contactMultisig,
     };
   }
 
-  return { wallet: matched, account, multisigAccountId: null, isMultisig: false };
+  return { wallet: matched, account, multisigAccountId: null, isMultisig: false, contactMultisig };
 }
 
 function extractVerifyProxyMarker(tx: DecodedTransaction | null | undefined): VerifyProxyMarkerPayload | null {
@@ -241,8 +262,9 @@ const $proxies = combine(
     wallets: walletModel.$wallets,
     operations: multisigOperation.$list,
     allAccounts: accounts.$list,
+    contactMultisigs: contactMultisigsModel.$contactMultisigs,
   },
-  ({ wallet, walletProxies, wallets, operations, allAccounts }): WalletProxy[] => {
+  ({ wallet, walletProxies, wallets, operations, allAccounts, contactMultisigs }): WalletProxy[] => {
     if (!wallet) return [];
 
     const onChainProxies: WalletProxy[] = [];
@@ -254,15 +276,13 @@ const $proxies = combine(
         if (seenKeys.has(key)) continue;
         seenKeys.add(key);
 
-        const resolved = resolveProxy(wallets, proxy.accountId, proxy.chainId);
+        const resolved = resolveProxy(wallets, contactMultisigs, proxy.accountId, proxy.chainId);
 
         let status: WalletProxyStatus;
         let lastOperation: WalletProxyLastOperation | null = null;
         let verifiable = false;
 
-        if (!resolved.wallet) {
-          status = 'not_verified_no_wallet';
-        } else if (resolved.isMultisig && resolved.multisigAccountId) {
+        if (resolved.isMultisig && resolved.multisigAccountId) {
           const executed = findLatestExecutedOperation(
             operations,
             proxy.chainId,
@@ -282,10 +302,12 @@ const $proxies = combine(
               transaction: executed.transaction,
             };
           } else {
-            status = 'not_verified';
+            status = resolved.wallet ? 'not_verified' : 'not_verified_no_wallet';
           }
 
-          verifiable = VERIFIABLE_PROXY_TYPES.has(proxy.proxyType) && proxy.delay === 0;
+          verifiable = resolved.wallet !== null && VERIFIABLE_PROXY_TYPES.has(proxy.proxyType) && proxy.delay === 0;
+        } else if (!resolved.wallet) {
+          status = 'not_verified_no_wallet';
         } else {
           status = 'not_verified';
         }
@@ -372,7 +394,7 @@ const $proxies = combine(
           if (seenKeys.has(key)) continue;
           seenKeys.add(key);
 
-          const resolved = resolveProxy(wallets, addProxyArgs.proxy, op.chainId);
+          const resolved = resolveProxy(wallets, contactMultisigs, addProxyArgs.proxy, op.chainId);
           const account = allAccounts.find(a => a.accountId === addProxyArgs.proxy) ?? resolved.account;
 
           pendingProxies.push({

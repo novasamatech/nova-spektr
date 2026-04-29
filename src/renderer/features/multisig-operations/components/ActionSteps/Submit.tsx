@@ -51,12 +51,13 @@ export const Submit = ({ api, tx, operation, txPayload, signature, description, 
 
     if (result.executed) {
       const { params } = result;
+      const dispatchError = params.proxyError || params.multisigError;
 
       // Sync accounts if proxy was added/removed
       if (
         operation &&
         params.isFinalApprove &&
-        !params.multisigError &&
+        !dispatchError &&
         isProxyTypeTransaction(operation.transaction ?? undefined)
       ) {
         accountSync.syncAccounts();
@@ -70,11 +71,15 @@ export const Submit = ({ api, tx, operation, txPayload, signature, description, 
         });
       }
 
-      toggleSuccessMessage();
-      setTimeout(() => {
+      if (dispatchError) {
+        setErrorMessage(dispatchError);
+      } else {
         toggleSuccessMessage();
-        onClose();
-      }, 2000);
+        setTimeout(() => {
+          toggleSuccessMessage();
+          onClose();
+        }, 2000);
+      }
     } else {
       setErrorMessage(result.error);
     }
