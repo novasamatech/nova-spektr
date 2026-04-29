@@ -13,7 +13,7 @@ import { backendConfigurationModel } from '@/aggregates/backend';
 // GraphQL query: find proxy relationships where the contact is the proxied account
 const CONTACT_PROXIES_QUERY = gql`
   query ContactProxies($accountIds: [String!]) {
-    proxieds(filter: { accountId: { in: $accountIds }, delay: { equalTo: 0 }, isPureProxy: { equalTo: true } }) {
+    proxieds(filter: { accountId: { in: $accountIds }, delay: { equalTo: 0 } }) {
       nodes {
         accountId
         proxyAccountId
