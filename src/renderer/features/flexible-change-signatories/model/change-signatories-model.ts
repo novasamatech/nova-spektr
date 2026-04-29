@@ -29,7 +29,6 @@ import { multisigService } from '@/features/multisig-wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { type PathNode } from '../lib/path';
 import { type ExecutionMode, type SelectedTarget } from '../types';
 
 import { confirmModel } from './confirm-model';
@@ -43,13 +42,11 @@ const selectSignatory = createEvent<AnyAccount | null>();
 const targetSelected = createEvent<SelectedTarget | null>();
 const executionModeChanged = createEvent<ExecutionMode>();
 const nextFromSelectController = createEvent();
-const signingPathConfirmed = createEvent<PathNode[]>();
 const confirmGoBack = createEvent();
 
 const $step = restore(stepChanged, Step.SELECT_CONTROLLER).reset(flow.open).reset(flow.close);
 const $selectedTarget = restore<SelectedTarget | null>(targetSelected, null).reset(flow.open).reset(flow.close);
 const $executionMode = restore<ExecutionMode>(executionModeChanged, 'verified').reset(flow.open).reset(flow.close);
-const $signingPath = restore<PathNode[]>(signingPathConfirmed, []).reset(flow.open).reset(flow.close);
 
 const $initiatorWallet = flow.state.map((state) => state.wallet ?? null);
 
@@ -131,12 +128,12 @@ sample({
   target: $signatory,
 });
 
-// Interim: when SigningPathStep is still a stub (real path-driven signatory
-// selection is part of follow-up work), default $signatory to the first
-// available signatory once the path is confirmed. This unblocks
-// multi-signatory wallets which otherwise stall silently on Step 3.
+// Interim: real path-driven signatory selection will come from the drafts
+// signing-path integration. Until then, default $signatory to the first
+// available signatory when the user advances from SELECT_CONTROLLER. This
+// unblocks multi-signatory wallets which otherwise stall silently on Confirm.
 sample({
-  clock: signingPathConfirmed,
+  clock: nextFromSelectController,
   source: { signatory: $signatory, signatories: $signatories },
   filter: ({ signatory, signatories }) => nullable(signatory) && signatories.length > 0,
   fn: ({ signatories }) => signatories.at(0) ?? null,
@@ -475,32 +472,25 @@ const $canSubmit = and($valid, $canProceedFromForm);
 
 // step transitions
 
-// Step 1 → Step 2: requires a non-null $selectedTarget. The UI keeps the Next button
-// disabled until that's true; this filter is a defence-in-depth guard.
+// SELECT_CONTROLLER → CONFIRM. Requires a non-null $selectedTarget; the UI
+// keeps the Next button disabled until that's true and this filter is a
+// defence-in-depth guard. The transition is not gated on $tx readiness —
+// the Confirm step's UI shows its own loading state for fees / validation,
+// so a slow wrap doesn't silently swallow the click.
 sample({
   clock: nextFromSelectController,
   source: $selectedTarget,
   filter: nonNullable,
-  fn: () => Step.SIGNING_PATH,
-  target: stepChanged,
-});
-
-// Step 2 → Step 3 (confirm). The step transition fires immediately on click,
-// regardless of tx-wrap state — Step 3's UI shows its own loading state for fees /
-// validation, so we don't gate the transition on tx readiness. Otherwise a slow
-// wrap would silently swallow the click and leave the user stuck on Step 2.
-sample({
-  clock: signingPathConfirmed,
   fn: () => Step.CONFIRM,
   target: stepChanged,
 });
 
-// Track whether the user has confirmed the path so confirmModel.init can fire as
-// soon as the wrapped tx becomes available — even if the user clicked Confirm
-// before the wrap finished. Resets when the flow opens/closes so a re-entry
-// doesn't replay the previous intent.
+// Track whether the user has advanced to Confirm so confirmModel.init can
+// fire as soon as the wrapped tx becomes available — even if the user
+// clicked Next before the wrap finished. Resets when the flow opens/closes
+// so a re-entry doesn't replay the previous intent.
 const $confirmIntent = createStore(false).reset(flow.open).reset(flow.close);
-sample({ clock: signingPathConfirmed, fn: () => true, target: $confirmIntent });
+sample({ clock: nextFromSelectController, fn: () => true, target: $confirmIntent });
 
 // Drive confirmModel.init off both the intent and tx updates so it fires when:
 //   (a) intent flips true while tx is already ready, or
@@ -533,11 +523,11 @@ const formSubmitted = sample({
 sample({ clock: formSubmitted, target: confirmModel.init });
 sample({ clock: formSubmitted, fn: () => false, target: $confirmIntent });
 
-// Confirm → back to Step 2 (the path picker). $signingPath is preserved so the user
-// doesn't lose their picked path on backtrack.
+// Confirm → back to SELECT_CONTROLLER. $selectedTarget is preserved so the
+// user doesn't lose their picked controller on backtrack.
 sample({
   clock: confirmGoBack,
-  fn: () => Step.SIGNING_PATH,
+  fn: () => Step.SELECT_CONTROLLER,
   target: stepChanged,
 });
 
@@ -676,7 +666,6 @@ export const changeSignatoriesModel = {
   $isTxReady,
   $selectedTarget,
   $executionMode,
-  $signingPath,
   $effectiveThreshold,
   $effectiveSignatories,
   $newControllerAccountId,
@@ -687,6 +676,5 @@ export const changeSignatoriesModel = {
   targetSelected,
   executionModeChanged,
   nextFromSelectController,
-  signingPathConfirmed,
   flow,
 };

@@ -15,12 +15,10 @@ import { ConfirmationStep } from './ConfirmationStep';
 import { ExecutionModeToggle } from './components/ExecutionModeToggle';
 import { InitializingBody } from './components/InitializingBody';
 import { PersistentBanner } from './components/PersistentBanner';
-import { SigningPathStep } from './components/SigningPathStep';
 import { UnifiedPicker } from './components/UnifiedPicker';
 
 const MODAL_SIZE: Record<number, Pick<ComponentProps<typeof Modal>, 'size' | 'height'>> = {
   [Step.SELECT_CONTROLLER]: { size: 'mdlg', height: 'full' },
-  [Step.SIGNING_PATH]: { size: 'mdlg', height: 'full' },
   [Step.SIGN]: { size: 'md', height: 'fit' },
   [Step.CONFIRM]: { size: 'mdlg', height: 'fit' },
   [Step.SUBMIT]: { size: 'md', height: 'fit' },
@@ -75,7 +73,6 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
   const flexibleAccount = useUnit(changeSignatoriesModel.$flexibleMultisigAccount);
   const selectedTarget = useUnit(changeSignatoriesModel.$selectedTarget);
   const nextFromSelectController = useUnit(changeSignatoriesModel.nextFromSelectController);
-  const signingPathConfirmed = useUnit(changeSignatoriesModel.signingPathConfirmed);
 
   const currentControllerAddress = useMemo(() => {
     if (!flexibleAccount || !chain) return null;
@@ -186,26 +183,6 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
             </Box>
           </Modal.Footer>
         </>
-      )}
-
-      {!showInitializingBody && isStep(step, Step.SIGNING_PATH) && chain && currentControllerAddress && (
-        <Modal.Content>
-          <div className="flex h-full flex-col gap-y-4 px-5 pt-4 pb-6">
-            <PersistentBanner
-              currentControllerAddress={currentControllerAddress}
-              currentSignatories={currentSignatories}
-              currentThreshold={currentThreshold}
-            />
-            <SigningPathStep
-              currentController={{
-                address: currentControllerAddress,
-                name: wallet.name,
-              }}
-              onBack={() => changeSignatoriesModel.stepChanged(Step.SELECT_CONTROLLER)}
-              onConfirm={(path) => signingPathConfirmed(path)}
-            />
-          </div>
-        </Modal.Content>
       )}
 
       {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => changeSignatoriesModel.stepChanged(Step.CONFIRM)} />}

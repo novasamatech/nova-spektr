@@ -31,7 +31,7 @@ import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from 
  *
  * Scenarios covered (from Task 15 of the edit-flexible-flow plan):
  *
- * 1. Step transitions on the happy path: SELECT_CONTROLLER → SIGNING_PATH.
+ * 1. Step transitions on the happy path: SELECT_CONTROLLER → CONFIRM.
  * 2. Default execution mode after `flow.open` is `'verified'`.
  * 3. The trusted-mode branch produces a `batchAll(addProxy + removeProxy)`.
  *
@@ -39,11 +39,6 @@ import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from 
  *
  * - These are model-only tests; no React rendering, no API calls, no signing.
  * - We work entirely off the publicly-exported `changeSignatoriesModel` surface.
- * - Where the model's CONFIRM-step transition depends on a fully-resolved tx
- *   (which in turn requires the network/account-graph DI handler chain that
- *   only the live multisig-wallet feature registers), we reduce the assertion
- *   to the public observables that drive the branch — see the inline comment on
- *   each affected test.
  */
 
 // ─── Inline fixtures ─────────────────────────────────────────────────────────
@@ -144,25 +139,7 @@ describe('Edit Flexible Multisig Controller — model', () => {
       });
     });
 
-    /**
-     * Reduction note: the spec also asks us to assert the second hop
-     * `signingPathConfirmed → step === Step.CONFIRM`. The model gates that hop
-     * on a fully-resolved `$tx` from `createComplexTxStore`, which depends on:
-     *
-     * 1. A non-null api in `networkModel.$apis[chainId]`.
-     * 2. A non-empty route from `findRoute(initiator=FM, signatory, accounts,
-     *    chain)`, which in turn depends on the `accountCollectChildrenPipeline`
-     *    DI handler that the multisig-wallet feature registers in production
-     *    via the SDK.
-     * 3. The `wrapLegacyTransactionFx` async effect completing.
-     *
-     * Reproducing all three in a model-only test (without booting the feature
-     * registry) is mock theater that drowns the actual signal. The spec
-     * explicitly authorises this kind of reduction. We assert the first hop
-     * here; the full SIGNING_PATH → CONFIRM transition is covered by
-     * Playwright.
-     */
-    it('should walk SELECT_CONTROLLER → SIGNING_PATH on happy path', async () => {
+    it('should walk SELECT_CONTROLLER → CONFIRM on happy path', async () => {
       env = await buildEnv();
 
       await allSettled(changeSignatoriesModel.flow.open, {
@@ -188,7 +165,7 @@ describe('Edit Flexible Multisig Controller — model', () => {
       });
 
       await allSettled(changeSignatoriesModel.nextFromSelectController, { scope: env.scope });
-      expect(env.getState(changeSignatoriesModel.$step)).toBe(Step.SIGNING_PATH);
+      expect(env.getState(changeSignatoriesModel.$step)).toBe(Step.CONFIRM);
     });
 
     it('should resolve $newControllerAccountId from the selected target', async () => {
@@ -216,7 +193,7 @@ describe('Edit Flexible Multisig Controller — model', () => {
     it('should reset $step to SELECT_CONTROLLER on flow.open', async () => {
       env = await buildEnv();
 
-      // Drive into SIGNING_PATH first.
+      // Drive past SELECT_CONTROLLER first.
       await allSettled(changeSignatoriesModel.flow.open, {
         scope: env.scope,
         params: { wallet: flexibleMultisigWallet },
@@ -228,7 +205,7 @@ describe('Edit Flexible Multisig Controller — model', () => {
         params: { kind: 'existing', candidate: candidate! },
       });
       await allSettled(changeSignatoriesModel.nextFromSelectController, { scope: env.scope });
-      expect(env.getState(changeSignatoriesModel.$step)).toBe(Step.SIGNING_PATH);
+      expect(env.getState(changeSignatoriesModel.$step)).toBe(Step.CONFIRM);
 
       // Re-open the gate; step should reset back to SELECT_CONTROLLER.
       await allSettled(changeSignatoriesModel.flow.open, {

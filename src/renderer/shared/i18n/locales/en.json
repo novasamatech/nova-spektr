@@ -1627,17 +1627,6 @@
           "modify": "Modify current",
           "replace": "Replace with existing"
         }
-      },
-      "signingPath": {
-        "complete": "Continue",
-        "completeHint": "Pick the wallet that will sign this operation",
-        "label": {
-          "multisig": "Multisig",
-          "proxied": "Proxied",
-          "signer": "Signer",
-          "source": "Source"
-        },
-        "next": "Next"
       }
     },
     "editSubtitle": "Change the signatories and set the signatory threshold for your flexible multisig.",
