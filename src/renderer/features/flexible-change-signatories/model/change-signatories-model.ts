@@ -344,6 +344,63 @@ const $controllerEditTx = combine(
   },
 );
 
+// Drafts use the bare controller-edit batch (addProxy + marker, or addProxy +
+// removeProxy) without the multisig.asMulti / proxy.proxy wrapping. The wrap is
+// applied at submit time based on whichever signatory picks the draft up, so a
+// signer doesn't need to be selected here. We use the current controller's
+// accountId as the BatchAll's metadata accountId — it's not part of the encoded
+// call data hex (only `args.transactions` is), so any non-null AccountId works.
+const $draftTx = combine(
+  {
+    chain: $chain,
+    multisigAccount: $flexibleMultisigAccount,
+    newControllerAccountId: $newControllerAccountId,
+    currentControllerAccountId: $currentControllerAccountId,
+    executionMode: $executionMode,
+  },
+  ({ chain, multisigAccount, newControllerAccountId, currentControllerAccountId, executionMode }) => {
+    if (
+      nullable(multisigAccount) ||
+      nullable(chain) ||
+      nullable(newControllerAccountId) ||
+      nullable(currentControllerAccountId)
+    ) {
+      return null;
+    }
+
+    const oldAccountId = currentControllerAccountId;
+
+    if (executionMode === 'verified') {
+      const addProxyTx = transactionBuilder.buildAddProxy({
+        chain,
+        accountId: oldAccountId,
+        delegateAccountId: newControllerAccountId,
+        type: multisigAccount.proxyType,
+      });
+
+      const markerTx = buildEditControllerMarkerTx({
+        chainId: chain.chainId,
+        accountId: oldAccountId,
+        oldControllerAccountId: oldAccountId,
+      });
+
+      return transactionBuilder.buildBatchAll({
+        chain,
+        accountId: oldAccountId,
+        transactions: [addProxyTx, markerTx],
+      });
+    }
+
+    return transactionBuilder.buildProxyReassign({
+      chain,
+      oldAccountId,
+      newAccountId: newControllerAccountId,
+      signerAccountId: oldAccountId,
+      proxyType: multisigAccount.proxyType,
+    });
+  },
+);
+
 const {
   $tx: $flexibleTx,
   $route,
@@ -721,6 +778,9 @@ export const changeSignatoriesModel = {
   $effectiveThreshold,
   $effectiveSignatories,
   $newControllerAccountId,
+  $coreTx,
+  $draftTx,
+  $api: formModel.$api,
   stepChanged,
   selectSignatory,
   confirmGoBack,

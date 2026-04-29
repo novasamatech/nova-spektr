@@ -210,7 +210,7 @@ export const DraftsSection = () => {
 
   return (
     <div className="mb-6">
-      <Accordion open={focusedDraftId ? true : undefined}>
+      <Accordion initialOpen>
         <Accordion.Trigger sticky>
           <div className="flex items-center gap-2 py-2">
             <FootnoteText className="font-medium text-text-secondary">{t('operations.drafts.title')}</FootnoteText>

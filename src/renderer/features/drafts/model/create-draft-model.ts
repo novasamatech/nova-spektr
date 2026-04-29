@@ -1,7 +1,8 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 
 import { type Chain, type ChainId } from '@/shared/core';
-import { RelayChains, isHex } from '@/shared/lib/utils';
+import { isHex } from '@/shared/lib/utils';
+import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { graphModel, pathModel } from '@/features/signing-path';
 
@@ -79,7 +80,7 @@ sample({
   clock: createDraftRequested,
   source: { chains: networkModel.$chains, chainsList: networkModel.$chainsList },
   filter: (_, seed) => !seed || !seed.chainId,
-  fn: ({ chains, chainsList }) => chains[RelayChains.POLKADOT] ?? chainsList[0] ?? null,
+  fn: ({ chains, chainsList }) => chains[AssetHubChains.POLKADOT_AH] ?? chainsList[0] ?? null,
   target: $selectedChain,
 });
 
