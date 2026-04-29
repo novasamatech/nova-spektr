@@ -42,9 +42,10 @@ export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 type Props = {
   wallet: WalletConnectGroup;
+  defaultTab?: 'accounts' | 'proxies';
   onClose: () => void;
 };
-export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
+export const WalletConnectDetails = ({ wallet, defaultTab, onClose }: Props) => {
   useGate(walletConnectForget.flow, { accounts: wallet.accounts });
   useGate(walletConnectReconnect.flow, { accounts: wallet.accounts });
   useGate(walletDetailsModel.flow, { wallet });
@@ -64,7 +65,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
 
   const [_, startTransition] = useTransition();
 
-  const [tab, setTab] = useState('accounts');
+  const [tab, setTab] = useState(defaultTab === 'proxies' ? 'proxies' : 'accounts');
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmReconnectOpen, toggleConfirmReconnect] = useToggle();
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
