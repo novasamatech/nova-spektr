@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Call, type DispatchError, type Weight } from '@polkadot/types/interfaces';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { type Registry } from '@polkadot/types/types';
-import { BN_ZERO, hexToU8a } from '@polkadot/util';
+import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 
 import { type HexString, type Transaction as DeprecatedTransaction } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
@@ -191,6 +191,12 @@ async function getExtrinsicFee(extrinsic: Extrinsic) {
   return partialFee.toBn();
 }
 
+async function getSplitExtrinsicFee(extrinsic: Extrinsic, api: ApiPromise) {
+  const parts = await splitExtrinsic(extrinsic, api);
+  const fees = await Promise.all(parts.map(getExtrinsicFee));
+  return fees.reduce((acc, fee) => acc.add(fee), BN_ZERO);
+}
+
 async function getTransactionFee(transaction: AnyTransaction, signatory: AccountId, api: ApiPromise) {
   const extrinsic = createExtrinsic(transaction, api);
   const { partialFee } = await extrinsic.paymentInfo(signatory);
@@ -240,8 +246,7 @@ async function getBlockLimit(api: ApiPromise): Promise<BlockWeight> {
   return BlockWeight.takeMinimums(maxExtrinsic.withMargin(), freeSpaceInLastBlock.withMargin());
 }
 
-async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
-  const blockLimit = await getBlockLimit(api);
+async function splitCallsByWeight(api: ApiPromise, calls: Call[], budget: BlockWeight) {
   const result: Extrinsic[][] = [[]];
   let totalWeight = new BlockWeight(BN_ZERO, BN_ZERO);
 
@@ -258,7 +263,7 @@ async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
     const callWeight = BlockWeight.fromWeight(weight);
     const newTotalWeight = totalWeight.add(callWeight);
 
-    if (newTotalWeight.fitsIn(blockLimit) && result.length > 0) {
+    if (newTotalWeight.fitsIn(budget) && result.length > 0) {
       const lastBuffer = result.at(-1);
       if (lastBuffer) {
         lastBuffer.push(extrinsic);
@@ -272,45 +277,119 @@ async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
   return result;
 }
 
-async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise): Promise<Extrinsic[]> {
+type CallWrapper = {
+  section: string;
+  method: string;
+  innerCallIndex: number;
+  declaresInnerWeight: boolean;
+};
+
+const CALL_WRAPPERS: CallWrapper[] = [
+  { section: 'multisig', method: 'asMulti', innerCallIndex: 3, declaresInnerWeight: true },
+  { section: 'proxy', method: 'proxy', innerCallIndex: 2, declaresInnerWeight: false },
+  { section: 'utility', method: 'asDerivative', innerCallIndex: 1, declaresInnerWeight: false },
+];
+
+function findCallWrapper(extrinsic: Extrinsic): CallWrapper | null {
+  const { section, method } = extrinsic.method;
+
+  return CALL_WRAPPERS.find(w => w.section === section && w.method === method) ?? null;
+}
+
+async function rewrapWithInner(
+  wrapped: Extrinsic,
+  wrapper: CallWrapper,
+  newInner: Extrinsic,
+  api: ApiPromise,
+): Promise<Extrinsic> {
+  const args: unknown[] = [...wrapped.args];
+  args[wrapper.innerCallIndex] = newInner.method;
+
+  if (wrapper.declaresInnerWeight && args.length > 0) {
+    args[args.length - 1] = await getExtrinsicWeight(newInner);
+  }
+
+  const section = api.tx[wrapped.method.section];
+  const method = section?.[wrapped.method.method];
+  if (!method) {
+    throw new Error(`Cannot rewrap extrinsic ${wrapped.method.section}.${wrapped.method.method}`);
+  }
+  return method(...args);
+}
+
+async function subtractWrapperOverhead(
+  budget: BlockWeight,
+  wrapped: Extrinsic,
+  inner: Extrinsic,
+): Promise<BlockWeight> {
+  const wrappedWeight = BlockWeight.fromWeight(await getExtrinsicWeight(wrapped));
+  const innerWeight = BlockWeight.fromWeight(await getExtrinsicWeight(inner));
+
+  return new BlockWeight(
+    BN.max(budget.refTime.sub(BN.max(wrappedWeight.refTime.sub(innerWeight.refTime), BN_ZERO)), BN_ZERO),
+    BN.max(budget.proofSize.sub(BN.max(wrappedWeight.proofSize.sub(innerWeight.proofSize), BN_ZERO)), BN_ZERO),
+  );
+}
+
+async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise, budget?: BlockWeight): Promise<Extrinsic[]> {
+  const effectiveBudget = budget ?? (await getBlockLimit(api));
+
   if (isBatchExtrinsic(extrinsic)) {
     const callsArg = extrinsic.args.at(0);
     const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
-    const splitted = await splitCallsByWeight(api, calls);
-    const batched = splitted
-      .map(e => {
-        if (e.length === 0) return null;
-        if (e.length === 1) return e.at(0);
-        return api.tx.utility.batchAll(e);
+    const chunks = await splitCallsByWeight(api, calls, effectiveBudget);
+
+    return chunks
+      .map(chunk => {
+        if (chunk.length === 0) return null;
+        if (chunk.length === 1) return chunk.at(0);
+        return api.tx.utility.batchAll(chunk);
       })
       .filter(nonNullable);
+  }
 
-    return batched;
+  const wrapper = findCallWrapper(extrinsic);
+  if (wrapper) {
+    const innerArg = extrinsic.args.at(wrapper.innerCallIndex);
+    const innerCall = innerArg as unknown as Call | undefined;
+
+    if (innerCall?.section && innerCall.method) {
+      const innerExtrinsic = api.tx(innerCall);
+      const innerBudget = await subtractWrapperOverhead(effectiveBudget, extrinsic, innerExtrinsic);
+      const splitInner = await splitExtrinsic(innerExtrinsic, api, innerBudget);
+
+      if (splitInner.length > 1) {
+        return Promise.all(splitInner.map(inner => rewrapWithInner(extrinsic, wrapper, inner, api)));
+      }
+    }
   }
 
   return [extrinsic];
 }
 
-function getBatchWrappedCallsFromExtrinsic(extrinsic: Extrinsic): Call[] {
-  if (isBatchExtrinsic(extrinsic)) {
-    const callsArg = extrinsic.args.at(0);
-    const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
+const INNER_CALL_RECURSION_LIMIT = 16;
 
-    return calls.flatMap(call => getBatchWrappedCallsFromCall(call));
+function getInnerCallsFromCall(call: Call, depth = 0): Call[] {
+  if (depth >= INNER_CALL_RECURSION_LIMIT) return [call];
+
+  const next = depth + 1;
+
+  if (call.section === 'utility') {
+    if (['batchAll', 'batch', 'forceBatch'].includes(call.method)) {
+      const callsArg = call.args?.at?.(0) || call.args?.[0];
+      const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
+
+      return calls.flatMap(nested => getInnerCallsFromCall(nested, next));
+    }
+    if (call.method === 'withWeight') {
+      return getInnerCallsFromCall(call.args[0] as unknown as Call, next);
+    }
+    if (call.method === 'dispatchAs' || call.method === 'asDerivative') {
+      return getInnerCallsFromCall(call.args[1] as unknown as Call, next);
+    }
   }
 
-  return [extrinsic.method as Call];
-}
-
-function getBatchWrappedCallsFromCall(call: Call): Call[] {
-  if (call.section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(call.method)) {
-    const callsArg = call.args?.at?.(0) || call.args?.[0];
-    const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
-
-    return calls.flatMap(nestedCall => getBatchWrappedCallsFromCall(nestedCall));
-  }
-
-  return [call as Call];
+  return [call];
 }
 
 const decodeDispatchError = (error: DispatchError | SpRuntimeDispatchError, registry: Registry): string => {
@@ -356,6 +435,7 @@ async function submitExtrinsic(
           const extrinsicIndex = txIndex;
           let isFinalApprove = false;
           let multisigError = '';
+          let proxyError = '';
 
           if (internalError) {
             resolve({
@@ -389,6 +469,10 @@ async function submitExtrinsic(
                 multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, extrinsic.registry) : '';
               }
 
+              if (api.events.proxy?.ProxyExecuted?.is(event) && !proxyError && event.data[0].isErr) {
+                proxyError = decodeDispatchError(event.data[0].asErr, extrinsic.registry);
+              }
+
               if (api.events.system.ExtrinsicSuccess.is(event)) {
                 resolve({
                   executed: true,
@@ -401,6 +485,7 @@ async function submitExtrinsic(
                     extrinsicHash: actualTxHash,
                     isFinalApprove,
                     multisigError,
+                    proxyError,
                   },
                 });
               }
@@ -446,12 +531,12 @@ export const transactionService = {
   createExtrinsic,
 
   getExtrinsicFee,
+  getSplitExtrinsicFee,
   getTransactionFee,
   getExtrinsicWeight,
   getTransactionWeight,
 
-  getBatchWrappedCallsFromExtrinsic,
-  getBatchWrappedCallsFromCall,
+  getInnerCallsFromCall,
 
   splitExtrinsic,
   submitExtrinsic,

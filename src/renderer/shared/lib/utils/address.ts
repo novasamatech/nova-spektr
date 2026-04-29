@@ -126,7 +126,7 @@ export const validateAddress = (address: string, chain?: Chain): address is Addr
   return isEvmChain(chain) ? validateEvmAddress(address) : validateSubstrateAddress(address);
 };
 
-const validateSubstrateAddress = (address: string): boolean => {
+export const validateSubstrateAddress = (address: string): boolean => {
   if (isU8a(address) || isHex(address)) {
     return u8aToU8a(address).length === PUBLIC_KEY_LENGTH_BYTES;
   }

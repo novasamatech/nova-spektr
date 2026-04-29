@@ -8,12 +8,13 @@ import {
   type MultisigWallet,
   type ProxiedWallet,
   AccountType,
+  CryptoType,
   ProxyTypes,
   ProxyVariant,
   WalletType,
 } from '@/shared/core';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
-import { type MultisigOperation, accounts, multisigOperation } from '@/domains/network';
+import { type MultisigOperation, accounts, contactMultisigsModel, multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { type WalletProxy, isProxyVerifiable, proxiesModel } from '../proxies-model';
@@ -546,6 +547,48 @@ describe('features/wallet-details/model/proxies-model', () => {
       expect(proxies).toHaveLength(2);
       const m2Row = proxies.find(p => p.proxyAccountId === M2);
       expect(m2Row?.pendingVerificationOperation?.operationId).toBe('op-verify-m2');
+    });
+
+    test('Proxied wallet view treats address-book-only multisig proxy as multisig', async () => {
+      const M2 = ('0x' + 'cc'.repeat(32)) as AccountId;
+      const walletProxiesWithExternal = {
+        [verifyChainId]: {
+          proxies: [
+            { accountId: M2, proxiedAccountId: F, chainId: verifyChainId, proxyType: ProxyTypes.ANY, delay: 0 },
+          ],
+          deposit: null,
+        },
+      };
+
+      const scope = fork({
+        values: new Map<any, any>([
+          [walletModel.__test.$rawWallets, [pwWallet]],
+          [accounts.__test.$list, [pwAccount]],
+          [
+            contactMultisigsModel.$contactMultisigs,
+            [
+              {
+                accountId: M2,
+                name: 'External multisig',
+                signatories: ['0xsig3' as AccountId, '0xsig4' as AccountId],
+                threshold: 2,
+                cryptoType: CryptoType.SR25519,
+                contactIds: ['contact-1'],
+              },
+            ],
+          ],
+          [networkModel.$chains, { [verifyChainId]: chain }],
+          [walletProxiesModel.$walletProxies, walletProxiesWithExternal],
+          [multisigOperation.__test.$cachedOperations, []],
+        ]),
+      });
+      await allSettled(walletProxiesModel.flow.open, { scope, params: { wallet: pwWallet } });
+      const proxies = scope.getState(proxiesModel.$proxies);
+
+      expect(proxies).toHaveLength(1);
+      expect(proxies[0]?.proxyMultisigAccountId).toBe(M2);
+      expect(proxies[0]?.status).toBe('not_verified_no_wallet');
+      expect(proxies[0]?.verifiable).toBe(false);
     });
   });
 });
