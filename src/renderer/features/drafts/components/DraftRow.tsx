@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { type ReactNode, useMemo } from 'react';
 
 import { type CallData, type ChainId, CryptoType } from '@/shared/core';
-import { useTransformer } from '@/shared/di';
+import { Slot, createSlot, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import {
   cnTw,
@@ -24,12 +24,24 @@ import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
 import { decodeCallData, findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { authModel } from '@/aggregates/backend';
-import { AccountsStructureModal } from '@/features/accounts-structure';
 import { operationTitleTransformer } from '@/features/multisig-operations';
 import { graphModel } from '@/features/signing-path';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { getDestinationAccountId } from '../lib/get-destination-account-id';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
+
+/**
+ * Slot for the per-row "view accounts structure" trigger. Drafts owns the slot
+ * but never imports `@/features/accounts-structure` directly —
+ * accounts-structure registers its own modal here. Direct import would create a
+ * module-evaluation cycle: drafts → accounts-structure → wallet-details →
+ * flexible-change-signatories → drafts (via InitiateDraftButton).
+ */
+export const draftAccountsOverviewSlot = createSlot<{
+  walletAccounts: AnyAccount[];
+  initialChainId: string;
+  trigger: ReactNode;
+}>();
 
 type DraftRowProps = {
   draft: Draft;
@@ -225,14 +237,17 @@ export const DraftRow = ({
         <div className="flex shrink-0 items-center gap-x-1" onClick={(e) => e.stopPropagation()}>
           <div className="flex w-[90px] shrink-0 items-center justify-center">
             {overviewAccount && (
-              <AccountsStructureModal
-                walletAccounts={[overviewAccount]}
-                initialChainId={draft.chainId}
-                trigger={
-                  <Button size="sm" variant="text">
-                    {t('operations.drafts.overviewButton')}
-                  </Button>
-                }
+              <Slot
+                id={draftAccountsOverviewSlot}
+                props={{
+                  walletAccounts: [overviewAccount],
+                  initialChainId: draft.chainId,
+                  trigger: (
+                    <Button size="sm" variant="text">
+                      {t('operations.drafts.overviewButton')}
+                    </Button>
+                  ),
+                }}
               />
             )}
           </div>

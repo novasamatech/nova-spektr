@@ -10,11 +10,13 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { ConfirmModal, Modal, Tooltip, useNotification } from '@/shared/ui-kit';
 import { HttpError, draftsResource, draftsService } from '@/domains/backend';
+import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
 import { decodeCallData, findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { backendConfigurationModel } from '@/aggregates/backend';
 import { operationIconTransformer, operationTitleTransformer } from '@/features/multisig-operations';
 import {
+  type PathSource,
   StepPath,
   deriveInitiatorAccountId,
   deriveMultisigAccountId,
@@ -63,10 +65,29 @@ export const CreateDraftModal = () => {
 
   const path = useUnit(pathModel.$path);
   const resolveName = useUnit(graphModel.$nameResolver);
+  const backendContacts = useUnit(contactModel.$backendContacts);
 
   const deferredCallData = useDeferredValue(callData);
   const chains = useUnit(networkModel.$chains);
   const chainsList = useUnit(networkModel.$chainsList);
+
+  // Drafts restrict the signing-path source picker to address-book entries —
+  // multisigs and proxied accounts the user has imported as backend contacts.
+  // Own multisig wallets are excluded unless they're also in the address book.
+  // We lean on graphModel for source derivation (proxy-reachability, name
+  // resolution) and filter the result to the address-book set; the ownership
+  // policy lives here in the consumer rather than in the graph.
+  const sourcesStore = useMemo(
+    () => graphModel.$sourcesFor(selectedChain?.chainId ?? ('0x00' as ChainId)),
+    [selectedChain?.chainId],
+  );
+  const allSources = useUnit(sourcesStore);
+  const draftPathSources = useMemo<PathSource[]>(() => {
+    if (!selectedChain) return [];
+    const addressBookIds = new Set(backendContacts.map((c) => c.accountId));
+
+    return allSources.filter((s) => addressBookIds.has(s.accountId));
+  }, [allSources, backendContacts, selectedChain]);
 
   const api = useApi(selectedChain?.chainId ?? ('0x00' as ChainId));
   const specVersion = api?.runtimeVersion.specVersion.toNumber() ?? null;
@@ -224,7 +245,9 @@ export const CreateDraftModal = () => {
                 onTemplateApply={handleTemplateApply}
               />
             )}
-            {activeStep === 'select-path' && selectedChain && <StepPath chainId={selectedChain.chainId} />}
+            {activeStep === 'select-path' && selectedChain && (
+              <StepPath chainId={selectedChain.chainId} sources={draftPathSources} />
+            )}
             {activeStep === 'confirm' && selectedChain && (
               <StepReview
                 path={path}

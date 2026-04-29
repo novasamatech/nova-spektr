@@ -72,7 +72,17 @@ const $multisigByAccountId = combine(
 
     for (const account of accountList) {
       if (accountUtils.isAnyMultisigAccount(account)) {
-        result.set(account.accountId, {
+        // For flexible multisig accounts, `account.accountId` is the pure
+        // proxy (the principal), not the multisig itself — the actual multisig
+        // lives at `multisigAccountId`. Keying by `accountId` here would
+        // incorrectly surface the pure proxy as a direct multisig source,
+        // skipping the proxy hop in the signing path. Use the proper multisig
+        // accountId so the pure proxy is left to surface as a proxied source
+        // via the proxy graph below.
+        const multisigAccountId = accountUtils.isFlexibleMultisigAccount(account)
+          ? account.multisigAccountId
+          : account.accountId;
+        result.set(multisigAccountId, {
           signatories: account.signatories.map((s) => s.accountId),
           threshold: account.threshold,
         });

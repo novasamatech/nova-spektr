@@ -3,11 +3,11 @@ import { useMemo, useState } from 'react';
 
 import { type ChainId, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
+import { cnTw, performSearch, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { Select } from '@/shared/ui-kit';
-import { graphModel } from '../model/graph-model';
+import { type PathSource, graphModel } from '../model/graph-model';
 import { pathModel } from '../model/path-model';
 
 import { NextOptionRow } from './NextOptionRow';
@@ -16,6 +16,14 @@ import { SectionCard } from './SectionCard';
 
 type Props = {
   chainId: ChainId;
+  /**
+   * Optional override for the source candidates shown in step 1. When omitted,
+   * StepPath derives sources from the global graph (own multisigs + address
+   * book multisigs + proxied contacts whose graph reaches a multisig signer).
+   * Pass an explicit list when the consuming flow should restrict the picker to
+   * a specific subset (e.g. drafts only allow address-book multisigs).
+   */
+  sources?: PathSource[];
   /**
    * When > 0, the first N nodes of the path are treated as fixed: the source
    * dropdown is hidden and clicks on those breadcrumb cards do not truncate the
@@ -47,6 +55,7 @@ type Props = {
 
 export const StepPath = ({
   chainId,
+  sources: externalSources,
   lockedSourceCount = 0,
   restrictToOwnAccounts = false,
   allowedProxyTypes,
@@ -59,12 +68,25 @@ export const StepPath = ({
   const lastNode = useUnit(pathModel.$lastNode);
 
   const [autoOpenSource, setAutoOpenSource] = useState(false);
+  const [sourceQuery, setSourceQuery] = useState('');
 
   const sourcesStore = useMemo(
     () => graphModel.$sourcesFor(chainId, { restrictToOwn: restrictToOwnAccounts, allowedProxyTypes }),
     [chainId, restrictToOwnAccounts, allowedProxyTypes],
   );
-  const sources = useUnit(sourcesStore);
+  const internalSources = useUnit(sourcesStore);
+  const sources = externalSources ?? internalSources;
+
+  const searchableSources = useMemo(() => sources.map((s) => ({ ...s, address: toAddress(s.accountId) })), [sources]);
+  const filteredSources = useMemo(
+    () =>
+      performSearch({
+        records: searchableSources,
+        query: sourceQuery,
+        weights: { name: 1, address: 0.5 },
+      }),
+    [searchableSources, sourceQuery],
+  );
 
   const nextOptionsStore = useMemo(
     () =>
@@ -136,21 +158,31 @@ export const StepPath = ({
             value={selectedSourceId}
             defaultOpen={autoOpenSource}
             onChange={handleSourceChange}
+            onSearch={setSourceQuery}
           >
-            {sources.map((source) => {
-              const address = toAddress(source.accountId);
+            {filteredSources.map((source) => {
               const walletType =
                 source.walletType ?? (source.isProxy ? WalletType.POLKADOT_VAULT : WalletType.MULTISIG);
 
               return (
                 <Select.Item key={source.accountId} value={source.accountId}>
                   <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
-                    <WalletAccountIcon address={address} type={walletType} size={24} iconSize={12} />
-                    <span className="flex w-full flex-col overflow-hidden">
+                    <WalletAccountIcon address={source.address} type={walletType} size={24} iconSize={12} />
+                    <span className="flex min-w-0 flex-1 flex-col overflow-hidden">
                       <FootnoteText className="w-fit max-w-full truncate text-text-primary">{source.name}</FootnoteText>
                       <HelpText className="truncate text-text-tertiary">
                         {source.isProxy ? t('signingPath.proxiedAccountsGroup') : t('signingPath.multisigsGroup')}
                       </HelpText>
+                    </span>
+                    <span
+                      className={cnTw(
+                        'shrink-0 rounded-full border px-2 py-0.5 text-help-text',
+                        source.isProxy
+                          ? 'border-icon-accent/30 bg-icon-accent/8 text-icon-accent'
+                          : 'bg-shade-4 border-shade-12 text-text-tertiary',
+                      )}
+                    >
+                      {source.isProxy ? t('signingPath.label.proxied') : t('signingPath.label.multisig')}
                     </span>
                   </span>
                 </Select.Item>
