@@ -205,6 +205,21 @@ const $isLoading = combine(
   ({ isProxiesLoading, isAccountSyncPending }) => isProxiesLoading || isAccountSyncPending,
 );
 
+const $allChainsLoaded = combine(
+  {
+    proxies: $walletProxies,
+    chains: networkModel.$chains,
+    apis: networkModel.$apis,
+    wallet: $wallet,
+  },
+  ({ proxies, chains, apis, wallet }) => {
+    if (!wallet) return true;
+    const expected = Object.values(chains).filter(chain => Boolean(apis[chain.chainId]));
+    if (expected.length === 0) return false;
+    return expected.every(chain => chain.chainId in proxies);
+  },
+);
+
 export const walletProxiesModel = {
   flow,
   $wallet,
@@ -213,4 +228,5 @@ export const walletProxiesModel = {
   $walletProxiesCount,
   $walletProxyGroups,
   $isLoading,
+  $allChainsLoaded,
 };

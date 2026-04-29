@@ -9,7 +9,7 @@ import { isEthereumAccountId, nonNullable, nullable, toAddress } from '@/shared/
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
 import { AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
-import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
+import { Box, Modal, ScrollArea, Skeleton, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts, useAccountName } from '@/domains/network';
 import { useWalletName } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -45,12 +45,16 @@ const SignatoryContactItem = ({ accountId, chain, children }: SignatoryContactIt
 
 type Props = {
   wallet: MultisigWallet | FlexibleMultisigWallet;
+  defaultTab?: 'accounts' | 'proxies';
   onClose: () => void;
 };
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
-export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
+const ACCOUNT_TAB_ID = '1';
+const PROXIES_TAB_ID = '3';
+
+export const FlexibleWalletDetails = ({ wallet, defaultTab, onClose }: Props) => {
   useGate(multisigWalletDetailsModel.flow, { wallet });
   useGate(walletDetailsModel.flow, { wallet });
   useGate(walletProxiesModel.flow, { wallet });
@@ -64,8 +68,9 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
-  const [tab, setTab] = useState('1');
+  const [tab, setTab] = useState(defaultTab === 'proxies' ? PROXIES_TAB_ID : ACCOUNT_TAB_ID);
   const proxiesCount = useUnit(proxiesModel.$totalCount);
+  const isProxiesLoading = useUnit(proxiesModel.$isLoading);
 
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
 
@@ -101,7 +106,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const actions: WalletAction[] = [
     {
       component: (
-        <ChangeSignatories wallet={wallet} canUseVerifiedPath={canCreateProxy}>
+        <ChangeSignatories wallet={wallet}>
           <Action title={t('walletDetails.multisig.changeSignatories')} icon="changeSignatories" />
         </ChangeSignatories>
       ),
@@ -140,7 +145,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const TabItems: { id: string; title: ReactNode; panel: ReactNode }[] = [];
 
   const TabAccount = {
-    id: '1',
+    id: ACCOUNT_TAB_ID,
     title: t('walletDetails.multisig.accountTab'),
     panel: (
       <div>
@@ -197,11 +202,15 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (canCreateProxy) {
     const TabProxies = {
-      id: '3',
+      id: PROXIES_TAB_ID,
       title: (
         <span className="flex items-center gap-1">
           {t('walletDetails.proxies.tabTitleShort')}
-          <span className="text-text-tertiary">{proxiesCount}</span>
+          {isProxiesLoading && proxiesCount === 0 ? (
+            <Skeleton width={2} height={2.5} />
+          ) : (
+            <span className="text-text-tertiary">{proxiesCount}</span>
+          )}
         </span>
       ),
       panel: <ProxiesTab wallet={wallet} onCloseWalletDetails={closeModal} />,

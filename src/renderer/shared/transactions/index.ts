@@ -9,3 +9,15 @@ export { type ExtrinsicConfirmInfo, createExtrinsicConfirmStore } from './create
 export { createTxValidationStore } from './createTxValidationStore';
 export { createTxValidator, getActionRequiredAmount } from './createTxValidator';
 export { combineTotalRequiredFee } from './combineTotalRequiredFee';
+export {
+  type EditControllerMarkerPayload,
+  EDIT_FLEXIBLE_CONTROLLER_REMARK_KIND,
+  buildEditControllerMarkerTx,
+  parseEditControllerMarker,
+} from './editControllerMarker';
+export {
+  type VerifyProxyMarkerPayload,
+  VERIFY_PROXY_REMARK_KIND,
+  buildVerifyProxyRemarkTx,
+  parseVerifyProxyMarker,
+} from './verifyProxyMarker';

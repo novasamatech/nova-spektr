@@ -2,6 +2,7 @@ import { TransactionType } from '@/shared/core';
 import { ProxyTypes } from '@/shared/core/types/proxy';
 import { toAccountId } from '@/shared/lib/utils';
 import { RelayChains } from '@/shared/lib/utils/constants';
+import { VERIFY_PROXY_REMARK_KIND, parseVerifyProxyMarker } from '@/shared/transactions';
 import { VERIFIABLE_PROXY_TYPES, buildVerifyProxyCall, isVerifiableProxyType } from '../build-verify-proxy';
 
 const chainId = RelayChains.POLKADOT;
@@ -10,28 +11,30 @@ const pure = toAccountId('0xbbbbbbbb');
 
 describe('features/proxy-verify/lib/build-verify-proxy', () => {
   describe('buildVerifyProxyCall', () => {
-    test('wraps system.remark in proxy.proxy attributed to the delegate; asMulti is layered by the wrap pipeline', () => {
-      expect(
-        buildVerifyProxyCall({
-          chainId,
-          delegateAccountId: delegate,
-          pureProxyAccountId: pure,
-          proxyType: ProxyTypes.ANY,
-        }),
-      ).toEqual({
+    test('wraps system.remarkWithEvent(<marker>) in proxy.proxy attributed to the delegate; asMulti is layered by the wrap pipeline', () => {
+      const call = buildVerifyProxyCall({
         chainId,
-        accountId: delegate,
-        type: TransactionType.PROXY,
-        args: {
-          real: pure,
-          forceProxyType: ProxyTypes.ANY,
-          transaction: {
-            chainId,
-            accountId: pure,
-            type: TransactionType.REMARK,
-            args: { remark: '0x' },
-          },
-        },
+        delegateAccountId: delegate,
+        pureProxyAccountId: pure,
+        proxyType: ProxyTypes.ANY,
+      });
+
+      expect(call.chainId).toBe(chainId);
+      expect(call.accountId).toBe(delegate);
+      expect(call.type).toBe(TransactionType.PROXY);
+      expect(call.args.real).toBe(pure);
+      expect(call.args.forceProxyType).toBe(ProxyTypes.ANY);
+
+      const inner = call.args.transaction;
+      expect(inner.chainId).toBe(chainId);
+      expect(inner.accountId).toBe(pure);
+      expect(inner.type).toBe(TransactionType.REMARK_WITH_EVENT);
+
+      const marker = parseVerifyProxyMarker(inner.args.remark);
+      expect(marker).toEqual({
+        kind: VERIFY_PROXY_REMARK_KIND,
+        delegateAccountId: delegate,
+        pureProxyAccountId: pure,
       });
     });
 

@@ -24,9 +24,10 @@ export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 type Props = {
   wallet: Wallet;
+  defaultTab?: 'accounts' | 'proxies';
   onClose: () => void;
 };
-export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
+export const WatchOnlyWalletDetails = ({ wallet, defaultTab, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
   useGate(walletProxiesModel.flow, { wallet });
   const { t } = useI18n();
@@ -47,7 +48,7 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
 
   const [chains, setChains] = useState<Chain[]>([]);
-  const [tab, setTab] = useState('accounts');
+  const [tab, setTab] = useState(defaultTab === 'proxies' ? 'proxies' : 'accounts');
 
   const isEthereumBased = firstAccount ? accountUtils.isEthereumBased(firstAccount) : false;
 

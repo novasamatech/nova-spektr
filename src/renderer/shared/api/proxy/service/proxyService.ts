@@ -8,6 +8,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 export const proxyService = {
   getMaxProxies,
   getProxyDepositDelta,
+  getProxyDepositRequired: proxyDepositRequired,
   getPureProxyDeposit,
   getProxiesForAccount,
 };

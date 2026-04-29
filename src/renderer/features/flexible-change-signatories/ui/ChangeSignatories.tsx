@@ -3,30 +3,24 @@ import { type ComponentProps, type PropsWithChildren, useEffect, useMemo, useRef
 
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Step, getNativeAsset, isStep, toAccountId, transferableAmount } from '@/shared/lib/utils';
-import { Paths } from '@/shared/routes';
-import { Alert, Button, ButtonLink, Icon, InputHint, SmallTitleText } from '@/shared/ui';
-import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
-import { Box, Field, Modal, Select } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { Step, isStep, toAddress } from '@/shared/lib/utils';
+import { Button } from '@/shared/ui';
+import { Box, Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
-import { walletModel } from '@/entities/wallet';
 import { OperationSign } from '@/features/operations';
 import { OperationSubmitWithAction } from '@/features/operations/OperationSubmit';
 import { changeSignatoriesModel } from '../model/change-signatories-model';
-import { formModel } from '../model/form-model';
-import { signatoryModel } from '../model/signatory-model';
 
 import { ConfirmationStep } from './ConfirmationStep';
-import { MultisigFees } from './components/MultisigFees';
-import { Signatory } from './components/Signatory';
+import { ExecutionModeToggle } from './components/ExecutionModeToggle';
+import { InitializingBody } from './components/InitializingBody';
+import { PersistentBanner } from './components/PersistentBanner';
+import { UnifiedPicker } from './components/UnifiedPicker';
 
-const MODAL_SIZE: Record<string, Pick<ComponentProps<typeof Modal>, 'size' | 'height'>> = {
-  [Step.SIGNATORIES_THRESHOLD]: { size: 'mdlg', height: 'full' },
-  [Step.SIGNER_SELECTION]: { size: 'md', height: 'fit' },
+const MODAL_SIZE: Record<number, Pick<ComponentProps<typeof Modal>, 'size' | 'height'>> = {
+  [Step.SELECT_CONTROLLER]: { size: 'mdlg', height: 'full' },
   [Step.SIGN]: { size: 'md', height: 'fit' },
-  [Step.CONFIRM]: { size: 'md', height: 'fit' },
+  [Step.CONFIRM]: { size: 'mdlg', height: 'fit' },
   [Step.SUBMIT]: { size: 'md', height: 'fit' },
 };
 
@@ -40,50 +34,57 @@ type Props = PropsWithChildren<{
 export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideTrigger }: Props) => {
   const { t } = useI18n();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Initialize from `launchOpen` so the Modal renders open on the very first
+  // render — saves the previous mount → effect → setState → re-render cycle
+  // that delayed the modal from appearing on click.
+  const [isModalOpen, setIsModalOpen] = useState(launchOpen ?? false);
   const walletRef = useRef(wallet);
   walletRef.current = wallet;
 
+  // Two-phase mount:
+  //   1. First render commits Modal shell + <InitializingBody> only — fast.
+  //      Browser paints the loader so the user gets immediate feedback.
+  //   2. After paint, `bodyReady` flips and the heavy step bodies (PersistentBanner,
+  //      UnifiedPicker, ExecutionModeToggle, ConfirmationStep, …) actually mount.
+  //   The loader stays on screen during the heavy second render because JS blocks
+  //   the browser from painting again until React commits the new tree.
+  const [bodyReady, setBodyReady] = useState(false);
+  useEffect(() => {
+    const handle = requestAnimationFrame(() => setBodyReady(true));
+
+    return () => cancelAnimationFrame(handle);
+  }, []);
+
+  // Open the model gate after the first paint so the Effector cascade
+  // (populateSignatories, getSignatoriesBalance, populateForm, …) runs against
+  // an already-visible modal instead of blocking the first render.
+  const launchedRef = useRef(false);
   useEffect(() => {
     if (!launchOpen) return;
+    if (launchedRef.current) return;
+    launchedRef.current = true;
 
     setIsModalOpen(true);
     changeSignatoriesModel.flow.open({ wallet: walletRef.current });
   }, [launchOpen, wallet.id]);
 
   const step = useUnit(changeSignatoriesModel.$step);
-  const canSubmit = useUnit(changeSignatoriesModel.$canSubmit);
-  const canProceedFromForm = useUnit(changeSignatoriesModel.$canProceedFromForm);
   const chain = useUnit(changeSignatoriesModel.$chain);
-  const errors = useUnit(changeSignatoriesModel.$errors);
-  const threshold = useUnit(formModel.$threshold);
-  const invalidAddresses = useUnit(formModel.$invalidAddresses);
-  const isEditOperationAlreadyExists = useUnit(changeSignatoriesModel.$isEditOperationAlreadyExists);
+  const flexibleAccount = useUnit(changeSignatoriesModel.$flexibleMultisigAccount);
+  const selectedTarget = useUnit(changeSignatoriesModel.$selectedTarget);
+  const nextFromSelectController = useUnit(changeSignatoriesModel.nextFromSelectController);
 
-  const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
-  const signatories = useUnit(signatoryModel.$signatories);
-  const wallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balanceMap);
-  const allAccounts = useUnit(accounts.$list);
-  const signatoriesForSelect = useUnit(changeSignatoriesModel.$signatories);
-  const selectedSignatory = useUnit(changeSignatoriesModel.$signer);
+  const currentControllerAddress = useMemo(() => {
+    if (!flexibleAccount || !chain) return null;
+    return toAddress(flexibleAccount.multisigAccountId, { prefix: chain.addressPrefix });
+  }, [flexibleAccount, chain]);
 
-  const thresholdDisabled = signatories.length < 2 || signatories.some((s) => s.address === '');
+  const currentSignatories = useMemo(() => {
+    if (!flexibleAccount) return [];
+    return flexibleAccount.signatories.map((s) => s.accountId);
+  }, [flexibleAccount]);
 
-  const asset = chain ? getNativeAsset(chain.assets) : null;
-
-  const signatoriesWithBalance = useMemo(() => {
-    if (!chain || !asset) return [];
-    return signatoriesForSelect.map((s) => {
-      const balance = balanceUtils.getBalance(balances, s.accountId, chain.chainId, asset.assetId);
-      return { account: s, balance: transferableAmount(balance) };
-    });
-  }, [signatoriesForSelect, balances, chain, asset]);
-
-  const network = useMemo(() => {
-    if (!chain || !asset) return null;
-    return { chain, asset };
-  }, [chain, asset]);
+  const currentThreshold = flexibleAccount?.threshold ?? 0;
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -115,143 +116,75 @@ export const ChangeSignatories = ({ wallet, onClose, children, launchOpen, hideT
     );
   }
 
+  // Render the loader-only body when:
+  // - bodyReady hasn't flipped yet (first paint), OR
+  // - Effector hasn't resolved $chain / current controller yet
+  // - and the active step actually has a body (SIGN/SUBMIT have their own UI)
+  const showInitializingBody =
+    (!bodyReady || !chain || !currentControllerAddress) && !isStep(step, Step.SIGN) && !isStep(step, Step.SUBMIT);
+
   return (
-    <Modal isOpen={isModalOpen} size={MODAL_SIZE[step]!.size} height={MODAL_SIZE[step]!.height} onToggle={onToggle}>
+    <Modal
+      isOpen={isModalOpen}
+      size={MODAL_SIZE[step]?.size ?? 'mdlg'}
+      height={MODAL_SIZE[step]?.height ?? 'full'}
+      onToggle={onToggle}
+    >
       {!hideTrigger && <Modal.Trigger>{children}</Modal.Trigger>}
 
       <Modal.Title close>
-        {chain && <OperationTitle title={t('flexibleMultisig.editTitleOn')} chainId={chain.chainId} />}
+        {chain ? (
+          <OperationTitle title={t('flexibleMultisig.editTitleOn')} chainId={chain.chainId} />
+        ) : (
+          t('flexibleMultisig.editTitleOn')
+        )}
       </Modal.Title>
-      {isStep(step, Step.CONFIRM) && <ConfirmationStep />}
-      {isStep(step, Step.SIGNATORIES_THRESHOLD) && (
-        <>
-          <Modal.Content>
-            <div className="flex h-full flex-col gap-y-6 px-5 pt-4 pb-6">
-              <SmallTitleText>{t('flexibleMultisig.editSubtitle')}</SmallTitleText>
 
-              <hr className="-ml-5 w-[110%] border-divider" />
-
-              {signatories.map((signatory, index) => (
-                <Signatory
-                  key={signatory.address}
-                  isOwnAccount={index === 0}
-                  isDuplicate={duplicateSignatories[toAccountId(signatory.address)]?.includes(index) ?? false}
-                  isInvalidAddress={invalidAddresses.includes(signatory.address)}
-                  signatoryIndex={index}
-                  signatory={signatory}
-                  onDelete={signatoryModel.deleteSignatory}
-                />
-              ))}
-
-              <Button
-                size="md"
-                variant="text"
-                className="h-8.5 w-max justify-center gap-x-1 pl-0"
-                suffixElement={<Icon className="text-icon-primary" name="add" size={16} />}
-                onClick={() => signatoryModel.addSignatory({ address: '', walletId: '' })}
-              >
-                {t('createMultisigAccount.addNewSignatory')}
-              </Button>
-
-              <hr className="-ml-5 w-[110%] border-divider" />
-
-              <div className="flex gap-x-6">
-                <Box width="232px">
-                  <Field text={t('createMultisigAccount.thresholdName')}>
-                    <Select
-                      placeholder={t('createMultisigAccount.thresholdPlaceholder')}
-                      value={(threshold || '').toString()}
-                      disabled={thresholdDisabled}
-                      height="md"
-                      onChange={(value) => formModel.thresholdChanged(Number(value))}
-                    >
-                      {Array.from({ length: signatories.length - 1 }, (_, index) => (
-                        <Select.Item key={index} value={(index + 2).toString()}>
-                          {index + 2}
-                        </Select.Item>
-                      ))}
-                    </Select>
-                  </Field>
-                </Box>
-                <InputHint active className="mt-8.5 flex-1">
-                  {t('flexibleMultisig.thresholdDescription')}
-                </InputHint>
-              </div>
-
-              <div className="mt-auto flex flex-col gap-2">
-                <TransactionValidationError errors={errors} wallets={wallets} />
-
-                {isEditOperationAlreadyExists && (
-                  <Alert
-                    active
-                    variant="error"
-                    title={t('createMultisigAccount.flexibleMultisig.editOperationExistsTitle')}
-                  >
-                    <Alert.Item withDot={false}>
-                      {t('createMultisigAccount.flexibleMultisig.editOperationExistsDescription')}
-                    </Alert.Item>
-                    <Alert.Item withDot={false}>
-                      <ButtonLink
-                        className="h-auto p-0"
-                        variant="text"
-                        size="sm"
-                        to={Paths.OPERATIONS}
-                        onClick={onClose}
-                      >
-                        {t('createMultisigAccount.flexibleMultisig.editOperationExistsAction')}
-                      </ButtonLink>
-                    </Alert.Item>
-                  </Alert>
-                )}
-              </div>
-            </div>
-          </Modal.Content>
-
-          <Modal.Footer>
-            <Box fitContainer direction="row" horizontalAlign="end" verticalAlign="center">
-              <div className="flex items-center justify-end gap-x-6">
-                <MultisigFees />
-
-                <Button
-                  key="create"
-                  type="submit"
-                  disabled={!canProceedFromForm}
-                  onClick={() => formModel.formSubmit()}
-                >
-                  {t('createMultisigAccount.continueButton')}
-                </Button>
-              </div>
-            </Box>
-          </Modal.Footer>
-        </>
+      {showInitializingBody && (
+        <Modal.Content>
+          <InitializingBody />
+        </Modal.Content>
       )}
-      {isStep(step, Step.SIGNER_SELECTION) && (
+
+      {!showInitializingBody && isStep(step, Step.CONFIRM) && chain && currentControllerAddress && (
+        <ConfirmationStep
+          banner={
+            <PersistentBanner
+              currentControllerAddress={currentControllerAddress}
+              currentSignatories={currentSignatories}
+              currentThreshold={currentThreshold}
+            />
+          }
+        />
+      )}
+
+      {!showInitializingBody && isStep(step, Step.SELECT_CONTROLLER) && chain && currentControllerAddress && (
         <>
           <Modal.Content>
-            <div className="flex flex-col gap-y-6 px-5 pt-4 pb-6">
-              <SignatorySelect
-                signatory={selectedSignatory}
-                signatories={signatoriesWithBalance}
-                allAccounts={allAccounts}
-                allWallets={wallets}
-                initiator={signatoriesForSelect[0] ?? null}
-                hasError={false}
-                errorText=""
-                network={network}
-                onChange={changeSignatoriesModel.selectSignatory}
+            <div className="flex h-full flex-col gap-y-4 px-5 pt-4 pb-6">
+              <PersistentBanner
+                currentControllerAddress={currentControllerAddress}
+                currentSignatories={currentSignatories}
+                currentThreshold={currentThreshold}
+              />
+              <ExecutionModeToggle />
+              <UnifiedPicker
+                chain={chain}
+                currentControllerAddress={currentControllerAddress}
+                currentThreshold={currentThreshold}
               />
             </div>
           </Modal.Content>
           <Modal.Footer>
-            <Button variant="text" onClick={() => changeSignatoriesModel.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
-              {t('operation.goBackButton')}
-            </Button>
-            <Button disabled={!canSubmit} onClick={() => changeSignatoriesModel.signerConfirmed()}>
-              {t('createMultisigAccount.continueButton')}
-            </Button>
+            <Box fitContainer direction="row" horizontalAlign="end" verticalAlign="center">
+              <Button disabled={!selectedTarget} onClick={() => nextFromSelectController()}>
+                {t('flexibleMultisig.editController.picker.next')}
+              </Button>
+            </Box>
           </Modal.Footer>
         </>
       )}
+
       {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => changeSignatoriesModel.stepChanged(Step.CONFIRM)} />}
     </Modal>
   );

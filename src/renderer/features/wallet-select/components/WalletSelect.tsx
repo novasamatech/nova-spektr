@@ -12,6 +12,7 @@ import { useWalletName } from '@/domains/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletList } from '../model/list';
+import { walletSelectUI } from '../model/ui-state';
 
 export const walletGroupSlot = createSlot<{
   query: string;
@@ -22,6 +23,7 @@ export const walletIconSlot = createSlot<{ wallet: Wallet; size: number }>();
 
 export const WalletSelect = memo(({ folded }: { folded: boolean }) => {
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
+  const isOpen = useUnit(walletSelectUI.$isOpen);
 
   useEffect(() => {
     walletList.fetchWallets();
@@ -31,8 +33,16 @@ export const WalletSelect = memo(({ folded }: { folded: boolean }) => {
     return <Skeleton width={52} height={16} />;
   }
 
+  // Controlled so other features (e.g. wallet-details "View details") can close
+  // this Popover when they open a modal that should replace it visually.
   return (
-    <Popover align="start" side={folded ? 'right' : 'bottom'} sideOffset={2}>
+    <Popover
+      align="start"
+      side={folded ? 'right' : 'bottom'}
+      sideOffset={2}
+      open={isOpen}
+      onToggle={walletSelectUI.toggled}
+    >
       <Popover.Trigger>
         <WalletSelectTrigger wallet={selectedWallet} folded={folded} />
       </Popover.Trigger>
