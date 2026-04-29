@@ -7,17 +7,28 @@ import { toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { Select } from '@/shared/ui-kit';
-import { NextOptionRow } from '../components/signing-path/NextOptionRow';
-import { PathBreadcrumb } from '../components/signing-path/PathBreadcrumb';
-import { SectionCard } from '../components/signing-path/SectionCard';
 import { graphModel } from '../model/graph-model';
 import { pathModel } from '../model/path-model';
 
+import { NextOptionRow } from './NextOptionRow';
+import { PathBreadcrumb } from './PathBreadcrumb';
+import { SectionCard } from './SectionCard';
+
 type Props = {
   chainId: ChainId;
+  lockedSourceCount?: number;
+  restrictToOwnAccounts?: boolean;
+  allowedProxyTypes?: readonly string[];
+  disabledProxyReason?: string;
 };
 
-export const StepPath = ({ chainId }: Props) => {
+export const StepPath = ({
+  chainId,
+  lockedSourceCount = 0,
+  restrictToOwnAccounts = false,
+  allowedProxyTypes,
+  disabledProxyReason,
+}: Props) => {
   const { t } = useI18n();
 
   const path = useUnit(pathModel.$path);
@@ -26,12 +37,22 @@ export const StepPath = ({ chainId }: Props) => {
 
   const [autoOpenSource, setAutoOpenSource] = useState(false);
 
-  const sourcesStore = useMemo(() => graphModel.$sourcesFor(chainId), [chainId]);
+  const sourcesStore = useMemo(
+    () => graphModel.$sourcesFor(chainId, { restrictToOwn: restrictToOwnAccounts, allowedProxyTypes }),
+    [chainId, restrictToOwnAccounts, allowedProxyTypes],
+  );
   const sources = useUnit(sourcesStore);
 
   const nextOptionsStore = useMemo(
-    () => (lastNode ? graphModel.$nextOptionsForNode(lastNode, chainId) : graphModel.$empty),
-    [lastNode, chainId],
+    () =>
+      lastNode
+        ? graphModel.$nextOptionsForNode(lastNode, chainId, {
+            restrictToOwn: restrictToOwnAccounts,
+            allowedProxyTypes,
+            disabledProxyReason,
+          })
+        : graphModel.$empty,
+    [lastNode, chainId, restrictToOwnAccounts, allowedProxyTypes, disabledProxyReason],
   );
   const nextOptions = useUnit(nextOptionsStore);
 
@@ -54,7 +75,7 @@ export const StepPath = ({ chainId }: Props) => {
 
     if (lastNode.kind === 'proxied') {
       return {
-        title: t('operations.drafts.signingPath.pickMultisigForProxy'),
+        title: t('signingPath.pickMultisigForProxy'),
       };
     }
 
@@ -62,9 +83,7 @@ export const StepPath = ({ chainId }: Props) => {
       const hasNested = nextOptions.some((opt) => opt.kind === 'multisig');
 
       return {
-        title: hasNested
-          ? t('operations.drafts.signingPath.pickInitiatorOrNested')
-          : t('operations.drafts.signingPath.pickInitiator'),
+        title: hasNested ? t('signingPath.pickInitiatorOrNested') : t('signingPath.pickInitiator'),
       };
     }
 
@@ -73,26 +92,24 @@ export const StepPath = ({ chainId }: Props) => {
 
   const pickerInfo = getPickerTitle();
 
+  const handleBreadcrumbClick = (i: number) => {
+    if (i < lockedSourceCount) return;
+    if (i === 0) setAutoOpenSource(true);
+    pathModel.pathTruncatedTo(i - 1);
+  };
+
   return (
     <div className="flex min-h-[520px] flex-col gap-y-4">
-      {path.length > 0 && (
-        <PathBreadcrumb
-          path={path}
-          onNodeClick={(i) => {
-            if (i === 0) setAutoOpenSource(true);
-            pathModel.pathTruncatedTo(i - 1);
-          }}
-        />
-      )}
+      {path.length > 0 && <PathBreadcrumb path={path} chainId={chainId} onNodeClick={handleBreadcrumbClick} />}
 
-      {path.length === 0 ? (
+      {path.length === 0 && lockedSourceCount === 0 ? (
         <SectionCard
           number={1}
-          title={t('operations.drafts.signingPath.sourceAccount')}
-          description={t('operations.drafts.signingPath.sourceAccountDescription')}
+          title={t('signingPath.sourceAccount')}
+          description={t('signingPath.sourceAccountDescription')}
         >
           <Select
-            placeholder={t('operations.drafts.signingPath.selectSource')}
+            placeholder={t('signingPath.selectSource')}
             value={selectedSourceId}
             defaultOpen={autoOpenSource}
             onChange={handleSourceChange}
@@ -109,9 +126,7 @@ export const StepPath = ({ chainId }: Props) => {
                     <span className="flex w-full flex-col overflow-hidden">
                       <FootnoteText className="w-fit max-w-full truncate text-text-primary">{source.name}</FootnoteText>
                       <HelpText className="truncate text-text-tertiary">
-                        {source.isProxy
-                          ? t('operations.drafts.proxiedAccountsGroup')
-                          : t('operations.drafts.multisigsGroup')}
+                        {source.isProxy ? t('signingPath.proxiedAccountsGroup') : t('signingPath.multisigsGroup')}
                       </HelpText>
                     </span>
                   </span>
@@ -126,8 +141,8 @@ export const StepPath = ({ chainId }: Props) => {
             <Icon name="checkmark" size={16} className="text-white" />
           </div>
           <div className="flex flex-col gap-y-0.5">
-            <BodyText className="text-text-primary">{t('operations.drafts.signingPath.pathComplete')}</BodyText>
-            <HelpText className="text-text-secondary">{t('operations.drafts.signingPath.pathCompleteHint')}</HelpText>
+            <BodyText className="text-text-primary">{t('signingPath.pathComplete')}</BodyText>
+            <HelpText className="text-text-secondary">{t('signingPath.pathCompleteHint')}</HelpText>
           </div>
         </div>
       ) : (
@@ -137,9 +152,7 @@ export const StepPath = ({ chainId }: Props) => {
             <div className="flex flex-col gap-y-1.5">
               {nextOptions.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-shade-12 px-3 py-4 text-center">
-                  <FootnoteText className="text-text-tertiary">
-                    {t('operations.drafts.signingPath.noOptions')}
-                  </FootnoteText>
+                  <FootnoteText className="text-text-tertiary">{t('signingPath.noOptions')}</FootnoteText>
                 </div>
               ) : (
                 nextOptions.map((opt, idx) => (

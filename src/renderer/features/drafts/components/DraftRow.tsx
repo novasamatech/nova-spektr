@@ -26,10 +26,10 @@ import { decodeCallData, findCoreTransaction, getTransactionAmount, useTransacti
 import { authModel } from '@/aggregates/backend';
 import { AccountsStructureModal } from '@/features/accounts-structure';
 import { operationTitleTransformer } from '@/features/multisig-operations';
+import { graphModel } from '@/features/signing-path';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { getDestinationAccountId } from '../lib/get-destination-account-id';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
-import { graphModel } from '../model/graph-model';
 
 type DraftRowProps = {
   draft: Draft;
@@ -62,7 +62,7 @@ export const DraftRow = ({
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const chains = useUnit(networkModel.$chains);
   const backendContacts = useUnit(contactModel.$backendContacts);
-  const contactNameByAccountId = useUnit(graphModel.$contactNameByAccountId);
+  const resolveName = useUnit(graphModel.$nameResolver);
 
   const chain = chains[draft.chainId as ChainId];
   const chainName = chain?.name;
@@ -168,9 +168,7 @@ export const DraftRow = ({
                 }
 
                 if (draft.initiatorAccountId) {
-                  const initiatorName =
-                    contactNameByAccountId[draft.initiatorAccountId] ??
-                    toShortAddress(toAddress(draft.initiatorAccountId, { prefix: chain?.addressPrefix }), 4);
+                  const initiatorName = resolveName(draft.initiatorAccountId as AccountId, draft.chainId as ChainId);
 
                   return (
                     <>

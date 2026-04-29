@@ -1,9 +1,11 @@
 import { useUnit } from 'effector-react';
-import { type ReactNode } from 'react';
+import { type ReactNode, useCallback } from 'react';
 
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
-import { graphModel } from '../../model/graph-model';
+import { graphModel } from '../model/graph-model';
 
 import { EllipsisCard } from './EllipsisCard';
 import { PathArrow } from './PathArrow';
@@ -12,6 +14,7 @@ import { type PathCardSize, type PathNodeView, nodeView } from './path-views';
 
 type Props = {
   path: PathNode[];
+  chainId: ChainId;
   size?: PathCardSize;
   onNodeClick?: (index: number) => void;
 };
@@ -74,12 +77,13 @@ const buildBreadcrumbElements = (
   return elements;
 };
 
-export const PathBreadcrumb = ({ path, size = 'sm', onNodeClick }: Props) => {
+export const PathBreadcrumb = ({ path, chainId, size = 'sm', onNodeClick }: Props) => {
   const { t } = useI18n();
-  const nameByAccountId = useUnit(graphModel.$contactNameByAccountId);
+  const resolveName = useUnit(graphModel.$nameResolver);
+  const boundResolve = useCallback((accountId: AccountId) => resolveName(accountId, chainId), [resolveName, chainId]);
 
   const views = path
-    .map((node, i) => nodeView(node, nameByAccountId, i, t))
+    .map((node, i) => nodeView(node, boundResolve, i, t))
     .filter((v): v is NonNullable<typeof v> => v !== null);
 
   if (views.length === 0) {

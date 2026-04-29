@@ -74,7 +74,7 @@ export const ModifyCurrentForm = ({ active, chain, currentControllerAddress, ini
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3">
         <FootnoteText className="text-text-secondary">
-          {t('flexibleMultisig.editController.modifyCurrent.signatoriesLabel')}
+          {t('flexibleMultisig.editProxy.modifyCurrent.signatoriesLabel')}
         </FootnoteText>
 
         {signatories.map((signatory, index) => (
@@ -95,15 +95,15 @@ export const ModifyCurrentForm = ({ active, chain, currentControllerAddress, ini
           suffixElement={<Icon className="text-icon-primary" name="add" size={16} />}
           onClick={() => signatoryModel.addSignatory({ address: '', walletId: '' })}
         >
-          {t('flexibleMultisig.editController.modifyCurrent.addSignatory')}
+          {t('flexibleMultisig.editProxy.modifyCurrent.addSignatory')}
         </Button>
       </div>
 
       <div className="flex flex-col gap-1">
         <Box width="232px">
-          <Field text={t('flexibleMultisig.editController.modifyCurrent.thresholdLabel')}>
+          <Field text={t('flexibleMultisig.editProxy.modifyCurrent.thresholdLabel')}>
             <Select
-              placeholder={t('flexibleMultisig.editController.modifyCurrent.thresholdLabel')}
+              placeholder={t('flexibleMultisig.editProxy.modifyCurrent.thresholdLabel')}
               value={threshold ? threshold.toString() : ''}
               disabled={thresholdDisabled}
               height="md"
@@ -121,19 +121,19 @@ export const ModifyCurrentForm = ({ active, chain, currentControllerAddress, ini
           </Field>
         </Box>
         <InputHint active={!thresholdDisabled && threshold >= 1} variant="hint">
-          {t('flexibleMultisig.editController.modifyCurrent.thresholdHint', {
+          {t('flexibleMultisig.editProxy.modifyCurrent.thresholdHint', {
             threshold,
             total: signatories.length,
           })}
         </InputHint>
         <InputHint active={thresholdDisabled} variant="hint">
-          {t('flexibleMultisig.editController.modifyCurrent.notEnoughSignatories')}
+          {t('flexibleMultisig.editProxy.modifyCurrent.notEnoughSignatories')}
         </InputHint>
         <InputHint active={hasDuplicates} variant="error">
-          {t('flexibleMultisig.editController.modifyCurrent.duplicateSignatories')}
+          {t('flexibleMultisig.editProxy.modifyCurrent.duplicateSignatories')}
         </InputHint>
         <InputHint active={hasEmpty && !thresholdDisabled} variant="error">
-          {t('flexibleMultisig.editController.modifyCurrent.emptySignatories')}
+          {t('flexibleMultisig.editProxy.modifyCurrent.emptySignatories')}
         </InputHint>
       </div>
     </div>

@@ -259,6 +259,7 @@ export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onClos
         </ProxyDetailExplanation>
         <ProxyDetailActions>
           {pendingVerificationAction}
+          {editAction}
           {pendingRemovalAction}
           {revokeButton}
         </ProxyDetailActions>

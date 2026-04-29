@@ -29,19 +29,22 @@ import { multisigService } from '@/features/multisig-wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
+import { pathModel } from '@/features/signing-path';
 import { type ExecutionMode, type SelectedTarget } from '../types';
 
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
 import { signatoryModel } from './signatory-model';
 
-const flow = createGate<{ wallet: Wallet | null }>();
+const flow = createGate<{ wallet: Wallet | null; controllerOverride?: AccountId | null }>();
 
 const stepChanged = createEvent<Step>();
 const selectSignatory = createEvent<AnyAccount | null>();
 const targetSelected = createEvent<SelectedTarget | null>();
 const executionModeChanged = createEvent<ExecutionMode>();
 const nextFromSelectController = createEvent();
+const nextFromSigningPath = createEvent();
+const signingPathGoBack = createEvent();
 const confirmGoBack = createEvent();
 
 const $step = restore(stepChanged, Step.SELECT_CONTROLLER).reset(flow.open).reset(flow.close);
@@ -56,6 +59,42 @@ const $walletAccounts = combine($initiatorWallet, accounts.$list, (wallet, accou
 });
 
 const $flexibleMultisigAccount = $walletAccounts.map((acc) => acc.find(accountUtils.isFlexibleMultisigAccount) ?? null);
+
+const $controllerOverride = flow.state.map((state) => state?.controllerOverride ?? null);
+
+const $currentController = combine(
+  {
+    override: $controllerOverride,
+    flex: $flexibleMultisigAccount,
+    accountList: accounts.$list,
+  },
+  ({ override, flex, accountList }) => {
+    if (override) {
+      const candidate = accountList.find((a) => a.accountId === override);
+      if (candidate && accountUtils.isAnyMultisigAccount(candidate)) {
+        return {
+          accountId: override,
+          signatories: candidate.signatories.map((s) => s.accountId),
+          threshold: candidate.threshold,
+        };
+      }
+
+      return { accountId: override, signatories: null, threshold: null };
+    }
+
+    if (flex) {
+      return {
+        accountId: flex.multisigAccountId,
+        signatories: flex.signatories.map((s) => s.accountId),
+        threshold: flex.threshold,
+      };
+    }
+
+    return null;
+  },
+);
+
+const $currentControllerAccountId = $currentController.map((c) => c?.accountId ?? null);
 
 // The flexible multisig stores the pure proxy as a sister `ProxiedAccount`
 // (proxyVariant === PURE) under a separate auto-generated wallet. The graph
@@ -121,17 +160,15 @@ const $signatories = createSignatoriesStore({
 
 const $signatory = restore<AnyAccount | null>(selectSignatory, null).reset(flow.close);
 
-// Interim: drives `$signatory` from data alone, not from user actions. Real
-// path-driven signatory selection will come from the drafts signing-path
-// integration — at that point the path leaf will dispatch `selectSignatory`,
-// overriding this default. Until then, auto-picking the first available
-// signatory unblocks multi-signatory wallets without surprising the user with
-// a silent change on click.
 sample({
-  clock: $signatories,
-  source: $signatory,
-  filter: (signatory, signatories) => nullable(signatory) && signatories.length > 0,
-  fn: (_, signatories) => signatories.at(0) ?? null,
+  clock: pathModel.$path,
+  source: accounts.$list,
+  filter: (_accountList, path) => path.length > 0 && path[path.length - 1]!.kind === 'signer',
+  fn: (accountList, path) => {
+    const leafAccountId = path[path.length - 1]!.accountId;
+
+    return accountList.find((a) => a.accountId === leafAccountId) ?? null;
+  },
   target: $signatory,
 });
 
@@ -255,14 +292,21 @@ const $controllerEditTx = combine(
     multisigAccount: $flexibleMultisigAccount,
     signer: $signatory,
     newControllerAccountId: $newControllerAccountId,
+    currentControllerAccountId: $currentControllerAccountId,
     executionMode: $executionMode,
   },
-  ({ chain, multisigAccount, signer, newControllerAccountId, executionMode }) => {
-    if (nullable(multisigAccount) || nullable(signer) || nullable(chain) || nullable(newControllerAccountId)) {
+  ({ chain, multisigAccount, signer, newControllerAccountId, currentControllerAccountId, executionMode }) => {
+    if (
+      nullable(multisigAccount) ||
+      nullable(signer) ||
+      nullable(chain) ||
+      nullable(newControllerAccountId) ||
+      nullable(currentControllerAccountId)
+    ) {
       return null;
     }
 
-    const oldAccountId = multisigService.getMultisigAccountId(multisigAccount);
+    const oldAccountId = currentControllerAccountId;
 
     if (executionMode === 'verified') {
       // Verified path: addProxy + a marker `system.remark` so this op can be told
@@ -420,12 +464,12 @@ const {
 const $isTheSameMultisig = combine(
   {
     newControllerAccountId: $newControllerAccountId,
-    multisigAccount: $flexibleMultisigAccount,
+    currentControllerAccountId: $currentControllerAccountId,
   },
-  ({ multisigAccount, newControllerAccountId }) => {
-    if (!newControllerAccountId || !multisigAccount) return false;
+  ({ currentControllerAccountId, newControllerAccountId }) => {
+    if (!newControllerAccountId || !currentControllerAccountId) return false;
 
-    return newControllerAccountId === multisigService.getMultisigAccountId(multisigAccount);
+    return newControllerAccountId === currentControllerAccountId;
   },
 );
 
@@ -467,30 +511,41 @@ const $canSubmit = and($valid, $canProceedFromForm);
 
 // step transitions
 
-// SELECT_CONTROLLER → CONFIRM. Requires a non-null $selectedTarget; the UI
-// keeps the Next button disabled until that's true and this filter is a
-// defence-in-depth guard. The transition is not gated on $tx readiness —
-// the Confirm step's UI shows its own loading state for fees / validation,
-// so a slow wrap doesn't silently swallow the click.
 sample({
   clock: nextFromSelectController,
   source: $selectedTarget,
   filter: nonNullable,
+  fn: () => Step.SIGNING_PATH,
+  target: stepChanged,
+});
+
+sample({
+  clock: stepChanged,
+  source: { flexible: $flexibleMultisigAccount, path: pathModel.$path },
+  filter: ({ flexible, path }, step) => step === Step.SIGNING_PATH && nonNullable(flexible) && path.length === 0,
+  fn: ({ flexible }) => [{ kind: 'proxied' as const, accountId: flexible!.accountId }],
+  target: pathModel.pathSeeded,
+});
+
+sample({
+  clock: nextFromSigningPath,
+  source: pathModel.$isComplete,
+  filter: (isComplete) => isComplete,
   fn: () => Step.CONFIRM,
   target: stepChanged,
 });
 
-// Track whether the user has advanced to Confirm so confirmModel.init can
-// fire as soon as the wrapped tx becomes available — even if the user
-// clicked Next before the wrap finished. Resets when the flow opens/closes
-// so a re-entry doesn't replay the previous intent.
-const $confirmIntent = createStore(false).reset(flow.open).reset(flow.close);
-sample({ clock: nextFromSelectController, fn: () => true, target: $confirmIntent });
+sample({
+  clock: signingPathGoBack,
+  fn: () => Step.SELECT_CONTROLLER,
+  target: stepChanged,
+});
 
-// Drive confirmModel.init off both the intent and tx updates so it fires when:
-//   (a) intent flips true while tx is already ready, or
-//   (b) tx becomes ready after intent was already set.
-// Once fired, $confirmIntent is reset so subsequent tx updates don't re-init.
+sample({ clock: [flow.open, flow.close], target: pathModel.pathReset });
+
+const $confirmIntent = createStore(false).reset(flow.open).reset(flow.close);
+sample({ clock: nextFromSigningPath, fn: () => true, target: $confirmIntent });
+
 const formSubmitted = sample({
   clock: [$confirmIntent, $tx.updates],
   source: {
@@ -518,11 +573,11 @@ const formSubmitted = sample({
 sample({ clock: formSubmitted, target: confirmModel.init });
 sample({ clock: formSubmitted, fn: () => false, target: $confirmIntent });
 
-// Confirm → back to SELECT_CONTROLLER. $selectedTarget is preserved so the
-// user doesn't lose their picked controller on backtrack.
+// Confirm → back to SIGNING_PATH. $selectedTarget and the path are preserved
+// so the user doesn't lose their picks on backtrack.
 sample({
   clock: confirmGoBack,
-  fn: () => Step.SELECT_CONTROLLER,
+  fn: () => Step.SIGNING_PATH,
   target: stepChanged,
 });
 
@@ -648,6 +703,8 @@ export const changeSignatoriesModel = {
   $totalDeposit,
   $isEditOperationAlreadyExists,
   $isTheSameMultisig,
+  $currentControllerAccountId,
+  $currentController,
   $chain,
   $canSubmit,
   $canProceedFromForm,
@@ -671,5 +728,7 @@ export const changeSignatoriesModel = {
   targetSelected,
   executionModeChanged,
   nextFromSelectController,
+  nextFromSigningPath,
+  signingPathGoBack,
   flow,
 };

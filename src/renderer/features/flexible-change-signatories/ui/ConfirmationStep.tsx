@@ -49,13 +49,13 @@ export const ConfirmationStep = ({ banner }: Props) => {
 
   const disabledReason = (() => {
     if (canSubmit) return null;
-    if (isLoading) return t('flexibleMultisig.editController.confirm.signDisabled.loading');
-    if (validationPending) return t('flexibleMultisig.editController.confirm.signDisabled.validating');
-    if (isEditOperationAlreadyExists) return t('flexibleMultisig.editController.confirm.signDisabled.pendingOperation');
-    if (isTheSameMultisig) return t('flexibleMultisig.editController.confirm.signDisabled.sameMultisig');
-    if (errors.length > 0) return t('flexibleMultisig.editController.confirm.signDisabled.balance');
+    if (isLoading) return t('flexibleMultisig.editProxy.confirm.signDisabled.loading');
+    if (validationPending) return t('flexibleMultisig.editProxy.confirm.signDisabled.validating');
+    if (isEditOperationAlreadyExists) return t('flexibleMultisig.editProxy.confirm.signDisabled.pendingOperation');
+    if (isTheSameMultisig) return t('flexibleMultisig.editProxy.confirm.signDisabled.sameMultisig');
+    if (errors.length > 0) return t('flexibleMultisig.editProxy.confirm.signDisabled.balance');
 
-    return t('flexibleMultisig.editController.confirm.signDisabled.invalid');
+    return t('flexibleMultisig.editProxy.confirm.signDisabled.invalid');
   })();
 
   return (
@@ -71,7 +71,7 @@ export const ConfirmationStep = ({ banner }: Props) => {
 
             {banner ? <Separator className="border-filter-border" /> : null}
 
-            <DetailRow label={t('flexibleMultisig.editController.confirm.submitterWallet')}>
+            <DetailRow label={t('flexibleMultisig.editProxy.confirm.submitterWallet')}>
               <div className="flex w-full items-center justify-end gap-x-2">
                 <WalletIcon type={initiatorWallet.type} />
                 <BodyText as="span" className="truncate tracking-tight text-text-secondary">
