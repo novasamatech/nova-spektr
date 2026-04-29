@@ -6,7 +6,7 @@ import { CaptionText, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { Popover } from '@/shared/ui-kit';
 import { type PathNode } from '@/domains/backend';
-import { graphModel } from '../../model/graph-model';
+import { graphModel } from '../model/graph-model';
 
 import { nodeView } from './path-views';
 

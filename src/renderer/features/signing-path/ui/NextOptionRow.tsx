@@ -4,7 +4,7 @@ import { WalletType } from '@/shared/core';
 import { cnTw, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { BodyText, HelpText } from '@/shared/ui';
 import { WalletAccountIcon } from '@/shared/ui-entities';
-import { type PathNextOption } from '../../model/graph-model';
+import { type PathNextOption } from '../model/graph-model';
 
 type NextOptionRowProps = {
   option: PathNextOption;

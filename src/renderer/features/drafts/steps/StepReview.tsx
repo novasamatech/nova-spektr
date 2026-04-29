@@ -5,9 +5,8 @@ import { type IconNames, CaptionText, FootnoteText, HelpText, Icon, Separator, S
 import { Field, TextArea } from '@/shared/ui-kit';
 import { type PathNode } from '@/domains/backend';
 import { type OperationTitle } from '@/features/multisig-operations';
+import { PathBreadcrumb, PathReviewPopover } from '@/features/signing-path';
 import { DraftSummary } from '../components/DraftSummary';
-import { PathBreadcrumb } from '../components/signing-path/PathBreadcrumb';
-import { PathReviewPopover } from '../components/signing-path/PathReviewPopover';
 
 type Props = {
   path: PathNode[];

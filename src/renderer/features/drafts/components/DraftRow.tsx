@@ -26,10 +26,10 @@ import { decodeCallData, findCoreTransaction, getTransactionAmount, useTransacti
 import { authModel } from '@/aggregates/backend';
 import { AccountsStructureModal } from '@/features/accounts-structure';
 import { operationTitleTransformer } from '@/features/multisig-operations';
+import { graphModel } from '@/features/signing-path';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { getDestinationAccountId } from '../lib/get-destination-account-id';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
-import { graphModel } from '../model/graph-model';
 
 type DraftRowProps = {
   draft: Draft;

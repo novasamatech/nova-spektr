@@ -3,9 +3,7 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { type Chain, type ChainId } from '@/shared/core';
 import { RelayChains, isHex } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
-
-import { graphModel } from './graph-model';
-import { pathModel } from './path-model';
+import { graphModel, pathModel } from '@/features/signing-path';
 
 export type Step = 'call-data' | 'select-path' | 'confirm';
 

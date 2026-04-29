@@ -3,7 +3,7 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { type PathNode } from '@/domains/backend';
-import { graphModel } from '../../model/graph-model';
+import { graphModel } from '../model/graph-model';
 
 import { EllipsisCard } from './EllipsisCard';
 import { PathArrow } from './PathArrow';
