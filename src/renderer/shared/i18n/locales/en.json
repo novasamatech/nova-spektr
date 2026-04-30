@@ -132,6 +132,11 @@
         "replaceButton": "Replace",
         "title": "Import options"
       },
+      "duplicates": {
+        "cancelButton": "Cancel",
+        "description": "Pick which entry you want to import for this address.",
+        "title": "Resolve duplicate addresses"
+      },
       "errors": {
         "description": "Certain contacts don't match required format. Check guidelines on Wiki, update your file, and try uploading again.",
         "emptyList": "File has no accounts to import",
