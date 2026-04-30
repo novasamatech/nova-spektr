@@ -73,6 +73,7 @@ describe('features/contacts/ContactFilter/model/contact-source-model', () => {
         .set(contactSourceModel.$sourceTab, 'backend')
         .set(contactModel.$contacts, backendContacts)
         .set(backendConfigurationModel.$backendUrl, 'https://backend.example.com'),
+      handlers: [[contactModel.effects.clearBackendContactsFx, () => ['backend-1']]],
     });
 
     await allSettled(authModel.$isSessionExpired, { scope, params: true });
