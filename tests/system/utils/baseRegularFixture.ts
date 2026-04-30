@@ -172,6 +172,9 @@ export const validationsTest = createWorkerScopedFixture({ dbFixture: 'validatio
 export const setupTestMetadata = async (feature: string, story: string): Promise<void> => {
   await allure.feature(feature);
   await allure.story(story);
+  await allure.parentSuite('System tests');
+  await allure.suite(feature);
+  await allure.subSuite(story);
 };
 
 export { expect } from '@playwright/test';
