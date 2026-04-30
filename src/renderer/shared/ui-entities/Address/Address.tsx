@@ -14,14 +14,25 @@ type IconProps = XOR<{
 type Props = IconProps & {
   address: AddressType;
   title?: string;
+  titleClass?: string;
   hideAddress?: boolean;
   variant?: 'full' | 'truncate' | 'short';
   testId?: string;
 };
 
 export const Address = memo(
-  ({ title, variant = 'full', canCopy, showIcon, iconSize = 16, address, testId = 'Address', hideAddress }: Props) => {
-    const titleNode = title ? <span className="w-fit max-w-full truncate">{title}</span> : null;
+  ({
+    title,
+    titleClass,
+    variant = 'full',
+    canCopy,
+    showIcon,
+    iconSize = 16,
+    address,
+    testId = 'Address',
+    hideAddress,
+  }: Props) => {
+    const titleNode = title ? <span className={cnTw('w-fit max-w-full truncate', titleClass)}>{title}</span> : null;
 
     const addressNode = (
       <span
