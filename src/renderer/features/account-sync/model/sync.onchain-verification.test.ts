@@ -28,7 +28,14 @@ vi.mock('@/shared/api/storage', async (importOriginal) => {
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { walletModel } from '@/entities/wallet';
 
-import { allAccounts, proxiedAccount1, proxiedAccount2, proxiedAccount3, userAccount } from './__mocks__/sync.proxied.mocks';
+import {
+  allAccounts,
+  multisigAccount1,
+  proxiedAccount1,
+  proxiedAccount2,
+  proxiedAccount3,
+  userAccount,
+} from './__mocks__/sync.proxied.mocks';
 import { sync } from './sync';
 
 const { verifyProxiedDeletionFx } = sync.__test;
@@ -163,6 +170,32 @@ describe('verifyProxiedDeletionFx', () => {
     expect(result).not.toContain(proxiedAccount2.walletId);
   });
 
+  it('deletes proxied delegated by a multisig that has been excluded from allAccounts', async () => {
+    // Models the user-removes-signer scenario: the multisig is doomed in this
+    // sync iteration, so the caller passes accountsAfterImmediate WITHOUT the
+    // multisig. proxiedAccount2 is delegated by multisigAccount1 on-chain.
+    // verify must see "no live delegate" and confirm deletion.
+    const accountsAfterImmediate = allAccounts.filter((a) => a.accountId !== multisigAccount1.accountId);
+
+    proxyPallet.storage.proxies.mockResolvedValueOnce([
+      {
+        account: proxiedAccount2.accountId,
+        value: {
+          proxies: [{ delegate: multisigAccount1.accountId, proxyType: 'Any', delay: 0 }],
+          deposit: '1',
+        },
+      },
+    ]);
+
+    const result = await verifyProxiedDeletionFx({
+      candidateWalletIds: [proxiedAccount2.walletId],
+      allAccounts: accountsAfterImmediate,
+      apis: { [CHAIN_ID]: buildMockApi() },
+    });
+
+    expect(result).toEqual([proxiedAccount2.walletId]);
+  });
+
   it('falls back to original wallet IDs when no matching proxied accounts found', async () => {
     const result = await verifyProxiedDeletionFx({
       candidateWalletIds: [999],
@@ -265,4 +298,3 @@ describe('verifyProxiedDeletionFx → walletModel.walletsRemoved (Effector graph
     );
   });
 });
-
