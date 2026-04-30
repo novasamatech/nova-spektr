@@ -9,8 +9,10 @@ import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 function categorizeError(error: Error): BackendError {
   if (error instanceof HttpError) {
     const category = error.status === 401 ? 'auth' : error.status === 403 ? 'forbidden' : 'generic';
+    // auth/forbidden titles are self-contained — don't expose raw HTTP response body
+    const message = category === 'generic' ? error.message : undefined;
 
-    return { category, message: error.message };
+    return { category, message };
   }
 
   if (error.name === 'AbortError') return { category: 'timeout', message: error.message };
