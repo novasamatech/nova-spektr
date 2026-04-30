@@ -49,6 +49,11 @@ pnpm test
 ```
 
 ```sh
+# Run unit tests in watch mode
+pnpm test:watch
+```
+
+```sh
 # Watch unit tests with vite ui plugin
 pnpm test:ui
 ```
@@ -56,6 +61,11 @@ pnpm test:ui
 ```sh
 # Collect coverage from unit tests
 pnpm test:coverage
+```
+
+```sh
+# Run integration tests (tests/integrations/)
+pnpm test:integration
 ```
 
 ```sh
@@ -71,8 +81,13 @@ pnpm lint
 ```
 
 ```sh
-# Run formatter
-pnpm fmt
+# Check formatting
+pnpm fmt:check
+```
+
+```sh
+# Auto-fix formatting
+pnpm fmt:fix
 ```
 
 ```sh
@@ -85,6 +100,11 @@ pnpm lint:fix
 pnpm types
 ```
 
+```sh
+# Run typescript typechecker via tsgo (~6x faster, preferred)
+pnpm types:go
+```
+
 ## Building
 
 ```sh
@@ -93,11 +113,26 @@ pnpm preview
 ```
 
 ```sh
+# Build app in development mode
+pnpm build:dev
+```
+
+```sh
 # Build app in staging mode
-pnpm staging:sequence
+pnpm build:staging
 ```
 
 ```sh
 # Build app in production mode
+pnpm build
+```
+
+```sh
+# Full staging build sequence (clean, build, postbuild, dist)
+pnpm staging:sequence
+```
+
+```sh
+# Full production build sequence (clean, build, postbuild, dist)
 pnpm prod:sequence
 ```

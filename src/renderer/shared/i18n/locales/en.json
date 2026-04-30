@@ -42,6 +42,7 @@
       "disconnectButton": "Disconnect",
       "disconnected": "Disconnected",
       "errorTitle": "Authentication failed",
+      "networkIssues": "Network issues",
       "noSignableAccounts": "No extension or Polkadot Vault accounts available",
       "notConnected": "Not signed in",
       "reconnectButton": "Reconnect",
