@@ -7,12 +7,14 @@ import { toast } from 'sonner';
 
 import { type CallData, type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import {
   type ExtrinsicConfirmInfo,
   createExtrinsicConfirmStore,
   createFeeCalculator,
   createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
 } from '@/shared/transactions';
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
@@ -25,6 +27,7 @@ import {
   multisigOperationService,
   transactionService,
 } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
@@ -140,6 +143,28 @@ const $signatories = createSignatoriesStore({
   chain: $chain,
   accounts: walletModel.$availableAccounts,
   initiator: $initiator,
+});
+
+// --- Pre-submit validation (generic: fee + multisig deposit) ---
+
+const $asset = $chain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
+
+const draftSubmitValidator = createTxValidator();
+
+const {
+  $errors: $validationErrors,
+  $valid: $validationValid,
+  $pending: $validationPending,
+  $validationDone,
+} = createTxValidationStore({
+  validator: draftSubmitValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $wrappedTx,
+  },
 });
 
 // --- Initiator rehydration from signingPath ---
@@ -520,6 +545,10 @@ export const submitDraftModel = {
   $wrappedExtrinsic,
   $wrappedTxError,
   $submittedDraftIds,
+  $validationErrors,
+  $validationValid,
+  $validationPending,
+  $validationDone,
 
   flowStarted,
   flowFinished,
