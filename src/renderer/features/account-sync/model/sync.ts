@@ -86,6 +86,16 @@ sample({
   target: accountSync.syncAccounts,
 });
 
+// Cascade: when a sync run actually removes wallets, kick another sync to
+// collapse downstream orphans (proxied-of-proxied-of-...). Terminates when an
+// iteration removes nothing — walletsRemovedFx returns undefined for an empty
+// batch, which the filter rejects.
+sample({
+  clock: walletModel.walletsRemoved.doneData,
+  filter: (removed) => Array.isArray(removed) && removed.length > 0,
+  target: accountSync.syncAccounts,
+});
+
 // TODO
 // all code bellow should be moved to specific features
 
