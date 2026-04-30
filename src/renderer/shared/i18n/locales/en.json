@@ -42,6 +42,7 @@
       "disconnectButton": "Disconnect",
       "disconnected": "Disconnected",
       "errorTitle": "Authentication failed",
+      "networkIssues": "Network issues",
       "noSignableAccounts": "No extension or Polkadot Vault accounts available",
       "notConnected": "Not signed in",
       "reconnectButton": "Reconnect",
@@ -50,7 +51,7 @@
       "selectAccountLabel": "Select account",
       "selectAccountPlaceholder": "Choose an account",
       "sessionExpired": "Session expired",
-      "sessionExpiredToast": "Session expired",
+      "sessionExpiredToast": "Address Book session expired",
       "signingMessage": "Waiting for signature...",
       "signInSuccess": "Successfully signed in",
       "signOutButton": "Sign out"
@@ -1549,16 +1550,75 @@
     }
   },
   "flexibleMultisig": {
-    "changeSignatoriesMode": {
-      "pickerSubtitle": "Choose how you want to update signatories.",
-      "pickerTitle": "Change signatories",
-      "trustDescription": "Submit one batch transaction that adds the new multisig proxy and removes the old one. Fastest path. The tradeoff is that signers are approving the whole change at once, with no intermediate ‘test then remove’ step.",
-      "trustTagline": "Single step",
-      "trustTitle": "Trust-based",
-      "verifiedDescription": "Add a new multisig as a delegated authority (proxy), verify it from the Proxies tab (via system remark), then remove the old proxy when you are ready. Safer because you add and verify the new proxy before removing the old one.",
-      "verifiedTagline": "Multi-step",
-      "verifiedTitle": "With verification",
-      "verifiedUnavailable": "Adding a proxy is not available for this wallet or network, so the verified path cannot be used."
+    "editProxy": {
+      "banner": {
+        "notSelected": "Modify the current multisig or pick one from the list",
+        "scope": {
+          "openOverview": "Open overview"
+        },
+        "stateAddressBook": "From address book",
+        "stateModify": "New address",
+        "stateNoChanges": "No changes yet",
+        "stateWallet": "From your wallets",
+        "was": "Current",
+        "willBecome": "New",
+        "willBeRemoved": "Will be removed"
+      },
+      "confirm": {
+        "submitterWallet": "Submitter wallet",
+        "signDisabled": {
+          "loading": "Loading transaction details — please wait.",
+          "validating": "Validating transaction…",
+          "pendingOperation": "An edit operation for this multisig is already pending. Wait for it to finish before submitting another.",
+          "sameMultisig": "The new proxy is identical to the current one. Pick different signatories or a threshold to continue.",
+          "balance": "The signer doesn't have enough balance to cover the deposits and fee.",
+          "invalid": "Transaction is incomplete. Go back and review your selection."
+        }
+      },
+      "loader": {
+        "fetchingMultisigs": "Fetching your multisigs…",
+        "findingConnections": "Resolving on-chain connections…",
+        "planningEdit": "Planning the edit…"
+      },
+      "editButton": "Edit",
+      "modifyCurrent": {
+        "addSignatory": "Add new signatory",
+        "duplicateSignatories": "Some signatories are duplicated",
+        "emptySignatories": "Some signatories are empty",
+        "notEnoughSignatories": "Add at least 2 signatories",
+        "removeSignatory": "Remove signatory",
+        "signatoriesLabel": "Signatories",
+        "thresholdHint": "{ threshold } of { total } signatories",
+        "thresholdOf": "of { total } signatories",
+        "thresholdLabel": "Threshold"
+      },
+      "mode": {
+        "sectionTitle": "Execution mode",
+        "trustedBullet1": "Atomic - new proxy is added and old one is removed in one transaction",
+        "trustedBullet2": "Cannot be undone if the proxied account has no other active proxy",
+        "trustedBullet3": "Do not use if you want to verify the new proxy first",
+        "trustedHint": "Old proxy is removed in the same transaction",
+        "trustedShort": "Atomic swap",
+        "trustedTitle": "Atomic swap",
+        "verifiedBullet1": "New proxy is added; old one stays",
+        "verifiedBullet2": "Verify the new proxy before retiring the old one",
+        "verifiedBullet3": "Recommended",
+        "verifiedHint": "Add the new proxy; old one stays until you remove it",
+        "verifiedShort": "Verified swap",
+        "verifiedTitle": "Verified swap"
+      },
+      "picker": {
+        "fromAddressBook": "From address book",
+        "myWallets": "My multisig wallets",
+        "next": "Next",
+        "search": "Replace with",
+        "searchPlaceholder": "Search wallets and address book…",
+        "tabs": {
+          "modify": "Modify current",
+          "replace": "Replace with existing"
+        }
+      },
+      "signingPathProxyTypeDisabled": "This proxy type can't add or remove proxies. Pick a proxy with the “Any” proxy type."
     },
     "editSubtitle": "Change the signatories and set the signatory threshold for your flexible multisig.",
     "editTitleOn": "Edit flexible multisig on",
@@ -2591,8 +2651,6 @@
       "linkCopied": "Draft link copied!",
       "shareDraftTooltip": "Share draft link with signatories",
       "selectMultisigForProxy": "Proxy multisig",
-      "multisigsGroup": "Multisigs",
-      "proxiedAccountsGroup": "Proxied accounts",
       "proxyLabel": "Proxy",
       "viewDraft": "View draft",
       "notifications": {
@@ -2600,31 +2658,6 @@
         "updated": "Draft updated",
         "removed": "Draft removed",
         "batch": "Draft changes"
-      },
-      "signingPath": {
-        "signingPath": "Signing path",
-        "hopsCount": "{count} hops",
-        "openOverview": "Open overview",
-        "fullSigningPath": "Full signing path",
-        "notSignedYet": "This does not sign yet",
-        "notSignedYetHint": "A draft goes into the pending list so co-signers can review before anything is broadcast.",
-        "sourceAccount": "Source account",
-        "sourceAccountDescription": "The account that executes the transaction",
-        "selectSource": "Select a source account",
-        "pickMultisigForProxy": "Pick a multisig to sign via",
-        "pickInitiator": "Pick an initiator",
-        "pickInitiatorOrNested": "Pick an initiator or nested multisig",
-        "pathComplete": "Path complete",
-        "pathCompleteHint": "Click any hop above to edit, or Back to change the last one",
-        "noOptions": "No options available for this hop",
-        "label": {
-          "source": "Source",
-          "proxied": "Proxied",
-          "proxiedWithType": "Proxied · {type}",
-          "viaMultisig": "via Multisig",
-          "multisig": "Multisig",
-          "initiator": "Initiator"
-        }
       }
     },
     "callData": {
@@ -2748,6 +2781,33 @@
       "unstake": "Unstake",
       "vestedTransfer": "Vested transfer",
       "vote": "Vote"
+    },
+    "editProxy": {
+      "title": "Edit flexible multisig",
+      "trustedTag": "Atomic swap",
+      "trustedTooltip": "Old proxy is removed in the same transaction",
+      "verifiedTag": "Verified swap",
+      "verifiedTooltip": "New proxy is added; the old one is removed later, after verification",
+      "details": {
+        "headerLabel": "Proxy change",
+        "previousSection": "Old proxy",
+        "targetSection": "New proxy",
+        "threshold": "{threshold} of {total}",
+        "modeSection": "Execution mode",
+        "trustedDescription": "Trusted (atomic): old proxy will be removed in the same transaction.",
+        "verifiedDescription": "Verified (add-only): old proxy will be removed later, after verification.",
+        "openProxyDetails": "Open proxy details",
+        "unknownName": "(unknown)"
+      }
+    },
+    "verifyProxy": {
+      "title": "Verification for wallet",
+      "tag": "Verification",
+      "tooltip": "Signer is proving control of the proxied wallet via a marker remark",
+      "details": {
+        "targetSection": "Verifying wallet",
+        "openProxyDetails": "Open wallet details"
+      }
     },
     "viewOperation": "View operation"
   },
@@ -3000,6 +3060,33 @@
     "signingMultipleInProgress": "Signing {current} of {total}...",
     "title": "Signing",
     "troubleshootingLink": "I have an error in Polkadot Vault"
+  },
+  "signingPath": {
+    "signingPath": "Signing path",
+    "multisigsGroup": "Multisigs",
+    "proxiedAccountsGroup": "Proxied accounts",
+    "hopsCount": "{count} hops",
+    "openOverview": "Open overview",
+    "fullSigningPath": "Full signing path",
+    "notSignedYet": "This does not sign yet",
+    "notSignedYetHint": "A draft goes into the pending list so co-signers can review before anything is broadcast.",
+    "sourceAccount": "Source account",
+    "sourceAccountDescription": "The account that executes the transaction",
+    "selectSource": "Select a source account",
+    "pickMultisigForProxy": "Pick a multisig to sign via",
+    "pickInitiator": "Pick an initiator",
+    "pickInitiatorOrNested": "Pick an initiator or nested multisig",
+    "pathComplete": "Path complete",
+    "pathCompleteHint": "Click any hop above to edit, or Back to change the last one",
+    "noOptions": "No options available for this hop",
+    "label": {
+      "source": "Source",
+      "proxied": "Proxied",
+      "proxiedWithType": "Proxied · {type}",
+      "viaMultisig": "via Multisig",
+      "multisig": "Multisig",
+      "initiator": "Initiator"
+    }
   },
   "splashscreen": {
     "multisig": {
@@ -3500,7 +3587,7 @@
       "proxyVia": "via",
       "removeButton": "Remove",
       "removeMessage": "Are you sure you want to remove { walletName }?",
-      "removeProxyAction": "Revoke authority",
+      "removeProxyAction": "Delete",
       "removeTitle": "Remove wallet",
       "removeWalletDesc": "Are you sure you want to remove {walletName}?",
       "removeWalletTitle": "Remove wallet",
@@ -3527,11 +3614,12 @@
       "empty": "No proxies yet",
       "statusVerified": "Verified",
       "statusNotVerified": "Not verified",
-      "statusAwaitingSignatures": "Awaiting signatures",
+      "statusPendingVerification": "Pending verification",
+      "statusPendingDelegation": "Pending delegation",
       "verifyFormResolvingAccounts": "Resolving proxy account…",
       "verifyViaProxy": "Verify proxy",
       "notVerifiedHeadline": "This proxy is not verified yet.",
-      "verifyDescription": "Verify submits a minimal `system.remark` via the proxy so we can confirm it on-chain. Because the proxy is a multisig, it's submitted as a multisig proposal—signatories must approve it before it executes.",
+      "verifyDescription": "Verify submits a `system.remarkWithEvent` via the proxy so we can confirm it on-chain. Because the proxy is a multisig, it's submitted as a multisig proposal-signatories must approve it before it executes.",
       "cannotAutoVerify": "Test verification isn't supported for this proxy type. This row will be marked Verified the first time the proxy is used.",
       "cannotAutoVerifyDelay": "Delayed proxies require an announce-and-execute flow that isn't supported in Spektr yet. This row will be marked Verified the first time the proxy is used.",
       "nonMultisigDescription": "Verification for non-multisig proxies isn't available yet.",
@@ -3541,6 +3629,7 @@
       "verifiedOperationUnknown": "Unknown call",
       "viewOperation": "View operation",
       "shareOperation": "Share",
+      "revokeAuthority": "Revoke authority",
       "pendingAdditionDescription": "An add-proxy operation is waiting for multisig signatures.",
       "pendingRemovalDescription": "A remove-proxy operation is waiting for multisig signatures.",
       "pendingVerificationHeadline": "Verification awaiting signatures",

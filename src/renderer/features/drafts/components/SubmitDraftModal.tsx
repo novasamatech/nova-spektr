@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useMemo, useState } from 'react';
 
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { getNativeAsset, nullable, toAddress } from '@/shared/lib/utils';
@@ -25,11 +26,10 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { OperationSign, OperationSubmit } from '@/features/operations';
+import { PathBreadcrumb } from '@/features/signing-path';
 import { WalletDetails } from '@/features/wallet-details';
 import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { submitDraftModel } from '../model/submit-draft-model';
-
-import { PathBreadcrumb } from './signing-path/PathBreadcrumb';
 
 type Props = {
   onClose: () => void;
@@ -219,9 +219,9 @@ const ConfirmStep = () => {
 
   return (
     <>
-      {signingPath.length > 0 && (
+      {signingPath.length > 0 && draft && (
         <div className="mx-5 mt-4">
-          <PathBreadcrumb path={signingPath} size="sm" />
+          <PathBreadcrumb path={signingPath} chainId={draft.chainId as ChainId} size="sm" />
         </div>
       )}
 

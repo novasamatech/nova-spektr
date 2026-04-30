@@ -1,4 +1,4 @@
-import { useGate, useUnit } from 'effector-react';
+import { useGate } from 'effector-react';
 import { type ReactNode, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
@@ -8,8 +8,8 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { type IconNames, Icon, IconButton } from '@/shared/ui';
 import { Dropdown } from '@/shared/ui-kit';
-import { networkModel, networkUtils } from '@/entities/network';
-import { accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
+import { permissionUtils, walletUtils } from '@/entities/wallet';
+import { modalsSlot } from '@/features/app-shell';
 import { walletActionsSlot as extensionActionsSlot } from '@/features/extension-wallet';
 import { ChangeSignatories } from '@/features/flexible-change-signatories';
 import { walletActionsSlot as multisigActionsSlot } from '@/features/multisig-wallet';
@@ -18,6 +18,7 @@ import { AddPureProxied } from '@/features/proxied-add-pure';
 import { walletActionsSlot as proxiedActionsSlot } from '@/features/proxied-wallet';
 import { AddProxy } from '@/features/proxy-add';
 import { walletActionsSlot as walletConnectActionsSlot } from '@/features/wallet-connect-wallet';
+import { walletSelectUI } from '@/features/wallet-select';
 import { ExportKeysModal } from '@/features/wallets/ExportKeys';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
@@ -25,8 +26,9 @@ import { walletActionsSlot as watchOnlyActionsSlot } from '@/features/watch-only
 
 export { walletDetailsUtils } from './lib/utils';
 
+import { viewDetailsModel } from './model/view-details-model';
 import { walletConnectForget } from './model/walletConnectForgot';
-import { WalletDetails } from './ui/components';
+import { ViewDetailsMount, WalletDetails } from './ui/components';
 
 export { overviewSlot as simpleOverviewSlot } from './ui/wallets/SimpleWalletDetails';
 export { overviewSlot as vaultOverviewSlot } from './ui/wallets/VaultWalletDetails';
@@ -47,6 +49,8 @@ export { WalletDetails };
 export const walletDetailsFeature = createFeature({
   name: 'wallet/details',
 });
+
+walletDetailsFeature.inject(modalsSlot, ViewDetailsMount);
 
 const walletActionSlot = combineIdentifiers(
   walletConnectActionsSlot,
@@ -86,17 +90,9 @@ const DropdownItem = (props: DropdownItemProps) => {
 
 walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
   useGate(walletConnectForget.flow, { accounts: wallet.accounts });
-  const [isWalletDetailsOpen, setIsWalletDetailsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const chains = useUnit(networkModel.$chains);
   const { t } = useI18n();
-
-  const flexibleMultisigAccount = wallet.accounts.find(accountUtils.isFlexibleMultisigAccount);
-  const chain = flexibleMultisigAccount ? chains[flexibleMultisigAccount.chainId] : undefined;
-  const canUseVerifiedPath =
-    (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) &&
-    networkUtils.isProxySupported(chain?.options);
 
   const createModalCloseHandler = (modalCloseFn?: () => void) => () => {
     modalCloseFn?.();
@@ -108,7 +104,13 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
       icon: 'info',
       title: t('walletDetails.common.viewDetails'),
       testId: TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ITEM_VIEW_DETAILS,
-      onClick: () => setIsWalletDetailsOpen(true),
+      // Open via a model so the modal lives at app root (see ViewDetailsMount).
+      // Closing the wallet-selector Popover unmounts this slot, which would also
+      // unmount a locally-stored modal — keeping it at root sidesteps that.
+      onClick: () => {
+        viewDetailsModel.requested(wallet);
+        walletSelectUI.closed();
+      },
     },
     {
       component: (
@@ -159,7 +161,7 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
   if (walletUtils.isFlexibleMultisig(wallet)) {
     items.push({
       component: (
-        <ChangeSignatories wallet={wallet} canUseVerifiedPath={canUseVerifiedPath} onClose={createModalCloseHandler()}>
+        <ChangeSignatories wallet={wallet} onClose={createModalCloseHandler()}>
           <Dropdown.Item>
             <div className="flex items-center gap-2">
               <Icon name="changeSignatories" size={20} className="text-icon-accent" />
@@ -217,23 +219,15 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
   }
 
   return (
-    <>
-      <Dropdown keepOpen avoidCollisions open={isDropdownOpen} onToggle={setIsDropdownOpen}>
-        <Dropdown.Trigger>
-          <IconButton testId={TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ACTIONS} name="more" />
-        </Dropdown.Trigger>
-        <Dropdown.Content>
-          {items.map((item, index) => (
-            <DropdownItem key={item.title || `item-${index}`} {...item} />
-          ))}
-        </Dropdown.Content>
-      </Dropdown>
-
-      <WalletDetails
-        wallet={wallet}
-        isOpen={isWalletDetailsOpen}
-        onClose={createModalCloseHandler(() => setIsWalletDetailsOpen(false))}
-      />
-    </>
+    <Dropdown keepOpen avoidCollisions open={isDropdownOpen} onToggle={setIsDropdownOpen}>
+      <Dropdown.Trigger>
+        <IconButton testId={TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ACTIONS} name="more" />
+      </Dropdown.Trigger>
+      <Dropdown.Content>
+        {items.map((item, index) => (
+          <DropdownItem key={item.title || `item-${index}`} {...item} />
+        ))}
+      </Dropdown.Content>
+    </Dropdown>
   );
 });

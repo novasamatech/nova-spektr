@@ -31,7 +31,7 @@ import { accounts } from '@/domains/network';
 
 // Function scope
 function filterAccounts(allAccounts: AnyAccount[], chain: Chain) {
-  return chainAccounts = allAccounts.filter(a => a.chainId === chain.id);
+  const chainAccounts = allAccounts.filter(a => a.chainId === chain.id);
   return chainAccounts;
 }
 ```

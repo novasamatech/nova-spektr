@@ -10,22 +10,23 @@ import { AuthStatus } from './AuthStatus';
 export const BackendConnectionCard = () => {
   const { t } = useI18n();
 
-  const [hasBackend, isAuthenticated, isSessionExpired] = useUnit([
+  const [hasBackend, isAuthenticated, isSessionExpired, hasNetworkIssue] = useUnit([
     backendConfigurationModel.$hasBackend,
     authModel.$isAuthenticated,
     authModel.$isSessionExpired,
+    authModel.$hasNetworkIssue,
   ]);
 
   if (!hasBackend) return null;
 
-  const isDisconnected = !isAuthenticated || isSessionExpired;
+  const isWarning = !isAuthenticated || isSessionExpired || hasNetworkIssue;
 
   return (
     <button
       type="button"
       className={cnTw(
         'flex h-full cursor-pointer items-center gap-x-1 rounded-md border bg-input-background px-2.5 hover:bg-hover',
-        isDisconnected ? 'border-text-warning' : 'border-filter-border',
+        isWarning ? 'border-text-warning' : 'border-filter-border',
       )}
       onClick={() => backendConfigurationModel.events.editStarted()}
     >
@@ -34,7 +35,11 @@ export const BackendConnectionCard = () => {
         size={16}
         className={cnTw(
           'shrink-0',
-          isSessionExpired ? 'text-text-warning' : isAuthenticated ? 'text-icon-positive' : 'text-icon-accent',
+          isSessionExpired || hasNetworkIssue
+            ? 'text-text-warning'
+            : isAuthenticated
+              ? 'text-icon-positive'
+              : 'text-icon-accent',
         )}
       />
       <FootnoteText>{t('addressBook.sources.externalSource')}</FootnoteText>

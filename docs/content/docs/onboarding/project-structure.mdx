@@ -34,7 +34,7 @@ Source code is separated into 3 build targets:
   - domains/ core business logic
   - aggregates/ shared state and logic
   - features/ user flows implemented as separated modules
-  - sdk/ simple way to integate features and domains
+  - sdk/ simple way to integrate features and domains
   - pages/ combination of features
   - shared/ helpers, utils, integrations
   - entities/ **deprecated** logic and ui for given entity (e.g. wallet, chain, etc.)
@@ -52,10 +52,10 @@ Domains encapsulate core business logic while providing a clean, intuitive contr
       - helpers.ts
       - types.ts
     - entity
-      - store.spec.ts
+      - store.test.ts
       - store.ts effector storage with related logic
       - resource.ts (optional) transport + mappings
-      - service.spec.ts
+      - service.test.ts
       - service.ts stateless service
       - types.ts public interfaces
     - entity-2
@@ -118,7 +118,7 @@ Domain's service **must**:
 - Be stateless
 
 ```ts title="service.ts" frame="code"
-function isChainAccount(account: AnyAccount) {
+function isChainAccount(account: Pick<AnyAccount, 'type'>): account is ChainAccount {
   /* implementation */
 }
 
@@ -138,9 +138,10 @@ For example, a selected wallet or network for working within a specific feature.
 
 <FileTree>
   - aggregate-name
-  - model.ts
-  - service.ts (optional)
-  - index.ts
+    - model.ts
+    - hooks.ts (optional) effector-react bindings
+    - service.ts (optional)
+    - index.ts
 </FileTree>
 
 ## Feature
@@ -166,8 +167,7 @@ Feature **must not**:
   - feature-name
     - ui/ React components only
     - hooks/ custom React hooks
-    - model/
-      - feature.tsx
-      - ...
-    - index.tsx
+    - model/ effector stores, events, and effects
+    - feature.ts feature identifier created with `createFeature` + `feature.inject(...)` integrations
+    - index.ts (or index.tsx) public exports
 </FileTree>
