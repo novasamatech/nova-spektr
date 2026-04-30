@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 import { authFetch, parseResponse } from '@/shared/api/backend-fetch';
-import { HttpError } from '../contacts/service';
 
 export const pathNodeKindSchema = z.enum(['proxied', 'multisig', 'signer']);
 
@@ -56,10 +55,6 @@ async function createDraft(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
   });
-
-  if (!result.ok) {
-    throw new HttpError(result.status, result.body);
-  }
 
   return parseResponse(result, backendDraftSchema);
 }

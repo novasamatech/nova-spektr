@@ -10,6 +10,8 @@ export type Step = 'call-data' | 'select-path' | 'confirm';
 
 export const STEPS_ORDER: Step[] = ['call-data', 'select-path', 'confirm'];
 
+export const DESCRIPTION_MAX_LENGTH = 500;
+
 export type DraftSeed = {
   callData?: string;
   chainId?: ChainId;
@@ -111,6 +113,8 @@ const $callDataErrorKey = $callData.map((hex) =>
   hex.length > 0 && !isHex(hex) ? ('operations.drafts.callDataErrorHex' as const) : null,
 );
 
+const $isDescriptionTooLong = $description.map((d) => d.length > DESCRIPTION_MAX_LENGTH);
+
 const $isDirty = combine(
   { chain: $selectedChain, path: pathModel.$path, callData: $callData, description: $description },
   ({ chain, path, callData, description }) =>
@@ -130,7 +134,7 @@ const $canContinue = combine(
     if (step === 'call-data') return !!chain && callData.length > 0 && errorKey === null;
     if (step === 'select-path') return pathComplete;
 
-    return step === 'confirm' && description.trim().length > 0;
+    return step === 'confirm' && description.trim().length > 0 && description.length <= DESCRIPTION_MAX_LENGTH;
   },
 );
 
@@ -154,6 +158,7 @@ export const createDraftModel = {
   $selectedChain,
   $description,
   $callDataErrorKey,
+  $isDescriptionTooLong,
   $isDirty,
   $canContinue,
   $canSkip,
