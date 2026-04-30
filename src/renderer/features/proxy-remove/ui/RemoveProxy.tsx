@@ -7,7 +7,9 @@ import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
-import { OperationResult } from '@/entities/transaction';
+import { OperationResult, transactionService } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
+import { InitiateDraftButton } from '@/features/drafts';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { RemoveProxyConfirmation as Confirmation } from '@/features/operations/OperationsConfirm/RemoveProxy';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
@@ -29,8 +31,16 @@ export const RemoveProxy = ({ wallet }: Props) => {
   const step = useUnit(removeProxyModel.$step);
   const chainId = useUnit(removeProxyModel.$proxyAccount.map((proxy) => proxy?.chainId ?? null));
 
-  const initiatorWallet = useUnit(removeProxyModel.$wallet);
   const isPureProxiedNeedToBeKilled = useUnit(removeProxyModel.$isPureProxiedNeedToBeKilled);
+  const coreTx = useUnit(removeProxyModel.$coreTx);
+  const api = useUnit(removeProxyModel.$api);
+  const signatoryAccount = useUnit(removeProxyModel.form.fields.signatory.$value);
+  const wallets = useUnit(walletModel.$wallets);
+
+  const draftCallData = transactionService.getCallDataHex(coreTx, api);
+
+  const signatoryWallet = signatoryAccount ? (wallets.find((w) => w.id === signatoryAccount.walletId) ?? null) : null;
+  const isBasketAvailable = signatoryWallet ? basketUtils.isBasketAvailable(signatoryWallet) : false;
 
   const [isModalOpen, closeModal] = useModalClose(!removeProxyUtils.isNoneStep(step), removeProxyModel.flowFinished);
 
@@ -89,12 +99,19 @@ export const RemoveProxy = ({ wallet }: Props) => {
         {removeProxyUtils.isConfirmStep(step) && (
           <Confirmation
             secondaryActionButton={
-              initiatorWallet &&
-              basketUtils.isBasketAvailable(initiatorWallet) && (
-                <Button pallet="secondary" onClick={void removeProxyModel.txSaved}>
-                  {t('operation.addToBasket')}
-                </Button>
-              )
+              <>
+                {isBasketAvailable && (
+                  <Button pallet="secondary" onClick={() => removeProxyModel.txSaved()}>
+                    {t('operation.addToBasket')}
+                  </Button>
+                )}
+                <InitiateDraftButton
+                  callData={draftCallData}
+                  chainId={chainId}
+                  source="remove-proxy"
+                  onDraftCreated={closeModal}
+                />
+              </>
             }
             onGoBack={removeProxyModel.wentBackFromConfirm}
           />
