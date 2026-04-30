@@ -1,0 +1,43 @@
+import { type DecodedTransaction } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { parseVerifyProxyMarker } from '@/shared/transactions';
+import { type MultisigOperation } from '@/domains/network';
+
+export type VerifyProxyOpInfo = {
+  // The new proxy whose access is being proven (subject of the verification).
+  delegateAccountId: AccountId;
+  // The pure proxy through which the ping is dispatched (`real` of proxy.proxy).
+  pureProxyAccountId: AccountId;
+};
+
+const isProxyWrap = (tx: DecodedTransaction): boolean => tx.section === 'proxy' && tx.method === 'proxy';
+
+const unwrapProxyOrNull = (tx: DecodedTransaction | null): DecodedTransaction | null => {
+  if (nullable(tx) || !isProxyWrap(tx)) return null;
+  const inner = (tx.args['transaction'] as DecodedTransaction | null) ?? null;
+  if (nullable(inner)) return null;
+  // Tolerate nested proxy.proxy wrappers (defensive — real ops shouldn't nest).
+  return isProxyWrap(inner) ? unwrapProxyOrNull(inner) : inner;
+};
+
+// Verify-proxy ping shape: `proxy.proxy(real=pure, call=system.remarkWithEvent(<verify-proxy marker>))`.
+// We require the proxy.proxy wrap (a bare remarkWithEvent isn't how the ping is built — see
+// `features/proxy-verify/lib/build-verify-proxy.ts`), and additionally require the marker payload
+// so incidental proxy.remarkWithEvent ops don't render here.
+export const parseVerifyProxyOperation = (operation: MultisigOperation): VerifyProxyOpInfo | null => {
+  const inner = unwrapProxyOrNull(operation.transaction);
+  if (nullable(inner)) return null;
+  if (inner.section !== 'system' || inner.method !== 'remarkWithEvent') return null;
+  const remark = inner.args['remark'];
+  if (typeof remark !== 'string') return null;
+  const payload = parseVerifyProxyMarker(remark);
+  if (!payload) return null;
+  return {
+    delegateAccountId: payload.delegateAccountId,
+    pureProxyAccountId: payload.pureProxyAccountId,
+  };
+};
+
+export const isVerifyProxyOperation = (operation: MultisigOperation): boolean =>
+  parseVerifyProxyOperation(operation) !== null;

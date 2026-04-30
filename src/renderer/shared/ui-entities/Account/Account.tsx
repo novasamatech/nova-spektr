@@ -1,10 +1,11 @@
 import { memo } from 'react';
 
-import { type Address as AddresssType, type Chain } from '@/shared/core';
+import { type Address as AddresssType, type Chain, type WalletType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
+import { WalletAccountIcon } from '../WalletAccountIcon/WalletAccountIcon';
 
 type Props = {
   accountId: AccountId | AddresssType;
@@ -14,6 +15,7 @@ type Props = {
   hideIcon?: boolean;
   hideAddress?: boolean;
   variant?: 'truncate' | 'short' | 'full';
+  walletType?: WalletType;
   addressTestId?: string;
   explorersTestId?: string;
 };
@@ -27,18 +29,30 @@ export const Account = memo(
     hideAddress,
     hideIcon,
     chain,
+    walletType,
     addressTestId,
     explorersTestId,
   }: Props) => {
+    const address = toAddress(accountId, { prefix: chain?.addressPrefix });
+    const showWalletBadge = !hideIcon && walletType !== undefined;
+
     return (
       <div className="flex w-max max-w-full min-w-0 items-center gap-2">
+        {showWalletBadge ? (
+          <WalletAccountIcon
+            address={address}
+            type={walletType}
+            size={iconSize ?? 32}
+            iconSize={Math.max(12, Math.round((iconSize ?? 32) / 2))}
+          />
+        ) : null}
         <Address
-          showIcon={!hideIcon}
+          showIcon={!hideIcon && !showWalletBadge}
           variant={variant}
           iconSize={iconSize}
           hideAddress={hideAddress}
           title={title}
-          address={toAddress(accountId, { prefix: chain?.addressPrefix })}
+          address={address}
           testId={addressTestId}
         />
         <AccountExplorers accountId={accountId} chain={chain} testId={explorersTestId} />

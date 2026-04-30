@@ -15,14 +15,20 @@ import { ProxyStatusBadge } from './ProxyStatusBadge';
 type Props = {
   proxy: WalletProxy;
   verifyAction: ReactNode | null;
+  editAction?: ReactNode | null;
   onRemove?: (proxy: WalletProxy) => void;
   onCloseWalletDetails?: () => void;
 };
 
-export const ProxyRow = ({ proxy, verifyAction, onRemove, onCloseWalletDetails }: Props) => {
+export const ProxyRow = ({ proxy, verifyAction, editAction, onRemove, onCloseWalletDetails }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const chain = chains[proxy.chainId] ?? null;
+  // Verification + status badge only apply to multisig proxies; non-multisig
+  // rows render flat (no Accordion, no status column).
   const isMultisigProxy = proxy.proxyMultisigAccountId !== null;
+  // Prefer the proxy delegate's wallet name (e.g. "Financial Multisig") over the
+  // short-address fallback that resolveAccountName produces when the underlying
+  // account has no custom name. Skips for non-wallet proxies (status no_wallet).
   const proxyWalletName = useWalletName(proxy.proxyWallet);
 
   const rowContent = (
@@ -34,6 +40,7 @@ export const ProxyRow = ({ proxy, verifyAction, onRemove, onCloseWalletDetails }
           title={proxyWalletName ?? undefined}
           variant="truncate"
           iconSize={28}
+          walletType={proxy.proxyWallet?.type}
         />
       </div>
       <div className="min-w-0">
@@ -72,6 +79,7 @@ export const ProxyRow = ({ proxy, verifyAction, onRemove, onCloseWalletDetails }
           <ProxyDetails
             proxy={proxy}
             verifyAction={verifyAction}
+            editAction={editAction}
             onRemove={onRemove}
             onCloseWalletDetails={onCloseWalletDetails}
           />

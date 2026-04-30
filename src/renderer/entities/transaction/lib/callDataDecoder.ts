@@ -15,6 +15,7 @@ import {
   OLD_MULTISIG_ARGS_AMOUNT,
   PROXY_SECTION,
   STAKING_SECTION,
+  SYSTEM_SECTION,
   TRANSFER_SECTIONS,
   VESTING_SECTION,
   XCM_SECTIONS,
@@ -58,6 +59,29 @@ const getDataFromCallData = (
 
 export const getTxFromCallData = (api: ApiPromise, callData: CallData): SubmittableExtrinsic<'promise'> => {
   return getDataFromCallData(api, callData).decoded;
+};
+
+/**
+ * Extracts only the outer pallet/method names from raw callData. Unlike
+ * `decodeCallData`, this never builds the SubmittableExtrinsic and never
+ * recurses into batch/proxy children — so a missing inner-call type or a
+ * runtime metadata mismatch on a nested call does not poison the result.
+ *
+ * Returns null only when the local API genuinely doesn't know the outer
+ * pallet/call index (e.g. callData was emitted under a different runtime).
+ */
+export const extractSectionMethodFromCallData = (
+  api: ApiPromise,
+  callData: CallData,
+): { section: string; method: string } | null => {
+  try {
+    const call = api.createType('Call', callData);
+    const { method, section } = api.registry.findMetaCall(call.callIndex);
+
+    return { section, method };
+  } catch {
+    return null;
+  }
 };
 
 export const decodeCallData = (
@@ -564,6 +588,7 @@ export const getTransactionType = (method: string, section: string): Transaction
   const governanceType = getGovernanceTxType(method, section);
   const collectiveType = getCollectiveTxType(method, section);
   const vestingType = getVestingTxType(method, section);
+  const systemType = getSystemTxType(method, section);
 
   return (
     transferType ||
@@ -573,8 +598,18 @@ export const getTransactionType = (method: string, section: string): Transaction
     multisigType ||
     governanceType ||
     collectiveType ||
-    vestingType
+    vestingType ||
+    systemType
   );
+};
+
+const getSystemTxType = (method: string, section: string): TransactionType | undefined => {
+  if (SYSTEM_SECTION !== section) return;
+
+  return {
+    remark: TransactionType.REMARK,
+    remarkWithEvent: TransactionType.REMARK_WITH_EVENT,
+  }[method];
 };
 
 const getTransferTxType = (method: string, section: string): TransactionType | undefined => {
