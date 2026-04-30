@@ -78,7 +78,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         )}
 
         <div className="flex gap-4">
-          {secondaryActionButton}
+          {!hideSignButton && !isMultisigExists && secondaryActionButton}
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
