@@ -45,7 +45,6 @@ import { InitiateDraftButton } from '@/features/drafts';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
-import { transferModel } from '../model/transfer-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
 import { TokenSelectorModal } from './TokenSelector';
@@ -806,7 +805,7 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
             callData={draftCallData}
             chainId={network?.chain.chainId}
             source="transfer"
-            onDraftCreated={() => transferModel.output.flowFinished()}
+            onDraftCreated={onGoBack}
           />
           <Button form="transfer-form" type="submit" disabled={!canSubmit || hasErrors} isLoading={isLoading}>
             {t('transfer.continueButton')}
