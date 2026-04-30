@@ -40,7 +40,7 @@ const signConfirmed = createEvent();
 const connectTriggered = createEvent();
 const modalClosed = createEvent();
 const signingCancelled = createEvent();
-const sessionExpiryDetected = createEvent();
+const unauthorizedResponseReceived = createEvent();
 
 // Stores
 const $authState = createStore<AuthState | null>(null);
@@ -360,17 +360,15 @@ sample({
 
 sample({
   clock: checkSessionFx.done,
-  source: $authState,
-  filter: (auth, { result }) => result === null && auth !== null,
+  source: $lastAuthedAccountId,
+  filter: (lastAuthedId, { result }) => result === null && lastAuthedId !== null,
   fn: () => true,
   target: $isSessionExpired,
 });
 
-$authState.on(checkSessionFx.fail, () => null);
-
 const sessionHealthCheck = interval({
   timeout: 5 * 60 * 1000,
-  start: merge([verifySignatureFx.done, checkSessionFx.done]),
+  start: merge([verifySignatureFx.done, checkSessionFx.done, checkSessionFx.fail]),
   stop: merge([signOutClicked, backendConfigurationModel.events.urlCleared]),
 });
 
@@ -381,12 +379,16 @@ sample({
   target: checkSessionFx,
 });
 
-$isSessionExpired.on(checkSessionFx.fail, () => true);
-$isSessionExpired.on(sessionExpiryDetected, () => true);
+$isSessionExpired.on(unauthorizedResponseReceived, () => true);
 $isSessionExpired.on(
   [verifySignatureFx.done, signOutClicked, backendConfigurationModel.events.urlCleared],
   () => false,
 );
+
+const $hasNetworkIssue = createStore(false);
+$hasNetworkIssue.on(checkSessionFx.fail, () => true);
+$hasNetworkIssue.on(checkSessionFx.done, () => false);
+$hasNetworkIssue.on([verifySignatureFx.done, signOutClicked, backendConfigurationModel.events.urlCleared], () => false);
 
 const sessionExpired = createEvent();
 
@@ -415,6 +417,7 @@ export const authModel = {
   $isAuthenticated,
   $signableAccounts,
   $isSessionExpired,
+  $hasNetworkIssue,
 
   events: {
     signInClicked,
@@ -425,7 +428,7 @@ export const authModel = {
     connectTriggered,
     modalClosed,
     sessionExpired,
-    sessionExpiryDetected,
+    unauthorizedResponseReceived,
     signingCancelled,
   },
 

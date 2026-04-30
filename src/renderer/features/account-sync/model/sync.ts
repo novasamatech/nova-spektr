@@ -73,6 +73,29 @@ const $pending = createStore(false)
   .on(requestAllIdentitiesFx.fail, () => false)
   .on(accountsSynced, () => false);
 
+// Auto-sync on user wallet connect/disconnect. Both signals fire only from
+// single-wallet flows (createWalletFx / removeWalletFx); sync's own batch
+// derived-wallet ops don't fire them, so this can't loop.
+sample({
+  clock: walletModel.events.walletCreatedDone,
+  target: accountSync.syncAccounts,
+});
+
+sample({
+  clock: walletModel.events.walletRemovedSuccess,
+  target: accountSync.syncAccounts,
+});
+
+// Cascade: when a sync run actually removes wallets, kick another sync to
+// collapse downstream orphans (proxied-of-proxied-of-...). Terminates when an
+// iteration removes nothing — walletsRemovedFx returns undefined for an empty
+// batch, which the filter rejects.
+sample({
+  clock: walletModel.walletsRemoved.doneData,
+  filter: (removed) => Array.isArray(removed) && removed.length > 0,
+  target: accountSync.syncAccounts,
+});
+
 // TODO
 // all code bellow should be moved to specific features
 
@@ -106,53 +129,45 @@ type VerifyProxiedDeletionParams = {
   apis: Record<ChainId, ApiPromise>;
 };
 
-// Guards against false deletions caused by indexer lag: only remove a proxied wallet
-// after confirming on-chain that the proxy relationship is gone. Missing API = skip deletion.
+// A proxied wallet stays ours iff at least one on-chain delegate is a local
+// account. Caller pre-prunes multisig/flex deletions from allAccounts so a
+// proxied delegated by a doomed multisig isn't kept by accident. Unreachable
+// chains: skip (keep).
 const verifyProxiedDeletionFx = createEffect(
   async ({ candidateWalletIds, allAccounts, apis }: VerifyProxiedDeletionParams): Promise<number[]> => {
     if (candidateWalletIds.length === 0) return [];
 
-    // Find the proxied accounts that correspond to the candidate wallet IDs
     const candidates = allAccounts
       .filter(accountUtils.isProxiedAccount)
       .filter((a) => candidateWalletIds.includes(a.walletId));
 
-    // If we cannot find any matching accounts (unexpected state), fall back to
-    // the original list to avoid silently swallowing deletions.
+    // No matching accounts (unexpected): defer to caller's list, don't swallow.
     if (candidates.length === 0) return candidateWalletIds;
 
-    const byChain = groupBy(candidates, (a) => a.chainId);
+    const liveAccountIds = new Set(allAccounts.map((a) => a.accountId));
     const confirmedDeleteWalletIds = new Set<number>();
 
-    for (const [chainId, chainCandidates] of entries(byChain)) {
+    for (const [chainId, chainCandidates] of entries(groupBy(candidates, (a) => a.chainId))) {
       if (nullable(chainCandidates)) continue;
 
       const api = apis[chainId as ChainId];
-      if (nullable(api)) {
-        // No connected API for this chain — be conservative and skip deletion.
-        continue;
-      }
-
-      const accountIds = chainCandidates.map((a) => a.accountId);
+      if (nullable(api)) continue;
 
       try {
-        const onChainData = await proxyPallet.storage.proxies(api, accountIds);
+        const onChainData = await proxyPallet.storage.proxies(
+          api,
+          chainCandidates.map((a) => a.accountId),
+        );
 
         for (const { account: accountId, value } of onChainData) {
-          // A proxied account with zero on-chain proxies is truly gone.
-          const stillExistsOnChain = value.proxies.length > 0;
+          const hasLocalSource = value.proxies.some((p) => liveAccountIds.has(p.delegate));
+          if (hasLocalSource) continue;
 
-          if (!stillExistsOnChain) {
-            const candidate = chainCandidates.find((c) => c.accountId === accountId);
-            if (candidate) {
-              confirmedDeleteWalletIds.add(candidate.walletId);
-            }
-          }
-          // If still present on-chain the indexer was just lagging — keep the wallet.
+          const candidate = chainCandidates.find((c) => c.accountId === accountId);
+          if (candidate) confirmedDeleteWalletIds.add(candidate.walletId);
         }
       } catch (e) {
-        // On any RPC error be conservative: skip deletion for this chain.
-        console.warn('[proxy-sync] On-chain verification failed for chain', chainId, '— skipping deletion:', e);
+        console.warn('[proxy-sync] on-chain verify failed for chain', chainId, e);
       }
     }
 
@@ -312,6 +327,9 @@ export const syncProxiedAccounts = ({
   };
 };
 
+// Single combined pass: multisig + flex deletes are stripped from allAccounts
+// before the proxied verify so a proxied delegated by a doomed multisig isn't
+// kept by accident.
 sample({
   clock: accountsSynced,
   source: {
@@ -321,35 +339,39 @@ sample({
     apis: networkModel.$apis,
   },
   fn({ allAccounts, allWallets, allChains, apis }, [syncResult, identities]) {
-    const { createWallets, deleteWallets, updateAccounts } = syncProxiedAccounts({
-      allAccounts,
-      allWallets,
-      allChains,
-      syncResult,
-      identities,
-    });
+    const proxied = syncProxiedAccounts({ allAccounts, allWallets, allChains, syncResult, identities });
+    const multisig = syncMultisigAccounts({ allAccounts, allWallets, syncResult, identities });
+    const flex = syncFlexibleMultisigs({ allAccounts, allWallets, allChains, syncResult, identities });
+
+    const immediateRemovalIds = new Set([...multisig.deleteWallets, ...flex.deleteWallets]);
+    const accountsAfterImmediate = allAccounts.filter((a) => !immediateRemovalIds.has(a.walletId));
 
     return {
-      createWallets,
-      updateAccounts,
-      // Instead of deleting immediately, pass candidates to on-chain verification.
-      // walletModel.walletsRemoved is called only after confirmed absence on-chain.
-      verifyDeletion: { candidateWalletIds: deleteWallets, allAccounts, apis },
+      createWallets: [...proxied.createWallets, ...multisig.createWallets, ...flex.createWallets],
+      updateAccounts: proxied.updateAccounts,
+      immediateRemovals: Array.from(immediateRemovalIds),
+      verifyDeletion: {
+        candidateWalletIds: proxied.deleteWallets,
+        allAccounts: accountsAfterImmediate,
+        apis,
+      },
     };
   },
   target: spread({
     createWallets: createWalletsFx,
     updateAccounts: accounts.updateAccounts,
+    immediateRemovals: walletModel.walletsRemoved,
     verifyDeletion: verifyProxiedDeletionFx,
   }),
 });
 
-// Only remove wallets that have been confirmed absent on-chain.
 sample({
   clock: verifyProxiedDeletionFx.doneData,
   target: walletModel.walletsRemoved,
 });
 
+// Reconcile proxy entries against the indexer (scoped to our accounts):
+// keep matches, add missing, delete unreturned. False removals heal next sync.
 sample({
   clock: accountsSynced,
   source: {
@@ -483,26 +505,6 @@ export const syncMultisigAccounts = ({ allAccounts, allWallets, syncResult, iden
   };
 };
 
-sample({
-  clock: accountsSynced,
-  source: {
-    allAccounts: accounts.$list,
-    allWallets: walletModel.$allWallets,
-  },
-  fn({ allAccounts, allWallets }, [syncResult, identities]) {
-    return syncMultisigAccounts({
-      allAccounts,
-      allWallets,
-      syncResult,
-      identities,
-    });
-  },
-  target: spread({
-    createWallets: createWalletsFx,
-    deleteWallets: walletModel.walletsRemoved,
-  }),
-});
-
 // flexible multisig sync
 
 export type SyncFlexibleMultisigParams = {
@@ -612,28 +614,6 @@ export const syncFlexibleMultisigs = ({
     deleteWallets: Array.from(deleteWallets).map((w) => w.id),
   };
 };
-
-sample({
-  clock: accountsSynced,
-  source: {
-    allAccounts: accounts.$list,
-    allWallets: walletModel.$allWallets,
-    allChains: networkModel.$chains,
-  },
-  fn({ allAccounts, allWallets, allChains }, [syncResult, identities]) {
-    return syncFlexibleMultisigs({
-      allAccounts,
-      allWallets,
-      allChains,
-      syncResult,
-      identities,
-    });
-  },
-  target: spread({
-    createWallets: createWalletsFx,
-    deleteWallets: walletModel.walletsRemoved,
-  }),
-});
 
 // notifications
 

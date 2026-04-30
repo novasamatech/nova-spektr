@@ -50,15 +50,15 @@ async function checkSession(baseUrl: string): Promise<SessionResponse | null> {
     headers: { 'Content-Type': 'application/json' },
   });
 
-  if (!result.ok) {
+  if (result.status === 401) {
     return null;
   }
 
-  try {
-    return parseResponse(result, sessionResponseSchema);
-  } catch {
-    return null;
+  if (!result.ok) {
+    throw new Error(`Session check failed with status ${result.status}`);
   }
+
+  return parseResponse(result, sessionResponseSchema);
 }
 
 async function logout(baseUrl: string): Promise<void> {
