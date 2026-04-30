@@ -1,12 +1,22 @@
 import { type Chain, type WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type IconNames, CaptionText, FootnoteText, HelpText, Icon, Separator, SmallTitleText } from '@/shared/ui';
+import {
+  type IconNames,
+  CaptionText,
+  FootnoteText,
+  HelpText,
+  Icon,
+  InputHint,
+  Separator,
+  SmallTitleText,
+} from '@/shared/ui';
 import { Field, TextArea } from '@/shared/ui-kit';
 import { type PathNode } from '@/domains/backend';
 import { type OperationTitle } from '@/features/multisig-operations';
 import { PathBreadcrumb, PathReviewPopover } from '@/features/signing-path';
 import { DraftSummary } from '../components/DraftSummary';
+import { DESCRIPTION_MAX_LENGTH } from '../model/create-draft-model';
 
 type Props = {
   path: PathNode[];
@@ -71,8 +81,12 @@ export const StepReview = ({
           placeholder={t('operations.drafts.descriptionPlaceholder')}
           value={description}
           rows={3}
+          invalid={description.length > DESCRIPTION_MAX_LENGTH}
           onChange={onDescriptionChanged}
         />
+        <InputHint variant="error" active={description.length > DESCRIPTION_MAX_LENGTH}>
+          {t('operations.drafts.descriptionMaxLengthError', { max: DESCRIPTION_MAX_LENGTH })}
+        </InputHint>
       </Field>
 
       <div className="flex flex-col rounded-lg border border-container-border bg-white">

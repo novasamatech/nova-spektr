@@ -2588,6 +2588,7 @@
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Note for signatories (max 500 characters)",
       "descriptionRequired": "Description is required",
+      "descriptionMaxLengthError": "Description cannot exceed {max} characters",
       "summaryTitle": "Summary",
       "summaryMultisig": "Multisig",
       "summaryThreshold": "Threshold",
