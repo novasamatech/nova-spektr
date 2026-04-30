@@ -41,7 +41,7 @@ $error.on(fetchBackendContactsFx.failData, (_, error) => categorizeError(error))
 sample({
   clock: fetchBackendContactsFx.failData,
   filter: (error) => error instanceof HttpError && error.status === 401,
-  target: authModel.events.sessionExpiryDetected,
+  target: authModel.events.unauthorizedResponseReceived,
 });
 $syncStatus.on(fetchBackendContactsFx, () => 'syncing');
 $syncStatus.on(fetchBackendContactsFx.done, () => 'done');
@@ -109,10 +109,36 @@ $error.on(backendConfigurationModel.events.urlCleared, () => null);
 $lastSyncTime.on(backendConfigurationModel.events.urlCleared, () => null);
 $syncStatus.on(backendConfigurationModel.events.urlCleared, () => 'idle');
 
-// Delete all synced contacts when connection is deleted (but not on disconnect or session expiry)
+const sessionExpired = sample({
+  clock: authModel.$isSessionExpired,
+  filter: (expired) => expired,
+});
+
+const networkIssueDetected = sample({
+  clock: authModel.$hasNetworkIssue,
+  filter: (issue) => issue,
+});
+
+$error.on(sessionExpired, () => null);
+$lastSyncTime.on(sessionExpired, () => null);
+$syncStatus.on(sessionExpired, () => 'idle');
+
 sample({
-  clock: backendConfigurationModel.events.urlCleared,
+  clock: [backendConfigurationModel.events.urlCleared, sessionExpired, networkIssueDetected],
   target: contactModel.effects.clearBackendContactsFx,
+});
+
+const networkIssueCleared = sample({
+  clock: authModel.$hasNetworkIssue,
+  filter: (issue) => !issue,
+});
+
+sample({
+  clock: networkIssueCleared,
+  source: { url: backendConfigurationModel.$backendUrl, authState: authModel.$authState },
+  filter: ({ url, authState }) => url !== null && authState !== null,
+  fn: ({ url }) => url!,
+  target: fetchBackendContactsFx,
 });
 
 export const backendContactsModel = {
@@ -124,5 +150,9 @@ export const backendContactsModel = {
 
   events: {
     syncTriggered,
+  },
+
+  __test: {
+    fetchBackendContactsFx,
   },
 };
