@@ -51,7 +51,7 @@
       "selectAccountLabel": "Select account",
       "selectAccountPlaceholder": "Choose an account",
       "sessionExpired": "Session expired",
-      "sessionExpiredToast": "Session expired",
+      "sessionExpiredToast": "Address Book session expired",
       "signingMessage": "Waiting for signature...",
       "signInSuccess": "Successfully signed in",
       "signOutButton": "Sign out"
