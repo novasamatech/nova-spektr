@@ -18,7 +18,14 @@ import {
   createTxValidationStore,
   createTxValidator,
 } from '@/shared/transactions';
-import { type AnyAccount, accountService, accounts, balanceService, multisigOperation } from '@/domains/network';
+import {
+  type AnyAccount,
+  accountService,
+  accountSync,
+  accounts,
+  balanceService,
+  multisigOperation,
+} from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
@@ -28,7 +35,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { multisigService } from '@/features/multisig-wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@/features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { pathModel } from '@/features/signing-path';
 import { type ExecutionMode, type SelectedTarget } from '../types';
 
@@ -746,6 +753,14 @@ sample({
     return [notification];
   },
   target: notificationModel.events.notificationsAdded,
+});
+
+sample({
+  clock: submitModel.done,
+  source: $flexibleMultisigAccount,
+  filter: (multisigAccount, results) =>
+    nonNullable(multisigAccount) && results.some((r) => submitUtils.isSuccessResult(r.result)),
+  target: accountSync.syncAccounts,
 });
 
 export const changeSignatoriesModel = {
