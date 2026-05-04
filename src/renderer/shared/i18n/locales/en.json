@@ -2606,7 +2606,7 @@
       "createError": "Failed to create draft",
       "connectToCreate": "Sign in to create drafts",
       "connectToSubmit": "Sign in to submit drafts",
-      "noWritePermission": "Only admins can create and edit drafts",
+      "noWritePermission": "You do not have permission to create drafts. Contact your admin.", 
       "noMultisigsInAddressBook": "No multisig accounts found. Add a multisig wallet first.",
       "noDescription": "No description",
       "unknownMultisig": "Unknown multisig",

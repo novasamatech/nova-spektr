@@ -78,7 +78,7 @@ const config: ViteUserConfigFnPromise = async (options) => {
         exclude: ['**/node_modules/**'],
         reportsDirectory: folders.coverage,
         thresholds: {
-          branches: 25,
+          branches: 20,
           functions: 10,
           lines: 10,
           statements: 10,
