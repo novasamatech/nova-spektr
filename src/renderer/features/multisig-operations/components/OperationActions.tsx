@@ -60,6 +60,14 @@ export const OperationActions = memo(({ operation, account }: Props) => {
 
   if (!chain && !isContact) return null;
 
+  if (isContact) {
+    return (
+      <div className="flex w-[220px] shrink-0" onClick={e => e.stopPropagation()}>
+        <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
+      </div>
+    );
+  }
+
   return (
     <div className="grid w-[220px] shrink-0 grid-cols-2 gap-x-2" onClick={e => e.stopPropagation()}>
       <div className="flex">
@@ -85,11 +93,6 @@ export const OperationActions = memo(({ operation, account }: Props) => {
               {t('operation.callData.addCallDataButton')}
             </Button>
           </CallDataModal>
-        )}
-        {isContact && (
-          <div className="w-full">
-            <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
-          </div>
         )}
       </div>
     </div>
