@@ -88,12 +88,14 @@ const releaseAccountNode = createEvent();
 const $hoveredAccountNode = restore(enterAccountNode, null).reset(leaveAccountNode, releaseAccountNode);
 const $heldAccountNode = restore(holdAccountNode, null).reset(releaseAccountNode);
 
-// Merge wallet accounts with externally-passed accounts (e.g. synthetic
-// multisigs built from backend contacts that aren't in the local wallet store).
+const setExclusive = createEvent<boolean>();
+const $exclusive = restore(setExclusive, false);
+
+// Exclusive mode skips merging with wallet-store accounts.
 const $mergedAccounts = combine(
-  walletModel.$availableAccounts,
-  $allAccounts,
-  (walletAccounts, passedAccounts) => {
+  { walletAccounts: walletModel.$availableAccounts, passedAccounts: $allAccounts, exclusive: $exclusive },
+  ({ walletAccounts, passedAccounts, exclusive }) => {
+    if (exclusive) return passedAccounts ?? [];
     if (!passedAccounts?.length) return walletAccounts;
 
     const merged = [...(walletAccounts ?? [])];
@@ -205,6 +207,7 @@ export const accountsStructureModel = {
 
   selectChain,
   setAccounts,
+  setExclusive,
   selectAccount,
   setPathType,
   setEdgeType,
