@@ -4,7 +4,7 @@ import { accountUtils, walletUtils } from '@/entities/wallet';
 import { type ContactCandidate, type MultisigCandidate, type WalletCandidate } from '../types';
 
 export function mergeMultisigCandidates(wallets: Wallet[], contacts: Contact[]): MultisigCandidate[] {
-  const fromWallets: WalletCandidate[] = wallets.filter(walletUtils.isAnyMultisig).flatMap(wallet => {
+  const fromWallets: WalletCandidate[] = wallets.filter(walletUtils.isRegularMultisig).flatMap(wallet => {
     const account = wallet.accounts.find(accountUtils.isAnyMultisigAccount);
 
     if (!account || account.signatories.length === 0) return [];
