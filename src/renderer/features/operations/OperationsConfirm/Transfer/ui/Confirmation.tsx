@@ -13,6 +13,7 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -155,6 +156,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           </DetailRow>
         )}
       </TransactionDetails>
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-between">
         {nonNullable(onGoBack) && (

@@ -9,6 +9,7 @@ import { SignButton } from '@/entities/operations';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { confirmModel } from '@/features/operations/OperationsConfirm/VerifyProxy/model/confirm-model';
 import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
+import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { verifyProxyModel } from '../model/verify-proxy-model';
@@ -87,6 +88,8 @@ export const VerifyProxyConfirmation = ({ id = 0, secondaryActionButton, hideSig
 
         <FeeWithLabel asset={nativeAsset} fee={feeValue} isLoading={pendingFee} />
       </TransactionDetails>
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (

@@ -12,6 +12,7 @@ import { SelectedValidatorsModal, StakingPopover } from '@/entities/staking';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -110,6 +111,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
             <StakingPopover.Item>{t('staking.confirmation.hintNewValidators')}</StakingPopover.Item>
           </StakingPopover>
         </TransactionDetails>
+
+        <MultisigOperationDescriptionField />
 
         <div className="mt-3 flex w-full justify-between">
           {onGoBack && (

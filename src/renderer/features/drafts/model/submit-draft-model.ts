@@ -31,6 +31,7 @@ import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
+import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 
@@ -266,6 +267,21 @@ sample({
   clock: flowStarted,
   fn: () => Step.CONFIRM,
   target: stepChanged,
+});
+
+// Tell the multisig description aggregate that a draft submission is in
+// progress, so it hides its description input (drafts carry their own
+// description) and skips its post-submit hook.
+sample({
+  clock: flowStarted,
+  fn: () => true,
+  target: multisigOperationDescription.setDraftFlowActive,
+});
+
+sample({
+  clock: flowFinished,
+  fn: () => false,
+  target: multisigOperationDescription.setDraftFlowActive,
 });
 
 // Auto-select signatory when only one option
