@@ -20,6 +20,7 @@ import { networkModel, useApi } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { tryDecodeCallData } from '../lib/decode-call-data';
+import { useCanCreateDraft } from '../lib/useCanCreateDraft';
 import { DESCRIPTION_MAX_LENGTH, createDraftModel } from '../model/create-draft-model';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
 import '../model/drafts-model'; // side-effect: orchestration wiring
@@ -38,7 +39,7 @@ export const DraftsSection = () => {
   const focusedDraftId = useUnit(draftDeepLinkModel.$focusedDraftId);
 
   const canRead = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_READ) ?? false);
-  const canWrite = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_WRITE) ?? false);
+  const canWrite = useCanCreateDraft();
   const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);
 
   const { data: drafts } = useDrafts(canRead ? backendUrl : null);

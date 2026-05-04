@@ -9,11 +9,13 @@ import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { AddProxyConfirmation } from '@/features/operations/OperationsConfirm/AddProxy';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { Step } from '../lib/types';
 import { addProxyModel } from '../model/add-proxy-model';
+import { formModel } from '../model/form-model';
 
 import { AddProxyForm } from './AddProxyForm';
 
@@ -44,7 +46,11 @@ export const AddProxy = ({ wallet, onClose, children, launchOpen, hideTrigger }:
 
   const step = useUnit(addProxyModel.$step);
   const chain = useUnit(addProxyModel.$chain);
-  const initiatorWallet = useUnit(addProxyModel.$initiatorWallet);
+  const signatoryAccount = useUnit(formModel.form.fields.signatory.$value);
+  const wallets = useUnit(walletModel.$wallets);
+
+  const signatoryWallet = signatoryAccount ? (wallets.find((w) => w.id === signatoryAccount.walletId) ?? null) : null;
+  const isBasketAvailable = signatoryWallet ? basketUtils.isBasketAvailable(signatoryWallet) : false;
 
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
     addProxyUtils.isBasketStep(step),
@@ -120,12 +126,11 @@ export const AddProxy = ({ wallet, onClose, children, launchOpen, hideTrigger }:
         {addProxyUtils.isConfirmStep(step) && (
           <AddProxyConfirmation
             secondaryActionButton={
-              initiatorWallet &&
-              basketUtils.isBasketAvailable(initiatorWallet) && (
+              isBasketAvailable ? (
                 <Button pallet="secondary" onClick={() => addProxyModel.events.txSaved()}>
                   {t('operation.addToBasket')}
                 </Button>
-              )
+              ) : undefined
             }
             onGoBack={() => addProxyModel.events.stepChanged(Step.INIT)}
           />

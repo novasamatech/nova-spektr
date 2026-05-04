@@ -595,6 +595,8 @@ export const removeProxyModel = {
 
   $step,
   $wallet,
+  $coreTx,
+  $api,
   stepChanged,
   wentBackFromConfirm,
   txSaved,

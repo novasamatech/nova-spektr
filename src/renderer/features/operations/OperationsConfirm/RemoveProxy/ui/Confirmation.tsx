@@ -76,7 +76,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         )}
 
         <div className="flex gap-4">
-          {secondaryActionButton}
+          {!hideSignButton && secondaryActionButton}
 
           {!hideSignButton && (
             <SignButton
