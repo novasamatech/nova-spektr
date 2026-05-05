@@ -21,11 +21,8 @@ export function useComboboxFilter(options: string[], value: string | null, onCha
     (val: string) => {
       if (options.includes(val)) {
         onChange(val);
-        setIsEditing(false);
-        setInputText('');
-      } else {
-        setInputText(val);
       }
+      setInputText(val);
     },
     [options, onChange],
   );
