@@ -15,4 +15,3 @@
 # starting at block 123456 would release 100000 (0.00001 DOT) per block
 #
 target,locked,starting_block,per_block,unlocked_at_start_block
-5C5BDLw8tzzWB6XQbVPuzeL34d6GmPYPH1NaqsWBaJWzz42J,10000000000,123456,100000,
