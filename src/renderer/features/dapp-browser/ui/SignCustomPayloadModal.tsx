@@ -14,6 +14,7 @@ import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
 import { OperationSign } from '@/features/operations';
+import { SigningPathControl } from '@/features/signing-path';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { confirmModel } from '../model/confirm';
@@ -80,6 +81,7 @@ const Form = memo(({ onConfirm }: { onConfirm: VoidFunction }) => {
 
   const showSignatories = useUnit(formModel.$showSignatories);
   const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const initiators = useUnit(formModel.$initiators);
 
   const args = useUnit(formModel.$args);
@@ -91,6 +93,10 @@ const Form = memo(({ onConfirm }: { onConfirm: VoidFunction }) => {
   if (nullable(chain)) {
     return null;
   }
+
+  const pathChip = (
+    <SigningPathControl chainId={chain.chainId} path={signingPath} onChange={formModel.signingPathChanged} />
+  );
 
   return (
     <>
@@ -122,6 +128,7 @@ const Form = memo(({ onConfirm }: { onConfirm: VoidFunction }) => {
             allAccounts={allAccounts}
             initiator={initiator.value}
             allWallets={allWallets}
+            action={pathChip}
             onChange={signatory.onChange}
           />
         )}

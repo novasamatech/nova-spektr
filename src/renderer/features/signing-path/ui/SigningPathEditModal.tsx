@@ -67,6 +67,7 @@ export const SigningPathEditModal = ({
             restrictToOwnAccounts
             allowedProxyTypes={allowedProxyTypes}
             disabledProxyReason={disabledProxyReason}
+            className="min-h-[320px]"
           />
         </div>
       </Modal.Content>

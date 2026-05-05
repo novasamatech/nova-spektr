@@ -11,6 +11,7 @@ import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { SigningPathControl } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { verifyProxyModel } from '../model/verify-proxy-model';
 
@@ -53,6 +54,7 @@ const Signatories = ({ chainId }: { chainId: ChainId }) => {
   const initiator = useUnit(verifyProxyModel.$verifyStore.map((s) => s?.initiator ?? null));
 
   const signatories = useUnit(verifyProxyModel.$signatories);
+  const signingPath = useUnit(verifyProxyModel.$signingPath);
   const chains = useUnit(networkModel.$chains);
   const chainFromStore = useUnit(verifyProxyModel.$verifyStore.map((s) => s?.chain ?? null));
   const chain = chainFromStore ?? chains[chainId] ?? null;
@@ -88,6 +90,14 @@ const Signatories = ({ chainId }: { chainId: ChainId }) => {
     );
   }
 
+  const pathChip = (
+    <SigningPathControl
+      chainId={chain.chainId}
+      path={signingPath}
+      onChange={verifyProxyModel.events.signingPathChanged}
+    />
+  );
+
   return (
     <SignatorySelect
       signatory={signatory.value}
@@ -98,6 +108,7 @@ const Signatories = ({ chainId }: { chainId: ChainId }) => {
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
       network={{ chain, asset: getNativeAsset(chain.assets) }}
+      action={pathChip}
       onChange={signatory.onChange}
     />
   );

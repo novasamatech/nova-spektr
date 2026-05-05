@@ -22,14 +22,23 @@ import {
 } from '@/shared/transactions';
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
-import { type AnyAccount, type EncodedTransaction, accountService, transactionService } from '@/domains/network';
+import { type PathNode } from '@/domains/backend';
+import {
+  type AnyAccount,
+  type EncodedTransaction,
+  accountService,
+  accounts,
+  transactionService,
+} from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { proxyModel } from '@/entities/proxy';
 import { transactionService as transactionEntitiesService } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 // TODO move balances subscription to balance model
 import { balanceSubModel } from '@/features/assets-balances';
 import { type SignatureResult, type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
+import { graphModel } from '@/features/signing-path';
 
 import { type ConfirmInput, confirmModel } from './confirm';
 import { dappBrowserFeature } from './feature';
@@ -212,6 +221,41 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
 });
 
+// signing path
+
+const signingPathChanged = createEvent<PathNode[]>();
+const $signingPath = createStore<PathNode[]>([])
+  .on(signingPathChanged, (_, path) => path)
+  .reset(flow.close);
+
+const $userOverrodePath = createStore(false)
+  .on(signingPathChanged, () => true)
+  .reset(flow.close, form.fields.initiator.change);
+
+const $chainIdForPath = $chain.map((c) => c?.chainId ?? null);
+const $defaultSigningPath = graphModel.$defaultPathFor(form.fields.initiator.$value, $chainIdForPath);
+
+sample({
+  clock: $defaultSigningPath,
+  source: $userOverrodePath,
+  filter: (userOverrode) => !userOverrode,
+  fn: (_, defaultPath) => defaultPath,
+  target: $signingPath,
+});
+
+const $signatoryFromPath = combine(
+  { path: $signingPath, allAccounts: accounts.$list, chain: $chain },
+  ({ path, allAccounts, chain }): AnyAccount | null => {
+    if (nullable(chain)) return null;
+    const last = path.at(-1);
+    if (!last || last.kind !== 'signer') return null;
+    return (
+      allAccounts.find((a) => a.accountId === last.accountId && accountService.isAccountAvailableOnChain(a, chain)) ??
+      null
+    );
+  },
+);
+
 const $showSignatories = combine(
   form.fields.initiator.$value,
   form.fields.signatory.$value,
@@ -241,14 +285,42 @@ sample({
 
 // Preselect signatory when initiator changes
 sample({
-  clock: $signatories,
-  source: {
-    selectedSignatory: form.fields.signatory.$value,
-  },
-  filter: ({ selectedSignatory }, signatories) =>
-    !selectedSignatory || !signatories.some((s) => s.accountId === selectedSignatory.accountId),
-  fn: (_, signatories) => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, flow.close],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
+});
+
+// Dropdown → path sync.
+sample({
+  clock: form.fields.signatory.$value,
+  source: {
+    initiator: form.fields.initiator.$value,
+    chain: $chain,
+    currentPath: $signingPath,
+    multisigByAccountId: graphModel.$multisigByAccountId,
+    proxies: proxyModel.$proxies,
+    ownSignerAccountIds: graphModel.$ownSignerAccountIds,
+    resolveName: graphModel.$nameResolver,
+  },
+  filter: ({ initiator, chain, currentPath }, signatory) => {
+    if (!initiator || !chain || !signatory) return false;
+    const last = currentPath.at(-1);
+    if (last && last.kind === 'signer' && last.accountId === signatory.accountId) return false;
+    return accountUtils.isAnyMultisigAccount(initiator) || accountUtils.isProxiedAccount(initiator);
+  },
+  fn: ({ initiator, chain, multisigByAccountId, proxies, ownSignerAccountIds, resolveName }, signatory): PathNode[] => {
+    return graphModel.pickDefaultPath({
+      initiator: initiator!,
+      chainId: chain!.chainId,
+      multisigByAccountId,
+      proxies,
+      ownSignerAccountIds,
+      resolveName,
+      targetSigner: signatory!.accountId,
+    });
+  },
+  target: signingPathChanged,
 });
 
 sample({
@@ -355,10 +427,12 @@ export const formModel = {
   $initiators,
 
   $signatories,
+  $signingPath,
   $showSignatories,
   $signatoryWallet,
 
   $signatureResult,
 
   setStep,
+  signingPathChanged,
 };

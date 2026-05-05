@@ -16,6 +16,7 @@ import { transactionService } from '@/entities/transaction';
 import { type ValidationIssue, VestingCsvError, VestingFieldError } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { InitiateDraftButton } from '@/features/drafts';
+import { SigningPathControl } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import {
@@ -108,6 +109,7 @@ const Signatories = () => {
   } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const chain = useUnit(formModel.$chain);
   const asset = useUnit(formModel.$asset);
 
@@ -130,6 +132,10 @@ const Signatories = () => {
     return null;
   }
 
+  const pathChip = (
+    <SigningPathControl chainId={chain.chainId} path={signingPath} onChange={formModel.signingPathChanged} />
+  );
+
   return (
     <SignatorySelect
       signatory={signatory.value}
@@ -140,6 +146,7 @@ const Signatories = () => {
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
       network={{ chain, asset }}
+      action={pathChip}
       onChange={signatory.onChange}
     />
   );

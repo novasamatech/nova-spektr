@@ -20,14 +20,17 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
-import { type AnyAccount, accounts } from '@/domains/network';
+import { type PathNode } from '@/domains/backend';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { staking, stakingUtils } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { proxyModel } from '@/entities/proxy';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { bondExtraValidator } from '@/features/operations/OperationsValidation';
+import { graphModel } from '@/features/signing-path';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -80,6 +83,41 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
 });
+
+// signing path
+
+const signingPathChanged = createEvent<PathNode[]>();
+const $signingPath = createStore<PathNode[]>([])
+  .on(signingPathChanged, (_, path) => path)
+  .reset(formInitiated);
+
+const $userOverrodePath = createStore(false)
+  .on(signingPathChanged, () => true)
+  .reset(formInitiated, form.fields.initiator.change);
+
+const $chainIdForPath = $chain.map((c) => c?.chainId ?? null);
+const $defaultSigningPath = graphModel.$defaultPathFor(form.fields.initiator.$value, $chainIdForPath);
+
+sample({
+  clock: $defaultSigningPath,
+  source: $userOverrodePath,
+  filter: (userOverrode) => !userOverrode,
+  fn: (_, defaultPath) => defaultPath,
+  target: $signingPath,
+});
+
+const $signatoryFromPath = combine(
+  { path: $signingPath, allAccounts: accounts.$list, chain: $chain },
+  ({ path, allAccounts, chain }): AnyAccount | null => {
+    if (nullable(chain)) return null;
+    const last = path.at(-1);
+    if (!last || last.kind !== 'signer') return null;
+    return (
+      allAccounts.find((a) => a.accountId === last.accountId && accountService.isAccountAvailableOnChain(a, chain)) ??
+      null
+    );
+  },
+);
 
 const $initiatorBalance = combine(
   {
@@ -306,11 +344,42 @@ sample({
 });
 
 sample({
-  clock: formInitiated,
-  source: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, formInitiated],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
+});
+
+// Dropdown → path sync.
+sample({
+  clock: form.fields.signatory.$value,
+  source: {
+    initiator: form.fields.initiator.$value,
+    chain: $chain,
+    currentPath: $signingPath,
+    multisigByAccountId: graphModel.$multisigByAccountId,
+    proxies: proxyModel.$proxies,
+    ownSignerAccountIds: graphModel.$ownSignerAccountIds,
+    resolveName: graphModel.$nameResolver,
+  },
+  filter: ({ initiator, chain, currentPath }, signatory) => {
+    if (!initiator || !chain || !signatory) return false;
+    const last = currentPath.at(-1);
+    if (last && last.kind === 'signer' && last.accountId === signatory.accountId) return false;
+    return accountUtils.isAnyMultisigAccount(initiator) || accountUtils.isProxiedAccount(initiator);
+  },
+  fn: ({ initiator, chain, multisigByAccountId, proxies, ownSignerAccountIds, resolveName }, signatory): PathNode[] => {
+    return graphModel.pickDefaultPath({
+      initiator: initiator!,
+      chainId: chain!.chainId,
+      multisigByAccountId,
+      proxies,
+      ownSignerAccountIds,
+      resolveName,
+      targetSigner: signatory!.accountId,
+    });
+  },
+  target: signingPathChanged,
 });
 
 sample({
@@ -376,6 +445,7 @@ export const formModel = {
   form,
   $proxyWallet,
   $signatories,
+  $signingPath,
 
   $initiatorBalance,
   $bondBalanceRange,
@@ -398,6 +468,7 @@ export const formModel = {
   $errors,
 
   setReuseLockMode,
+  signingPathChanged,
 
   events: {
     formInitiated,

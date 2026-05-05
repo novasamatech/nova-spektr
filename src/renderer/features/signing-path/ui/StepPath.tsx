@@ -22,6 +22,12 @@ type Props = {
   restrictToOwnAccounts?: boolean;
   allowedProxyTypes?: readonly string[];
   disabledProxyReason?: string;
+  /**
+   * Override the wrapper's classes. Tailwind-merge resolves conflicts, so
+   * passing `min-h-[360px]` shrinks the default 520px floor — useful when the
+   * StepPath sits in a "fit" modal that should not pad to the legacy height.
+   */
+  className?: string;
 };
 
 export const StepPath = ({
@@ -32,6 +38,7 @@ export const StepPath = ({
   restrictToOwnAccounts = false,
   allowedProxyTypes,
   disabledProxyReason,
+  className,
 }: Props) => {
   const { t } = useI18n();
 
@@ -120,7 +127,7 @@ export const StepPath = ({
   };
 
   return (
-    <div className="flex min-h-[520px] flex-col gap-y-4">
+    <div className={cnTw('flex min-h-[520px] flex-col gap-y-4', className)}>
       {path.length > 0 && <PathBreadcrumb path={path} chainId={chainId} onNodeClick={handleBreadcrumbClick} />}
 
       {path.length === 0 && lockedSourceCount === 0 ? (

@@ -11,6 +11,7 @@ import { Field } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
+import { SigningPathControl } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { approveModel } from '../model/approve-model';
 
@@ -43,6 +44,7 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, op
   const signatory = useUnit(approveModel.$signatory);
 
   const signatories = useUnit(approveModel.$signatories);
+  const signingPath = useUnit(approveModel.$signingPath);
 
   const signatoriesWithBalance = useMemo(() => {
     return signatories.map(s => {
@@ -52,6 +54,10 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, op
   }, [signatories, balances, chain, nativeAsset]);
 
   const network = useMemo(() => ({ chain, asset: nativeAsset }), [chain, nativeAsset]);
+
+  const pathChip = (
+    <SigningPathControl chainId={chain.chainId} path={signingPath} onChange={approveModel.signingPathChanged} />
+  );
 
   return (
     <div className="flex flex-col items-center gap-y-3 px-5 pb-4">
@@ -85,6 +91,7 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, op
         hasError={false}
         errorText=""
         network={network}
+        action={pathChip}
         onChange={approveModel.selectSignatory}
       />
 

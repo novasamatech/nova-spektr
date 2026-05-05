@@ -16,6 +16,7 @@ import {
   createTxValidator,
   getActionRequiredAmount,
 } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import {
@@ -25,12 +26,14 @@ import {
   MultiTransferCsvError,
 } from '@/entities/multi-transfer';
 import { networkModel } from '@/entities/network';
+import { proxyModel } from '@/entities/proxy';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
+import { graphModel } from '@/features/signing-path';
 import { type ValidationSchemaOptions, Step } from '../types';
 import { multiTransferUtils } from '../utils';
 
@@ -189,6 +192,41 @@ const $signatories = createSignatoriesStore({
   accounts: walletModel.$availableAccounts,
   initiator: form.fields.initiator.$value,
 });
+
+// signing path
+
+const signingPathChanged = createEvent<PathNode[]>();
+const $signingPath = createStore<PathNode[]>([])
+  .on(signingPathChanged, (_, path) => path)
+  .reset(flowStarted);
+
+const $userOverrodePath = createStore(false)
+  .on(signingPathChanged, () => true)
+  .reset(flowStarted, form.fields.initiator.change);
+
+const $chainIdForPath = form.fields.chain.$value.map((c) => c?.chainId ?? null);
+const $defaultSigningPath = graphModel.$defaultPathFor(form.fields.initiator.$value, $chainIdForPath);
+
+sample({
+  clock: $defaultSigningPath,
+  source: $userOverrodePath,
+  filter: (userOverrode) => !userOverrode,
+  fn: (_, defaultPath) => defaultPath,
+  target: $signingPath,
+});
+
+const $signatoryFromPath = combine(
+  { path: $signingPath, allAccounts: accounts.$list, chain: form.fields.chain.$value },
+  ({ path, allAccounts, chain }): AnyAccount | null => {
+    if (nullable(chain)) return null;
+    const last = path.at(-1);
+    if (!last || last.kind !== 'signer') return null;
+    return (
+      allAccounts.find((a) => a.accountId === last.accountId && accountService.isAccountAvailableOnChain(a, chain)) ??
+      null
+    );
+  },
+);
 
 const $showSignatories = combine(
   $signatories,
@@ -580,10 +618,42 @@ sample({
 });
 
 sample({
-  clock: [flowStarted, $signatories],
-  source: $signatories,
-  fn: (signatories) => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, flowStarted],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
+});
+
+// Dropdown → path sync.
+sample({
+  clock: form.fields.signatory.$value,
+  source: {
+    initiator: form.fields.initiator.$value,
+    chain: form.fields.chain.$value,
+    currentPath: $signingPath,
+    multisigByAccountId: graphModel.$multisigByAccountId,
+    proxies: proxyModel.$proxies,
+    ownSignerAccountIds: graphModel.$ownSignerAccountIds,
+    resolveName: graphModel.$nameResolver,
+  },
+  filter: ({ initiator, chain, currentPath }, signatory) => {
+    if (!initiator || !chain || !signatory) return false;
+    const last = currentPath.at(-1);
+    if (last && last.kind === 'signer' && last.accountId === signatory.accountId) return false;
+    return accountUtils.isAnyMultisigAccount(initiator) || accountUtils.isProxiedAccount(initiator);
+  },
+  fn: ({ initiator, chain, multisigByAccountId, proxies, ownSignerAccountIds, resolveName }, signatory): PathNode[] => {
+    return graphModel.pickDefaultPath({
+      initiator: initiator!,
+      chainId: chain!.chainId,
+      multisigByAccountId,
+      proxies,
+      ownSignerAccountIds,
+      resolveName,
+      targetSigner: signatory!.accountId,
+    });
+  },
+  target: signingPathChanged,
 });
 
 sample({
@@ -689,6 +759,7 @@ export const formModel = {
   flowFinished,
 
   fileUploaded,
+  signingPathChanged,
 
   $step,
   $fileName,
@@ -699,6 +770,7 @@ export const formModel = {
   $availableChains,
   $initiators,
   $signatories,
+  $signingPath,
   $showSignatories,
   $amount,
   $asset,

@@ -12,6 +12,7 @@ import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 // eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts -> accounts-structure -> wallet-details -> proxy-remove
 import { InitiateDraftButton } from '@/features/drafts/components/InitiateDraftButton';
+import { SigningPathControl } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { removeProxyModel } from '../model/remove-proxy-model';
 
@@ -52,6 +53,7 @@ const Signatories = () => {
   const proxiedAccount = useUnit(removeProxyModel.$proxiedAccount);
 
   const signatories = useUnit(removeProxyModel.$signatories);
+  const signingPath = useUnit(removeProxyModel.$signingPath);
   const chain = useUnit(removeProxyModel.$chain);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
@@ -77,6 +79,10 @@ const Signatories = () => {
     return null;
   }
 
+  const pathChip = (
+    <SigningPathControl chainId={chain.chainId} path={signingPath} onChange={removeProxyModel.signingPathChanged} />
+  );
+
   return (
     <SignatorySelect
       signatory={signatory.value}
@@ -87,6 +93,7 @@ const Signatories = () => {
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
       network={{ chain, asset: getNativeAsset(chain.assets) }}
+      action={pathChip}
       onChange={signatory.onChange}
     />
   );

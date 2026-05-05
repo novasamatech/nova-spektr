@@ -15,6 +15,7 @@ import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts → accounts-structure → wallet-details → proxied-add-pure
 import { InitiateDraftButton } from '@/features/drafts/components/InitiateDraftButton';
+import { SigningPathControl } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/widgets/transaction-fee';
 import { addPureProxiedModel } from '../model/add-pure-proxied-model';
 import { formModel } from '../model/form-model';
@@ -115,6 +116,7 @@ const Signatories = () => {
   } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balanceMap);
@@ -135,6 +137,10 @@ const Signatories = () => {
     });
   }, [signatories, balances, chainValue]);
 
+  const pathChip = (
+    <SigningPathControl chainId={chainValue.chainId} path={signingPath} onChange={formModel.signingPathChanged} />
+  );
+
   return (
     <SignatorySelect
       signatory={signatory.value}
@@ -145,6 +151,7 @@ const Signatories = () => {
       allAccounts={allAccounts}
       initiator={account.value}
       allWallets={allWallets}
+      action={pathChip}
       onChange={signatory.onChange}
     />
   );

@@ -10,6 +10,7 @@ import { Tooltip } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
+import { SigningPathControl } from '@/features/signing-path';
 import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
 
@@ -49,6 +50,7 @@ const Signatories = () => {
   } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
   const balances = useUnit(balanceModel.$balanceMap);
   const allAccounts = useUnit(accounts.$list);
@@ -74,6 +76,10 @@ const Signatories = () => {
     return null;
   }
 
+  const pathChip = (
+    <SigningPathControl chainId={network.chain.chainId} path={signingPath} onChange={formModel.signingPathChanged} />
+  );
+
   return (
     <SignatorySelect
       signatory={signatory.value}
@@ -84,6 +90,7 @@ const Signatories = () => {
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
       network={network}
+      action={pathChip}
       onChange={signatory.onChange}
     />
   );

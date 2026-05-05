@@ -16,6 +16,7 @@ import { ProxyWalletAlert, walletModel } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
 import { AmountInput } from '@/features/assets-balances';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
+import { SigningPathControl } from '@/features/signing-path';
 import { ConvictionSelect } from '@/widgets/VoteModal';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeLoader } from '@/widgets/transaction-fee';
@@ -103,6 +104,7 @@ const Signatories = () => {
   } = useForm(formModel.$delegateForm);
 
   const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
   const isMultisig = useUnit(formModel.$isMultisig);
   const allAccounts = useUnit(accounts.$list);
@@ -129,6 +131,14 @@ const Signatories = () => {
     return null;
   }
 
+  const pathChip = (
+    <SigningPathControl
+      chainId={network.chain.chainId}
+      path={signingPath}
+      onChange={formModel.events.signingPathChanged}
+    />
+  );
+
   return (
     <SignatorySelect
       signatory={signatory.value}
@@ -139,6 +149,7 @@ const Signatories = () => {
       hasError={signatory.hasError()}
       errorText={t(signatory.errorText())}
       network={network}
+      action={pathChip}
       onChange={signatory.onChange}
     />
   );

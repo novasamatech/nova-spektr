@@ -14,6 +14,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { transactionService } from '@/entities/transaction';
 import { AccountAddress, walletModel } from '@/entities/wallet';
 import { InitiateDraftButton } from '@/features/drafts';
+import { SigningPathControl } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
@@ -53,6 +54,7 @@ const Signatories = () => {
   } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
 
   const balances = useUnit(balanceModel.$balanceMap);
@@ -78,6 +80,14 @@ const Signatories = () => {
     return null;
   }
 
+  const pathChip = (
+    <SigningPathControl
+      chainId={network.chain.chainId}
+      path={signingPath}
+      onChange={formModel.events.signingPathChanged}
+    />
+  );
+
   return (
     <SignatorySelect
       signatory={signatory.value}
@@ -88,6 +98,7 @@ const Signatories = () => {
       hasError={signatory.hasError}
       errorText={signatory.errorMessage}
       network={network}
+      action={pathChip}
       onChange={signatory.onChange}
     />
   );

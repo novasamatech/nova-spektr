@@ -15,7 +15,7 @@ import {
   createTxValidator,
   getActionRequiredAmount,
 } from '@/shared/transactions';
-import { HttpError, operationDescriptionsResource, operationsService } from '@/domains/backend';
+import { type PathNode, HttpError, operationDescriptionsResource, operationsService } from '@/domains/backend';
 import {
   type AnyAccount,
   type MultisigOperation,
@@ -26,8 +26,11 @@ import {
 } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { proxyModel } from '@/entities/proxy';
 import { MAX_WEIGHT, getExtrinsic, transactionBuilder } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { graphModel } from '@/features/signing-path';
 
 type GetMultisigType = {
   chain: Chain | null;
@@ -105,6 +108,41 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+// signing path
+
+const signingPathChanged = createEvent<PathNode[]>();
+const $signingPath = createStore<PathNode[]>([])
+  .on(signingPathChanged, (_, path) => path)
+  .reset(flow.open);
+
+const $userOverrodePath = createStore(false)
+  .on(signingPathChanged, () => true)
+  .reset(flow.open, selectInitiator);
+
+const $chainIdForPath = $chain.map(c => c?.chainId ?? null);
+const $defaultSigningPath = graphModel.$defaultPathFor($initiator, $chainIdForPath);
+
+sample({
+  clock: $defaultSigningPath,
+  source: $userOverrodePath,
+  filter: userOverrode => !userOverrode,
+  fn: (_, defaultPath) => defaultPath,
+  target: $signingPath,
+});
+
+const $signatoryFromPath = combine(
+  { path: $signingPath, allAccounts: accounts.$list, chain: $chain },
+  ({ path, allAccounts, chain }): AnyAccount | null => {
+    if (nullable(chain)) return null;
+    const last = path.at(-1);
+    if (!last || last.kind !== 'signer') return null;
+    return (
+      allAccounts.find(a => a.accountId === last.accountId && accountService.isAccountAvailableOnChain(a, chain)) ??
+      null
+    );
+  },
+);
+
 sample({
   clock: $unsignedAccounts,
   filter: $unsignedAccounts.map(unsignedAccounts => unsignedAccounts.length === 1),
@@ -112,10 +150,42 @@ sample({
   target: $initiator,
 });
 sample({
-  clock: $signatories,
-  filter: $signatories.map(signatories => signatories.length === 1),
-  fn: signatories => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, flow.open],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: $signatory,
+});
+
+// Dropdown → path sync.
+sample({
+  clock: $signatory,
+  source: {
+    initiator: $initiator,
+    chain: $chain,
+    currentPath: $signingPath,
+    multisigByAccountId: graphModel.$multisigByAccountId,
+    proxies: proxyModel.$proxies,
+    ownSignerAccountIds: graphModel.$ownSignerAccountIds,
+    resolveName: graphModel.$nameResolver,
+  },
+  filter: ({ initiator, chain, currentPath }, signatory) => {
+    if (!initiator || !chain || !signatory) return false;
+    const last = currentPath.at(-1);
+    if (last && last.kind === 'signer' && last.accountId === signatory.accountId) return false;
+    return accountUtils.isAnyMultisigAccount(initiator) || accountUtils.isProxiedAccount(initiator);
+  },
+  fn: ({ initiator, chain, multisigByAccountId, proxies, ownSignerAccountIds, resolveName }, signatory): PathNode[] => {
+    return graphModel.pickDefaultPath({
+      initiator: initiator!,
+      chainId: chain!.chainId,
+      multisigByAccountId,
+      proxies,
+      ownSignerAccountIds,
+      resolveName,
+      targetSigner: signatory!.accountId,
+    });
+  },
+  target: signingPathChanged,
 });
 
 // Get weight
@@ -323,9 +393,11 @@ export const approveModel = {
   $valid,
 
   $signatories,
+  $signingPath,
   $description,
   selectSignatory,
   selectInitiator,
   setDescription,
   postDescription,
+  signingPathChanged,
 };

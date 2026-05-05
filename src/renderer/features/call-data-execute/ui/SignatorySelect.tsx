@@ -11,6 +11,7 @@ import { Box, Field, Select } from '@/shared/ui-kit';
 import { accountService, useWalletsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
+import { SigningPathControl } from '@/features/signing-path';
 import { formModel } from '../model/form';
 
 import { walletTypesTitles } from './titles';
@@ -21,6 +22,7 @@ export const SignatorySelect = memo(() => {
   const wallets = useUnit(walletModel.$wallets);
   const resolvedWallets = useWalletsNames(wallets);
   const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const balancesMap = useUnit(balanceModel.$balanceMap);
   const chain = useUnit(formModel.form.fields.chain.$value);
   const {
@@ -129,8 +131,12 @@ export const SignatorySelect = memo(() => {
     return null;
   }, [wallets, signatory.value]);
 
+  const pathChip = chain ? (
+    <SigningPathControl chainId={chain.chainId} path={signingPath} onChange={formModel.signingPathChanged} />
+  ) : null;
+
   return (
-    <Field text={t('callData.fields.signatory.label')}>
+    <Field text={t('callData.fields.signatory.label')} action={pathChip}>
       <Select
         placeholder={t('callData.fields.signatory.placeholder')}
         value={selectedSignatoryWallet?.id.toString() ?? null}

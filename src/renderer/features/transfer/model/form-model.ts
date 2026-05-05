@@ -293,16 +293,11 @@ const $signatories = createSignatoriesStore({
 
 const TRANSFER_ALLOWED_PROXY_TYPES = ['Any'] as const;
 
-// The widget calls `signingPathChanged` on save; the auto-seed sample below
-// uses the same event but is suppressed once the user has overridden, so
-// proxy/multisig store refreshes don't clobber the user's choice.
 const signingPathChanged = createEvent<PathNode[]>();
 const $signingPath = createStore<PathNode[]>([])
   .on(signingPathChanged, (_, path) => path)
   .reset(formInitiated);
 
-// Tracks whether the user has explicitly committed a path via the edit modal.
-// Reset on initiator change so the new initiator gets a fresh default seed.
 const $userOverrodePath = createStore(false)
   .on(signingPathChanged, () => true)
   .reset(formInitiated, form.fields.initiator.change);
@@ -955,17 +950,14 @@ sample({
 });
 
 // Pick the form's `signatory` AnyAccount: prefer the leaf signer of the
-// committed signing path (so the new widget drives signing), and fall back to
-// the first available signatory for plain-proxy / no-path cases. Resolves the
-// path's accountId against the accounts list — `findRoute` downstream needs a
-// real AnyAccount, not just an id.
+// committed signing path (so the path drives signing) and fall back to the
+// first available signatory for plain-proxy / no-path cases.
 const $signatoryFromPath = combine(
   { path: $signingPath, allAccounts: accounts.$list, chain: $chain },
   ({ path, allAccounts, chain }): AnyAccount | null => {
     if (nullable(chain)) return null;
     const last = path.at(-1);
     if (!last || last.kind !== 'signer') return null;
-
     return (
       allAccounts.find((a) => a.accountId === last.accountId && accountService.isAccountAvailableOnChain(a, chain)) ??
       null
@@ -980,10 +972,8 @@ sample({
   target: form.fields.signatory.change,
 });
 
-// When the user picks a signatory from the legacy dropdown (or any source
-// other than the path itself), recompute the signing path so it terminates at
-// that signatory. Skip when path's leaf already matches — prevents bouncing
-// against $signatoryFromPath which writes the same value back.
+// Dropdown → path sync: when the user picks a different signatory, recompute
+// the path targeting that signer. Skip when path's leaf already matches.
 sample({
   clock: form.fields.signatory.$value,
   source: {
@@ -999,8 +989,6 @@ sample({
     if (!initiator || !chain || !signatory) return false;
     const last = currentPath.at(-1);
     if (last && last.kind === 'signer' && last.accountId === signatory.accountId) return false;
-    // Only meaningful when the initiator is the kind that produces a path
-    // (multisig or proxied). Regular accounts have no path to recompute.
     return accountUtils.isAnyMultisigAccount(initiator) || accountUtils.isProxiedAccount(initiator);
   },
   fn: ({ initiator, chain, multisigByAccountId, proxies, ownSignerAccountIds, resolveName }, signatory): PathNode[] => {
