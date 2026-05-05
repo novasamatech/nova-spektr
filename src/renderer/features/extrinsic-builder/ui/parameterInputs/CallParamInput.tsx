@@ -44,10 +44,13 @@ const NestedBuilder = memo(({ api, value: hexValue, depth, onChange }: NestedBui
   const [paramValues, setParamValues] = useState<Record<string, unknown>>({});
   const [restored, setRestored] = useState(false);
 
-  // Restore nested builder state from hex on remount (e.g. back from Confirm)
+  // Restore nested builder state from hex on remount (e.g. back from Confirm).
+  // Only runs once on first render with api available — subsequent hexValue
+  // changes come from user edits and must not clobber the in-progress input.
   useEffect(() => {
-    if (restored || !api || !hexValue || !hexValue.startsWith('0x')) return;
+    if (restored || !api) return;
     setRestored(true);
+    if (!hexValue || !hexValue.startsWith('0x')) return;
     const parsed = parseCallData(api, hexValue);
     if (parsed) {
       setPallet(parsed.pallet);

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   type FlexibleMultisigAccount,
   type FlexibleMultisigWallet,
+  type MultisigAccount,
   AccountType,
   ConnectionStatus,
   CryptoType,
@@ -24,7 +25,7 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 import { type MultisigCandidate, multisigCandidates } from '@/aggregates/multisig-candidates';
 import { changeSignatoriesModel } from '@/features/flexible-change-signatories/model/change-signatories-model';
 import { pathModel } from '@/features/signing-path';
-import { multisigAccount, multisigWallet, polkadotChain, polkadotChainId, vaultWallet } from '../../fixtures/index';
+import { multisigWallet, polkadotChain, polkadotChainId, vaultWallet } from '../../fixtures/index';
 import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
 
 /**
@@ -89,6 +90,23 @@ const flexibleMultisigWallet: FlexibleMultisigWallet = {
   accounts: [],
 };
 
+// Regular multisig candidate — seeded so that multisigCandidates.$candidates yields a
+// wallet-sourced entry after the isRegularMultisig filter is applied.
+const regularMultisigSignatoryId = createAccountId('reg-multisig-signatory-1');
+const regularMultisigAccount: MultisigAccount = {
+  id: 'reg-multisig-1',
+  accountId: accountUtils.getMultisigAccountId([regularMultisigSignatoryId], 1, CryptoType.SR25519),
+  walletId: multisigWallet.id,
+  name: 'Regular Multisig Account',
+  type: 'universal',
+  accountType: AccountType.MULTISIG,
+  cryptoType: CryptoType.SR25519,
+  signingType: SigningType.MULTISIG,
+  threshold: 1,
+  signatories: [{ accountId: regularMultisigSignatoryId, name: 'Reg Signatory 1' }],
+  createdAt: 0,
+};
+
 // Vault account that owns the FM signatory.
 const flexibleSignatoryAccount: AnyAccount = {
   id: 'flex-signatory-account-1',
@@ -122,7 +140,7 @@ const buildEnv = () =>
     .withChain(polkadotChain)
     .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
     .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet, multisigWallet, flexibleMultisigWallet])
-    .withStoreValue(accounts.__test.$list, [flexibleMultisigAccount, flexibleSignatoryAccount, multisigAccount])
+    .withStoreValue(accounts.__test.$list, [flexibleMultisigAccount, flexibleSignatoryAccount, regularMultisigAccount])
     .build();
 
 // ─── Tests ───────────────────────────────────────────────────────────────────

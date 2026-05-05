@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type BN, BN_ZERO } from '@polkadot/util';
+import { BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { and, delay, not, or, spread } from 'patronum';
@@ -7,7 +7,7 @@ import { and, delay, not, or, spread } from 'patronum';
 import { proxyService } from '@/shared/api/proxy';
 import { type CreateFlexibleMultisigOperationParams, type Wallet, CryptoType, NotificationType } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
-import { Step, assert, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { Step, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import {
@@ -16,9 +16,8 @@ import {
   createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
-  createTxValidator,
 } from '@/shared/transactions';
-import { type AnyAccount, accountService, accounts, balanceService, multisigOperation } from '@/domains/network';
+import { type AnyAccount, accountService, accounts, multisigOperation } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
@@ -29,6 +28,7 @@ import { multisigService } from '@/features/multisig-wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
+import { changeSignatoriesValidator } from '@/features/operations/OperationsValidation';
 import { pathModel } from '@/features/signing-path';
 import { type ExecutionMode, type SelectedTarget } from '../types';
 
@@ -478,36 +478,13 @@ const {
 
 // validation
 
-const validator = createTxValidator<{ proxyDeposit: BN }>({
-  additionalBalanceRules: [
-    ({ route, getBalance, asset, proxyDeposit }) => {
-      const initiator = accountService.findInitiator(route);
-      assert(initiator, 'Initiator not found');
-
-      if (!accountUtils.isFlexibleMultisigAccount(initiator)) {
-        throw new Error('Initiator is not a flexible multisig account');
-      }
-
-      const balance = getBalance(initiator.accountId, initiator.chainId, asset.assetId);
-      assert(balance, 'Balance not found');
-
-      return {
-        account: initiator,
-        balance: balanceService.tryReserve(balance, proxyDeposit, 'legacy'),
-        asset: asset,
-        action: 'proxy deposit',
-      };
-    },
-  ],
-});
-
 const {
   $errors,
   $valid,
   $pending: $validationPending,
   $validationDone,
 } = createTxValidationStore({
-  validator,
+  validator: changeSignatoriesValidator,
   params: {
     api: formModel.$api,
     asset: formModel.$asset,
