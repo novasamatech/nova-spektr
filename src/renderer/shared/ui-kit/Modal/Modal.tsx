@@ -1,6 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { isObject } from 'lodash';
-import { type PropsWithChildren, type ReactNode, Children } from 'react';
+import { type PropsWithChildren, type ReactNode, Children, createContext, useContext, useState } from 'react';
 
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { IconButton } from '@/shared/ui/Buttons/IconButton/IconButton';
@@ -8,6 +8,10 @@ import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { useTheme } from '../Theme/useTheme';
 
 import './Modal.css';
+
+const ModalOverlayContext = createContext<HTMLElement | null>(null);
+
+export const useModalOverlay = () => useContext(ModalOverlayContext);
 
 type Props = {
   isOpen?: boolean;
@@ -28,6 +32,7 @@ const Root = ({
   preventOutsideClick = false,
 }: PropsWithChildren<Props>) => {
   const { portalContainer } = useTheme();
+  const [overlay, setOverlay] = useState<HTMLElement | null>(null);
 
   const arrayChildren = Children.toArray(children);
   const triggerNode = arrayChildren.find(child => {
@@ -45,39 +50,42 @@ const Root = ({
       {triggerNode}
       <Dialog.Portal container={portalContainer}>
         <Dialog.Overlay
+          ref={setOverlay}
           className={cnTw(
             'absolute inset-0 z-50 flex min-h-full items-center justify-center overflow-hidden p-4',
             'bg-dim-background',
             'duration-300 animate-in fade-in',
           )}
         >
-          <Dialog.Content
-            aria-describedby={undefined}
-            data-testid={testId}
-            className={cnTw(
-              'ui-kit-modal-height flex max-w-full min-w-32 flex-col overflow-hidden',
-              'text-left align-middle text-body',
-              'transform rounded-lg bg-white shadow-modal transition-transform',
-              'duration-200 animate-in fade-in zoom-in-95',
-              {
-                'w-modal-sm': size === 'sm',
-                'w-modal': size === 'md',
-                'w-148': size === 'mdlg',
-                'w-modal-lg': size === 'lg',
-                'w-modal-xl': size === 'xl',
-                'w-modal-xxl': size === 'xxl',
-                'w-full': size === 'full',
-                'w-fit': size === 'fit',
-                'h-fit': height === 'fit',
-                'h-full': height === 'full',
-                'h-modal': height === 'lg',
-              },
-            )}
-            onInteractOutside={preventOutsideClick ? e => e.preventDefault() : undefined}
-          >
-            {hasTitle ? null : <Dialog.Title hidden />}
-            {modalNodes}
-          </Dialog.Content>
+          <ModalOverlayContext.Provider value={overlay}>
+            <Dialog.Content
+              aria-describedby={undefined}
+              data-testid={testId}
+              className={cnTw(
+                'ui-kit-modal-height flex max-w-full min-w-32 flex-col overflow-hidden',
+                'text-left align-middle text-body',
+                'transform rounded-lg bg-white shadow-modal transition-transform',
+                'duration-200 animate-in fade-in zoom-in-95',
+                {
+                  'w-modal-sm': size === 'sm',
+                  'w-modal': size === 'md',
+                  'w-148': size === 'mdlg',
+                  'w-modal-lg': size === 'lg',
+                  'w-modal-xl': size === 'xl',
+                  'w-modal-xxl': size === 'xxl',
+                  'w-full': size === 'full',
+                  'w-fit': size === 'fit',
+                  'h-fit': height === 'fit',
+                  'h-full': height === 'full',
+                  'h-modal': height === 'lg',
+                },
+              )}
+              onInteractOutside={preventOutsideClick ? e => e.preventDefault() : undefined}
+            >
+              {hasTitle ? null : <Dialog.Title hidden />}
+              {modalNodes}
+            </Dialog.Content>
+          </ModalOverlayContext.Provider>
         </Dialog.Overlay>
       </Dialog.Portal>
     </Dialog.Root>

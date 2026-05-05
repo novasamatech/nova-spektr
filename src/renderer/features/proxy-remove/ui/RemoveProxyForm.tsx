@@ -8,7 +8,10 @@ import { Button } from '@/shared/ui';
 import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
+import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts -> accounts-structure -> wallet-details -> proxy-remove
+import { InitiateDraftButton } from '@/features/drafts/components/InitiateDraftButton';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { removeProxyModel } from '../model/remove-proxy-model';
 
@@ -113,15 +116,28 @@ const ActionSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(removeProxyModel.$canSubmit);
+  const coreTx = useUnit(removeProxyModel.$coreTx);
+  const api = useUnit(removeProxyModel.$api);
+  const chainId = useUnit(removeProxyModel.$proxyAccount.map((proxy) => proxy?.chainId ?? null));
+
+  const draftCallData = transactionService.getCallDataHex(coreTx, api);
 
   return (
     <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
-        {t('operation.continueButton')}
-      </Button>
+      <div className="flex items-center gap-3">
+        <InitiateDraftButton
+          callData={draftCallData}
+          chainId={chainId}
+          source="remove-proxy"
+          onDraftCreated={removeProxyModel.flowFinished}
+        />
+        <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
+          {t('operation.continueButton')}
+        </Button>
+      </div>
     </div>
   );
 };

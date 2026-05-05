@@ -31,21 +31,19 @@ import {
   TransactionValidationError,
   WalletIcon,
 } from '@/shared/ui-entities';
-import { Box, Combobox, Field, Select, TextArea, Tooltip } from '@/shared/ui-kit';
+import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
 import { accountService, accounts, useAccountName, useAccountsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { transactionService } from '@/entities/transaction';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
-import { authModel } from '@/aggregates/backend';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { InitiateDraftButton } from '@/features/drafts';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
-import { transferModel } from '../model/transfer-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
 import { TokenSelectorModal } from './TokenSelector';
@@ -97,7 +95,6 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
         <SignatorySelector />
         <Destination />
         <Amount />
-        <DescriptionField />
       </form>
       <div className="flex flex-col gap-y-6">
         <FeeSection />
@@ -633,27 +630,6 @@ const Amount = memo(() => {
   );
 });
 
-const DescriptionField = memo(() => {
-  const { t } = useI18n();
-  const multisigAccount = useUnit(formModel.$multisigAccount);
-  const isAuthenticated = useUnit(authModel.$isAuthenticated);
-  const description = useUnit(formModel.$description);
-
-  if (!multisigAccount || !isAuthenticated) return null;
-
-  return (
-    <Field text={t('operation.descriptionLabel')}>
-      <TextArea
-        value={description}
-        placeholder={t('operation.descriptionPlaceholder')}
-        rows={2}
-        maxLength={500}
-        onChange={formModel.setDescription}
-      />
-    </Field>
-  );
-});
-
 const FeeSection = memo(() => {
   const { t } = useI18n();
 
@@ -806,7 +782,7 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
             callData={draftCallData}
             chainId={network?.chain.chainId}
             source="transfer"
-            onDraftCreated={() => transferModel.output.flowFinished()}
+            onDraftCreated={onGoBack}
           />
           <Button form="transfer-form" type="submit" disabled={!canSubmit || hasErrors} isLoading={isLoading}>
             {t('transfer.continueButton')}

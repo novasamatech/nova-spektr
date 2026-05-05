@@ -136,17 +136,9 @@ describe('mergeMultisigCandidates', () => {
     }
   });
 
-  it('returns WalletCandidate for a FLEXIBLE_MULTISIG wallet with valid account', () => {
+  it('excludes FLEXIBLE_MULTISIG wallet', () => {
     const result = mergeMultisigCandidates([flexibleMultisigWallet], []);
-    expect(result).toHaveLength(1);
-    const candidate = result[0]!;
-    expect(candidate.source).toBe('wallet');
-    if (candidate.source === 'wallet') {
-      expect(candidate.walletId).toBe(2);
-      expect(candidate.name).toBe('Bob Flexible Multisig');
-      expect(candidate.accountId).toBe(BOB_ID);
-      expect(candidate.threshold).toBe(2);
-    }
+    expect(result).toHaveLength(0);
   });
 
   it('excludes non-multisig wallet (SINGLE_PARITY_SIGNER)', () => {
@@ -194,8 +186,8 @@ describe('mergeMultisigCandidates', () => {
       [multisigWallet, flexibleMultisigWallet, regularWallet],
       [backendContactWithSignatories, backendContactNullSignatories, localContact],
     );
-    expect(result).toHaveLength(3);
-    expect(result.filter(c => c.source === 'wallet')).toHaveLength(2);
+    expect(result).toHaveLength(2);
+    expect(result.filter(c => c.source === 'wallet')).toHaveLength(1);
     expect(result.filter(c => c.source === 'contact')).toHaveLength(1);
   });
 });

@@ -1,12 +1,10 @@
-import { useUnit } from 'effector-react';
 import { useEffect, useRef } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
-import { PERMISSIONS } from '@/domains/backend';
-import { authModel } from '@/aggregates/backend';
+import { useCanCreateDraft } from '../lib/useCanCreateDraft';
 import { createDraftModel } from '../model/create-draft-model';
 
 type Props = {
@@ -51,8 +49,7 @@ export const InitiateDraftButton = ({
   onDraftCreated,
 }: Props) => {
   const { t } = useI18n();
-  const isAuthenticated = useUnit(authModel.$isAuthenticated);
-  const authState = useUnit(authModel.$authState);
+  const canWrite = useCanCreateDraft();
 
   // Tracks whether this button instance started the currently-open draft flow.
   // Only the initiator should fire onDraftCreated — prevents unrelated draft
@@ -77,8 +74,6 @@ export const InitiateDraftButton = ({
       unsubClosed();
     };
   }, [onDraftCreated]);
-
-  const canWrite = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_WRITE) ?? false);
 
   // Not connected to address book or no write perm — hide entirely to keep the footer clean.
   if (!canWrite) return null;

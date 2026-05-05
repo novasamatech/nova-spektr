@@ -148,6 +148,103 @@ describe('importContactsModel', () => {
     });
   });
 
+  describe('duplicate detection within file', () => {
+    it('should enter duplicates resolution state when same address appears twice', async () => {
+      const aliceAddress = mockData.VALID_CONTACTS[0]!.address;
+      const file = createMockFile([
+        { name: 'Alice', address: aliceAddress },
+        { name: 'AliceClone', address: aliceAddress },
+      ]);
+
+      const scope = fork();
+
+      await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
+
+      const state = scope.getState(importContactsModel.$importState);
+
+      expect(state.status).toBe('duplicates');
+      if (state.status === 'duplicates') {
+        expect(state.duplicates).toHaveLength(1);
+        expect(state.duplicates[0]!.names).toEqual(['Alice', 'AliceClone']);
+      }
+    });
+
+    it('should import only the chosen entry after resolveDuplicates', async () => {
+      const aliceAddress = mockData.VALID_CONTACTS[0]!.address;
+      const file = createMockFile([
+        { name: 'Alice', address: aliceAddress },
+        { name: 'AliceClone', address: aliceAddress },
+      ]);
+
+      const aliceAccountId = toAccountId(aliceAddress);
+      const mockCreate = vi.spyOn(contactModel.effects, 'createContactsFx').mockResolvedValue([]);
+      mockCreate.mockClear();
+
+      const scope = fork();
+
+      await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
+      await allSettled(importContactsModel.events.resolveDuplicates, {
+        scope,
+        params: { [aliceAccountId]: 'AliceClone' },
+      });
+
+      expect(mockCreate).toHaveBeenCalledTimes(1);
+      const createdContacts = mockCreate.mock.calls[0]![0];
+      expect(createdContacts).toHaveLength(1);
+      expect(createdContacts[0]!.name).toBe('AliceClone');
+
+      const state = scope.getState(importContactsModel.$importState);
+      expect(state.status).toBe('success');
+    });
+
+    it('should skip the address entirely when resolveDuplicates picks null', async () => {
+      const aliceAddress = mockData.VALID_CONTACTS[0]!.address;
+      const bobAddress = mockData.VALID_CONTACTS[1]!.address;
+      const file = createMockFile([
+        { name: 'Alice', address: aliceAddress },
+        { name: 'AliceClone', address: aliceAddress },
+        { name: 'Bob', address: bobAddress },
+      ]);
+
+      const aliceAccountId = toAccountId(aliceAddress);
+      const mockCreate = vi.spyOn(contactModel.effects, 'createContactsFx').mockResolvedValue([]);
+      mockCreate.mockClear();
+
+      const scope = fork();
+
+      await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
+      await allSettled(importContactsModel.events.resolveDuplicates, {
+        scope,
+        params: { [aliceAccountId]: null },
+      });
+
+      expect(mockCreate).toHaveBeenCalledTimes(1);
+      const createdContacts = mockCreate.mock.calls[0]![0];
+      expect(createdContacts).toHaveLength(1);
+      expect(createdContacts[0]!.name).toBe('Bob');
+    });
+
+    it('should reset state on closeModal during duplicates resolution', async () => {
+      const aliceAddress = mockData.VALID_CONTACTS[0]!.address;
+      const file = createMockFile([
+        { name: 'Alice', address: aliceAddress },
+        { name: 'AliceClone', address: aliceAddress },
+      ]);
+
+      const mockCreate = vi.spyOn(contactModel.effects, 'createContactsFx').mockResolvedValue([]);
+      mockCreate.mockClear();
+
+      const scope = fork();
+
+      await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
+      await allSettled(importContactsModel.events.closeModal, { scope });
+
+      expect(mockCreate).not.toHaveBeenCalled();
+      const state = scope.getState(importContactsModel.$importState);
+      expect(state.status).toBe('idle');
+    });
+  });
+
   describe('conflict detection', () => {
     it('should detect accountId conflicts and show conflicts state', async () => {
       const aliceAddress = mockData.VALID_CONTACTS[0]!.address;

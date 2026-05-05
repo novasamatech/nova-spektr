@@ -16,7 +16,7 @@ import {
   Loader,
   Separator,
 } from '@/shared/ui';
-import { Account, Address, WalletIcon } from '@/shared/ui-entities';
+import { Account, Address, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Box, Field, Modal, Select } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { transactionService, useAccountName } from '@/domains/network';
@@ -86,6 +86,9 @@ const ConfirmStep = () => {
   const draft = useUnit(submitDraftModel.$draft);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
   const initiatorUnavailable = useUnit(submitDraftModel.$initiatorUnavailable);
+  const validationErrors = useUnit(submitDraftModel.$validationErrors);
+  const validationValid = useUnit(submitDraftModel.$validationValid);
+  const validationPending = useUnit(submitDraftModel.$validationPending);
 
   const [showWalletDetails, setShowWalletDetails] = useState(false);
 
@@ -329,10 +332,16 @@ const ConfirmStep = () => {
         </dl>
       </Box>
 
+      {validationErrors.length > 0 && (
+        <div className="mx-5 mb-3">
+          <TransactionValidationError errors={validationErrors} wallets={wallets} />
+        </div>
+      )}
+
       <Modal.Footer align="between">
         <div />
         <SignButton
-          disabled={nullable(wrappedExtrinsic) || nullable(fee)}
+          disabled={nullable(wrappedExtrinsic) || nullable(fee) || validationPending || !validationValid}
           type={confirm.signatoryWallet.type}
           onClick={submitDraftModel.confirmModel.startSigning}
         />

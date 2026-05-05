@@ -70,7 +70,7 @@ export const AssetTransactionModal = () => {
               >
                 <Link
                   to={createLink(path, {}, { chainId: [chain.chainId], assetId: [chain.assetId] })}
-                  onClick={() => assetTransactionModel.flowClosed}
+                  onClick={() => assetTransactionModel.flowClosed()}
                 >
                   <div className="flex items-center px-2 py-1.5">
                     <div className="mr-auto flex items-center gap-x-2 px-2 py-1">
