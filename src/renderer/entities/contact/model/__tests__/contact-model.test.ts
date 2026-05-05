@@ -29,7 +29,7 @@ describe('entities/contact/model/contact-model', () => {
     const spyPut = jest.spyOn(storageService.contacts, 'put');
 
     const scope = fork({
-      values: new Map().set(contactModel.$contacts, [existingContact]),
+      values: new Map().set(contactModel.$localContacts, [existingContact]),
     });
 
     // Try to undo delete with a contact that has the same accountId as existing
@@ -54,7 +54,7 @@ describe('entities/contact/model/contact-model', () => {
     const spyPut = jest.spyOn(storageService.contacts, 'put').mockResolvedValue(createdContact);
 
     const scope = fork({
-      values: new Map().set(contactModel.$contacts, [existingContact]),
+      values: new Map().set(contactModel.$localContacts, [existingContact]),
     });
 
     // Try to undo delete with a contact that has different accountId
