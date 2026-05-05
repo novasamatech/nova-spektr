@@ -135,7 +135,7 @@ const logoutFx = createEffect(async (baseUrl: string) => {
 sample({
   clock: connectTriggered,
   source: backendConfigurationModel.$draftUrl,
-  fn: url => (url ? url.trim().replace(/\/+$/, '') : null) || null,
+  fn: url => (url ? url.trim().replace(/#.*$/, '').replace(/\/+$/, '') : null) || null,
   target: backendConfigurationModel.$backendUrl,
 });
 

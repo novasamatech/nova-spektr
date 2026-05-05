@@ -7,7 +7,7 @@ import { persist } from '@/shared/api/storage';
 type UrlReachability = null | 'checking' | 'reachable' | 'unreachable';
 
 function normalizeUrl(url: string): string {
-  return url.trim().replace(/\/+$/, '');
+  return url.trim().replace(/#.*$/, '').replace(/\/+$/, '');
 }
 
 const urlChanged = createEvent<string>();
@@ -77,6 +77,7 @@ $draftUrl.on(urlCleared, () => '');
 const checkUrlReachabilityFx = createEffect(async (url: string) => {
   const result = await authFetch(`${url}/health`, { method: 'GET' });
   if (!result.ok) throw new Error(`Status ${result.status}`);
+  JSON.parse(result.body);
 });
 
 const $urlReachable = createStore<UrlReachability>(null);
