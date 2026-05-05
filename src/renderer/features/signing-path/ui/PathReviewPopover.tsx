@@ -38,7 +38,9 @@ export const PathReviewPopover = ({ path, chainId }: Props) => {
         <div className="flex w-[340px] flex-col gap-y-3 p-4">
           <div className="flex items-center justify-between">
             <CaptionText className="text-text-tertiary uppercase">{t('signingPath.fullSigningPath')}</CaptionText>
-            <HelpText className="text-text-tertiary">{t('signingPath.hopsCount', { count: path.length })}</HelpText>
+            <HelpText className="text-text-tertiary">
+              {t('signingPath.hopsCount', { count: Math.max(0, path.length - 1) })}
+            </HelpText>
           </div>
           <div className="flex flex-col">
             {path.map((node, idx) => {

@@ -5,11 +5,12 @@ import { type BackendContact } from '@/shared/core/types/contact';
 import { type ProxyAccount, type ProxyType } from '@/shared/core/types/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
-import { accountService, accounts, identity } from '@/domains/network';
+import { type AnyAccount, accountService, accounts, identity } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { accountUtils } from '@/entities/wallet';
+import { MAX_PATH_DEPTH } from '../lib/path-validation';
 
 export type PathSource = {
   accountId: AccountId;
@@ -322,6 +323,89 @@ function buildNextOptions(
   });
 }
 
+type PickDefaultPathParams = {
+  initiator: AnyAccount;
+  chainId: ChainId;
+  multisigByAccountId: MultisigByAccountId;
+  proxies: Record<AccountId, ProxyAccount[] | undefined>;
+  ownSignerAccountIds: Set<AccountId>;
+  resolveName: AccountNameResolver;
+  allowedProxyTypes?: readonly string[];
+  /**
+   * When set, the BFS terminates only at this specific signer accountId. Used
+   * to translate a dropdown signatory pick back into a concrete signing path.
+   * Without it, the first reachable own signer wins.
+   */
+  targetSigner?: AccountId;
+};
+
+/**
+ * Walks the graph from `initiator` picking the first valid `PathNextOption` at
+ * each step until reaching a signer. Reuses `buildNextOptions` so the default
+ * selection matches exactly what StepPath would offer the user — same
+ * reachability, same proxyType filtering, same dedup. Returns [] when the
+ * initiator is a regular account or no own-signer-terminating branch exists.
+ */
+function pickDefaultPath({
+  initiator,
+  chainId,
+  multisigByAccountId,
+  proxies,
+  ownSignerAccountIds,
+  resolveName,
+  allowedProxyTypes,
+  targetSigner,
+}: PickDefaultPathParams): PathNode[] {
+  const isMultisig = accountUtils.isAnyMultisigAccount(initiator);
+  const isProxied = accountUtils.isProxiedAccount(initiator);
+  if (!isMultisig && !isProxied) return [];
+
+  const allowedProxyTypeSet = allowedProxyTypes ? new Set<string>(allowedProxyTypes) : null;
+  // Reachability set: when targetSigner is set, restrict to paths reaching
+  // exactly that signer; otherwise fall back to any own signer.
+  const reachabilitySet = targetSigner ? new Set<AccountId>([targetSigner]) : ownSignerAccountIds;
+
+  let firstNode: PathNode;
+  if (isProxied) {
+    firstNode = { kind: 'proxied', accountId: initiator.accountId };
+  } else {
+    const multisigAccountId = accountUtils.isFlexibleMultisigAccount(initiator)
+      ? initiator.multisigAccountId
+      : initiator.accountId;
+    firstNode = { kind: 'multisig', accountId: multisigAccountId };
+  }
+
+  const path: PathNode[] = [firstNode];
+
+  while (path.length < MAX_PATH_DEPTH) {
+    const last = path[path.length - 1]!;
+    if (last.kind === 'signer') return path;
+
+    const options = buildNextOptions(
+      last,
+      multisigByAccountId,
+      proxies,
+      chainId,
+      reachabilitySet,
+      allowedProxyTypeSet,
+      null,
+      resolveName,
+    );
+    const next = options.find((opt) => opt.kind !== 'multisig' || !opt.disabled);
+    if (!next) return [];
+
+    if (next.kind === 'multisig' && next.proxyType && path[0]!.kind === 'proxied') {
+      // Mirror StepPath: when stepping from a proxied source into a multisig
+      // delegate, the chosen proxyType is recorded on the source node.
+      path[0] = { ...path[0]!, proxyType: next.proxyType };
+    }
+
+    path.push({ kind: next.kind, accountId: next.accountId });
+  }
+
+  return path[path.length - 1]!.kind === 'signer' ? path : [];
+}
+
 export type GraphOptions = {
   /**
    * If true, hide any branch of the graph that doesn't terminate at one of the
@@ -452,19 +536,67 @@ function $nextOptionsForNode(node: PathNode, chainId: ChainId, opts?: GraphOptio
   return $store;
 }
 
+const defaultPathCache = new Map<string, Store<PathNode[]>>();
+
+function $defaultPathFor(
+  initiatorStore: Store<AnyAccount | null>,
+  chainIdStore: Store<ChainId | null>,
+  opts?: GraphOptions,
+): Store<PathNode[]> {
+  const allowedProxyTypes = opts?.allowedProxyTypes;
+  // Two callers passing the same input stores + opts share one combine — keeps
+  // graph traversal cheap when consumers re-render. Identity of the input
+  // stores is part of the key so different forms get distinct caches.
+  const cacheKey = `${initiatorStore.shortName}:${chainIdStore.shortName}:${allowedProxyTypes ? [...allowedProxyTypes].sort().join(',') : '*'}`;
+  const $cached = defaultPathCache.get(cacheKey);
+  if ($cached) return $cached;
+
+  const $store = combine(
+    {
+      initiator: initiatorStore,
+      chainId: chainIdStore,
+      multisigByAccountId: $multisigByAccountId,
+      proxies: proxyModel.$proxies,
+      ownSignerAccountIds: $ownSignerAccountIds,
+      resolveName: $nameResolver,
+    },
+    ({ initiator, chainId, multisigByAccountId, proxies, ownSignerAccountIds, resolveName }): PathNode[] => {
+      if (!initiator || !chainId) return [];
+
+      return pickDefaultPath({
+        initiator,
+        chainId,
+        multisigByAccountId,
+        proxies: proxies as Record<AccountId, ProxyAccount[] | undefined>,
+        ownSignerAccountIds,
+        resolveName,
+        allowedProxyTypes,
+      });
+    },
+  );
+  defaultPathCache.set(cacheKey, $store);
+
+  return $store;
+}
+
 const $empty = createStore<PathNextOption[]>([]);
 
 const cachesCleared = createEvent();
 const clearCachesFx = createEffect(() => {
   nextOptionsCache.clear();
   sourcesForCache.clear();
+  defaultPathCache.clear();
 });
 sample({ clock: cachesCleared, target: clearCachesFx });
 
 export const graphModel = {
   $sourcesFor,
   $nextOptionsForNode,
+  $defaultPathFor,
   $nameResolver,
+  $multisigByAccountId,
+  $ownSignerAccountIds,
   $empty,
   cachesCleared,
+  pickDefaultPath,
 };

@@ -3090,6 +3090,11 @@
       "viaMultisig": "via Multisig",
       "multisig": "Multisig",
       "initiator": "Initiator"
+    },
+    "control": {
+      "editTitle": "Edit signing path",
+      "save": "Save",
+      "cancel": "Cancel"
     }
   },
   "splashscreen": {

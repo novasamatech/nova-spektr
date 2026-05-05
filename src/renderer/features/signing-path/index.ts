@@ -10,3 +10,4 @@ export {
 export { StepPath } from './ui/StepPath';
 export { PathBreadcrumb } from './ui/PathBreadcrumb';
 export { PathReviewPopover } from './ui/PathReviewPopover';
+export { SigningPathControl } from './ui/SigningPathControl';

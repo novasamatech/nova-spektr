@@ -41,6 +41,7 @@ import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { InitiateDraftButton } from '@/features/drafts';
+import { SigningPathControl } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
@@ -221,6 +222,7 @@ const SignatorySelector = memo(() => {
 
   const initiator = useUnit(formModel.form.fields.initiator.$value);
   const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
   const balances = useUnit(balanceModel.$balanceMap);
   const allAccounts = useUnit(accounts.$list);
@@ -272,6 +274,13 @@ const SignatorySelector = memo(() => {
     );
   }
 
+  // No allowedProxyTypes on the picker — keep every multisig pickable. The
+  // auto-default path in form-model still uses the allowed list so the
+  // pre-selection lands on a transfer-capable proxy when one exists.
+  const pathChip = (
+    <SigningPathControl chainId={network.chain.chainId} path={signingPath} onChange={formModel.signingPathChanged} />
+  );
+
   return (
     <SignatorySelect
       signatory={signatory.value}
@@ -282,6 +291,7 @@ const SignatorySelector = memo(() => {
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
       network={network}
+      action={pathChip}
       onChange={signatory.onChange}
     />
   );
