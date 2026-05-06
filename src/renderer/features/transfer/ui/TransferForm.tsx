@@ -17,6 +17,7 @@ import {
   nonNullable,
   nullable,
   performSearch,
+  toAccountId,
   toAddress,
   validateAddress,
   withdrawableAmount,
@@ -41,10 +42,10 @@ import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { InitiateDraftButton } from '@/features/drafts';
-import { SigningPathControl } from '@/features/signing-path';
+import { SigningPathInline, graphModel } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
-import { formModel } from '../model/form-model';
+import { TRANSFER_ALLOWED_PROXY_TYPES, formModel } from '../model/form-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
 import { TokenSelectorModal } from './TokenSelector';
@@ -228,6 +229,20 @@ const SignatorySelector = memo(() => {
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
+  const errors = useUnit(formModel.$errors);
+
+  // AccountIds with active balance/permission errors — surfaced to the path
+  // visualization so the failing hop lights up red (e.g. source can't cover
+  // the sending amount, signer can't cover fee + deposit).
+  const errorAccountIds = useMemo<ReadonlySet<AccountId>>(() => {
+    const ids = new Set<AccountId>();
+    for (const e of errors) {
+      if ('account' in e && e.account?.accountId) {
+        ids.add(e.account.accountId);
+      }
+    }
+    return ids;
+  }, [errors]);
 
   const signatoriesWithBalance = useMemo(() => {
     if (!network) {
@@ -274,13 +289,36 @@ const SignatorySelector = memo(() => {
     );
   }
 
-  // No allowedProxyTypes on the picker — keep every multisig pickable. The
-  // auto-default path in form-model still uses the allowed list so the
-  // pre-selection lands on a transfer-capable proxy when one exists.
-  const pathChip = (
-    <SigningPathControl chainId={network.chain.chainId} path={signingPath} onChange={formModel.signingPathChanged} />
-  );
+  // Once the path traverses a multisig (or proxy → multisig), the inline
+  // cards replace the signatory dropdown — the signer is already pinned by
+  // the path, so the only useful action is editing the path. Trivial paths
+  // (single direct signer) keep the legacy dropdown.
+  if (signingPath.length >= 2) {
+    const getBalance = (accountId: AccountId) => {
+      const balance = balanceUtils.getBalance(balances, accountId, network.chain.chainId, network.asset.assetId);
+      return balance ? withdrawableAmount(balance) : null;
+    };
 
+    return (
+      <SigningPathInline
+        chainId={network.chain.chainId}
+        path={signingPath}
+        asset={network.asset}
+        getBalance={getBalance}
+        errorAccountIds={errorAccountIds}
+        errorText={t(signatory.errorMessage)}
+        allowedProxyTypes={TRANSFER_ALLOWED_PROXY_TYPES}
+        disabledProxyReason={t('signingPath.transferProxyTypeDisabled')}
+        onChange={formModel.signingPathChanged}
+      />
+    );
+  }
+
+  // Trivial path (single direct signer): show the legacy dropdown only when
+  // the user actually has a choice between multiple signatories. Otherwise
+  // SignatorySelect auto-hides via its built-in `signatories.length <= 1`
+  // guard. We deliberately drop the path chip here because there's no
+  // multi-hop path to visualize.
   return (
     <SignatorySelect
       signatory={signatory.value}
@@ -291,7 +329,6 @@ const SignatorySelector = memo(() => {
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
       network={network}
-      action={pathChip}
       onChange={signatory.onChange}
     />
   );
@@ -516,6 +553,31 @@ const Destination = memo(() => {
 
   const options = [...walletsOptions, ...contactOptions];
 
+  // Synthetic "Address" group surfaces a typed/pasted address that isn't in
+  // the user's wallets or contacts, so transfers to fresh addresses still
+  // work without first adding a contact.
+  const customAddressOption = useMemo<ComboboxGroup | null>(() => {
+    const trimmed = query.trim();
+    if (!trimmed || !chain || !validateAddress(trimmed, chain)) return null;
+
+    const typedAccountId = toAccountId(trimmed);
+    const isAlreadyListed = options.some((g) => g.items.some((i) => toAccountId(i.value.address) === typedAccountId));
+    if (isAlreadyListed) return null;
+
+    return {
+      id: 'typed-address',
+      label: t('transfer.recipientPlaceholder'),
+      items: [{ id: trimmed, value: { address: trimmed }, label: <Address showIcon address={trimmed} /> }],
+    };
+  }, [query, chain, options, t]);
+
+  const allOptions = customAddressOption ? [customAddressOption, ...options] : options;
+
+  const handleChange = () => {
+    formModel.myselfClicked();
+    setQuery('');
+  };
+
   const prefixElement = (
     <Identicon
       invalid={destination.touched && destination.hasError}
@@ -524,11 +586,6 @@ const Destination = memo(() => {
       background={false}
     />
   );
-
-  const handleChange = () => {
-    formModel.myselfClicked();
-    setQuery('');
-  };
 
   return (
     <Field text={t('transfer.recipientLabel')}>
@@ -545,7 +602,7 @@ const Destination = memo(() => {
           onBlur={destination.markAsTouched}
           onInput={setQuery}
         >
-          {options.map((group) => (
+          {allOptions.map((group) => (
             <Combobox.Group key={group.id} title={group.label}>
               {group.items.map((option) => (
                 <Combobox.Item key={`${option.id}-${option.value.walletId ?? 'unknown'}`} value={option.value.address}>
@@ -653,12 +710,23 @@ const FeeSection = memo(() => {
   const destinationFee = useUnit(formModel.$destinationFee);
   const isDestinationFeeLoading = useUnit(xcmSpellTransferModel.$isDestinationFeeLoading);
   const shouldShowFees = useUnit(xcmSpellTransferModel.$shouldShowFees);
+  const signingPath = useUnit(formModel.$signingPath);
+  const multisigByAccountId = useUnit(graphModel.$multisigByAccountId);
 
   if (!network) {
     return null;
   }
 
-  const isMultisig = initiator && accountUtils.isAnyMultisigAccount(initiator);
+  // Resolve the multisig threshold from the path: a proxied → multisig →
+  // signer flow keeps the multisig in the middle of the path, not on the
+  // initiator (which is the proxied source). Without this lookup the deposit
+  // line goes missing whenever the user signs through a proxy.
+  const pathMultisigNode = signingPath.find((n) => n.kind === 'multisig');
+  const pathMultisigInfo = pathMultisigNode ? multisigByAccountId.get(pathMultisigNode.accountId) : null;
+
+  const initiatorThreshold = initiator && accountUtils.isAnyMultisigAccount(initiator) ? initiator.threshold : 0;
+  const isMultisig = initiatorThreshold > 0 || pathMultisigInfo !== null;
+  const threshold = pathMultisigInfo?.threshold ?? initiatorThreshold;
   const nativeAsset = getNativeAsset(network.chain.assets)!;
 
   return (
@@ -667,7 +735,7 @@ const FeeSection = memo(() => {
         <MultisigDepositWithLabel
           api={api}
           asset={nativeAsset}
-          threshold={initiator.threshold || 1}
+          threshold={threshold || 1}
           onDepositChange={(deposit) => formModel.multisigDepositChanged(new BN(deposit))}
         />
       )}

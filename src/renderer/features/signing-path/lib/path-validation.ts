@@ -27,10 +27,6 @@ export function isValidPath(path: PathNode[]): ValidationResult {
     }
   }
 
-  if (!path.some((n) => n.kind === 'multisig')) {
-    return { ok: false, reason: 'must contain at least one multisig node' };
-  }
-
   const seen = new Set<string>();
   for (const node of path) {
     if (seen.has(node.accountId)) {
@@ -64,9 +60,6 @@ export function isValidPathPrefix(path: PathNode[]): ValidationResult {
     const last = path[path.length - 1]!;
     if (last.kind !== 'multisig' && last.kind !== 'signer') {
       return { ok: false, reason: 'last node must be multisig or signer' };
-    }
-    if (last.kind === 'signer' && !path.some((n) => n.kind === 'multisig')) {
-      return { ok: false, reason: 'must contain at least one multisig node' };
     }
   }
 
