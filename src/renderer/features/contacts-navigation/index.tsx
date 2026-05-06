@@ -3,6 +3,9 @@ import { createFeature } from '@/shared/feature';
 import { Paths } from '@/shared/routes';
 import { navigationTopLinksPipeline } from '@/features/app-shell';
 
+import { AddressBookReconnectPill } from './ui/AddressBookReconnectPill';
+import { AddressBookStatusDot } from './ui/AddressBookStatusDot';
+
 export const contactsNavigationFeature = createFeature({
   name: 'contacts/navigation',
   enable: $features.map(({ contacts }) => contacts),
@@ -14,5 +17,7 @@ contactsNavigationFeature.inject(navigationTopLinksPipeline, (items) => {
     icon: 'addressBook',
     title: 'navigation.addressBookLabel',
     link: Paths.ADDRESS_BOOK,
+    iconBadge: <AddressBookStatusDot />,
+    trailingAction: <AddressBookReconnectPill />,
   });
 });
