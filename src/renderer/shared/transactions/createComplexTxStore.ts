@@ -19,6 +19,14 @@ type Params<T extends Transaction> = {
   accounts: Store<AnyAccount[]>;
   initiator: Store<AnyAccount | null>;
   signatory: Store<AnyAccount | null>;
+  /**
+   * Optional explicit route through the account graph. When this store emits a
+   * non-empty array, it wins over the BFS-derived route — letting the caller
+   * pin which intermediate multisig / proxy hops the wrapping uses (e.g. the
+   * user's signing-path selection, where two parallel multisigs could each
+   * reach the same signer but only one was picked).
+   */
+  routeOverride?: Store<AnyAccount[] | null>;
 };
 
 export const createComplexTxStore = <T extends Transaction>({
@@ -30,8 +38,17 @@ export const createComplexTxStore = <T extends Transaction>({
   accounts,
   initiator,
   signatory,
+  routeOverride,
 }: Params<T>) => {
-  const $route = createRouteStore({ accounts, initiator, signatory, chain });
+  const $bfsRoute = createRouteStore({ accounts, initiator, signatory, chain });
+  // Prefer the override when it carries enough hops to wrap the transaction;
+  // fall back to the BFS route for empty/missing overrides so existing flows
+  // (no signing-path widget) keep working.
+  const $route = routeOverride
+    ? combine($bfsRoute, routeOverride, (bfsRoute, override) =>
+        override && override.length >= 2 ? override : bfsRoute,
+      )
+    : $bfsRoute;
 
   const $tx = createStore<Transaction | null>(null);
   const $feeTx = createStore<Transaction | null>(null);
