@@ -45,12 +45,11 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
 
   return (
     <RadixAccordion.Header asChild>
-      <div className={cnTw('block w-full', sticky && 'sticky top-0 z-10')}>
+      <div className={cnTw('block w-full', sticky && 'sticky top-0 z-10 bg-background-default')}>
         <RadixAccordion.Trigger
           className={cnTw(
             'group flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-caption text-text-secondary uppercase',
             'transition-colors duration-100 hover:bg-action-background-hover',
-            sticky && 'bg-background-default',
           )}
         >
           <div className="flex min-w-0 grow items-center gap-2 truncate text-start">{children}</div>
