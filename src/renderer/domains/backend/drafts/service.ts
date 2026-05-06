@@ -1,12 +1,26 @@
+import { type HexString } from '@polkadot/util/types';
 import { z } from 'zod';
 
 import { authFetch, parseResponse } from '@/shared/api/backend-fetch';
+import { isCorrectAccountId, isEthereumAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const pathNodeKindSchema = z.enum(['proxied', 'multisig', 'signer']);
 
+// Backend ships accountIds as plain hex strings; brand them at parse time so
+// every consumer sees `AccountId` without ad-hoc casts. Validation matches
+// `accountIdSchema` (Substrate or Ethereum hex), so an unbranded path node
+// never reaches the renderer.
+const accountIdStringSchema = z
+  .string()
+  .refine(v => isCorrectAccountId(v as HexString) || isEthereumAccountId(v), {
+    message: 'invalid accountId',
+  })
+  .transform(v => v as AccountId);
+
 export const pathNodeSchema = z.object({
   kind: pathNodeKindSchema,
-  accountId: z.string(),
+  accountId: accountIdStringSchema,
   proxyType: z.string().optional(),
 });
 

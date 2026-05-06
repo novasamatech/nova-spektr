@@ -7,6 +7,19 @@ import { NextOptionRow } from './NextOptionRow';
 
 vi.mock('@/shared/ui-entities', () => ({
   WalletAccountIcon: () => null,
+  AssetBalance: () => null,
+}));
+
+vi.mock('@/shared/i18n', () => ({
+  useI18n: vi.fn().mockReturnValue({
+    t: (key: string, params?: Record<string, unknown>) => {
+      if (key === 'signingPath.label.thresholdRatio' && params) {
+        return `${params['current']} of ${params['total']}`;
+      }
+      if (key === 'signingPath.label.multisig') return 'Multisig';
+      return key;
+    },
+  }),
 }));
 
 const acc = (n: number): AccountId => `1${'0'.repeat(46)}${n}`.slice(0, 48) as AccountId;

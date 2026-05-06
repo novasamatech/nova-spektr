@@ -123,6 +123,7 @@ const readyToConfirm = sample({
       destinationChain: form.destinationChain,
       destination: form.destination,
       route: form.route,
+      signingPath: form.signingPath,
       amount: form.amount,
       rawAmount: form.rawAmount,
       fee: form.fee,
