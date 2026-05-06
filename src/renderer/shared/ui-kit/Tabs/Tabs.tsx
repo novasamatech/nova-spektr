@@ -4,19 +4,19 @@ import { type PropsWithChildren, Children, cloneElement, isValidElement } from '
 import { cnTw } from '@/shared/lib/utils';
 import { Carousel } from '../Carousel/Carousel';
 
-type RootProps = PropsWithChildren<{
-  value: string;
-  onChange: (value: string) => unknown;
+type RootProps<T extends string> = PropsWithChildren<{
+  value: T;
+  onChange: (value: T) => unknown;
 }>;
 
-const Root = ({ value, onChange, children }: RootProps) => {
+const Root = <T extends string>({ value, onChange, children }: RootProps<T>) => {
   const indexedChildren = Children.map(children, (child, index) =>
     // @ts-expect-error __index field is not typed
     isValidElement(child) ? cloneElement(child, { __index: index }) : null,
   );
 
   return (
-    <RadixTabs.Root value={value} asChild onValueChange={onChange}>
+    <RadixTabs.Root value={value} asChild onValueChange={v => onChange(v as T)}>
       <Carousel item={value} fixedHeight>
         {indexedChildren}
       </Carousel>

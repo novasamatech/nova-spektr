@@ -4,8 +4,7 @@ import { type Contact } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
-
-import '../backend-contacts-model';
+import { backendContactsModel } from '../backend-contacts-model';
 
 const backendContacts: Contact[] = [
   {
@@ -86,8 +85,8 @@ describe('features/contacts/BackendContacts/model/backend-contacts-model', () =>
     expect(scope.getState(contactModel.$backendContacts)).toEqual(backendContacts);
   });
 
-  test('should NOT clear backend contacts when session expires', async () => {
-    const clearSpy = jest.fn().mockResolvedValue([]);
+  test('should clear backend contacts when session expires', async () => {
+    const clearSpy = jest.fn().mockResolvedValue(['backend-1', 'backend-2']);
 
     const scope = fork({
       values: new Map().set(contactModel.$contacts, [...backendContacts, localContact]),
@@ -96,8 +95,80 @@ describe('features/contacts/BackendContacts/model/backend-contacts-model', () =>
 
     await allSettled(authModel.$isSessionExpired, { scope, params: true });
 
+    expect(clearSpy).toHaveBeenCalledTimes(1);
+    expect(scope.getState(contactModel.$contacts)).toEqual([localContact]);
+  });
+
+  test('should NOT clear backend contacts when $isSessionExpired transitions to false', async () => {
+    const clearSpy = jest.fn().mockResolvedValue([]);
+
+    const scope = fork({
+      values: new Map()
+        .set(contactModel.$contacts, [...backendContacts, localContact])
+        .set(authModel.$isSessionExpired, true),
+      handlers: [[contactModel.effects.clearBackendContactsFx, clearSpy]],
+    });
+
+    await allSettled(authModel.$isSessionExpired, { scope, params: false });
+
     expect(clearSpy).not.toHaveBeenCalled();
     expect(scope.getState(contactModel.$backendContacts)).toEqual(backendContacts);
+  });
+
+  test('should clear backend contacts on a network/reachability issue', async () => {
+    const clearSpy = jest.fn().mockResolvedValue(['backend-1', 'backend-2']);
+
+    const scope = fork({
+      values: new Map().set(contactModel.$contacts, [...backendContacts, localContact]),
+      handlers: [[contactModel.effects.clearBackendContactsFx, clearSpy]],
+    });
+
+    await allSettled(authModel.$hasNetworkIssue, { scope, params: true });
+
+    expect(clearSpy).toHaveBeenCalledTimes(1);
+    expect(scope.getState(contactModel.$contacts)).toEqual([localContact]);
+  });
+
+  test('should refetch backend contacts when network issue clears (session still authed)', async () => {
+    const fetchSpy = jest.fn().mockResolvedValue([]);
+
+    const scope = fork({
+      values: new Map()
+        .set(authModel.$hasNetworkIssue, true)
+        .set(authModel.$authState, {
+          accountId: toAccountId('0x04'),
+          accountName: 'Signer',
+          permissions: [],
+        })
+        .set(backendConfigurationModel.$backendUrl, 'https://backend.example.com'),
+      handlers: [
+        [contactModel.effects.clearBackendContactsFx, jest.fn().mockResolvedValue([])],
+        [backendContactsModel.__test.fetchBackendContactsFx, fetchSpy],
+      ],
+    });
+
+    await allSettled(authModel.$hasNetworkIssue, { scope, params: false });
+
+    expect(fetchSpy).toHaveBeenCalledWith('https://backend.example.com');
+  });
+
+  test('should NOT refetch when network issue clears but no auth state', async () => {
+    const fetchSpy = jest.fn().mockResolvedValue([]);
+
+    const scope = fork({
+      values: new Map()
+        .set(authModel.$hasNetworkIssue, true)
+        .set(authModel.$authState, null)
+        .set(backendConfigurationModel.$backendUrl, 'https://backend.example.com'),
+      handlers: [
+        [contactModel.effects.clearBackendContactsFx, jest.fn().mockResolvedValue([])],
+        [backendContactsModel.__test.fetchBackendContactsFx, fetchSpy],
+      ],
+    });
+
+    await allSettled(authModel.$hasNetworkIssue, { scope, params: false });
+
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   test('should preserve local contacts when connection is deleted', async () => {

@@ -43,10 +43,11 @@ export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 type Props = {
   wallet: PolkadotVaultWallet;
+  defaultTab?: 'accounts' | 'proxies';
   onClose: () => void;
 };
 
-export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
+export const VaultWalletDetails = ({ wallet, defaultTab, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
   useGate(walletProxiesModel.flow, { wallet });
   const { t } = useI18n();
@@ -65,7 +66,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const [isImportModalOpen, toggleImportModal] = useToggle();
   const [isScanModalOpen, toggleScanModal] = useToggle();
 
-  const [tab, setTab] = useState('accounts');
+  const [tab, setTab] = useState(defaultTab === 'proxies' ? 'proxies' : 'accounts');
   const [chains, setChains] = useState<Chain[]>([]);
 
   const walletAccounts = useStoreMap({

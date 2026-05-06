@@ -29,7 +29,7 @@ export { type TimelineStep, Timeline } from './Timeline/Timeline';
 export { Select } from './Select/Select';
 export { Slider } from './Slider/Slider';
 export { type LabelVariant, Label } from './Label/Label';
-export { Modal } from './Modal/Modal';
+export { Modal, useModalOverlay } from './Modal/Modal';
 export { type Step, StepIndicator } from './StepIndicator/StepIndicator';
 export { Field } from './Field/Field';
 export { Input } from './Input/Input';

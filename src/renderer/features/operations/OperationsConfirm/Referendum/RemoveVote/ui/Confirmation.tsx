@@ -19,6 +19,7 @@ import { getLocksForAccount, lockPeriodsModel, locksPeriodsAggregate } from '@/f
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { FeeWithDataLoading } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../../common/MultisigExistsAlert';
+import { MultisigOperationDescriptionField } from '../../../common/MultisigOperationDescriptionField';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -126,6 +127,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
           <FeeWithDataLoading api={api} asset={asset} transaction={tx} />
         </DetailRow>
       </TransactionDetails>
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-end">
         <div className="flex gap-4">

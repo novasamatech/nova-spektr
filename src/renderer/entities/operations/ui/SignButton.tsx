@@ -31,17 +31,19 @@ type Props = {
   type?: WalletType; // TODO: should not be undefined
   isDefault?: boolean;
   disabled?: boolean;
+  isLoading?: boolean;
   className?: string;
   onClick?: () => void;
 };
 
-export const SignButton = ({ disabled, isDefault, type, className, onClick }: Props) => {
+export const SignButton = ({ disabled, isDefault, isLoading, type, className, onClick }: Props) => {
   const { t } = useI18n();
 
   return (
     <Button
       className={className}
       disabled={disabled}
+      isLoading={isLoading}
       prefixElement={
         type && <Icon className="text-icon-button" name={WalletIcon[type as SignableWalletFamily]} size={14} />
       }

@@ -156,6 +156,61 @@ describe('contactImportUtils', () => {
     });
   });
 
+  describe('findDuplicateAccountIds', () => {
+    it('should return empty when no duplicates', () => {
+      const imported = [
+        { name: 'Alice', address: ALICE_ADDRESS },
+        { name: 'Bob', address: BOB_ADDRESS },
+      ];
+
+      const duplicates = contactImportUtils.findDuplicateAccountIds(imported);
+
+      expect(duplicates).toHaveLength(0);
+    });
+
+    it('should group entries that share the same accountId', () => {
+      const imported = [
+        { name: 'Alice', address: ALICE_ADDRESS },
+        { name: 'AliceClone', address: ALICE_ADDRESS },
+      ];
+
+      const duplicates = contactImportUtils.findDuplicateAccountIds(imported);
+
+      expect(duplicates).toHaveLength(1);
+      expect(duplicates[0]!.accountId).toBe(toAccountId(ALICE_ADDRESS));
+      expect(duplicates[0]!.names).toEqual(['Alice', 'AliceClone']);
+    });
+
+    it('should report multiple duplicate groups', () => {
+      const imported = [
+        { name: 'Alice', address: ALICE_ADDRESS },
+        { name: 'AliceClone', address: ALICE_ADDRESS },
+        { name: 'Bob', address: BOB_ADDRESS },
+        { name: 'BobClone', address: BOB_ADDRESS },
+        { name: 'Charlie', address: CHARLIE_ADDRESS },
+      ];
+
+      const duplicates = contactImportUtils.findDuplicateAccountIds(imported);
+
+      expect(duplicates).toHaveLength(2);
+      const accountIds = duplicates.map((d) => d.accountId).sort();
+      expect(accountIds).toEqual([toAccountId(ALICE_ADDRESS), toAccountId(BOB_ADDRESS)].sort());
+    });
+
+    it('should list all conflicting names in encounter order', () => {
+      const imported = [
+        { name: 'First', address: ALICE_ADDRESS },
+        { name: 'Second', address: ALICE_ADDRESS },
+        { name: 'Third', address: ALICE_ADDRESS },
+      ];
+
+      const duplicates = contactImportUtils.findDuplicateAccountIds(imported);
+
+      expect(duplicates).toHaveLength(1);
+      expect(duplicates[0]!.names).toEqual(['First', 'Second', 'Third']);
+    });
+  });
+
   describe('detectAccountIdConflicts', () => {
     it('should detect no conflicts when accountIds are different', () => {
       const imported = [

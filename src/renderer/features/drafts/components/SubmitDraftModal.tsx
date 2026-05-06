@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useMemo, useState } from 'react';
 
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { getNativeAsset, nullable, toAddress } from '@/shared/lib/utils';
@@ -15,7 +16,7 @@ import {
   Loader,
   Separator,
 } from '@/shared/ui';
-import { Account, Address, WalletIcon } from '@/shared/ui-entities';
+import { Account, Address, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Box, Field, Modal, Select } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { transactionService, useAccountName } from '@/domains/network';
@@ -25,11 +26,10 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { OperationSign, OperationSubmit } from '@/features/operations';
+import { PathBreadcrumb } from '@/features/signing-path';
 import { WalletDetails } from '@/features/wallet-details';
 import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { submitDraftModel } from '../model/submit-draft-model';
-
-import { PathBreadcrumb } from './signing-path/PathBreadcrumb';
 
 type Props = {
   onClose: () => void;
@@ -86,6 +86,9 @@ const ConfirmStep = () => {
   const draft = useUnit(submitDraftModel.$draft);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
   const initiatorUnavailable = useUnit(submitDraftModel.$initiatorUnavailable);
+  const validationErrors = useUnit(submitDraftModel.$validationErrors);
+  const validationValid = useUnit(submitDraftModel.$validationValid);
+  const validationPending = useUnit(submitDraftModel.$validationPending);
 
   const [showWalletDetails, setShowWalletDetails] = useState(false);
 
@@ -219,9 +222,9 @@ const ConfirmStep = () => {
 
   return (
     <>
-      {signingPath.length > 0 && (
+      {signingPath.length > 0 && draft && (
         <div className="mx-5 mt-4">
-          <PathBreadcrumb path={signingPath} size="sm" />
+          <PathBreadcrumb path={signingPath} chainId={draft.chainId as ChainId} size="sm" />
         </div>
       )}
 
@@ -329,10 +332,16 @@ const ConfirmStep = () => {
         </dl>
       </Box>
 
+      {validationErrors.length > 0 && (
+        <div className="mx-5 mb-3">
+          <TransactionValidationError errors={validationErrors} wallets={wallets} />
+        </div>
+      )}
+
       <Modal.Footer align="between">
         <div />
         <SignButton
-          disabled={nullable(wrappedExtrinsic) || nullable(fee)}
+          disabled={nullable(wrappedExtrinsic) || nullable(fee) || validationPending || !validationValid}
           type={confirm.signatoryWallet.type}
           onClick={submitDraftModel.confirmModel.startSigning}
         />

@@ -33,6 +33,7 @@ import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { balanceSubModel } from '@/features/assets-balances';
+import { multisigService } from '@/features/multisig-wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -536,15 +537,19 @@ sample({
 
 sample({
   clock: submitModel.done,
-  source: { isMultisig: $isMultisig, coreTx: $coreTx, wrappedTx: $tx },
-  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  source: { isMultisig: $isMultisig, coreTx: $coreTx, wrappedTx: $tx, route: $route },
+  filter: ({ isMultisig, route }, results) =>
+    isMultisig &&
+    submitUtils.isSuccessResult(results[0]!.result) &&
+    nonNullable(route.find(accountUtils.isAnyMultisigAccount)),
+  fn: ({ coreTx, wrappedTx, route }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
+    const multisigAccount = route.find(accountUtils.isAnyMultisigAccount)!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
       chainId: coreTx!.chainId,
       callHash: wrappedTx!.args.callHash,
-      multisigAccountId: coreTx!.accountId,
+      multisigAccountId: multisigService.getMultisigAccountId(multisigAccount),
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });
@@ -590,6 +595,8 @@ export const removeProxyModel = {
 
   $step,
   $wallet,
+  $coreTx,
+  $api,
   stepChanged,
   wentBackFromConfirm,
   txSaved,

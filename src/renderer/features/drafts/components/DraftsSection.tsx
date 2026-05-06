@@ -20,7 +20,8 @@ import { networkModel, useApi } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { tryDecodeCallData } from '../lib/decode-call-data';
-import { createDraftModel } from '../model/create-draft-model';
+import { useCanCreateDraft } from '../lib/useCanCreateDraft';
+import { DESCRIPTION_MAX_LENGTH, createDraftModel } from '../model/create-draft-model';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
 import '../model/drafts-model'; // side-effect: orchestration wiring
 import { submitDraftModel } from '../model/submit-draft-model';
@@ -38,7 +39,7 @@ export const DraftsSection = () => {
   const focusedDraftId = useUnit(draftDeepLinkModel.$focusedDraftId);
 
   const canRead = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_READ) ?? false);
-  const canWrite = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_WRITE) ?? false);
+  const canWrite = useCanCreateDraft();
   const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);
 
   const { data: drafts } = useDrafts(canRead ? backendUrl : null);
@@ -210,7 +211,7 @@ export const DraftsSection = () => {
 
   return (
     <div className="mb-6">
-      <Accordion open={focusedDraftId ? true : undefined}>
+      <Accordion initialOpen>
         <Accordion.Trigger sticky>
           <div className="flex items-center gap-2 py-2">
             <FootnoteText className="font-medium text-text-secondary">{t('operations.drafts.title')}</FootnoteText>
@@ -306,10 +307,14 @@ export const DraftsSection = () => {
                   placeholder={t('operations.drafts.descriptionPlaceholder')}
                   rows={3}
                   value={editDescription}
+                  invalid={editDescription.length > DESCRIPTION_MAX_LENGTH}
                   onChange={setEditDescription}
                 />
                 <InputHint variant="error" active={!editDescription.trim()}>
                   {t('operations.drafts.descriptionRequired')}
+                </InputHint>
+                <InputHint variant="error" active={editDescription.length > DESCRIPTION_MAX_LENGTH}>
+                  {t('operations.drafts.descriptionMaxLengthError', { max: DESCRIPTION_MAX_LENGTH })}
                 </InputHint>
               </Field>
 
@@ -340,7 +345,7 @@ export const DraftsSection = () => {
               {t('operations.drafts.backButton')}
             </Button>
             <Button
-              disabled={!editDescription.trim() || !isEditDirty}
+              disabled={!editDescription.trim() || editDescription.length > DESCRIPTION_MAX_LENGTH || !isEditDirty}
               isLoading={isSavingEdit}
               onClick={handleSaveEdit}
             >

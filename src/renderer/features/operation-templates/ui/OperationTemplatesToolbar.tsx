@@ -6,6 +6,7 @@ import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
+import { useModalOverlay } from '@/shared/ui-kit';
 import { useNotification } from '@/shared/ui-kit/NotificationContext';
 import { useTheme } from '@/shared/ui-kit/Theme/useTheme';
 import { type OperationTemplate } from '@/domains/operation-templates';
@@ -39,6 +40,7 @@ export const OperationTemplatesToolbar = ({
   const { t } = useI18n();
   const { toast } = useNotification();
   const { portalContainer } = useTheme();
+  const modalOverlay = useModalOverlay();
   const [open, setOpen] = useState(false);
 
   const handleApply = (template: OperationTemplate) => {
@@ -47,7 +49,8 @@ export const OperationTemplatesToolbar = ({
     setOpen(false);
   };
 
-  if (!portalContainer) return null;
+  const container = modalOverlay ?? portalContainer;
+  if (!container) return null;
 
   return createPortal(
     <>
@@ -101,6 +104,6 @@ export const OperationTemplatesToolbar = ({
         </div>
       </div>
     </>,
-    portalContainer,
+    container,
   );
 };

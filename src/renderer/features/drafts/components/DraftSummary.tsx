@@ -112,7 +112,7 @@ export const DraftSummary = ({
                 <Modal.Title close>{t('operation.viewJSON.label')}</Modal.Title>
                 <Modal.Content>
                   <Box padding={5}>
-                    <Json value={jsonArgs} name="callData" expandDepth={3} />
+                    <Json value={jsonArgs} name="callData" />
                   </Box>
                 </Modal.Content>
               </Modal>

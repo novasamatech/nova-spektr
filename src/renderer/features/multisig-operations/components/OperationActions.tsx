@@ -60,34 +60,41 @@ export const OperationActions = memo(({ operation, account }: Props) => {
 
   if (!chain && !isContact) return null;
 
+  if (isContact) {
+    return (
+      <div className="flex w-[220px] shrink-0" onClick={e => e.stopPropagation()}>
+        <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex w-[220px] shrink-0 justify-center gap-x-2" onClick={e => e.stopPropagation()}>
-      {api && chain && isRejectAvailable && (
-        <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
-          <Button pallet="error" variant="fill" size="sm" className="max-w-1/2 flex-1">
-            {t('operation.rejectButton')}
-          </Button>
-        </RejectTxModal>
-      )}
-      {api && chain && isApproveAvailable && (
-        <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
-          <Button size="sm" className="max-w-1/2 flex-1">
-            {t('operation.approveButton')}
-          </Button>
-        </ApproveTxModal>
-      )}
-      {api && chain && needsCallData && (
-        <CallDataModal api={api} operation={operation} chain={chain}>
-          <Button size="sm" variant="chip" className="max-w-1/2 flex-1 whitespace-nowrap">
-            {t('operation.callData.addCallDataButton')}
-          </Button>
-        </CallDataModal>
-      )}
-      {isContact && (
-        <div className="max-w-1/2 flex-1">
-          <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
-        </div>
-      )}
+    <div className="grid w-[220px] shrink-0 grid-cols-2 gap-x-2" onClick={e => e.stopPropagation()}>
+      <div className="flex">
+        {api && chain && isRejectAvailable && (
+          <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
+            <Button pallet="error" variant="fill" size="sm" className="w-full">
+              {t('operation.rejectButton')}
+            </Button>
+          </RejectTxModal>
+        )}
+      </div>
+      <div className="flex">
+        {api && chain && isApproveAvailable && (
+          <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
+            <Button size="sm" className="w-full">
+              {t('operation.approveButton')}
+            </Button>
+          </ApproveTxModal>
+        )}
+        {api && chain && needsCallData && (
+          <CallDataModal api={api} operation={operation} chain={chain}>
+            <Button size="sm" variant="chip" className="w-full whitespace-nowrap">
+              {t('operation.callData.addCallDataButton')}
+            </Button>
+          </CallDataModal>
+        )}
+      </div>
     </div>
   );
 });

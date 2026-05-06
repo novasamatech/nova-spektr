@@ -16,6 +16,7 @@ import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -205,6 +206,8 @@ export const Confirmation = ({
             <StakingPopover.Item>{t('staking.confirmation.hintWithdraw')}</StakingPopover.Item>
           </StakingPopover>
         </TransactionDetails>
+
+        <MultisigOperationDescriptionField />
 
         <div className="mt-3 flex w-full justify-between">
           {onGoBack && (
