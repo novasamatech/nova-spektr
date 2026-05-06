@@ -112,7 +112,7 @@ function makeValues(
   }
 
   return new Map<any, any>([
-    [contactModel.$contacts, contacts],
+    [contactModel.$backendContacts, contacts],
     [proxyModel.$proxies, proxiesDict],
     [accounts.__test.$list, ownAccounts],
   ]);
