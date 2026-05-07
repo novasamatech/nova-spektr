@@ -11,11 +11,10 @@ import { connectionStatusModel } from '../model/connection-status-model';
 export const AddressBookReconnectPill = () => {
   const { t } = useI18n();
 
-  const [featureEnabled, hasEverConnected, isHealthy, hasAuthIssue] = useUnit([
+  const [featureEnabled, hasEverConnected, isHealthy] = useUnit([
     connectionStatusModel.$featureEnabled,
     connectionStatusModel.$hasEverConnected,
     backendContactsModel.$isHealthy,
-    backendContactsModel.$hasAuthIssue,
   ]);
 
   if (!featureEnabled || !hasEverConnected || isHealthy) return null;
@@ -23,11 +22,7 @@ export const AddressBookReconnectPill = () => {
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    if (hasAuthIssue) {
-      backendConfigurationModel.events.editStarted();
-    } else {
-      backendContactsModel.events.syncTriggered();
-    }
+    backendConfigurationModel.events.editStarted();
   };
 
   const label = t('addressBook.auth.reconnectButton');

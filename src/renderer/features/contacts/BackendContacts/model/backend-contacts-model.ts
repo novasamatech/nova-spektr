@@ -173,7 +173,6 @@ export const backendContactsModel = {
   $syncStatus,
   $syncStatusThrottled,
   $isHealthy,
-  $hasAuthIssue,
 
   events: {
     syncTriggered,

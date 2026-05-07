@@ -1,10 +1,7 @@
-import { useUnit } from 'effector-react';
-
 import { useI18n } from '@/shared/i18n';
 import { Button, Icon } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
 import { backendConfigurationModel } from '@/aggregates/backend';
-import { backendContactsModel } from '@/features/contacts';
 
 type Props = {
   variant?: 'fill' | 'chip';
@@ -12,14 +9,9 @@ type Props = {
 
 export const ReconnectAddressBookButton = ({ variant = 'chip' }: Props) => {
   const { t } = useI18n();
-  const hasAuthIssue = useUnit(backendContactsModel.$hasAuthIssue);
 
   const handleClick = () => {
-    if (hasAuthIssue) {
-      backendConfigurationModel.events.editStarted();
-    } else {
-      backendContactsModel.events.syncTriggered();
-    }
+    backendConfigurationModel.events.editStarted();
   };
 
   return (
