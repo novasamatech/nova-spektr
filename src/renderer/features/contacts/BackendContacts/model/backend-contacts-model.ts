@@ -1,4 +1,4 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 
 import { persist } from '@/shared/api/storage';
 import { type BackendContact } from '@/shared/core';
@@ -148,12 +148,32 @@ sample({
   target: fetchBackendContactsFx,
 });
 
+// Address book is "healthy" when the user is signed in, no auth/network issues, and contacts are
+// not in sync-error state. UI surfaces (sidebar pill/dot, drafts overlay, save-as-draft swap)
+// derive their visibility from this single source of truth.
+const $hasAuthIssue = combine(
+  {
+    isAuthenticated: authModel.$isAuthenticated,
+    isSessionExpired: authModel.$isSessionExpired,
+    hasNetworkIssue: authModel.$hasNetworkIssue,
+  },
+  ({ isAuthenticated, isSessionExpired, hasNetworkIssue }) => !isAuthenticated || isSessionExpired || hasNetworkIssue,
+);
+
+const $isHealthy = combine(
+  $hasAuthIssue,
+  $syncStatus,
+  (hasAuthIssue, syncStatus) => !hasAuthIssue && syncStatus !== 'error',
+);
+
 export const backendContactsModel = {
   $isLoading,
   $error,
   $lastSyncTime,
   $syncStatus,
   $syncStatusThrottled,
+  $isHealthy,
+  $hasAuthIssue,
 
   events: {
     syncTriggered,

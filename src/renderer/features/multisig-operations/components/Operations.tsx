@@ -41,7 +41,6 @@ export const Operations = () => {
   const isTabDataLoading = useUnit(operationsContextModel.$isTabDataLoading);
   const tab = useUnit(operationsContextModel.$tab);
   const baseUrl = useUnit(backendConfigurationModel.$backendUrl);
-  const hasBackend = useUnit(backendConfigurationModel.$hasBackend);
   const hasEverConnected = useUnit(connectionHistoryModel.$hasEverConnected);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
 
@@ -139,7 +138,7 @@ export const Operations = () => {
 
       {hasMultisigAccounts && (
         <ScrollArea viewportRef={scrollRef}>
-          {tab === 'pending' && hasBackend && hasEverConnected && <DraftsSection />}
+          {tab === 'pending' && hasEverConnected && <DraftsSection />}
 
           {(isDeferredLoading || isDeepLinkLoading) && (
             <div className="mt-4 flex w-full items-center justify-center gap-x-3">

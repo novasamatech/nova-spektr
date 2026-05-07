@@ -38,12 +38,9 @@ export const DraftsSection = () => {
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const authState = useUnit(authModel.$authState);
-  const isSessionExpired = useUnit(authModel.$isSessionExpired);
-  const hasNetworkIssue = useUnit(authModel.$hasNetworkIssue);
-  const syncStatus = useUnit(backendContactsModel.$syncStatus);
+  const isHealthy = useUnit(backendContactsModel.$isHealthy);
   const focusedDraftId = useUnit(draftDeepLinkModel.$focusedDraftId);
 
-  const isHealthy = isAuthenticated && !isSessionExpired && !hasNetworkIssue && syncStatus !== 'error';
   const canRead = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_READ) ?? false);
   const canWrite = useCanCreateDraft();
   const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);

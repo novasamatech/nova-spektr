@@ -1,23 +1,21 @@
 import { useUnit } from 'effector-react';
 
 import { cnTw } from '@/shared/lib/utils';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { authModel } from '@/aggregates/backend';
 import { backendContactsModel } from '@/features/contacts';
 import { connectionStatusModel } from '../model/connection-status-model';
 
 export const AddressBookStatusDot = () => {
-  const [featureEnabled, hasEverConnected, hasBackend, isAuthenticated, isSessionExpired, hasNetworkIssue, syncStatus] =
-    useUnit([
-      connectionStatusModel.$featureEnabled,
-      connectionStatusModel.$hasEverConnected,
-      backendConfigurationModel.$hasBackend,
-      authModel.$isAuthenticated,
-      authModel.$isSessionExpired,
-      authModel.$hasNetworkIssue,
-      backendContactsModel.$syncStatus,
-    ]);
+  const [featureEnabled, hasEverConnected, isAuthenticated, isSessionExpired, hasNetworkIssue, syncStatus] = useUnit([
+    connectionStatusModel.$featureEnabled,
+    connectionStatusModel.$hasEverConnected,
+    authModel.$isAuthenticated,
+    authModel.$isSessionExpired,
+    authModel.$hasNetworkIssue,
+    backendContactsModel.$syncStatus,
+  ]);
 
-  if (!featureEnabled || !hasEverConnected || !hasBackend) return null;
+  if (!featureEnabled || !hasEverConnected) return null;
 
   const isWarning = isSessionExpired || hasNetworkIssue || syncStatus === 'error';
   const isConnected = isAuthenticated && !isWarning;

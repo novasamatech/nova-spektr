@@ -5,7 +5,7 @@ import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
-import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
+import { connectionHistoryModel } from '@/aggregates/backend';
 import { backendContactsModel } from '@/features/contacts';
 import { useCanCreateDraft } from '../lib/useCanCreateDraft';
 import { createDraftModel } from '../model/create-draft-model';
@@ -56,13 +56,7 @@ export const InitiateDraftButton = ({
   const { t } = useI18n();
   const canWrite = useCanCreateDraft();
   const hasEverConnected = useUnit(connectionHistoryModel.$hasEverConnected);
-  const hasBackend = useUnit(backendConfigurationModel.$hasBackend);
-  const isAuthenticated = useUnit(authModel.$isAuthenticated);
-  const isSessionExpired = useUnit(authModel.$isSessionExpired);
-  const hasNetworkIssue = useUnit(authModel.$hasNetworkIssue);
-  const syncStatus = useUnit(backendContactsModel.$syncStatus);
-
-  const isHealthy = isAuthenticated && !isSessionExpired && !hasNetworkIssue && syncStatus !== 'error';
+  const isHealthy = useUnit(backendContactsModel.$isHealthy);
 
   // Tracks whether this button instance started the currently-open draft flow.
   // Only the initiator should fire onDraftCreated — prevents unrelated draft
@@ -88,8 +82,8 @@ export const InitiateDraftButton = ({
     };
   }, [onDraftCreated]);
 
-  // No backend configured or user has never connected — keep the footer clean.
-  if (!hasBackend || !hasEverConnected) return null;
+  // User has never connected — keep the footer clean.
+  if (!hasEverConnected) return null;
 
   // Connection issue (auth/network/sync) — swap with reconnect CTA.
   if (!isHealthy) return <ReconnectAddressBookButton />;

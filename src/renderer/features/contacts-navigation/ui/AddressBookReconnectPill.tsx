@@ -4,35 +4,26 @@ import { type MouseEvent } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { Icon } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { backendConfigurationModel } from '@/aggregates/backend';
 import { backendContactsModel } from '@/features/contacts';
 import { connectionStatusModel } from '../model/connection-status-model';
 
 export const AddressBookReconnectPill = () => {
   const { t } = useI18n();
 
-  const [featureEnabled, hasEverConnected, hasBackend, isAuthenticated, isSessionExpired, hasNetworkIssue, syncStatus] =
-    useUnit([
-      connectionStatusModel.$featureEnabled,
-      connectionStatusModel.$hasEverConnected,
-      backendConfigurationModel.$hasBackend,
-      authModel.$isAuthenticated,
-      authModel.$isSessionExpired,
-      authModel.$hasNetworkIssue,
-      backendContactsModel.$syncStatus,
-    ]);
+  const [featureEnabled, hasEverConnected, isHealthy, hasAuthIssue] = useUnit([
+    connectionStatusModel.$featureEnabled,
+    connectionStatusModel.$hasEverConnected,
+    backendContactsModel.$isHealthy,
+    backendContactsModel.$hasAuthIssue,
+  ]);
 
-  const isHealthy = isAuthenticated && !isSessionExpired && !hasNetworkIssue && syncStatus !== 'error';
-  const isActionable = featureEnabled && hasEverConnected && hasBackend && !isHealthy;
-
-  if (!isActionable) return null;
-
-  const isAuthIssue = !isAuthenticated || isSessionExpired || hasNetworkIssue;
+  if (!featureEnabled || !hasEverConnected || isHealthy) return null;
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    if (isAuthIssue) {
+    if (hasAuthIssue) {
       backendConfigurationModel.events.editStarted();
     } else {
       backendContactsModel.events.syncTriggered();

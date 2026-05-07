@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { Button, Icon } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { backendConfigurationModel } from '@/aggregates/backend';
 import { backendContactsModel } from '@/features/contacts';
 
 type Props = {
@@ -12,14 +12,10 @@ type Props = {
 
 export const ReconnectAddressBookButton = ({ variant = 'chip' }: Props) => {
   const { t } = useI18n();
-  const isAuthenticated = useUnit(authModel.$isAuthenticated);
-  const isSessionExpired = useUnit(authModel.$isSessionExpired);
-  const hasNetworkIssue = useUnit(authModel.$hasNetworkIssue);
-
-  const isAuthIssue = !isAuthenticated || isSessionExpired || hasNetworkIssue;
+  const hasAuthIssue = useUnit(backendContactsModel.$hasAuthIssue);
 
   const handleClick = () => {
-    if (isAuthIssue) {
+    if (hasAuthIssue) {
       backendConfigurationModel.events.editStarted();
     } else {
       backendContactsModel.events.syncTriggered();
