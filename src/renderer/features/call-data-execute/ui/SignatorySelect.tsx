@@ -4,7 +4,14 @@ import { type ReactNode, memo, useMemo } from 'react';
 import { type Wallet, type WalletType } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nonNullable, nullable, toAddress, transferableAmount, transferableAmountBN } from '@/shared/lib/utils';
+import {
+  getNativeAsset,
+  nonNullable,
+  nullable,
+  toAddress,
+  transferableAmount,
+  transferableAmountBN,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, InputHint } from '@/shared/ui';
 import { Address, AssetBalance, WalletIcon } from '@/shared/ui-entities';

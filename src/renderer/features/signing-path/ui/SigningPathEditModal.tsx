@@ -16,7 +16,8 @@ type Props = {
   isOpen: boolean;
   chainId: ChainId;
   initialPath: PathNode[];
-  /** Open the modal at the picker for this hop. 0 + editableInitiator opens the source picker. */
+  /** Open the modal at the picker for this hop. 0 + editableInitiator opens the
+source picker. */
   editFromIndex?: number;
   /** Allow editing the source. Off for wallet-bound forms. */
   editableInitiator?: boolean;
