@@ -16,18 +16,13 @@ type Props = {
   isOpen: boolean;
   chainId: ChainId;
   initialPath: PathNode[];
-  /**
-   * When set, the modal opens with the path truncated to before this index so
-   * the user lands on the picker for that exact hop. Out-of-range values (≤ 0
-   * or ≥ path.length) leave the full path seeded.
-   */
+  /** Open the modal at the picker for this hop. 0 + editableInitiator opens the source picker. */
   editFromIndex?: number;
+  /** Allow editing the source. Off for wallet-bound forms. */
+  editableInitiator?: boolean;
   allowedProxyTypes?: readonly string[];
   disabledProxyReason?: string;
-  /**
-   * Forwarded to StepPath. When provided, signer candidate rows display the
-   * option's transferable balance to help the user pick a viable initiator.
-   */
+  /** When set, signer rows show the candidate's transferable balance. */
   getOptionBalance?: (option: PathNextOption) => BN | string | null;
   optionAsset?: Asset;
   onSave: (path: PathNode[]) => void;
@@ -39,6 +34,7 @@ export const SigningPathEditModal = ({
   chainId,
   initialPath,
   editFromIndex,
+  editableInitiator = false,
   allowedProxyTypes,
   disabledProxyReason,
   getOptionBalance,
@@ -50,13 +46,13 @@ export const SigningPathEditModal = ({
   const isComplete = useUnit(pathModel.$isComplete);
   const livePath = useUnit(pathModel.$path);
 
-  // Borrow the singleton pathModel as a scratchpad while the modal is open:
-  // seed from incoming committed path on open, clear on close so we don't
-  // leak state into other consumers (drafts, flexible-multisig).
+  // pathModel is a shared singleton; reset on close so other consumers
+  // (drafts, flexible-multisig) don't see leftover state.
   useEffect(() => {
     if (!isOpen) return;
     pathModel.pathReset();
-    if (initialPath.length > 0) {
+    const editingInitiator = editableInitiator && editFromIndex === 0;
+    if (initialPath.length > 0 && !editingInitiator) {
       pathModel.pathSeeded(initialPath);
       if (editFromIndex !== undefined && editFromIndex > 0 && editFromIndex < initialPath.length) {
         pathModel.pathTruncatedTo(editFromIndex - 1);
@@ -66,7 +62,7 @@ export const SigningPathEditModal = ({
     return () => {
       pathModel.pathReset();
     };
-  }, [isOpen, initialPath, editFromIndex]);
+  }, [isOpen, initialPath, editFromIndex, editableInitiator]);
 
   const handleToggle = (open: boolean) => {
     if (!open) onClose();
@@ -83,7 +79,7 @@ export const SigningPathEditModal = ({
         <div className="flex h-full flex-col gap-y-4 px-5 pt-4 pb-6">
           <StepPath
             chainId={chainId}
-            lockedSourceCount={1}
+            lockedSourceCount={editableInitiator ? 0 : 1}
             restrictToOwnAccounts
             allowedProxyTypes={allowedProxyTypes}
             disabledProxyReason={disabledProxyReason}

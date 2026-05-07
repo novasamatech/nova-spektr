@@ -30,7 +30,7 @@ import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { unstakeValidator } from '@/features/operations/OperationsValidation';
-import { graphModel } from '@/features/signing-path';
+import { createPathRouteStore, graphModel } from '@/features/signing-path';
 import { type NetworkStore } from '../lib/types';
 
 type FormParams = {
@@ -278,6 +278,8 @@ sample({
   target: signingPathChanged,
 });
 
+const $pathRoute = createPathRouteStore($signingPath, $chain);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
@@ -285,6 +287,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: $chain,
   transaction: $coreTx,
+  routeOverride: $pathRoute,
 });
 
 const $isMultisig = $route.map((route) => {

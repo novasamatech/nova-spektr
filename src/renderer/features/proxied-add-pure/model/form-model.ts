@@ -27,7 +27,7 @@ import { proxyModel } from '@/entities/proxy';
 import { accountUtils } from '@/entities/wallet';
 import { addPureProxiedValidator } from '@/features/operations/OperationsValidation';
 import { proxiesUtils } from '@/features/proxies';
-import { graphModel } from '@/features/signing-path';
+import { createPathRouteStore, graphModel } from '@/features/signing-path';
 
 type FormParams = {
   chain: Chain | null;
@@ -265,6 +265,8 @@ const $coreTx = combine(
   },
 );
 
+const $pathRoute = createPathRouteStore($signingPath, form.fields.chain.$value);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   chain: form.fields.chain.$value,
@@ -272,6 +274,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 // Transaction validation

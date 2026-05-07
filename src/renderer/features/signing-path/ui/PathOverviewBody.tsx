@@ -14,9 +14,9 @@ type Props = {
   path: PathNode[];
   views: PathNodeView[];
   /**
-   * Balance lookup is optional — supplied by SigningPathInline (transfer flow)
-   * so the popover surfaces per-hop balances. PathReviewPopover and
-   * SigningPathControl render structure-only views and omit it.
+   * Balance lookup is optional — supplied by SigningPathInline so the popover
+   * surfaces per-hop balances. PathReviewPopover renders structure-only views
+   * and omits it.
    */
   getBalance?: (accountId: AccountId) => BN | string | null;
   asset?: Asset;
@@ -25,8 +25,8 @@ type Props = {
 
 /**
  * Inner content of the signing-path overview popover. Shared by
- * PathReviewPopover, SigningPathControl and SigningPathInline so the structure
- * (header + numbered hop list) is defined once.
+ * PathReviewPopover and SigningPathInline so the structure (header + numbered
+ * hop list) is defined once.
  */
 export const PathOverviewBody = ({ path, views, getBalance, asset, errorAccountIds }: Props) => {
   const { t } = useI18n();

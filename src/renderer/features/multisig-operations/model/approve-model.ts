@@ -30,7 +30,7 @@ import { proxyModel } from '@/entities/proxy';
 import { MAX_WEIGHT, getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
-import { graphModel } from '@/features/signing-path';
+import { createPathRouteStore, graphModel } from '@/features/signing-path';
 
 type GetMultisigType = {
   chain: Chain | null;
@@ -248,6 +248,8 @@ const $transaction = combine(
   },
 );
 
+const $pathRoute = createPathRouteStore($signingPath, $chain);
+
 const {
   $tx,
   $route,
@@ -260,6 +262,7 @@ const {
   accounts: accounts.$list,
   chain: $chain,
   transaction: $transaction,
+  routeOverride: $pathRoute,
 });
 
 const $extrinsic = combine($api, $tx, (api, tx) => {

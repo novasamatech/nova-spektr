@@ -82,7 +82,7 @@ export const RemoveProxy = ({ wallet }: Props) => {
   return (
     <Modal
       isOpen={isModalOpen}
-      size={removeProxyUtils.isWarningStep(step) && !isPureProxiedNeedToBeKilled ? 'fit' : 'md'}
+      size={removeProxyUtils.isWarningStep(step) && !isPureProxiedNeedToBeKilled ? 'fit' : 'mdlg'}
       onToggle={closeModal}
     >
       {removeProxyUtils.isWarningStep(step) && !isPureProxiedNeedToBeKilled ? null : (

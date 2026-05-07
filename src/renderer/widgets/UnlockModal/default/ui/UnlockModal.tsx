@@ -51,7 +51,7 @@ export const UnlockModal = () => {
   );
 
   return (
-    <Modal isOpen={isModalOpen} size="md" onToggle={(isOpen) => !isOpen && closeModal()}>
+    <Modal isOpen={isModalOpen} size="mdlg" onToggle={(isOpen) => !isOpen && closeModal()}>
       <Modal.Title close>{title}</Modal.Title>
       <Modal.Content>
         {isStep(step, Step.INIT) && <UnlockInfo />}

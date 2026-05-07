@@ -36,6 +36,8 @@ type Props = {
   errorText?: string;
   allowedProxyTypes?: readonly string[];
   disabledProxyReason?: string;
+  /** Allow editing the initiator card. Off for wallet-bound forms. */
+  editableInitiator?: boolean;
   onChange: (path: PathNode[]) => void;
 };
 
@@ -48,6 +50,7 @@ export const SigningPathInline = ({
   errorText,
   allowedProxyTypes,
   disabledProxyReason,
+  editableInitiator = false,
   onChange,
 }: Props) => {
   const { t } = useI18n();
@@ -105,14 +108,9 @@ export const SigningPathInline = ({
     closeModal();
   };
 
-  // Skip the source — it lives in the popover only. The first inline card is
-  // the next hop; the source's proxy type already decorates that card's label
-  // as the connection type via enrichConnectionEdge above.
-  const inlineNodes = path.slice(1);
+  const inlineNodes = path;
 
-  // Only flag the chip when an error actually lands on a node currently in
-  // the path — unrelated form errors (e.g. amount/destination) shouldn't
-  // light up the signing-path chip.
+  // Flag the chip only when an error lands on a node in the current path.
   const hasAnyError = errorAccountIds ? path.some((n) => errorAccountIds.has(n.accountId)) : false;
 
   return (
@@ -136,29 +134,17 @@ export const SigningPathInline = ({
         </div>
         <div className="flex items-stretch gap-2">
           {inlineNodes.map((node, i) => {
-            const absoluteIndex = i + 1;
-            const view = enrichedViews[absoluteIndex];
+            const view = enrichedViews[i];
             if (!view) return null;
 
-            const isSigner = node.kind === 'signer';
-            // Balance is only meaningful on the signer — that's the account
-            // that pays fee + multisig deposit, so it's the only one whose
-            // funds matter at this stage. Multisig hops are decision points,
-            // not payers, so showing "0 DOT" there would be misleading.
-            const balance = isSigner ? getBalance(node.accountId) : null;
             const hasError = errorAccountIds?.has(node.accountId) ?? false;
+            const isInitiator = i === 0;
+            const handleClick = isInitiator && !editableInitiator ? undefined : () => openFromCard(i);
 
             return (
               <Fragment key={`inline-${i}-${node.kind}-${node.accountId}`}>
                 {i > 0 && <PathArrow />}
-                <PathCard
-                  view={view}
-                  size="sm"
-                  position={absoluteIndex}
-                  balance={balance ? { value: balance, asset } : undefined}
-                  hasError={hasError}
-                  onClick={() => openFromCard(absoluteIndex)}
-                />
+                <PathCard view={view} size="sm" position={i} hasError={hasError} onClick={handleClick} />
               </Fragment>
             );
           })}
@@ -173,6 +159,7 @@ export const SigningPathInline = ({
         chainId={chainId}
         initialPath={path}
         editFromIndex={editFromIndex}
+        editableInitiator={editableInitiator}
         allowedProxyTypes={allowedProxyTypes}
         disabledProxyReason={disabledProxyReason}
         getOptionBalance={(option) => getBalance(option.accountId)}

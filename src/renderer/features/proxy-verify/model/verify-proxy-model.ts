@@ -26,7 +26,7 @@ import {
   confirmModel,
 } from '@/features/operations/OperationsConfirm/VerifyProxy/model/confirm-model';
 import { verifyProxyValidator } from '@/features/operations/OperationsValidation';
-import { graphModel } from '@/features/signing-path';
+import { createPathRouteStore, graphModel } from '@/features/signing-path';
 import { VERIFIABLE_PROXY_TYPES, buildVerifyProxyCall } from '../lib/build-verify-proxy';
 
 export enum Step {
@@ -288,6 +288,8 @@ const $api = combine({ store: $verifyStore, apis: networkModel.$apis }, ({ store
   store ? (apis[store.chain.chainId] ?? null) : null,
 );
 
+const $pathRoute = createPathRouteStore($signingPath, $chainStore);
+
 const {
   $tx: $wrappedTx,
   $fee,
@@ -300,6 +302,7 @@ const {
   accounts: accounts.$list,
   initiator: $initiatorStore,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 const $asset = $chainStore.map((chain) => (chain ? getNativeAsset(chain.assets) : null));

@@ -50,7 +50,7 @@ import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { transferValidator } from '@/features/operations/OperationsValidation';
-import { createSigningPathModel } from '@/features/signing-path';
+import { createPathRouteStore, createSigningPathModel } from '@/features/signing-path';
 import { type NetworkStore, type NetworkStoreParams } from '../lib/types';
 
 import { xcmSpellTransferModel } from './xcm-spell-transfer-model';
@@ -302,29 +302,7 @@ const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner
   allowedProxyTypes: TRANSFER_ALLOWED_PROXY_TYPES,
 });
 
-// Resolve every PathNode.accountId to a concrete AnyAccount so the wrapping
-// pipeline can use the user's chosen multisig hops instead of a BFS guess.
-// If any hop can't be resolved (e.g. the picked delegate is a contact-only
-// multisig outside the user's wallets), bail out and let the BFS route take
-// over downstream — `findRoute` only walks the user's account graph anyway,
-// so a partial path can't be wrapped consistently here.
-const $pathRoute = combine(
-  { path: $signingPath, allAccounts: accounts.$list, chain: $chain },
-  ({ path, allAccounts, chain }): AnyAccount[] | null => {
-    if (nullable(chain) || path.length < 2) return null;
-
-    const resolved: AnyAccount[] = [];
-    for (const node of path) {
-      const account = allAccounts.find(
-        (a) => a.accountId === node.accountId && accountService.isAccountAvailableOnChain(a, chain),
-      );
-      if (!account) return null;
-      resolved.push(account);
-    }
-
-    return resolved;
-  },
-);
+const $pathRoute = createPathRouteStore($signingPath, $chain);
 
 const $signatoryBalance = combine(
   {

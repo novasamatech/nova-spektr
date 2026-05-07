@@ -30,7 +30,7 @@ import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { bondExtraValidator } from '@/features/operations/OperationsValidation';
-import { graphModel } from '@/features/signing-path';
+import { createPathRouteStore, graphModel } from '@/features/signing-path';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -182,6 +182,8 @@ const $feeTx = combine(
   },
 );
 
+const $pathRoute = createPathRouteStore($signingPath, $chain);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
@@ -190,6 +192,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   chain: $chain,
   transaction: $coreTx,
   feeTransaction: $feeTx,
+  routeOverride: $pathRoute,
 });
 
 const $available = combine({ reservableAmount: $reservableAmount, fee: $fee }).map(({ reservableAmount, fee }) => {

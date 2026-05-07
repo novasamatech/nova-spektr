@@ -26,7 +26,7 @@ import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { restakeValidator } from '@/features/operations/OperationsValidation';
-import { graphModel } from '@/features/signing-path';
+import { createPathRouteStore, graphModel } from '@/features/signing-path';
 import { type NetworkStore } from '../lib/types';
 
 type FormParams = {
@@ -166,6 +166,13 @@ const $coreTx = combine(
   },
 );
 
+// $signingPath hoisted here so $pathRoute can feed createComplexTxStore.
+const signingPathChanged = createEvent<PathNode[]>();
+const $signingPath = createStore<PathNode[]>([])
+  .on(signingPathChanged, (_, path) => path)
+  .reset(formInitiated);
+const $pathRoute = createPathRouteStore($signingPath, $chain);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
@@ -173,6 +180,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: $chain,
   transaction: $coreTx,
+  routeOverride: $pathRoute,
 });
 
 const $realAccount = combine(
@@ -254,12 +262,7 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-// signing path
-
-const signingPathChanged = createEvent<PathNode[]>();
-const $signingPath = createStore<PathNode[]>([])
-  .on(signingPathChanged, (_, path) => path)
-  .reset(formInitiated);
+// signing path (event + $signingPath declared above)
 
 const $userOverrodePath = createStore(false)
   .on(signingPathChanged, () => true)

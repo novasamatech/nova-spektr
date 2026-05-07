@@ -95,5 +95,6 @@ export const PathCard = ({ view, size = 'md', onClick, position = 0, balance, ha
     );
   }
 
-  return inner;
+  // Match the clickable branch's flex shell so widths stay equal across cards.
+  return <div className="flex min-w-0 flex-1">{inner}</div>;
 };

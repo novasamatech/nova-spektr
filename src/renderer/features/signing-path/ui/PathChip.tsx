@@ -7,8 +7,7 @@ type Props = { hasError?: boolean } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
  * Pill-shaped trigger that opens the signing-path overview popover. Used as
- * `<Popover.Trigger>`'s child across PathReviewPopover, SigningPathControl and
- * SigningPathInline.
+ * `<Popover.Trigger>`'s child across PathReviewPopover and SigningPathInline.
  *
  * Radix's `Popover.Trigger` uses `asChild` and forwards mouse / focus / ARIA
  * handlers (including the hover-open `onMouseEnter`/`onMouseLeave`) onto the

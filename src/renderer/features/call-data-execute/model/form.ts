@@ -35,7 +35,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { graphModel } from '@/features/signing-path';
+import { createPathRouteStore, graphModel } from '@/features/signing-path';
 import { InputMode, Step } from '../lib/types';
 
 import { type ConfirmInput, confirmModel } from './confirm';
@@ -126,12 +126,23 @@ const $args = combine($call, form.fields.chain.$value, (call, chain) => {
   return transactionEntitiesService.formatCall(call, chain);
 });
 
-const $route = createRouteStore({
+// $signingPath hoisted here so $pathRoute can feed createWrappedTxStore.
+const signingPathChanged = createEvent<PathNode[]>();
+const $signingPath = createStore<PathNode[]>([])
+  .on(signingPathChanged, (_, path) => path)
+  .reset(flowFinished);
+const $pathRoute = createPathRouteStore($signingPath, form.fields.chain.$value);
+
+const $bfsRoute = createRouteStore({
   chain: form.fields.chain.$value,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
   accounts: walletModel.$availableAccounts,
 });
+// Picked path wins over BFS when it has enough hops to wrap.
+const $route = combine($bfsRoute, $pathRoute, (bfs, override) =>
+  override && override.length >= 2 ? override : bfs,
+);
 
 const { $tx: $wrappedTx } = createWrappedTxStore({
   api: $api,
@@ -286,12 +297,7 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
 });
 
-// signing path
-
-const signingPathChanged = createEvent<PathNode[]>();
-const $signingPath = createStore<PathNode[]>([])
-  .on(signingPathChanged, (_, path) => path)
-  .reset(flowFinished);
+// signing path (event + $signingPath declared above)
 
 const $userOverrodePath = createStore(false)
   .on(signingPathChanged, () => true)

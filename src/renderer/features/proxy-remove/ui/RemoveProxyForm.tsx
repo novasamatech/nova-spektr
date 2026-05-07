@@ -4,6 +4,7 @@ import { type FormEvent, useMemo } from 'react';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { accounts } from '@/domains/network';
@@ -12,7 +13,7 @@ import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 // eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts -> accounts-structure -> wallet-details -> proxy-remove
 import { InitiateDraftButton } from '@/features/drafts/components/InitiateDraftButton';
-import { SigningPathControl } from '@/features/signing-path';
+import { SigningPathInline } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { removeProxyModel } from '../model/remove-proxy-model';
 
@@ -58,6 +59,7 @@ const Signatories = () => {
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balanceMap);
+  const formErrors = useUnit(removeProxyModel.$errors);
 
   const signatoriesWithBalance = useMemo(() => {
     if (!signatories || !chain) {
@@ -75,13 +77,37 @@ const Signatories = () => {
     });
   }, [signatories, balances]);
 
+  const errorAccountIds = useMemo<ReadonlySet<AccountId>>(() => {
+    const ids = new Set<AccountId>();
+    for (const e of formErrors) {
+      if ('account' in e && e.account?.accountId) ids.add(e.account.accountId);
+    }
+    return ids;
+  }, [formErrors]);
+
   if (!chain || !proxiedAccount) {
     return null;
   }
 
-  const pathChip = (
-    <SigningPathControl chainId={chain.chainId} path={signingPath} onChange={removeProxyModel.signingPathChanged} />
-  );
+  if (signingPath.length >= 2) {
+    const nativeAsset = getNativeAsset(chain.assets);
+    const getBalance = (accountId: AccountId) => {
+      const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, nativeAsset.assetId);
+      return balance ? withdrawableAmount(balance) : null;
+    };
+
+    return (
+      <SigningPathInline
+        chainId={chain.chainId}
+        path={signingPath}
+        asset={nativeAsset}
+        getBalance={getBalance}
+        errorAccountIds={errorAccountIds}
+        errorText={t(signatory.errorMessage)}
+        onChange={removeProxyModel.signingPathChanged}
+      />
+    );
+  }
 
   return (
     <SignatorySelect
@@ -93,7 +119,6 @@ const Signatories = () => {
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
       network={{ chain, asset: getNativeAsset(chain.assets) }}
-      action={pathChip}
       onChange={signatory.onChange}
     />
   );

@@ -118,7 +118,7 @@ export const AddProxy = ({ wallet, onClose, children, launchOpen, hideTrigger }:
   }
 
   return (
-    <Modal size="md" height="fit" isOpen={isModalOpen} onToggle={onToggle}>
+    <Modal size="mdlg" height="fit" isOpen={isModalOpen} onToggle={onToggle}>
       {!hideTrigger && <Modal.Trigger>{children}</Modal.Trigger>}
       <Modal.Title close>{getModalTitle(step, chain)}</Modal.Title>
       <Modal.Content>

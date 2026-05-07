@@ -33,7 +33,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { graphModel } from '@/features/signing-path';
+import { createPathRouteStore, graphModel } from '@/features/signing-path';
 import { type ValidationSchemaOptions, Step } from '../types';
 import { multiTransferUtils } from '../utils';
 
@@ -294,6 +294,8 @@ const $feeCoreTx = combine(
   },
 );
 
+const $pathRoute = createPathRouteStore($signingPath, form.fields.chain.$value);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   chain: form.fields.chain.$value,
@@ -302,6 +304,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 const validator = createTxValidator<{
