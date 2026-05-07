@@ -36,7 +36,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { graphModel } from '@/features/signing-path';
+import { createPathRouteStore, graphModel } from '@/features/signing-path';
 import { type ValidationSchemaOptions, Step } from '../types';
 import { vestedTransferUtils } from '../utils';
 
@@ -176,6 +176,13 @@ const $feeCoreTx = combine(
   },
 );
 
+// $signingPath hoisted here so $pathRoute can feed createComplexTxStore.
+const signingPathChanged = createEvent<PathNode[]>();
+const $signingPath = createStore<PathNode[]>([])
+  .on(signingPathChanged, (_, path) => path)
+  .reset(flowStarted);
+const $pathRoute = createPathRouteStore($signingPath, form.fields.chain.$value);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   chain: form.fields.chain.$value,
@@ -184,6 +191,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 // validations
@@ -262,12 +270,7 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
 });
 
-// signing path
-
-const signingPathChanged = createEvent<PathNode[]>();
-const $signingPath = createStore<PathNode[]>([])
-  .on(signingPathChanged, (_, path) => path)
-  .reset(flowStarted);
+// signing path (event + $signingPath declared above)
 
 const $userOverrodePath = createStore(false)
   .on(signingPathChanged, () => true)

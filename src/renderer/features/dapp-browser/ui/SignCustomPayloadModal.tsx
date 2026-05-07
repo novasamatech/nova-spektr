@@ -4,17 +4,19 @@ import { memo, useEffect } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, ButtonWebLink, DetailRow, FootnoteText, Icon, LargeTitleText, Separator } from '@/shared/ui';
 import { AccountSelect, SignatorySelect, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, Modal, ScrollArea } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { transactionService } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
 import { OperationSign } from '@/features/operations';
-import { SigningPathControl } from '@/features/signing-path';
+import { SigningPathInline } from '@/features/signing-path';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { confirmModel } from '../model/confirm';
@@ -49,7 +51,7 @@ export const SignCustomPayloadModal = memo(({ payload, onCancel, onResult }: Pro
   }, [signatureResult]);
 
   return (
-    <Modal size="md" isOpen onToggle={(open) => !open && onCancel('Rejected by user')}>
+    <Modal size="mdlg" isOpen onToggle={(open) => !open && onCancel('Rejected by user')}>
       <Modal.Title close>
         <OperationTitle title="Sign dapp request on" chainId={payload.genesisHash} />
       </Modal.Title>
@@ -83,6 +85,7 @@ const Form = memo(({ onConfirm }: { onConfirm: VoidFunction }) => {
   const signatories = useUnit(formModel.$signatories);
   const signingPath = useUnit(formModel.$signingPath);
   const initiators = useUnit(formModel.$initiators);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   const args = useUnit(formModel.$args);
 
@@ -94,9 +97,12 @@ const Form = memo(({ onConfirm }: { onConfirm: VoidFunction }) => {
     return null;
   }
 
-  const pathChip = (
-    <SigningPathControl chainId={chain.chainId} path={signingPath} onChange={formModel.signingPathChanged} />
-  );
+  const useInline = showSignatories && signingPath.length >= 2 && nonNullable(asset);
+  const getBalance = (accountId: AccountId) => {
+    if (!asset) return null;
+    const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
+    return balance ? transferableAmount(balance) : null;
+  };
 
   return (
     <>
@@ -111,7 +117,16 @@ const Form = memo(({ onConfirm }: { onConfirm: VoidFunction }) => {
             onChange={initiator.onChange}
           />
         </Field>
-        {showSignatories && (
+        {useInline && asset ? (
+          <SigningPathInline
+            chainId={chain.chainId}
+            path={signingPath}
+            asset={asset}
+            getBalance={getBalance}
+            errorText={signatory.errorMessage}
+            onChange={formModel.signingPathChanged}
+          />
+        ) : showSignatories ? (
           <SignatorySelect
             signatory={signatory.value}
             signatories={signatories}
@@ -128,10 +143,9 @@ const Form = memo(({ onConfirm }: { onConfirm: VoidFunction }) => {
             allAccounts={allAccounts}
             initiator={initiator.value}
             allWallets={allWallets}
-            action={pathChip}
             onChange={signatory.onChange}
           />
-        )}
+        ) : null}
         {showSignatories && signatories.length === 1 && nonNullable(signatory.value) && (
           <Field text={t('proxy.addProxy.signatoryLabel')}>
             <NamedAccount accountId={signatory.value.accountId} chain={chain} />

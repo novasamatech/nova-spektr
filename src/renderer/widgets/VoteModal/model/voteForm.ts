@@ -12,11 +12,13 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService, voteTransactionService } from '@/entities/governance';
+import { proxyModel } from '@/entities/proxy';
 import { transactionBuilder } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import {
   type AggregatedReferendum,
@@ -28,6 +30,7 @@ import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { voteValidateModel } from '@/features/governance/model/vote/voteValidateModel';
 import { type VoteConfirm, voteConfirmModel } from '@/features/operations/OperationsConfirm';
 import { voteValidator } from '@/features/operations/OperationsValidation';
+import { graphModel } from '@/features/signing-path';
 
 type FormFields = {
   initiator: AnyAccount | null;

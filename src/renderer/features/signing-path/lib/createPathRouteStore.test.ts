@@ -1,0 +1,135 @@
+import { createStore, fork } from 'effector';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import { type Chain, CryptoType, SigningType } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type PathNode } from '@/domains/backend';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
+
+import { createPathRouteStore } from './createPathRouteStore';
+
+const acc = (n: number): AccountId => `1${'0'.repeat(46)}${n}`.slice(0, 48) as AccountId;
+
+const CHAIN_A: Chain = { chainId: '0xaaaa', options: [] } as unknown as Chain;
+const CHAIN_B: Chain = { chainId: '0xbbbb', options: [] } as unknown as Chain;
+
+const makeAccount = (accountId: AccountId): AnyAccount => {
+  const draft = {
+    id: `acct-${accountId}`,
+    type: 'universal',
+    walletId: 1,
+    name: `wallet-${accountId}`,
+    accountId,
+    cryptoType: CryptoType.SR25519,
+    signingType: SigningType.POLKADOT_VAULT,
+    createdAt: 0,
+  };
+  return draft as unknown as AnyAccount;
+};
+
+const proxied = (accountId: AccountId): PathNode => ({ kind: 'proxied', accountId });
+const multisig = (accountId: AccountId): PathNode => ({ kind: 'multisig', accountId });
+const signer = (accountId: AccountId): PathNode => ({ kind: 'signer', accountId });
+
+describe('createPathRouteStore', () => {
+  beforeEach(() => {
+    // The chain-availability pipeline starts empty in tests, so check()
+    // returns false. Register an accept-all handler so accounts can resolve.
+    accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+      body: () => true,
+      available: () => true,
+    });
+  });
+
+  afterEach(() => {
+    accountService.accountAvailabilityOnChainAnyOf.resetHandlers();
+  });
+
+  it('returns null for a trivial path (length < 2)', () => {
+    const $path = createStore<PathNode[]>([signer(acc(1))]);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([[accounts.__test.$list, [makeAccount(acc(1))]]]),
+    });
+
+    expect(scope.getState($route)).toBeNull();
+  });
+
+  it('returns null when chain is null', () => {
+    const $path = createStore<PathNode[]>([proxied(acc(1)), signer(acc(2))]);
+    const $chain = createStore<Chain | null>(null);
+    const $route = createPathRouteStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([[accounts.__test.$list, [makeAccount(acc(1)), makeAccount(acc(2))]]]),
+    });
+
+    expect(scope.getState($route)).toBeNull();
+  });
+
+  it('resolves every node to an AnyAccount in path order', () => {
+    const path: PathNode[] = [proxied(acc(1)), multisig(acc(2)), signer(acc(3))];
+    const $path = createStore<PathNode[]>(path);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    const a1 = makeAccount(acc(1));
+    const a2 = makeAccount(acc(2));
+    const a3 = makeAccount(acc(3));
+
+    const scope = fork({
+      values: new Map<any, any>([[accounts.__test.$list, [a3, a1, a2]]]),
+    });
+
+    expect(scope.getState($route)).toEqual([a1, a2, a3]);
+  });
+
+  it('returns null when any node is missing from the account list', () => {
+    const $path = createStore<PathNode[]>([proxied(acc(1)), signer(acc(2))]);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    const scope = fork({
+      // acc(2) intentionally absent
+      values: new Map<any, any>([[accounts.__test.$list, [makeAccount(acc(1))]]]),
+    });
+
+    expect(scope.getState($route)).toBeNull();
+  });
+
+  it('returns null when an account is not available on the chain', () => {
+    accountService.accountAvailabilityOnChainAnyOf.resetHandlers();
+    accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+      // Accept only matching chainId — flips the check to chain-scoped.
+      body: ({ chain }) => chain.chainId === CHAIN_A.chainId,
+      available: () => true,
+    });
+
+    const $path = createStore<PathNode[]>([proxied(acc(1)), signer(acc(2))]);
+    const $chain = createStore<Chain | null>(CHAIN_B);
+    const $route = createPathRouteStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([[accounts.__test.$list, [makeAccount(acc(1)), makeAccount(acc(2))]]]),
+    });
+
+    expect(scope.getState($route)).toBeNull();
+  });
+
+  it('skips an ethereum-account candidate on a substrate chain (crypto mismatch)', () => {
+    const ethAccountId = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd' as unknown as AccountId;
+    const $path = createStore<PathNode[]>([proxied(ethAccountId), signer(acc(1))]);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([[accounts.__test.$list, [makeAccount(ethAccountId), makeAccount(acc(1))]]]),
+    });
+
+    // Ethereum-shaped accountId on a non-ethereum chain → isCryptoMatch fails
+    // → first node unresolvable → whole route returns null.
+    expect(scope.getState($route)).toBeNull();
+  });
+});

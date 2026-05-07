@@ -4,6 +4,7 @@ import { type FormEvent, useMemo } from 'react';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, InputHint } from '@/shared/ui';
 import { AccountSelect, ChainSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Field } from '@/shared/ui-kit';
@@ -15,7 +16,7 @@ import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts → accounts-structure → wallet-details → proxied-add-pure
 import { InitiateDraftButton } from '@/features/drafts/components/InitiateDraftButton';
-import { SigningPathControl } from '@/features/signing-path';
+import { SigningPathInline } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/widgets/transaction-fee';
 import { addPureProxiedModel } from '../model/add-pure-proxied-model';
 import { formModel } from '../model/form-model';
@@ -120,6 +121,7 @@ const Signatories = () => {
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balanceMap);
+  const formErrors = useUnit(formModel.$errors);
 
   const chainValue = chain.value;
 
@@ -137,9 +139,33 @@ const Signatories = () => {
     });
   }, [signatories, balances, chainValue]);
 
-  const pathChip = (
-    <SigningPathControl chainId={chainValue.chainId} path={signingPath} onChange={formModel.signingPathChanged} />
-  );
+  const errorAccountIds = useMemo<ReadonlySet<AccountId>>(() => {
+    const ids = new Set<AccountId>();
+    for (const e of formErrors) {
+      if ('account' in e && e.account?.accountId) ids.add(e.account.accountId);
+    }
+    return ids;
+  }, [formErrors]);
+
+  if (signingPath.length >= 2) {
+    const nativeAsset = getNativeAsset(chainValue.assets);
+    const getBalance = (accountId: AccountId) => {
+      const balance = balanceUtils.getBalance(balances, accountId, chainValue.chainId, nativeAsset.assetId);
+      return balance ? withdrawableAmount(balance) : null;
+    };
+
+    return (
+      <SigningPathInline
+        chainId={chainValue.chainId}
+        path={signingPath}
+        asset={nativeAsset}
+        getBalance={getBalance}
+        errorAccountIds={errorAccountIds}
+        errorText={t(signatory.errorMessage)}
+        onChange={formModel.signingPathChanged}
+      />
+    );
+  }
 
   return (
     <SignatorySelect
@@ -151,7 +177,6 @@ const Signatories = () => {
       allAccounts={allAccounts}
       initiator={account.value}
       allWallets={allWallets}
-      action={pathChip}
       onChange={signatory.onChange}
     />
   );

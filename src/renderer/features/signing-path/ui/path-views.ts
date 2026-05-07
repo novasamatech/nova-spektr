@@ -2,7 +2,7 @@ import { type TFunction } from 'i18next';
 import { type ReactNode } from 'react';
 
 import { WalletType } from '@/shared/core';
-import { toShortAddress } from '@/shared/lib/utils';
+import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
 
@@ -14,6 +14,12 @@ export type PathNodeView = {
   subtitle: string;
   address?: AccountId;
   walletType?: WalletType | null;
+  /**
+   * Optional proxy type carried from the source node, appended to the label of
+   * the next hop (e.g. "VIA MULTISIG · Any") so the inline view can show the
+   * connection type without rendering the source itself.
+   */
+  connectionType?: string;
 };
 
 export const nodeView = (
@@ -21,8 +27,9 @@ export const nodeView = (
   resolveName: (accountId: AccountId) => string,
   position: number,
   t: TFunction,
+  addressPrefix?: number,
 ): PathNodeView | null => {
-  const accountId = node.accountId as AccountId;
+  const accountId = node.accountId;
   const name = resolveName(accountId);
   const address = accountId;
 
@@ -51,10 +58,27 @@ export const nodeView = (
   return {
     label: t('signingPath.label.initiator'),
     title: name,
-    subtitle: toShortAddress(node.accountId),
+    subtitle: toShortAddress(toAddress(node.accountId, { prefix: addressPrefix })),
     address,
     walletType: null,
   };
+};
+
+/**
+ * Move a proxied source's `proxyType` from its own subtitle onto the next hop's
+ * `connectionType`. Source then shows just "Proxied" (uncluttered) and the type
+ * sits on the edge it actually describes — matches the inline transfer card
+ * layout.
+ */
+export const enrichConnectionEdge = (views: PathNodeView[], path: PathNode[], t: TFunction): PathNodeView[] => {
+  const source = path[0];
+  if (!source || source.kind !== 'proxied' || !source.proxyType) return views;
+
+  return views.map((v, idx) => {
+    if (idx === 0) return { ...v, subtitle: t('signingPath.label.proxied') };
+    if (idx === 1) return { ...v, connectionType: source.proxyType };
+    return v;
+  });
 };
 
 export type BreadcrumbCardFactories = {

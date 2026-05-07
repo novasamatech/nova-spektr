@@ -16,7 +16,7 @@ import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { locksModel, networkSelectorModel, unlockModel } from '@/features/governance';
-import { graphModel } from '@/features/signing-path';
+import { createPathRouteStore, graphModel } from '@/features/signing-path';
 
 type FormParams = {
   initiator: AnyAccount | null;
@@ -219,6 +219,8 @@ const $coreTx = combine(
   },
 );
 
+const $pathRoute = createPathRouteStore($signingPath, networkSelectorModel.$governanceChain);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   chain: networkSelectorModel.$governanceChain,
@@ -226,6 +228,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);

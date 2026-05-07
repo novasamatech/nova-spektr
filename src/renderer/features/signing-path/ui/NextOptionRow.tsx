@@ -1,9 +1,11 @@
+import { type BN } from '@polkadot/util';
 import { type ReactNode } from 'react';
 
-import { WalletType } from '@/shared/core';
+import { type Asset, WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { BodyText, HelpText } from '@/shared/ui';
-import { WalletAccountIcon } from '@/shared/ui-entities';
+import { AssetBalance, WalletAccountIcon } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { type PathNextOption } from '../model/graph-model';
 
@@ -12,22 +14,28 @@ type NextOptionRowProps = {
   selected: boolean;
   onClick: () => void;
   trailing?: ReactNode;
+  /**
+   * Balance shown on the right side of the row — useful when the option is a
+   * candidate signer whose available funds matter for the operation.
+   */
+  balance?: { value: BN | string; asset: Asset };
 };
 
-export const NextOptionRow = ({ option, selected, onClick, trailing }: NextOptionRowProps) => {
+export const NextOptionRow = ({ option, selected, onClick, trailing, balance }: NextOptionRowProps) => {
+  const { t } = useI18n();
   const address = toAddress(option.accountId);
 
   const subtitle =
     option.kind === 'multisig'
       ? option.threshold !== undefined && option.signatoriesCount !== undefined
-        ? `${option.threshold} of ${option.signatoriesCount}`
-        : 'Multisig'
+        ? t('signingPath.label.thresholdRatio', { current: option.threshold, total: option.signatoriesCount })
+        : t('signingPath.label.multisig')
       : toShortAddress(address, 8);
 
   const walletType = option.kind === 'multisig' ? WalletType.MULTISIG : null;
-  const proxyType = option.kind === 'multisig' ? option.proxyType : undefined;
-  const isDisabled = option.kind === 'multisig' && Boolean(option.disabled);
-  const disabledReason = option.kind === 'multisig' ? option.disabledReason : undefined;
+  const proxyType = option.proxyType;
+  const isDisabled = Boolean(option.disabled);
+  const disabledReason = option.disabledReason;
 
   const row = (
     <button
@@ -64,6 +72,9 @@ export const NextOptionRow = ({ option, selected, onClick, trailing }: NextOptio
         >
           {proxyType}
         </span>
+      )}
+      {balance && (
+        <AssetBalance value={balance.value} asset={balance.asset} className="text-footnote text-text-secondary" />
       )}
       {trailing}
       {!isDisabled && (

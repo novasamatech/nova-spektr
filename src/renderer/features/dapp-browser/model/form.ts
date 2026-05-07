@@ -38,7 +38,7 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 // TODO move balances subscription to balance model
 import { balanceSubModel } from '@/features/assets-balances';
 import { type SignatureResult, type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
-import { graphModel } from '@/features/signing-path';
+import { createPathRouteStore, graphModel } from '@/features/signing-path';
 
 import { type ConfirmInput, confirmModel } from './confirm';
 import { dappBrowserFeature } from './feature';
@@ -114,12 +114,23 @@ const $coreTx = $callData.map((callData): EncodedTransaction | null => {
   };
 });
 
-const $route = createRouteStore({
+// $signingPath hoisted here so $pathRoute can feed createWrappedTxStore.
+const signingPathChanged = createEvent<PathNode[]>();
+const $signingPath = createStore<PathNode[]>([])
+  .on(signingPathChanged, (_, path) => path)
+  .reset(flow.close);
+const $pathRoute = createPathRouteStore($signingPath, $chain);
+
+const $bfsRoute = createRouteStore({
   chain: $chain,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
   accounts: walletModel.$availableAccounts,
 });
+// Picked path wins over BFS when it has enough hops to wrap.
+const $route = combine($bfsRoute, $pathRoute, (bfs, override) =>
+  override && override.length >= 2 ? override : bfs,
+);
 
 const { $tx: $wrappedTx } = createWrappedTxStore({
   api: $api,
@@ -221,12 +232,7 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
 });
 
-// signing path
-
-const signingPathChanged = createEvent<PathNode[]>();
-const $signingPath = createStore<PathNode[]>([])
-  .on(signingPathChanged, (_, path) => path)
-  .reset(flow.close);
+// signing path (event + $signingPath declared above)
 
 const $userOverrodePath = createStore(false)
   .on(signingPathChanged, () => true)

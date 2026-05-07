@@ -44,13 +44,13 @@ import {
 } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { proxiedChainResource, proxyModel } from '@/entities/proxy';
+import { proxiedChainResource } from '@/entities/proxy';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { transferValidator } from '@/features/operations/OperationsValidation';
-import { graphModel } from '@/features/signing-path';
+import { createPathRouteStore, createSigningPathModel } from '@/features/signing-path';
 import { type NetworkStore, type NetworkStoreParams } from '../lib/types';
 
 import { xcmSpellTransferModel } from './xcm-spell-transfer-model';
@@ -93,6 +93,7 @@ type FormSubmitEvent = FormParams & {
   signatory: AnyAccount;
   destination: Address;
   route: AnyAccount[];
+  signingPath: PathNode[];
   destinationChain: Chain;
   fee: BN;
   originFee: BN;
@@ -291,29 +292,17 @@ const $signatories = createSignatoriesStore({
 
 // signing path
 
-const TRANSFER_ALLOWED_PROXY_TYPES = ['Any'] as const;
+export const TRANSFER_ALLOWED_PROXY_TYPES = ['Any'] as const;
 
-const signingPathChanged = createEvent<PathNode[]>();
-const $signingPath = createStore<PathNode[]>([])
-  .on(signingPathChanged, (_, path) => path)
-  .reset(formInitiated);
-
-const $userOverrodePath = createStore(false)
-  .on(signingPathChanged, () => true)
-  .reset(formInitiated, form.fields.initiator.change);
-
-const $chainId = $chain.map((c) => c?.chainId ?? null);
-const $defaultSigningPath = graphModel.$defaultPathFor(form.fields.initiator.$value, $chainId, {
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner } = createSigningPathModel({
+  initiator: form.fields.initiator.$value,
+  chain: $chain,
+  resetOn: formInitiated,
+  resetUserOverrideOn: form.fields.initiator.change,
   allowedProxyTypes: TRANSFER_ALLOWED_PROXY_TYPES,
 });
 
-sample({
-  clock: $defaultSigningPath,
-  source: $userOverrodePath,
-  filter: (userOverrode) => !userOverrode,
-  fn: (_, defaultPath) => defaultPath,
-  target: $signingPath,
-});
+const $pathRoute = createPathRouteStore($signingPath, $chain);
 
 const $signatoryBalance = combine(
   {
@@ -610,6 +599,7 @@ const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   chain: $chain,
   transaction: $coreTx,
   feeTransaction: $feeCoreTx,
+  routeOverride: $pathRoute,
 });
 
 const $networkFee = combine(
@@ -949,22 +939,8 @@ sample({
   target: form.fields.initiator.change,
 });
 
-// Pick the form's `signatory` AnyAccount: prefer the leaf signer of the
-// committed signing path (so the path drives signing) and fall back to the
-// first available signatory for plain-proxy / no-path cases.
-const $signatoryFromPath = combine(
-  { path: $signingPath, allAccounts: accounts.$list, chain: $chain },
-  ({ path, allAccounts, chain }): AnyAccount | null => {
-    if (nullable(chain)) return null;
-    const last = path.at(-1);
-    if (!last || last.kind !== 'signer') return null;
-    return (
-      allAccounts.find((a) => a.accountId === last.accountId && accountService.isAccountAvailableOnChain(a, chain)) ??
-      null
-    );
-  },
-);
-
+// Prefer the path's leaf signer; fall back to the first available signatory
+// for no-path / plain-proxy flows.
 sample({
   clock: [$signatoryFromPath, $signatories, formInitiated],
   source: { fromPath: $signatoryFromPath, signatories: $signatories },
@@ -972,39 +948,9 @@ sample({
   target: form.fields.signatory.change,
 });
 
-// Dropdown → path sync: when the user picks a different signatory, recompute
-// the path targeting that signer. Skip when path's leaf already matches.
-sample({
-  clock: form.fields.signatory.$value,
-  source: {
-    initiator: form.fields.initiator.$value,
-    chain: $chain,
-    currentPath: $signingPath,
-    multisigByAccountId: graphModel.$multisigByAccountId,
-    proxies: proxyModel.$proxies,
-    ownSignerAccountIds: graphModel.$ownSignerAccountIds,
-    resolveName: graphModel.$nameResolver,
-  },
-  filter: ({ initiator, chain, currentPath }, signatory) => {
-    if (!initiator || !chain || !signatory) return false;
-    const last = currentPath.at(-1);
-    if (last && last.kind === 'signer' && last.accountId === signatory.accountId) return false;
-    return accountUtils.isAnyMultisigAccount(initiator) || accountUtils.isProxiedAccount(initiator);
-  },
-  fn: ({ initiator, chain, multisigByAccountId, proxies, ownSignerAccountIds, resolveName }, signatory): PathNode[] => {
-    return graphModel.pickDefaultPath({
-      initiator: initiator!,
-      chainId: chain!.chainId,
-      multisigByAccountId,
-      proxies,
-      ownSignerAccountIds,
-      resolveName,
-      allowedProxyTypes: TRANSFER_ALLOWED_PROXY_TYPES,
-      targetSigner: signatory!.accountId,
-    });
-  },
-  target: signingPathChanged,
-});
+// Dropdown→path sync: when the user picks a signatory from the legacy
+// dropdown, the factory recomputes the path so it terminates there.
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: form.fields.destinationChain.change,
@@ -1243,6 +1189,7 @@ const formSubmitFinished = sample({
     initiator: form.fields.initiator.$value,
     network: $networkStore,
     route: $route,
+    signingPath: $signingPath,
     coreTx: $coreTx,
     tx: $tx,
     fee: $fee,
@@ -1258,6 +1205,7 @@ const formSubmitFinished = sample({
       initiator,
       network,
       route,
+      signingPath,
       coreTx,
       tx,
       multisigDeposit,
@@ -1291,6 +1239,7 @@ const formSubmitFinished = sample({
       destinationChain: form.destinationChain ?? chain,
       multisigDeposit,
       route,
+      signingPath,
       fee,
       originFee: isXcm ? (originFee ?? BN_ZERO) : BN_ZERO,
       destinationFee: isXcm ? (destinationFee ?? null) : null,

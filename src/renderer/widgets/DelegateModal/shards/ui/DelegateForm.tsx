@@ -5,6 +5,7 @@ import { type FormEvent, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, formatBalance, nonNullable, transferableAmount } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
@@ -16,7 +17,7 @@ import { ProxyWalletAlert, walletModel } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
 import { AmountInput } from '@/features/assets-balances';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
-import { SigningPathControl } from '@/features/signing-path';
+import { SigningPathInline } from '@/features/signing-path';
 import { ConvictionSelect } from '@/widgets/VoteModal';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeLoader } from '@/widgets/transaction-fee';
@@ -39,7 +40,7 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
   };
 
   return (
-    <Modal isOpen={isOpen} size="md" height="fit" onToggle={onClose}>
+    <Modal isOpen={isOpen} size="mdlg" height="fit" onToggle={onClose}>
       <Modal.Title close>
         {network?.chain && (
           <OperationTitle title={t('governance.addDelegation.title')} chainId={network.chain.chainId} />
@@ -131,13 +132,23 @@ const Signatories = () => {
     return null;
   }
 
-  const pathChip = (
-    <SigningPathControl
-      chainId={network.chain.chainId}
-      path={signingPath}
-      onChange={formModel.events.signingPathChanged}
-    />
-  );
+  if (signingPath.length >= 2) {
+    const getBalance = (accountId: AccountId) => {
+      const balance = balanceUtils.getBalance(balances, accountId, network.chain.chainId, network.asset.assetId);
+      return balance ? transferableAmount(balance) : null;
+    };
+
+    return (
+      <SigningPathInline
+        chainId={network.chain.chainId}
+        path={signingPath}
+        asset={network.asset}
+        getBalance={getBalance}
+        errorText={t(signatory.errorText())}
+        onChange={formModel.events.signingPathChanged}
+      />
+    );
+  }
 
   return (
     <SignatorySelect
@@ -149,7 +160,6 @@ const Signatories = () => {
       hasError={signatory.hasError()}
       errorText={t(signatory.errorText())}
       network={network}
-      action={pathChip}
       onChange={signatory.onChange}
     />
   );

@@ -42,7 +42,7 @@ import {
   removeProxyConfirmModel as confirmModel,
 } from '@/features/operations/OperationsConfirm/RemoveProxy';
 import { removeProxyValidator } from '@/features/operations/OperationsValidation';
-import { graphModel } from '@/features/signing-path';
+import { createPathRouteStore, graphModel } from '@/features/signing-path';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { type RemoveProxyStore, Step } from '../lib/types';
 
@@ -214,6 +214,8 @@ const $signatoryFromPath = combine(
   },
 );
 
+const $pathRoute = createPathRouteStore($signingPath, $chain);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   chain: $chain,
@@ -221,6 +223,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: $proxiedAccount,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 // Transaction validation
