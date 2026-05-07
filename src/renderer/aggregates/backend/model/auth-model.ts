@@ -135,7 +135,7 @@ const logoutFx = createEffect(async (baseUrl: string) => {
 sample({
   clock: connectTriggered,
   source: backendConfigurationModel.$draftUrl,
-  fn: url => (url ? url.trim().replace(/\/+$/, '') : null) || null,
+  fn: url => (url ? url.trim().replace(/#.*$/, '').replace(/\/+$/, '') : null) || null,
   target: backendConfigurationModel.$backendUrl,
 });
 
@@ -390,6 +390,16 @@ $hasNetworkIssue.on(checkSessionFx.fail, () => true);
 $hasNetworkIssue.on(checkSessionFx.done, () => false);
 $hasNetworkIssue.on([verifySignatureFx.done, signOutClicked, backendConfigurationModel.events.urlCleared], () => false);
 
+const $isConnectionAlive = combine(
+  {
+    url: backendConfigurationModel.$backendUrl,
+    auth: $authState,
+    expired: $isSessionExpired,
+    networkIssue: $hasNetworkIssue,
+  },
+  ({ url, auth, expired, networkIssue }) => url !== null && auth !== null && !expired && !networkIssue,
+);
+
 const sessionExpired = createEvent();
 
 const showSessionExpiredToastFx = createEffect(() => {
@@ -418,6 +428,7 @@ export const authModel = {
   $signableAccounts,
   $isSessionExpired,
   $hasNetworkIssue,
+  $isConnectionAlive,
 
   events: {
     signInClicked,

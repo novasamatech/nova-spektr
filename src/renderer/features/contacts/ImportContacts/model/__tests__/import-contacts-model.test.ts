@@ -1,19 +1,19 @@
 import { allSettled, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type Contact } from '@/shared/core';
+import { type LocalContact } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 import { importContactsModel } from '../import-contacts-model';
 
 import * as mockData from './mocks/import-data';
 
-function localContact(overrides: Partial<Contact> & { id: string; name: string; address: string }): Contact {
+function localContact(overrides: Partial<LocalContact> & { id: string; name: string; address: string }): LocalContact {
   return {
     accountId: toAccountId(overrides.address),
     source: 'local' as const,
     ...overrides,
-  } as Contact;
+  } as LocalContact;
 }
 
 const createMockFile = (data: unknown): File => {
@@ -259,7 +259,7 @@ describe('importContactsModel', () => {
       ];
 
       const scope = fork({
-        values: new Map().set(contactModel.$contacts, existingContacts),
+        values: new Map().set(contactModel.$localContacts, existingContacts),
       });
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
@@ -297,7 +297,7 @@ describe('importContactsModel', () => {
       ]);
 
       const scope = fork({
-        values: new Map().set(contactModel.$contacts, existingContacts),
+        values: new Map().set(contactModel.$localContacts, existingContacts),
       });
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
@@ -324,7 +324,7 @@ describe('importContactsModel', () => {
       const mockUpdate = vi.spyOn(contactModel.effects, 'updateContactsFx').mockResolvedValue([]);
 
       const scope = fork({
-        values: new Map().set(contactModel.$contacts, existingContacts),
+        values: new Map().set(contactModel.$localContacts, existingContacts),
       });
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
@@ -369,7 +369,7 @@ describe('importContactsModel', () => {
       ]);
 
       const scope = fork({
-        values: new Map().set(contactModel.$contacts, existingContacts),
+        values: new Map().set(contactModel.$localContacts, existingContacts),
       });
 
       await allSettled(importContactsModel.events.fileSelected, { scope, params: file });

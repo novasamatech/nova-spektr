@@ -73,7 +73,7 @@ describe('features/wallets/RenameWallet/model/rename-wallet-model', () => {
     };
 
     const scope = fork({
-      values: [[contactModel.$contacts, [backendContact]]],
+      values: [[contactModel.$backendContacts, [backendContact]]],
     });
 
     // Directly call the sync effect with only local contacts (empty, since we only have backend)

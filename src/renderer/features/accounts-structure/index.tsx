@@ -33,8 +33,15 @@ const overviewSlot = combineIdentifiers(
   operationOverviewSlot,
 );
 
-accountsStructureFeature.inject(overviewSlot, ({ walletAccounts, trigger }) => {
-  return <AccountsStructureModal walletAccounts={walletAccounts} trigger={trigger} />;
+accountsStructureFeature.inject(overviewSlot, ({ walletAccounts, trigger, initialChainId, exclusive }) => {
+  return (
+    <AccountsStructureModal
+      walletAccounts={walletAccounts}
+      initialChainId={initialChainId}
+      exclusive={exclusive}
+      trigger={trigger}
+    />
+  );
 });
 
 accountsStructureFeature.inject(draftAccountsOverviewSlot, ({ walletAccounts, initialChainId, trigger }) => {

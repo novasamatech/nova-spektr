@@ -1,28 +1,40 @@
-import { attach, createEffect, createStore, sample } from 'effector';
+import { attach, combine, createEffect, createEvent, createStore, sample } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
 import { kernelModel } from '@/shared/core/model/kernel-model';
-import { type Contact, type LocalContact } from '@/shared/core/types/contact';
-import { isBackendContact, isLocalContact } from '@/shared/core/types/contact';
+import { type BackendContact, type Contact, type LocalContact } from '@/shared/core/types/contact';
+import { isLocalContact } from '@/shared/core/types/contact';
 import { merge, splice } from '@/shared/lib/utils';
 
-const $contacts = createStore<Contact[]>([]);
-const $localContacts = $contacts.map((cs) => cs.filter(isLocalContact));
-const $backendContacts = $contacts.map((cs) => cs.filter(isBackendContact));
+// Public events the BackendContacts feature uses to push the connection-scoped backend contact list
+// into this entity. Backend contacts are session-scoped and never persisted to Dexie.
+const backendContactsReceived = createEvent<BackendContact[]>();
+const backendContactsCleared = createEvent();
 
-const populateContactsFx = createEffect((): Promise<Contact[]> => {
-  return storageService.contacts.readAll();
+const $localContacts = createStore<LocalContact[]>([]);
+const $backendContacts = createStore<BackendContact[]>([])
+  .on(backendContactsReceived, (_, contacts) => contacts)
+  .reset(backendContactsCleared);
+
+const $contacts = combine($localContacts, $backendContacts, (local, backend): Contact[] => [...local, ...backend]);
+
+// Loads contacts from Dexie. Backend contacts are session-scoped and never persisted; legacy rows
+// from previous app versions are dropped at the schema level by migration-19.
+const populateLocalContactsFx = createEffect(async (): Promise<LocalContact[]> => {
+  const all = await storageService.contacts.readAll();
+
+  return all.filter(isLocalContact);
 });
 
-const createContactFx = createEffect(async (contact: Omit<LocalContact, 'id'>): Promise<Contact | undefined> => {
+const createContactFx = createEffect(async (contact: Omit<LocalContact, 'id'>): Promise<LocalContact | undefined> => {
   const full: LocalContact = { ...contact, id: crypto.randomUUID() };
 
-  return storageService.contacts.put(full);
+  return storageService.contacts.put(full) as Promise<LocalContact | undefined>;
 });
 
 const undoDeleteContactFx = attach({
-  source: $contacts,
-  mapParams: (contact: Omit<LocalContact, 'id'>, existingContacts: Contact[]) => ({
+  source: $localContacts,
+  mapParams: (contact: Omit<LocalContact, 'id'>, existingContacts: LocalContact[]) => ({
     contact,
     existingContacts,
   }),
@@ -32,38 +44,41 @@ const undoDeleteContactFx = attach({
       existingContacts,
     }: {
       contact: Omit<LocalContact, 'id'>;
-      existingContacts: Contact[];
-    }): Promise<Contact | undefined> => {
+      existingContacts: LocalContact[];
+    }): Promise<LocalContact | undefined> => {
       const hasDuplicate = existingContacts.some((c) => c.accountId === contact.accountId);
       if (hasDuplicate) {
         return undefined;
       }
       const full: LocalContact = { ...contact, id: crypto.randomUUID() };
 
-      return storageService.contacts.put(full);
+      return storageService.contacts.put(full) as Promise<LocalContact | undefined>;
     },
   ),
 });
 
-const createContactsFx = createEffect(async (contacts: Omit<LocalContact, 'id'>[]): Promise<Contact[] | undefined> => {
-  const fullContacts: LocalContact[] = contacts.map((c) => ({ ...c, id: crypto.randomUUID() }));
-  await storageService.contacts.insertAll(fullContacts);
+const createContactsFx = createEffect(
+  async (contacts: Omit<LocalContact, 'id'>[]): Promise<LocalContact[] | undefined> => {
+    const fullContacts: LocalContact[] = contacts.map((c) => ({ ...c, id: crypto.randomUUID() }));
+    await storageService.contacts.insertAll(fullContacts);
 
-  return fullContacts;
-});
+    return fullContacts;
+  },
+);
 
-const updateContactFx = createEffect(async ({ id, ...rest }: Contact): Promise<Contact> => {
+const updateContactFx = createEffect(async ({ id, ...rest }: LocalContact): Promise<LocalContact> => {
   await storageService.contacts.update(id, rest);
 
-  return { id, ...rest } satisfies Contact;
+  return { id, ...rest } satisfies LocalContact;
 });
 
-const updateContactsFx = createEffect(async (contacts: Contact[]): Promise<Contact[]> => {
-  if (contacts.length === 0) return [];
+const updateContactsFx = createEffect(async (contacts: Contact[]): Promise<LocalContact[]> => {
+  const localOnly = contacts.filter(isLocalContact);
+  if (localOnly.length === 0) return [];
 
-  await storageService.contacts.updateAll(contacts);
+  await storageService.contacts.updateAll(localOnly);
 
-  return contacts;
+  return localOnly;
 });
 
 const deleteContactFx = createEffect(async (contactId: string): Promise<string> => {
@@ -72,34 +87,8 @@ const deleteContactFx = createEffect(async (contactId: string): Promise<string> 
   return contactId;
 });
 
-const syncBackendContactsFx = createEffect(async (contacts: Contact[]): Promise<Contact[]> => {
-  const all = await storageService.contacts.readAll();
-  const oldBackendIds = all.filter((c) => c.source === 'backend').map((c) => c.id);
-  const newIds = new Set(contacts.map((c) => c.id));
-  const staleIds = oldBackendIds.filter((id) => !newIds.has(id));
-
-  if (staleIds.length > 0) {
-    await storageService.contacts.deleteAll(staleIds);
-  }
-  await storageService.contacts.insertAll(contacts);
-
-  return contacts;
-});
-
-const clearBackendContactsFx = createEffect(async (): Promise<string[]> => {
-  const all = await storageService.contacts.readAll();
-  const backendIds = all.filter((c) => c.source === 'backend').map((c) => c.id);
-  if (backendIds.length > 0) {
-    await storageService.contacts.deleteAll(backendIds);
-  }
-
-  return backendIds;
-});
-
-$contacts
-  .on(populateContactsFx.doneData, (_, contacts) => {
-    return contacts;
-  })
+$localContacts
+  .on(populateLocalContactsFx.doneData, (_, contacts) => contacts)
   .on([createContactFx.doneData, createContactsFx.doneData, undoDeleteContactFx.doneData], (state, contact) => {
     return contact ? state.concat(contact) : state;
   })
@@ -117,27 +106,21 @@ $contacts
       b: contacts,
       mergeBy: (c) => c.id,
     });
-  })
-  .on(syncBackendContactsFx.doneData, (state, backendContacts) => {
-    const withoutOldBackend: Contact[] = state.filter((c) => c.source !== 'backend');
-
-    return withoutOldBackend.concat(backendContacts);
-  })
-  .on(clearBackendContactsFx.doneData, (state, deletedIds) => {
-    const idSet = new Set(deletedIds);
-
-    return state.filter((c) => !idSet.has(c.id));
   });
 
 sample({
   clock: kernelModel.events.appStarted,
-  target: populateContactsFx,
+  target: populateLocalContactsFx,
 });
 
 export const contactModel = {
   $contacts,
   $localContacts,
   $backendContacts,
+  events: {
+    backendContactsReceived,
+    backendContactsCleared,
+  },
   effects: {
     createContactFx,
     createContactsFx,
@@ -145,7 +128,5 @@ export const contactModel = {
     deleteContactFx,
     updateContactFx,
     updateContactsFx,
-    syncBackendContactsFx,
-    clearBackendContactsFx,
   },
 };

@@ -24,7 +24,7 @@ import {
 import { useChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard } from '@/entities/signatory';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { WalletName } from '@/widgets/NameResolver';
 
 import LogModal from './LogModal';
@@ -51,6 +51,8 @@ const SignatoryAddress = ({ accountId, chain }: SignatoryAddressProps) => {
 export const operationOverviewSlot = createSlot<{
   walletAccounts: AnyAccount[];
   trigger?: ReactNode;
+  initialChainId?: string;
+  exclusive?: boolean;
 }>();
 
 type WalletSignatory = Signatory & { wallet: Wallet };
@@ -110,6 +112,20 @@ export const OperationSignatories = ({ operation, account }: Props) => {
   // visualize — hide the trigger.
   const isExternalMultisig = isContactMultisigAccount(account);
 
+  // Flex multisig overview: render proxied → multisig (hidden-wallet accounts).
+  const overviewAccounts = useMemo<AnyAccount[]>(() => {
+    if (!accountUtils.isFlexibleMultisigAccount(account)) return [account];
+
+    const proxied = accountsList.filter(accountUtils.isProxiedAccount).find(a => a.accountId === account.accountId);
+    const multisig = accountsList
+      .filter(accountUtils.isMultisigAccount)
+      .find(a => a.accountId === account.multisigAccountId);
+
+    if (!proxied || !multisig) return [account];
+
+    return [proxied, multisig];
+  }, [account, accountsList]);
+
   return (
     <div className="flex flex-col border-r border-divider p-4">
       <div className="mb-4 flex items-center justify-between">
@@ -134,7 +150,9 @@ export const OperationSignatories = ({ operation, account }: Props) => {
           <Slot
             id={operationOverviewSlot}
             props={{
-              walletAccounts: [account],
+              walletAccounts: overviewAccounts,
+              initialChainId: operation.chainId,
+              exclusive: accountUtils.isFlexibleMultisigAccount(account),
               trigger: (
                 <Button pallet="primary" variant="text" size="sm">
                   {t('operation.openOverviewButton')}

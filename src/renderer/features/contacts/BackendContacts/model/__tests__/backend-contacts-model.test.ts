@@ -1,12 +1,12 @@
 import { allSettled, fork } from 'effector';
 
-import { type Contact } from '@/shared/core';
+import { type BackendContact } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { backendContactsModel } from '../backend-contacts-model';
 
-const backendContacts: Contact[] = [
+const backendContacts: BackendContact[] = [
   {
     id: 'backend-1',
     name: 'Backend Contact 1',
@@ -43,90 +43,81 @@ const backendContacts: Contact[] = [
   },
 ];
 
-const localContact: Contact = {
-  id: 'local-1',
-  name: 'Local Contact',
-  address: toAddress('333'),
-  accountId: toAccountId('0x03'),
-  source: 'local',
-};
-
 describe('features/contacts/BackendContacts/model/backend-contacts-model', () => {
-  test('should clear backend contacts when connection is deleted (urlCleared)', async () => {
-    const clearSpy = jest.fn().mockResolvedValue(['backend-1', 'backend-2']);
-
+  test('should clear backend contacts when connection url is cleared', async () => {
     const scope = fork({
-      values: new Map().set(contactModel.$contacts, [...backendContacts, localContact]),
-      handlers: [[contactModel.effects.clearBackendContactsFx, clearSpy]],
+      values: new Map().set(contactModel.$backendContacts, backendContacts),
     });
+
+    expect(scope.getState(contactModel.$backendContacts)).toEqual(backendContacts);
 
     await allSettled(backendConfigurationModel.events.urlCleared, { scope });
 
-    expect(clearSpy).toHaveBeenCalledTimes(1);
-    expect(scope.getState(contactModel.$contacts)).toEqual([localContact]);
+    expect(scope.getState(contactModel.$backendContacts)).toEqual([]);
   });
 
-  test('should NOT clear backend contacts when disconnecting (signOutClicked)', async () => {
-    const clearSpy = jest.fn().mockResolvedValue([]);
-
+  test('should clear backend contacts when user signs out', async () => {
     const scope = fork({
       values: new Map()
-        .set(contactModel.$contacts, [...backendContacts, localContact])
+        .set(contactModel.$backendContacts, backendContacts)
         .set(backendConfigurationModel.$backendUrl, 'https://backend.example.com'),
-      handlers: [
-        [contactModel.effects.clearBackendContactsFx, clearSpy],
-        [authModel.__test.logoutFx, jest.fn().mockResolvedValue(undefined)],
-      ],
+      handlers: [[authModel.__test.logoutFx, jest.fn().mockResolvedValue(undefined)]],
     });
 
     await allSettled(authModel.events.signOutClicked, { scope });
 
-    expect(clearSpy).not.toHaveBeenCalled();
-    expect(scope.getState(contactModel.$backendContacts)).toEqual(backendContacts);
+    expect(scope.getState(contactModel.$backendContacts)).toEqual([]);
   });
 
   test('should clear backend contacts when session expires', async () => {
-    const clearSpy = jest.fn().mockResolvedValue(['backend-1', 'backend-2']);
-
     const scope = fork({
-      values: new Map().set(contactModel.$contacts, [...backendContacts, localContact]),
-      handlers: [[contactModel.effects.clearBackendContactsFx, clearSpy]],
+      values: new Map().set(contactModel.$backendContacts, backendContacts),
     });
 
     await allSettled(authModel.$isSessionExpired, { scope, params: true });
 
-    expect(clearSpy).toHaveBeenCalledTimes(1);
-    expect(scope.getState(contactModel.$contacts)).toEqual([localContact]);
+    expect(scope.getState(contactModel.$backendContacts)).toEqual([]);
   });
 
   test('should NOT clear backend contacts when $isSessionExpired transitions to false', async () => {
-    const clearSpy = jest.fn().mockResolvedValue([]);
-
     const scope = fork({
       values: new Map()
-        .set(contactModel.$contacts, [...backendContacts, localContact])
+        .set(contactModel.$backendContacts, backendContacts)
         .set(authModel.$isSessionExpired, true),
-      handlers: [[contactModel.effects.clearBackendContactsFx, clearSpy]],
     });
 
     await allSettled(authModel.$isSessionExpired, { scope, params: false });
 
-    expect(clearSpy).not.toHaveBeenCalled();
     expect(scope.getState(contactModel.$backendContacts)).toEqual(backendContacts);
   });
 
   test('should clear backend contacts on a network/reachability issue', async () => {
-    const clearSpy = jest.fn().mockResolvedValue(['backend-1', 'backend-2']);
-
     const scope = fork({
-      values: new Map().set(contactModel.$contacts, [...backendContacts, localContact]),
-      handlers: [[contactModel.effects.clearBackendContactsFx, clearSpy]],
+      values: new Map().set(contactModel.$backendContacts, backendContacts),
     });
 
     await allSettled(authModel.$hasNetworkIssue, { scope, params: true });
 
-    expect(clearSpy).toHaveBeenCalledTimes(1);
-    expect(scope.getState(contactModel.$contacts)).toEqual([localContact]);
+    expect(scope.getState(contactModel.$backendContacts)).toEqual([]);
+  });
+
+  test('should clear backend contacts when fetch fails', async () => {
+    const scope = fork({
+      values: new Map().set(contactModel.$backendContacts, backendContacts),
+      handlers: [
+        [
+          backendContactsModel.__test.fetchBackendContactsFx,
+          jest.fn().mockRejectedValue(new Error('boom')),
+        ],
+      ],
+    });
+
+    await allSettled(backendContactsModel.__test.fetchBackendContactsFx, {
+      scope,
+      params: 'https://backend.example.com',
+    });
+
+    expect(scope.getState(contactModel.$backendContacts)).toEqual([]);
   });
 
   test('should refetch backend contacts when network issue clears (session still authed)', async () => {
@@ -141,10 +132,7 @@ describe('features/contacts/BackendContacts/model/backend-contacts-model', () =>
           permissions: [],
         })
         .set(backendConfigurationModel.$backendUrl, 'https://backend.example.com'),
-      handlers: [
-        [contactModel.effects.clearBackendContactsFx, jest.fn().mockResolvedValue([])],
-        [backendContactsModel.__test.fetchBackendContactsFx, fetchSpy],
-      ],
+      handlers: [[backendContactsModel.__test.fetchBackendContactsFx, fetchSpy]],
     });
 
     await allSettled(authModel.$hasNetworkIssue, { scope, params: false });
@@ -160,27 +148,11 @@ describe('features/contacts/BackendContacts/model/backend-contacts-model', () =>
         .set(authModel.$hasNetworkIssue, true)
         .set(authModel.$authState, null)
         .set(backendConfigurationModel.$backendUrl, 'https://backend.example.com'),
-      handlers: [
-        [contactModel.effects.clearBackendContactsFx, jest.fn().mockResolvedValue([])],
-        [backendContactsModel.__test.fetchBackendContactsFx, fetchSpy],
-      ],
+      handlers: [[backendContactsModel.__test.fetchBackendContactsFx, fetchSpy]],
     });
 
     await allSettled(authModel.$hasNetworkIssue, { scope, params: false });
 
     expect(fetchSpy).not.toHaveBeenCalled();
-  });
-
-  test('should preserve local contacts when connection is deleted', async () => {
-    const clearSpy = jest.fn().mockResolvedValue(['backend-1', 'backend-2']);
-
-    const scope = fork({
-      values: new Map().set(contactModel.$contacts, [...backendContacts, localContact]),
-      handlers: [[contactModel.effects.clearBackendContactsFx, clearSpy]],
-    });
-
-    await allSettled(backendConfigurationModel.events.urlCleared, { scope });
-
-    expect(scope.getState(contactModel.$localContacts)).toEqual([localContact]);
   });
 });

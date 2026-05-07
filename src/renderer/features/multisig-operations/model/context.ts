@@ -179,7 +179,8 @@ const $operationsWithAccounts = combine(
     const findAccount = (op: MultisigOperation) => {
       if (op.proxiedAccountId) {
         const key = `${op.proxiedAccountId}:${op.multisigAccountId}`;
-        return byAccountId.get(key)?.find(a => accountUtils.isFlexibleMultisigAccount(a));
+        const flex = byAccountId.get(key)?.find(a => accountUtils.isFlexibleMultisigAccount(a));
+        if (flex) return flex;
       }
       const candidates = byMultisigAccountId.get(op.multisigAccountId);
       return candidates?.find(a => accountUtils.isMultisigAccount(a)) ?? candidates?.[0];
