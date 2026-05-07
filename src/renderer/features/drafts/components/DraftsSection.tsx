@@ -19,6 +19,7 @@ import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel, useApi } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { backendContactsModel } from '@/features/contacts';
 import { tryDecodeCallData } from '../lib/decode-call-data';
 import { useCanCreateDraft } from '../lib/useCanCreateDraft';
 import { DESCRIPTION_MAX_LENGTH, createDraftModel } from '../model/create-draft-model';
@@ -36,8 +37,13 @@ export const DraftsSection = () => {
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const authState = useUnit(authModel.$authState);
+  const isSessionExpired = useUnit(authModel.$isSessionExpired);
+  const hasNetworkIssue = useUnit(authModel.$hasNetworkIssue);
+  const syncStatus = useUnit(backendContactsModel.$syncStatus);
   const focusedDraftId = useUnit(draftDeepLinkModel.$focusedDraftId);
 
+  const isHealthy = isAuthenticated && !isSessionExpired && !hasNetworkIssue && syncStatus !== 'error';
+  const isAuthIssue = !isAuthenticated || isSessionExpired || hasNetworkIssue;
   const canRead = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_READ) ?? false);
   const canWrite = useCanCreateDraft();
   const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);
@@ -207,86 +213,115 @@ export const DraftsSection = () => {
     setEditingDraft(null);
   };
 
-  if (!canRead) return null;
+  const handleReconnect = () => {
+    if (isAuthIssue) {
+      backendConfigurationModel.events.editStarted();
+    } else {
+      backendContactsModel.events.syncTriggered();
+    }
+  };
+
+  if (isHealthy && !canRead) return null;
 
   return (
     <div className="mb-6">
-      <Accordion initialOpen>
-        <Accordion.Trigger sticky>
-          <div className="flex items-center gap-2 py-2">
-            <FootnoteText className="font-medium text-text-secondary">{t('operations.drafts.title')}</FootnoteText>
-            {visibleDrafts.length > 0 && (
-              <div className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-icon-accent/15 px-2">
-                <CaptionText className="font-medium text-icon-accent">{visibleDrafts.length}</CaptionText>
+      <div className="relative">
+        <div aria-hidden={!isHealthy} inert={!isHealthy || undefined}>
+          <Accordion initialOpen>
+            <Accordion.Trigger sticky>
+              <div className="flex items-center gap-2 py-2">
+                <FootnoteText className="font-medium text-text-secondary">{t('operations.drafts.title')}</FootnoteText>
+                {isHealthy && visibleDrafts.length > 0 && (
+                  <div className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-icon-accent/15 px-2">
+                    <CaptionText className="font-medium text-icon-accent">{visibleDrafts.length}</CaptionText>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </Accordion.Trigger>
-        <Accordion.Content>
-          <div className="mt-1 flex flex-col gap-y-1.5">
-            {visibleDrafts.map((draft) => (
-              <DraftRow
-                key={draft.id}
-                canDelete={canDelete}
-                canWrite={canWrite}
-                isSubmitted={submittedDraftIds.has(draft.id)}
-                hasInitiator={
-                  draft.proxyAccountId
-                    ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
-                    : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
-                }
-                isHighlighted={focusedDraftId === draft.id}
-                multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
-                rowRef={
-                  focusedDraftId === draft.id
-                    ? (el) => {
-                        highlightedRef.current = el;
+            </Accordion.Trigger>
+            <Accordion.Content>
+              <div className="mt-1 flex flex-col gap-y-1.5">
+                {isHealthy &&
+                  visibleDrafts.map((draft) => (
+                    <DraftRow
+                      key={draft.id}
+                      canDelete={canDelete}
+                      canWrite={canWrite}
+                      isSubmitted={submittedDraftIds.has(draft.id)}
+                      hasInitiator={
+                        draft.proxyAccountId
+                          ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
+                          : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
                       }
-                    : undefined
-                }
-                draft={draft}
-                onDelete={handleDeleteDraft}
-                onEdit={handleEditDraft}
-                onSubmit={handleSubmitDraft}
-              />
-            ))}
+                      isHighlighted={focusedDraftId === draft.id}
+                      multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
+                      rowRef={
+                        focusedDraftId === draft.id
+                          ? (el) => {
+                              highlightedRef.current = el;
+                            }
+                          : undefined
+                      }
+                      draft={draft}
+                      onDelete={handleDeleteDraft}
+                      onEdit={handleEditDraft}
+                      onSubmit={handleSubmitDraft}
+                    />
+                  ))}
 
-            <Tooltip open={canWrite ? false : undefined}>
-              <Tooltip.Trigger>
-                <div>
-                  <button
-                    className={cnTw(
-                      'group w-full rounded-lg border-2 border-dashed border-shade-12 px-4 py-3.5 transition-all',
-                      canWrite
-                        ? 'cursor-pointer hover:border-icon-accent hover:bg-icon-accent/4 active:scale-[0.998]'
-                        : 'cursor-not-allowed opacity-50',
-                    )}
-                    disabled={!canWrite}
-                    type="button"
-                    onClick={() => canWrite && createDraftModel.createDraftRequested()}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-dashed border-shade-12 transition-colors group-hover:border-icon-accent group-hover:bg-icon-accent/10">
-                        <Icon
-                          name="add"
-                          size={14}
-                          className="text-text-tertiary transition-colors group-hover:text-icon-accent"
-                        />
-                      </div>
-                      <FootnoteText className="font-medium text-text-tertiary transition-colors group-hover:text-icon-accent">
-                        {t('operations.drafts.createNew')}
-                      </FootnoteText>
+                <Tooltip open={canWrite ? false : undefined}>
+                  <Tooltip.Trigger>
+                    <div>
+                      <button
+                        className={cnTw(
+                          'group w-full rounded-lg border-2 border-dashed border-shade-12 px-4 py-3.5 transition-all',
+                          canWrite
+                            ? 'cursor-pointer hover:border-icon-accent hover:bg-icon-accent/4 active:scale-[0.998]'
+                            : 'cursor-not-allowed opacity-50',
+                        )}
+                        disabled={!canWrite}
+                        type="button"
+                        onClick={() => canWrite && createDraftModel.createDraftRequested()}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-dashed border-shade-12 transition-colors group-hover:border-icon-accent group-hover:bg-icon-accent/10">
+                            <Icon
+                              name="add"
+                              size={14}
+                              className="text-text-tertiary transition-colors group-hover:text-icon-accent"
+                            />
+                          </div>
+                          <FootnoteText className="font-medium text-text-tertiary transition-colors group-hover:text-icon-accent">
+                            {t('operations.drafts.createNew')}
+                          </FootnoteText>
+                        </div>
+                      </button>
                     </div>
-                  </button>
-                </div>
-              </Tooltip.Trigger>
-              <Tooltip.Content>
-                {isAuthenticated ? t('operations.drafts.noWritePermission') : t('operations.drafts.connectToCreate')}
-              </Tooltip.Content>
-            </Tooltip>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    {isAuthenticated
+                      ? t('operations.drafts.noWritePermission')
+                      : t('operations.drafts.connectToCreate')}
+                  </Tooltip.Content>
+                </Tooltip>
+              </div>
+            </Accordion.Content>
+          </Accordion>
+        </div>
+        {!isHealthy && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-block-background-default/70 backdrop-blur-[2px]">
+            <div className="rounded-full bg-background-default">
+              <Button
+                variant="chip"
+                pallet="secondary"
+                prefixElement={<Icon name="refresh" size={16} className="text-tab-icon-inactive" />}
+                onClick={handleReconnect}
+              >
+                {t('operations.drafts.reconnectOverlayButton')}
+              </Button>
+            </div>
           </div>
-        </Accordion.Content>
-      </Accordion>
+        )}
+      </div>
 
       {editingDraft && (
         <Modal size="md" isOpen={isEditModalOpen} onToggle={handleEditToggle}>

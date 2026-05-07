@@ -10,7 +10,7 @@ import { AsyncItem, Box, ScrollArea } from '@/shared/ui-kit';
 import { useOperationDescriptionsFetch } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
 import { DraftsSection } from '@/features/drafts';
 import { type OperationWithAccount, operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
@@ -42,6 +42,7 @@ export const Operations = () => {
   const tab = useUnit(operationsContextModel.$tab);
   const baseUrl = useUnit(backendConfigurationModel.$backendUrl);
   const hasBackend = useUnit(backendConfigurationModel.$hasBackend);
+  const hasEverConnected = useUnit(connectionHistoryModel.$hasEverConnected);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
 
   const operationIds = useMemo(() => filteredOps.map(({ operation }) => operation.id), [filteredOps]);
@@ -138,7 +139,7 @@ export const Operations = () => {
 
       {hasMultisigAccounts && (
         <ScrollArea viewportRef={scrollRef}>
-          {tab === 'pending' && hasBackend && <DraftsSection />}
+          {tab === 'pending' && hasBackend && hasEverConnected && <DraftsSection />}
 
           {(isDeferredLoading || isDeepLinkLoading) && (
             <div className="mt-4 flex w-full items-center justify-center gap-x-3">

@@ -2633,6 +2633,7 @@
       "discardDescription": "You have unsaved changes. Discard them?",
       "discardConfirm": "Discard",
       "discardCancel": "Keep editing",
+      "reconnectOverlayButton": "Reconnect to address book",
       "submitTitle": "Submit draft",
       "submitSignatory": "Signatory",
       "noCallDataToSubmit": "Call data is required to submit",

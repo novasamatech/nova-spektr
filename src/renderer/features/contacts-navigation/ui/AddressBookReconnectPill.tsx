@@ -51,7 +51,7 @@ export const AddressBookReconnectPill = () => {
         <button
           type="button"
           aria-label={label}
-          className="flex h-6 w-6 items-center justify-center rounded-md text-text-warning transition-colors hover:bg-badge-orange-background-default"
+          className="flex h-6 w-6 items-center justify-center rounded-md text-tab-icon-inactive transition-colors hover:bg-hover"
           onClick={handleClick}
         >
           <Icon name="refresh" size={14} className="text-inherit" />
