@@ -4,7 +4,6 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { Box, Tabs } from '@/shared/ui-kit';
-import { BackendConfigurationModal } from '@/features/contacts';
 import {
   ExportButton,
   Operations as OperationsList,
@@ -69,8 +68,6 @@ export const Operations = () => {
           <OperationsList />
         </div>
       </div>
-
-      <BackendConfigurationModal />
     </div>
   );
 };

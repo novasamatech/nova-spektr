@@ -1,7 +1,8 @@
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { Paths } from '@/shared/routes';
-import { navigationTopLinksPipeline } from '@/features/app-shell';
+import { modalsSlot, navigationTopLinksPipeline } from '@/features/app-shell';
+import { BackendConfigurationModal } from '@/features/contacts';
 
 import { AddressBookReconnectPill } from './ui/AddressBookReconnectPill';
 import { AddressBookStatusDot } from './ui/AddressBookStatusDot';
@@ -21,3 +22,5 @@ contactsNavigationFeature.inject(navigationTopLinksPipeline, (items) => {
     trailingAction: <AddressBookReconnectPill />,
   });
 });
+
+contactsNavigationFeature.inject(modalsSlot, BackendConfigurationModal);

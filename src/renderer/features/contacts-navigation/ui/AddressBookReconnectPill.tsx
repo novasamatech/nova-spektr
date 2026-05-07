@@ -1,9 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type MouseEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
-import { Paths } from '@/shared/routes';
 import { Icon } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
@@ -12,7 +10,6 @@ import { connectionStatusModel } from '../model/connection-status-model';
 
 export const AddressBookReconnectPill = () => {
   const { t } = useI18n();
-  const navigate = useNavigate();
 
   const [featureEnabled, hasEverConnected, hasBackend, isAuthenticated, isSessionExpired, hasNetworkIssue, syncStatus] =
     useUnit([
@@ -35,7 +32,6 @@ export const AddressBookReconnectPill = () => {
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    navigate(Paths.ADDRESS_BOOK);
     if (isAuthIssue) {
       backendConfigurationModel.events.editStarted();
     } else {
@@ -44,6 +40,7 @@ export const AddressBookReconnectPill = () => {
   };
 
   const label = t('addressBook.auth.reconnectButton');
+  const tooltipText = t('addressBook.auth.reconnectTooltip');
 
   return (
     <Tooltip>
@@ -57,7 +54,7 @@ export const AddressBookReconnectPill = () => {
           <Icon name="refresh" size={14} className="text-inherit" />
         </button>
       </Tooltip.Trigger>
-      <Tooltip.Content>{label}</Tooltip.Content>
+      <Tooltip.Content>{tooltipText}</Tooltip.Content>
     </Tooltip>
   );
 };

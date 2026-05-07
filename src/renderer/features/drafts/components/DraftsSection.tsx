@@ -29,6 +29,7 @@ import { submitDraftModel } from '../model/submit-draft-model';
 
 import { DraftRow } from './DraftRow';
 import { DraftSummary } from './DraftSummary';
+import { ReconnectAddressBookButton } from './ReconnectAddressBookButton';
 import { SubmitDraftModal } from './SubmitDraftModal';
 
 export const DraftsSection = () => {
@@ -43,7 +44,6 @@ export const DraftsSection = () => {
   const focusedDraftId = useUnit(draftDeepLinkModel.$focusedDraftId);
 
   const isHealthy = isAuthenticated && !isSessionExpired && !hasNetworkIssue && syncStatus !== 'error';
-  const isAuthIssue = !isAuthenticated || isSessionExpired || hasNetworkIssue;
   const canRead = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_READ) ?? false);
   const canWrite = useCanCreateDraft();
   const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);
@@ -213,14 +213,6 @@ export const DraftsSection = () => {
     setEditingDraft(null);
   };
 
-  const handleReconnect = () => {
-    if (isAuthIssue) {
-      backendConfigurationModel.events.editStarted();
-    } else {
-      backendContactsModel.events.syncTriggered();
-    }
-  };
-
   if (isHealthy && !canRead) return null;
 
   return (
@@ -310,14 +302,7 @@ export const DraftsSection = () => {
         {!isHealthy && (
           <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-block-background-default/70 backdrop-blur-[2px]">
             <div className="rounded-full bg-background-default">
-              <Button
-                variant="chip"
-                pallet="secondary"
-                prefixElement={<Icon name="refresh" size={16} className="text-tab-icon-inactive" />}
-                onClick={handleReconnect}
-              >
-                {t('operations.drafts.reconnectOverlayButton')}
-              </Button>
+              <ReconnectAddressBookButton />
             </div>
           </div>
         )}

@@ -2,7 +2,6 @@ import { Outlet } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
-import { BackendConfigurationModal } from '@/features/contacts';
 
 import { BackendSyncSettings, GeneralActions, SocialLinks, Version } from './components';
 
@@ -25,7 +24,6 @@ export const Overview = () => {
       </div>
 
       <Outlet />
-      <BackendConfigurationModal />
     </>
   );
 };
