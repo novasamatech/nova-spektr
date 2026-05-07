@@ -286,11 +286,7 @@ export const DraftsSection = () => {
                       </button>
                     </div>
                   </Tooltip.Trigger>
-                  <Tooltip.Content>
-                    {isAuthenticated
-                      ? t('operations.drafts.noWritePermission')
-                      : t('operations.drafts.connectToCreate')}
-                  </Tooltip.Content>
+                  <Tooltip.Content>{t('operations.drafts.noWritePermission')}</Tooltip.Content>
                 </Tooltip>
               </div>
             </Accordion.Content>

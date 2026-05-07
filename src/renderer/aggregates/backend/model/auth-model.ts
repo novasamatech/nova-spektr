@@ -334,6 +334,13 @@ sample({
 });
 
 sample({
+  clock: backendConfigurationModel.events.editStarted,
+  source: backendConfigurationModel.$backendUrl,
+  filter: (url): url is string => url !== null,
+  target: checkSessionFx,
+});
+
+sample({
   clock: checkSessionFx.doneData,
   source: $signableAccounts,
   filter: (_accounts, sessionData) => sessionData !== null,
