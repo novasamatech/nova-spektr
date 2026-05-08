@@ -352,7 +352,15 @@ sample({
 
 sample({
   clock: parseFileFx.doneData,
+  filter: (data) => data.length > 0,
   target: [$parsedCsv, validateFileFx],
+});
+
+sample({
+  clock: parseFileFx.doneData,
+  filter: (data) => data.length === 0,
+  fn: () => VestingCsvError.EMPTY,
+  target: $csvError,
 });
 
 sample({
