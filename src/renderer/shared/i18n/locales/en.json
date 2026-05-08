@@ -2814,7 +2814,8 @@
       "tooltip": "Signer is proving control of the proxied wallet via a marker remark",
       "details": {
         "targetSection": "Verifying wallet",
-        "openProxyDetails": "Open wallet details"
+        "openProxyDetails": "Open wallet details",
+        "memo": "Memo"
       }
     },
     "viewOperation": "View operation"
@@ -3626,6 +3627,9 @@
       "statusPendingVerification": "Pending verification",
       "statusPendingDelegation": "Pending delegation",
       "verifyFormResolvingAccounts": "Resolving proxy account…",
+      "verifyMemoLabel": "Memo",
+      "verifyMemoPlaceholder": "Optional note (max 200 chars)",
+      "verifyConfirmMemo": "Memo",
       "verifyViaProxy": "Verify proxy",
       "notVerifiedHeadline": "This proxy is not verified yet.",
       "verifyDescription": "Verify submits a `system.remarkWithEvent` via the proxy so we can confirm it on-chain. Because the proxy is a multisig, it's submitted as a multisig proposal-signatories must approve it before it executes.",

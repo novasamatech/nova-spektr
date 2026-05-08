@@ -11,6 +11,7 @@ export type VerifyProxyConfirm = TxConfirmInfo & {
   proxyType: ProxyType;
   pureProxyAccountId: AccountId;
   proxyAccountId: AccountId;
+  memo?: string;
 };
 
 const confirmStore = createTransactionConfirmStore<VerifyProxyConfirm>({
