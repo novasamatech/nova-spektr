@@ -2644,6 +2644,7 @@
       "syncRetry": "Try again",
       "extrinsicError": "Call data is invalid or incompatible with this chain",
       "internalPathError": "Signing path is invalid",
+      "signingPathUnresolved": "The signing path saved with this draft can no longer be resolved against your accounts. The draft cannot be submitted along the original route.",
       "submitSuccess": "Draft submitted",
       "initiatorUnavailable": "The initiator is no longer a signatory of this multisig. Please pick another.",
       "submittedBadge": "Submitted",

@@ -116,6 +116,7 @@ const { $fee, $tx } = createComplexTxStore({
   accounts: accounts.$list,
   chain: $walletData.map((data) => data?.chain ?? null),
   transaction: $coreTx,
+  routeOverride: formModel.$pathRoute,
 });
 
 const $nominateForm = createStore<FormSubmitEvent | null>(null);

@@ -285,6 +285,7 @@ export const formModel = {
   form,
   $signatories,
   $signingPath,
+  $pathRoute,
   $selectedSignatory: form.fields.signatory.$value,
 
   $proxyWallet,

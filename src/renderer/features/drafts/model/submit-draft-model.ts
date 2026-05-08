@@ -18,7 +18,7 @@ import {
 } from '@/shared/transactions';
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
-import { type Draft, operationDescriptionsResource, operationsService } from '@/domains/backend';
+import { type Draft, type PathNode, operationDescriptionsResource, operationsService } from '@/domains/backend';
 import {
   type AnyAccount,
   type AnyTransaction,
@@ -34,6 +34,7 @@ import { backendConfigurationModel } from '@/aggregates/backend';
 import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
+import { createPathRouteStore } from '@/features/signing-path';
 
 import './drafts-model'; // side-effect: orchestration wiring
 
@@ -90,12 +91,40 @@ const $transaction = $draft.map((draft): EncodedTransaction | null => {
   };
 });
 
-const $route = createRouteStore({
+const $bfsRoute = createRouteStore({
   chain: $chain,
   initiator: $initiator,
   signatory: $signatoryStore,
   accounts: walletModel.$availableAccounts,
 });
+
+// The picked path was persisted with the draft — resolve it back to accounts
+// and use it strictly. Falling back to BFS would silently sign through a
+// different route than the user authored the draft for.
+const $draftSigningPath = $draft.map((draft): PathNode[] =>
+  Array.isArray(draft?.signingPath) ? draft.signingPath : [],
+);
+const $pathRoute = createPathRouteStore($draftSigningPath, $chain);
+
+// Draft has a non-trivial saved path but it can't be resolved against the
+// current account list (e.g. a wallet that the path traversed has been
+// removed). Block the flow rather than wrap silently along a different route.
+const $pathResolutionError = combine(
+  { saved: $draftSigningPath, resolved: $pathRoute },
+  ({ saved, resolved }) => saved.length >= 2 && (resolved === null || resolved.length < 2),
+);
+
+// Saved path resolved → use it. No saved path (legacy drafts) → BFS.
+// Saved path present but unresolvable → empty route, the gating check below
+// flips $wrappedTxError so the UI surfaces the error.
+const $route = combine(
+  { bfs: $bfsRoute, saved: $draftSigningPath, resolved: $pathRoute },
+  ({ bfs, saved, resolved }) => {
+    if (saved.length < 2) return bfs;
+    if (resolved && resolved.length >= 2) return resolved;
+    return [];
+  },
+);
 
 const { $tx: $wrappedTx } = createWrappedTxStore({
   api: $api,
@@ -104,7 +133,9 @@ const { $tx: $wrappedTx } = createWrappedTxStore({
 });
 
 const $wrappedExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null).reset(flowFinished);
-const $wrappedTxError = createStore(false).reset(flowFinished, flowStarted);
+type WrappedTxErrorKind = 'extrinsic' | 'signing-path-unresolved';
+const $wrappedTxErrorKind = createStore<WrappedTxErrorKind | null>(null).reset(flowFinished, flowStarted);
+const $wrappedTxError = $wrappedTxErrorKind.map((kind) => kind !== null);
 
 const createWrappedExtrinsicFx = createQueuedEffect(
   ({ transaction, api }: { transaction: AnyTransaction | null; api: ApiPromise | null }) => {
@@ -132,8 +163,33 @@ sample({
 
 sample({
   clock: createWrappedExtrinsicFx.fail,
-  fn: () => true,
-  target: $wrappedTxError,
+  fn: (): WrappedTxErrorKind => 'extrinsic',
+  target: $wrappedTxErrorKind,
+});
+
+// Trip the same error UI when the saved signing path can't be resolved.
+sample({
+  clock: $pathResolutionError,
+  filter: (hasError) => hasError,
+  fn: (): WrappedTxErrorKind => 'signing-path-unresolved',
+  target: $wrappedTxErrorKind,
+});
+
+sample({
+  clock: $pathResolutionError,
+  filter: (hasError) => hasError,
+  fn: () => null,
+  target: $wrappedExtrinsic,
+});
+
+const pathResolutionToastFx = createEffect(() => {
+  toast.error(t('operations.drafts.signingPathUnresolved'));
+});
+
+sample({
+  clock: $pathResolutionError.updates,
+  filter: (hasError) => hasError,
+  target: pathResolutionToastFx,
 });
 
 const { $: $fee } = createFeeCalculator({
@@ -560,6 +616,7 @@ export const submitDraftModel = {
   $wrappedTx,
   $wrappedExtrinsic,
   $wrappedTxError,
+  $wrappedTxErrorKind,
   $submittedDraftIds,
   $validationErrors,
   $validationValid,

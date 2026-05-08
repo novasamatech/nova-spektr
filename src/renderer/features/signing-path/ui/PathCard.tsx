@@ -4,8 +4,8 @@ import { type KeyboardEvent, type ReactNode } from 'react';
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
-import { BodyText, CaptionText, HelpText } from '@/shared/ui';
-import { WalletAccountIcon } from '@/shared/ui-entities';
+import { CaptionText } from '@/shared/ui';
+import { Address, WalletAccountIcon } from '@/shared/ui-entities';
 import { AssetBalance } from '@/shared/ui-entities/AssetBalance/AssetBalance';
 
 import { type PathCardSize, type PathNodeView } from './path-views';
@@ -56,7 +56,14 @@ export const PathCard = ({ view, size = 'md', onClick, position = 0, balance, ha
           </>
         )}
       </CaptionText>
-      <div className="flex min-w-0 items-center gap-2">
+      {/*
+        Reserve the height of the two-line (name + address) layout regardless
+        of whether a display name resolves, so adjacent cards in a row stay
+        vertically aligned. The Address component renders one line when no
+        title is set; `min-h` + `items-center` keep it centered in the same
+        slot a two-line card would occupy.
+      */}
+      <div className="flex min-h-[34px] min-w-0 items-center gap-2">
         {view.address && (
           <WalletAccountIcon
             address={toAddress(view.address)}
@@ -65,10 +72,14 @@ export const PathCard = ({ view, size = 'md', onClick, position = 0, balance, ha
             iconSize={12}
           />
         )}
-        <div className="flex min-w-0 flex-1 flex-col">
-          <BodyText className="truncate text-text-primary">{view.title}</BodyText>
-          <HelpText className="truncate text-text-tertiary">{view.subtitle}</HelpText>
-        </div>
+        {view.address && (
+          <Address
+            showIcon={false}
+            address={toAddress(view.address)}
+            title={view.displayName ?? undefined}
+            variant="truncate"
+          />
+        )}
         {balance && (
           <AssetBalance
             value={balance.value}

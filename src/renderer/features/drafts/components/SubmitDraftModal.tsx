@@ -82,6 +82,7 @@ const ConfirmStep = () => {
   const fee = useUnit(submitDraftModel.$fee);
   const wrappedExtrinsic = useUnit(submitDraftModel.$wrappedExtrinsic);
   const wrappedTxError = useUnit(submitDraftModel.$wrappedTxError);
+  const wrappedTxErrorKind = useUnit(submitDraftModel.$wrappedTxErrorKind);
   const wallets = useUnit(walletModel.$wallets);
   const draft = useUnit(submitDraftModel.$draft);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
@@ -192,10 +193,15 @@ const ConfirmStep = () => {
 
   if (!confirm) {
     if (wrappedTxError) {
+      const messageKey =
+        wrappedTxErrorKind === 'signing-path-unresolved'
+          ? 'operations.drafts.signingPathUnresolved'
+          : 'operations.drafts.extrinsicError';
+
       return (
         <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
           <Icon className="text-icon-negative" name="warnCutout" size={60} />
-          <FootnoteText className="text-text-tertiary">{t('operations.drafts.extrinsicError')}</FootnoteText>
+          <FootnoteText className="text-text-tertiary">{t(messageKey)}</FootnoteText>
         </Box>
       );
     }
