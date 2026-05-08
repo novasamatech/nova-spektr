@@ -17,17 +17,20 @@ export function buildVerifyProxyCall({
   delegateAccountId,
   pureProxyAccountId,
   proxyType,
+  memo,
 }: {
   chainId: ChainId;
   delegateAccountId: AccountId;
   pureProxyAccountId: AccountId;
   proxyType: ProxyType;
+  memo?: string;
 }): Transaction {
   const remark = buildVerifyProxyRemarkTx({
     chainId,
     accountId: pureProxyAccountId,
     delegateAccountId,
     pureProxyAccountId,
+    memo,
   });
 
   return {
