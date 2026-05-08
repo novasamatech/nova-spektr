@@ -8,6 +8,8 @@ import { proxyModel } from '@/entities/proxy';
 import { accountUtils } from '@/entities/wallet';
 import { graphModel } from '../model/graph-model';
 
+import { createPathRouteStore } from './createPathRouteStore';
+
 type Params = {
   initiator: Store<AnyAccount | null>;
   chain: Store<Chain | null>;
@@ -126,10 +128,13 @@ export function createSigningPathModel({ initiator, chain, resetOn, resetUserOve
     target: signingPathChanged,
   });
 
+  const $pathRoute = createPathRouteStore($signingPath, chain);
+
   return {
     $signingPath,
     signingPathChanged,
     $signatoryFromPath,
     recomputeForSigner,
+    $pathRoute,
   };
 }

@@ -10,20 +10,17 @@ import {
   formatAmount,
   getRelaychainAsset,
   nonNullable,
-  nullable,
   transferableAmount,
   transferableAmountBN,
 } from '@/shared/lib/utils';
-import { type PathNode } from '@/domains/backend';
-import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
-import { proxyModel } from '@/entities/proxy';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { getLocksForAccount, locksAggregate } from '@/features/governance';
-import { graphModel } from '@/features/signing-path';
+import { createSigningPathModel } from '@/features/signing-path';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -227,43 +224,15 @@ const $delegateForm = createForm<FormParams>({
   validateOn: ['submit'],
 });
 
-// signing path
-
 const $chain = $networkStore.map((network) => network?.chain ?? null);
 const $shardInitiator = $shards.map((shards) => shards[0] ?? null);
 
-const signingPathChanged = createEvent<PathNode[]>();
-const $signingPath = createStore<PathNode[]>([])
-  .on(signingPathChanged, (_, path) => path)
-  .reset(formInitiated);
-
-const $userOverrodePath = createStore(false)
-  .on(signingPathChanged, () => true)
-  .reset(formInitiated, $shardInitiator);
-
-const $chainIdForPath = $chain.map((c) => c?.chainId ?? null);
-const $defaultSigningPath = graphModel.$defaultPathFor($shardInitiator, $chainIdForPath);
-
-sample({
-  clock: $defaultSigningPath,
-  source: $userOverrodePath,
-  filter: (userOverrode) => !userOverrode,
-  fn: (_, defaultPath) => defaultPath,
-  target: $signingPath,
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner } = createSigningPathModel({
+  initiator: $shardInitiator,
+  chain: $chain,
+  resetOn: formInitiated,
+  resetUserOverrideOn: $shardInitiator.updates,
 });
-
-const $signatoryFromPath = combine(
-  { path: $signingPath, allAccounts: accounts.$list, chain: $chain },
-  ({ path, allAccounts, chain }): AnyAccount | null => {
-    if (nullable(chain)) return null;
-    const last = path.at(-1);
-    if (!last || last.kind !== 'signer') return null;
-    return (
-      allAccounts.find((a) => a.accountId === last.accountId && accountService.isAccountAvailableOnChain(a, chain)) ??
-      null
-    );
-  },
-);
 
 sample({
   clock: $signatoryFromPath,
@@ -271,37 +240,7 @@ sample({
   target: $delegateForm.fields.signatory.onChange,
 });
 
-// Dropdown → path sync.
-sample({
-  clock: $delegateForm.fields.signatory.$value,
-  source: {
-    initiator: $shardInitiator,
-    chain: $chain,
-    currentPath: $signingPath,
-    multisigByAccountId: graphModel.$multisigByAccountId,
-    proxies: proxyModel.$proxies,
-    ownSignerAccountIds: graphModel.$ownSignerAccountIds,
-    resolveName: graphModel.$nameResolver,
-  },
-  filter: ({ initiator, chain, currentPath }, signatory) => {
-    if (!initiator || !chain || !signatory) return false;
-    const last = currentPath.at(-1);
-    if (last && last.kind === 'signer' && last.accountId === signatory.accountId) return false;
-    return accountUtils.isAnyMultisigAccount(initiator) || accountUtils.isProxiedAccount(initiator);
-  },
-  fn: ({ initiator, chain, multisigByAccountId, proxies, ownSignerAccountIds, resolveName }, signatory): PathNode[] => {
-    return graphModel.pickDefaultPath({
-      initiator: initiator!,
-      chainId: chain!.chainId,
-      multisigByAccountId,
-      proxies,
-      ownSignerAccountIds,
-      resolveName,
-      targetSigner: signatory!.accountId,
-    });
-  },
-  target: signingPathChanged,
-});
+sample({ clock: $delegateForm.fields.signatory.$value, target: recomputeForSigner });
 
 // Computed
 

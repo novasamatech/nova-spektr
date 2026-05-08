@@ -50,7 +50,7 @@ import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { transferValidator } from '@/features/operations/OperationsValidation';
-import { createPathRouteStore, createSigningPathModel } from '@/features/signing-path';
+import { createSigningPathModel } from '@/features/signing-path';
 import { type NetworkStore, type NetworkStoreParams } from '../lib/types';
 
 import { xcmSpellTransferModel } from './xcm-spell-transfer-model';
@@ -294,15 +294,15 @@ const $signatories = createSignatoriesStore({
 
 export const TRANSFER_ALLOWED_PROXY_TYPES = ['Any'] as const;
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner } = createSigningPathModel({
-  initiator: form.fields.initiator.$value,
-  chain: $chain,
-  resetOn: formInitiated,
-  resetUserOverrideOn: form.fields.initiator.change,
-  allowedProxyTypes: TRANSFER_ALLOWED_PROXY_TYPES,
-});
-
-const $pathRoute = createPathRouteStore($signingPath, $chain);
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
+    initiator: form.fields.initiator.$value,
+    chain: $chain,
+    resetOn: formInitiated,
+    resetUserOverrideOn: form.fields.initiator.change,
+    allowedProxyTypes: TRANSFER_ALLOWED_PROXY_TYPES,
+  },
+);
 
 const $signatoryBalance = combine(
   {

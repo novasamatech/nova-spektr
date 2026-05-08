@@ -23,7 +23,6 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
-import { type PathNode } from '@/domains/backend';
 import { accountSync, multisigOperationService } from '@/domains/network';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -42,7 +41,7 @@ import {
   removeProxyConfirmModel as confirmModel,
 } from '@/features/operations/OperationsConfirm/RemoveProxy';
 import { removeProxyValidator } from '@/features/operations/OperationsValidation';
-import { createPathRouteStore, graphModel } from '@/features/signing-path';
+import { createSigningPathModel } from '@/features/signing-path';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { type RemoveProxyStore, Step } from '../lib/types';
 
@@ -179,42 +178,12 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-// signing path
-
-const signingPathChanged = createEvent<PathNode[]>();
-const $signingPath = createStore<PathNode[]>([])
-  .on(signingPathChanged, (_, path) => path)
-  .reset(flowStarted);
-
-const $userOverrodePath = createStore(false)
-  .on(signingPathChanged, () => true)
-  .reset(flowStarted);
-
-const $chainIdForPath = $chain.map((c) => c?.chainId ?? null);
-const $defaultSigningPath = graphModel.$defaultPathFor($proxiedAccount, $chainIdForPath);
-
-sample({
-  clock: $defaultSigningPath,
-  source: $userOverrodePath,
-  filter: (userOverrode) => !userOverrode,
-  fn: (_, defaultPath) => defaultPath,
-  target: $signingPath,
-});
-
-const $signatoryFromPath = combine(
-  { path: $signingPath, allAccounts: accounts.$list, chain: $chain },
-  ({ path, allAccounts, chain }): AnyAccount | null => {
-    if (nullable(chain)) return null;
-    const last = path.at(-1);
-    if (!last || last.kind !== 'signer') return null;
-    return (
-      allAccounts.find((a) => a.accountId === last.accountId && accountService.isAccountAvailableOnChain(a, chain)) ??
-      null
-    );
-  },
-);
-
-const $pathRoute = createPathRouteStore($signingPath, $chain);
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: $proxiedAccount,
+    chain: $chain,
+    resetOn: flowStarted,
+  });
 
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
@@ -284,37 +253,7 @@ sample({
   target: form.fields.signatory.change,
 });
 
-// Dropdown → path sync.
-sample({
-  clock: form.fields.signatory.$value,
-  source: {
-    initiator: $proxiedAccount,
-    chain: $chain,
-    currentPath: $signingPath,
-    multisigByAccountId: graphModel.$multisigByAccountId,
-    proxies: proxyModel.$proxies,
-    ownSignerAccountIds: graphModel.$ownSignerAccountIds,
-    resolveName: graphModel.$nameResolver,
-  },
-  filter: ({ initiator, chain, currentPath }, signatory) => {
-    if (!initiator || !chain || !signatory) return false;
-    const last = currentPath.at(-1);
-    if (last && last.kind === 'signer' && last.accountId === signatory.accountId) return false;
-    return accountUtils.isAnyMultisigAccount(initiator) || accountUtils.isProxiedAccount(initiator);
-  },
-  fn: ({ initiator, chain, multisigByAccountId, proxies, ownSignerAccountIds, resolveName }, signatory): PathNode[] => {
-    return graphModel.pickDefaultPath({
-      initiator: initiator!,
-      chainId: chain!.chainId,
-      multisigByAccountId,
-      proxies,
-      ownSignerAccountIds,
-      resolveName,
-      targetSigner: signatory!.accountId,
-    });
-  },
-  target: signingPathChanged,
-});
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: getAccountProxiesFx.done,

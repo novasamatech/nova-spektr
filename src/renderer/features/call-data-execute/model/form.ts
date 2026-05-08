@@ -16,26 +16,23 @@ import {
 } from '@/shared/transactions';
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
-import { type PathNode } from '@/domains/backend';
 import {
   type AnyAccount,
   type AnyTransaction,
   type EncodedTransaction,
   accountService,
-  accounts,
   transactionService,
 } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { proxyModel } from '@/entities/proxy';
 import { transactionService as transactionEntitiesService } from '@/entities/transaction';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
 import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { createPathRouteStore, graphModel } from '@/features/signing-path';
+import { createSigningPathModel } from '@/features/signing-path';
 import { InputMode, Step } from '../lib/types';
 
 import { type ConfirmInput, confirmModel } from './confirm';
@@ -126,12 +123,13 @@ const $args = combine($call, form.fields.chain.$value, (call, chain) => {
   return transactionEntitiesService.formatCall(call, chain);
 });
 
-// $signingPath hoisted here so $pathRoute can feed createWrappedTxStore.
-const signingPathChanged = createEvent<PathNode[]>();
-const $signingPath = createStore<PathNode[]>([])
-  .on(signingPathChanged, (_, path) => path)
-  .reset(flowFinished);
-const $pathRoute = createPathRouteStore($signingPath, form.fields.chain.$value);
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: form.fields.initiator.$value,
+    chain: form.fields.chain.$value,
+    resetOn: flowFinished,
+    resetUserOverrideOn: form.fields.initiator.change,
+  });
 
 const $bfsRoute = createRouteStore({
   chain: form.fields.chain.$value,
@@ -297,36 +295,6 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
 });
 
-// signing path (event + $signingPath declared above)
-
-const $userOverrodePath = createStore(false)
-  .on(signingPathChanged, () => true)
-  .reset(flowFinished, form.fields.initiator.change);
-
-const $chainIdForPath = form.fields.chain.$value.map((c) => c?.chainId ?? null);
-const $defaultSigningPath = graphModel.$defaultPathFor(form.fields.initiator.$value, $chainIdForPath);
-
-sample({
-  clock: $defaultSigningPath,
-  source: $userOverrodePath,
-  filter: (userOverrode) => !userOverrode,
-  fn: (_, defaultPath) => defaultPath,
-  target: $signingPath,
-});
-
-const $signatoryFromPath = combine(
-  { path: $signingPath, allAccounts: accounts.$list, chain: form.fields.chain.$value },
-  ({ path, allAccounts, chain }): AnyAccount | null => {
-    if (nullable(chain)) return null;
-    const last = path.at(-1);
-    if (!last || last.kind !== 'signer') return null;
-    return (
-      allAccounts.find((a) => a.accountId === last.accountId && accountService.isAccountAvailableOnChain(a, chain)) ??
-      null
-    );
-  },
-);
-
 const $showSignatories = combine(
   $signatories,
   form.fields.initiator.$value,
@@ -429,37 +397,7 @@ sample({
   target: form.fields.signatory.change,
 });
 
-// Dropdown → path sync.
-sample({
-  clock: form.fields.signatory.$value,
-  source: {
-    initiator: form.fields.initiator.$value,
-    chain: form.fields.chain.$value,
-    currentPath: $signingPath,
-    multisigByAccountId: graphModel.$multisigByAccountId,
-    proxies: proxyModel.$proxies,
-    ownSignerAccountIds: graphModel.$ownSignerAccountIds,
-    resolveName: graphModel.$nameResolver,
-  },
-  filter: ({ initiator, chain, currentPath }, signatory) => {
-    if (!initiator || !chain || !signatory) return false;
-    const last = currentPath.at(-1);
-    if (last && last.kind === 'signer' && last.accountId === signatory.accountId) return false;
-    return accountUtils.isAnyMultisigAccount(initiator) || accountUtils.isProxiedAccount(initiator);
-  },
-  fn: ({ initiator, chain, multisigByAccountId, proxies, ownSignerAccountIds, resolveName }, signatory): PathNode[] => {
-    return graphModel.pickDefaultPath({
-      initiator: initiator!,
-      chainId: chain!.chainId,
-      multisigByAccountId,
-      proxies,
-      ownSignerAccountIds,
-      resolveName,
-      targetSigner: signatory!.accountId,
-    });
-  },
-  target: signingPathChanged,
-});
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: form.fields.chain.change,
