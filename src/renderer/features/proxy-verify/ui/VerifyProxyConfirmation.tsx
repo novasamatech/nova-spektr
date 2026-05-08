@@ -56,6 +56,7 @@ export const VerifyProxyConfirmation = ({ id = 0, secondaryActionButton, hideSig
     multisigDeposit: metaMultisigDeposit,
     proxyType,
     pureProxyAccountId,
+    memo,
   } = meta;
 
   const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
@@ -81,6 +82,12 @@ export const VerifyProxyConfirmation = ({ id = 0, secondaryActionButton, hideSig
         <DetailRow label={t('walletDetails.proxies.verifyConfirmPureProxy')} className="text-text-secondary">
           <NamedAccount accountId={pureProxyAccountId} chain={chain} variant="short" />
         </DetailRow>
+
+        {memo && (
+          <DetailRow label={t('walletDetails.proxies.verifyConfirmMemo')} className="pr-2">
+            <FootnoteText className="break-all">{memo}</FootnoteText>
+          </DetailRow>
+        )}
 
         <hr className="w-full border-filter-border pr-2" />
 

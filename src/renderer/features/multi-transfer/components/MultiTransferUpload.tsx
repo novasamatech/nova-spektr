@@ -89,6 +89,11 @@ export const UploadCSV = () => {
             }
           }}
         />
+        {csvError === MultiTransferCsvError.EMPTY && (
+          <InputHint variant="error" active>
+            {t('multiTransfer.errors.csv.emptyFileDescription')}
+          </InputHint>
+        )}
         {csvError === MultiTransferCsvError.STRUCTURE && (
           <InputHint variant="error" active>
             {t('multiTransfer.errors.csv.invalidStructureDescription')}
@@ -126,7 +131,11 @@ const ValidationsAlert = () => {
     }
   }, [csvError, csvIssues]);
 
-  if (csvError === MultiTransferCsvError.STRUCTURE || csvError === MultiTransferCsvError.TOO_MANY_ROWS) {
+  if (
+    csvError === MultiTransferCsvError.EMPTY ||
+    csvError === MultiTransferCsvError.STRUCTURE ||
+    csvError === MultiTransferCsvError.TOO_MANY_ROWS
+  ) {
     return null;
   }
 

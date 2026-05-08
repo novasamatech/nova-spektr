@@ -51,6 +51,13 @@ export const VerifyProxyOperationDetails = ({ operation }: Props) => {
         </FootnoteText>
       </div>
 
+      {info.memo && (
+        <div className="flex flex-col gap-y-2">
+          <SmallTitleText>{t('operations.verifyProxy.details.memo')}</SmallTitleText>
+          <FootnoteText className="break-all text-text-secondary">{info.memo}</FootnoteText>
+        </div>
+      )}
+
       {proxiedWallet && (
         <>
           <Button className="self-start p-0" size="sm" variant="text" onClick={() => setIsOverviewOpen(true)}>

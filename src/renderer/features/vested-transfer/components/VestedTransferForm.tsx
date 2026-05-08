@@ -271,6 +271,14 @@ const ValidationsAlert = () => {
     }
   }, [csvError, csvIssues]);
 
+  if (csvError === VestingCsvError.EMPTY) {
+    return (
+      <InputHint variant="error" active>
+        {t('vestedTransfer.errors.csv.emptyFileDescription')}
+      </InputHint>
+    );
+  }
+
   if (csvError === VestingCsvError.STRUCTURE) {
     return (
       <InputHint variant="error" active>

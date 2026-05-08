@@ -15,6 +15,7 @@ export type VerifyProxyMarkerPayload = {
   kind: typeof VERIFY_PROXY_REMARK_KIND;
   delegateAccountId: AccountId;
   pureProxyAccountId: AccountId;
+  memo?: string;
 };
 
 type BuildVerifyProxyRemarkTxParams = {
@@ -22,6 +23,7 @@ type BuildVerifyProxyRemarkTxParams = {
   accountId: AccountId;
   delegateAccountId: AccountId;
   pureProxyAccountId: AccountId;
+  memo?: string;
 };
 
 export const buildVerifyProxyRemarkTx = ({
@@ -29,11 +31,13 @@ export const buildVerifyProxyRemarkTx = ({
   accountId,
   delegateAccountId,
   pureProxyAccountId,
+  memo,
 }: BuildVerifyProxyRemarkTxParams): Transaction => {
   const payload: VerifyProxyMarkerPayload = {
     kind: VERIFY_PROXY_REMARK_KIND,
     delegateAccountId,
     pureProxyAccountId,
+    ...(memo ? { memo } : {}),
   };
 
   return {
@@ -72,5 +76,6 @@ export const parseVerifyProxyMarker = (remark: string): VerifyProxyMarkerPayload
     kind: VERIFY_PROXY_REMARK_KIND,
     delegateAccountId: toAccountId(delegate),
     pureProxyAccountId: toAccountId(pure),
+    ...(typeof obj['memo'] === 'string' && obj['memo'] ? { memo: obj['memo'] } : {}),
   };
 };

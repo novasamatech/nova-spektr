@@ -1,12 +1,13 @@
 import { useUnit } from 'effector-react';
-import { useDeferredValue, useMemo, useState } from 'react';
+import { type ReactElement, useDeferredValue, useMemo, useState } from 'react';
 
 import { type CallData, type ChainId, type DecodedTransaction } from '@/shared/core';
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { formatSectionAndMethod, getNativeAssetId, isHex } from '@/shared/lib/utils';
+import { formatSectionAndMethod, getNativeAssetId, isHex, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 import { ConfirmModal, Modal, Tooltip, useNotification } from '@/shared/ui-kit';
 import { draftsResource, draftsService } from '@/domains/backend';
 import { contactModel } from '@/entities/contact';
@@ -208,8 +209,32 @@ export const CreateDraftModal = () => {
       toast.success(t('operations.drafts.createSuccess'));
       createDraftModel.modalClosed();
     } catch (e) {
-      const message = e instanceof Error ? e.message : t('operations.drafts.createError');
-      toast.error(t('operations.drafts.createError'), { description: message });
+      let description: string | ReactElement;
+
+      if (e instanceof Error) {
+        const match = e.message.match(/^Account (.+) not found$/);
+        if (match && selectedChain) {
+          const accountId = match[1] as AccountId;
+          const address = toAddress(accountId);
+          const name = resolveName(accountId, selectedChain.chainId);
+          description = (
+            <span className="flex flex-col gap-1" onPointerDown={(e) => e.stopPropagation()}>
+              <span className="flex items-center gap-1.5">
+                <Identicon address={address} size={20} background={false} canCopy />
+                <span className="font-medium">{name}</span>
+                <span className="text-text-tertiary">{toShortAddress(address)}</span>
+              </span>
+              <span>{t('operations.drafts.accountNotInAddressBook')}</span>
+            </span>
+          );
+        } else {
+          description = e.message;
+        }
+      } else {
+        description = t('operations.drafts.createError');
+      }
+
+      toast.error(t('operations.drafts.createError'), { description });
     } finally {
       setIsSubmitting(false);
     }

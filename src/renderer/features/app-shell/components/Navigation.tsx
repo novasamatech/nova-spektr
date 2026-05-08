@@ -28,8 +28,16 @@ export const Navigation = memo(() => {
   return (
     <nav className="h-full overflow-x-hidden overflow-y-auto">
       <div className="flex h-full flex-col gap-2">
-        {upperItems.map(({ icon, title, link, badge }) => (
-          <NavItem key={link} icon={icon} title={title} link={link} badge={badge} />
+        {upperItems.map(({ icon, title, link, badge, iconBadge, trailingAction }) => (
+          <NavItem
+            key={link}
+            icon={icon}
+            title={title}
+            link={link}
+            badge={badge}
+            iconBadge={iconBadge}
+            trailingAction={trailingAction}
+          />
         ))}
         {customOperationItems}
         <div className="mt-auto flex flex-col gap-2">
