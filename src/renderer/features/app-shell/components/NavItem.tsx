@@ -14,9 +14,11 @@ export type Props = {
   link: string;
   icon: IconNames | ReactNode;
   badge?: ReactNode;
+  iconBadge?: ReactNode;
+  trailingAction?: ReactNode;
 };
 
-export const NavItem = ({ title, link, icon, badge }: Props) => {
+export const NavItem = ({ title, link, icon, badge, iconBadge, trailingAction }: Props) => {
   const { t } = useI18n();
   const folded = useUnit(sidebarModel.$folded);
 
@@ -25,7 +27,7 @@ export const NavItem = ({ title, link, icon, badge }: Props) => {
   return (
     <Tooltip side="right" open={folded ? undefined : false}>
       <Tooltip.Trigger>
-        <div>
+        <div className="relative">
           <NavLink
             to={link}
             className={({ isActive }) =>
@@ -54,6 +56,7 @@ export const NavItem = ({ title, link, icon, badge }: Props) => {
                       {icon}
                     </span>
                   )}
+                  {iconBadge}
                   {folded && badge && (
                     <span className="absolute -top-0.5 -right-1.5 h-1.5 w-1.5 rounded-full bg-icon-accent" />
                   )}
@@ -78,6 +81,18 @@ export const NavItem = ({ title, link, icon, badge }: Props) => {
               </>
             )}
           </NavLink>
+          {trailingAction ? (
+            <div
+              aria-hidden={folded}
+              inert={folded || undefined}
+              className={cnTw(
+                'absolute top-1/2 right-2 -translate-y-1/2 transition-opacity duration-200',
+                folded ? 'opacity-0' : 'opacity-100',
+              )}
+            >
+              {trailingAction}
+            </div>
+          ) : null}
         </div>
       </Tooltip.Trigger>
       <Tooltip.Content>{translatedTitle}</Tooltip.Content>

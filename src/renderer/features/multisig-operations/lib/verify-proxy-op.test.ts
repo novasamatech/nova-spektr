@@ -121,4 +121,39 @@ describe('parseVerifyProxyOperation', () => {
       pureProxyAccountId: pureProxy,
     });
   });
+
+  test('returns memo when present in the marker payload', () => {
+    const payloadWithMemo = JSON.stringify({
+      kind: VERIFY_PROXY_REMARK_KIND,
+      delegateAccountId: delegate,
+      pureProxyAccountId: pureProxy,
+      memo: 'Q1 audit sign-off',
+    });
+    const op = operation(proxyWrap(remarkWithEvent(payloadWithMemo)));
+    expect(parseVerifyProxyOperation(op)).toEqual({
+      delegateAccountId: delegate,
+      pureProxyAccountId: pureProxy,
+      memo: 'Q1 audit sign-off',
+    });
+  });
+
+  test('returns no memo property when memo is absent from marker payload', () => {
+    const op = operation(proxyWrap(remarkWithEvent(markerPayload)));
+    const result = parseVerifyProxyOperation(op);
+    expect(result).not.toBeNull();
+    expect('memo' in result!).toBe(false);
+  });
+
+  test('ignores empty-string memo in marker payload', () => {
+    const payloadEmptyMemo = JSON.stringify({
+      kind: VERIFY_PROXY_REMARK_KIND,
+      delegateAccountId: delegate,
+      pureProxyAccountId: pureProxy,
+      memo: '',
+    });
+    const op = operation(proxyWrap(remarkWithEvent(payloadEmptyMemo)));
+    const result = parseVerifyProxyOperation(op);
+    expect(result).not.toBeNull();
+    expect('memo' in result!).toBe(false);
+  });
 });

@@ -8,6 +8,7 @@ import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText } from '@/shared/ui';
 import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
+import { Field, Input } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -36,6 +37,7 @@ export const VerifyProxyForm = ({ chainId, onGoBack }: Props) => {
       <TransactionValidationError errors={errors} wallets={wallets} />
       <form id="verify-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <Signatories chainId={chainId} />
+        <MemoField />
       </form>
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection chainId={chainId} />
@@ -154,6 +156,24 @@ const FeeSection = ({ chainId }: { chainId: ChainId }) => {
 
       <FeeWithLabel asset={getNativeAsset(chain.assets)} fee={fee} />
     </div>
+  );
+};
+
+const MemoField = () => {
+  const { t } = useI18n();
+  const {
+    fields: { memo },
+  } = useForm(verifyProxyModel.form);
+
+  return (
+    <Field text={t('walletDetails.proxies.verifyMemoLabel')}>
+      <Input
+        placeholder={t('walletDetails.proxies.verifyMemoPlaceholder')}
+        value={memo.value}
+        maxLength={200}
+        onChange={memo.onChange}
+      />
+    </Field>
   );
 };
 

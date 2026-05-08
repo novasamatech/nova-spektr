@@ -9,6 +9,7 @@ export type VerifyProxyOpInfo = {
   delegateAccountId: AccountId;
   // The pure proxy through which the ping is dispatched (`real` of proxy.proxy).
   pureProxyAccountId: AccountId;
+  memo?: string;
 };
 
 const isProxyWrap = (tx: DecodedTransaction): boolean => tx.section === 'proxy' && tx.method === 'proxy';
@@ -36,6 +37,7 @@ export const parseVerifyProxyOperation = (operation: MultisigOperation): VerifyP
   return {
     delegateAccountId: payload.delegateAccountId,
     pureProxyAccountId: payload.pureProxyAccountId,
+    ...(payload.memo ? { memo: payload.memo } : {}),
   };
 };
 

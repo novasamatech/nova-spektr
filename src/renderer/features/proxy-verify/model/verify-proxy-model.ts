@@ -72,6 +72,7 @@ type ResolveResult = { ok: true; store: VerifyStore } | { ok: false; reason: Ver
 
 type FormParams = {
   signatory: AnyAccount | null;
+  memo: string;
 };
 
 function resolveVerifyStore({ chains, allAccounts }: ResolveCtx, input: VerifyFlowInput): ResolveResult {
@@ -195,6 +196,9 @@ const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner
 
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
+    memo: {
+      defaultValue: '',
+    },
     signatory: {
       defaultValue: null,
       validator: () => {
@@ -240,9 +244,10 @@ const form: Form<FormParams> = createForm<FormParams>({
 const $coreTx = combine(
   {
     signatory: form.fields.signatory.$value,
+    memo: form.fields.memo.$value,
     data: $verifyStore,
   },
-  ({ signatory, data }) => {
+  ({ signatory, memo, data }) => {
     if (!signatory || !data) return null;
 
     return buildVerifyProxyCall({
@@ -250,6 +255,7 @@ const $coreTx = combine(
       delegateAccountId: data.proxy.proxyAccountId,
       pureProxyAccountId: data.proxy.pureProxyAccountId,
       proxyType: data.proxy.proxyType,
+      memo: memo || undefined,
     });
   },
 );
@@ -331,11 +337,12 @@ const confirmEvent = sample({
     multisigDeposit: $multisigDeposit,
     verifyStore: $verifyStore,
     route: $route,
+    memo: form.fields.memo.$value,
   },
   fn: (source, clock) => {
     return { ...source, ...clock };
   },
-}).filterMap(({ tx, coreTx, chain, initiator, fee, multisigDeposit, verifyStore, route, signatory }) => {
+}).filterMap(({ tx, coreTx, chain, initiator, fee, multisigDeposit, verifyStore, route, signatory, memo }) => {
   if (
     nonNullable(tx) &&
     nonNullable(chain) &&
@@ -359,6 +366,7 @@ const confirmEvent = sample({
         proxyType: verifyStore.proxy.proxyType,
         pureProxyAccountId: verifyStore.proxy.pureProxyAccountId,
         proxyAccountId: verifyStore.proxy.proxyAccountId,
+        memo: memo || undefined,
       } satisfies VerifyProxyConfirm,
     ];
   }
