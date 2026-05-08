@@ -21,6 +21,7 @@ export const $defaultFeatures = createStore({
   operations: true,
   basket: true,
   contacts: true,
+  addressBookStatus: true,
   notifications: true,
   settings: true,
 

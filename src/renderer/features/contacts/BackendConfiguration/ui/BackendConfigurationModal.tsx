@@ -30,6 +30,7 @@ export const BackendConfigurationModal = () => {
   const signableAccounts = useUnit(authModel.$signableAccounts);
   const error = useUnit(authModel.$error);
   const isSessionExpired = useUnit(authModel.$isSessionExpired);
+  const hasNetworkIssue = useUnit(authModel.$hasNetworkIssue);
 
   useEffect(() => {
     // eslint-disable-next-line effector/no-watch
@@ -42,7 +43,12 @@ export const BackendConfigurationModal = () => {
   const isError = authStep === 'error';
   const showUrlError = draftUrl.trim().length > 0 && !isValid;
 
-  const urlUnchanged = isAuthenticated && !isDirty && !isSessionExpired;
+  // The cached auth state can survive a server outage — only present the user as "connected"
+  // when both background signals agree the backend is currently live: the keepalive hasn't
+  // reported a network issue, AND the live reachability probe affirmed reachability. Treating
+  // 'checking' / null as not-live closes the brief race between modal-open and probe-completion.
+  const isLive = !hasNetworkIssue && urlReachable === 'reachable';
+  const urlUnchanged = isAuthenticated && !isDirty && !isSessionExpired && isLive;
 
   const showAccountSelector = isValid && !urlUnchanged && !isSigning;
   const showConnectedAccount = urlUnchanged && authState && !isSigning;

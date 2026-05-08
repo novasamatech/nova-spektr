@@ -1,7 +1,11 @@
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { Paths } from '@/shared/routes';
-import { navigationTopLinksPipeline } from '@/features/app-shell';
+import { modalsSlot, navigationTopLinksPipeline } from '@/features/app-shell';
+import { BackendConfigurationModal } from '@/features/contacts';
+
+import { AddressBookReconnectPill } from './ui/AddressBookReconnectPill';
+import { AddressBookStatusDot } from './ui/AddressBookStatusDot';
 
 export const contactsNavigationFeature = createFeature({
   name: 'contacts/navigation',
@@ -14,5 +18,9 @@ contactsNavigationFeature.inject(navigationTopLinksPipeline, (items) => {
     icon: 'addressBook',
     title: 'navigation.addressBookLabel',
     link: Paths.ADDRESS_BOOK,
+    iconBadge: <AddressBookStatusDot />,
+    trailingAction: <AddressBookReconnectPill />,
   });
 });
+
+contactsNavigationFeature.inject(modalsSlot, BackendConfigurationModal);
