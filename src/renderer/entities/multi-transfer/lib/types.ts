@@ -19,6 +19,7 @@ export enum MultiTransferCsvError {
   STRUCTURE = 'STRUCTURE',
   DATA = 'DATA',
   TOO_MANY_ROWS = 'TOO_MANY_ROWS',
+  EMPTY = 'EMPTY',
 }
 
 export enum MultiTransferFieldError {

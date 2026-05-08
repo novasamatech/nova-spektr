@@ -23,6 +23,7 @@ export type ExistingVestingSchedule = Record<AccountId, Omit<VestingSchedule, 't
 export enum VestingCsvError {
   STRUCTURE = 'STRUCTURE',
   DATA = 'DATA',
+  EMPTY = 'EMPTY',
 }
 
 export enum VestingFieldError {

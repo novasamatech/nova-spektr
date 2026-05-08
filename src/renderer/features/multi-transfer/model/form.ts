@@ -355,6 +355,13 @@ sample({
 });
 
 sample({
+  clock: parseFileFx.doneData,
+  filter: (data) => data.length === 0,
+  fn: () => MultiTransferCsvError.EMPTY,
+  target: $csvError,
+});
+
+sample({
   clock: parseFileFx.failData,
   target: $csvError,
 });
@@ -365,7 +372,7 @@ sample({
     parsedCsvRaw: $parsedCsvRaw,
     chain: form.fields.chain.$value,
   },
-  filter: ({ parsedCsvRaw, chain }) => nonNullable(parsedCsvRaw) && nonNullable(chain),
+  filter: ({ parsedCsvRaw, chain }) => nonNullable(parsedCsvRaw) && nonNullable(chain) && parsedCsvRaw.length > 0,
   target: validateFileFx,
 });
 
