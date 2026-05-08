@@ -2605,6 +2605,7 @@
       "createDraftButton": "Create",
       "createSuccess": "Draft created",
       "createError": "Failed to create draft",
+      "accountNotInAddressBook": "This account is not in the address book contacts. Add it to contacts before creating a draft.",
       "connectToCreate": "Sign in to create drafts",
       "connectToSubmit": "Sign in to submit drafts",
       "noWritePermission": "You do not have permission to create drafts. Contact your admin.", 
