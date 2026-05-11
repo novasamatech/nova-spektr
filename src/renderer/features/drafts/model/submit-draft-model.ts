@@ -109,9 +109,11 @@ const $pathRoute = createPathRouteStore($draftSigningPath, $chain);
 // Draft has a non-trivial saved path but it can't be resolved against the
 // current account list (e.g. a wallet that the path traversed has been
 // removed). Block the flow rather than wrap silently along a different route.
+// Gated on `$chain` so it doesn't fire transiently while `flowStarted` updates
+// `$draft` and `$chain` in separate samples.
 const $pathResolutionError = combine(
-  { saved: $draftSigningPath, resolved: $pathRoute },
-  ({ saved, resolved }) => saved.length >= 2 && (resolved === null || resolved.length < 2),
+  { saved: $draftSigningPath, resolved: $pathRoute, chain: $chain },
+  ({ saved, resolved, chain }) => chain !== null && saved.length >= 2 && (resolved === null || resolved.length < 2),
 );
 
 // Saved path resolved → use it. No saved path (legacy drafts) → BFS.
@@ -134,7 +136,18 @@ const { $tx: $wrappedTx } = createWrappedTxStore({
 
 const $wrappedExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null).reset(flowFinished);
 type WrappedTxErrorKind = 'extrinsic' | 'signing-path-unresolved';
-const $wrappedTxErrorKind = createStore<WrappedTxErrorKind | null>(null).reset(flowFinished, flowStarted);
+const $extrinsicCreationFailed = createStore(false).reset(flowFinished, flowStarted);
+// Derived so it always reflects the current path-resolution and extrinsic
+// state. A sample-based "set once" store would stick after a transient init
+// flip even after the path resolves.
+const $wrappedTxErrorKind = combine(
+  { extrinsicFailed: $extrinsicCreationFailed, pathError: $pathResolutionError },
+  ({ extrinsicFailed, pathError }): WrappedTxErrorKind | null => {
+    if (pathError) return 'signing-path-unresolved';
+    if (extrinsicFailed) return 'extrinsic';
+    return null;
+  },
+);
 const $wrappedTxError = $wrappedTxErrorKind.map((kind) => kind !== null);
 
 const createWrappedExtrinsicFx = createQueuedEffect(
@@ -161,35 +174,17 @@ sample({
   target: $wrappedExtrinsic,
 });
 
-sample({
-  clock: createWrappedExtrinsicFx.fail,
-  fn: (): WrappedTxErrorKind => 'extrinsic',
-  target: $wrappedTxErrorKind,
-});
+$extrinsicCreationFailed
+  .on(createWrappedExtrinsicFx.fail, () => true)
+  .on(createWrappedExtrinsicFx.doneData, () => false);
 
-// Trip the same error UI when the saved signing path can't be resolved.
-sample({
-  clock: $pathResolutionError,
-  filter: (hasError) => hasError,
-  fn: (): WrappedTxErrorKind => 'signing-path-unresolved',
-  target: $wrappedTxErrorKind,
-});
-
+// Block the flow when the path can't be resolved — otherwise the empty route
+// would wrap to the raw transaction and the user could sign through a wrong path.
 sample({
   clock: $pathResolutionError,
   filter: (hasError) => hasError,
   fn: () => null,
   target: $wrappedExtrinsic,
-});
-
-const pathResolutionToastFx = createEffect(() => {
-  toast.error(t('operations.drafts.signingPathUnresolved'));
-});
-
-sample({
-  clock: $pathResolutionError.updates,
-  filter: (hasError) => hasError,
-  target: pathResolutionToastFx,
 });
 
 const { $: $fee } = createFeeCalculator({
@@ -233,9 +228,17 @@ const {
  * account, independent of the wallet's account-graph traversal.
  */
 const $initiatorUnavailable = combine(
-  { draft: $draft, signatories: $signatories, availableAccounts: walletModel.$availableAccounts },
-  ({ draft, signatories, availableAccounts }) => {
+  {
+    draft: $draft,
+    signatories: $signatories,
+    availableAccounts: walletModel.$availableAccounts,
+    signatory: $signatoryStore,
+  },
+  ({ draft, signatories, availableAccounts, signatory }) => {
     if (!draft?.initiatorAccountId) return false;
+    // A valid signatory was already picked (auto-selected or by the user) —
+    // the banner has nothing left to ask for.
+    if (signatory !== null) return false;
 
     if (Array.isArray(draft.signingPath) && draft.signingPath.length > 0) {
       return !availableAccounts.some(

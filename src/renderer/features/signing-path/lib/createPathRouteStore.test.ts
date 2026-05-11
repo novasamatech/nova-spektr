@@ -1,7 +1,7 @@
 import { createStore, fork } from 'effector';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { type Chain, CryptoType, SigningType } from '@/shared/core';
+import { type Chain, AccountType, CryptoType, SigningType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
@@ -116,6 +116,36 @@ describe('createPathRouteStore', () => {
     });
 
     expect(scope.getState($route)).toBeNull();
+  });
+
+  it('collapses proxied+multisig hops onto a single flex-multisig account', () => {
+    const facadeId = acc(1);
+    const innerMultisigId = acc(2);
+    const signerId = acc(3);
+
+    const flexMultisig = {
+      id: 'acct-flex',
+      type: 'chain',
+      walletId: 1,
+      name: 'flex',
+      accountId: facadeId,
+      multisigAccountId: innerMultisigId,
+      accountType: AccountType.FLEX_MULTISIG,
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.MULTISIG,
+      createdAt: 0,
+    } as unknown as AnyAccount;
+    const signerAccount = makeAccount(signerId);
+
+    const $path = createStore<PathNode[]>([proxied(facadeId), multisig(innerMultisigId), signer(signerId)]);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([[accounts.__test.$list, [flexMultisig, signerAccount]]]),
+    });
+
+    expect(scope.getState($route)).toEqual([flexMultisig, signerAccount]);
   });
 
   it('skips an ethereum-account candidate on a substrate chain (crypto mismatch)', () => {
