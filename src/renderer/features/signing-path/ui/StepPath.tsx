@@ -56,7 +56,6 @@ export const StepPath = ({
   const isComplete = useUnit(pathModel.$isComplete);
   const lastNode = useUnit(pathModel.$lastNode);
 
-  const [autoOpenSource, setAutoOpenSource] = useState(false);
   const [sourceQuery, setSourceQuery] = useState('');
 
   const sourcesStore = useMemo(
@@ -122,7 +121,6 @@ export const StepPath = ({
 
   const handleBreadcrumbClick = (i: number) => {
     if (i < lockedSourceCount) return;
-    if (i === 0) setAutoOpenSource(true);
     pathModel.pathTruncatedTo(i - 1);
   };
 
@@ -139,7 +137,6 @@ export const StepPath = ({
           <Select
             placeholder={t('signingPath.selectSource')}
             value={selectedSourceId}
-            defaultOpen={autoOpenSource}
             onChange={handleSourceChange}
             onSearch={setSourceQuery}
           >
