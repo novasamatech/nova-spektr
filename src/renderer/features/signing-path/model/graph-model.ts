@@ -128,6 +128,16 @@ const $ownSignerAccountIds = accounts.$list.map<Set<AccountId>>(
   (list) => new Set(list.filter((a) => a.signingType !== SigningType.WATCH_ONLY).map((a) => a.accountId)),
 );
 
+const $pureProxyAccountIds = accounts.$list.map<Set<AccountId>>((list) => {
+  const result = new Set<AccountId>();
+  for (const account of list) {
+    if (accountUtils.isPureProxiedAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
+      result.add(account.accountId);
+    }
+  }
+  return result;
+});
+
 function extractVerifyProxyMarker(tx: DecodedTransaction | null | undefined) {
   if (nullable(tx)) return null;
   if (tx.section === 'proxy' && tx.method === 'proxy') {
@@ -147,13 +157,15 @@ const $proxyEdgeStatus = combine(
     proxiesByPure: proxyModel.$proxies,
     operations: multisigOperation.$list,
     opsLoaded: multisigOperation.$initialLoadingComplete,
+    pureProxyAccountIds: $pureProxyAccountIds,
   },
-  ({ proxiesByPure, operations, opsLoaded }): Map<string, ProxyEdgeStatus> | null => {
+  ({ proxiesByPure, operations, opsLoaded, pureProxyAccountIds }): Map<string, ProxyEdgeStatus> | null => {
     if (!opsLoaded) return null;
 
     const result = new Map<string, ProxyEdgeStatus>();
 
     for (const [pure, delegates] of entries(proxiesByPure)) {
+      if (!pureProxyAccountIds.has(pure)) continue;
       for (const delegate of delegates ?? []) {
         result.set(proxyEdgeKey(delegate.chainId, pure, delegate.accountId, delegate.proxyType), 'not_verified');
       }
@@ -161,6 +173,7 @@ const $proxyEdgeStatus = combine(
 
     for (const op of operations) {
       if (op.status !== 'executed' || !op.proxiedAccountId) continue;
+      if (!pureProxyAccountIds.has(op.proxiedAccountId)) continue;
       const delegates = proxiesByPure[op.proxiedAccountId] ?? [];
       for (const delegate of delegates) {
         if (delegate.chainId !== op.chainId) continue;
@@ -173,6 +186,7 @@ const $proxyEdgeStatus = combine(
       if (op.status !== 'pending') continue;
       const marker = extractVerifyProxyMarker(op.transaction);
       if (!marker) continue;
+      if (!pureProxyAccountIds.has(marker.pureProxyAccountId)) continue;
       const delegates = proxiesByPure[marker.pureProxyAccountId] ?? [];
       for (const delegate of delegates) {
         if (delegate.chainId !== op.chainId) continue;
