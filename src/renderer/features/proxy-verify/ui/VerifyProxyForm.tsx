@@ -5,6 +5,7 @@ import { type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText } from '@/shared/ui';
 import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Field, Input } from '@/shared/ui-kit';
@@ -12,6 +13,7 @@ import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { SigningPathInline } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { verifyProxyModel } from '../model/verify-proxy-model';
 
@@ -55,12 +57,14 @@ const Signatories = ({ chainId }: { chainId: ChainId }) => {
   const initiator = useUnit(verifyProxyModel.$verifyStore.map((s) => s?.initiator ?? null));
 
   const signatories = useUnit(verifyProxyModel.$signatories);
+  const signingPath = useUnit(verifyProxyModel.$signingPath);
   const chains = useUnit(networkModel.$chains);
   const chainFromStore = useUnit(verifyProxyModel.$verifyStore.map((s) => s?.chain ?? null));
   const chain = chainFromStore ?? chains[chainId] ?? null;
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balanceMap);
+  const formErrors = useUnit(verifyProxyModel.$errors);
 
   const signatoriesWithBalance = useMemo(() => {
     if (!signatories || !chain) {
@@ -78,6 +82,14 @@ const Signatories = ({ chainId }: { chainId: ChainId }) => {
     });
   }, [signatories, balances, chain]);
 
+  const errorAccountIds = useMemo<ReadonlySet<AccountId>>(() => {
+    const ids = new Set<AccountId>();
+    for (const e of formErrors) {
+      if ('account' in e && e.account?.accountId) ids.add(e.account.accountId);
+    }
+    return ids;
+  }, [formErrors]);
+
   if (!chain) {
     return null;
   }
@@ -87,6 +99,26 @@ const Signatories = ({ chainId }: { chainId: ChainId }) => {
       <FootnoteText className="text-text-tertiary">
         {t('walletDetails.proxies.verifyFormResolvingAccounts')}
       </FootnoteText>
+    );
+  }
+
+  if (signingPath.length >= 2) {
+    const nativeAsset = getNativeAsset(chain.assets);
+    const getBalance = (accountId: AccountId) => {
+      const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, nativeAsset.assetId);
+      return balance ? withdrawableAmount(balance) : null;
+    };
+
+    return (
+      <SigningPathInline
+        chainId={chain.chainId}
+        path={signingPath}
+        asset={nativeAsset}
+        getBalance={getBalance}
+        errorAccountIds={errorAccountIds}
+        errorText={t(signatory.errorMessage)}
+        onChange={verifyProxyModel.events.signingPathChanged}
+      />
     );
   }
 

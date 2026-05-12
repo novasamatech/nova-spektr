@@ -24,6 +24,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { addPureProxiedValidator } from '@/features/operations/OperationsValidation';
 import { proxiesUtils } from '@/features/proxies';
+import { createSigningPathModel } from '@/features/signing-path';
 
 type FormParams = {
   chain: Chain | null;
@@ -181,6 +182,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: form.fields.initiator.$value,
+    chain: form.fields.chain.$value,
+    resetOn: formInitiated,
+    resetUserOverrideOn: form.fields.initiator.change,
+  });
+
 const $isChainConnected = combine(
   {
     chain: form.fields.chain.$value,
@@ -233,6 +242,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 // Transaction validation
@@ -318,12 +328,13 @@ sample({
 });
 
 sample({
-  clock: form.fields.initiator.change,
-  source: $signatories,
-  filter: signatories => signatories.length < 2,
-  fn: signatories => signatories.at(0)!,
+  clock: [$signatoryFromPath, $signatories, formInitiated],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 // Submit
 
@@ -363,6 +374,7 @@ export const formModel = {
   $wallet,
   $availableChains,
   $signatories,
+  $signingPath,
   $proxyQuery,
   $tx,
 
@@ -386,6 +398,7 @@ export const formModel = {
   proxyQueryChanged,
   proxyDepositChanged,
   isProxyDepositLoadingChanged,
+  signingPathChanged,
 
   formSubmitted,
   $errors,

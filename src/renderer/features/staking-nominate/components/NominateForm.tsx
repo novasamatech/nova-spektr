@@ -4,12 +4,14 @@ import { type FormEvent, useMemo } from 'react';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { transferableAmount } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
 import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
+import { SigningPathInline } from '@/features/signing-path';
 import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
 
@@ -49,8 +51,10 @@ const Signatories = () => {
   } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
   const balances = useUnit(balanceModel.$balanceMap);
+  const formErrors = useUnit(formModel.$errors);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
 
@@ -70,8 +74,35 @@ const Signatories = () => {
     });
   }, [signatories, balances]);
 
+  const errorAccountIds = useMemo<ReadonlySet<AccountId>>(() => {
+    const ids = new Set<AccountId>();
+    for (const e of formErrors) {
+      if ('account' in e && e.account?.accountId) ids.add(e.account.accountId);
+    }
+    return ids;
+  }, [formErrors]);
+
   if (!network) {
     return null;
+  }
+
+  if (signingPath.length >= 2) {
+    const getBalance = (accountId: AccountId) => {
+      const balance = balanceUtils.getBalance(balances, accountId, network.chain.chainId, network.asset.assetId);
+      return balance ? transferableAmount(balance) : null;
+    };
+
+    return (
+      <SigningPathInline
+        chainId={network.chain.chainId}
+        path={signingPath}
+        asset={network.asset}
+        getBalance={getBalance}
+        errorAccountIds={errorAccountIds}
+        errorText={t(signatory.errorMessage)}
+        onChange={formModel.signingPathChanged}
+      />
+    );
   }
 
   return (

@@ -39,6 +39,7 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts → accounts-structure → wallet-details → proxy-add
 import { InitiateDraftButton } from '@/features/drafts/components/InitiateDraftButton';
+import { SigningPathInline } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/widgets/transaction-fee';
 import { addProxyModel } from '../model/add-proxy-model';
@@ -247,11 +248,13 @@ const Signatories = () => {
   } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const isMultisig = useUnit(formModel.$isMultisig);
 
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balanceMap);
+  const formErrors = useUnit(formModel.$errors);
 
   if (!chain.value) return null;
 
@@ -269,8 +272,35 @@ const Signatories = () => {
     });
   }, [signatories, balances]);
 
+  const errorAccountIds = useMemo<ReadonlySet<AccountId>>(() => {
+    const ids = new Set<AccountId>();
+    for (const e of formErrors) {
+      if ('account' in e && e.account?.accountId) ids.add(e.account.accountId);
+    }
+    return ids;
+  }, [formErrors]);
+
   if (!isMultisig) {
     return null;
+  }
+
+  if (signingPath.length >= 2) {
+    const getBalance = (accountId: AccountId) => {
+      const balance = balanceUtils.getBalance(balances, accountId, chain.value!.chainId, nativeAsset.assetId);
+      return balance ? withdrawableAmount(balance) : null;
+    };
+
+    return (
+      <SigningPathInline
+        chainId={chain.value.chainId}
+        path={signingPath}
+        asset={nativeAsset}
+        getBalance={getBalance}
+        errorAccountIds={errorAccountIds}
+        errorText={t(signatory.errorMessage)}
+        onChange={formModel.signingPathChanged}
+      />
+    );
   }
 
   return (

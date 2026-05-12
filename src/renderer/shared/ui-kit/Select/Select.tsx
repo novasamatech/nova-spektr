@@ -212,7 +212,7 @@ const Root = <T extends string>({
             </div>
           </ComboboxDisclosure>
         ) : (
-          <div className="relative" data-testid={testId}>
+          <div className="relative w-full" data-testid={testId}>
             <Combobox
               autoFocus
               placeholder={placeholder}

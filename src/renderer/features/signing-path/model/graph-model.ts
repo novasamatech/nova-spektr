@@ -1,15 +1,16 @@
 import { type Store, combine, createEffect, createEvent, createStore, sample } from 'effector';
 
-import { type ChainId, type WalletType, SigningType } from '@/shared/core';
+import { type ChainId, SigningType, WalletType } from '@/shared/core';
 import { type BackendContact } from '@/shared/core/types/contact';
 import { type ProxyAccount, type ProxyType } from '@/shared/core/types/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
-import { accountService, accounts, identity } from '@/domains/network';
+import { type AnyAccount, accountService, accounts, identity } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { accountUtils } from '@/entities/wallet';
+import { MAX_PATH_DEPTH } from '../lib/path-validation';
 
 export type PathSource = {
   accountId: AccountId;
@@ -34,7 +35,19 @@ export type PathNextOption =
       disabled?: boolean;
       disabledReason?: string;
     }
-  | { kind: 'signer'; accountId: AccountId; name: string };
+  | {
+      kind: 'signer';
+      accountId: AccountId;
+      name: string;
+      /**
+       * When the signer is reached as a direct proxy delegate (not via a
+       * multisig), the proxy type the user picks is recorded back on the source
+       * node — same mechanism as for multisig delegates.
+       */
+      proxyType?: ProxyType;
+      disabled?: boolean;
+      disabledReason?: string;
+    };
 
 const isMultisigContact = (c: BackendContact): boolean =>
   Array.isArray(c.signatories) && c.signatories.length > 0 && typeof c.threshold === 'number' && c.threshold >= 1;
@@ -107,7 +120,7 @@ const $multisigByAccountId = combine(
 // produce signatures. Used by the restrictToOwn graph mode to hide any path
 // that doesn't terminate at one of these.
 const $ownSignerAccountIds = accounts.$list.map<Set<AccountId>>(
-  (list) => new Set(list.filter((a) => a.signingType !== SigningType.WATCH_ONLY).map((a) => a.accountId as AccountId)),
+  (list) => new Set(list.filter((a) => a.signingType !== SigningType.WATCH_ONLY).map((a) => a.accountId)),
 );
 
 /**
@@ -180,6 +193,7 @@ function buildSources(
   contactByAccountId: ContactsByAccountId,
   multisigByAccountId: MultisigByAccountId,
   proxies: Record<AccountId, ProxyAccount[] | undefined>,
+  accountList: AnyAccount[],
   chainId: ChainId,
   allowedSet: Set<AccountId> | null,
   resolveName: AccountNameResolver,
@@ -188,10 +202,50 @@ function buildSources(
   const seenAccounts = new Set<AccountId>();
   const canReach = allowedSet ? makeReachabilityChecker(multisigByAccountId, allowedSet) : null;
 
-  // 1. Direct multisig sources — anything in the merged lookup (own +
+  const hasReachableMultisigDelegate = (proxiedAccountId: AccountId) => {
+    const signers = proxies[proxiedAccountId] ?? [];
+    return signers.some((p) => {
+      if (p.chainId !== chainId) return false;
+      if (!multisigByAccountId.has(p.accountId)) return false;
+      // restrictToOwn: only count the proxy as a viable source if its signing
+      // multisig leads to one of the user's own signers — otherwise the user
+      // could pick the source but never complete the path.
+      //
+      // Note: direct proxied → signer paths (no multisig in between) aren't
+      // surfaced here. Drafts route through multisigs for proposal/approval,
+      // so a multisig hop is the only viable path shape for source picking.
+      // Transfer uses the user's selected wallet as initiator directly, not
+      // via this source list.
+      if (canReach && !canReach(p.accountId)) return false;
+      return true;
+    });
+  };
+
+  // 1. Own flex multisig facades — surface as proxy sources, not multisig
+  //    sources. A flex multisig's `accountId` is a pure proxy delegating to
+  //    `multisigAccountId`, so the path it produces is `proxied → multisig →
+  //    signer` (same shape as pure proxy + multisig). $multisigByAccountId
+  //    already keys the inner multisig; here we register the facade itself.
+  for (const account of accountList) {
+    if (!accountUtils.isFlexibleMultisigAccount(account)) continue;
+    if (account.chainId !== chainId) continue;
+    if (seenAccounts.has(account.accountId)) continue;
+    if (!hasReachableMultisigDelegate(account.accountId)) continue;
+
+    seenAccounts.add(account.accountId);
+    sources.push({
+      accountId: account.accountId,
+      name: resolveName(account.accountId, chainId),
+      isProxy: true,
+      walletType: WalletType.FLEXIBLE_MULTISIG,
+    });
+  }
+
+  // 2. Direct multisig sources — anything in the merged lookup (own +
   //    backend contacts). Iterating the unified map means own multisigs
   //    surface here even when the user hasn't synced them as a contact.
   for (const accountId of multisigByAccountId.keys()) {
+    if (seenAccounts.has(accountId)) continue;
     if (canReach && !canReach(accountId)) continue;
     seenAccounts.add(accountId);
     sources.push({
@@ -202,34 +256,21 @@ function buildSources(
     });
   }
 
-  // 2. Proxied sources — non-multisig contacts whose proxy graph leads to
+  // 3. Proxied sources — non-multisig contacts whose proxy graph leads to
   //    a multisig signer (so the path can continue). Iterating contacts
   //    here matches the historical semantics for drafts: surfaces external
   //    proxied accounts the user wants to write drafts for.
   for (const contact of contactByAccountId.values()) {
     if (seenAccounts.has(contact.accountId)) continue;
     if (isMultisigContact(contact)) continue;
+    if (!hasReachableMultisigDelegate(contact.accountId)) continue;
 
-    const signers = proxies[contact.accountId] ?? [];
-    const hasMultisigSigner = signers.some((p) => {
-      if (p.chainId !== chainId) return false;
-      if (!multisigByAccountId.has(p.accountId)) return false;
-      // restrictToOwn: only count the proxy as a viable source if its signing
-      // multisig leads to one of the user's own signers — otherwise the user
-      // could pick the source but never complete the path.
-      if (canReach && !canReach(p.accountId)) return false;
-
-      return true;
+    sources.push({
+      accountId: contact.accountId,
+      name: resolveName(contact.accountId, chainId),
+      isProxy: true,
+      walletType: null,
     });
-
-    if (hasMultisigSigner) {
-      sources.push({
-        accountId: contact.accountId,
-        name: resolveName(contact.accountId, chainId),
-        isProxy: true,
-        walletType: null,
-      });
-    }
   }
 
   return sources;
@@ -248,7 +289,7 @@ function buildNextOptions(
   if (node.kind === 'signer') return [];
 
   const canReach = allowedSet ? makeReachabilityChecker(multisigByAccountId, allowedSet) : null;
-  const nodeAccountId = node.accountId as AccountId;
+  const nodeAccountId = node.accountId;
 
   if (node.kind === 'proxied') {
     const signers = proxies[nodeAccountId] ?? [];
@@ -256,10 +297,7 @@ function buildNextOptions(
 
     return signers
       .filter((p) => p.chainId === chainId)
-      .flatMap((p) => {
-        const multisig = multisigByAccountId.get(p.accountId);
-        if (!multisig) return [];
-
+      .flatMap<PathNextOption>((p) => {
         const dedupKey = `${p.accountId}|${p.proxyType}|${p.delay}`;
         if (seen.has(dedupKey)) return [];
         seen.add(dedupKey);
@@ -268,26 +306,42 @@ function buildNextOptions(
         // as disabled rows rather than hiding them — the user should see
         // that the delegate exists but understand why they can't pick it.
         const isProxyTypeAllowed = !allowedProxyTypes || allowedProxyTypes.has(p.proxyType);
+        const disabledExtras = isProxyTypeAllowed
+          ? {}
+          : { disabled: true, disabledReason: disabledProxyReason ?? undefined };
 
-        // Reachability still hides delegates that can't possibly complete a
-        // path (no own signer downstream); proxyType-mismatch is a softer
-        // disable that needs to be visible.
+        const multisig = multisigByAccountId.get(p.accountId);
+        if (multisig) {
+          // Reachability still hides delegates that can't possibly complete
+          // a path (no own signer downstream); proxyType-mismatch is a
+          // softer disable that needs to be visible.
+          if (canReach && isProxyTypeAllowed && !canReach(p.accountId)) return [];
+
+          return [
+            {
+              kind: 'multisig',
+              accountId: p.accountId,
+              name: resolveName(p.accountId, chainId),
+              threshold: multisig.threshold,
+              signatoriesCount: multisig.signatories.length,
+              proxyType: p.proxyType,
+              ...disabledExtras,
+            },
+          ];
+        }
+
+        // Direct signer delegate (proxied → signer, 2-hop path). Hide non-
+        // reachable when restrictToOwn is set — a delegate we don't own
+        // can't sign and would dead-end the path.
         if (canReach && isProxyTypeAllowed && !canReach(p.accountId)) return [];
 
         return [
           {
-            kind: 'multisig' as const,
+            kind: 'signer',
             accountId: p.accountId,
             name: resolveName(p.accountId, chainId),
-            threshold: multisig.threshold,
-            signatoriesCount: multisig.signatories.length,
             proxyType: p.proxyType,
-            ...(isProxyTypeAllowed
-              ? {}
-              : {
-                  disabled: true,
-                  disabledReason: disabledProxyReason ?? undefined,
-                }),
+            ...disabledExtras,
           },
         ];
       });
@@ -320,6 +374,92 @@ function buildNextOptions(
       },
     ];
   });
+}
+
+type PickDefaultPathParams = {
+  initiator: AnyAccount;
+  chainId: ChainId;
+  multisigByAccountId: MultisigByAccountId;
+  proxies: Record<AccountId, ProxyAccount[] | undefined>;
+  ownSignerAccountIds: Set<AccountId>;
+  resolveName: AccountNameResolver;
+  allowedProxyTypes?: readonly string[];
+  /**
+   * When set, the BFS terminates only at this specific signer accountId. Used
+   * to translate a dropdown signatory pick back into a concrete signing path.
+   * Without it, the first reachable own signer wins.
+   */
+  targetSigner?: AccountId;
+};
+
+/**
+ * Walks the graph from `initiator` picking the first valid `PathNextOption` at
+ * each step until reaching a signer. Reuses `buildNextOptions` so the default
+ * selection matches exactly what StepPath would offer the user — same
+ * reachability, same proxyType filtering, same dedup. Returns [] when the
+ * initiator is a regular account or no own-signer-terminating branch exists.
+ */
+function pickDefaultPath({
+  initiator,
+  chainId,
+  multisigByAccountId,
+  proxies,
+  ownSignerAccountIds,
+  resolveName,
+  allowedProxyTypes,
+  targetSigner,
+}: PickDefaultPathParams): PathNode[] {
+  const isMultisig = accountUtils.isAnyMultisigAccount(initiator);
+  const isProxied = accountUtils.isProxiedAccount(initiator);
+  if (!isMultisig && !isProxied) return [];
+
+  const allowedProxyTypeSet = allowedProxyTypes ? new Set<string>(allowedProxyTypes) : null;
+  // Reachability set: when targetSigner is set, restrict to paths reaching
+  // exactly that signer; otherwise fall back to any own signer.
+  const reachabilitySet = targetSigner ? new Set<AccountId>([targetSigner]) : ownSignerAccountIds;
+
+  // Flex multisig's facade is a pure proxy delegating to an inner multisig —
+  // start the path at `proxied` so BFS hops via the proxy graph into the
+  // multisig, matching the structure the chain actually requires
+  // (proxy.proxy(real=facade, call=...) signed by the multisig).
+  const isFlexibleMultisig = accountUtils.isFlexibleMultisigAccount(initiator);
+  let firstNode: PathNode;
+  if (isProxied || isFlexibleMultisig) {
+    firstNode = { kind: 'proxied', accountId: initiator.accountId };
+  } else {
+    firstNode = { kind: 'multisig', accountId: initiator.accountId };
+  }
+
+  const path: PathNode[] = [firstNode];
+
+  while (path.length < MAX_PATH_DEPTH) {
+    const last = path[path.length - 1]!;
+    if (last.kind === 'signer') return path;
+
+    const options = buildNextOptions(
+      last,
+      multisigByAccountId,
+      proxies,
+      chainId,
+      reachabilitySet,
+      allowedProxyTypeSet,
+      null,
+      resolveName,
+    );
+    const next = options.find((opt) => opt.kind !== 'multisig' || !opt.disabled);
+    if (!next) return [];
+
+    if (next.proxyType && path[0]!.kind === 'proxied') {
+      // Mirror StepPath: when stepping from a proxied source into either a
+      // multisig delegate or a direct signer delegate, the chosen proxyType
+      // is recorded on the source node.
+      path[0] = { ...path[0]!, proxyType: next.proxyType };
+    }
+
+    path.push({ kind: next.kind, accountId: next.accountId });
+  }
+
+  return path[path.length - 1]!.kind === 'signer' ? path : [];
 }
 
 export type GraphOptions = {
@@ -368,14 +508,16 @@ function $sourcesFor(chainId: ChainId, opts?: GraphOptions): Store<PathSource[]>
           contactByAccountId: $contactByAccountId,
           multisigByAccountId: $multisigByAccountId,
           proxies: proxyModel.$proxies,
+          accountList: accounts.$list,
           allowed: $ownSignerAccountIds,
           resolveName: $nameResolver,
         },
-        ({ contactByAccountId, multisigByAccountId, proxies, allowed, resolveName }) =>
+        ({ contactByAccountId, multisigByAccountId, proxies, accountList, allowed, resolveName }) =>
           buildSources(
             contactByAccountId,
             multisigByAccountId,
             proxies as Record<AccountId, ProxyAccount[] | undefined>,
+            accountList,
             chainId,
             allowed,
             resolveName,
@@ -386,13 +528,15 @@ function $sourcesFor(chainId: ChainId, opts?: GraphOptions): Store<PathSource[]>
           contactByAccountId: $contactByAccountId,
           multisigByAccountId: $multisigByAccountId,
           proxies: proxyModel.$proxies,
+          accountList: accounts.$list,
           resolveName: $nameResolver,
         },
-        ({ contactByAccountId, multisigByAccountId, proxies, resolveName }) =>
+        ({ contactByAccountId, multisigByAccountId, proxies, accountList, resolveName }) =>
           buildSources(
             contactByAccountId,
             multisigByAccountId,
             proxies as Record<AccountId, ProxyAccount[] | undefined>,
+            accountList,
             chainId,
             null,
             resolveName,
@@ -452,19 +596,77 @@ function $nextOptionsForNode(node: PathNode, chainId: ChainId, opts?: GraphOptio
   return $store;
 }
 
+const defaultPathCache = new Map<string, Store<PathNode[]>>();
+
+function $defaultPathFor(
+  initiatorStore: Store<AnyAccount | null>,
+  chainIdStore: Store<ChainId | null>,
+  opts?: GraphOptions,
+): Store<PathNode[]> {
+  const allowedProxyTypes = opts?.allowedProxyTypes;
+  // Two callers passing the same input stores + opts share one combine — keeps
+  // graph traversal cheap when consumers re-render. Identity of the input
+  // stores is part of the key so different forms get distinct caches.
+  const cacheKey = `${initiatorStore.shortName}:${chainIdStore.shortName}:${allowedProxyTypes ? [...allowedProxyTypes].sort().join(',') : '*'}`;
+  const $cached = defaultPathCache.get(cacheKey);
+  if ($cached) return $cached;
+
+  const $store = combine(
+    {
+      initiator: initiatorStore,
+      chainId: chainIdStore,
+      multisigByAccountId: $multisigByAccountId,
+      proxies: proxyModel.$proxies,
+      ownSignerAccountIds: $ownSignerAccountIds,
+      resolveName: $nameResolver,
+    },
+    ({ initiator, chainId, multisigByAccountId, proxies, ownSignerAccountIds, resolveName }): PathNode[] => {
+      if (!initiator || !chainId) return [];
+
+      return pickDefaultPath({
+        initiator,
+        chainId,
+        multisigByAccountId,
+        proxies: proxies as Record<AccountId, ProxyAccount[] | undefined>,
+        ownSignerAccountIds,
+        resolveName,
+        allowedProxyTypes,
+      });
+    },
+  );
+  defaultPathCache.set(cacheKey, $store);
+
+  return $store;
+}
+
 const $empty = createStore<PathNextOption[]>([]);
 
+// `cachesCleared` is the existing API — clears ALL three caches. New code
+// should prefer `nextOptionsCacheCleared` because the sources / default-path
+// caches are bounded (chainId × opts × initiator-store-identity); only the
+// node-keyed `nextOptionsCache` grows unboundedly with user navigation.
 const cachesCleared = createEvent();
+const nextOptionsCacheCleared = createEvent();
 const clearCachesFx = createEffect(() => {
   nextOptionsCache.clear();
   sourcesForCache.clear();
+  defaultPathCache.clear();
+});
+const clearNextOptionsCacheFx = createEffect(() => {
+  nextOptionsCache.clear();
 });
 sample({ clock: cachesCleared, target: clearCachesFx });
+sample({ clock: nextOptionsCacheCleared, target: clearNextOptionsCacheFx });
 
 export const graphModel = {
   $sourcesFor,
   $nextOptionsForNode,
+  $defaultPathFor,
   $nameResolver,
+  $multisigByAccountId,
+  $ownSignerAccountIds,
   $empty,
   cachesCleared,
+  nextOptionsCacheCleared,
+  pickDefaultPath,
 };

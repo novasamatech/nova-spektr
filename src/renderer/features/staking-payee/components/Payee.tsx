@@ -49,7 +49,7 @@ export const Payee = () => {
   }
 
   return (
-    <Modal isOpen={isModalOpen} size="md" onToggle={(open: boolean) => !open && closeModal()}>
+    <Modal isOpen={isModalOpen} size="mdlg" onToggle={(open: boolean) => !open && closeModal()}>
       <Modal.Title close>
         <OperationTitle
           title={t('staking.destination.title', { asset: getNativeAsset(walletData.chain.assets)!.symbol })}

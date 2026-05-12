@@ -24,6 +24,7 @@ import {
   confirmModel,
 } from '@/features/operations/OperationsConfirm/VerifyProxy/model/confirm-model';
 import { verifyProxyValidator } from '@/features/operations/OperationsValidation';
+import { createSigningPathModel } from '@/features/signing-path';
 import { VERIFIABLE_PROXY_TYPES, buildVerifyProxyCall } from '../lib/build-verify-proxy';
 
 export enum Step {
@@ -186,6 +187,13 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: $initiatorStore,
+    chain: $chainStore,
+    resetOn: flowStarted,
+  });
+
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     memo: {
@@ -268,6 +276,7 @@ const {
   accounts: accounts.$list,
   initiator: $initiatorStore,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 const $asset = $chainStore.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
@@ -300,12 +309,13 @@ const $isMultisig = $multisigDeposit.map((deposit) => deposit.gt(BN_ZERO));
 const $canSubmit = and($valid, form.$isValid, not($pendingFee));
 
 sample({
-  clock: $signatories,
-  source: form.fields.signatory.$value,
-  filter: (current, signatories) => !current && signatories.length > 0,
-  fn: (_current, signatories) => signatories[0]!,
+  clock: [$signatoryFromPath, $signatories, flowStarted],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: $step,
@@ -519,6 +529,7 @@ export const verifyProxyModel = {
   $pendingFee,
   $multisigDeposit,
   $signatories,
+  $signingPath,
   $errors,
   $canSubmit,
   $lastGuardFailure,
@@ -528,6 +539,7 @@ export const verifyProxyModel = {
   events: {
     flowStarted,
     stepChanged,
+    signingPathChanged,
   },
   output: {
     flowFinished,

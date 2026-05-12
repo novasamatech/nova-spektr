@@ -149,7 +149,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
 
   return (
     <>
-      <Modal size="md" isOpen={isModalOpen} onToggle={handleToggle}>
+      <Modal size="mdlg" isOpen={isModalOpen} onToggle={handleToggle}>
         <Modal.Trigger>{children}</Modal.Trigger>
         <Modal.Title close>
           <OperationTitle

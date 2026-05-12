@@ -31,6 +31,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
+import { createSigningPathModel } from '@/features/signing-path';
 import { type ValidationSchemaOptions, Step } from '../types';
 import { multiTransferUtils } from '../utils';
 
@@ -190,6 +191,14 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: form.fields.initiator.$value,
+    chain: form.fields.chain.$value,
+    resetOn: flowStarted,
+    resetUserOverrideOn: form.fields.initiator.change,
+  });
+
 const $showSignatories = combine(
   $signatories,
   form.fields.initiator.$value,
@@ -264,6 +273,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 const validator = createTxValidator<{
@@ -587,11 +597,13 @@ sample({
 });
 
 sample({
-  clock: [flowStarted, $signatories],
-  source: $signatories,
-  fn: (signatories) => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, flowStarted],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: [form.fields.chain.change, fileUploaded],
@@ -696,6 +708,7 @@ export const formModel = {
   flowFinished,
 
   fileUploaded,
+  signingPathChanged,
 
   $step,
   $fileName,
@@ -706,6 +719,7 @@ export const formModel = {
   $availableChains,
   $initiators,
   $signatories,
+  $signingPath,
   $showSignatories,
   $amount,
   $asset,

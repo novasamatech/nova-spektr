@@ -5,12 +5,14 @@ import { type Asset, type Chain } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { transferableAmount } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, Icon, Separator } from '@/shared/ui';
 import { AccountSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Field } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
+import { SigningPathInline } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { approveModel } from '../model/approve-model';
 
@@ -43,6 +45,7 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, op
   const signatory = useUnit(approveModel.$signatory);
 
   const signatories = useUnit(approveModel.$signatories);
+  const signingPath = useUnit(approveModel.$signingPath);
 
   const signatoriesWithBalance = useMemo(() => {
     return signatories.map(s => {
@@ -51,7 +54,20 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, op
     });
   }, [signatories, balances, chain, nativeAsset]);
 
+  const errorAccountIds = useMemo<ReadonlySet<AccountId>>(() => {
+    const ids = new Set<AccountId>();
+    for (const e of errors) {
+      if ('account' in e && e.account?.accountId) ids.add(e.account.accountId);
+    }
+    return ids;
+  }, [errors]);
+
   const network = useMemo(() => ({ chain, asset: nativeAsset }), [chain, nativeAsset]);
+
+  const getBalance = (accountId: AccountId) => {
+    const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, nativeAsset.assetId);
+    return balance ? transferableAmount(balance) : null;
+  };
 
   return (
     <div className="flex flex-col items-center gap-y-3 px-5 pb-4">
@@ -76,17 +92,28 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, op
         />
       </Field>
 
-      <SignatorySelect
-        signatory={signatory}
-        signatories={signatoriesWithBalance}
-        allAccounts={allAccounts}
-        allWallets={allWallets}
-        initiator={initiator}
-        hasError={false}
-        errorText=""
-        network={network}
-        onChange={approveModel.selectSignatory}
-      />
+      {signingPath.length >= 2 ? (
+        <SigningPathInline
+          chainId={chain.chainId}
+          path={signingPath}
+          asset={nativeAsset}
+          getBalance={getBalance}
+          errorAccountIds={errorAccountIds}
+          onChange={approveModel.signingPathChanged}
+        />
+      ) : (
+        <SignatorySelect
+          signatory={signatory}
+          signatories={signatoriesWithBalance}
+          allAccounts={allAccounts}
+          allWallets={allWallets}
+          initiator={initiator}
+          hasError={false}
+          errorText=""
+          network={network}
+          onChange={approveModel.selectSignatory}
+        />
+      )}
 
       <Separator className="my-1 w-full" />
 

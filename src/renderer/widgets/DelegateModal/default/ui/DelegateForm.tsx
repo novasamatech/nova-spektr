@@ -5,6 +5,7 @@ import { type FormEvent, useMemo } from 'react';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, formatAsset, fromPrecision, transferableAmount } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { SignatorySelect } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
@@ -17,6 +18,7 @@ import { walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { InitiateDraftButton } from '@/features/drafts';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
+import { SigningPathInline } from '@/features/signing-path';
 import { ConvictionSelect } from '@/widgets/VoteModal';
 import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
@@ -38,7 +40,7 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
   };
 
   return (
-    <Modal isOpen={isOpen} size="md" height="fit" onToggle={onClose}>
+    <Modal isOpen={isOpen} size="mdlg" height="fit" onToggle={onClose}>
       <Modal.Title close>
         {network?.chain && (
           <OperationTitle title={t('governance.addDelegation.title')} chainId={network.chain.chainId} />
@@ -74,6 +76,7 @@ const Signatories = () => {
   } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
 
   const balances = useUnit(balanceModel.$balanceMap);
@@ -98,6 +101,24 @@ const Signatories = () => {
 
   if (!network) {
     return null;
+  }
+
+  if (signingPath.length >= 2) {
+    const getBalance = (accountId: AccountId) => {
+      const balance = balanceUtils.getBalance(balances, accountId, network.chain.chainId, network.asset.assetId);
+      return balance ? transferableAmount(balance) : null;
+    };
+
+    return (
+      <SigningPathInline
+        chainId={network.chain.chainId}
+        path={signingPath}
+        asset={network.asset}
+        getBalance={getBalance}
+        errorText={t(signatory.errorMessage)}
+        onChange={formModel.events.signingPathChanged}
+      />
+    );
   }
 
   return (

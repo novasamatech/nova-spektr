@@ -1,7 +1,8 @@
+import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useMemo, useState } from 'react';
 
-import { type ChainId, WalletType } from '@/shared/core';
+import { type Asset, type ChainId, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, performSearch, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, Icon } from '@/shared/ui';
@@ -22,6 +23,19 @@ type Props = {
   restrictToOwnAccounts?: boolean;
   allowedProxyTypes?: readonly string[];
   disabledProxyReason?: string;
+  /**
+   * Optional balance lookup for signer options. When provided alongside
+   * `optionAsset`, signer rows show the candidate signer's transferable balance
+   * — useful so the user picks an initiator who can actually pay.
+   */
+  getOptionBalance?: (option: PathNextOption) => BN | string | null;
+  optionAsset?: Asset;
+  /**
+   * Override the wrapper's classes. Tailwind-merge resolves conflicts, so
+   * passing `min-h-[360px]` shrinks the default 520px floor — useful when the
+   * StepPath sits in a "fit" modal that should not pad to the legacy height.
+   */
+  className?: string;
 };
 
 export const StepPath = ({
@@ -32,6 +46,9 @@ export const StepPath = ({
   restrictToOwnAccounts = false,
   allowedProxyTypes,
   disabledProxyReason,
+  getOptionBalance,
+  optionAsset,
+  className,
 }: Props) => {
   const { t } = useI18n();
 
@@ -39,7 +56,6 @@ export const StepPath = ({
   const isComplete = useUnit(pathModel.$isComplete);
   const lastNode = useUnit(pathModel.$lastNode);
 
-  const [autoOpenSource, setAutoOpenSource] = useState(false);
   const [sourceQuery, setSourceQuery] = useState('');
 
   const sourcesStore = useMemo(
@@ -91,36 +107,25 @@ export const StepPath = ({
     });
   };
 
-  const getPickerTitle = (): { title: string; description?: string } => {
-    if (!lastNode) return { title: '' };
-
-    if (lastNode.kind === 'proxied') {
-      return {
-        title: t('signingPath.pickMultisigForProxy'),
-      };
-    }
-
+  const getPickerTitle = (): string => {
+    if (!lastNode) return '';
+    if (lastNode.kind === 'proxied') return t('signingPath.pickMultisigForProxy');
     if (lastNode.kind === 'multisig') {
       const hasNested = nextOptions.some((opt) => opt.kind === 'multisig');
-
-      return {
-        title: hasNested ? t('signingPath.pickInitiatorOrNested') : t('signingPath.pickInitiator'),
-      };
+      return hasNested ? t('signingPath.pickInitiatorOrNested') : t('signingPath.pickInitiator');
     }
-
-    return { title: '' };
+    return '';
   };
 
-  const pickerInfo = getPickerTitle();
+  const pickerTitle = getPickerTitle();
 
   const handleBreadcrumbClick = (i: number) => {
     if (i < lockedSourceCount) return;
-    if (i === 0) setAutoOpenSource(true);
     pathModel.pathTruncatedTo(i - 1);
   };
 
   return (
-    <div className="flex min-h-[520px] flex-col gap-y-4">
+    <div className={cnTw('flex min-h-[520px] flex-col gap-y-4', className)}>
       {path.length > 0 && <PathBreadcrumb path={path} chainId={chainId} onNodeClick={handleBreadcrumbClick} />}
 
       {path.length === 0 && lockedSourceCount === 0 ? (
@@ -132,7 +137,6 @@ export const StepPath = ({
           <Select
             placeholder={t('signingPath.selectSource')}
             value={selectedSourceId}
-            defaultOpen={autoOpenSource}
             onChange={handleSourceChange}
             onSearch={setSourceQuery}
           >
@@ -179,26 +183,31 @@ export const StepPath = ({
       ) : (
         lastNode &&
         lastNode.kind !== 'signer' && (
-          <SectionCard number={path.length + 1} title={pickerInfo.title} description={pickerInfo.description}>
+          <SectionCard number={path.length + 1} title={pickerTitle}>
             <div className="flex flex-col gap-y-1.5">
               {nextOptions.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-shade-12 px-3 py-4 text-center">
                   <FootnoteText className="text-text-tertiary">{t('signingPath.noOptions')}</FootnoteText>
                 </div>
               ) : (
-                nextOptions.map((opt, idx) => (
-                  <NextOptionRow
-                    key={`${opt.kind}-${opt.accountId}-${opt.kind === 'multisig' ? (opt.proxyType ?? '') : ''}-${idx}`}
-                    option={opt}
-                    selected={false}
-                    onClick={() => {
-                      if (opt.kind === 'multisig' && opt.proxyType && lastNode?.kind === 'proxied') {
-                        pathModel.pathSourceProxyTypeSet(opt.proxyType);
-                      }
-                      pathModel.pathNodeAppended({ kind: opt.kind, accountId: opt.accountId });
-                    }}
-                  />
-                ))
+                nextOptions.map((opt, idx) => {
+                  const optionBalance =
+                    opt.kind === 'signer' && optionAsset && getOptionBalance ? getOptionBalance(opt) : null;
+                  return (
+                    <NextOptionRow
+                      key={`${opt.kind}-${opt.accountId}-${opt.kind === 'multisig' ? (opt.proxyType ?? '') : ''}-${idx}`}
+                      option={opt}
+                      selected={false}
+                      balance={optionBalance && optionAsset ? { value: optionBalance, asset: optionAsset } : undefined}
+                      onClick={() => {
+                        if (opt.proxyType && lastNode?.kind === 'proxied') {
+                          pathModel.pathSourceProxyTypeSet(opt.proxyType);
+                        }
+                        pathModel.pathNodeAppended({ kind: opt.kind, accountId: opt.accountId });
+                      }}
+                    />
+                  );
+                })
               )}
             </div>
           </SectionCard>

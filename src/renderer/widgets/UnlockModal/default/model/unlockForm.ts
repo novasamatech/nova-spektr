@@ -14,6 +14,7 @@ import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { locksModel, networkSelectorModel, unlockModel } from '@/features/governance';
+import { createSigningPathModel } from '@/features/signing-path';
 
 type FormParams = {
   initiator: AnyAccount | null;
@@ -134,6 +135,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: form.fields.initiator.$value,
+    chain: networkSelectorModel.$governanceChain,
+    resetOn: formInitiated,
+    resetUserOverrideOn: form.fields.initiator.change,
+  });
+
 const $api = combine(
   {
     apis: networkModel.$apis,
@@ -188,6 +197,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
@@ -236,12 +246,13 @@ sample({
 });
 
 sample({
-  clock: formInitiated,
-  source: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, formInitiated],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: formInitiated,
@@ -284,14 +295,6 @@ const $signatoryBalance = combine(
     return transferableAmount(balance);
   },
 );
-
-sample({
-  clock: formInitiated,
-  source: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
-  target: form.fields.signatory.change,
-});
 
 const $canSubmit = combine(
   {
@@ -350,11 +353,13 @@ export const unlockFormAggregate = {
   $isMultisig,
   $proxyWallet,
   $signatories,
+  $signingPath,
   $proxyBalance,
   $signatoryBalance,
 
   formInitiated,
   formCleared,
   multisigDepositChanged,
+  signingPathChanged,
   formSubmitted,
 };

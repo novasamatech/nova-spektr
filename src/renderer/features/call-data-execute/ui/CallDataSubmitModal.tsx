@@ -31,7 +31,7 @@ export const CallDataSubmit = memo(() => {
   };
 
   return (
-    <Modal isOpen={isOpen} size="md" height="fit" preventOutsideClick onToggle={handleModalToggle}>
+    <Modal isOpen={isOpen} size="mdlg" height="fit" preventOutsideClick onToggle={handleModalToggle}>
       <Modal.Trigger>
         <Dropdown.Item>{t('navigation.callDataLabel')}</Dropdown.Item>
       </Modal.Trigger>

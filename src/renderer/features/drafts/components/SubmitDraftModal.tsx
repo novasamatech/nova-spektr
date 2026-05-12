@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -82,6 +82,7 @@ const ConfirmStep = () => {
   const fee = useUnit(submitDraftModel.$fee);
   const wrappedExtrinsic = useUnit(submitDraftModel.$wrappedExtrinsic);
   const wrappedTxError = useUnit(submitDraftModel.$wrappedTxError);
+  const wrappedTxErrorKind = useUnit(submitDraftModel.$wrappedTxErrorKind);
   const wallets = useUnit(walletModel.$wallets);
   const draft = useUnit(submitDraftModel.$draft);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
@@ -91,6 +92,19 @@ const ConfirmStep = () => {
   const validationPending = useUnit(submitDraftModel.$validationPending);
 
   const [showWalletDetails, setShowWalletDetails] = useState(false);
+
+  // Defer surfacing wrappedTx errors so a transient `true` during store init
+  // (chain set before accounts settle, etc.) doesn't flash the red error UI
+  // before the confirm view replaces it.
+  const [showWrappedTxError, setShowWrappedTxError] = useState(false);
+  useEffect(() => {
+    if (!wrappedTxError) {
+      setShowWrappedTxError(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowWrappedTxError(true), 300);
+    return () => clearTimeout(timer);
+  }, [wrappedTxError]);
 
   const confirm = confirms.at(0) ?? null;
 
@@ -191,11 +205,16 @@ const ConfirmStep = () => {
   }
 
   if (!confirm) {
-    if (wrappedTxError) {
+    if (showWrappedTxError) {
+      const messageKey =
+        wrappedTxErrorKind === 'signing-path-unresolved'
+          ? 'operations.drafts.signingPathUnresolved'
+          : 'operations.drafts.extrinsicError';
+
       return (
         <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
           <Icon className="text-icon-negative" name="warnCutout" size={60} />
-          <FootnoteText className="text-text-tertiary">{t('operations.drafts.extrinsicError')}</FootnoteText>
+          <FootnoteText className="text-text-tertiary">{t(messageKey)}</FootnoteText>
         </Box>
       );
     }
@@ -341,7 +360,10 @@ const ConfirmStep = () => {
       <Modal.Footer align="between">
         <div />
         <SignButton
-          disabled={nullable(wrappedExtrinsic) || nullable(fee) || validationPending || !validationValid}
+          disabled={
+            initiatorUnavailable || nullable(wrappedExtrinsic) || nullable(fee) || validationPending || !validationValid
+          }
+          isDefault={initiatorUnavailable}
           type={confirm.signatoryWallet.type}
           onClick={submitDraftModel.confirmModel.startSigning}
         />

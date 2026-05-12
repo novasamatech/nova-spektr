@@ -34,6 +34,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
+import { createSigningPathModel } from '@/features/signing-path';
 import { type ValidationSchemaOptions, Step } from '../types';
 import { vestedTransferUtils } from '../utils';
 
@@ -173,6 +174,14 @@ const $feeCoreTx = combine(
   },
 );
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: form.fields.initiator.$value,
+    chain: form.fields.chain.$value,
+    resetOn: flowStarted,
+    resetUserOverrideOn: form.fields.initiator.change,
+  });
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   chain: form.fields.chain.$value,
@@ -181,6 +190,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 // validations
@@ -450,11 +460,13 @@ sample({
 });
 
 sample({
-  clock: [flowStarted, $signatories],
-  source: $signatories,
-  fn: (signatories) => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, flowStarted],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: [form.fields.chain.change, fileUploaded],
@@ -589,6 +601,7 @@ export const formModel = {
   $csvIssues,
   $availableChains: $availableChains,
   $signatories: $signatories,
+  $signingPath,
   $showSignatories: $showSignatories,
   $minVestedTransfer,
 
@@ -596,4 +609,5 @@ export const formModel = {
   flowStarted,
   flowFinished,
   fileUploaded,
+  signingPathChanged,
 };

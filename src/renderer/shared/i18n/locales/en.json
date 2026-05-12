@@ -2644,6 +2644,7 @@
       "syncRetry": "Try again",
       "extrinsicError": "Call data is invalid or incompatible with this chain",
       "internalPathError": "Signing path is invalid",
+      "signingPathUnresolved": "The signing path saved with this draft can no longer be resolved against your accounts. The draft cannot be submitted along the original route.",
       "submitSuccess": "Draft submitted",
       "initiatorUnavailable": "The initiator is no longer a signatory of this multisig. Please pick another.",
       "submittedBadge": "Submitted",
@@ -3082,7 +3083,7 @@
     "sourceAccount": "Source account",
     "sourceAccountDescription": "The account that executes the transaction",
     "selectSource": "Select a source account",
-    "pickMultisigForProxy": "Pick a multisig to sign via",
+    "pickMultisigForProxy": "Pick a wallet to sign via",
     "pickInitiator": "Pick an initiator",
     "pickInitiatorOrNested": "Pick an initiator or nested multisig",
     "pathComplete": "Path complete",
@@ -3094,8 +3095,16 @@
       "proxiedWithType": "Proxied · {type}",
       "viaMultisig": "via Multisig",
       "multisig": "Multisig",
+      "multisigThreshold": "Multisig {current} of {total}",
+      "thresholdRatio": "{current} of {total}",
       "initiator": "Initiator"
-    }
+    },
+    "control": {
+      "editTitle": "Edit signing path",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "transferProxyTypeDisabled": "This proxy type cannot perform transfers"
   },
   "splashscreen": {
     "multisig": {

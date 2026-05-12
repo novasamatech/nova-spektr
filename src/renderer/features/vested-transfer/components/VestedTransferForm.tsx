@@ -6,6 +6,7 @@ import vested_transfer_template_url from '@/shared/assets/templates/vested-trans
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, DetailRow, FootnoteText, Icon, InfoLink, InputHint } from '@/shared/ui';
 import { AssetBalance, ChainSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
@@ -16,6 +17,7 @@ import { transactionService } from '@/entities/transaction';
 import { type ValidationIssue, VestingCsvError, VestingFieldError } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { InitiateDraftButton } from '@/features/drafts';
+import { SigningPathInline } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import {
@@ -108,10 +110,12 @@ const Signatories = () => {
   } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const chain = useUnit(formModel.$chain);
   const asset = useUnit(formModel.$asset);
 
   const balances = useUnit(balanceModel.$balanceMap);
+  const txErrors = useUnit(formModel.$txErrors);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
 
@@ -126,8 +130,35 @@ const Signatories = () => {
     });
   }, [signatories, balances, chain, asset]);
 
+  const errorAccountIds = useMemo<ReadonlySet<AccountId>>(() => {
+    const ids = new Set<AccountId>();
+    for (const e of txErrors) {
+      if ('account' in e && e.account?.accountId) ids.add(e.account.accountId);
+    }
+    return ids;
+  }, [txErrors]);
+
   if (!chain || !asset) {
     return null;
+  }
+
+  if (signingPath.length >= 2) {
+    const getBalance = (accountId: AccountId) => {
+      const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
+      return balance ? transferableAmount(balance) : null;
+    };
+
+    return (
+      <SigningPathInline
+        chainId={chain.chainId}
+        path={signingPath}
+        asset={asset}
+        getBalance={getBalance}
+        errorAccountIds={errorAccountIds}
+        errorText={t(signatory.errorMessage)}
+        onChange={formModel.signingPathChanged}
+      />
+    );
   }
 
   return (

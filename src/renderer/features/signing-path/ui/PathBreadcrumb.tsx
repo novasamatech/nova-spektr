@@ -5,12 +5,13 @@ import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
+import { networkModel } from '@/entities/network';
 import { graphModel } from '../model/graph-model';
 
 import { EllipsisCard } from './EllipsisCard';
 import { PathArrow } from './PathArrow';
 import { PathCard } from './PathCard';
-import { type PathCardSize, type PathNodeView, nodeView } from './path-views';
+import { type PathCardSize, type PathNodeView, enrichConnectionEdge, nodeView } from './path-views';
 
 type Props = {
   path: PathNode[];
@@ -80,11 +81,14 @@ const buildBreadcrumbElements = (
 export const PathBreadcrumb = ({ path, chainId, size = 'sm', onNodeClick }: Props) => {
   const { t } = useI18n();
   const resolveName = useUnit(graphModel.$nameResolver);
+  const chains = useUnit(networkModel.$chains);
+  const addressPrefix = chains[chainId]?.addressPrefix;
   const boundResolve = useCallback((accountId: AccountId) => resolveName(accountId, chainId), [resolveName, chainId]);
 
-  const views = path
-    .map((node, i) => nodeView(node, boundResolve, i, t))
+  const rawViews = path
+    .map((node, i) => nodeView(node, boundResolve, i, t, addressPrefix))
     .filter((v): v is NonNullable<typeof v> => v !== null);
+  const views = enrichConnectionEdge(rawViews, path, t);
 
   if (views.length === 0) {
     return null;

@@ -7,6 +7,7 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAsset } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   Alert,
   Button,
@@ -20,10 +21,11 @@ import {
 import { AssetBalance, TransactionValidationError } from '@/shared/ui-entities';
 import { Popover, Skeleton } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
-import { balanceModel } from '@/entities/balance';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { LockPeriodDiff, LockValueDiff, votingService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
 import { locksPeriodsAggregate } from '@/features/governance';
+import { SigningPathInline } from '@/features/signing-path';
 import { voteForm } from '../model/voteForm';
 import { voteModal } from '../model/voteModal';
 
@@ -51,6 +53,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
   const availableBalance = useUnit(voteForm.$availableBalance);
   const signatories = useUnit(voteForm.$signatories);
   const initiators = useUnit(voteForm.$initiators);
+  const signingPath = useUnit(voteForm.$signingPath);
   const isFeeLoading = useUnit(voteForm.$pendingFee);
   const hasDelegatedTrack = useUnit(voteForm.$hasDelegatedTrack);
   const balances = useUnit(balanceModel.$balanceMap);
@@ -115,20 +118,34 @@ export const VoteForm = ({ chain, asset }: Props) => {
               onChange={initiator.onChange}
             />
           )}
-          {signatories.length > 1 && (
-            <Signatories
-              initiator={initiator.value}
-              allAccounts={allAccounts}
-              allWallets={allWallets}
-              value={signatory.value}
+          {signingPath.length >= 2 ? (
+            <SigningPathInline
+              chainId={chain.chainId}
+              path={signingPath}
               asset={asset}
-              chain={chain}
-              balances={balances}
-              signatories={signatories}
-              errorText={signatory.errorMessage}
-              hasError={signatory.hasError}
-              onChange={signatory.onChange}
+              getBalance={(accountId: AccountId) => {
+                const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
+                return balance ? balance.free : null;
+              }}
+              errorText={t(signatory.errorMessage)}
+              onChange={voteForm.signingPathChanged}
             />
+          ) : (
+            signatories.length > 1 && (
+              <Signatories
+                initiator={initiator.value}
+                allAccounts={allAccounts}
+                allWallets={allWallets}
+                value={signatory.value}
+                asset={asset}
+                chain={chain}
+                balances={balances}
+                signatories={signatories}
+                errorText={signatory.errorMessage}
+                hasError={signatory.hasError}
+                onChange={signatory.onChange}
+              />
+            )
           )}
 
           <div className="flex flex-col gap-2">

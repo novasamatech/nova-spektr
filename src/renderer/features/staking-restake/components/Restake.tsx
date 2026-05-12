@@ -49,7 +49,7 @@ export const Restake = () => {
   }
 
   return (
-    <Modal size="md" isOpen={isModalOpen} onToggle={closeModal}>
+    <Modal size="mdlg" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>
         <OperationTitle
           title={t('staking.restake.title', { asset: getNativeAsset(networkStore.chain.assets)!.symbol })}

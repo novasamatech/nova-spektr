@@ -92,7 +92,7 @@ export const AddPureProxied = ({ wallet, onClose, children }: Props) => {
   }
 
   return (
-    <Modal isOpen={isModalOpen} size="md" height="fit" onToggle={onToggle}>
+    <Modal isOpen={isModalOpen} size="mdlg" height="fit" onToggle={onToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{getModalTitle(step, chain.value ?? undefined)}</Modal.Title>
       <Modal.Content>
