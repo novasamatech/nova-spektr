@@ -1,16 +1,20 @@
 import { type Store, combine, createEffect, createEvent, createStore, sample } from 'effector';
 
-import { type ChainId, SigningType, WalletType } from '@/shared/core';
+import { type ChainId, type DecodedTransaction, SigningType, WalletType } from '@/shared/core';
 import { type BackendContact } from '@/shared/core/types/contact';
 import { type ProxyAccount, type ProxyType } from '@/shared/core/types/proxy';
+import { entries, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { parseVerifyProxyMarker } from '@/shared/transactions';
 import { type PathNode } from '@/domains/backend';
-import { type AnyAccount, accountService, accounts, identity } from '@/domains/network';
+import { type AnyAccount, accountService, accounts, identity, multisigOperation } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { accountUtils } from '@/entities/wallet';
 import { MAX_PATH_DEPTH } from '../lib/path-validation';
+
+export type ProxyEdgeStatus = 'verified' | 'not_verified' | 'pending_verification';
 
 export type PathSource = {
   accountId: AccountId;
@@ -34,6 +38,7 @@ export type PathNextOption =
        */
       disabled?: boolean;
       disabledReason?: string;
+      verificationStatus?: ProxyEdgeStatus;
     }
   | {
       kind: 'signer';
@@ -121,6 +126,66 @@ const $multisigByAccountId = combine(
 // that doesn't terminate at one of these.
 const $ownSignerAccountIds = accounts.$list.map<Set<AccountId>>(
   (list) => new Set(list.filter((a) => a.signingType !== SigningType.WATCH_ONLY).map((a) => a.accountId)),
+);
+
+function extractVerifyProxyMarker(tx: DecodedTransaction | null | undefined) {
+  if (nullable(tx)) return null;
+  if (tx.section === 'proxy' && tx.method === 'proxy') {
+    return extractVerifyProxyMarker(tx.args['transaction'] as DecodedTransaction | undefined);
+  }
+  if (tx.section !== 'system' || tx.method !== 'remarkWithEvent') return null;
+  const remark = tx.args['remark'];
+  if (typeof remark !== 'string') return null;
+  return parseVerifyProxyMarker(remark);
+}
+
+const proxyEdgeKey = (chainId: ChainId, pure: AccountId, delegate: AccountId, proxyType: ProxyType): string =>
+  `${chainId}:${pure}:${delegate}:${proxyType}`;
+
+const $proxyEdgeStatus = combine(
+  {
+    proxiesByPure: proxyModel.$proxies,
+    operations: multisigOperation.$list,
+    opsLoaded: multisigOperation.$initialLoadingComplete,
+  },
+  ({ proxiesByPure, operations, opsLoaded }): Map<string, ProxyEdgeStatus> | null => {
+    if (!opsLoaded) return null;
+
+    const result = new Map<string, ProxyEdgeStatus>();
+
+    for (const [pure, delegates] of entries(proxiesByPure)) {
+      for (const delegate of delegates ?? []) {
+        result.set(proxyEdgeKey(delegate.chainId, pure, delegate.accountId, delegate.proxyType), 'not_verified');
+      }
+    }
+
+    for (const op of operations) {
+      if (op.status !== 'executed' || !op.proxiedAccountId) continue;
+      const delegates = proxiesByPure[op.proxiedAccountId] ?? [];
+      for (const delegate of delegates) {
+        if (delegate.chainId !== op.chainId) continue;
+        if (delegate.accountId !== op.multisigAccountId) continue;
+        result.set(proxyEdgeKey(op.chainId, op.proxiedAccountId, delegate.accountId, delegate.proxyType), 'verified');
+      }
+    }
+
+    for (const op of operations) {
+      if (op.status !== 'pending') continue;
+      const marker = extractVerifyProxyMarker(op.transaction);
+      if (!marker) continue;
+      const delegates = proxiesByPure[marker.pureProxyAccountId] ?? [];
+      for (const delegate of delegates) {
+        if (delegate.chainId !== op.chainId) continue;
+        if (delegate.accountId !== marker.delegateAccountId) continue;
+        const key = proxyEdgeKey(op.chainId, marker.pureProxyAccountId, delegate.accountId, delegate.proxyType);
+        if (result.get(key) === 'not_verified') {
+          result.set(key, 'pending_verification');
+        }
+      }
+    }
+
+    return result;
+  },
 );
 
 /**
@@ -285,6 +350,7 @@ function buildNextOptions(
   allowedProxyTypes: ReadonlySet<string> | null,
   disabledProxyReason: string | null,
   resolveName: AccountNameResolver,
+  proxyEdgeStatus: Map<string, ProxyEdgeStatus> | null,
 ): PathNextOption[] {
   if (node.kind === 'signer') return [];
 
@@ -317,6 +383,10 @@ function buildNextOptions(
           // softer disable that needs to be visible.
           if (canReach && isProxyTypeAllowed && !canReach(p.accountId)) return [];
 
+          const verificationStatus = proxyEdgeStatus?.get(
+            proxyEdgeKey(chainId, nodeAccountId, p.accountId, p.proxyType),
+          );
+
           return [
             {
               kind: 'multisig',
@@ -325,6 +395,7 @@ function buildNextOptions(
               threshold: multisig.threshold,
               signatoriesCount: multisig.signatories.length,
               proxyType: p.proxyType,
+              ...(verificationStatus ? { verificationStatus } : {}),
               ...disabledExtras,
             },
           ];
@@ -445,6 +516,7 @@ function pickDefaultPath({
       allowedProxyTypeSet,
       null,
       resolveName,
+      null,
     );
     const next = options.find((opt) => opt.kind !== 'multisig' || !opt.disabled);
     if (!next) return [];
@@ -564,8 +636,9 @@ function $nextOptionsForNode(node: PathNode, chainId: ChainId, opts?: GraphOptio
           proxies: proxyModel.$proxies,
           allowed: $ownSignerAccountIds,
           resolveName: $nameResolver,
+          edgeStatus: $proxyEdgeStatus,
         },
-        ({ multisigByAccountId, proxies, allowed, resolveName }) =>
+        ({ multisigByAccountId, proxies, allowed, resolveName, edgeStatus }) =>
           buildNextOptions(
             node,
             multisigByAccountId,
@@ -575,11 +648,17 @@ function $nextOptionsForNode(node: PathNode, chainId: ChainId, opts?: GraphOptio
             allowedProxyTypes,
             disabledProxyReason,
             resolveName,
+            edgeStatus,
           ),
       )
     : combine(
-        { multisigByAccountId: $multisigByAccountId, proxies: proxyModel.$proxies, resolveName: $nameResolver },
-        ({ multisigByAccountId, proxies, resolveName }) =>
+        {
+          multisigByAccountId: $multisigByAccountId,
+          proxies: proxyModel.$proxies,
+          resolveName: $nameResolver,
+          edgeStatus: $proxyEdgeStatus,
+        },
+        ({ multisigByAccountId, proxies, resolveName, edgeStatus }) =>
           buildNextOptions(
             node,
             multisigByAccountId,
@@ -589,6 +668,7 @@ function $nextOptionsForNode(node: PathNode, chainId: ChainId, opts?: GraphOptio
             allowedProxyTypes,
             disabledProxyReason,
             resolveName,
+            edgeStatus,
           ),
       );
   nextOptionsCache.set(key, $store);
