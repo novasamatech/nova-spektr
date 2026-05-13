@@ -73,7 +73,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
   const isErrorModalOpen = step === 'rejected' || step === 'failed';
 
   return (
-    <div className="flex w-[440px] flex-col items-center gap-y-2.5 rounded-b-lg p-4">
+    <div className="flex w-full flex-col items-center gap-y-2.5 rounded-b-lg p-4">
       <SmallTitleText>
         {t('operation.walletConnect.signTitle', {
           count: transactions.length || 1,
