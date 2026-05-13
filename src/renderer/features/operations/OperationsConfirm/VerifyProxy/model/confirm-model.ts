@@ -1,6 +1,7 @@
 import { type ProxyType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
@@ -12,6 +13,7 @@ export type VerifyProxyConfirm = TxConfirmInfo & {
   pureProxyAccountId: AccountId;
   proxyAccountId: AccountId;
   memo?: string;
+  signingPath?: PathNode[];
 };
 
 const confirmStore = createTransactionConfirmStore<VerifyProxyConfirm>({

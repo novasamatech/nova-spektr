@@ -18,6 +18,7 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -43,6 +44,7 @@ type FormSubmitEvent = {
     fee: string;
     multisigDeposit: string;
     proxyDeposit: string;
+    signingPath: PathNode[];
   };
 };
 
@@ -182,13 +184,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: form.fields.initiator.$value,
     chain: form.fields.chain.$value,
     resetOn: formInitiated,
     resetUserOverrideOn: form.fields.initiator.change,
-  });
+  },
+);
 
 const $isChainConnected = combine(
   {
@@ -348,9 +351,13 @@ sample({
     multisigDeposit: $multisigDeposit,
     proxyDeposit: $proxyDeposit,
     coreTx: $coreTx,
+    signingPath: $signingPath,
   },
   filter: ({ transaction, fee }) => nonNullable(transaction) && nonNullable(fee),
-  fn: ({ proxyDeposit, multisigDeposit, transaction, initiator, isProxy, fee, coreTx }, formData: FormParams) => {
+  fn: (
+    { proxyDeposit, multisigDeposit, transaction, initiator, isProxy, fee, coreTx, signingPath },
+    formData: FormParams,
+  ) => {
     return {
       transactions: {
         wrappedTx: transaction!,
@@ -362,6 +369,7 @@ sample({
         initiator,
         proxyDeposit,
         multisigDeposit: multisigDeposit.toString(),
+        signingPath,
         ...(isProxy && { proxiedAccount: formData.initiator as ProxiedAccount }),
       },
     } satisfies FormSubmitEvent;

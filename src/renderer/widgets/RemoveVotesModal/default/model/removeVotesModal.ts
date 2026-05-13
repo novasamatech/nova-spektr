@@ -124,7 +124,7 @@ const $coreTx = combine({ state: flow.state, initiator: $initiator }, ({ state: 
   });
 });
 
-const { recomputeForSigner, $pathRoute } = createSigningPathModel({
+const { recomputeForSigner, $pathRoute, $signingPath } = createSigningPathModel({
   initiator: $initiator,
   chain: networkSelectorModel.$governanceChain,
   resetOn: flow.close,
@@ -235,6 +235,7 @@ sample({
     route: $route,
     tx: $tx,
     coreTx: $coreTx,
+    signingPath: $signingPath,
   },
   filter: ({ tx, initiator, signatory, state: { votes, asset, chain, api } }) => {
     return (
@@ -247,7 +248,15 @@ sample({
       nonNullable(api)
     );
   },
-  fn: ({ tx, coreTx, route, initiator, signatory, state: { votes, asset, chain, api } }): RemoveVoteConfirm => {
+  fn: ({
+    tx,
+    coreTx,
+    route,
+    initiator,
+    signatory,
+    signingPath,
+    state: { votes, asset, chain, api },
+  }): RemoveVoteConfirm => {
     return {
       api: api!,
       asset: asset!,
@@ -258,6 +267,7 @@ sample({
       route,
       tx: tx!,
       coreTx: coreTx!,
+      signingPath,
     };
   },
   target: removeVoteConfirmModel.replaceWithConfirm,

@@ -64,6 +64,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
           proxyNumber: 1,
           fee: '1',
           multisigDeposit: '0',
+          signingPath: [],
         },
       },
     });

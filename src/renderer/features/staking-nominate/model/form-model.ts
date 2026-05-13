@@ -118,13 +118,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: form.fields.initiator.$value,
     chain: $chain,
     resetOn: formInitiated,
     resetUserOverrideOn: form.fields.initiator.change,
-  });
+  },
+);
 
 sample({
   clock: [$signatoryFromPath, $signatories, formInitiated],
@@ -258,6 +259,7 @@ sample({
   source: {
     network: $networkStore,
     route: $route,
+    signingPath: $signingPath,
     fee: $fee.map((fee) => fee?.toString()),
     multisigDeposit: $multisigDeposit,
     selectedSignatory: form.fields.signatory.$value,
@@ -265,7 +267,7 @@ sample({
   filter: ({ network, selectedSignatory, fee }) => {
     return nonNullable(network) && nonNullable(selectedSignatory) && nonNullable(fee);
   },
-  fn: ({ selectedSignatory, network, fee, multisigDeposit, ...rest }, formData) => {
+  fn: ({ selectedSignatory, network, fee, multisigDeposit, signingPath, ...rest }, formData) => {
     const { initiator } = formData;
 
     return {
@@ -276,6 +278,7 @@ sample({
       chain: network!.chain,
       initiator: initiator!,
       signatory: selectedSignatory!,
+      signingPath,
     };
   },
   target: formSubmitted,

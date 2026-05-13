@@ -87,6 +87,7 @@ const formSubmitted = sample({
     route: formModel.$route,
     step: $step,
     multisigDeposit: formModel.$multisigDeposit,
+    signingPath: formModel.$signingPath,
   },
 }).filterMap(
   ({
@@ -102,6 +103,7 @@ const formSubmitted = sample({
     multisigDeposit,
     tx,
     route,
+    signingPath,
   }) => {
     if (
       nonNullable(delegateData) &&
@@ -138,6 +140,7 @@ const formSubmitted = sample({
           initiator,
           route,
           tx,
+          signingPath,
         } satisfies DelegateConfirm,
       ];
     }

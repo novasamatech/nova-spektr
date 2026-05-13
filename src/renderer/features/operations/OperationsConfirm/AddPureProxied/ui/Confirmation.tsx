@@ -4,13 +4,13 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { Fee, FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
+import { SigningPathConfirmSection } from '../../common/SigningPathConfirmSection';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -37,7 +37,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     return null;
   }
 
-  const { chain, signatory, proxyDeposit, fee, multisigDeposit, route } = confirmStore.meta;
+  const { chain, signatory, proxyDeposit, fee, multisigDeposit, route, signingPath } = confirmStore.meta;
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
   const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
@@ -45,14 +45,20 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const nativeAsset = getNativeAsset(chain.assets);
 
   return (
-    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
+    <div className="flex w-full flex-col items-center gap-y-4 px-5 pt-4 pb-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="proxyConfirm" size={60} />
       </div>
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails chain={chain} wallets={wallets} initiators={initiators} signatory={signatory}>
+      <SigningPathConfirmSection
+        signingPath={signingPath}
+        chain={chain}
+        wallets={wallets}
+        initiators={initiators}
+        signatory={signatory}
+      >
         <DetailRow
           className="text-text-primary"
           label={
@@ -76,7 +82,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         {hasMultisigAccount && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit} />}
 
         <FeeWithLabel fee={fee} asset={nativeAsset} />
-      </TransactionDetails>
+      </SigningPathConfirmSection>
 
       <MultisigOperationDescriptionField />
 

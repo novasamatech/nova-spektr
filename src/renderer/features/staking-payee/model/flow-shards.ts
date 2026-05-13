@@ -281,6 +281,7 @@ sample({
           initiator: shard,
           signatory: shard,
           route: [shard],
+          signingPath: [],
           tx: coreTxs[index]!,
           coreTx: coreTxs[index]!,
         } satisfies PayeeConfirm;

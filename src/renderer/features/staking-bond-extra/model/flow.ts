@@ -107,8 +107,9 @@ const formSubmitted = sample({
     coreTx: formModel.$coreTx,
     tx: formModel.$tx,
     route: formModel.$route,
+    signingPath: formModel.$signingPath,
   },
-}).filterMap(({ formParams, walletData, tx, route, coreTx, fee, multisigDeposit }) => {
+}).filterMap(({ formParams, walletData, tx, route, coreTx, fee, multisigDeposit, signingPath }) => {
   if (
     nonNullable(formParams) &&
     nonNullable(walletData) &&
@@ -132,6 +133,7 @@ const formSubmitted = sample({
         tx: tx,
         coreTx: coreTx,
         route,
+        signingPath,
       } satisfies BondExtraConfirm,
     ];
   }
