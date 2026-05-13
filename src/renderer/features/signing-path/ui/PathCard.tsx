@@ -3,7 +3,7 @@ import { type KeyboardEvent, type ReactNode } from 'react';
 
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, toAddress } from '@/shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { CaptionText } from '@/shared/ui';
 import { Address, WalletAccountIcon } from '@/shared/ui-entities';
 import { AssetBalance } from '@/shared/ui-entities/AssetBalance/AssetBalance';
@@ -64,18 +64,18 @@ export const PathCard = ({ view, size = 'md', onClick, position = 0, balance, ha
         slot a two-line card would occupy.
       */}
       <div className="flex min-h-[34px] min-w-0 items-center gap-2">
-        {view.address && (
+        {view.formattedAddress && (
           <WalletAccountIcon
-            address={toAddress(view.address)}
+            address={view.formattedAddress}
             type={view.walletType ?? null}
             size={size === 'md' ? 28 : 22}
             iconSize={12}
           />
         )}
-        {view.address && (
+        {view.formattedAddress && (
           <Address
             showIcon={false}
-            address={toAddress(view.address)}
+            address={view.formattedAddress}
             title={view.displayName ?? undefined}
             variant="truncate"
           />

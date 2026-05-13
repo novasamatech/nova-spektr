@@ -76,6 +76,26 @@ export function createSigningPathModel({ initiator, chain, resetOn, resetUserOve
     target: $signingPath,
   });
 
+  // Re-seed `$signingPath` from the current `$defaultSigningPath` value on
+  // every form reset. Without this, re-opening a form left the path stuck at
+  // `[]`: the seeding sample above only fires when `$defaultSigningPath`
+  // *changes*, but `$defaultPathFor` is store-identity-cached and stably
+  // holds the previously-computed real path across re-opens — so it never
+  // emits on a fresh open. Subscription order matters: registered after
+  // `$signingPath.reset(...resetEvents)`, this sample's write to
+  // `$signingPath` lands after the reset in the same tick, so the path
+  // ends the tick holding the freshly-read default. `$userOverrodePath` is
+  // already cleared in the same tick (see `.reset(...overrideResetEvents)`
+  // above), so unconditionally re-seeding here matches the not-overridden
+  // semantics of the change-driven sample.
+  if (resetEvents.length > 0) {
+    sample({
+      clock: resetEvents,
+      source: $defaultSigningPath,
+      target: $signingPath,
+    });
+  }
+
   const $signatoryFromPath = combine(
     { path: $signingPath, allAccounts: accounts.$list, chainValue: chain },
     ({ path, allAccounts, chainValue }): AnyAccount | null => {

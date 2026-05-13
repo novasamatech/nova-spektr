@@ -1,4 +1,4 @@
-import { cnTw, toAddress } from '@/shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText, HelpText } from '@/shared/ui';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { Popover } from '@/shared/ui-kit';
@@ -39,13 +39,8 @@ export const EllipsisCard = ({ hiddenViews, size = 'sm' }: Props) => {
           <div className="flex flex-col gap-y-2">
             {hiddenViews.map((v, i) => (
               <div key={`${v.label}-${i}`} className="flex items-center gap-2.5">
-                {v.address && (
-                  <WalletAccountIcon
-                    address={toAddress(v.address)}
-                    type={v.walletType ?? null}
-                    size={24}
-                    iconSize={10}
-                  />
+                {v.formattedAddress && (
+                  <WalletAccountIcon address={v.formattedAddress} type={v.walletType ?? null} size={24} iconSize={10} />
                 )}
                 <div className="flex min-w-0 flex-col">
                   <CaptionText className="text-text-tertiary uppercase">{v.label}</CaptionText>

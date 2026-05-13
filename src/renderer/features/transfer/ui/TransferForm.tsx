@@ -24,17 +24,10 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, CaptionText, FootnoteText, Icon, InputHint, Switch } from '@/shared/ui';
-import {
-  AccountSelect,
-  Address,
-  Identicon,
-  SignatorySelect,
-  TransactionValidationError,
-  WalletIcon,
-} from '@/shared/ui-entities';
+import { AccountSelect, Address, Identicon, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
-import { accountService, accounts, useAccountName, useAccountsNames } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { accountService, useAccountName, useAccountsNames } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { transactionService } from '@/entities/transaction';
@@ -42,7 +35,7 @@ import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { InitiateDraftButton } from '@/features/drafts';
-import { SigningPathInline, graphModel } from '@/features/signing-path';
+import { SigningPathSection, graphModel } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { TRANSFER_ALLOWED_PROXY_TYPES, formModel } from '../model/form-model';
@@ -222,46 +215,12 @@ const SignatorySelector = memo(() => {
   } = useForm(formModel.form);
 
   const initiator = useUnit(formModel.form.fields.initiator.$value);
-  const signatories = useUnit(formModel.$signatories);
   const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
-  const balances = useUnit(balanceModel.$balanceMap);
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
   const errors = useUnit(formModel.$errors);
 
-  // AccountIds with active balance/permission errors — surfaced to the path
-  // visualization so the failing hop lights up red (e.g. source can't cover
-  // the sending amount, signer can't cover fee + deposit).
-  const errorAccountIds = useMemo<ReadonlySet<AccountId>>(() => {
-    const ids = new Set<AccountId>();
-    for (const e of errors) {
-      if ('account' in e && e.account?.accountId) {
-        ids.add(e.account.accountId);
-      }
-    }
-    return ids;
-  }, [errors]);
-
-  const signatoriesWithBalance = useMemo(() => {
-    if (!network) {
-      return [];
-    }
-    return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        network.chain.chainId,
-        network.asset.assetId,
-      );
-      return { account: signatory, balance: withdrawableAmount(balance) };
-    });
-  }, [signatories, balances]);
-
-  if (!network) {
-    return null;
-  }
+  if (!network) return null;
 
   if (!initiator) {
     return (
@@ -289,47 +248,17 @@ const SignatorySelector = memo(() => {
     );
   }
 
-  // Once the path traverses a multisig (or proxy → multisig), the inline
-  // cards replace the signatory dropdown — the signer is already pinned by
-  // the path, so the only useful action is editing the path. Trivial paths
-  // (single direct signer) keep the legacy dropdown.
-  if (signingPath.length >= 2) {
-    const getBalance = (accountId: AccountId) => {
-      const balance = balanceUtils.getBalance(balances, accountId, network.chain.chainId, network.asset.assetId);
-      return balance ? withdrawableAmount(balance) : null;
-    };
-
-    return (
-      <SigningPathInline
-        chainId={network.chain.chainId}
-        path={signingPath}
-        asset={network.asset}
-        getBalance={getBalance}
-        errorAccountIds={errorAccountIds}
-        errorText={t(signatory.errorMessage)}
-        allowedProxyTypes={TRANSFER_ALLOWED_PROXY_TYPES}
-        disabledProxyReason={t('signingPath.transferProxyTypeDisabled')}
-        onChange={formModel.signingPathChanged}
-      />
-    );
-  }
-
-  // Trivial path (single direct signer): show the legacy dropdown only when
-  // the user actually has a choice between multiple signatories. Otherwise
-  // SignatorySelect auto-hides via its built-in `signatories.length <= 1`
-  // guard. We deliberately drop the path chip here because there's no
-  // multi-hop path to visualize.
   return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      allWallets={allWallets}
-      initiator={initiator}
-      hasError={signatory.hasError}
+    <SigningPathSection
+      signingPath={signingPath}
+      chain={network.chain}
+      asset={network.asset}
+      txErrors={errors}
       errorText={t(signatory.errorMessage)}
-      network={network}
-      onChange={signatory.onChange}
+      allowedProxyTypes={TRANSFER_ALLOWED_PROXY_TYPES}
+      disabledProxyReason={t('signingPath.transferProxyTypeDisabled')}
+      balanceExtractor={(b) => (b ? withdrawableAmount(b) : null)}
+      onChange={formModel.signingPathChanged}
     />
   );
 });

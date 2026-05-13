@@ -1,19 +1,14 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent, useMemo } from 'react';
+import { type FormEvent } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, getNativeAsset, transferableAmount } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { formatBalance, getNativeAsset } from '@/shared/lib/utils';
 import { Button, InputHint } from '@/shared/ui';
-import { SignatorySelect } from '@/shared/ui-entities';
-import { accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
-import { walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { networkSelectorModel } from '@/features/governance';
-import { SigningPathInline } from '@/features/signing-path';
+import { SigningPathSection } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { unlockFormAggregate } from '../model/unlockForm';
 
@@ -47,64 +42,20 @@ const Signatories = () => {
   const { t } = useI18n();
 
   const {
-    fields: { signatory, initiator },
+    fields: { signatory },
   } = useForm(unlockFormAggregate.form);
 
-  const signatories = useUnit(unlockFormAggregate.$signatories);
   const signingPath = useUnit(unlockFormAggregate.$signingPath);
   const network = useUnit(networkSelectorModel.$network);
-  const balances = useUnit(balanceModel.$balanceMap);
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
-
-  const signatoriesWithBalance = useMemo(() => {
-    if (!network) {
-      return [];
-    }
-    return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        network.chain.chainId,
-        network.asset.assetId,
-      );
-      return { account: signatory, balance: transferableAmount(balance) };
-    });
-  }, [signatories, balances]);
-
-  if (!network) {
-    return null;
-  }
-
-  if (signingPath.length >= 2) {
-    const getBalance = (accountId: AccountId) => {
-      const balance = balanceUtils.getBalance(balances, accountId, network.chain.chainId, network.asset.assetId);
-      return balance ? transferableAmount(balance) : null;
-    };
-
-    return (
-      <SigningPathInline
-        chainId={network.chain.chainId}
-        path={signingPath}
-        asset={network.asset}
-        getBalance={getBalance}
-        errorText={t(signatory.errorMessage)}
-        onChange={unlockFormAggregate.signingPathChanged}
-      />
-    );
-  }
 
   return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      allWallets={allWallets}
-      initiator={initiator.value}
-      hasError={signatory.hasError}
+    <SigningPathSection
+      signingPath={signingPath}
+      chain={network?.chain ?? null}
+      asset={network?.asset ?? null}
+      txErrors={[]}
       errorText={t(signatory.errorMessage)}
-      network={network}
-      onChange={signatory.onChange}
+      onChange={unlockFormAggregate.signingPathChanged}
     />
   );
 };
