@@ -81,7 +81,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
         })}
       </SmallTitleText>
 
-      <div className="relative w-full">
+      <div className="relative flex w-full justify-center">
         {!pairingUri && (
           <video className="h-[240px]" autoPlay loop>
             <source src={wallet_connect_confirm_webm} type="video/webm" />
