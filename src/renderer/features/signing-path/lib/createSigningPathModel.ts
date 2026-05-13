@@ -51,10 +51,19 @@ export function createSigningPathModel({ initiator, chain, resetOn, resetUserOve
   const signingPathChanged = createEvent<PathNode[]>();
   const recomputeForSigner = createEvent<AnyAccount | null>();
 
-  let $signingPath = createStore<PathNode[]>([]).on(signingPathChanged, (_, path) => path);
+  // Empty paths from `signingPathChanged` are treated as no-op: they don't
+  // overwrite the current path and don't mark a user override. This guards
+  // against a race during first-open auto-pick where `recomputeForSigner`
+  // fires before the graph data ($multisigByAccountId / $proxies) has loaded
+  // — its `pickDefaultPath` then returns `[]`, which would otherwise clobber
+  // the freshly-seeded default and lock the path empty by flipping the
+  // override flag.
+  let $signingPath = createStore<PathNode[]>([]).on(signingPathChanged, (current, path) =>
+    path.length > 0 ? path : current,
+  );
   if (resetEvents.length > 0) $signingPath = $signingPath.reset(...resetEvents);
 
-  let $userOverrodePath = createStore(false).on(signingPathChanged, () => true);
+  let $userOverrodePath = createStore(false).on(signingPathChanged, (_, path) => path.length > 0);
   if (overrideResetEvents.length > 0) $userOverrodePath = $userOverrodePath.reset(...overrideResetEvents);
 
   // Release the navigation-keyed cache in `graphModel` so it doesn't
