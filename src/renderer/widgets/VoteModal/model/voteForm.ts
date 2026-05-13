@@ -317,11 +317,12 @@ sample({
     route: $route,
     tx: $tx,
     coreTx: $coreTx,
+    signingPath: $signingPath,
   },
   filter: ({ network, tx, initiator }, { decision }) => {
     return nonNullable(network) && nonNullable(initiator) && nonNullable(decision) && nonNullable(tx);
   },
-  fn: ({ existingVote, network, tx, coreTx, route, initiator }, { signatory }): VoteConfirm => {
+  fn: ({ existingVote, network, tx, coreTx, route, initiator, signingPath }, { signatory }): VoteConfirm => {
     return {
       api: network!.api,
       chain: network!.chain,
@@ -332,6 +333,7 @@ sample({
       existingVote,
       tx: tx!,
       coreTx: coreTx!,
+      signingPath,
     };
   },
   target: voteConfirmModel.replaceWithConfirm,
