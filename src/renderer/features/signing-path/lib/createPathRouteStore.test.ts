@@ -27,6 +27,38 @@ const makeAccount = (accountId: AccountId): AnyAccount => {
   return draft as unknown as AnyAccount;
 };
 
+const makeProxiedAccount = (accountId: AccountId): AnyAccount => {
+  return {
+    id: `acct-${accountId}`,
+    type: 'chain',
+    walletId: 1,
+    name: `proxied-${accountId}`,
+    accountId,
+    accountType: AccountType.PROXIED,
+    chainId: '0xaaaa',
+    cryptoType: CryptoType.SR25519,
+    signingType: SigningType.WATCH_ONLY,
+    connections: [],
+    createdAt: 0,
+  } as unknown as AnyAccount;
+};
+
+const makeMultisigAccount = (accountId: AccountId): AnyAccount => {
+  return {
+    id: `acct-${accountId}`,
+    type: 'universal',
+    walletId: 1,
+    name: `multisig-${accountId}`,
+    accountId,
+    accountType: AccountType.MULTISIG,
+    cryptoType: CryptoType.SR25519,
+    signingType: SigningType.MULTISIG,
+    signatories: [],
+    threshold: 1,
+    createdAt: 0,
+  } as unknown as AnyAccount;
+};
+
 const proxied = (accountId: AccountId): PathNode => ({ kind: 'proxied', accountId });
 const multisig = (accountId: AccountId): PathNode => ({ kind: 'multisig', accountId });
 const signer = (accountId: AccountId): PathNode => ({ kind: 'signer', accountId });
@@ -63,7 +95,7 @@ describe('createPathRouteStore', () => {
     const $route = createPathRouteStore($path, $chain);
 
     const scope = fork({
-      values: new Map<any, any>([[accounts.__test.$list, [makeAccount(acc(1)), makeAccount(acc(2))]]]),
+      values: new Map<any, any>([[accounts.__test.$list, [makeProxiedAccount(acc(1)), makeAccount(acc(2))]]]),
     });
 
     expect(scope.getState($route)).toBeNull();
@@ -75,8 +107,8 @@ describe('createPathRouteStore', () => {
     const $chain = createStore<Chain | null>(CHAIN_A);
     const $route = createPathRouteStore($path, $chain);
 
-    const a1 = makeAccount(acc(1));
-    const a2 = makeAccount(acc(2));
+    const a1 = makeProxiedAccount(acc(1));
+    const a2 = makeMultisigAccount(acc(2));
     const a3 = makeAccount(acc(3));
 
     const scope = fork({
@@ -86,6 +118,48 @@ describe('createPathRouteStore', () => {
     expect(scope.getState($route)).toEqual([a1, a2, a3]);
   });
 
+  it('prefers a Proxied account over a generic same-accountId entry for a proxied node', () => {
+    // Two wallet entries share an accountId — e.g. browser-extension wallet
+    // plus a synced Proxied wallet. The plain-accountId lookup would have
+    // returned whichever came first in `accounts.$list`; the kind-aware lookup
+    // must pick the ProxiedAccount so the proxy.proxy wrap layer actually
+    // fires.
+    const path: PathNode[] = [proxied(acc(1)), multisig(acc(2)), signer(acc(3))];
+    const $path = createStore<PathNode[]>(path);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    const extensionAt1 = makeAccount(acc(1)); // wrong type but same accountId
+    const proxiedAt1 = makeProxiedAccount(acc(1));
+    const multisigAt2 = makeMultisigAccount(acc(2));
+    const signerAt3 = makeAccount(acc(3));
+
+    const scope = fork({
+      // Extension entry intentionally listed FIRST — the old `.find` returned it.
+      values: new Map<any, any>([[accounts.__test.$list, [extensionAt1, proxiedAt1, multisigAt2, signerAt3]]]),
+    });
+
+    expect(scope.getState($route)).toEqual([proxiedAt1, multisigAt2, signerAt3]);
+  });
+
+  it('returns null when a proxied node has no Proxied/Flex account, only a same-accountId generic entry', () => {
+    // No local ProxiedAccount → wrap pipeline can't produce proxy.proxy.
+    // Better to block (and surface the path-unresolved error) than to silently
+    // pick the generic account and drop the proxy layer.
+    const path: PathNode[] = [proxied(acc(1)), multisig(acc(2)), signer(acc(3))];
+    const $path = createStore<PathNode[]>(path);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([
+        [accounts.__test.$list, [makeAccount(acc(1)), makeMultisigAccount(acc(2)), makeAccount(acc(3))]],
+      ]),
+    });
+
+    expect(scope.getState($route)).toBeNull();
+  });
+
   it('returns null when any node is missing from the account list', () => {
     const $path = createStore<PathNode[]>([proxied(acc(1)), signer(acc(2))]);
     const $chain = createStore<Chain | null>(CHAIN_A);
@@ -93,7 +167,7 @@ describe('createPathRouteStore', () => {
 
     const scope = fork({
       // acc(2) intentionally absent
-      values: new Map<any, any>([[accounts.__test.$list, [makeAccount(acc(1))]]]),
+      values: new Map<any, any>([[accounts.__test.$list, [makeProxiedAccount(acc(1))]]]),
     });
 
     expect(scope.getState($route)).toBeNull();
@@ -112,7 +186,7 @@ describe('createPathRouteStore', () => {
     const $route = createPathRouteStore($path, $chain);
 
     const scope = fork({
-      values: new Map<any, any>([[accounts.__test.$list, [makeAccount(acc(1)), makeAccount(acc(2))]]]),
+      values: new Map<any, any>([[accounts.__test.$list, [makeProxiedAccount(acc(1)), makeAccount(acc(2))]]]),
     });
 
     expect(scope.getState($route)).toBeNull();
