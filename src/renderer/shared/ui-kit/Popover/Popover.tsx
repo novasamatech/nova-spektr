@@ -1,5 +1,5 @@
 import * as RadixPopover from '@radix-ui/react-popover';
-import { type PropsWithChildren, createContext, useContext, useMemo, useRef, useState } from 'react';
+import { type PropsWithChildren, createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 
 import { type XOR } from '@/shared/core';
 import { useTheme } from '../Theme/useTheme';
@@ -48,35 +48,32 @@ const Root = ({
   const [hoverOpen, setHoverOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const openHover = useMemo(
-    () =>
-      enableHover
-        ? () => {
-            if (closeTimer.current !== null) {
-              clearTimeout(closeTimer.current);
-              closeTimer.current = null;
-            }
-            setHoverOpen(true);
-          }
-        : undefined,
-    [enableHover],
-  );
+  const openHover = useCallback(() => {
+    if (closeTimer.current !== null) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+    setHoverOpen(true);
+  }, []);
 
-  const closeHover = useMemo(
-    () =>
-      enableHover
-        ? () => {
-            closeTimer.current = setTimeout(() => {
-              setHoverOpen(false);
-              closeTimer.current = null;
-            }, HOVER_CLOSE_DELAY);
-          }
-        : undefined,
-    [enableHover],
-  );
+  const closeHover = useCallback(() => {
+    closeTimer.current = setTimeout(() => {
+      setHoverOpen(false);
+      closeTimer.current = null;
+    }, HOVER_CLOSE_DELAY);
+  }, []);
 
   const ctx = useMemo(
-    () => ({ side, sideOffset, align, alignOffset, testId, enableHover, openHover, closeHover }),
+    () => ({
+      side,
+      sideOffset,
+      align,
+      alignOffset,
+      testId,
+      enableHover,
+      openHover: enableHover ? openHover : undefined,
+      closeHover: enableHover ? closeHover : undefined,
+    }),
     [side, sideOffset, align, alignOffset, testId, enableHover, openHover, closeHover],
   );
 
