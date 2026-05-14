@@ -152,7 +152,7 @@ export const DraftsSection = () => {
   );
 
   const handleSubmitDraft = (draft: Draft) => {
-    if (!draft.callData || !draft.multisigAccountId) return;
+    if (!draft.multisigAccountId) return;
 
     const chain = chains[draft.chainId as ChainId];
     if (!chain) return;
