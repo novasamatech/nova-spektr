@@ -18,7 +18,14 @@ import {
 } from '@/shared/transactions';
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
-import { type Draft, type PathNode, operationDescriptionsResource, operationsService } from '@/domains/backend';
+import {
+  type Draft,
+  type PathNode,
+  draftsResource,
+  draftsService,
+  operationDescriptionsResource,
+  operationsService,
+} from '@/domains/backend';
 import {
   type AnyAccount,
   type AnyTransaction,
@@ -35,11 +42,13 @@ import { multisigOperationDescription } from '@/aggregates/multisig-operation-de
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { createPathRouteStore } from '@/features/signing-path';
+import { tryDecodeCallData } from '../lib/decode-call-data';
 
 import './drafts-model'; // side-effect: orchestration wiring
 
 enum Step {
   NONE,
+  CALL_DATA,
   CONFIRM,
   SIGN,
   SUBMIT,
@@ -89,6 +98,63 @@ const $transaction = $draft.map((draft): EncodedTransaction | null => {
     type: 'encoded',
     callData: draft.callData as CallData,
   };
+});
+
+// --- Late call-data entry (drafts created with the call-data step skipped) ---
+
+const callDataChanged = createEvent<string>();
+const callDataConfirmRequested = createEvent();
+const $pendingCallData = createStore('').reset(flowFinished);
+$pendingCallData.on(callDataChanged, (_, value) => value);
+
+const $pendingCallDataDecoded = combine(
+  { callData: $pendingCallData, api: $api, chain: $chain },
+  ({ callData, api, chain }) => tryDecodeCallData(callData, api, chain),
+);
+
+// "Have we typed something that doesn't decode?" — used to surface an error.
+// Empty input is not an error, just a not-yet-confirmable state.
+const $pendingCallDataError = combine(
+  $pendingCallData,
+  $pendingCallDataDecoded,
+  (callData, decoded) => callData.length > 0 && !decoded,
+);
+
+const $canConfirmCallData = $pendingCallDataDecoded.map(nonNullable);
+
+const submitCallDataFx = createEffect(({ id, callData, baseUrl }: { id: string; callData: string; baseUrl: string }) =>
+  draftsService.updateDraft(baseUrl, id, { callData }),
+);
+
+sample({
+  clock: callDataConfirmRequested,
+  source: {
+    draft: $draft,
+    baseUrl: backendConfigurationModel.$backendUrl,
+    callData: $pendingCallData,
+    canConfirm: $canConfirmCallData,
+  },
+  filter: ({ draft, baseUrl, canConfirm }) => nonNullable(draft) && nonNullable(baseUrl) && canConfirm,
+  fn: ({ draft, baseUrl, callData }) => ({ id: draft!.id, callData, baseUrl: baseUrl! }),
+  target: submitCallDataFx,
+});
+
+// Replace $draft with the server-confirmed version so $transaction picks up
+// the new callData and the rest of the flow proceeds as if it were never
+// missing.
+sample({
+  clock: submitCallDataFx.doneData,
+  target: [$draft, draftsResource.draftUpdated],
+});
+
+const showCallDataSubmitErrorFx = createEffect((message: string) => {
+  toast.error(t('operations.drafts.editError'), { description: message });
+});
+
+sample({
+  clock: submitCallDataFx.fail,
+  fn: ({ error }) => (error instanceof Error ? error.message : t('operations.drafts.editError')),
+  target: showCallDataSubmitErrorFx,
 });
 
 const $bfsRoute = createRouteStore({
@@ -324,6 +390,12 @@ sample({
 
 sample({
   clock: flowStarted,
+  fn: ({ draft }) => (draft.callData ? Step.CONFIRM : Step.CALL_DATA),
+  target: stepChanged,
+});
+
+sample({
+  clock: submitCallDataFx.doneData,
   fn: () => Step.CONFIRM,
   target: stepChanged,
 });
@@ -625,10 +697,17 @@ export const submitDraftModel = {
   $validationValid,
   $validationPending,
   $validationDone,
+  $pendingCallData,
+  $pendingCallDataDecoded,
+  $pendingCallDataError,
+  $canConfirmCallData,
+  $savingCallData: submitCallDataFx.pending,
 
   flowStarted,
   flowFinished,
   signatoryChanged: $signatory,
+  callDataChanged,
+  callDataConfirmRequested,
 
   confirmModel,
 

@@ -12,12 +12,15 @@ import {
   DetailRow,
   FootnoteText,
   Icon,
+  InputHint,
   LargeTitleText,
   Loader,
   Separator,
+  SmallTitleText,
 } from '@/shared/ui';
 import { Account, Address, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
-import { Box, Field, Modal, Select } from '@/shared/ui-kit';
+import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
+import { Json } from '@/shared/ui-kit/Json/Json';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { transactionService, useAccountName } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
@@ -66,10 +69,56 @@ export const SubmitDraftModal = ({ onClose }: Props) => {
     <Modal isOpen={isModalOpen} size="md" height="fit" onToggle={(open) => !open && closeModal()}>
       <Modal.Title close>{t('operations.drafts.submitTitle')}</Modal.Title>
       <Modal.Content>
+        {step === submitDraftModel.Step.CALL_DATA && <CallDataStep />}
         {step === submitDraftModel.Step.CONFIRM && <ConfirmStep />}
         {step === submitDraftModel.Step.SIGN && <OperationSign onGoBack={() => submitDraftModel.flowFinished()} />}
       </Modal.Content>
     </Modal>
+  );
+};
+
+const CallDataStep = () => {
+  const { t } = useI18n();
+
+  const callData = useUnit(submitDraftModel.$pendingCallData);
+  const decoded = useUnit(submitDraftModel.$pendingCallDataDecoded);
+  const hasError = useUnit(submitDraftModel.$pendingCallDataError);
+  const canConfirm = useUnit(submitDraftModel.$canConfirmCallData);
+  const saving = useUnit(submitDraftModel.$savingCallData);
+
+  return (
+    <>
+      <div className="flex flex-col gap-4 px-5 pt-4 pb-5">
+        <Field text={t('operations.drafts.callDataLabel')}>
+          <Input
+            height="md"
+            placeholder={t('operations.drafts.callDataPlaceholder')}
+            value={callData}
+            invalid={hasError}
+            onChange={submitDraftModel.callDataChanged}
+          />
+          <InputHint variant="error" active={hasError}>
+            {t('operations.drafts.extrinsicError')}
+          </InputHint>
+        </Field>
+
+        {decoded && (
+          <div className="flex flex-col gap-y-2">
+            <SmallTitleText>{t('operation.callData.preview')}</SmallTitleText>
+            <div className="max-h-[300px] overflow-auto rounded-md border border-filter-border bg-block-background p-4 break-all">
+              <Json value={decoded} name="call" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <Modal.Footer align="between">
+        <div />
+        <Button disabled={!canConfirm} isLoading={saving} onClick={() => submitDraftModel.callDataConfirmRequested()}>
+          {t('operations.callData.continueButton')}
+        </Button>
+      </Modal.Footer>
+    </>
   );
 };
 
