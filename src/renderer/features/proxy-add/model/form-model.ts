@@ -250,13 +250,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: form.fields.initiator.$value,
     chain: form.fields.chain.$value,
     resetOn: formInitiated,
     resetUserOverrideOn: form.fields.initiator.change,
-  });
+  },
+);
 
 const $availableAccounts = createInitiatorsStore({
   chain: form.fields.chain.$value,
@@ -355,11 +356,11 @@ const $coreTx = combine(
     isConnected: $isChainConnected,
   },
   ({ form, signatory, isConnected }): Transaction | null => {
-    if (!isConnected || !signatory || !form.delegate || !form.proxyType || !form.chain) return null;
+    if (!isConnected || !signatory || !form.initiator || !form.delegate || !form.proxyType || !form.chain) return null;
 
     return transactionBuilder.buildAddProxy({
       chain: form.chain,
-      accountId: signatory.accountId,
+      accountId: form.initiator.accountId,
       delegateAccountId: toAccountId(form.delegate),
       type: form.proxyType,
     });

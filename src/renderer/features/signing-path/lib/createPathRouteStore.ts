@@ -40,7 +40,14 @@ export const createPathRouteStore = (
 
       const resolved: AnyAccount[] = [];
       for (const node of path) {
-        const account = chainAccounts.find((a) => matchesNode(a, node));
+        // For proxied nodes prefer a concrete ProxiedAccount over a flex-multisig
+        // facade sharing the same accountId — otherwise the wrong forceProxyType
+        // ends up in the extrinsic when both exist in the wallet (SPEK-558).
+        const account =
+          node.kind === 'proxied'
+            ? (chainAccounts.find((a) => accountUtils.isProxiedAccount(a) && a.accountId === node.accountId) ??
+              chainAccounts.find((a) => matchesNode(a, node)))
+            : chainAccounts.find((a) => matchesNode(a, node));
         if (!account) return null;
         // Flex multisig spans two consecutive hops as one account; its
         // transformer wraps both layers in a single step.
