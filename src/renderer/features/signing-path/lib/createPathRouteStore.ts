@@ -2,15 +2,25 @@ import { type Store, combine } from 'effector';
 
 import { type Chain } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
-// Flex multisig is one account that answers to two accountIds: `accountId`
-// is the proxy facade, `multisigAccountId` is the inner multisig.
-const ownsAccountId = (account: AnyAccount, id: AccountId): boolean =>
-  account.accountId === id || (accountUtils.isFlexibleMultisigAccount(account) && account.multisigAccountId === id);
+const matchesNode = (account: AnyAccount, node: PathNode): boolean => {
+  if (node.kind === 'proxied') {
+    return (
+      (accountUtils.isProxiedAccount(account) && account.accountId === node.accountId) ||
+      (accountUtils.isFlexibleMultisigAccount(account) && account.accountId === node.accountId)
+    );
+  }
+  if (node.kind === 'multisig') {
+    return (
+      (accountUtils.isMultisigAccount(account) && account.accountId === node.accountId) ||
+      (accountUtils.isFlexibleMultisigAccount(account) && account.multisigAccountId === node.accountId)
+    );
+  }
+  return account.accountId === node.accountId;
+};
 
 /**
  * Resolves `$signingPath` to `AnyAccount[]` for `createComplexTxStore`'s
@@ -30,7 +40,14 @@ export const createPathRouteStore = (
 
       const resolved: AnyAccount[] = [];
       for (const node of path) {
-        const account = chainAccounts.find((a) => ownsAccountId(a, node.accountId));
+        // For proxied nodes prefer a concrete ProxiedAccount over a flex-multisig
+        // facade sharing the same accountId — otherwise the wrong forceProxyType
+        // ends up in the extrinsic when both exist in the wallet (SPEK-558).
+        const account =
+          node.kind === 'proxied'
+            ? (chainAccounts.find((a) => accountUtils.isProxiedAccount(a) && a.accountId === node.accountId) ??
+              chainAccounts.find((a) => matchesNode(a, node)))
+            : chainAccounts.find((a) => matchesNode(a, node));
         if (!account) return null;
         // Flex multisig spans two consecutive hops as one account; its
         // transformer wraps both layers in a single step.

@@ -358,11 +358,11 @@ const $coreTx = combine(
     isConnected: $isChainConnected,
   },
   ({ form, signatory, isConnected }): Transaction | null => {
-    if (!isConnected || !signatory || !form.delegate || !form.proxyType || !form.chain) return null;
+    if (!isConnected || !signatory || !form.initiator || !form.delegate || !form.proxyType || !form.chain) return null;
 
     return transactionBuilder.buildAddProxy({
       chain: form.chain,
-      accountId: signatory.accountId,
+      accountId: form.initiator.accountId,
       delegateAccountId: toAccountId(form.delegate),
       type: form.proxyType,
     });

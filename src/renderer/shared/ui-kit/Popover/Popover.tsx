@@ -1,20 +1,9 @@
 import * as RadixPopover from '@radix-ui/react-popover';
-import {
-  type PropsWithChildren,
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { type PropsWithChildren, createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 
 import { type XOR } from '@/shared/core';
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
-
-const HOVER_CLOSE_DELAY_MS = 120;
 
 type ContextProps = {
   side?: 'top' | 'right' | 'bottom' | 'left';
@@ -23,7 +12,8 @@ type ContextProps = {
   alignOffset?: number;
   testId?: string;
   enableHover?: boolean;
-  scheduleHoverOpen?: (open: boolean) => void;
+  openHover?: () => void;
+  closeHover?: () => void;
 };
 
 const Context = createContext<ContextProps>({});
@@ -41,6 +31,8 @@ type RootProps = PropsWithChildren<
     }
 >;
 
+const HOVER_CLOSE_DELAY = 100;
+
 const Root = ({
   dialog,
   open,
@@ -54,33 +46,22 @@ const Root = ({
   children,
 }: RootProps) => {
   const [hoverOpen, setHoverOpen] = useState(false);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Debounce hover-close so the mouse can traverse the gap between trigger
-  // and content (sideOffset). Without the delay, leaving the trigger fires
-  // `setHoverOpen(false)` before the content's `mouseEnter` lands → popover
-  // closes mid-traversal.
-  const scheduleHoverOpen = useCallback((next: boolean) => {
-    if (closeTimerRef.current !== null) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
+  const openHover = useCallback(() => {
+    if (closeTimer.current !== null) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
     }
-    if (next) {
-      setHoverOpen(true);
-    } else {
-      closeTimerRef.current = setTimeout(() => {
-        setHoverOpen(false);
-        closeTimerRef.current = null;
-      }, HOVER_CLOSE_DELAY_MS);
-    }
+    setHoverOpen(true);
   }, []);
 
-  useEffect(
-    () => () => {
-      if (closeTimerRef.current !== null) clearTimeout(closeTimerRef.current);
-    },
-    [],
-  );
+  const closeHover = useCallback(() => {
+    closeTimer.current = setTimeout(() => {
+      setHoverOpen(false);
+      closeTimer.current = null;
+    }, HOVER_CLOSE_DELAY);
+  }, []);
 
   const ctx = useMemo(
     () => ({
@@ -90,9 +71,10 @@ const Root = ({
       alignOffset,
       testId,
       enableHover,
-      scheduleHoverOpen: enableHover ? scheduleHoverOpen : undefined,
+      openHover: enableHover ? openHover : undefined,
+      closeHover: enableHover ? closeHover : undefined,
     }),
-    [side, sideOffset, align, alignOffset, testId, enableHover, scheduleHoverOpen],
+    [side, sideOffset, align, alignOffset, testId, enableHover, openHover, closeHover],
   );
 
   return (
@@ -109,13 +91,13 @@ const Root = ({
 };
 
 const Trigger = ({ children }: PropsWithChildren) => {
-  const { enableHover, scheduleHoverOpen } = useContext(Context);
+  const { enableHover, openHover, closeHover } = useContext(Context);
 
   return (
     <RadixPopover.Trigger
       asChild
-      onMouseEnter={enableHover && scheduleHoverOpen ? () => scheduleHoverOpen(true) : undefined}
-      onMouseLeave={enableHover && scheduleHoverOpen ? () => scheduleHoverOpen(false) : undefined}
+      onMouseEnter={enableHover && openHover ? openHover : undefined}
+      onMouseLeave={enableHover && closeHover ? closeHover : undefined}
     >
       {children}
     </RadixPopover.Trigger>
@@ -128,7 +110,7 @@ const Anchor = ({ children }: PropsWithChildren) => {
 
 const Content = ({ children }: PropsWithChildren) => {
   const { portalContainer } = useTheme();
-  const { align, alignOffset, side, sideOffset, testId, enableHover, scheduleHoverOpen } = useContext(Context);
+  const { align, alignOffset, side, sideOffset, testId, enableHover, openHover, closeHover } = useContext(Context);
 
   return (
     <RadixPopover.Portal container={portalContainer}>
@@ -142,8 +124,8 @@ const Content = ({ children }: PropsWithChildren) => {
         sideOffset={sideOffset && gridSpaceConverter(sideOffset)}
         data-testid={testId}
         onClick={e => e.stopPropagation()}
-        onMouseEnter={enableHover && scheduleHoverOpen ? () => scheduleHoverOpen(true) : undefined}
-        onMouseLeave={enableHover && scheduleHoverOpen ? () => scheduleHoverOpen(false) : undefined}
+        onMouseEnter={enableHover && openHover ? openHover : undefined}
+        onMouseLeave={enableHover && closeHover ? closeHover : undefined}
       >
         <div className="pointer-events-auto z-50 h-fit max-h-(--radix-popper-available-height) min-h-0 origin-(--radix-popper-transform-origin) overflow-hidden rounded-md border border-token-container-border bg-block-background-default text-body shadow-shadow-2 duration-100 animate-in fade-in zoom-in-95">
           {children}
