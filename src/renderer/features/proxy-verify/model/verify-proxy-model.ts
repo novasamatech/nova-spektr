@@ -187,12 +187,13 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: $initiatorStore,
     chain: $chainStore,
     resetOn: flowStarted,
-  });
+  },
+);
 
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
@@ -338,41 +339,45 @@ const confirmEvent = sample({
     verifyStore: $verifyStore,
     route: $route,
     memo: form.fields.memo.$value,
+    signingPath: $signingPath,
   },
   fn: (source, clock) => {
     return { ...source, ...clock };
   },
-}).filterMap(({ tx, coreTx, chain, initiator, fee, multisigDeposit, verifyStore, route, signatory, memo }) => {
-  if (
-    nonNullable(tx) &&
-    nonNullable(chain) &&
-    nonNullable(initiator) &&
-    nonNullable(verifyStore) &&
-    nonNullable(signatory) &&
-    nonNullable(fee) &&
-    nonNullable(coreTx)
-  ) {
-    return [
-      {
-        id: 0,
-        initiator,
-        signatory,
-        route,
-        chain,
-        tx,
-        coreTx,
-        fee: fee.toString(),
-        multisigDeposit: multisigDeposit.toString(),
-        proxyType: verifyStore.proxy.proxyType,
-        pureProxyAccountId: verifyStore.proxy.pureProxyAccountId,
-        proxyAccountId: verifyStore.proxy.proxyAccountId,
-        memo: memo || undefined,
-      } satisfies VerifyProxyConfirm,
-    ];
-  }
+}).filterMap(
+  ({ tx, coreTx, chain, initiator, fee, multisigDeposit, verifyStore, route, signatory, memo, signingPath }) => {
+    if (
+      nonNullable(tx) &&
+      nonNullable(chain) &&
+      nonNullable(initiator) &&
+      nonNullable(verifyStore) &&
+      nonNullable(signatory) &&
+      nonNullable(fee) &&
+      nonNullable(coreTx)
+    ) {
+      return [
+        {
+          id: 0,
+          initiator,
+          signatory,
+          route,
+          chain,
+          tx,
+          coreTx,
+          fee: fee.toString(),
+          multisigDeposit: multisigDeposit.toString(),
+          proxyType: verifyStore.proxy.proxyType,
+          pureProxyAccountId: verifyStore.proxy.pureProxyAccountId,
+          proxyAccountId: verifyStore.proxy.proxyAccountId,
+          memo: memo || undefined,
+          signingPath,
+        } satisfies VerifyProxyConfirm,
+      ];
+    }
 
-  return null;
-});
+    return null;
+  },
+);
 
 sample({
   clock: confirmEvent,

@@ -23,10 +23,19 @@ type Props = {
   path: PathNode[];
   asset: Asset;
   /**
-   * Caller-supplied balance lookup. Returning `null` skips the balance line for
-   * that hop, which is appropriate when the account isn't tracked.
+   * Asset used for fees / multisig deposit (typically the chain's native
+   * token). When set and different from `asset`, the source hop shows `asset`
+   * balance while the remaining hops show `feeAsset` balance.
    */
-  getBalance: (accountId: AccountId) => BN | string | null;
+  feeAsset?: Asset;
+  /**
+   * Caller-supplied balance lookup. Returning `null` skips the balance line for
+   * that hop, which is appropriate when the account isn't tracked. The
+   * `isFeeHop` flag is true for non-source nodes when `feeAsset` is set and
+   * differs from `asset` — the caller can use it to fetch the fee-asset balance
+   * instead of the operation-asset balance.
+   */
+  getBalance: (accountId: AccountId, isFeeHop: boolean) => BN | string | null;
   /**
    * AccountIds with active validation errors — any matching node is rendered
    * with a red border (inline cards) and red tint (popover rows) so the user
@@ -45,6 +54,7 @@ export const SigningPathInline = ({
   chainId,
   path,
   asset,
+  feeAsset,
   getBalance,
   errorAccountIds,
   errorText,
@@ -127,6 +137,7 @@ export const SigningPathInline = ({
                 views={enrichedViews}
                 getBalance={getBalance}
                 asset={asset}
+                feeAsset={feeAsset}
                 errorAccountIds={errorAccountIds}
               />
             </Popover.Content>
@@ -162,8 +173,8 @@ export const SigningPathInline = ({
         editableInitiator={editableInitiator}
         allowedProxyTypes={allowedProxyTypes}
         disabledProxyReason={disabledProxyReason}
-        getOptionBalance={(option) => getBalance(option.accountId)}
-        optionAsset={asset}
+        getOptionBalance={(option) => getBalance(option.accountId, true)}
+        optionAsset={feeAsset ?? asset}
         onSave={handleSave}
         onClose={closeModal}
       />

@@ -10,6 +10,7 @@ import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { InitiateDraftButton } from '@/features/drafts';
+import { SigningPathSection } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form';
@@ -45,6 +46,7 @@ export const MultiTransferForm = memo(({ formId }: Props) => {
           <Box padding={[4, 5]} gap={4}>
             <TransactionValidationError errors={txErrors} wallets={wallets} />
             <NetworkSelect />
+            <Signatories />
             <UploadCSV />
             <TotalAmountSection />
             <FeeSection />
@@ -68,6 +70,29 @@ export const MultiTransferForm = memo(({ formId }: Props) => {
     </>
   );
 });
+
+const Signatories = () => {
+  const { t } = useI18n();
+  const {
+    fields: { signatory },
+  } = useForm(formModel.form);
+
+  const signingPath = useUnit(formModel.$signingPath);
+  const chain = useUnit(formModel.$chain);
+  const asset = useUnit(formModel.$asset);
+  const txErrors = useUnit(formModel.$txErrors);
+
+  return (
+    <SigningPathSection
+      signingPath={signingPath}
+      chain={chain}
+      asset={asset}
+      txErrors={txErrors}
+      errorText={t(signatory.errorMessage)}
+      onChange={formModel.signingPathChanged}
+    />
+  );
+};
 
 const TotalAmountSection = memo(() => {
   const { t } = useI18n();

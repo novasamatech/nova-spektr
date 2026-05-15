@@ -51,10 +51,19 @@ export function createSigningPathModel({ initiator, chain, resetOn, resetUserOve
   const signingPathChanged = createEvent<PathNode[]>();
   const recomputeForSigner = createEvent<AnyAccount | null>();
 
-  let $signingPath = createStore<PathNode[]>([]).on(signingPathChanged, (_, path) => path);
+  // Empty paths from `signingPathChanged` are treated as no-op: they don't
+  // overwrite the current path and don't mark a user override. This guards
+  // against a race during first-open auto-pick where `recomputeForSigner`
+  // fires before the graph data ($multisigByAccountId / $proxies) has loaded
+  // — its `pickDefaultPath` then returns `[]`, which would otherwise clobber
+  // the freshly-seeded default and lock the path empty by flipping the
+  // override flag.
+  let $signingPath = createStore<PathNode[]>([]).on(signingPathChanged, (current, path) =>
+    path.length > 0 ? path : current,
+  );
   if (resetEvents.length > 0) $signingPath = $signingPath.reset(...resetEvents);
 
-  let $userOverrodePath = createStore(false).on(signingPathChanged, () => true);
+  let $userOverrodePath = createStore(false).on(signingPathChanged, (_, path) => path.length > 0);
   if (overrideResetEvents.length > 0) $userOverrodePath = $userOverrodePath.reset(...overrideResetEvents);
 
   // Release the navigation-keyed cache in `graphModel` so it doesn't
@@ -75,6 +84,26 @@ export function createSigningPathModel({ initiator, chain, resetOn, resetUserOve
     fn: (_, defaultPath) => defaultPath,
     target: $signingPath,
   });
+
+  // Re-seed `$signingPath` from the current `$defaultSigningPath` value on
+  // every form reset. Without this, re-opening a form left the path stuck at
+  // `[]`: the seeding sample above only fires when `$defaultSigningPath`
+  // *changes*, but `$defaultPathFor` is store-identity-cached and stably
+  // holds the previously-computed real path across re-opens — so it never
+  // emits on a fresh open. Subscription order matters: registered after
+  // `$signingPath.reset(...resetEvents)`, this sample's write to
+  // `$signingPath` lands after the reset in the same tick, so the path
+  // ends the tick holding the freshly-read default. `$userOverrodePath` is
+  // already cleared in the same tick (see `.reset(...overrideResetEvents)`
+  // above), so unconditionally re-seeding here matches the not-overridden
+  // semantics of the change-driven sample.
+  if (resetEvents.length > 0) {
+    sample({
+      clock: resetEvents,
+      source: $defaultSigningPath,
+      target: $signingPath,
+    });
+  }
 
   const $signatoryFromPath = combine(
     { path: $signingPath, allAccounts: accounts.$list, chainValue: chain },

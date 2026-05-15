@@ -4,12 +4,7 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { combineEvents, spread } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
-import {
-  type MultisigTxWrapper,
-  type ProxyTxWrapper,
-  type Transaction,
-  WrapperKind,
-} from '@/shared/core';
+import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, WrapperKind } from '@/shared/core';
 import {
   Step,
   formatAmount,
@@ -128,7 +123,6 @@ const $transactions = combine(
 );
 
 // Transaction & Form
-
 
 sample({
   clock: formModel.output.formChanged,
@@ -345,6 +339,7 @@ sample({
             wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
           ),
           tx: coreTx,
+          signingPath: [],
         } satisfies DelegateConfirm;
       }),
       step: Step.CONFIRM,

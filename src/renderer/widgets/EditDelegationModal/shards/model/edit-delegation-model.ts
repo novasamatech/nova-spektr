@@ -136,7 +136,6 @@ const $transactions = combine(
 
 // Transaction & Form
 
-
 sample({
   clock: formModel.output.formChanged,
   fn: (formParams) => {
@@ -388,6 +387,7 @@ sample({
           route: [shard],
           tx: transaction.wrappedTx,
           initiator: shard,
+          signingPath: [],
         } satisfies EditDelegationConfirm;
       })
       .filter(nonNullable);

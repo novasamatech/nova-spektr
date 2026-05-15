@@ -8,6 +8,7 @@ import { cnTw, performSearch, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { Select } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
 import { type PathNextOption, type PathSource, graphModel } from '../model/graph-model';
 import { pathModel } from '../model/path-model';
 
@@ -55,6 +56,8 @@ export const StepPath = ({
   const path = useUnit(pathModel.$path);
   const isComplete = useUnit(pathModel.$isComplete);
   const lastNode = useUnit(pathModel.$lastNode);
+  const chains = useUnit(networkModel.$chains);
+  const addressPrefix = chains[chainId]?.addressPrefix;
 
   const [sourceQuery, setSourceQuery] = useState('');
 
@@ -65,7 +68,10 @@ export const StepPath = ({
   const internalSources = useUnit(sourcesStore);
   const sources = externalSources ?? internalSources;
 
-  const searchableSources = useMemo(() => sources.map((s) => ({ ...s, address: toAddress(s.accountId) })), [sources]);
+  const searchableSources = useMemo(
+    () => sources.map((s) => ({ ...s, address: toAddress(s.accountId, { prefix: addressPrefix }) })),
+    [sources, addressPrefix],
+  );
   const filteredSources = useMemo(
     () =>
       performSearch({
@@ -198,6 +204,7 @@ export const StepPath = ({
                       key={`${opt.kind}-${opt.accountId}-${opt.kind === 'multisig' ? (opt.proxyType ?? '') : ''}-${idx}`}
                       option={opt}
                       selected={false}
+                      addressPrefix={addressPrefix}
                       balance={optionBalance && optionAsset ? { value: optionBalance, asset: optionAsset } : undefined}
                       onClick={() => {
                         if (opt.proxyType && lastNode?.kind === 'proxied') {

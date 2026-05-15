@@ -161,8 +161,9 @@ const validatorsFormSubmitted = sample({
     tx: formModel.$tx,
     route: formModel.$route,
     multisigDeposit: $multisigDeposit,
+    signingPath: formModel.$signingPath,
   },
-}).filterMap(({ bondData, fee, walletData, coreTx, multisigDeposit, tx, route }) => {
+}).filterMap(({ bondData, fee, walletData, coreTx, multisigDeposit, tx, route, signingPath }) => {
   if (
     nonNullable(bondData) &&
     nonNullable(fee) &&
@@ -183,6 +184,7 @@ const validatorsFormSubmitted = sample({
         coreTx,
         tx,
         route,
+        signingPath,
       } satisfies BondNominateConfirm,
     ];
   }

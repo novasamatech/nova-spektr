@@ -29,6 +29,7 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -69,6 +70,7 @@ type FormSubmitEvent = {
     multisigDeposit: string;
     proxyDeposit: string;
     proxyNumber: number;
+    signingPath: PathNode[];
   };
 };
 const flowStarted = createEvent<Wallet>();
@@ -524,8 +526,12 @@ const submitCompleted = sample({
     multisigDeposit: $multisigDeposit,
     proxyDeposit: $newProxyDeposit,
     proxies: $activeProxies,
+    signingPath: $signingPath,
   },
-  fn: ({ proxyDeposit, multisigDeposit, proxies, transaction, coreTx, fee }, formData): FormSubmitEvent | null => {
+  fn: (
+    { proxyDeposit, multisigDeposit, proxies, transaction, coreTx, fee, signingPath },
+    formData,
+  ): FormSubmitEvent | null => {
     const delegate = formData.delegate;
 
     if (!validateAddress(delegate)) return null;
@@ -548,6 +554,7 @@ const submitCompleted = sample({
         proxyDeposit,
         multisigDeposit: multisigDeposit.toString(),
         proxyNumber: proxies.length,
+        signingPath,
       },
     };
   },

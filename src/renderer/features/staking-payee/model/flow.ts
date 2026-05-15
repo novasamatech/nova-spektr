@@ -86,10 +86,11 @@ const formSubmitted = sample({
     walletData: $walletData,
     coreTx: formModel.$coreTx,
     route: formModel.$route,
+    signingPath: formModel.$signingPath,
     tx: formModel.$tx,
     fee: formModel.$fee,
   },
-}).filterMap(({ payeeData, multisigDeposit, walletData, coreTx, route, tx, fee }) => {
+}).filterMap(({ payeeData, multisigDeposit, walletData, coreTx, route, signingPath, tx, fee }) => {
   if (
     nonNullable(payeeData.initiator) &&
     nonNullable(payeeData.signatory) &&
@@ -107,6 +108,7 @@ const formSubmitted = sample({
         signatory: payeeData.signatory,
         initiator: payeeData.initiator,
         route: route,
+        signingPath,
         fee: fee.toString(),
         totalFee: fee.toString(),
         coreTx: coreTx,

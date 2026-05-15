@@ -2,7 +2,7 @@ import { type BN } from '@polkadot/util';
 
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, toAddress } from '@/shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, FootnoteText, HelpText } from '@/shared/ui';
 import { AssetBalance, WalletAccountIcon } from '@/shared/ui-entities';
@@ -17,9 +17,21 @@ type Props = {
    * Balance lookup is optional — supplied by SigningPathInline so the popover
    * surfaces per-hop balances. PathReviewPopover renders structure-only views
    * and omits it.
+   *
+   * `isFeeHop` is true for hops that pay fees / deposits (every node except the
+   * source, when `feeAsset` differs from `asset`). Lookup callers can switch
+   * which asset's balance they fetch on that flag.
    */
-  getBalance?: (accountId: AccountId) => BN | string | null;
+  getBalance?: (accountId: AccountId, isFeeHop: boolean) => BN | string | null;
   asset?: Asset;
+  /**
+   * Asset used for fees / multisig deposit (typically the chain's native
+   * token). When set and different from `asset`, the source node renders its
+   * `asset` balance while the remaining hops render their `feeAsset` balance —
+   * matches the on-chain reality where the operation amount lives on the source
+   * while the rest of the path settles fees in native.
+   */
+  feeAsset?: Asset;
   errorAccountIds?: ReadonlySet<AccountId>;
 };
 
@@ -28,8 +40,9 @@ type Props = {
  * PathReviewPopover and SigningPathInline so the structure (header + numbered
  * hop list) is defined once.
  */
-export const PathOverviewBody = ({ path, views, getBalance, asset, errorAccountIds }: Props) => {
+export const PathOverviewBody = ({ path, views, getBalance, asset, feeAsset, errorAccountIds }: Props) => {
   const { t } = useI18n();
+  const hasSplitAssets = !!feeAsset && !!asset && feeAsset.assetId !== asset.assetId;
 
   return (
     <div className="flex w-[340px] flex-col gap-y-3 p-4">
@@ -44,7 +57,9 @@ export const PathOverviewBody = ({ path, views, getBalance, asset, errorAccountI
           const v = views[idx];
           if (!v) return null;
           const isLast = idx === path.length - 1;
-          const balanceValue = getBalance ? getBalance(node.accountId) : null;
+          const isFeeHop = hasSplitAssets && idx > 0;
+          const hopAsset = isFeeHop ? feeAsset : asset;
+          const balanceValue = getBalance ? getBalance(node.accountId, isFeeHop) : null;
           const hasError = errorAccountIds?.has(node.accountId) ?? false;
 
           return (
@@ -68,9 +83,9 @@ export const PathOverviewBody = ({ path, views, getBalance, asset, errorAccountI
                   )}
                 </CaptionText>
                 <div className="mt-1 flex min-w-0 items-center gap-2">
-                  {v.address && (
+                  {v.formattedAddress && (
                     <WalletAccountIcon
-                      address={toAddress(v.address)}
+                      address={v.formattedAddress}
                       type={v.walletType ?? null}
                       size={22}
                       iconSize={10}
@@ -80,10 +95,10 @@ export const PathOverviewBody = ({ path, views, getBalance, asset, errorAccountI
                     <FootnoteText className="truncate text-text-primary">{v.title}</FootnoteText>
                     <HelpText className="truncate text-text-tertiary">{v.subtitle}</HelpText>
                   </div>
-                  {balanceValue && asset && (
+                  {balanceValue && hopAsset && (
                     <AssetBalance
                       value={balanceValue}
-                      asset={asset}
+                      asset={hopAsset}
                       className={cnTw('text-footnote', hasError ? 'text-text-negative' : 'text-text-secondary')}
                     />
                   )}

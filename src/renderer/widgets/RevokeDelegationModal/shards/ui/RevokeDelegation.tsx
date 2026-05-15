@@ -76,7 +76,7 @@ export const RevokeDelegation = () => {
   }
 
   return (
-    <Modal isOpen={isModalOpen} size="fit" onToggle={closeModal}>
+    <Modal isOpen={isModalOpen} size="mdlg" onToggle={closeModal}>
       <Modal.Title close>
         <OperationTitle title={t('governance.revokeDelegation.title')} chainId={walletData.chain!.chainId} />
       </Modal.Title>

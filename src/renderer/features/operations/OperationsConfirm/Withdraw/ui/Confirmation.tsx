@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { AccountsModal } from '@/entities/staking';
@@ -14,6 +14,7 @@ import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
+import { SigningPathConfirmSection } from '../../common/SigningPathConfirmSection';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -41,7 +42,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     return null;
   }
 
-  const { asset, amount, chain, initiator, signatory, multisigDeposit, fee } = confirmStore.meta;
+  const { asset, amount, chain, initiator, signatory, multisigDeposit, fee, signingPath } = confirmStore.meta;
   const nativeAsset = getNativeAsset(chain.assets);
 
   const hasMultisigAccount = confirmStore.meta.route.some(accountUtils.isAnyMultisigAccount) ?? null;
@@ -64,7 +65,13 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
         <MultisigExistsAlert active={isMultisigExists} />
 
-        <TransactionDetails chain={chain} wallets={wallets} initiators={[initiator]} signatory={signatory}>
+        <SigningPathConfirmSection
+          signingPath={signingPath}
+          chain={chain}
+          wallets={wallets}
+          initiators={[initiator]}
+          signatory={signatory}
+        >
           {hasMultisigAccount && (
             <DetailRow
               className="text-text-primary"
@@ -91,7 +98,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           )}
 
           <FeeWithLabel fee={fee} asset={nativeAsset} label={t('staking.networkFee', { count: 1 })} />
-        </TransactionDetails>
+        </SigningPathConfirmSection>
 
         <MultisigOperationDescriptionField />
 

@@ -4,12 +4,12 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
 import { SignButton } from '@/entities/operations';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { confirmModel } from '@/features/operations/OperationsConfirm/VerifyProxy/model/confirm-model';
 import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
+import { SigningPathConfirmSection } from '@/features/operations/OperationsConfirm/common/SigningPathConfirmSection';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { verifyProxyModel } from '../model/verify-proxy-model';
@@ -57,6 +57,7 @@ export const VerifyProxyConfirmation = ({ id = 0, secondaryActionButton, hideSig
     proxyType,
     pureProxyAccountId,
     memo,
+    signingPath,
   } = meta;
 
   const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
@@ -74,7 +75,13 @@ export const VerifyProxyConfirmation = ({ id = 0, secondaryActionButton, hideSig
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails chain={chain} wallets={wallets} initiators={initiators} signatory={signatory}>
+      <SigningPathConfirmSection
+        signingPath={signingPath}
+        chain={chain}
+        wallets={wallets}
+        initiators={initiators}
+        signatory={signatory}
+      >
         <DetailRow label={t('proxy.details.accessType')} className="pr-2">
           <FootnoteText>{proxyType}</FootnoteText>
         </DetailRow>
@@ -94,7 +101,7 @@ export const VerifyProxyConfirmation = ({ id = 0, secondaryActionButton, hideSig
         {hasMultisigAccount && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDepositValue} />}
 
         <FeeWithLabel asset={nativeAsset} fee={feeValue} isLoading={pendingFee} />
-      </TransactionDetails>
+      </SigningPathConfirmSection>
 
       <MultisigOperationDescriptionField />
 

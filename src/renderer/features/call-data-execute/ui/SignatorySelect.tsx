@@ -4,22 +4,14 @@ import { type ReactNode, memo, useMemo } from 'react';
 import { type Wallet, type WalletType } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import {
-  getNativeAsset,
-  nonNullable,
-  nullable,
-  toAddress,
-  transferableAmount,
-  transferableAmountBN,
-} from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { getNativeAsset, nonNullable, nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
 import { FootnoteText, InputHint } from '@/shared/ui';
 import { Address, AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { Box, Field, Select } from '@/shared/ui-kit';
 import { accountService, useWalletsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
-import { SigningPathInline } from '@/features/signing-path';
+import { SigningPathSection } from '@/features/signing-path';
 import { formModel } from '../model/form';
 
 import { walletTypesTitles } from './titles';
@@ -140,17 +132,12 @@ export const SignatorySelect = memo(() => {
   }, [wallets, signatory.value]);
 
   if (chain && asset && signingPath.length >= 2) {
-    const getBalance = (accountId: AccountId) => {
-      const balance = balanceUtils.getBalance(balancesMap, accountId, chain.chainId, asset.assetId);
-      return balance ? transferableAmount(balance) : null;
-    };
-
     return (
-      <SigningPathInline
-        chainId={chain.chainId}
-        path={signingPath}
+      <SigningPathSection
+        signingPath={signingPath}
+        chain={chain}
         asset={asset}
-        getBalance={getBalance}
+        txErrors={[]}
         errorText={t(signatory.errorMessage)}
         onChange={formModel.signingPathChanged}
       />

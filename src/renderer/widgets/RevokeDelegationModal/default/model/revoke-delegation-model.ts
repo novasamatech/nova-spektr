@@ -116,7 +116,7 @@ const $coreTx = combine(
   },
 );
 
-const { $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel({
+const { $signatoryFromPath, recomputeForSigner, $pathRoute, $signingPath } = createSigningPathModel({
   initiator: $initiator,
   chain: networkSelectorModel.$governanceChain,
   resetOn: flowFinished,
@@ -176,6 +176,7 @@ const dataSubmitted = sample({
     signatory: $signatory,
     delegate: $delegate,
     multisigDeposit: $multisigDeposit,
+    signingPath: $signingPath,
   },
 }).updates.filterMap(
   ({
@@ -191,6 +192,7 @@ const dataSubmitted = sample({
     initiator,
     signatory,
     delegate,
+    signingPath,
   }) => {
     if (
       nonNullable(coreTx) &&
@@ -230,6 +232,7 @@ const dataSubmitted = sample({
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),
+          signingPath,
         } satisfies RevokeDelegationConfirm,
       ];
     }

@@ -6,6 +6,7 @@ import { type Asset, type Chain } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import { ZERO_BALANCE, getNativeAsset, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
 import { createComplexTxStore, createInitiatorsStore, createSignatoriesStore } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService } from '@/entities/governance';
@@ -29,6 +30,7 @@ type FormSubmitEvent = FormParams & {
   totalLock: BN;
   totalFee: string;
   multisigDeposit: string;
+  signingPath: PathNode[];
 };
 
 const formInitiated = createEvent<ClaimChunkWithAccountId[]>();
@@ -135,13 +137,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: form.fields.initiator.$value,
     chain: networkSelectorModel.$governanceChain,
     resetOn: formInitiated,
     resetUserOverrideOn: form.fields.initiator.change,
-  });
+  },
+);
 
 const $api = combine(
   {
@@ -314,11 +317,12 @@ sample({
     fee: $fee,
     multisigDeposit: $multisigDeposit,
     totalLock: locksModel.$totalLock,
+    signingPath: $signingPath,
   },
   filter: ({ network, fee }) => {
     return nonNullable(network) && nonNullable(fee);
   },
-  fn: ({ network, fee, multisigDeposit, totalLock }, formData) => {
+  fn: ({ network, fee, multisigDeposit, totalLock, signingPath }, formData) => {
     return {
       initiator: formData.initiator,
       signatory: formData.signatory,
@@ -329,6 +333,7 @@ sample({
       fee: fee!.toString(),
       totalFee: fee!.toString(),
       multisigDeposit: multisigDeposit.toString(),
+      signingPath,
     } satisfies FormSubmitEvent;
   },
   target: formSubmitted,

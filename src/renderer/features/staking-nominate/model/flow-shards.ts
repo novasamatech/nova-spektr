@@ -302,6 +302,7 @@ sample({
         initiator: shard,
         signatory: shard,
         route: [shard],
+        signingPath: [],
         tx: coreTxs[index]!,
       })),
       step: Step.CONFIRM,

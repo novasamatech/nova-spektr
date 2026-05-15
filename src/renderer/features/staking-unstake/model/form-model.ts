@@ -20,6 +20,7 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { staking, stakingService } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -46,6 +47,7 @@ type FormSubmitEvent = {
     totalFee: string;
     multisigDeposit: string;
     initiator: AnyAccount;
+    signingPath: PathNode[];
   };
 };
 
@@ -202,13 +204,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: form.fields.initiator.$value,
     chain: $chain,
     resetOn: formInitiated,
     resetUserOverrideOn: form.fields.initiator.change,
-  });
+  },
+);
 
 sample({
   clock: [$signatoryFromPath, $signatories, formInitiated],
@@ -411,11 +414,12 @@ sample({
     fee: $fee.map((fee) => fee?.toString()),
     multisigDeposit: $multisigDeposit,
     selectedSignatory: form.fields.signatory.$value,
+    signingPath: $signingPath,
   },
   filter: ({ network, transaction, selectedSignatory, fee }) => {
     return nonNullable(network) && nonNullable(transaction) && nonNullable(selectedSignatory) && nonNullable(fee);
   },
-  fn: ({ network, transaction, selectedSignatory, multisigDeposit, route, fee }, formData) => {
+  fn: ({ network, transaction, selectedSignatory, multisigDeposit, route, fee, signingPath }, formData) => {
     const { initiator, ...rest } = formData;
     const amount = formatAmount(rest.amount, network!.asset.precision);
 
@@ -429,6 +433,7 @@ sample({
         multisigDeposit: multisigDeposit.toString(),
         initiator: initiator!,
         signatory: selectedSignatory!,
+        signingPath,
       },
     };
   },

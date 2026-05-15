@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { type AccountVote, type Asset, type ReferendumId, type TrackId } from '@/shared/core';
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
@@ -14,6 +15,7 @@ export type RemoveVoteConfirm = TxConfirmInfo & {
     track: TrackId;
     vote?: AccountVote;
   }[];
+  signingPath?: PathNode[];
 };
 
 const confirmStore = createTransactionConfirmStore<RemoveVoteConfirm>({

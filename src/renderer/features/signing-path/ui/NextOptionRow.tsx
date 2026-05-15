@@ -36,11 +36,17 @@ type NextOptionRowProps = {
    * candidate signer whose available funds matter for the operation.
    */
   balance?: { value: BN | string; asset: Asset };
+  /**
+   * SS58 prefix of the chain the option belongs to. Required so the address
+   * (used for the identicon and short-form fallback subtitle) is encoded with
+   * the chain's native prefix instead of defaulting to 0.
+   */
+  addressPrefix?: number;
 };
 
-export const NextOptionRow = ({ option, selected, onClick, trailing, balance }: NextOptionRowProps) => {
+export const NextOptionRow = ({ option, selected, onClick, trailing, balance, addressPrefix }: NextOptionRowProps) => {
   const { t } = useI18n();
-  const address = toAddress(option.accountId);
+  const address = toAddress(option.accountId, { prefix: addressPrefix });
 
   const subtitle =
     option.kind === 'multisig'

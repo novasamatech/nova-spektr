@@ -62,9 +62,10 @@ const formSubmitted = sample({
     coreTx: formModel.$coreTx,
     tx: formModel.$tx,
     route: formModel.$route,
+    signingPath: formModel.$signingPath,
   },
   fn: (source, formData) => ({ source, formData }),
-}).filterMap(({ formData, source: { networkStore, coreTx, tx, route } }) => {
+}).filterMap(({ formData, source: { networkStore, coreTx, tx, route, signingPath } }) => {
   if (
     nonNullable(networkStore) &&
     nonNullable(coreTx) &&
@@ -83,6 +84,7 @@ const formSubmitted = sample({
         coreTx,
         route,
         tx,
+        signingPath,
       } satisfies RestakeConfirm,
     ];
   }

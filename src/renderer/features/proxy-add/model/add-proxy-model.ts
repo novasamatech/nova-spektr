@@ -3,8 +3,7 @@ import { spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
-import { multisigOperationService } from '@/domains/network';
-import { accountSync } from '@/domains/network';
+import { accountSync, multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { balanceSubModel } from '@/features/assets-balances';
@@ -99,6 +98,7 @@ const formSubmitted = sample({
         tx: transactions.wrappedTx,
         coreTx: transactions.coreTx,
         route,
+        signingPath: formData.signingPath,
       } satisfies AddProxyConfirm,
     ];
   }

@@ -1,20 +1,16 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent, useMemo } from 'react';
+import { type FormEvent } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { transferableAmount } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, InputHint } from '@/shared/ui';
-import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
-import { accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { TransactionValidationError } from '@/shared/ui-entities';
 import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { InitiateDraftButton } from '@/features/drafts';
-import { SigningPathInline } from '@/features/signing-path';
+import { SigningPathSection } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
 
@@ -54,71 +50,18 @@ const Signatories = () => {
     fields: { signatory },
   } = useForm(formModel.form);
 
-  const signatories = useUnit(formModel.$signatories);
   const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
-  const balances = useUnit(balanceModel.$balanceMap);
   const formErrors = useUnit(formModel.$errors);
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
-
-  const signatoriesWithBalance = useMemo(() => {
-    if (!network) {
-      return [];
-    }
-    return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        network.chain.chainId,
-        network.asset.assetId,
-      );
-      return { account: signatory, balance: transferableAmount(balance) };
-    });
-  }, [signatories, balances]);
-
-  const errorAccountIds = useMemo<ReadonlySet<AccountId>>(() => {
-    const ids = new Set<AccountId>();
-    for (const e of formErrors) {
-      if ('account' in e && e.account?.accountId) ids.add(e.account.accountId);
-    }
-    return ids;
-  }, [formErrors]);
-
-  if (!network) {
-    return null;
-  }
-
-  if (signingPath.length >= 2) {
-    const getBalance = (accountId: AccountId) => {
-      const balance = balanceUtils.getBalance(balances, accountId, network.chain.chainId, network.asset.assetId);
-      return balance ? transferableAmount(balance) : null;
-    };
-
-    return (
-      <SigningPathInline
-        chainId={network.chain.chainId}
-        path={signingPath}
-        asset={network.asset}
-        getBalance={getBalance}
-        errorAccountIds={errorAccountIds}
-        errorText={t(signatory.errorMessage)}
-        onChange={formModel.events.signingPathChanged}
-      />
-    );
-  }
 
   return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      allWallets={allWallets}
-      initiator={signatory.value}
-      hasError={signatory.hasError}
+    <SigningPathSection
+      signingPath={signingPath}
+      chain={network?.chain ?? null}
+      asset={network?.asset ?? null}
+      txErrors={formErrors}
       errorText={t(signatory.errorMessage)}
-      network={network}
-      onChange={signatory.onChange}
+      onChange={formModel.events.signingPathChanged}
     />
   );
 };

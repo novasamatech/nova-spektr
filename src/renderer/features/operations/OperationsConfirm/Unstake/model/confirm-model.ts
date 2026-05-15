@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { type Asset } from '@/shared/core';
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
@@ -13,6 +14,7 @@ export type UnstakeConfirm = TxConfirmInfo & {
   totalFee: string;
   multisigDeposit: string;
   api: ApiPromise;
+  signingPath?: PathNode[];
 };
 
 const confirmStore = createTransactionConfirmStore<UnstakeConfirm>({

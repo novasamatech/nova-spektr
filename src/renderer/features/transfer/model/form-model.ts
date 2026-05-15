@@ -300,7 +300,6 @@ const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner
     chain: $chain,
     resetOn: formInitiated,
     resetUserOverrideOn: form.fields.initiator.change,
-    allowedProxyTypes: TRANSFER_ALLOWED_PROXY_TYPES,
   },
 );
 

@@ -1,4 +1,5 @@
 import { type Chain, type Validator, type Wallet } from '@/shared/core';
+import { type PathNode } from '@/domains/backend';
 import { type AnyAccount } from '@/domains/network';
 
 export const enum Step {
@@ -25,6 +26,7 @@ export type FormSubmitEvent = {
   totalFee: string;
   multisigDeposit: string;
   initiator: AnyAccount;
+  signingPath: PathNode[];
 };
 
 export type NominateData = {

@@ -1,7 +1,7 @@
 import { type TFunction } from 'i18next';
 import { type ReactNode } from 'react';
 
-import { WalletType } from '@/shared/core';
+import { type Address, WalletType } from '@/shared/core';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
@@ -20,6 +20,13 @@ export type PathNodeView = {
   displayName: string | null;
   subtitle: string;
   address?: AccountId;
+  /**
+   * Same address re-encoded with the chain's SS58 prefix. Renderers should use
+   * this for `<Address>` / `<WalletAccountIcon>` so proxied wallets surface in
+   * the chain's native format (e.g. Kusama prefix on Kusama Asset Hub) instead
+   * of defaulting to generic prefix 0.
+   */
+  formattedAddress?: Address;
   walletType?: WalletType | null;
   /**
    * Optional proxy type carried from the source node, appended to the label of
@@ -39,9 +46,10 @@ export const nodeView = (
   const accountId = node.accountId;
   const name = resolveName(accountId);
   const address = accountId;
+  const formattedAddress = toAddress(accountId, { prefix: addressPrefix });
   // resolveAccountName falls back to the 5-char short address when no real
   // name resolves; mirror its format here so we can detect that case.
-  const fallbackName = toShortAddress(toAddress(accountId, { prefix: addressPrefix }), 5);
+  const fallbackName = toShortAddress(formattedAddress, 5);
   const displayName = name === fallbackName ? null : name;
 
   if (node.kind === 'proxied') {
@@ -53,6 +61,7 @@ export const nodeView = (
         ? t('signingPath.label.proxiedWithType', { type: node.proxyType })
         : t('signingPath.label.proxied'),
       address,
+      formattedAddress,
       walletType: WalletType.PROXIED,
     };
   }
@@ -64,6 +73,7 @@ export const nodeView = (
       displayName,
       subtitle: t('signingPath.label.multisig'),
       address,
+      formattedAddress,
       walletType: WalletType.MULTISIG,
     };
   }
@@ -72,8 +82,9 @@ export const nodeView = (
     label: t('signingPath.label.initiator'),
     title: name,
     displayName,
-    subtitle: toShortAddress(toAddress(node.accountId, { prefix: addressPrefix })),
+    subtitle: toShortAddress(formattedAddress),
     address,
+    formattedAddress,
     walletType: null,
   };
 };

@@ -20,16 +20,9 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, CaptionText, InputHint } from '@/shared/ui';
-import {
-  Address,
-  AssetBalance,
-  Identicon,
-  SignatorySelect,
-  TransactionValidationError,
-  WalletIcon,
-} from '@/shared/ui-entities';
+import { Address, AssetBalance, Identicon, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Combobox, Field, Select } from '@/shared/ui-kit';
-import { accountService, accounts, useAccountName, useAccountsNames } from '@/domains/network';
+import { accountService, useAccountName, useAccountsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
@@ -39,7 +32,7 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts → accounts-structure → wallet-details → proxy-add
 import { InitiateDraftButton } from '@/features/drafts/components/InitiateDraftButton';
-import { SigningPathInline } from '@/features/signing-path';
+import { SigningPathSection } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/widgets/transaction-fee';
 import { addProxyModel } from '../model/add-proxy-model';
@@ -244,76 +237,23 @@ const Signatories = () => {
   const { t } = useI18n();
 
   const {
-    fields: { chain, signatory, initiator },
+    fields: { chain, signatory },
   } = useForm(formModel.form);
 
-  const signatories = useUnit(formModel.$signatories);
   const signingPath = useUnit(formModel.$signingPath);
-  const isMultisig = useUnit(formModel.$isMultisig);
-
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balanceMap);
   const formErrors = useUnit(formModel.$errors);
 
-  if (!chain.value) return null;
-
-  const nativeAsset = getNativeAsset(chain.value.assets);
-
-  const signatoriesWithBalance = useMemo(() => {
-    return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        chain.value?.chainId ?? ('' as ChainId),
-        nativeAsset.assetId,
-      );
-      return { account: signatory, balance: withdrawableAmount(balance) };
-    });
-  }, [signatories, balances]);
-
-  const errorAccountIds = useMemo<ReadonlySet<AccountId>>(() => {
-    const ids = new Set<AccountId>();
-    for (const e of formErrors) {
-      if ('account' in e && e.account?.accountId) ids.add(e.account.accountId);
-    }
-    return ids;
-  }, [formErrors]);
-
-  if (!isMultisig) {
-    return null;
-  }
-
-  if (signingPath.length >= 2) {
-    const getBalance = (accountId: AccountId) => {
-      const balance = balanceUtils.getBalance(balances, accountId, chain.value!.chainId, nativeAsset.assetId);
-      return balance ? withdrawableAmount(balance) : null;
-    };
-
-    return (
-      <SigningPathInline
-        chainId={chain.value.chainId}
-        path={signingPath}
-        asset={nativeAsset}
-        getBalance={getBalance}
-        errorAccountIds={errorAccountIds}
-        errorText={t(signatory.errorMessage)}
-        onChange={formModel.signingPathChanged}
-      />
-    );
-  }
+  const nativeAsset = chain.value ? getNativeAsset(chain.value.assets) : null;
 
   return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      initiator={initiator.value}
-      allWallets={allWallets}
-      hasError={signatory.hasError}
+    <SigningPathSection
+      signingPath={signingPath}
+      chain={chain.value ?? null}
+      asset={nativeAsset}
+      txErrors={formErrors}
       errorText={t(signatory.errorMessage)}
-      network={{ chain: chain.value, asset: nativeAsset }}
-      onChange={signatory.onChange}
+      balanceExtractor={(b) => (b ? withdrawableAmount(b) : null)}
+      onChange={formModel.signingPathChanged}
     />
   );
 };

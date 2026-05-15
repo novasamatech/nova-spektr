@@ -14,3 +14,4 @@ export { StepPath } from './ui/StepPath';
 export { PathBreadcrumb } from './ui/PathBreadcrumb';
 export { PathReviewPopover } from './ui/PathReviewPopover';
 export { SigningPathInline } from './ui/SigningPathInline';
+export { type SigningPathTxError, SigningPathSection } from './ui/SigningPathSection';

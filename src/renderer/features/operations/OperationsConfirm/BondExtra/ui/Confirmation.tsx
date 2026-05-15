@@ -4,7 +4,7 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, getNativeAsset } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { StakingPopover } from '@/entities/staking';
@@ -13,6 +13,7 @@ import { AssetFiatBalance } from '@/widgets/price';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
+import { SigningPathConfirmSection } from '../../common/SigningPathConfirmSection';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -46,7 +47,7 @@ export const Confirmation = ({
     return null;
   }
 
-  const { amount, asset, chain, fee, totalFee, signatory, route, multisigDeposit } = confirm.meta;
+  const { amount, asset, chain, fee, totalFee, signatory, route, multisigDeposit, signingPath } = confirm.meta;
   const nativeAsset = getNativeAsset(chain.assets);
 
   const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
@@ -56,7 +57,7 @@ export const Confirmation = ({
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
   return (
-    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
+    <div className="flex w-full flex-col items-center gap-y-4 px-5 pt-4 pb-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="stakeMoreConfirm" size={60} />
 
@@ -72,7 +73,13 @@ export const Confirmation = ({
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails chain={chain} wallets={wallets} initiators={initiators} signatory={signatory}>
+      <SigningPathConfirmSection
+        signingPath={signingPath}
+        chain={chain}
+        wallets={wallets}
+        initiators={initiators}
+        signatory={signatory}
+      >
         {hasMultisigAccount && (
           <DetailRow
             className="text-text-primary"
@@ -123,7 +130,7 @@ export const Confirmation = ({
         <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
           <StakingPopover.Item>{t('staking.confirmation.hintNewRewards')}</StakingPopover.Item>
         </StakingPopover>
-      </TransactionDetails>
+      </SigningPathConfirmSection>
 
       <MultisigOperationDescriptionField />
 
