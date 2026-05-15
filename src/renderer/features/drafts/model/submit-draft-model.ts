@@ -80,7 +80,10 @@ const stepChanged = createEvent<Step>();
 const $step = readonly(restore(stepChanged, Step.NONE));
 const $draft = createStore<Draft | null>(null).reset(flowFinished);
 const $chain = createStore<Chain | null>(null).reset(flowFinished);
-const $initiator = createStore<AnyAccount | null>(null).reset(flowFinished);
+// Seed initiator from `flowStarted` — used as a fallback for legacy drafts
+// that have no `signingPath`. For path-driven drafts the canonical initiator
+// is the resolved `signingPath[0]` (see `$initiator` below).
+const $flowInitiator = createStore<AnyAccount | null>(null).reset(flowFinished);
 const $displayInitiator = createStore<AnyAccount | null>(null).reset(flowFinished);
 const $signatory = createEvent<AnyAccount | null>();
 const $signatoryStore = createStore<AnyAccount | null>(null).reset(flowFinished);
@@ -157,13 +160,6 @@ sample({
   target: showCallDataSubmitErrorFx,
 });
 
-const $bfsRoute = createRouteStore({
-  chain: $chain,
-  initiator: $initiator,
-  signatory: $signatoryStore,
-  accounts: walletModel.$availableAccounts,
-});
-
 // The picked path was persisted with the draft — resolve it back to accounts
 // and use it strictly. Falling back to BFS would silently sign through a
 // different route than the user authored the draft for.
@@ -171,6 +167,22 @@ const $draftSigningPath = $draft.map((draft): PathNode[] =>
   Array.isArray(draft?.signingPath) ? draft.signingPath : [],
 );
 const $pathRoute = createPathRouteStore($draftSigningPath, $chain);
+
+// Canonical initiator: for path-driven drafts the route's first node is the
+// authored top of the chain (matters for nested-multisig drafts where
+// `multisigAccountId` is the deepest hop, not the root). Legacy drafts have
+// no path → fall back to the seed initiator from `flowStarted`.
+const $initiator = combine(
+  { pathRoute: $pathRoute, flowInitiator: $flowInitiator },
+  ({ pathRoute, flowInitiator }) => pathRoute?.[0] ?? flowInitiator,
+);
+
+const $bfsRoute = createRouteStore({
+  chain: $chain,
+  initiator: $initiator,
+  signatory: $signatoryStore,
+  accounts: walletModel.$availableAccounts,
+});
 
 // Draft has a non-trivial saved path but it can't be resolved against the
 // current account list (e.g. a wallet that the path traversed has been
@@ -182,15 +194,14 @@ const $pathResolutionError = combine(
   ({ saved, resolved, chain }) => chain !== null && saved.length >= 2 && (resolved === null || resolved.length < 2),
 );
 
-// Saved path resolved → use it. No saved path (legacy drafts) → BFS.
-// Saved path present but unresolvable → empty route, the gating check below
-// flips $wrappedTxError so the UI surfaces the error.
+// Path-driven drafts: strictly follow the resolved path; never silently
+// re-route through BFS. Legacy drafts (no saved path) keep the BFS fallback
+// for backwards compatibility.
 const $route = combine(
   { bfs: $bfsRoute, saved: $draftSigningPath, resolved: $pathRoute },
   ({ bfs, saved, resolved }) => {
-    if (saved.length < 2) return bfs;
-    if (resolved && resolved.length >= 2) return resolved;
-    return [];
+    if (saved.length === 0) return bfs;
+    return resolved && resolved.length > 0 ? resolved : [];
   },
 );
 
@@ -379,7 +390,7 @@ sample({
 sample({
   clock: flowStarted,
   fn: ({ initiator }) => initiator,
-  target: $initiator,
+  target: $flowInitiator,
 });
 
 sample({
@@ -467,9 +478,11 @@ sample({
     nonNullable(s.fee) &&
     nonNullable(s.api) &&
     nonNullable(s.chain) &&
-    nonNullable(s.initiator),
+    nonNullable(s.initiator) &&
+    nonNullable(s.signatory),
   fn: (s) => {
     const uiInitiator = s.displayInitiator ?? s.initiator!;
+    const signatory = s.signatory!;
 
     return [
       {
@@ -477,8 +490,8 @@ sample({
         chain: s.chain!,
         transaction: s.wrappedTx!,
         initiator: uiInitiator,
-        signatory: s.signatory || uiInitiator,
-        route: s.route.length > 0 ? s.route : [s.signatory || uiInitiator],
+        signatory,
+        route: s.route.length > 0 ? s.route : [signatory],
         fee: s.fee!,
         draft: s.draft!,
       },
@@ -495,16 +508,13 @@ const sign = sample({
     api: $api,
     chain: $chain,
     signatory: $signatoryStore,
-    initiator: $initiator,
   },
-  fn({ wrappedTx, api, chain, signatory, initiator }) {
-    if (nullable(api) || nullable(wrappedTx) || nullable(chain)) return null;
-    const signer = signatory || initiator;
-    if (nullable(signer)) return null;
+  fn({ wrappedTx, api, chain, signatory }) {
+    if (nullable(api) || nullable(wrappedTx) || nullable(chain) || nullable(signatory)) return null;
 
     return {
       transaction: wrappedTx,
-      signatory: signer,
+      signatory,
       chain,
       api,
     } satisfies TransactionSigningPayload;
@@ -712,4 +722,11 @@ export const submitDraftModel = {
   confirmModel,
 
   Step,
+
+  __test: {
+    $route,
+    $pathRoute,
+    $pathResolutionError,
+    $flowInitiator,
+  },
 };
