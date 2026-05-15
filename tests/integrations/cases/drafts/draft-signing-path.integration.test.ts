@@ -19,10 +19,12 @@ import { submitDraftModel } from '@/features/drafts/model/submit-draft-model';
 import { polkadotChain, polkadotChainId, vaultWallet } from '../../fixtures/index';
 import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
 
-// --- Local fixtures: production typeguards check `accountType` (added by
-// account-sync), while the shared fixtures lack it. Build accounts with the
-// real `accountType` field so `isMultisigAccount` / `isProxiedAccount`
-// resolve correctly inside `createPathRouteStore`.
+// --- Local fixtures: production typeguards check the `accountType`
+// discriminator (set when the account is persisted — see
+// `features/multisig-wallet`, `features/proxied-wallet`), while the shared
+// fixtures lack it. Build accounts with the real `accountType` field so
+// `isMultisigAccount` / `isProxiedAccount` resolve correctly inside
+// `createPathRouteStore`.
 
 // Use distinct string seeds — `createAccountId` reduces the seed to a sum of
 // char codes, so numeric seeds like 101/110 collide (both sum to 146).
@@ -286,7 +288,7 @@ describe('Submit Draft — signing path drives the route', () => {
         params: { draft, initiator: multisigMid, chain: polkadotChain },
       });
 
-      const route = env.getState(submitDraftModel.__test.$route);
+      const route = env.getState(submitDraftModel.$route);
       expect(route.map((a) => a.accountId)).toEqual([MULTISIG_TOP_ID, MULTISIG_MID_ID, SIGNER_ID]);
     });
 
@@ -308,16 +310,22 @@ describe('Submit Draft — signing path drives the route', () => {
         params: { draft, initiator: null, chain: polkadotChain },
       });
 
-      expect(env.getState(submitDraftModel.__test.$route)).toEqual([]);
-      expect(env.getState(submitDraftModel.__test.$pathResolutionError)).toBe(true);
+      expect(env.getState(submitDraftModel.$route)).toEqual([]);
+      expect(env.getState(submitDraftModel.$pathResolutionError)).toBe(true);
       expect(env.getState(submitDraftModel.$wrappedTxErrorKind)).toBe('signing-path-unresolved');
     });
 
-    it('strictly follows the saved path even when BFS could connect a different way', async () => {
-      // multisigTop has signatory `mid`, mid has signatory `signer-1`. We
-      // also drop `signer-2` into the wallet, fully disconnected from the
-      // multisig graph — BFS shouldn't pull it in, and we shouldn't even try
-      // BFS since the draft authored a path.
+    it('ignores stray wallet accounts outside the saved path', async () => {
+      // Drop an unrelated `signer-2` into the wallet alongside the authored
+      // path. The resolved route must contain exactly the path nodes — no
+      // accidental inclusion of extra accounts.
+      //
+      // Note: this test does NOT prove BFS itself is bypassed (the
+      // `accountCollectChildrenPipeline` DI handler isn't registered here, so
+      // `findRoute` returns [] regardless). Verifying BFS-bypass directly
+      // would require wiring the multisig children pipeline; until then, the
+      // BFS-vs-saved branch is covered by the resolution tests above and by
+      // production usage in `aggregates/multisig`.
       env = await buildEnv([multisigTop, multisigMid, signerAccount, signerAccount2]);
 
       const draft = makeDraft(
@@ -334,9 +342,45 @@ describe('Submit Draft — signing path drives the route', () => {
         params: { draft, initiator: multisigMid, chain: polkadotChain },
       });
 
-      const route = env.getState(submitDraftModel.__test.$route);
-      // signer-2 never appears; the resolved path is authoritative.
+      const route = env.getState(submitDraftModel.$route);
       expect(route.map((a) => a.accountId)).toEqual([MULTISIG_TOP_ID, MULTISIG_MID_ID, SIGNER_ID]);
+      expect(route).toHaveLength(3);
+      expect(route.every((a) => a.accountId !== SIGNER_2_ID)).toBe(true);
+    });
+  });
+
+  describe('signatory auto-selection (regression: dropped signatory→initiator fallback)', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Drafts',
+        feature: 'Submit Draft',
+        story: 'Signatory pre-select fires on flow start',
+      });
+    });
+
+    it('pre-selects $signatoryStore from draft.initiatorAccountId on flow start', async () => {
+      // After removing the `signer = signatory || initiator` fallback, the
+      // confirm/sign chain depends on `$signatoryStore` being non-null. The
+      // path-driven pre-select sample (clock: `[$availableAccounts, $draft]`)
+      // must fire on flow start so the user isn't stuck on a loader.
+      env = await buildEnv([multisigTop, signerAccount]);
+
+      const draft = makeDraft(
+        [
+          { kind: 'multisig', accountId: MULTISIG_TOP_ID },
+          { kind: 'signer', accountId: SIGNER_ID },
+        ],
+        { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: SIGNER_ID },
+      );
+
+      await allSettled(submitDraftModel.flowStarted, {
+        scope: env.scope,
+        params: { draft, initiator: multisigTop, chain: polkadotChain },
+      });
+
+      const signatory = env.getState(submitDraftModel.$signatoryStore);
+      expect(signatory).not.toBeNull();
+      expect(signatory!.accountId).toBe(SIGNER_ID);
     });
   });
 });

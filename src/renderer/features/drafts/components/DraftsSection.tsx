@@ -157,12 +157,17 @@ export const DraftsSection = () => {
     const chain = chains[draft.chainId as ChainId];
     if (!chain) return;
 
-    // For flex drafts, the routing initiator is the proxied (pure proxy) account,
-    // but the display initiator is the flex multisig account
+    // `initiator` here is a legacy fallback only: for path-driven drafts
+    // submitDraftModel derives `$initiator` from `signingPath[0]`. It still
+    // matters for legacy drafts (empty `signingPath`). Note this branch picks
+    // the deepest multisig for nested paths — that's wrong for routing but
+    // harmless because the model overrides it when a saved path is present.
     const initiatorAccount = draft.proxyAccountId
       ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
       : (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null);
 
+    // `displayInitiator` is consumed verbatim by the confirm UI — for flex
+    // drafts we want the multisig facade label, not the pure proxied address.
     const displayInitiator = draft.proxyAccountId
       ? (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null)
       : undefined;

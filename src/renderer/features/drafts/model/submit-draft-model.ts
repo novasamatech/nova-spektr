@@ -16,7 +16,6 @@ import {
   createTxValidationStore,
   createTxValidator,
 } from '@/shared/transactions';
-import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
 import {
   type Draft,
@@ -177,18 +176,33 @@ const $initiator = combine(
   ({ pathRoute, flowInitiator }) => pathRoute?.[0] ?? flowInitiator,
 );
 
-const $bfsRoute = createRouteStore({
-  chain: $chain,
-  initiator: $initiator,
-  signatory: $signatoryStore,
-  accounts: walletModel.$availableAccounts,
-});
+// Legacy BFS route — only consumed when the draft has no saved signing path.
+// The gate is *inside* the combine so `accountService.findRoute` (which
+// allocates an account graph) doesn't run at all for path-driven drafts.
+// `createRouteStore` would be simpler but it's unconditional, so we inline
+// the logic here.
+const $bfsRoute = combine(
+  {
+    saved: $draftSigningPath,
+    chain: $chain,
+    initiator: $initiator,
+    signatory: $signatoryStore,
+    accounts: walletModel.$availableAccounts,
+  },
+  ({ saved, chain, initiator, signatory, accounts }) => {
+    if (saved.length > 0) return [];
+    if (nullable(chain) || nullable(initiator) || nullable(signatory)) return [];
+
+    return accountService.findRoute(initiator, signatory, accounts, chain);
+  },
+);
 
 // Draft has a non-trivial saved path but it can't be resolved against the
 // current account list (e.g. a wallet that the path traversed has been
 // removed). Block the flow rather than wrap silently along a different route.
-// Gated on `$chain` so it doesn't fire transiently while `flowStarted` updates
-// `$draft` and `$chain` in separate samples.
+// Defence-in-depth: `$pathRoute` already returns `null` while `$chain` is
+// null, but the explicit guard avoids accidental regressions if the resolver
+// ever surfaces a non-null route before chain settles.
 const $pathResolutionError = combine(
   { saved: $draftSigningPath, resolved: $pathRoute, chain: $chain },
   ({ saved, resolved, chain }) => chain !== null && saved.length >= 2 && (resolved === null || resolved.length < 2),
@@ -346,16 +360,20 @@ sample({
 // watch-only entries, and a duplicate accountId imported under a watch-only
 // wallet would otherwise be picked first and route the flow to the watch-only
 // dead-end UI.
+//
+// `clock` includes `$draft` (not just `$availableAccounts`) so the sample
+// fires on flow start even when the account list is already populated — in
+// a steady-state session that's the common case.
 sample({
-  clock: walletModel.$availableAccounts,
-  source: $draft,
-  filter: (draft, accounts) =>
+  clock: [walletModel.$availableAccounts, $draft],
+  source: { draft: $draft, accounts: walletModel.$availableAccounts },
+  filter: ({ draft, accounts }) =>
     nonNullable(draft) &&
     Array.isArray(draft.signingPath) &&
     draft.signingPath.length > 0 &&
     nonNullable(draft.initiatorAccountId) &&
     accounts.some((a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a)),
-  fn: (draft, accounts) =>
+  fn: ({ draft, accounts }) =>
     accounts.find((a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a)) ??
     null,
   target: $signatory,
@@ -426,11 +444,16 @@ sample({
   target: multisigOperationDescription.setDraftFlowActive,
 });
 
-// Auto-select signatory when only one option
+// Auto-select signatory when only one option — but never overwrite an
+// already-chosen one. Without this guard, an auto-select fired by a later
+// `$signatories` recomputation would clobber the path-driven pre-selection
+// (e.g. for nested multisigs where the wallet exposes the root multisig as a
+// "leaf" because no children-pipeline handler is registered).
 sample({
   clock: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
+  source: $signatoryStore,
+  filter: (current, signatories) => current === null && signatories.length === 1,
+  fn: (_, signatories) => signatories.at(0) ?? null,
   target: $signatory,
 });
 
@@ -458,9 +481,12 @@ sample({
 
 // --- Confirm → Sign → Submit ---
 
-// When wrappedTx + fee are ready and step is CONFIRM, auto-init confirm
+// When wrappedTx + fee are ready and step is CONFIRM, auto-init confirm.
+// `$signatoryStore` is in `clock` so init re-fires when auto-/pre-selection
+// resolves the signatory after fee/wrappedTx have already settled — without
+// it the previous fallback (`signatory || initiator`) used to mask the gap.
 sample({
-  clock: [flowStarted, $wrappedTx, $fee],
+  clock: [flowStarted, $wrappedTx, $fee, $signatoryStore],
   source: {
     draft: $draft,
     wrappedTx: $wrappedTx,
@@ -552,6 +578,12 @@ const postSubmitFx = createEffect(
     timepoint: { height: number; index: number };
     baseUrl: string;
   }) => {
+    // `draft.multisigAccountId` is guaranteed by the caller (DraftsSection
+    // refuses to submit without it). The `?? initiator.accountId` fallback is
+    // a last-resort safety net — note that for flex drafts `initiator` is now
+    // the resolved `FlexibleMultisigAccount` whose `accountId` is the *pure
+    // proxied* accountId, not the inner multisig. The fallback path is only
+    // reachable if a future caller bypasses the entrypoint guard.
     await operationsService.createDescription(baseUrl, {
       multisigAccountId: draft.multisigAccountId ?? initiator.accountId,
       chainId: draft.chainId,
@@ -702,6 +734,8 @@ export const submitDraftModel = {
   $wrappedExtrinsic,
   $wrappedTxError,
   $wrappedTxErrorKind,
+  $route,
+  $pathResolutionError,
   $submittedDraftIds,
   $validationErrors,
   $validationValid,
@@ -724,9 +758,7 @@ export const submitDraftModel = {
   Step,
 
   __test: {
-    $route,
     $pathRoute,
-    $pathResolutionError,
     $flowInitiator,
   },
 };
