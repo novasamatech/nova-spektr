@@ -146,6 +146,11 @@ const restoreWalletsFx = attach({
   mapParams: (wallets: Wallet[]) => wallets.map((wallet) => ({ ...wallet, isHidden: false })),
 });
 
+const hideWalletsFx = attach({
+  effect: updateWalletsFx,
+  mapParams: (wallets: Wallet[]) => wallets.map((wallet) => ({ ...wallet, isHidden: true })),
+});
+
 sample({
   clock: fetchAllWalletsFx.doneData,
   target: $rawWallets,
@@ -303,6 +308,7 @@ export const walletModel = {
   updateWallet: updateWalletFx,
   populate: fetchAllWalletsFx,
   walletHidden: walletHiddenFx,
+  hideWallets: hideWalletsFx,
   walletsRemoved: walletsRemovedFx,
   restoreWallets: restoreWalletsFx,
 
