@@ -92,8 +92,10 @@ const restoreWalletsFx = attach({
   },
 });
 
+// Clear the selection only after the restore finishes — clearing on the effect
+// call itself races with the effect reading `$selectedWallets` from its source.
 sample({
-  clock: restoreWalletsFx,
+  clock: restoreWalletsFx.done,
   fn: () => new Set<Wallet['id']>(),
   target: $selectedWallets,
 });
