@@ -22,8 +22,8 @@ const $autoNamedWallets = combine(
   },
 );
 
-const $visibleAutoNamed = $autoNamedWallets.map((wallets) => wallets.filter((w) => !w.isHidden));
-const $hiddenAutoNamed = $autoNamedWallets.map((wallets) => wallets.filter((w) => Boolean(w.isHidden)));
+const $visibleAutoNamed = $autoNamedWallets.map((wallets) => wallets.filter((w) => !w.hiddenReason));
+const $hiddenAutoNamed = $autoNamedWallets.map((wallets) => wallets.filter((w) => w.hiddenReason === 'unnamed'));
 
 const $mode = combine($visibleAutoNamed, $hiddenAutoNamed, (visible, hidden): 'hide' | 'unhide' | 'none' => {
   if (visible.length > 0) return 'hide';

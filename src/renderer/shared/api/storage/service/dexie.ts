@@ -34,6 +34,7 @@ import {
   migratePVAccounts,
   migrateRevoteToVote,
   migrateWallets,
+  migrateWalletsHiddenReason,
   removeDeprecatedProxiedAccounts,
   renameBlockNumberToEntropyBlockNumber,
   restoreContactsAfterPKChange,
@@ -175,6 +176,8 @@ class DexieStorage extends Dexie {
     this.version(50).stores({ operationTemplates: '++id, chainId' });
 
     this.version(51).upgrade(dropPersistedBackendContacts);
+
+    this.version(52).upgrade(migrateWalletsHiddenReason);
 
     this.connections = this.table('connections');
     this.balances2 = this.table('balances2');

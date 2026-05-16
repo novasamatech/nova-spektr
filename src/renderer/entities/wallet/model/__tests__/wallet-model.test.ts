@@ -73,7 +73,7 @@ describe('entities/wallet/model/wallet-model', () => {
   test('should update $wallets and $hiddenWallets when $rawWallets is updated', async () => {
     const wallets = walletMock.getWallets();
     const hiddenWallet = wallets[2];
-    const visibleWallets = wallets.filter((wallet) => !wallet?.isHidden);
+    const visibleWallets = wallets.filter((wallet) => !wallet?.hiddenReason);
 
     const scope = fork({
       values: [[accounts.__test.$list, walletMock.accounts]],

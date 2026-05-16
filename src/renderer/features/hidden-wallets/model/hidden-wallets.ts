@@ -4,7 +4,9 @@ import { debounce } from 'patronum';
 import { type Wallet } from '@/shared/core';
 import { walletModel } from '@/entities/wallet';
 
-const $hiddenWallets = walletModel.$hiddenWallets;
+const $hiddenWallets = walletModel.$hiddenWallets.map((wallets) =>
+  wallets.filter((wallet) => wallet.hiddenReason === 'manual'),
+);
 
 // Events
 const changeQuery = createEvent<string>();
