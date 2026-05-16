@@ -1,12 +1,9 @@
-import { combine, createEvent, sample } from 'effector';
+import { attach, combine } from 'effector';
 
 import { type Wallet } from '@/shared/core';
 import { accountService, accounts, identity } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { walletModel, walletUtils } from '@/entities/wallet';
-
-const hideAll = createEvent();
-const unhideAll = createEvent();
 
 const $autoNamedWallets = combine(
   {
@@ -34,24 +31,28 @@ const $mode = combine($visibleAutoNamed, $hiddenAutoNamed, (visible, hidden): 'h
   return 'none';
 });
 
-sample({
-  clock: hideAll,
+const hideAllFx = attach({
   source: $visibleAutoNamed,
-  filter: (wallets: Wallet[]) => wallets.length > 0,
-  target: walletModel.hideWallets,
+  effect: async (wallets: Wallet[]) => {
+    if (wallets.length === 0) return [];
+    await walletModel.hideWallets(wallets);
+    return wallets;
+  },
 });
 
-sample({
-  clock: unhideAll,
+const unhideAllFx = attach({
   source: $hiddenAutoNamed,
-  filter: (wallets: Wallet[]) => wallets.length > 0,
-  target: walletModel.restoreWallets,
+  effect: async (wallets: Wallet[]) => {
+    if (wallets.length === 0) return [];
+    await walletModel.restoreWallets(wallets);
+    return wallets;
+  },
 });
 
 export const hideUnnamedWalletsModel = {
   $mode,
   $visibleAutoNamed,
   $hiddenAutoNamed,
-  hideAll,
-  unhideAll,
+  hideAll: hideAllFx,
+  unhideAll: unhideAllFx,
 };

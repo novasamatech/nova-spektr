@@ -862,7 +862,9 @@
     },
     "hide-unnamed-wallets": {
       "hideTooltip": "Hide unnamed multisig and proxied wallets",
-      "unhideTooltip": "Show hidden unnamed wallets"
+      "unhideTooltip": "Show hidden unnamed wallets",
+      "hiddenToast": "Unnamed wallets hidden",
+      "restoredToast": "Hidden wallets restored"
     }
   },
   "fellowship": {

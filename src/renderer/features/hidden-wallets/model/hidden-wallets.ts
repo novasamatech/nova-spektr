@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { attach, combine, createEvent, createStore, restore, sample } from 'effector';
 import { debounce } from 'patronum';
 
 import { type Wallet } from '@/shared/core';
@@ -8,8 +8,6 @@ const $hiddenWallets = walletModel.$hiddenWallets;
 
 // Events
 const changeQuery = createEvent<string>();
-const restoreWallets = createEvent();
-const walletsRestored = createEvent();
 const clearSelection = createEvent();
 const toggleWalletSelection = createEvent<Wallet>();
 const toggleGroupSelection = createEvent<Wallet[]>();
@@ -80,26 +78,22 @@ const $selectionState = combine($selectedWallets, $hiddenWallets, (selectedWalle
   };
 });
 
-sample({
-  clock: restoreWallets,
+const restoreWalletsFx = attach({
   source: { selectedWallets: $selectedWallets, hiddenWallets: $hiddenWallets },
-  fn: ({ selectedWallets, hiddenWallets }) => {
+  effect: async ({ selectedWallets, hiddenWallets }) => {
     const selectedIds = new Set(selectedWallets);
+    const wallets = hiddenWallets.filter((wallet) => selectedIds.has(wallet.id));
+    if (wallets.length === 0) return [];
 
-    return hiddenWallets.filter((wallet) => selectedIds.has(wallet.id));
+    await walletModel.restoreWallets(wallets);
+    return wallets;
   },
-  target: walletModel.restoreWallets,
 });
 
 sample({
-  clock: restoreWallets,
+  clock: restoreWalletsFx,
   fn: () => new Set<Wallet['id']>(),
   target: $selectedWallets,
-});
-
-sample({
-  clock: walletModel.restoreWallets.done,
-  target: walletsRestored,
 });
 
 export const hiddenWalletsModel = {
@@ -112,8 +106,7 @@ export const hiddenWalletsModel = {
 
   // Events
   changeQuery,
-  restoreWallets,
-  walletsRestored,
+  restoreWallets: restoreWalletsFx,
   clearSelection,
   toggleWalletSelection,
   toggleGroupSelection,

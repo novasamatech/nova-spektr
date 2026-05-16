@@ -4,8 +4,7 @@ import { useEffect, useMemo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { entries, groupBy, performSearch } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
-import { Animation } from '@/shared/ui/Animation/Animation';
-import { Box, Checkbox, Modal, SearchInput, useNotification } from '@/shared/ui-kit';
+import { Checkbox, Modal, SearchInput, useNotification } from '@/shared/ui-kit';
 import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelectService } from '@/aggregates/wallet-select';
@@ -17,7 +16,7 @@ import { WalletGroup } from './walletGroup';
 export const HiddenWalletsModal = () => {
   const { t } = useI18n();
 
-  const notification = useNotification();
+  const { toast } = useNotification();
 
   const inputQuery = useUnit(hiddenWalletsModel.$inputQuery);
   const query = useUnit(hiddenWalletsModel.$query);
@@ -31,25 +30,6 @@ export const HiddenWalletsModal = () => {
   useEffect(() => {
     hiddenWalletsBalancesModel.loadBalances();
   }, []);
-
-  useEffect(() => {
-    // eslint-disable-next-line effector/no-watch
-    const unsubscribe = hiddenWalletsModel.walletsRestored.watch(() => {
-      notification.modal({
-        content: (
-          <Box width={60} padding={4} gap={1} verticalAlign="center" horizontalAlign="center">
-            <Animation variant="success" width={80} height={80} />
-            <SmallTitleText>{t('settings.hiddenWallets.restored')}</SmallTitleText>
-            <FootnoteText className="text-center text-text-secondary">
-              {t('settings.hiddenWallets.restoredDescription')}
-            </FootnoteText>
-          </Box>
-        ),
-      });
-    });
-
-    return unsubscribe;
-  }, [notification, t]);
 
   const resolvedWallets = useWalletsNames(hiddenWallets);
 
@@ -123,12 +103,17 @@ export const HiddenWalletsModal = () => {
     return null;
   }, [inputQuery, query, hiddenWallets, selectionState, filteredWalletsByType, t]);
 
-  const handleRestore = () => {
+  const handleRestore = async () => {
     if (hiddenWallets.length === 0) {
       return;
     }
 
-    hiddenWalletsModel.restoreWallets();
+    const restored = await hiddenWalletsModel.restoreWallets();
+    if (restored.length === 0) return;
+
+    toast.success(t('settings.hiddenWallets.restored'), {
+      description: t('settings.hiddenWallets.restoredDescription'),
+    });
   };
 
   const handleClose = () => {
