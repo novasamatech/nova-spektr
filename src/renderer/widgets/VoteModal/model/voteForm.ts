@@ -1,6 +1,6 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { and, empty, not, reset } from 'patronum';
+import { reset } from 'patronum';
 
 import { type AccountVote, type Conviction, type OngoingReferendum, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -15,9 +15,10 @@ import {
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService, voteTransactionService } from '@/entities/governance';
-import { transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { createDraftModeBinding, wireDraftSourceBalance } from '@/features/drafts';
 import {
   type AggregatedReferendum,
   delegationAggregate,
@@ -45,6 +46,8 @@ type FormInput = {
 
 const setReferendum = createEvent<AggregatedReferendum<OngoingReferendum> | null>();
 
+const draftMode = createDraftModeBinding({ formInitiated: setReferendum, chainChanged: setReferendum });
+
 const $type = createStore<'vote' | 'revote' | null>(null);
 const $voters = createStore<AccountId[]>([]);
 const $existingVote = createStore<AccountVote | null>(null);
@@ -60,29 +63,39 @@ const form: Form<FormFields> = createForm<FormFields>({
   fields: {
     initiator: {
       defaultValue: null,
-      validator: () => (value) => {
-        if (nullable(value)) {
-          return { message: 'governance.vote.errors.noAccountError' };
-        }
-      },
+      validator: () => ({
+        source: draftMode.$isDraftMode,
+        fn: (value, _, isDraftMode) => {
+          if (isDraftMode) return;
+          if (nullable(value)) {
+            return { message: 'governance.vote.errors.noAccountError' };
+          }
+        },
+      }),
     },
     signatory: {
       defaultValue: null,
-      validator: () => (value) => {
-        if (nullable(value)) {
-          return { message: 'governance.vote.errors.noSignatoryError' };
-        }
-      },
+      validator: () => ({
+        source: draftMode.$isDraftMode,
+        fn: (value, _, isDraftMode) => {
+          if (isDraftMode) return;
+          if (nullable(value)) {
+            return { message: 'governance.vote.errors.noSignatoryError' };
+          }
+        },
+      }),
     },
     amount: {
       defaultValue: null,
       validator: () => {
         return {
-          source: $availableBalance,
-          fn: (value, _, balance: BN) => {
+          source: combine({ balance: $availableBalance, isDraftMode: draftMode.$isDraftMode }),
+          fn: (value, _, { balance, isDraftMode }) => {
             if (nullable(value) || value.lte(BN_ZERO)) {
               return { message: 'transfer.notZeroAmountError' };
             }
+
+            if (isDraftMode) return;
 
             if (nonNullable(value) && value.gt(balance)) {
               return { message: 'governance.errors.notEnoughBalanceError' };
@@ -262,17 +275,38 @@ sample({
   target: $lockForAccount,
 });
 
+// Source balance for draft mode: fetched on-demand once the path is set so
+// the "Available:" row reflects the eventual signer's balance, not the
+// connected wallet's initiator.
+const $draftSourceBalance = wireDraftSourceBalance({
+  $draftPath: draftMode.$draftSigningPath,
+  $chain: networkSelectorModel.$governanceChain,
+  $isDraftMode: draftMode.$isDraftMode,
+});
+
 const $availableBalance = combine(
   {
+    isDraftMode: draftMode.$isDraftMode,
     initiator: form.fields.initiator.$value,
     referendum: $referendum,
     chain: networkSelectorModel.$governanceChain,
     balances: balanceModel.$balanceMap,
     accounts: accounts.$list,
     fee: feeTxStore.$fee,
+    draftSourceBalance: $draftSourceBalance,
   },
-  ({ referendum, balances, chain, initiator, fee }) => {
-    if (!initiator || !referendum || !chain || !fee) return BN_ZERO;
+  ({ isDraftMode, referendum, balances, chain, initiator, fee, draftSourceBalance }) => {
+    if (!referendum || !chain) return BN_ZERO;
+
+    // Draft mode: read the path source's balance directly (no fee to subtract
+    // — the eventual signer pays it at submit time).
+    if (isDraftMode) {
+      if (!draftSourceBalance) return BN_ZERO;
+
+      return locksService.getAvailableBalance(draftSourceBalance);
+    }
+
+    if (!initiator || !fee) return BN_ZERO;
 
     const nativeAsset = getNativeAsset(chain.assets);
     const accountBalance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, nativeAsset.assetId);
@@ -291,7 +325,95 @@ reset({
 
 // Submit
 
-const $canSubmit = and($valid, form.$isValid, not($pendingFee), not(empty($tx)));
+const $draftCoreTx = combine(
+  {
+    chain: networkSelectorModel.$governanceChain,
+    referendum: $referendum,
+    conviction: form.fields.conviction.$value,
+    amount: form.fields.amount.$value,
+    decision: form.fields.decision.$value,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+  },
+  ({ chain, referendum, conviction, amount, decision, path, isPathComplete }) => {
+    if (nullable(referendum) || nullable(chain) || nullable(decision) || nullable(amount) || !isPathComplete) {
+      return null;
+    }
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+
+    return transactionBuilder.buildVote({
+      chain,
+      accountId: sourceAccountId,
+      trackId: referendum.track,
+      referendumId: referendum.referendumId,
+      vote: voteTransactionService.createTransactionVote(decision, amount, conviction),
+    });
+  },
+);
+
+const $draftCallDataHex = combine($draftCoreTx, networkSelectorModel.$governanceChainApi, (tx, api) =>
+  transactionService.getCallDataHex(tx, api),
+);
+
+const $draftNetworkStore = networkSelectorModel.$governanceChain.map((chain) =>
+  chain ? { chain, asset: getNativeAsset(chain.assets) } : null,
+);
+
+const $canSubmit = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    valid: $valid,
+    formValid: form.$isValid,
+    pendingFee: $pendingFee,
+    txEmpty: $tx.map(nullable),
+  },
+  ({ isDraftMode, valid, formValid, pendingFee, txEmpty }) => {
+    if (isDraftMode) return false;
+    return valid && formValid && !pendingFee && !txEmpty;
+  },
+);
+
+// Decision (aye/nay/abstain) is supplied by clicking one of the decision
+// buttons, not pre-selected from a form field — so the button-disabled gate
+// must NOT require a decision. We expose a "ready to pick a decision" signal
+// for the UI, and a stricter `$canSaveAsDraft` filter for `connectSave` that
+// only fires once the decision has been set (in the same React handler that
+// triggers `saveAsDraftRequested`).
+const $isReadyForDecision = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    networkStore: $draftNetworkStore,
+    amount: form.fields.amount.$value,
+  },
+  ({ isDraftMode, isPathComplete, networkStore, amount }) => {
+    if (!isDraftMode || !isPathComplete || !networkStore) return false;
+    if (!amount || amount.lte(BN_ZERO)) return false;
+
+    return true;
+  },
+);
+
+const $canSaveAsDraft = combine(
+  {
+    ready: $isReadyForDecision,
+    callData: $draftCallDataHex,
+    decision: form.fields.decision.$value,
+  },
+  ({ ready, callData, decision }) => {
+    if (!ready || !callData || !decision) return false;
+
+    return true;
+  },
+);
+
+draftMode.connectSave({
+  source: 'governance-vote-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore: $draftNetworkStore,
+  $canSave: $canSaveAsDraft,
+});
 
 sample({
   clock: form.submit.doneData,
@@ -380,4 +502,18 @@ export const voteForm = {
   setReferendum,
   formSubmitted,
   $errors,
+
+  $isDraftMode: draftMode.$isDraftMode,
+  $canSaveAsDraft,
+  $isReadyForDecision,
+  $initiatedDraft: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
+  events: {
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
+  },
 };

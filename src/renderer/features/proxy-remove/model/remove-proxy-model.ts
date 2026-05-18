@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
 import { createGate } from 'effector-react';
-import { and, not, spread } from 'patronum';
+import { spread } from 'patronum';
 
 import { type ChainId, type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -17,6 +17,7 @@ import {
 } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { Paths } from '@/shared/routes';
 import {
   createComplexTxStore,
   createMultisigDeposit,
@@ -28,10 +29,11 @@ import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
-import { transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { balanceSubModel } from '@/features/assets-balances';
+import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
 import { multisigService } from '@/features/multisig-wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -56,6 +58,8 @@ type Input = {
 
 const flowStarted = createEvent<Input>();
 const flowFinished = createEvent();
+
+const draftMode = createDraftModeBinding({ formInitiated: flowStarted, chainChanged: flowStarted });
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
@@ -110,8 +114,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             balances: balanceModel.$balanceMap,
             signatories: $signatories,
             chain: $chain,
+            isDraftMode: draftMode.$isDraftMode,
           }),
-          fn: (signatory, _f, { balances, chain, fee, multisigDeposit }) => {
+          fn: (signatory, _f, { balances, chain, fee, multisigDeposit, isDraftMode }) => {
+            if (isDraftMode) return;
             if (!signatory) {
               return { message: 'proxy.addProxy.noSignatoryError' };
             }
@@ -178,12 +184,13 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: $proxiedAccount,
     chain: $chain,
     resetOn: flowStarted,
-  });
+  },
+);
 
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
@@ -244,7 +251,80 @@ const $chainProxies = combine(
   },
 );
 
-const $canSubmit = and($valid, form.$isValid, not($pendingFee));
+const $draftCoreTx = combine(
+  {
+    proxiedAccount: $proxiedAccount,
+    data: $removeProxyStore,
+    isPureProxiedNeedToBeKilled: $isPureProxiedNeedToBeKilled,
+    chain: $chain,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+  },
+  ({ proxiedAccount, data, isPureProxiedNeedToBeKilled, chain, path, isPathComplete }) => {
+    if (!data || !proxiedAccount || !chain || !isPathComplete) return null;
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+
+    if (isPureProxiedNeedToBeKilled) {
+      assert(proxiedAccount.spawner, 'spawner is required');
+
+      return transactionBuilder.buildKillPureProxy({
+        chain,
+        accountId: sourceAccountId,
+        spawner: proxiedAccount.spawner,
+        proxyType: data.proxyType,
+        index: 0,
+        height: proxiedAccount.entropyBlockNumber,
+        extIndex: proxiedAccount.extrinsicIndex,
+      });
+    }
+
+    return transactionBuilder.buildRemoveProxy({
+      chain,
+      accountId: sourceAccountId,
+      delegate: data.proxyAccount.accountId,
+      proxyType: data.proxyType,
+      delay: 0,
+    });
+  },
+);
+
+const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
+
+const $draftNetworkStore = combine($chain, (chain) => (chain ? { chain, asset: getNativeAsset(chain.assets) } : null));
+
+const $canSubmit = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    valid: $valid,
+    formValid: form.$isValid,
+    pendingFee: $pendingFee,
+  },
+  ({ isDraftMode, valid, formValid, pendingFee }) => {
+    if (isDraftMode) return false;
+    return valid && formValid && !pendingFee;
+  },
+);
+
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    networkStore: $draftNetworkStore,
+  },
+  ({ isDraftMode, isPathComplete, callData, networkStore }) => {
+    if (!isDraftMode || !isPathComplete || !callData || !networkStore) return false;
+    return true;
+  },
+);
+
+draftMode.connectSave({
+  source: 'proxy-remove-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore: $draftNetworkStore,
+  $canSave: $canSaveAsDraft,
+});
 
 sample({
   clock: [$signatoryFromPath, $signatories, flowStarted],
@@ -586,6 +666,13 @@ sample({
   target: navigationModel.events.navigateTo,
 });
 
+wireDraftCloseRedirect({
+  $initiatedDraft: draftMode.$initiatedDraft,
+  flowFinished,
+  redirectTarget: $redirectAfterSubmitPath,
+  destination: Paths.OPERATIONS,
+});
+
 export const removeProxyModel = {
   flow,
   flowStarted,
@@ -612,4 +699,17 @@ export const removeProxyModel = {
   signingPathChanged,
   txSaved,
   $errors,
+
+  $isDraftMode: draftMode.$isDraftMode,
+  $canSaveAsDraft,
+  $initiatedDraft: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
+  events: {
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
+  },
 };

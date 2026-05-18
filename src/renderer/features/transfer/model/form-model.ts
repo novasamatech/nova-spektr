@@ -45,10 +45,11 @@ import {
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { proxiedChainResource } from '@/entities/proxy';
-import { transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
+import { createDraftModeBinding, wireDraftSourceBalance } from '@/features/drafts';
 import { transferValidator } from '@/features/operations/OperationsValidation';
 import { createSigningPathModel } from '@/features/signing-path';
 import { type NetworkStore, type NetworkStoreParams } from '../lib/types';
@@ -487,6 +488,9 @@ createSubscription({
   unsubscribe: balanceSubModel.unsubscribeAccounts.prepend((a: { accountId: AccountId; chain: Chain }) => [a]),
 });
 
+// draft mode — wired through the shared factory in features/drafts
+const draftMode = createDraftModeBinding({ formInitiated, chainChanged });
+
 // balance preservation strategy
 
 const toggleExistentialDeposit = createEvent<boolean | null>();
@@ -545,6 +549,63 @@ const $coreTx = combine(
     });
   },
 );
+
+// Draft-mode transaction: built from the path's source accountId (external
+// address-book contact) instead of the wallet-initiator. Mirrors $coreTx but
+// skips the wallet-account requirement — the draft is for someone else to sign
+// later, so we don't validate against the current wallet's signing capability.
+const $draftCoreTx = combine(
+  {
+    network: $networkStore,
+    isXcm: $isXcm,
+    formValues: form.$values,
+    xcmData: xcmSpellTransferModel.$xcmData,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    inputMode: $inputMode,
+    balancePreservation: $balancePreservationStrategy,
+  },
+  ({ network, isXcm, formValues, xcmData, path, isPathComplete, inputMode, balancePreservation }) => {
+    if (!network || !isPathComplete || !validateAddress(formValues.destination)) return null;
+    if (isXcm && !xcmData) return null;
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+
+    return transactionBuilder.buildTransfer({
+      chain: network.chain,
+      asset: network.asset,
+      accountId: sourceAccountId,
+      amount: formValues.amount,
+      destination: formValues.destination,
+      xcmData: isXcm ? xcmData : undefined,
+      balancePreservation,
+      inputMode,
+    });
+  },
+);
+
+const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
+
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    network: $networkStore,
+    isFormValid: form.$isValid,
+    amount: form.fields.amount.$value,
+    destination: form.fields.destination.$value,
+  },
+  ({ isDraftMode, isPathComplete, callData, network, isFormValid, amount, destination }) =>
+    isDraftMode && isPathComplete && !!callData && !!network && !!amount && validateAddress(destination) && isFormValid,
+);
+
+draftMode.connectSave({
+  source: 'transfer-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore,
+  $canSave: $canSaveAsDraft,
+});
 
 const $mockDestination = combine(
   {
@@ -697,12 +758,27 @@ sample({
 
 // available balance
 
+// Source balance for draft mode: fetched on-demand once the path is set so
+// the "Available:" row reflects the eventual signer's balance, not the
+// connected wallet's initiator.
+const $draftSourceBalance = wireDraftSourceBalance({
+  $draftPath: draftMode.$draftSigningPath,
+  $chain: $chain,
+  $isDraftMode: draftMode.$isDraftMode,
+  $asset: $asset,
+});
+
 const $availableBalance = combine(
   {
+    isDraftMode: draftMode.$isDraftMode,
+    draftSourceBalance: $draftSourceBalance,
     availableBalances: $availableBalances,
     balance: $initiatorAccountBalance,
   },
-  ({ availableBalances, balance }) => {
+  ({ isDraftMode, draftSourceBalance, availableBalances, balance }) => {
+    // Draft mode: read the path source's balance directly (no fee to subtract
+    // — the eventual signer pays it at submit time).
+    if (isDraftMode) return draftSourceBalance;
     if (nullable(balance)) return null;
     return availableBalances.find((b) => b.id === balance.id) ?? balance;
   },
@@ -1388,6 +1464,11 @@ export const formModel = {
 
   $xcmApi: xcmSpellTransferModel.$apiDestination,
 
+  $isDraftMode: draftMode.$isDraftMode,
+  $canSaveAsDraft,
+  $initiatedDraftFromTransfer: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
   $isExistentialDepositEnabled,
   $isMaxModeEnabled,
   $showEDSwitch,
@@ -1420,5 +1501,10 @@ export const formModel = {
   events: {
     toggleExistentialDeposit,
     toggleMaxMode: setMaxMode,
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
   },
 };

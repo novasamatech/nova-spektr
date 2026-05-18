@@ -4,12 +4,14 @@ import { combineEvents, spread } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { Step, getBalanceBn, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { type AnyAccount, accountService, multisigOperationService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { accountUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { wireDraftCloseRedirect } from '@/features/drafts';
 import { networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -356,6 +358,13 @@ sample({
   source: $redirectAfterSubmitPath,
   filter: nonNullable,
   target: navigationModel.events.navigateTo,
+});
+
+wireDraftCloseRedirect({
+  $initiatedDraft: formModel.$initiatedDraft,
+  flowFinished,
+  redirectTarget: $redirectAfterSubmitPath,
+  destination: Paths.OPERATIONS,
 });
 
 sample({

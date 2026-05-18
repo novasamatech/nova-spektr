@@ -1,7 +1,7 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { uniqBy } from 'lodash';
-import { and, not, spread } from 'patronum';
+import { spread } from 'patronum';
 
 import { type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -22,9 +22,10 @@ import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { stakingUtils } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { createDraftModeBinding, wireDraftSourceBalance } from '@/features/drafts';
 import { bondNominateValidator } from '@/features/operations/OperationsValidation';
 import { createSigningPathModel } from '@/features/signing-path';
 import { validatorsModel } from '@/features/staking';
@@ -43,6 +44,11 @@ const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
 const destinationQueryChanged = createEvent<string>();
 const destinationTypeChanged = createEvent<RewardsDestination>();
+
+// draft mode — wired through the shared factory in features/drafts
+// Chain doesn't change mid-flow here (it's seeded once via flowStarted ->
+// formInitiated), so the same event drives both reset clocks.
+const draftMode = createDraftModeBinding({ formInitiated, chainChanged: formInitiated });
 
 const setReuseLockMode = createEvent<boolean>();
 const $isReuseLockModeEnabled = createStore(false)
@@ -74,11 +80,17 @@ const form: Form<FormParams> = createForm<FormParams>({
     },
     signatory: {
       defaultValue: null,
-      validator: () => (signatory) => {
-        if (nullable(signatory)) {
-          return { message: 'transfer.noSignatoryError' };
-        }
-      },
+      validator: () => ({
+        source: draftMode.$isDraftMode,
+        fn: (signatory, _, isDraftMode) => {
+          // In draft mode the signer comes from the path picker, not from
+          // the wallet-account dropdown — null signatory is expected.
+          if (isDraftMode) return;
+          if (nullable(signatory)) {
+            return { message: 'transfer.noSignatoryError' };
+          }
+        },
+      }),
     },
     amount: {
       defaultValue: '',
@@ -129,9 +141,28 @@ const $initiatorBalance = combine(
   },
 );
 
-const $reservableAmount = $initiatorBalance.map((initiatorBalance) => {
-  return initiatorBalance ? reservableAmountBN(initiatorBalance) : null;
+// Source balance for draft mode: fetched on-demand once the path is set so
+// the "Available:" row reflects the eventual signer's balance, not the
+// connected wallet's initiator.
+const $draftSourceBalance = wireDraftSourceBalance({
+  $draftPath: draftMode.$draftSigningPath,
+  $chain: $chain,
+  $isDraftMode: draftMode.$isDraftMode,
 });
+
+const $reservableAmount = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    draftSourceBalance: $draftSourceBalance,
+    initiatorBalance: $initiatorBalance,
+  },
+  ({ isDraftMode, draftSourceBalance, initiatorBalance }) => {
+    // Draft mode: read the path source's balance directly (no fee to subtract
+    // — the eventual signer pays it at submit time).
+    if (isDraftMode) return draftSourceBalance ? reservableAmountBN(draftSourceBalance) : null;
+    return initiatorBalance ? reservableAmountBN(initiatorBalance) : null;
+  },
+);
 
 const $signatories = createSignatoriesStore({
   chain: $chain,
@@ -139,13 +170,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: form.fields.initiator.$value,
     chain: $chain,
     resetOn: formInitiated,
     resetUserOverrideOn: form.fields.initiator.change,
-  });
+  },
+);
 
 const $destinationAccounts = combine(
   {
@@ -215,6 +247,42 @@ const $coreTx = combine(
   },
 );
 
+// Draft-mode transaction: built from the path's source accountId instead of
+// the wallet-signatory. Mirrors $coreTx but is driven by the draft signing-path
+// picker. Validators come from the same $validators store (the user picks them
+// in the VALIDATORS step regardless of mode).
+const $draftCoreTx = combine(
+  {
+    chain: $chain,
+    amount: form.fields.amount.$value,
+    destination: form.fields.destination.$value,
+    destinationType: $destinationType,
+    validators: $validators,
+    networkStore: $networkStore,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+  },
+  ({ chain, amount, destination, destinationType, validators, networkStore, path, isPathComplete }) => {
+    if (nullable(chain) || nullable(networkStore) || !amount || !isPathComplete) return null;
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+    if (destinationType !== RewardsDestination.RESTAKE) {
+      if (nullable(destination) || !validateAddress(destination)) return null;
+    }
+
+    return transactionBuilder.buildBondNominate({
+      chain,
+      asset: networkStore.asset,
+      accountId: sourceAccountId,
+      amount,
+      destination: destinationType === RewardsDestination.RESTAKE ? 'Staked' : { destination: toAddress(destination!) },
+      nominators: validators.map(({ accountId }) => accountId),
+    });
+  },
+);
+
+const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
+
 const $feeTx = combine(
   {
     chain: $chain,
@@ -280,7 +348,62 @@ const { $errors, $valid } = createTxValidationStore({
   },
 });
 
-const $canSubmit = and($valid, form.$isValid, not($pendingFee));
+// In draft mode the regular tx-validity and fee aren't computed (signatory is
+// null; $tx is null). Gate Continue on path + amount + destination only so the
+// user can still advance to the VALIDATORS step.
+const $canSubmit = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    valid: $valid,
+    formValid: form.$isValid,
+    pendingFee: $pendingFee,
+    draftPathComplete: draftMode.$isDraftPathComplete,
+    amount: form.fields.amount.$value,
+    destinationType: $destinationType,
+    destination: form.fields.destination.$value,
+  },
+  ({ isDraftMode, valid, formValid, pendingFee, draftPathComplete, amount, destinationType, destination }) => {
+    if (isDraftMode) {
+      if (!draftPathComplete || !amount) return false;
+      if (destinationType === RewardsDestination.TRANSFERABLE && !validateAddress(destination)) return false;
+
+      return true;
+    }
+
+    return valid && formValid && !pendingFee;
+  },
+);
+
+// Draft mode bypasses signer-validity and fee checks — the eventual signer
+// pays the fee and is responsible for those at submit time. We still require
+// a valid path, amount, validators, and (for the TRANSFERABLE destination) a
+// valid destination address.
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    networkStore: $networkStore,
+    amount: form.fields.amount.$value,
+    destination: form.fields.destination.$value,
+    destinationType: $destinationType,
+    validators: $validators,
+  },
+  ({ isDraftMode, isPathComplete, callData, networkStore, amount, destination, destinationType, validators }) => {
+    if (!isDraftMode || !isPathComplete || !callData || !networkStore || !amount) return false;
+    if (validators.length === 0) return false;
+    if (destinationType === RewardsDestination.TRANSFERABLE && !validateAddress(destination)) return false;
+
+    return true;
+  },
+);
+
+draftMode.connectSave({
+  source: 'staking-bond-nominate-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore,
+  $canSave: $canSaveAsDraft,
+});
 
 // Fields connections
 
@@ -439,4 +562,17 @@ export const formModel = {
   formSubmitted,
   formChanged,
   setReuseLockMode,
+
+  $isDraftMode: draftMode.$isDraftMode,
+  $canSaveAsDraft,
+  $initiatedDraft: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
+  events: {
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
+  },
 };

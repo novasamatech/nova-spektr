@@ -10,11 +10,18 @@ import { DefaultTransfer, defaultTransferModel } from '@/features/transfer';
 
 export const SendAsset = () => {
   const wallet = useUnit(walletSelect.$selectedWallet);
-  const redirectPath = useUnit(defaultTransferModel.$redirectAfterSubmitPath);
 
+  // Read the redirect store imperatively at close-time. The transfer flow may
+  // fire `flowFinished` from inside an effector tick (e.g. on draft created),
+  // so React hasn't re-rendered yet when this handler runs — a useUnit-derived
+  // closure would carry the stale (initial null) value and override the
+  // intended redirect. getState is correct here precisely because we want the
+  // up-to-the-moment value at the click, not a subscribed snapshot.
   const handleClose = useCallback(() => {
-    navigationModel.events.navigateTo(redirectPath ?? Paths.ASSETS);
-  }, [redirectPath]);
+    // eslint-disable-next-line effector/no-getState
+    const path = defaultTransferModel.$redirectAfterSubmitPath.getState();
+    navigationModel.events.navigateTo(path ?? Paths.ASSETS);
+  }, []);
 
   return (
     <CheckPermission operationType={OperationType.TRANSFER} wallet={wallet} redirectPath={Paths.ASSETS}>

@@ -6,10 +6,11 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { TransactionValidationError } from '@/shared/ui-entities';
-import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 // eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts -> accounts-structure -> wallet-details -> proxy-remove
-import { InitiateDraftButton } from '@/features/drafts/components/InitiateDraftButton';
+import { DraftModeCard } from '@/features/drafts/components/DraftModeCard';
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts -> accounts-structure -> wallet-details -> proxy-remove
+import { DraftSigningPath } from '@/features/drafts/components/DraftSigningPath';
 import { SigningPathSection } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { removeProxyModel } from '../model/remove-proxy-model';
@@ -21,6 +22,7 @@ export const RemoveProxyForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(removeProxyModel.form);
   const errors = useUnit(removeProxyModel.$errors);
   const wallets = useUnit(walletModel.$wallets);
+  const isDraftMode = useUnit(removeProxyModel.$isDraftMode);
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -28,14 +30,17 @@ export const RemoveProxyForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="px-5 pb-4">
-      <TransactionValidationError errors={errors} wallets={wallets} />
-      <form id="add-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitProxy}>
+    <div className="flex flex-col gap-4 px-5 pb-4">
+      <DraftModeCard isOn={isDraftMode} onToggle={removeProxyModel.events.toggleDraftMode} />
+      {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+      <form id="add-proxy-form" className="flex flex-col gap-y-4" onSubmit={submitProxy}>
         <Signatories />
       </form>
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
-        <FeeSection />
-      </div>
+      {!isDraftMode && (
+        <div className="flex flex-col gap-y-6 pt-2 pb-4">
+          <FeeSection />
+        </div>
+      )}
       <ActionSection onGoBack={onGoBack} />
     </div>
   );
@@ -48,11 +53,25 @@ const Signatories = () => {
     fields: { signatory },
   } = useForm(removeProxyModel.form);
 
+  const isDraftMode = useUnit(removeProxyModel.$isDraftMode);
   const signingPath = useUnit(removeProxyModel.$signingPath);
   const chain = useUnit(removeProxyModel.$chain);
   const formErrors = useUnit(removeProxyModel.$errors);
 
   const nativeAsset = chain ? getNativeAsset(chain.assets) : null;
+
+  if (isDraftMode) {
+    return (
+      <DraftSigningPath
+        chainId={chain?.chainId ?? null}
+        asset={nativeAsset}
+        $draftPath={removeProxyModel.$draftSigningPath}
+        draftPathCommitted={removeProxyModel.events.draftPathCommitted}
+        draftPathEditStarted={removeProxyModel.events.draftPathEditStarted}
+        draftPathEditEnded={removeProxyModel.events.draftPathEditEnded}
+      />
+    );
+  }
 
   return (
     <SigningPathSection
@@ -91,28 +110,22 @@ const ActionSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(removeProxyModel.$canSubmit);
-  const coreTx = useUnit(removeProxyModel.$coreTx);
-  const api = useUnit(removeProxyModel.$api);
-  const chainId = useUnit(removeProxyModel.$proxyAccount.map((proxy) => proxy?.chainId ?? null));
-
-  const draftCallData = transactionService.getCallDataHex(coreTx, api);
+  const canSaveAsDraft = useUnit(removeProxyModel.$canSaveAsDraft);
+  const isDraftMode = useUnit(removeProxyModel.$isDraftMode);
 
   return (
     <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <div className="flex items-center gap-3">
-        <InitiateDraftButton
-          callData={draftCallData}
-          chainId={chainId}
-          source="remove-proxy"
-          onDraftCreated={removeProxyModel.flowFinished}
-        />
-        <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
-          {t('operation.continueButton')}
-        </Button>
-      </div>
+      <Button
+        form={isDraftMode ? undefined : 'add-proxy-form'}
+        type={isDraftMode ? 'button' : 'submit'}
+        disabled={isDraftMode ? !canSaveAsDraft : !canSubmit}
+        onClick={isDraftMode ? () => removeProxyModel.events.saveAsDraftRequested() : undefined}
+      >
+        {isDraftMode ? t('operations.drafts.initiateButton') : t('operation.continueButton')}
+      </Button>
     </div>
   );
 };

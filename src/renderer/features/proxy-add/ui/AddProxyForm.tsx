@@ -27,15 +27,15 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { ProxyPopover } from '@/entities/proxy';
-import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts → accounts-structure → wallet-details → proxy-add
-import { InitiateDraftButton } from '@/features/drafts/components/InitiateDraftButton';
+import { DraftModeCard } from '@/features/drafts/components/DraftModeCard';
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts → accounts-structure → wallet-details → proxy-add
+import { DraftSigningPath } from '@/features/drafts/components/DraftSigningPath';
 import { SigningPathSection } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/widgets/transaction-fee';
-import { addProxyModel } from '../model/add-proxy-model';
 import { formModel } from '../model/form-model';
 
 const { services, constants } = walletSelectFeature;
@@ -65,6 +65,7 @@ export const AddProxyForm = () => {
   const { submit } = useForm(formModel.form);
   const errors = useUnit(formModel.$errors);
   const wallets = useUnit(walletModel.$wallets);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -72,20 +73,23 @@ export const AddProxyForm = () => {
   };
 
   return (
-    <div className="px-5 pb-4">
-      <TransactionValidationError errors={errors} wallets={wallets} />
+    <div className="flex flex-col gap-4 px-5 pb-4">
+      <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
+      {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
       <ProxyPopover>{t('proxy.proxyTooltip')}</ProxyPopover>
-      <form id="add-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitProxy}>
+      <form id="add-proxy-form" className="flex flex-col gap-y-4" onSubmit={submitProxy}>
         <NetworkSelector />
         <AccountSelector />
         <Signatories />
         <ProxyInput />
         <ProxyTypeSelector />
       </form>
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
-        <FeeSection />
-        <FeeError />
-      </div>
+      {!isDraftMode && (
+        <div className="flex flex-col gap-y-6 pt-2 pb-4">
+          <FeeSection />
+          <FeeError />
+        </div>
+      )}
       <ActionSection />
     </div>
   );
@@ -240,10 +244,24 @@ const Signatories = () => {
     fields: { chain, signatory },
   } = useForm(formModel.form);
 
+  const isDraftMode = useUnit(formModel.$isDraftMode);
   const signingPath = useUnit(formModel.$signingPath);
   const formErrors = useUnit(formModel.$errors);
 
   const nativeAsset = chain.value ? getNativeAsset(chain.value.assets) : null;
+
+  if (isDraftMode) {
+    return (
+      <DraftSigningPath
+        chainId={chain.value?.chainId ?? null}
+        asset={nativeAsset}
+        $draftPath={formModel.$draftSigningPath}
+        draftPathCommitted={formModel.events.draftPathCommitted}
+        draftPathEditStarted={formModel.events.draftPathEditStarted}
+        draftPathEditEnded={formModel.events.draftPathEditEnded}
+      />
+    );
+  }
 
   return (
     <SigningPathSection
@@ -499,24 +517,18 @@ const ActionSection = () => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
-  const coreTx = useUnit(formModel.$coreTx);
-  const api = useUnit(formModel.$api);
-  const {
-    fields: { chain },
-  } = useForm(formModel.form);
-
-  const draftCallData = transactionService.getCallDataHex(coreTx, api);
+  const canSaveAsDraft = useUnit(formModel.$canSaveAsDraft);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
 
   return (
     <div className="mt-4 flex items-center justify-end gap-3">
-      <InitiateDraftButton
-        callData={draftCallData}
-        chainId={chain.value?.chainId}
-        source="proxy-add"
-        onDraftCreated={addProxyModel.output.flowFinished}
-      />
-      <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
-        {t('operation.continueButton')}
+      <Button
+        form={isDraftMode ? undefined : 'add-proxy-form'}
+        type={isDraftMode ? 'button' : 'submit'}
+        disabled={isDraftMode ? !canSaveAsDraft : !canSubmit}
+        onClick={isDraftMode ? () => formModel.events.saveAsDraftRequested() : undefined}
+      >
+        {isDraftMode ? t('operations.drafts.initiateButton') : t('operation.continueButton')}
       </Button>
     </div>
   );

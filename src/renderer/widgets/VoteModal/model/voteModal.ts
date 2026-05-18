@@ -4,9 +4,11 @@ import { spread } from 'patronum';
 
 import { type OngoingReferendum } from '@/shared/core';
 import { Step, isStep, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { votingService } from '@/entities/governance';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { wireDraftCloseRedirect } from '@/features/drafts';
 import {
   type AggregatedReferendum,
   lockPeriodsModel,
@@ -191,6 +193,15 @@ sample({
 sample({
   clock: flow.close,
   target: voteConfirmModel.resetConfirm,
+});
+
+const flowFinished = createEvent();
+sample({ clock: flow.close, target: flowFinished });
+
+wireDraftCloseRedirect({
+  $initiatedDraft: voteForm.$initiatedDraft,
+  flowFinished,
+  destination: Paths.OPERATIONS,
 });
 
 sample({

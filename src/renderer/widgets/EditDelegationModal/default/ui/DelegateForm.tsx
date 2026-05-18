@@ -10,9 +10,8 @@ import { AssetBalance } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
-import { transactionService } from '@/entities/transaction';
 import { AmountInput } from '@/features/assets-balances';
-import { InitiateDraftButton } from '@/features/drafts';
+import { DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { SigningPathSection } from '@/features/signing-path';
 import { ConvictionSelect } from '@/widgets/VoteModal';
@@ -30,6 +29,7 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
   const { t } = useI18n();
   const { submit } = useForm(formModel.form);
   const network = useUnit(formModel.$networkStore);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -45,7 +45,8 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
       </Modal.Title>
       <Modal.Content>
         <div className="flex w-full flex-1 flex-col rounded-lg bg-card-background px-5">
-          <SmallTitleText>{t('governance.addDelegation.formTitle')}</SmallTitleText>
+          <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
+          <SmallTitleText className="mt-4">{t('governance.addDelegation.formTitle')}</SmallTitleText>
 
           <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
             <Signatories />
@@ -53,9 +54,11 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
             <Conviction />
           </form>
 
-          <div className="flex flex-1 flex-col justify-end gap-y-6 pt-6">
-            <FeeSection />
-          </div>
+          {!isDraftMode && (
+            <div className="flex flex-1 flex-col justify-end gap-y-6 pt-6">
+              <FeeSection />
+            </div>
+          )}
         </div>
       </Modal.Content>
       <Modal.Footer>
@@ -72,8 +75,22 @@ const Signatories = () => {
     fields: { signatory },
   } = useForm(formModel.form);
 
+  const isDraftMode = useUnit(formModel.$isDraftMode);
   const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
+
+  if (isDraftMode) {
+    return (
+      <DraftSigningPath
+        chainId={network?.chain.chainId ?? null}
+        asset={network?.asset ?? null}
+        $draftPath={formModel.$draftSigningPath}
+        draftPathCommitted={formModel.events.draftPathCommitted}
+        draftPathEditStarted={formModel.events.draftPathEditStarted}
+        draftPathEditEnded={formModel.events.draftPathEditEnded}
+      />
+    );
+  }
 
   return (
     <SigningPathSection
@@ -234,27 +251,22 @@ const ActionsSection = ({ onGoBack }: { onGoBack: () => void }) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
-  const coreTx = useUnit(formModel.$coreTx);
-  const api = useUnit(formModel.$api);
-  const network = useUnit(formModel.$networkStore);
-  const draftCallData = transactionService.getCallDataHex(coreTx, api);
+  const canSaveAsDraft = useUnit(formModel.$canSaveAsDraft);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
 
   return (
     <div className="flex w-full items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <div className="flex items-center gap-3">
-        <InitiateDraftButton
-          callData={draftCallData}
-          chainId={network?.chain.chainId}
-          source="edit-delegation"
-          onDraftCreated={onGoBack}
-        />
-        <Button form="transfer-form" type="submit" disabled={!canSubmit}>
-          {t('transfer.continueButton')}
-        </Button>
-      </div>
+      <Button
+        form={isDraftMode ? undefined : 'transfer-form'}
+        type={isDraftMode ? 'button' : 'submit'}
+        disabled={isDraftMode ? !canSaveAsDraft : !canSubmit}
+        onClick={isDraftMode ? () => formModel.events.saveAsDraftRequested() : undefined}
+      >
+        {isDraftMode ? t('operations.drafts.initiateButton') : t('transfer.continueButton')}
+      </Button>
     </div>
   );
 };

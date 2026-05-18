@@ -23,9 +23,10 @@ import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { createDraftModeBinding, wireDraftSourceBalance } from '@/features/drafts';
 import { delegationAggregate, getLocksForAccount, networkSelectorModel } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { createSigningPathModel } from '@/features/signing-path';
@@ -57,6 +58,8 @@ const formSubmitted = createEvent();
 const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
 
+const draftMode = createDraftModeBinding({ formInitiated, chainChanged: formInitiated });
+
 const $target = createStore<DelegateAccount | null>(null);
 const $tracks = createStore<number[]>([]);
 
@@ -78,8 +81,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             proxyBalance: $proxyBalance,
             network: $networkStore,
             initiatorBalance: $initiatorBalance,
+            isDraftMode: draftMode.$isDraftMode,
           }),
-          fn: (initiator, fields, { fee, isProxy, proxyBalance, network, initiatorBalance }) => {
+          fn: (initiator, fields, { fee, isProxy, proxyBalance, network, initiatorBalance, isDraftMode }) => {
+            if (isDraftMode) return;
             if (!initiator) {
               return { message: 'staking.bond.noInitiatorError' };
             }
@@ -107,8 +112,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             multisigDeposit: $multisigDeposit,
             hasAnyMultisig: $hasAnyMultisig,
             signatoryBalance: $signatoryBalance,
+            isDraftMode: draftMode.$isDraftMode,
           }),
-          fn: (signatory, _fields, { fee, multisigDeposit, hasAnyMultisig, signatoryBalance }) => {
+          fn: (signatory, _fields, { fee, multisigDeposit, hasAnyMultisig, signatoryBalance, isDraftMode }) => {
+            if (isDraftMode) return;
             if (nullable(signatory)) {
               return { message: 'transfer.noSignatoryError' };
             }
@@ -131,12 +138,19 @@ const form: Form<FormParams> = createForm<FormParams>({
             network: $networkStore,
             delegateBalanceRange: $delegateBalanceRange,
             initiatorBalance: $initiatorBalance,
+            isDraftMode: draftMode.$isDraftMode,
           }),
-          fn: (value, fields, { fee, hasAnyMultisig, network, delegateBalanceRange, initiatorBalance }) => {
+          fn: (
+            value,
+            fields,
+            { fee, hasAnyMultisig, network, delegateBalanceRange, initiatorBalance, isDraftMode },
+          ) => {
             if (fields.isUnchanged) return; // skip checks when unchanged
 
             if (!value) return { message: 'transfer.requiredAmountError' };
             if (value === ZERO_BALANCE) return { message: 'transfer.notZeroAmountError' };
+
+            if (isDraftMode) return;
 
             const amountBN = new BN(formatAmount(value, network.asset.precision));
             const delegateBalance = Array.isArray(delegateBalanceRange)
@@ -193,9 +207,30 @@ const $availableBalance = combine(
   },
 );
 
-const $initiatorBalance = $availableBalance.map((account) => {
-  return account?.available.toString() || ZERO_BALANCE;
+// Source balance for draft mode: fetched on-demand once the path is set so
+// the "Available:" row reflects the eventual signer's balance, not the
+// connected wallet's initiator.
+const $draftSourceBalance = wireDraftSourceBalance({
+  $draftPath: draftMode.$draftSigningPath,
+  $chain: $chain,
+  $isDraftMode: draftMode.$isDraftMode,
 });
+
+const $initiatorBalance = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    draftSourceBalance: $draftSourceBalance,
+    availableBalance: $availableBalance,
+  },
+  ({ isDraftMode, draftSourceBalance, availableBalance }) => {
+    // Draft mode: read the path source's balance directly (no fee to subtract
+    // — the eventual signer pays it at submit time).
+    if (isDraftMode) {
+      return draftSourceBalance ? locksService.getAvailableBalance(draftSourceBalance).toString() : ZERO_BALANCE;
+    }
+    return availableBalance?.available.toString() || ZERO_BALANCE;
+  },
+);
 
 const $api = combine(
   {
@@ -219,13 +254,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: form.fields.initiator.$value,
     chain: $chain,
     resetOn: formInitiated,
     resetUserOverrideOn: form.fields.initiator.change,
-  });
+  },
+);
 
 const $walletData = combine({
   wallet: walletSelect.$selectedWallet,
@@ -358,15 +394,89 @@ const $signatoryBalance = combine(
   },
 );
 
+const $draftCoreTx = combine(
+  {
+    walletData: $walletData,
+    target: $target,
+    tracks: $tracks,
+    activeTracks: delegationAggregate.$activeTracks,
+    activeDelegations: $activeDelegations,
+    amount: form.fields.amount.$value,
+    conviction: form.fields.conviction.$value,
+    isUnchanged: form.fields.isUnchanged.$value,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+  },
+  ({
+    walletData,
+    target,
+    tracks,
+    activeTracks,
+    activeDelegations,
+    amount,
+    conviction,
+    isUnchanged,
+    path,
+    isPathComplete,
+  }) => {
+    if (nullable(walletData?.chain) || nullable(target) || tracks.length === 0 || !isPathComplete) {
+      return null;
+    }
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+
+    const signatoryDelegation = activeDelegations[sourceAccountId];
+    const finalConviction = isUnchanged ? signatoryDelegation?.conviction : conviction;
+    const finalAmount = isUnchanged
+      ? signatoryDelegation?.balance.toString()
+      : walletData.chain && formatAmount(amount, walletData.chain.assets[0]!.precision);
+
+    return transactionBuilder.buildEditDelegation({
+      chain: walletData.chain!,
+      accountId: sourceAccountId,
+      balance: finalAmount || '0',
+      conviction: finalConviction || 'None',
+      previousConviction: signatoryDelegation?.conviction || 'None',
+      target: target!.accountId,
+      tracks,
+      undelegateTracks: activeTracks[target!.accountId]?.[sourceAccountId]?.map(Number) || [],
+    });
+  },
+);
+
+const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
+
 const $canSubmit = combine(
   {
+    isDraftMode: draftMode.$isDraftMode,
     isFormValid: form.$isValid,
     isFeePending: $pendingFee,
   },
-  ({ isFormValid, isFeePending }) => {
+  ({ isDraftMode, isFormValid, isFeePending }) => {
+    if (isDraftMode) return false;
     return isFormValid && !isFeePending;
   },
 );
+
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    networkStore: $networkStore,
+  },
+  ({ isDraftMode, isPathComplete, callData, networkStore }) => {
+    if (!isDraftMode || !isPathComplete || !callData || !networkStore) return false;
+    return true;
+  },
+);
+
+draftMode.connectSave({
+  source: 'governance-edit-delegation-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore,
+  $canSave: $canSaveAsDraft,
+});
 
 sample({
   clock: formInitiated,
@@ -495,10 +605,20 @@ export const formModel = {
   $proxyAccount,
   $isProxy,
 
+  $isDraftMode: draftMode.$isDraftMode,
+  $canSaveAsDraft,
+  $initiatedDraft: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
   events: {
     formInitiated,
     formCleared,
     signingPathChanged,
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
   },
   output: {
     formSubmitted,
