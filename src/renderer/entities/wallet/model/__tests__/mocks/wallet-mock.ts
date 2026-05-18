@@ -93,7 +93,7 @@ function getWallets(): Wallet[] {
     {
       id: 3,
       name: 'My third wallet',
-      isHidden: true,
+      hiddenReason: 'manual',
       type: WalletType.MULTISIG,
       accounts: [accounts[4]!],
     },

@@ -382,21 +382,21 @@ describe('features/wallet-details/model/proxies-model', () => {
       id: 1,
       name: 'PW',
       type: WalletType.PROXIED,
-      isHidden: false,
+      hiddenReason: null,
       accounts: [pwAccount],
     } as unknown as ProxiedWallet;
     const fmwWallet = {
       id: 2,
       name: 'FMW',
       type: WalletType.FLEXIBLE_MULTISIG,
-      isHidden: false,
+      hiddenReason: null,
       accounts: [fmwAccount],
     } as unknown as FlexibleMultisigWallet;
     const mwWallet = {
       id: 3,
       name: 'MW',
       type: WalletType.MULTISIG,
-      isHidden: false,
+      hiddenReason: null,
       accounts: [mwAccount],
     } as unknown as MultisigWallet;
 
@@ -576,7 +576,7 @@ describe('features/wallet-details/model/proxies-model', () => {
         id: 4,
         name: 'MW2',
         type: WalletType.MULTISIG,
-        isHidden: false,
+        hiddenReason: null,
         accounts: [mw2Account],
       } as unknown as MultisigWallet;
 

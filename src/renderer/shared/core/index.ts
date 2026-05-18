@@ -20,6 +20,7 @@ export type {
   WalletConnectGroup,
   WalletConnectWallet,
   WalletFamily,
+  WalletHiddenReason,
   WalletsMap,
   WatchOnlyWallet,
 } from './types/wallet';

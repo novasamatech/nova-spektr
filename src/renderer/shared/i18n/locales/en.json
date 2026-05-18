@@ -859,6 +859,12 @@
   "features": {
     "account-sync": {
       "syncAccountsLabel": "Sync accounts"
+    },
+    "hide-unnamed-wallets": {
+      "hideTooltip": "Hide auto-discovered wallets. Keeps only wallets named via the address book, an on-chain identity, or manually. You can still hide individual wallets manually.",
+      "unhideTooltip": "Show auto-discovered wallets",
+      "hiddenToast": "Auto-discovered wallets hidden from wallet management",
+      "restoredToast": "Auto-discovered wallets are shown in wallet management"
     }
   },
   "fellowship": {
