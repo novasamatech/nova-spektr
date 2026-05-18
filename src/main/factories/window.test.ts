@@ -72,7 +72,7 @@ vi.mock('../shared/constants/environment', () => ({
 }));
 
 const EXPECTED_CSP =
-  "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' data: wss: ws: https: http:; font-src 'self' data:; worker-src 'self' blob:; object-src 'none'; frame-src 'none'";
+  "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' data: wss: ws: https: http:; font-src 'self' data:; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'";
 
 type HeadersReceivedCallback = (
   details: Record<string, unknown>,
@@ -212,6 +212,20 @@ describe('window.ts — CSP header via session.webRequest.onHeadersReceived', ()
     expect(headers['Content-Type']).toEqual(['text/html; charset=utf-8']);
     expect(headers['X-Frame-Options']).toEqual(['DENY']);
     expect(headers['Content-Security-Policy']).toBeDefined();
+  });
+
+  it("should set directive base-uri 'self' (prevents base-tag hijacking)", async () => {
+    const cb = await getHeadersReceivedCallback();
+    const result = await invokeCallback(cb, {}, 'mainFrame');
+    const headers = result.responseHeaders as Record<string, string[]>;
+    expect(headers['Content-Security-Policy']?.[0]).toContain("base-uri 'self'");
+  });
+
+  it("should set directive form-action 'self' (prevents form submission hijacking)", async () => {
+    const cb = await getHeadersReceivedCallback();
+    const result = await invokeCallback(cb, {}, 'mainFrame');
+    const headers = result.responseHeaders as Record<string, string[]>;
+    expect(headers['Content-Security-Policy']?.[0]).toContain("form-action 'self'");
   });
 
   it('CSP value should match the full expected policy string exactly', async () => {
