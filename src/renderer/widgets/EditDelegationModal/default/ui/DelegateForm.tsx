@@ -11,7 +11,7 @@ import { Modal, Tooltip } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
 import { AmountInput } from '@/features/assets-balances';
-import { DraftModeCard, DraftSigningPath } from '@/features/drafts';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { SigningPathSection } from '@/features/signing-path';
 import { ConvictionSelect } from '@/widgets/VoteModal';
@@ -46,19 +46,35 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
       <Modal.Content>
         <div className="flex w-full flex-1 flex-col rounded-lg bg-card-background px-5">
           <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
-          <SmallTitleText className="mt-4">{t('governance.addDelegation.formTitle')}</SmallTitleText>
-
-          <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
-            <Signatories />
-            <Amount />
-            <Conviction />
-          </form>
-
-          {!isDraftMode && (
-            <div className="flex flex-1 flex-col justify-end gap-y-6 pt-6">
-              <FeeSection />
+          {isDraftMode && network && (
+            <div className="mt-4">
+              <DraftSigningPath
+                chainId={network.chain.chainId}
+                asset={network.asset}
+                $draftPath={formModel.$draftSigningPath}
+                draftPathCommitted={formModel.events.draftPathCommitted}
+                draftPathEditStarted={formModel.events.draftPathEditStarted}
+                draftPathEditEnded={formModel.events.draftPathEditEnded}
+              />
             </div>
           )}
+          <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+            <div className="flex flex-1 flex-col">
+              <SmallTitleText className="mt-4">{t('governance.addDelegation.formTitle')}</SmallTitleText>
+
+              <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
+                <Signatories />
+                <Amount />
+                <Conviction />
+              </form>
+
+              {!isDraftMode && (
+                <div className="flex flex-1 flex-col justify-end gap-y-6 pt-6">
+                  <FeeSection />
+                </div>
+              )}
+            </div>
+          </DraftFormBody>
         </div>
       </Modal.Content>
       <Modal.Footer>
@@ -79,18 +95,7 @@ const Signatories = () => {
   const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
 
-  if (isDraftMode) {
-    return (
-      <DraftSigningPath
-        chainId={network?.chain.chainId ?? null}
-        asset={network?.asset ?? null}
-        $draftPath={formModel.$draftSigningPath}
-        draftPathCommitted={formModel.events.draftPathCommitted}
-        draftPathEditStarted={formModel.events.draftPathEditStarted}
-        draftPathEditEnded={formModel.events.draftPathEditEnded}
-      />
-    );
-  }
+  if (isDraftMode) return null;
 
   return (
     <SigningPathSection

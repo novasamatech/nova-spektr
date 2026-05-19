@@ -821,6 +821,7 @@ export const changeSignatoriesModel = {
   flow,
 
   $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
   $canSaveAsDraft,
   $initiatedDraft: draftMode.$initiatedDraft,
   $draftSigningPath: draftMode.$draftSigningPath,

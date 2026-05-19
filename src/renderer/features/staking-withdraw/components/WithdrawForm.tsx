@@ -9,7 +9,7 @@ import { Button, InputHint } from '@/shared/ui';
 import { TransactionValidationError } from '@/shared/ui-entities';
 import { walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
-import { DraftModeCard, DraftSigningPath } from '@/features/drafts';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { SigningPathSection } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
@@ -23,6 +23,7 @@ export const WithdrawForm = ({ onGoBack }: Props) => {
   const errors = useUnit(formModel.$errors);
   const wallets = useUnit(walletModel.$wallets);
   const isDraftMode = useUnit(formModel.$isDraftMode);
+  const network = useUnit(formModel.$networkStore);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -32,16 +33,30 @@ export const WithdrawForm = ({ onGoBack }: Props) => {
   return (
     <div className="flex flex-col gap-4 px-5 pb-4">
       <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
-      {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
-      <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
-        <Signatories />
-        <Amount />
-      </form>
-      {!isDraftMode && (
-        <div className="flex flex-col gap-y-6 pt-2 pb-4">
-          <FeeSection />
-        </div>
+      {isDraftMode && network && (
+        <DraftSigningPath
+          chainId={network.chain.chainId}
+          asset={network.asset}
+          $draftPath={formModel.$draftSigningPath}
+          draftPathCommitted={formModel.events.draftPathCommitted}
+          draftPathEditStarted={formModel.events.draftPathEditStarted}
+          draftPathEditEnded={formModel.events.draftPathEditEnded}
+        />
       )}
+      <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+        <div className="flex flex-col gap-4">
+          {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+          <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
+            <Signatories />
+            <Amount />
+          </form>
+          {!isDraftMode && (
+            <div className="flex flex-col gap-y-6 pt-2 pb-4">
+              <FeeSection />
+            </div>
+          )}
+        </div>
+      </DraftFormBody>
       <ActionsSection onGoBack={onGoBack} />
     </div>
   );
@@ -59,18 +74,7 @@ const Signatories = () => {
   const network = useUnit(formModel.$networkStore);
   const formErrors = useUnit(formModel.$errors);
 
-  if (isDraftMode) {
-    return (
-      <DraftSigningPath
-        chainId={network?.chain.chainId ?? null}
-        asset={network?.asset ?? null}
-        $draftPath={formModel.$draftSigningPath}
-        draftPathCommitted={formModel.events.draftPathCommitted}
-        draftPathEditStarted={formModel.events.draftPathEditStarted}
-        draftPathEditEnded={formModel.events.draftPathEditEnded}
-      />
-    );
-  }
+  if (isDraftMode) return null;
 
   return (
     <SigningPathSection

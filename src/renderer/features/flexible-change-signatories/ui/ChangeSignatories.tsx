@@ -8,7 +8,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
-import { DraftModeCard, DraftSigningPath } from '@/features/drafts';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { OperationSign } from '@/features/operations';
 import { OperationSubmitWithAction } from '@/features/operations/OperationSubmit';
 import { StepPath, pathModel } from '@/features/signing-path';
@@ -165,17 +165,6 @@ export const ChangeSignatories = ({
           <Modal.Content>
             <div className="flex h-full flex-col gap-y-4 px-5 pt-4 pb-6">
               <DraftModeCard isOn={isDraftMode} onToggle={changeSignatoriesModel.events.toggleDraftMode} />
-              <PersistentBanner
-                currentControllerAddress={currentControllerAddress}
-                currentSignatories={currentSignatories}
-                currentThreshold={currentThreshold}
-              />
-              <ExecutionModeToggle />
-              <UnifiedPicker
-                chain={chain}
-                currentControllerAddress={currentControllerAddress}
-                currentThreshold={currentThreshold}
-              />
               {isDraftMode && (
                 <DraftSigningPath
                   chainId={chain.chainId}
@@ -186,6 +175,24 @@ export const ChangeSignatories = ({
                   draftPathEditEnded={changeSignatoriesModel.events.draftPathEditEnded}
                 />
               )}
+              <DraftFormBody
+                $isDraftMode={changeSignatoriesModel.$isDraftMode}
+                $isDraftPathComplete={changeSignatoriesModel.$isDraftPathComplete}
+              >
+                <div className="flex flex-col gap-y-4">
+                  <PersistentBanner
+                    currentControllerAddress={currentControllerAddress}
+                    currentSignatories={currentSignatories}
+                    currentThreshold={currentThreshold}
+                  />
+                  <ExecutionModeToggle />
+                  <UnifiedPicker
+                    chain={chain}
+                    currentControllerAddress={currentControllerAddress}
+                    currentThreshold={currentThreshold}
+                  />
+                </div>
+              </DraftFormBody>
             </div>
           </Modal.Content>
           <Modal.Footer>

@@ -398,6 +398,7 @@ export const formModel = {
   signingPathChanged,
 
   $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
   $canSaveAsDraft,
   $initiatedDraft: draftMode.$initiatedDraft,
   $draftSigningPath: draftMode.$draftSigningPath,

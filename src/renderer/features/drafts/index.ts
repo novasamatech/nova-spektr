@@ -4,6 +4,7 @@ import { modalsSlot } from '@/features/app-shell';
 import { CreateDraftModalSlot } from './components/CreateDraftModalSlot';
 
 export { AddressBookHealthOverlay } from './components/AddressBookHealthOverlay';
+export { DraftFormBody } from './components/DraftFormBody';
 export { DraftModeCard } from './components/DraftModeCard';
 export { DraftSigningPath } from './components/DraftSigningPath';
 export { DraftsSection } from './components/DraftsSectionLazy';

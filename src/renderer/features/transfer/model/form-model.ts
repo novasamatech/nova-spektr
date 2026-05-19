@@ -1465,6 +1465,7 @@ export const formModel = {
   $xcmApi: xcmSpellTransferModel.$apiDestination,
 
   $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
   $canSaveAsDraft,
   $initiatedDraftFromTransfer: draftMode.$initiatedDraft,
   $draftSigningPath: draftMode.$draftSigningPath,

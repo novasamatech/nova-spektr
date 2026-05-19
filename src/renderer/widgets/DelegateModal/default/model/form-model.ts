@@ -501,6 +501,7 @@ export const formModel = {
   $proxyAccount,
 
   $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
   $canSaveAsDraft,
   $initiatedDraft: draftMode.$initiatedDraft,
   $draftSigningPath: draftMode.$draftSigningPath,

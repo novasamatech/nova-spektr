@@ -806,6 +806,7 @@ export const formModel = {
   $multisigDeposit,
 
   $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
   $canSaveAsDraft,
   $draftSigningPath: draftMode.$draftSigningPath,
 

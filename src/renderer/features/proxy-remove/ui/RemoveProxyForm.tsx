@@ -8,6 +8,8 @@ import { Button } from '@/shared/ui';
 import { TransactionValidationError } from '@/shared/ui-entities';
 import { walletModel } from '@/entities/wallet';
 // eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts -> accounts-structure -> wallet-details -> proxy-remove
+import { DraftFormBody } from '@/features/drafts/components/DraftFormBody';
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts -> accounts-structure -> wallet-details -> proxy-remove
 import { DraftModeCard } from '@/features/drafts/components/DraftModeCard';
 // eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts -> accounts-structure -> wallet-details -> proxy-remove
 import { DraftSigningPath } from '@/features/drafts/components/DraftSigningPath';
@@ -23,6 +25,8 @@ export const RemoveProxyForm = ({ onGoBack }: Props) => {
   const errors = useUnit(removeProxyModel.$errors);
   const wallets = useUnit(walletModel.$wallets);
   const isDraftMode = useUnit(removeProxyModel.$isDraftMode);
+  const chain = useUnit(removeProxyModel.$chain);
+  const nativeAsset = chain ? getNativeAsset(chain.assets) : null;
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -32,15 +36,32 @@ export const RemoveProxyForm = ({ onGoBack }: Props) => {
   return (
     <div className="flex flex-col gap-4 px-5 pb-4">
       <DraftModeCard isOn={isDraftMode} onToggle={removeProxyModel.events.toggleDraftMode} />
-      {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
-      <form id="add-proxy-form" className="flex flex-col gap-y-4" onSubmit={submitProxy}>
-        <Signatories />
-      </form>
-      {!isDraftMode && (
-        <div className="flex flex-col gap-y-6 pt-2 pb-4">
-          <FeeSection />
-        </div>
+      {isDraftMode && chain && (
+        <DraftSigningPath
+          chainId={chain.chainId}
+          asset={nativeAsset}
+          $draftPath={removeProxyModel.$draftSigningPath}
+          draftPathCommitted={removeProxyModel.events.draftPathCommitted}
+          draftPathEditStarted={removeProxyModel.events.draftPathEditStarted}
+          draftPathEditEnded={removeProxyModel.events.draftPathEditEnded}
+        />
       )}
+      <DraftFormBody
+        $isDraftMode={removeProxyModel.$isDraftMode}
+        $isDraftPathComplete={removeProxyModel.$isDraftPathComplete}
+      >
+        <div className="flex flex-col gap-4">
+          {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+          <form id="add-proxy-form" className="flex flex-col gap-y-4" onSubmit={submitProxy}>
+            <Signatories />
+          </form>
+          {!isDraftMode && (
+            <div className="flex flex-col gap-y-6 pt-2 pb-4">
+              <FeeSection />
+            </div>
+          )}
+        </div>
+      </DraftFormBody>
       <ActionSection onGoBack={onGoBack} />
     </div>
   );
@@ -60,18 +81,7 @@ const Signatories = () => {
 
   const nativeAsset = chain ? getNativeAsset(chain.assets) : null;
 
-  if (isDraftMode) {
-    return (
-      <DraftSigningPath
-        chainId={chain?.chainId ?? null}
-        asset={nativeAsset}
-        $draftPath={removeProxyModel.$draftSigningPath}
-        draftPathCommitted={removeProxyModel.events.draftPathCommitted}
-        draftPathEditStarted={removeProxyModel.events.draftPathEditStarted}
-        draftPathEditEnded={removeProxyModel.events.draftPathEditEnded}
-      />
-    );
-  }
+  if (isDraftMode) return null;
 
   return (
     <SigningPathSection

@@ -504,6 +504,7 @@ export const voteForm = {
   $errors,
 
   $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
   $canSaveAsDraft,
   $isReadyForDecision,
   $initiatedDraft: draftMode.$initiatedDraft,

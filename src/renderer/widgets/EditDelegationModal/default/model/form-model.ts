@@ -606,6 +606,7 @@ export const formModel = {
   $isProxy,
 
   $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
   $canSaveAsDraft,
   $initiatedDraft: draftMode.$initiatedDraft,
   $draftSigningPath: draftMode.$draftSigningPath,

@@ -33,7 +33,7 @@ import { contactModel } from '@/entities/contact';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
-import { DraftModeCard, DraftSigningPath } from '@/features/drafts';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { SigningPathSection, graphModel } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
@@ -81,29 +81,38 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
   return (
     <div className="flex flex-col gap-4 px-5 py-4">
       <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
-      {/* Transaction-level validation (signer balance, dry-run, destination
-          ED, account-death, pure-proxy chain mismatch) and the network fee row
-          don't apply to a draft — the eventual signer pays the fee and is
-          responsible for being able to sign. Hide the whole stack in draft
-          mode so the form stays focused on call-data inputs. */}
-      {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
-      {!isDraftMode && <DestinationBalanceAlert />}
-      {!isDraftMode && <PureProxyChainMismatchAlert />}
-      <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
-        <ChainSelector />
-        <XcmChainSelector />
-        <InitiatorSelector />
-        <SignatorySelector />
-        <Destination />
-        <Amount />
-      </form>
-      {!isDraftMode && (
-        <div className="flex flex-col gap-y-6">
-          <FeeSection />
-        </div>
+      {isDraftMode && network && (
+        <DraftSigningPath
+          chainId={network.chain.chainId}
+          asset={network.asset}
+          $draftPath={formModel.$draftSigningPath}
+          draftPathCommitted={formModel.events.draftPathCommitted}
+          draftPathEditStarted={formModel.events.draftPathEditStarted}
+          draftPathEditEnded={formModel.events.draftPathEditEnded}
+          allowedProxyTypes={TRANSFER_ALLOWED_PROXY_TYPES}
+        />
       )}
-
-      {!isDraftMode && <AlertForAccountDeath />}
+      <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+        <div className="flex flex-col gap-4">
+          {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+          {!isDraftMode && <DestinationBalanceAlert />}
+          {!isDraftMode && <PureProxyChainMismatchAlert />}
+          <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
+            <ChainSelector />
+            <XcmChainSelector />
+            <InitiatorSelector />
+            <SignatorySelector />
+            <Destination />
+            <Amount />
+          </form>
+          {!isDraftMode && (
+            <div className="flex flex-col gap-y-6">
+              <FeeSection />
+            </div>
+          )}
+          {!isDraftMode && <AlertForAccountDeath />}
+        </div>
+      </DraftFormBody>
 
       <ActionsSection onGoBack={onGoBack} />
 
@@ -235,22 +244,7 @@ const SignatorySelector = memo(() => {
   const isDraftMode = useUnit(formModel.$isDraftMode);
 
   if (!network) return null;
-
-  // Draft mode: surface the full signing-path picker driven by the shared
-  // pathModel, with sources restricted to External Address-Book contacts.
-  if (isDraftMode) {
-    return (
-      <DraftSigningPath
-        chainId={network.chain.chainId}
-        asset={network.asset}
-        $draftPath={formModel.$draftSigningPath}
-        draftPathCommitted={formModel.events.draftPathCommitted}
-        draftPathEditStarted={formModel.events.draftPathEditStarted}
-        draftPathEditEnded={formModel.events.draftPathEditEnded}
-        allowedProxyTypes={TRANSFER_ALLOWED_PROXY_TYPES}
-      />
-    );
-  }
+  if (isDraftMode) return null;
 
   if (!initiator) {
     return (

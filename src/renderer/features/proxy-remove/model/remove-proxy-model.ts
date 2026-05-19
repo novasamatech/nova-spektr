@@ -701,6 +701,7 @@ export const removeProxyModel = {
   $errors,
 
   $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
   $canSaveAsDraft,
   $initiatedDraft: draftMode.$initiatedDraft,
   $draftSigningPath: draftMode.$draftSigningPath,

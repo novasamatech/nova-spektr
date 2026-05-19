@@ -9,7 +9,7 @@ import { TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { walletModel } from '@/entities/wallet';
-import { DraftModeCard, DraftSigningPath } from '@/features/drafts';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
 import { OperationTemplatesToolbar } from '@/features/operation-templates';
 import { Fee } from '@/widgets/transaction-fee';
@@ -51,12 +51,8 @@ export const CallDataForm = () => {
   return (
     <>
       <ScrollArea>
-        <form id="call-data-form" className="flex flex-col gap-y-4 px-5 pb-4" onSubmit={submitForm}>
+        <div className="flex flex-col gap-y-4 px-5 pb-4">
           <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
-          {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
-          <NetworkSelect />
-          {!isDraftMode && <InitiatorSelect />}
-          {!isDraftMode && showSignatories && <SignatorySelect />}
           {isDraftMode && (
             <DraftSigningPath
               chainId={chain?.chainId ?? null}
@@ -67,26 +63,36 @@ export const CallDataForm = () => {
               draftPathEditEnded={formModel.events.draftPathEditEnded}
             />
           )}
+          <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+            <div className="flex flex-col gap-y-4">
+              {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+              <form id="call-data-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
+                <NetworkSelect />
+                {!isDraftMode && <InitiatorSelect />}
+                {!isDraftMode && showSignatories && <SignatorySelect />}
 
-          <div className="-mb-2">
-            <Tabs value={inputMode} onChange={(value) => inputModeChanged(value as InputMode)}>
-              <Tabs.List>
-                <Tabs.Trigger value={InputMode.PASTE}>{t('callData.mode.paste')}</Tabs.Trigger>
-                <Tabs.Trigger value={InputMode.BUILD}>{t('callData.mode.build')}</Tabs.Trigger>
-              </Tabs.List>
-              <Tabs.Content value={InputMode.PASTE}>
-                <CallDataInput />
-              </Tabs.Content>
-              <Tabs.Content value={InputMode.BUILD}>
-                <ExtrinsicBuilder
-                  api={api}
-                  initialCallData={builderInitialCallData}
-                  onCallDataChange={builderCallDataChanged}
-                />
-              </Tabs.Content>
-            </Tabs>
-          </div>
-        </form>
+                <div className="-mb-2">
+                  <Tabs value={inputMode} onChange={(value) => inputModeChanged(value as InputMode)}>
+                    <Tabs.List>
+                      <Tabs.Trigger value={InputMode.PASTE}>{t('callData.mode.paste')}</Tabs.Trigger>
+                      <Tabs.Trigger value={InputMode.BUILD}>{t('callData.mode.build')}</Tabs.Trigger>
+                    </Tabs.List>
+                    <Tabs.Content value={InputMode.PASTE}>
+                      <CallDataInput />
+                    </Tabs.Content>
+                    <Tabs.Content value={InputMode.BUILD}>
+                      <ExtrinsicBuilder
+                        api={api}
+                        initialCallData={builderInitialCallData}
+                        onCallDataChange={builderCallDataChanged}
+                      />
+                    </Tabs.Content>
+                  </Tabs>
+                </div>
+              </form>
+            </div>
+          </DraftFormBody>
+        </div>
 
         {nonNullable(chain) && (
           <OperationTemplatesToolbar

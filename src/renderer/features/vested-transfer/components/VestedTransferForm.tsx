@@ -12,7 +12,7 @@ import { Box, Field, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { type ValidationIssue, VestingCsvError, VestingFieldError } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
-import { DraftModeCard, DraftSigningPath } from '@/features/drafts';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { SigningPathSection } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -31,6 +31,8 @@ export const VestedTransferForm = () => {
   const canSubmit = useUnit(formModel.$canSubmit);
   const canSaveAsDraft = useUnit(formModel.$canSaveAsDraft);
   const isDraftMode = useUnit(formModel.$isDraftMode);
+  const chain = useUnit(formModel.$chain);
+  const asset = useUnit(formModel.$asset);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -43,18 +45,32 @@ export const VestedTransferForm = () => {
   return (
     <>
       <ScrollArea>
-        <form id="vested-transfer-form" onSubmit={submitForm}>
-          <Box padding={[4, 5]} gap={4}>
-            <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
-            {!isDraftMode && <TransactionValidationError errors={txErrors} wallets={wallets} />}
-            <NetworkSelect />
-            <Signatories />
-            <UploadCSV />
-            <ValidationsAlert />
-            <TotalAmountSection />
-            {!isDraftMode && <FeeSection />}
-          </Box>
-        </form>
+        <Box padding={[4, 5]} gap={4}>
+          <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
+          {isDraftMode && chain && (
+            <DraftSigningPath
+              chainId={chain.chainId}
+              asset={asset}
+              $draftPath={formModel.$draftSigningPath}
+              draftPathCommitted={formModel.events.draftPathCommitted}
+              draftPathEditStarted={formModel.events.draftPathEditStarted}
+              draftPathEditEnded={formModel.events.draftPathEditEnded}
+            />
+          )}
+          <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+            <div className="flex flex-col gap-4">
+              {!isDraftMode && <TransactionValidationError errors={txErrors} wallets={wallets} />}
+              <form id="vested-transfer-form" className="flex flex-col gap-4" onSubmit={submitForm}>
+                <NetworkSelect />
+                <Signatories />
+                <UploadCSV />
+                <ValidationsAlert />
+                <TotalAmountSection />
+              </form>
+              {!isDraftMode && <FeeSection />}
+            </div>
+          </DraftFormBody>
+        </Box>
       </ScrollArea>
       <Modal.Footer>
         <div className="flex items-center gap-3">
@@ -107,18 +123,7 @@ const Signatories = () => {
   const asset = useUnit(formModel.$asset);
   const txErrors = useUnit(formModel.$txErrors);
 
-  if (isDraftMode) {
-    return (
-      <DraftSigningPath
-        chainId={chain?.chainId ?? null}
-        asset={asset}
-        $draftPath={formModel.$draftSigningPath}
-        draftPathCommitted={formModel.events.draftPathCommitted}
-        draftPathEditStarted={formModel.events.draftPathEditStarted}
-        draftPathEditEnded={formModel.events.draftPathEditEnded}
-      />
-    );
-  }
+  if (isDraftMode) return null;
 
   return (
     <SigningPathSection
