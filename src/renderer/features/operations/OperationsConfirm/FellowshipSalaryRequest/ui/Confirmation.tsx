@@ -6,6 +6,7 @@ import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';
 import { SalaryRegisterConfirmation } from '@/features/fellowship-salary';
+import { CallDataConfirmSection } from '../../common/CallDataConfirmSection';
 import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
 import { confirm } from '../model/confirm';
 
@@ -37,6 +38,13 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
         chain={record.meta.chain}
         wallets={record.meta.wallets}
         fee={record.meta.fee}
+      />
+
+      <CallDataConfirmSection
+        api={record.meta.api}
+        chain={record.meta.chain}
+        resultTx={record.meta.tx}
+        coreTx={record.meta.coreTx}
       />
 
       <MultisigOperationDescriptionField />

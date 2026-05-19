@@ -100,6 +100,8 @@ export const Confirmation = ({
         wallets={wallets}
         initiators={initiators}
         signatory={meta.signatory}
+        resultTx={meta.tx}
+        coreTx={meta.coreTx}
       >
         <DetailRow label={t('governance.addDelegation.confirmation.target')}>
           <NamedAccount variant="short" chain={meta.chain} accountId={toAccountId(meta.target)} />

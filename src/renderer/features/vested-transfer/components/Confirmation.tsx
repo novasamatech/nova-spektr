@@ -10,6 +10,7 @@ import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { type VestingScheduleRaw } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
+import { CallDataConfirmSection } from '@/features/operations/OperationsConfirm/common/CallDataConfirmSection';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { VestingSchedulePreview } from '@/widgets/vesting-schedule-preview';
@@ -42,6 +43,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const timelineChainId = chain.additional?.timelineChain;
   const timelineApi = (nonNullable(timelineChainId) ? apis[timelineChainId] : apis[chain.chainId]) ?? null;
   const asset = getNativeAsset(chain.assets);
+  const api = apis?.[chain.chainId] ?? null;
 
   return (
     <>
@@ -85,6 +87,9 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
           </DetailRow>
           {hasMultisigAccount && <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} />}
           <FeeWithLabel asset={asset} fee={fee} />
+          {api && (
+            <CallDataConfirmSection api={api} chain={chain} resultTx={confirm.meta.tx} coreTx={confirm.meta.coreTx} />
+          )}
         </TransactionDetails>
       </Box>
 

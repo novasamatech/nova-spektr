@@ -60,6 +60,8 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         wallets={wallets}
         initiators={initiators}
         signatory={signatory}
+        resultTx={confirm.meta.tx}
+        coreTx={confirm.meta.coreTx}
       >
         <DetailRow label={t('staking.confirmation.rewardsDestinationLabel')}>
           {destination ? (
