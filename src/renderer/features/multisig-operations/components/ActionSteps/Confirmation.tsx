@@ -18,6 +18,7 @@ import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { SignButton, operationDetailsUtils } from '@/entities/operations';
 import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { CallDataConfirmSection } from '@/features/operations/OperationsConfirm/common/CallDataConfirmSection';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { Details } from '../Details';
 
@@ -39,6 +40,7 @@ type Props = {
   valid: boolean;
   isFeeLoading: boolean;
   isDepositRequired?: boolean;
+  showUnderlyingTransaction?: boolean;
   onSign: () => void;
   onGoBack?: () => void;
   errors?: (
@@ -62,6 +64,7 @@ export const Confirmation = ({
   onGoBack,
   errors,
   isDepositRequired = false,
+  showUnderlyingTransaction = false,
 }: Props) => {
   const { t } = useI18n();
 
@@ -101,7 +104,12 @@ export const Confirmation = ({
           signatory={signAccount}
         />
       )}
-      <OperationMeta operation={operation} chain={chain} api={api} />
+      <OperationMeta
+        operation={operation}
+        chain={chain}
+        api={api}
+        showUnderlyingTransaction={showUnderlyingTransaction}
+      />
       {asset && isDepositRequired && <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} />}
       {asset && <FeeWithLabel fee={fee} asset={asset} isLoading={isFeeLoading} />}
       <div className="mt-3 flex w-full justify-between">
@@ -119,7 +127,17 @@ export const Confirmation = ({
 const InteractionStyle =
   'rounded-sm hover:bg-action-background-hover hover:text-text-primary cursor-pointer py-[3px] px-2 -mr-2';
 
-const OperationMeta = ({ operation, chain, api }: { operation: MultisigOperation; chain: Chain; api: ApiPromise }) => {
+const OperationMeta = ({
+  operation,
+  chain,
+  api,
+  showUnderlyingTransaction = false,
+}: {
+  operation: MultisigOperation;
+  chain: Chain;
+  api: ApiPromise;
+  showUnderlyingTransaction?: boolean;
+}) => {
   const { t } = useI18n();
 
   const { callHash, callData, blockCreated, indexCreated } = operation;
@@ -172,7 +190,17 @@ const OperationMeta = ({ operation, chain, api }: { operation: MultisigOperation
         </DetailRow>
       )}
 
-      {callData && (
+      {callData && showUnderlyingTransaction && (
+        <CallDataConfirmSection
+          api={api}
+          chain={chain}
+          resultCallData={callData}
+          resultLabel={t('operation.details.coreTx')}
+          coreCallData={callData}
+        />
+      )}
+
+      {callData && !showUnderlyingTransaction && (
         <DetailRow label={t('operation.details.callData')} className="text-text-secondary">
           <div className="flex items-center gap-1">
             <Copy value={callData}>

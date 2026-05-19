@@ -73,6 +73,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         wallets={wallets}
         initiators={confirms.map((c) => c.meta.initiator)}
         signatory={signatory}
+        resultTx={confirmStore.meta.tx}
+        coreTx={confirmStore.meta.coreTx}
       >
         {hasMultisigAccount && (
           <DetailRow
