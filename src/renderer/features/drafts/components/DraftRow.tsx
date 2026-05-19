@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { type ReactNode, useMemo } from 'react';
 
 import { type CallData, type ChainId, CryptoType } from '@/shared/core';
-import { Slot, createSlot, useTransformer } from '@/shared/di';
+import { Slot, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import {
   cnTw,
@@ -28,27 +28,9 @@ import { authModel } from '@/aggregates/backend';
 import { operationTitleTransformer } from '@/features/multisig-operations';
 import { graphModel } from '@/features/signing-path';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
+import { draftAccountsOverviewSlot } from '../lib/draft-row-slot';
 import { getDestinationAccountId } from '../lib/get-destination-account-id';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
-
-/**
- * Slot for the per-row "view accounts structure" trigger. Drafts owns the slot
- * but never imports `@/features/accounts-structure` directly —
- * accounts-structure registers its own modal here. Direct import would create a
- * module-evaluation cycle: drafts → accounts-structure → wallet-details →
- * flexible-change-signatories → drafts.
- */
-export const draftAccountsOverviewSlot = createSlot<{
-  walletAccounts: AnyAccount[];
-  initialChainId: string;
-  trigger: ReactNode;
-  /**
-   * Skip merging with the user's wallet accounts. Drafts use this to render
-   * only the path-relevant nodes (proxied → multisig → path signer), instead of
-   * the full account structure of the surrounding wallet.
-   */
-  exclusive?: boolean;
-}>();
 
 type DraftRowProps = {
   draft: Draft;

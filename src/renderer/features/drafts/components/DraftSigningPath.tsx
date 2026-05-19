@@ -1,4 +1,4 @@
-import { type EventCallable, type Store } from 'effector';
+import { type EventCallable, type Store, createStore } from 'effector';
 import { useUnit } from 'effector-react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -16,6 +16,8 @@ import {
 } from '@/features/signing-path';
 
 const DRAFT_INLINE_HOLD_MS = 500;
+
+const $emptySources = createStore<PathSource[]>([]);
 
 type Props = {
   chainId: ChainId | null;
@@ -51,7 +53,7 @@ export const DraftSigningPath = memo(
     const draftPath = useUnit($draftPath);
 
     const sourcesStore = useMemo(
-      () => graphModel.$sourcesFor(chainId ?? ('0x00' as ChainId), { allowedProxyTypes }),
+      () => (chainId ? graphModel.$sourcesFor(chainId, { allowedProxyTypes }) : $emptySources),
       [chainId, allowedProxyTypes],
     );
     const allSources = useUnit(sourcesStore);

@@ -1,15 +1,15 @@
 import { createFeature } from '@/shared/feature';
 import { modalsSlot } from '@/features/app-shell';
 
-import { CreateDraftModal } from './components/CreateDraftModal';
+import { CreateDraftModalSlot } from './components/CreateDraftModalSlot';
 
 export { AddressBookHealthOverlay } from './components/AddressBookHealthOverlay';
 export { DraftModeCard } from './components/DraftModeCard';
 export { DraftSigningPath } from './components/DraftSigningPath';
-export { DraftsSection } from './components/DraftsSection';
+export { DraftsSection } from './components/DraftsSectionLazy';
 export { ReconnectAddressBookButton } from './components/ReconnectAddressBookButton';
-export { draftAccountsOverviewSlot } from './components/DraftRow';
-export { createDraftModeBinding } from './lib/createDraftModeBinding';
+export { draftAccountsOverviewSlot } from './lib/draft-row-slot';
+export { type DraftNetworkStore, createDraftModeBinding } from './lib/createDraftModeBinding';
 export { useCanCreateDraft } from './lib/useCanCreateDraft';
 export { wireDraftCloseRedirect } from './lib/wireDraftCloseRedirect';
 export { wireDraftSourceBalance } from './lib/wireDraftSourceBalance';
@@ -22,6 +22,6 @@ const draftsFeature = createFeature({
   name: 'drafts/modal',
 });
 
-draftsFeature.inject(modalsSlot, CreateDraftModal);
+draftsFeature.inject(modalsSlot, CreateDraftModalSlot);
 
 export { draftsFeature };

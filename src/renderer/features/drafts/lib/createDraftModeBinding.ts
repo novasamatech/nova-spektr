@@ -7,39 +7,19 @@ import { pathModel } from '@/features/signing-path';
 import { createDraftModel } from '../model/create-draft-model';
 
 type FactoryOpts = {
-  /** Reset clock for `$isDraftMode`, `$draftSigningPath`, and `$initiatedDraft`. */
   formInitiated: Event<unknown>;
-  /** Reset clock for `$draftSigningPath` (path becomes stale on chain switch). */
   chainChanged: Event<unknown>;
 };
 
+export type DraftNetworkStore = Store<{ chain: { chainId: ChainId } } | null>;
+
 type ConnectSaveOpts = {
-  /** Tracing tag forwarded to `createDraftModel` (e.g. `'transfer-draft-mode'`). */
   source: string;
-  /** Hex-encoded call data of the draft transaction the host computes. */
   $callDataHex: Store<string | null>;
-  /** Network bundle (chain + asset) the host already exposes. */
-  $networkStore: Store<{ chain: { chainId: ChainId } } | null>;
-  /** Final gate the host enforces before a save is actually accepted. */
+  $networkStore: DraftNetworkStore;
   $canSave: Store<boolean>;
 };
 
-/**
- * Shared draft-mode state machine for transaction-builder flows. Each flow owns
- * its toggle store, its draft signing-path mirror, and the `$initiatedDraft`
- * marker — the factory wires them up identically so flows stay one-liners.
- *
- * Usage:
- *
- * ```ts
- * const draftMode = createDraftModeBinding({
- *   formInitiated,
- *   chainChanged,
- * });
- * // ...flow computes $draftCoreTx using draftMode.$draftSigningPath...
- * draftMode.connectSave({ source, $callDataHex, $networkStore, $canSave });
- * ```
- */
 export const createDraftModeBinding = ({ formInitiated, chainChanged }: FactoryOpts) => {
   const draftModeToggled = createEvent<boolean | null>();
   const $isDraftMode = createStore(false)
@@ -48,29 +28,20 @@ export const createDraftModeBinding = ({ formInitiated, chainChanged }: FactoryO
 
   const saveAsDraftRequested = createEvent();
 
-  // Marker: a draft-creation flow was just initiated from THIS form session.
-  // Lets the parent flow-model close the modal on `draftCreated` without
-  // affecting unrelated draft flows triggered from elsewhere.
-  //
-  // Do NOT reset on `createDraftModel.draftCreated` — effector evaluates .on
-  // before sample sources, so a parent reading this store would observe
-  // `false`. Reset on flow boundaries instead.
+  // Do NOT reset on `createDraftModel.draftCreated` — effector evaluates `.on`
+  // before sample sources, so a parent reading this store on `draftCreated`
+  // would observe `false`. Reset on flow boundaries instead.
   const $initiatedDraft = createStore(false)
     .on(saveAsDraftRequested, () => true)
     .reset(formInitiated, createDraftModel.modalClosed);
 
-  // Reset the shared signing-path picker whenever draft mode flips OR the form
-  // is re-initiated. Keeps the picker free of stale nodes when the user toggles
-  // the mode mid-flow, or reopens the flow on a different network.
   sample({
     clock: [draftModeToggled, formInitiated, chainChanged],
     target: pathModel.pathReset,
   });
 
-  // Stable committed draft signing path. Inline view and draft submission read
-  // from here, not directly from `pathModel` — `SigningPathEditModal` resets
-  // pathModel on close, which would wipe the inline view if it were the source
-  // of truth.
+  // `$draftSigningPath` mirrors the committed path independently of `pathModel`
+  // because `SigningPathEditModal` resets `pathModel` on close.
   const draftPathCommitted = createEvent<PathNode[]>();
   const draftPathEditStarted = createEvent();
   const draftPathEditEnded = createEvent();
@@ -84,25 +55,17 @@ export const createDraftModeBinding = ({ formInitiated, chainChanged }: FactoryO
     .on(draftPathCommitted, (_, path) => path)
     .reset(formInitiated, draftModeToggled, chainChanged);
 
-  // Auto-commit when `StepPath` finishes the path and the user isn't mid-edit
-  // inside the modal. The modal's own pathModel changes are gated by
-  // `$isEditingDraftPath` so they don't double-commit.
   sample({
     clock: pathModel.$path,
     source: $isEditingDraftPath,
-    filter: (isEditing, path) => !isEditing && path.length > 0 && path[path.length - 1]!.kind === 'signer',
+    filter: (isEditing, path) => !isEditing && path.at(-1)?.kind === 'signer',
     fn: (_, path) => path,
     target: draftPathCommitted,
   });
 
-  // Clear the committed path when the user truncates back via the StepPath
-  // breadcrumb. Listening to `pathTruncatedTo` (rather than every `$path`
-  // emission) intentionally ignores resets emitted by SigningPathEditModal's
-  // cleanup, CreateDraftModal's own modalClosed flow, and chain/init resets —
-  // none of those are user truncations and clearing on them would lose the
-  // committed draft path when the user just navigated away from a nested
-  // modal. The `$isEditingDraftPath` gate additionally blocks truncates the
-  // modal fires during seeding.
+  // Listening to `pathTruncatedTo` (not every `$path` emission) lets us treat
+  // resets from SigningPathEditModal/CreateDraftModal/chain-init as non-clearing,
+  // preserving the committed path when the user just navigated away from a modal.
   sample({
     clock: pathModel.pathTruncatedTo,
     source: $isEditingDraftPath,
@@ -111,9 +74,7 @@ export const createDraftModeBinding = ({ formInitiated, chainChanged }: FactoryO
     target: $draftSigningPath,
   });
 
-  const $isDraftPathComplete = $draftSigningPath.map(
-    (path) => path.length > 0 && path[path.length - 1]!.kind === 'signer',
-  );
+  const $isDraftPathComplete = $draftSigningPath.map((path) => path.at(-1)?.kind === 'signer');
 
   const connectSave = ({ source, $callDataHex, $networkStore, $canSave }: ConnectSaveOpts) => {
     sample({
