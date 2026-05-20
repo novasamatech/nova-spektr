@@ -10,10 +10,9 @@ import { Alert, Button, DetailRow, FootnoteText, Icon, InfoLink, InputHint } fro
 import { AssetBalance, ChainSelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
-import { transactionService } from '@/entities/transaction';
 import { type ValidationIssue, VestingCsvError, VestingFieldError } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
-import { InitiateDraftButton } from '@/features/drafts';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { SigningPathSection } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -30,6 +29,10 @@ export const VestedTransferForm = () => {
 
   const { submit } = useForm(formModel.form);
   const canSubmit = useUnit(formModel.$canSubmit);
+  const canSaveAsDraft = useUnit(formModel.$canSaveAsDraft);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
+  const chain = useUnit(formModel.$chain);
+  const asset = useUnit(formModel.$asset);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -38,36 +41,46 @@ export const VestedTransferForm = () => {
 
   const wallets = useUnit(walletModel.$wallets);
   const txErrors = useUnit(formModel.$txErrors);
-  const chain = useUnit(formModel.$chain);
-  const api = useUnit(formModel.$api);
-  const coreTx = useUnit(formModel.$coreTx);
-  const draftCallData = transactionService.getCallDataHex(coreTx, api);
 
   return (
     <>
       <ScrollArea>
-        <form id="vested-transfer-form" onSubmit={submitForm}>
-          <Box padding={[4, 5]} gap={4}>
-            <TransactionValidationError errors={txErrors} wallets={wallets} />
-            <NetworkSelect />
-            <Signatories />
-            <UploadCSV />
-            <ValidationsAlert />
-            <TotalAmountSection />
-            <FeeSection />
-          </Box>
-        </form>
+        <Box padding={[4, 5]} gap={4}>
+          <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
+          {isDraftMode && chain && (
+            <DraftSigningPath
+              chainId={chain.chainId}
+              asset={asset}
+              $draftPath={formModel.$draftSigningPath}
+              draftPathCommitted={formModel.events.draftPathCommitted}
+              draftPathEditStarted={formModel.events.draftPathEditStarted}
+              draftPathEditEnded={formModel.events.draftPathEditEnded}
+            />
+          )}
+          <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+            <div className="flex flex-col gap-4">
+              {!isDraftMode && <TransactionValidationError errors={txErrors} wallets={wallets} />}
+              <form id="vested-transfer-form" className="flex flex-col gap-4" onSubmit={submitForm}>
+                <NetworkSelect />
+                <Signatories />
+                <UploadCSV />
+                <ValidationsAlert />
+                <TotalAmountSection />
+              </form>
+              {!isDraftMode && <FeeSection />}
+            </div>
+          </DraftFormBody>
+        </Box>
       </ScrollArea>
       <Modal.Footer>
         <div className="flex items-center gap-3">
-          <InitiateDraftButton
-            callData={draftCallData}
-            chainId={chain?.chainId}
-            source="vested-transfer"
-            onDraftCreated={() => formModel.flowFinished()}
-          />
-          <Button form="vested-transfer-form" type="submit" disabled={!canSubmit}>
-            {t('transfer.continueButton')}
+          <Button
+            form={isDraftMode ? undefined : 'vested-transfer-form'}
+            type={isDraftMode ? 'button' : 'submit'}
+            disabled={isDraftMode ? !canSaveAsDraft : !canSubmit}
+            onClick={isDraftMode ? () => formModel.events.saveAsDraftRequested() : undefined}
+          >
+            {isDraftMode ? t('operations.drafts.initiateButton') : t('transfer.continueButton')}
           </Button>
         </div>
       </Modal.Footer>
@@ -104,10 +117,13 @@ const Signatories = () => {
     fields: { signatory },
   } = useForm(formModel.form);
 
+  const isDraftMode = useUnit(formModel.$isDraftMode);
   const signingPath = useUnit(formModel.$signingPath);
   const chain = useUnit(formModel.$chain);
   const asset = useUnit(formModel.$asset);
   const txErrors = useUnit(formModel.$txErrors);
+
+  if (isDraftMode) return null;
 
   return (
     <SigningPathSection

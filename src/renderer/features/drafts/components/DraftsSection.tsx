@@ -27,9 +27,9 @@ import { draftDeepLinkModel } from '../model/draft-deep-link';
 import '../model/drafts-model'; // side-effect: orchestration wiring
 import { submitDraftModel } from '../model/submit-draft-model';
 
+import { AddressBookHealthOverlay } from './AddressBookHealthOverlay';
 import { DraftRow } from './DraftRow';
 import { DraftSummary } from './DraftSummary';
-import { ReconnectAddressBookButton } from './ReconnectAddressBookButton';
 import { SubmitDraftModal } from './SubmitDraftModal';
 
 export const DraftsSection = () => {
@@ -219,7 +219,7 @@ export const DraftsSection = () => {
 
   return (
     <div className="mb-6">
-      <div className="relative">
+      <AddressBookHealthOverlay isHealthy={isHealthy}>
         <div aria-hidden={!isHealthy} inert={!isHealthy || undefined}>
           <Accordion initialOpen>
             <Accordion.Trigger sticky>
@@ -248,6 +248,11 @@ export const DraftsSection = () => {
                       }
                       isHighlighted={focusedDraftId === draft.id}
                       multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
+                      proxyAccount={
+                        draft.proxyAccountId
+                          ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
+                          : null
+                      }
                       rowRef={
                         focusedDraftId === draft.id
                           ? (el) => {
@@ -297,14 +302,7 @@ export const DraftsSection = () => {
             </Accordion.Content>
           </Accordion>
         </div>
-        {!isHealthy && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-block-background-default/70 backdrop-blur-[2px]">
-            <div className="rounded-full bg-background-default">
-              <ReconnectAddressBookButton />
-            </div>
-          </div>
-        )}
-      </div>
+      </AddressBookHealthOverlay>
 
       {editingDraft && (
         <Modal size="md" isOpen={isEditModalOpen} onToggle={handleEditToggle}>

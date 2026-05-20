@@ -22,6 +22,7 @@ import { Popover, Skeleton } from '@/shared/ui-kit';
 import { balanceModel } from '@/entities/balance';
 import { LockPeriodDiff, LockValueDiff, votingService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { locksPeriodsAggregate } from '@/features/governance';
 import { SigningPathSection } from '@/features/signing-path';
 import { voteForm } from '../model/voteForm';
@@ -53,6 +54,8 @@ export const VoteForm = ({ chain, asset }: Props) => {
   const isFeeLoading = useUnit(voteForm.$pendingFee);
   const hasDelegatedTrack = useUnit(voteForm.$hasDelegatedTrack);
   const balances = useUnit(balanceModel.$balanceMap);
+  const isDraftMode = useUnit(voteForm.$isDraftMode);
+  const isReadyForDecision = useUnit(voteForm.$isReadyForDecision);
 
   const lockPeriods = useStoreMap({
     store: voteModal.$lockPeriods,
@@ -84,95 +87,120 @@ export const VoteForm = ({ chain, asset }: Props) => {
   return (
     <>
       <div className="flex flex-col gap-6 px-5 py-4">
-        <TransactionValidationError errors={errors} wallets={wallets} />
-        <div className="flex">
-          <Popover align="start">
-            <Popover.Trigger>
-              <div>
-                <LabelHelpBox>{t('governance.voting.aboutLabel')}</LabelHelpBox>
-              </div>
-            </Popover.Trigger>
-            <Popover.Content>
-              <div className="w-90">
-                <AboutVoting />
-              </div>
-            </Popover.Content>
-          </Popover>
-        </div>
-        <div className="flex flex-col gap-4">
-          {initiators.length > 1 && (
-            <AccountsSelector
-              value={initiator.value}
-              asset={asset}
-              chain={chain}
-              accounts={initiators}
-              balances={balances}
-              hasError={initiator.hasError}
-              errorText={t(initiator.errorMessage)}
-              onChange={initiator.onChange}
-            />
-          )}
-          <SigningPathSection
-            signingPath={signingPath}
-            chain={chain}
+        <DraftModeCard isOn={isDraftMode} onToggle={voteForm.events.toggleDraftMode} />
+        {isDraftMode && (
+          <DraftSigningPath
+            chainId={chain.chainId}
             asset={asset}
-            txErrors={errors}
-            errorText={t(signatory.errorMessage)}
-            balanceExtractor={(b) => (b ? b.free : null)}
-            onChange={voteForm.signingPathChanged}
+            $draftPath={voteForm.$draftSigningPath}
+            draftPathCommitted={voteForm.events.draftPathCommitted}
+            draftPathEditStarted={voteForm.events.draftPathEditStarted}
+            draftPathEditEnded={voteForm.events.draftPathEditEnded}
           />
+        )}
+        <DraftFormBody $isDraftMode={voteForm.$isDraftMode} $isDraftPathComplete={voteForm.$isDraftPathComplete}>
+          <div className="flex flex-col gap-6">
+            {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+            <div className="flex">
+              <Popover align="start">
+                <Popover.Trigger>
+                  <div>
+                    <LabelHelpBox>{t('governance.voting.aboutLabel')}</LabelHelpBox>
+                  </div>
+                </Popover.Trigger>
+                <Popover.Content>
+                  <div className="w-90">
+                    <AboutVoting />
+                  </div>
+                </Popover.Content>
+              </Popover>
+            </div>
+            <div className="flex flex-col gap-4">
+              {!isDraftMode && initiators.length > 1 && (
+                <AccountsSelector
+                  value={initiator.value}
+                  asset={asset}
+                  chain={chain}
+                  accounts={initiators}
+                  balances={balances}
+                  hasError={initiator.hasError}
+                  errorText={t(initiator.errorMessage)}
+                  onChange={initiator.onChange}
+                />
+              )}
+              {!isDraftMode && (
+                <SigningPathSection
+                  signingPath={signingPath}
+                  chain={chain}
+                  asset={asset}
+                  txErrors={errors}
+                  errorText={t(signatory.errorMessage)}
+                  balanceExtractor={(b) => (b ? b.free : null)}
+                  onChange={voteForm.signingPathChanged}
+                />
+              )}
 
-          <div className="flex flex-col gap-2">
-            <Amount
-              value={amount.value}
-              asset={asset}
-              availableBalance={availableBalance}
-              hasError={amount.hasError}
-              errorText={amount.errorMessage}
-              onChange={amount.onChange}
-            />
-            {showReuseLockBtn && (
-              <div className="flex justify-end">
-                <Button size="sm" pallet="secondary" onClick={() => amount.onChange(lock)}>
-                  {t('governance.vote.reuseLock')}: {formatAsset(lock, asset)}
-                </Button>
+              <div className="flex flex-col gap-2">
+                <Amount
+                  value={amount.value}
+                  asset={asset}
+                  availableBalance={availableBalance}
+                  hasError={amount.hasError}
+                  errorText={amount.errorMessage}
+                  onChange={amount.onChange}
+                />
+                {showReuseLockBtn && (
+                  <div className="flex justify-end">
+                    <Button size="sm" pallet="secondary" onClick={() => amount.onChange(lock)}>
+                      {t('governance.vote.reuseLock')}: {formatAsset(lock, asset)}
+                    </Button>
+                  </div>
+                )}
               </div>
+              <ConvictionSelect
+                asset={asset}
+                conviction={conviction.value}
+                amount={amount.value || BN_ZERO}
+                onChange={conviction.onChange}
+              />
+            </div>
+            {!isDraftMode && (
+              <div className="flex flex-col gap-4">
+                <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.governanceLock')}>
+                  <LockValueDiff from={lock} to={amount.value || BN_ZERO} asset={asset} />
+                </DetailRow>
+                <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
+                  <LockPeriodDiff from={initialConviction} to={conviction.value} lockPeriods={lockPeriods} />
+                </DetailRow>
+                <DetailRow label={t('governance.vote.field.networkFee')}>
+                  {isFeeLoading || !fee ? (
+                    <Skeleton height={4.5} width={12.5} />
+                  ) : (
+                    <FootnoteText>{formatAsset(fee, asset)}</FootnoteText>
+                  )}
+                </DetailRow>
+              </div>
+            )}
+            {!isDraftMode && (
+              <Alert active={hasDelegatedTrack} title={t('governance.vote.delegationErrorTitle')} variant="error">
+                <FootnoteText className="text-text-secondary">{t('governance.vote.delegationError')}</FootnoteText>
+              </Alert>
             )}
           </div>
-          <ConvictionSelect
-            asset={asset}
-            conviction={conviction.value}
-            amount={amount.value || BN_ZERO}
-            onChange={conviction.onChange}
-          />
-        </div>
-        <div className="flex flex-col gap-4">
-          <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.governanceLock')}>
-            <LockValueDiff from={lock} to={amount.value || BN_ZERO} asset={asset} />
-          </DetailRow>
-          <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
-            <LockPeriodDiff from={initialConviction} to={conviction.value} lockPeriods={lockPeriods} />
-          </DetailRow>
-          <DetailRow label={t('governance.vote.field.networkFee')}>
-            {isFeeLoading || !fee ? (
-              <Skeleton height={4.5} width={12.5} />
-            ) : (
-              <FootnoteText>{formatAsset(fee, asset)}</FootnoteText>
-            )}
-          </DetailRow>
-        </div>
-        <Alert active={hasDelegatedTrack} title={t('governance.vote.delegationErrorTitle')} variant="error">
-          <FootnoteText className="text-text-secondary">{t('governance.vote.delegationError')}</FootnoteText>
-        </Alert>
+        </DraftFormBody>
         <div className="flex shrink-0 gap-4">
           <ButtonCard
             className="grow basis-0"
             icon="thumbDown"
             pallet="negative"
-            disabled={hasDelegatedTrack}
+            disabled={isDraftMode ? !isReadyForDecision : hasDelegatedTrack}
             onClick={() => {
               decision.onChange('nay');
-              submit();
+              if (isDraftMode) {
+                voteForm.events.saveAsDraftRequested();
+              } else {
+                submit();
+              }
             }}
           >
             {t('governance.referendum.nay')}
@@ -181,7 +209,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
             className="grow basis-0"
             icon="minusCircle"
             pallet="secondary"
-            disabled={hasDelegatedTrack}
+            disabled={isDraftMode ? !isReadyForDecision : hasDelegatedTrack}
             onClick={toggleAbstainConfirm}
           >
             {t('governance.referendum.abstain')}
@@ -190,10 +218,14 @@ export const VoteForm = ({ chain, asset }: Props) => {
             className="grow basis-0"
             icon="thumbUp"
             pallet="positive"
-            disabled={hasDelegatedTrack}
+            disabled={isDraftMode ? !isReadyForDecision : hasDelegatedTrack}
             onClick={() => {
               decision.onChange('aye');
-              submit();
+              if (isDraftMode) {
+                voteForm.events.saveAsDraftRequested();
+              } else {
+                submit();
+              }
             }}
           >
             {t('governance.referendum.aye')}
@@ -212,7 +244,11 @@ export const VoteForm = ({ chain, asset }: Props) => {
             toggleAbstainConfirm();
             conviction.onChange('None');
             decision.onChange('abstain');
-            submit();
+            if (isDraftMode) {
+              voteForm.events.saveAsDraftRequested();
+            } else {
+              submit();
+            }
           }}
         >
           <div className="flex flex-col gap-2">

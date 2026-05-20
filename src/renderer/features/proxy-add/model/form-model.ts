@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { and, not } from 'patronum';
 
 import { chainsService } from '@/shared/api/network';
 import { proxyService } from '@/shared/api/proxy';
@@ -33,8 +32,9 @@ import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { createDraftModeBinding } from '@/features/drafts';
 import { addProxyValidator } from '@/features/operations/OperationsValidation';
 import { proxiesUtils } from '@/features/proxies';
 import { createSigningPathModel } from '@/features/signing-path';
@@ -79,6 +79,8 @@ const formInitiated = createEvent();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const proxyDepositChanged = createEvent<string>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
+
+const draftMode = createDraftModeBinding({ formInitiated, chainChanged: formInitiated });
 
 const $wallet = restore(flowStarted, null);
 
@@ -153,8 +155,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             proxyDeposit: $newProxyDeposit,
             balances: balanceModel.$balanceMap,
             isMultisig: $isMultisig,
+            isDraftMode: draftMode.$isDraftMode,
           }),
-          fn: (signatory, form, { isMultisig, balances, ...params }) => {
+          fn: (signatory, form, { isMultisig, balances, isDraftMode, ...params }) => {
+            if (isDraftMode) return;
             if (nullable(signatory)) {
               return { message: 'proxy.addProxy.noSignatoryError' };
             }
@@ -369,6 +373,27 @@ const $coreTx = combine(
   },
 );
 
+const $draftCoreTx = combine(
+  {
+    form: form.$values,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+  },
+  ({ form, path, isPathComplete }): Transaction | null => {
+    if (!isPathComplete || !form.chain || !form.delegate || !form.proxyType) return null;
+    if (!validateAddress(form.delegate)) return null;
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+
+    return transactionBuilder.buildAddProxy({
+      chain: form.chain,
+      accountId: sourceAccountId,
+      delegateAccountId: toAccountId(form.delegate),
+      type: form.proxyType,
+    });
+  },
+);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
@@ -430,7 +455,50 @@ const { $multisigDeposit } = createMultisigDeposit({
   $api: $api,
 });
 
-const $canSubmit = and($valid, form.$isValid, not($pendingFee), not($isProxyDepositLoading));
+const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
+
+const $draftNetworkStore = combine(form.fields.chain.$value, (chain) =>
+  chain ? { chain, asset: getNativeAsset(chain.assets) } : null,
+);
+
+const $canSubmit = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    valid: $valid,
+    formValid: form.$isValid,
+    pendingFee: $pendingFee,
+    isProxyDepositLoading: $isProxyDepositLoading,
+  },
+  ({ isDraftMode, valid, formValid, pendingFee, isProxyDepositLoading }) => {
+    if (isDraftMode) return false;
+    return valid && formValid && !pendingFee && !isProxyDepositLoading;
+  },
+);
+
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    networkStore: $draftNetworkStore,
+    delegate: form.fields.delegate.$value,
+    proxyType: form.fields.proxyType.$value,
+  },
+  ({ isDraftMode, isPathComplete, callData, networkStore, delegate, proxyType }) => {
+    if (!isDraftMode || !isPathComplete || !callData || !networkStore) return false;
+    if (!validateAddress(delegate)) return false;
+    if (!proxyType) return false;
+
+    return true;
+  },
+);
+
+draftMode.connectSave({
+  source: 'proxy-add-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore: $draftNetworkStore,
+  $canSave: $canSaveAsDraft,
+});
 
 const getMaxProxiesFx = createEffect((api: ApiPromise): number => {
   return proxyService.getMaxProxies(api);
@@ -597,4 +665,18 @@ export const formModel = {
   signingPathChanged,
   formSubmitted,
   $errors,
+
+  $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
+  $canSaveAsDraft,
+  $initiatedDraft: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
+  events: {
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
+  },
 };

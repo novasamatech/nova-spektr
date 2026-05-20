@@ -7,9 +7,8 @@ import { nullable } from '@/shared/lib/utils';
 import { Button, DetailRow } from '@/shared/ui';
 import { AssetBalance, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
-import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
-import { InitiateDraftButton } from '@/features/drafts';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { SigningPathSection } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -27,12 +26,12 @@ export const MultiTransferForm = memo(({ formId }: Props) => {
   const { submit } = useForm(formModel.form);
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const canSaveAsDraft = useUnit(formModel.$canSaveAsDraft);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
+  const chain = useUnit(formModel.$chain);
+  const asset = useUnit(formModel.$asset);
   const wallets = useUnit(walletModel.$wallets);
   const txErrors = useUnit(formModel.$txErrors);
-  const chain = useUnit(formModel.$chain);
-  const api = useUnit(formModel.$api);
-  const coreTx = useUnit(formModel.$coreTx);
-  const draftCallData = transactionService.getCallDataHex(coreTx, api);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -42,28 +41,42 @@ export const MultiTransferForm = memo(({ formId }: Props) => {
   return (
     <>
       <ScrollArea>
-        <form id={formId} onSubmit={handleSubmit}>
-          <Box padding={[4, 5]} gap={4}>
-            <TransactionValidationError errors={txErrors} wallets={wallets} />
-            <NetworkSelect />
-            <Signatories />
-            <UploadCSV />
-            <TotalAmountSection />
-            <FeeSection />
-          </Box>
-        </form>
+        <Box padding={[4, 5]} gap={4}>
+          <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
+          {isDraftMode && chain && (
+            <DraftSigningPath
+              chainId={chain.chainId}
+              asset={asset}
+              $draftPath={formModel.$draftSigningPath}
+              draftPathCommitted={formModel.events.draftPathCommitted}
+              draftPathEditStarted={formModel.events.draftPathEditStarted}
+              draftPathEditEnded={formModel.events.draftPathEditEnded}
+            />
+          )}
+          <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+            <div className="flex flex-col gap-4">
+              {!isDraftMode && <TransactionValidationError errors={txErrors} wallets={wallets} />}
+              <form id={formId} className="flex flex-col gap-4" onSubmit={handleSubmit}>
+                <NetworkSelect />
+                <Signatories />
+                <UploadCSV />
+                <TotalAmountSection />
+              </form>
+              {!isDraftMode && <FeeSection />}
+            </div>
+          </DraftFormBody>
+        </Box>
       </ScrollArea>
 
       <Modal.Footer>
         <div className="flex items-center gap-3">
-          <InitiateDraftButton
-            callData={draftCallData}
-            chainId={chain?.chainId}
-            source="multi-transfer"
-            onDraftCreated={() => formModel.flowFinished()}
-          />
-          <Button form={formId} type="submit" disabled={!canSubmit}>
-            {t('transfer.continueButton')}
+          <Button
+            form={isDraftMode ? undefined : formId}
+            type={isDraftMode ? 'button' : 'submit'}
+            disabled={isDraftMode ? !canSaveAsDraft : !canSubmit}
+            onClick={isDraftMode ? () => formModel.events.saveAsDraftRequested() : undefined}
+          >
+            {isDraftMode ? t('operations.drafts.initiateButton') : t('transfer.continueButton')}
           </Button>
         </div>
       </Modal.Footer>
@@ -77,10 +90,13 @@ const Signatories = () => {
     fields: { signatory },
   } = useForm(formModel.form);
 
+  const isDraftMode = useUnit(formModel.$isDraftMode);
   const signingPath = useUnit(formModel.$signingPath);
   const chain = useUnit(formModel.$chain);
   const asset = useUnit(formModel.$asset);
   const txErrors = useUnit(formModel.$txErrors);
+
+  if (isDraftMode) return null;
 
   return (
     <SigningPathSection

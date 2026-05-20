@@ -106,13 +106,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: $initiator,
     chain: $chain,
     resetOn: flow.open,
     resetUserOverrideOn: selectInitiator,
-  });
+  },
+);
 
 sample({
   clock: $unsignedAccounts,

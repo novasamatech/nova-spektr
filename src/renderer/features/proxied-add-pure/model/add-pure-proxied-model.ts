@@ -3,6 +3,7 @@ import { delay, spread } from 'patronum';
 
 import { type PartialProxiedAccount, ProxyTypes, ProxyVariant } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
@@ -10,6 +11,7 @@ import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { balanceSubModel } from '@/features/assets-balances';
+import { wireDraftCloseRedirect } from '@/features/drafts';
 import { navigationModel } from '@/features/navigation';
 import { type SigningPayload } from '@/features/operations/OperationSign';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -266,6 +268,13 @@ sample({
   source: $redirectAfterSubmitPath,
   filter: nonNullable,
   target: navigationModel.events.navigateTo,
+});
+
+wireDraftCloseRedirect({
+  $initiatedDraft: formModel.$initiatedDraft,
+  flowFinished,
+  redirectTarget: $redirectAfterSubmitPath,
+  destination: Paths.OPERATIONS,
 });
 
 sample({

@@ -21,9 +21,10 @@ import { type AnyAccount, accountService, accountSync, accounts, multisigOperati
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
-import { isEditFlexibleTransaction, transactionBuilder } from '@/entities/transaction';
+import { isEditFlexibleTransaction, transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
 import { multisigService } from '@/features/multisig-wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -50,6 +51,8 @@ const confirmGoBack = createEvent();
 const $step = restore(stepChanged, Step.SELECT_CONTROLLER).reset(flow.open).reset(flow.close);
 const $selectedTarget = restore<SelectedTarget | null>(targetSelected, null).reset(flow.open).reset(flow.close);
 const $executionMode = restore<ExecutionMode>(executionModeChanged, 'verified').reset(flow.open).reset(flow.close);
+
+const draftMode = createDraftModeBinding({ formInitiated: flow.open, chainChanged: flow.open });
 
 const $initiatorWallet = flow.state.map((state) => state.wallet ?? null);
 
@@ -543,6 +546,46 @@ const $canProceedFromForm = and(
 
 const $canSubmit = and($valid, $canProceedFromForm);
 
+const $draftCallDataHex = combine($draftTx, formModel.$api, (tx, api) => transactionService.getCallDataHex(tx, api));
+
+const $draftNetworkStore = $chain.map((chain) => (chain ? { chain } : null));
+
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    networkStore: $draftNetworkStore,
+    newControllerAccountId: $newControllerAccountId,
+  },
+  ({ isDraftMode, isPathComplete, callData, networkStore, newControllerAccountId }) => {
+    if (!isDraftMode || !isPathComplete || !callData || !networkStore || !newControllerAccountId) return false;
+    return true;
+  },
+);
+
+draftMode.connectSave({
+  source: 'flexible-change-signatories-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore: $draftNetworkStore,
+  $canSave: $canSaveAsDraft,
+});
+
+const $redirectAfterSubmitPath = createStore<string | null>(null);
+const flowFinished = createEvent();
+
+sample({
+  clock: flow.close,
+  target: flowFinished,
+});
+
+wireDraftCloseRedirect({
+  $initiatedDraft: draftMode.$initiatedDraft,
+  flowFinished,
+  redirectTarget: $redirectAfterSubmitPath,
+  destination: Paths.OPERATIONS,
+});
+
 // step transitions
 
 sample({
@@ -776,4 +819,18 @@ export const changeSignatoriesModel = {
   nextFromSigningPath,
   signingPathGoBack,
   flow,
+
+  $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
+  $canSaveAsDraft,
+  $initiatedDraft: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
+  events: {
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
+  },
 };

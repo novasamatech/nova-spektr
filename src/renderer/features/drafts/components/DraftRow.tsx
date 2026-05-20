@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { type ReactNode, useMemo } from 'react';
 
 import { type CallData, type ChainId, CryptoType } from '@/shared/core';
-import { Slot, createSlot, useTransformer } from '@/shared/di';
+import { Slot, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import {
   cnTw,
@@ -23,25 +23,14 @@ import { type AnyAccount, contactMultisigsModel } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
 import { decodeCallData, findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 import { authModel } from '@/aggregates/backend';
 import { operationTitleTransformer } from '@/features/multisig-operations';
 import { graphModel } from '@/features/signing-path';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
+import { draftAccountsOverviewSlot } from '../lib/draft-row-slot';
 import { getDestinationAccountId } from '../lib/get-destination-account-id';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
-
-/**
- * Slot for the per-row "view accounts structure" trigger. Drafts owns the slot
- * but never imports `@/features/accounts-structure` directly —
- * accounts-structure registers its own modal here. Direct import would create a
- * module-evaluation cycle: drafts → accounts-structure → wallet-details →
- * flexible-change-signatories → drafts (via InitiateDraftButton).
- */
-export const draftAccountsOverviewSlot = createSlot<{
-  walletAccounts: AnyAccount[];
-  initialChainId: string;
-  trigger: ReactNode;
-}>();
 
 type DraftRowProps = {
   draft: Draft;
@@ -51,6 +40,12 @@ type DraftRowProps = {
   hasInitiator: boolean;
   isHighlighted: boolean;
   multisigAccount: AnyAccount | null;
+  /**
+   * The draft's proxied source (when `draft.proxyAccountId` is set). Resolved
+   * by DraftsSection so the overview opens with the proxied — the deepest
+   * source of the signing path — pre-selected.
+   */
+  proxyAccount?: AnyAccount | null;
   rowRef?: (el: HTMLDivElement | null) => void;
   onDelete: (id: string) => void;
   onEdit: (draft: Draft) => void;
@@ -65,6 +60,7 @@ export const DraftRow = ({
   hasInitiator,
   isHighlighted,
   multisigAccount,
+  proxyAccount,
   rowRef,
   onDelete,
   onEdit,
@@ -83,7 +79,7 @@ export const DraftRow = ({
     draft.createdByContact?.name ?? backendContacts.find((c) => c.accountId === draft.createdBy)?.name;
   const creatorAddress = draft.createdBy ? toAddress(draft.createdBy, { prefix: chain?.addressPrefix }) : null;
 
-  const overviewAccount = useMemo<AnyAccount | null>(() => {
+  const baseMultisigAccount = useMemo<AnyAccount | null>(() => {
     if (multisigAccount) return multisigAccount;
     if (!contact?.signatories || !contact.threshold) return null;
 
@@ -96,6 +92,33 @@ export const DraftRow = ({
       contactIds: [contact.id],
     });
   }, [multisigAccount, contact]);
+
+  // Trim the multisig's signatories to just the draft's chosen signer so the
+  // overview graph renders the specific execution path (proxied → multisig →
+  // signer), not every signatory of the multisig.
+  const pathMultisigAccount = useMemo<AnyAccount | null>(() => {
+    if (!baseMultisigAccount) return null;
+    if (!accountUtils.isAnyMultisigAccount(baseMultisigAccount)) return baseMultisigAccount;
+    if (!draft.initiatorAccountId) return baseMultisigAccount;
+
+    const pathSigners = baseMultisigAccount.signatories.filter((s) => s.accountId === draft.initiatorAccountId);
+    if (pathSigners.length === 0) return baseMultisigAccount;
+
+    return { ...baseMultisigAccount, signatories: pathSigners };
+  }, [baseMultisigAccount, draft.initiatorAccountId]);
+
+  // First entry in the list is what the modal pre-selects — open from the
+  // proxied source when present so the graph anchors on the deepest hop, with
+  // the multisig falling in behind it.
+  const overviewWalletAccounts = useMemo<AnyAccount[]>(() => {
+    const items: AnyAccount[] = [];
+    if (proxyAccount) items.push(proxyAccount);
+    if (pathMultisigAccount) items.push(pathMultisigAccount);
+    return items;
+  }, [proxyAccount, pathMultisigAccount]);
+
+  // Used only to gate rendering of the overview trigger.
+  const hasOverview = overviewWalletAccounts.length > 0;
 
   const api = useApi(draft.chainId as ChainId);
 
@@ -236,12 +259,13 @@ export const DraftRow = ({
         {/* Actions */}
         <div className="flex shrink-0 items-center gap-x-1" onClick={(e) => e.stopPropagation()}>
           <div className="flex w-[90px] shrink-0 items-center justify-center">
-            {overviewAccount && (
+            {hasOverview && (
               <Slot
                 id={draftAccountsOverviewSlot}
                 props={{
-                  walletAccounts: [overviewAccount],
+                  walletAccounts: overviewWalletAccounts,
                   initialChainId: draft.chainId,
+                  exclusive: true,
                   trigger: (
                     <Button size="sm" variant="text">
                       {t('operations.drafts.overviewButton')}

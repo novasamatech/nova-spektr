@@ -43,10 +43,7 @@ async function parseJSON(file: File): Promise<ParseResult> {
   return { success: true, data: parsed.filter((contact) => contact.name.length > 0) };
 }
 
-function applyDuplicateResolutions(
-  contacts: ContactImport[],
-  resolutions: DuplicateResolutions,
-): ContactImport[] {
+function applyDuplicateResolutions(contacts: ContactImport[], resolutions: DuplicateResolutions): ContactImport[] {
   const nonDuplicates: ContactImport[] = [];
   const buckets = new Map<string, ContactImport[]>();
 

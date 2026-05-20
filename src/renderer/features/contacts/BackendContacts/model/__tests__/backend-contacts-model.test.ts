@@ -81,9 +81,7 @@ describe('features/contacts/BackendContacts/model/backend-contacts-model', () =>
 
   test('should NOT clear backend contacts when $isSessionExpired transitions to false', async () => {
     const scope = fork({
-      values: new Map()
-        .set(contactModel.$backendContacts, backendContacts)
-        .set(authModel.$isSessionExpired, true),
+      values: new Map().set(contactModel.$backendContacts, backendContacts).set(authModel.$isSessionExpired, true),
     });
 
     await allSettled(authModel.$isSessionExpired, { scope, params: false });
@@ -104,12 +102,7 @@ describe('features/contacts/BackendContacts/model/backend-contacts-model', () =>
   test('should clear backend contacts when fetch fails', async () => {
     const scope = fork({
       values: new Map().set(contactModel.$backendContacts, backendContacts),
-      handlers: [
-        [
-          backendContactsModel.__test.fetchBackendContactsFx,
-          jest.fn().mockRejectedValue(new Error('boom')),
-        ],
-      ],
+      handlers: [[backendContactsModel.__test.fetchBackendContactsFx, jest.fn().mockRejectedValue(new Error('boom'))]],
     });
 
     await allSettled(backendContactsModel.__test.fetchBackendContactsFx, {

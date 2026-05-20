@@ -2631,6 +2631,8 @@
       "addCallDataButton": "Add call data",
       "initiateButton": "Save as draft",
       "initiateDisabledTooltip": "Fill in all transaction details to save as draft",
+      "modeCardLabel": "Save as draft",
+      "modeCardDescription": "Pick the source account and execution path below - the operation will be saved as a draft and assigned to the selected initiator instead of signed now.",
       "editDraftTitle": "Edit draft",
       "editSuccess": "Draft updated",
       "editError": "Failed to update draft",
