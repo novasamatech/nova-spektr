@@ -274,7 +274,7 @@ export const DraftRow = ({
                     size="sm"
                     variant="fill"
                     disabled={!isAuthenticated || !canWrite}
-                    onClick={() => onEdit(draft)}
+                    onClick={() => onSubmit(draft)}
                   >
                     {t('operations.drafts.addCallDataButton')}
                   </Button>

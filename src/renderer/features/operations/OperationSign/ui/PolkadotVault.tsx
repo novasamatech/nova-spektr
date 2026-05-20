@@ -94,7 +94,7 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
 
   if (cameraStatus === 'checking') {
     return (
-      <Box width="440px" height="490px" verticalAlign="center" horizontalAlign="center">
+      <Box width="100%" height="490px" verticalAlign="center" horizontalAlign="center">
         <Loader color="primary" />
       </Box>
     );
@@ -102,7 +102,7 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
 
   if (cameraStatus === 'denied' || cameraStatus === 'no_input') {
     return (
-      <div className="flex w-[440px] flex-col items-center gap-4 px-5 py-4">
+      <div className="flex w-full flex-col items-center gap-4 px-5 py-4">
         <CameraAccessAlert status={cameraStatus} onRetry={retryCamera} />
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
@@ -113,18 +113,13 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
 
   if (isScanStep) {
     return (
-      <div className="w-[440px] px-5 py-4">
+      <div className="w-full px-5 py-4">
         <div className="flex w-full flex-col items-center">
           {signerWallet && (
-            <div className="mb-1 flex h-8 w-full items-center justify-center">
-              <div className="flex h-full items-center justify-center gap-x-0.5">
-                <FootnoteText className="whitespace-nowrap text-text-secondary">{t('signing.signer')}</FootnoteText>
-
-                <div className="flex w-full items-center gap-x-2 px-2">
-                  <WalletIcon type={signerWallet.type} size={16} />
-                  <FootnoteText className="w-max text-text-secondary">{signerWallet.name}</FootnoteText>
-                </div>
-              </div>
+            <div className="mb-1 flex h-8 items-center gap-x-2">
+              <FootnoteText className="whitespace-nowrap text-text-secondary">{t('signing.signer')}</FootnoteText>
+              <WalletIcon type={signerWallet.type} size={16} />
+              <FootnoteText className="text-text-secondary">{signerWallet.name}</FootnoteText>
             </div>
           )}
 
@@ -158,7 +153,7 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
   }
 
   return (
-    <div className="flex w-[440px] flex-col items-center overflow-hidden rounded-lg">
+    <div className="flex w-full flex-col items-center overflow-hidden rounded-lg">
       <QrReaderWrapper
         isMultiFrame={isMultiTx}
         countdown={countdown || 0}

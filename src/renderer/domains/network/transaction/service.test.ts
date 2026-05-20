@@ -253,5 +253,55 @@ describe('Transaction service', () => {
       expect(wrappedCalls?.[0]?.section).toBe('balances');
       expect(wrappedCalls?.[1]?.section).toBe('balances');
     });
+
+    it('should unwrap proxy.proxy to its inner call when target matches', async () => {
+      const api = await createMockApi();
+
+      const transfer = createTransferExtrinsic(api, TEST_ADDRESS_1, TRANSFER_AMOUNT_1);
+      const proxyCall = api.tx.proxy.proxy(TEST_ADDRESS_2, null, transfer);
+
+      const wrappedCalls = transactionService.getInnerCallsFromCall(
+        proxyCall.method as Call,
+        TEST_ADDRESS_2 as AccountId,
+      );
+
+      expect(wrappedCalls).toHaveLength(1);
+      expect(wrappedCalls?.[0]?.section).toBe('balances');
+      expect(wrappedCalls?.[0]?.method).toBe('transferKeepAlive');
+    });
+
+    it('should unwrap proxy.proxy nested inside a batch when target matches', async () => {
+      const api = await createMockApi();
+
+      const transfer = createTransferExtrinsic(api, TEST_ADDRESS_1, TRANSFER_AMOUNT_1);
+      const proxyCall = api.tx.proxy.proxy(TEST_ADDRESS_2, null, transfer);
+      const batchCall = api.tx.utility.batchAll([proxyCall]);
+
+      const wrappedCalls = transactionService.getInnerCallsFromCall(
+        batchCall.method as Call,
+        TEST_ADDRESS_2 as AccountId,
+      );
+
+      expect(wrappedCalls).toHaveLength(1);
+      expect(wrappedCalls?.[0]?.section).toBe('balances');
+      expect(wrappedCalls?.[0]?.method).toBe('transferKeepAlive');
+    });
+
+    it('should treat proxy.proxy as a leaf when target does not match', async () => {
+      const api = await createMockApi();
+
+      const transfer = createTransferExtrinsic(api, TEST_ADDRESS_1, TRANSFER_AMOUNT_1);
+      const proxyCall = api.tx.proxy.proxy(TEST_ADDRESS_2, null, transfer);
+      const batchCall = api.tx.utility.batchAll([proxyCall]);
+
+      const wrappedCalls = transactionService.getInnerCallsFromCall(
+        batchCall.method as Call,
+        TEST_ADDRESS_1 as AccountId,
+      );
+
+      expect(wrappedCalls).toHaveLength(1);
+      expect(wrappedCalls?.[0]?.section).toBe('proxy');
+      expect(wrappedCalls?.[0]?.method).toBe('proxy');
+    });
   });
 });

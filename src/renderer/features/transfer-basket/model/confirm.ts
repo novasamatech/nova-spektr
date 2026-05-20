@@ -38,6 +38,10 @@ const prepareDataFx = createEffect(async ({ transaction, accounts, chains, apis 
     initiator: account,
     signatory: account,
     route: [account],
+    // Basket entries are committed without the multi-hop graph context, so
+    // no signing path is reconstructed here. The confirm screen's chip
+    // hides itself when the path is shorter than 2 nodes.
+    signingPath: [],
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
     amount: transaction.coreTx.args.value,

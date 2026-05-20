@@ -4,7 +4,6 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { Button, CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
@@ -13,6 +12,7 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
+import { SigningPathConfirmSection } from '../../common/SigningPathConfirmSection';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -47,20 +47,21 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     return null;
   }
 
-  const { chain, asset, route, validators, signatory, fee, totalFee, multisigDeposit } = confirmStore.meta;
+  const { chain, asset, route, validators, signatory, fee, totalFee, multisigDeposit, signingPath } = confirmStore.meta;
 
   const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
 
   return (
     <>
-      <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
+      <div className="flex w-full flex-col items-center gap-y-4 px-5 pt-4 pb-4">
         <div className="mb-2 flex flex-col items-center gap-y-3">
           <Icon className="text-icon-default" name="changeValidatorsConfirm" size={60} />
         </div>
 
         <MultisigExistsAlert active={isMultisigExists} />
 
-        <TransactionDetails
+        <SigningPathConfirmSection
+          signingPath={signingPath}
           chain={chain}
           wallets={wallets}
           initiators={confirms.map((c) => c.meta.initiator)}
@@ -110,7 +111,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
             <StakingPopover.Item>{t('staking.confirmation.hintNewValidators')}</StakingPopover.Item>
           </StakingPopover>
-        </TransactionDetails>
+        </SigningPathConfirmSection>
 
         <MultisigOperationDescriptionField />
 

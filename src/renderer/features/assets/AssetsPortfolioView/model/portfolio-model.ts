@@ -51,6 +51,7 @@ sample({
     struct: shardsModel.$selectedStructure,
     selectedAccounts: walletSelect.$selectedAccounts,
   },
+  filter: ({ struct, selectedAccounts }) => shardsUtils.getSelectedShards(struct, selectedAccounts).length > 0,
   fn: ({ struct, selectedAccounts }) => shardsUtils.getSelectedShards(struct, selectedAccounts),
   target: $filteredAccounts,
 });

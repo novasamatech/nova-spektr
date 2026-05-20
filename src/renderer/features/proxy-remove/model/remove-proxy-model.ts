@@ -23,9 +23,8 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
-import { multisigOperationService } from '@/domains/network';
+import { accountSync, multisigOperationService } from '@/domains/network';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
-import { accountSync } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
@@ -42,6 +41,7 @@ import {
   removeProxyConfirmModel as confirmModel,
 } from '@/features/operations/OperationsConfirm/RemoveProxy';
 import { removeProxyValidator } from '@/features/operations/OperationsValidation';
+import { createSigningPathModel } from '@/features/signing-path';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { type RemoveProxyStore, Step } from '../lib/types';
 
@@ -178,6 +178,13 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: $proxiedAccount,
+    chain: $chain,
+    resetOn: flowStarted,
+  });
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   chain: $chain,
@@ -185,6 +192,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: $proxiedAccount,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 // Transaction validation
@@ -239,12 +247,13 @@ const $chainProxies = combine(
 const $canSubmit = and($valid, form.$isValid, not($pendingFee));
 
 sample({
-  clock: $signatories,
-  source: form.fields.signatory.$value,
-  filter: (current, signatories) => !current && signatories.length > 0,
-  fn: (_current, signatories) => signatories[0]!,
+  clock: [$signatoryFromPath, $signatories, flowStarted],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: getAccountProxiesFx.done,
@@ -587,6 +596,7 @@ export const removeProxyModel = {
   $proxiedAccount,
   $proxyAccount,
   $signatories,
+  $signingPath,
   $multisigDeposit,
   $fee,
   $isMultisig,
@@ -599,6 +609,7 @@ export const removeProxyModel = {
   $api,
   stepChanged,
   wentBackFromConfirm,
+  signingPathChanged,
   txSaved,
   $errors,
 };

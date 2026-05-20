@@ -3,7 +3,7 @@ import { createForm } from 'effector-forms';
 import { t } from 'i18next';
 import { not } from 'patronum';
 
-import { type Contact } from '@/shared/core';
+import { type Contact, type LocalContact } from '@/shared/core';
 import { isValidContactName, sanitizeContactName, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 
@@ -207,12 +207,12 @@ export function createEditFormModel() {
   sample({
     clock: $contactForm.formValidated,
     source: $contactToEdit,
-    filter: (contactToEdit): contactToEdit is Contact => contactToEdit !== null,
-    fn: (contactToEdit, form) => {
+    filter: (contactToEdit): contactToEdit is LocalContact =>
+      contactToEdit !== null && contactToEdit.source === 'local',
+    fn: (contactToEdit: LocalContact, form): LocalContact => {
       const address = toAddress(form.address);
-      const base = { ...contactToEdit, name: sanitizeContactName(form.name), address, accountId: toAccountId(address) };
 
-      return base as Contact;
+      return { ...contactToEdit, name: sanitizeContactName(form.name), address, accountId: toAccountId(address) };
     },
     target: contactModel.effects.updateContactFx,
   });

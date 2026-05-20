@@ -95,6 +95,7 @@ export const bootstrap = () => {
     import('@/features/wallet-pairing').then(({ walletPairingFeature }) => walletPairingFeature),
 
     import('@/features/account-sync').then(({ accountSyncFeature }) => accountSyncFeature),
+    import('@/features/hide-unnamed-wallets').then(({ hideUnnamedWalletsFeature }) => hideUnnamedWalletsFeature),
 
     import('@/features/multisig-wallet').then(({ multisigWalletFeature }) => multisigWalletFeature),
     import('@/features/multisig-wallet-create').then(({ multisigWalletPairingFeature }) => multisigWalletPairingFeature),

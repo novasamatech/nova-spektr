@@ -62,7 +62,9 @@ export const StepReview = ({
           <div className="flex items-center justify-between">
             <CaptionText className="text-text-tertiary uppercase">{t('signingPath.signingPath')}</CaptionText>
             <div className="flex items-center gap-3">
-              <HelpText className="text-text-tertiary">{t('signingPath.hopsCount', { count: path.length })}</HelpText>
+              <HelpText className="text-text-tertiary">
+                {t('signingPath.hopsCount', { count: Math.max(0, path.length - 1) })}
+              </HelpText>
               {chain && <PathReviewPopover path={path} chainId={chain.chainId} />}
             </div>
           </div>

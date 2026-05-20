@@ -351,7 +351,7 @@ async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise, budget?: Bl
   const wrapper = findCallWrapper(extrinsic);
   if (wrapper) {
     const innerArg = extrinsic.args.at(wrapper.innerCallIndex);
-    const innerCall = innerArg as unknown as Call | undefined;
+    const innerCall = innerArg as Call | undefined;
 
     if (innerCall?.section && innerCall.method) {
       const innerExtrinsic = api.tx(innerCall);
@@ -369,7 +369,7 @@ async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise, budget?: Bl
 
 const INNER_CALL_RECURSION_LIMIT = 16;
 
-function getInnerCallsFromCall(call: Call, depth = 0): Call[] {
+function getInnerCallsFromCall(call: Call, proxyTarget?: AccountId, depth = 0): Call[] {
   if (depth >= INNER_CALL_RECURSION_LIMIT) return [call];
 
   const next = depth + 1;
@@ -379,13 +379,21 @@ function getInnerCallsFromCall(call: Call, depth = 0): Call[] {
       const callsArg = call.args?.at?.(0) || call.args?.[0];
       const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
 
-      return calls.flatMap(nested => getInnerCallsFromCall(nested, next));
+      return calls.flatMap(nested => getInnerCallsFromCall(nested, proxyTarget, next));
     }
     if (call.method === 'withWeight') {
-      return getInnerCallsFromCall(call.args[0] as unknown as Call, next);
+      return getInnerCallsFromCall(call.args[0] as Call, proxyTarget, next);
     }
     if (call.method === 'dispatchAs' || call.method === 'asDerivative') {
-      return getInnerCallsFromCall(call.args[1] as unknown as Call, next);
+      return getInnerCallsFromCall(call.args[1] as Call, proxyTarget, next);
+    }
+  }
+
+  if (proxyTarget && call.section === 'proxy' && call.method === 'proxy') {
+    const realArg = call.args[0] as { isId?: boolean; asId?: { toHex(): string }; toHex?: () => string };
+    const real = realArg?.isId ? realArg.asId?.toHex() : realArg?.toHex?.();
+    if (real === proxyTarget) {
+      return getInnerCallsFromCall(call.args[2] as Call, proxyTarget, next);
     }
   }
 

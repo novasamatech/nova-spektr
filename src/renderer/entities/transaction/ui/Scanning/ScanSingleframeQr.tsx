@@ -189,7 +189,7 @@ export const ScanSingleframeQr = ({
         <QrTxGenerator payload={qrPayload} />
       </QrGeneratorContainer>
 
-      <div className="mt-3 flex w-full justify-between pl-2">
+      <div className="mt-3 flex w-full justify-between">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>

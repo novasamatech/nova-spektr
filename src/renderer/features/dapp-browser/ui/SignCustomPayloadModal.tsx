@@ -6,7 +6,7 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, ButtonWebLink, DetailRow, FootnoteText, Icon, LargeTitleText, Separator } from '@/shared/ui';
-import { AccountSelect, SignatorySelect, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
+import { AccountSelect, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, Modal, ScrollArea } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { transactionService } from '@/domains/network';
@@ -14,7 +14,7 @@ import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
 import { OperationSign } from '@/features/operations';
-import { NamedAccount } from '@/widgets/NameResolver';
+import { SigningPathSection } from '@/features/signing-path';
 import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { confirmModel } from '../model/confirm';
 import { Step, formModel } from '../model/form';
@@ -48,7 +48,7 @@ export const SignCustomPayloadModal = memo(({ payload, onCancel, onResult }: Pro
   }, [signatureResult]);
 
   return (
-    <Modal size="md" isOpen onToggle={(open) => !open && onCancel('Rejected by user')}>
+    <Modal size="mdlg" isOpen onToggle={(open) => !open && onCancel('Rejected by user')}>
       <Modal.Title close>
         <OperationTitle title="Sign dapp request on" chainId={payload.genesisHash} />
       </Modal.Title>
@@ -66,7 +66,6 @@ export const SignCustomPayloadModal = memo(({ payload, onCancel, onResult }: Pro
 const Form = memo(({ onConfirm }: { onConfirm: VoidFunction }) => {
   const { t } = useI18n();
 
-  const allAccounts = useUnit(walletModel.$availableAccounts);
   const allWallets = useUnit(walletModel.$allWallets);
 
   const errors = useUnit(formModel.$errors);
@@ -78,8 +77,7 @@ const Form = memo(({ onConfirm }: { onConfirm: VoidFunction }) => {
   const chain = useUnit(formModel.$chain);
   const asset = useUnit(formModel.$asset);
 
-  const showSignatories = useUnit(formModel.$showSignatories);
-  const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const initiators = useUnit(formModel.$initiators);
 
   const args = useUnit(formModel.$args);
@@ -105,31 +103,14 @@ const Form = memo(({ onConfirm }: { onConfirm: VoidFunction }) => {
             onChange={initiator.onChange}
           />
         </Field>
-        {showSignatories && (
-          <SignatorySelect
-            signatory={signatory.value}
-            signatories={signatories}
-            hasError={signatory.hasError}
-            errorText={signatory.errorMessage}
-            network={
-              nonNullable(chain) && nonNullable(asset)
-                ? {
-                    chain,
-                    asset,
-                  }
-                : null
-            }
-            allAccounts={allAccounts}
-            initiator={initiator.value}
-            allWallets={allWallets}
-            onChange={signatory.onChange}
-          />
-        )}
-        {showSignatories && signatories.length === 1 && nonNullable(signatory.value) && (
-          <Field text={t('proxy.addProxy.signatoryLabel')}>
-            <NamedAccount accountId={signatory.value.accountId} chain={chain} />
-          </Field>
-        )}
+        <SigningPathSection
+          signingPath={signingPath}
+          chain={chain}
+          asset={asset}
+          txErrors={errors}
+          errorText={signatory.errorMessage}
+          onChange={formModel.signingPathChanged}
+        />
       </Box>
       {nonNullable(args) && (
         <Box gap={4}>

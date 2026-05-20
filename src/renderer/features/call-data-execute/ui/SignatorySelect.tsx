@@ -11,6 +11,7 @@ import { Box, Field, Select } from '@/shared/ui-kit';
 import { accountService, useWalletsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
+import { SigningPathSection } from '@/features/signing-path';
 import { formModel } from '../model/form';
 
 import { walletTypesTitles } from './titles';
@@ -21,6 +22,7 @@ export const SignatorySelect = memo(() => {
   const wallets = useUnit(walletModel.$wallets);
   const resolvedWallets = useWalletsNames(wallets);
   const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const balancesMap = useUnit(balanceModel.$balanceMap);
   const chain = useUnit(formModel.form.fields.chain.$value);
   const {
@@ -128,6 +130,19 @@ export const SignatorySelect = memo(() => {
     }
     return null;
   }, [wallets, signatory.value]);
+
+  if (chain && asset && signingPath.length >= 2) {
+    return (
+      <SigningPathSection
+        signingPath={signingPath}
+        chain={chain}
+        asset={asset}
+        txErrors={[]}
+        errorText={t(signatory.errorMessage)}
+        onChange={formModel.signingPathChanged}
+      />
+    );
+  }
 
   return (
     <Field text={t('callData.fields.signatory.label')}>

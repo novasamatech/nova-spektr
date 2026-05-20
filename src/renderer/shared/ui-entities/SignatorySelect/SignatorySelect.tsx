@@ -1,5 +1,5 @@
 import { type BN } from '@polkadot/util';
-import { useCallback, useMemo } from 'react';
+import { type ReactNode, useCallback, useMemo } from 'react';
 import { Trans } from 'react-i18next';
 
 import { TEST_IDS } from '@/shared/constants/testIds';
@@ -55,6 +55,11 @@ type Props = {
   allAccounts: AnyAccount[];
   initiator: AnyAccount | null;
   allWallets: Wallet[];
+  /**
+   * Optional content rendered on the right side of the field label — used by
+   * transfer/* to mount the signing-path chip next to "Signatory".
+   */
+  action?: ReactNode;
 };
 
 export const SignatorySelect = ({
@@ -67,6 +72,7 @@ export const SignatorySelect = ({
   allAccounts,
   initiator,
   allWallets,
+  action,
 }: Props) => {
   const { t } = useI18n();
 
@@ -90,13 +96,15 @@ export const SignatorySelect = ({
     );
   }
 
-  // Hide selector if less than two signatories are available
-  if (signatories.length <= 1) {
+  // Hide selector when there's nothing to choose between — unless an action
+  // is mounted next to the label (e.g. transfer's signing-path chip), in
+  // which case the field stays visible so the action stays reachable.
+  if (signatories.length <= 1 && !action) {
     return null;
   }
 
   return (
-    <Field text={t('proxy.addProxy.signatoryLabel')}>
+    <Field text={t('proxy.addProxy.signatoryLabel')} action={action}>
       <Select
         placeholder={t('proxy.addProxy.signatoryPlaceholder')}
         value={signatory?.id.toString() ?? null}

@@ -46,6 +46,7 @@
       "noSignableAccounts": "No extension or Polkadot Vault accounts available",
       "notConnected": "Not signed in",
       "reconnectButton": "Reconnect",
+      "reconnectTooltip": "Address book is disconnected. Reconnect to restore access.",
       "scanQrTitle": "Scan with Polkadot Vault",
       "scanSignatureTitle": "Scan signature QR",
       "selectAccountLabel": "Select account",
@@ -858,6 +859,12 @@
   "features": {
     "account-sync": {
       "syncAccountsLabel": "Sync accounts"
+    },
+    "hide-unnamed-wallets": {
+      "hideTooltip": "Hide auto-discovered wallets. Keeps only wallets named via the address book, an on-chain identity, or manually. You can still hide individual wallets manually.",
+      "unhideTooltip": "Show auto-discovered wallets",
+      "hiddenToast": "Auto-discovered wallets hidden from wallet management",
+      "restoredToast": "Auto-discovered wallets are shown in wallet management"
     }
   },
   "fellowship": {
@@ -2106,6 +2113,7 @@
           "RECIPIENT_HAS_LESS_THAN_ED": "Recipient has less than ED",
           "UNKNOWN_ERROR": "Unknown error"
         },
+        "emptyFileDescription": "File has no data rows. Add at least one address and try uploading again.",
         "invalidDataDescription": "File couldn’t be read. Please check data formatting and try again.",
         "invalidDataRow": "Row {row}",
         "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
@@ -2604,6 +2612,7 @@
       "createDraftButton": "Create",
       "createSuccess": "Draft created",
       "createError": "Failed to create draft",
+      "accountNotInAddressBook": "This account is not in the address book contacts. Add it to contacts before creating a draft.",
       "connectToCreate": "Sign in to create drafts",
       "connectToSubmit": "Sign in to submit drafts",
       "noWritePermission": "You do not have permission to create drafts. Contact your admin.", 
@@ -2633,6 +2642,7 @@
       "discardDescription": "You have unsaved changes. Discard them?",
       "discardConfirm": "Discard",
       "discardCancel": "Keep editing",
+      "reconnectOverlayButton": "Reconnect",
       "submitTitle": "Submit draft",
       "submitSignatory": "Signatory",
       "noCallDataToSubmit": "Call data is required to submit",
@@ -2640,6 +2650,7 @@
       "syncRetry": "Try again",
       "extrinsicError": "Call data is invalid or incompatible with this chain",
       "internalPathError": "Signing path is invalid",
+      "signingPathUnresolved": "The signing path saved with this draft can no longer be resolved against your accounts. The draft cannot be submitted along the original route.",
       "submitSuccess": "Draft submitted",
       "initiatorUnavailable": "The initiator is no longer a signatory of this multisig. Please pick another.",
       "submittedBadge": "Submitted",
@@ -2810,7 +2821,8 @@
       "tooltip": "Signer is proving control of the proxied wallet via a marker remark",
       "details": {
         "targetSection": "Verifying wallet",
-        "openProxyDetails": "Open wallet details"
+        "openProxyDetails": "Open wallet details",
+        "memo": "Memo"
       }
     },
     "viewOperation": "View operation"
@@ -3077,7 +3089,7 @@
     "sourceAccount": "Source account",
     "sourceAccountDescription": "The account that executes the transaction",
     "selectSource": "Select a source account",
-    "pickMultisigForProxy": "Pick a multisig to sign via",
+    "pickMultisigForProxy": "Pick a wallet to sign via",
     "pickInitiator": "Pick an initiator",
     "pickInitiatorOrNested": "Pick an initiator or nested multisig",
     "pathComplete": "Path complete",
@@ -3089,8 +3101,16 @@
       "proxiedWithType": "Proxied · {type}",
       "viaMultisig": "via Multisig",
       "multisig": "Multisig",
+      "multisigThreshold": "Multisig {current} of {total}",
+      "thresholdRatio": "{current} of {total}",
       "initiator": "Initiator"
-    }
+    },
+    "control": {
+      "editTitle": "Edit signing path",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "transferProxyTypeDisabled": "This proxy type cannot perform transfers"
   },
   "splashscreen": {
     "multisig": {
@@ -3481,6 +3501,7 @@
           "START_BLOCK_IN_PAST": "Block in the past. Make sure you are using relaychain block number",
           "UNKNOWN_ERROR": "Unknown error"
         },
+        "emptyFileDescription": "File has no data rows. Add at least one address and try uploading again.",
         "invalidDataRow": "Row {row}",
         "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
         "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
@@ -3621,6 +3642,9 @@
       "statusPendingVerification": "Pending verification",
       "statusPendingDelegation": "Pending delegation",
       "verifyFormResolvingAccounts": "Resolving proxy account…",
+      "verifyMemoLabel": "Memo",
+      "verifyMemoPlaceholder": "Optional note (max 200 chars)",
+      "verifyConfirmMemo": "Memo",
       "verifyViaProxy": "Verify proxy",
       "notVerifiedHeadline": "This proxy is not verified yet.",
       "verifyDescription": "Verify submits a `system.remarkWithEvent` via the proxy so we can confirm it on-chain. Because the proxy is a multisig, it's submitted as a multisig proposal-signatories must approve it before it executes.",

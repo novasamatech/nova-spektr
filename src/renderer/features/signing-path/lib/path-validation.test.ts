@@ -30,12 +30,12 @@ describe('path-validation', () => {
       expect(isValidPath(path).ok).toBe(false);
     });
 
-    it('rejects proxied -> signer without multisig', () => {
+    it('accepts proxied -> signer (direct delegate)', () => {
       const path: PathNode[] = [
         { kind: 'proxied', accountId: acc(1) },
         { kind: 'signer', accountId: acc(2) },
       ];
-      expect(isValidPath(path).ok).toBe(false);
+      expect(isValidPath(path).ok).toBe(true);
     });
 
     it('rejects middle node that is not multisig', () => {
@@ -118,12 +118,12 @@ describe('path-validation', () => {
       expect(isValidPathPrefix(path).ok).toBe(true);
     });
 
-    it('rejects proxied → signer (no multisig)', () => {
+    it('accepts proxied → signer (direct delegate)', () => {
       const path: PathNode[] = [
         { kind: 'proxied', accountId: acc(1) },
         { kind: 'signer', accountId: acc(2) },
       ];
-      expect(isValidPathPrefix(path).ok).toBe(false);
+      expect(isValidPathPrefix(path).ok).toBe(true);
     });
 
     it('rejects cycles', () => {

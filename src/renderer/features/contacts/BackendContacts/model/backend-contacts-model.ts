@@ -1,7 +1,7 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 
 import { persist } from '@/shared/api/storage';
-import { type Contact } from '@/shared/core';
+import { type BackendContact } from '@/shared/core';
 import { HttpError, backendContactsService } from '@/domains/backend';
 import { type BackendError, contactModel } from '@/entities/contact';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
@@ -31,8 +31,10 @@ const $lastSyncTime = createStore<number | null>(null);
 persist({ store: $lastSyncTime, key: 'address-book-last-sync-time' });
 const $syncStatus = createStore<SyncStatus>('idle');
 
-const fetchBackendContactsFx = createEffect(async (baseUrl: string): Promise<Contact[]> => {
-  return backendContactsService.fetchAllContacts(baseUrl);
+const fetchBackendContactsFx = createEffect(async (baseUrl: string): Promise<BackendContact[]> => {
+  const result = await backendContactsService.fetchAllContacts(baseUrl);
+
+  return result.filter((c): c is BackendContact => c.source === 'backend');
 });
 
 $isLoading.on(fetchBackendContactsFx, () => true);
@@ -83,10 +85,10 @@ sample({
 
 $syncStatusThrottled.on(ensureMinSyncTimeFx.doneData, (_, status) => status);
 
-// Persist fetched backend contacts to Dexie
+// Push freshly fetched contacts into the contact entity (in-memory, never persisted)
 sample({
   clock: fetchBackendContactsFx.doneData,
-  target: contactModel.effects.syncBackendContactsFx,
+  target: contactModel.events.backendContactsReceived,
 });
 
 // Auto-fetch when auth state changes to non-null
@@ -116,18 +118,21 @@ const sessionExpired = sample({
   filter: (expired) => expired,
 });
 
-const networkIssueDetected = sample({
-  clock: authModel.$hasNetworkIssue,
-  filter: (issue) => issue,
-});
-
 $error.on(sessionExpired, () => null);
 $lastSyncTime.on(sessionExpired, () => null);
 $syncStatus.on(sessionExpired, () => 'idle');
 
+// All disconnect signals reset the entity's backend-contact store. New disconnect events get added
+// here once and pick up the cleanup automatically — no per-trigger imperative clear is needed.
 sample({
-  clock: [backendConfigurationModel.events.urlCleared, sessionExpired, networkIssueDetected],
-  target: contactModel.effects.clearBackendContactsFx,
+  clock: [
+    backendConfigurationModel.events.urlCleared,
+    authModel.events.signOutClicked,
+    sessionExpired,
+    sample({ clock: authModel.$hasNetworkIssue, filter: (issue) => issue }),
+    fetchBackendContactsFx.failData,
+  ],
+  target: contactModel.events.backendContactsCleared,
 });
 
 const networkIssueCleared = sample({
@@ -143,12 +148,31 @@ sample({
   target: fetchBackendContactsFx,
 });
 
+// Address book is "healthy" when the user is signed in, no auth/network issues, and contacts are
+// not in sync-error state. UI surfaces (sidebar pill/dot, drafts overlay, save-as-draft swap)
+// derive their visibility from this single source of truth.
+const $hasAuthIssue = combine(
+  {
+    isAuthenticated: authModel.$isAuthenticated,
+    isSessionExpired: authModel.$isSessionExpired,
+    hasNetworkIssue: authModel.$hasNetworkIssue,
+  },
+  ({ isAuthenticated, isSessionExpired, hasNetworkIssue }) => !isAuthenticated || isSessionExpired || hasNetworkIssue,
+);
+
+const $isHealthy = combine(
+  $hasAuthIssue,
+  $syncStatus,
+  (hasAuthIssue, syncStatus) => !hasAuthIssue && syncStatus !== 'error',
+);
+
 export const backendContactsModel = {
   $isLoading,
   $error,
   $lastSyncTime,
   $syncStatus,
   $syncStatusThrottled,
+  $isHealthy,
 
   events: {
     syncTriggered,

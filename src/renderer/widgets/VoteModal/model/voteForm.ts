@@ -28,6 +28,7 @@ import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { voteValidateModel } from '@/features/governance/model/vote/voteValidateModel';
 import { type VoteConfirm, voteConfirmModel } from '@/features/operations/OperationsConfirm';
 import { voteValidator } from '@/features/operations/OperationsValidation';
+import { createSigningPathModel } from '@/features/signing-path';
 
 type FormFields = {
   initiator: AnyAccount | null;
@@ -120,6 +121,24 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
+    initiator: form.fields.initiator.$value,
+    chain: networkSelectorModel.$governanceChain,
+    resetOn: form.reset,
+    resetUserOverrideOn: form.fields.initiator.change,
+  },
+);
+
+sample({
+  clock: [$signatoryFromPath, $signatories, form.reset],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
+  target: form.fields.signatory.change,
+});
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
+
 // delegated
 
 const $hasDelegatedTrack = combine(
@@ -179,6 +198,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: networkSelectorModel.$governanceChain,
   transaction: $coreTx,
+  routeOverride: $pathRoute,
 });
 
 // used only to calc fee before decision made
@@ -213,6 +233,7 @@ const feeTxStore = createComplexTxStore({
   accounts: accounts.$list,
   chain: networkSelectorModel.$governanceChain,
   transaction: $feeTx,
+  routeOverride: $pathRoute,
 });
 
 // Transaction validation
@@ -296,11 +317,12 @@ sample({
     route: $route,
     tx: $tx,
     coreTx: $coreTx,
+    signingPath: $signingPath,
   },
   filter: ({ network, tx, initiator }, { decision }) => {
     return nonNullable(network) && nonNullable(initiator) && nonNullable(decision) && nonNullable(tx);
   },
-  fn: ({ existingVote, network, tx, coreTx, route, initiator }, { signatory }): VoteConfirm => {
+  fn: ({ existingVote, network, tx, coreTx, route, initiator, signingPath }, { signatory }): VoteConfirm => {
     return {
       api: network!.api,
       chain: network!.chain,
@@ -311,6 +333,7 @@ sample({
       existingVote,
       tx: tx!,
       coreTx: coreTx!,
+      signingPath,
     };
   },
   target: voteConfirmModel.replaceWithConfirm,
@@ -348,6 +371,9 @@ export const voteForm = {
 
   $fee,
   $pendingFee,
+
+  $signingPath,
+  signingPathChanged,
 
   $canSubmit,
 

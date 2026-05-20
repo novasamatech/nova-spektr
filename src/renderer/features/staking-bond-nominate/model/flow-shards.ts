@@ -324,6 +324,7 @@ sample({
           route: [bondData!.shards[0]!],
           coreTx: coreTxs[0]!,
           tx: coreTxs[0]!,
+          signingPath: [],
         } satisfies BondNominateConfirm,
       ],
       step: Step.CONFIRM,

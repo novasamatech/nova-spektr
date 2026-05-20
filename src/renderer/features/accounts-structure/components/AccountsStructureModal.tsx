@@ -19,11 +19,12 @@ const AccountsStructure = lazy(() =>
 type Props = {
   walletAccounts: AnyAccount[];
   initialChainId?: string;
+  exclusive?: boolean;
   trigger?: ReactNode;
   onClose?: () => void;
 };
 
-export const AccountsStructureModal = ({ walletAccounts, initialChainId, trigger, onClose }: Props) => {
+export const AccountsStructureModal = ({ walletAccounts, initialChainId, exclusive, trigger, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const pathType = useUnit(accountsStructureModel.$pathType);
@@ -33,23 +34,33 @@ export const AccountsStructureModal = ({ walletAccounts, initialChainId, trigger
 
   useEffect(() => {
     if (isOpen) {
+      accountsStructureModel.setExclusive(exclusive ?? false);
       accountsStructureModel.setAccounts(walletAccounts);
     }
     return () => {
       if (isOpen) {
         accountsStructureModel.setAccounts(null);
+        accountsStructureModel.setExclusive(false);
       }
     };
-  }, [walletAccounts, isOpen]);
+  }, [walletAccounts, isOpen, exclusive]);
 
   useEffect(() => {
-    if (!isOpen || !initialChainId) return;
+    if (!isOpen) return;
 
-    const chain = allChainsMap.get(initialChainId as never) ?? null;
-    if (chain) {
-      accountsStructureModel.selectChain(chain);
+    if (initialChainId) {
+      const chain = allChainsMap.get(initialChainId as never) ?? null;
+      if (chain) {
+        accountsStructureModel.selectChain(chain);
+      }
     }
-  }, [isOpen, initialChainId, allChainsMap]);
+
+    // First passed account wins — auto-select cascade can land elsewhere.
+    const initialAccount = walletAccounts.at(0);
+    if (initialAccount) {
+      accountsStructureModel.selectAccount(initialAccount);
+    }
+  }, [isOpen, initialChainId, allChainsMap, walletAccounts]);
 
   const onToggle = useCallback(
     (value: boolean) => {

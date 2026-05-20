@@ -65,7 +65,7 @@ export const EditDelegation = () => {
   }
 
   return (
-    <Modal isOpen={isModalOpen} size="fit" height="fit" onToggle={(open) => !open && closeModal()}>
+    <Modal isOpen={isModalOpen} size="mdlg" height="fit" onToggle={(open) => !open && closeModal()}>
       <Modal.Title close>
         <OperationTitle title={t('operations.modalTitles.editDelegationOn')} chainId={walletData.chain!.chainId} />
       </Modal.Title>

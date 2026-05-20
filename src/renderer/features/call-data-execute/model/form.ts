@@ -32,6 +32,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
+import { createSigningPathModel } from '@/features/signing-path';
 import { InputMode, Step } from '../lib/types';
 
 import { type ConfirmInput, confirmModel } from './confirm';
@@ -122,12 +123,24 @@ const $args = combine($call, form.fields.chain.$value, (call, chain) => {
   return transactionEntitiesService.formatCall(call, chain);
 });
 
-const $route = createRouteStore({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: form.fields.initiator.$value,
+    chain: form.fields.chain.$value,
+    resetOn: flowFinished,
+    resetUserOverrideOn: form.fields.initiator.change,
+  });
+
+const $bfsRoute = createRouteStore({
   chain: form.fields.chain.$value,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
   accounts: walletModel.$availableAccounts,
 });
+// Picked path wins over BFS when it has enough hops to wrap.
+const $route = combine($bfsRoute, $pathRoute, (bfs, override) =>
+  override && override.length >= 2 ? override : bfs,
+);
 
 const { $tx: $wrappedTx } = createWrappedTxStore({
   api: $api,
@@ -378,11 +391,13 @@ sample({
 
 // Preselect signatory when initiator changes
 sample({
-  clock: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, flowFinished],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: form.fields.chain.change,
@@ -487,6 +502,7 @@ export const formModel = {
   $allChains: $allChains,
   $availableChains: $availableChains,
   $signatories: $signatories,
+  $signingPath,
   $showSignatories: $showSignatories,
 
   stepChanged,
@@ -495,4 +511,5 @@ export const formModel = {
   inputModeChanged,
   builderCallDataChanged,
   templateApplied,
+  signingPathChanged,
 };

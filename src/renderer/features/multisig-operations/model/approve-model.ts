@@ -28,6 +28,7 @@ import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { MAX_WEIGHT, getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { createSigningPathModel } from '@/features/signing-path';
 
 type GetMultisigType = {
   chain: Chain | null;
@@ -105,18 +106,29 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: $initiator,
+    chain: $chain,
+    resetOn: flow.open,
+    resetUserOverrideOn: selectInitiator,
+  });
+
 sample({
   clock: $unsignedAccounts,
   filter: $unsignedAccounts.map(unsignedAccounts => unsignedAccounts.length === 1),
   fn: unsignedAccounts => unsignedAccounts.at(0) ?? null,
   target: $initiator,
 });
+
 sample({
-  clock: $signatories,
-  filter: $signatories.map(signatories => signatories.length === 1),
-  fn: signatories => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, flow.open],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: $signatory,
 });
+
+sample({ clock: $signatory, target: recomputeForSigner });
 
 // Get weight
 type ExtrinsicSigningPayload = {
@@ -190,6 +202,7 @@ const {
   accounts: accounts.$list,
   chain: $chain,
   transaction: $transaction,
+  routeOverride: $pathRoute,
 });
 
 const $extrinsic = combine($api, $tx, (api, tx) => {
@@ -323,9 +336,11 @@ export const approveModel = {
   $valid,
 
   $signatories,
+  $signingPath,
   $description,
   selectSignatory,
   selectInitiator,
   setDescription,
   postDescription,
+  signingPathChanged,
 };

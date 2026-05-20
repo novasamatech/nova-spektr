@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -12,12 +12,15 @@ import {
   DetailRow,
   FootnoteText,
   Icon,
+  InputHint,
   LargeTitleText,
   Loader,
   Separator,
+  SmallTitleText,
 } from '@/shared/ui';
 import { Account, Address, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
-import { Box, Field, Modal, Select } from '@/shared/ui-kit';
+import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
+import { Json } from '@/shared/ui-kit/Json/Json';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { transactionService, useAccountName } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
@@ -66,10 +69,56 @@ export const SubmitDraftModal = ({ onClose }: Props) => {
     <Modal isOpen={isModalOpen} size="md" height="fit" onToggle={(open) => !open && closeModal()}>
       <Modal.Title close>{t('operations.drafts.submitTitle')}</Modal.Title>
       <Modal.Content>
+        {step === submitDraftModel.Step.CALL_DATA && <CallDataStep />}
         {step === submitDraftModel.Step.CONFIRM && <ConfirmStep />}
         {step === submitDraftModel.Step.SIGN && <OperationSign onGoBack={() => submitDraftModel.flowFinished()} />}
       </Modal.Content>
     </Modal>
+  );
+};
+
+const CallDataStep = () => {
+  const { t } = useI18n();
+
+  const callData = useUnit(submitDraftModel.$pendingCallData);
+  const decoded = useUnit(submitDraftModel.$pendingCallDataDecoded);
+  const hasError = useUnit(submitDraftModel.$pendingCallDataError);
+  const canConfirm = useUnit(submitDraftModel.$canConfirmCallData);
+  const saving = useUnit(submitDraftModel.$savingCallData);
+
+  return (
+    <>
+      <div className="flex flex-col gap-4 px-5 pt-4 pb-5">
+        <Field text={t('operations.drafts.callDataLabel')}>
+          <Input
+            height="md"
+            placeholder={t('operations.drafts.callDataPlaceholder')}
+            value={callData}
+            invalid={hasError}
+            onChange={submitDraftModel.callDataChanged}
+          />
+          <InputHint variant="error" active={hasError}>
+            {t('operations.drafts.extrinsicError')}
+          </InputHint>
+        </Field>
+
+        {decoded && (
+          <div className="flex flex-col gap-y-2">
+            <SmallTitleText>{t('operation.callData.preview')}</SmallTitleText>
+            <div className="max-h-[300px] overflow-auto rounded-md border border-filter-border bg-block-background p-4 break-all">
+              <Json value={decoded} name="call" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <Modal.Footer align="between">
+        <div />
+        <Button disabled={!canConfirm} isLoading={saving} onClick={() => submitDraftModel.callDataConfirmRequested()}>
+          {t('operations.callData.continueButton')}
+        </Button>
+      </Modal.Footer>
+    </>
   );
 };
 
@@ -82,6 +131,7 @@ const ConfirmStep = () => {
   const fee = useUnit(submitDraftModel.$fee);
   const wrappedExtrinsic = useUnit(submitDraftModel.$wrappedExtrinsic);
   const wrappedTxError = useUnit(submitDraftModel.$wrappedTxError);
+  const wrappedTxErrorKind = useUnit(submitDraftModel.$wrappedTxErrorKind);
   const wallets = useUnit(walletModel.$wallets);
   const draft = useUnit(submitDraftModel.$draft);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
@@ -91,6 +141,19 @@ const ConfirmStep = () => {
   const validationPending = useUnit(submitDraftModel.$validationPending);
 
   const [showWalletDetails, setShowWalletDetails] = useState(false);
+
+  // Defer surfacing wrappedTx errors so a transient `true` during store init
+  // (chain set before accounts settle, etc.) doesn't flash the red error UI
+  // before the confirm view replaces it.
+  const [showWrappedTxError, setShowWrappedTxError] = useState(false);
+  useEffect(() => {
+    if (!wrappedTxError) {
+      setShowWrappedTxError(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowWrappedTxError(true), 300);
+    return () => clearTimeout(timer);
+  }, [wrappedTxError]);
 
   const confirm = confirms.at(0) ?? null;
 
@@ -191,11 +254,16 @@ const ConfirmStep = () => {
   }
 
   if (!confirm) {
-    if (wrappedTxError) {
+    if (showWrappedTxError) {
+      const messageKey =
+        wrappedTxErrorKind === 'signing-path-unresolved'
+          ? 'operations.drafts.signingPathUnresolved'
+          : 'operations.drafts.extrinsicError';
+
       return (
         <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
           <Icon className="text-icon-negative" name="warnCutout" size={60} />
-          <FootnoteText className="text-text-tertiary">{t('operations.drafts.extrinsicError')}</FootnoteText>
+          <FootnoteText className="text-text-tertiary">{t(messageKey)}</FootnoteText>
         </Box>
       );
     }
@@ -341,7 +409,10 @@ const ConfirmStep = () => {
       <Modal.Footer align="between">
         <div />
         <SignButton
-          disabled={nullable(wrappedExtrinsic) || nullable(fee) || validationPending || !validationValid}
+          disabled={
+            initiatorUnavailable || nullable(wrappedExtrinsic) || nullable(fee) || validationPending || !validationValid
+          }
+          isDefault={initiatorUnavailable}
           type={confirm.signatoryWallet.type}
           onClick={submitDraftModel.confirmModel.startSigning}
         />
