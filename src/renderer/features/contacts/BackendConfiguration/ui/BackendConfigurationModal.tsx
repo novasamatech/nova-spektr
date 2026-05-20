@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useMemo } from 'react';
 
-import { type Chain } from '@/shared/core';
+import { type Chain, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -12,6 +12,8 @@ import { Box, Field, Input, Modal, Select, Surface, Tooltip, useNotification } f
 import { networkModel } from '@/entities/network';
 import { type SignableAccount, authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { OperationMessageSign } from '@/features/operations/OperationMessageSign';
+
+const VAULT_SIGNING_TYPES = new Set<SigningType>([SigningType.POLKADOT_VAULT, SigningType.PARITY_SIGNER]);
 
 export const BackendConfigurationModal = () => {
   const { t } = useI18n();
@@ -38,6 +40,13 @@ export const BackendConfigurationModal = () => {
 
   const chainOptions = useMemo(() => Object.values(chainsMap), [chainsMap]);
   const selectedChain = chainsMap[selectedChainId] ?? null;
+
+  const selectedAccount = useMemo(
+    () => signableAccounts.find((a) => a.accountId === selectedAccountId) ?? null,
+    [signableAccounts, selectedAccountId],
+  );
+  const showSigningChainSelector =
+    selectedAccount !== null && VAULT_SIGNING_TYPES.has(selectedAccount.account.signingType);
 
   useEffect(() => {
     // eslint-disable-next-line effector/no-watch
@@ -144,21 +153,25 @@ export const BackendConfigurationModal = () => {
             </Field>
           )}
 
-          {isSigning && <OperationMessageSign onGoBack={() => authModel.events.signingCancelled()} />}
+          {isSigning && (
+            <>
+              {showSigningChainSelector && (
+                <ChainSelectorField
+                  value={selectedChain}
+                  options={chainOptions}
+                  onSelect={(chain: Chain) => authModel.events.chainSelected(chain.chainId)}
+                />
+              )}
+              <OperationMessageSign onGoBack={() => authModel.events.signingCancelled()} />
+            </>
+          )}
 
           {showAccountSelector && (
-            <>
-              <AccountSelector
-                accounts={signableAccounts}
-                selectedAccountId={selectedAccountId}
-                onSelect={(id) => authModel.events.accountSelected(id)}
-              />
-              <ChainSelectorField
-                value={selectedChain}
-                options={chainOptions}
-                onSelect={(chain: Chain) => authModel.events.chainSelected(chain.chainId)}
-              />
-            </>
+            <AccountSelector
+              accounts={signableAccounts}
+              selectedAccountId={selectedAccountId}
+              onSelect={(id) => authModel.events.accountSelected(id)}
+            />
           )}
 
           <Alert active={isError} title={t('addressBook.auth.errorTitle')} variant="error">
