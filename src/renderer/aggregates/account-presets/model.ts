@@ -225,11 +225,21 @@ const $matchedOperationsEntriesRaw = combine($activeOperationsPreset, $allEntrie
 const $matchedOperationsEntries = createStore<AccountEntry[]>([], { updateFilter: matchedEntriesFilter });
 $matchedOperationsEntries.on($matchedOperationsEntriesRaw, (_, next) => next);
 
+const $entriesByPresetId = combine($presets, $allEntries, (presets, entries) => {
+  const map: Record<string, AccountEntry[]> = {};
+  for (const preset of presets) {
+    map[preset.id] = matchPreset(preset, entries);
+  }
+
+  return map;
+});
+
 export const accountPresetsModel = {
   $presets,
   $segmentPresets,
   $overflowPresets,
   $allEntries,
+  $entriesByPresetId,
 
   $activeDashboardPresetId,
   $activeDashboardPreset,

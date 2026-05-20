@@ -5,9 +5,69 @@ import { useCallback, useMemo, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, includes } from '@/shared/lib/utils';
 import { FootnoteText, Icon, IconButton } from '@/shared/ui';
-import { Popover, SearchInput, Tabs } from '@/shared/ui-kit';
-import { accountPresetsModel } from '@/aggregates/account-presets';
+import { Popover, SearchInput, Tabs, Tooltip } from '@/shared/ui-kit';
+import { type AccountEntry, accountPresetsModel } from '@/aggregates/account-presets';
 import { PresetManagementModal } from '@/widgets/PresetManagementModal';
+
+type SourceBreakdown = { wallet: number; localContact: number; backendContact: number };
+
+const computeBreakdown = (entries: AccountEntry[]): SourceBreakdown => {
+  let wallet = 0;
+  let localContact = 0;
+  let backendContact = 0;
+  for (const entry of entries) {
+    if (entry.source === 'wallet') wallet++;
+    else if (entry.source === 'local-contact') localContact++;
+    else backendContact++;
+  }
+
+  return { wallet, localContact, backendContact };
+};
+
+type TabCounterProps = {
+  label: string;
+  count: number;
+  total: number;
+  breakdown: SourceBreakdown;
+};
+
+const TabCounter = ({ label, count, total, breakdown }: TabCounterProps) => {
+  const { t } = useI18n();
+
+  return (
+    <Tooltip side="bottom">
+      <Tooltip.Trigger>
+        <span className="inline-flex items-center gap-x-1.5">
+          {label}
+          <span className="min-w-[20px] rounded-full bg-icon-accent px-1.5 text-center text-help-text leading-4 font-semibold text-white">
+            {count}
+          </span>
+        </span>
+      </Tooltip.Trigger>
+      <Tooltip.Content>
+        <div className="flex flex-col gap-y-0.5">
+          <FootnoteText className="text-white">{t('presets.counterTooltip.title', { count, total })}</FootnoteText>
+          {breakdown.wallet > 0 && (
+            <FootnoteText className="text-white/80">
+              {t('presets.counterTooltip.wallets', { count: breakdown.wallet })}
+            </FootnoteText>
+          )}
+          {breakdown.localContact > 0 && (
+            <FootnoteText className="text-white/80">
+              {t('presets.counterTooltip.localContacts', { count: breakdown.localContact })}
+            </FootnoteText>
+          )}
+          {breakdown.backendContact > 0 && (
+            <FootnoteText className="text-white/80">
+              {t('presets.counterTooltip.backendContacts', { count: breakdown.backendContact })}
+            </FootnoteText>
+          )}
+          {count === 0 && <FootnoteText className="text-white/80">{t('presets.counterTooltip.empty')}</FootnoteText>}
+        </div>
+      </Tooltip.Content>
+    </Tooltip>
+  );
+};
 
 const ALL_VALUE = '__all__';
 
@@ -29,6 +89,11 @@ export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) 
   const activePresetId = useUnit($activePresetId);
   const segmentPresets = useUnit(accountPresetsModel.$segmentPresets);
   const overflowPresets = useUnit(accountPresetsModel.$overflowPresets);
+  const allEntries = useUnit(accountPresetsModel.$allEntries);
+  const entriesByPresetId = useUnit(accountPresetsModel.$entriesByPresetId);
+
+  const allBreakdown = useMemo(() => computeBreakdown(allEntries), [allEntries]);
+  const totalCount = allEntries.length;
 
   const [overflowOpen, setOverflowOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -73,12 +138,23 @@ export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) 
         <div className="[&_[role=tablist]]:mb-0">
           <Tabs value={tabValue} onChange={handleTabChange}>
             <Tabs.List>
-              <Tabs.Trigger value={ALL_VALUE}>{t('presets.all')}</Tabs.Trigger>
-              {segmentPresets.map((preset) => (
-                <Tabs.Trigger key={preset.id} value={preset.id}>
-                  {preset.name}
-                </Tabs.Trigger>
-              ))}
+              <Tabs.Trigger value={ALL_VALUE}>
+                <TabCounter label={t('presets.all')} count={totalCount} total={totalCount} breakdown={allBreakdown} />
+              </Tabs.Trigger>
+              {segmentPresets.map((preset) => {
+                const matched = entriesByPresetId[preset.id] ?? [];
+
+                return (
+                  <Tabs.Trigger key={preset.id} value={preset.id}>
+                    <TabCounter
+                      label={preset.name}
+                      count={matched.length}
+                      total={totalCount}
+                      breakdown={computeBreakdown(matched)}
+                    />
+                  </Tabs.Trigger>
+                );
+              })}
             </Tabs.List>
           </Tabs>
         </div>
@@ -99,19 +175,26 @@ export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) 
                   <SearchInput value={search} placeholder={t('presets.searchPresets')} onChange={setSearch} />
                 </div>
                 <div className="mt-1 max-h-48 overflow-y-auto">
-                  {filteredOverflow.map((preset) => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      className={cnTw(
-                        'flex w-full items-center rounded px-2 py-1.5 text-left transition-colors hover:bg-action-background-hover',
-                        activePresetId === preset.id && 'border-l-2 border-icon-accent bg-block-background-default',
-                      )}
-                      onClick={() => handleOverflowActivate(preset.id)}
-                    >
-                      <FootnoteText className="text-text-primary">{preset.name}</FootnoteText>
-                    </button>
-                  ))}
+                  {filteredOverflow.map((preset) => {
+                    const matched = entriesByPresetId[preset.id] ?? [];
+
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        className={cnTw(
+                          'flex w-full items-center justify-between gap-x-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-action-background-hover',
+                          activePresetId === preset.id && 'border-l-2 border-icon-accent bg-block-background-default',
+                        )}
+                        onClick={() => handleOverflowActivate(preset.id)}
+                      >
+                        <FootnoteText className="text-text-primary">{preset.name}</FootnoteText>
+                        <span className="min-w-[20px] rounded-full bg-icon-accent px-1.5 text-center text-help-text leading-4 font-semibold text-white">
+                          {matched.length}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
                 <div className="mt-1 border-t border-divider pt-1">
                   <button
