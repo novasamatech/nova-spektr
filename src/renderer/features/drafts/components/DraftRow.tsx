@@ -15,7 +15,7 @@ import {
   toShortAddress,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Button, CaptionText, FootnoteText, HelpText, Icon, IconButton } from '@/shared/ui';
+import { Button, CaptionText, FootnoteText, HelpText, IconButton } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { ConfirmModal, Copy, Tooltip } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
@@ -29,6 +29,8 @@ import { graphModel } from '@/features/signing-path';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { getDestinationAccountId } from '../lib/get-destination-account-id';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
+
+import { DraftIcon } from './DraftIcon';
 
 /**
  * Slot for the per-row "view accounts structure" trigger. Drafts owns the slot
@@ -155,9 +157,7 @@ export const DraftRow = ({
       <div className="flex min-h-[52px] w-full min-w-0 items-start px-4 py-2">
         {/* Icon + description */}
         <div className="flex min-w-0 flex-[3] items-start gap-x-3">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-icon-accent/15">
-            <Icon name="document" size={16} className="text-icon-accent" />
-          </div>
+          <DraftIcon />
           <div className="flex min-w-0 flex-1 flex-col">
             <FootnoteText className="max-w-[350px] font-medium break-words text-text-primary">
               {draft.description || (

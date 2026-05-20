@@ -8,6 +8,12 @@ export { InitiateDraftButton } from './components/InitiateDraftButton';
 export { draftAccountsOverviewSlot } from './components/DraftRow';
 export { type DraftSeed, createDraftModel } from './model/create-draft-model';
 export { type Draft } from '@/domains/backend';
+export { filterVisibleDrafts } from './lib/visible-drafts';
+export { draftDeepLinkModel } from './model/draft-deep-link';
+export { DraftIcon } from './components/DraftIcon';
+export { useReadableDrafts } from './lib/useReadableDrafts';
+export { useSubmitDraft } from './lib/useSubmitDraft';
+export { getDraftSubmitGate } from './lib/submit-draft-availability';
 
 import './model/contact-proxies-model';
 

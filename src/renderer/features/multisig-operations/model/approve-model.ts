@@ -19,7 +19,6 @@ import { HttpError, operationDescriptionsResource, operationsService } from '@/d
 import {
   type AnyAccount,
   type MultisigOperation,
-  accountService,
   accounts,
   multisigOperationService,
   transactionService,
@@ -78,26 +77,14 @@ const $unsignedAccounts = combine(
   ({ multisigAccount, chain, accountsList, operation }) => {
     if (!multisigAccount || !chain || !operation) return [];
 
-    const signatories = accountsList.filter(a =>
-      multisigAccount.signatories.some(s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
-    );
-
-    const signatoriesOnChain = signatories.filter(s => accountService.isAccountAvailableOnChain(s, chain));
-
-    const filteredSignatories = signatoriesOnChain.filter(
-      a => !operation.events.some(e => e.accountId === a.accountId),
-    );
-
-    return filteredSignatories;
+    return multisigOperationService.findActionableSignatories(operation, multisigAccount, accountsList, chain);
   },
 );
 
 const $isDepositRequired = $operation.map(operation => {
   if (nullable(operation)) return true;
 
-  const approvalsCount = operation.events.filter(event => event.status === 'approve').length;
-
-  return approvalsCount === 0;
+  return multisigOperationService.getApprovalsCount(operation) === 0;
 });
 
 const $signatories = createSignatoriesStore({
@@ -106,13 +93,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: $initiator,
     chain: $chain,
     resetOn: flow.open,
     resetUserOverrideOn: selectInitiator,
-  });
+  },
+);
 
 sample({
   clock: $unsignedAccounts,

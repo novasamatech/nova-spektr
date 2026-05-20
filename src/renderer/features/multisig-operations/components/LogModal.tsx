@@ -16,7 +16,13 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
-import { type AnyAccount, type MultisigEvent, type MultisigOperation, useAccountName } from '@/domains/network';
+import {
+  type AnyAccount,
+  type MultisigEvent,
+  type MultisigOperation,
+  multisigOperationService,
+  useAccountName,
+} from '@/domains/network';
 import { Status, operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -100,7 +106,7 @@ const LogModal = ({ isOpen, onClose, operation, account, chain }: Props) => {
 
   const filteredWalletsMap = getFilteredWalletsMap(wallets);
   const filteredAccountMap = getFilteredAccountsMap(filteredWalletsMap);
-  const approvals = events.filter(e => e.status === 'approve');
+  const approvals = multisigOperationService.getApprovals(operation);
 
   let titleNode;
 

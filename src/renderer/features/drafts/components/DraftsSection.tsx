@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAccountId } from '@/shared/lib/utils';
-import { Button, CaptionText, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
+import { Button, CountChip, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { Accordion, ConfirmModal, Field, Modal, TextArea, Tooltip, useNotification } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import {
@@ -22,6 +22,8 @@ import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { backendContactsModel } from '@/features/contacts';
 import { tryDecodeCallData } from '../lib/decode-call-data';
 import { useCanCreateDraft } from '../lib/useCanCreateDraft';
+import { useSubmitDraft } from '../lib/useSubmitDraft';
+import { filterVisibleDrafts } from '../lib/visible-drafts';
 import { DESCRIPTION_MAX_LENGTH, createDraftModel } from '../model/create-draft-model';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
 import '../model/drafts-model'; // side-effect: orchestration wiring
@@ -30,7 +32,6 @@ import { submitDraftModel } from '../model/submit-draft-model';
 import { DraftRow } from './DraftRow';
 import { DraftSummary } from './DraftSummary';
 import { ReconnectAddressBookButton } from './ReconnectAddressBookButton';
-import { SubmitDraftModal } from './SubmitDraftModal';
 
 export const DraftsSection = () => {
   const { t } = useI18n();
@@ -50,16 +51,10 @@ export const DraftsSection = () => {
   const linkedDraftIds = useUnit(operationDescriptionsResource.$linkedDraftIds);
   const operationsLoaded = useUnit(operationDescriptionsResource.$operationsLoaded);
 
-  const visibleDrafts = useMemo(() => {
-    if (!operationsLoaded) return [];
-
-    return drafts.filter((d) => {
-      if (linkedDraftIds.has(d.id)) return false;
-      if (submittedDraftIds.has(d.id)) return true;
-
-      return true;
-    });
-  }, [drafts, submittedDraftIds, linkedDraftIds, operationsLoaded]);
+  const visibleDrafts = useMemo(
+    () => filterVisibleDrafts(drafts, linkedDraftIds, operationsLoaded),
+    [drafts, linkedDraftIds, operationsLoaded],
+  );
 
   // Deep link: scroll-to and highlight
   const highlightedRef = useRef<HTMLDivElement | null>(null);
@@ -88,7 +83,7 @@ export const DraftsSection = () => {
     };
   }, [focusedDraftId]);
 
-  const [submittingDraft, setSubmittingDraft] = useState<Draft | null>(null);
+  const { submitDraft, modal: submitDraftModalNode } = useSubmitDraft();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showDiscardEdit, setShowDiscardEdit] = useState(false);
   const [editingDraft, setEditingDraft] = useState<Draft | null>(null);
@@ -151,26 +146,6 @@ export const DraftsSection = () => {
     [editingDraft?.callData, draftApi, draftChain],
   );
 
-  const handleSubmitDraft = (draft: Draft) => {
-    if (!draft.multisigAccountId) return;
-
-    const chain = chains[draft.chainId as ChainId];
-    if (!chain) return;
-
-    // For flex drafts, the routing initiator is the proxied (pure proxy) account,
-    // but the display initiator is the flex multisig account
-    const initiatorAccount = draft.proxyAccountId
-      ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
-      : (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null);
-
-    const displayInitiator = draft.proxyAccountId
-      ? (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null)
-      : undefined;
-
-    setSubmittingDraft(draft);
-    submitDraftModel.flowStarted({ draft, initiator: initiatorAccount, displayInitiator, chain });
-  };
-
   const handleSaveEdit = async () => {
     if (!backendUrl || !editingDraft) return;
 
@@ -220,11 +195,7 @@ export const DraftsSection = () => {
             <Accordion.Trigger sticky>
               <div className="flex items-center gap-2 py-2">
                 <FootnoteText className="font-medium text-text-secondary">{t('operations.drafts.title')}</FootnoteText>
-                {isHealthy && visibleDrafts.length > 0 && (
-                  <div className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-icon-accent/15 px-2">
-                    <CaptionText className="font-medium text-icon-accent">{visibleDrafts.length}</CaptionText>
-                  </div>
-                )}
+                {isHealthy && visibleDrafts.length > 0 && <CountChip count={visibleDrafts.length} />}
               </div>
             </Accordion.Trigger>
             <Accordion.Content>
@@ -253,7 +224,7 @@ export const DraftsSection = () => {
                       draft={draft}
                       onDelete={handleDeleteDraft}
                       onEdit={handleEditDraft}
-                      onSubmit={handleSubmitDraft}
+                      onSubmit={submitDraft}
                     />
                   ))}
 
@@ -380,7 +351,7 @@ export const DraftsSection = () => {
         onConfirm={handleDiscardEdit}
       />
 
-      {submittingDraft && <SubmitDraftModal onClose={() => setSubmittingDraft(null)} />}
+      {submitDraftModalNode}
     </div>
   );
 };
