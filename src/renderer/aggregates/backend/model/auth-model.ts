@@ -4,13 +4,15 @@ import { interval, once } from 'patronum';
 import { toast } from 'sonner';
 
 import { persist } from '@/shared/api/storage';
-import { RelayChains, assert, toAccountId } from '@/shared/lib/utils';
+import { type ChainId } from '@/shared/core';
+import { assert, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { backendAuthService } from '@/domains/backend';
-import { type AnyAccount, accountService } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { polkadotExtensionService } from '@/features/extension-wallet';
 import { messageSignModel } from '@/features/operations/OperationMessageSign';
+import { DEFAULT_AUTH_CHAIN_ID } from '../lib/auth-chain';
 import { buildSignMessage } from '../lib/sign-message';
 
 import { backendConfigurationModel } from './backend-configuration-model';
@@ -36,6 +38,7 @@ export type SignableAccount = {
 const signInClicked = createEvent();
 const signOutClicked = createEvent();
 const accountSelected = createEvent<AccountId>();
+const chainSelected = createEvent<ChainId>();
 const signConfirmed = createEvent();
 const connectTriggered = createEvent();
 const modalClosed = createEvent();
@@ -46,9 +49,12 @@ const unauthorizedResponseReceived = createEvent();
 const $authState = createStore<AuthState | null>(null);
 const $authStep = createStore<AuthStep>('selectAccount');
 const $selectedAccountId = createStore<AccountId | null>(null);
+const $selectedChainId = createStore<ChainId>(DEFAULT_AUTH_CHAIN_ID);
 const $error = createStore<string | null>(null);
 const $connectionResult = createStore<ConnectionResult>({ status: 'idle' });
 const $challengeId = createStore<string | null>(null);
+
+$selectedChainId.on(chainSelected, (_, chainId) => chainId);
 
 const $lastAuthedAccountId = createStore<AccountId | null>(null);
 persist({ store: $lastAuthedAccountId, key: 'address-book-last-authed-account-id' });
@@ -190,6 +196,7 @@ const resetAuthUiTriggers = [
 
 $authStep.on(resetAuthUiTriggers, () => 'selectAccount');
 $selectedAccountId.on(resetAuthUiTriggers, () => null);
+$selectedChainId.on(resetAuthUiTriggers, () => DEFAULT_AUTH_CHAIN_ID);
 $error.on(resetAuthUiTriggers, () => null);
 $challengeId.on(resetAuthUiTriggers, () => null);
 
@@ -216,13 +223,12 @@ sample({
 
 sample({
   clock: requestChallengeFx.doneData,
-  source: { account: $selectedAccount },
+  source: { account: $selectedAccount, chainId: $selectedChainId },
   filter: ({ account }) => account !== null,
-  fn: ({ account }, challengeData) => {
+  fn: ({ account, chainId }, challengeData) => {
     const signatory = account!.account;
     const messageText = buildSignMessage(challengeData.nonce);
     const message = new TextEncoder().encode(messageText);
-    const chainId = accountService.isChainAccount(signatory) ? signatory.chainId : RelayChains.POLKADOT;
 
     return { message, signatory, chainId };
   },
@@ -429,6 +435,7 @@ export const authModel = {
   $authState,
   $authStep,
   $selectedAccountId,
+  $selectedChainId,
   $error,
   $connectionResult,
   $isAuthenticated,
@@ -442,6 +449,7 @@ export const authModel = {
     signInSucceeded,
     signOutClicked,
     accountSelected,
+    chainSelected,
     signConfirmed,
     connectTriggered,
     modalClosed,

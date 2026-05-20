@@ -1,13 +1,15 @@
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
+import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useConfirmContext } from '@/shared/providers/ConfirmContext';
 import { Alert, Button, FootnoteText, Icon, InputHint, Loader, SmallTitleText } from '@/shared/ui';
-import { Address, Identicon } from '@/shared/ui-entities';
-import { Box, Field, Input, Modal, Select, Surface, useNotification } from '@/shared/ui-kit';
+import { Address, ChainSelect, Identicon } from '@/shared/ui-entities';
+import { Box, Field, Input, Modal, Select, Surface, Tooltip, useNotification } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
 import { type SignableAccount, authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { OperationMessageSign } from '@/features/operations/OperationMessageSign';
 
@@ -27,10 +29,15 @@ export const BackendConfigurationModal = () => {
   const authState = useUnit(authModel.$authState);
   const authStep = useUnit(authModel.$authStep);
   const selectedAccountId = useUnit(authModel.$selectedAccountId);
+  const selectedChainId = useUnit(authModel.$selectedChainId);
   const signableAccounts = useUnit(authModel.$signableAccounts);
+  const chainsMap = useUnit(networkModel.$chains);
   const error = useUnit(authModel.$error);
   const isSessionExpired = useUnit(authModel.$isSessionExpired);
   const hasNetworkIssue = useUnit(authModel.$hasNetworkIssue);
+
+  const chainOptions = useMemo(() => Object.values(chainsMap), [chainsMap]);
+  const selectedChain = chainsMap[selectedChainId] ?? null;
 
   useEffect(() => {
     // eslint-disable-next-line effector/no-watch
@@ -140,11 +147,18 @@ export const BackendConfigurationModal = () => {
           {isSigning && <OperationMessageSign onGoBack={() => authModel.events.signingCancelled()} />}
 
           {showAccountSelector && (
-            <AccountSelector
-              accounts={signableAccounts}
-              selectedAccountId={selectedAccountId}
-              onSelect={(id) => authModel.events.accountSelected(id)}
-            />
+            <>
+              <AccountSelector
+                accounts={signableAccounts}
+                selectedAccountId={selectedAccountId}
+                onSelect={(id) => authModel.events.accountSelected(id)}
+              />
+              <ChainSelectorField
+                value={selectedChain}
+                options={chainOptions}
+                onSelect={(chain: Chain) => authModel.events.chainSelected(chain.chainId)}
+              />
+            </>
           )}
 
           <Alert active={isError} title={t('addressBook.auth.errorTitle')} variant="error">
@@ -234,6 +248,43 @@ const AccountSelector = ({
           </Select.Item>
         ))}
       </Select>
+    </Field>
+  );
+};
+
+const ChainSelectorField = ({
+  value,
+  options,
+  onSelect,
+}: {
+  value: Chain | null;
+  options: Chain[];
+  onSelect: (chain: Chain) => void;
+}) => {
+  const { t } = useI18n();
+
+  return (
+    <Field
+      text={
+        <span className="flex items-center gap-x-1">
+          {t('addressBook.auth.selectChainLabel')}
+          <Tooltip>
+            <Tooltip.Trigger>
+              <span tabIndex={0} className="text-text-tertiary hover:text-primary-button-background-default">
+                <Icon name="info" size={12} className="text-inherit" />
+              </span>
+            </Tooltip.Trigger>
+            <Tooltip.Content>{t('addressBook.auth.chainHintTooltip')}</Tooltip.Content>
+          </Tooltip>
+        </span>
+      }
+    >
+      <ChainSelect
+        value={value}
+        options={options}
+        placeholder={t('addressBook.auth.selectChainPlaceholder')}
+        onChange={onSelect}
+      />
     </Field>
   );
 };
