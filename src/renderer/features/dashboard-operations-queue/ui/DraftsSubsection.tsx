@@ -65,14 +65,23 @@ export const DraftsSubsection = ({ drafts }: Props) => {
                 }
                 chain={chain}
                 action={
-                  <Tooltip open={gate.canSubmit ? false : undefined}>
-                    <Tooltip.Trigger>
-                      <Button size="sm" variant="fill" disabled={!gate.canSubmit} onClick={() => submitDraft(draft)}>
-                        {t('operations.drafts.submitButton')}
-                      </Button>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>{gate.reasonKey ? t(gate.reasonKey) : ''}</Tooltip.Content>
-                  </Tooltip>
+                  <div className="grid w-[220px] shrink-0 grid-cols-2 gap-x-2">
+                    <div />
+                    <Tooltip open={gate.canSubmit ? false : undefined}>
+                      <Tooltip.Trigger>
+                        <Button
+                          size="sm"
+                          variant="fill"
+                          className="w-full"
+                          disabled={!gate.canSubmit}
+                          onClick={() => submitDraft(draft)}
+                        >
+                          {t('operations.drafts.submitButton')}
+                        </Button>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>{gate.reasonKey ? t(gate.reasonKey) : ''}</Tooltip.Content>
+                    </Tooltip>
+                  </div>
                 }
                 onClick={() => navigate(draftDeepLinkModel.generateDraftRelativeLink(draft.id))}
               />
