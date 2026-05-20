@@ -22,7 +22,9 @@ import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
+import { transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { createDraftModeBinding } from '@/features/drafts';
 import { addPureProxiedValidator } from '@/features/operations/OperationsValidation';
 import { proxiesUtils } from '@/features/proxies';
 import { createSigningPathModel } from '@/features/signing-path';
@@ -53,6 +55,8 @@ const flowStarted = createEvent<Wallet>();
 const formInitiated = createEvent();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const proxyQueryChanged = createEvent<string>();
+
+const draftMode = createDraftModeBinding({ formInitiated, chainChanged: formInitiated });
 
 const proxyDepositChanged = createEvent<string>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
@@ -118,8 +122,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             proxyDeposit: $proxyDeposit,
             balances: balanceModel.$balanceMap,
             isMultisig: $isMultisig,
+            isDraftMode: draftMode.$isDraftMode,
           }),
-          fn: (value, form, { isMultisig, balances, fee, multisigDeposit }) => {
+          fn: (value, form, { isMultisig, balances, fee, multisigDeposit, isDraftMode }) => {
+            if (isDraftMode) return;
             if (!isMultisig) return;
 
             if (!value) {
@@ -276,17 +282,65 @@ const { $multisigDeposit, $pending: $pendingMultisigDeposit } = createMultisigDe
   $api: $api,
 });
 
+const $draftCoreTx = combine(
+  {
+    chain: form.fields.chain.$value,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+  },
+  ({ chain, path, isPathComplete }): Transaction | null => {
+    if (!chain || !isPathComplete) return null;
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+
+    return {
+      chainId: chain.chainId,
+      accountId: sourceAccountId,
+      type: TransactionType.CREATE_PURE_PROXY,
+      args: { proxyType: 'Any', delay: 0, index: 0 },
+    };
+  },
+);
+
+const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
+
+const $draftNetworkStore = combine(form.fields.chain.$value, chain =>
+  chain ? { chain, asset: getNativeAsset(chain.assets) } : null,
+);
+
 const $canSubmit = combine(
   {
+    isDraftMode: draftMode.$isDraftMode,
     isFormValid: form.$isValid,
     isValid: $valid,
     isFeeLoading: $pendingFee,
     isProxyDepositLoading: $isProxyDepositLoading,
   },
-  ({ isValid, isFormValid, isFeeLoading, isProxyDepositLoading }) => {
+  ({ isDraftMode, isValid, isFormValid, isFeeLoading, isProxyDepositLoading }) => {
+    if (isDraftMode) return false;
     return isValid && isFormValid && !isFeeLoading && !isProxyDepositLoading;
   },
 );
+
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    networkStore: $draftNetworkStore,
+  },
+  ({ isDraftMode, isPathComplete, callData, networkStore }) => {
+    if (!isDraftMode || !isPathComplete || !callData || !networkStore) return false;
+    return true;
+  },
+);
+
+draftMode.connectSave({
+  source: 'proxied-add-pure-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore: $draftNetworkStore,
+  $canSave: $canSaveAsDraft,
+});
 
 sample({
   clock: formInitiated,
@@ -410,4 +464,18 @@ export const formModel = {
 
   formSubmitted,
   $errors,
+
+  $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
+  $canSaveAsDraft,
+  $initiatedDraft: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
+  events: {
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
+  },
 };

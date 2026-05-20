@@ -10,17 +10,19 @@ import { type AnyAccount } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
 /**
- * Builds the legacy `TxWrapper[]` array used by `transactionService.getWrappedTransaction`
- * from a user-picked signing path. Mirrors what `getTxWrappers` produces from
- * a wallet's account graph, but driven by `$signingPath` so the user's hop
- * choices (alternate multisig, alternate proxy) are honoured at signing time.
+ * Builds the legacy `TxWrapper[]` array used by
+ * `transactionService.getWrappedTransaction` from a user-picked signing path.
+ * Mirrors what `getTxWrappers` produces from a wallet's account graph, but
+ * driven by `$signingPath` so the user's hop choices (alternate multisig,
+ * alternate proxy) are honoured at signing time.
  *
- * Flex-multisig handling matches `getMultisigWrapper`: a flex-multisig generates
- * a `proxied → multisig → signer` path because its `accountId` is a pure proxy
- * delegating to `multisigAccountId`, but the legacy code collapses that into a
- * single MULTISIG wrapper carrying the flex itself as `multisigAccount`. We do
- * the same — skip the proxy node when the resolved account is a flex facade,
- * and look up the flex on the multisig node via `multisigAccountId`.
+ * Flex-multisig handling matches `getMultisigWrapper`: a flex-multisig
+ * generates a `proxied → multisig → signer` path because its `accountId` is a
+ * pure proxy delegating to `multisigAccountId`, but the legacy code collapses
+ * that into a single MULTISIG wrapper carrying the flex itself as
+ * `multisigAccount`. We do the same — skip the proxy node when the resolved
+ * account is a flex facade, and look up the flex on the multisig node via
+ * `multisigAccountId`.
  */
 export function pathToTxWrappers(path: PathNode[], allAccounts: AnyAccount[], wallets: Wallet[]): TxWrapper[] {
   return path.slice(0, -1).flatMap<TxWrapper>((node, i) => {
@@ -70,10 +72,7 @@ const findMultisigForNode = (
   return undefined;
 };
 
-const collectSigners = (
-  multisig: MultisigAccount | FlexibleMultisigAccount,
-  wallets: Wallet[],
-): AnyAccount[] => {
+const collectSigners = (multisig: MultisigAccount | FlexibleMultisigAccount, wallets: Wallet[]): AnyAccount[] => {
   const ids = new Set(multisig.signatories.map((s) => s.accountId));
   return wallets
     .map((wallet) => wallet.accounts.find((a) => ids.has(a.accountId)))

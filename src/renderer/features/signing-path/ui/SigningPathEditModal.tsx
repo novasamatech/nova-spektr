@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { type PathNode } from '@/domains/backend';
-import { type PathNextOption } from '../model/graph-model';
+import { type PathNextOption, type PathSource } from '../model/graph-model';
 import { pathModel } from '../model/path-model';
 
 import { StepPath } from './StepPath';
@@ -28,6 +28,20 @@ type Props = {
   /** When set, signer rows show the candidate's transferable balance. */
   getOptionBalance?: (option: PathNextOption) => BN | string | null;
   optionAsset?: Asset;
+  /**
+   * Override the source list used inside the modal. Draft mode passes the
+   * address-book-restricted set; regular flows let the modal derive its own via
+   * `restrictToOwnAccounts`.
+   */
+  sources?: PathSource[];
+  /** Hop-level filter applied to the next-options shown in the picker. */
+  filterNextOption?: (option: PathNextOption) => boolean;
+  /**
+   * Restrict next-options to own-wallet candidates. Defaults to true so the
+   * regular flow keeps its existing behavior; draft mode passes false so the
+   * address-book filter governs which hops are reachable.
+   */
+  restrictToOwnAccounts?: boolean;
   onSave: (path: PathNode[]) => void;
   onClose: () => void;
 };
@@ -42,6 +56,9 @@ export const SigningPathEditModal = ({
   disabledProxyReason,
   getOptionBalance,
   optionAsset,
+  sources,
+  filterNextOption,
+  restrictToOwnAccounts = true,
   onSave,
   onClose,
 }: Props) => {
@@ -83,7 +100,9 @@ export const SigningPathEditModal = ({
           <StepPath
             chainId={chainId}
             lockedSourceCount={editableInitiator ? 0 : 1}
-            restrictToOwnAccounts
+            restrictToOwnAccounts={restrictToOwnAccounts}
+            sources={sources}
+            filterNextOption={filterNextOption}
             allowedProxyTypes={allowedProxyTypes}
             disabledProxyReason={disabledProxyReason}
             getOptionBalance={getOptionBalance}

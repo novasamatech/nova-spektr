@@ -9,7 +9,7 @@ import { TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { walletModel } from '@/entities/wallet';
-import { InitiateDraftButton } from '@/features/drafts';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
 import { OperationTemplatesToolbar } from '@/features/operation-templates';
 import { Fee } from '@/widgets/transaction-fee';
@@ -32,6 +32,7 @@ export const CallDataForm = () => {
   const api = useUnit(formModel.$api);
   const callDataValue = useUnit(formModel.form.fields.callData.$value);
   const chain = useUnit(formModel.form.fields.chain.$value);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
 
   // Pass callData to builder when in Build mode (for tab switch + remount after Confirm)
   const builderInitialCallData = inputMode === InputMode.BUILD ? callDataValue : undefined;
@@ -50,31 +51,48 @@ export const CallDataForm = () => {
   return (
     <>
       <ScrollArea>
-        <form id="call-data-form" className="flex flex-col gap-y-4 px-5 pb-4" onSubmit={submitForm}>
-          <TransactionValidationError errors={errors} wallets={wallets} />
-          <NetworkSelect />
-          <InitiatorSelect />
-          {showSignatories && <SignatorySelect />}
+        <div className="flex flex-col gap-y-4 px-5 pb-4">
+          <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
+          {isDraftMode && (
+            <DraftSigningPath
+              chainId={chain?.chainId ?? null}
+              asset={chain ? getNativeAsset(chain.assets) : null}
+              $draftPath={formModel.$draftSigningPath}
+              draftPathCommitted={formModel.events.draftPathCommitted}
+              draftPathEditStarted={formModel.events.draftPathEditStarted}
+              draftPathEditEnded={formModel.events.draftPathEditEnded}
+            />
+          )}
+          <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+            <div className="flex flex-col gap-y-4">
+              {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+              <form id="call-data-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
+                <NetworkSelect />
+                {!isDraftMode && <InitiatorSelect />}
+                {!isDraftMode && showSignatories && <SignatorySelect />}
 
-          <div className="-mb-2">
-            <Tabs value={inputMode} onChange={(value) => inputModeChanged(value as InputMode)}>
-              <Tabs.List>
-                <Tabs.Trigger value={InputMode.PASTE}>{t('callData.mode.paste')}</Tabs.Trigger>
-                <Tabs.Trigger value={InputMode.BUILD}>{t('callData.mode.build')}</Tabs.Trigger>
-              </Tabs.List>
-              <Tabs.Content value={InputMode.PASTE}>
-                <CallDataInput />
-              </Tabs.Content>
-              <Tabs.Content value={InputMode.BUILD}>
-                <ExtrinsicBuilder
-                  api={api}
-                  initialCallData={builderInitialCallData}
-                  onCallDataChange={builderCallDataChanged}
-                />
-              </Tabs.Content>
-            </Tabs>
-          </div>
-        </form>
+                <div className="-mb-2">
+                  <Tabs value={inputMode} onChange={(value) => inputModeChanged(value as InputMode)}>
+                    <Tabs.List>
+                      <Tabs.Trigger value={InputMode.PASTE}>{t('callData.mode.paste')}</Tabs.Trigger>
+                      <Tabs.Trigger value={InputMode.BUILD}>{t('callData.mode.build')}</Tabs.Trigger>
+                    </Tabs.List>
+                    <Tabs.Content value={InputMode.PASTE}>
+                      <CallDataInput />
+                    </Tabs.Content>
+                    <Tabs.Content value={InputMode.BUILD}>
+                      <ExtrinsicBuilder
+                        api={api}
+                        initialCallData={builderInitialCallData}
+                        onCallDataChange={builderCallDataChanged}
+                      />
+                    </Tabs.Content>
+                  </Tabs>
+                </div>
+              </form>
+            </div>
+          </DraftFormBody>
+        </div>
 
         {nonNullable(chain) && (
           <OperationTemplatesToolbar
@@ -115,30 +133,30 @@ const ActionsSection = () => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const canSaveAsDraft = useUnit(formModel.$canSaveAsDraft);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
   const call = useUnit(formModel.$call);
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
   const chain = useUnit(formModel.form.fields.chain.$value);
-  const callData = useUnit(formModel.form.fields.callData.$value);
   const asset = chain ? getNativeAsset(chain.assets) : null;
 
   return (
     <Modal.Footer>
-      {nonNullable(asset) && nonNullable(call) && (
+      {!isDraftMode && nonNullable(asset) && nonNullable(call) && (
         <Box direction="row" gap={2} verticalAlign="center">
           <FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>
           <Fee className="text-footnote" fee={fee} isLoading={pendingFee} asset={asset} hideFiat />
         </Box>
       )}
 
-      <InitiateDraftButton
-        callData={callData}
-        chainId={chain?.chainId}
-        source="call-data-execute"
-        onDraftCreated={formModel.flowFinished}
-      />
-      <Button form="call-data-form" type="submit" disabled={!canSubmit}>
-        {t('transfer.continueButton')}
+      <Button
+        form={isDraftMode ? undefined : 'call-data-form'}
+        type={isDraftMode ? 'button' : 'submit'}
+        disabled={isDraftMode ? !canSaveAsDraft : !canSubmit}
+        onClick={isDraftMode ? () => formModel.events.saveAsDraftRequested() : undefined}
+      >
+        {isDraftMode ? t('operations.drafts.initiateButton') : t('transfer.continueButton')}
       </Button>
     </Modal.Footer>
   );

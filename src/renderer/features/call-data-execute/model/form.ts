@@ -8,6 +8,7 @@ import { type CallData, type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import { getNativeAsset, nonNullable, nonNullableMap, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import {
   createFeeCalculator,
   createSignatoriesStore,
@@ -30,6 +31,7 @@ import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
 import { balanceSubModel } from '@/features/assets-balances';
+import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { createSigningPathModel } from '@/features/signing-path';
@@ -50,6 +52,8 @@ const stepChanged = createEvent<Step>();
 const flowStarted = createEvent();
 const flowFinished = createEvent();
 const $step = readonly(restore(stepChanged, Step.NONE));
+
+const draftMode = createDraftModeBinding({ formInitiated: flowStarted, chainChanged: flowStarted });
 
 // input mode (paste vs build)
 
@@ -73,8 +77,10 @@ const form: Form<FormData> = createForm<FormData>({
         source: combine({
           fee: $fee,
           balance: $signatoryBalance,
+          isDraftMode: draftMode.$isDraftMode,
         }),
-        fn: (signatory, _, { balance, fee }) => {
+        fn: (signatory, _, { balance, fee, isDraftMode }) => {
+          if (isDraftMode) return;
           if (!signatory) {
             return { message: 'callData.errors.signatoryRequired' };
           }
@@ -123,13 +129,14 @@ const $args = combine($call, form.fields.chain.$value, (call, chain) => {
   return transactionEntitiesService.formatCall(call, chain);
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: form.fields.initiator.$value,
     chain: form.fields.chain.$value,
     resetOn: flowFinished,
     resetUserOverrideOn: form.fields.initiator.change,
-  });
+  },
+);
 
 const $bfsRoute = createRouteStore({
   chain: form.fields.chain.$value,
@@ -138,9 +145,7 @@ const $bfsRoute = createRouteStore({
   accounts: walletModel.$availableAccounts,
 });
 // Picked path wins over BFS when it has enough hops to wrap.
-const $route = combine($bfsRoute, $pathRoute, (bfs, override) =>
-  override && override.length >= 2 ? override : bfs,
-);
+const $route = combine($bfsRoute, $pathRoute, (bfs, override) => (override && override.length >= 2 ? override : bfs));
 
 const { $tx: $wrappedTx } = createWrappedTxStore({
   api: $api,
@@ -404,15 +409,54 @@ sample({
   target: form.fields.callData.resetError,
 });
 
+const $draftCallDataHex = combine(form.fields.callData.$value, (callData) => {
+  if (!callData || !callData.startsWith('0x')) return null;
+  return callData;
+});
+
+const $draftNetworkStore = form.fields.chain.$value.map((chain) =>
+  chain ? { chain, asset: getNativeAsset(chain.assets) } : null,
+);
+
 const $canSubmit = combine(
   {
+    isDraftMode: draftMode.$isDraftMode,
     formValid: form.$isValid,
     valid: $valid,
     extrinsic: $wrappedExtrinsic,
     fee: $fee,
   },
-  ({ formValid, valid, extrinsic, fee }) => formValid && valid && nonNullable(extrinsic) && !fee?.isZero(),
+  ({ isDraftMode, formValid, valid, extrinsic, fee }) => {
+    if (isDraftMode) return false;
+    return formValid && valid && nonNullable(extrinsic) && !fee?.isZero();
+  },
 );
+
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    networkStore: $draftNetworkStore,
+  },
+  ({ isDraftMode, isPathComplete, callData, networkStore }) => {
+    if (!isDraftMode || !isPathComplete || !callData || !networkStore) return false;
+    return true;
+  },
+);
+
+draftMode.connectSave({
+  source: 'call-data-execute-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore: $draftNetworkStore,
+  $canSave: $canSaveAsDraft,
+});
+
+wireDraftCloseRedirect({
+  $initiatedDraft: draftMode.$initiatedDraft,
+  flowFinished,
+  destination: Paths.OPERATIONS,
+});
 
 // submit flow
 
@@ -512,4 +556,18 @@ export const formModel = {
   builderCallDataChanged,
   templateApplied,
   signingPathChanged,
+
+  $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
+  $canSaveAsDraft,
+  $initiatedDraft: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
+  events: {
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
+  },
 };
