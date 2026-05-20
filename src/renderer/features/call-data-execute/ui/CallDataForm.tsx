@@ -82,6 +82,7 @@ export const CallDataForm = () => {
             chainId={chain.chainId}
             callData={callDataValue}
             specVersion={specVersion}
+            modalWidth="37rem"
             onApply={templateApplied}
           />
         )}

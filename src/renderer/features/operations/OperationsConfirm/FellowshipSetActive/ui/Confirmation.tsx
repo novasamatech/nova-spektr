@@ -6,6 +6,7 @@ import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';
 import { SetActiveConfirmation, setActive } from '@/features/fellowship-profile';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -40,6 +41,8 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
         fee={confirm.meta.fee}
         isActive={confirm.meta.isActive}
       />
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (

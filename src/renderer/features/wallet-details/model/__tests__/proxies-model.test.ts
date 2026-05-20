@@ -14,6 +14,7 @@ import {
   WalletType,
 } from '@/shared/core';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
+import { VERIFY_PROXY_REMARK_KIND } from '@/shared/transactions';
 import { type MultisigOperation, accounts, contactMultisigsModel, multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -29,8 +30,8 @@ const {
 } = proxiesModel.__test;
 
 const chainId = '0x01' as ChainId;
-const pureProxy = '0xpure' as AccountId;
-const proxyMultisig = '0xproxymulti' as AccountId;
+const pureProxy = ('0x' + 'aa'.repeat(32)) as AccountId;
+const proxyMultisig = ('0x' + 'bb'.repeat(32)) as AccountId;
 
 const decodedTx = (section: string, method: string, args: Record<string, unknown> = {}): DecodedTransaction =>
   ({ section, method, args, chainId, accountId: pureProxy }) as DecodedTransaction;
@@ -254,7 +255,7 @@ describe('features/wallet-details/model/proxies-model', () => {
       expect(findLatestExecutedOperation(ops, chainId, pureProxy, proxyMultisig)).toBeNull();
     });
 
-    test('returns the executed operation with the greatest blockCreated', () => {
+    test('returns the executed operation with the greatest blockCreated (lenient — any executed op via the proxy combo counts as verified)', () => {
       const ops: MultisigOperation[] = [
         makeOp({ id: 'a', blockCreated: 50 as BlockHeight }),
         makeOp({ id: 'b', blockCreated: 200 as BlockHeight }),
@@ -272,6 +273,17 @@ describe('features/wallet-details/model/proxies-model', () => {
       ];
 
       expect(findLatestExecutedOperation(ops, chainId, pureProxy, proxyMultisig)?.id).toBe('executed-old');
+    });
+
+    test('counts incidental executed ops (plain remark, transfer, etc.) as verification — any successful op proves the proxy works', () => {
+      const transfer = decodedTx('proxy', 'proxy', {
+        real: pureProxy,
+        forceProxyType: ProxyTypes.ANY,
+        transaction: { section: 'balances', method: 'transferKeepAlive', chainId, accountId: pureProxy, args: {} },
+      });
+
+      const ops: MultisigOperation[] = [makeOp({ id: 'transfer', transaction: transfer })];
+      expect(findLatestExecutedOperation(ops, chainId, pureProxy, proxyMultisig)?.id).toBe('transfer');
     });
   });
 
@@ -370,23 +382,49 @@ describe('features/wallet-details/model/proxies-model', () => {
       id: 1,
       name: 'PW',
       type: WalletType.PROXIED,
-      isHidden: false,
+      hiddenReason: null,
       accounts: [pwAccount],
     } as unknown as ProxiedWallet;
     const fmwWallet = {
       id: 2,
       name: 'FMW',
       type: WalletType.FLEXIBLE_MULTISIG,
-      isHidden: false,
+      hiddenReason: null,
       accounts: [fmwAccount],
     } as unknown as FlexibleMultisigWallet;
     const mwWallet = {
       id: 3,
       name: 'MW',
       type: WalletType.MULTISIG,
-      isHidden: false,
+      hiddenReason: null,
       accounts: [mwAccount],
     } as unknown as MultisigWallet;
+
+    const verifyMarkerInner = (delegate: AccountId, pure: AccountId) => ({
+      section: 'system',
+      method: 'remarkWithEvent',
+      chainId: verifyChainId,
+      accountId: pure,
+      args: {
+        remark: JSON.stringify({
+          kind: VERIFY_PROXY_REMARK_KIND,
+          delegateAccountId: delegate,
+          pureProxyAccountId: pure,
+        }),
+      },
+    });
+
+    const buildVerifyTx = (delegate: AccountId, pure: AccountId) => ({
+      section: 'proxy',
+      method: 'proxy',
+      chainId: verifyChainId,
+      accountId: delegate,
+      args: {
+        real: pure,
+        forceProxyType: ProxyTypes.ANY,
+        transaction: verifyMarkerInner(delegate, pure),
+      },
+    });
 
     const verifyOp = {
       id: 'op-verify',
@@ -399,23 +437,7 @@ describe('features/wallet-details/model/proxies-model', () => {
       indexCreated: 0,
       timestamp: 0,
       events: [],
-      transaction: {
-        section: 'proxy',
-        method: 'proxy',
-        chainId: verifyChainId,
-        accountId: M,
-        args: {
-          real: F,
-          forceProxyType: ProxyTypes.ANY,
-          transaction: {
-            section: 'system',
-            method: 'remark',
-            chainId: verifyChainId,
-            accountId: M,
-            args: { remark: '0x' },
-          },
-        },
-      },
+      transaction: buildVerifyTx(M, F),
     } as unknown as MultisigOperation;
 
     const walletProxiesData = {
@@ -492,6 +514,53 @@ describe('features/wallet-details/model/proxies-model', () => {
       expect(proxies[0]?.pendingVerificationOperation).not.toBeNull();
     });
 
+    test('does NOT stamp pendingVerificationOperation for incidental pending proxy.proxy ops (e.g. a transfer routed through the proxy)', async () => {
+      const transferOp = {
+        id: 'op-transfer',
+        status: 'pending',
+        chainId: verifyChainId,
+        multisigAccountId: M,
+        proxiedAccountId: F,
+        callHash: '0xtransfer',
+        blockCreated: 210,
+        indexCreated: 0,
+        timestamp: 0,
+        events: [],
+        transaction: {
+          section: 'proxy',
+          method: 'proxy',
+          chainId: verifyChainId,
+          accountId: M,
+          args: {
+            real: F,
+            forceProxyType: ProxyTypes.ANY,
+            transaction: {
+              section: 'balances',
+              method: 'transferKeepAlive',
+              chainId: verifyChainId,
+              accountId: F,
+              args: { dest: ('0x' + 'ee'.repeat(32)) as AccountId, value: '1000' },
+            },
+          },
+        },
+      } as unknown as MultisigOperation;
+
+      const scope = fork({
+        values: new Map<any, any>([
+          [walletModel.__test.$rawWallets, [pwWallet, fmwWallet, mwWallet]],
+          [accounts.__test.$list, [pwAccount, fmwAccount, mwAccount]],
+          [networkModel.$chains, { [verifyChainId]: chain }],
+          [walletProxiesModel.$walletProxies, walletProxiesData],
+          [multisigOperation.__test.$cachedOperations, [transferOp]],
+        ]),
+      });
+      await allSettled(walletProxiesModel.flow.open, { scope, params: { wallet: pwWallet } });
+      const proxies = scope.getState(proxiesModel.$proxies);
+
+      expect(proxies).toHaveLength(1);
+      expect(proxies[0]?.pendingVerificationOperation).toBeNull();
+    });
+
     test('Flex Multisig view detects verification op signed by an additional multisig proxy', async () => {
       const M2 = ('0x' + 'cc'.repeat(32)) as AccountId;
       const mw2Account = {
@@ -507,7 +576,7 @@ describe('features/wallet-details/model/proxies-model', () => {
         id: 4,
         name: 'MW2',
         type: WalletType.MULTISIG,
-        isHidden: false,
+        hiddenReason: null,
         accounts: [mw2Account],
       } as unknown as MultisigWallet;
 
@@ -515,12 +584,8 @@ describe('features/wallet-details/model/proxies-model', () => {
         ...verifyOp,
         id: 'op-verify-m2',
         multisigAccountId: M2,
-        transaction: {
-          ...verifyOp.transaction,
-          accountId: M2,
-          args: { ...verifyOp.transaction!.args },
-        },
-      } as MultisigOperation;
+        transaction: buildVerifyTx(M2, F),
+      } as unknown as MultisigOperation;
 
       const walletProxiesWithExtra = {
         [verifyChainId]: {

@@ -1,0 +1,87 @@
+import { type ApiPromise } from '@polkadot/api';
+import { type SignerOptions } from '@polkadot/api/submittable/types';
+import { type Store, attach, createEffect } from 'effector';
+
+import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
+import { getAssetById, getNativeAsset } from '@/shared/lib/utils';
+import { balanceModel } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { transactionService } from '@/entities/transaction';
+import { ChangeSignatoriesRules } from '../lib/change-signatories-rules';
+import { validationUtils } from '../lib/validation-utils';
+import {
+  type AccountStore,
+  type Validation,
+  type ValidationResult,
+  type ValidationStartedParams,
+} from '../types/types';
+
+type ValidateParams = {
+  id: ID;
+  api: ApiPromise;
+  chain: Chain;
+  asset: Asset;
+  transaction: Transaction;
+  balances: BalanceMap;
+  signerOptions?: Partial<SignerOptions>;
+};
+
+const rootValidateFx = createEffect(
+  async ({
+    id,
+    api,
+    chain,
+    transaction,
+    balances,
+    signerOptions,
+  }: ValidateParams): Promise<{ id: ID; result: ValidationResult }> => {
+    const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
+
+    const rules: Validation[] = [
+      {
+        value: { accountId: transaction.accountId },
+        form: {
+          chain,
+        },
+        ...ChangeSignatoriesRules.account.notEnoughTokens({} as Store<AccountStore>),
+        source: {
+          fee,
+          isMultisig: false,
+          proxyDeposit: '0',
+          balances,
+        } as AccountStore,
+      },
+    ];
+
+    return { id, result: validationUtils.applyValidationRules(rules) };
+  },
+);
+
+const validateFx = attach({
+  source: {
+    chains: networkModel.$chains,
+    apis: networkModel.$apis,
+    balances: balanceModel.$balanceMap,
+  },
+  async effect({ chains, balances, apis }, { id, transaction }: ValidationStartedParams) {
+    const chain = chains[transaction.chainId];
+    const api = apis[transaction.chainId];
+    if (!chain || !api) {
+      return { id, result: undefined };
+    }
+    const asset = getAssetById(transaction.args.asset, chain.assets) || getNativeAsset(chain.assets);
+
+    return rootValidateFx({
+      id,
+      api,
+      transaction,
+      chain,
+      asset,
+      balances,
+    });
+  },
+});
+
+export const changeSignatoriesValidateModel = {
+  validate: validateFx,
+};

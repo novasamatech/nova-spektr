@@ -49,7 +49,7 @@ export const Unstake = () => {
   }
 
   return (
-    <Modal size="md" isOpen={isModalOpen} onToggle={closeModal}>
+    <Modal size="mdlg" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>
         <OperationTitle
           title={t('staking.unstake.title', { asset: getNativeAsset(networkStore.chain.assets)!.symbol })}

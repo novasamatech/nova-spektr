@@ -57,7 +57,7 @@ export const BondNominate = () => {
   return (
     <Modal
       isOpen={isModalOpen}
-      size={step === Step.VALIDATORS ? 'fit' : 'md'}
+      size={step === Step.VALIDATORS ? 'fit' : 'mdlg'}
       onToggle={(open) => {
         if (!open) {
           closeModal();

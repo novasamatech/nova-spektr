@@ -191,7 +191,7 @@ const OperationMeta = ({ operation, chain, api }: { operation: MultisigOperation
                 <Modal.Title close>{t('operation.viewJSON.label')}</Modal.Title>
                 <Modal.Content>
                   <Box padding={5}>
-                    <Json value={jsonArgs} name="operation" expandDepth={3} />
+                    <Json value={jsonArgs} name="operation" />
                   </Box>
                 </Modal.Content>
               </Modal>

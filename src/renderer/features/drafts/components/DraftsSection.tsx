@@ -19,14 +19,17 @@ import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel, useApi } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { backendContactsModel } from '@/features/contacts';
 import { tryDecodeCallData } from '../lib/decode-call-data';
-import { createDraftModel } from '../model/create-draft-model';
+import { useCanCreateDraft } from '../lib/useCanCreateDraft';
+import { DESCRIPTION_MAX_LENGTH, createDraftModel } from '../model/create-draft-model';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
 import '../model/drafts-model'; // side-effect: orchestration wiring
 import { submitDraftModel } from '../model/submit-draft-model';
 
 import { DraftRow } from './DraftRow';
 import { DraftSummary } from './DraftSummary';
+import { ReconnectAddressBookButton } from './ReconnectAddressBookButton';
 import { SubmitDraftModal } from './SubmitDraftModal';
 
 export const DraftsSection = () => {
@@ -35,10 +38,11 @@ export const DraftsSection = () => {
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const authState = useUnit(authModel.$authState);
+  const isHealthy = useUnit(backendContactsModel.$isHealthy);
   const focusedDraftId = useUnit(draftDeepLinkModel.$focusedDraftId);
 
   const canRead = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_READ) ?? false);
-  const canWrite = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_WRITE) ?? false);
+  const canWrite = useCanCreateDraft();
   const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);
 
   const { data: drafts } = useDrafts(canRead ? backendUrl : null);
@@ -148,17 +152,22 @@ export const DraftsSection = () => {
   );
 
   const handleSubmitDraft = (draft: Draft) => {
-    if (!draft.callData || !draft.multisigAccountId) return;
+    if (!draft.multisigAccountId) return;
 
     const chain = chains[draft.chainId as ChainId];
     if (!chain) return;
 
-    // For flex drafts, the routing initiator is the proxied (pure proxy) account,
-    // but the display initiator is the flex multisig account
+    // `initiator` here is a legacy fallback only: for path-driven drafts
+    // submitDraftModel derives `$initiator` from `signingPath[0]`. It still
+    // matters for legacy drafts (empty `signingPath`). Note this branch picks
+    // the deepest multisig for nested paths — that's wrong for routing but
+    // harmless because the model overrides it when a saved path is present.
     const initiatorAccount = draft.proxyAccountId
       ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
       : (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null);
 
+    // `displayInitiator` is consumed verbatim by the confirm UI — for flex
+    // drafts we want the multisig facade label, not the pure proxied address.
     const displayInitiator = draft.proxyAccountId
       ? (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null)
       : undefined;
@@ -206,86 +215,96 @@ export const DraftsSection = () => {
     setEditingDraft(null);
   };
 
-  if (!canRead) return null;
+  if (isHealthy && !canRead) return null;
 
   return (
     <div className="mb-6">
-      <Accordion open={focusedDraftId ? true : undefined}>
-        <Accordion.Trigger sticky>
-          <div className="flex items-center gap-2 py-2">
-            <FootnoteText className="font-medium text-text-secondary">{t('operations.drafts.title')}</FootnoteText>
-            {visibleDrafts.length > 0 && (
-              <div className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-icon-accent/15 px-2">
-                <CaptionText className="font-medium text-icon-accent">{visibleDrafts.length}</CaptionText>
+      <div className="relative">
+        <div aria-hidden={!isHealthy} inert={!isHealthy || undefined}>
+          <Accordion initialOpen>
+            <Accordion.Trigger sticky>
+              <div className="flex items-center gap-2 py-2">
+                <FootnoteText className="font-medium text-text-secondary">{t('operations.drafts.title')}</FootnoteText>
+                {isHealthy && visibleDrafts.length > 0 && (
+                  <div className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-icon-accent/15 px-2">
+                    <CaptionText className="font-medium text-icon-accent">{visibleDrafts.length}</CaptionText>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </Accordion.Trigger>
-        <Accordion.Content>
-          <div className="mt-1 flex flex-col gap-y-1.5">
-            {visibleDrafts.map((draft) => (
-              <DraftRow
-                key={draft.id}
-                canDelete={canDelete}
-                canWrite={canWrite}
-                isSubmitted={submittedDraftIds.has(draft.id)}
-                hasInitiator={
-                  draft.proxyAccountId
-                    ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
-                    : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
-                }
-                isHighlighted={focusedDraftId === draft.id}
-                multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
-                rowRef={
-                  focusedDraftId === draft.id
-                    ? (el) => {
-                        highlightedRef.current = el;
+            </Accordion.Trigger>
+            <Accordion.Content>
+              <div className="mt-1 flex flex-col gap-y-1.5">
+                {isHealthy &&
+                  visibleDrafts.map((draft) => (
+                    <DraftRow
+                      key={draft.id}
+                      canDelete={canDelete}
+                      canWrite={canWrite}
+                      isSubmitted={submittedDraftIds.has(draft.id)}
+                      hasInitiator={
+                        draft.proxyAccountId
+                          ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
+                          : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
                       }
-                    : undefined
-                }
-                draft={draft}
-                onDelete={handleDeleteDraft}
-                onEdit={handleEditDraft}
-                onSubmit={handleSubmitDraft}
-              />
-            ))}
+                      isHighlighted={focusedDraftId === draft.id}
+                      multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
+                      rowRef={
+                        focusedDraftId === draft.id
+                          ? (el) => {
+                              highlightedRef.current = el;
+                            }
+                          : undefined
+                      }
+                      draft={draft}
+                      onDelete={handleDeleteDraft}
+                      onEdit={handleEditDraft}
+                      onSubmit={handleSubmitDraft}
+                    />
+                  ))}
 
-            <Tooltip open={canWrite ? false : undefined}>
-              <Tooltip.Trigger>
-                <div>
-                  <button
-                    className={cnTw(
-                      'group w-full rounded-lg border-2 border-dashed border-shade-12 px-4 py-3.5 transition-all',
-                      canWrite
-                        ? 'cursor-pointer hover:border-icon-accent hover:bg-icon-accent/4 active:scale-[0.998]'
-                        : 'cursor-not-allowed opacity-50',
-                    )}
-                    disabled={!canWrite}
-                    type="button"
-                    onClick={() => canWrite && createDraftModel.createDraftRequested()}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-dashed border-shade-12 transition-colors group-hover:border-icon-accent group-hover:bg-icon-accent/10">
-                        <Icon
-                          name="add"
-                          size={14}
-                          className="text-text-tertiary transition-colors group-hover:text-icon-accent"
-                        />
-                      </div>
-                      <FootnoteText className="font-medium text-text-tertiary transition-colors group-hover:text-icon-accent">
-                        {t('operations.drafts.createNew')}
-                      </FootnoteText>
+                <Tooltip open={canWrite ? false : undefined}>
+                  <Tooltip.Trigger>
+                    <div>
+                      <button
+                        className={cnTw(
+                          'group w-full rounded-lg border-2 border-dashed border-shade-12 px-4 py-3.5 transition-all',
+                          canWrite
+                            ? 'cursor-pointer hover:border-icon-accent hover:bg-icon-accent/4 active:scale-[0.998]'
+                            : 'cursor-not-allowed opacity-50',
+                        )}
+                        disabled={!canWrite}
+                        type="button"
+                        onClick={() => canWrite && createDraftModel.createDraftRequested()}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-dashed border-shade-12 transition-colors group-hover:border-icon-accent group-hover:bg-icon-accent/10">
+                            <Icon
+                              name="add"
+                              size={14}
+                              className="text-text-tertiary transition-colors group-hover:text-icon-accent"
+                            />
+                          </div>
+                          <FootnoteText className="font-medium text-text-tertiary transition-colors group-hover:text-icon-accent">
+                            {t('operations.drafts.createNew')}
+                          </FootnoteText>
+                        </div>
+                      </button>
                     </div>
-                  </button>
-                </div>
-              </Tooltip.Trigger>
-              <Tooltip.Content>
-                {isAuthenticated ? t('operations.drafts.noWritePermission') : t('operations.drafts.connectToCreate')}
-              </Tooltip.Content>
-            </Tooltip>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>{t('operations.drafts.noWritePermission')}</Tooltip.Content>
+                </Tooltip>
+              </div>
+            </Accordion.Content>
+          </Accordion>
+        </div>
+        {!isHealthy && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-block-background-default/70 backdrop-blur-[2px]">
+            <div className="rounded-full bg-background-default">
+              <ReconnectAddressBookButton />
+            </div>
           </div>
-        </Accordion.Content>
-      </Accordion>
+        )}
+      </div>
 
       {editingDraft && (
         <Modal size="md" isOpen={isEditModalOpen} onToggle={handleEditToggle}>
@@ -306,10 +325,14 @@ export const DraftsSection = () => {
                   placeholder={t('operations.drafts.descriptionPlaceholder')}
                   rows={3}
                   value={editDescription}
+                  invalid={editDescription.length > DESCRIPTION_MAX_LENGTH}
                   onChange={setEditDescription}
                 />
                 <InputHint variant="error" active={!editDescription.trim()}>
                   {t('operations.drafts.descriptionRequired')}
+                </InputHint>
+                <InputHint variant="error" active={editDescription.length > DESCRIPTION_MAX_LENGTH}>
+                  {t('operations.drafts.descriptionMaxLengthError', { max: DESCRIPTION_MAX_LENGTH })}
                 </InputHint>
               </Field>
 
@@ -340,7 +363,7 @@ export const DraftsSection = () => {
               {t('operations.drafts.backButton')}
             </Button>
             <Button
-              disabled={!editDescription.trim() || !isEditDirty}
+              disabled={!editDescription.trim() || editDescription.length > DESCRIPTION_MAX_LENGTH || !isEditDirty}
               isLoading={isSavingEdit}
               onClick={handleSaveEdit}
             >

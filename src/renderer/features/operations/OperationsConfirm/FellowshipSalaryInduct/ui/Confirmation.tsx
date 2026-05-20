@@ -6,6 +6,7 @@ import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';
 import { SalaryRegisterConfirmation } from '@/features/fellowship-salary';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
 import { confirm } from '../model/confirm';
 
 type Props = {
@@ -37,6 +38,8 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
         wallets={record.meta.wallets}
         fee={record.meta.fee}
       />
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (

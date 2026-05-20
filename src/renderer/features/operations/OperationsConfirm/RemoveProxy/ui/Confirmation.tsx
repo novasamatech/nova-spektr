@@ -4,12 +4,13 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
 import { SignButton } from '@/entities/operations';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
+import { SigningPathConfirmSection } from '../../common/SigningPathConfirmSection';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -36,7 +37,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     return null;
   }
 
-  const { chain, signatory, spawner, delegate, proxyType, route, fee, multisigDeposit } = confirmStore.meta;
+  const { chain, signatory, spawner, delegate, proxyType, route, fee, multisigDeposit, signingPath } =
+    confirmStore.meta;
   const proxyAccount = spawner || delegate;
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
@@ -52,7 +54,13 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails chain={chain} wallets={wallets} initiators={initiators} signatory={signatory}>
+      <SigningPathConfirmSection
+        signingPath={signingPath}
+        chain={chain}
+        wallets={wallets}
+        initiators={initiators}
+        signatory={signatory}
+      >
         <DetailRow label={t('proxy.details.accessType')} className="pr-2">
           <FootnoteText>{proxyType}</FootnoteText>
         </DetailRow>
@@ -66,7 +74,9 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         {hasMultisigAccount && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit} />}
 
         <FeeWithLabel asset={nativeAsset} fee={fee} />
-      </TransactionDetails>
+      </SigningPathConfirmSection>
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (
@@ -76,7 +86,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         )}
 
         <div className="flex gap-4">
-          {secondaryActionButton}
+          {!hideSignButton && secondaryActionButton}
 
           {!hideSignButton && (
             <SignButton

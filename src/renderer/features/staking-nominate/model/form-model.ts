@@ -25,6 +25,7 @@ import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { createSigningPathModel } from '@/features/signing-path';
 import { type FormSubmitEvent } from '../lib/types';
 
 type NetworkStore = {
@@ -117,12 +118,23 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
+    initiator: form.fields.initiator.$value,
+    chain: $chain,
+    resetOn: formInitiated,
+    resetUserOverrideOn: form.fields.initiator.change,
+  },
+);
+
 sample({
-  clock: $signatories,
-  filter: $signatories.map((x) => x.length === 1),
-  fn: (s) => s.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, formInitiated],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 const $coreTx = combine(
   {
@@ -147,6 +159,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: $chain,
   transaction: $coreTx,
+  routeOverride: $pathRoute,
 });
 
 const $isMultisig = $route.map((route) => {
@@ -240,20 +253,13 @@ sample({
   }),
 });
 
-sample({
-  clock: formInitiated,
-  source: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
-  target: form.fields.signatory.change,
-});
-
 // Submit
 sample({
   clock: form.submit.doneData,
   source: {
     network: $networkStore,
     route: $route,
+    signingPath: $signingPath,
     fee: $fee.map((fee) => fee?.toString()),
     multisigDeposit: $multisigDeposit,
     selectedSignatory: form.fields.signatory.$value,
@@ -261,7 +267,7 @@ sample({
   filter: ({ network, selectedSignatory, fee }) => {
     return nonNullable(network) && nonNullable(selectedSignatory) && nonNullable(fee);
   },
-  fn: ({ selectedSignatory, network, fee, multisigDeposit, ...rest }, formData) => {
+  fn: ({ selectedSignatory, network, fee, multisigDeposit, signingPath, ...rest }, formData) => {
     const { initiator } = formData;
 
     return {
@@ -272,6 +278,7 @@ sample({
       chain: network!.chain,
       initiator: initiator!,
       signatory: selectedSignatory!,
+      signingPath,
     };
   },
   target: formSubmitted,
@@ -280,6 +287,8 @@ sample({
 export const formModel = {
   form,
   $signatories,
+  $signingPath,
+  $pathRoute,
   $selectedSignatory: form.fields.signatory.$value,
 
   $proxyWallet,
@@ -300,4 +309,5 @@ export const formModel = {
 
   formInitiated,
   formSubmitted,
+  signingPathChanged,
 };

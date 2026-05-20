@@ -2,11 +2,11 @@ import { useI18n } from '@/shared/i18n';
 import { Alert, Button, CaptionText } from '@/shared/ui';
 
 export type BackendErrorCategory = 'auth' | 'forbidden' | 'timeout' | 'network' | 'generic';
-export type BackendError = { category: BackendErrorCategory; message: string };
+export type BackendError = { category: BackendErrorCategory; message?: string };
 
 type Props = {
   category: BackendErrorCategory;
-  message: string;
+  message?: string;
   onRetry: () => void;
 };
 
@@ -24,7 +24,7 @@ export const BackendErrorView = ({ category, message, onRetry }: Props) => {
   return (
     <div className="py-4">
       <Alert title={t(i18nKeyByCategory[category])} active variant="error">
-        <CaptionText className="break-all text-text-tertiary">{message}</CaptionText>
+        {message && <CaptionText className="break-all text-text-tertiary">{message}</CaptionText>}
         <Button variant="text" className="h-4.5 self-start p-0" onClick={onRetry}>
           {t('addressBook.sources.retry')}
         </Button>

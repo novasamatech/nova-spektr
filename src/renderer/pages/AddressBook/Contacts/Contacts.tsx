@@ -18,7 +18,6 @@ import {
 } from '@/entities/contact';
 import {
   BackendConfigurationButton,
-  BackendConfigurationModal,
   BackendConnectionCard,
   ContactFilter,
   CreateContactNavigation,
@@ -181,7 +180,6 @@ export const Contacts = () => {
       <Outlet />
 
       <SendToContactModal />
-      <BackendConfigurationModal />
     </>
   );
 };

@@ -9,7 +9,7 @@ import { isEthereumAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
 import { AccountExplorers, Address, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
-import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
+import { Box, Modal, ScrollArea, Skeleton, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, useAccountName, useWalletName } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
@@ -51,12 +51,19 @@ const ProxiedAccountItem = ({ chain, accountId }: { chain: Chain; accountId: Acc
   );
 };
 
+const ProxyDelegateName = ({ accountId, chain }: { accountId: AccountId; chain: Chain | null }) => {
+  const resolved = useAccountName({ accountId, chain });
+
+  return <FootnoteText className="truncate">{resolved}</FootnoteText>;
+};
+
 type Props = {
   wallet: ProxiedWallet;
+  defaultTab?: 'accounts' | 'proxies';
   onClose: () => void;
 };
 
-export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
+export const ProxiedWalletDetails = ({ wallet, defaultTab, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
   useGate(walletProxiesModel.flow, { wallet });
 
@@ -68,8 +75,9 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
 
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
-  const [tab, setTab] = useState<'accounts' | 'proxies'>('accounts');
+  const [tab, setTab] = useState<'accounts' | 'proxies'>(defaultTab === 'proxies' ? 'proxies' : 'accounts');
   const proxiesCount = useUnit(proxiesModel.$totalCount);
+  const isProxiesLoading = useUnit(proxiesModel.$isLoading);
   const handleTabChange = (value: string) => {
     if (value === 'accounts' || value === 'proxies') setTab(value);
   };
@@ -163,8 +171,10 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
             )}
           </div>
 
-          {proxyWallets.map(
-            ({ connection, proxyWallet }) =>
+          {proxyWallets.map(({ connection, proxyWallet }) => {
+            const proxyChain = wallet.accounts[0] ? chains[wallet.accounts[0].chainId] : null;
+
+            return (
               proxyWallet && (
                 <div className="flex items-center pl-4" key={`${connection.proxyType}-${connection.proxyAccountId}`}>
                   <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
@@ -172,14 +182,15 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
                   <span className="mx-1">
                     <WalletIcon type={proxyWallet.type} size={16} />
                   </span>
-                  <FootnoteText className="truncate">{proxyWallet.name}</FootnoteText>
+                  <ProxyDelegateName accountId={connection.proxyAccountId} chain={proxyChain ?? null} />
                   &nbsp;
                   <FootnoteText className="whitespace-nowrap">{t('walletDetails.common.proxyToControl')}</FootnoteText>
                   &nbsp;
                   <FootnoteText className="whitespace-nowrap">{connection.proxyType}</FootnoteText>
                 </div>
-              ),
-          )}
+              )
+            );
+          })}
         </div>
 
         <WalletActions actions={actions} />
@@ -199,7 +210,11 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
               <Tabs.Trigger value="proxies">
                 <span className="flex items-center gap-1">
                   {t('walletDetails.proxies.tabTitle')}
-                  <span className="text-text-tertiary">{proxiesCount}</span>
+                  {isProxiesLoading && proxiesCount === 0 ? (
+                    <Skeleton width={2} height={2.5} />
+                  ) : (
+                    <span className="text-text-tertiary">{proxiesCount}</span>
+                  )}
                 </span>
               </Tabs.Trigger>
             </Tabs.List>

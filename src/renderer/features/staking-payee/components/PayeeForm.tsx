@@ -1,19 +1,19 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent, useMemo, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 
 import { RewardsDestination } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { toAddress, transferableAmount } from '@/shared/lib/utils';
+import { toAddress } from '@/shared/lib/utils';
 import { Button, Combobox, DetailRow, FootnoteText, Icon, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
-import { AssetBalance, Identicon, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
+import { AssetBalance, Identicon, TransactionValidationError } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { accounts, useAccountsNames } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { useAccountsNames } from '@/domains/network';
 import { transactionService } from '@/entities/transaction';
 import { AccountAddress, walletModel } from '@/entities/wallet';
 import { InitiateDraftButton } from '@/features/drafts';
+import { SigningPathSection } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
@@ -48,47 +48,24 @@ export const PayeeForm = ({ onGoBack }: Props) => {
 };
 
 const Signatories = () => {
+  const { t } = useI18n();
+
   const {
     fields: { signatory },
   } = useForm(formModel.form);
 
-  const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
-
-  const balances = useUnit(balanceModel.$balanceMap);
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
-
-  const signatoriesWithBalance = useMemo(() => {
-    if (!network) {
-      return [];
-    }
-    return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        network.chain.chainId,
-        network.asset.assetId,
-      );
-      return { account: signatory, balance: transferableAmount(balance) };
-    });
-  }, [signatories, balances]);
-
-  if (!network) {
-    return null;
-  }
+  const formErrors = useUnit(formModel.$errors);
 
   return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      allWallets={allWallets}
-      initiator={signatory.value}
-      hasError={signatory.hasError}
-      errorText={signatory.errorMessage}
-      network={network}
-      onChange={signatory.onChange}
+    <SigningPathSection
+      signingPath={signingPath}
+      chain={network?.chain ?? null}
+      asset={network?.asset ?? null}
+      txErrors={formErrors}
+      errorText={t(signatory.errorMessage)}
+      onChange={formModel.events.signingPathChanged}
     />
   );
 };

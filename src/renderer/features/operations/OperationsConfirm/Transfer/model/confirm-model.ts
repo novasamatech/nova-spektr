@@ -4,6 +4,7 @@ import { combine, createEvent, sample } from 'effector';
 import { type Address, type Asset, type Chain } from '@/shared/core';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { type TxConfirmInfo, createTransactionConfirmStore, createTxValidationStore } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { type BalancePreservation } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -17,6 +18,12 @@ export type TransferConfirmStore = TxConfirmInfo & {
   amount: string;
   rawAmount: string;
   destination: Address;
+  /**
+   * Full signing path captured at submit time. Used by the confirm screen to
+   * surface a SIGNING PATH chip with the same multi-hop overview the user saw
+   * on the transfer form, so they can verify before signing.
+   */
+  signingPath: PathNode[];
 
   fee: BN;
   originFee: BN;

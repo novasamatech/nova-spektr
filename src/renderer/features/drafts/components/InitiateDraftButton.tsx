@@ -5,9 +5,12 @@ import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
-import { PERMISSIONS } from '@/domains/backend';
-import { authModel } from '@/aggregates/backend';
+import { connectionHistoryModel } from '@/aggregates/backend';
+import { backendContactsModel } from '@/features/contacts';
+import { useCanCreateDraft } from '../lib/useCanCreateDraft';
 import { createDraftModel } from '../model/create-draft-model';
+
+import { ReconnectAddressBookButton } from './ReconnectAddressBookButton';
 
 type Props = {
   /** Hex call data of the built transaction. Button is disabled while empty. */
@@ -51,8 +54,9 @@ export const InitiateDraftButton = ({
   onDraftCreated,
 }: Props) => {
   const { t } = useI18n();
-  const isAuthenticated = useUnit(authModel.$isAuthenticated);
-  const authState = useUnit(authModel.$authState);
+  const canWrite = useCanCreateDraft();
+  const hasEverConnected = useUnit(connectionHistoryModel.$hasEverConnected);
+  const isHealthy = useUnit(backendContactsModel.$isHealthy);
 
   // Tracks whether this button instance started the currently-open draft flow.
   // Only the initiator should fire onDraftCreated — prevents unrelated draft
@@ -78,9 +82,13 @@ export const InitiateDraftButton = ({
     };
   }, [onDraftCreated]);
 
-  const canWrite = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_WRITE) ?? false);
+  // User has never connected — keep the footer clean.
+  if (!hasEverConnected) return null;
 
-  // Not connected to address book or no write perm — hide entirely to keep the footer clean.
+  // Connection issue (auth/network/sync) — swap with reconnect CTA.
+  if (!isHealthy) return <ReconnectAddressBookButton />;
+
+  // Authenticated but no write permission — hide.
   if (!canWrite) return null;
 
   const ready = !!callData && !!chainId;

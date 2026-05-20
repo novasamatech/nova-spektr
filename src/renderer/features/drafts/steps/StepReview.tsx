@@ -1,13 +1,22 @@
 import { type Chain, type WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type IconNames, CaptionText, FootnoteText, HelpText, Icon, Separator, SmallTitleText } from '@/shared/ui';
+import {
+  type IconNames,
+  CaptionText,
+  FootnoteText,
+  HelpText,
+  Icon,
+  InputHint,
+  Separator,
+  SmallTitleText,
+} from '@/shared/ui';
 import { Field, TextArea } from '@/shared/ui-kit';
 import { type PathNode } from '@/domains/backend';
 import { type OperationTitle } from '@/features/multisig-operations';
+import { PathBreadcrumb, PathReviewPopover } from '@/features/signing-path';
 import { DraftSummary } from '../components/DraftSummary';
-import { PathBreadcrumb } from '../components/signing-path/PathBreadcrumb';
-import { PathReviewPopover } from '../components/signing-path/PathReviewPopover';
+import { DESCRIPTION_MAX_LENGTH } from '../model/create-draft-model';
 
 type Props = {
   path: PathNode[];
@@ -51,17 +60,15 @@ export const StepReview = ({
       {path.length > 0 && (
         <section className="flex flex-col gap-y-2">
           <div className="flex items-center justify-between">
-            <CaptionText className="text-text-tertiary uppercase">
-              {t('operations.drafts.signingPath.signingPath')}
-            </CaptionText>
+            <CaptionText className="text-text-tertiary uppercase">{t('signingPath.signingPath')}</CaptionText>
             <div className="flex items-center gap-3">
               <HelpText className="text-text-tertiary">
-                {t('operations.drafts.signingPath.hopsCount', { count: path.length })}
+                {t('signingPath.hopsCount', { count: Math.max(0, path.length - 1) })}
               </HelpText>
-              <PathReviewPopover path={path} />
+              {chain && <PathReviewPopover path={path} chainId={chain.chainId} />}
             </div>
           </div>
-          <PathBreadcrumb path={path} size="sm" />
+          {chain && <PathBreadcrumb path={path} chainId={chain.chainId} size="sm" />}
         </section>
       )}
 
@@ -76,8 +83,12 @@ export const StepReview = ({
           placeholder={t('operations.drafts.descriptionPlaceholder')}
           value={description}
           rows={3}
+          invalid={description.length > DESCRIPTION_MAX_LENGTH}
           onChange={onDescriptionChanged}
         />
+        <InputHint variant="error" active={description.length > DESCRIPTION_MAX_LENGTH}>
+          {t('operations.drafts.descriptionMaxLengthError', { max: DESCRIPTION_MAX_LENGTH })}
+        </InputHint>
       </Field>
 
       <div className="flex flex-col rounded-lg border border-container-border bg-white">
@@ -115,8 +126,8 @@ export const StepReview = ({
       <div className="flex items-start gap-3 rounded-lg border border-icon-warning/20 bg-icon-warning/8 p-4">
         <Icon name="warn" size={16} className="mt-0.5 shrink-0 text-icon-warning" />
         <div className="flex flex-col gap-y-1">
-          <FootnoteText className="text-text-primary">{t('operations.drafts.signingPath.notSignedYet')}</FootnoteText>
-          <HelpText className="text-text-secondary">{t('operations.drafts.signingPath.notSignedYetHint')}</HelpText>
+          <FootnoteText className="text-text-primary">{t('signingPath.notSignedYet')}</FootnoteText>
+          <HelpText className="text-text-secondary">{t('signingPath.notSignedYetHint')}</HelpText>
         </div>
       </div>
     </div>

@@ -52,7 +52,7 @@ export const MultiTransferModal = () => {
 
   return (
     <>
-      <Modal isOpen={isOpen} size="md" height="fit" onToggle={handleModalToggle}>
+      <Modal isOpen={isOpen} size="mdlg" height="fit" onToggle={handleModalToggle}>
         <Modal.Trigger>
           <Dropdown.Item>{t('navigation.multiTransferLabel')}</Dropdown.Item>
         </Modal.Trigger>

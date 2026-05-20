@@ -17,35 +17,28 @@ import {
   nonNullable,
   nullable,
   performSearch,
+  toAccountId,
   toAddress,
   validateAddress,
   withdrawableAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, CaptionText, FootnoteText, Icon, InputHint, Switch } from '@/shared/ui';
-import {
-  AccountSelect,
-  Address,
-  Identicon,
-  SignatorySelect,
-  TransactionValidationError,
-  WalletIcon,
-} from '@/shared/ui-entities';
-import { Box, Combobox, Field, Select, TextArea, Tooltip } from '@/shared/ui-kit';
-import { accountService, accounts, useAccountName, useAccountsNames } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { AccountSelect, Address, Identicon, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
+import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
+import { accountService, useAccountName, useAccountsNames } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { transactionService } from '@/entities/transaction';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
-import { authModel } from '@/aggregates/backend';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { InitiateDraftButton } from '@/features/drafts';
+import { SigningPathSection, graphModel } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
-import { formModel } from '../model/form-model';
-import { transferModel } from '../model/transfer-model';
+import { TRANSFER_ALLOWED_PROXY_TYPES, formModel } from '../model/form-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
 import { TokenSelectorModal } from './TokenSelector';
@@ -97,7 +90,6 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
         <SignatorySelector />
         <Destination />
         <Amount />
-        <DescriptionField />
       </form>
       <div className="flex flex-col gap-y-6">
         <FeeSection />
@@ -223,31 +215,12 @@ const SignatorySelector = memo(() => {
   } = useForm(formModel.form);
 
   const initiator = useUnit(formModel.form.fields.initiator.$value);
-  const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
-  const balances = useUnit(balanceModel.$balanceMap);
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
+  const errors = useUnit(formModel.$errors);
 
-  const signatoriesWithBalance = useMemo(() => {
-    if (!network) {
-      return [];
-    }
-    return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        network.chain.chainId,
-        network.asset.assetId,
-      );
-      return { account: signatory, balance: withdrawableAmount(balance) };
-    });
-  }, [signatories, balances]);
-
-  if (!network) {
-    return null;
-  }
+  if (!network) return null;
 
   if (!initiator) {
     return (
@@ -276,16 +249,16 @@ const SignatorySelector = memo(() => {
   }
 
   return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      allWallets={allWallets}
-      initiator={initiator}
-      hasError={signatory.hasError}
+    <SigningPathSection
+      signingPath={signingPath}
+      chain={network.chain}
+      asset={network.asset}
+      txErrors={errors}
       errorText={t(signatory.errorMessage)}
-      network={network}
-      onChange={signatory.onChange}
+      allowedProxyTypes={TRANSFER_ALLOWED_PROXY_TYPES}
+      disabledProxyReason={t('signingPath.transferProxyTypeDisabled')}
+      balanceExtractor={(b) => (b ? withdrawableAmount(b) : null)}
+      onChange={formModel.signingPathChanged}
     />
   );
 });
@@ -509,6 +482,31 @@ const Destination = memo(() => {
 
   const options = [...walletsOptions, ...contactOptions];
 
+  // Synthetic "Address" group surfaces a typed/pasted address that isn't in
+  // the user's wallets or contacts, so transfers to fresh addresses still
+  // work without first adding a contact.
+  const customAddressOption = useMemo<ComboboxGroup | null>(() => {
+    const trimmed = query.trim();
+    if (!trimmed || !chain || !validateAddress(trimmed, chain)) return null;
+
+    const typedAccountId = toAccountId(trimmed);
+    const isAlreadyListed = options.some((g) => g.items.some((i) => toAccountId(i.value.address) === typedAccountId));
+    if (isAlreadyListed) return null;
+
+    return {
+      id: 'typed-address',
+      label: t('transfer.recipientPlaceholder'),
+      items: [{ id: trimmed, value: { address: trimmed }, label: <Address showIcon address={trimmed} /> }],
+    };
+  }, [query, chain, options, t]);
+
+  const allOptions = customAddressOption ? [customAddressOption, ...options] : options;
+
+  const handleChange = () => {
+    formModel.myselfClicked();
+    setQuery('');
+  };
+
   const prefixElement = (
     <Identicon
       invalid={destination.touched && destination.hasError}
@@ -517,11 +515,6 @@ const Destination = memo(() => {
       background={false}
     />
   );
-
-  const handleChange = () => {
-    formModel.myselfClicked();
-    setQuery('');
-  };
 
   return (
     <Field text={t('transfer.recipientLabel')}>
@@ -538,7 +531,7 @@ const Destination = memo(() => {
           onBlur={destination.markAsTouched}
           onInput={setQuery}
         >
-          {options.map((group) => (
+          {allOptions.map((group) => (
             <Combobox.Group key={group.id} title={group.label}>
               {group.items.map((option) => (
                 <Combobox.Item key={`${option.id}-${option.value.walletId ?? 'unknown'}`} value={option.value.address}>
@@ -633,27 +626,6 @@ const Amount = memo(() => {
   );
 });
 
-const DescriptionField = memo(() => {
-  const { t } = useI18n();
-  const multisigAccount = useUnit(formModel.$multisigAccount);
-  const isAuthenticated = useUnit(authModel.$isAuthenticated);
-  const description = useUnit(formModel.$description);
-
-  if (!multisigAccount || !isAuthenticated) return null;
-
-  return (
-    <Field text={t('operation.descriptionLabel')}>
-      <TextArea
-        value={description}
-        placeholder={t('operation.descriptionPlaceholder')}
-        rows={2}
-        maxLength={500}
-        onChange={formModel.setDescription}
-      />
-    </Field>
-  );
-});
-
 const FeeSection = memo(() => {
   const { t } = useI18n();
 
@@ -667,12 +639,23 @@ const FeeSection = memo(() => {
   const destinationFee = useUnit(formModel.$destinationFee);
   const isDestinationFeeLoading = useUnit(xcmSpellTransferModel.$isDestinationFeeLoading);
   const shouldShowFees = useUnit(xcmSpellTransferModel.$shouldShowFees);
+  const signingPath = useUnit(formModel.$signingPath);
+  const multisigByAccountId = useUnit(graphModel.$multisigByAccountId);
 
   if (!network) {
     return null;
   }
 
-  const isMultisig = initiator && accountUtils.isAnyMultisigAccount(initiator);
+  // Resolve the multisig threshold from the path: a proxied → multisig →
+  // signer flow keeps the multisig in the middle of the path, not on the
+  // initiator (which is the proxied source). Without this lookup the deposit
+  // line goes missing whenever the user signs through a proxy.
+  const pathMultisigNode = signingPath.find((n) => n.kind === 'multisig');
+  const pathMultisigInfo = pathMultisigNode ? multisigByAccountId.get(pathMultisigNode.accountId) : null;
+
+  const initiatorThreshold = initiator && accountUtils.isAnyMultisigAccount(initiator) ? initiator.threshold : 0;
+  const isMultisig = initiatorThreshold > 0 || pathMultisigInfo !== null;
+  const threshold = pathMultisigInfo?.threshold ?? initiatorThreshold;
   const nativeAsset = getNativeAsset(network.chain.assets)!;
 
   return (
@@ -681,7 +664,7 @@ const FeeSection = memo(() => {
         <MultisigDepositWithLabel
           api={api}
           asset={nativeAsset}
-          threshold={initiator.threshold || 1}
+          threshold={threshold || 1}
           onDepositChange={(deposit) => formModel.multisigDepositChanged(new BN(deposit))}
         />
       )}
@@ -806,7 +789,7 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
             callData={draftCallData}
             chainId={network?.chain.chainId}
             source="transfer"
-            onDraftCreated={() => transferModel.output.flowFinished()}
+            onDraftCreated={onGoBack}
           />
           <Button form="transfer-form" type="submit" disabled={!canSubmit || hasErrors} isLoading={isLoading}>
             {t('transfer.continueButton')}

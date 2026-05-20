@@ -5,6 +5,7 @@ import { CreateDraftModal } from './components/CreateDraftModal';
 
 export { DraftsSection } from './components/DraftsSection';
 export { InitiateDraftButton } from './components/InitiateDraftButton';
+export { draftAccountsOverviewSlot } from './components/DraftRow';
 export { type DraftSeed, createDraftModel } from './model/create-draft-model';
 export { type Draft } from '@/domains/backend';
 

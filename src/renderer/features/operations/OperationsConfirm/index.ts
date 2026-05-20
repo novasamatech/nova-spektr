@@ -33,3 +33,4 @@ export { type ConfirmInfo } from './lib/createTransactionConfirmStore';
 
 export { ConfirmSlider } from './common/ConfirmSlider';
 export { MultisigExistsAlert } from './common/MultisigExistsAlert';
+export { MultisigOperationDescriptionField } from './common/MultisigOperationDescriptionField';

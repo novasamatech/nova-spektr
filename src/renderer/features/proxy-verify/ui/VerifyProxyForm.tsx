@@ -1,16 +1,16 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent, useMemo } from 'react';
+import { type FormEvent } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
 import { Button, FootnoteText } from '@/shared/ui';
-import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
-import { accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { TransactionValidationError } from '@/shared/ui-entities';
+import { Field, Input } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { SigningPathSection } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { verifyProxyModel } from '../model/verify-proxy-model';
 
@@ -34,6 +34,7 @@ export const VerifyProxyForm = ({ chainId, onGoBack }: Props) => {
       <TransactionValidationError errors={errors} wallets={wallets} />
       <form id="verify-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <Signatories chainId={chainId} />
+        <MemoField />
       </form>
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection chainId={chainId} />
@@ -51,36 +52,13 @@ const Signatories = ({ chainId }: { chainId: ChainId }) => {
   } = useForm(verifyProxyModel.form);
 
   const initiator = useUnit(verifyProxyModel.$verifyStore.map((s) => s?.initiator ?? null));
-
-  const signatories = useUnit(verifyProxyModel.$signatories);
+  const signingPath = useUnit(verifyProxyModel.$signingPath);
   const chains = useUnit(networkModel.$chains);
   const chainFromStore = useUnit(verifyProxyModel.$verifyStore.map((s) => s?.chain ?? null));
   const chain = chainFromStore ?? chains[chainId] ?? null;
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balanceMap);
+  const formErrors = useUnit(verifyProxyModel.$errors);
 
-  const signatoriesWithBalance = useMemo(() => {
-    if (!signatories || !chain) {
-      return [];
-    }
-
-    return signatories.map((signatoryItem) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatoryItem.accountId,
-        chain.chainId,
-        getNativeAsset(chain.assets).assetId,
-      );
-      return { account: signatoryItem, balance: withdrawableAmount(balance) };
-    });
-  }, [signatories, balances, chain]);
-
-  if (!chain) {
-    return null;
-  }
-
-  if (!initiator) {
+  if (chain && !initiator) {
     return (
       <FootnoteText className="text-text-tertiary">
         {t('walletDetails.proxies.verifyFormResolvingAccounts')}
@@ -88,17 +66,17 @@ const Signatories = ({ chainId }: { chainId: ChainId }) => {
     );
   }
 
+  const nativeAsset = chain ? getNativeAsset(chain.assets) : null;
+
   return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      initiator={initiator}
-      allWallets={allWallets}
-      hasError={signatory.hasError}
+    <SigningPathSection
+      signingPath={signingPath}
+      chain={chain}
+      asset={nativeAsset}
+      txErrors={formErrors}
       errorText={t(signatory.errorMessage)}
-      network={{ chain, asset: getNativeAsset(chain.assets) }}
-      onChange={signatory.onChange}
+      balanceExtractor={(b) => (b ? withdrawableAmount(b) : null)}
+      onChange={verifyProxyModel.events.signingPathChanged}
     />
   );
 };
@@ -122,6 +100,24 @@ const FeeSection = ({ chainId }: { chainId: ChainId }) => {
 
       <FeeWithLabel asset={getNativeAsset(chain.assets)} fee={fee} />
     </div>
+  );
+};
+
+const MemoField = () => {
+  const { t } = useI18n();
+  const {
+    fields: { memo },
+  } = useForm(verifyProxyModel.form);
+
+  return (
+    <Field text={t('walletDetails.proxies.verifyMemoLabel')}>
+      <Input
+        placeholder={t('walletDetails.proxies.verifyMemoPlaceholder')}
+        value={memo.value}
+        maxLength={200}
+        onChange={memo.onChange}
+      />
+    </Field>
   );
 };
 

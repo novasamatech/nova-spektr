@@ -1,15 +1,16 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 
 import { type Chain, type ChainId } from '@/shared/core';
-import { RelayChains, isHex } from '@/shared/lib/utils';
+import { isHex } from '@/shared/lib/utils';
+import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-
-import { graphModel } from './graph-model';
-import { pathModel } from './path-model';
+import { graphModel, pathModel } from '@/features/signing-path';
 
 export type Step = 'call-data' | 'select-path' | 'confirm';
 
 export const STEPS_ORDER: Step[] = ['call-data', 'select-path', 'confirm'];
+
+export const DESCRIPTION_MAX_LENGTH = 500;
 
 export type DraftSeed = {
   callData?: string;
@@ -81,7 +82,7 @@ sample({
   clock: createDraftRequested,
   source: { chains: networkModel.$chains, chainsList: networkModel.$chainsList },
   filter: (_, seed) => !seed || !seed.chainId,
-  fn: ({ chains, chainsList }) => chains[RelayChains.POLKADOT] ?? chainsList[0] ?? null,
+  fn: ({ chains, chainsList }) => chains[AssetHubChains.POLKADOT_AH] ?? chainsList[0] ?? null,
   target: $selectedChain,
 });
 
@@ -112,6 +113,8 @@ const $callDataErrorKey = $callData.map((hex) =>
   hex.length > 0 && !isHex(hex) ? ('operations.drafts.callDataErrorHex' as const) : null,
 );
 
+const $isDescriptionTooLong = $description.map((d) => d.length > DESCRIPTION_MAX_LENGTH);
+
 const $isDirty = combine(
   { chain: $selectedChain, path: pathModel.$path, callData: $callData, description: $description },
   ({ chain, path, callData, description }) =>
@@ -131,7 +134,7 @@ const $canContinue = combine(
     if (step === 'call-data') return !!chain && callData.length > 0 && errorKey === null;
     if (step === 'select-path') return pathComplete;
 
-    return step === 'confirm' && description.trim().length > 0;
+    return step === 'confirm' && description.trim().length > 0 && description.length <= DESCRIPTION_MAX_LENGTH;
   },
 );
 
@@ -155,6 +158,7 @@ export const createDraftModel = {
   $selectedChain,
   $description,
   $callDataErrorKey,
+  $isDescriptionTooLong,
   $isDirty,
   $canContinue,
   $canSkip,

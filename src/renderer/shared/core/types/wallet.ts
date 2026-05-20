@@ -24,8 +24,11 @@ export interface Wallet {
    *   walletId)`.
    */
   accounts: (AnyAccount & Record<string, any>)[];
-  isHidden?: boolean;
+  /** Why the wallet is hidden; `null`/`undefined` means it is visible. */
+  hiddenReason?: WalletHiddenReason | null;
 }
+
+export type WalletHiddenReason = 'unnamed' | 'manual';
 
 export interface PolkadotVaultWallet extends Wallet {
   type: WalletType.POLKADOT_VAULT;

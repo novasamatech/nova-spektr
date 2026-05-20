@@ -5,7 +5,7 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, getNativeAsset, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, LargeTitleText, Loader } from '@/shared/ui';
-import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
@@ -15,6 +15,8 @@ import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
+import { SigningPathConfirmSection } from '../../common/SigningPathConfirmSection';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -77,7 +79,7 @@ export const Confirmation = ({
   const locksForAddress = getLocksForAccount(confirmStore.meta.initiator.accountId, trackLocks);
 
   return (
-    <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">
+    <div className="flex w-full flex-col items-center gap-y-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="revokeDelegationConfirm" size={60} />
 
@@ -89,7 +91,8 @@ export const Confirmation = ({
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
+      <SigningPathConfirmSection
+        signingPath={confirmStore.meta.signingPath}
         chain={confirmStore.meta.chain}
         wallets={wallets}
         initiators={initiators}
@@ -162,7 +165,9 @@ export const Confirmation = ({
             <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.fee} />
           </div>
         </DetailRow>
-      </TransactionDetails>
+      </SigningPathConfirmSection>
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (

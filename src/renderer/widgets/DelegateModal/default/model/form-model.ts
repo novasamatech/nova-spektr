@@ -25,6 +25,7 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { getLocksForAccount, networkSelectorModel } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
+import { createSigningPathModel } from '@/features/signing-path';
 import { type DelegateData, type WalletData } from '../lib/types';
 
 export const flowFinished = createEvent();
@@ -235,6 +236,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: form.fields.initiator.$value,
+    chain: $chain,
+    resetOn: formInitiated,
+    resetUserOverrideOn: form.fields.initiator.change,
+  });
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   chain: $chain,
@@ -242,6 +251,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
@@ -330,11 +340,13 @@ sample({
 
 // Pre-select first signatory automatically
 sample({
-  clock: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0)!,
+  clock: [$signatoryFromPath, $signatories, formInitiated],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: formInitiated,
@@ -377,6 +389,7 @@ export const formModel = {
   form,
   $proxyWallet,
   $signatories,
+  $signingPath,
 
   $account,
   $initiatorBalance,
@@ -401,6 +414,7 @@ export const formModel = {
   events: {
     formInitiated,
     formCleared,
+    signingPathChanged,
   },
   output: {
     formSubmitted,

@@ -4,6 +4,7 @@ import { type ChainId, type DecodedTransaction, type HexString, type Wallet } fr
 import { type ProxyType, ProxyTypeOrder, ProxyTypes } from '@/shared/core/types/proxy';
 import { nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
+import { type VerifyProxyMarkerPayload, parseVerifyProxyMarker } from '@/shared/transactions';
 import {
   type AnyAccount,
   type ContactMultisig,
@@ -20,7 +21,12 @@ import { walletProxiesModel } from './wallet-proxies-model';
 
 export const VERIFIABLE_PROXY_TYPES: ReadonlySet<ProxyType> = new Set([ProxyTypes.ANY, ProxyTypes.NON_TRANSFER]);
 
-export type WalletProxyStatus = 'verified' | 'not_verified' | 'pending_addition' | 'not_verified_no_wallet';
+export type WalletProxyStatus =
+  | 'verified'
+  | 'not_verified'
+  | 'pending_verification'
+  | 'pending_addition'
+  | 'not_verified_no_wallet';
 
 export type WalletProxyLastOperation = {
   txHash: HexString;
@@ -187,6 +193,17 @@ function resolveProxy(
   return { wallet: matched, account, multisigAccountId: null, isMultisig: false, contactMultisig };
 }
 
+function extractVerifyProxyMarker(tx: DecodedTransaction | null | undefined): VerifyProxyMarkerPayload | null {
+  if (nullable(tx)) return null;
+  if (tx.section === 'proxy' && tx.method === 'proxy') {
+    return extractVerifyProxyMarker(tx.args['transaction'] as DecodedTransaction | undefined);
+  }
+  if (tx.section !== 'system' || tx.method !== 'remarkWithEvent') return null;
+  const remark = tx.args['remark'];
+  if (typeof remark !== 'string') return null;
+  return parseVerifyProxyMarker(remark);
+}
+
 function findLatestExecutedOperation(
   operations: MultisigOperation[],
   chainId: ChainId,
@@ -201,6 +218,10 @@ function findLatestExecutedOperation(
     if (op.multisigAccountId !== proxyMultisigAccountId) continue;
     if (op.proxiedAccountId !== pureProxyAccountId) continue;
 
+    // Lenient: any executed multisig op routed via this (multisig signer, pure proxy)
+    // pair proves the proxy authority works, so it counts as "verified". The strict
+    // marker check only applies to the pending side, where we need to distinguish a
+    // verify ping in flight from incidental pending ops via the same proxy.
     if (!latest || op.blockCreated > latest.blockCreated) {
       latest = op;
     }
@@ -225,17 +246,19 @@ function sortProxiesInBucket(a: WalletProxy, b: WalletProxy): number {
 function bucketRank(proxy: WalletProxy): number {
   if (proxy.status === 'pending_addition') return 0;
   if (proxy.status === 'not_verified' && proxy.verifiable) return 1;
+  if (proxy.status === 'pending_verification') return 2;
   if (
     proxy.status === 'not_verified' &&
     proxy.proxyWallet !== null &&
-    accountUtils.isAnyMultisigAccount(proxy.proxyAccount ?? ({} as AnyAccount)) &&
+    proxy.proxyAccount !== null &&
+    accountUtils.isAnyMultisigAccount(proxy.proxyAccount) &&
     !proxy.verifiable
   ) {
-    return 2;
+    return 3;
   }
-  if (proxy.status === 'not_verified_no_wallet') return 3;
-  if (proxy.status === 'not_verified') return 4;
-  return 5; // verified
+  if (proxy.status === 'not_verified_no_wallet') return 4;
+  if (proxy.status === 'not_verified') return 5;
+  return 6; // verified
 }
 
 const $proxies = combine(
@@ -350,16 +373,27 @@ const $proxies = combine(
           indexCreated: op.indexCreated,
         };
 
-        if (executionArgs) {
+        // Strict gate (mirrors findLatestExecutedOperation): only stamp pending
+        // verification when the op is actually our verify ping —
+        // proxy.proxy(real=pure, call=system.remarkWithEvent(<verify-proxy marker>))
+        // matching the row's (delegate, pure, proxyType, multisig signer). Otherwise
+        // any incidental pending proxy.proxy op (transfer, stake, …) would falsely
+        // flip the row to "pending verification" and hide the Verify button.
+        const verifyMarker = extractVerifyProxyMarker(op.transaction);
+        if (verifyMarker && executionArgs) {
           const row = onChainProxies.find(
             r =>
               r.chainId === op.chainId &&
-              r.pureProxyAccountId === executionArgs.real &&
+              r.pureProxyAccountId === verifyMarker.pureProxyAccountId &&
+              r.proxyAccountId === verifyMarker.delegateAccountId &&
               r.proxyType === executionArgs.proxyType &&
               r.proxyMultisigAccountId === op.multisigAccountId,
           );
           if (row && !row.pendingVerificationOperation) {
             row.pendingVerificationOperation = pendingRef;
+            if (row.status === 'not_verified') {
+              row.status = 'pending_verification';
+            }
           }
         }
 
@@ -419,8 +453,11 @@ const $verifiedCount = $proxies.map(proxies => proxies.filter(p => p.status === 
 const $totalCount = $proxies.map(proxies => proxies.length);
 
 const $isLoading = combine(
-  { proxies: $proxies, proxiesLoading: walletProxiesModel.$isLoading },
-  ({ proxiesLoading }) => proxiesLoading,
+  {
+    allChainsLoaded: walletProxiesModel.$allChainsLoaded,
+    operationsLoaded: multisigOperation.$initialLoadingComplete,
+  },
+  ({ allChainsLoaded, operationsLoaded }) => !allChainsLoaded || !operationsLoaded,
 );
 
 export const proxiesModel = {

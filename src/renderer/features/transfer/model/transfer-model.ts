@@ -1,14 +1,10 @@
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
-import { t } from 'i18next';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
-import { toast } from 'sonner';
 
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
-import { HttpError, operationDescriptionsResource, operationsService } from '@/domains/backend';
 import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { multisigService } from '@/features/multisig-wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -127,6 +123,7 @@ const readyToConfirm = sample({
       destinationChain: form.destinationChain,
       destination: form.destination,
       route: form.route,
+      signingPath: form.signingPath,
       amount: form.amount,
       rawAmount: form.rawAmount,
       fee: form.fee,
@@ -226,84 +223,6 @@ sample({
     });
   },
   target: $redirectAfterSubmitPath,
-});
-
-const postDescriptionFx = createEffect(
-  async (params: {
-    baseUrl: string;
-    multisigAccountId: string;
-    chainId: string;
-    callHash: string;
-    blockNumber: number;
-    extrinsicIndex: number;
-    description: string;
-  }) => {
-    const { baseUrl, ...body } = params;
-    await operationsService.createDescription(baseUrl, body);
-  },
-);
-
-sample({
-  clock: submitModel.done,
-  source: {
-    coreTx: $coreTx,
-    wrappedTx: $tx,
-    multisigAccount: formModel.$multisigAccount,
-    description: formModel.$description,
-    baseUrl: backendConfigurationModel.$backendUrl,
-    isAuthenticated: authModel.$isAuthenticated,
-  },
-  filter: ({ multisigAccount, description, baseUrl, isAuthenticated }, results) =>
-    nonNullable(multisigAccount) &&
-    submitUtils.isSuccessResult(results[0]!.result) &&
-    description.length > 0 &&
-    nonNullable(baseUrl) &&
-    isAuthenticated,
-  fn: ({ coreTx, wrappedTx, multisigAccount, description, baseUrl }, results) => {
-    const { timepoint } = (results[0] as SuccessResult).params;
-
-    return {
-      baseUrl: baseUrl!,
-      multisigAccountId: multisigService.getMultisigAccountId(multisigAccount!),
-      chainId: coreTx!.chainId,
-      callHash: wrappedTx!.args.callHash,
-      blockNumber: timepoint.height,
-      extrinsicIndex: timepoint.index,
-      description,
-    };
-  },
-  target: postDescriptionFx,
-});
-
-const showDescriptionErrorFx = createEffect((error: Error) => {
-  const description =
-    error instanceof HttpError && error.status === 403 ? t('addressBook.sources.errorForbidden') : error.message;
-  toast.error(t('operation.descriptionSaveError'), { description });
-});
-
-sample({
-  clock: postDescriptionFx.failData,
-  target: showDescriptionErrorFx,
-});
-
-sample({
-  clock: postDescriptionFx.done,
-  source: {
-    coreTx: $coreTx,
-    wrappedTx: $tx,
-    multisigAccount: formModel.$multisigAccount,
-    description: formModel.$description,
-  },
-  filter: ({ multisigAccount, description }) => nonNullable(multisigAccount) && description.length > 0,
-  fn: ({ coreTx, wrappedTx, multisigAccount, description }, { params: { blockNumber, extrinsicIndex } }) => {
-    const multisigAccountId = multisigService.getMultisigAccountId(multisigAccount!);
-    // Must match multisigOperationService.getOperationId format:
-    // `${chainId}-${callHash}-${accountId}-${block}-${index}`
-    const id = `${coreTx!.chainId}-${wrappedTx!.args.callHash}-${multisigAccountId}-${blockNumber}-${extrinsicIndex}`;
-
-    return { id, description };
-  },
-  target: operationDescriptionsResource.descriptionCreated,
 });
 
 sample({

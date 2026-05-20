@@ -40,7 +40,7 @@ const signConfirmed = createEvent();
 const connectTriggered = createEvent();
 const modalClosed = createEvent();
 const signingCancelled = createEvent();
-const sessionExpiryDetected = createEvent();
+const unauthorizedResponseReceived = createEvent();
 
 // Stores
 const $authState = createStore<AuthState | null>(null);
@@ -135,7 +135,7 @@ const logoutFx = createEffect(async (baseUrl: string) => {
 sample({
   clock: connectTriggered,
   source: backendConfigurationModel.$draftUrl,
-  fn: url => (url ? url.trim().replace(/\/+$/, '') : null) || null,
+  fn: url => (url ? url.trim().replace(/#.*$/, '').replace(/\/+$/, '') : null) || null,
   target: backendConfigurationModel.$backendUrl,
 });
 
@@ -334,6 +334,13 @@ sample({
 });
 
 sample({
+  clock: backendConfigurationModel.events.editStarted,
+  source: backendConfigurationModel.$backendUrl,
+  filter: (url): url is string => url !== null,
+  target: checkSessionFx,
+});
+
+sample({
   clock: checkSessionFx.doneData,
   source: $signableAccounts,
   filter: (_accounts, sessionData) => sessionData !== null,
@@ -360,17 +367,15 @@ sample({
 
 sample({
   clock: checkSessionFx.done,
-  source: $authState,
-  filter: (auth, { result }) => result === null && auth !== null,
+  source: $lastAuthedAccountId,
+  filter: (lastAuthedId, { result }) => result === null && lastAuthedId !== null,
   fn: () => true,
   target: $isSessionExpired,
 });
 
-$authState.on(checkSessionFx.fail, () => null);
-
 const sessionHealthCheck = interval({
   timeout: 5 * 60 * 1000,
-  start: merge([verifySignatureFx.done, checkSessionFx.done]),
+  start: merge([verifySignatureFx.done, checkSessionFx.done, checkSessionFx.fail]),
   stop: merge([signOutClicked, backendConfigurationModel.events.urlCleared]),
 });
 
@@ -381,11 +386,25 @@ sample({
   target: checkSessionFx,
 });
 
-$isSessionExpired.on(checkSessionFx.fail, () => true);
-$isSessionExpired.on(sessionExpiryDetected, () => true);
+$isSessionExpired.on(unauthorizedResponseReceived, () => true);
 $isSessionExpired.on(
   [verifySignatureFx.done, signOutClicked, backendConfigurationModel.events.urlCleared],
   () => false,
+);
+
+const $hasNetworkIssue = createStore(false);
+$hasNetworkIssue.on(checkSessionFx.fail, () => true);
+$hasNetworkIssue.on(checkSessionFx.done, () => false);
+$hasNetworkIssue.on([verifySignatureFx.done, signOutClicked, backendConfigurationModel.events.urlCleared], () => false);
+
+const $isConnectionAlive = combine(
+  {
+    url: backendConfigurationModel.$backendUrl,
+    auth: $authState,
+    expired: $isSessionExpired,
+    networkIssue: $hasNetworkIssue,
+  },
+  ({ url, auth, expired, networkIssue }) => url !== null && auth !== null && !expired && !networkIssue,
 );
 
 const sessionExpired = createEvent();
@@ -415,6 +434,8 @@ export const authModel = {
   $isAuthenticated,
   $signableAccounts,
   $isSessionExpired,
+  $hasNetworkIssue,
+  $isConnectionAlive,
 
   events: {
     signInClicked,
@@ -425,7 +446,7 @@ export const authModel = {
     connectTriggered,
     modalClosed,
     sessionExpired,
-    sessionExpiryDetected,
+    unauthorizedResponseReceived,
     signingCancelled,
   },
 

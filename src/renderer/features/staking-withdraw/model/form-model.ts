@@ -23,6 +23,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { withdrawValidator } from '@/features/operations/OperationsValidation';
+import { createSigningPathModel } from '@/features/signing-path';
 import { type NetworkStore } from '../lib/types';
 
 export type FormParams = {
@@ -145,12 +146,22 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: form.fields.initiator.$value,
+    chain: $chain,
+    resetOn: formInitiated,
+    resetUserOverrideOn: form.fields.initiator.change,
+  });
+
 sample({
-  clock: $signatories,
-  filter: (signatories) => signatories.length > 0,
-  fn: (signatories) => signatories.at(0)!,
+  clock: [$signatoryFromPath, $signatories, formInitiated],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 const $signatoryBalance = combine(
   {
@@ -221,6 +232,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: $chain,
   transaction: $coreTx,
+  routeOverride: $pathRoute,
 });
 
 const $isProxy = $route.map((route) => nonNullable(route.find((account) => accountUtils.isProxiedAccount(account))));
@@ -276,14 +288,6 @@ sample({
     initiator: form.fields.initiator.change,
     networkStore: $networkStore,
   }),
-});
-
-sample({
-  clock: formInitiated,
-  source: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
-  target: form.fields.signatory.change,
 });
 
 sample({
@@ -435,6 +439,7 @@ export const formModel = {
   form,
   $proxyWallet,
   $signatories,
+  $signingPath,
 
   $fee,
   $proxyBalance,
@@ -458,6 +463,7 @@ export const formModel = {
     formInitiated,
     formCleared,
     multisigDepositChanged,
+    signingPathChanged,
   },
   output: {
     formSubmitted,

@@ -62,11 +62,12 @@ sample({
     coreTx: formModel.$coreTx,
     route: formModel.$route,
     tx: formModel.$tx,
+    signingPath: formModel.$signingPath,
   },
   filter: ({ networkStore }, { formData }) => {
     return nonNullable(networkStore) && nonNullable(formData.initiator) && nonNullable(formData.signatory);
   },
-  fn: ({ networkStore, coreTx, route, tx }, { formData }) => {
+  fn: ({ networkStore, coreTx, route, tx, signingPath }, { formData }) => {
     return {
       event: [
         {
@@ -78,6 +79,7 @@ sample({
           coreTx: coreTx!,
           route: route,
           tx: tx!,
+          signingPath,
         } satisfies WithdrawConfirm,
       ],
       step: Step.CONFIRM,

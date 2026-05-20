@@ -117,6 +117,7 @@ const formSubmitted = sample({
     coreTx: formModel.$coreTx,
     step: $step,
     tx: formModel.$tx,
+    signingPath: formModel.$signingPath,
   },
 }).filterMap(
   ({
@@ -133,6 +134,7 @@ const formSubmitted = sample({
     coreTx,
     step,
     tx,
+    signingPath,
   }) => {
     if (
       nonNullable(delegateData) &&
@@ -176,6 +178,7 @@ const formSubmitted = sample({
           route: [initiator],
           tx,
           initiator,
+          signingPath,
         } satisfies EditDelegationConfirm,
       ];
     }

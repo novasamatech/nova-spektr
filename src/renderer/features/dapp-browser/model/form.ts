@@ -22,7 +22,12 @@ import {
 } from '@/shared/transactions';
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
-import { type AnyAccount, type EncodedTransaction, accountService, transactionService } from '@/domains/network';
+import {
+  type AnyAccount,
+  type EncodedTransaction,
+  accountService,
+  transactionService,
+} from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService as transactionEntitiesService } from '@/entities/transaction';
@@ -30,6 +35,7 @@ import { walletModel } from '@/entities/wallet';
 // TODO move balances subscription to balance model
 import { balanceSubModel } from '@/features/assets-balances';
 import { type SignatureResult, type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
+import { createSigningPathModel } from '@/features/signing-path';
 
 import { type ConfirmInput, confirmModel } from './confirm';
 import { dappBrowserFeature } from './feature';
@@ -105,12 +111,24 @@ const $coreTx = $callData.map((callData): EncodedTransaction | null => {
   };
 });
 
-const $route = createRouteStore({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: form.fields.initiator.$value,
+    chain: $chain,
+    resetOn: flow.close,
+    resetUserOverrideOn: form.fields.initiator.change,
+  });
+
+const $bfsRoute = createRouteStore({
   chain: $chain,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
   accounts: walletModel.$availableAccounts,
 });
+// Picked path wins over BFS when it has enough hops to wrap.
+const $route = combine($bfsRoute, $pathRoute, (bfs, override) =>
+  override && override.length >= 2 ? override : bfs,
+);
 
 const { $tx: $wrappedTx } = createWrappedTxStore({
   api: $api,
@@ -241,15 +259,13 @@ sample({
 
 // Preselect signatory when initiator changes
 sample({
-  clock: $signatories,
-  source: {
-    selectedSignatory: form.fields.signatory.$value,
-  },
-  filter: ({ selectedSignatory }, signatories) =>
-    !selectedSignatory || !signatories.some((s) => s.accountId === selectedSignatory.accountId),
-  fn: (_, signatories) => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, flow.close],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: flow.close,
@@ -355,10 +371,12 @@ export const formModel = {
   $initiators,
 
   $signatories,
+  $signingPath,
   $showSignatories,
   $signatoryWallet,
 
   $signatureResult,
 
   setStep,
+  signingPathChanged,
 };

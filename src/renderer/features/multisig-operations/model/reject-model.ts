@@ -15,6 +15,7 @@ import { type MultisigOperation, accountService, accounts, multisigOperationServ
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
+import { createSigningPathModel } from '@/features/signing-path';
 
 type GetMultisigType = {
   chain: Chain | null;
@@ -88,6 +89,12 @@ const $transaction = combine(
   },
 );
 
+const { $pathRoute } = createSigningPathModel({
+  initiator: $initiator,
+  chain: $chain,
+  resetOn: flow.open,
+});
+
 const {
   $tx,
   $fee,
@@ -100,6 +107,7 @@ const {
   accounts: accounts.$list,
   chain: $chain,
   transaction: $transaction,
+  routeOverride: $pathRoute,
 });
 
 // Reset async-computed stores on new flow to prevent stale data from previous rejection

@@ -58,7 +58,7 @@ type HideWalletProps = Props & {
 const HideWallet = ({ onClose, onForget, children, isModalOpen, setIsModalOpen }: HideWalletProps) => {
   const { t } = useI18n();
 
-  const notification = useNotification();
+  const { toast } = useNotification();
 
   const isHideWalletDoNotShowAgain = useUnit(forgetWalletModel.$hideWalletDoNotShowAgain);
   const [isHideWalletDoNotShowAgainLocal, setIsHideWalletDoNotShowAgainLocal] = useState(false);
@@ -77,15 +77,7 @@ const HideWallet = ({ onClose, onForget, children, isModalOpen, setIsModalOpen }
       description = t('walletDetails.multisig.pendingOperations');
     }
 
-    notification.modal({
-      content: (
-        <Box width={60} padding={4} gap={1} verticalAlign="center" horizontalAlign="center">
-          <Animation variant="success" width={80} height={80} />
-          <SmallTitleText>{t('settings.hiddenWallets.walletHidden')}</SmallTitleText>
-          <FootnoteText className="text-center text-text-secondary">{description}</FootnoteText>
-        </Box>
-      ),
-    });
+    toast.success(t('settings.hiddenWallets.walletHidden'), { description });
   };
 
   useEffect(() => {

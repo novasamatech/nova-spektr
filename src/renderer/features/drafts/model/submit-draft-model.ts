@@ -7,16 +7,24 @@ import { toast } from 'sonner';
 
 import { type CallData, type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import {
   type ExtrinsicConfirmInfo,
   createExtrinsicConfirmStore,
   createFeeCalculator,
   createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
 } from '@/shared/transactions';
-import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
-import { type Draft, operationDescriptionsResource, operationsService } from '@/domains/backend';
+import {
+  type Draft,
+  type PathNode,
+  draftsResource,
+  draftsService,
+  operationDescriptionsResource,
+  operationsService,
+} from '@/domains/backend';
 import {
   type AnyAccount,
   type AnyTransaction,
@@ -25,16 +33,21 @@ import {
   multisigOperationService,
   transactionService,
 } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
+import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
+import { createPathRouteStore } from '@/features/signing-path';
+import { tryDecodeCallData } from '../lib/decode-call-data';
 
 import './drafts-model'; // side-effect: orchestration wiring
 
 enum Step {
   NONE,
+  CALL_DATA,
   CONFIRM,
   SIGN,
   SUBMIT,
@@ -66,7 +79,10 @@ const stepChanged = createEvent<Step>();
 const $step = readonly(restore(stepChanged, Step.NONE));
 const $draft = createStore<Draft | null>(null).reset(flowFinished);
 const $chain = createStore<Chain | null>(null).reset(flowFinished);
-const $initiator = createStore<AnyAccount | null>(null).reset(flowFinished);
+// Seed initiator from `flowStarted` — used as a fallback for legacy drafts
+// that have no `signingPath`. For path-driven drafts the canonical initiator
+// is the resolved `signingPath[0]` (see `$initiator` below).
+const $flowInitiator = createStore<AnyAccount | null>(null).reset(flowFinished);
 const $displayInitiator = createStore<AnyAccount | null>(null).reset(flowFinished);
 const $signatory = createEvent<AnyAccount | null>();
 const $signatoryStore = createStore<AnyAccount | null>(null).reset(flowFinished);
@@ -86,12 +102,122 @@ const $transaction = $draft.map((draft): EncodedTransaction | null => {
   };
 });
 
-const $route = createRouteStore({
-  chain: $chain,
-  initiator: $initiator,
-  signatory: $signatoryStore,
-  accounts: walletModel.$availableAccounts,
+// --- Late call-data entry (drafts created with the call-data step skipped) ---
+
+const callDataChanged = createEvent<string>();
+const callDataConfirmRequested = createEvent();
+const $pendingCallData = createStore('').reset(flowFinished);
+$pendingCallData.on(callDataChanged, (_, value) => value);
+
+const $pendingCallDataDecoded = combine(
+  { callData: $pendingCallData, api: $api, chain: $chain },
+  ({ callData, api, chain }) => tryDecodeCallData(callData, api, chain),
+);
+
+// "Have we typed something that doesn't decode?" — used to surface an error.
+// Empty input is not an error, just a not-yet-confirmable state.
+const $pendingCallDataError = combine(
+  $pendingCallData,
+  $pendingCallDataDecoded,
+  (callData, decoded) => callData.length > 0 && !decoded,
+);
+
+const $canConfirmCallData = $pendingCallDataDecoded.map(nonNullable);
+
+const submitCallDataFx = createEffect(({ id, callData, baseUrl }: { id: string; callData: string; baseUrl: string }) =>
+  draftsService.updateDraft(baseUrl, id, { callData }),
+);
+
+sample({
+  clock: callDataConfirmRequested,
+  source: {
+    draft: $draft,
+    baseUrl: backendConfigurationModel.$backendUrl,
+    callData: $pendingCallData,
+    canConfirm: $canConfirmCallData,
+  },
+  filter: ({ draft, baseUrl, canConfirm }) => nonNullable(draft) && nonNullable(baseUrl) && canConfirm,
+  fn: ({ draft, baseUrl, callData }) => ({ id: draft!.id, callData, baseUrl: baseUrl! }),
+  target: submitCallDataFx,
 });
+
+// Replace $draft with the server-confirmed version so $transaction picks up
+// the new callData and the rest of the flow proceeds as if it were never
+// missing.
+sample({
+  clock: submitCallDataFx.doneData,
+  target: [$draft, draftsResource.draftUpdated],
+});
+
+const showCallDataSubmitErrorFx = createEffect((message: string) => {
+  toast.error(t('operations.drafts.editError'), { description: message });
+});
+
+sample({
+  clock: submitCallDataFx.fail,
+  fn: ({ error }) => (error instanceof Error ? error.message : t('operations.drafts.editError')),
+  target: showCallDataSubmitErrorFx,
+});
+
+// The picked path was persisted with the draft — resolve it back to accounts
+// and use it strictly. Falling back to BFS would silently sign through a
+// different route than the user authored the draft for.
+const $draftSigningPath = $draft.map((draft): PathNode[] =>
+  Array.isArray(draft?.signingPath) ? draft.signingPath : [],
+);
+const $pathRoute = createPathRouteStore($draftSigningPath, $chain);
+
+// Canonical initiator: for path-driven drafts the route's first node is the
+// authored top of the chain (matters for nested-multisig drafts where
+// `multisigAccountId` is the deepest hop, not the root). Legacy drafts have
+// no path → fall back to the seed initiator from `flowStarted`.
+const $initiator = combine(
+  { pathRoute: $pathRoute, flowInitiator: $flowInitiator },
+  ({ pathRoute, flowInitiator }) => pathRoute?.[0] ?? flowInitiator,
+);
+
+// Legacy BFS route — only consumed when the draft has no saved signing path.
+// The gate is *inside* the combine so `accountService.findRoute` (which
+// allocates an account graph) doesn't run at all for path-driven drafts.
+// `createRouteStore` would be simpler but it's unconditional, so we inline
+// the logic here.
+const $bfsRoute = combine(
+  {
+    saved: $draftSigningPath,
+    chain: $chain,
+    initiator: $initiator,
+    signatory: $signatoryStore,
+    accounts: walletModel.$availableAccounts,
+  },
+  ({ saved, chain, initiator, signatory, accounts }) => {
+    if (saved.length > 0) return [];
+    if (nullable(chain) || nullable(initiator) || nullable(signatory)) return [];
+
+    return accountService.findRoute(initiator, signatory, accounts, chain);
+  },
+);
+
+// Draft has a non-trivial saved path but it can't be resolved against the
+// current account list (e.g. a wallet that the path traversed has been
+// removed). Block the flow rather than wrap silently along a different route.
+// Defence-in-depth: `$pathRoute` already returns `null` while `$chain` is
+// null, but the explicit guard avoids accidental regressions if the resolver
+// ever surfaces a non-null route before chain settles.
+const $pathResolutionError = combine(
+  { saved: $draftSigningPath, resolved: $pathRoute, chain: $chain },
+  ({ saved, resolved, chain }) => chain !== null && saved.length >= 2 && (resolved === null || resolved.length < 2),
+);
+
+// Path-driven drafts: strictly follow the resolved path; never silently
+// re-route through BFS. Legacy drafts (no saved path) keep the BFS fallback
+// for backwards compatibility.
+const $route = combine(
+  { bfs: $bfsRoute, saved: $draftSigningPath, resolved: $pathRoute },
+  ({ bfs, saved, resolved }) => {
+    if (saved.length === 0) return bfs;
+    return resolved && resolved.length > 0 ? resolved : [];
+  },
+);
 
 const { $tx: $wrappedTx } = createWrappedTxStore({
   api: $api,
@@ -100,7 +226,20 @@ const { $tx: $wrappedTx } = createWrappedTxStore({
 });
 
 const $wrappedExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null).reset(flowFinished);
-const $wrappedTxError = createStore(false).reset(flowFinished, flowStarted);
+type WrappedTxErrorKind = 'extrinsic' | 'signing-path-unresolved';
+const $extrinsicCreationFailed = createStore(false).reset(flowFinished, flowStarted);
+// Derived so it always reflects the current path-resolution and extrinsic
+// state. A sample-based "set once" store would stick after a transient init
+// flip even after the path resolves.
+const $wrappedTxErrorKind = combine(
+  { extrinsicFailed: $extrinsicCreationFailed, pathError: $pathResolutionError },
+  ({ extrinsicFailed, pathError }): WrappedTxErrorKind | null => {
+    if (pathError) return 'signing-path-unresolved';
+    if (extrinsicFailed) return 'extrinsic';
+    return null;
+  },
+);
+const $wrappedTxError = $wrappedTxErrorKind.map((kind) => kind !== null);
 
 const createWrappedExtrinsicFx = createQueuedEffect(
   ({ transaction, api }: { transaction: AnyTransaction | null; api: ApiPromise | null }) => {
@@ -126,10 +265,17 @@ sample({
   target: $wrappedExtrinsic,
 });
 
+$extrinsicCreationFailed
+  .on(createWrappedExtrinsicFx.fail, () => true)
+  .on(createWrappedExtrinsicFx.doneData, () => false);
+
+// Block the flow when the path can't be resolved — otherwise the empty route
+// would wrap to the raw transaction and the user could sign through a wrong path.
 sample({
-  clock: createWrappedExtrinsicFx.fail,
-  fn: () => true,
-  target: $wrappedTxError,
+  clock: $pathResolutionError,
+  filter: (hasError) => hasError,
+  fn: () => null,
+  target: $wrappedExtrinsic,
 });
 
 const { $: $fee } = createFeeCalculator({
@@ -142,6 +288,28 @@ const $signatories = createSignatoriesStore({
   initiator: $initiator,
 });
 
+// --- Pre-submit validation (generic: fee + multisig deposit) ---
+
+const $asset = $chain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
+
+const draftSubmitValidator = createTxValidator();
+
+const {
+  $errors: $validationErrors,
+  $valid: $validationValid,
+  $pending: $validationPending,
+  $validationDone,
+} = createTxValidationStore({
+  validator: draftSubmitValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $wrappedTx,
+  },
+});
+
 // --- Initiator rehydration from signingPath ---
 
 /**
@@ -151,9 +319,17 @@ const $signatories = createSignatoriesStore({
  * account, independent of the wallet's account-graph traversal.
  */
 const $initiatorUnavailable = combine(
-  { draft: $draft, signatories: $signatories, availableAccounts: walletModel.$availableAccounts },
-  ({ draft, signatories, availableAccounts }) => {
+  {
+    draft: $draft,
+    signatories: $signatories,
+    availableAccounts: walletModel.$availableAccounts,
+    signatory: $signatoryStore,
+  },
+  ({ draft, signatories, availableAccounts, signatory }) => {
     if (!draft?.initiatorAccountId) return false;
+    // A valid signatory was already picked (auto-selected or by the user) —
+    // the banner has nothing left to ask for.
+    if (signatory !== null) return false;
 
     if (Array.isArray(draft.signingPath) && draft.signingPath.length > 0) {
       return !availableAccounts.some(
@@ -184,16 +360,20 @@ sample({
 // watch-only entries, and a duplicate accountId imported under a watch-only
 // wallet would otherwise be picked first and route the flow to the watch-only
 // dead-end UI.
+//
+// `clock` includes `$draft` (not just `$availableAccounts`) so the sample
+// fires on flow start even when the account list is already populated — in
+// a steady-state session that's the common case.
 sample({
-  clock: walletModel.$availableAccounts,
-  source: $draft,
-  filter: (draft, accounts) =>
+  clock: [walletModel.$availableAccounts, $draft],
+  source: { draft: $draft, accounts: walletModel.$availableAccounts },
+  filter: ({ draft, accounts }) =>
     nonNullable(draft) &&
     Array.isArray(draft.signingPath) &&
     draft.signingPath.length > 0 &&
     nonNullable(draft.initiatorAccountId) &&
     accounts.some((a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a)),
-  fn: (draft, accounts) =>
+  fn: ({ draft, accounts }) =>
     accounts.find((a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a)) ??
     null,
   target: $signatory,
@@ -228,7 +408,7 @@ sample({
 sample({
   clock: flowStarted,
   fn: ({ initiator }) => initiator,
-  target: $initiator,
+  target: $flowInitiator,
 });
 
 sample({
@@ -239,15 +419,41 @@ sample({
 
 sample({
   clock: flowStarted,
+  fn: ({ draft }) => (draft.callData ? Step.CONFIRM : Step.CALL_DATA),
+  target: stepChanged,
+});
+
+sample({
+  clock: submitCallDataFx.doneData,
   fn: () => Step.CONFIRM,
   target: stepChanged,
 });
 
-// Auto-select signatory when only one option
+// Tell the multisig description aggregate that a draft submission is in
+// progress, so it hides its description input (drafts carry their own
+// description) and skips its post-submit hook.
+sample({
+  clock: flowStarted,
+  fn: () => true,
+  target: multisigOperationDescription.setDraftFlowActive,
+});
+
+sample({
+  clock: flowFinished,
+  fn: () => false,
+  target: multisigOperationDescription.setDraftFlowActive,
+});
+
+// Auto-select signatory when only one option — but never overwrite an
+// already-chosen one. Without this guard, an auto-select fired by a later
+// `$signatories` recomputation would clobber the path-driven pre-selection
+// (e.g. for nested multisigs where the wallet exposes the root multisig as a
+// "leaf" because no children-pipeline handler is registered).
 sample({
   clock: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
+  source: $signatoryStore,
+  filter: (current, signatories) => current === null && signatories.length === 1,
+  fn: (_, signatories) => signatories.at(0) ?? null,
   target: $signatory,
 });
 
@@ -275,9 +481,12 @@ sample({
 
 // --- Confirm → Sign → Submit ---
 
-// When wrappedTx + fee are ready and step is CONFIRM, auto-init confirm
+// When wrappedTx + fee are ready and step is CONFIRM, auto-init confirm.
+// `$signatoryStore` is in `clock` so init re-fires when auto-/pre-selection
+// resolves the signatory after fee/wrappedTx have already settled — without
+// it the previous fallback (`signatory || initiator`) used to mask the gap.
 sample({
-  clock: [flowStarted, $wrappedTx, $fee],
+  clock: [flowStarted, $wrappedTx, $fee, $signatoryStore],
   source: {
     draft: $draft,
     wrappedTx: $wrappedTx,
@@ -295,9 +504,11 @@ sample({
     nonNullable(s.fee) &&
     nonNullable(s.api) &&
     nonNullable(s.chain) &&
-    nonNullable(s.initiator),
+    nonNullable(s.initiator) &&
+    nonNullable(s.signatory),
   fn: (s) => {
     const uiInitiator = s.displayInitiator ?? s.initiator!;
+    const signatory = s.signatory!;
 
     return [
       {
@@ -305,8 +516,8 @@ sample({
         chain: s.chain!,
         transaction: s.wrappedTx!,
         initiator: uiInitiator,
-        signatory: s.signatory || uiInitiator,
-        route: s.route.length > 0 ? s.route : [s.signatory || uiInitiator],
+        signatory,
+        route: s.route.length > 0 ? s.route : [signatory],
         fee: s.fee!,
         draft: s.draft!,
       },
@@ -323,16 +534,13 @@ const sign = sample({
     api: $api,
     chain: $chain,
     signatory: $signatoryStore,
-    initiator: $initiator,
   },
-  fn({ wrappedTx, api, chain, signatory, initiator }) {
-    if (nullable(api) || nullable(wrappedTx) || nullable(chain)) return null;
-    const signer = signatory || initiator;
-    if (nullable(signer)) return null;
+  fn({ wrappedTx, api, chain, signatory }) {
+    if (nullable(api) || nullable(wrappedTx) || nullable(chain) || nullable(signatory)) return null;
 
     return {
       transaction: wrappedTx,
-      signatory: signer,
+      signatory,
       chain,
       api,
     } satisfies TransactionSigningPayload;
@@ -370,6 +578,12 @@ const postSubmitFx = createEffect(
     timepoint: { height: number; index: number };
     baseUrl: string;
   }) => {
+    // `draft.multisigAccountId` is guaranteed by the caller (DraftsSection
+    // refuses to submit without it). The `?? initiator.accountId` fallback is
+    // a last-resort safety net — note that for flex drafts `initiator` is now
+    // the resolved `FlexibleMultisigAccount` whose `accountId` is the *pure
+    // proxied* accountId, not the inner multisig. The fallback path is only
+    // reachable if a future caller bypasses the entrypoint guard.
     await operationsService.createDescription(baseUrl, {
       multisigAccountId: draft.multisigAccountId ?? initiator.accountId,
       chainId: draft.chainId,
@@ -519,13 +733,32 @@ export const submitDraftModel = {
   $wrappedTx,
   $wrappedExtrinsic,
   $wrappedTxError,
+  $wrappedTxErrorKind,
+  $route,
+  $pathResolutionError,
   $submittedDraftIds,
+  $validationErrors,
+  $validationValid,
+  $validationPending,
+  $validationDone,
+  $pendingCallData,
+  $pendingCallDataDecoded,
+  $pendingCallDataError,
+  $canConfirmCallData,
+  $savingCallData: submitCallDataFx.pending,
 
   flowStarted,
   flowFinished,
   signatoryChanged: $signatory,
+  callDataChanged,
+  callDataConfirmRequested,
 
   confirmModel,
 
   Step,
+
+  __test: {
+    $pathRoute,
+    $flowInitiator,
+  },
 };

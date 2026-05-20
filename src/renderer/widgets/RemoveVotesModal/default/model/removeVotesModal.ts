@@ -24,6 +24,7 @@ import { submitModel } from '@/features/operations/OperationSubmit';
 import { removeVoteConfirmModel } from '@/features/operations/OperationsConfirm';
 import { type RemoveVoteConfirm } from '@/features/operations/OperationsConfirm/Referendum/RemoveVote/model/confirm-model';
 import { removeVoteValidator } from '@/features/operations/OperationsValidation';
+import { createSigningPathModel } from '@/features/signing-path';
 
 const flow = createGate<{
   votes: {
@@ -123,6 +124,15 @@ const $coreTx = combine({ state: flow.state, initiator: $initiator }, ({ state: 
   });
 });
 
+const { recomputeForSigner, $pathRoute, $signingPath } = createSigningPathModel({
+  initiator: $initiator,
+  chain: networkSelectorModel.$governanceChain,
+  resetOn: flow.close,
+  resetUserOverrideOn: $initiator.updates,
+});
+
+sample({ clock: $selectedSignatory, target: recomputeForSigner });
+
 const { $tx, $route } = createComplexTxStore({
   api: networkSelectorModel.$governanceChainApi,
   initiator: $initiator,
@@ -130,6 +140,7 @@ const { $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: networkSelectorModel.$governanceChain,
   transaction: $coreTx,
+  routeOverride: $pathRoute,
 });
 
 // Transaction validation
@@ -224,6 +235,7 @@ sample({
     route: $route,
     tx: $tx,
     coreTx: $coreTx,
+    signingPath: $signingPath,
   },
   filter: ({ tx, initiator, signatory, state: { votes, asset, chain, api } }) => {
     return (
@@ -236,7 +248,15 @@ sample({
       nonNullable(api)
     );
   },
-  fn: ({ tx, coreTx, route, initiator, signatory, state: { votes, asset, chain, api } }): RemoveVoteConfirm => {
+  fn: ({
+    tx,
+    coreTx,
+    route,
+    initiator,
+    signatory,
+    signingPath,
+    state: { votes, asset, chain, api },
+  }): RemoveVoteConfirm => {
     return {
       api: api!,
       asset: asset!,
@@ -247,6 +267,7 @@ sample({
       route,
       tx: tx!,
       coreTx: coreTx!,
+      signingPath,
     };
   },
   target: removeVoteConfirmModel.replaceWithConfirm,

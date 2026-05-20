@@ -26,7 +26,7 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
     const height = signerWallet && walletUtils.isWalletConnectGroup(signerWallet) ? '430px' : '490px';
 
     return (
-      <Box width="440px" height={height} verticalAlign="center" horizontalAlign="center" gap={4}>
+      <Box width="100%" height={height} verticalAlign="center" horizontalAlign="center" gap={4}>
         <Loader color="primary" />
         <FootnoteText className="text-text-tertiary">{t('signing.loadingSignData')}</FootnoteText>
       </Box>
@@ -47,7 +47,7 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
   };
 
   return (
-    <Box width="440px" direction="column" gap={3}>
+    <Box width="100%" direction="column" gap={3}>
       {batchSplitWarning && (
         <div className="px-4">
           <Alert active variant="warn" title={t('signing.batchSplit.title')}>

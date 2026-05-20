@@ -5,7 +5,7 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, Loader } from '@/shared/ui';
-import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { basketUtils } from '@/entities/basket';
@@ -15,6 +15,7 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
+import { SigningPathConfirmSection } from '../../common/SigningPathConfirmSection';
 import { unlockConfirmModel } from '../model/unlockConfirm';
 
 type Props = {
@@ -59,12 +60,12 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
   }
 
   const hasMultisigAccount = confirmStore.meta.route.some(accountUtils.isAnyMultisigAccount);
-  const { fee, asset, amount, totalLock, signatory } = confirmStore.meta;
+  const { fee, asset, amount, totalLock, signatory, signingPath } = confirmStore.meta;
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
   const nativeAsset = getNativeAsset(confirmStore.meta.chain.assets);
 
   return (
-    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
+    <div className="flex w-full flex-col items-center gap-y-4 px-5 pt-4 pb-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="unlockMst" size={60} />
 
@@ -80,7 +81,8 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
+      <SigningPathConfirmSection
+        signingPath={signingPath}
         chain={confirmStore.meta.chain}
         wallets={wallets}
         initiators={initiators}
@@ -129,7 +131,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
           </DetailRow>
         )}
         <FeeWithLabel fee={fee} asset={nativeAsset} />
-      </TransactionDetails>
+      </SigningPathConfirmSection>
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (

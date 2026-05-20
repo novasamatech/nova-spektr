@@ -52,7 +52,7 @@ export const WithdrawShards = () => {
   }
 
   return (
-    <Modal size="md" isOpen={isModalOpen} onToggle={(open) => !open && closeModal()}>
+    <Modal size="mdlg" isOpen={isModalOpen} onToggle={(open) => !open && closeModal()}>
       <Modal.Title close>
         <OperationTitle
           title={t('staking.withdraw.title', { asset: getNativeAsset(networkStore.chain.assets)!.symbol })}

@@ -26,6 +26,7 @@ import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { bondNominateValidator } from '@/features/operations/OperationsValidation';
+import { createSigningPathModel } from '@/features/signing-path';
 import { validatorsModel } from '@/features/staking';
 import { type WalletData } from '../lib/types';
 
@@ -138,6 +139,14 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
+  createSigningPathModel({
+    initiator: form.fields.initiator.$value,
+    chain: $chain,
+    resetOn: formInitiated,
+    resetUserOverrideOn: form.fields.initiator.change,
+  });
+
 const $destinationAccounts = combine(
   {
     wallets: walletModel.$wallets,
@@ -246,6 +255,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   chain: $chain,
   transaction: $coreTx,
   feeTransaction: $feeTx,
+  routeOverride: $pathRoute,
 });
 
 const $available = combine({ reservableAmount: $reservableAmount, fee: $fee }).map(({ reservableAmount, fee }) => {
@@ -293,12 +303,13 @@ sample({
 });
 
 sample({
-  clock: formInitiated,
-  source: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, formInitiated],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: $route,
@@ -398,6 +409,7 @@ export const formModel = {
 
   $proxyWallet,
   $signatories,
+  $signingPath,
   $destinationAccounts,
   $destinationQuery,
   $destinationType,
@@ -423,6 +435,7 @@ export const formModel = {
   destinationQueryChanged,
   destinationTypeChanged,
   multisigDepositChanged,
+  signingPathChanged,
   formSubmitted,
   formChanged,
   setReuseLockMode,

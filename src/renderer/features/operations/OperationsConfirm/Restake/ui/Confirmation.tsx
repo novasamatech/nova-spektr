@@ -4,7 +4,7 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { StakingPopover } from '@/entities/staking';
@@ -12,6 +12,8 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
+import { SigningPathConfirmSection } from '../../common/SigningPathConfirmSection';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -60,7 +62,8 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
+      <SigningPathConfirmSection
+        signingPath={confirm.meta.signingPath}
         chain={confirm.meta.chain}
         wallets={wallets}
         initiators={confirms.map((confirm) => confirm.meta.initiator)}
@@ -104,7 +107,9 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
           <StakingPopover.Item>{t('staking.confirmation.hintRestake')}</StakingPopover.Item>
         </StakingPopover>
-      </TransactionDetails>
+      </SigningPathConfirmSection>
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (

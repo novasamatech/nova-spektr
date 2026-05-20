@@ -1,5 +1,6 @@
 import { type Address, type Asset, type Validator } from '@/shared/core';
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
@@ -12,6 +13,7 @@ export type BondNominateConfirm = TxConfirmInfo & {
   totalFee: string;
   multisigDeposit: string;
   asset: Asset;
+  signingPath?: PathNode[];
 };
 
 const confirmStore = createTransactionConfirmStore<BondNominateConfirm>({

@@ -104,7 +104,7 @@ function checkPermission(
       const connection = account.connections.find(c => c.proxyAccountId === proxyAccount.accountId);
       if (nullable(connection)) return null;
 
-      const wrappedCalls = transactionService.getInnerCallsFromCall(extrinsic.method as Call);
+      const wrappedCalls = transactionService.getInnerCallsFromCall(extrinsic.method as Call, account.accountId);
       if (wrappedCalls.some(call => checkCallPermission(connection.proxyType, call.section) === false)) {
         return { account, permission: connection.proxyType };
       }

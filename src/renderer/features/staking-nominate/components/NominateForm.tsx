@@ -1,15 +1,13 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent, useMemo } from 'react';
+import { type FormEvent } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
-import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
+import { TransactionValidationError } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
+import { SigningPathSection } from '@/features/signing-path';
 import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
 
@@ -48,43 +46,18 @@ const Signatories = () => {
     fields: { signatory },
   } = useForm(formModel.form);
 
-  const signatories = useUnit(formModel.$signatories);
+  const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
-  const balances = useUnit(balanceModel.$balanceMap);
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
-
-  const signatoriesWithBalance = useMemo(() => {
-    if (!network) {
-      return [];
-    }
-
-    return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        network.chain.chainId,
-        network.asset.assetId,
-      );
-      return { account: signatory, balance: transferableAmount(balance) };
-    });
-  }, [signatories, balances]);
-
-  if (!network) {
-    return null;
-  }
+  const formErrors = useUnit(formModel.$errors);
 
   return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      allWallets={allWallets}
-      initiator={signatory.value}
-      hasError={signatory.hasError}
+    <SigningPathSection
+      signingPath={signingPath}
+      chain={network?.chain ?? null}
+      asset={network?.asset ?? null}
+      txErrors={formErrors}
       errorText={t(signatory.errorMessage)}
-      network={network}
-      onChange={signatory.onChange}
+      onChange={formModel.signingPathChanged}
     />
   );
 };

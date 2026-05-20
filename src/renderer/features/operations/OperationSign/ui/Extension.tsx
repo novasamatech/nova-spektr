@@ -109,17 +109,12 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
   };
 
   return (
-    <div className="flex w-[440px] flex-col items-center gap-y-2.5 rounded-b-lg p-4">
+    <div className="flex w-full flex-col items-center gap-y-2.5 rounded-b-lg p-4">
       {signerWallet && (
-        <div className="mb-1 flex h-8 w-full items-center justify-center">
-          <div className="flex h-full items-center justify-center gap-x-0.5">
-            <FootnoteText className="whitespace-nowrap text-text-secondary">{t('signing.signer')}</FootnoteText>
-
-            <div className="flex w-full items-center gap-x-2 px-2">
-              <WalletIcon type={signerWallet.type} size={16} />
-              <FootnoteText className="w-max text-text-secondary">{signerWallet.name}</FootnoteText>
-            </div>
-          </div>
+        <div className="mb-1 flex h-8 items-center gap-x-2">
+          <FootnoteText className="whitespace-nowrap text-text-secondary">{t('signing.signer')}</FootnoteText>
+          <WalletIcon type={signerWallet.type} size={16} />
+          <FootnoteText className="text-text-secondary">{signerWallet.name}</FootnoteText>
         </div>
       )}
 
@@ -129,7 +124,7 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
           : t('signing.signingInProgress')}
       </SmallTitleText>
 
-      <div className="mt-5 flex w-full justify-between">
+      <div className="mt-5 flex w-full">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>

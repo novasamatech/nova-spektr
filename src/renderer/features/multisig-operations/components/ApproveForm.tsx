@@ -1,17 +1,15 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { transferableAmount } from '@/shared/lib/utils';
 import { Button, Icon, Separator } from '@/shared/ui';
-import { AccountSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
-import { Field, TextArea } from '@/shared/ui-kit';
-import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { AccountSelect, TransactionValidationError } from '@/shared/ui-entities';
+import { Field } from '@/shared/ui-kit';
+import { type AnyAccount, type MultisigOperation } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
-import { authModel } from '@/aggregates/backend';
+import { SigningPathSection } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { approveModel } from '../model/approve-model';
 
@@ -30,8 +28,6 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, op
   const { t } = useI18n();
 
   const balances = useUnit(balanceModel.$balanceMap);
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
   const fee = useUnit(approveModel.$fee);
   const isFeeLoading = useUnit(approveModel.$isFeeLoading);
   const isDepositRequired = useUnit(approveModel.$isDepositRequired);
@@ -42,19 +38,8 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, op
 
   const initiator = useUnit(approveModel.$initiator);
   const signatory = useUnit(approveModel.$signatory);
-  const description = useUnit(approveModel.$description);
-  const isAuthenticated = useUnit(authModel.$isAuthenticated);
 
-  const signatories = useUnit(approveModel.$signatories);
-
-  const signatoriesWithBalance = useMemo(() => {
-    return signatories.map(s => {
-      const balance = balanceUtils.getBalance(balances, s.accountId, chain.chainId, nativeAsset.assetId);
-      return { account: s, balance: transferableAmount(balance) };
-    });
-  }, [signatories, balances, chain, nativeAsset]);
-
-  const network = useMemo(() => ({ chain, asset: nativeAsset }), [chain, nativeAsset]);
+  const signingPath = useUnit(approveModel.$signingPath);
 
   return (
     <div className="flex flex-col items-center gap-y-3 px-5 pb-4">
@@ -79,29 +64,13 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, op
         />
       </Field>
 
-      <SignatorySelect
-        signatory={signatory}
-        signatories={signatoriesWithBalance}
-        allAccounts={allAccounts}
-        allWallets={allWallets}
-        initiator={initiator}
-        hasError={false}
-        errorText=""
-        network={network}
-        onChange={approveModel.selectSignatory}
+      <SigningPathSection
+        signingPath={signingPath}
+        chain={chain}
+        asset={nativeAsset}
+        txErrors={errors}
+        onChange={approveModel.signingPathChanged}
       />
-
-      {isAuthenticated && (
-        <Field text={t('operation.descriptionLabel')}>
-          <TextArea
-            value={description}
-            placeholder={t('operation.descriptionPlaceholder')}
-            rows={2}
-            maxLength={500}
-            onChange={approveModel.setDescription}
-          />
-        </Field>
-      )}
 
       <Separator className="my-1 w-full" />
 

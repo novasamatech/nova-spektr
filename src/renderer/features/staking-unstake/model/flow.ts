@@ -122,7 +122,7 @@ sample({
   source: {
     unstakeStore: $unstakeStore,
     networkStore: $networkStore,
-    transaction: $coreTx,
+    transaction: formModel.$tx,
   },
   filter: ({ unstakeStore, networkStore, transaction }) => {
     return nonNullable(unstakeStore) && nonNullable(networkStore) && nonNullable(transaction);
