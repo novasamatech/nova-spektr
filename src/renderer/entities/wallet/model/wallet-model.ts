@@ -47,8 +47,8 @@ const $allWallets = combine($rawWallets, accounts.$list, (wallets, accounts) => 
 
   return wallets.map<Wallet>((wallet) => ({ ...wallet, accounts: grouped[wallet.id] ?? [] }));
 });
-const $wallets = $allWallets.map((wallets) => wallets.filter((x) => !x.isHidden));
-const $hiddenWallets = $allWallets.map((wallets) => wallets.filter((x) => x.isHidden));
+const $wallets = $allWallets.map((wallets) => wallets.filter((x) => !x.hiddenReason));
+const $hiddenWallets = $allWallets.map((wallets) => wallets.filter((x) => Boolean(x.hiddenReason)));
 
 // list of accounts filtered by non-hidden wallets
 const $availableAccounts = combine($wallets, accounts.$list, (wallets, allAccounts) => {
@@ -143,7 +143,12 @@ const updateWalletsFx = createEffect(async (wallets: Wallet[]): Promise<Wallet[]
 
 const restoreWalletsFx = attach({
   effect: updateWalletsFx,
-  mapParams: (wallets: Wallet[]) => wallets.map((wallet) => ({ ...wallet, isHidden: false })),
+  mapParams: (wallets: Wallet[]) => wallets.map((wallet) => ({ ...wallet, hiddenReason: null })),
+});
+
+const hideWalletsFx = attach({
+  effect: updateWalletsFx,
+  mapParams: (wallets: Wallet[]) => wallets.map((wallet) => ({ ...wallet, hiddenReason: 'unnamed' as const })),
 });
 
 sample({
@@ -235,7 +240,7 @@ sample({
 // Hide wallet
 
 const hideWalletFx = createEffect(async (walletId: ID): Promise<ID> => {
-  await storageService.wallets.update(walletId, { isHidden: true });
+  await storageService.wallets.update(walletId, { hiddenReason: 'manual' });
 
   return walletId;
 });
@@ -251,7 +256,8 @@ const walletHiddenFx = attach({
 sample({
   clock: hideWalletFx.doneData,
   source: $rawWallets,
-  fn: (wallets, walletIdToHide) => wallets.map((w) => (w.id === walletIdToHide ? { ...w, isHidden: true } : w)),
+  fn: (wallets, walletIdToHide) =>
+    wallets.map((w) => (w.id === walletIdToHide ? { ...w, hiddenReason: 'manual' as const } : w)),
   target: $rawWallets,
 });
 
@@ -303,6 +309,7 @@ export const walletModel = {
   updateWallet: updateWalletFx,
   populate: fetchAllWalletsFx,
   walletHidden: walletHiddenFx,
+  hideWallets: hideWalletsFx,
   walletsRemoved: walletsRemovedFx,
   restoreWallets: restoreWalletsFx,
 
