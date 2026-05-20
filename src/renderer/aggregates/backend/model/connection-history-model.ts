@@ -2,6 +2,7 @@ import { createStore, sample } from 'effector';
 import { persist } from 'effector-storage/local';
 
 import { authModel } from './auth-model';
+import { backendConfigurationModel } from './backend-configuration-model';
 
 const $hasEverConnected = createStore(false);
 
@@ -17,6 +18,8 @@ sample({
   fn: () => true,
   target: $hasEverConnected,
 });
+
+$hasEverConnected.on(backendConfigurationModel.events.urlCleared, () => false);
 
 export const connectionHistoryModel = {
   $hasEverConnected,
