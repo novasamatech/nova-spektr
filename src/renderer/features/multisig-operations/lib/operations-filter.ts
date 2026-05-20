@@ -104,10 +104,7 @@ export const matchesNetwork = (operation: MultisigOperation, networkIds: string[
 export const matchesTxType = (operation: MultisigOperation, typeIds: string[]) =>
   typeIds.length === 0 || typeIds.includes(getFilterableTxType(operation));
 
-export const matchesProxyType = (
-  proxyTypeIds: string[],
-  account: MultisigAccount | FlexibleMultisigAccount,
-) => {
+export const matchesProxyType = (proxyTypeIds: string[], account: MultisigAccount | FlexibleMultisigAccount) => {
   if (proxyTypeIds.length === 0) return true;
   let operationProxyType: ProxyType | null = null;
   if (accountUtils.isFlexibleMultisigAccount(account)) {

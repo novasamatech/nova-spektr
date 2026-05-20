@@ -2,6 +2,7 @@ import { combine, createEvent, createStore, sample } from 'effector';
 
 import { type Chain, type ChainId } from '@/shared/core';
 import { isHex } from '@/shared/lib/utils';
+import { type PathNode } from '@/domains/backend';
 import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { graphModel, pathModel } from '@/features/signing-path';
@@ -18,6 +19,26 @@ export type DraftSeed = {
   description?: string;
   inputMode?: 'paste' | 'build';
   source?: string;
+  /**
+   * Pre-built signing path for the operation. When present (and complete +
+   * matches the provided chain + call data is valid), the modal jumps directly
+   * to the `confirm` step so the user only needs to fill in a description.
+   */
+  path?: PathNode[];
+};
+
+const seedHasCompletePath = (seed: DraftSeed | void): boolean =>
+  !!seed && Array.isArray(seed.path) && seed.path.length > 0 && seed.path[seed.path.length - 1]?.kind === 'signer';
+
+const seedHasValidCallData = (seed: DraftSeed | void): boolean =>
+  !!seed && typeof seed.callData === 'string' && seed.callData.length > 0 && isHex(seed.callData);
+
+const seedHasChain = (seed: DraftSeed | void): boolean => !!seed && !!seed.chainId;
+
+const deriveInitialStep = (seed: DraftSeed | void): Step => {
+  if (seedHasChain(seed) && seedHasValidCallData(seed) && seedHasCompletePath(seed)) return 'confirm';
+  if (seedHasChain(seed) && seedHasValidCallData(seed)) return 'select-path';
+  return 'call-data';
 };
 
 const createDraftRequested = createEvent<DraftSeed | void>();
@@ -39,7 +60,7 @@ const $isOpen = createStore(false)
   .reset(modalClosed);
 
 const $activeStep = createStore<Step>('call-data')
-  .on(createDraftRequested, () => 'call-data' as Step)
+  .on(createDraftRequested, (_, seed) => deriveInitialStep(seed))
   .on(stepAdvanced, advance)
   .on(stepReverted, revert)
   .on(skipPressed, advance)
@@ -98,6 +119,17 @@ sample({
   filter: (seed): seed is DraftSeed => !!seed && seed.inputMode !== undefined,
   fn: (seed) => seed!.inputMode!,
   target: $inputMode,
+});
+
+// Pre-fill the signing-path picker from the seed. Runs synchronously alongside
+// the chain/call-data seeding so the next-tick chainSelected reset (below)
+// can't fire on it — the seed only carries a path when the caller already set
+// the chain explicitly.
+sample({
+  clock: createDraftRequested,
+  filter: seedHasCompletePath,
+  fn: (seed) => seed!.path!,
+  target: pathModel.pathSeeded,
 });
 
 sample({

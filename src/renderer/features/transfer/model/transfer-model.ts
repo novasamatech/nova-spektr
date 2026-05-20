@@ -3,9 +3,11 @@ import { spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
+import { wireDraftCloseRedirect } from '@/features/drafts';
 import { multisigService } from '@/features/multisig-wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -223,6 +225,17 @@ sample({
     });
   },
   target: $redirectAfterSubmitPath,
+});
+
+// Draft mode: when a draft is successfully saved from THIS transfer session,
+// redirect the user to the Operations page (where the new draft now lives)
+// and close the transfer modal — the CreateDraftModal has already taken over
+// and reported success.
+wireDraftCloseRedirect({
+  $initiatedDraft: formModel.$initiatedDraftFromTransfer,
+  flowFinished,
+  redirectTarget: $redirectAfterSubmitPath,
+  destination: Paths.OPERATIONS,
 });
 
 sample({

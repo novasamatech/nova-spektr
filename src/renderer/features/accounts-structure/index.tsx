@@ -44,6 +44,13 @@ accountsStructureFeature.inject(overviewSlot, ({ walletAccounts, trigger, initia
   );
 });
 
-accountsStructureFeature.inject(draftAccountsOverviewSlot, ({ walletAccounts, initialChainId, trigger }) => {
-  return <AccountsStructureModal walletAccounts={walletAccounts} initialChainId={initialChainId} trigger={trigger} />;
+accountsStructureFeature.inject(draftAccountsOverviewSlot, ({ walletAccounts, initialChainId, trigger, exclusive }) => {
+  return (
+    <AccountsStructureModal
+      walletAccounts={walletAccounts}
+      initialChainId={initialChainId}
+      trigger={trigger}
+      exclusive={exclusive}
+    />
+  );
 });

@@ -30,11 +30,10 @@ import { accountService, useAccountName, useAccountsNames } from '@/domains/netw
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
-import { transactionService } from '@/entities/transaction';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
-import { InitiateDraftButton } from '@/features/drafts';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { SigningPathSection, graphModel } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
@@ -65,6 +64,7 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
   const wallets = useUnit(walletModel.$wallets);
   const isTokenSelectorOpen = useUnit(formModel.$isTokenSelectorOpen);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
   const network = useUnit(formModel.$networkStore);
 
   const submitForm = (event: FormEvent) => {
@@ -80,22 +80,39 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
 
   return (
     <div className="flex flex-col gap-4 px-5 py-4">
-      <TransactionValidationError errors={errors} wallets={wallets} />
-      <DestinationBalanceAlert />
-      <PureProxyChainMismatchAlert />
-      <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
-        <ChainSelector />
-        <XcmChainSelector />
-        <InitiatorSelector />
-        <SignatorySelector />
-        <Destination />
-        <Amount />
-      </form>
-      <div className="flex flex-col gap-y-6">
-        <FeeSection />
-      </div>
-
-      <AlertForAccountDeath />
+      <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
+      {isDraftMode && network && (
+        <DraftSigningPath
+          chainId={network.chain.chainId}
+          asset={network.asset}
+          $draftPath={formModel.$draftSigningPath}
+          draftPathCommitted={formModel.events.draftPathCommitted}
+          draftPathEditStarted={formModel.events.draftPathEditStarted}
+          draftPathEditEnded={formModel.events.draftPathEditEnded}
+          allowedProxyTypes={TRANSFER_ALLOWED_PROXY_TYPES}
+        />
+      )}
+      <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+        <div className="flex flex-col gap-4">
+          {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+          {!isDraftMode && <DestinationBalanceAlert />}
+          {!isDraftMode && <PureProxyChainMismatchAlert />}
+          <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
+            <ChainSelector />
+            <XcmChainSelector />
+            <InitiatorSelector />
+            <SignatorySelector />
+            <Destination />
+            <Amount />
+          </form>
+          {!isDraftMode && (
+            <div className="flex flex-col gap-y-6">
+              <FeeSection />
+            </div>
+          )}
+          {!isDraftMode && <AlertForAccountDeath />}
+        </div>
+      </DraftFormBody>
 
       <ActionsSection onGoBack={onGoBack} />
 
@@ -176,6 +193,11 @@ const InitiatorSelector = memo(() => {
   const initiators = useUnit(formModel.$initiators);
   const network = useUnit(formModel.$networkStore);
   const balances = useUnit(balanceModel.$balanceMap);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
+
+  // In draft mode the source is picked inside <StepPath> (rendered by
+  // SignatorySelector below), not via the wallet-account dropdown.
+  if (isDraftMode) return null;
 
   if (initiators.length < 2) {
     return null;
@@ -219,8 +241,10 @@ const SignatorySelector = memo(() => {
   const network = useUnit(formModel.$networkStore);
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
   const errors = useUnit(formModel.$errors);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
 
   if (!network) return null;
+  if (isDraftMode) return null;
 
   if (!initiator) {
     return (
@@ -769,14 +793,14 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const canSaveAsDraft = useUnit(formModel.$canSaveAsDraft);
   const isPreparingTransaction = useUnit(formModel.$isPreparingTransaction);
   const errors = useUnit(formModel.$errors);
-  const tx = useUnit(formModel.$coreTx);
-  const api = useUnit(formModel.$api);
-  const network = useUnit(formModel.$networkStore);
-  const draftCallData = transactionService.getCallDataHex(tx, api);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
   const hasErrors = errors.length > 0;
   const isLoading = isPreparingTransaction && !hasErrors;
+
+  const isDisabled = isDraftMode ? !canSaveAsDraft : !canSubmit || hasErrors;
 
   return (
     <div className="mt-4 flex flex-col gap-2">
@@ -785,14 +809,14 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
           {t('operation.goBackButton')}
         </Button>
         <div className="flex items-center gap-3">
-          <InitiateDraftButton
-            callData={draftCallData}
-            chainId={network?.chain.chainId}
-            source="transfer"
-            onDraftCreated={onGoBack}
-          />
-          <Button form="transfer-form" type="submit" disabled={!canSubmit || hasErrors} isLoading={isLoading}>
-            {t('transfer.continueButton')}
+          <Button
+            form={isDraftMode ? undefined : 'transfer-form'}
+            type={isDraftMode ? 'button' : 'submit'}
+            disabled={isDisabled}
+            isLoading={!isDraftMode && isLoading}
+            onClick={isDraftMode ? () => formModel.events.saveAsDraftRequested() : undefined}
+          >
+            {isDraftMode ? t('operations.drafts.initiateButton') : t('transfer.continueButton')}
           </Button>
         </div>
       </div>

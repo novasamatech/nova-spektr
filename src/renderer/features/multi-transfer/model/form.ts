@@ -25,10 +25,11 @@ import {
   MultiTransferCsvError,
 } from '@/entities/multi-transfer';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
+import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { createSigningPathModel } from '@/features/signing-path';
@@ -191,19 +192,23 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: form.fields.initiator.$value,
     chain: form.fields.chain.$value,
     resetOn: flowStarted,
     resetUserOverrideOn: form.fields.initiator.change,
-  });
+  },
+);
 
 const $showSignatories = combine(
   $signatories,
   form.fields.initiator.$value,
   (signatories, initiator) => signatories.length > 1 || signatories.at(0)?.accountId !== initiator?.accountId,
 );
+
+// draft mode — wired through the shared factory in features/drafts
+const draftMode = createDraftModeBinding({ formInitiated: flowStarted, chainChanged: form.fields.chain.change });
 
 const $amount = form.fields.transfers.$value.map((transfers) =>
   transfers.reduce((amount, transfer) => amount.add(transfer.amount.parsed || BN_ZERO), BN_ZERO),
@@ -239,6 +244,36 @@ const $coreTx = combine(
     });
   },
 );
+
+// Draft-mode transaction: built from the path's source accountId (external
+// address-book contact) instead of the wallet-signatory. Mirrors $coreTx but
+// is driven by the draft signing-path picker.
+const $draftCoreTx = combine(
+  {
+    chain: form.fields.chain.$value,
+    transfers: form.fields.transfers.$value,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+  },
+  ({ chain, transfers, path, isPathComplete }) => {
+    if (nullable(chain) || !isPathComplete || transfers.length === 0) return null;
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+
+    const validTransfers = transfers
+      .filter((t) => t.recipient.parsed && t.amount.parsed)
+      .map((t) => ({ recipient: t.recipient.parsed!, amount: t.amount.parsed! }));
+    if (validTransfers.length === 0) return null;
+
+    return transactionBuilder.buildMultiTransfer({
+      chain,
+      accountId: sourceAccountId,
+      transfers: validTransfers,
+    });
+  },
+);
+
+const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
 
 const $feeCoreTx = combine(
   {
@@ -337,6 +372,41 @@ const $canSubmit = combine(
     return isFormValid && isTxValid && nonNullable(fee) && !hasCsvErrors;
   },
 );
+
+// Draft mode bypasses signer-validity, fee, and tx-validation checks — the
+// eventual signer is a different account responsible for those at submit time.
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    chain: form.fields.chain.$value,
+    transfers: form.fields.transfers.$value,
+    csvIssues: $csvIssues,
+    csvError: $csvError,
+  },
+  ({ isDraftMode, isPathComplete, callData, chain, transfers, csvIssues, csvError }) => {
+    if (!isDraftMode || !isPathComplete || !callData || !chain) return false;
+    if (transfers.length === 0) return false;
+    const hasCsvErrors = nonNullable(csvError) || csvIssues?.some((issue) => issue.severity === 'error');
+
+    return !hasCsvErrors;
+  },
+);
+
+const $draftNetworkStore = form.fields.chain.$value.map((chain) => (chain ? { chain } : null));
+
+draftMode.connectSave({
+  source: 'multi-transfer-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore: $draftNetworkStore,
+  $canSave: $canSaveAsDraft,
+});
+
+wireDraftCloseRedirect({
+  $initiatedDraft: draftMode.$initiatedDraft,
+  flowFinished,
+});
 
 sample({
   clock: fileUploaded,
@@ -734,4 +804,17 @@ export const formModel = {
   $canSubmit,
   $hasMultisigAccount,
   $multisigDeposit,
+
+  $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
+  $canSaveAsDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
+  events: {
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
+  },
 };

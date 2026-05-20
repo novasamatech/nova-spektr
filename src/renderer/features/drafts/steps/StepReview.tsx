@@ -59,15 +59,11 @@ export const StepReview = ({
     <div className="flex flex-col gap-5">
       {path.length > 0 && (
         <section className="flex flex-col gap-y-2">
-          <div className="flex items-center justify-between">
-            <CaptionText className="text-text-tertiary uppercase">{t('signingPath.signingPath')}</CaptionText>
-            <div className="flex items-center gap-3">
-              <HelpText className="text-text-tertiary">
-                {t('signingPath.hopsCount', { count: Math.max(0, path.length - 1) })}
-              </HelpText>
-              {chain && <PathReviewPopover path={path} chainId={chain.chainId} />}
+          {chain && (
+            <div className="flex">
+              <PathReviewPopover path={path} chainId={chain.chainId} />
             </div>
-          </div>
+          )}
           {chain && <PathBreadcrumb path={path} chainId={chain.chainId} size="sm" />}
         </section>
       )}
