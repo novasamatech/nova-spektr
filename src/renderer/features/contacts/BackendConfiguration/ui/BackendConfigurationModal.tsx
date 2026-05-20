@@ -159,7 +159,7 @@ export const BackendConfigurationModal = () => {
                 <ChainSelectorField
                   value={selectedChain}
                   options={chainOptions}
-                  onSelect={(chain: Chain) => authModel.events.chainSelected(chain.chainId)}
+                  onSelect={(chain) => authModel.events.chainSelected(chain.chainId)}
                 />
               )}
               <OperationMessageSign onGoBack={() => authModel.events.signingCancelled()} />

@@ -235,9 +235,7 @@ sample({
   target: messageSignModel.init,
 });
 
-// Re-render the QR live when the user picks a different network on the
-// signing step. We only forward updates while the signing step is open so a
-// later reset of $selectedChainId doesn't bleed into the model.
+// Gate on 'signing' step so a later $selectedChainId reset doesn't leak into messageSignModel.
 sample({
   clock: $selectedChainId,
   source: $authStep,
