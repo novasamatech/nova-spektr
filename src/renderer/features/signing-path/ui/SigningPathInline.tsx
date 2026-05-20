@@ -1,6 +1,6 @@
 import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { Fragment, useCallback, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 
 import { type Asset, type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -9,7 +9,7 @@ import { InputHint } from '@/shared/ui';
 import { Popover } from '@/shared/ui-kit';
 import { type PathNode } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
-import { graphModel } from '../model/graph-model';
+import { type PathNextOption, type PathSource, graphModel } from '../model/graph-model';
 
 import { PathArrow } from './PathArrow';
 import { PathCard } from './PathCard';
@@ -47,6 +47,20 @@ type Props = {
   disabledProxyReason?: string;
   /** Allow editing the initiator card. Off for wallet-bound forms. */
   editableInitiator?: boolean;
+  /**
+   * Forwarded to the edit modal. Draft mode passes the address-book-restricted
+   * source list; the regular flow leaves this empty so the modal derives its
+   * own from `restrictToOwnAccounts`.
+   */
+  sources?: PathSource[];
+  filterNextOption?: (option: PathNextOption) => boolean;
+  restrictToOwnAccounts?: boolean;
+  /**
+   * Fires when the edit modal is opened/closed. Draft mode uses this to gate
+   * its auto-commit sample — pathModel changes inside the modal must not
+   * overwrite the committed draft path until the user explicitly saves.
+   */
+  onEditOpenChange?: (open: boolean) => void;
   onChange: (path: PathNode[]) => void;
 };
 
@@ -61,6 +75,10 @@ export const SigningPathInline = ({
   allowedProxyTypes,
   disabledProxyReason,
   editableInitiator = false,
+  sources,
+  filterNextOption,
+  restrictToOwnAccounts,
+  onEditOpenChange,
   onChange,
 }: Props) => {
   const { t } = useI18n();
@@ -103,15 +121,28 @@ export const SigningPathInline = ({
     t,
   );
 
+  // Notify the parent before the modal opens — draft mode needs to flip its
+  // editing flag synchronously so the auto-commit sample doesn't pick up the
+  // modal's internal pathModel writes.
   const openFromCard = (index: number) => {
+    onEditOpenChange?.(true);
     setEditFromIndex(index);
     setIsModalOpen(true);
   };
   const openFromChip = () => {
+    onEditOpenChange?.(true);
     setEditFromIndex(undefined);
     setIsModalOpen(true);
   };
   const closeModal = () => setIsModalOpen(false);
+
+  // The edit modal resets pathModel in its cleanup, which the parent sees
+  // before this effect fires — so we end the editing window *after* that
+  // cleanup runs to keep the auto-commit gate held until pathModel is back
+  // to its post-modal state.
+  useEffect(() => {
+    if (!isModalOpen) onEditOpenChange?.(false);
+  }, [isModalOpen, onEditOpenChange]);
 
   const handleSave = (next: PathNode[]) => {
     onChange(next);
@@ -175,6 +206,9 @@ export const SigningPathInline = ({
         disabledProxyReason={disabledProxyReason}
         getOptionBalance={(option) => getBalance(option.accountId, true)}
         optionAsset={feeAsset ?? asset}
+        sources={sources}
+        filterNextOption={filterNextOption}
+        restrictToOwnAccounts={restrictToOwnAccounts}
         onSave={handleSave}
         onClose={closeModal}
       />

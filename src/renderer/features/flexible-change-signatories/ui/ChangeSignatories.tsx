@@ -3,13 +3,12 @@ import { type ComponentProps, type PropsWithChildren, useEffect, useMemo, useRef
 
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Step, isStep, toAddress } from '@/shared/lib/utils';
+import { Step, getNativeAsset, isStep, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
-import { transactionService } from '@/entities/transaction';
-import { InitiateDraftButton } from '@/features/drafts';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { OperationSign } from '@/features/operations';
 import { OperationSubmitWithAction } from '@/features/operations/OperationSubmit';
 import { StepPath, pathModel } from '@/features/signing-path';
@@ -79,13 +78,11 @@ export const ChangeSignatories = ({
   const currentController = useUnit(changeSignatoriesModel.$currentController);
   const selectedTarget = useUnit(changeSignatoriesModel.$selectedTarget);
   const isPathComplete = useUnit(pathModel.$isComplete);
-  const draftTx = useUnit(changeSignatoriesModel.$draftTx);
-  const api = useUnit(changeSignatoriesModel.$api);
+  const isDraftMode = useUnit(changeSignatoriesModel.$isDraftMode);
+  const canSaveAsDraft = useUnit(changeSignatoriesModel.$canSaveAsDraft);
   const nextFromSelectController = useUnit(changeSignatoriesModel.nextFromSelectController);
   const nextFromSigningPath = useUnit(changeSignatoriesModel.nextFromSigningPath);
   const signingPathGoBack = useUnit(changeSignatoriesModel.signingPathGoBack);
-
-  const draftCallData = transactionService.getCallDataHex(draftTx, api);
 
   const currentControllerAddress = useMemo(() => {
     if (!currentController || !chain) return null;
@@ -167,29 +164,46 @@ export const ChangeSignatories = ({
         <>
           <Modal.Content>
             <div className="flex h-full flex-col gap-y-4 px-5 pt-4 pb-6">
-              <PersistentBanner
-                currentControllerAddress={currentControllerAddress}
-                currentSignatories={currentSignatories}
-                currentThreshold={currentThreshold}
-              />
-              <ExecutionModeToggle />
-              <UnifiedPicker
-                chain={chain}
-                currentControllerAddress={currentControllerAddress}
-                currentThreshold={currentThreshold}
-              />
+              <DraftModeCard isOn={isDraftMode} onToggle={changeSignatoriesModel.events.toggleDraftMode} />
+              {isDraftMode && (
+                <DraftSigningPath
+                  chainId={chain.chainId}
+                  asset={getNativeAsset(chain.assets)}
+                  $draftPath={changeSignatoriesModel.$draftSigningPath}
+                  draftPathCommitted={changeSignatoriesModel.events.draftPathCommitted}
+                  draftPathEditStarted={changeSignatoriesModel.events.draftPathEditStarted}
+                  draftPathEditEnded={changeSignatoriesModel.events.draftPathEditEnded}
+                />
+              )}
+              <DraftFormBody
+                $isDraftMode={changeSignatoriesModel.$isDraftMode}
+                $isDraftPathComplete={changeSignatoriesModel.$isDraftPathComplete}
+              >
+                <div className="flex flex-col gap-y-4">
+                  <PersistentBanner
+                    currentControllerAddress={currentControllerAddress}
+                    currentSignatories={currentSignatories}
+                    currentThreshold={currentThreshold}
+                  />
+                  <ExecutionModeToggle />
+                  <UnifiedPicker
+                    chain={chain}
+                    currentControllerAddress={currentControllerAddress}
+                    currentThreshold={currentThreshold}
+                  />
+                </div>
+              </DraftFormBody>
             </div>
           </Modal.Content>
           <Modal.Footer>
             <Box fitContainer direction="row" horizontalAlign="end" verticalAlign="center" gap={3}>
-              <InitiateDraftButton
-                callData={draftCallData}
-                chainId={chain.chainId}
-                source="flexible-change-signatories"
-                onDraftCreated={closeModal}
-              />
-              <Button disabled={!selectedTarget} onClick={() => nextFromSelectController()}>
-                {t('flexibleMultisig.editProxy.picker.next')}
+              <Button
+                disabled={isDraftMode ? !canSaveAsDraft : !selectedTarget}
+                onClick={() =>
+                  isDraftMode ? changeSignatoriesModel.events.saveAsDraftRequested() : nextFromSelectController()
+                }
+              >
+                {isDraftMode ? t('operations.drafts.initiateButton') : t('flexibleMultisig.editProxy.picker.next')}
               </Button>
             </Box>
           </Modal.Footer>

@@ -6,15 +6,13 @@ import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
-import { OperationResult, transactionService } from '@/entities/transaction';
-import { InitiateDraftButton } from '@/features/drafts';
+import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { NominateConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
 import { Validators } from '@/features/staking';
 import { Step } from '../lib/types';
 import { nominateUtils } from '../lib/utils';
 import { nominateFlow } from '../model/flow';
-import { formModel } from '../model/form-model';
 
 import { NominateForm } from './NominateForm';
 
@@ -24,10 +22,6 @@ export const Nominate = () => {
   const step = useUnit(nominateFlow.$step);
   const walletData = useUnit(nominateFlow.$walletData);
   const initiatorWallet = useUnit(nominateFlow.$initiatorWallet);
-  const coreTx = useUnit(formModel.$coreTx);
-  const api = useUnit(formModel.$api);
-  const network = useUnit(formModel.$networkStore);
-  const draftCallData = transactionService.getCallDataHex(coreTx, api);
 
   const [isModalOpen, closeModal] = useModalClose(!nominateUtils.isNoneStep(step), nominateFlow.output.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
@@ -67,19 +61,11 @@ export const Nominate = () => {
         {nominateUtils.isConfirmStep(step) && (
           <Confirmation
             secondaryActionButton={
-              <>
-                {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
-                  <Button pallet="secondary" onClick={() => nominateFlow.events.txSaved()}>
-                    {t('operation.addToBasket')}
-                  </Button>
-                )}
-                <InitiateDraftButton
-                  callData={draftCallData}
-                  chainId={network?.chain.chainId}
-                  source="staking-nominate"
-                  onDraftCreated={closeModal}
-                />
-              </>
+              initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) ? (
+                <Button pallet="secondary" onClick={() => nominateFlow.events.txSaved()}>
+                  {t('operation.addToBasket')}
+                </Button>
+              ) : undefined
             }
             onGoBack={() => nominateFlow.events.stepChanged(Step.VALIDATORS)}
           />

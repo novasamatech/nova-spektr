@@ -3,10 +3,12 @@ import { spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { accountSync, multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { balanceSubModel } from '@/features/assets-balances';
+import { wireDraftCloseRedirect } from '@/features/drafts';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -201,6 +203,13 @@ sample({
   source: $redirectAfterSubmitPath,
   filter: nonNullable,
   target: navigationModel.events.navigateTo,
+});
+
+wireDraftCloseRedirect({
+  $initiatedDraft: formModel.$initiatedDraft,
+  flowFinished,
+  redirectTarget: $redirectAfterSubmitPath,
+  destination: Paths.OPERATIONS,
 });
 
 sample({

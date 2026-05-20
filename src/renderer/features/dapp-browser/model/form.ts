@@ -22,12 +22,7 @@ import {
 } from '@/shared/transactions';
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
-import {
-  type AnyAccount,
-  type EncodedTransaction,
-  accountService,
-  transactionService,
-} from '@/domains/network';
+import { type AnyAccount, type EncodedTransaction, accountService, transactionService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService as transactionEntitiesService } from '@/entities/transaction';
@@ -111,13 +106,14 @@ const $coreTx = $callData.map((callData): EncodedTransaction | null => {
   };
 });
 
-const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } =
-  createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
     initiator: form.fields.initiator.$value,
     chain: $chain,
     resetOn: flow.close,
     resetUserOverrideOn: form.fields.initiator.change,
-  });
+  },
+);
 
 const $bfsRoute = createRouteStore({
   chain: $chain,
@@ -126,9 +122,7 @@ const $bfsRoute = createRouteStore({
   accounts: walletModel.$availableAccounts,
 });
 // Picked path wins over BFS when it has enough hops to wrap.
-const $route = combine($bfsRoute, $pathRoute, (bfs, override) =>
-  override && override.length >= 2 ? override : bfs,
-);
+const $route = combine($bfsRoute, $pathRoute, (bfs, override) => (override && override.length >= 2 ? override : bfs));
 
 const { $tx: $wrappedTx } = createWrappedTxStore({
   api: $api,
