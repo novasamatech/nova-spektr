@@ -1,13 +1,18 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { persist } from 'effector-storage/local';
-import { uniqBy } from 'lodash';
 
 import { toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 
-import { matchPreset } from './lib';
+import {
+  type BackendContactSeed,
+  type LocalContactSeed,
+  type WalletEntrySeed,
+  buildMergedEntries,
+  matchPreset,
+} from './lib';
 import { type AccountEntry, type AccountPreset, type PresetFilterCriteria, type PresetType } from './types';
 
 const MAX_SEGMENTS = 3;
@@ -155,49 +160,40 @@ const $allEntries = combine(
   ({ accountsWithWallets: { accounts, wallets }, localContacts, backendContacts, chains }): AccountEntry[] => {
     const walletNameById = new Map(wallets.map(w => [w.id, w.name]));
     const walletTypeById = new Map(wallets.map(w => [w.id, w.type]));
-    const entries: AccountEntry[] = [];
 
+    const walletSeeds: WalletEntrySeed[] = [];
     for (const account of accounts) {
       if (accountUtils.isMultisigSignatoryAccount(account)) continue;
-
       const addressPrefix = account.type === 'chain' ? chains[account.chainId]?.addressPrefix : undefined;
-
-      entries.push({
+      walletSeeds.push({
         id: account.id,
         name: account.name,
         address: toAddress(account.accountId, { prefix: addressPrefix }),
         accountId: account.accountId,
-        source: 'wallet',
         walletId: account.walletId,
         walletName: walletNameById.get(account.walletId),
         walletType: walletTypeById.get(account.walletId),
       });
     }
 
-    for (const contact of localContacts) {
-      entries.push({
-        id: contact.id,
-        name: contact.name,
-        address: contact.address,
-        accountId: contact.accountId,
-        source: 'local-contact',
-      });
-    }
+    const localSeeds: LocalContactSeed[] = localContacts.map(c => ({
+      id: c.id,
+      name: c.name,
+      address: c.address,
+      accountId: c.accountId,
+    }));
 
-    for (const contact of backendContacts) {
-      entries.push({
-        id: contact.id,
-        name: contact.name,
-        address: contact.address,
-        accountId: contact.accountId,
-        source: 'backend-contact',
-        entityNames: contact.entityNames,
-        categoryName: contact.categoryName,
-        tags: contact.tags,
-      });
-    }
+    const backendSeeds: BackendContactSeed[] = backendContacts.map(c => ({
+      id: c.id,
+      name: c.name,
+      address: c.address,
+      accountId: c.accountId,
+      entityNames: c.entityNames,
+      categoryName: c.categoryName,
+      tags: c.tags,
+    }));
 
-    return uniqBy(entries, 'accountId');
+    return buildMergedEntries({ walletSeeds, localContacts: localSeeds, backendContacts: backendSeeds });
   },
 );
 
@@ -213,14 +209,34 @@ const matchedEntriesFilter = (next: AccountEntry[], prev: AccountEntry[]): boole
   return false;
 };
 
-const $matchedDashboardEntriesRaw = combine($activeDashboardPreset, $allEntries, (preset, entries) =>
-  matchPreset(preset, entries),
+const $entriesByPresetId = combine($presets, $allEntries, (presets, entries) => {
+  const map: Record<string, AccountEntry[]> = {};
+  for (const preset of presets) {
+    map[preset.id] = matchPreset(preset, entries);
+  }
+
+  return map;
+});
+
+type MatchedSource = {
+  activeId: string | null;
+  byPresetId: Record<string, AccountEntry[]>;
+  all: AccountEntry[];
+};
+
+const resolveMatched = ({ activeId, byPresetId, all }: MatchedSource) =>
+  activeId ? (byPresetId[activeId] ?? all) : all;
+
+const $matchedDashboardEntriesRaw = combine(
+  { activeId: $activeDashboardPresetId, byPresetId: $entriesByPresetId, all: $allEntries },
+  resolveMatched,
 );
 const $matchedDashboardEntries = createStore<AccountEntry[]>([], { updateFilter: matchedEntriesFilter });
 $matchedDashboardEntries.on($matchedDashboardEntriesRaw, (_, next) => next);
 
-const $matchedOperationsEntriesRaw = combine($activeOperationsPreset, $allEntries, (preset, entries) =>
-  matchPreset(preset, entries),
+const $matchedOperationsEntriesRaw = combine(
+  { activeId: $activeOperationsPresetId, byPresetId: $entriesByPresetId, all: $allEntries },
+  resolveMatched,
 );
 const $matchedOperationsEntries = createStore<AccountEntry[]>([], { updateFilter: matchedEntriesFilter });
 $matchedOperationsEntries.on($matchedOperationsEntriesRaw, (_, next) => next);
@@ -230,6 +246,7 @@ export const accountPresetsModel = {
   $segmentPresets,
   $overflowPresets,
   $allEntries,
+  $entriesByPresetId,
 
   $activeDashboardPresetId,
   $activeDashboardPreset,

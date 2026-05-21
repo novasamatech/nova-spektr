@@ -6,7 +6,7 @@ import { cnTw } from '@/shared/lib/utils';
 import { MultiSelect } from '@/shared/ui';
 import { Input } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
-import { type PresetFilterCriteria } from '@/aggregates/account-presets';
+import { type AccountSource, type PresetFilterCriteria } from '@/aggregates/account-presets';
 
 type Props = {
   name: string;
@@ -16,7 +16,7 @@ type Props = {
 };
 
 type SourceOption = {
-  id: 'wallet' | 'local-contact' | 'backend-contact';
+  id: AccountSource;
   label: string;
 };
 
@@ -62,7 +62,7 @@ export const PresetFilterEditor = ({ name, filters, onNameChange, onFiltersChang
     };
   }, [backendContacts]);
 
-  const toggleSource = (sourceId: 'wallet' | 'local-contact' | 'backend-contact') => {
+  const toggleSource = (sourceId: AccountSource) => {
     const already = filters.sources.includes(sourceId);
     const newSources = already ? filters.sources.filter((s) => s !== sourceId) : [...filters.sources, sourceId];
     onFiltersChange({ ...filters, sources: newSources });

@@ -13,11 +13,13 @@ import {
   type PresetType,
   EMPTY_FILTERS,
   accountPresetsModel,
+  applyPresetFilter,
 } from '@/aggregates/account-presets';
 
 import { CustomAccountSelector } from './CustomAccountSelector';
 import { MatchedAccountsPreview } from './MatchedAccountsPreview';
 import { PresetFilterEditor } from './PresetFilterEditor';
+import { SourceBreakdownBar } from './SourceBreakdownBar';
 
 type Props = {
   isOpen: boolean;
@@ -153,6 +155,14 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   const isNewPreset = selectedId === null;
   const canSave = editName.trim().length > 0 && (editType === 'filter' || editSelectedIds.length > 0);
 
+  const matchedEntries = useMemo(() => {
+    if (editType === 'custom') {
+      const selected = new Set(editSelectedIds);
+      return allEntries.filter((e) => selected.has(e.id));
+    }
+    return applyPresetFilter(editFilters, allEntries);
+  }, [editType, editSelectedIds, editFilters, allEntries]);
+
   return (
     <Modal isOpen={isOpen} size="lg" onToggle={(open) => !open && onClose()}>
       <Modal.Title close>{t('dashboard.presets.modal.title')}</Modal.Title>
@@ -187,7 +197,6 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
                   )}
                   onClick={resetEditor}
                 >
-                  {/* eslint-disable-next-line i18next/no-literal-string */}
                   <span className="text-base leading-none">+</span>
                   <FootnoteText as="span" className="text-inherit">
                     {t('dashboard.presets.modal.newPreset')}
@@ -211,6 +220,8 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
               />
             </div>
 
+            <SourceBreakdownBar entries={matchedEntries} total={allEntries.length} tone="light" />
+
             {editType === 'filter' ? (
               <>
                 <PresetFilterEditor
@@ -219,7 +230,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
                   onNameChange={setEditName}
                   onFiltersChange={setEditFilters}
                 />
-                <MatchedAccountsPreview allEntries={allEntries} filters={editFilters} />
+                <MatchedAccountsPreview matched={matchedEntries} totalEntries={allEntries.length} />
               </>
             ) : (
               <CustomAccountSelector
