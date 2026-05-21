@@ -4,14 +4,10 @@ import { memo, useMemo, useState } from 'react';
 
 import { ProxyTypeOrder, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
+import { performSearch } from '@/shared/lib/utils';
 import { Button, MultiSelect } from '@/shared/ui';
-import { Hash, WalletAccountIcon } from '@/shared/ui-entities';
 import { DateRangePicker } from '@/shared/ui-kit';
-import { accountService, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { accountUtils } from '@/entities/wallet';
-import { walletSelectService } from '@/aggregates/wallet-select';
 import { operationsContextModel } from '../model/context';
 
 export const OperationsFilter = memo(() => {
@@ -19,18 +15,8 @@ export const OperationsFilter = memo(() => {
 
   const selectedOptions = useUnit(operationsContextModel.$filter);
   const isFiltersSelected = useUnit(operationsContextModel.$isFiltersSelected);
-  const chains = useUnit(networkModel.$chains);
   const chainsList = useUnit(networkModel.$chainsList);
-  const multisigAccounts = useUnit(operationsContextModel.$presetScopedMultisigAccounts);
-  const multisigWallets = useUnit(operationsContextModel.$multisigWallets);
 
-  // When an active preset narrows the account list down to 0 or 1, the account multi-select
-  // becomes redundant — hide it entirely so the preset is the single source of account scope.
-  const showAccountFilter = multisigAccounts.length > 1;
-
-  const resolvedWallets = useWalletsNames(multisigWallets);
-
-  const [accountSearchQuery, setAccountSearchQuery] = useState('');
   const [networkSearchQuery, setNetworkSearchQuery] = useState('');
   const [typeSearchQuery, setTypeSearchQuery] = useState('');
   const [proxyTypeSearchQuery, setProxyTypeSearchQuery] = useState('');
@@ -48,51 +34,6 @@ export const OperationsFilter = memo(() => {
   }));
 
   const filtersOptions = useMemo(() => {
-    const filteredAccountOptions = performSearch({
-      query: accountSearchQuery,
-      records: multisigAccounts
-        .map(multisigAccount => {
-          const wallet = resolvedWallets.find(w => w.id === multisigAccount.walletId);
-          const addressPrefix = accountUtils.isFlexibleMultisigAccount(multisigAccount)
-            ? chains[multisigAccount.chainId]?.addressPrefix
-            : undefined;
-          const accountAddress = toAddress(multisigAccount.accountId, { prefix: addressPrefix });
-
-          return wallet
-            ? {
-                multisigAccount,
-                walletName: wallet.name,
-                accountAddress,
-                wallet,
-              }
-            : null;
-        })
-        .filter(nonNullable),
-      getMeta: ({ walletName, wallet }) => ({
-        name: walletName,
-        address: walletSelectService.composeWalletMeta(
-          wallet,
-          accountService.filterAccountsByWallet(multisigAccounts, wallet.id),
-          chains,
-        ),
-      }),
-      weights: { name: 1, address: 0.8 },
-    }).map(({ multisigAccount, walletName, accountAddress, wallet }) => ({
-      id: multisigAccount.accountId,
-      value: multisigAccount.accountId,
-      element: (
-        <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden">
-          {wallet && <WalletAccountIcon address={accountAddress} type={wallet.type} size={24} iconSize={12} />}
-          <span className="flex w-full flex-col overflow-hidden">
-            {walletName && <span className="w-fit max-w-full truncate">{walletName}</span>}
-            <span className="w-full text-help-text text-text-tertiary">
-              <Hash value={accountAddress} variant="truncate" />
-            </span>
-          </span>
-        </span>
-      ),
-    }));
-
     const filteredNetworkOptions = performSearch({
       query: networkSearchQuery,
       records: NetworkOptions,
@@ -112,23 +53,11 @@ export const OperationsFilter = memo(() => {
     });
 
     return {
-      account: filteredAccountOptions,
       network: filteredNetworkOptions,
       type: filteredTypeOptions,
       proxyType: filteredProxyTypeOptions,
     };
-  }, [
-    multisigAccounts,
-    resolvedWallets,
-    chains,
-    NetworkOptions,
-    TransactionOptions,
-    ProxyTypeOptions,
-    accountSearchQuery,
-    networkSearchQuery,
-    typeSearchQuery,
-    proxyTypeSearchQuery,
-  ]);
+  }, [NetworkOptions, TransactionOptions, ProxyTypeOptions, networkSearchQuery, typeSearchQuery, proxyTypeSearchQuery]);
 
   const clearFilters = () => {
     operationsContextModel.resetFilters();
@@ -148,17 +77,6 @@ export const OperationsFilter = memo(() => {
           onChange={range => operationsContextModel.setFilter({ dateRange: range })}
         />
       </div>
-      {showAccountFilter && (
-        <MultiSelect
-          showSelectAll
-          className="w-[136px]"
-          placeholder={t('operations.filters.accountPlaceholder')}
-          selectedIds={selectedOptions.account}
-          options={[...filtersOptions.account]}
-          onChange={value => operationsContextModel.setFilter({ account: value.map(({ id }) => id) })}
-          onSearch={setAccountSearchQuery}
-        />
-      )}
       <MultiSelect
         showSelectAll
         className="w-[136px]"

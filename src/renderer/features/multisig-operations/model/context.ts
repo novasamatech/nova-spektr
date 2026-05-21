@@ -30,7 +30,6 @@ export type OperationWithAccount = {
 };
 
 interface SelectedFilters {
-  account: string[];
   network: string[];
   type: string[];
   proxyType: string[];
@@ -51,7 +50,6 @@ $hiddenOperationIds
   .on(unhideOperation, (state, id) => state.filter(opId => opId !== id));
 
 const initialFilter: SelectedFilters = {
-  account: [],
   network: [],
   type: [],
   proxyType: [],
@@ -73,8 +71,7 @@ const $filter = createStore(initialFilter)
 
 const $isFiltersSelected = $filter.map(filter =>
   Boolean(
-    filter.account.length ||
-      filter.network.length ||
+    filter.network.length ||
       filter.type.length ||
       filter.proxyType.length ||
       filter.dateRange?.from ||

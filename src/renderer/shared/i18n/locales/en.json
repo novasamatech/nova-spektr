@@ -2696,7 +2696,6 @@
       "tooltip": "Export operations to CSV"
     },
     "filters": {
-      "accountPlaceholder": "Accounts",
       "clearAll": "operations.filters.clearAll",
       "clearFilters": "Clear filters",
       "dateRangePlaceholder": "Date range",

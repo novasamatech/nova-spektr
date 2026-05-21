@@ -16,7 +16,6 @@ import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transactio
 import { accountUtils } from '@/entities/wallet';
 
 export interface OperationsFilterCriteria {
-  account: string[];
   network: string[];
   type: string[];
   proxyType: string[];
@@ -92,9 +91,6 @@ export const matchesTab = (operation: MultisigOperation, tab: OperationsFilterTa
   }
 };
 
-export const matchesAccount = (operation: MultisigOperation, accountIds: string[]) =>
-  accountIds.length === 0 || accountIds.includes(operation.multisigAccountId);
-
 export const matchesNetwork = (operation: MultisigOperation, networkIds: string[]) => {
   if (networkIds.length === 0) return true;
   const xcmDestination = operation.transaction?.args.destinationChain;
@@ -156,7 +152,6 @@ export const filterOperation = (
   const { filters, tab, hiddenIds, multisigWallets, chains } = context;
 
   if (!matchesTab(operation, tab, hiddenIds)) return false;
-  if (!matchesAccount(operation, filters.account)) return false;
   if (!matchesNetwork(operation, filters.network)) return false;
   if (!matchesTxType(operation, filters.type)) return false;
   if (!matchesProxyType(filters.proxyType, account)) return false;
