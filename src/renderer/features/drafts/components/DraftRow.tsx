@@ -174,7 +174,8 @@ export const DraftRow = ({
     return formatSectionAndMethod(coreTx.section, coreTx.method);
   }, [externalTitle, coreTx]);
 
-  const displayAccountId = (draft.proxyAccountId ?? draft.multisigAccountId) as AccountId | undefined;
+  const displayAccountIdRaw = draft.proxyAccountId ?? draft.multisigAccountId;
+  const displayAccountId = displayAccountIdRaw ? toAccountId(displayAccountIdRaw) : undefined;
   const displayAccount = draft.proxyAccountId ? proxyAccount : baseMultisigAccount;
   const displayWallet = displayAccount ? wallets.find((w) => w.id === displayAccount.walletId) : undefined;
 
