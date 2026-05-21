@@ -2451,6 +2451,8 @@
       "account": "Account",
       "amount": "Amount",
       "callData": "Call Data",
+      "coreTx": "Underlying transaction",
+      "coreTxSame": "Underlying transaction",
       "callHash": "Call Hash",
       "controller": "Controller",
       "dateTime": "Date & Time",
@@ -2691,7 +2693,6 @@
       "tooltip": "Export operations to CSV"
     },
     "filters": {
-      "accountPlaceholder": "Accounts",
       "clearAll": "operations.filters.clearAll",
       "clearFilters": "Clear filters",
       "dateRangePlaceholder": "Date range",
@@ -3769,6 +3770,9 @@
   },
   "operationTemplates": {
     "saveButton": "Save as template",
+    "saveCoreTxButton": "Save as template",
+    "saveCallDataTooltip": "Save this transaction as a template to reuse the operation later.",
+    "saveCoreTxTooltip": "This is the transaction inside the proxy or multisig wrapper. Save it as a template to reuse the operation later.",
     "panelTitle": "Templates",
     "apply": "Apply",
     "delete": "Delete template",

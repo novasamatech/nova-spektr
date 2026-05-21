@@ -81,6 +81,8 @@ export const VerifyProxyConfirmation = ({ id = 0, secondaryActionButton, hideSig
         wallets={wallets}
         initiators={initiators}
         signatory={signatory}
+        resultTx={meta.tx}
+        coreTx={meta.coreTx}
       >
         <DetailRow label={t('proxy.details.accessType')} className="pr-2">
           <FootnoteText>{proxyType}</FootnoteText>

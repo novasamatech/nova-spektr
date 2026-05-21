@@ -253,6 +253,21 @@ const getOperationId = (op: MultisigOperation) =>
 const getNotificationKey = (op: MultisigOperation) =>
   `${NotificationType.MULTISIG_OPERATION}-${getOperationId(op)}-${op.status}`;
 
+const $notificationCutoffTimestamp = createStore(Date.now()).on(
+  multisigOperation.$initialLoadingComplete,
+  (cutoffTimestamp, initialLoadingComplete) => {
+    return initialLoadingComplete ? cutoffTimestamp : Date.now();
+  },
+);
+
+const isAfterNotificationCutoff = (timestamp: number, notificationCutoffTimestamp: number): boolean => {
+  return timestamp >= notificationCutoffTimestamp;
+};
+
+const getLatestOperationTimestamp = (operation: MultisigOperation): number => {
+  return Math.max(operation.timestamp, ...operation.events.map(event => event.timestamp));
+};
+
 const operationChanges = pairwise(multisigOperation.$list)
   .map(({ prev: prevState, current: update }) => {
     const previousOpsMap = new Map(prevState.map((op: MultisigOperation) => [getOperationId(op), op]));
@@ -298,13 +313,18 @@ const $allAccounts = accounts.$list;
 sample({
   clock: operationChanges,
   source: {
-    populated: multisigOperation.$populated,
+    initialLoadingComplete: multisigOperation.$initialLoadingComplete,
+    notificationCutoffTimestamp: $notificationCutoffTimestamp,
     anyMultisigAccounts: $anyMultisigAccounts,
     allAccounts: $allAccounts,
     chains: networkModel.$chains,
   },
-  filter: ({ populated }) => populated,
-  fn: ({ anyMultisigAccounts, allAccounts, chains }, { newOperations, statusChanges, removedKeys, newEvents }) => {
+  filter: ({ initialLoadingComplete }) => initialLoadingComplete,
+  fn: (
+    { anyMultisigAccounts, allAccounts, chains, notificationCutoffTimestamp },
+    { newOperations, statusChanges, removedKeys, newEvents },
+  ) => {
+    const notificationCutoff = notificationCutoffTimestamp;
     // Filter new operations - apply timestamp filter to exclude operations created before account was connected
     const newOperationNotifications = newOperations
       .filter(operation => {
@@ -315,7 +335,11 @@ sample({
 
         const account = findAccountForOperation(operation, anyMultisigAccounts);
         // Show only operations created after account was connected
-        return nonNullable(account) && operation.timestamp >= account.createdAt;
+        return (
+          nonNullable(account) &&
+          operation.timestamp >= account.createdAt &&
+          isAfterNotificationCutoff(operation.timestamp, notificationCutoff)
+        );
       })
       .map(operation => {
         const account = findAccountForOperation(operation, anyMultisigAccounts);
@@ -323,15 +347,36 @@ sample({
         return createOperationNotification(operation, chains, account);
       });
 
-    // Status changes should always create notifications regardless of when the operation was created
-    const statusChangeNotifications = statusChanges.map(operation => {
-      const account = findAccountForOperation(operation, anyMultisigAccounts);
+    // Status changes notify only when the latest operation activity is fresh for this account
+    const statusChangeNotifications = statusChanges
+      .filter(operation => {
+        const account = findAccountForOperation(operation, anyMultisigAccounts);
+        const latestTimestamp = getLatestOperationTimestamp(operation);
 
-      return createOperationNotification(operation, chains, account);
-    });
+        return (
+          nonNullable(account) &&
+          latestTimestamp >= account.createdAt &&
+          isAfterNotificationCutoff(latestTimestamp, notificationCutoff)
+        );
+      })
+      .map(operation => {
+        const account = findAccountForOperation(operation, anyMultisigAccounts);
+
+        return createOperationNotification(operation, chains, account);
+      });
 
     const eventNotifications = newEvents
-      .filter(({ event }) => {
+      .filter(({ operation, event }) => {
+        const account = findAccountForOperation(operation, anyMultisigAccounts);
+
+        if (!nonNullable(account) || event.timestamp < account.createdAt) {
+          return false;
+        }
+
+        if (!isAfterNotificationCutoff(event.timestamp, notificationCutoff)) {
+          return false;
+        }
+
         // Don't notify if the current user caused the event
         if (anyMultisigAccounts.some(a => a.accountId === event.accountId) && event.status !== 'reject') {
           return false;

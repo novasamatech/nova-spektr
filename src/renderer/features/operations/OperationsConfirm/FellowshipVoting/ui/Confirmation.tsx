@@ -8,6 +8,7 @@ import { Box } from '@/shared/ui-kit';
 import { referendumService, useCoreMembers, useMaxRank, useReferendums, useTracks } from '@/domains/collectives';
 import { SignButton } from '@/entities/operations';
 import { VotingConfirmation } from '@/features/fellowship-voting';
+import { CallDataConfirmSection } from '../../common/CallDataConfirmSection';
 import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
 import { confirmModel } from '../model/confirm-model';
 
@@ -81,6 +82,13 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
         maxRank={maxRank}
         fee={confirm.meta.fee}
         rank={confirm.meta.rank}
+      />
+
+      <CallDataConfirmSection
+        api={confirm.meta.api}
+        chain={confirm.meta.chain}
+        resultTx={confirm.meta.tx}
+        coreTx={confirm.meta.coreTx}
       />
 
       <MultisigOperationDescriptionField />

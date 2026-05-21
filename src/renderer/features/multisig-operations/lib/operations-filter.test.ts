@@ -7,7 +7,6 @@ import {
   type OperationsFilterContext,
   filterOperation,
   getFilterableTxType,
-  matchesAccount,
   matchesDateRange,
   matchesNetwork,
   matchesProxyType,
@@ -42,7 +41,6 @@ const mockMultisigAccount = { accountId: MOCK_ACCOUNT_ID, accountType: 'multisig
 
 const emptyContext: OperationsFilterContext = {
   filters: {
-    account: [],
     network: [],
     type: [],
     proxyType: [],
@@ -158,27 +156,6 @@ describe('operations-filter', () => {
 
     test('history: returns false when not hidden but status is pending', () => {
       expect(matchesTab(createMockOperation({ status: 'pending' }), 'history', [])).toBe(false);
-    });
-  });
-
-  describe('matchesAccount', () => {
-    test('returns true when account list is empty', () => {
-      const op = createMockOperation();
-      expect(matchesAccount(op, [])).toBe(true);
-    });
-
-    test('returns true when operation accountId is in list', () => {
-      const op = createMockOperation();
-      expect(matchesAccount(op, [MOCK_ACCOUNT_ID, '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never])).toBe(
-        true,
-      );
-    });
-
-    test('returns false when operation accountId is not in list', () => {
-      const op = createMockOperation({
-        multisigAccountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never,
-      });
-      expect(matchesAccount(op, [MOCK_ACCOUNT_ID])).toBe(false);
     });
   });
 
@@ -370,17 +347,6 @@ describe('operations-filter', () => {
       expect(filterOperation(op, mockMultisigAccount, emptyContext)).toBe(false);
     });
 
-    test('returns false when account filter excludes operation', () => {
-      const op = createMockOperation({
-        multisigAccountId: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as never,
-      });
-      const ctx: OperationsFilterContext = {
-        ...emptyContext,
-        filters: { ...emptyContext.filters, account: [MOCK_ACCOUNT_ID] },
-      };
-      expect(filterOperation(op, mockMultisigAccount, ctx)).toBe(false);
-    });
-
     test('returns true when all predicates pass', () => {
       const op = createMockOperation({
         id: 'op-1',
@@ -391,7 +357,6 @@ describe('operations-filter', () => {
         ...emptyContext,
         filters: {
           ...emptyContext.filters,
-          account: [MOCK_ACCOUNT_ID],
           network: [MOCK_CHAIN_ID],
           searchQuery: 'match',
         },

@@ -60,6 +60,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         wallets={wallets}
         initiators={initiators}
         signatory={signatory}
+        resultTx={confirmStore.meta.tx}
+        coreTx={confirmStore.meta.coreTx}
       >
         <DetailRow label={t('proxy.details.accessType')} className="pr-2">
           <FootnoteText>{proxyType}</FootnoteText>
