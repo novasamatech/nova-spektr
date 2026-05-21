@@ -4,66 +4,28 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, includes } from '@/shared/lib/utils';
-import { FootnoteText, Icon, IconButton } from '@/shared/ui';
+import { Counter, FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { Popover, SearchInput, Tabs, Tooltip } from '@/shared/ui-kit';
 import { type AccountEntry, accountPresetsModel } from '@/aggregates/account-presets';
-import { PresetManagementModal } from '@/widgets/PresetManagementModal';
-
-type SourceBreakdown = { wallet: number; localContact: number; backendContact: number };
-
-const computeBreakdown = (entries: AccountEntry[]): SourceBreakdown => {
-  let wallet = 0;
-  let localContact = 0;
-  let backendContact = 0;
-  for (const entry of entries) {
-    if (entry.source === 'wallet') wallet++;
-    else if (entry.source === 'local-contact') localContact++;
-    else backendContact++;
-  }
-
-  return { wallet, localContact, backendContact };
-};
+import { PresetManagementModal, SourceBreakdownBar } from '@/widgets/PresetManagementModal';
 
 type TabCounterProps = {
   label: string;
-  count: number;
+  entries: AccountEntry[];
   total: number;
-  breakdown: SourceBreakdown;
 };
 
-const TabCounter = ({ label, count, total, breakdown }: TabCounterProps) => {
-  const { t } = useI18n();
-
+const TabCounter = ({ label, entries, total }: TabCounterProps) => {
   return (
     <Tooltip side="bottom">
       <Tooltip.Trigger>
         <span className="inline-flex items-center gap-x-1.5">
           {label}
-          <span className="min-w-[20px] rounded-full bg-icon-accent px-1.5 text-center text-help-text leading-4 font-semibold text-white">
-            {count}
-          </span>
+          <Counter variant="neutral">{entries.length}</Counter>
         </span>
       </Tooltip.Trigger>
-      <Tooltip.Content>
-        <div className="flex flex-col gap-y-0.5">
-          <FootnoteText className="text-white">{t('presets.counterTooltip.title', { count, total })}</FootnoteText>
-          {breakdown.wallet > 0 && (
-            <FootnoteText className="text-white/80">
-              {t('presets.counterTooltip.wallets', { count: breakdown.wallet })}
-            </FootnoteText>
-          )}
-          {breakdown.localContact > 0 && (
-            <FootnoteText className="text-white/80">
-              {t('presets.counterTooltip.localContacts', { count: breakdown.localContact })}
-            </FootnoteText>
-          )}
-          {breakdown.backendContact > 0 && (
-            <FootnoteText className="text-white/80">
-              {t('presets.counterTooltip.backendContacts', { count: breakdown.backendContact })}
-            </FootnoteText>
-          )}
-          {count === 0 && <FootnoteText className="text-white/80">{t('presets.counterTooltip.empty')}</FootnoteText>}
-        </div>
+      <Tooltip.Content className="w-[260px] max-w-[260px] px-3 py-2.5">
+        <SourceBreakdownBar entries={entries} total={total} tone="dark" />
       </Tooltip.Content>
     </Tooltip>
   );
@@ -92,7 +54,6 @@ export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) 
   const allEntries = useUnit(accountPresetsModel.$allEntries);
   const entriesByPresetId = useUnit(accountPresetsModel.$entriesByPresetId);
 
-  const allBreakdown = useMemo(() => computeBreakdown(allEntries), [allEntries]);
   const totalCount = allEntries.length;
 
   const [overflowOpen, setOverflowOpen] = useState(false);
@@ -139,22 +100,13 @@ export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) 
           <Tabs value={tabValue} onChange={handleTabChange}>
             <Tabs.List>
               <Tabs.Trigger value={ALL_VALUE}>
-                <TabCounter label={t('presets.all')} count={totalCount} total={totalCount} breakdown={allBreakdown} />
+                <TabCounter label={t('presets.all')} entries={allEntries} total={totalCount} />
               </Tabs.Trigger>
-              {segmentPresets.map((preset) => {
-                const matched = entriesByPresetId[preset.id] ?? [];
-
-                return (
-                  <Tabs.Trigger key={preset.id} value={preset.id}>
-                    <TabCounter
-                      label={preset.name}
-                      count={matched.length}
-                      total={totalCount}
-                      breakdown={computeBreakdown(matched)}
-                    />
-                  </Tabs.Trigger>
-                );
-              })}
+              {segmentPresets.map((preset) => (
+                <Tabs.Trigger key={preset.id} value={preset.id}>
+                  <TabCounter label={preset.name} entries={entriesByPresetId[preset.id] ?? []} total={totalCount} />
+                </Tabs.Trigger>
+              ))}
             </Tabs.List>
           </Tabs>
         </div>
@@ -189,9 +141,7 @@ export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) 
                         onClick={() => handleOverflowActivate(preset.id)}
                       >
                         <FootnoteText className="text-text-primary">{preset.name}</FootnoteText>
-                        <span className="min-w-[20px] rounded-full bg-icon-accent px-1.5 text-center text-help-text leading-4 font-semibold text-white">
-                          {matched.length}
-                        </span>
+                        <Counter variant="neutral">{matched.length}</Counter>
                       </button>
                     );
                   })}

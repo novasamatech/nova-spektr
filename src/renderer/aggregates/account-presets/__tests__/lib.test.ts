@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Address } from '@/shared/core';
-import { applyPresetFilter, matchPreset } from '../lib';
+import { type Address, WalletType } from '@/shared/core';
+import { applyPresetFilter, buildMergedEntries, matchPreset } from '../lib';
 import { type AccountEntry, type AccountPreset, type PresetFilterCriteria } from '../types';
 
 const wallet: AccountEntry = {
@@ -9,8 +9,11 @@ const wallet: AccountEntry = {
   name: 'Main Wallet',
   address: '0x1' as Address,
   accountId: '0x1',
-  source: 'wallet',
+  aliases: ['Main Wallet'],
+  sources: ['wallet'],
   walletId: 1,
+  walletName: 'Main Wallet',
+  walletType: WalletType.POLKADOT_VAULT,
 };
 
 const localContact: AccountEntry = {
@@ -18,7 +21,8 @@ const localContact: AccountEntry = {
   name: 'Alice Local',
   address: '0x2' as Address,
   accountId: '0x2',
-  source: 'local-contact',
+  aliases: ['Alice Local'],
+  sources: ['local-contact'],
 };
 
 const backendContact: AccountEntry = {
@@ -26,7 +30,8 @@ const backendContact: AccountEntry = {
   name: 'Bob Backend',
   address: '0x3' as Address,
   accountId: '0x3',
-  source: 'backend-contact',
+  aliases: ['Bob Backend'],
+  sources: ['backend-contact'],
   entityNames: ['Parity', 'W3F'],
   categoryName: 'Treasury',
   tags: [{ tagName: 'team', values: ['core', 'infra'] }],
@@ -37,13 +42,30 @@ const backendContact2: AccountEntry = {
   name: 'Charlie Backend',
   address: '0x4' as Address,
   accountId: '0x4',
-  source: 'backend-contact',
+  aliases: ['Charlie Backend'],
+  sources: ['backend-contact'],
   entityNames: ['W3F'],
   categoryName: 'Grants',
   tags: [{ tagName: 'team', values: ['research'] }],
 };
 
-const entries = [wallet, localContact, backendContact, backendContact2];
+// Same address as `wallet` (`0x1`) but also labeled in the external address book.
+const walletAndBackend: AccountEntry = {
+  id: 'w-x',
+  name: 'Treasury',
+  address: '0xX' as Address,
+  accountId: '0xX',
+  aliases: ['MS-1', 'Treasury'],
+  sources: ['wallet', 'backend-contact'],
+  walletId: 9,
+  walletName: 'MS-1',
+  walletType: WalletType.MULTISIG,
+  entityNames: ['Treasury Co'],
+  categoryName: 'Treasury',
+  tags: [],
+};
+
+const entries = [wallet, localContact, backendContact, backendContact2, walletAndBackend];
 const empty: PresetFilterCriteria = { sources: [], entityNames: [], categoryNames: [], tags: [] };
 
 describe('applyPresetFilter', () => {
@@ -51,8 +73,16 @@ describe('applyPresetFilter', () => {
     expect(applyPresetFilter(empty, entries)).toEqual(entries);
   });
 
-  it('filters by source type', () => {
-    expect(applyPresetFilter({ ...empty, sources: ['wallet'] }, entries)).toEqual([wallet]);
+  it('filters by source membership', () => {
+    expect(applyPresetFilter({ ...empty, sources: ['wallet'] }, entries)).toEqual([wallet, walletAndBackend]);
+  });
+
+  it('source: backend-contact includes entries that are also wallets', () => {
+    expect(applyPresetFilter({ ...empty, sources: ['backend-contact'] }, entries)).toEqual([
+      backendContact,
+      backendContact2,
+      walletAndBackend,
+    ]);
   });
 
   it('filters by multiple source types (OR)', () => {
@@ -60,6 +90,7 @@ describe('applyPresetFilter', () => {
       wallet,
       backendContact,
       backendContact2,
+      walletAndBackend,
     ]);
   });
 
@@ -72,7 +103,10 @@ describe('applyPresetFilter', () => {
   });
 
   it('filters by category name', () => {
-    expect(applyPresetFilter({ ...empty, categoryNames: ['Treasury'] }, entries)).toEqual([backendContact]);
+    expect(applyPresetFilter({ ...empty, categoryNames: ['Treasury'] }, entries)).toEqual([
+      backendContact,
+      walletAndBackend,
+    ]);
   });
 
   it('filters by tags (AND across tag names, OR within values)', () => {
@@ -81,10 +115,9 @@ describe('applyPresetFilter', () => {
     ]);
   });
 
-  it('non-backend entries excluded when entity/category/tag filters are active', () => {
+  it('entries without backend-contact source are excluded when entity/category/tag filters are active', () => {
     const result = applyPresetFilter({ ...empty, entityNames: ['Parity'] }, entries);
-    expect(result.find(e => e.source === 'wallet')).toBeUndefined();
-    expect(result.find(e => e.source === 'local-contact')).toBeUndefined();
+    expect(result.some(e => !e.sources.includes('backend-contact'))).toBe(false);
   });
 
   it('combines source + entity (AND across dimensions)', () => {
@@ -116,7 +149,7 @@ describe('matchPreset', () => {
   });
 
   it('type=filter applies the filter criteria', () => {
-    expect(matchPreset(preset({ filters: { ...empty, sources: ['wallet'] } }), entries)).toEqual([wallet]);
+    expect(matchPreset(preset({ filters: { ...empty, sources: ['local-contact'] } }), entries)).toEqual([localContact]);
   });
 
   it('type=custom uses selectedIds intersection', () => {
@@ -137,5 +170,158 @@ describe('matchPreset', () => {
       filters: { ...empty, sources: ['wallet'] },
     });
     expect(matchPreset(p, entries)).toEqual([localContact]);
+  });
+});
+
+describe('buildMergedEntries', () => {
+  it('produces one entry per accountId when all three sources overlap', () => {
+    const result = buildMergedEntries({
+      walletSeeds: [
+        {
+          id: 'w-id',
+          name: 'My Wallet',
+          address: '0xA' as Address,
+          accountId: '0xA',
+          walletId: 1,
+          walletName: 'My Wallet',
+          walletType: WalletType.POLKADOT_VAULT,
+        },
+      ],
+      localContacts: [{ id: 'lc-id', name: 'Local Alice', address: '0xA' as Address, accountId: '0xA' }],
+      backendContacts: [
+        {
+          id: 'bc-id',
+          name: 'External Alice',
+          address: '0xA' as Address,
+          accountId: '0xA',
+          entityNames: ['Co'],
+          categoryName: null,
+          tags: [],
+        },
+      ],
+    });
+
+    expect(result).toHaveLength(1);
+    const entry = result[0]!;
+    expect(entry.id).toBe('w-id');
+    expect(entry.sources).toEqual(['wallet', 'local-contact', 'backend-contact']);
+    expect(entry.aliases).toEqual(['My Wallet', 'Local Alice', 'External Alice']);
+    expect(entry.entityNames).toEqual(['Co']);
+  });
+
+  it('uses backend-contact name when wallet is indexed (multisig/proxied)', () => {
+    const result = buildMergedEntries({
+      walletSeeds: [
+        {
+          id: 'ms-id',
+          name: 'MS-1',
+          address: '0xB' as Address,
+          accountId: '0xB',
+          walletId: 2,
+          walletName: 'MS-1',
+          walletType: WalletType.MULTISIG,
+        },
+      ],
+      localContacts: [],
+      backendContacts: [
+        {
+          id: 'bc-id',
+          name: 'Treasury Multisig',
+          address: '0xB' as Address,
+          accountId: '0xB',
+          entityNames: [],
+          categoryName: null,
+          tags: [],
+        },
+      ],
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.name).toBe('Treasury Multisig');
+    expect(result[0]!.aliases).toEqual(['MS-1', 'Treasury Multisig']);
+    expect(result[0]!.sources).toEqual(['wallet', 'backend-contact']);
+  });
+
+  it('prefers user-chosen wallet name over contact name for non-indexed wallets', () => {
+    const result = buildMergedEntries({
+      walletSeeds: [
+        {
+          id: 'w-id',
+          name: "Alice's Vault",
+          address: '0xC' as Address,
+          accountId: '0xC',
+          walletId: 3,
+          walletName: "Alice's Vault",
+          walletType: WalletType.POLKADOT_VAULT,
+        },
+      ],
+      localContacts: [],
+      backendContacts: [
+        {
+          id: 'bc-id',
+          name: 'Alice External',
+          address: '0xC' as Address,
+          accountId: '0xC',
+          entityNames: [],
+          categoryName: null,
+          tags: [],
+        },
+      ],
+    });
+
+    expect(result[0]!.name).toBe("Alice's Vault");
+    expect(result[0]!.aliases).toContain("Alice's Vault");
+    expect(result[0]!.aliases).toContain('Alice External');
+  });
+
+  it('falls back through local then wallet when backend is absent', () => {
+    const result = buildMergedEntries({
+      walletSeeds: [],
+      localContacts: [{ id: 'lc-id', name: 'Local Only', address: '0xD' as Address, accountId: '0xD' }],
+      backendContacts: [],
+    });
+
+    expect(result[0]!.name).toBe('Local Only');
+    expect(result[0]!.sources).toEqual(['local-contact']);
+  });
+
+  it('deduplicates aliases case-insensitively', () => {
+    const result = buildMergedEntries({
+      walletSeeds: [],
+      localContacts: [{ id: 'lc-id', name: 'Treasury', address: '0xE' as Address, accountId: '0xE' }],
+      backendContacts: [
+        {
+          id: 'bc-id',
+          name: 'treasury',
+          address: '0xE' as Address,
+          accountId: '0xE',
+          entityNames: [],
+          categoryName: null,
+          tags: [],
+        },
+      ],
+    });
+
+    expect(result[0]!.aliases).toEqual(['Treasury']);
+  });
+
+  it('preserves wallet-first id when both wallet and contact share an accountId', () => {
+    const result = buildMergedEntries({
+      walletSeeds: [
+        {
+          id: 'w-id',
+          name: 'W',
+          address: '0xF' as Address,
+          accountId: '0xF',
+          walletId: 4,
+          walletName: 'W',
+          walletType: WalletType.POLKADOT_VAULT,
+        },
+      ],
+      localContacts: [{ id: 'lc-id', name: 'C', address: '0xF' as Address, accountId: '0xF' }],
+      backendContacts: [],
+    });
+
+    expect(result[0]!.id).toBe('w-id');
   });
 });
