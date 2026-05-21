@@ -90,10 +90,12 @@ export const OngoingReferendumVoting = ({
   }, [meta, rfc, isPending, connectedGovernanceReferendumSummary, t]);
 
   const title = useMemo(() => {
+    if (meta?.title) return meta.title;
+
     return isSpendProposal
       ? t('governance.referendums.spendReferendumTitle')
       : t('governance.referendums.referendumTitle', { index: referendum.id });
-  }, [isSpendProposal, referendum.id]);
+  }, [meta, isSpendProposal, referendum.id]);
 
   return (
     <Box direction="row" gap={2}>
