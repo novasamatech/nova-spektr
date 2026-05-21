@@ -8,11 +8,13 @@ import { Button, DetailRow, FootnoteText, Icon, Loader } from '@/shared/ui';
 import { AssetBalance, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { PathBreadcrumb, PathReviewPopover } from '@/features/signing-path';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
+import { CallDataConfirmSection } from '../../common/CallDataConfirmSection';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
 import { confirmModel } from '../model/confirm-model';
@@ -28,6 +30,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
+  const apis = useUnit(networkModel.$apis);
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
   const validationErrors = useUnit(confirmModel.$validationErrors);
   const canSubmit = useUnit(confirmModel.$canSubmit);
@@ -56,6 +59,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
   const nativeAsset = getNativeAsset(meta.chain.assets);
   const isMultiHopPath = nonNullable(meta.signingPath) && meta.signingPath.length >= 2;
+  const api = apis?.[meta.chain.chainId] ?? null;
 
   // Reused below TransactionDetails (trivial) AND below PathBreadcrumb
   // (multi-hop) — the same recipient / fee / deposit detail rows.
@@ -138,6 +142,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           </div>
         </DetailRow>
       )}
+
+      {api && <CallDataConfirmSection api={api} chain={meta.chain} resultTx={meta.tx} coreTx={meta.coreTx} />}
     </>
   );
 

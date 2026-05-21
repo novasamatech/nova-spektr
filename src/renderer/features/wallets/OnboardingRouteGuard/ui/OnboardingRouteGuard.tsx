@@ -17,7 +17,7 @@ export const OnboardingRouteGuard = ({ children }: Props) => {
 
   useEffect(() => {
     if (!isLoadingWallets && wallets.length > 0) {
-      navigate(Paths.ASSETS, { replace: true });
+      navigate(Paths.DASHBOARD, { replace: true });
     }
   }, [isLoadingWallets, wallets.length, navigate]);
 

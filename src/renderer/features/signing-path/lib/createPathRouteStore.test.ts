@@ -118,6 +118,41 @@ describe('createPathRouteStore', () => {
     expect(scope.getState($route)).toEqual([a1, a2, a3]);
   });
 
+  it('scopes a proxied route to the selected proxy type', () => {
+    const proxiedId = acc(1);
+    const proxyId = acc(2);
+    const signerId = acc(3);
+    const path: PathNode[] = [
+      { kind: 'proxied', accountId: proxiedId, proxyType: 'Governance' as never },
+      multisig(proxyId),
+      signer(signerId),
+    ];
+    const $path = createStore<PathNode[]>(path);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    const proxiedAccount = {
+      ...makeProxiedAccount(proxiedId),
+      connections: [
+        { proxyAccountId: proxyId, proxyType: 'Any', delay: 0 },
+        { proxyAccountId: proxyId, proxyType: 'Governance', delay: 0 },
+      ],
+    } as unknown as AnyAccount;
+    const proxyAccount = makeMultisigAccount(proxyId);
+    const signerAccount = makeAccount(signerId);
+
+    const scope = fork({
+      values: new Map<any, any>([[accounts.__test.$list, [proxiedAccount, proxyAccount, signerAccount]]]),
+    });
+
+    const route = scope.getState($route);
+
+    expect(route?.[0]).toMatchObject({
+      accountId: proxiedId,
+      connections: [{ proxyAccountId: proxyId, proxyType: 'Governance', delay: 0 }],
+    });
+  });
+
   it('prefers a Proxied account over a generic same-accountId entry for a proxied node', () => {
     // Two wallet entries share an accountId — e.g. browser-extension wallet
     // plus a synced Proxied wallet. The plain-accountId lookup would have

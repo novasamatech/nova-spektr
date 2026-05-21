@@ -87,6 +87,8 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
         wallets={wallets}
         initiators={initiators}
         signatory={signatory}
+        resultTx={confirmStore.meta.tx}
+        coreTx={confirmStore.meta.coreTx}
       >
         <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
           <BalanceDiff from={transferableBalance} to={transferableBalance.add(new BN(amount))} asset={asset} />

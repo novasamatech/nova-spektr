@@ -1,11 +1,14 @@
-import { type ReactNode, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, includes, toShortAddress } from '@/shared/lib/utils';
+import { cnTw, includesMultiple, toShortAddress } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { Checkbox, Input, SearchInput } from '@/shared/ui-kit';
 import { type AccountEntry } from '@/aggregates/account-presets';
+
+import { AccountEntryRowBadges } from './AccountEntryRowBadges';
+import { VirtualAccountList } from './VirtualAccountList';
 
 type Props = {
   name: string;
@@ -15,20 +18,6 @@ type Props = {
   onSelectedIdsChange: (ids: string[]) => void;
 };
 
-const SOURCE_LABELS: Record<string, string> = {
-  wallet: 'wallet',
-  'local-contact': 'contact',
-  'backend-contact': 'external',
-};
-
-const SOURCE_BADGE_COLORS: Record<string, string> = {
-  wallet: 'bg-icon-accent/10 text-icon-accent',
-  'local-contact': 'bg-icon-positive/10 text-icon-positive',
-  'backend-contact': 'bg-icon-alert/10 text-icon-alert',
-};
-
-const ENTITY_BADGE = 'bg-badge-orange-background-default text-badge-orange-text';
-
 export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameChange, onSelectedIdsChange }: Props) => {
   const { t } = useI18n();
   const [search, setSearch] = useState('');
@@ -36,7 +25,7 @@ export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameCha
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
   const filtered = useMemo(
-    () => allEntries.filter((entry) => includes(entry.name, search) || includes(entry.address, search)),
+    () => allEntries.filter((entry) => includesMultiple([entry.address, ...entry.aliases], search)),
     [allEntries, search],
   );
 
@@ -92,10 +81,11 @@ export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameCha
         </Checkbox>
       </div>
 
-      <div className="max-h-[280px] overflow-y-auto rounded-sm">
-        {filtered.map((entry) => (
+      <VirtualAccountList
+        entries={filtered}
+        className="max-h-[280px]"
+        renderRow={(entry) => (
           <div
-            key={entry.id}
             className={cnTw(
               'flex cursor-pointer items-center gap-x-2 rounded px-2 py-1.5 transition-colors hover:bg-action-background-hover',
               selectedSet.has(entry.id) && 'bg-block-background-default',
@@ -110,19 +100,10 @@ export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameCha
               <FootnoteText className="truncate text-text-primary">{entry.name}</FootnoteText>
               <CaptionText className="text-text-tertiary">{toShortAddress(entry.address, 6)}</CaptionText>
             </div>
-            <div className="flex shrink-0 items-center gap-x-1">
-              {entry.source === 'backend-contact' && entry.entityNames.length > 0 && (
-                <Badge className={ENTITY_BADGE}>{entry.entityNames[0]}</Badge>
-              )}
-              <Badge className={SOURCE_BADGE_COLORS[entry.source]}>{SOURCE_LABELS[entry.source] ?? entry.source}</Badge>
-            </div>
+            <AccountEntryRowBadges entry={entry} />
           </div>
-        ))}
-      </div>
+        )}
+      />
     </div>
   );
 };
-
-const Badge = ({ className, children }: { className?: string; children: ReactNode }) => (
-  <span className={cnTw('rounded-full px-2 py-0.5 text-[10px] font-medium', className)}>{children}</span>
-);

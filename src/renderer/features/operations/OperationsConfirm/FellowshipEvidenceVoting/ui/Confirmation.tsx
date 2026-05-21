@@ -1,12 +1,14 @@
-import { useStoreMap } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode, memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { EvidenceVotingConfirmation } from '@/features/fellowship-evidence';
+import { CallDataConfirmSection } from '../../common/CallDataConfirmSection';
 import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
 import { confirmModel } from '../model/confirm-model';
 
@@ -26,10 +28,13 @@ export const Confirmation = memo(({ id, secondaryActionButton, hideSignButton, o
     fn: (value, [id]) => (id ? value[id] : null) ?? null,
   });
 
+  const apis = useUnit(networkModel.$apis);
+
   if (nullable(confirm) || nullable(confirm.meta)) return null;
 
   const { wallets, chain, asset, fee, aye, tracks, maxRank, evidence, votingMember, proposerMember, initiator } =
     confirm.meta;
+  const api = apis?.[chain.chainId] ?? null;
 
   return (
     <Box padding={[4, 5]}>
@@ -46,6 +51,15 @@ export const Confirmation = memo(({ id, secondaryActionButton, hideSignButton, o
         proposerMember={proposerMember}
         evidence={evidence}
       />
+
+      {api && (
+        <CallDataConfirmSection
+          api={api}
+          chain={confirm.meta.chain}
+          resultTx={confirm.meta.tx}
+          coreTx={confirm.meta.coreTx}
+        />
+      )}
 
       <MultisigOperationDescriptionField />
 

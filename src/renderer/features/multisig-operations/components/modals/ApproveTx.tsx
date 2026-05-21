@@ -180,6 +180,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
               signAccount={signAccount}
               multisigDeposit={multisigDeposit}
               valid={valid}
+              showUnderlyingTransaction
               onSign={handleConfirm}
               onGoBack={() => setActiveStep(Step.FORM)}
             />
