@@ -10,11 +10,12 @@ type Props = {
   title: ReactNode;
   account: ReactNode;
   chain: Chain | undefined;
+  status?: ReactNode;
   action?: ReactNode;
   onClick: () => void;
 };
 
-export const QueueRow = ({ leadingIcon, title, account, chain, action, onClick }: Props) => {
+export const QueueRow = ({ leadingIcon, title, account, chain, status, action, onClick }: Props) => {
   return (
     <div
       role="button"
@@ -39,6 +40,8 @@ export const QueueRow = ({ leadingIcon, title, account, chain, action, onClick }
       </div>
 
       <div className="flex min-w-0 flex-1 items-center">{account}</div>
+
+      {status && <div className="shrink-0">{status}</div>}
 
       {action && (
         <div className="shrink-0" onClick={(e) => e.stopPropagation()}>

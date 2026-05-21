@@ -18,11 +18,11 @@ import {
   Separator,
   SmallTitleText,
 } from '@/shared/ui';
-import { Account, Address, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
+import { Address, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
-import { transactionService, useAccountName } from '@/domains/network';
+import { transactionService } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
 import { transactionService as entityTransactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -31,6 +31,7 @@ import { EmptyAccountMessage } from '@/features/emptyList';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { PathBreadcrumb } from '@/features/signing-path';
 import { WalletDetails } from '@/features/wallet-details';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { submitDraftModel } from '../model/submit-draft-model';
 
@@ -219,13 +220,6 @@ const ConfirmStep = () => {
   const noSignatories = signatories.length === 0;
   const canAddAccount = walletUtils.isPolkadotVault(activeWallet);
 
-  // For proxy drafts, show the proxy address with its contact name.
-  // For regular multisig drafts, show the multisig account from the wallet.
-  const isProxyDraft = !!draft?.proxyAccountId;
-  const multisigAccountId = confirm?.initiator.accountId ?? null;
-  const multisigChain = confirm?.chain ?? null;
-  const multisigName = useAccountName({ accountId: isProxyDraft ? null : multisigAccountId, chain: multisigChain });
-
   if (noSignatories) {
     return (
       <>
@@ -350,7 +344,7 @@ const ConfirmStep = () => {
                 />
               </div>
             ) : (
-              <Account variant="short" accountId={initiator.accountId} chain={chain} title={multisigName} />
+              <NamedAccount variant="short" accountId={initiator.accountId} chain={chain} />
             )}
           </DetailRow>
           <Separator className="border-filter-border" />
@@ -362,7 +356,7 @@ const ConfirmStep = () => {
           </DetailRow>
           {selectedSignatory && (
             <DetailRow label={t('transaction.details.sinatoryAccount')}>
-              <Account variant="short" accountId={selectedSignatory.accountId} chain={chain} />
+              <NamedAccount variant="short" accountId={selectedSignatory.accountId} chain={chain} />
             </DetailRow>
           )}
           <Separator className="border-filter-border" />

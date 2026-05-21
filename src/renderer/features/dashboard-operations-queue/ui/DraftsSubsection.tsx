@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
-import { Account } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { authModel } from '@/aggregates/backend';
 import { DraftIcon, draftDeepLinkModel, getDraftSubmitGate, useSubmitDraft } from '@/features/drafts';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { useMultisigByAccountId } from '../model/use-multisig-by-account-id';
 
 import { GroupedList } from './GroupedList';
@@ -53,11 +53,10 @@ export const DraftsSubsection = ({ drafts }: Props) => {
                 title={truncateTitle(draft.description || t('dashboard.operationsQueue.untitledDraft'))}
                 account={
                   draft.multisigAccountId ? (
-                    <Account
+                    <NamedAccount
                       accountId={draft.multisigAccountId}
-                      chain={chain ?? null}
-                      title={wallet?.name}
-                      walletType={wallet?.type}
+                      chain={chain}
+                      wallet={wallet}
                       iconSize={32}
                       hideExplorers
                     />

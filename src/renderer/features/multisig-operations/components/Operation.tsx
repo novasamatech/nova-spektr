@@ -1,9 +1,8 @@
 import { type BN } from '@polkadot/util';
 import { type TFunction } from 'i18next';
-import { type ReactNode, memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import {
-  type Address,
   type Asset,
   type AssetByChains,
   type Chain,
@@ -14,13 +13,13 @@ import {
 } from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { formatSectionAndMethod, toAddress, toShortAddress } from '@/shared/lib/utils';
-import { Accordion, CaptionText, FootnoteText, HelpText } from '@/shared/ui';
+import { formatSectionAndMethod, toAddress } from '@/shared/lib/utils';
+import { Accordion, CaptionText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
-import { AssetBalance, AssetIcon, Identicon, WalletAccountIcon } from '@/shared/ui-entities';
+import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { AsyncItem, Copy, Tooltip } from '@/shared/ui-kit';
 import { useIsDraftLinkedOperation, useOperationDescription } from '@/domains/backend';
-import { type MultisigOperation, useWalletName } from '@/domains/network';
+import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { OperationTitleStatus } from '@/entities/operations';
 import {
@@ -30,6 +29,7 @@ import {
   useTransactionAsset,
 } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 import { parseProxyEditOperation } from '../lib/proxy-edit';
 import { parseVerifyProxyOperation } from '../lib/verify-proxy-op';
@@ -71,30 +71,6 @@ export const operationTitleTransformer = createTransformer<
   },
   OperationTitle
 >();
-
-const AccountInfoCell = memo(
-  ({ icon, title, accountAddress }: { icon: ReactNode; title: string; accountAddress: Address }) => (
-    <div className="flex min-w-[140px] flex-1 items-center gap-x-2">
-      {icon}
-      <div className="flex min-w-0 flex-col items-start gap-y-0.5">
-        <FootnoteText className="w-full truncate text-text-primary">{title}</FootnoteText>
-        <HelpText className="text-text-tertiary">{toShortAddress(accountAddress, 6)}</HelpText>
-      </div>
-    </div>
-  ),
-);
-
-const OperationWalletInfo = memo(({ wallet, accountAddress }: { wallet: Wallet; accountAddress: Address }) => {
-  const walletName = useWalletName(wallet);
-
-  return (
-    <AccountInfoCell
-      icon={<WalletAccountIcon address={accountAddress} type={wallet.type} size={32} iconSize={14} />}
-      title={walletName ?? ''}
-      accountAddress={accountAddress}
-    />
-  );
-});
 
 export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false, tab, chains, wallets }: Props) => {
   const { t } = useI18n();
@@ -191,14 +167,17 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
             )}
 
             <div className="flex min-w-0 flex-1 items-center justify-between">
-              {wallet && accountAddress ? (
-                <OperationWalletInfo wallet={wallet} accountAddress={accountAddress} />
-              ) : accountAddress ? (
-                <AccountInfoCell
-                  icon={<Identicon address={accountAddress} size={32} background={false} canCopy={false} />}
-                  title={multisigAccount.name}
-                  accountAddress={accountAddress}
-                />
+              {accountAddress ? (
+                <div className="flex min-w-[140px] flex-1 items-center">
+                  <NamedAccount
+                    accountId={multisigAccount.accountId}
+                    chain={isFlexibleMultisigAccount ? chains[multisigAccount.chainId] : undefined}
+                    wallet={wallet}
+                    iconSize={32}
+                    hideExplorers
+                    variant="short"
+                  />
+                </div>
               ) : (
                 <div className="min-w-[200px] flex-1" />
               )}

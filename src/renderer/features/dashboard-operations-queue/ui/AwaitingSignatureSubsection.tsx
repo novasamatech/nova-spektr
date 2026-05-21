@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
-import { Account } from '@/shared/ui-entities';
 import { type MultisigOperation, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { OperationTitleStatus } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { OperationActions, OperationIcon } from '@/features/multisig-operations';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { useMultisigByAccountId } from '../model/use-multisig-by-account-id';
 
 import { GroupedList } from './GroupedList';
@@ -45,16 +46,16 @@ export const AwaitingSignatureSubsection = ({ operations }: Props) => {
               leadingIcon={account ? <OperationIcon operation={op} account={account} /> : null}
               title={title}
               account={
-                <Account
+                <NamedAccount
                   accountId={op.multisigAccountId}
-                  chain={chain ?? null}
-                  title={wallet?.name}
-                  walletType={wallet?.type}
+                  chain={chain}
+                  wallet={wallet}
                   iconSize={32}
                   hideExplorers
                 />
               }
               chain={chain}
+              status={<OperationTitleStatus operation={op} account={account ?? null} />}
               action={account ? <OperationActions operation={op} account={account} /> : null}
               onClick={() =>
                 navigate(

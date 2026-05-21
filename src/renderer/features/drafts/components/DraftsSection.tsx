@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, toAccountId } from '@/shared/lib/utils';
+import { cnTw, groupByDate, toAccountId } from '@/shared/lib/utils';
 import { Button, CountChip, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { Accordion, ConfirmModal, Field, Modal, TextArea, Tooltip, useNotification } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
@@ -34,7 +34,7 @@ import { DraftRow } from './DraftRow';
 import { DraftSummary } from './DraftSummary';
 
 export const DraftsSection = () => {
-  const { t } = useI18n();
+  const { t, formatDate } = useI18n();
   const { toast } = useNotification();
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
@@ -54,6 +54,11 @@ export const DraftsSection = () => {
   const visibleDrafts = useMemo(
     () => filterVisibleDrafts(drafts, linkedDraftIds, operationsLoaded),
     [drafts, linkedDraftIds, operationsLoaded],
+  );
+
+  const groupedDrafts = useMemo(
+    () => groupByDate(visibleDrafts, (d) => new Date(d.createdAt).getTime()),
+    [visibleDrafts],
   );
 
   // Deep link: scroll-to and highlight
@@ -201,36 +206,45 @@ export const DraftsSection = () => {
             <Accordion.Content>
               <div className="mt-1 flex flex-col gap-y-1.5">
                 {isHealthy &&
-                  visibleDrafts.map((draft) => (
-                    <DraftRow
-                      key={draft.id}
-                      canDelete={canDelete}
-                      canWrite={canWrite}
-                      isSubmitted={submittedDraftIds.has(draft.id)}
-                      hasInitiator={
-                        draft.proxyAccountId
-                          ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
-                          : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
-                      }
-                      isHighlighted={focusedDraftId === draft.id}
-                      multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
-                      proxyAccount={
-                        draft.proxyAccountId
-                          ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
-                          : null
-                      }
-                      rowRef={
-                        focusedDraftId === draft.id
-                          ? (el) => {
-                              highlightedRef.current = el;
-                            }
-                          : undefined
-                      }
-                      draft={draft}
-                      onDelete={handleDeleteDraft}
-                      onEdit={handleEditDraft}
-                      onSubmit={submitDraft}
-                    />
+                  groupedDrafts.map((group, groupIndex) => (
+                    <div key={group.dateKey} className="flex flex-col gap-y-1.5">
+                      <div className={groupIndex > 0 ? 'pt-4 pb-1 pl-2' : 'pb-1 pl-2'}>
+                        <FootnoteText className="text-text-tertiary">{formatDate(group.dateStart, 'PP')}</FootnoteText>
+                      </div>
+                      {group.items.map((draft) => (
+                        <DraftRow
+                          key={draft.id}
+                          canDelete={canDelete}
+                          canWrite={canWrite}
+                          isSubmitted={submittedDraftIds.has(draft.id)}
+                          hasInitiator={
+                            draft.proxyAccountId
+                              ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
+                              : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
+                          }
+                          isHighlighted={focusedDraftId === draft.id}
+                          multisigAccount={
+                            allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null
+                          }
+                          proxyAccount={
+                            draft.proxyAccountId
+                              ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
+                              : null
+                          }
+                          rowRef={
+                            focusedDraftId === draft.id
+                              ? (el) => {
+                                  highlightedRef.current = el;
+                                }
+                              : undefined
+                          }
+                          draft={draft}
+                          onDelete={handleDeleteDraft}
+                          onEdit={handleEditDraft}
+                          onSubmit={submitDraft}
+                        />
+                      ))}
+                    </div>
                   ))}
 
                 <Tooltip open={canWrite ? false : undefined}>
