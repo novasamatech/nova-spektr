@@ -107,6 +107,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
         wallets={wallets}
         initiators={[confirm.meta.initiator]}
         signatory={confirm.meta.signatory}
+        resultTx={confirm.meta.tx}
+        coreTx={confirm.meta.coreTx}
       >
         {votingPower && amount && conviction ? (
           <>

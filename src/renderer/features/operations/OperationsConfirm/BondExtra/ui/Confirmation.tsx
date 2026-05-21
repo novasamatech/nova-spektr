@@ -79,6 +79,8 @@ export const Confirmation = ({
         wallets={wallets}
         initiators={initiators}
         signatory={signatory}
+        resultTx={confirm.meta.tx}
+        coreTx={confirm.meta.coreTx}
       >
         {hasMultisigAccount && (
           <DetailRow

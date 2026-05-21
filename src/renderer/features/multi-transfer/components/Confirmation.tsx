@@ -6,8 +6,10 @@ import { getNativeAsset } from '@/shared/lib/utils';
 import { Button, DetailRow, Icon, Separator } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
+import { CallDataConfirmSection } from '@/features/operations/OperationsConfirm/common/CallDataConfirmSection';
 import { MultiTransferPreview } from '@/widgets/multi-transfer-preview';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -21,6 +23,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
+  const apis = useUnit(networkModel.$apis);
   const confirms = useUnit(confirmModel.$confirms);
   const confirm = confirms.at(0) ?? null;
 
@@ -30,6 +33,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
     confirm.meta;
 
   const asset = getNativeAsset(chain.assets);
+  const api = apis?.[chain.chainId] ?? null;
 
   return (
     <>
@@ -67,6 +71,9 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
           </DetailRow>
           {hasMultisigAccount && <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} />}
           <FeeWithLabel asset={asset} fee={fee} />
+          {api && (
+            <CallDataConfirmSection api={api} chain={chain} resultTx={confirm.meta.tx} coreTx={confirm.meta.coreTx} />
+          )}
         </TransactionDetails>
       </Box>
 

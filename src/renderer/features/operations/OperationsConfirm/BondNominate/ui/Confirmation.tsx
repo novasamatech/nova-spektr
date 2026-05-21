@@ -115,6 +115,8 @@ export const Confirmation = ({
           wallets={wallets}
           initiators={initiators}
           signatory={confirm.meta.signatory}
+          resultTx={confirm.meta.tx}
+          coreTx={confirm.meta.coreTx}
         >
           <DetailRow label={t('staking.confirmation.validatorsLabel')}>
             <button

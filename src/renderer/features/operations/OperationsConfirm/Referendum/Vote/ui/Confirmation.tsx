@@ -111,6 +111,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         wallets={wallets}
         initiators={[confirm.meta.initiator]}
         signatory={confirm.meta.signatory}
+        resultTx={confirm.meta.tx}
+        coreTx={confirm.meta.coreTx}
       >
         <DetailRow label={t('governance.vote.field.decision')}>{t(`governance.referendum.${decision}`)}</DetailRow>
         <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">
