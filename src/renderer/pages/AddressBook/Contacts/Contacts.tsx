@@ -18,7 +18,6 @@ import {
 } from '@/entities/contact';
 import {
   BackendConfigurationButton,
-  BackendConfigurationModal,
   BackendConnectionCard,
   ContactFilter,
   CreateContactNavigation,
@@ -131,8 +130,12 @@ export const Contacts = () => {
     sendToContactModel.events.sendToContactStarted(contact);
   };
 
-  const handleSync = () => {
-    backendContactsModel.events.syncTriggered();
+  const handleRetry = () => {
+    if (backendError?.category === 'auth') {
+      backendConfigurationModel.events.editStarted();
+    } else {
+      backendContactsModel.events.syncTriggered();
+    }
   };
 
   const showTabs = availableSources.length > 1;
@@ -168,7 +171,7 @@ export const Contacts = () => {
             {showTabs && <SourceTabs localCount={localContacts.length} backendCount={backendContacts.length} />}
 
             <div className="flex-1" aria-live="polite" aria-busy={viewState.view === 'loading'}>
-              {renderViewState(viewState, handleSendTo, handleSync)}
+              {renderViewState(viewState, handleSendTo, handleRetry)}
             </div>
           </div>
         </section>
@@ -177,7 +180,6 @@ export const Contacts = () => {
       <Outlet />
 
       <SendToContactModal />
-      <BackendConfigurationModal />
     </>
   );
 };

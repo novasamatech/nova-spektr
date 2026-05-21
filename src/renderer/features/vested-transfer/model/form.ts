@@ -9,6 +9,7 @@ import { type Form, createForm } from '@/shared/forms';
 import { assert, getNativeAsset, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { createAccountId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { Paths } from '@/shared/routes';
 import {
   createComplexTxStore,
   createInitiatorsStore,
@@ -20,7 +21,7 @@ import {
 import { type AnyAccount, accountService, accounts, balanceService, block } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import {
   type ValidationIssue,
   type VestingSchedule,
@@ -32,8 +33,10 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
 import { balanceSubModel } from '@/features/assets-balances';
+import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
+import { createSigningPathModel } from '@/features/signing-path';
 import { type ValidationSchemaOptions, Step } from '../types';
 import { vestedTransferUtils } from '../utils';
 
@@ -53,6 +56,8 @@ const flowStarted = createEvent();
 const flowFinished = createEvent();
 const $step = readonly(restore(stepChanged, Step.NONE));
 
+const draftMode = createDraftModeBinding({ formInitiated: flowStarted, chainChanged: flowStarted });
+
 const form: Form<FormData> = createForm<FormData>({
   fields: {
     chain: {
@@ -66,11 +71,15 @@ const form: Form<FormData> = createForm<FormData>({
     },
     signatory: {
       defaultValue: null,
-      validator: () => (signatory) => {
-        if (nullable(signatory)) {
-          return { message: 'vestedTransfer.errors.form.signatoryRequired' };
-        }
-      },
+      validator: () => ({
+        source: draftMode.$isDraftMode,
+        fn: (signatory, _, isDraftMode) => {
+          if (isDraftMode) return;
+          if (nullable(signatory)) {
+            return { message: 'vestedTransfer.errors.form.signatoryRequired' };
+          }
+        },
+      }),
     },
     vestingSchedule: {
       defaultValue: [],
@@ -116,16 +125,11 @@ const { $: $existingVestingSchedules } = createStoreFromEffect({
   params: { api: $api },
   fn: async ({ api }) => {
     const vestingSchedules = await vestingService.getExistingVestingSchedules(api);
-    const accountIds = Object.keys(vestingSchedules);
 
     const existingVestingSchedules: ValidationSchemaOptions['existingVestingSchedules'] = {};
 
-    for (const accountId of accountIds) {
-      if (nullable(existingVestingSchedules[accountId as AccountId])) {
-        existingVestingSchedules[accountId as AccountId] = 1;
-      } else {
-        existingVestingSchedules[accountId as AccountId]! += 1;
-      }
+    for (const [accountId, schedules] of Object.entries(vestingSchedules)) {
+      existingVestingSchedules[accountId as AccountId] = schedules.length;
     }
 
     return existingVestingSchedules;
@@ -178,6 +182,15 @@ const $feeCoreTx = combine(
   },
 );
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
+    initiator: form.fields.initiator.$value,
+    chain: form.fields.chain.$value,
+    resetOn: flowStarted,
+    resetUserOverrideOn: form.fields.initiator.change,
+  },
+);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   chain: form.fields.chain.$value,
@@ -186,6 +199,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 // validations
@@ -316,7 +330,6 @@ const rootValidateFileFx = createEffect<ValidateFileParams, ValidateFileResults,
 
 const validateFileFx = attach({
   source: {
-    chain: form.fields.chain.$value,
     minStartingBlock: $minStartingBlock,
     minVestedTransfer: $minVestedTransfer,
     maxVestingSchedules: $maxVestingSchedules,
@@ -324,10 +337,9 @@ const validateFileFx = attach({
   },
   mapParams: (
     parsedFile: VestingScheduleRaw[],
-    { chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules },
+    { minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules },
   ) => {
     assert(parsedFile);
-    assert(chain);
     assert(minStartingBlock);
     assert(minVestedTransfer);
     assert(maxVestingSchedules);
@@ -336,7 +348,6 @@ const validateFileFx = attach({
     return {
       parsedFile,
       validationSchemaOptions: {
-        chain,
         minStartingBlock,
         minVestedTransfer,
         maxVestingSchedules,
@@ -360,7 +371,15 @@ sample({
 
 sample({
   clock: parseFileFx.doneData,
+  filter: (data) => data.length > 0,
   target: [$parsedCsv, validateFileFx],
+});
+
+sample({
+  clock: parseFileFx.doneData,
+  filter: (data) => data.length === 0,
+  fn: () => VestingCsvError.EMPTY,
+  target: $csvError,
 });
 
 sample({
@@ -450,11 +469,13 @@ sample({
 });
 
 sample({
-  clock: [flowStarted, $signatories],
-  source: $signatories,
-  fn: (signatories) => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, flowStarted],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: [form.fields.chain.change, fileUploaded],
@@ -467,19 +488,78 @@ sample({
   ],
 });
 
+const $draftCoreTx = combine(
+  {
+    chain: form.fields.chain.$value,
+    vestingSchedule: form.fields.vestingSchedule.$value,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+  },
+  ({ chain, vestingSchedule, path, isPathComplete }) => {
+    if (nullable(chain) || !isPathComplete || vestingSchedule.length === 0) return null;
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+
+    return transactionBuilder.buildVestedTransfer({
+      chain,
+      accountId: sourceAccountId,
+      vestingSchedule,
+    });
+  },
+);
+
+const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
+
+const $draftNetworkStore = form.fields.chain.$value.map((chain) =>
+  chain ? { chain, asset: getNativeAsset(chain.assets) } : null,
+);
+
 const $canSubmit = combine(
   {
+    isDraftMode: draftMode.$isDraftMode,
     isFormValid: form.$isValid,
     isTxValid: $isTxValid,
     fee: $fee,
     csvIssues: $csvIssues,
     csvError: $csvError,
   },
-  ({ isFormValid, isTxValid, fee, csvIssues, csvError }) => {
+  ({ isDraftMode, isFormValid, isTxValid, fee, csvIssues, csvError }) => {
+    if (isDraftMode) return false;
     const hasCsvErrors = nonNullable(csvError) || csvIssues?.some((issue) => issue.severity === 'error');
     return isFormValid && isTxValid && nonNullable(fee) && !hasCsvErrors;
   },
 );
+
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    networkStore: $draftNetworkStore,
+    vestingSchedule: form.fields.vestingSchedule.$value,
+    csvIssues: $csvIssues,
+    csvError: $csvError,
+  },
+  ({ isDraftMode, isPathComplete, callData, networkStore, vestingSchedule, csvIssues, csvError }) => {
+    if (!isDraftMode || !isPathComplete || !callData || !networkStore) return false;
+    if (vestingSchedule.length === 0) return false;
+    const hasCsvErrors = nonNullable(csvError) || csvIssues?.some((issue) => issue.severity === 'error');
+    return !hasCsvErrors;
+  },
+);
+
+draftMode.connectSave({
+  source: 'vested-transfer-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore: $draftNetworkStore,
+  $canSave: $canSaveAsDraft,
+});
+
+wireDraftCloseRedirect({
+  $initiatedDraft: draftMode.$initiatedDraft,
+  flowFinished,
+  destination: Paths.OPERATIONS,
+});
 
 // submit flow
 
@@ -575,6 +655,7 @@ export const formModel = {
   $canSubmit,
   $step,
   $api,
+  $coreTx,
   $fee,
   $pendingFee,
   $multisigDeposit,
@@ -588,6 +669,7 @@ export const formModel = {
   $csvIssues,
   $availableChains: $availableChains,
   $signatories: $signatories,
+  $signingPath,
   $showSignatories: $showSignatories,
   $minVestedTransfer,
 
@@ -595,4 +677,19 @@ export const formModel = {
   flowStarted,
   flowFinished,
   fileUploaded,
+  signingPathChanged,
+
+  $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
+  $canSaveAsDraft,
+  $initiatedDraft: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
+  events: {
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
+  },
 };

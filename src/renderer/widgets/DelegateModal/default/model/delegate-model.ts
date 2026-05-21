@@ -4,12 +4,14 @@ import { combineEvents, spread } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import { Step, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { accountService, multisigOperationService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { accountUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { wireDraftCloseRedirect } from '@/features/drafts';
 import {
   delegateRegistryAggregate,
   networkSelectorModel,
@@ -87,6 +89,7 @@ const formSubmitted = sample({
     route: formModel.$route,
     step: $step,
     multisigDeposit: formModel.$multisigDeposit,
+    signingPath: formModel.$signingPath,
   },
 }).filterMap(
   ({
@@ -102,6 +105,7 @@ const formSubmitted = sample({
     multisigDeposit,
     tx,
     route,
+    signingPath,
   }) => {
     if (
       nonNullable(delegateData) &&
@@ -138,6 +142,7 @@ const formSubmitted = sample({
           initiator,
           route,
           tx,
+          signingPath,
         } satisfies DelegateConfirm,
       ];
     }
@@ -331,6 +336,13 @@ sample({
   source: $redirectAfterSubmitPath,
   filter: nonNullable,
   target: navigationModel.events.navigateTo,
+});
+
+wireDraftCloseRedirect({
+  $initiatedDraft: formModel.$initiatedDraft,
+  flowFinished,
+  redirectTarget: $redirectAfterSubmitPath,
+  destination: Paths.OPERATIONS,
 });
 
 sample({

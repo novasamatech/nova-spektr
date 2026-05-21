@@ -3,12 +3,14 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { spread } from 'patronum';
 
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { multisigOperationService } from '@/domains/network';
 import { validatorsService } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { wireDraftCloseRedirect } from '@/features/drafts';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -161,8 +163,9 @@ const validatorsFormSubmitted = sample({
     tx: formModel.$tx,
     route: formModel.$route,
     multisigDeposit: $multisigDeposit,
+    signingPath: formModel.$signingPath,
   },
-}).filterMap(({ bondData, fee, walletData, coreTx, multisigDeposit, tx, route }) => {
+}).filterMap(({ bondData, fee, walletData, coreTx, multisigDeposit, tx, route, signingPath }) => {
   if (
     nonNullable(bondData) &&
     nonNullable(fee) &&
@@ -183,6 +186,7 @@ const validatorsFormSubmitted = sample({
         coreTx,
         tx,
         route,
+        signingPath,
       } satisfies BondNominateConfirm,
     ];
   }
@@ -200,6 +204,23 @@ sample({
     event: confirmModel.init,
     step: stepChanged,
   }),
+});
+
+// Draft mode: skip CONFIRM/SIGN entirely. When the user finishes the
+// validators step with draft mode on, fire the save request directly — the
+// factory's `connectSave` builds the seed and forwards it to `createDraftModel`.
+sample({
+  clock: validatorsModel.output.formSubmitted,
+  source: formModel.$isDraftMode,
+  filter: (isDraftMode) => isDraftMode,
+  target: formModel.events.saveAsDraftRequested,
+});
+
+wireDraftCloseRedirect({
+  $initiatedDraft: formModel.$initiatedDraft,
+  flowFinished,
+  redirectTarget: $redirectAfterSubmitPath,
+  destination: Paths.OPERATIONS,
 });
 
 const confirmStartSigning = sample({

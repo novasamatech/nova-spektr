@@ -1,6 +1,6 @@
 import { type BN } from '@polkadot/util';
 import { type TFunction } from 'i18next';
-import { memo, useMemo } from 'react';
+import { type ReactNode, memo, useMemo } from 'react';
 
 import {
   type Address,
@@ -15,10 +15,11 @@ import {
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod, toAddress, toShortAddress } from '@/shared/lib/utils';
-import { Accordion, FootnoteText, HelpText } from '@/shared/ui';
+import { Accordion, CaptionText, FootnoteText, HelpText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
-import { AssetBalance, AssetIcon, WalletAccountIcon } from '@/shared/ui-entities';
+import { AssetBalance, AssetIcon, Identicon, WalletAccountIcon } from '@/shared/ui-entities';
 import { AsyncItem, Copy, Tooltip } from '@/shared/ui-kit';
+import { useIsDraftLinkedOperation, useOperationDescription } from '@/domains/backend';
 import { type MultisigOperation, useWalletName } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { OperationTitleStatus } from '@/entities/operations';
@@ -30,8 +31,12 @@ import {
 } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { AssetFiatBalance } from '@/widgets/price';
+import { parseProxyEditOperation } from '../lib/proxy-edit';
+import { parseVerifyProxyOperation } from '../lib/verify-proxy-op';
 import { type TabFilter } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
+import { EditControllerOperationCard } from '../ui/EditControllerOperationCard';
+import { VerifyProxyOperationCard } from '../ui/VerifyProxyOperationCard';
 
 import { OperationActions } from './OperationActions';
 import { OperationFullInfo } from './OperationFullInfo';
@@ -67,22 +72,34 @@ export const operationTitleTransformer = createTransformer<
   OperationTitle
 >();
 
+const AccountInfoCell = memo(
+  ({ icon, title, accountAddress }: { icon: ReactNode; title: string; accountAddress: Address }) => (
+    <div className="flex min-w-[140px] flex-1 items-center gap-x-2">
+      {icon}
+      <div className="flex min-w-0 flex-col items-start gap-y-0.5">
+        <FootnoteText className="w-full truncate text-text-primary">{title}</FootnoteText>
+        <HelpText className="text-text-tertiary">{toShortAddress(accountAddress, 6)}</HelpText>
+      </div>
+    </div>
+  ),
+);
+
 const OperationWalletInfo = memo(({ wallet, accountAddress }: { wallet: Wallet; accountAddress: Address }) => {
   const walletName = useWalletName(wallet);
 
   return (
-    <div className="flex w-[240px] items-center gap-x-2">
-      <WalletAccountIcon address={accountAddress} type={wallet.type} size={32} iconSize={14} />
-      <div className="flex min-w-0 flex-col items-start gap-y-0.5">
-        <FootnoteText className="w-full truncate text-text-primary">{walletName}</FootnoteText>
-        <HelpText className="text-text-tertiary">{toShortAddress(accountAddress, 6)}</HelpText>
-      </div>
-    </div>
+    <AccountInfoCell
+      icon={<WalletAccountIcon address={accountAddress} type={wallet.type} size={32} iconSize={14} />}
+      title={walletName ?? ''}
+      accountAddress={accountAddress}
+    />
   );
 });
 
 export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false, tab, chains, wallets }: Props) => {
   const { t } = useI18n();
+  const description = useOperationDescription(operation.id);
+  const isDraftLinked = useIsDraftLinkedOperation(operation.id);
 
   const wallet = useMemo(
     () => wallets.find(w => w.id === multisigAccount.walletId),
@@ -91,6 +108,11 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
   const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(multisigAccount);
   const coreTx = isFlexibleMultisigAccount ? findCoreTransaction(operation.transaction) : operation.transaction;
+  const proxyEdit = useMemo(() => parseProxyEditOperation(operation), [operation]);
+  // verify-proxy and edit-flexible-controller are mutually exclusive — proxyEdit has priority
+  // because its detection is stricter (batch + addProxy match), so we only test for the
+  // verify-proxy ping when the edit detector returned null.
+  const verifyProxy = useMemo(() => (proxyEdit ? null : parseVerifyProxyOperation(operation)), [operation, proxyEdit]);
   const addressPrefix = isFlexibleMultisigAccount ? chains[multisigAccount.chainId]?.addressPrefix : undefined;
   const accountAddress = toAddress(multisigAccount.accountId, { prefix: addressPrefix });
   const asset = useTransactionAsset(coreTx, operation.chainId);
@@ -115,7 +137,9 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
       title:
         coreTx?.section && coreTx?.method
           ? formatSectionAndMethod(coreTx.section, coreTx.method)
-          : t('operations.titles.unknown'),
+          : operation.section && operation.method
+            ? formatSectionAndMethod(operation.section, operation.method)
+            : t('operations.titles.unknown'),
       amount: asset && amount ? { value: amount, asset } : undefined,
       sourceChainId: operation.chainId,
     };
@@ -126,44 +150,76 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
       <Accordion isDefaultOpen={isDefaultOpen}>
         <Accordion.Button buttonClass="px-4 py-2">
           <div className="flex h-[52px] w-full items-center gap-x-2 overflow-hidden">
-            <div className="flex w-[450px] min-w-0 items-center gap-x-2">
-              <OperationIcon operation={operation} account={multisigAccount} />
+            {proxyEdit ? (
+              <EditControllerOperationCard info={proxyEdit} chain={chains[operation.chainId]} />
+            ) : verifyProxy ? (
+              <VerifyProxyOperationCard
+                info={verifyProxy}
+                chain={chains[operation.chainId]}
+                status={operation.status}
+              />
+            ) : (
+              <div className="flex w-[450px] items-center gap-x-2">
+                <OperationIcon operation={operation} account={multisigAccount} />
 
-              <div className="flex flex-1 flex-col justify-center gap-y-0.5 overflow-hidden">
-                {titleData.title && <TransactionTitle title={titleData.title} />}
-                {titleData.sourceChainId &&
-                  (titleData.destinationChainId ? (
-                    <XcmChains chainIdFrom={titleData.sourceChainId} chainIdTo={titleData.destinationChainId} />
-                  ) : (
-                    <ChainTitle chainId={titleData.sourceChainId} fontClass="text-help-text text-text-tertiary" />
-                  ))}
-              </div>
-
-              {titleData.amount && (
-                <div className="flex w-[240px] shrink-0 items-center gap-x-2">
-                  <AssetIcon asset={titleData.amount.asset} size={32} />
-                  <div className="flex flex-col items-start gap-y-0.5">
-                    <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />
-                    <AsyncItem strategy="idle" fallback={<div className="h-[18px]" />}>
-                      <AssetFiatBalance
-                        asset={titleData.amount.asset}
-                        amount={titleData.amount.value}
-                        className="text-help-text text-text-tertiary"
-                      />
-                    </AsyncItem>
-                  </div>
+                <div className="flex flex-1 flex-col justify-center gap-y-0.5 overflow-hidden">
+                  {titleData.title && <TransactionTitle title={titleData.title} />}
+                  {titleData.sourceChainId &&
+                    (titleData.destinationChainId ? (
+                      <XcmChains chainIdFrom={titleData.sourceChainId} chainIdTo={titleData.destinationChainId} />
+                    ) : (
+                      <ChainTitle chainId={titleData.sourceChainId} fontClass="text-help-text text-text-tertiary" />
+                    ))}
                 </div>
-              )}
-            </div>
+
+                {titleData.amount && (
+                  <div className="flex w-[200px] shrink-0 items-center gap-x-2">
+                    <AssetIcon asset={titleData.amount.asset} size={32} />
+                    <div className="flex flex-col items-start gap-y-0.5">
+                      <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />
+                      <AsyncItem strategy="idle" fallback={<div className="h-[18px]" />}>
+                        <AssetFiatBalance
+                          asset={titleData.amount.asset}
+                          amount={titleData.amount.value}
+                          className="text-help-text text-text-tertiary"
+                        />
+                      </AsyncItem>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="flex min-w-0 flex-1 items-center justify-between">
               {wallet && accountAddress ? (
                 <OperationWalletInfo wallet={wallet} accountAddress={accountAddress} />
+              ) : accountAddress ? (
+                <AccountInfoCell
+                  icon={<Identicon address={accountAddress} size={32} background={false} canCopy={false} />}
+                  title={multisigAccount.name}
+                  accountAddress={accountAddress}
+                />
               ) : (
-                <div className="w-[240px]" />
+                <div className="min-w-[200px] flex-1" />
               )}
 
-              <OperationTitleStatus operation={operation} account={multisigAccount} />
+              <div className="flex shrink-0 items-center gap-x-2">
+                <div className="w-[100px]">
+                  {isDraftLinked && (
+                    <Tooltip open={description ? undefined : false}>
+                      <Tooltip.Trigger>
+                        <div className="inline-flex items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
+                          <CaptionText className="text-icon-accent uppercase">
+                            {t('operations.drafts.operationBadge')}
+                          </CaptionText>
+                        </div>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>{description}</Tooltip.Content>
+                    </Tooltip>
+                  )}
+                </div>
+                <OperationTitleStatus operation={operation} account={multisigAccount} />
+              </div>
 
               <OperationActions operation={operation} account={multisigAccount} />
             </div>

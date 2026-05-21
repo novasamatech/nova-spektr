@@ -4,14 +4,15 @@ import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
-import { authModel } from '../model/auth-model';
+import { authModel } from '@/aggregates/backend';
 
 export const AuthStatus = () => {
   const { t } = useI18n();
-  const [isAuthenticated, authState, isSessionExpired] = useUnit([
+  const [isAuthenticated, authState, isSessionExpired, hasNetworkIssue] = useUnit([
     authModel.$isAuthenticated,
     authModel.$authState,
     authModel.$isSessionExpired,
+    authModel.$hasNetworkIssue,
   ]);
 
   if (isSessionExpired) {
@@ -19,6 +20,15 @@ export const AuthStatus = () => {
       <div className="flex items-center gap-x-1">
         <Icon name="warnCutout" size={14} className="text-text-warning" />
         <FootnoteText className="text-text-warning">{t('addressBook.auth.sessionExpired')}</FootnoteText>
+      </div>
+    );
+  }
+
+  if (hasNetworkIssue) {
+    return (
+      <div className="flex items-center gap-x-1">
+        <Icon name="warnCutout" size={14} className="text-text-warning" />
+        <FootnoteText className="text-text-warning">{t('addressBook.auth.networkIssues')}</FootnoteText>
       </div>
     );
   }

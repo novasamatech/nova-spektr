@@ -48,6 +48,7 @@ export type ExtrinsicResultParams = {
   extrinsicHash: HexString;
   isFinalApprove: boolean;
   multisigError: string;
+  proxyError: string;
 };
 
 export type XcmPallet = 'xcmPallet' | 'polkadotXcm';

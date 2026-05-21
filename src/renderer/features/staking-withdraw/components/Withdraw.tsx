@@ -49,7 +49,7 @@ export const Withdraw = () => {
   }
 
   return (
-    <Modal isOpen={isModalOpen} size="md" onToggle={(open) => !open && closeModal()}>
+    <Modal isOpen={isModalOpen} size="mdlg" onToggle={(open) => !open && closeModal()}>
       <Modal.Title close>
         <OperationTitle
           title={t('staking.withdraw.title', { asset: getNativeAsset(networkStore.chain.assets)!.symbol })}

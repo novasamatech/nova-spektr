@@ -1,14 +1,19 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent, useMemo } from 'react';
+import { type FormEvent } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
-import { accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { TransactionValidationError } from '@/shared/ui-entities';
 import { walletModel } from '@/entities/wallet';
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts -> accounts-structure -> wallet-details -> proxy-remove
+import { DraftFormBody } from '@/features/drafts/components/DraftFormBody';
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts -> accounts-structure -> wallet-details -> proxy-remove
+import { DraftModeCard } from '@/features/drafts/components/DraftModeCard';
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts -> accounts-structure -> wallet-details -> proxy-remove
+import { DraftSigningPath } from '@/features/drafts/components/DraftSigningPath';
+import { SigningPathSection } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { removeProxyModel } from '../model/remove-proxy-model';
 
@@ -19,6 +24,9 @@ export const RemoveProxyForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(removeProxyModel.form);
   const errors = useUnit(removeProxyModel.$errors);
   const wallets = useUnit(walletModel.$wallets);
+  const isDraftMode = useUnit(removeProxyModel.$isDraftMode);
+  const chain = useUnit(removeProxyModel.$chain);
+  const nativeAsset = chain ? getNativeAsset(chain.assets) : null;
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -26,14 +34,34 @@ export const RemoveProxyForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="px-5 pb-4">
-      <TransactionValidationError errors={errors} wallets={wallets} />
-      <form id="add-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitProxy}>
-        <Signatories />
-      </form>
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
-        <FeeSection />
-      </div>
+    <div className="flex flex-col gap-4 px-5 pb-4">
+      <DraftModeCard isOn={isDraftMode} onToggle={removeProxyModel.events.toggleDraftMode} />
+      {isDraftMode && chain && (
+        <DraftSigningPath
+          chainId={chain.chainId}
+          asset={nativeAsset}
+          $draftPath={removeProxyModel.$draftSigningPath}
+          draftPathCommitted={removeProxyModel.events.draftPathCommitted}
+          draftPathEditStarted={removeProxyModel.events.draftPathEditStarted}
+          draftPathEditEnded={removeProxyModel.events.draftPathEditEnded}
+        />
+      )}
+      <DraftFormBody
+        $isDraftMode={removeProxyModel.$isDraftMode}
+        $isDraftPathComplete={removeProxyModel.$isDraftPathComplete}
+      >
+        <div className="flex flex-col gap-4">
+          {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+          <form id="add-proxy-form" className="flex flex-col gap-y-4" onSubmit={submitProxy}>
+            <Signatories />
+          </form>
+          {!isDraftMode && (
+            <div className="flex flex-col gap-y-6 pt-2 pb-4">
+              <FeeSection />
+            </div>
+          )}
+        </div>
+      </DraftFormBody>
       <ActionSection onGoBack={onGoBack} />
     </div>
   );
@@ -46,45 +74,24 @@ const Signatories = () => {
     fields: { signatory },
   } = useForm(removeProxyModel.form);
 
-  const proxiedAccount = useUnit(removeProxyModel.$proxiedAccount);
-
-  const signatories = useUnit(removeProxyModel.$signatories);
+  const isDraftMode = useUnit(removeProxyModel.$isDraftMode);
+  const signingPath = useUnit(removeProxyModel.$signingPath);
   const chain = useUnit(removeProxyModel.$chain);
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balanceMap);
+  const formErrors = useUnit(removeProxyModel.$errors);
 
-  const signatoriesWithBalance = useMemo(() => {
-    if (!signatories || !chain) {
-      return [];
-    }
+  const nativeAsset = chain ? getNativeAsset(chain.assets) : null;
 
-    return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        chain.chainId,
-        getNativeAsset(chain.assets).assetId,
-      );
-      return { account: signatory, balance: withdrawableAmount(balance) };
-    });
-  }, [signatories, balances]);
-
-  if (!chain || !proxiedAccount) {
-    return null;
-  }
+  if (isDraftMode) return null;
 
   return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      initiator={proxiedAccount}
-      allWallets={allWallets}
-      hasError={signatory.hasError}
+    <SigningPathSection
+      signingPath={signingPath}
+      chain={chain}
+      asset={nativeAsset}
+      txErrors={formErrors}
       errorText={t(signatory.errorMessage)}
-      network={{ chain, asset: getNativeAsset(chain.assets) }}
-      onChange={signatory.onChange}
+      balanceExtractor={(b) => (b ? withdrawableAmount(b) : null)}
+      onChange={removeProxyModel.signingPathChanged}
     />
   );
 };
@@ -113,14 +120,21 @@ const ActionSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(removeProxyModel.$canSubmit);
+  const canSaveAsDraft = useUnit(removeProxyModel.$canSaveAsDraft);
+  const isDraftMode = useUnit(removeProxyModel.$isDraftMode);
 
   return (
     <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
-        {t('operation.continueButton')}
+      <Button
+        form={isDraftMode ? undefined : 'add-proxy-form'}
+        type={isDraftMode ? 'button' : 'submit'}
+        disabled={isDraftMode ? !canSaveAsDraft : !canSubmit}
+        onClick={isDraftMode ? () => removeProxyModel.events.saveAsDraftRequested() : undefined}
+      >
+        {isDraftMode ? t('operations.drafts.initiateButton') : t('operation.continueButton')}
       </Button>
     </div>
   );

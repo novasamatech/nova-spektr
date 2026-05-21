@@ -130,6 +130,7 @@ export const ReferendumDetailsModal = memo(
                 <DetailsCard title={t('governance.referendum.votingStatus')}>
                   <VotingStatus
                     timelineApi={timelineApi}
+                    chain={chain}
                     referendum={referendum}
                     asset={asset}
                     canVote={showActions ?? canVote}

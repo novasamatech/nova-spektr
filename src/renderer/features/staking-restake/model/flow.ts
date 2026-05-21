@@ -2,9 +2,11 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { getRelaychainAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { wireDraftCloseRedirect } from '@/features/drafts';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -62,9 +64,10 @@ const formSubmitted = sample({
     coreTx: formModel.$coreTx,
     tx: formModel.$tx,
     route: formModel.$route,
+    signingPath: formModel.$signingPath,
   },
   fn: (source, formData) => ({ source, formData }),
-}).filterMap(({ formData, source: { networkStore, coreTx, tx, route } }) => {
+}).filterMap(({ formData, source: { networkStore, coreTx, tx, route, signingPath } }) => {
   if (
     nonNullable(networkStore) &&
     nonNullable(coreTx) &&
@@ -83,6 +86,7 @@ const formSubmitted = sample({
         coreTx,
         route,
         tx,
+        signingPath,
       } satisfies RestakeConfirm,
     ];
   }
@@ -214,6 +218,13 @@ sample({
   source: $redirectAfterSubmitPath,
   filter: nonNullable,
   target: navigationModel.events.navigateTo,
+});
+
+wireDraftCloseRedirect({
+  $initiatedDraft: formModel.$initiatedDraft,
+  flowFinished,
+  redirectTarget: $redirectAfterSubmitPath,
+  destination: Paths.OPERATIONS,
 });
 
 sample({

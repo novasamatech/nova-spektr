@@ -4,14 +4,19 @@ import { type FormEvent } from 'react';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
-import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
+import { Button, FootnoteText, Icon, Separator, SmallTitleText } from '@/shared/ui';
 import { TransactionValidationError } from '@/shared/ui-entities';
-import { Box, Field, Input, Modal, ScrollArea } from '@/shared/ui-kit';
+import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { walletModel } from '@/entities/wallet';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
+import { ExtrinsicBuilder } from '@/features/extrinsic-builder';
+import { OperationTemplatesToolbar } from '@/features/operation-templates';
 import { Fee } from '@/widgets/transaction-fee';
+import { InputMode } from '../lib/types';
 import { formModel } from '../model/form';
 
+import { CallDataInput } from './CallDataInput';
 import { InitiatorSelect } from './InitiatorSelect';
 import { NetworkSelect } from './NetworkSelect';
 import { SignatorySelect } from './SignatorySelect';
@@ -20,6 +25,19 @@ export const CallDataForm = () => {
   const { t } = useI18n();
   const { submit } = useForm(formModel.form);
   const showSignatories = useUnit(formModel.$showSignatories);
+  const inputMode = useUnit(formModel.$inputMode);
+  const inputModeChanged = useUnit(formModel.inputModeChanged);
+  const builderCallDataChanged = useUnit(formModel.builderCallDataChanged);
+  const templateApplied = useUnit(formModel.templateApplied);
+  const api = useUnit(formModel.$api);
+  const callDataValue = useUnit(formModel.form.fields.callData.$value);
+  const chain = useUnit(formModel.form.fields.chain.$value);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
+
+  // Pass callData to builder when in Build mode (for tab switch + remount after Confirm)
+  const builderInitialCallData = inputMode === InputMode.BUILD ? callDataValue : undefined;
+
+  const specVersion = api?.runtimeVersion.specVersion.toNumber() ?? null;
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -32,17 +50,63 @@ export const CallDataForm = () => {
 
   return (
     <>
-      <form id="call-data-form" className="flex flex-col gap-y-4 px-5 pb-4" onSubmit={submitForm}>
-        <TransactionValidationError errors={errors} wallets={wallets} />
-        <NetworkSelect />
-        <InitiatorSelect />
-        {showSignatories && <SignatorySelect />}
-        <CallDataInput />
-      </form>
-
-      <Separator />
-
       <ScrollArea>
+        <div className="flex flex-col gap-y-4 px-5 pb-4">
+          <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
+          {isDraftMode && (
+            <DraftSigningPath
+              chainId={chain?.chainId ?? null}
+              asset={chain ? getNativeAsset(chain.assets) : null}
+              $draftPath={formModel.$draftSigningPath}
+              draftPathCommitted={formModel.events.draftPathCommitted}
+              draftPathEditStarted={formModel.events.draftPathEditStarted}
+              draftPathEditEnded={formModel.events.draftPathEditEnded}
+            />
+          )}
+          <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+            <div className="flex flex-col gap-y-4">
+              {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+              <form id="call-data-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
+                <NetworkSelect />
+                {!isDraftMode && <InitiatorSelect />}
+                {!isDraftMode && showSignatories && <SignatorySelect />}
+
+                <div className="-mb-2">
+                  <Tabs value={inputMode} onChange={(value) => inputModeChanged(value as InputMode)}>
+                    <Tabs.List>
+                      <Tabs.Trigger value={InputMode.PASTE}>{t('callData.mode.paste')}</Tabs.Trigger>
+                      <Tabs.Trigger value={InputMode.BUILD}>{t('callData.mode.build')}</Tabs.Trigger>
+                    </Tabs.List>
+                    <Tabs.Content value={InputMode.PASTE}>
+                      <CallDataInput />
+                    </Tabs.Content>
+                    <Tabs.Content value={InputMode.BUILD}>
+                      <ExtrinsicBuilder
+                        api={api}
+                        initialCallData={builderInitialCallData}
+                        onCallDataChange={builderCallDataChanged}
+                      />
+                    </Tabs.Content>
+                  </Tabs>
+                </div>
+              </form>
+            </div>
+          </DraftFormBody>
+        </div>
+
+        {nonNullable(chain) && (
+          <OperationTemplatesToolbar
+            api={api}
+            chainId={chain.chainId}
+            callData={callDataValue}
+            specVersion={specVersion}
+            modalWidth="37rem"
+            onApply={templateApplied}
+          />
+        )}
+
+        <Separator />
+
         <Box padding={[4, 5]}>
           {nonNullable(args) && (
             <div className="flex flex-col gap-y-3">
@@ -65,27 +129,12 @@ export const CallDataForm = () => {
   );
 };
 
-const CallDataInput = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { callData },
-  } = useForm(formModel.form);
-
-  return (
-    <Field text={t('callData.callData')}>
-      <Input height="md" value={callData.value} placeholder={t('callData.placeholder')} onChange={callData.onChange} />
-      <InputHint variant="error" active={callData.hasError}>
-        {t(callData.errorMessage)}
-      </InputHint>
-    </Field>
-  );
-};
-
 const ActionsSection = () => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const canSaveAsDraft = useUnit(formModel.$canSaveAsDraft);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
   const call = useUnit(formModel.$call);
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
@@ -94,15 +143,20 @@ const ActionsSection = () => {
 
   return (
     <Modal.Footer>
-      {nonNullable(asset) && nonNullable(call) && (
+      {!isDraftMode && nonNullable(asset) && nonNullable(call) && (
         <Box direction="row" gap={2} verticalAlign="center">
           <FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>
           <Fee className="text-footnote" fee={fee} isLoading={pendingFee} asset={asset} hideFiat />
         </Box>
       )}
 
-      <Button form="call-data-form" type="submit" disabled={!canSubmit}>
-        {t('transfer.continueButton')}
+      <Button
+        form={isDraftMode ? undefined : 'call-data-form'}
+        type={isDraftMode ? 'button' : 'submit'}
+        disabled={isDraftMode ? !canSaveAsDraft : !canSubmit}
+        onClick={isDraftMode ? () => formModel.events.saveAsDraftRequested() : undefined}
+      >
+        {isDraftMode ? t('operations.drafts.initiateButton') : t('transfer.continueButton')}
       </Button>
     </Modal.Footer>
   );

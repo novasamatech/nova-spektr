@@ -59,6 +59,7 @@ type RootProps<T extends string> = PropsWithChildren<
     disabled?: boolean;
     height?: 'sm' | 'md';
     testId?: string;
+    defaultOpen?: boolean;
     onSearch?: (query: string) => void;
   }
 >;
@@ -85,6 +86,7 @@ const Root = <T extends string>({
   value,
   onChange,
   onSearch,
+  defaultOpen = false,
   children,
 }: RootProps<T>) => {
   const { t } = useI18n();
@@ -94,7 +96,7 @@ const Root = <T extends string>({
   const [searchValue, setSearchValue] = useState('');
   const [selectedItemContent, setSelectedItemContent] = useState<ReactNode>(null);
   const [registeredItems, setRegisteredItems] = useState<Map<string, ReactNode>>(new Map());
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const onOpenChange = (requestedOpen: boolean) => {
     // If external open prop is true, prevent closing
@@ -210,7 +212,7 @@ const Root = <T extends string>({
             </div>
           </ComboboxDisclosure>
         ) : (
-          <div className="relative" data-testid={testId}>
+          <div className="relative w-full" data-testid={testId}>
             <Combobox
               autoFocus
               placeholder={placeholder}

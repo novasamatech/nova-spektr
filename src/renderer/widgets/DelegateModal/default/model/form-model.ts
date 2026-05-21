@@ -20,11 +20,13 @@ import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { createDraftModeBinding, wireDraftSourceBalance } from '@/features/drafts';
 import { getLocksForAccount, networkSelectorModel } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
+import { createSigningPathModel } from '@/features/signing-path';
 import { type DelegateData, type WalletData } from '../lib/types';
 
 export const flowFinished = createEvent();
@@ -49,6 +51,8 @@ const formSubmitted = createEvent();
 const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
 
+const draftMode = createDraftModeBinding({ formInitiated, chainChanged: formInitiated });
+
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $chain = $networkStore.map((network) => network?.chain ?? null);
@@ -65,8 +69,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             proxyBalance: $proxyBalance,
             network: $networkStore,
             initiatorBalance: $initiatorBalance,
+            isDraftMode: draftMode.$isDraftMode,
           }),
-          fn: (initiator, fields, { fee, isProxy, proxyBalance, network, initiatorBalance }) => {
+          fn: (initiator, fields, { fee, isProxy, proxyBalance, network, initiatorBalance, isDraftMode }) => {
+            if (isDraftMode) return;
             if (!initiator) {
               return { message: 'staking.bond.noInitiatorError' };
             }
@@ -94,8 +100,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             fee: $fee,
             hasAnyMultisig: $hasAnyMultisig,
             signatoryBalance: $signatoryBalance,
+            isDraftMode: draftMode.$isDraftMode,
           }),
-          fn: (signatory, _fields, { multisigDeposit, fee, hasAnyMultisig, signatoryBalance }) => {
+          fn: (signatory, _fields, { multisigDeposit, fee, hasAnyMultisig, signatoryBalance, isDraftMode }) => {
+            if (isDraftMode) return;
             if (nullable(signatory)) {
               return { message: 'transfer.noSignatoryError' };
             }
@@ -118,8 +126,13 @@ const form: Form<FormParams> = createForm<FormParams>({
             network: $networkStore,
             delegateBalanceRange: $delegateBalanceRange,
             initiatorBalance: $initiatorBalance,
+            isDraftMode: draftMode.$isDraftMode,
           }),
-          fn: (value, fields, { fee, hasAnyMultisig, network, delegateBalanceRange, initiatorBalance }) => {
+          fn: (
+            value,
+            fields,
+            { fee, hasAnyMultisig, network, delegateBalanceRange, initiatorBalance, isDraftMode },
+          ) => {
             if (!value) {
               return { message: 'transfer.requiredAmountError' };
             }
@@ -127,6 +140,8 @@ const form: Form<FormParams> = createForm<FormParams>({
             if (value === ZERO_BALANCE) {
               return { message: 'transfer.notZeroAmountError' };
             }
+
+            if (isDraftMode) return;
 
             const amountBN = new BN(formatAmount(value, network.asset.precision));
             const delegateBalance = Array.isArray(delegateBalanceRange)
@@ -197,9 +212,30 @@ const $account = combine(
   },
 );
 
-const $initiatorBalance = $account.map((account) => {
-  return account?.available.toString() || ZERO_BALANCE;
+// Source balance for draft mode: fetched on-demand once the path is set so
+// the "Available:" row reflects the eventual signer's balance, not the
+// connected wallet's initiator.
+const $draftSourceBalance = wireDraftSourceBalance({
+  $draftPath: draftMode.$draftSigningPath,
+  $chain: $chain,
+  $isDraftMode: draftMode.$isDraftMode,
 });
+
+const $initiatorBalance = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    draftSourceBalance: $draftSourceBalance,
+    account: $account,
+  },
+  ({ isDraftMode, draftSourceBalance, account }) => {
+    // Draft mode: read the path source's balance directly (no fee to subtract
+    // — the eventual signer pays it at submit time).
+    if (isDraftMode) {
+      return draftSourceBalance ? locksService.getAvailableBalance(draftSourceBalance).toString() : ZERO_BALANCE;
+    }
+    return account?.available.toString() || ZERO_BALANCE;
+  },
+);
 
 const $delegateBalanceRange = combine($initiatorBalance, (initiatorBalance) => {
   if (!initiatorBalance || initiatorBalance === ZERO_BALANCE) return ZERO_BALANCE;
@@ -235,6 +271,15 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
+    initiator: form.fields.initiator.$value,
+    chain: $chain,
+    resetOn: formInitiated,
+    resetUserOverrideOn: form.fields.initiator.change,
+  },
+);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   chain: $chain,
@@ -242,6 +287,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
@@ -315,13 +361,66 @@ const $proxyWallet = combine(
   },
 );
 
+const $draftCoreTx = combine(
+  {
+    walletData: $walletData,
+    target: $target,
+    tracks: $tracks,
+    delegateData: $delegateData,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+  },
+  ({ walletData, target, tracks, delegateData, path, isPathComplete }) => {
+    if (!walletData.chain || !target || tracks.length === 0 || !delegateData || !isPathComplete) return null;
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+
+    return transactionBuilder.buildDelegate({
+      chain: walletData.chain,
+      accountId: sourceAccountId,
+      balance: (walletData.chain && formatAmount(delegateData.balance, walletData.chain.assets[0]!.precision)) || '0',
+      conviction: delegateData.conviction || 'None',
+      target: target.accountId,
+      tracks,
+    });
+  },
+);
+
+const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
+
 const $canSubmit = combine(
   {
+    isDraftMode: draftMode.$isDraftMode,
     isFormValid: form.$isValid,
     pendingFee: $pendingFee,
   },
-  ({ isFormValid, pendingFee }) => isFormValid && !pendingFee,
+  ({ isDraftMode, isFormValid, pendingFee }) => {
+    if (isDraftMode) return false;
+    return isFormValid && !pendingFee;
+  },
 );
+
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    networkStore: $networkStore,
+    amount: form.fields.amount.$value,
+  },
+  ({ isDraftMode, isPathComplete, callData, networkStore, amount }) => {
+    if (!isDraftMode || !isPathComplete || !callData || !networkStore) return false;
+    if (!amount || amount === ZERO_BALANCE) return false;
+    return true;
+  },
+);
+
+draftMode.connectSave({
+  source: 'governance-delegate-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore,
+  $canSave: $canSaveAsDraft,
+});
 
 sample({
   clock: formInitiated,
@@ -330,11 +429,13 @@ sample({
 
 // Pre-select first signatory automatically
 sample({
-  clock: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0)!,
+  clock: [$signatoryFromPath, $signatories, formInitiated],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: formInitiated,
@@ -377,6 +478,7 @@ export const formModel = {
   form,
   $proxyWallet,
   $signatories,
+  $signingPath,
 
   $account,
   $initiatorBalance,
@@ -398,9 +500,21 @@ export const formModel = {
   $coreTx,
   $proxyAccount,
 
+  $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
+  $canSaveAsDraft,
+  $initiatedDraft: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
   events: {
     formInitiated,
     formCleared,
+    signingPathChanged,
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
   },
   output: {
     formSubmitted,

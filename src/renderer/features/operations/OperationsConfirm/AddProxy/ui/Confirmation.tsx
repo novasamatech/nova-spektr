@@ -4,12 +4,13 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
 import { SignButton } from '@/entities/operations';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { Fee, FeeWithLabel, MultisigDepositFee, ProxyDepositLabel } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
+import { SigningPathConfirmSection } from '../../common/SigningPathConfirmSection';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -34,7 +35,8 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
     return null;
   }
 
-  const { route, chain, signatory, delegate, proxyType, proxyDeposit, multisigDeposit, fee } = confirm.meta;
+  const { route, chain, signatory, delegate, proxyType, proxyDeposit, multisigDeposit, fee, signingPath } =
+    confirm.meta;
 
   const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
 
@@ -43,14 +45,20 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
   return (
-    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
+    <div className="flex w-full flex-col items-center gap-y-4 px-5 pt-4 pb-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon name="proxyConfirm" size={60} />
       </div>
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails chain={chain} wallets={wallets} initiators={initiators} signatory={signatory}>
+      <SigningPathConfirmSection
+        signingPath={signingPath}
+        chain={chain}
+        wallets={wallets}
+        initiators={initiators}
+        signatory={signatory}
+      >
         <DetailRow label={t('proxy.details.grantAccessType')} className="pr-2">
           <FootnoteText>{proxyType}</FootnoteText>
         </DetailRow>
@@ -68,7 +76,9 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         {hasMultisigAccount && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit} />}
 
         <FeeWithLabel asset={nativeAsset} fee={fee} />
-      </TransactionDetails>
+      </SigningPathConfirmSection>
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (
@@ -78,7 +88,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         )}
 
         <div className="flex gap-4">
-          {secondaryActionButton}
+          {!hideSignButton && !isMultisigExists && secondaryActionButton}
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}

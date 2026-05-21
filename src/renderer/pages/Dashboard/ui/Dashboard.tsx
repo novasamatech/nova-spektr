@@ -1,14 +1,15 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
-import { createSlot } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Header, IconButton, SmallTitleText } from '@/shared/ui';
 import { Tabs } from '@/shared/ui-kit';
 import { dashboardModel } from '../model/dashboard-model';
 
-import { DashboardAccountSelector } from './DashboardAccountSelector';
 import { DashboardGrid } from './DashboardGrid';
+
+export const dashboardPresetSwitcherSlot = createSlot({ name: 'dashboardPresetSwitcher' });
 
 export const dashboardWidgetsSlot = createSlot<{
   accountIds: string[];
@@ -20,18 +21,36 @@ export const dashboardStakingSlot = createSlot<{
   allEntries: { accountId: string; name: string; address: string }[];
 }>({ name: 'dashboardStaking' });
 
-const TABS = ['overview', 'staking', 'governance', 'alerts'] as const;
+export const dashboardGovernanceSlot = createSlot<{
+  accountIds: string[];
+  allEntries: { accountId: string; name: string; address: string }[];
+}>({ name: 'dashboardGovernance' });
+
+// const TABS = ['overview', 'staking', 'governance', 'alerts'] as const;
+const TABS = ['overview', 'staking', 'governance'] as const;
+
+const EmptyState = ({ t }: { t: (key: string) => string }) => (
+  <div className="flex h-full w-full flex-col items-center justify-center">
+    <div className="flex flex-col items-center gap-y-2">
+      <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
+      <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
+    </div>
+  </div>
+);
 
 export const Dashboard = () => {
   const { t } = useI18n();
   const allEntries = useUnit(dashboardModel.$allEntries);
   const selectedIds = useUnit(dashboardModel.$selectedIds);
   const activeTab = useUnit(dashboardModel.$activeTab);
+
+  // Mount tabs on first visit, then keep alive — avoids re-mount storm on tab switch
+  const visitedTabs = useRef(new Set<string>([activeTab]));
+  visitedTabs.current.add(activeTab);
   const editMode = useUnit(dashboardModel.$editMode);
-  const tabChanged = useUnit(dashboardModel.tabChanged);
   const editModeToggled = useUnit(dashboardModel.editModeToggled);
 
-  const accountIds = useMemo(() => {
+  const accountIdsKey = useMemo(() => {
     const selectedIdSet = new Set(selectedIds);
     const ids = new Set<string>();
     for (const entry of allEntries) {
@@ -40,8 +59,15 @@ export const Dashboard = () => {
       }
     }
 
-    return Array.from(ids);
+    return [...ids].sort().join('\0');
   }, [allEntries, selectedIds]);
+
+  const accountIds = useMemo(() => (accountIdsKey ? accountIdsKey.split('\0') : []), [accountIdsKey]);
+
+  const slimEntries = useMemo(
+    () => allEntries.map((e) => ({ accountId: e.accountId, name: e.name, address: e.address })),
+    [allEntries],
+  );
 
   return (
     <section className="flex h-full flex-col">
@@ -49,13 +75,13 @@ export const Dashboard = () => {
         {allEntries.length > 0 && (
           <div className="flex items-center gap-x-2">
             <IconButton className={editMode ? 'text-icon-accent' : ''} name="edit" onClick={editModeToggled} />
-            <DashboardAccountSelector />
+            <Slot id={dashboardPresetSwitcherSlot} />
           </div>
         )}
       </Header>
 
-      <div className="flex min-h-0 flex-1 flex-col px-4">
-        <Tabs value={activeTab} onChange={tabChanged}>
+      <div className="flex min-h-0 flex-1 flex-col px-4 pt-4">
+        <Tabs value={activeTab} onChange={dashboardModel.tabChanged}>
           <div className="w-fit">
             <Tabs.List>
               {TABS.map((tab) => (
@@ -67,46 +93,45 @@ export const Dashboard = () => {
           </div>
 
           <Tabs.Content value="overview">
-            {allEntries.length === 0 ? (
-              <div className="flex h-full w-full flex-col items-center justify-center">
-                <div className="flex flex-col items-center gap-y-2">
-                  <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
-                  <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
-                </div>
-              </div>
-            ) : (
-              <DashboardGrid
-                slot={dashboardWidgetsSlot}
-                tab="overview"
-                editMode={editMode}
-                props={{ accountIds, allEntries }}
-              />
-            )}
+            {visitedTabs.current.has('overview') &&
+              (allEntries.length === 0 ? (
+                <EmptyState t={t} />
+              ) : (
+                <DashboardGrid
+                  slot={dashboardWidgetsSlot}
+                  tab="overview"
+                  editMode={editMode}
+                  props={{ accountIds, allEntries: slimEntries }}
+                />
+              ))}
           </Tabs.Content>
 
           <Tabs.Content value="staking">
-            {allEntries.length === 0 ? (
-              <div className="flex h-full w-full flex-col items-center justify-center">
-                <div className="flex flex-col items-center gap-y-2">
-                  <SmallTitleText className="text-text-tertiary">{t('dashboard.emptyState.title')}</SmallTitleText>
-                  <BodyText className="text-text-tertiary">{t('dashboard.emptyState.description')}</BodyText>
-                </div>
-              </div>
-            ) : (
-              <DashboardGrid
-                slot={dashboardStakingSlot}
-                tab="staking"
-                editMode={editMode}
-                props={{ accountIds, allEntries }}
-              />
-            )}
+            {visitedTabs.current.has('staking') &&
+              (allEntries.length === 0 ? (
+                <EmptyState t={t} />
+              ) : (
+                <DashboardGrid
+                  slot={dashboardStakingSlot}
+                  tab="staking"
+                  editMode={editMode}
+                  props={{ accountIds, allEntries: slimEntries }}
+                />
+              ))}
           </Tabs.Content>
 
           <Tabs.Content value="governance">
-            <div className="flex h-full w-full flex-col items-center justify-center py-20">
-              <SmallTitleText className="text-text-tertiary">{t('dashboard.tabs.governance')}</SmallTitleText>
-              <BodyText className="text-text-tertiary">{t('dashboard.tabs.comingSoon')}</BodyText>
-            </div>
+            {visitedTabs.current.has('governance') &&
+              (allEntries.length === 0 ? (
+                <EmptyState t={t} />
+              ) : (
+                <DashboardGrid
+                  slot={dashboardGovernanceSlot}
+                  tab="governance"
+                  editMode={editMode}
+                  props={{ accountIds, allEntries: slimEntries }}
+                />
+              ))}
           </Tabs.Content>
 
           <Tabs.Content value="alerts">

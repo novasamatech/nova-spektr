@@ -14,11 +14,17 @@ import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Address, WalletIcon } from '@/shared/ui-entities';
-import { type AnyAccount, type MultisigOperation, accounts, useAccountName } from '@/domains/network';
+import {
+  type AnyAccount,
+  type MultisigOperation,
+  accounts,
+  isContactMultisigAccount,
+  useAccountName,
+} from '@/domains/network';
 import { useChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard } from '@/entities/signatory';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { WalletName } from '@/widgets/NameResolver';
 
 import LogModal from './LogModal';
@@ -36,7 +42,7 @@ const SignatoryAddress = ({ accountId, chain }: SignatoryAddressProps) => {
       title={name}
       address={toAddress(accountId, { prefix: chain?.addressPrefix })}
       variant="short"
-      canCopy={false}
+      canCopy
       showIcon
     />
   );
@@ -45,6 +51,8 @@ const SignatoryAddress = ({ accountId, chain }: SignatoryAddressProps) => {
 export const operationOverviewSlot = createSlot<{
   walletAccounts: AnyAccount[];
   trigger?: ReactNode;
+  initialChainId?: string;
+  exclusive?: boolean;
 }>();
 
 type WalletSignatory = Signatory & { wallet: Wallet };
@@ -99,6 +107,25 @@ export const OperationSignatories = ({ operation, account }: Props) => {
   const walletSignatoriesIds = walletSignatories.map(a => a.accountId);
   const contactSignatories = account.signatories.filter(s => !walletSignatoriesIds.includes(s.accountId));
 
+  // Contact-backed external multisigs aren't part of the user's account
+  // graph, so the "Open overview" structure view has nothing meaningful to
+  // visualize — hide the trigger.
+  const isExternalMultisig = isContactMultisigAccount(account);
+
+  // Flex multisig overview: render proxied → multisig (hidden-wallet accounts).
+  const overviewAccounts = useMemo<AnyAccount[]>(() => {
+    if (!accountUtils.isFlexibleMultisigAccount(account)) return [account];
+
+    const proxied = accountsList.filter(accountUtils.isProxiedAccount).find(a => a.accountId === account.accountId);
+    const multisig = accountsList
+      .filter(accountUtils.isMultisigAccount)
+      .find(a => a.accountId === account.multisigAccountId);
+
+    if (!proxied || !multisig) return [account];
+
+    return [proxied, multisig];
+  }, [account, accountsList]);
+
   return (
     <div className="flex flex-col border-r border-divider p-4">
       <div className="mb-4 flex items-center justify-between">
@@ -119,17 +146,21 @@ export const OperationSignatories = ({ operation, account }: Props) => {
             {t('operation.logButton')}
           </Button>
         </div>
-        <Slot
-          id={operationOverviewSlot}
-          props={{
-            walletAccounts: [account],
-            trigger: (
-              <Button pallet="primary" variant="text" size="sm">
-                {t('operation.openOverviewButton')}
-              </Button>
-            ),
-          }}
-        />
+        {!isExternalMultisig && (
+          <Slot
+            id={operationOverviewSlot}
+            props={{
+              walletAccounts: overviewAccounts,
+              initialChainId: operation.chainId,
+              exclusive: accountUtils.isFlexibleMultisigAccount(account),
+              trigger: (
+                <Button pallet="primary" variant="text" size="sm">
+                  {t('operation.openOverviewButton')}
+                </Button>
+              ),
+            }}
+          />
+        )}
       </div>
 
       <div className="flex flex-col gap-y-2">

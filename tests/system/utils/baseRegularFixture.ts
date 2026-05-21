@@ -24,6 +24,7 @@ type TestScopedFixtures = {
 };
 
 type WorkerScopedTestFixtures = {
+  workerPage: Page;
   assetsPage: BaseAssetsPage;
   loginPage: BaseLoginPage;
   settingsPage: BaseSettingsPage;
@@ -31,7 +32,7 @@ type WorkerScopedTestFixtures = {
 
 type WorkerScopedWorkerFixtures = {
   workerContext: BrowserContext;
-  workerPage: Page;
+  workerPageState: { page: Page | null };
 };
 
 const DB_PATHS: Record<Exclude<DbFixture, 'none'>, string> = {
@@ -54,7 +55,7 @@ export const test = base.extend<TestScopedFixtures>({
   context: async ({ browser }, use) => {
     const context = await browser.newContext({
       ignoreHTTPSErrors: true,
-      permissions: [],
+      permissions: ['camera'],
     });
     await applyInitFlags(context);
     await use(context);
@@ -98,7 +99,7 @@ function createWorkerScopedFixture(config: WorkerFixtureConfig) {
       async ({ browser }, use) => {
         const context = await browser.newContext({
           ignoreHTTPSErrors: true,
-          permissions: [],
+          permissions: ['camera'],
         });
         await applyInitFlags(context);
         await use(context);
@@ -107,31 +108,41 @@ function createWorkerScopedFixture(config: WorkerFixtureConfig) {
       { scope: 'worker' },
     ],
 
-    // Single page per worker - created once, initialized with DB and connections
-    workerPage: [
-      async ({ workerContext }, use) => {
-        const page = await workerContext.newPage();
-
-        // Step 1: Import database if needed
-        if (dbFixture !== 'none') {
-          const login = new BaseLoginPage(page, loginElements);
-          await login.importDatabase(DB_PATHS[dbFixture]);
-        }
-
-        // Step 2: Wait for all network connections to be established
-        if (dbFixture !== 'none' && waitForConnections) {
-          const settings = new BaseSettingsPage(page, settingsElements);
-          await settings.waitForNetworkConnections(connectionTimeout);
-        }
-
-        // Step 3: Navigate to assets page and wait for it to be ready
-        const assets = new BaseAssetsPage(page, assetsElements);
-        await assets.gotoMain();
-
-        await use(page);
-        await page.close();
+    workerPageState: [
+      // eslint-disable-next-line no-empty-pattern
+      async ({}, use) => {
+        const state: { page: Page | null } = { page: null };
+        await use(state);
+        await state.page?.close();
       },
       { scope: 'worker' },
+    ],
+
+    // Test-scoped: initializes the shared page on first call, retries if previous attempt failed
+    workerPage: [
+      async ({ workerContext, workerPageState }, use) => {
+        if (!workerPageState.page) {
+          const page = await workerContext.newPage();
+
+          try {
+            if (dbFixture !== 'none') {
+              await new BaseLoginPage(page, loginElements).importDatabase(DB_PATHS[dbFixture]);
+            }
+            if (dbFixture !== 'none' && waitForConnections) {
+              await new BaseSettingsPage(page, settingsElements).waitForNetworkConnections(connectionTimeout);
+            }
+            await new BaseAssetsPage(page, assetsElements).gotoMain();
+
+            workerPageState.page = page;
+          } catch (error) {
+            await page.close();
+            throw error;
+          }
+        }
+
+        await use(workerPageState.page);
+      },
+      { timeout: connectionTimeout + 30_000 },
     ],
 
     // Wraps workerPage in page object, navigates to assets page before each test
@@ -161,6 +172,9 @@ export const validationsTest = createWorkerScopedFixture({ dbFixture: 'validatio
 export const setupTestMetadata = async (feature: string, story: string): Promise<void> => {
   await allure.feature(feature);
   await allure.story(story);
+  await allure.parentSuite('System tests');
+  await allure.suite(feature);
+  await allure.subSuite(story);
 };
 
 export { expect } from '@playwright/test';

@@ -1,6 +1,7 @@
 import { type BN } from '@polkadot/util';
 
 import { type Asset, type Chain } from '@/shared/core';
+import { type PathNode } from '@/domains/backend';
 import { type AnyAccount } from '@/domains/network';
 
 export type UnlockFormData = {
@@ -15,4 +16,5 @@ export type UnlockFormData = {
   fee: string;
   totalFee: string;
   multisigDeposit: string;
+  signingPath?: PathNode[];
 };

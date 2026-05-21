@@ -1,3 +1,5 @@
+import { default as BigNumber } from 'bignumber.js';
+import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 
@@ -7,12 +9,19 @@ import { FootnoteText } from '@/shared/ui';
 import { CHART_TOOLTIP_STYLE, FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { AssetIcon, Identicon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
-import { type CurrencyItem } from '@/domains/price';
+import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
+import { balanceModel } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { currencySelect } from '@/aggregates/currency-select';
 import { type BreakdownRow, useHoldingBreakdown } from '../hooks/useHoldingBreakdown';
 import { type Holding } from '../hooks/useHoldings';
+import { type RowAllocation, computeAssetRowAllocations } from '../lib/computeRowAllocations';
 
+import { AllocationBar } from './AllocationBar';
 import { Price } from './Price';
 import { PriceChangeIndicator } from './PriceChangeIndicator';
+
+type AssetTableRow = BreakdownRow & { allocation: RowAllocation | null };
 
 type ChartEntry = {
   name: string;
@@ -36,7 +45,7 @@ const ChartTooltip = memo(({ active, payload }: { active?: boolean; payload?: To
   return (
     <div style={CHART_TOOLTIP_STYLE}>
       <div style={{ fontWeight: 600 }}>{row.name || toShortAddress(row.address)}</div>
-      <div>{row.sharePercent.toFixed(1)}%</div>
+      <div>{new BigNumber(row.sharePercent).decimalPlaces(1, BigNumber.ROUND_DOWN).toFixed(1)}%</div>
     </div>
   );
 });
@@ -57,6 +66,98 @@ export const AssetDetailModal = memo(({ holding, accountIds, allEntries, currenc
   const addressCount = rows.length;
   const { formatted, suffix } = formatBalance(holding.totalRaw, holding.precision);
 
+  const balanceMap = useUnit(balanceModel.$balanceMap);
+  const chains = useUnit(networkModel.$chains);
+  const activeCurrency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
+
+  const allocations = useMemo(() => {
+    if (!prices || !activeCurrency) return new Map<string, RowAllocation>();
+
+    return computeAssetRowAllocations({
+      accountIds: rows.map((r) => r.accountId),
+      priceId: holding.priceId,
+      balanceMap,
+      chains,
+      prices,
+      currency: activeCurrency,
+    });
+  }, [rows, holding.priceId, balanceMap, chains, prices, activeCurrency]);
+
+  const tableData = useMemo<AssetTableRow[]>(
+    () => rows.map((row) => ({ ...row, allocation: allocations.get(row.accountId) ?? null })),
+    [rows, allocations],
+  );
+
+  const columns = useMemo<Column<AssetTableRow>[]>(
+    () => [
+      {
+        key: 'name',
+        title: t('dashboard.portfolioOverview.assetDetail.address'),
+        width: '28%',
+        render: (_, item) => (
+          <div className="flex items-center gap-2">
+            <span
+              className="h-2 w-2 shrink-0 rounded-full"
+              style={{ backgroundColor: FALLBACK_COLORS[item.colorIndex % FALLBACK_COLORS.length] }}
+            />
+            <Identicon address={toAddress(item.address)} />
+            <div className="min-w-0">
+              <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
+              <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'rawAmountNum',
+        title: t('dashboard.portfolioOverview.assetDetail.amount'),
+        sortable: true,
+        width: '20%',
+        render: (_, item) => {
+          const bal = formatBalance(item.rawAmount, item.precision);
+
+          return (
+            <FootnoteText className="tabular-nums">
+              {bal.formatted}
+              {bal.suffix} {item.symbol}
+            </FootnoteText>
+          );
+        },
+      },
+      {
+        key: 'fiatValueNum',
+        title: t('dashboard.portfolioOverview.assetDetail.value'),
+        sortable: true,
+        width: '18%',
+        render: (_, item) => (
+          <FootnoteText className="tabular-nums">
+            <Price amount={item.fiatValue} currency={currency} />
+          </FootnoteText>
+        ),
+      },
+      {
+        key: 'sharePercent',
+        title: t('dashboard.portfolioOverview.assetDetail.share'),
+        sortable: true,
+        width: '15%',
+        render: (_, item) => (
+          <FootnoteText className="tabular-nums">
+            {new BigNumber(item.sharePercent).decimalPlaces(1, BigNumber.ROUND_DOWN).toFixed(1)}%
+          </FootnoteText>
+        ),
+      },
+      {
+        key: 'allocation',
+        title: t('dashboard.portfolioOverview.assetAllocation'),
+        width: '19%',
+        render: (_, item) => (item.allocation ? <AllocationBar allocation={item.allocation} /> : null),
+      },
+    ],
+    [t, currency],
+  );
+
   const chartData = useMemo<ChartEntry[]>(
     () =>
       rows
@@ -64,61 +165,6 @@ export const AssetDetailModal = memo(({ holding, accountIds, allEntries, currenc
         .filter((d) => d.value > 0),
     [rows],
   );
-
-  const columns: Column<BreakdownRow>[] = [
-    {
-      key: 'name',
-      title: t('dashboard.portfolioOverview.assetDetail.address'),
-      width: '35%',
-      render: (_, item) => (
-        <div className="flex items-center gap-2">
-          <span
-            className="h-2 w-2 shrink-0 rounded-full"
-            style={{ backgroundColor: FALLBACK_COLORS[item.colorIndex % FALLBACK_COLORS.length] }}
-          />
-          <Identicon address={toAddress(item.address)} />
-          <div className="min-w-0">
-            <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
-            <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'rawAmountNum',
-      title: t('dashboard.portfolioOverview.assetDetail.amount'),
-      sortable: true,
-      width: '25%',
-      render: (_, item) => {
-        const bal = formatBalance(item.rawAmount, item.precision);
-
-        return (
-          <FootnoteText className="tabular-nums">
-            {bal.formatted}
-            {bal.suffix} {item.symbol}
-          </FootnoteText>
-        );
-      },
-    },
-    {
-      key: 'fiatValueNum',
-      title: t('dashboard.portfolioOverview.assetDetail.value'),
-      sortable: true,
-      width: '22%',
-      render: (_, item) => (
-        <FootnoteText className="tabular-nums">
-          <Price amount={item.fiatValue} currency={currency} />
-        </FootnoteText>
-      ),
-    },
-    {
-      key: 'sharePercent',
-      title: t('dashboard.portfolioOverview.assetDetail.share'),
-      sortable: true,
-      width: '18%',
-      render: (_, item) => <FootnoteText className="tabular-nums">{item.sharePercent.toFixed(1)}%</FootnoteText>,
-    },
-  ];
 
   const showChart = chartData.length > 1;
 
@@ -171,7 +217,7 @@ export const AssetDetailModal = memo(({ holding, accountIds, allEntries, currenc
         )}
 
         <div className="overflow-y-auto px-5 pb-4" style={{ maxHeight: 440 }}>
-          <Table columns={columns} data={rows} />
+          <Table columns={columns} data={tableData} />
         </div>
       </Modal.Content>
     </Modal>

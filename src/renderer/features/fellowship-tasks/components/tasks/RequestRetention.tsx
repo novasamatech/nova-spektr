@@ -6,7 +6,7 @@ import { getCreatedDateFromApi, toRomanNumeral } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { useFellowshipMemberCurrentTrack, useFellowshipMemberEndDemotionBlock } from '@/aggregates/fellowship-member';
-import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { RetentionEndTimer } from '../RetentionEndTimer';
 import { BadgeIcon } from '../TaskBadge';
 
@@ -17,12 +17,13 @@ export const RequestRetention = () => {
   const [periodEnd, setPeriodEnd] = useState(0);
 
   const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const { data: track } = useFellowshipMemberCurrentTrack();
   const { data: endDemotionBlock } = useFellowshipMemberEndDemotionBlock();
 
   useEffect(() => {
-    if (api && endDemotionBlock) {
-      getCreatedDateFromApi(endDemotionBlock, api).then(setPeriodEnd);
+    if (api && chain && endDemotionBlock) {
+      getCreatedDateFromApi(endDemotionBlock, api, chain).then(setPeriodEnd);
     }
   }, [api, endDemotionBlock]);
 

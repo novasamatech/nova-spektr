@@ -10,7 +10,7 @@ import { InputFile } from '@/shared/ui-kit';
 import { type ValidationIssue, MultiTransferCsvError } from '@/entities/multi-transfer';
 import { MultiTransferPreview } from '@/widgets/multi-transfer-preview';
 import { formModel } from '../model/form';
-import { multiTransferUtils } from '../utils';
+import { MAX_CSV_ROWS, multiTransferUtils } from '../utils';
 
 export const UploadCSV = () => {
   const { t } = useI18n();
@@ -89,9 +89,19 @@ export const UploadCSV = () => {
             }
           }}
         />
+        {csvError === MultiTransferCsvError.EMPTY && (
+          <InputHint variant="error" active>
+            {t('multiTransfer.errors.csv.emptyFileDescription')}
+          </InputHint>
+        )}
         {csvError === MultiTransferCsvError.STRUCTURE && (
           <InputHint variant="error" active>
             {t('multiTransfer.errors.csv.invalidStructureDescription')}
+          </InputHint>
+        )}
+        {csvError === MultiTransferCsvError.TOO_MANY_ROWS && (
+          <InputHint variant="error" active>
+            {t('multiTransfer.errors.csv.tooManyRowsDescription', { maxRows: MAX_CSV_ROWS })}
           </InputHint>
         )}
         {csvError === MultiTransferCsvError.DATA && nullable(csvIssues) && (
@@ -121,7 +131,11 @@ const ValidationsAlert = () => {
     }
   }, [csvError, csvIssues]);
 
-  if (csvError === MultiTransferCsvError.STRUCTURE) {
+  if (
+    csvError === MultiTransferCsvError.EMPTY ||
+    csvError === MultiTransferCsvError.STRUCTURE ||
+    csvError === MultiTransferCsvError.TOO_MANY_ROWS
+  ) {
     return null;
   }
 

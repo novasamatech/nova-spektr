@@ -4,12 +4,14 @@ import { spread } from 'patronum';
 
 import { type Chain, type Validator, type Wallet } from '@/shared/core';
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { createComplexTxStore } from '@/shared/transactions';
 import { type AnyAccount, accounts, multisigOperationService } from '@/domains/network';
 import { validatorsService } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { wireDraftCloseRedirect } from '@/features/drafts';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -116,6 +118,7 @@ const { $fee, $tx } = createComplexTxStore({
   accounts: accounts.$list,
   chain: $walletData.map((data) => data?.chain ?? null),
   transaction: $coreTx,
+  routeOverride: formModel.$pathRoute,
 });
 
 const $nominateForm = createStore<FormSubmitEvent | null>(null);
@@ -302,6 +305,20 @@ sample({
   source: $redirectAfterSubmitPath,
   filter: nonNullable,
   target: navigationModel.events.navigateTo,
+});
+
+wireDraftCloseRedirect({
+  $initiatedDraft: formModel.$initiatedDraft,
+  flowFinished,
+  redirectTarget: $redirectAfterSubmitPath,
+  destination: Paths.OPERATIONS,
+});
+
+sample({
+  clock: validatorsModel.output.formSubmitted,
+  source: formModel.$isDraftMode,
+  filter: (isDraftMode) => isDraftMode,
+  target: formModel.events.saveAsDraftRequested,
 });
 
 sample({

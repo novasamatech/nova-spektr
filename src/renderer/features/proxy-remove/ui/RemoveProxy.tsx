@@ -8,6 +8,7 @@ import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { RemoveProxyConfirmation as Confirmation } from '@/features/operations/OperationsConfirm/RemoveProxy';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
@@ -29,8 +30,12 @@ export const RemoveProxy = ({ wallet }: Props) => {
   const step = useUnit(removeProxyModel.$step);
   const chainId = useUnit(removeProxyModel.$proxyAccount.map((proxy) => proxy?.chainId ?? null));
 
-  const initiatorWallet = useUnit(removeProxyModel.$wallet);
   const isPureProxiedNeedToBeKilled = useUnit(removeProxyModel.$isPureProxiedNeedToBeKilled);
+  const signatoryAccount = useUnit(removeProxyModel.form.fields.signatory.$value);
+  const wallets = useUnit(walletModel.$wallets);
+
+  const signatoryWallet = signatoryAccount ? (wallets.find((w) => w.id === signatoryAccount.walletId) ?? null) : null;
+  const isBasketAvailable = signatoryWallet ? basketUtils.isBasketAvailable(signatoryWallet) : false;
 
   const [isModalOpen, closeModal] = useModalClose(!removeProxyUtils.isNoneStep(step), removeProxyModel.flowFinished);
 
@@ -77,7 +82,7 @@ export const RemoveProxy = ({ wallet }: Props) => {
   return (
     <Modal
       isOpen={isModalOpen}
-      size={removeProxyUtils.isWarningStep(step) && !isPureProxiedNeedToBeKilled ? 'fit' : 'md'}
+      size={removeProxyUtils.isWarningStep(step) && !isPureProxiedNeedToBeKilled ? 'fit' : 'mdlg'}
       onToggle={closeModal}
     >
       {removeProxyUtils.isWarningStep(step) && !isPureProxiedNeedToBeKilled ? null : (
@@ -89,12 +94,11 @@ export const RemoveProxy = ({ wallet }: Props) => {
         {removeProxyUtils.isConfirmStep(step) && (
           <Confirmation
             secondaryActionButton={
-              initiatorWallet &&
-              basketUtils.isBasketAvailable(initiatorWallet) && (
-                <Button pallet="secondary" onClick={void removeProxyModel.txSaved}>
+              isBasketAvailable ? (
+                <Button pallet="secondary" onClick={() => removeProxyModel.txSaved()}>
                   {t('operation.addToBasket')}
                 </Button>
-              )
+              ) : undefined
             }
             onGoBack={removeProxyModel.wentBackFromConfirm}
           />

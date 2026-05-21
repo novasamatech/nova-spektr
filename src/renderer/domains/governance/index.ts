@@ -3,7 +3,7 @@ export { type ReferendumSummary, referendumSummaryResource } from './referendum-
 export { useReferendumSummary } from './referendum-summary/hooks';
 export type { ReferendumSummaryRequestParams } from './referendum-summary/resource';
 
-export { subscriptionResource as referendumSubscriptionResource } from './referendum/resource';
+export { $referendumsFullyLoaded, subscriptionResource as referendumSubscriptionResource } from './referendum/resource';
 export { useReferendums } from './referendum/hooks';
 export type { ReferendumSubscriptionParams } from './referendum/resource';
 
@@ -22,3 +22,7 @@ export type { TracksRequestParams } from './tracks/resource';
 export { undecidingTimeoutResource } from './undeciding-timeout/resource';
 export { useUndecidingTimeout } from './undeciding-timeout/hooks';
 export type { UndecidingTimeoutRequestParams } from './undeciding-timeout/resource';
+
+export { trackLocksResource } from './track-locks/resource';
+export { useTrackLocks } from './track-locks/hooks';
+export type { TrackLocksRequestParams } from './track-locks/resource';

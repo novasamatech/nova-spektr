@@ -20,6 +20,7 @@ import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { getLocksForAccount, locksAggregate } from '@/features/governance';
+import { createSigningPathModel } from '@/features/signing-path';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -223,6 +224,24 @@ const $delegateForm = createForm<FormParams>({
   validateOn: ['submit'],
 });
 
+const $chain = $networkStore.map((network) => network?.chain ?? null);
+const $shardInitiator = $shards.map((shards) => shards[0] ?? null);
+
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner } = createSigningPathModel({
+  initiator: $shardInitiator,
+  chain: $chain,
+  resetOn: formInitiated,
+  resetUserOverrideOn: $shardInitiator.updates,
+});
+
+sample({
+  clock: $signatoryFromPath,
+  filter: (fromPath): fromPath is AnyAccount => nonNullable(fromPath),
+  target: $delegateForm.fields.signatory.onChange,
+});
+
+sample({ clock: $delegateForm.fields.signatory.$value, target: recomputeForSigner });
+
 // Computed
 
 const $proxyWallet = combine(
@@ -396,6 +415,7 @@ export const formModel = {
   $delegateForm,
   $proxyWallet,
   $signatories: $availableSignatories,
+  $signingPath,
 
   $accounts,
   $accountsBalances,
@@ -417,6 +437,7 @@ export const formModel = {
     txWrapperChanged,
     feeDataChanged,
     isFeeLoadingChanged,
+    signingPathChanged,
   },
   output: {
     formSubmitted,

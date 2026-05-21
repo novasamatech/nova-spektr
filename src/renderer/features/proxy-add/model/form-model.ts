@@ -1,11 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { and, not } from 'patronum';
 
 import { chainsService } from '@/shared/api/network';
 import { proxyService } from '@/shared/api/proxy';
-import { type Address, type Chain, type ProxyType, type Transaction, type Wallet, ProxyTypes } from '@/shared/core';
+import { type Chain, type ProxyType, type Transaction, type Wallet, ProxyTypes } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import {
@@ -29,17 +28,20 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { createDraftModeBinding } from '@/features/drafts';
 import { addProxyValidator } from '@/features/operations/OperationsValidation';
 import { proxiesUtils } from '@/features/proxies';
+import { createSigningPathModel } from '@/features/signing-path';
 
 type ProxyAccounts = {
   accounts: {
-    address: Address;
+    accountId: AccountId;
     proxyType: ProxyType;
   }[];
   deposit: string;
@@ -68,6 +70,7 @@ type FormSubmitEvent = {
     multisigDeposit: string;
     proxyDeposit: string;
     proxyNumber: number;
+    signingPath: PathNode[];
   };
 };
 const flowStarted = createEvent<Wallet>();
@@ -76,6 +79,8 @@ const formInitiated = createEvent();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const proxyDepositChanged = createEvent<string>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
+
+const draftMode = createDraftModeBinding({ formInitiated, chainChanged: formInitiated });
 
 const $wallet = restore(flowStarted, null);
 
@@ -150,8 +155,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             proxyDeposit: $newProxyDeposit,
             balances: balanceModel.$balanceMap,
             isMultisig: $isMultisig,
+            isDraftMode: draftMode.$isDraftMode,
           }),
-          fn: (signatory, form, { isMultisig, balances, ...params }) => {
+          fn: (signatory, form, { isMultisig, balances, isDraftMode, ...params }) => {
+            if (isDraftMode) return;
             if (nullable(signatory)) {
               return { message: 'proxy.addProxy.noSignatoryError' };
             }
@@ -200,7 +207,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             }
 
             const sameProxyExist = activeProxies.some((proxy) => {
-              return proxy.proxyType === form.proxyType && proxy.address === delegate;
+              return proxy.proxyType === form.proxyType && proxy.accountId === toAccountId(delegate);
             });
             if (sameProxyExist) {
               return { message: 'proxy.addProxy.proxyTypeExistError' };
@@ -248,6 +255,15 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
 });
+
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
+    initiator: form.fields.initiator.$value,
+    chain: form.fields.chain.$value,
+    resetOn: formInitiated,
+    resetUserOverrideOn: form.fields.initiator.change,
+  },
+);
 
 const $availableAccounts = createInitiatorsStore({
   chain: form.fields.chain.$value,
@@ -346,11 +362,32 @@ const $coreTx = combine(
     isConnected: $isChainConnected,
   },
   ({ form, signatory, isConnected }): Transaction | null => {
-    if (!isConnected || !signatory || !form.delegate || !form.proxyType || !form.chain) return null;
+    if (!isConnected || !signatory || !form.initiator || !form.delegate || !form.proxyType || !form.chain) return null;
 
     return transactionBuilder.buildAddProxy({
       chain: form.chain,
-      accountId: signatory.accountId,
+      accountId: form.initiator.accountId,
+      delegateAccountId: toAccountId(form.delegate),
+      type: form.proxyType,
+    });
+  },
+);
+
+const $draftCoreTx = combine(
+  {
+    form: form.$values,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+  },
+  ({ form, path, isPathComplete }): Transaction | null => {
+    if (!isPathComplete || !form.chain || !form.delegate || !form.proxyType) return null;
+    if (!validateAddress(form.delegate)) return null;
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+
+    return transactionBuilder.buildAddProxy({
+      chain: form.chain,
+      accountId: sourceAccountId,
       delegateAccountId: toAccountId(form.delegate),
       type: form.proxyType,
     });
@@ -365,6 +402,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   chain: form.fields.chain.$value,
   transaction: $coreTx,
   feeTransaction: $fakeTx,
+  routeOverride: $pathRoute,
 });
 
 // Transaction validation
@@ -417,7 +455,50 @@ const { $multisigDeposit } = createMultisigDeposit({
   $api: $api,
 });
 
-const $canSubmit = and($valid, form.$isValid, not($pendingFee), not($isProxyDepositLoading));
+const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
+
+const $draftNetworkStore = combine(form.fields.chain.$value, (chain) =>
+  chain ? { chain, asset: getNativeAsset(chain.assets) } : null,
+);
+
+const $canSubmit = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    valid: $valid,
+    formValid: form.$isValid,
+    pendingFee: $pendingFee,
+    isProxyDepositLoading: $isProxyDepositLoading,
+  },
+  ({ isDraftMode, valid, formValid, pendingFee, isProxyDepositLoading }) => {
+    if (isDraftMode) return false;
+    return valid && formValid && !pendingFee && !isProxyDepositLoading;
+  },
+);
+
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    networkStore: $draftNetworkStore,
+    delegate: form.fields.delegate.$value,
+    proxyType: form.fields.proxyType.$value,
+  },
+  ({ isDraftMode, isPathComplete, callData, networkStore, delegate, proxyType }) => {
+    if (!isDraftMode || !isPathComplete || !callData || !networkStore) return false;
+    if (!validateAddress(delegate)) return false;
+    if (!proxyType) return false;
+
+    return true;
+  },
+);
+
+draftMode.connectSave({
+  source: 'proxy-add-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore: $draftNetworkStore,
+  $canSave: $canSaveAsDraft,
+});
 
 const getMaxProxiesFx = createEffect((api: ApiPromise): number => {
   return proxyService.getMaxProxies(api);
@@ -443,11 +524,13 @@ sample({
 });
 
 sample({
-  source: $signatories,
-  filter: (signatories) => signatories.length > 0,
-  fn: (signatories) => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, formInitiated],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: [form.fields.delegate.change, form.fields.proxyType.change],
@@ -511,8 +594,12 @@ const submitCompleted = sample({
     multisigDeposit: $multisigDeposit,
     proxyDeposit: $newProxyDeposit,
     proxies: $activeProxies,
+    signingPath: $signingPath,
   },
-  fn: ({ proxyDeposit, multisigDeposit, proxies, transaction, coreTx, fee }, formData): FormSubmitEvent | null => {
+  fn: (
+    { proxyDeposit, multisigDeposit, proxies, transaction, coreTx, fee, signingPath },
+    formData,
+  ): FormSubmitEvent | null => {
     const delegate = formData.delegate;
 
     if (!validateAddress(delegate)) return null;
@@ -535,6 +622,7 @@ const submitCompleted = sample({
         proxyDeposit,
         multisigDeposit: multisigDeposit.toString(),
         proxyNumber: proxies.length,
+        signingPath,
       },
     };
   },
@@ -552,6 +640,7 @@ export const formModel = {
   $availableChains,
   $availableAccounts,
   $signatories,
+  $signingPath,
   $proxyAccounts,
   $proxyTypes,
 
@@ -564,6 +653,7 @@ export const formModel = {
   $route,
 
   flowStarted,
+  $coreTx,
   $api,
   $isMultisig,
   $isChainConnected,
@@ -572,6 +662,21 @@ export const formModel = {
   formInitiated,
   proxyDepositChanged,
   isProxyDepositLoadingChanged,
+  signingPathChanged,
   formSubmitted,
   $errors,
+
+  $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
+  $canSaveAsDraft,
+  $initiatedDraft: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
+  events: {
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
+  },
 };

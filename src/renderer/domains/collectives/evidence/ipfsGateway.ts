@@ -10,7 +10,6 @@ const DEFAULT_IPFS_GATEWAY = 'https://ipfs.io';
 const DEFAULT_IPFS_GATEWAYS = [DEFAULT_IPFS_GATEWAY];
 
 export const $ipfsGateways = createStore<string[]>(DEFAULT_IPFS_GATEWAYS);
-export const $primaryIpfsGateway = $ipfsGateways.map(gateways => gateways[0] ?? DEFAULT_IPFS_GATEWAY);
 
 persist({
   key: 'ipfs_gateways',

@@ -5,26 +5,29 @@ import { interval, throttle } from 'patronum';
 import { type Done, persist } from '@/shared/api/storage';
 import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type DateRange } from '@/shared/ui-kit';
 import {
   type AnyAccount,
   type MultisigOperation,
   accountService,
   accounts,
+  contactMultisigsModel,
   multisigOperation,
 } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountPresetsModel } from '@/aggregates/account-presets';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { filterOperation, findAccountForOperation } from '../lib/operations-filter';
+import { filterOperation } from '../lib/operations-filter';
+
+import { deepLinkModel } from './deep-link';
+import { multisigOperationsFeature } from './feature';
 
 export type OperationWithAccount = {
   operation: MultisigOperation;
   account: MultisigAccount | FlexibleMultisigAccount;
 };
-
-import { deepLinkModel } from './deep-link';
-import { multisigOperationsFeature } from './feature';
 
 interface SelectedFilters {
   account: string[];
@@ -102,7 +105,43 @@ const $initiators = combine(
   },
 );
 
-const $multisigAccounts = accounts.$list.map(accs => accs.filter(accountUtils.isAnyMultisigAccount));
+const $walletMultisigAccounts = accounts.$list.map(accs => accs.filter(accountUtils.isAnyMultisigAccount));
+
+// Union of user-owned multisig accounts + synthetic records built from
+// contact-backed multisigs discovered by `contactMultisigsModel`. Dedupe drops
+// externals the user also owns as a real wallet (wallet ownership wins).
+// Preset scoping is applied downstream by `$presetScopedMultisigAccounts` —
+// this combine doesn't need to know about presets.
+const $multisigAccounts = combine(
+  $walletMultisigAccounts,
+  contactMultisigsModel.$contactMultisigs,
+  (walletMultisigs, contactMultisigs) => {
+    const walletIds = new Set<AccountId>(walletMultisigs.map(contactMultisigsModel.resolveMultisigAccountId));
+    const externals = contactMultisigs.filter(cm => !walletIds.has(cm.accountId));
+    if (externals.length === 0) return walletMultisigs;
+    return [...walletMultisigs, ...externals.map(contactMultisigsModel.toSyntheticMultisigAccount)];
+  },
+);
+
+// When an Operations preset is active, its matched entries define the scope of visible accounts.
+// `null` means no preset is active → no scoping, use every multisig account.
+const $presetScopedAccountIds = accountPresetsModel.$matchedOperationsEntries.map(entries => {
+  // If no preset is active, `$matchedOperationsEntries` returns `$allEntries` — but so do empty
+  // presets, so we can't distinguish them here. Use the active preset id instead.
+  return new Set(entries.map(e => e.accountId));
+});
+
+const $presetScopedMultisigAccounts = combine(
+  {
+    multisigAccounts: $multisigAccounts,
+    activePresetId: accountPresetsModel.$activeOperationsPresetId,
+    scopedAccountIds: $presetScopedAccountIds,
+  },
+  ({ multisigAccounts, activePresetId, scopedAccountIds }) => {
+    if (activePresetId === null) return multisigAccounts;
+    return multisigAccounts.filter(acc => scopedAccountIds.has(acc.accountId));
+  },
+);
 
 const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isAnyMultisig));
 
@@ -111,15 +150,45 @@ const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 const $operationsWithAccounts = combine(
   {
     operations: multisigOperation.$list,
-    multisigAccounts: $multisigAccounts,
+    multisigAccounts: $presetScopedMultisigAccounts,
     accountsPopulated: accounts.$populated,
   },
   ({ operations, multisigAccounts, accountsPopulated }): OperationWithAccount[] => {
     if (!accountsPopulated) return [];
 
+    // Build lookup maps for O(1) account resolution instead of O(m) linear scan per operation
+    const byAccountId = new Map<string, (MultisigAccount | FlexibleMultisigAccount)[]>();
+    const byMultisigAccountId = new Map<string, (MultisigAccount | FlexibleMultisigAccount)[]>();
+    for (const acc of multisigAccounts) {
+      if (accountUtils.isFlexibleMultisigAccount(acc)) {
+        const key = `${acc.accountId}:${acc.multisigAccountId}`;
+        const list = byAccountId.get(key) ?? [];
+        list.push(acc);
+        byAccountId.set(key, list);
+
+        const mList = byMultisigAccountId.get(acc.multisigAccountId) ?? [];
+        mList.push(acc);
+        byMultisigAccountId.set(acc.multisigAccountId, mList);
+      } else if (accountUtils.isMultisigAccount(acc)) {
+        const list = byMultisigAccountId.get(acc.accountId) ?? [];
+        list.push(acc);
+        byMultisigAccountId.set(acc.accountId, list);
+      }
+    }
+
+    const findAccount = (op: MultisigOperation) => {
+      if (op.proxiedAccountId) {
+        const key = `${op.proxiedAccountId}:${op.multisigAccountId}`;
+        const flex = byAccountId.get(key)?.find(a => accountUtils.isFlexibleMultisigAccount(a));
+        if (flex) return flex;
+      }
+      const candidates = byMultisigAccountId.get(op.multisigAccountId);
+      return candidates?.find(a => accountUtils.isMultisigAccount(a)) ?? candidates?.[0];
+    };
+
     const result: OperationWithAccount[] = [];
     for (const op of operations) {
-      const account = findAccountForOperation(op, multisigAccounts);
+      const account = findAccount(op);
       if (account) result.push({ operation: op, account });
     }
 
@@ -133,25 +202,15 @@ const $filteredOperations = combine(
     filter: $filter,
     tab: $tab,
     hiddenIds: $hiddenOperationIds,
-    multisigAccounts: $multisigAccounts,
     multisigWallets: $multisigWallets,
     chains: networkModel.$chains,
   },
-  ({
-    operationsWithAccounts,
-    filter,
-    tab,
-    hiddenIds,
-    multisigAccounts,
-    multisigWallets,
-    chains,
-  }): OperationWithAccount[] => {
-    return operationsWithAccounts.filter(({ operation }) =>
-      filterOperation(operation, {
+  ({ operationsWithAccounts, filter, tab, hiddenIds, multisigWallets, chains }): OperationWithAccount[] => {
+    return operationsWithAccounts.filter(({ operation, account }) =>
+      filterOperation(operation, account, {
         filters: filter,
         tab,
         hiddenIds,
-        multisigAccounts,
         multisigWallets,
         chains,
       }),
@@ -264,6 +323,7 @@ export const operationsContextModel = {
   $isFiltersSelected,
   $filteredOperations,
   $multisigAccounts,
+  $presetScopedMultisigAccounts,
   $multisigWallets,
   $initiator,
   $tab,

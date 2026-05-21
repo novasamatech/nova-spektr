@@ -24,7 +24,7 @@ import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { createQueryResource, createSubscriptionResource } from '@/shared/query';
 import { type MapCacheFn } from '@/shared/query/types';
 // eslint-disable-next-line boundaries/entry-point
-import { decodeCallData } from '@/entities/transaction/lib/callDataDecoder';
+import { decodeCallData, extractSectionMethodFromCallData } from '@/entities/transaction/lib/callDataDecoder';
 
 import { INDEXER_URL } from './constants';
 import { multisigOperationService } from './service';
@@ -51,7 +51,7 @@ async function createOperationFromMultisig({
   const extrinsicIndex = multisig.when.index.toNumber();
   const multisigAccountId = toAccountId(accountId.toString());
 
-  const timestamp = await getCreatedDateFromApi(blockHeight, api);
+  const timestamp = await getCreatedDateFromApi(blockHeight, api, chain);
   const operationId = multisigOperationService.getOperationId(
     chainId,
     callHash,
@@ -81,12 +81,16 @@ async function createOperationFromMultisig({
   const callData = transaction?.method.toHex() || null;
 
   let decodedTransaction: DecodedTransaction | null = null;
+  let extractedMeta: { section: string; method: string } | null = null;
   try {
     if (callData && validateCallData(callData, callHash)) {
       decodedTransaction = decodeCallData(api, multisigAccountId, callData, nativeAssetId);
     }
   } catch (error) {
     console.warn('Failed to decode call data', { callHash, error });
+    if (callData) {
+      extractedMeta = extractSectionMethodFromCallData(api, callData);
+    }
   }
 
   const proxiedAccountId = multisigOperationService.extractProxiedAccountId(decodedTransaction);
@@ -103,8 +107,8 @@ async function createOperationFromMultisig({
     blockCreated: pjsSchema.helpers.toBlockHeight(blockHeight),
     indexCreated: extrinsicIndex,
     deposit: multisig.deposit,
-    method: transaction?.method?.method ?? null,
-    section: transaction?.method?.section ?? null,
+    method: transaction?.method?.method ?? extractedMeta?.method ?? null,
+    section: transaction?.method?.section ?? extractedMeta?.section ?? null,
     timestamp,
     events,
     transaction: decodedTransaction,
@@ -204,6 +208,7 @@ function mapSubqueryOperationRecord(
   if (nullable(api) || nullable(chain)) return null;
 
   let transaction: DecodedTransaction | null = null;
+  let extractedMeta: { section: string; method: string } | null = null;
 
   try {
     if (response.callData && validateCallData(response.callData, response.callHash)) {
@@ -211,6 +216,12 @@ function mapSubqueryOperationRecord(
     }
   } catch (error) {
     console.warn('Failed to decode call data from indexer response', { callHash: response.callHash, error });
+    // Full decoding can blow up on nested batch/proxy children even when the
+    // outer call is well-known. Try to recover at least the pallet/method names
+    // so the operation doesn't render as "unknown".
+    if (response.callData) {
+      extractedMeta = extractSectionMethodFromCallData(api, response.callData);
+    }
   }
 
   const proxiedAccountId = multisigOperationService.extractProxiedAccountId(transaction);
@@ -218,8 +229,8 @@ function mapSubqueryOperationRecord(
   return {
     id: operationId,
     transaction,
-    section: response.section,
-    method: response.method,
+    section: response.section ?? extractedMeta?.section ?? null,
+    method: response.method ?? extractedMeta?.method ?? null,
     timestamp: response.timestamp,
     multisigAccountId,
     ...(proxiedAccountId ? { proxiedAccountId } : {}),

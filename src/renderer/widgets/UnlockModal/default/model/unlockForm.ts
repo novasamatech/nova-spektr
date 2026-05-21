@@ -6,6 +6,7 @@ import { type Asset, type Chain } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import { ZERO_BALANCE, getNativeAsset, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
 import { createComplexTxStore, createInitiatorsStore, createSignatoriesStore } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService } from '@/entities/governance';
@@ -14,6 +15,7 @@ import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { locksModel, networkSelectorModel, unlockModel } from '@/features/governance';
+import { createSigningPathModel } from '@/features/signing-path';
 
 type FormParams = {
   initiator: AnyAccount | null;
@@ -28,6 +30,7 @@ type FormSubmitEvent = FormParams & {
   totalLock: BN;
   totalFee: string;
   multisigDeposit: string;
+  signingPath: PathNode[];
 };
 
 const formInitiated = createEvent<ClaimChunkWithAccountId[]>();
@@ -134,6 +137,15 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
+    initiator: form.fields.initiator.$value,
+    chain: networkSelectorModel.$governanceChain,
+    resetOn: formInitiated,
+    resetUserOverrideOn: form.fields.initiator.change,
+  },
+);
+
 const $api = combine(
   {
     apis: networkModel.$apis,
@@ -188,6 +200,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
@@ -236,12 +249,13 @@ sample({
 });
 
 sample({
-  clock: formInitiated,
-  source: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, formInitiated],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: formInitiated,
@@ -285,14 +299,6 @@ const $signatoryBalance = combine(
   },
 );
 
-sample({
-  clock: formInitiated,
-  source: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
-  target: form.fields.signatory.change,
-});
-
 const $canSubmit = combine(
   {
     isFormValid: form.$isValid,
@@ -311,11 +317,12 @@ sample({
     fee: $fee,
     multisigDeposit: $multisigDeposit,
     totalLock: locksModel.$totalLock,
+    signingPath: $signingPath,
   },
   filter: ({ network, fee }) => {
     return nonNullable(network) && nonNullable(fee);
   },
-  fn: ({ network, fee, multisigDeposit, totalLock }, formData) => {
+  fn: ({ network, fee, multisigDeposit, totalLock, signingPath }, formData) => {
     return {
       initiator: formData.initiator,
       signatory: formData.signatory,
@@ -326,6 +333,7 @@ sample({
       fee: fee!.toString(),
       totalFee: fee!.toString(),
       multisigDeposit: multisigDeposit.toString(),
+      signingPath,
     } satisfies FormSubmitEvent;
   },
   target: formSubmitted,
@@ -350,11 +358,13 @@ export const unlockFormAggregate = {
   $isMultisig,
   $proxyWallet,
   $signatories,
+  $signingPath,
   $proxyBalance,
   $signatoryBalance,
 
   formInitiated,
   formCleared,
   multisigDepositChanged,
+  signingPathChanged,
   formSubmitted,
 };

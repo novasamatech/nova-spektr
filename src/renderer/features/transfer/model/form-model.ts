@@ -33,6 +33,7 @@ import {
   createTxValidationStore,
 } from '@/shared/transactions';
 import { type TransactionValidationDryRunError, type TransactionValidationNetworkError } from '@/shared/ui-entities';
+import { type PathNode } from '@/domains/backend';
 import {
   type AnyAccount,
   type BalancePreservation,
@@ -44,11 +45,13 @@ import {
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { proxiedChainResource } from '@/entities/proxy';
-import { transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
+import { createDraftModeBinding, wireDraftSourceBalance } from '@/features/drafts';
 import { transferValidator } from '@/features/operations/OperationsValidation';
+import { createSigningPathModel } from '@/features/signing-path';
 import { type NetworkStore, type NetworkStoreParams } from '../lib/types';
 
 import { xcmSpellTransferModel } from './xcm-spell-transfer-model';
@@ -91,6 +94,7 @@ type FormSubmitEvent = FormParams & {
   signatory: AnyAccount;
   destination: Address;
   route: AnyAccount[];
+  signingPath: PathNode[];
   destinationChain: Chain;
   fee: BN;
   originFee: BN;
@@ -287,6 +291,19 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
 });
 
+// signing path
+
+export const TRANSFER_ALLOWED_PROXY_TYPES = ['Any'] as const;
+
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
+    initiator: form.fields.initiator.$value,
+    chain: $chain,
+    resetOn: formInitiated,
+    resetUserOverrideOn: form.fields.initiator.change,
+  },
+);
+
 const $signatoryBalance = combine(
   {
     signatory: form.fields.signatory.$value,
@@ -471,6 +488,9 @@ createSubscription({
   unsubscribe: balanceSubModel.unsubscribeAccounts.prepend((a: { accountId: AccountId; chain: Chain }) => [a]),
 });
 
+// draft mode — wired through the shared factory in features/drafts
+const draftMode = createDraftModeBinding({ formInitiated, chainChanged });
+
 // balance preservation strategy
 
 const toggleExistentialDeposit = createEvent<boolean | null>();
@@ -530,6 +550,63 @@ const $coreTx = combine(
   },
 );
 
+// Draft-mode transaction: built from the path's source accountId (external
+// address-book contact) instead of the wallet-initiator. Mirrors $coreTx but
+// skips the wallet-account requirement — the draft is for someone else to sign
+// later, so we don't validate against the current wallet's signing capability.
+const $draftCoreTx = combine(
+  {
+    network: $networkStore,
+    isXcm: $isXcm,
+    formValues: form.$values,
+    xcmData: xcmSpellTransferModel.$xcmData,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    inputMode: $inputMode,
+    balancePreservation: $balancePreservationStrategy,
+  },
+  ({ network, isXcm, formValues, xcmData, path, isPathComplete, inputMode, balancePreservation }) => {
+    if (!network || !isPathComplete || !validateAddress(formValues.destination)) return null;
+    if (isXcm && !xcmData) return null;
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+
+    return transactionBuilder.buildTransfer({
+      chain: network.chain,
+      asset: network.asset,
+      accountId: sourceAccountId,
+      amount: formValues.amount,
+      destination: formValues.destination,
+      xcmData: isXcm ? xcmData : undefined,
+      balancePreservation,
+      inputMode,
+    });
+  },
+);
+
+const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
+
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    network: $networkStore,
+    isFormValid: form.$isValid,
+    amount: form.fields.amount.$value,
+    destination: form.fields.destination.$value,
+  },
+  ({ isDraftMode, isPathComplete, callData, network, isFormValid, amount, destination }) =>
+    isDraftMode && isPathComplete && !!callData && !!network && !!amount && validateAddress(destination) && isFormValid,
+);
+
+draftMode.connectSave({
+  source: 'transfer-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore,
+  $canSave: $canSaveAsDraft,
+});
+
 const $mockDestination = combine(
   {
     network: $networkStore,
@@ -582,6 +659,7 @@ const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   chain: $chain,
   transaction: $coreTx,
   feeTransaction: $feeCoreTx,
+  routeOverride: $pathRoute,
 });
 
 const $networkFee = combine(
@@ -680,12 +758,27 @@ sample({
 
 // available balance
 
+// Source balance for draft mode: fetched on-demand once the path is set so
+// the "Available:" row reflects the eventual signer's balance, not the
+// connected wallet's initiator.
+const $draftSourceBalance = wireDraftSourceBalance({
+  $draftPath: draftMode.$draftSigningPath,
+  $chain: $chain,
+  $isDraftMode: draftMode.$isDraftMode,
+  $asset: $asset,
+});
+
 const $availableBalance = combine(
   {
+    isDraftMode: draftMode.$isDraftMode,
+    draftSourceBalance: $draftSourceBalance,
     availableBalances: $availableBalances,
     balance: $initiatorAccountBalance,
   },
-  ({ availableBalances, balance }) => {
+  ({ isDraftMode, draftSourceBalance, availableBalances, balance }) => {
+    // Draft mode: read the path source's balance directly (no fee to subtract
+    // — the eventual signer pays it at submit time).
+    if (isDraftMode) return draftSourceBalance;
     if (nullable(balance)) return null;
     return availableBalances.find((b) => b.id === balance.id) ?? balance;
   },
@@ -921,12 +1014,18 @@ sample({
   target: form.fields.initiator.change,
 });
 
+// Prefer the path's leaf signer; fall back to the first available signatory
+// for no-path / plain-proxy flows.
 sample({
-  clock: [$signatories, formInitiated],
-  source: $signatories,
-  fn: (signatories) => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, formInitiated],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+// Dropdown→path sync: when the user picks a signatory from the legacy
+// dropdown, the factory recomputes the path so it terminates there.
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 sample({
   clock: form.fields.destinationChain.change,
@@ -1165,6 +1264,7 @@ const formSubmitFinished = sample({
     initiator: form.fields.initiator.$value,
     network: $networkStore,
     route: $route,
+    signingPath: $signingPath,
     coreTx: $coreTx,
     tx: $tx,
     fee: $fee,
@@ -1180,6 +1280,7 @@ const formSubmitFinished = sample({
       initiator,
       network,
       route,
+      signingPath,
       coreTx,
       tx,
       multisigDeposit,
@@ -1213,6 +1314,7 @@ const formSubmitFinished = sample({
       destinationChain: form.destinationChain ?? chain,
       multisigDeposit,
       route,
+      signingPath,
       fee,
       originFee: isXcm ? (originFee ?? BN_ZERO) : BN_ZERO,
       destinationFee: isXcm ? (destinationFee ?? null) : null,
@@ -1320,6 +1422,7 @@ export const formModel = {
 
   $initiators,
   $signatories,
+  $signingPath,
 
   $available,
   $initiatorAccountBalance,
@@ -1361,6 +1464,12 @@ export const formModel = {
 
   $xcmApi: xcmSpellTransferModel.$apiDestination,
 
+  $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
+  $canSaveAsDraft,
+  $initiatedDraftFromTransfer: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
   $isExistentialDepositEnabled,
   $isMaxModeEnabled,
   $showEDSwitch,
@@ -1386,11 +1495,17 @@ export const formModel = {
   chainChanged,
 
   multisigDepositChanged,
+  signingPathChanged,
 
   formSubmitted,
 
   events: {
     toggleExistentialDeposit,
     toggleMaxMode: setMaxMode,
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
   },
 };

@@ -3,8 +3,10 @@ import { type Weight } from '@polkadot/types/interfaces';
 import { BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
+import { t } from 'i18next';
+import { toast } from 'sonner';
 
-import { type Chain, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { type Chain, type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { getNativeAsset, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
@@ -13,6 +15,7 @@ import {
   createTxValidator,
   getActionRequiredAmount,
 } from '@/shared/transactions';
+import { HttpError, operationDescriptionsResource, operationsService } from '@/domains/backend';
 import {
   type AnyAccount,
   type MultisigOperation,
@@ -24,6 +27,8 @@ import {
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { MAX_WEIGHT, getExtrinsic, transactionBuilder } from '@/entities/transaction';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { createSigningPathModel } from '@/features/signing-path';
 
 type GetMultisigType = {
   chain: Chain | null;
@@ -42,6 +47,10 @@ const $weight = createStore<Weight | null>(null);
 
 const selectSignatory = createEvent<AnyAccount | null>();
 const $signatory = restore<AnyAccount | null>(selectSignatory, null).reset(flow.open);
+
+const setDescription = createEvent<string>();
+const $description = createStore('').reset(flow.open);
+$description.on(setDescription, (_, value) => value);
 
 const $chain = flow.state.map(state => state.chain);
 const $operation = flow.state.map(state => state.operation);
@@ -97,18 +106,30 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
+    initiator: $initiator,
+    chain: $chain,
+    resetOn: flow.open,
+    resetUserOverrideOn: selectInitiator,
+  },
+);
+
 sample({
   clock: $unsignedAccounts,
   filter: $unsignedAccounts.map(unsignedAccounts => unsignedAccounts.length === 1),
   fn: unsignedAccounts => unsignedAccounts.at(0) ?? null,
   target: $initiator,
 });
+
 sample({
-  clock: $signatories,
-  filter: $signatories.map(signatories => signatories.length === 1),
-  fn: signatories => signatories.at(0) ?? null,
+  clock: [$signatoryFromPath, $signatories, flow.open],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: $signatory,
 });
+
+sample({ clock: $signatory, target: recomputeForSigner });
 
 // Get weight
 type ExtrinsicSigningPayload = {
@@ -182,6 +203,7 @@ const {
   accounts: accounts.$list,
   chain: $chain,
   transaction: $transaction,
+  routeOverride: $pathRoute,
 });
 
 const $extrinsic = combine($api, $tx, (api, tx) => {
@@ -231,6 +253,73 @@ const $canSubmit = combine(
   },
 );
 
+// --- Description posting ---
+
+type PostDescriptionParams = {
+  operation: MultisigOperation;
+  chainId: ChainId;
+  description: string;
+};
+
+const postDescription = createEvent<PostDescriptionParams>();
+
+const postDescriptionFx = createEffect(
+  async (params: {
+    baseUrl: string;
+    multisigAccountId: string;
+    chainId: string;
+    callHash: string;
+    blockNumber: number;
+    extrinsicIndex: number;
+    description: string;
+  }) => {
+    const { baseUrl, ...body } = params;
+    await operationsService.createDescription(baseUrl, body);
+  },
+);
+
+sample({
+  clock: postDescription,
+  source: {
+    baseUrl: backendConfigurationModel.$backendUrl,
+    isAuthenticated: authModel.$isAuthenticated,
+  },
+  filter: ({ baseUrl, isAuthenticated }, { description }) =>
+    nonNullable(baseUrl) && isAuthenticated && description.length > 0,
+  fn: ({ baseUrl }, { operation, chainId, description }) => ({
+    baseUrl: baseUrl!,
+    multisigAccountId: operation.multisigAccountId,
+    chainId,
+    callHash: operation.callHash,
+    blockNumber: operation.blockCreated,
+    extrinsicIndex: operation.indexCreated,
+    description,
+  }),
+  target: postDescriptionFx,
+});
+
+const showDescriptionErrorFx = createEffect((error: Error) => {
+  const description =
+    error instanceof HttpError && error.status === 403 ? t('addressBook.sources.errorForbidden') : error.message;
+  toast.error(t('operation.descriptionSaveError'), { description });
+});
+
+sample({
+  clock: postDescriptionFx.failData,
+  target: showDescriptionErrorFx,
+});
+
+sample({
+  clock: postDescriptionFx.done,
+  source: $operation,
+  filter: (operation): operation is MultisigOperation => nonNullable(operation),
+  fn: (operation, { params }) => ({
+    id: operation!.id,
+    description: params.description,
+  }),
+  target: operationDescriptionsResource.descriptionCreated,
+});
+
 export const approveModel = {
   flow,
   $transaction: $tx,
@@ -248,6 +337,11 @@ export const approveModel = {
   $valid,
 
   $signatories,
+  $signingPath,
+  $description,
   selectSignatory,
   selectInitiator,
+  setDescription,
+  postDescription,
+  signingPathChanged,
 };

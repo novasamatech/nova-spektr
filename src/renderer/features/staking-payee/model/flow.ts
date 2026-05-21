@@ -3,10 +3,12 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { spread } from 'patronum';
 
 import { getRelaychainAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { wireDraftCloseRedirect } from '@/features/drafts';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -86,10 +88,11 @@ const formSubmitted = sample({
     walletData: $walletData,
     coreTx: formModel.$coreTx,
     route: formModel.$route,
+    signingPath: formModel.$signingPath,
     tx: formModel.$tx,
     fee: formModel.$fee,
   },
-}).filterMap(({ payeeData, multisigDeposit, walletData, coreTx, route, tx, fee }) => {
+}).filterMap(({ payeeData, multisigDeposit, walletData, coreTx, route, signingPath, tx, fee }) => {
   if (
     nonNullable(payeeData.initiator) &&
     nonNullable(payeeData.signatory) &&
@@ -107,6 +110,7 @@ const formSubmitted = sample({
         signatory: payeeData.signatory,
         initiator: payeeData.initiator,
         route: route,
+        signingPath,
         fee: fee.toString(),
         totalFee: fee.toString(),
         coreTx: coreTx,
@@ -245,6 +249,13 @@ sample({
   source: $redirectAfterSubmitPath,
   filter: nonNullable,
   target: navigationModel.events.navigateTo,
+});
+
+wireDraftCloseRedirect({
+  $initiatedDraft: formModel.$initiatedDraft,
+  flowFinished,
+  redirectTarget: $redirectAfterSubmitPath,
+  destination: Paths.OPERATIONS,
 });
 
 sample({

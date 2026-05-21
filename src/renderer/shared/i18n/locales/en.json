@@ -37,20 +37,25 @@
       "delete": "Delete"
     },
     "auth": {
+      "chainHintTooltip": "If you use a derivation in Polkadot Vault, select the network this derivation was created in to avoid the \"Transaction author public key not found\" error.",
       "connectedAccountLabel": "Connected account",
       "connectionSuccess": "Connected successfully",
       "disconnectButton": "Disconnect",
       "disconnected": "Disconnected",
       "errorTitle": "Authentication failed",
+      "networkIssues": "Network issues",
       "noSignableAccounts": "No extension or Polkadot Vault accounts available",
       "notConnected": "Not signed in",
       "reconnectButton": "Reconnect",
+      "reconnectTooltip": "Address book is disconnected. Reconnect to restore access.",
       "scanQrTitle": "Scan with Polkadot Vault",
       "scanSignatureTitle": "Scan signature QR",
       "selectAccountLabel": "Select account",
       "selectAccountPlaceholder": "Choose an account",
+      "selectChainLabel": "Signing network",
+      "selectChainPlaceholder": "Choose a network",
       "sessionExpired": "Session expired",
-      "sessionExpiredToast": "Session expired",
+      "sessionExpiredToast": "Address Book session expired",
       "signingMessage": "Waiting for signature...",
       "signInSuccess": "Successfully signed in",
       "signOutButton": "Sign out"
@@ -130,6 +135,11 @@
         "keepCurrentButton": "Keep current",
         "replaceButton": "Replace",
         "title": "Import options"
+      },
+      "duplicates": {
+        "cancelButton": "Cancel",
+        "description": "Pick which entry you want to import for this address.",
+        "title": "Resolve duplicate addresses"
       },
       "errors": {
         "description": "Certain contacts don't match required format. Check guidelines on Wiki, update your file, and try uploading again.",
@@ -325,8 +335,13 @@
     "isCorrect": "Make sure the operation is correct",
     "noDecodedTxDescription": "Operation details will appear here after call data parsed",
     "noDecodedTxTitle": "No data available",
+    "copyCallData": "Copy call data",
+    "mode": {
+      "paste": "Paste",
+      "build": "Build"
+    },
     "placeholder": "Paste the call data here",
-    "title": "Add call data"
+    "title": "Build an operation"
   },
   "common": {
     "continue": "Continue",
@@ -498,6 +513,47 @@
       "selectedCount_one": "{{count}} account selected",
       "selectedCount_other": "{{count}} accounts selected"
     },
+    "presets": {
+      "all": "All",
+      "overflow": "+{count} more",
+      "manage": "Manage Presets",
+      "searchPresets": "Search presets...",
+      "modal": {
+        "title": "Manage Presets",
+        "newPreset": "New Preset",
+        "name": "Name",
+        "namePlaceholder": "Preset name",
+        "sourceType": "Source Type",
+        "entity": "Entity",
+        "category": "Category",
+        "tags": "Tags",
+        "anyCategory": "Any category",
+        "anyTags": "Any tags",
+        "matchingAccounts": "Matching Accounts ({count})",
+        "searchAccounts": "Search accounts...",
+        "noMatches": "No accounts match these filters",
+        "matchesAll": "This preset matches all accounts",
+        "moreAccounts": "+{count} more",
+        "delete": "Delete Preset",
+        "deleteConfirmTitle": "Delete Preset",
+        "deleteConfirmDescription": "Are you sure you want to delete \"{name}\"?",
+        "cancel": "Cancel",
+        "save": "Save",
+        "savedToast": "Preset \"{name}\" saved",
+        "createdToast": "Preset \"{name}\" created",
+        "deletedToast": "Preset \"{name}\" deleted",
+        "typeFilter": "Smart Filter",
+        "typeCustom": "Custom Selection",
+        "selectAll": "Select All",
+        "deselectAll": "Deselect All",
+        "selectedCount": "{count} selected"
+      },
+      "sources": {
+        "wallet": "Wallet",
+        "localContact": "My Contacts",
+        "backendContact": "External Source"
+      }
+    },
     "emptyState": {
       "title": "No accounts available",
       "description": "Add a wallet or contact to get started"
@@ -583,6 +639,102 @@
       "stakingAccounts": "Staking accounts",
       "totalStaked": "Total staked",
       "noStaking": "No active staking positions"
+    },
+    "governanceOverview": {
+      "title": "Governance Overview",
+      "votingAccounts": "Voting accounts",
+      "unlockable": "Claimable",
+      "averageConviction": "Avg. conviction",
+      "noGovernance": "No governance activity found",
+      "convictionDisplay": "{value}x",
+      "governanceDetail": {
+        "title": "Governance \u2014 {chain}",
+        "account": "Account",
+        "locked": "Locked",
+        "conviction": "Avg. conviction",
+        "value": "Value",
+        "share": "Share",
+        "accountCount_one": "{count} voting account",
+        "accountCount_other": "{count} voting accounts"
+      },
+      "trackDetail": {
+        "title": "Tracks \u2014 {account}",
+        "track": "Track",
+        "locked": "Locked",
+        "conviction": "Conviction",
+        "value": "Value",
+        "share": "Share"
+      }
+    },
+    "referendums": {
+      "activeTab": "Active",
+      "endedTab": "Ended",
+      "outcome": "Outcome",
+      "ended": "Ended",
+      "unlockable": "Unlockable",
+      "locks": "Locks",
+      "noEndedReferendums": "No ended referendums with locks",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled",
+      "timedOut": "Timed out",
+      "killed": "Killed",
+      "unlockableStatus": "Unlockable",
+      "shadowedLock": "Shadowed",
+      "lockedUntil": "Locked until ~{date}",
+      "time": {
+        "today": "Today",
+        "daysAgo_one": "{count}d ago",
+        "daysAgo_other": "{count}d ago"
+      },
+      "detail": {
+        "endedTitle": "Ended Referendum",
+        "lockStatus": "Lock Status",
+        "endedDate": "Ended {date}"
+      }
+    },
+    "unlockSchedule": {
+      "title": "Unlock Schedule",
+      "claimableNow": "Claimable",
+      "pendingLocks": "Pending",
+      "delegated": "Delegated",
+      "upcomingUnlocks": "Upcoming Unlocks",
+      "noLocks": "No governance locks found",
+      "accountCount": "{count} accounts",
+      "breakdown": {
+        "account": "Account",
+        "amount": "Amount",
+        "chain": "Chain",
+        "share": "Share",
+        "accountCount": "{count} accounts"
+      }
+    },
+    "activeReferendums": {
+      "title": "Referenda",
+      "noReferendums": "No active referendums found",
+      "aye": "Aye",
+      "nay": "Nay",
+      "abstain": "Abstain",
+      "split": "Split",
+      "unknownTrack": "Unknown track",
+      "id": "#",
+      "track": "Track",
+      "proposal": "Proposal",
+      "allChains": "All chains",
+      "searchPlaceholder": "Search referendums...",
+      "noResults": "No referendums match your filters",
+      "votes": "Votes",
+      "time": "Time",
+      "tvl": "TVL",
+      "detail": {
+        "title": "Referendum Details",
+        "ourVotes": "Our Votes",
+        "account": "Account",
+        "vote": "Vote",
+        "amount": "Amount",
+        "conviction": "Conviction",
+        "value": "Value (USD)"
+      }
     },
     "priceCharts": {
       "title": "Price Tracker",
@@ -685,6 +837,23 @@
     "createOrImportAccount": "Create a new account or import an existing one",
     "searchEmpty": "Nothing was found for the \"{query}\""
   },
+  "extrinsicBuilder": {
+    "pallet": "Pallet",
+    "palletPlaceholder": "Select pallet...",
+    "call": "Call",
+    "callPlaceholder": "Select call...",
+    "accountPlaceholder": "Enter account address",
+    "enumPlaceholder": "Select variant...",
+    "addItem": "Add item",
+    "optionSome": "Some",
+    "optionNone": "None",
+    "accounts": "Accounts",
+    "accountHint": "Account",
+    "balanceHint": "Balance",
+    "contacts": "Contacts",
+    "encodingError": "Failed to encode call data. Check parameters.",
+    "depthLimitReached": "Nested call builder is limited to 3 levels. Enter call data as hex."
+  },
   "fallbackScreen": {
     "message": "Sorry, something went wrong",
     "omniLogoAlt": "Nova Spektr logo",
@@ -693,6 +862,12 @@
   "features": {
     "account-sync": {
       "syncAccountsLabel": "Sync accounts"
+    },
+    "hide-unnamed-wallets": {
+      "hideTooltip": "Hide auto-discovered wallets. Keeps only wallets named via the address book, an on-chain identity, or manually. You can still hide individual wallets manually.",
+      "unhideTooltip": "Show auto-discovered wallets",
+      "hiddenToast": "Auto-discovered wallets hidden from wallet management",
+      "restoredToast": "Auto-discovered wallets are shown in wallet management"
     }
   },
   "fellowship": {
@@ -728,8 +903,8 @@
         "promoted": "has been promoted to rank {rank}",
         "proven": "proved his rank {rank}",
         "referendumFallback": "created a referendum <link></link>",
-        "submittedPromotion": "submitted <evidence>evidence</evidence> with a wish to promotion",
-        "submittedRetention": "submitted <evidence>evidence</evidence> with a wish to retention"
+        "submittedPromotion": "submitted <0 /> with a wish to promotion",
+        "submittedRetention": "submitted <0 /> with a wish to retention"
       },
       "referendum": {
         "promote": "created a referendum <link></link> to promote {target} to rank {rank}",
@@ -1145,7 +1320,7 @@
       },
       "modalTitle": "Evidence & Salary",
       "promotionApplied": "Applied for promotion:",
-      "promotionAppliedAlertDescription": "You are already uploaded evidence for promotion. If you want to add it for retention, you can upload it again — the previous one will be replaced.",
+      "promotionAppliedAlertDescription": "You are already uploaded evidence for promotion. If you want to add it for retention, you can upload it again - the previous one will be replaced.",
       "promotionAppliedAlertTitle": "Promotion evidence is uploaded",
       "promotionEvidenceModalTitle": "Submit your promotion evidence",
       "promotionHelpRank1": "<li>Provide three examples of meaningful protocol contributions.</li><li>Actively design a deployable or future protocol component at PRP² standards.</li><li>Assist in analysis, formalization, or implementation at peer-reviewed or PRP standards.</li><li>Know Polkadot’s key goals and principles.</li><li>Examples: fixing key issues, enabling network fixes, proposing innovations, or improving protocol design.</li>",
@@ -1356,6 +1531,30 @@
       "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
     },
+    "onChainData": {
+      "amount": "Amount",
+      "call": "Track",
+      "callData": "Call data",
+      "callDataCopied": "Call data copied!",
+      "callHash": "Call hash",
+      "callHashCopied": "Call hash copied!",
+      "decode": "Decode",
+      "description": "Description",
+      "details": "Details",
+      "documentHash": "Document hash",
+      "documentHashCopied": "Document hash copied!",
+      "governanceNotCreated": "Governance referendum not created yet",
+      "member": "Member",
+      "origin": "Origin",
+      "proposalNotAvailable": "Proposal data not available",
+      "referendumId": "Referendum ID",
+      "proposalParseFailed": "Failed to parse proposal data",
+      "pullRequest": "Pull request",
+      "referendumNotCreated": "Referendum not created yet",
+      "targetRank": "Target rank",
+      "title": "On-chain data",
+      "viewJson": "View JSON"
+    },
     "whitelist": {
       "aiGenerated": "AI generated",
       "callData": "Call data",
@@ -1366,6 +1565,76 @@
     }
   },
   "flexibleMultisig": {
+    "editProxy": {
+      "banner": {
+        "notSelected": "Modify the current multisig or pick one from the list",
+        "scope": {
+          "openOverview": "Open overview"
+        },
+        "stateAddressBook": "From address book",
+        "stateModify": "New address",
+        "stateNoChanges": "No changes yet",
+        "stateWallet": "From your wallets",
+        "was": "Current",
+        "willBecome": "New",
+        "willBeRemoved": "Will be removed"
+      },
+      "confirm": {
+        "submitterWallet": "Submitter wallet",
+        "signDisabled": {
+          "loading": "Loading transaction details — please wait.",
+          "validating": "Validating transaction…",
+          "pendingOperation": "An edit operation for this multisig is already pending. Wait for it to finish before submitting another.",
+          "sameMultisig": "The new proxy is identical to the current one. Pick different signatories or a threshold to continue.",
+          "balance": "The signer doesn't have enough balance to cover the deposits and fee.",
+          "invalid": "Transaction is incomplete. Go back and review your selection."
+        }
+      },
+      "loader": {
+        "fetchingMultisigs": "Fetching your multisigs…",
+        "findingConnections": "Resolving on-chain connections…",
+        "planningEdit": "Planning the edit…"
+      },
+      "editButton": "Edit",
+      "modifyCurrent": {
+        "addSignatory": "Add new signatory",
+        "duplicateSignatories": "Some signatories are duplicated",
+        "emptySignatories": "Some signatories are empty",
+        "notEnoughSignatories": "Add at least 2 signatories",
+        "removeSignatory": "Remove signatory",
+        "signatoriesLabel": "Signatories",
+        "thresholdHint": "{ threshold } of { total } signatories",
+        "thresholdOf": "of { total } signatories",
+        "thresholdLabel": "Threshold"
+      },
+      "mode": {
+        "sectionTitle": "Execution mode",
+        "trustedBullet1": "Atomic - new proxy is added and old one is removed in one transaction",
+        "trustedBullet2": "Cannot be undone if the proxied account has no other active proxy",
+        "trustedBullet3": "Do not use if you want to verify the new proxy first",
+        "trustedHint": "Old proxy is removed in the same transaction",
+        "trustedShort": "Atomic swap",
+        "trustedTitle": "Atomic swap",
+        "verifiedBullet1": "New proxy is added; old one stays",
+        "verifiedBullet2": "Verify the new proxy before retiring the old one",
+        "verifiedBullet3": "Recommended",
+        "verifiedHint": "Add the new proxy; old one stays until you remove it",
+        "verifiedShort": "Verified swap",
+        "verifiedTitle": "Verified swap"
+      },
+      "picker": {
+        "fromAddressBook": "From address book",
+        "myWallets": "My multisig wallets",
+        "next": "Next",
+        "search": "Replace with",
+        "searchPlaceholder": "Search wallets and address book…",
+        "tabs": {
+          "modify": "Modify current",
+          "replace": "Replace with existing"
+        }
+      },
+      "signingPathProxyTypeDisabled": "This proxy type can't add or remove proxies. Pick a proxy with the “Any” proxy type."
+    },
     "editSubtitle": "Change the signatories and set the signatory threshold for your flexible multisig.",
     "editTitleOn": "Edit flexible multisig on",
     "thresholdDescription": "Minimum signatories needed to approve."
@@ -1847,10 +2116,12 @@
           "RECIPIENT_HAS_LESS_THAN_ED": "Recipient has less than ED",
           "UNKNOWN_ERROR": "Unknown error"
         },
+        "emptyFileDescription": "File has no data rows. Add at least one address and try uploading again.",
         "invalidDataDescription": "File couldn’t be read. Please check data formatting and try again.",
         "invalidDataRow": "Row {row}",
         "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
-        "issueLine": "Row {row} — {path}: {message}",
+        "tooManyRowsDescription": "File exceeds the {maxRows} row limit. Please split the file into smaller batches and upload again.",
+        "issueLine": "Row {row} - {path}: {message}",
         "issuesTitle": "Found {count} errors",
         "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
         "title": "CSV error",
@@ -1916,7 +2187,7 @@
     "balancesLabel": "Portfolio",
     "dashboardLabel": "Dashboard",
     "basketLabel": "Basket",
-    "callDataLabel": "Add call data",
+    "callDataLabel": "Build an operation",
     "customOperationLabel": "Custom operation",
     "fellowship": "Fellowship",
     "governance": "Governance",
@@ -1961,7 +2232,8 @@
     "emptySearchDescription": "Update the search or cancel filtering",
     "emptySearchTitle": "Nothing was found",
     "noNotificationsDescription": "You don't have notifications yet",
-    "searchPlaceholder": "Search by wallet or event type",
+    "dateRangePlaceholder": "Filter by date",
+    "searchPlaceholder": "Search notifications",
     "title": "Notifications",
     "toast": {
       "batch": {
@@ -2134,6 +2406,9 @@
     "accountNotFoundDescription": "Your account is not listed as a signatory in this multisig.\nPlease add account to sign operation.",
     "accountNotFoundTitle": "No account to sign operation",
     "addCallDataButton": "Add call data",
+    "addWalletButton": "Add wallet",
+    "addWalletTooltip": "Add a wallet you can sign with.",
+    "addWalletTooltipMultisig": "You don't have a wallet with a signatory key for this multisig. Add one to sign transactions.",
     "addedToBasket": "Added to basket",
     "addToBasket": "Add to basket",
     "advanced": "Advanced",
@@ -2165,6 +2440,9 @@
     "connectionTimeoutTitle": "Connection timeout",
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Add an optional note for this operation...",
+    "descriptionSaveError": "Failed to store description",
     "createFlexibleMultisig": {
       "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below.",
       "rejectConfirmDescription": "If you reject this operation then you will cancel the creation of the Pure Proxy account and will not create a flexible multisig. The Proxy deposit will be refunded to you. Are you sure you want to reject this operation?",
@@ -2317,6 +2595,93 @@
     "xcmFee": "Cross-chain fee"
   },
   "operations": {
+    "drafts": {
+      "title": "Drafts",
+      "createNew": "New draft",
+      "selectMultisig": "Select account",
+      "selectNetwork": "Network",
+      "backButton": "Back",
+      "callDataLabel": "Call data",
+      "callDataPlaceholder": "0x...",
+      "callDataErrorHex": "Call data must be valid hex starting with 0x",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Note for signatories (max 500 characters)",
+      "descriptionRequired": "Description is required",
+      "descriptionMaxLengthError": "Description cannot exceed {max} characters",
+      "summaryTitle": "Summary",
+      "summaryMultisig": "Multisig",
+      "summaryThreshold": "Threshold",
+      "summaryOperation": "Operation",
+      "summaryTransaction": "Transaction",
+      "summaryAmount": "Amount",
+      "createDraftButton": "Create",
+      "createSuccess": "Draft created",
+      "createError": "Failed to create draft",
+      "accountNotInAddressBook": "This account is not in the address book contacts. Add it to contacts before creating a draft.",
+      "connectToCreate": "Sign in to create drafts",
+      "connectToSubmit": "Sign in to submit drafts",
+      "noWritePermission": "You do not have permission to create drafts. Contact your admin.", 
+      "noMultisigsInAddressBook": "No multisig accounts found. Add a multisig wallet first.",
+      "noDescription": "No description",
+      "unknownMultisig": "Unknown multisig",
+      "unknownChain": "Unknown chain",
+      "badge": "Draft",
+      "operationBadge": "From draft",
+      "overviewButton": "Overview",
+      "editButton": "Edit",
+      "submitButton": "Submit",
+      "addCallDataButton": "Add call data",
+      "initiateButton": "Save as draft",
+      "initiateDisabledTooltip": "Fill in all transaction details to save as draft",
+      "modeCardLabel": "Save as draft",
+      "modeCardDescription": "Pick the source account and execution path below - the operation will be saved as a draft and assigned to the selected initiator instead of signed now.",
+      "editDraftTitle": "Edit draft",
+      "editSuccess": "Draft updated",
+      "editError": "Failed to update draft",
+      "saveButton": "Save",
+      "deleteTitle": "Delete draft",
+      "deleteDescription": "Are you sure you want to delete this draft? This action cannot be undone.",
+      "deleteCancel": "Cancel",
+      "deleteConfirm": "Delete",
+      "deleteSuccess": "Draft deleted",
+      "deleteError": "Failed to delete draft",
+      "discardTitle": "Unsaved changes",
+      "discardDescription": "You have unsaved changes. Discard them?",
+      "discardConfirm": "Discard",
+      "discardCancel": "Keep editing",
+      "reconnectOverlayButton": "Reconnect",
+      "submitTitle": "Submit draft",
+      "submitSignatory": "Signatory",
+      "noCallDataToSubmit": "Call data is required to submit",
+      "syncError": "Failed to sync operation description",
+      "syncRetry": "Try again",
+      "extrinsicError": "Call data is invalid or incompatible with this chain",
+      "internalPathError": "Signing path is invalid",
+      "signingPathUnresolved": "The signing path saved with this draft can no longer be resolved against your accounts. The draft cannot be submitted along the original route.",
+      "submitSuccess": "Draft submitted",
+      "initiatorUnavailable": "The initiator is no longer a signatory of this multisig. Please pick another.",
+      "submittedBadge": "Submitted",
+      "stepMultisig": "Account",
+      "stepCallData": "Call data",
+      "stepSigningPath": "Signing path",
+      "stepConfirm": "Confirm",
+      "stepCompleted": "Step {step} completed",
+      "editHop": "Edit hop {step}",
+      "skipButton": "Skip",
+      "skipTooltip": "You'll be able to set the actual extrinsic when submitting this operation.",
+      "summaryNoCallData": "No call data - you'll add it when submitting this operation.",
+      "linkCopied": "Draft link copied!",
+      "shareDraftTooltip": "Share draft link with signatories",
+      "selectMultisigForProxy": "Proxy multisig",
+      "proxyLabel": "Proxy",
+      "viewDraft": "View draft",
+      "notifications": {
+        "added": "New draft added",
+        "updated": "Draft updated",
+        "removed": "Draft removed",
+        "batch": "Draft changes"
+      }
+    },
     "callData": {
       "adding": "Adding call data...",
       "continueButton": "Continue",
@@ -2385,6 +2750,8 @@
       "unstakeOn": "Unstake { asset } on",
       "vestedTransfer": "Vested transfer",
       "vestedTransferOn": "Vested transfer on",
+      "verifyProxy": "Verify proxy",
+      "verifyProxyOn": "Verify proxy on",
       "vote": "Vote { asset } on"
     },
     "noOperationsFilters": "Try to use different keywords or adjust filters",
@@ -2437,10 +2804,43 @@
       "vestedTransfer": "Vested transfer",
       "vote": "Vote"
     },
+    "editProxy": {
+      "title": "Edit flexible multisig",
+      "trustedTag": "Atomic swap",
+      "trustedTooltip": "Old proxy is removed in the same transaction",
+      "verifiedTag": "Verified swap",
+      "verifiedTooltip": "New proxy is added; the old one is removed later, after verification",
+      "details": {
+        "headerLabel": "Proxy change",
+        "previousSection": "Old proxy",
+        "targetSection": "New proxy",
+        "threshold": "{threshold} of {total}",
+        "modeSection": "Execution mode",
+        "trustedDescription": "Trusted (atomic): old proxy will be removed in the same transaction.",
+        "verifiedDescription": "Verified (add-only): old proxy will be removed later, after verification.",
+        "openProxyDetails": "Open proxy details",
+        "unknownName": "(unknown)"
+      }
+    },
+    "verifyProxy": {
+      "title": "Verification for wallet",
+      "tag": "Verification",
+      "tooltip": "Signer is proving control of the proxied wallet via a marker remark",
+      "details": {
+        "targetSection": "Verifying wallet",
+        "openProxyDetails": "Open wallet details",
+        "memo": "Memo"
+      }
+    },
     "viewOperation": "View operation"
   },
   "portfolilo": {
     "selectNetworkLabel": "Select network"
+  },
+  "presets": {
+    "all": "All",
+    "searchPresets": "Search presets...",
+    "manage": "Manage Presets"
   },
   "price": {
     "withCode": "{ amount } { code }",
@@ -2500,7 +2900,7 @@
   },
   "pureProxyRemove": {
     "warning": {
-      "inputHint": "Enter the sentence <i>“I understand that I will not be able to manage this wallet”</i> in the field above",
+      "inputHint": "Enter the sentence <i>\"I understand that I will not be able to manage this wallet\"</i> in the field above",
       "isCorrectProxyCheckbox": "I am certain that I am removing <strong>the correct delegated authority</strong> from this Pure Proxy",
       "isInaccessibleCheckbox": "I understand that once this delegated authority is removed then <strong>the pure proxy will become permanently inaccessible and cannot be restored</strong>",
       "isIrreversibleCheckbox": "I understand that this <strong>process is irreversible</strong> and cannot be undone",
@@ -2683,6 +3083,41 @@
     "signingMultipleInProgress": "Signing {current} of {total}...",
     "title": "Signing",
     "troubleshootingLink": "I have an error in Polkadot Vault"
+  },
+  "signingPath": {
+    "signingPath": "Signing path",
+    "multisigsGroup": "Multisigs",
+    "proxiedAccountsGroup": "Proxied accounts",
+    "hopsCount": "{count} hops",
+    "openOverview": "Open overview",
+    "fullSigningPath": "Full signing path",
+    "notSignedYet": "This does not sign yet",
+    "notSignedYetHint": "A draft goes into the pending list so co-signers can review before anything is broadcast.",
+    "sourceAccount": "Source account",
+    "sourceAccountDescription": "The account that executes the transaction",
+    "selectSource": "Select a source account",
+    "pickMultisigForProxy": "Pick a wallet to sign via",
+    "pickInitiator": "Pick an initiator",
+    "pickInitiatorOrNested": "Pick an initiator or nested multisig",
+    "pathComplete": "Path complete",
+    "pathCompleteHint": "Click any hop above to edit, or Back to change the last one",
+    "noOptions": "No options available for this hop",
+    "label": {
+      "source": "Source",
+      "proxied": "Proxied",
+      "proxiedWithType": "Proxied · {type}",
+      "viaMultisig": "via Multisig",
+      "multisig": "Multisig",
+      "multisigThreshold": "Multisig {current} of {total}",
+      "thresholdRatio": "{current} of {total}",
+      "initiator": "Initiator"
+    },
+    "control": {
+      "editTitle": "Edit signing path",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "transferProxyTypeDisabled": "This proxy type cannot perform transfers"
   },
   "splashscreen": {
     "multisig": {
@@ -3073,6 +3508,7 @@
           "START_BLOCK_IN_PAST": "Block in the past. Make sure you are using relaychain block number",
           "UNKNOWN_ERROR": "Unknown error"
         },
+        "emptyFileDescription": "File has no data rows. Add at least one address and try uploading again.",
         "invalidDataRow": "Row {row}",
         "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
         "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
@@ -3183,7 +3619,7 @@
       "proxyVia": "via",
       "removeButton": "Remove",
       "removeMessage": "Are you sure you want to remove { walletName }?",
-      "removeProxyAction": "Revoke authority",
+      "removeProxyAction": "Delete",
       "removeTitle": "Remove wallet",
       "removeWalletDesc": "Are you sure you want to remove {walletName}?",
       "removeWalletTitle": "Remove wallet",
@@ -3201,6 +3637,50 @@
       "walletRemoved": "Wallet removed",
       "walletWillBeHidden": "Wallet will be hidden",
       "youCanRestoreIt": "You can restore it any time from Settings."
+    },
+    "proxies": {
+      "tabTitle": "Proxies",
+      "tabTitleShort": "Proxies",
+      "summary": "This proxy controls {count} proxied wallets — {verified} verified",
+      "summaryEmpty": "This proxy has no proxied wallets yet",
+      "empty": "No proxies yet",
+      "statusVerified": "Verified",
+      "statusNotVerified": "Not verified",
+      "statusPendingVerification": "Pending verification",
+      "statusPendingDelegation": "Pending delegation",
+      "verifyFormResolvingAccounts": "Resolving proxy account…",
+      "verifyMemoLabel": "Memo",
+      "verifyMemoPlaceholder": "Optional note (max 200 chars)",
+      "verifyConfirmMemo": "Memo",
+      "verifyViaProxy": "Verify proxy",
+      "notVerifiedHeadline": "This proxy is not verified yet.",
+      "verifyDescription": "Verify submits a `system.remarkWithEvent` via the proxy so we can confirm it on-chain. Because the proxy is a multisig, it's submitted as a multisig proposal-signatories must approve it before it executes.",
+      "cannotAutoVerify": "Test verification isn't supported for this proxy type. This row will be marked Verified the first time the proxy is used.",
+      "cannotAutoVerifyDelay": "Delayed proxies require an announce-and-execute flow that isn't supported in Spektr yet. This row will be marked Verified the first time the proxy is used.",
+      "nonMultisigDescription": "Verification for non-multisig proxies isn't available yet.",
+      "verifiedHeadline": "Verified via multisig operation",
+      "verifiedOperationLabel": "Operation:",
+      "verifiedDateLabel": "Executed at:",
+      "verifiedOperationUnknown": "Unknown call",
+      "viewOperation": "View operation",
+      "shareOperation": "Share",
+      "revokeAuthority": "Revoke authority",
+      "pendingAdditionDescription": "An add-proxy operation is waiting for multisig signatures.",
+      "pendingRemovalDescription": "A remove-proxy operation is waiting for multisig signatures.",
+      "pendingVerificationHeadline": "Verification awaiting signatures",
+      "pendingVerificationDescription": "A verification operation has been created and is waiting for the remaining multisig signatures.",
+      "noWalletDescription": "This proxy account isn't available in Spektr yet. Add it as a wallet to interact with it.",
+      "noWalletCopyAddress": "Copy address",
+      "addWalletTooltip": "You don't have this proxy account as a wallet. Add one to sign transactions and verify this proxy.",
+      "verifyModalConfirmTitle": "Verify proxy",
+      "verifyModalSignTitle": "Sign verification",
+      "verifyModalSubmitTitle": "Submitting verification",
+      "verifyConfirmSubtitle": "Send a minimal system.remark through the proxy from the proxy multisig.",
+      "verifyConfirmPureProxy": "Pure proxy (real)",
+      "verifyConfirmProxyType": "Proxy type",
+      "verifyConfirmFee": "Transaction fee",
+      "verifyContinue": "Continue",
+      "verifySignPending": "Signing and submitting is handled in the Operations page once the proposal is created."
     },
     "multisig": {
       "accountGroup": "Account",
@@ -3279,6 +3759,28 @@
     "title": "Wallets",
     "walletConnectLabel": "WalletConnect",
     "watchOnlyLabel": "Watch-only"
+  },
+  "operationTemplates": {
+    "saveButton": "Save as template",
+    "panelTitle": "Templates",
+    "apply": "Apply",
+    "delete": "Delete template",
+    "renameHint": "Rename template",
+    "renameTitle": "Rename template",
+    "renameSave": "Save",
+    "staleTooltip": "Chain runtime was updated since this template was saved. It may fail to parse - re-save to refresh.",
+    "emptyListDescription": "Save an operation as a template to reuse its call data later.",
+    "otherChains": "In other networks ({num})",
+    "crossChainDisabled": "Switch network to apply",
+    "viewDetails": "View details",
+    "toggleDetails": "Toggle details",
+    "copyCallData": "Copy call data",
+    "parseFailed": "Unable to parse call data with current runtime.",
+    "toastCreated": "Template saved",
+    "toastRemoved": "Template deleted",
+    "toastApplied": "Template applied",
+    "toastCallDataCopied": "Call data copied",
+    "undo": "Undo"
   },
   "welcome": {
     "addLedgerButton": "Coming soon",

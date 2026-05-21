@@ -2,6 +2,7 @@ import { combine, createStore, sample } from 'effector';
 
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
+import { accountService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { balanceSubModel } from '@/features/assets-balances';
 import { dashboardWidgetsSlot } from '@/pages/Dashboard';
@@ -24,7 +25,12 @@ sample({
 sample({
   clock: combine(dashboardModel.$selectedContactAccountIds, networkModel.$chainsList),
   filter: ([accountIds]) => accountIds.length > 0,
-  fn: ([accountIds, chains]) => chains.flatMap((chain) => accountIds.map((accountId) => ({ accountId, chain }))),
+  fn: ([accountIds, chains]) =>
+    chains.flatMap((chain) =>
+      accountIds
+        .filter((accountId) => accountService.isAccountSchemeMatchChain(accountId, chain))
+        .map((accountId) => ({ accountId, chain })),
+    ),
   target: balanceSubModel.fetchAccountIds,
 });
 

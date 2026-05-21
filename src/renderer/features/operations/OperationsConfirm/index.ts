@@ -5,6 +5,7 @@ export * from './AddProxy';
 export * from './AddPureProxied';
 export * from './RemoveProxy';
 export * from './RemoveProxy';
+export * from './VerifyProxy';
 
 export * from './BondNominate';
 export * from './Nominate';
@@ -32,3 +33,4 @@ export { type ConfirmInfo } from './lib/createTransactionConfirmStore';
 
 export { ConfirmSlider } from './common/ConfirmSlider';
 export { MultisigExistsAlert } from './common/MultisigExistsAlert';
+export { MultisigOperationDescriptionField } from './common/MultisigOperationDescriptionField';

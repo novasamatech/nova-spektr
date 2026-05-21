@@ -7,6 +7,7 @@ import { Button } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { EvidenceVotingConfirmation } from '@/features/fellowship-evidence';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -45,6 +46,8 @@ export const Confirmation = memo(({ id, secondaryActionButton, hideSignButton, o
         proposerMember={proposerMember}
         evidence={evidence}
       />
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (

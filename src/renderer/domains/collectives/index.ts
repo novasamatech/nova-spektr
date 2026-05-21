@@ -13,14 +13,19 @@ export type {
   CancelledReferendum,
   CompletedReferendum,
   Deposit,
+  EvidenceProposal,
   KilledReferendum,
   OngoingReferendum,
   Proposal,
+  ProposalCallData,
   Referendum,
   RejectedReferendum,
   RfcProposal,
+  SpendProposal,
   Tally,
   TimedOutReferendum,
+  UnknownProposal,
+  WhitelistProposal,
 } from './referendum/types';
 
 export { referendumMeta } from './referendumMeta/store';
@@ -35,7 +40,7 @@ export type { CoreMember, Member } from './member/types';
 
 export { evidence } from './evidence/store';
 export { evidenceService } from './evidence/service';
-export { $ipfsGateways, $primaryIpfsGateway, ipfsGatewayModel } from './evidence/ipfsGateway';
+export { $ipfsGateways, ipfsGatewayModel } from './evidence/ipfsGateway';
 export {
   useEvidencePeriod,
   useEvidenceSummary,

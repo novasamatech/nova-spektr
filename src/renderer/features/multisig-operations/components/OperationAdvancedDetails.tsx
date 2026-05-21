@@ -1,12 +1,13 @@
+import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, getNativeAsset, truncate } from '@/shared/lib/utils';
+import { cnTw, getNativeAsset, nullable, truncate } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance } from '@/shared/ui-entities';
-import { Box, Copy, Modal, Tooltip, useNotification } from '@/shared/ui-kit';
+import { Copy, Modal, Skeleton, Tooltip, useNotification } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel, useNetworkData } from '@/entities/network';
@@ -124,10 +125,10 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
                     </button>
                   </Modal.Trigger>
                   <Modal.Title close>{t('operation.viewJSON.label')}</Modal.Title>
-                  <Modal.Content>
-                    <Box padding={5}>
+                  <Modal.Content disableScroll>
+                    <div className="max-h-[600px] overflow-y-auto p-5 break-all">
                       <Json value={jsonArgs} name="operation" />
-                    </Box>
+                    </div>
                   </Modal.Content>
                 </Modal>
               )}
@@ -135,9 +136,21 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
           </DetailRow>
         )}
 
-        {deposit && nativeAsset && (
+        {!nullable(deposit) && nativeAsset && (
           <DetailRow label={t('operation.details.deposit')} className="text-text-secondary">
-            <AssetBalance value={deposit} asset={nativeAsset} className="py-[3px] text-footnote text-text-secondary" />
+            {/* `deposit` may rehydrate from cache as a plain BN-shaped object (no prototype),
+                which makes formatBalance render `NaN` with a trillions suffix. Trust only a real
+                BN instance or a numeric string; anything else stays under a skeleton until a
+                fresh on-chain fetch replaces it. */}
+            {BN.isBN(deposit) || (typeof deposit === 'string' && /^-?\d+$/.test(deposit)) ? (
+              <AssetBalance
+                value={deposit}
+                asset={nativeAsset}
+                className="py-[3px] text-footnote text-text-secondary"
+              />
+            ) : (
+              <Skeleton height={4} width={24} />
+            )}
           </DetailRow>
         )}
 

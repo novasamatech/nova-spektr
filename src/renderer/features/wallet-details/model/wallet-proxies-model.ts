@@ -11,7 +11,7 @@ import { createSubscriptionResource, deriveFromResources } from '@/shared/resour
 import { type AnyAccount, accountService, accountSync, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 
-export type Proxy = Omit<ProxyAccount, 'id' | 'delay'>;
+export type Proxy = Omit<ProxyAccount, 'id'>;
 type ChainProxies = { proxies: Proxy[]; deposit: BN | null };
 type WalletProxiesByChain = Record<ChainId, ChainProxies>;
 
@@ -63,6 +63,7 @@ const walletProxiesSubscription = createSubscriptionResource<WalletProxiesSubscr
             proxiedAccountId: account,
             chainId: chain.chainId,
             proxyType: proxy.proxyType.toString() as ProxyType,
+            delay: proxy.delay?.toNumber() ?? 0,
           }));
 
           allProxies.push(...(mappedProxies ?? []));
@@ -204,6 +205,21 @@ const $isLoading = combine(
   ({ isProxiesLoading, isAccountSyncPending }) => isProxiesLoading || isAccountSyncPending,
 );
 
+const $allChainsLoaded = combine(
+  {
+    proxies: $walletProxies,
+    chains: networkModel.$chains,
+    apis: networkModel.$apis,
+    wallet: $wallet,
+  },
+  ({ proxies, chains, apis, wallet }) => {
+    if (!wallet) return true;
+    const expected = Object.values(chains).filter(chain => Boolean(apis[chain.chainId]));
+    if (expected.length === 0) return false;
+    return expected.every(chain => chain.chainId in proxies);
+  },
+);
+
 export const walletProxiesModel = {
   flow,
   $wallet,
@@ -212,4 +228,5 @@ export const walletProxiesModel = {
   $walletProxiesCount,
   $walletProxyGroups,
   $isLoading,
+  $allChainsLoaded,
 };

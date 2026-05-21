@@ -10,6 +10,8 @@ import {
   type TContact,
   type TMetadata,
   type TNotification,
+  type TOperationDescription,
+  type TOperationTemplate,
   type TProxy,
   type TWallet,
 } from '../lib/types';
@@ -18,6 +20,7 @@ import {
   addAccountNameType,
   addFlexibleMultisigProxyType,
   backupContactsBeforePKChange,
+  dropPersistedBackendContacts,
   migrateAccounts,
   migrateBasketTransactionAfterAddressRemoval,
   migrateCASBasket,
@@ -31,6 +34,7 @@ import {
   migratePVAccounts,
   migrateRevoteToVote,
   migrateWallets,
+  migrateWalletsHiddenReason,
   removeDeprecatedProxiedAccounts,
   renameBlockNumberToEntropyBlockNumber,
   restoreContactsAfterPKChange,
@@ -51,6 +55,8 @@ class DexieStorage extends Dexie {
   metadata: TMetadata;
   proxies: TProxy;
   basketTransactions: TBasketTransaction;
+  operationDescriptions: TOperationDescription;
+  operationTemplates: TOperationTemplate;
 
   constructor() {
     super('spektr');
@@ -165,6 +171,14 @@ class DexieStorage extends Dexie {
     this.version(47).stores({ contacts: 'id,source' }).upgrade(restoreContactsAfterPKChange);
     this.version(48).stores({ _contactsBackup: null });
 
+    this.version(49).stores({ operationDescriptions: 'id' });
+
+    this.version(50).stores({ operationTemplates: '++id, chainId' });
+
+    this.version(51).upgrade(dropPersistedBackendContacts);
+
+    this.version(52).upgrade(migrateWalletsHiddenReason);
+
     this.connections = this.table('connections');
     this.balances2 = this.table('balances2');
     this.wallets = this.table('wallets');
@@ -175,6 +189,8 @@ class DexieStorage extends Dexie {
     this.metadata = this.table('metadata');
     this.proxies = this.table('proxies');
     this.basketTransactions = this.table('basketTransactions');
+    this.operationDescriptions = this.table('operationDescriptions');
+    this.operationTemplates = this.table('operationTemplates');
   }
 }
 
@@ -217,4 +233,6 @@ export const dexieStorage = {
   metadata: dexie.metadata,
   balances2: dexie.balances2,
   basketTransactions: dexie.basketTransactions,
+  operationDescriptions: dexie.operationDescriptions,
+  operationTemplates: dexie.operationTemplates,
 };

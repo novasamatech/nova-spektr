@@ -51,7 +51,7 @@ export const BondNominate = () => {
   return (
     <Modal
       isOpen={isModalOpen}
-      size={step === Step.VALIDATORS ? 'fit' : 'md'}
+      size={step === Step.VALIDATORS ? 'fit' : 'mdlg'}
       onToggle={(open) => {
         if (!open) {
           closeModal();
@@ -72,12 +72,11 @@ export const BondNominate = () => {
         {bondNominateUtils.isConfirmStep(step) && (
           <Confirmation
             secondaryActionButton={
-              initiatorWallet &&
-              basketUtils.isBasketAvailable(initiatorWallet) && (
+              initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) ? (
                 <Button pallet="secondary" onClick={() => bondNominateFlow.txSaved()}>
                   {t('operation.addToBasket')}
                 </Button>
-              )
+              ) : undefined
             }
             onGoBack={() => bondNominateFlow.stepChanged(Step.VALIDATORS)}
           />

@@ -17,6 +17,8 @@ export const enum NotificationType {
 
   MULTISIG_OPERATION = 'MultisigOperationNotification',
   MULTISIG_EVENT = 'MultisigEventNotification',
+
+  DRAFT_CHANGE = 'DraftChangeNotification',
 }
 
 // User-facing notification event categories for settings
@@ -92,12 +94,15 @@ export type ProxyAction = BaseNotification & {
   proxiedAccountId: AccountId;
 };
 
+export type DraftNotification = BaseNotification;
+
 export type Notification =
   | MultisigCreated
   | FlexibleMultisigOperationNotification
   | MultisigOperationNotification
   | MultisigEventNotification
-  | ProxyAction;
+  | ProxyAction
+  | DraftNotification;
 
 type NotificationInput<T extends Notification> = Omit<T, 'id' | 'read' | 'dateCreated'> & {
   batch: BatchParams;
@@ -108,10 +113,12 @@ export type CreateFlexibleMultisigOperationParams = NotificationInput<FlexibleMu
 export type CreateMultisigOperationParams = NotificationInput<MultisigOperationNotification>;
 export type CreateMultisigEventParams = NotificationInput<MultisigEventNotification>;
 export type CreateProxyActionParams = NotificationInput<ProxyAction>;
+export type CreateDraftNotificationParams = NotificationInput<DraftNotification>;
 
 export type CreateNotificationParams =
   | CreateMultisigCreatedParams
   | CreateFlexibleMultisigOperationParams
   | CreateMultisigOperationParams
   | CreateMultisigEventParams
-  | CreateProxyActionParams;
+  | CreateProxyActionParams
+  | CreateDraftNotificationParams;

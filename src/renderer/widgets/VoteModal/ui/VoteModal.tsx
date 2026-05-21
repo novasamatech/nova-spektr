@@ -71,12 +71,11 @@ export const VoteModal = ({ referendum, asset, chain, onClose, onSuccess }: Prop
           {isStep(step, Step.CONFIRM) && (
             <VoteConfirmation
               secondaryActionButton={
-                initiatorWallet &&
-                basketUtils.isBasketAvailable(initiatorWallet) && (
+                initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) ? (
                   <Button pallet="secondary" onClick={() => voteModal.events.txSaved()}>
                     {t('operation.addToBasket')}
                   </Button>
-                )
+                ) : undefined
               }
               onGoBack={() => voteModal.events.setStep(Step.INIT)}
             />

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -6,8 +6,8 @@ import { BodyText, FootnoteText, SmallTitleText, TitleText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { useBalanceAllocation } from '../hooks/useBalanceAllocation';
-import { useChainHoldings } from '../hooks/useChainHoldings';
-import { useHoldings } from '../hooks/useHoldings';
+import { type ChainHolding, useChainHoldings } from '../hooks/useChainHoldings';
+import { type Holding, useHoldings } from '../hooks/useHoldings';
 
 import { AssetDetailModal } from './AssetDetailModal';
 import { BalanceAllocationBars } from './BalanceAllocationBars';
@@ -25,7 +25,7 @@ type Props = {
   allEntries: EntryLike[];
 };
 
-const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold transition-colors';
+const toggleButtonClass = 'flex-1 cursor-pointer rounded px-3 py-1 text-footnote font-semibold transition-colors';
 const activeToggleClass = 'bg-white text-text-primary shadow-sm';
 const inactiveToggleClass = 'text-text-tertiary hover:text-text-secondary';
 
@@ -40,6 +40,13 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
 
   const selectedHolding = holdings.find((h) => h.priceId === selectedPriceId) ?? null;
   const selectedChainHolding = chainHoldings.find((h) => h.chainId === selectedChainId) ?? null;
+
+  const switchToAssetView = useCallback(() => setViewMode('asset'), []);
+  const switchToChainView = useCallback(() => setViewMode('chain'), []);
+  const handleHoldingSelect = useCallback((h: Holding) => setSelectedPriceId(h.priceId), []);
+  const handleChainSelect = useCallback((h: ChainHolding) => setSelectedChainId(h.chainId), []);
+  const closeAssetDetail = useCallback(() => setSelectedPriceId(null), []);
+  const closeChainDetail = useCallback(() => setSelectedChainId(null), []);
 
   if (!fiatFlag) return null;
 
@@ -80,13 +87,13 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
           <div className="mb-3 flex rounded-md bg-tab-background p-0.5">
             <button
               className={`${toggleButtonClass} ${viewMode === 'asset' ? activeToggleClass : inactiveToggleClass}`}
-              onClick={() => setViewMode('asset')}
+              onClick={switchToAssetView}
             >
               {t('dashboard.portfolioOverview.byAsset')}
             </button>
             <button
               className={`${toggleButtonClass} ${viewMode === 'chain' ? activeToggleClass : inactiveToggleClass}`}
-              onClick={() => setViewMode('chain')}
+              onClick={switchToChainView}
             >
               {t('dashboard.portfolioOverview.byChain')}
             </button>
@@ -94,13 +101,9 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
 
           <div>
             {viewMode === 'asset' ? (
-              <HoldingsList holdings={holdings} currency={currency} onSelect={(h) => setSelectedPriceId(h.priceId)} />
+              <HoldingsList holdings={holdings} currency={currency} onSelect={handleHoldingSelect} />
             ) : (
-              <ChainHoldingsList
-                chainHoldings={chainHoldings}
-                currency={currency}
-                onSelect={(h) => setSelectedChainId(h.chainId)}
-              />
+              <ChainHoldingsList chainHoldings={chainHoldings} currency={currency} onSelect={handleChainSelect} />
             )}
           </div>
         </>
@@ -112,7 +115,7 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
           accountIds={accountIds}
           allEntries={allEntries}
           currency={currency}
-          onClose={() => setSelectedPriceId(null)}
+          onClose={closeAssetDetail}
         />
       )}
 
@@ -121,7 +124,7 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
           chainHolding={selectedChainHolding}
           accountIds={accountIds}
           currency={currency}
-          onClose={() => setSelectedChainId(null)}
+          onClose={closeChainDetail}
         />
       )}
     </DashboardWidget>

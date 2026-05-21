@@ -92,7 +92,7 @@ export const Transfer = ({ chain, asset, destination, xcm, onClose }: Props) => 
 
   return (
     <>
-      <Modal size="md" isOpen={isModalOpen} testId={TEST_IDS.TRANSFER.MODAL} onToggle={handleToggle}>
+      <Modal size="mdlg" isOpen={isModalOpen} testId={TEST_IDS.TRANSFER.MODAL} onToggle={handleToggle}>
         <Modal.Title close>{getModalTitle()}</Modal.Title>
         <Modal.Content>
           {transferUtils.isInitStep(step) && <TransferForm onGoBack={closeModal} />}

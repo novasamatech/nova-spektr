@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAmount, getNativeAsset, toAccountId } from '@/shared/lib/utils';
 import { Button, CaptionText, DetailRow, Duration, FootnoteText, Icon } from '@/shared/ui';
-import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
 import { stakingService } from '@/domains/staking';
@@ -16,6 +16,8 @@ import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
+import { SigningPathConfirmSection } from '../../common/SigningPathConfirmSection';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -60,7 +62,8 @@ export const Confirmation = ({
   });
 
   const { getEraDurationSeconds } = stakingService;
-  const eraDurationSeconds = api && timelineApi ? getEraDurationSeconds(api, timelineApi) : undefined;
+  const eraDurationSeconds =
+    api && timelineApi && confirm?.meta.chain ? getEraDurationSeconds(api, timelineApi, confirm.meta.chain) : undefined;
 
   const identities = useStoreMap({
     store: identity.$list,
@@ -84,9 +87,13 @@ export const Confirmation = ({
 
   const nativeAsset = getNativeAsset(confirm.meta.chain.assets);
 
+  const { signingPath } = confirm.meta;
+
+  const initiators = confirms.map((confirm) => confirm.meta.initiator);
+
   return (
     <>
-      <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
+      <div className="flex w-full flex-col items-center gap-y-4 px-5 pt-4 pb-4">
         <div className="mb-2 flex flex-col items-center gap-y-3">
           <Icon className="text-icon-default" name="startStakingConfirm" size={60} />
 
@@ -102,10 +109,11 @@ export const Confirmation = ({
 
         <MultisigExistsAlert active={isMultisigExists} />
 
-        <TransactionDetails
+        <SigningPathConfirmSection
+          signingPath={signingPath}
           chain={confirm.meta.chain}
           wallets={wallets}
-          initiators={confirms.map((confirm) => confirm.meta.initiator)}
+          initiators={initiators}
           signatory={confirm.meta.signatory}
         >
           <DetailRow label={t('staking.confirmation.validatorsLabel')}>
@@ -203,7 +211,9 @@ export const Confirmation = ({
             <StakingPopover.Item>{t('staking.confirmation.hintNoRewards')}</StakingPopover.Item>
             <StakingPopover.Item>{t('staking.confirmation.hintWithdraw')}</StakingPopover.Item>
           </StakingPopover>
-        </TransactionDetails>
+        </SigningPathConfirmSection>
+
+        <MultisigOperationDescriptionField />
 
         <div className="mt-3 flex w-full justify-between">
           {onGoBack && (

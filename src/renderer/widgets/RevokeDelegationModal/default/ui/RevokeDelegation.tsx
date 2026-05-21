@@ -75,7 +75,7 @@ export const RevokeDelegation = () => {
   }
 
   return (
-    <Modal isOpen={isModalOpen} size="fit" onToggle={closeModal}>
+    <Modal isOpen={isModalOpen} size="mdlg" onToggle={closeModal}>
       <Modal.Title close>
         <OperationTitle title={t('governance.revokeDelegation.title')} chainId={chain!.chainId} />
       </Modal.Title>
@@ -85,13 +85,11 @@ export const RevokeDelegation = () => {
             config={{ withFormatAmount: false }}
             hideSignButton={shouldPickSignatory}
             secondaryActionButton={
-              !shouldPickSignatory &&
-              nonNullable(initiatorWallet) &&
-              basketUtils.isBasketAvailable(initiatorWallet) && (
+              !shouldPickSignatory && nonNullable(initiatorWallet) && basketUtils.isBasketAvailable(initiatorWallet) ? (
                 <Button pallet="secondary" onClick={() => revokeDelegationModel.txSaved()}>
                   {t('operation.addToBasket')}
                 </Button>
-              )
+              ) : undefined
             }
             onGoBack={() => revokeDelegationModel.stepChanged(Step.NONE)}
           />

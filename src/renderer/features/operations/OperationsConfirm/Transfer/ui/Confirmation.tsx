@@ -10,9 +10,11 @@ import { Box, Tooltip } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { PathBreadcrumb, PathReviewPopover } from '@/features/signing-path';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -53,9 +55,94 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const hasAnyMultisig = meta.route.some(accountUtils.isAnyMultisigAccount);
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
   const nativeAsset = getNativeAsset(meta.chain.assets);
+  const isMultiHopPath = nonNullable(meta.signingPath) && meta.signingPath.length >= 2;
+
+  // Reused below TransactionDetails (trivial) AND below PathBreadcrumb
+  // (multi-hop) — the same recipient / fee / deposit detail rows.
+  const detailRows = (
+    <>
+      {isXcm && (
+        <DetailRow label={t('operation.details.destinationChain')}>
+          <ChainTitle
+            className="px-2"
+            fontClass="text-text-primary text-footnote"
+            chainId={meta.destinationChain.chainId}
+          />
+        </DetailRow>
+      )}
+
+      <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
+        <NamedAccount accountId={toAccountId(meta.destination)} chain={meta.destinationChain} variant="short" />
+      </DetailRow>
+
+      <hr className="w-full border-filter-border pr-2" />
+
+      {hasAnyMultisig && (
+        <DetailRow
+          className="text-text-primary"
+          label={
+            <>
+              <Icon className="text-text-tertiary" name="lock" size={12} />
+              <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div tabIndex={0}>
+                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
+              </Tooltip>
+            </>
+          }
+        >
+          <div className="flex flex-col items-end gap-y-0.5">
+            <AssetBalance value={meta.multisigDeposit} asset={nativeAsset} />
+            <AssetFiatBalance asset={nativeAsset} amount={meta.multisigDeposit} />
+          </div>
+        </DetailRow>
+      )}
+
+      {isXcm ? (
+        <>
+          <DetailRow
+            label={<FootnoteText className="text-text-tertiary">{t('operation.originNetworkFee')}</FootnoteText>}
+            className="text-text-primary"
+            testId={TEST_IDS.OPERATIONS.CONFIRM_NETWORK_FEE}
+          >
+            <div className="flex flex-col items-end gap-y-0.5">
+              <AssetBalance value={meta.originFee} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={meta.originFee} />
+            </div>
+          </DetailRow>
+          {nonNullable(meta.destinationFee) && (
+            <DetailRow
+              label={<FootnoteText className="text-text-tertiary">{t('operation.destinationNetworkFee')}</FootnoteText>}
+              className="text-text-primary"
+            >
+              <div className="flex flex-col items-end gap-y-0.5">
+                <AssetBalance value={meta.destinationFee} asset={nativeAsset} />
+                <AssetFiatBalance asset={nativeAsset} amount={meta.destinationFee} />
+              </div>
+            </DetailRow>
+          )}
+        </>
+      ) : (
+        <DetailRow
+          label={<FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>}
+          className="text-text-primary"
+          testId={TEST_IDS.OPERATIONS.CONFIRM_NETWORK_FEE}
+        >
+          <div className="flex flex-col items-end gap-y-0.5">
+            <AssetBalance value={meta.fee} asset={nativeAsset} />
+            <AssetFiatBalance asset={nativeAsset} amount={meta.fee} />
+          </div>
+        </DetailRow>
+      )}
+    </>
+  );
 
   return (
-    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
+    <div className="flex w-full flex-col items-center gap-y-4 px-5 pt-4 pb-4">
       <TransactionValidationError errors={validationErrors} wallets={wallets} />
 
       <div className="mb-2 flex flex-col items-center gap-y-3">
@@ -74,87 +161,22 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails chain={meta.chain} wallets={wallets} initiators={initiators} signatory={meta.signatory}>
-        {isXcm && (
-          <DetailRow label={t('operation.details.destinationChain')}>
-            <ChainTitle
-              className="px-2"
-              fontClass="text-text-primary text-footnote"
-              chainId={meta.destinationChain.chainId}
-            />
-          </DetailRow>
-        )}
+      {isMultiHopPath ? (
+        <div className="flex w-full flex-col gap-y-4">
+          <div className="flex w-full justify-start">
+            <PathReviewPopover path={meta.signingPath} chainId={meta.chain.chainId} />
+          </div>
+          <PathBreadcrumb path={meta.signingPath} chainId={meta.chain.chainId} size="sm" />
+          <hr className="w-full border-filter-border pr-2" />
+          <dl className="flex w-full flex-col gap-y-4 text-footnote">{detailRows}</dl>
+        </div>
+      ) : (
+        <TransactionDetails chain={meta.chain} wallets={wallets} initiators={initiators} signatory={meta.signatory}>
+          {detailRows}
+        </TransactionDetails>
+      )}
 
-        <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
-          <NamedAccount accountId={toAccountId(meta.destination)} chain={meta.destinationChain} variant="short" />
-        </DetailRow>
-
-        <hr className="w-full border-filter-border pr-2" />
-
-        {hasAnyMultisig && (
-          <DetailRow
-            className="text-text-primary"
-            label={
-              <>
-                <Icon className="text-text-tertiary" name="lock" size={12} />
-                <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
-                <Tooltip>
-                  <Tooltip.Trigger>
-                    <div tabIndex={0}>
-                      <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
-                    </div>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
-                </Tooltip>
-              </>
-            }
-          >
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={meta.multisigDeposit} asset={nativeAsset} />
-              <AssetFiatBalance asset={nativeAsset} amount={meta.multisigDeposit} />
-            </div>
-          </DetailRow>
-        )}
-
-        {isXcm ? (
-          <>
-            <DetailRow
-              label={<FootnoteText className="text-text-tertiary">{t('operation.originNetworkFee')}</FootnoteText>}
-              className="text-text-primary"
-              testId={TEST_IDS.OPERATIONS.CONFIRM_NETWORK_FEE}
-            >
-              <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={meta.originFee} asset={nativeAsset} />
-                <AssetFiatBalance asset={nativeAsset} amount={meta.originFee} />
-              </div>
-            </DetailRow>
-            {nonNullable(meta.destinationFee) && (
-              <DetailRow
-                label={
-                  <FootnoteText className="text-text-tertiary">{t('operation.destinationNetworkFee')}</FootnoteText>
-                }
-                className="text-text-primary"
-              >
-                <div className="flex flex-col items-end gap-y-0.5">
-                  <AssetBalance value={meta.destinationFee} asset={nativeAsset} />
-                  <AssetFiatBalance asset={nativeAsset} amount={meta.destinationFee} />
-                </div>
-              </DetailRow>
-            )}
-          </>
-        ) : (
-          <DetailRow
-            label={<FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>}
-            className="text-text-primary"
-            testId={TEST_IDS.OPERATIONS.CONFIRM_NETWORK_FEE}
-          >
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={meta.fee} asset={nativeAsset} />
-              <AssetFiatBalance asset={nativeAsset} amount={meta.fee} />
-            </div>
-          </DetailRow>
-        )}
-      </TransactionDetails>
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-between">
         {nonNullable(onGoBack) && (

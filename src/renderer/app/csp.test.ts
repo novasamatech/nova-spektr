@@ -80,6 +80,14 @@ describe('src/renderer/app/index.html — Content-Security-Policy meta tag', () 
     expect(cspContent).toContain("worker-src 'self' blob:");
   });
 
+  it("should contain directive: base-uri 'self' (prevents base-tag hijacking)", () => {
+    expect(cspContent).toContain("base-uri 'self'");
+  });
+
+  it("should contain directive: form-action 'self' (prevents form submission hijacking)", () => {
+    expect(cspContent).toContain("form-action 'self'");
+  });
+
   it('should NOT allow unsafe-eval in script-src (prevents XSS)', () => {
     expect(cspContent).not.toContain("'unsafe-eval'");
   });

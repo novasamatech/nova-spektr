@@ -18,12 +18,16 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
+import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
+import { transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { createDraftModeBinding } from '@/features/drafts';
 import { addPureProxiedValidator } from '@/features/operations/OperationsValidation';
 import { proxiesUtils } from '@/features/proxies';
+import { createSigningPathModel } from '@/features/signing-path';
 
 type FormParams = {
   chain: Chain | null;
@@ -42,6 +46,7 @@ type FormSubmitEvent = {
     fee: string;
     multisigDeposit: string;
     proxyDeposit: string;
+    signingPath: PathNode[];
   };
 };
 
@@ -50,6 +55,8 @@ const flowStarted = createEvent<Wallet>();
 const formInitiated = createEvent();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const proxyQueryChanged = createEvent<string>();
+
+const draftMode = createDraftModeBinding({ formInitiated, chainChanged: formInitiated });
 
 const proxyDepositChanged = createEvent<string>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
@@ -115,8 +122,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             proxyDeposit: $proxyDeposit,
             balances: balanceModel.$balanceMap,
             isMultisig: $isMultisig,
+            isDraftMode: draftMode.$isDraftMode,
           }),
-          fn: (value, form, { isMultisig, balances, fee, multisigDeposit }) => {
+          fn: (value, form, { isMultisig, balances, fee, multisigDeposit, isDraftMode }) => {
+            if (isDraftMode) return;
             if (!isMultisig) return;
 
             if (!value) {
@@ -181,6 +190,15 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
+    initiator: form.fields.initiator.$value,
+    chain: form.fields.chain.$value,
+    resetOn: formInitiated,
+    resetUserOverrideOn: form.fields.initiator.change,
+  },
+);
+
 const $isChainConnected = combine(
   {
     chain: form.fields.chain.$value,
@@ -233,6 +251,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+  routeOverride: $pathRoute,
 });
 
 // Transaction validation
@@ -263,17 +282,65 @@ const { $multisigDeposit, $pending: $pendingMultisigDeposit } = createMultisigDe
   $api: $api,
 });
 
+const $draftCoreTx = combine(
+  {
+    chain: form.fields.chain.$value,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+  },
+  ({ chain, path, isPathComplete }): Transaction | null => {
+    if (!chain || !isPathComplete) return null;
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+
+    return {
+      chainId: chain.chainId,
+      accountId: sourceAccountId,
+      type: TransactionType.CREATE_PURE_PROXY,
+      args: { proxyType: 'Any', delay: 0, index: 0 },
+    };
+  },
+);
+
+const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
+
+const $draftNetworkStore = combine(form.fields.chain.$value, chain =>
+  chain ? { chain, asset: getNativeAsset(chain.assets) } : null,
+);
+
 const $canSubmit = combine(
   {
+    isDraftMode: draftMode.$isDraftMode,
     isFormValid: form.$isValid,
     isValid: $valid,
     isFeeLoading: $pendingFee,
     isProxyDepositLoading: $isProxyDepositLoading,
   },
-  ({ isValid, isFormValid, isFeeLoading, isProxyDepositLoading }) => {
+  ({ isDraftMode, isValid, isFormValid, isFeeLoading, isProxyDepositLoading }) => {
+    if (isDraftMode) return false;
     return isValid && isFormValid && !isFeeLoading && !isProxyDepositLoading;
   },
 );
+
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    networkStore: $draftNetworkStore,
+  },
+  ({ isDraftMode, isPathComplete, callData, networkStore }) => {
+    if (!isDraftMode || !isPathComplete || !callData || !networkStore) return false;
+    return true;
+  },
+);
+
+draftMode.connectSave({
+  source: 'proxied-add-pure-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore: $draftNetworkStore,
+  $canSave: $canSaveAsDraft,
+});
 
 sample({
   clock: formInitiated,
@@ -318,12 +385,13 @@ sample({
 });
 
 sample({
-  clock: form.fields.initiator.change,
-  source: $signatories,
-  filter: signatories => signatories.length < 2,
-  fn: signatories => signatories.at(0)!,
+  clock: [$signatoryFromPath, $signatories, formInitiated],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 // Submit
 
@@ -337,9 +405,13 @@ sample({
     multisigDeposit: $multisigDeposit,
     proxyDeposit: $proxyDeposit,
     coreTx: $coreTx,
+    signingPath: $signingPath,
   },
   filter: ({ transaction, fee }) => nonNullable(transaction) && nonNullable(fee),
-  fn: ({ proxyDeposit, multisigDeposit, transaction, initiator, isProxy, fee, coreTx }, formData: FormParams) => {
+  fn: (
+    { proxyDeposit, multisigDeposit, transaction, initiator, isProxy, fee, coreTx, signingPath },
+    formData: FormParams,
+  ) => {
     return {
       transactions: {
         wrappedTx: transaction!,
@@ -351,6 +423,7 @@ sample({
         initiator,
         proxyDeposit,
         multisigDeposit: multisigDeposit.toString(),
+        signingPath,
         ...(isProxy && { proxiedAccount: formData.initiator as ProxiedAccount }),
       },
     } satisfies FormSubmitEvent;
@@ -363,6 +436,7 @@ export const formModel = {
   $wallet,
   $availableChains,
   $signatories,
+  $signingPath,
   $proxyQuery,
   $tx,
 
@@ -386,7 +460,22 @@ export const formModel = {
   proxyQueryChanged,
   proxyDepositChanged,
   isProxyDepositLoadingChanged,
+  signingPathChanged,
 
   formSubmitted,
   $errors,
+
+  $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
+  $canSaveAsDraft,
+  $initiatedDraft: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
+  events: {
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
+  },
 };

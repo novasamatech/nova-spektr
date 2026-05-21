@@ -1,20 +1,18 @@
 import { BN } from '@polkadot/util';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
-import { type FormEvent, useMemo } from 'react';
+import { type FormEvent } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, formatAsset, fromPrecision, transferableAmount } from '@/shared/lib/utils';
+import { formatAmount, formatAsset, fromPrecision } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
-import { SignatorySelect } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
-import { walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
+import { SigningPathSection } from '@/features/signing-path';
 import { ConvictionSelect } from '@/widgets/VoteModal';
 import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
@@ -29,6 +27,7 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
   const { t } = useI18n();
   const { submit } = useForm(formModel.form);
   const network = useUnit(formModel.$networkStore);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -36,7 +35,7 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
   };
 
   return (
-    <Modal isOpen={isOpen} size="md" height="fit" onToggle={onClose}>
+    <Modal isOpen={isOpen} size="mdlg" height="fit" onToggle={onClose}>
       <Modal.Title close>
         {network?.chain && (
           <OperationTitle title={t('governance.addDelegation.title')} chainId={network.chain.chainId} />
@@ -44,17 +43,36 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
       </Modal.Title>
       <Modal.Content>
         <div className="flex max-h-[736px] w-full flex-1 flex-col px-5">
-          <SmallTitleText>{t('governance.addDelegation.formTitle')}</SmallTitleText>
+          <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
+          {isDraftMode && network && (
+            <div className="mt-4">
+              <DraftSigningPath
+                chainId={network.chain.chainId}
+                asset={network.asset}
+                $draftPath={formModel.$draftSigningPath}
+                draftPathCommitted={formModel.events.draftPathCommitted}
+                draftPathEditStarted={formModel.events.draftPathEditStarted}
+                draftPathEditEnded={formModel.events.draftPathEditEnded}
+              />
+            </div>
+          )}
+          <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+            <div className="flex flex-1 flex-col">
+              <SmallTitleText className="mt-4">{t('governance.addDelegation.formTitle')}</SmallTitleText>
 
-          <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
-            <Signatories />
-            <Amount />
-            <Conviction />
-          </form>
+              <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
+                <Signatories />
+                <Amount />
+                <Conviction />
+              </form>
 
-          <div className="flex flex-1 flex-col justify-end gap-y-6 pt-6 pb-4">
-            <FeeSection />
-          </div>
+              {!isDraftMode && (
+                <div className="flex flex-1 flex-col justify-end gap-y-6 pt-6 pb-4">
+                  <FeeSection />
+                </div>
+              )}
+            </div>
+          </DraftFormBody>
         </div>
       </Modal.Content>
       <Modal.Footer>
@@ -68,47 +86,23 @@ const Signatories = () => {
   const { t } = useI18n();
 
   const {
-    fields: { signatory, initiator },
+    fields: { signatory },
   } = useForm(formModel.form);
 
-  const signatories = useUnit(formModel.$signatories);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
+  const signingPath = useUnit(formModel.$signingPath);
   const network = useUnit(formModel.$networkStore);
 
-  const balances = useUnit(balanceModel.$balanceMap);
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
-
-  const signatoriesWithBalance = useMemo(() => {
-    if (!network) {
-      return [];
-    }
-
-    return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        network.chain.chainId,
-        network.asset.assetId,
-      );
-      return { account: signatory, balance: transferableAmount(balance) };
-    });
-  }, [signatories, balances]);
-
-  if (!network) {
-    return null;
-  }
+  if (isDraftMode) return null;
 
   return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      initiator={initiator.value}
-      allWallets={allWallets}
-      hasError={signatory.hasError}
+    <SigningPathSection
+      signingPath={signingPath}
+      chain={network?.chain ?? null}
+      asset={network?.asset ?? null}
+      txErrors={[]}
       errorText={t(signatory.errorMessage)}
-      network={network}
-      onChange={signatory.onChange}
+      onChange={formModel.events.signingPathChanged}
     />
   );
 };
@@ -255,14 +249,21 @@ const ActionsSection = ({ onGoBack }: { onGoBack: () => void }) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const canSaveAsDraft = useUnit(formModel.$canSaveAsDraft);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
 
   return (
     <div className="flex w-full items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="transfer-form" type="submit" disabled={!canSubmit}>
-        {t('transfer.continueButton')}
+      <Button
+        form={isDraftMode ? undefined : 'transfer-form'}
+        type={isDraftMode ? 'button' : 'submit'}
+        disabled={isDraftMode ? !canSaveAsDraft : !canSubmit}
+        onClick={isDraftMode ? () => formModel.events.saveAsDraftRequested() : undefined}
+      >
+        {isDraftMode ? t('operations.drafts.initiateButton') : t('transfer.continueButton')}
       </Button>
     </div>
   );

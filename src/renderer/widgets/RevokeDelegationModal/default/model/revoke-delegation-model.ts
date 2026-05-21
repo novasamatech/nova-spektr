@@ -26,6 +26,7 @@ import { signModel } from '@/features/operations/OperationSign/model/sign-model'
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { revokeDelegationConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { type RevokeDelegationConfirm } from '@/features/operations/OperationsConfirm/RevokeDelegation/model/confirm-model';
+import { createSigningPathModel } from '@/features/signing-path';
 import { type RevokeDelegationData } from '../lib/types';
 
 const stepChanged = createEvent<Step>();
@@ -90,13 +91,6 @@ const $signatories = createSignatoriesStore({
 });
 
 sample({
-  clock: $signatories,
-  filter: (signatories) => signatories.length > 0,
-  fn: (signatories) => signatories.at(0) ?? null,
-  target: $signatory,
-});
-
-sample({
   clock: selectSignatory,
   target: $signatory,
 });
@@ -122,6 +116,22 @@ const $coreTx = combine(
   },
 );
 
+const { $signatoryFromPath, recomputeForSigner, $pathRoute, $signingPath } = createSigningPathModel({
+  initiator: $initiator,
+  chain: networkSelectorModel.$governanceChain,
+  resetOn: flowFinished,
+  resetUserOverrideOn: $initiator.updates,
+});
+
+sample({
+  clock: [$signatoryFromPath, $signatories, flowStarted],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
+  target: $signatory,
+});
+
+sample({ clock: $signatory, target: recomputeForSigner });
+
 const { $fee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: $initiator,
@@ -129,6 +139,7 @@ const { $fee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: networkSelectorModel.$governanceChain,
   transaction: $coreTx,
+  routeOverride: $pathRoute,
 });
 
 const $multisigThreshold = $route.map((route) => {
@@ -165,6 +176,7 @@ const dataSubmitted = sample({
     signatory: $signatory,
     delegate: $delegate,
     multisigDeposit: $multisigDeposit,
+    signingPath: $signingPath,
   },
 }).updates.filterMap(
   ({
@@ -180,6 +192,7 @@ const dataSubmitted = sample({
     initiator,
     signatory,
     delegate,
+    signingPath,
   }) => {
     if (
       nonNullable(coreTx) &&
@@ -219,6 +232,7 @@ const dataSubmitted = sample({
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),
+          signingPath,
         } satisfies RevokeDelegationConfirm,
       ];
     }
@@ -398,6 +412,8 @@ export const revokeDelegationModel = {
   $initiatorWallet: walletSelect.$selectedWallet,
   $chain: networkSelectorModel.$governanceChain,
   $tx,
+  $coreTx,
+  $api,
   $signatories,
   $signatory,
   $network: networkSelectorModel.$network,

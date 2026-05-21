@@ -21,7 +21,14 @@ export type {
 export { accountSync } from './account-sync/store';
 export { accountSyncService } from './account-sync/service';
 export { INDEXER_URL } from './account-sync/constants';
-export type { SyncedAccount, SyncedMultisigAccount, SyncedProxyAccount } from './account-sync/types';
+export { indexedBlocksProvider, multisigAccountsProvider, proxyAccountsProvider } from './account-sync/resource';
+export type {
+  AccountProvider,
+  AccountProviderChain,
+  SyncedAccount,
+  SyncedMultisigAccount,
+  SyncedProxyAccount,
+} from './account-sync/types';
 
 export { useAccountName, useAccountsNames, useWalletName, useWalletsNames } from './account/hooks';
 export { $accountNameCache, accountsNameResource, createAccountNameCacheKey } from './account/resource';
@@ -42,3 +49,11 @@ export { initialOnChainFetch } from './multisig-operation/resource';
 export { multisigOperationService } from './multisig-operation/service';
 export type { MultisigOperationDeepLinkParams } from './multisig-operation/service';
 export type { MultisigEvent, MultisigOperation } from './multisig-operation/types';
+
+export {
+  CONTACT_MULTISIG_WALLET_ID,
+  contactMultisigsModel,
+  isContactMultisigAccount,
+  toSyntheticMultisigAccount,
+} from './multisig-operation/contact-multisigs';
+export type { ContactMultisig } from './multisig-operation/contact-multisigs';

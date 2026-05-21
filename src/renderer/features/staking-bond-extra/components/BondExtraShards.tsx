@@ -51,7 +51,7 @@ export const BondExtraShards = () => {
   }
 
   return (
-    <Modal isOpen={isModalOpen} size="md" onToggle={closeModal}>
+    <Modal isOpen={isModalOpen} size="mdlg" onToggle={closeModal}>
       <Modal.Title close>
         <OperationTitle
           title={t('staking.stakeMore.title', { asset: walletData.chain.assets[0]!.symbol })}

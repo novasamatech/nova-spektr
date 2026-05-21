@@ -1,0 +1,1 @@
+export { multisigOperationDescription } from './model';

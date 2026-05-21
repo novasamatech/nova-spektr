@@ -1,35 +1,69 @@
 import { useGate, useUnit } from 'effector-react';
 import { useState } from 'react';
 
-import { type ProxiedWallet } from '@/shared/core';
+import { type Chain, type ProxiedWallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { isEthereumAccountId, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
-import { ChainAccountsList, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
-import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
-import { type AnyAccount, useWalletName } from '@/domains/network';
+import { AccountExplorers, Address, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
+import { Box, Modal, ScrollArea, Skeleton, Tabs } from '@/shared/ui-kit';
+import { type AnyAccount, useAccountName, useWalletName } from '@/domains/network';
+import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy } from '@/features/proxy-add';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
+import { proxiesModel } from '../../model/proxies-model';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { walletProxiesModel } from '../../model/wallet-proxies-model';
 import { WalletFiatBalance } from '../components';
-import { ProxiesCount } from '../components/ProxiesCount';
-import { ProxiesList } from '../components/ProxiesList';
 import { type WalletAction, Action, WalletActions } from '../components/WalletActions';
+import { ProxiesTab } from '../components/proxies';
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
+const ProxiedAccountItem = ({ chain, accountId }: { chain: Chain; accountId: AccountId }) => {
+  const accountName = useAccountName({ accountId, chain });
+
+  return (
+    <div className="grid grid-cols-2 items-center px-5 pb-3">
+      <div className="flex items-center py-4">
+        <ChainTitle fontClass="text-text-primary" chain={chain} />
+      </div>
+      <div className="flex min-w-0 items-center py-4 text-text-secondary">
+        <div className="flex w-full min-w-0 items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <Address
+              showIcon
+              variant="truncate"
+              title={accountName}
+              address={toAddress(accountId, { prefix: chain.addressPrefix })}
+            />
+          </div>
+          <AccountExplorers accountId={accountId} chain={chain} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ProxyDelegateName = ({ accountId, chain }: { accountId: AccountId; chain: Chain | null }) => {
+  const resolved = useAccountName({ accountId, chain });
+
+  return <FootnoteText className="truncate">{resolved}</FootnoteText>;
+};
+
 type Props = {
   wallet: ProxiedWallet;
+  defaultTab?: 'accounts' | 'proxies';
   onClose: () => void;
 };
 
-export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
+export const ProxiedWalletDetails = ({ wallet, defaultTab, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
   useGate(walletProxiesModel.flow, { wallet });
 
@@ -38,12 +72,15 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
 
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
-  const hasProxies = useUnit(walletProxiesModel.$hasWalletProxies);
-  const proxiesCount = useUnit(walletProxiesModel.$walletProxiesCount);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
 
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
-  const [tab, setTab] = useState('accounts');
+  const [tab, setTab] = useState<'accounts' | 'proxies'>(defaultTab === 'proxies' ? 'proxies' : 'accounts');
+  const proxiesCount = useUnit(proxiesModel.$totalCount);
+  const isProxiesLoading = useUnit(proxiesModel.$isLoading);
+  const handleTabChange = (value: string) => {
+    if (value === 'accounts' || value === 'proxies') setTab(value);
+  };
 
   if (!wallet || !walletUtils.isProxied(wallet)) return null;
 
@@ -98,7 +135,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
   };
 
   return (
-    <Modal size="mdlg" height="full" isOpen={true} onToggle={handleToggle}>
+    <Modal size="lg" height="full" isOpen={true} onToggle={handleToggle}>
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
         <div className="flex flex-col gap-y-2.5 px-5 pb-6">
@@ -134,8 +171,10 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
             )}
           </div>
 
-          {proxyWallets.map(
-            ({ connection, proxyWallet }) =>
+          {proxyWallets.map(({ connection, proxyWallet }) => {
+            const proxyChain = wallet.accounts[0] ? chains[wallet.accounts[0].chainId] : null;
+
+            return (
               proxyWallet && (
                 <div className="flex items-center pl-4" key={`${connection.proxyType}-${connection.proxyAccountId}`}>
                   <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
@@ -143,14 +182,15 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
                   <span className="mx-1">
                     <WalletIcon type={proxyWallet.type} size={16} />
                   </span>
-                  <FootnoteText className="truncate">{proxyWallet.name}</FootnoteText>
+                  <ProxyDelegateName accountId={connection.proxyAccountId} chain={proxyChain ?? null} />
                   &nbsp;
                   <FootnoteText className="whitespace-nowrap">{t('walletDetails.common.proxyToControl')}</FootnoteText>
                   &nbsp;
                   <FootnoteText className="whitespace-nowrap">{connection.proxyType}</FootnoteText>
                 </div>
-              ),
-          )}
+              )
+            );
+          })}
         </div>
 
         <WalletActions actions={actions} />
@@ -158,7 +198,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
         <Separator className="my-6" />
       </Modal.HeaderContent>
       <Modal.Content>
-        <Tabs value={tab} onChange={setTab}>
+        <Tabs value={tab} onChange={handleTabChange}>
           <Box padding={[0, 5]} shrink={0}>
             <Tabs.List>
               <Tabs.Trigger value="accounts">
@@ -169,18 +209,22 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
               </Tabs.Trigger>
               <Tabs.Trigger value="proxies">
                 <span className="flex items-center gap-1">
-                  {t('walletDetails.common.proxiesTabTitle')}
-                  <ProxiesCount count={proxiesCount} />
+                  {t('walletDetails.proxies.tabTitle')}
+                  {isProxiesLoading && proxiesCount === 0 ? (
+                    <Skeleton width={2} height={2.5} />
+                  ) : (
+                    <span className="text-text-tertiary">{proxiesCount}</span>
+                  )}
                 </span>
               </Tabs.Trigger>
             </Tabs.List>
           </Box>
           <Tabs.Content value="accounts">
-            <ChainAccountsList accounts={accounts} />
+            {account && chain && <ProxiedAccountItem accountId={account.accountId} chain={chain} />}
           </Tabs.Content>
           <Tabs.Content value="proxies">
             <ScrollArea>
-              <ProxiesList wallet={wallet} hasProxies={hasProxies} canCreateProxy={canCreateProxy} />
+              <ProxiesTab wallet={wallet} onCloseWalletDetails={onClose} />
             </ScrollArea>
           </Tabs.Content>
         </Tabs>

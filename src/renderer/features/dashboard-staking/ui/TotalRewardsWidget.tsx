@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -29,7 +29,7 @@ const SINCE_OFFSETS: Record<Exclude<RewardsTimeRange, 'all'>, number> = {
   '1y': 365 * 24 * 3600,
 };
 
-const toggleButtonClass = 'flex-1 rounded px-3 py-1 text-footnote font-semibold transition-colors';
+const toggleButtonClass = 'flex-1 cursor-pointer rounded px-3 py-1 text-footnote font-semibold transition-colors';
 const activeClass = 'bg-white text-text-primary shadow-sm';
 const inactiveClass = 'text-text-tertiary hover:text-text-secondary';
 
@@ -48,6 +48,9 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
   })();
   const { chains, rewardsMapByChain, totalFiat, pending, fiatFlag, currency } = useTotalRewards(accountIds, since);
   const [selectedChainId, setSelectedChainId] = useState<ChainId | null>(null);
+
+  const handleSetTimeRange = useCallback((range: RewardsTimeRange) => setTimeRange(range), []);
+  const handleCloseDetail = useCallback(() => setSelectedChainId(null), []);
 
   if (!fiatFlag) return null;
 
@@ -83,7 +86,7 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
               key={range}
               type="button"
               className={`${toggleButtonClass} ${timeRange === range ? activeClass : inactiveClass}`}
-              onClick={() => setTimeRange(range)}
+              onClick={() => handleSetTimeRange(range)}
             >
               {rangeLabels[range]}
             </button>
@@ -161,7 +164,7 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
           accountIds={accountIds}
           allEntries={allEntries}
           currency={currency}
-          onClose={() => setSelectedChainId(null)}
+          onClose={handleCloseDetail}
         />
       )}
     </DashboardWidget>

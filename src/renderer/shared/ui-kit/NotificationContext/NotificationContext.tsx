@@ -23,7 +23,7 @@ type NotificationContextProps = {
   toast: typeof toast;
 };
 
-const NotificationContext = createContext<NotificationContextProps>({} as NotificationContextProps);
+const NotificationContext = createContext<NotificationContextProps>({ modal: noop, toast });
 
 const DEFAULT_NOTIFICATION_DURATION = 3000;
 const NO_AUTO_DISMISS = 0;
@@ -127,6 +127,10 @@ export const NotificationProvider = ({ children }: PropsWithChildren) => {
         }}
         toastOptions={{
           classNames: {
+            toast: 'pointer-events-auto',
+            actionButton: 'pointer-events-auto',
+            cancelButton: 'pointer-events-auto',
+            closeButton: 'pointer-events-auto',
             icon: 'self-start mt-0.5',
           },
         }}

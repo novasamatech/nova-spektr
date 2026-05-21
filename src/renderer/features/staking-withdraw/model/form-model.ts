@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { noop } from 'lodash';
-import { and, not, spread } from 'patronum';
+import { spread } from 'patronum';
 
 import { type Asset, type Chain, type ProxiedAccount, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -20,9 +20,11 @@ import { type AnyAccount, accounts } from '@/domains/network';
 import { eraService, staking } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { createDraftModeBinding } from '@/features/drafts';
 import { withdrawValidator } from '@/features/operations/OperationsValidation';
+import { createSigningPathModel } from '@/features/signing-path';
 import { type NetworkStore } from '../lib/types';
 
 export type FormParams = {
@@ -51,6 +53,8 @@ const formCleared = createEvent();
 
 const multisigDepositChanged = createEvent<string>();
 
+const draftMode = createDraftModeBinding({ formInitiated, chainChanged: formInitiated });
+
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 const $stakingResourceKey = createStore<ResourceRequestKey | null>(null);
 const $era = restore(eraSet, null);
@@ -71,11 +75,15 @@ const form: Form<FormParams> = createForm<FormParams>({
     },
     signatory: {
       defaultValue: null,
-      validator: () => (signatory) => {
-        if (nullable(signatory)) {
-          return { message: 'transfer.noSignatoryError' };
-        }
-      },
+      validator: () => ({
+        source: draftMode.$isDraftMode,
+        fn: (signatory, _, isDraftMode) => {
+          if (isDraftMode) return;
+          if (nullable(signatory)) {
+            return { message: 'transfer.noSignatoryError' };
+          }
+        },
+      }),
     },
     amount: {
       defaultValue: '',
@@ -85,8 +93,9 @@ const form: Form<FormParams> = createForm<FormParams>({
             fee: $fee,
             isMultisig: $isMultisig,
             signatoryBalance: $signatoryBalance,
+            isDraftMode: draftMode.$isDraftMode,
           }),
-          fn: (value, _, { fee, isMultisig, signatoryBalance }) => {
+          fn: (value, _, { fee, isMultisig, signatoryBalance, isDraftMode }) => {
             if (!value) {
               return { message: 'transfer.requiredAmountError' };
             }
@@ -94,6 +103,8 @@ const form: Form<FormParams> = createForm<FormParams>({
             if (value === ZERO_BALANCE) {
               return { message: 'transfer.notZeroAmountError' };
             }
+
+            if (isDraftMode) return;
 
             if (isMultisig) {
               const isEnough = new BN(signatoryBalance).gt(new BN(fee));
@@ -145,12 +156,23 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner, $pathRoute } = createSigningPathModel(
+  {
+    initiator: form.fields.initiator.$value,
+    chain: $chain,
+    resetOn: formInitiated,
+    resetUserOverrideOn: form.fields.initiator.change,
+  },
+);
+
 sample({
-  clock: $signatories,
-  filter: (signatories) => signatories.length > 0,
-  fn: (signatories) => signatories.at(0)!,
+  clock: [$signatoryFromPath, $signatories, formInitiated],
+  source: { fromPath: $signatoryFromPath, signatories: $signatories },
+  fn: ({ fromPath, signatories }) => fromPath ?? signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+sample({ clock: form.fields.signatory.$value, target: recomputeForSigner });
 
 const $signatoryBalance = combine(
   {
@@ -214,6 +236,26 @@ const $coreTx = combine(
   },
 );
 
+const $draftCoreTx = combine(
+  {
+    network: $networkStore,
+    path: draftMode.$draftSigningPath,
+    isPathComplete: draftMode.$isDraftPathComplete,
+  },
+  ({ network, path, isPathComplete }) => {
+    if (nullable(network) || !isPathComplete) return null;
+    const sourceAccountId = path[0]?.accountId;
+    if (!sourceAccountId) return null;
+
+    return transactionBuilder.buildWithdraw({
+      chain: network.chain,
+      accountId: sourceAccountId,
+    });
+  },
+);
+
+const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
@@ -221,6 +263,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: $chain,
   transaction: $coreTx,
+  routeOverride: $pathRoute,
 });
 
 const $isProxy = $route.map((route) => nonNullable(route.find((account) => accountUtils.isProxiedAccount(account))));
@@ -255,7 +298,43 @@ const { $errors, $valid } = createTxValidationStore({
 
 const $isStakingLoading = $staking.map((s) => s === null);
 
-const $canSubmit = and($valid, form.$isValid, not($pendingFee), not($isStakingLoading), not(subscribeEraFx.pending));
+const $canSubmit = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    valid: $valid,
+    formValid: form.$isValid,
+    pendingFee: $pendingFee,
+    isStakingLoading: $isStakingLoading,
+    isEraLoading: subscribeEraFx.pending,
+  },
+  ({ isDraftMode, valid, formValid, pendingFee, isStakingLoading, isEraLoading }) => {
+    if (isDraftMode) return false;
+    return valid && formValid && !pendingFee && !isStakingLoading && !isEraLoading;
+  },
+);
+
+const $canSaveAsDraft = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    isPathComplete: draftMode.$isDraftPathComplete,
+    callData: $draftCallDataHex,
+    networkStore: $networkStore,
+    withdrawBalance: $withdrawBalance,
+  },
+  ({ isDraftMode, isPathComplete, callData, networkStore, withdrawBalance }) => {
+    if (!isDraftMode || !isPathComplete || !callData || !networkStore) return false;
+    if (!withdrawBalance || withdrawBalance === ZERO_BALANCE) return false;
+
+    return true;
+  },
+);
+
+draftMode.connectSave({
+  source: 'staking-withdraw-draft-mode',
+  $callDataHex: $draftCallDataHex,
+  $networkStore,
+  $canSave: $canSaveAsDraft,
+});
 
 // Fields connections
 
@@ -276,14 +355,6 @@ sample({
     initiator: form.fields.initiator.change,
     networkStore: $networkStore,
   }),
-});
-
-sample({
-  clock: formInitiated,
-  source: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
-  target: form.fields.signatory.change,
 });
 
 sample({
@@ -435,6 +506,7 @@ export const formModel = {
   form,
   $proxyWallet,
   $signatories,
+  $signingPath,
 
   $fee,
   $proxyBalance,
@@ -454,10 +526,22 @@ export const formModel = {
   $canSubmit,
   $errors,
 
+  $isDraftMode: draftMode.$isDraftMode,
+  $isDraftPathComplete: draftMode.$isDraftPathComplete,
+  $canSaveAsDraft,
+  $initiatedDraft: draftMode.$initiatedDraft,
+  $draftSigningPath: draftMode.$draftSigningPath,
+
   events: {
     formInitiated,
     formCleared,
     multisigDepositChanged,
+    signingPathChanged,
+    toggleDraftMode: draftMode.draftModeToggled,
+    saveAsDraftRequested: draftMode.saveAsDraftRequested,
+    draftPathCommitted: draftMode.draftPathCommitted,
+    draftPathEditStarted: draftMode.draftPathEditStarted,
+    draftPathEditEnded: draftMode.draftPathEditEnded,
   },
   output: {
     formSubmitted,

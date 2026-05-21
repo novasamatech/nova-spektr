@@ -1,19 +1,19 @@
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { type FormEvent, memo, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, memo, useEffect, useState } from 'react';
 
 import vested_transfer_template_url from '@/shared/assets/templates/vested-transfer-template.csv?url';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Alert, Button, DetailRow, FootnoteText, Icon, InfoLink, InputHint } from '@/shared/ui';
-import { AssetBalance, ChainSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
+import { AssetBalance, ChainSelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { type ValidationIssue, VestingCsvError, VestingFieldError } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
+import { SigningPathSection } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import {
@@ -28,8 +28,11 @@ export const VestedTransferForm = () => {
   const { t } = useI18n();
 
   const { submit } = useForm(formModel.form);
-  const showSignatories = useUnit(formModel.$showSignatories);
   const canSubmit = useUnit(formModel.$canSubmit);
+  const canSaveAsDraft = useUnit(formModel.$canSaveAsDraft);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
+  const chain = useUnit(formModel.$chain);
+  const asset = useUnit(formModel.$asset);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -42,22 +45,44 @@ export const VestedTransferForm = () => {
   return (
     <>
       <ScrollArea>
-        <form id="vested-transfer-form" onSubmit={submitForm}>
-          <Box padding={[4, 5]} gap={4}>
-            <TransactionValidationError errors={txErrors} wallets={wallets} />
-            <NetworkSelect />
-            {showSignatories && <Signatories />}
-            <UploadCSV />
-            <ValidationsAlert />
-            <TotalAmountSection />
-            <FeeSection />
-          </Box>
-        </form>
+        <Box padding={[4, 5]} gap={4}>
+          <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
+          {isDraftMode && chain && (
+            <DraftSigningPath
+              chainId={chain.chainId}
+              asset={asset}
+              $draftPath={formModel.$draftSigningPath}
+              draftPathCommitted={formModel.events.draftPathCommitted}
+              draftPathEditStarted={formModel.events.draftPathEditStarted}
+              draftPathEditEnded={formModel.events.draftPathEditEnded}
+            />
+          )}
+          <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+            <div className="flex flex-col gap-4">
+              {!isDraftMode && <TransactionValidationError errors={txErrors} wallets={wallets} />}
+              <form id="vested-transfer-form" className="flex flex-col gap-4" onSubmit={submitForm}>
+                <NetworkSelect />
+                <Signatories />
+                <UploadCSV />
+                <ValidationsAlert />
+                <TotalAmountSection />
+              </form>
+              {!isDraftMode && <FeeSection />}
+            </div>
+          </DraftFormBody>
+        </Box>
       </ScrollArea>
       <Modal.Footer>
-        <Button form="vested-transfer-form" type="submit" disabled={!canSubmit}>
-          {t('transfer.continueButton')}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            form={isDraftMode ? undefined : 'vested-transfer-form'}
+            type={isDraftMode ? 'button' : 'submit'}
+            disabled={isDraftMode ? !canSaveAsDraft : !canSubmit}
+            onClick={isDraftMode ? () => formModel.events.saveAsDraftRequested() : undefined}
+          >
+            {isDraftMode ? t('operations.drafts.initiateButton') : t('transfer.continueButton')}
+          </Button>
+        </div>
       </Modal.Footer>
     </>
   );
@@ -88,45 +113,26 @@ export const NetworkSelect = memo(() => {
 
 const Signatories = () => {
   const { t } = useI18n();
-
   const {
-    fields: { signatory, initiator },
+    fields: { signatory },
   } = useForm(formModel.form);
 
-  const signatories = useUnit(formModel.$signatories);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
+  const signingPath = useUnit(formModel.$signingPath);
   const chain = useUnit(formModel.$chain);
   const asset = useUnit(formModel.$asset);
+  const txErrors = useUnit(formModel.$txErrors);
 
-  const balances = useUnit(balanceModel.$balanceMap);
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
-
-  const signatoriesWithBalance = useMemo(() => {
-    if (!chain || !asset) {
-      return [];
-    }
-
-    return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId);
-      return { account: signatory, balance: transferableAmount(balance) };
-    });
-  }, [signatories, balances, chain, asset]);
-
-  if (!chain || !asset) {
-    return null;
-  }
+  if (isDraftMode) return null;
 
   return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      initiator={initiator.value}
-      allWallets={allWallets}
-      hasError={signatory.hasError}
+    <SigningPathSection
+      signingPath={signingPath}
+      chain={chain}
+      asset={asset}
+      txErrors={txErrors}
       errorText={t(signatory.errorMessage)}
-      network={{ chain, asset }}
-      onChange={signatory.onChange}
+      onChange={formModel.signingPathChanged}
     />
   );
 };
@@ -225,6 +231,14 @@ const ValidationsAlert = () => {
       toggleWarningAlert(true);
     }
   }, [csvError, csvIssues]);
+
+  if (csvError === VestingCsvError.EMPTY) {
+    return (
+      <InputHint variant="error" active>
+        {t('vestedTransfer.errors.csv.emptyFileDescription')}
+      </InputHint>
+    );
+  }
 
   if (csvError === VestingCsvError.STRUCTURE) {
     return (

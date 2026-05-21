@@ -1,4 +1,4 @@
-import { endOfDay, isAfter, isWithinInterval } from 'date-fns';
+import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
 
 import {
   type Chain,
@@ -30,7 +30,6 @@ export interface OperationsFilterContext {
   filters: OperationsFilterCriteria;
   tab: OperationsFilterTab;
   hiddenIds: string[];
-  multisigAccounts: (MultisigAccount | FlexibleMultisigAccount)[];
   multisigWallets: Wallet[];
   chains: Record<ChainId, Chain>;
 }
@@ -105,21 +104,14 @@ export const matchesNetwork = (operation: MultisigOperation, networkIds: string[
 export const matchesTxType = (operation: MultisigOperation, typeIds: string[]) =>
   typeIds.length === 0 || typeIds.includes(getFilterableTxType(operation));
 
-export const matchesProxyType = (
-  operation: MultisigOperation,
-  proxyTypeIds: string[],
-  multisigAccounts: (MultisigAccount | FlexibleMultisigAccount)[],
-) => {
+export const matchesProxyType = (proxyTypeIds: string[], account: MultisigAccount | FlexibleMultisigAccount) => {
   if (proxyTypeIds.length === 0) return true;
-  const account = findAccountForOperation(operation, multisigAccounts);
   let operationProxyType: ProxyType | null = null;
-  if (account && accountUtils.isFlexibleMultisigAccount(account)) {
+  if (accountUtils.isFlexibleMultisigAccount(account)) {
     operationProxyType = account.proxyType;
   }
   return nonNullable(operationProxyType) && proxyTypeIds.includes(operationProxyType);
 };
-
-const toLocalDate = (d: Date) => new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
 
 export const matchesDateRange = (operation: MultisigOperation, dateRange: OperationsFilterCriteria['dateRange']) => {
   if (!dateRange?.from && !dateRange?.to) return true;
@@ -127,13 +119,10 @@ export const matchesDateRange = (operation: MultisigOperation, dateRange: Operat
   const txDate = new Date(operation.timestamp);
 
   if (from && to) {
-    const fromLocal = toLocalDate(from);
-    const toLocal = toLocalDate(to);
-    return isWithinInterval(txDate, { start: fromLocal, end: endOfDay(toLocal) });
+    return isWithinInterval(txDate, { start: startOfDay(from), end: endOfDay(to) });
   }
   if (from) {
-    const fromLocal = toLocalDate(from);
-    return isAfter(txDate, fromLocal) || txDate.getTime() === fromLocal.getTime();
+    return isAfter(txDate, startOfDay(from)) || txDate.getTime() === startOfDay(from).getTime();
   }
   return true;
 };
@@ -142,16 +131,15 @@ export const matchesSearch = (
   operation: MultisigOperation,
   searchQuery: string | undefined,
   chains: Record<ChainId, Chain>,
-  multisigAccounts: (MultisigAccount | FlexibleMultisigAccount)[],
+  account: MultisigAccount | FlexibleMultisigAccount,
   multisigWallets: Wallet[],
 ) => {
   const query = searchQuery?.trim().toLowerCase();
   if (!query) return true;
 
-  const account = findAccountForOperation(operation, multisigAccounts);
-  const wallet = account ? multisigWallets.find(w => w.id === account.walletId) : undefined;
+  const wallet = multisigWallets.find(w => w.id === account.walletId);
   const walletName = (wallet?.name ?? '').toLowerCase();
-  const isFlex = account && accountUtils.isFlexibleMultisigAccount(account);
+  const isFlex = accountUtils.isFlexibleMultisigAccount(account);
   const addressPrefix = isFlex ? chains[operation.chainId]?.addressPrefix : undefined;
   const accountAddress = toAddress(operation.multisigAccountId, { prefix: addressPrefix }).toLowerCase();
 
@@ -160,16 +148,20 @@ export const matchesSearch = (
   );
 };
 
-export const filterOperation = (operation: MultisigOperation, context: OperationsFilterContext) => {
-  const { filters, tab, hiddenIds, multisigAccounts, multisigWallets, chains } = context;
+export const filterOperation = (
+  operation: MultisigOperation,
+  account: MultisigAccount | FlexibleMultisigAccount,
+  context: OperationsFilterContext,
+) => {
+  const { filters, tab, hiddenIds, multisigWallets, chains } = context;
 
   if (!matchesTab(operation, tab, hiddenIds)) return false;
   if (!matchesAccount(operation, filters.account)) return false;
   if (!matchesNetwork(operation, filters.network)) return false;
   if (!matchesTxType(operation, filters.type)) return false;
-  if (!matchesProxyType(operation, filters.proxyType, multisigAccounts)) return false;
+  if (!matchesProxyType(filters.proxyType, account)) return false;
   if (!matchesDateRange(operation, filters.dateRange)) return false;
-  if (!matchesSearch(operation, filters.searchQuery, chains, multisigAccounts, multisigWallets)) return false;
+  if (!matchesSearch(operation, filters.searchQuery, chains, account, multisigWallets)) return false;
 
   return true;
 };

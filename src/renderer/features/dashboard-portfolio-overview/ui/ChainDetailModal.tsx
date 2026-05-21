@@ -1,3 +1,5 @@
+import { default as BigNumber } from 'bignumber.js';
+import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
 
@@ -7,11 +9,18 @@ import { FootnoteText } from '@/shared/ui';
 import { CHART_TOOLTIP_STYLE, getColorByPriceId } from '@/shared/ui/chart-constants';
 import { AssetIcon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
-import { type CurrencyItem } from '@/domains/price';
+import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
+import { balanceModel } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { currencySelect } from '@/aggregates/currency-select';
 import { type ChainAssetRow, useChainBreakdown } from '../hooks/useChainBreakdown';
 import { type ChainHolding } from '../hooks/useChainHoldings';
+import { type RowAllocation, computeChainRowAllocations } from '../lib/computeRowAllocations';
 
+import { AllocationBar } from './AllocationBar';
 import { Price } from './Price';
+
+type ChainTableRow = ChainAssetRow & { allocation: RowAllocation | null };
 
 type ChartEntry = {
   name: string;
@@ -41,7 +50,7 @@ const ChartTooltip = memo(({ active, payload }: { active?: boolean; payload?: To
         {formatted}
         {suffix} {row.symbol}
       </div>
-      <div>{row.sharePercent.toFixed(1)}%</div>
+      <div>{new BigNumber(row.sharePercent).decimalPlaces(1, BigNumber.ROUND_DOWN).toFixed(1)}%</div>
     </div>
   );
 });
@@ -57,6 +66,96 @@ export const ChainDetailModal = memo(({ chainHolding, accountIds, currency, onCl
   const { t } = useI18n();
   const { rows } = useChainBreakdown(chainHolding.chainId, accountIds);
 
+  const balanceMap = useUnit(balanceModel.$balanceMap);
+  const chains = useUnit(networkModel.$chains);
+  const activeCurrency = useUnit(currencySelect.$activeCurrency);
+  const pricesParams = useUnit(currencySelect.$currentPricesParams);
+  const { data: prices } = useAssetsPrices(pricesParams);
+
+  const allocations = useMemo(() => {
+    if (!prices || !activeCurrency) return new Map<number, RowAllocation>();
+
+    return computeChainRowAllocations({
+      assetIds: rows.map((r) => r.assetId),
+      chainId: chainHolding.chainId,
+      accountIds,
+      balanceMap,
+      chains,
+      prices,
+      currency: activeCurrency,
+    });
+  }, [rows, chainHolding.chainId, accountIds, balanceMap, chains, prices, activeCurrency]);
+
+  const tableData = useMemo<ChainTableRow[]>(
+    () => rows.map((row) => ({ ...row, allocation: allocations.get(row.assetId) ?? null })),
+    [rows, allocations],
+  );
+
+  const columns = useMemo<Column<ChainTableRow>[]>(
+    () => [
+      {
+        key: 'name',
+        title: t('dashboard.portfolioOverview.chainDetail.asset'),
+        width: '28%',
+        render: (_, item) => (
+          <div className="flex items-center gap-2">
+            <span
+              className="h-2 w-2 shrink-0 rounded-full"
+              style={{ backgroundColor: getColorByPriceId(item.priceId, item.colorIndex) }}
+            />
+            <AssetIcon asset={item} size={24} />
+            <FootnoteText className="truncate font-semibold">{item.symbol}</FootnoteText>
+          </div>
+        ),
+      },
+      {
+        key: 'rawAmountNum',
+        title: t('dashboard.portfolioOverview.chainDetail.amount'),
+        sortable: true,
+        width: '20%',
+        render: (_, item) => {
+          const bal = formatBalance(item.rawAmount, item.precision);
+
+          return (
+            <FootnoteText className="tabular-nums">
+              {bal.formatted}
+              {bal.suffix} {item.symbol}
+            </FootnoteText>
+          );
+        },
+      },
+      {
+        key: 'fiatValueNum',
+        title: t('dashboard.portfolioOverview.chainDetail.value'),
+        sortable: true,
+        width: '18%',
+        render: (_, item) => (
+          <FootnoteText className="tabular-nums">
+            <Price amount={item.fiatValue} currency={currency} />
+          </FootnoteText>
+        ),
+      },
+      {
+        key: 'sharePercent',
+        title: t('dashboard.portfolioOverview.chainDetail.share'),
+        sortable: true,
+        width: '15%',
+        render: (_, item) => (
+          <FootnoteText className="tabular-nums">
+            {new BigNumber(item.sharePercent).decimalPlaces(1, BigNumber.ROUND_DOWN).toFixed(1)}%
+          </FootnoteText>
+        ),
+      },
+      {
+        key: 'allocation',
+        title: t('dashboard.portfolioOverview.assetAllocation'),
+        width: '19%',
+        render: (_, item) => (item.allocation ? <AllocationBar allocation={item.allocation} /> : null),
+      },
+    ],
+    [t, currency],
+  );
+
   const chartData = useMemo<ChartEntry[]>(
     () =>
       rows
@@ -70,58 +169,6 @@ export const ChainDetailModal = memo(({ chainHolding, accountIds, currency, onCl
         .filter((d) => d.value > 0),
     [rows],
   );
-
-  const columns: Column<ChainAssetRow>[] = [
-    {
-      key: 'name',
-      title: t('dashboard.portfolioOverview.chainDetail.asset'),
-      width: '35%',
-      render: (_, item) => (
-        <div className="flex items-center gap-2">
-          <span
-            className="h-2 w-2 shrink-0 rounded-full"
-            style={{ backgroundColor: getColorByPriceId(item.priceId, item.colorIndex) }}
-          />
-          <AssetIcon asset={item} size={24} />
-          <FootnoteText className="truncate font-semibold">{item.symbol}</FootnoteText>
-        </div>
-      ),
-    },
-    {
-      key: 'rawAmountNum',
-      title: t('dashboard.portfolioOverview.chainDetail.amount'),
-      sortable: true,
-      width: '25%',
-      render: (_, item) => {
-        const bal = formatBalance(item.rawAmount, item.precision);
-
-        return (
-          <FootnoteText className="tabular-nums">
-            {bal.formatted}
-            {bal.suffix} {item.symbol}
-          </FootnoteText>
-        );
-      },
-    },
-    {
-      key: 'fiatValueNum',
-      title: t('dashboard.portfolioOverview.chainDetail.value'),
-      sortable: true,
-      width: '22%',
-      render: (_, item) => (
-        <FootnoteText className="tabular-nums">
-          <Price amount={item.fiatValue} currency={currency} />
-        </FootnoteText>
-      ),
-    },
-    {
-      key: 'sharePercent',
-      title: t('dashboard.portfolioOverview.chainDetail.share'),
-      sortable: true,
-      width: '18%',
-      render: (_, item) => <FootnoteText className="tabular-nums">{item.sharePercent.toFixed(1)}%</FootnoteText>,
-    },
-  ];
 
   const showChart = chartData.length > 1;
 
@@ -165,7 +212,7 @@ export const ChainDetailModal = memo(({ chainHolding, accountIds, currency, onCl
         )}
 
         <div className="overflow-y-auto px-5 pb-4" style={{ maxHeight: 440 }}>
-          <Table columns={columns} data={rows} />
+          <Table columns={columns} data={tableData} />
         </div>
       </Modal.Content>
     </Modal>

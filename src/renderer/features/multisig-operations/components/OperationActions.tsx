@@ -5,9 +5,10 @@ import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/cor
 import { useI18n } from '@/shared/i18n';
 import { validateCallData } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { type MultisigOperation, accountService, accounts } from '@/domains/network';
+import { type MultisigOperation, accountService, accounts, isContactMultisigAccount } from '@/domains/network';
 import { useNetworkData } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
+import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 
 import { ApproveTxModal } from './modals/ApproveTx';
 import { CallDataModal } from './modals/CallDataModal';
@@ -23,57 +24,77 @@ export const OperationActions = memo(({ operation, account }: Props) => {
   const { api, chain } = useNetworkData(operation.chainId);
   const allAccounts = useUnit(accounts.$list);
 
-  const hasRejectAccount = allAccounts.some(a => {
-    const isDepositor = a.accountId === operation.depositor;
-    const isOnChain = chain ? accountService.isAccountAvailableOnChain(a, chain) : false;
+  const isContact = isContactMultisigAccount(account);
 
-    return isDepositor && isOnChain && !accountUtils.isWatchOnlyAccount(a);
-  });
+  if (isContact && operation.status !== 'pending') return null;
 
-  const hasApproveAccount = allAccounts.some(a => {
-    const isSignatory = account.signatories.some(
-      s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true),
-    );
-    const isOnChain = chain ? accountService.isAccountAvailableOnChain(a, chain) : false;
-    const hasNotSigned = !operation.events.some(e => e.accountId === a.accountId);
+  const hasRejectAccount =
+    !isContact &&
+    allAccounts.some(a => {
+      const isDepositor = a.accountId === operation.depositor;
+      const isOnChain = chain ? accountService.isAccountAvailableOnChain(a, chain) : false;
 
-    return isSignatory && isOnChain && hasNotSigned && !accountUtils.isWatchOnlyAccount(a);
-  });
+      return isDepositor && isOnChain && !accountUtils.isWatchOnlyAccount(a);
+    });
+
+  const hasApproveAccount =
+    !isContact &&
+    allAccounts.some(a => {
+      const isSignatory = account.signatories.some(
+        s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true),
+      );
+      const isOnChain = chain ? accountService.isAccountAvailableOnChain(a, chain) : false;
+      const hasNotSigned = !operation.events.some(e => e.accountId === a.accountId);
+
+      return isSignatory && isOnChain && hasNotSigned && !accountUtils.isWatchOnlyAccount(a);
+    });
 
   const isRejectAvailable = operation.status === 'pending' && hasRejectAccount;
 
-  const isFinalSigning = account && operation.events.length === account.threshold - 1;
+  const isFinalSigning = operation.events.length === account.threshold - 1;
   const hasValidCallData = operation.callData && validateCallData(operation.callData, operation.callHash);
   const isApproveAvailable =
     operation.status === 'pending' && hasApproveAccount && (!isFinalSigning || hasValidCallData);
 
   const needsCallData = operation.status === 'pending' && hasApproveAccount && isFinalSigning && !hasValidCallData;
 
-  if (!chain) return null;
+  if (!chain && !isContact) return null;
+
+  if (isContact) {
+    return (
+      <div className="flex w-[220px] shrink-0" onClick={e => e.stopPropagation()}>
+        <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex w-[150px] shrink-0 gap-x-2" onClick={e => e.stopPropagation()}>
-      {api && chain && isRejectAvailable && (
-        <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
-          <Button pallet="error" variant="fill" size="sm" className="flex-1">
-            {t('operation.rejectButton')}
-          </Button>
-        </RejectTxModal>
-      )}
-      {api && chain && isApproveAvailable && (
-        <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
-          <Button size="sm" className="flex-1">
-            {t('operation.approveButton')}
-          </Button>
-        </ApproveTxModal>
-      )}
-      {api && chain && needsCallData && (
-        <CallDataModal api={api} operation={operation} chain={chain}>
-          <Button size="sm" variant="chip" className="shrink-0 whitespace-nowrap">
-            {t('operation.callData.addCallDataButton')}
-          </Button>
-        </CallDataModal>
-      )}
+    <div className="grid w-[220px] shrink-0 grid-cols-2 gap-x-2" onClick={e => e.stopPropagation()}>
+      <div className="flex">
+        {api && chain && isRejectAvailable && (
+          <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
+            <Button pallet="error" variant="fill" size="sm" className="w-full">
+              {t('operation.rejectButton')}
+            </Button>
+          </RejectTxModal>
+        )}
+      </div>
+      <div className="flex">
+        {api && chain && isApproveAvailable && (
+          <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
+            <Button size="sm" className="w-full">
+              {t('operation.approveButton')}
+            </Button>
+          </ApproveTxModal>
+        )}
+        {api && chain && needsCallData && (
+          <CallDataModal api={api} operation={operation} chain={chain}>
+            <Button size="sm" variant="chip" className="w-full whitespace-nowrap">
+              {t('operation.callData.addCallDataButton')}
+            </Button>
+          </CallDataModal>
+        )}
+      </div>
     </div>
   );
 });

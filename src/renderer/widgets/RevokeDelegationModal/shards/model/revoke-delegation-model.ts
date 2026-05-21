@@ -10,8 +10,7 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@/shared/core';
-import { assert } from '@/shared/lib/utils';
-import { Step, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
+import { Step, assert, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';

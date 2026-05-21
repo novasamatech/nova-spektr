@@ -64,6 +64,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
           proxyNumber: 1,
           fee: '1',
           multisigDeposit: '0',
+          signingPath: [],
         },
       },
     });
@@ -95,6 +96,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         extrinsicHash: '0x00',
         isFinalApprove: true,
         multisigError: '',
+        proxyError: '',
       },
     });
 

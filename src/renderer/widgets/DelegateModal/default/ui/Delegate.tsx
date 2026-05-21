@@ -71,7 +71,7 @@ export const Delegate = () => {
   const title = t('governance.addDelegation.title');
 
   return (
-    <Modal isOpen={isModalOpen} size="fit" height="fit" onToggle={(open) => !open && closeModal()}>
+    <Modal isOpen={isModalOpen} size="mdlg" height="fit" onToggle={(open) => !open && closeModal()}>
       <Modal.Title close>
         <OperationTitle title={t(title)} chainId={walletData.chain!.chainId} />
       </Modal.Title>

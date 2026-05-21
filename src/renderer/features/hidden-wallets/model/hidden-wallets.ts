@@ -1,15 +1,15 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { attach, combine, createEvent, createStore, restore, sample } from 'effector';
 import { debounce } from 'patronum';
 
 import { type Wallet } from '@/shared/core';
 import { walletModel } from '@/entities/wallet';
 
-const $hiddenWallets = walletModel.$hiddenWallets;
+const $hiddenWallets = walletModel.$hiddenWallets.map((wallets) =>
+  wallets.filter((wallet) => wallet.hiddenReason === 'manual'),
+);
 
 // Events
 const changeQuery = createEvent<string>();
-const restoreWallets = createEvent();
-const walletsRestored = createEvent();
 const clearSelection = createEvent();
 const toggleWalletSelection = createEvent<Wallet>();
 const toggleGroupSelection = createEvent<Wallet[]>();
@@ -20,18 +20,19 @@ const $inputQuery = restore(changeQuery, '').reset(clearSelection);
 // Debounced query for expensive search operations (300ms delay)
 const $query = restore(debounce(changeQuery, 300), '').reset(clearSelection);
 
-const $selectedWallets = createStore<Set<Wallet>>(new Set()).reset(clearSelection);
+const $selectedWallets = createStore<Set<Wallet['id']>>(new Set()).reset(clearSelection);
 
 sample({
   clock: toggleWalletSelection,
   source: $selectedWallets,
   fn: (selected, wallet) => {
     const newSelected = new Set(selected);
+    const walletId = wallet.id;
 
-    if (newSelected.has(wallet)) {
-      newSelected.delete(wallet);
+    if (newSelected.has(walletId)) {
+      newSelected.delete(walletId);
     } else {
-      newSelected.add(wallet);
+      newSelected.add(walletId);
     }
     return newSelected;
   },
@@ -43,10 +44,10 @@ sample({
   source: $selectedWallets,
   fn: (selected, groupWallets) => {
     const newSelected = new Set(selected);
-    const allSelected = groupWallets.every((wallet) => newSelected.has(wallet));
+    const allSelected = groupWallets.every((wallet) => newSelected.has(wallet.id));
 
     for (const wallet of groupWallets) {
-      allSelected ? newSelected.delete(wallet) : newSelected.add(wallet);
+      allSelected ? newSelected.delete(wallet.id) : newSelected.add(wallet.id);
     }
 
     return newSelected;
@@ -58,7 +59,9 @@ sample({
   clock: toggleAllSelection,
   source: { selectedWallets: $selectedWallets, wallets: $hiddenWallets },
   fn: ({ selectedWallets, wallets }) => {
-    return selectedWallets.size === wallets.length ? new Set<Wallet>() : new Set(wallets);
+    return selectedWallets.size === wallets.length
+      ? new Set<Wallet['id']>()
+      : new Set(wallets.map((wallet) => wallet.id));
   },
   target: $selectedWallets,
 });
@@ -68,7 +71,7 @@ const $selectionState = combine($selectedWallets, $hiddenWallets, (selectedWalle
   const selectedCount = selectedWallets.size;
 
   return {
-    selectedWallets: Array.from(selectedWallets), // Convert Set to Array for UI compatibility
+    selectedWalletIds: Array.from(selectedWallets),
     selectedCount,
     totalWallets,
     allSelected: selectedCount > 0 && selectedCount === totalWallets,
@@ -77,22 +80,24 @@ const $selectionState = combine($selectedWallets, $hiddenWallets, (selectedWalle
   };
 });
 
-sample({
-  clock: restoreWallets,
-  source: $selectedWallets,
-  fn: (selectedWallets) => Array.from(selectedWallets),
-  target: walletModel.restoreWallets,
+const restoreWalletsFx = attach({
+  source: { selectedWallets: $selectedWallets, hiddenWallets: $hiddenWallets },
+  effect: async ({ selectedWallets, hiddenWallets }) => {
+    const selectedIds = new Set(selectedWallets);
+    const wallets = hiddenWallets.filter((wallet) => selectedIds.has(wallet.id));
+    if (wallets.length === 0) return [];
+
+    await walletModel.restoreWallets(wallets);
+    return wallets;
+  },
 });
 
+// Clear the selection only after the restore finishes — clearing on the effect
+// call itself races with the effect reading `$selectedWallets` from its source.
 sample({
-  clock: restoreWallets,
-  fn: () => new Set<Wallet>(),
+  clock: restoreWalletsFx.done,
+  fn: () => new Set<Wallet['id']>(),
   target: $selectedWallets,
-});
-
-sample({
-  clock: walletModel.restoreWallets.done,
-  target: walletsRestored,
 });
 
 export const hiddenWalletsModel = {
@@ -105,8 +110,7 @@ export const hiddenWalletsModel = {
 
   // Events
   changeQuery,
-  restoreWallets,
-  walletsRestored,
+  restoreWallets: restoreWalletsFx,
   clearSelection,
   toggleWalletSelection,
   toggleGroupSelection,

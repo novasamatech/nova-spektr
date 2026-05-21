@@ -2,9 +2,11 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { wireDraftCloseRedirect } from '@/features/drafts';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -62,11 +64,12 @@ sample({
     coreTx: formModel.$coreTx,
     route: formModel.$route,
     tx: formModel.$tx,
+    signingPath: formModel.$signingPath,
   },
   filter: ({ networkStore }, { formData }) => {
     return nonNullable(networkStore) && nonNullable(formData.initiator) && nonNullable(formData.signatory);
   },
-  fn: ({ networkStore, coreTx, route, tx }, { formData }) => {
+  fn: ({ networkStore, coreTx, route, tx, signingPath }, { formData }) => {
     return {
       event: [
         {
@@ -78,6 +81,7 @@ sample({
           coreTx: coreTx!,
           route: route,
           tx: tx!,
+          signingPath,
         } satisfies WithdrawConfirm,
       ],
       step: Step.CONFIRM,
@@ -187,6 +191,13 @@ sample({
   source: $redirectAfterSubmitPath,
   filter: nonNullable,
   target: navigationModel.events.navigateTo,
+});
+
+wireDraftCloseRedirect({
+  $initiatedDraft: formModel.$initiatedDraft,
+  flowFinished,
+  redirectTarget: $redirectAfterSubmitPath,
+  destination: Paths.OPERATIONS,
 });
 
 sample({

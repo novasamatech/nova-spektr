@@ -256,6 +256,7 @@ sample({
           coreTx: coreTxs[0]!,
           tx: coreTxs[0]!,
           route: [shard],
+          signingPath: [],
         } satisfies BondExtraConfirm;
       }),
       step: Step.CONFIRM,

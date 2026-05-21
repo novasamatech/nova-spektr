@@ -2,9 +2,11 @@ import { type Table } from 'dexie';
 
 import {
   type Balance,
+  type ChainId,
   type ChainMetadata,
   type Connection,
   type Contact,
+  type HexString,
   type Notification,
   type ProxyAccount,
   type Serializable,
@@ -33,3 +35,16 @@ export type TProxy = Table<ProxyAccount, ProxyAccount['id']>;
 export type TNotification = Table<Notification, Notification['id']>;
 export type TMetadata = Table<ChainMetadata, ChainMetadata['id']>;
 export type TBasketTransaction = Table<BasketTransaction, BasketTransaction['id']>;
+
+export type OperationDescriptionDS = { id: string; description: string };
+export type TOperationDescription = Table<OperationDescriptionDS, OperationDescriptionDS['id']>;
+
+export type OperationTemplateDS = {
+  id: number;
+  name: string;
+  chainId: ChainId;
+  callData: HexString;
+  specVersion: number;
+  createdAt: number;
+};
+export type TOperationTemplate = Table<OperationTemplateDS, OperationTemplateDS['id']>;

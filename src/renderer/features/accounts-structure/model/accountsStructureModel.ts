@@ -88,10 +88,32 @@ const releaseAccountNode = createEvent();
 const $hoveredAccountNode = restore(enterAccountNode, null).reset(leaveAccountNode, releaseAccountNode);
 const $heldAccountNode = restore(holdAccountNode, null).reset(releaseAccountNode);
 
+const setExclusive = createEvent<boolean>();
+const $exclusive = restore(setExclusive, false);
+
+// Exclusive mode skips merging with wallet-store accounts.
+const $mergedAccounts = combine(
+  { walletAccounts: walletModel.$availableAccounts, passedAccounts: $allAccounts, exclusive: $exclusive },
+  ({ walletAccounts, passedAccounts, exclusive }) => {
+    if (exclusive) return passedAccounts ?? [];
+    if (!passedAccounts?.length) return walletAccounts;
+
+    const merged = [...(walletAccounts ?? [])];
+    const existingIds = new Set(merged.map((a) => a.id));
+    for (const account of passedAccounts) {
+      if (!existingIds.has(account.id)) {
+        merged.push(account);
+      }
+    }
+
+    return merged;
+  },
+);
+
 const $highlightedNodes = combine(
   {
     selectedAccount: $selectedAccount,
-    accountList: walletModel.$availableAccounts,
+    accountList: $mergedAccounts,
     selectedChain: $selectedChain,
     hoveredAccountNode: $hoveredAccountNode,
     heldAccountNode: $heldAccountNode,
@@ -150,7 +172,7 @@ function findNodesRelatedToAccount(
 
 const $graph = combine(
   {
-    accounts: walletModel.$availableAccounts,
+    accounts: $mergedAccounts,
     selectedAccount: $selectedAccount,
     selectedChain: $selectedChain,
   },
@@ -185,6 +207,7 @@ export const accountsStructureModel = {
 
   selectChain,
   setAccounts,
+  setExclusive,
   selectAccount,
   setPathType,
   setEdgeType,

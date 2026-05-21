@@ -10,6 +10,7 @@ import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { AddPureProxiedConfirmation } from '@/features/operations/OperationsConfirm/AddPureProxied';
 import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
@@ -33,7 +34,11 @@ export const AddPureProxied = ({ wallet, onClose, children }: Props) => {
   const {
     fields: { chain },
   } = useForm(formModel.form);
-  const initiatorWallet = useUnit(addPureProxiedModel.$initiatorWallet);
+  const signatoryAccount = useUnit(formModel.form.fields.signatory.$value);
+  const wallets = useUnit(walletModel.$wallets);
+
+  const signatoryWallet = signatoryAccount ? (wallets.find(w => w.id === signatoryAccount.walletId) ?? null) : null;
+  const isBasketAvailable = signatoryWallet ? basketUtils.isBasketAvailable(signatoryWallet) : false;
 
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
     addPureProxiedUtils.isBasketStep(step),
@@ -87,7 +92,7 @@ export const AddPureProxied = ({ wallet, onClose, children }: Props) => {
   }
 
   return (
-    <Modal isOpen={isModalOpen} size="md" height="fit" onToggle={onToggle}>
+    <Modal isOpen={isModalOpen} size="mdlg" height="fit" onToggle={onToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{getModalTitle(step, chain.value ?? undefined)}</Modal.Title>
       <Modal.Content>
@@ -95,12 +100,11 @@ export const AddPureProxied = ({ wallet, onClose, children }: Props) => {
         {addPureProxiedUtils.isConfirmStep(step) && (
           <AddPureProxiedConfirmation
             secondaryActionButton={
-              initiatorWallet &&
-              basketUtils.isBasketAvailable(initiatorWallet) && (
-                <Button pallet="secondary" onClick={void addPureProxiedModel.events.txSaved}>
+              isBasketAvailable ? (
+                <Button pallet="secondary" onClick={() => addPureProxiedModel.events.txSaved()}>
                   {t('operation.addToBasket')}
                 </Button>
-              )
+              ) : undefined
             }
             onGoBack={() => addPureProxiedModel.events.stepChanged(Step.INIT)}
           />

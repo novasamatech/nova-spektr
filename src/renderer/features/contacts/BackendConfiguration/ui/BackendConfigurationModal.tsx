@@ -1,16 +1,19 @@
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
+import { type Chain, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useConfirmContext } from '@/shared/providers/ConfirmContext';
 import { Alert, Button, FootnoteText, Icon, InputHint, Loader, SmallTitleText } from '@/shared/ui';
-import { Address, Identicon } from '@/shared/ui-entities';
-import { Box, Field, Input, Modal, Select, Surface, useNotification } from '@/shared/ui-kit';
+import { Address, ChainSelect, Identicon } from '@/shared/ui-entities';
+import { Box, Field, Input, Modal, Select, Surface, Tooltip, useNotification } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
+import { type SignableAccount, authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { OperationMessageSign } from '@/features/operations/OperationMessageSign';
-import { type SignableAccount, authModel } from '../model/auth-model';
-import { backendConfigurationModel } from '../model/backend-configuration-model';
+
+const VAULT_SIGNING_TYPES = new Set<SigningType>([SigningType.POLKADOT_VAULT, SigningType.PARITY_SIGNER]);
 
 export const BackendConfigurationModal = () => {
   const { t } = useI18n();
@@ -28,8 +31,22 @@ export const BackendConfigurationModal = () => {
   const authState = useUnit(authModel.$authState);
   const authStep = useUnit(authModel.$authStep);
   const selectedAccountId = useUnit(authModel.$selectedAccountId);
+  const selectedChainId = useUnit(authModel.$selectedChainId);
   const signableAccounts = useUnit(authModel.$signableAccounts);
+  const chainsMap = useUnit(networkModel.$chains);
   const error = useUnit(authModel.$error);
+  const isSessionExpired = useUnit(authModel.$isSessionExpired);
+  const hasNetworkIssue = useUnit(authModel.$hasNetworkIssue);
+
+  const chainOptions = useMemo(() => Object.values(chainsMap), [chainsMap]);
+  const selectedChain = chainsMap[selectedChainId] ?? null;
+
+  const selectedAccount = useMemo(
+    () => signableAccounts.find((a) => a.accountId === selectedAccountId) ?? null,
+    [signableAccounts, selectedAccountId],
+  );
+  const showSigningChainSelector =
+    selectedAccount !== null && VAULT_SIGNING_TYPES.has(selectedAccount.account.signingType);
 
   useEffect(() => {
     // eslint-disable-next-line effector/no-watch
@@ -42,10 +59,15 @@ export const BackendConfigurationModal = () => {
   const isError = authStep === 'error';
   const showUrlError = draftUrl.trim().length > 0 && !isValid;
 
-  const urlUnchanged = isAuthenticated && !isDirty;
+  // The cached auth state can survive a server outage — only present the user as "connected"
+  // when both background signals agree the backend is currently live: the keepalive hasn't
+  // reported a network issue, AND the live reachability probe affirmed reachability. Treating
+  // 'checking' / null as not-live closes the brief race between modal-open and probe-completion.
+  const isLive = !hasNetworkIssue && urlReachable === 'reachable';
+  const urlUnchanged = isAuthenticated && !isDirty && !isSessionExpired && isLive;
 
   const showAccountSelector = isValid && !urlUnchanged && !isSigning;
-  const showConnectedAccount = urlUnchanged && authState;
+  const showConnectedAccount = urlUnchanged && authState && !isSigning;
 
   const canConnect = isValid && selectedAccountId !== null && !isSigning;
 
@@ -131,7 +153,18 @@ export const BackendConfigurationModal = () => {
             </Field>
           )}
 
-          {isSigning && <OperationMessageSign onGoBack={() => authModel.events.signingCancelled()} />}
+          {isSigning && (
+            <>
+              {showSigningChainSelector && (
+                <ChainSelectorField
+                  value={selectedChain}
+                  options={chainOptions}
+                  onSelect={(chain) => authModel.events.chainSelected(chain.chainId)}
+                />
+              )}
+              <OperationMessageSign onGoBack={() => authModel.events.signingCancelled()} />
+            </>
+          )}
 
           {showAccountSelector && (
             <AccountSelector
@@ -228,6 +261,43 @@ const AccountSelector = ({
           </Select.Item>
         ))}
       </Select>
+    </Field>
+  );
+};
+
+const ChainSelectorField = ({
+  value,
+  options,
+  onSelect,
+}: {
+  value: Chain | null;
+  options: Chain[];
+  onSelect: (chain: Chain) => void;
+}) => {
+  const { t } = useI18n();
+
+  return (
+    <Field
+      text={
+        <span className="flex items-center gap-x-1">
+          {t('addressBook.auth.selectChainLabel')}
+          <Tooltip>
+            <Tooltip.Trigger>
+              <span tabIndex={0} className="text-text-tertiary hover:text-primary-button-background-default">
+                <Icon name="info" size={12} className="text-inherit" />
+              </span>
+            </Tooltip.Trigger>
+            <Tooltip.Content>{t('addressBook.auth.chainHintTooltip')}</Tooltip.Content>
+          </Tooltip>
+        </span>
+      }
+    >
+      <ChainSelect
+        value={value}
+        options={options}
+        placeholder={t('addressBook.auth.selectChainPlaceholder')}
+        onChange={onSelect}
+      />
     </Field>
   );
 };

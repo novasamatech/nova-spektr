@@ -59,6 +59,8 @@ export const transactionService = {
   createCallFromCallData,
   formatCall,
 
+  getCallDataHex,
+
   logPayload,
 };
 
@@ -249,8 +251,9 @@ async function createPayloadWithProof(
   api: ApiPromise,
   nonceIncrement?: number,
   blockTimeMs?: number,
+  chain?: Chain,
 ) {
-  let metadata = await createTxMetadata(signatory, api, blockTimeMs);
+  let metadata = await createTxMetadata(signatory, api, blockTimeMs, chain);
   if (nonceIncrement) {
     metadata = upgradeNonce(metadata, nonceIncrement);
   }
@@ -440,6 +443,20 @@ function formatArg(arg: Codec, chain: Chain): unknown {
 function createCallFromCallData(callData: CallData, api: ApiPromise): CallBase<any> | null {
   try {
     return api.createType('Call', callData);
+  } catch {
+    return null;
+  }
+}
+
+function getCallDataHex(
+  transaction: Transaction | null | undefined,
+  api: ApiPromise | null | undefined,
+): string | null {
+  if (!transaction || !api) return null;
+  try {
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+
+    return extrinsic.method.toHex();
   } catch {
     return null;
   }

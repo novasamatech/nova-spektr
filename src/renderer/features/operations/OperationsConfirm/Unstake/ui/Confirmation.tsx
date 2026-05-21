@@ -3,7 +3,7 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { StakingPopover, UnstakingDuration } from '@/entities/staking';
@@ -11,6 +11,8 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 import { AssetFiatBalance } from '@/widgets/price';
 import { Fee, FeeWithLabel } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
+import { SigningPathConfirmSection } from '../../common/SigningPathConfirmSection';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -43,7 +45,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     return null;
   }
 
-  const { amount, asset, chain, totalFee, fee, signatory, route, multisigDeposit, api } = confirmStore.meta;
+  const { amount, asset, chain, totalFee, fee, signatory, route, multisigDeposit, api, signingPath } =
+    confirmStore.meta;
 
   const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
 
@@ -64,7 +67,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
+      <SigningPathConfirmSection
+        signingPath={signingPath}
         chain={chain}
         wallets={wallets}
         initiators={confirms.map((c) => c.meta.initiator)}
@@ -105,7 +109,9 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <StakingPopover.Item>{t('staking.confirmation.hintNoRewards')}</StakingPopover.Item>
           <StakingPopover.Item>{t('staking.confirmation.hintWithdraw')}</StakingPopover.Item>
         </StakingPopover>
-      </TransactionDetails>
+      </SigningPathConfirmSection>
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (

@@ -6,7 +6,7 @@ import { Trans } from 'react-i18next';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { Button, DetailRow, HeadlineText, Icon, LargeTitleText, Loader } from '@/shared/ui';
-import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
@@ -15,6 +15,8 @@ import { getLocksForAccount, lockPeriodsModel, locksPeriodsAggregate } from '@/f
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { FeeWithDataLoading } from '@/widgets/transaction-fee';
+import { MultisigOperationDescriptionField } from '../../../common/MultisigOperationDescriptionField';
+import { SigningPathConfirmSection } from '../../../common/SigningPathConfirmSection';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -103,7 +105,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
+      <SigningPathConfirmSection
+        signingPath={confirm.meta.signingPath}
         chain={confirm.meta.chain}
         wallets={wallets}
         initiators={[confirm.meta.initiator]}
@@ -120,7 +123,9 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <DetailRow label={t('governance.vote.field.networkFee')}>
           <FeeWithDataLoading api={api} asset={asset} transaction={tx} />
         </DetailRow>
-      </TransactionDetails>
+      </SigningPathConfirmSection>
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (

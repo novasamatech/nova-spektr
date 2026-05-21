@@ -49,7 +49,7 @@ export const Nominate = () => {
   }
 
   return (
-    <Modal size={nominateUtils.isValidatorsStep(step) ? 'fit' : 'md'} isOpen={isModalOpen} onToggle={closeModal}>
+    <Modal size={nominateUtils.isValidatorsStep(step) ? 'fit' : 'mdlg'} isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>
         {<OperationTitle title={t('staking.validators.title')} chainId={walletData.chain.chainId} />}
       </Modal.Title>
@@ -61,12 +61,11 @@ export const Nominate = () => {
         {nominateUtils.isConfirmStep(step) && (
           <Confirmation
             secondaryActionButton={
-              initiatorWallet &&
-              basketUtils.isBasketAvailable(initiatorWallet) && (
+              initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) ? (
                 <Button pallet="secondary" onClick={() => nominateFlow.events.txSaved()}>
                   {t('operation.addToBasket')}
                 </Button>
-              )
+              ) : undefined
             }
             onGoBack={() => nominateFlow.events.stepChanged(Step.VALIDATORS)}
           />

@@ -4,13 +4,7 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { combineEvents, spread } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
-import {
-  type MultisigTxWrapper,
-  type ProxyTxWrapper,
-  type Transaction,
-  type TxWrapper,
-  WrapperKind,
-} from '@/shared/core';
+import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, WrapperKind } from '@/shared/core';
 import {
   Step,
   formatAmount,
@@ -21,7 +15,7 @@ import {
   nullable,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { type AnyAccount, multisigOperationService } from '@/domains/network';
+import { type AnyAccount, accounts, multisigOperationService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -43,6 +37,7 @@ import {
   type EditDelegationConfirm,
   editDelegationConfirmModel as confirmModel,
 } from '@/features/operations/OperationsConfirm';
+import { pathToTxWrappers } from '@/features/signing-path';
 import { type DelegateData, type FeeData } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -70,7 +65,16 @@ const $accounts = createStore<AnyAccount[]>([]).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 const $isUnchanged = createStore(false);
 
-const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
+// Derive wrappers from the user-picked $signingPath instead of from wallet
+// structure so alternate hop choices flow into the signed extrinsic.
+const $txWrappers = combine(
+  {
+    path: formModel.$signingPath,
+    allAccounts: accounts.$list,
+    wallets: walletModel.$wallets,
+  },
+  ({ path, allAccounts, wallets }) => pathToTxWrappers(path, allAccounts, wallets),
+);
 const $coreTxs = createStore<Transaction[]>([]).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<string | null>(null).reset(flowStarted);
 
@@ -131,26 +135,6 @@ const $transactions = combine(
 );
 
 // Transaction & Form
-
-sample({
-  clock: formModel.output.formChanged,
-  source: {
-    walletData: $walletData,
-    wallets: walletModel.$wallets,
-  },
-  filter: ({ walletData }) => Boolean(walletData.wallet),
-  fn: ({ walletData, wallets }, data) => {
-    const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
-
-    return transactionService.getTxWrappers({
-      wallet: walletData.wallet!,
-      wallets,
-      account: walletData.wallet!.accounts[0]!,
-      signatories,
-    });
-  },
-  target: $txWrappers,
-});
 
 sample({
   clock: formModel.output.formChanged,
@@ -403,6 +387,7 @@ sample({
           route: [shard],
           tx: transaction.wrappedTx,
           initiator: shard,
+          signingPath: [],
         } satisfies EditDelegationConfirm;
       })
       .filter(nonNullable);

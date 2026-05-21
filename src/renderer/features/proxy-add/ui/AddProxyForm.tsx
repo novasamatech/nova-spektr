@@ -20,22 +20,22 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, CaptionText, InputHint } from '@/shared/ui';
-import {
-  Address,
-  AssetBalance,
-  Identicon,
-  SignatorySelect,
-  TransactionValidationError,
-  WalletIcon,
-} from '@/shared/ui-entities';
+import { Address, AssetBalance, Identicon, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Combobox, Field, Select } from '@/shared/ui-kit';
-import { accountService, accounts, useAccountName, useAccountsNames } from '@/domains/network';
+import { accountService, useAccountName, useAccountsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { ProxyPopover } from '@/entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts → accounts-structure → wallet-details → proxy-add
+import { DraftFormBody } from '@/features/drafts/components/DraftFormBody';
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts → accounts-structure → wallet-details → proxy-add
+import { DraftModeCard } from '@/features/drafts/components/DraftModeCard';
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular: drafts → accounts-structure → wallet-details → proxy-add
+import { DraftSigningPath } from '@/features/drafts/components/DraftSigningPath';
+import { SigningPathSection } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/widgets/transaction-fee';
 import { formModel } from '../model/form-model';
@@ -67,6 +67,9 @@ export const AddProxyForm = () => {
   const { submit } = useForm(formModel.form);
   const errors = useUnit(formModel.$errors);
   const wallets = useUnit(walletModel.$wallets);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
+  const chain = useUnit(formModel.form.fields.chain.$value);
+  const nativeAsset = chain ? getNativeAsset(chain.assets) : null;
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -74,20 +77,37 @@ export const AddProxyForm = () => {
   };
 
   return (
-    <div className="px-5 pb-4">
-      <TransactionValidationError errors={errors} wallets={wallets} />
-      <ProxyPopover>{t('proxy.proxyTooltip')}</ProxyPopover>
-      <form id="add-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitProxy}>
-        <NetworkSelector />
-        <AccountSelector />
-        <Signatories />
-        <ProxyInput />
-        <ProxyTypeSelector />
-      </form>
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
-        <FeeSection />
-        <FeeError />
-      </div>
+    <div className="flex flex-col gap-4 px-5 pb-4">
+      <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
+      {isDraftMode && chain && (
+        <DraftSigningPath
+          chainId={chain.chainId}
+          asset={nativeAsset}
+          $draftPath={formModel.$draftSigningPath}
+          draftPathCommitted={formModel.events.draftPathCommitted}
+          draftPathEditStarted={formModel.events.draftPathEditStarted}
+          draftPathEditEnded={formModel.events.draftPathEditEnded}
+        />
+      )}
+      <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+        <div className="flex flex-col gap-4">
+          {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+          <ProxyPopover>{t('proxy.proxyTooltip')}</ProxyPopover>
+          <form id="add-proxy-form" className="flex flex-col gap-y-4" onSubmit={submitProxy}>
+            <NetworkSelector />
+            <AccountSelector />
+            <Signatories />
+            <ProxyInput />
+            <ProxyTypeSelector />
+          </form>
+          {!isDraftMode && (
+            <div className="flex flex-col gap-y-6 pt-2 pb-4">
+              <FeeSection />
+              <FeeError />
+            </div>
+          )}
+        </div>
+      </DraftFormBody>
       <ActionSection />
     </div>
   );
@@ -239,47 +259,26 @@ const Signatories = () => {
   const { t } = useI18n();
 
   const {
-    fields: { chain, signatory, initiator },
+    fields: { chain, signatory },
   } = useForm(formModel.form);
 
-  const signatories = useUnit(formModel.$signatories);
-  const isMultisig = useUnit(formModel.$isMultisig);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
+  const signingPath = useUnit(formModel.$signingPath);
+  const formErrors = useUnit(formModel.$errors);
 
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balanceMap);
+  const nativeAsset = chain.value ? getNativeAsset(chain.value.assets) : null;
 
-  if (!chain.value) return null;
-
-  const nativeAsset = getNativeAsset(chain.value.assets);
-
-  const signatoriesWithBalance = useMemo(() => {
-    return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        chain.value?.chainId ?? ('' as ChainId),
-        nativeAsset.assetId,
-      );
-      return { account: signatory, balance: withdrawableAmount(balance) };
-    });
-  }, [signatories, balances]);
-
-  if (!isMultisig) {
-    return null;
-  }
+  if (isDraftMode) return null;
 
   return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      initiator={initiator.value}
-      allWallets={allWallets}
-      hasError={signatory.hasError}
+    <SigningPathSection
+      signingPath={signingPath}
+      chain={chain.value ?? null}
+      asset={nativeAsset}
+      txErrors={formErrors}
       errorText={t(signatory.errorMessage)}
-      network={{ chain: chain.value, asset: nativeAsset }}
-      onChange={signatory.onChange}
+      balanceExtractor={(b) => (b ? withdrawableAmount(b) : null)}
+      onChange={formModel.signingPathChanged}
     />
   );
 };
@@ -525,11 +524,18 @@ const ActionSection = () => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const canSaveAsDraft = useUnit(formModel.$canSaveAsDraft);
+  const isDraftMode = useUnit(formModel.$isDraftMode);
 
   return (
-    <div className="mt-4 flex items-center justify-end">
-      <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
-        {t('operation.continueButton')}
+    <div className="mt-4 flex items-center justify-end gap-3">
+      <Button
+        form={isDraftMode ? undefined : 'add-proxy-form'}
+        type={isDraftMode ? 'button' : 'submit'}
+        disabled={isDraftMode ? !canSaveAsDraft : !canSubmit}
+        onClick={isDraftMode ? () => formModel.events.saveAsDraftRequested() : undefined}
+      >
+        {isDraftMode ? t('operations.drafts.initiateButton') : t('operation.continueButton')}
       </Button>
     </div>
   );

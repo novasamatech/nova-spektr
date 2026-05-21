@@ -1,12 +1,12 @@
 import { allSettled, fork } from 'effector';
 
-import { type Contact } from '@/shared/core';
+import { type BackendContact, type Contact } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
-import { authModel, backendConfigurationModel } from '../../../BackendConfiguration';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { contactSourceModel } from '../contact-source-model';
 
-const backendContacts: Contact[] = [
+const backendContacts: BackendContact[] = [
   {
     id: 'backend-1',
     name: 'Backend Contact',
@@ -39,9 +39,9 @@ describe('features/contacts/ContactFilter/model/contact-source-model', () => {
     const scope = fork({
       values: new Map()
         .set(contactSourceModel.$sourceTab, 'backend')
-        .set(contactModel.$contacts, [...backendContacts, localContact])
+        .set(contactModel.$localContacts, [localContact])
+        .set(contactModel.$backendContacts, backendContacts)
         .set(backendConfigurationModel.$backendUrl, 'https://backend.example.com'),
-      handlers: [[contactModel.effects.clearBackendContactsFx, () => ['backend-1']]],
     });
 
     expect(scope.getState(contactSourceModel.$sourceTab)).toBe('backend');
@@ -55,7 +55,8 @@ describe('features/contacts/ContactFilter/model/contact-source-model', () => {
     const scope = fork({
       values: new Map()
         .set(contactSourceModel.$sourceTab, 'backend')
-        .set(contactModel.$contacts, [...backendContacts, localContact])
+        .set(contactModel.$localContacts, [localContact])
+        .set(contactModel.$backendContacts, backendContacts)
         .set(backendConfigurationModel.$backendUrl, 'https://backend.example.com'),
       handlers: [[authModel.__test.logoutFx, jest.fn().mockResolvedValue(undefined)]],
     });
@@ -71,7 +72,7 @@ describe('features/contacts/ContactFilter/model/contact-source-model', () => {
     const scope = fork({
       values: new Map()
         .set(contactSourceModel.$sourceTab, 'backend')
-        .set(contactModel.$contacts, backendContacts)
+        .set(contactModel.$backendContacts, backendContacts)
         .set(backendConfigurationModel.$backendUrl, 'https://backend.example.com'),
     });
 
@@ -83,7 +84,7 @@ describe('features/contacts/ContactFilter/model/contact-source-model', () => {
   test('should show backend tab when backend contacts exist even without active connection', () => {
     const scope = fork({
       values: new Map()
-        .set(contactModel.$contacts, backendContacts)
+        .set(contactModel.$backendContacts, backendContacts)
         .set(backendConfigurationModel.$backendUrl, null)
         .set(authModel.$authState, null),
     });
@@ -96,7 +97,8 @@ describe('features/contacts/ContactFilter/model/contact-source-model', () => {
   test('should hide backend tab when no backend contacts and no active connection', () => {
     const scope = fork({
       values: new Map()
-        .set(contactModel.$contacts, [])
+        .set(contactModel.$localContacts, [])
+        .set(contactModel.$backendContacts, [])
         .set(backendConfigurationModel.$backendUrl, null)
         .set(authModel.$authState, null),
     });

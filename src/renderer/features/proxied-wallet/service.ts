@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type ApiDecoration } from '@polkadot/api/types';
+import { type Call } from '@polkadot/types/interfaces';
 import { type Codec } from '@polkadot/types/types';
 import { stringToU8a, u8aConcatStrict, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress } from '@polkadot/util-crypto';
@@ -103,7 +104,7 @@ function checkPermission(
       const connection = account.connections.find(c => c.proxyAccountId === proxyAccount.accountId);
       if (nullable(connection)) return null;
 
-      const wrappedCalls = transactionService.getBatchWrappedCallsFromExtrinsic(extrinsic);
+      const wrappedCalls = transactionService.getInnerCallsFromCall(extrinsic.method as Call, account.accountId);
       if (wrappedCalls.some(call => checkCallPermission(connection.proxyType, call.section) === false)) {
         return { account, permission: connection.proxyType };
       }

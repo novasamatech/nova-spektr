@@ -8,6 +8,7 @@ import { Box } from '@/shared/ui-kit';
 import { referendumService, useCoreMembers, useMaxRank, useReferendums, useTracks } from '@/domains/collectives';
 import { SignButton } from '@/entities/operations';
 import { VotingConfirmation } from '@/features/fellowship-voting';
+import { MultisigOperationDescriptionField } from '../../common/MultisigOperationDescriptionField';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -81,6 +82,8 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
         fee={confirm.meta.fee}
         rank={confirm.meta.rank}
       />
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (

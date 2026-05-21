@@ -18,28 +18,41 @@ runs:
     - id: playwright_tests
       shell: bash
       run: |
-        allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }}
+        set +e
+        timeout 43m allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }}
+        EXIT_CODE=$?
+        set -e
+        if [ $EXIT_CODE -eq 124 ]; then
+          echo "TEST_TIMED_OUT=true" >> $GITHUB_ENV
+        fi
+        exit $EXIT_CODE
 
     - name: Create Allure testplan if missing
+      if: always()
       shell: bash
       run: |
         mkdir -p .allure
         echo '{}' > .allure/testplan.json
 
-    - shell: bash
+    - name: Prepare Telegram notification
+      if: always()
+      shell: bash
       run: |
         allurectl job-run env >> $GITHUB_ENV
         COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
         echo "COMMIT_INFO<<EOF" >> $GITHUB_ENV
         echo "$COMMIT_INFO" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
-        if [ "${{ steps.playwright_tests.outcome }}" == "failure" ]; then
+        if [ "${{ steps.playwright_tests.outcome }}" == "failure" ] && [ "${{ env.TEST_TIMED_OUT }}" == "true" ]; then
+          echo "TEST_STATUS=❌ Failed (timeout reached)" >> $GITHUB_ENV
+        elif [ "${{ steps.playwright_tests.outcome }}" == "failure" ]; then
           echo "TEST_STATUS=❌ Failed" >> $GITHUB_ENV
         else
           echo "TEST_STATUS=✅ Passed" >> $GITHUB_ENV
         fi
 
     - name: Notify Telegram channel
+      if: always()
       uses: appleboy/telegram-action@master
       with:
         to: ${{ inputs.telegram_to }}

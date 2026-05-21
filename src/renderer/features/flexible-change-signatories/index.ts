@@ -1,1 +1,1 @@
-export { ChangeSignatories } from './ui/ChangeSignatories';
+export { ChangeSignatoriesFlow as ChangeSignatories } from './ui/ChangeSignatoriesFlow';

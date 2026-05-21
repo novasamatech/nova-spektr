@@ -6,6 +6,7 @@ export { addProxyValidateModel } from './model/add-proxy-validate-model';
 export { addPureProxiedValidateModel } from './model/add-pure-proxied-validate-model';
 export { removeProxyValidateModel } from './model/remove-proxy-validate-model';
 export { removePureProxiedValidateModel } from './model/remove-pure-proxied-validate-model';
+export { changeSignatoriesValidateModel } from './model/change-signatories-validate-model';
 
 export { bondNominateValidateModel } from './model/bond-nominate-validate-model';
 export { nominateValidateModel } from './model/nominate-validate-model';
@@ -23,8 +24,10 @@ export { collectiveSetActiveValidateModel } from './model/collective-set-active-
 export { type DryRunResult, TransferRules, transferValidator } from './lib/transfer-rules';
 
 export { AddProxyRules, addProxyValidator } from './lib/add-proxy-rules';
+export { ChangeSignatoriesRules, changeSignatoriesValidator } from './lib/change-signatories-rules';
 export { AddPureProxiedRules, addPureProxiedValidator } from './lib/add-pure-proxied-rules';
 export { RemoveProxyRules, removeProxyValidator } from './lib/remove-proxy-rules';
+export { verifyProxyValidator } from './lib/verify-proxy-rules';
 export { voteValidator } from './lib/vote-rules';
 export { removeVoteValidator } from './lib/remove-vote-rules';
 export { RemovePureProxiedRules } from './lib/remove-pure-proxied-rules';

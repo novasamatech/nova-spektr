@@ -1,78 +1,96 @@
 import { useUnit } from 'effector-react';
-import { type ComponentProps, type PropsWithChildren, useMemo, useState } from 'react';
+import { type ComponentProps, type PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Step, getNativeAsset, isStep, toAccountId, transferableAmount } from '@/shared/lib/utils';
-import { Paths } from '@/shared/routes';
-import { Alert, Button, ButtonLink, Icon, InputHint, SmallTitleText } from '@/shared/ui';
-import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
-import { Box, Field, Modal, Select } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { Step, getNativeAsset, isStep, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { Button } from '@/shared/ui';
+import { Box, Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
-import { walletModel } from '@/entities/wallet';
+import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { OperationSign } from '@/features/operations';
 import { OperationSubmitWithAction } from '@/features/operations/OperationSubmit';
+import { StepPath, pathModel } from '@/features/signing-path';
 import { changeSignatoriesModel } from '../model/change-signatories-model';
-import { formModel } from '../model/form-model';
-import { signatoryModel } from '../model/signatory-model';
 
 import { ConfirmationStep } from './ConfirmationStep';
-import { MultisigFees } from './components/MultisigFees';
-import { Signatory } from './components/Signatory';
+import { ExecutionModeToggle } from './components/ExecutionModeToggle';
+import { InitializingBody } from './components/InitializingBody';
+import { PersistentBanner } from './components/PersistentBanner';
+import { UnifiedPicker } from './components/UnifiedPicker';
 
-const MODAL_SIZE: Record<string, Pick<ComponentProps<typeof Modal>, 'size' | 'height'>> = {
-  [Step.SIGNATORIES_THRESHOLD]: { size: 'mdlg', height: 'full' },
-  [Step.SIGNER_SELECTION]: { size: 'md', height: 'fit' },
+const MODAL_SIZE: Record<number, Pick<ComponentProps<typeof Modal>, 'size' | 'height'>> = {
+  [Step.SELECT_CONTROLLER]: { size: 'mdlg', height: 'full' },
+  [Step.SIGNING_PATH]: { size: 'mdlg', height: 'full' },
   [Step.SIGN]: { size: 'md', height: 'fit' },
-  [Step.CONFIRM]: { size: 'md', height: 'fit' },
+  [Step.CONFIRM]: { size: 'mdlg', height: 'fit' },
   [Step.SUBMIT]: { size: 'md', height: 'fit' },
 };
 
 type Props = PropsWithChildren<{
   wallet: Wallet;
+  currentControllerAccountId?: AccountId | null;
   onClose?: () => void;
+  launchOpen?: boolean;
+  hideTrigger?: boolean;
 }>;
 
-export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
+export const ChangeSignatories = ({
+  wallet,
+  currentControllerAccountId,
+  onClose,
+  children,
+  launchOpen,
+  hideTrigger,
+}: Props) => {
   const { t } = useI18n();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(launchOpen ?? false);
+  const walletRef = useRef(wallet);
+  walletRef.current = wallet;
+
+  const [bodyReady, setBodyReady] = useState(false);
+  useEffect(() => {
+    const handle = requestAnimationFrame(() => setBodyReady(true));
+
+    return () => cancelAnimationFrame(handle);
+  }, []);
+
+  const overrideRef = useRef(currentControllerAccountId ?? null);
+  overrideRef.current = currentControllerAccountId ?? null;
+
+  const launchedRef = useRef(false);
+  useEffect(() => {
+    if (!launchOpen) return;
+    if (launchedRef.current) return;
+    launchedRef.current = true;
+
+    setIsModalOpen(true);
+    changeSignatoriesModel.flow.open({
+      wallet: walletRef.current,
+      controllerOverride: overrideRef.current,
+    });
+  }, [launchOpen, wallet.id]);
 
   const step = useUnit(changeSignatoriesModel.$step);
-  const canSubmit = useUnit(changeSignatoriesModel.$canSubmit);
-  const canProceedFromForm = useUnit(changeSignatoriesModel.$canProceedFromForm);
   const chain = useUnit(changeSignatoriesModel.$chain);
-  const errors = useUnit(changeSignatoriesModel.$errors);
-  const threshold = useUnit(formModel.$threshold);
-  const invalidAddresses = useUnit(formModel.$invalidAddresses);
-  const isEditOperationAlreadyExists = useUnit(changeSignatoriesModel.$isEditOperationAlreadyExists);
+  const currentController = useUnit(changeSignatoriesModel.$currentController);
+  const selectedTarget = useUnit(changeSignatoriesModel.$selectedTarget);
+  const isPathComplete = useUnit(pathModel.$isComplete);
+  const isDraftMode = useUnit(changeSignatoriesModel.$isDraftMode);
+  const canSaveAsDraft = useUnit(changeSignatoriesModel.$canSaveAsDraft);
+  const nextFromSelectController = useUnit(changeSignatoriesModel.nextFromSelectController);
+  const nextFromSigningPath = useUnit(changeSignatoriesModel.nextFromSigningPath);
+  const signingPathGoBack = useUnit(changeSignatoriesModel.signingPathGoBack);
 
-  const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
-  const signatories = useUnit(signatoryModel.$signatories);
-  const wallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balanceMap);
-  const allAccounts = useUnit(accounts.$list);
-  const signatoriesForSelect = useUnit(changeSignatoriesModel.$signatories);
-  const selectedSignatory = useUnit(changeSignatoriesModel.$signer);
+  const currentControllerAddress = useMemo(() => {
+    if (!currentController || !chain) return null;
+    return toAddress(currentController.accountId, { prefix: chain.addressPrefix });
+  }, [currentController, chain]);
 
-  const thresholdDisabled = signatories.length < 2 || signatories.some((s) => s.address === '');
-
-  const asset = chain ? getNativeAsset(chain.assets) : null;
-
-  const signatoriesWithBalance = useMemo(() => {
-    if (!chain || !asset) return [];
-    return signatoriesForSelect.map((s) => {
-      const balance = balanceUtils.getBalance(balances, s.accountId, chain.chainId, asset.assetId);
-      return { account: s, balance: transferableAmount(balance) };
-    });
-  }, [signatoriesForSelect, balances, chain, asset]);
-
-  const network = useMemo(() => {
-    if (!chain || !asset) return null;
-    return { chain, asset };
-  }, [chain, asset]);
+  const currentSignatories = currentController?.signatories ?? [];
+  const currentThreshold = currentController?.threshold ?? 0;
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -83,7 +101,7 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
   const onToggle = (isOpen: boolean) => {
     if (isOpen) {
       setIsModalOpen(true);
-      changeSignatoriesModel.flow.open({ wallet });
+      changeSignatoriesModel.flow.open({ wallet, controllerOverride: currentControllerAccountId ?? null });
     } else {
       closeModal();
     }
@@ -104,143 +122,120 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
     );
   }
 
+  const showInitializingBody =
+    (!bodyReady || !chain || !currentControllerAddress) && !isStep(step, Step.SIGN) && !isStep(step, Step.SUBMIT);
+
   return (
-    <Modal isOpen={isModalOpen} size={MODAL_SIZE[step]!.size} height={MODAL_SIZE[step]!.height} onToggle={onToggle}>
-      <Modal.Trigger>{children}</Modal.Trigger>
+    <Modal
+      isOpen={isModalOpen}
+      size={MODAL_SIZE[step]?.size ?? 'mdlg'}
+      height={MODAL_SIZE[step]?.height ?? 'full'}
+      onToggle={onToggle}
+    >
+      {!hideTrigger && <Modal.Trigger>{children}</Modal.Trigger>}
 
       <Modal.Title close>
-        {chain && <OperationTitle title={t('flexibleMultisig.editTitleOn')} chainId={chain.chainId} />}
+        {chain ? (
+          <OperationTitle title={t('flexibleMultisig.editTitleOn')} chainId={chain.chainId} />
+        ) : (
+          t('flexibleMultisig.editTitleOn')
+        )}
       </Modal.Title>
-      {isStep(step, Step.CONFIRM) && <ConfirmationStep />}
-      {isStep(step, Step.SIGNATORIES_THRESHOLD) && (
+
+      {showInitializingBody && (
+        <Modal.Content>
+          <InitializingBody />
+        </Modal.Content>
+      )}
+
+      {!showInitializingBody && isStep(step, Step.CONFIRM) && chain && currentControllerAddress && (
+        <ConfirmationStep
+          banner={
+            <PersistentBanner
+              currentControllerAddress={currentControllerAddress}
+              currentSignatories={currentSignatories}
+              currentThreshold={currentThreshold}
+            />
+          }
+        />
+      )}
+
+      {!showInitializingBody && isStep(step, Step.SELECT_CONTROLLER) && chain && currentControllerAddress && (
         <>
           <Modal.Content>
-            <div className="flex h-full flex-col gap-y-6 px-5 pt-4 pb-6">
-              <SmallTitleText>{t('flexibleMultisig.editSubtitle')}</SmallTitleText>
-
-              <hr className="-ml-5 w-[110%] border-divider" />
-
-              {signatories.map((signatory, index) => (
-                <Signatory
-                  key={signatory.address}
-                  isOwnAccount={index === 0}
-                  isDuplicate={duplicateSignatories[toAccountId(signatory.address)]?.includes(index) ?? false}
-                  isInvalidAddress={invalidAddresses.includes(signatory.address)}
-                  signatoryIndex={index}
-                  signatory={signatory}
-                  onDelete={signatoryModel.deleteSignatory}
+            <div className="flex h-full flex-col gap-y-4 px-5 pt-4 pb-6">
+              <DraftModeCard isOn={isDraftMode} onToggle={changeSignatoriesModel.events.toggleDraftMode} />
+              {isDraftMode && (
+                <DraftSigningPath
+                  chainId={chain.chainId}
+                  asset={getNativeAsset(chain.assets)}
+                  $draftPath={changeSignatoriesModel.$draftSigningPath}
+                  draftPathCommitted={changeSignatoriesModel.events.draftPathCommitted}
+                  draftPathEditStarted={changeSignatoriesModel.events.draftPathEditStarted}
+                  draftPathEditEnded={changeSignatoriesModel.events.draftPathEditEnded}
                 />
-              ))}
-
-              <Button
-                size="md"
-                variant="text"
-                className="h-8.5 w-max justify-center gap-x-1 pl-0"
-                suffixElement={<Icon className="text-icon-primary" name="add" size={16} />}
-                onClick={() => signatoryModel.addSignatory({ address: '', walletId: '' })}
+              )}
+              <DraftFormBody
+                $isDraftMode={changeSignatoriesModel.$isDraftMode}
+                $isDraftPathComplete={changeSignatoriesModel.$isDraftPathComplete}
               >
-                {t('createMultisigAccount.addNewSignatory')}
-              </Button>
-
-              <hr className="-ml-5 w-[110%] border-divider" />
-
-              <div className="flex gap-x-6">
-                <Box width="232px">
-                  <Field text={t('createMultisigAccount.thresholdName')}>
-                    <Select
-                      placeholder={t('createMultisigAccount.thresholdPlaceholder')}
-                      value={(threshold || '').toString()}
-                      disabled={thresholdDisabled}
-                      height="md"
-                      onChange={(value) => formModel.thresholdChanged(Number(value))}
-                    >
-                      {Array.from({ length: signatories.length - 1 }, (_, index) => (
-                        <Select.Item key={index} value={(index + 2).toString()}>
-                          {index + 2}
-                        </Select.Item>
-                      ))}
-                    </Select>
-                  </Field>
-                </Box>
-                <InputHint active className="mt-8.5 flex-1">
-                  {t('flexibleMultisig.thresholdDescription')}
-                </InputHint>
-              </div>
-
-              <div className="mt-auto flex flex-col gap-2">
-                <TransactionValidationError errors={errors} wallets={wallets} />
-
-                {isEditOperationAlreadyExists && (
-                  <Alert
-                    active
-                    variant="error"
-                    title={t('createMultisigAccount.flexibleMultisig.editOperationExistsTitle')}
-                  >
-                    <Alert.Item withDot={false}>
-                      {t('createMultisigAccount.flexibleMultisig.editOperationExistsDescription')}
-                    </Alert.Item>
-                    <Alert.Item withDot={false}>
-                      <ButtonLink
-                        className="h-auto p-0"
-                        variant="text"
-                        size="sm"
-                        to={Paths.OPERATIONS}
-                        onClick={onClose}
-                      >
-                        {t('createMultisigAccount.flexibleMultisig.editOperationExistsAction')}
-                      </ButtonLink>
-                    </Alert.Item>
-                  </Alert>
-                )}
-              </div>
+                <div className="flex flex-col gap-y-4">
+                  <PersistentBanner
+                    currentControllerAddress={currentControllerAddress}
+                    currentSignatories={currentSignatories}
+                    currentThreshold={currentThreshold}
+                  />
+                  <ExecutionModeToggle />
+                  <UnifiedPicker
+                    chain={chain}
+                    currentControllerAddress={currentControllerAddress}
+                    currentThreshold={currentThreshold}
+                  />
+                </div>
+              </DraftFormBody>
             </div>
           </Modal.Content>
-
           <Modal.Footer>
-            <Box fitContainer direction="row" horizontalAlign="end" verticalAlign="center">
-              <div className="flex items-center justify-end gap-x-6">
-                <MultisigFees />
-
-                <Button
-                  key="create"
-                  type="submit"
-                  disabled={!canProceedFromForm}
-                  onClick={() => formModel.formSubmit()}
-                >
-                  {t('createMultisigAccount.continueButton')}
-                </Button>
-              </div>
+            <Box fitContainer direction="row" horizontalAlign="end" verticalAlign="center" gap={3}>
+              <Button
+                disabled={isDraftMode ? !canSaveAsDraft : !selectedTarget}
+                onClick={() =>
+                  isDraftMode ? changeSignatoriesModel.events.saveAsDraftRequested() : nextFromSelectController()
+                }
+              >
+                {isDraftMode ? t('operations.drafts.initiateButton') : t('flexibleMultisig.editProxy.picker.next')}
+              </Button>
             </Box>
           </Modal.Footer>
         </>
       )}
-      {isStep(step, Step.SIGNER_SELECTION) && (
+
+      {!showInitializingBody && isStep(step, Step.SIGNING_PATH) && chain && (
         <>
           <Modal.Content>
-            <div className="flex flex-col gap-y-6 px-5 pt-4 pb-6">
-              <SignatorySelect
-                signatory={selectedSignatory}
-                signatories={signatoriesWithBalance}
-                allAccounts={allAccounts}
-                allWallets={wallets}
-                initiator={signatoriesForSelect[0] ?? null}
-                hasError={false}
-                errorText=""
-                network={network}
-                onChange={changeSignatoriesModel.selectSignatory}
+            <div className="flex h-full flex-col gap-y-4 px-5 pt-4 pb-6">
+              <StepPath
+                chainId={chain.chainId}
+                lockedSourceCount={1}
+                restrictToOwnAccounts
+                allowedProxyTypes={['Any']}
+                disabledProxyReason={t('flexibleMultisig.editProxy.signingPathProxyTypeDisabled')}
               />
             </div>
           </Modal.Content>
           <Modal.Footer>
-            <Button variant="text" onClick={() => changeSignatoriesModel.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
-              {t('operation.goBackButton')}
-            </Button>
-            <Button disabled={!canSubmit} onClick={() => changeSignatoriesModel.signerConfirmed()}>
-              {t('createMultisigAccount.continueButton')}
-            </Button>
+            <Box fitContainer direction="row" horizontalAlign="space-between" verticalAlign="center">
+              <Button variant="text" onClick={() => signingPathGoBack()}>
+                {t('createMultisigAccount.backButton')}
+              </Button>
+              <Button disabled={!isPathComplete} onClick={() => nextFromSigningPath()}>
+                {t('flexibleMultisig.editProxy.picker.next')}
+              </Button>
+            </Box>
           </Modal.Footer>
         </>
       )}
+
       {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => changeSignatoriesModel.stepChanged(Step.CONFIRM)} />}
     </Modal>
   );

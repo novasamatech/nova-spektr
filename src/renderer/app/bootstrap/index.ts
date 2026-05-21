@@ -9,11 +9,13 @@ import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
+import { dashboardAccountSelectorFeature, operationsAccountSelectorFeature } from '@/features/account-selector';
 import { assetsSettingsModel, portfolioModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
 import { callDataExecuteFeature } from '@/features/call-data-execute';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
+import { dashboardGovernanceFeature } from '@/features/dashboard-governance';
 import { dashboardNavigationFeature } from '@/features/dashboard-navigation';
 import { dashboardPortfolioOverviewFeature } from '@/features/dashboard-portfolio-overview';
 import { dashboardPriceChartsFeature } from '@/features/dashboard-price-charts';
@@ -68,8 +70,11 @@ export const bootstrap = () => {
     config,
 
     dashboardNavigationFeature,
+    dashboardAccountSelectorFeature,
+    operationsAccountSelectorFeature,
     dashboardPortfolioOverviewFeature,
     dashboardPriceChartsFeature,
+    dashboardGovernanceFeature,
     dashboardStakingFeature,
     assetsNavigationFeature,
     fellowshipNavigationFeature,
@@ -90,6 +95,7 @@ export const bootstrap = () => {
     import('@/features/wallet-pairing').then(({ walletPairingFeature }) => walletPairingFeature),
 
     import('@/features/account-sync').then(({ accountSyncFeature }) => accountSyncFeature),
+    import('@/features/hide-unnamed-wallets').then(({ hideUnnamedWalletsFeature }) => hideUnnamedWalletsFeature),
 
     import('@/features/multisig-wallet').then(({ multisigWalletFeature }) => multisigWalletFeature),
     import('@/features/multisig-wallet-create').then(({ multisigWalletPairingFeature }) => multisigWalletPairingFeature),
@@ -162,6 +168,7 @@ export const bootstrap = () => {
     import('@/features/fellowship-retention').then(({ fellowshipRetentionFeature }) => fellowshipRetentionFeature),
     import('@/features/assethub-migration-modal').then(({ assethubMigrationModalFeature }) => assethubMigrationModalFeature),
     import('@/features/dapp-browser').then(({ dappBrowserFeature }) => dappBrowserFeature),
+    import('@/features/drafts').then(({ draftsFeature }) => draftsFeature),
   ]);
 
   populate();

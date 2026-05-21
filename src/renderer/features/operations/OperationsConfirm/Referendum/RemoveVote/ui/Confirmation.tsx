@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
 import { DetailRow, HeadlineText, Icon, LargeTitleText, Loader } from '@/shared/ui';
-import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import {
   LockPeriodDiff,
@@ -19,6 +19,8 @@ import { getLocksForAccount, lockPeriodsModel, locksPeriodsAggregate } from '@/f
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { FeeWithDataLoading } from '@/widgets/transaction-fee';
 import { MultisigExistsAlert } from '../../../common/MultisigExistsAlert';
+import { MultisigOperationDescriptionField } from '../../../common/MultisigOperationDescriptionField';
+import { SigningPathConfirmSection } from '../../../common/SigningPathConfirmSection';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -55,7 +57,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
     return null;
   }
 
-  const { asset, tx, coreTx, api, initiator, votes } = confirm.meta;
+  const { asset, tx, coreTx, api, initiator, votes, signingPath } = confirm.meta;
   const vote = votes.at(0)?.vote;
   const tracks = votes.map(({ track }) => Number(track));
 
@@ -74,7 +76,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
   const locksForAddress = getLocksForAccount(initiator.accountId, trackLocks);
 
   return (
-    <div className="flex w-modal flex-col items-center gap-4 px-5 py-4">
+    <div className="flex w-full flex-col items-center gap-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="retractMst" size={60} />
 
@@ -99,7 +101,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
+      <SigningPathConfirmSection
+        signingPath={signingPath}
         chain={confirm.meta.chain}
         wallets={wallets}
         initiators={[confirm.meta.initiator]}
@@ -125,7 +128,9 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
         <DetailRow label={t('governance.vote.field.networkFee')}>
           <FeeWithDataLoading api={api} asset={asset} transaction={tx} />
         </DetailRow>
-      </TransactionDetails>
+      </SigningPathConfirmSection>
+
+      <MultisigOperationDescriptionField />
 
       <div className="mt-3 flex w-full justify-end">
         <div className="flex gap-4">

@@ -254,11 +254,12 @@ const ReferendumCreated = memo(() => {
 
 const usePromotionData = () => {
   const api = useFellowshipApi();
+  const chain = useFellowshipChain();
 
   const { data: promotionPeriodDates } = usePromotionPeriodDates();
   const { data: promotionPeriod } = usePromotionPeriod();
   const { data: currentBlock } = useBlock(api);
-  const { data: blockTime } = useBlockTime(api);
+  const { data: blockTime } = useBlockTime(api, chain);
   const { data: member } = useFellowshipMember();
 
   const fromDateFormatted =
