@@ -19,6 +19,7 @@ type Props = {
   walletType?: WalletType;
   addressTestId?: string;
   explorersTestId?: string;
+  hideExplorers?: boolean;
 };
 
 export const Account = memo(
@@ -34,6 +35,7 @@ export const Account = memo(
     walletType,
     addressTestId,
     explorersTestId,
+    hideExplorers,
   }: Props) => {
     const address = toAddress(accountId, { prefix: chain?.addressPrefix });
     const showWalletBadge = !hideIcon && walletType !== undefined;
@@ -58,7 +60,7 @@ export const Account = memo(
           address={address}
           testId={addressTestId}
         />
-        <AccountExplorers accountId={accountId} chain={chain} testId={explorersTestId} />
+        {!hideExplorers && <AccountExplorers accountId={accountId} chain={chain} testId={explorersTestId} />}
       </div>
     );
   },

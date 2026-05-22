@@ -3,7 +3,7 @@ import { useI18n } from '@/shared/i18n';
 import { truncate } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account, AssetBalance, ChainIcon, WalletIcon } from '@/shared/ui-entities';
+import { AssetBalance, ChainIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Copy, Modal } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import { type OperationTitle } from '@/features/multisig-operations';
@@ -59,12 +59,12 @@ export const DraftSummary = ({
       )}
       {multisigAccountId && chain && (
         <DetailRow label={t('transaction.details.account')}>
-          <Account variant="short" accountId={multisigAccountId} chain={chain} title={multisigName} />
+          <NamedAccount variant="short" accountId={multisigAccountId} chain={chain} title={multisigName} />
         </DetailRow>
       )}
       {proxyAccountId && chain && (
         <DetailRow label={t('operations.drafts.proxyLabel')}>
-          <Account variant="short" accountId={proxyAccountId} chain={chain} title={proxyName} />
+          <NamedAccount variant="short" accountId={proxyAccountId} chain={chain} title={proxyName} />
         </DetailRow>
       )}
       {threshold && (

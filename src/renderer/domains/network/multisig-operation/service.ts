@@ -12,16 +12,20 @@ import {
   type MultisigAccount,
   type NoID,
   type Serializable,
+  type Signatory,
   ChainOptions,
   CryptoType,
+  SigningType,
 } from '@/shared/core';
 import { isEqual, merge, nonNullable, nullable, toAccountId, validateCallData } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
+import { accountService } from '../account/service';
+import { type AnyAccount } from '../account/types';
 import { transactionService } from '../transaction/service';
 
 import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, WRAP_EXTRINSIC_CALL_INDEX } from './constants';
-import { type MultisigOperation } from './types';
+import { type MultisigEvent, type MultisigOperation, MultisigEventStatus } from './types';
 
 /**
  * Public keys of signers' wallets are compared byte-for-byte and sorted
@@ -213,6 +217,65 @@ function extractProxiedAccountId(transaction: DecodedTransaction | null): Accoun
   return undefined;
 }
 
+function getApprovals(op: Pick<MultisigOperation, 'events'>): MultisigEvent[] {
+  return op.events.filter(e => e.status === MultisigEventStatus.Approve);
+}
+
+function getApprovers(op: Pick<MultisigOperation, 'events'>): Set<AccountId> {
+  return new Set(getApprovals(op).map(e => e.accountId));
+}
+
+function getApprovalsCount(op: Pick<MultisigOperation, 'events'>): number {
+  return getApprovals(op).length;
+}
+
+function getOperationTimestamp(op: Pick<MultisigOperation, 'timestamp' | 'events'>): number {
+  return op.timestamp ?? op.events.at(0)?.timestamp ?? 0;
+}
+
+/**
+ * Matches a wallet account against a multisig signatory entry. When the
+ * signatory pins a specific `walletId` (its `id` field), both accountId and
+ * walletId must match — otherwise the accountId alone is sufficient.
+ */
+function accountMatchesSignatory(account: Pick<AnyAccount, 'accountId' | 'walletId'>, signatory: Signatory): boolean {
+  if (account.accountId !== signatory.accountId) return false;
+
+  return signatory.id ? signatory.id === account.walletId : true;
+}
+
+/**
+ * Returns the user-controlled signatory accounts that can still act on this
+ * operation — i.e. signatories that haven't approved yet, available on the
+ * chain, and not watch-only. An empty array means "user can only reject / is
+ * just waiting".
+ */
+function findActionableSignatories(
+  op: Pick<MultisigOperation, 'events'>,
+  multisigAccount: MultisigAccount | FlexibleMultisigAccount,
+  walletAccounts: AnyAccount[],
+  chain: Chain | null | undefined,
+): AnyAccount[] {
+  if (!chain) return [];
+
+  const approvedBy = getApprovers(op);
+  const actionable: AnyAccount[] = [];
+
+  for (const signatory of multisigAccount.signatories) {
+    if (approvedBy.has(signatory.accountId)) continue;
+
+    for (const account of walletAccounts) {
+      if (account.signingType === SigningType.WATCH_ONLY) continue;
+      if (!accountMatchesSignatory(account, signatory)) continue;
+      if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
+
+      actionable.push(account);
+    }
+  }
+
+  return actionable;
+}
+
 export const multisigOperationService = {
   getOperationId,
   getEventId,
@@ -230,4 +293,11 @@ export const multisigOperationService = {
   generateMultisigOperationRelativeLink,
 
   findInnerExtrinsicCall,
+
+  getApprovals,
+  getApprovers,
+  getApprovalsCount,
+  getOperationTimestamp,
+  findActionableSignatories,
+  accountMatchesSignatory,
 };

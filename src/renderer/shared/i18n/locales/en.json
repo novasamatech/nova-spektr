@@ -557,6 +557,16 @@
       "title": "No accounts selected",
       "description": "Select accounts above to view your balance"
     },
+    "operationsQueue": {
+      "title": "Operations Queue",
+      "drafts": "Drafts",
+      "awaitingSignature": "Awaiting your signature",
+      "empty": "You're all caught up",
+      "untitledDraft": "Untitled draft",
+      "unknownOperation": "Pending operation",
+      "submitNeedsCallData": "Call data is required before submitting",
+      "submitUnavailable": "This draft can't be submitted yet"
+    },
     "portfolioOverview": {
       "title": "Portfolio Overview",
       "holdings": "Holdings by Asset",

@@ -26,6 +26,7 @@ export { RadioGroup } from './RadioGroup/RadioGroup';
 export { Accordion } from './Accordion/Accordion';
 export { Alert } from './Alert/Alert';
 export { Counter } from './Counter/Counter';
+export { CountChip } from './CountChip/CountChip';
 export { StatusLabel } from './StatusLabel/StatusLabel';
 export { Switch } from './Switch/Switch';
 export { Icon } from './Icon/Icon';

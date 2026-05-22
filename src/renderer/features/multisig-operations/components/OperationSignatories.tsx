@@ -21,6 +21,7 @@ import {
   type MultisigOperation,
   accounts,
   isContactMultisigAccount,
+  multisigOperationService,
   useAccountName,
 } from '@/domains/network';
 import { useChain } from '@/entities/network';
@@ -80,7 +81,7 @@ export const OperationSignatories = ({ operation, account }: Props) => {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const closeLogModal = useCallback(() => setIsLogModalOpen(false), []);
 
-  const approvals = operation.events.filter(e => e.status === 'approve');
+  const approvals = multisigOperationService.getApprovals(operation);
   const cancellation = operation.events.filter(e => e.status === 'reject');
 
   const signatoriesList = useMemo(() => {

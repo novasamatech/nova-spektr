@@ -1,36 +1,28 @@
-import { isHex } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { type ReactNode, useMemo } from 'react';
+import { useMemo } from 'react';
 
-import { type CallData, type ChainId, CryptoType } from '@/shared/core';
-import { Slot, useTransformer } from '@/shared/di';
+import { type ChainId, CryptoType } from '@/shared/core';
+import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import {
-  cnTw,
-  formatSectionAndMethod,
-  getNativeAssetId,
-  isEthereumAccountId,
-  toAccountId,
-  toAddress,
-  toShortAddress,
-} from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Button, CaptionText, FootnoteText, HelpText, Icon, IconButton } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
+import { cnTw, isEthereumAccountId, toAccountId } from '@/shared/lib/utils';
+import { Button, CaptionText, FootnoteText, HelpText, IconButton } from '@/shared/ui';
 import { ConfirmModal, Copy, Tooltip } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount, contactMultisigsModel } from '@/domains/network';
+import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
-import { networkModel, useApi } from '@/entities/network';
-import { decodeCallData, findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
-import { accountUtils } from '@/entities/wallet';
+import { networkModel } from '@/entities/network';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { authModel } from '@/aggregates/backend';
-import { operationTitleTransformer } from '@/features/multisig-operations';
-import { graphModel } from '@/features/signing-path';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
+import { NamedAccount } from '@/widgets/NameResolver';
+import { OperationAmount } from '@/widgets/transaction-amount';
 import { draftAccountsOverviewSlot } from '../lib/draft-row-slot';
-import { getDestinationAccountId } from '../lib/get-destination-account-id';
+import { useDraftOperationTitle } from '../lib/useDraftOperationTitle';
+import { useDraftTransactionAmount } from '../lib/useDraftTransactionAmount';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
+
+import { DraftIcon } from './DraftIcon';
 
 type DraftRowProps = {
   draft: Draft;
@@ -52,6 +44,38 @@ type DraftRowProps = {
   onSubmit: (draft: Draft) => void;
 };
 
+const DESCRIPTION_MAX_CHARS = 60;
+
+const DraftDescription = ({ description }: { description: string | null | undefined }) => {
+  const { t } = useI18n();
+
+  if (!description) {
+    return (
+      <div className="min-w-0 flex-1">
+        <FootnoteText className="text-text-tertiary italic">{t('operations.drafts.noDescription')}</FootnoteText>
+      </div>
+    );
+  }
+
+  const isTrimmed = description.length > DESCRIPTION_MAX_CHARS;
+  const visible = isTrimmed ? `${description.slice(0, DESCRIPTION_MAX_CHARS).trimEnd()}…` : description;
+
+  return (
+    <div className="min-w-0 flex-1">
+      <Tooltip side="top" open={isTrimmed ? undefined : false}>
+        <Tooltip.Trigger>
+          <div>
+            <FootnoteText className="text-text-primary">{visible}</FootnoteText>
+          </div>
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          <div className="max-w-[400px] break-words whitespace-normal">{description}</div>
+        </Tooltip.Content>
+      </Tooltip>
+    </div>
+  );
+};
+
 export const DraftRow = ({
   draft,
   canWrite,
@@ -66,18 +90,14 @@ export const DraftRow = ({
   onEdit,
   onSubmit,
 }: DraftRowProps) => {
-  const { t, formatDate } = useI18n();
+  const { t } = useI18n();
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const chains = useUnit(networkModel.$chains);
+  const wallets = useUnit(walletModel.$wallets);
   const backendContacts = useUnit(contactModel.$backendContacts);
-  const resolveName = useUnit(graphModel.$nameResolver);
 
   const chain = chains[draft.chainId as ChainId];
-  const chainName = chain?.name;
   const contact = backendContacts.find((c) => c.accountId === draft.multisigAccountId);
-  const creatorName =
-    draft.createdByContact?.name ?? backendContacts.find((c) => c.accountId === draft.createdBy)?.name;
-  const creatorAddress = draft.createdBy ? toAddress(draft.createdBy, { prefix: chain?.addressPrefix }) : null;
 
   const baseMultisigAccount = useMemo<AnyAccount | null>(() => {
     if (multisigAccount) return multisigAccount;
@@ -107,9 +127,8 @@ export const DraftRow = ({
     return { ...baseMultisigAccount, signatories: pathSigners };
   }, [baseMultisigAccount, draft.initiatorAccountId]);
 
-  // First entry in the list is what the modal pre-selects — open from the
-  // proxied source when present so the graph anchors on the deepest hop, with
-  // the multisig falling in behind it.
+  // First entry is what the overview modal pre-selects — start from the
+  // proxied source when present so the graph anchors on the deepest hop.
   const overviewWalletAccounts = useMemo<AnyAccount[]>(() => {
     const items: AnyAccount[] = [];
     if (proxyAccount) items.push(proxyAccount);
@@ -117,54 +136,15 @@ export const DraftRow = ({
     return items;
   }, [proxyAccount, pathMultisigAccount]);
 
-  // Used only to gate rendering of the overview trigger.
   const hasOverview = overviewWalletAccounts.length > 0;
 
-  const api = useApi(draft.chainId as ChainId);
+  const operationTitle = useDraftOperationTitle(draft);
+  const amount = useDraftTransactionAmount(draft);
 
-  const decodedTransaction = useMemo(() => {
-    if (!draft.callData || !isHex(draft.callData) || !api || !chain) return null;
-
-    try {
-      const nativeAssetId = getNativeAssetId(chain.assets);
-
-      return decodeCallData(
-        api,
-        (draft.multisigAccountId ?? '') as AccountId,
-        draft.callData as CallData,
-        nativeAssetId,
-      );
-    } catch {
-      return null;
-    }
-  }, [draft.callData, draft.multisigAccountId, api, chain]);
-
-  const coreTx = findCoreTransaction(decodedTransaction);
-  const destinationAccountId = useMemo(() => getDestinationAccountId(coreTx), [coreTx]);
-  const txAsset = useTransactionAsset(coreTx, draft.chainId as ChainId);
-  const externalTitle = useTransformer(operationTitleTransformer, {
-    operation: decodedTransaction ? ({ transaction: decodedTransaction, chainId: draft.chainId } as never) : null,
-    chains,
-    asset: txAsset,
-    t,
-  });
-
-  const titleData = useMemo(() => {
-    if (externalTitle?.title) return externalTitle;
-    if (!coreTx) return null;
-
-    const amount = getTransactionAmount(coreTx);
-    const asset = txAsset ?? chain?.assets[0] ?? null;
-
-    return {
-      title: formatSectionAndMethod(coreTx.section, coreTx.method),
-      amount: asset && amount ? { value: amount, asset } : undefined,
-    };
-  }, [externalTitle, coreTx, txAsset, chain]);
-
-  const destinationAddress = destinationAccountId
-    ? toAddress(destinationAccountId, { prefix: chain?.addressPrefix })
-    : null;
+  const displayAccountIdRaw = draft.proxyAccountId ?? draft.multisigAccountId;
+  const displayAccountId = displayAccountIdRaw ? toAccountId(displayAccountIdRaw) : undefined;
+  const displayAccount = draft.proxyAccountId ? proxyAccount : baseMultisigAccount;
+  const displayWallet = displayAccount ? wallets.find((w) => w.id === displayAccount.walletId) : undefined;
 
   return (
     <div
@@ -175,88 +155,39 @@ export const DraftRow = ({
         isHighlighted && 'ring-2 ring-icon-accent',
       )}
     >
-      <div className="flex min-h-[52px] w-full min-w-0 items-start px-4 py-2">
-        {/* Icon + description */}
-        <div className="flex min-w-0 flex-[3] items-start gap-x-3">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-icon-accent/15">
-            <Icon name="document" size={16} className="text-icon-accent" />
-          </div>
-          <div className="flex min-w-0 flex-1 flex-col">
-            <FootnoteText className="max-w-[350px] font-medium break-words text-text-primary">
-              {draft.description || (
-                <span className="text-text-tertiary italic">{t('operations.drafts.noDescription')}</span>
-              )}
-            </FootnoteText>
-            <HelpText className="block truncate text-text-tertiary">
-              {(() => {
-                let label: ReactNode;
+      <div className="flex min-h-[52px] w-full min-w-0 items-center gap-x-3 px-4 py-2">
+        <DraftIcon />
 
-                if (draft.proxyAccountId) {
-                  const proxyContact = backendContacts.find((c) => c.accountId === draft.proxyAccountId);
-                  label = proxyContact?.name
-                    ? proxyContact.name
-                    : toShortAddress(toAddress(draft.proxyAccountId, { prefix: chain?.addressPrefix }), 4);
-                } else {
-                  label = contact?.name || (
-                    <span className="text-text-negative">{t('operations.drafts.unknownMultisig')}</span>
-                  );
-                }
-
-                if (draft.initiatorAccountId) {
-                  const initiatorName = resolveName(draft.initiatorAccountId as AccountId, draft.chainId as ChainId);
-
-                  return (
-                    <>
-                      {label}
-                      {' → '}
-                      {initiatorName}
-                    </>
-                  );
-                }
-
-                return label;
-              })()}
-              {titleData?.title && ` · ${titleData.title}`}
-              {destinationAddress && ` · ${toShortAddress(destinationAddress, 4)}`}
-              {titleData?.amount && (
-                <>
-                  {}
-                  {' · '}
-                  <AssetBalance
-                    value={titleData.amount.value}
-                    asset={titleData.amount.asset}
-                    className="!text-help-text !text-text-tertiary"
-                  />
-                </>
-              )}
-            </HelpText>
-          </div>
-        </div>
-
-        {/* Chain + date */}
-        <div className="flex min-w-[160px] flex-1 flex-col">
-          <FootnoteText className="truncate text-right text-text-primary">
-            {chainName || <span className="text-text-negative">{t('operations.drafts.unknownChain')}</span>}
+        <div className="flex w-[200px] shrink-0 flex-col justify-center gap-y-0.5 overflow-hidden">
+          <FootnoteText className="truncate text-text-primary">
+            {operationTitle ?? <span className="text-text-tertiary">{t('operations.titles.unknown')}</span>}
           </FootnoteText>
-          <div className="flex min-w-0 items-baseline justify-end gap-x-1 text-help-text text-text-tertiary">
-            {(creatorName || creatorAddress) && (
-              <>
-                <span className="min-w-0 truncate">{creatorName ?? creatorAddress}</span>
-                <span className="shrink-0">·</span>
-              </>
-            )}
-            <span className="shrink-0">{formatDate(new Date(draft.createdAt), 'PP')}</span>
-          </div>
+          {chain ? (
+            <ChainTitle chainId={chain.chainId} fontClass="text-help-text text-text-tertiary" />
+          ) : (
+            <HelpText className="text-text-negative">{t('operations.drafts.unknownChain')}</HelpText>
+          )}
         </div>
 
-        {/* Draft badge */}
-        <div className="mx-3 flex w-[80px] shrink-0 items-center justify-end">
-          <div className="flex shrink-0 items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
-            <CaptionText className="text-icon-accent uppercase">{t('operations.drafts.badge')}</CaptionText>
-          </div>
+        <DraftDescription description={draft.description} />
+
+        <div className="flex w-[200px] shrink-0 items-center">
+          {amount && <OperationAmount value={amount.value} asset={amount.asset} />}
         </div>
 
-        {/* Actions */}
+        <div className="flex w-[200px] shrink-0 items-center">
+          {displayAccountId && (
+            <NamedAccount
+              accountId={displayAccountId}
+              chain={chain}
+              wallet={displayWallet}
+              iconSize={32}
+              hideExplorers
+              variant="short"
+            />
+          )}
+        </div>
+
         <div className="flex shrink-0 items-center gap-x-1" onClick={(e) => e.stopPropagation()}>
           <div className="flex w-[90px] shrink-0 items-center justify-center">
             {hasOverview && (

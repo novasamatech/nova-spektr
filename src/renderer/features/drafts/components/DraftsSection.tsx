@@ -3,8 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, toAccountId } from '@/shared/lib/utils';
-import { Button, CaptionText, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
+import { cnTw, groupByDate, toAccountId } from '@/shared/lib/utils';
+import { Button, CountChip, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { Accordion, ConfirmModal, Field, Modal, TextArea, Tooltip, useNotification } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import {
@@ -22,6 +22,8 @@ import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { backendContactsModel } from '@/features/contacts';
 import { tryDecodeCallData } from '../lib/decode-call-data';
 import { useCanCreateDraft } from '../lib/useCanCreateDraft';
+import { useSubmitDraft } from '../lib/useSubmitDraft';
+import { filterVisibleDrafts } from '../lib/visible-drafts';
 import { DESCRIPTION_MAX_LENGTH, createDraftModel } from '../model/create-draft-model';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
 import '../model/drafts-model'; // side-effect: orchestration wiring
@@ -30,10 +32,9 @@ import { submitDraftModel } from '../model/submit-draft-model';
 import { AddressBookHealthOverlay } from './AddressBookHealthOverlay';
 import { DraftRow } from './DraftRow';
 import { DraftSummary } from './DraftSummary';
-import { SubmitDraftModal } from './SubmitDraftModal';
 
 export const DraftsSection = () => {
-  const { t } = useI18n();
+  const { t, formatDate } = useI18n();
   const { toast } = useNotification();
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
@@ -50,16 +51,15 @@ export const DraftsSection = () => {
   const linkedDraftIds = useUnit(operationDescriptionsResource.$linkedDraftIds);
   const operationsLoaded = useUnit(operationDescriptionsResource.$operationsLoaded);
 
-  const visibleDrafts = useMemo(() => {
-    if (!operationsLoaded) return [];
+  const visibleDrafts = useMemo(
+    () => filterVisibleDrafts(drafts, linkedDraftIds, operationsLoaded),
+    [drafts, linkedDraftIds, operationsLoaded],
+  );
 
-    return drafts.filter((d) => {
-      if (linkedDraftIds.has(d.id)) return false;
-      if (submittedDraftIds.has(d.id)) return true;
-
-      return true;
-    });
-  }, [drafts, submittedDraftIds, linkedDraftIds, operationsLoaded]);
+  const groupedDrafts = useMemo(
+    () => groupByDate(visibleDrafts, (d) => new Date(d.createdAt).getTime()),
+    [visibleDrafts],
+  );
 
   // Deep link: scroll-to and highlight
   const highlightedRef = useRef<HTMLDivElement | null>(null);
@@ -88,7 +88,7 @@ export const DraftsSection = () => {
     };
   }, [focusedDraftId]);
 
-  const [submittingDraft, setSubmittingDraft] = useState<Draft | null>(null);
+  const { submitDraft, modal: submitDraftModalNode } = useSubmitDraft();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showDiscardEdit, setShowDiscardEdit] = useState(false);
   const [editingDraft, setEditingDraft] = useState<Draft | null>(null);
@@ -151,31 +151,6 @@ export const DraftsSection = () => {
     [editingDraft?.callData, draftApi, draftChain],
   );
 
-  const handleSubmitDraft = (draft: Draft) => {
-    if (!draft.multisigAccountId) return;
-
-    const chain = chains[draft.chainId as ChainId];
-    if (!chain) return;
-
-    // `initiator` here is a legacy fallback only: for path-driven drafts
-    // submitDraftModel derives `$initiator` from `signingPath[0]`. It still
-    // matters for legacy drafts (empty `signingPath`). Note this branch picks
-    // the deepest multisig for nested paths — that's wrong for routing but
-    // harmless because the model overrides it when a saved path is present.
-    const initiatorAccount = draft.proxyAccountId
-      ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
-      : (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null);
-
-    // `displayInitiator` is consumed verbatim by the confirm UI — for flex
-    // drafts we want the multisig facade label, not the pure proxied address.
-    const displayInitiator = draft.proxyAccountId
-      ? (allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null)
-      : undefined;
-
-    setSubmittingDraft(draft);
-    submitDraftModel.flowStarted({ draft, initiator: initiatorAccount, displayInitiator, chain });
-  };
-
   const handleSaveEdit = async () => {
     if (!backendUrl || !editingDraft) return;
 
@@ -225,46 +200,51 @@ export const DraftsSection = () => {
             <Accordion.Trigger sticky>
               <div className="flex items-center gap-2 py-2">
                 <FootnoteText className="font-medium text-text-secondary">{t('operations.drafts.title')}</FootnoteText>
-                {isHealthy && visibleDrafts.length > 0 && (
-                  <div className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-icon-accent/15 px-2">
-                    <CaptionText className="font-medium text-icon-accent">{visibleDrafts.length}</CaptionText>
-                  </div>
-                )}
+                {isHealthy && visibleDrafts.length > 0 && <CountChip count={visibleDrafts.length} />}
               </div>
             </Accordion.Trigger>
             <Accordion.Content>
               <div className="mt-1 flex flex-col gap-y-1.5">
                 {isHealthy &&
-                  visibleDrafts.map((draft) => (
-                    <DraftRow
-                      key={draft.id}
-                      canDelete={canDelete}
-                      canWrite={canWrite}
-                      isSubmitted={submittedDraftIds.has(draft.id)}
-                      hasInitiator={
-                        draft.proxyAccountId
-                          ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
-                          : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
-                      }
-                      isHighlighted={focusedDraftId === draft.id}
-                      multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
-                      proxyAccount={
-                        draft.proxyAccountId
-                          ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
-                          : null
-                      }
-                      rowRef={
-                        focusedDraftId === draft.id
-                          ? (el) => {
-                              highlightedRef.current = el;
-                            }
-                          : undefined
-                      }
-                      draft={draft}
-                      onDelete={handleDeleteDraft}
-                      onEdit={handleEditDraft}
-                      onSubmit={handleSubmitDraft}
-                    />
+                  groupedDrafts.map((group, groupIndex) => (
+                    <div key={group.dateKey} className="flex flex-col gap-y-1.5">
+                      <div className={groupIndex > 0 ? 'pt-4 pb-1 pl-2' : 'pb-1 pl-2'}>
+                        <FootnoteText className="text-text-tertiary">{formatDate(group.dateStart, 'PP')}</FootnoteText>
+                      </div>
+                      {group.items.map((draft) => (
+                        <DraftRow
+                          key={draft.id}
+                          canDelete={canDelete}
+                          canWrite={canWrite}
+                          isSubmitted={submittedDraftIds.has(draft.id)}
+                          hasInitiator={
+                            draft.proxyAccountId
+                              ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
+                              : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
+                          }
+                          isHighlighted={focusedDraftId === draft.id}
+                          multisigAccount={
+                            allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null
+                          }
+                          proxyAccount={
+                            draft.proxyAccountId
+                              ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
+                              : null
+                          }
+                          rowRef={
+                            focusedDraftId === draft.id
+                              ? (el) => {
+                                  highlightedRef.current = el;
+                                }
+                              : undefined
+                          }
+                          draft={draft}
+                          onDelete={handleDeleteDraft}
+                          onEdit={handleEditDraft}
+                          onSubmit={submitDraft}
+                        />
+                      ))}
+                    </div>
                   ))}
 
                 <Tooltip open={canWrite ? false : undefined}>
@@ -383,7 +363,7 @@ export const DraftsSection = () => {
         onConfirm={handleDiscardEdit}
       />
 
-      {submittingDraft && <SubmitDraftModal onClose={() => setSubmittingDraft(null)} />}
+      {submitDraftModalNode}
     </div>
   );
 };

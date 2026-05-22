@@ -1,6 +1,6 @@
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, multisigOperationService } from '@/domains/network';
 
 type Props = {
   operation: MultisigOperation;
@@ -9,9 +9,7 @@ type Props = {
 export const OperationTitleDate = ({ operation }: Props) => {
   const { formatDate } = useI18n();
 
-  const events = operation.events;
-  const approvals = events.filter((e) => e.status === 'approve');
-  const initEvent = approvals.find((e) => e.accountId === operation.depositor);
+  const initEvent = multisigOperationService.getApprovals(operation).find((e) => e.accountId === operation.depositor);
   const date = new Date(operation.timestamp || initEvent?.timestamp || Date.now());
 
   return (
