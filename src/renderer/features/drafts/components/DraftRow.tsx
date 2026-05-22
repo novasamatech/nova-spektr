@@ -1,26 +1,25 @@
-import { isHex } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type CallData, type ChainId, CryptoType } from '@/shared/core';
-import { Slot, useTransformer } from '@/shared/di';
+import { type ChainId, CryptoType } from '@/shared/core';
+import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, formatSectionAndMethod, getNativeAssetId, isEthereumAccountId, toAccountId } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { cnTw, isEthereumAccountId, toAccountId } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, HelpText, IconButton } from '@/shared/ui';
 import { ConfirmModal, Copy, Tooltip } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount, contactMultisigsModel } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
-import { networkModel, useApi } from '@/entities/network';
-import { decodeCallData, findCoreTransaction, useTransactionAsset } from '@/entities/transaction';
+import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { authModel } from '@/aggregates/backend';
-import { operationTitleTransformer } from '@/features/multisig-operations';
+import { OperationAmount } from '@/features/multisig-operations';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { draftAccountsOverviewSlot } from '../lib/draft-row-slot';
+import { useDraftOperationTitle } from '../lib/useDraftOperationTitle';
+import { useDraftTransactionAmount } from '../lib/useDraftTransactionAmount';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
 
 import { DraftIcon } from './DraftIcon';
@@ -139,40 +138,8 @@ export const DraftRow = ({
 
   const hasOverview = overviewWalletAccounts.length > 0;
 
-  const api = useApi(draft.chainId as ChainId);
-
-  const decodedTransaction = useMemo(() => {
-    if (!draft.callData || !isHex(draft.callData) || !api || !chain) return null;
-
-    try {
-      const nativeAssetId = getNativeAssetId(chain.assets);
-
-      return decodeCallData(
-        api,
-        (draft.multisigAccountId ?? '') as AccountId,
-        draft.callData as CallData,
-        nativeAssetId,
-      );
-    } catch {
-      return null;
-    }
-  }, [draft.callData, draft.multisigAccountId, api, chain]);
-
-  const coreTx = findCoreTransaction(decodedTransaction);
-  const txAsset = useTransactionAsset(coreTx, draft.chainId as ChainId);
-  const externalTitle = useTransformer(operationTitleTransformer, {
-    operation: decodedTransaction ? ({ transaction: decodedTransaction, chainId: draft.chainId } as never) : null,
-    chains,
-    asset: txAsset,
-    t,
-  });
-
-  const operationTitle = useMemo(() => {
-    if (externalTitle?.title) return externalTitle.title;
-    if (!coreTx) return null;
-
-    return formatSectionAndMethod(coreTx.section, coreTx.method);
-  }, [externalTitle, coreTx]);
+  const operationTitle = useDraftOperationTitle(draft);
+  const amount = useDraftTransactionAmount(draft);
 
   const displayAccountIdRaw = draft.proxyAccountId ?? draft.multisigAccountId;
   const displayAccountId = displayAccountIdRaw ? toAccountId(displayAccountIdRaw) : undefined;
@@ -203,6 +170,10 @@ export const DraftRow = ({
         </div>
 
         <DraftDescription description={draft.description} />
+
+        <div className="flex w-[200px] shrink-0 items-center">
+          {amount && <OperationAmount value={amount.value} asset={amount.asset} />}
+        </div>
 
         <div className="flex w-[200px] shrink-0 items-center">
           {displayAccountId && (

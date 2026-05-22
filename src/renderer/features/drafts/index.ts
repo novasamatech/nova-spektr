@@ -21,7 +21,9 @@ export { draftDeepLinkModel } from './model/draft-deep-link';
 export { DraftIcon } from './components/DraftIcon';
 export { useReadableDrafts } from './lib/useReadableDrafts';
 export { useSubmitDraft } from './lib/useSubmitDraft';
-export { getDraftSubmitGate } from './lib/submit-draft-availability';
+export { useDraftOperationTitle } from './lib/useDraftOperationTitle';
+export { useDraftTransactionAmount } from './lib/useDraftTransactionAmount';
+export { type DraftSubmitGate, getDraftSubmitGate } from './lib/submit-draft-availability';
 
 import './model/contact-proxies-model';
 

@@ -4,6 +4,7 @@ export { operationDetailsSlot } from './components/OperationFullInfo';
 export { operationOverviewSlot } from './components/OperationSignatories';
 export { OperationIcon, operationIconTransformer } from './components/OperationIcon';
 export { OperationActions } from './components/OperationActions';
+export { OperationAmount } from './components/OperationAmount';
 export { confirmTransactionInfoSlot } from './components/ActionSteps/Confirmation';
 export { Operations } from './components/Operations';
 export { Search } from './components/Search';
@@ -16,6 +17,7 @@ export { multisigOperationsFeature } from './model/feature';
 export { deepLinkModel } from './model/deep-link';
 export { exportModel } from './model/export';
 
+export { type TransferAmountInfo, extractTransferAmount } from './lib/transfer-amount-extractor';
 export { type ProxyEditInfo, isProxyEditOperation, parseProxyEditOperation } from './lib/proxy-edit';
 export { type VerifyProxyOpInfo, isVerifyProxyOperation, parseVerifyProxyOperation } from './lib/verify-proxy-op';
 

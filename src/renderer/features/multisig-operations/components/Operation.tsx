@@ -16,8 +16,7 @@ import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod, toAddress } from '@/shared/lib/utils';
 import { Accordion, CaptionText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
-import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
-import { AsyncItem, Copy, Tooltip } from '@/shared/ui-kit';
+import { Copy, Tooltip } from '@/shared/ui-kit';
 import { useIsDraftLinkedOperation, useOperationDescription } from '@/domains/backend';
 import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
@@ -30,7 +29,6 @@ import {
 } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
-import { AssetFiatBalance } from '@/widgets/price';
 import { parseProxyEditOperation } from '../lib/proxy-edit';
 import { parseVerifyProxyOperation } from '../lib/verify-proxy-op';
 import { type TabFilter } from '../model/context';
@@ -39,6 +37,7 @@ import { EditControllerOperationCard } from '../ui/EditControllerOperationCard';
 import { VerifyProxyOperationCard } from '../ui/VerifyProxyOperationCard';
 
 import { OperationActions } from './OperationActions';
+import { OperationAmount } from './OperationAmount';
 import { OperationFullInfo } from './OperationFullInfo';
 import { OperationIcon } from './OperationIcon';
 
@@ -149,19 +148,11 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                 </div>
 
                 {titleData.amount && (
-                  <div className="flex w-[200px] shrink-0 items-center gap-x-2">
-                    <AssetIcon asset={titleData.amount.asset} size={32} />
-                    <div className="flex flex-col items-start gap-y-0.5">
-                      <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />
-                      <AsyncItem strategy="idle" fallback={<div className="h-[18px]" />}>
-                        <AssetFiatBalance
-                          asset={titleData.amount.asset}
-                          amount={titleData.amount.value}
-                          className="text-help-text text-text-tertiary"
-                        />
-                      </AsyncItem>
-                    </div>
-                  </div>
+                  <OperationAmount
+                    value={titleData.amount.value}
+                    asset={titleData.amount.asset}
+                    className="w-[200px]"
+                  />
                 )}
               </div>
             )}
