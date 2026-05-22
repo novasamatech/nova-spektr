@@ -18,7 +18,7 @@ export const useDraftOperationTitle = (draft: Draft): string | null => {
   const coreTx = findCoreTransaction(decodedTransaction);
   const asset = useTransactionAsset(coreTx, draft.chainId);
   const externalTitle = useTransformer(operationTitleTransformer, {
-    operation: decodedTransaction ? ({ transaction: decodedTransaction, chainId: draft.chainId } as never) : null,
+    operation: decodedTransaction ? { transaction: decodedTransaction, chainId: draft.chainId } : null,
     chains,
     asset,
     t,

@@ -18,8 +18,8 @@ import {
   useDraftTransactionAmount,
   useSubmitDraft,
 } from '@/features/drafts';
-import { OperationAmount } from '@/features/multisig-operations';
 import { AccountName } from '@/widgets/NameResolver';
+import { OperationAmount } from '@/widgets/transaction-amount';
 import { useMultisigByAccountId } from '../model/use-multisig-by-account-id';
 
 import { GroupedList } from './GroupedList';

@@ -7,6 +7,7 @@ import {
   type AssetByChains,
   type Chain,
   type ChainId,
+  type DecodedTransaction,
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type Wallet,
@@ -29,6 +30,7 @@ import {
 } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
+import { OperationAmount } from '@/widgets/transaction-amount';
 import { parseProxyEditOperation } from '../lib/proxy-edit';
 import { parseVerifyProxyOperation } from '../lib/verify-proxy-op';
 import { type TabFilter } from '../model/context';
@@ -37,7 +39,6 @@ import { EditControllerOperationCard } from '../ui/EditControllerOperationCard';
 import { VerifyProxyOperationCard } from '../ui/VerifyProxyOperationCard';
 
 import { OperationActions } from './OperationActions';
-import { OperationAmount } from './OperationAmount';
 import { OperationFullInfo } from './OperationFullInfo';
 import { OperationIcon } from './OperationIcon';
 
@@ -60,9 +61,19 @@ export type OperationTitle = {
   destinationChainId?: ChainId; // For XCM transactions
 };
 
+/**
+ * Minimal context the title/icon transformers actually read off the operation.
+ * Lets non-multisig callers (e.g. drafts) feed in a decoded transaction without
+ * faking a full `MultisigOperation`.
+ */
+export type OperationTransformerContext = {
+  transaction: DecodedTransaction | null;
+  chainId: ChainId;
+};
+
 export const operationTitleTransformer = createTransformer<
   {
-    operation: MultisigOperation | null;
+    operation: OperationTransformerContext | null;
     showCoreTransaction?: boolean;
     chains: Record<ChainId, Chain> | null;
     asset?: Asset | null;

@@ -10,13 +10,9 @@ import { type MultisigOperation, multisigOperationService } from '@/domains/netw
 import { networkModel } from '@/entities/network';
 import { OperationTitleStatus } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import {
-  OperationActions,
-  OperationAmount,
-  OperationIcon,
-  extractTransferAmount,
-} from '@/features/multisig-operations';
+import { OperationActions, OperationIcon, extractTransferAmount } from '@/features/multisig-operations';
 import { AccountName } from '@/widgets/NameResolver';
+import { OperationAmount } from '@/widgets/transaction-amount';
 import { useMultisigByAccountId } from '../model/use-multisig-by-account-id';
 
 import { GroupedList } from './GroupedList';
