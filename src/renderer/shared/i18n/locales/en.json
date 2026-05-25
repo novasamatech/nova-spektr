@@ -75,6 +75,7 @@
       "tooltip": "Configure address book source",
       "tryAgainButton": "Try again",
       "unreachable": "Server is not reachable",
+      "wrongBackend": "Server does not appear to be an Address Book",
       "unsavedChangesMessage": "You have modified the backend URL without connecting. Discard changes?",
       "unsavedChangesTitle": "Unsaved changes",
       "urlInvalidError": "Please enter a valid URL",

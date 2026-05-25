@@ -1,10 +1,21 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { debounce } from 'patronum';
+import { z } from 'zod';
 
 import { authFetch } from '@/shared/api/backend-fetch';
 import { persist } from '@/shared/api/storage';
 
-type UrlReachability = null | 'checking' | 'reachable' | 'unreachable';
+type UrlReachability = null | 'checking' | 'reachable' | 'unreachable' | 'wrongBackend';
+
+const healthResponseSchema = z.object({
+  status: z.literal('ok'),
+  info: z.object({
+    database: z.object({ status: z.string() }),
+    blockchain: z.object({ status: z.string() }),
+  }),
+});
+
+class WrongBackendError extends Error {}
 
 function normalizeUrl(url: string): string {
   return url.trim().replace(/#.*$/, '').replace(/\/+$/, '');
@@ -75,9 +86,23 @@ $backendUrl.on(urlCleared, () => null);
 $draftUrl.on(urlCleared, () => '');
 
 const checkUrlReachabilityFx = createEffect(async (url: string) => {
-  const result = await authFetch(`${url}/health`, { method: 'GET' });
-  if (!result.ok) throw new Error(`Status ${result.status}`);
-  JSON.parse(result.body);
+  let result: Awaited<ReturnType<typeof authFetch>>;
+  try {
+    result = await authFetch(`${url}/health`, { method: 'GET' });
+  } catch {
+    throw new Error('Network unreachable');
+  }
+
+  let parsed: unknown = null;
+  try {
+    parsed = JSON.parse(result.body);
+  } catch {
+    // non-JSON body — wrong backend
+  }
+
+  if (!result.ok || !healthResponseSchema.safeParse(parsed).success) {
+    throw new WrongBackendError('Unexpected health response structure');
+  }
 });
 
 const $urlReachable = createStore<UrlReachability>(null);
@@ -121,7 +146,7 @@ sample({
   clock: checkUrlReachabilityFx.fail,
   source: $draftUrl,
   filter: (draftUrl, { params: checkedUrl }) => normalizeUrl(draftUrl) === checkedUrl,
-  fn: (): UrlReachability => 'unreachable',
+  fn: (_, { error }): UrlReachability => (error instanceof WrongBackendError ? 'wrongBackend' : 'unreachable'),
   target: $urlReachable,
 });
 

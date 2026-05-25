@@ -209,9 +209,13 @@ const urlReachabilityConfig = {
     icon: <Icon name="warnCutout" size={14} className="text-icon-negative" />,
     textClass: 'text-icon-negative',
   },
+  wrongBackend: {
+    icon: <Icon name="warnCutout" size={14} className="text-icon-negative" />,
+    textClass: 'text-icon-negative',
+  },
 } as const;
 
-const UrlReachabilityStatus = ({ status }: { status: 'checking' | 'reachable' | 'unreachable' }) => {
+const UrlReachabilityStatus = ({ status }: { status: 'checking' | 'reachable' | 'unreachable' | 'wrongBackend' }) => {
   const { t } = useI18n();
   const { icon, textClass } = urlReachabilityConfig[status];
 
