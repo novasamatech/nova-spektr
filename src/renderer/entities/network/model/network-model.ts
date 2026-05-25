@@ -31,6 +31,7 @@ const connectionStatusChanged = createEvent<{ chainId: ChainId; status: Connecti
 
 const disconnected = createEvent<ChainId>();
 const failed = createEvent<ChainId>();
+const providerReconnected = createEvent<ChainId>();
 
 const $chains = createStore<Record<ChainId, Chain>>({});
 const $chainsList = $chains.map((chains) => chainsService.sortChains(Object.values(chains)));
@@ -109,6 +110,7 @@ const createProviderFx = createEffect(
   ({ chainId, nodes, metadata, providerType, DEBUG_NETWORKS }: CreateProviderParams) => {
     const boundDisconnected = scopeBind(disconnected, { safe: true });
     const boundFailed = scopeBind(failed, { safe: true });
+    const boundReconnected = scopeBind(providerReconnected, { safe: true });
 
     const provider = networkService.createProvider(
       chainId,
@@ -119,6 +121,7 @@ const createProviderFx = createEffect(
           if (DEBUG_NETWORKS) {
             console.info('🟢 Provider connected ==> ', chainId);
           }
+          boundReconnected(chainId);
         },
         onDisconnected: () => {
           if (DEBUG_NETWORKS) {
@@ -390,6 +393,40 @@ sample({
   fn: (statuses, chainId) => ({
     newStatuses: { ...statuses, [chainId]: ConnectionStatus.ERROR },
     event: { chainId, status: ConnectionStatus.ERROR },
+  }),
+  target: spread({
+    newStatuses: $connectionStatuses,
+    event: connectionStatusChanged,
+  }),
+});
+
+// When provider reconnects after a network blip, restore the connection:
+// - if API exists: createApiFx returns immediately with the existing API → status = CONNECTED
+// - if API is absent (failed during init): createApiFx creates a new ApiPromise → status = CONNECTED when ready
+// Skip if already CONNECTED or still in initial CONNECTING (createApiFx already pending)
+sample({
+  clock: providerReconnected,
+  source: { apis: $apis, providers: $providers, statuses: $connectionStatuses },
+  filter: ({ providers, statuses }, chainId) => {
+    const status = statuses[chainId];
+    return (
+      nonNullable(providers[chainId]) && status !== ConnectionStatus.CONNECTED && status !== ConnectionStatus.CONNECTING
+    );
+  },
+  fn: ({ apis, providers }, chainId) => ({
+    chainId,
+    provider: providers[chainId]!,
+    existingApi: apis[chainId] ?? null,
+  }),
+  target: createApiFx,
+});
+
+sample({
+  clock: createApiFx.fail,
+  source: $connectionStatuses,
+  fn: (statuses, { params }) => ({
+    newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.ERROR },
+    event: { chainId: params.chainId, status: ConnectionStatus.ERROR },
   }),
   target: spread({
     newStatuses: $connectionStatuses,
