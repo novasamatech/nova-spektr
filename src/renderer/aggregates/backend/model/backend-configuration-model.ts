@@ -8,7 +8,7 @@ import { persist } from '@/shared/api/storage';
 type UrlReachability = null | 'checking' | 'reachable' | 'unreachable' | 'wrongBackend';
 
 const healthResponseSchema = z.object({
-  status: z.literal('ok'),
+  status: z.string(),
   info: z.object({
     database: z.object({ status: z.string() }),
     blockchain: z.object({ status: z.string() }),
@@ -90,18 +90,33 @@ const checkUrlReachabilityFx = createEffect(async (url: string) => {
   try {
     result = await authFetch(`${url}/health`, { method: 'GET' });
   } catch {
+    // Couldn't reach the server at all (DNS, timeout) — transient, retry may help.
     throw new Error('Network unreachable');
+  }
+
+  // A non-2xx response means the server is down (proxyFetch reports refused connections as
+  // status 0), erroring, or behind a failing proxy — all transient. Only a successful response
+  // lets us judge whether we reached the *right* server, so these must never be "wrong backend".
+  if (!result.ok) {
+    throw new Error('Server unavailable');
   }
 
   let parsed: unknown = null;
   try {
     parsed = JSON.parse(result.body);
   } catch {
-    // non-JSON body — wrong backend
+    // Non-JSON body on a 2xx — the server responded, but it isn't an Address Book.
   }
 
-  if (!result.ok || !healthResponseSchema.safeParse(parsed).success) {
+  const health = healthResponseSchema.safeParse(parsed);
+  if (!health.success) {
+    // 2xx with a foreign payload shape — pointed at the wrong server.
     throw new WrongBackendError('Unexpected health response structure');
+  }
+
+  if (health.data.status !== 'ok') {
+    // It is an Address Book, but currently reporting unhealthy — transient.
+    throw new Error('Backend unhealthy');
   }
 });
 
