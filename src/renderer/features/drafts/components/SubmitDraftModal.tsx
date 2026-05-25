@@ -29,7 +29,7 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { PathBreadcrumb } from '@/features/signing-path';
+import { PathBreadcrumb, PathReviewPopover } from '@/features/signing-path';
 import { WalletDetails } from '@/features/wallet-details';
 import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { submitDraftModel } from '../model/submit-draft-model';
@@ -291,8 +291,13 @@ const ConfirmStep = () => {
   return (
     <>
       {signingPath.length > 0 && draft && (
-        <div className="mx-5 mt-4">
-          <PathBreadcrumb path={signingPath} chainId={draft.chainId as ChainId} size="sm" />
+        <div className="mx-5 mt-4 flex flex-col gap-y-3">
+          {signingPath.length >= 2 && (
+            <div className="flex justify-start">
+              <PathReviewPopover path={signingPath} chainId={draft.chainId as ChainId} />
+            </div>
+          )}
+          <PathBreadcrumb path={signingPath} chainId={draft.chainId as ChainId} size="sm" orientation="auto" />
         </div>
       )}
 
