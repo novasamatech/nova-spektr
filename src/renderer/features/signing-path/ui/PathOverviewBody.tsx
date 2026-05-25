@@ -4,10 +4,11 @@ import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { CaptionText, FootnoteText, HelpText } from '@/shared/ui';
-import { AssetBalance, WalletAccountIcon } from '@/shared/ui-entities';
+import { CaptionText, HelpText } from '@/shared/ui';
+import { AssetBalance } from '@/shared/ui-entities';
 import { type PathNode } from '@/domains/backend';
 
+import { PathHopRow } from './PathHopRow';
 import { type PathNodeView } from './path-views';
 
 type Props = {
@@ -61,50 +62,23 @@ export const PathOverviewBody = ({ path, views, getBalance, asset, feeAsset, err
           const hopAsset = isFeeHop ? feeAsset : asset;
           const balanceValue = getBalance ? getBalance(node.accountId, isFeeHop) : null;
           const hasError = errorAccountIds?.has(node.accountId) ?? false;
+          const balanceNode =
+            balanceValue && hopAsset ? (
+              <AssetBalance
+                value={balanceValue}
+                asset={hopAsset}
+                className={cnTw('text-footnote', hasError ? 'text-text-negative' : 'text-text-secondary')}
+              />
+            ) : null;
 
           return (
-            <div key={`${idx}-${node.kind}-${node.accountId}`} className="flex gap-3">
-              <div className="flex flex-col items-center">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-container-border bg-white">
-                  <CaptionText className="text-text-secondary">{idx + 1}</CaptionText>
-                </div>
-                {!isLast && <div className="h-8 w-px bg-shade-12" />}
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col pb-4">
-                <CaptionText className="flex min-w-0 items-baseline gap-1 truncate text-text-tertiary">
-                  <span className="truncate uppercase">{v.label}</span>
-                  {v.connectionType && (
-                    <>
-                      <span className="text-text-tertiary" aria-hidden>
-                        ·
-                      </span>
-                      <span className="truncate text-icon-accent normal-case">{v.connectionType}</span>
-                    </>
-                  )}
-                </CaptionText>
-                <div className="mt-1 flex min-w-0 items-center gap-2">
-                  {v.formattedAddress && (
-                    <WalletAccountIcon
-                      address={v.formattedAddress}
-                      type={v.walletType ?? null}
-                      size={22}
-                      iconSize={10}
-                    />
-                  )}
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    <FootnoteText className="truncate text-text-primary">{v.title}</FootnoteText>
-                    <HelpText className="truncate text-text-tertiary">{v.subtitle}</HelpText>
-                  </div>
-                  {balanceValue && hopAsset && (
-                    <AssetBalance
-                      value={balanceValue}
-                      asset={hopAsset}
-                      className={cnTw('text-footnote', hasError ? 'text-text-negative' : 'text-text-secondary')}
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
+            <PathHopRow
+              key={`${idx}-${node.kind}-${node.accountId}`}
+              view={v}
+              index={idx}
+              isLast={isLast}
+              rightSlot={balanceNode}
+            />
           );
         })}
       </div>

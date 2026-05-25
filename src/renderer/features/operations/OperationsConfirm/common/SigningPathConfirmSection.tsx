@@ -47,7 +47,7 @@ export const SigningPathConfirmSection = ({
         <div className="flex w-full justify-start">
           <PathReviewPopover path={signingPath} chainId={chain.chainId} />
         </div>
-        <PathBreadcrumb path={signingPath} chainId={chain.chainId} size="sm" />
+        <PathBreadcrumb path={signingPath} chainId={chain.chainId} size="sm" orientation="auto" />
         <hr className="w-full border-filter-border pr-2" />
         <dl className="flex w-full flex-col gap-y-4 text-footnote">
           {children}
