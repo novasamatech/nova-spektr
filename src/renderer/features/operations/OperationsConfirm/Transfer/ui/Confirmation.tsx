@@ -172,7 +172,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <div className="flex w-full justify-start">
             <PathReviewPopover path={meta.signingPath} chainId={meta.chain.chainId} />
           </div>
-          <PathBreadcrumb path={meta.signingPath} chainId={meta.chain.chainId} size="sm" />
+          <PathBreadcrumb path={meta.signingPath} chainId={meta.chain.chainId} size="sm" orientation="auto" />
           <hr className="w-full border-filter-border pr-2" />
           <dl className="flex w-full flex-col gap-y-4 text-footnote">{detailRows}</dl>
         </div>
