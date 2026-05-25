@@ -11,6 +11,7 @@ import { graphModel } from '../model/graph-model';
 import { EllipsisCard } from './EllipsisCard';
 import { PathArrow } from './PathArrow';
 import { PathCard } from './PathCard';
+import { PathHopRow } from './PathHopRow';
 import { type PathCardSize, type PathNodeView, enrichConnectionEdge, nodeView } from './path-views';
 
 type Props = {
@@ -18,9 +19,17 @@ type Props = {
   chainId: ChainId;
   size?: PathCardSize;
   onNodeClick?: (index: number) => void;
+  /**
+   * `'auto'` switches to a vertical, full-width hop list once the path has 3+
+   * hops, where horizontal cards would otherwise squeeze wallet names down to a
+   * few characters. Defaults to `'horizontal'` so the path builder keeps its
+   * left-to-right card flow.
+   */
+  orientation?: 'horizontal' | 'auto';
 };
 
 const MAX_VISIBLE = 3;
+const VERTICAL_THRESHOLD = 3;
 
 const buildBreadcrumbElements = (
   views: PathNodeView[],
@@ -78,7 +87,7 @@ const buildBreadcrumbElements = (
   return elements;
 };
 
-export const PathBreadcrumb = ({ path, chainId, size = 'sm', onNodeClick }: Props) => {
+export const PathBreadcrumb = ({ path, chainId, size = 'sm', onNodeClick, orientation = 'horizontal' }: Props) => {
   const { t } = useI18n();
   const resolveName = useUnit(graphModel.$nameResolver);
   const chains = useUnit(networkModel.$chains);
@@ -92,6 +101,16 @@ export const PathBreadcrumb = ({ path, chainId, size = 'sm', onNodeClick }: Prop
 
   if (views.length === 0) {
     return null;
+  }
+
+  if (orientation === 'auto' && views.length >= VERTICAL_THRESHOLD) {
+    return (
+      <div className="flex flex-col rounded-lg bg-block-background-default p-3">
+        {views.map((view, i) => (
+          <PathHopRow key={`hop-${i}-${view.label}`} view={view} index={i} isLast={i === views.length - 1} />
+        ))}
+      </div>
+    );
   }
 
   return (

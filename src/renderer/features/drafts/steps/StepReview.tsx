@@ -64,7 +64,7 @@ export const StepReview = ({
               <PathReviewPopover path={path} chainId={chain.chainId} />
             </div>
           )}
-          {chain && <PathBreadcrumb path={path} chainId={chain.chainId} size="sm" />}
+          {chain && <PathBreadcrumb path={path} chainId={chain.chainId} size="sm" orientation="auto" />}
         </section>
       )}
 
