@@ -5,8 +5,10 @@ import {
   type Chain,
   type FlexibleMultisigAccount,
   type MultisigAccount,
+  type ProxyType,
   type Signatory,
   type Wallet,
+  TransactionType,
 } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -19,6 +21,7 @@ import {
   type MultisigOperation,
   accounts,
   isContactMultisigAccount,
+  multisigOperationService,
   useAccountName,
 } from '@/domains/network';
 import { useChain } from '@/entities/network';
@@ -48,6 +51,12 @@ const SignatoryAddress = ({ accountId, chain }: SignatoryAddressProps) => {
   );
 };
 
+const getOperationProxyType = (operation: MultisigOperation): ProxyType | null => {
+  if (operation.transaction?.type !== TransactionType.PROXY) return null;
+
+  return operation.transaction.args.forceProxyType as ProxyType;
+};
+
 export const operationOverviewSlot = createSlot<{
   walletAccounts: AnyAccount[];
   trigger?: ReactNode;
@@ -72,7 +81,7 @@ export const OperationSignatories = ({ operation, account }: Props) => {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const closeLogModal = useCallback(() => setIsLogModalOpen(false), []);
 
-  const approvals = operation.events.filter(e => e.status === 'approve');
+  const approvals = multisigOperationService.getApprovals(operation);
   const cancellation = operation.events.filter(e => e.status === 'reject');
 
   const signatoriesList = useMemo(() => {
@@ -112,7 +121,7 @@ export const OperationSignatories = ({ operation, account }: Props) => {
   // visualize — hide the trigger.
   const isExternalMultisig = isContactMultisigAccount(account);
 
-  // Flex multisig overview: render proxied → multisig (hidden-wallet accounts).
+  // Flex multisig overview: render only the proxy connection used by this operation.
   const overviewAccounts = useMemo<AnyAccount[]>(() => {
     if (!accountUtils.isFlexibleMultisigAccount(account)) return [account];
 
@@ -123,8 +132,19 @@ export const OperationSignatories = ({ operation, account }: Props) => {
 
     if (!proxied || !multisig) return [account];
 
-    return [proxied, multisig];
-  }, [account, accountsList]);
+    const proxyType = getOperationProxyType(operation) ?? account.proxyType;
+    const operationConnection = proxied.connections.find(
+      connection => connection.proxyAccountId === account.multisigAccountId && connection.proxyType === proxyType,
+    ) ?? { proxyAccountId: account.multisigAccountId, proxyType, delay: 0 };
+
+    return [
+      {
+        ...proxied,
+        connections: [operationConnection],
+      },
+      multisig,
+    ];
+  }, [account, accountsList, operation]);
 
   return (
     <div className="flex flex-col border-r border-divider p-4">
@@ -152,7 +172,7 @@ export const OperationSignatories = ({ operation, account }: Props) => {
             props={{
               walletAccounts: overviewAccounts,
               initialChainId: operation.chainId,
-              exclusive: accountUtils.isFlexibleMultisigAccount(account),
+              exclusive: true,
               trigger: (
                 <Button pallet="primary" variant="text" size="sm">
                   {t('operation.openOverviewButton')}

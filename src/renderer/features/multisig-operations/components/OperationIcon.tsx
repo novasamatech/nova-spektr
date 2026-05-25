@@ -1,4 +1,4 @@
-import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { type DecodedTransaction, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { cnTw } from '@/shared/lib/utils';
 import { type IconNames, Icon } from '@/shared/ui';
@@ -6,7 +6,7 @@ import { type MultisigOperation } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
 export const operationIconTransformer = createTransformer<
-  { operation: MultisigOperation; showCoreTransaction?: boolean },
+  { operation: { transaction: DecodedTransaction | null }; showCoreTransaction?: boolean },
   IconNames
 >();
 

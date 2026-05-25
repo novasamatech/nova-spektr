@@ -10,6 +10,6 @@ export const useDrafts = (baseUrl: string | null) => {
   return useResource(draftsResource, {
     params,
     defaultValue: [],
-    map: (cache) => cache,
+    map: cache => cache,
   });
 };

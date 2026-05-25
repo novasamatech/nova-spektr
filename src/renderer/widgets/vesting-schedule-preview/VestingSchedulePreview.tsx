@@ -14,13 +14,14 @@ import {
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
-import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Button, CaptionText, FootnoteText, Icon } from '@/shared/ui';
-import { Account, AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
-import { useBlockTimestamp, useIdentity } from '@/domains/network';
+import { useBlockTimestamp } from '@/domains/network';
 import { type ValidationIssue, type VestingScheduleRaw, VestingFieldError } from '@/entities/vesting';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 
 import { CliffMinVestedTransferError } from './CliffMinVestedTransferError';
@@ -146,7 +147,7 @@ export const VestingSchedulePreview = memo(
 
             return (
               <div className={cnTw('flex flex-col overflow-hidden', STATUS_TEXT_COLORS[status])}>
-                <TargetAccount target={row.target} chain={chain} />
+                <NamedAccount accountId={toAccountId(row.target)} chain={chain} variant="full" />
                 {fieldIssues.length > 0 && (
                   <FieldIssues
                     issue={fieldIssues[0]!}
@@ -392,12 +393,6 @@ const FieldIssues = memo(
     );
   },
 );
-
-const TargetAccount = memo(({ target, chain }: { target: AccountId; chain: Chain }) => {
-  const accountId = toAccountId(target);
-  const { data: identity } = useIdentity(accountId, chain.chainId);
-  return <Account accountId={target} title={identity?.name} chain={chain} variant="full" />;
-});
 
 const StartingBlock = memo(
   ({

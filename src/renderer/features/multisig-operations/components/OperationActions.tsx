@@ -5,7 +5,13 @@ import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/cor
 import { useI18n } from '@/shared/i18n';
 import { validateCallData } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { type MultisigOperation, accountService, accounts, isContactMultisigAccount } from '@/domains/network';
+import {
+  type MultisigOperation,
+  accountService,
+  accounts,
+  isContactMultisigAccount,
+  multisigOperationService,
+} from '@/domains/network';
 import { useNetworkData } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
@@ -38,16 +44,7 @@ export const OperationActions = memo(({ operation, account }: Props) => {
     });
 
   const hasApproveAccount =
-    !isContact &&
-    allAccounts.some(a => {
-      const isSignatory = account.signatories.some(
-        s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true),
-      );
-      const isOnChain = chain ? accountService.isAccountAvailableOnChain(a, chain) : false;
-      const hasNotSigned = !operation.events.some(e => e.accountId === a.accountId);
-
-      return isSignatory && isOnChain && hasNotSigned && !accountUtils.isWatchOnlyAccount(a);
-    });
+    !isContact && multisigOperationService.findActionableSignatories(operation, account, allAccounts, chain).length > 0;
 
   const isRejectAvailable = operation.status === 'pending' && hasRejectAccount;
 

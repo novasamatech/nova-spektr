@@ -4,10 +4,32 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, includes } from '@/shared/lib/utils';
-import { FootnoteText, Icon, IconButton } from '@/shared/ui';
-import { Popover, SearchInput, Tabs } from '@/shared/ui-kit';
-import { accountPresetsModel } from '@/aggregates/account-presets';
-import { PresetManagementModal } from '@/widgets/PresetManagementModal';
+import { Counter, FootnoteText, Icon, IconButton } from '@/shared/ui';
+import { Popover, SearchInput, Tabs, Tooltip } from '@/shared/ui-kit';
+import { type AccountEntry, accountPresetsModel } from '@/aggregates/account-presets';
+import { PresetManagementModal, SourceBreakdownBar } from '@/widgets/PresetManagementModal';
+
+type TabCounterProps = {
+  label: string;
+  entries: AccountEntry[];
+  total: number;
+};
+
+const TabCounter = ({ label, entries, total }: TabCounterProps) => {
+  return (
+    <Tooltip side="bottom">
+      <Tooltip.Trigger>
+        <span className="inline-flex items-center gap-x-1.5">
+          {label}
+          <Counter variant="neutral">{entries.length}</Counter>
+        </span>
+      </Tooltip.Trigger>
+      <Tooltip.Content className="w-[260px] max-w-[260px] px-3 py-2.5">
+        <SourceBreakdownBar entries={entries} total={total} tone="dark" />
+      </Tooltip.Content>
+    </Tooltip>
+  );
+};
 
 const ALL_VALUE = '__all__';
 
@@ -29,6 +51,10 @@ export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) 
   const activePresetId = useUnit($activePresetId);
   const segmentPresets = useUnit(accountPresetsModel.$segmentPresets);
   const overflowPresets = useUnit(accountPresetsModel.$overflowPresets);
+  const allEntries = useUnit(accountPresetsModel.$allEntries);
+  const entriesByPresetId = useUnit(accountPresetsModel.$entriesByPresetId);
+
+  const totalCount = allEntries.length;
 
   const [overflowOpen, setOverflowOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -73,10 +99,12 @@ export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) 
         <div className="[&_[role=tablist]]:mb-0">
           <Tabs value={tabValue} onChange={handleTabChange}>
             <Tabs.List>
-              <Tabs.Trigger value={ALL_VALUE}>{t('presets.all')}</Tabs.Trigger>
+              <Tabs.Trigger value={ALL_VALUE}>
+                <TabCounter label={t('presets.all')} entries={allEntries} total={totalCount} />
+              </Tabs.Trigger>
               {segmentPresets.map((preset) => (
                 <Tabs.Trigger key={preset.id} value={preset.id}>
-                  {preset.name}
+                  <TabCounter label={preset.name} entries={entriesByPresetId[preset.id] ?? []} total={totalCount} />
                 </Tabs.Trigger>
               ))}
             </Tabs.List>
@@ -99,19 +127,24 @@ export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) 
                   <SearchInput value={search} placeholder={t('presets.searchPresets')} onChange={setSearch} />
                 </div>
                 <div className="mt-1 max-h-48 overflow-y-auto">
-                  {filteredOverflow.map((preset) => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      className={cnTw(
-                        'flex w-full items-center rounded px-2 py-1.5 text-left transition-colors hover:bg-action-background-hover',
-                        activePresetId === preset.id && 'border-l-2 border-icon-accent bg-block-background-default',
-                      )}
-                      onClick={() => handleOverflowActivate(preset.id)}
-                    >
-                      <FootnoteText className="text-text-primary">{preset.name}</FootnoteText>
-                    </button>
-                  ))}
+                  {filteredOverflow.map((preset) => {
+                    const matched = entriesByPresetId[preset.id] ?? [];
+
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        className={cnTw(
+                          'flex w-full items-center justify-between gap-x-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-action-background-hover',
+                          activePresetId === preset.id && 'border-l-2 border-icon-accent bg-block-background-default',
+                        )}
+                        onClick={() => handleOverflowActivate(preset.id)}
+                      >
+                        <FootnoteText className="text-text-primary">{preset.name}</FootnoteText>
+                        <Counter variant="neutral">{matched.length}</Counter>
+                      </button>
+                    );
+                  })}
                 </div>
                 <div className="mt-1 border-t border-divider pt-1">
                   <button

@@ -73,7 +73,7 @@ export const Dashboard = () => {
     <section className="flex h-full flex-col">
       <Header title={t('dashboard.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
         {allEntries.length > 0 && (
-          <div className="flex items-center gap-x-2">
+          <div className="flex items-center gap-x-2 rounded-xl bg-white p-2">
             <IconButton className={editMode ? 'text-icon-accent' : ''} name="edit" onClick={editModeToggled} />
             <Slot id={dashboardPresetSwitcherSlot} />
           </div>

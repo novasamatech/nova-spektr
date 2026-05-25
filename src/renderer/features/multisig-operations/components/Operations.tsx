@@ -3,11 +3,11 @@ import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useRef } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { groupBy } from '@/shared/lib/utils';
-import { nullable } from '@/shared/lib/utils/functions';
+import { groupByDate } from '@/shared/lib/utils';
 import { FootnoteText, Loader } from '@/shared/ui';
 import { AsyncItem, Box, ScrollArea } from '@/shared/ui-kit';
 import { useOperationDescriptionsFetch } from '@/domains/backend';
+import { multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
@@ -55,47 +55,22 @@ export const Operations = () => {
   const isDeferredLoading = isTabDataLoading;
   const deferredOps = filteredOps;
 
-  const sortedOps = useMemo(() => {
-    const getDateKey = ({ operation }: OperationWithAccount): string => {
-      let date: number | undefined = operation.timestamp;
-
-      if (nullable(date)) {
-        date = operation.events.at(0)?.timestamp;
-      }
-
-      if (nullable(date)) {
-        date = Date.now();
-      }
-
-      const d = new Date(date);
-
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    };
-
-    const grouped = groupBy(deferredOps, getDateKey);
-
-    return Object.entries(grouped)
-      .toSorted(([dateA], [dateB]) => dateB.localeCompare(dateA))
-      .map(([isoDate, items]) => {
-        const sorted = items!.toSorted((a, b) => (b.operation.timestamp || 0) - (a.operation.timestamp || 0));
-        const [y, m, d] = isoDate.split('-').map(Number);
-        const displayDate = formatDate(new Date(y ?? 0, (m ?? 1) - 1, d), 'PP');
-
-        return [displayDate, sorted] as const;
-      });
-  }, [deferredOps, formatDate]);
+  const sortedOps = useMemo(
+    () => groupByDate(deferredOps, ({ operation }) => multisigOperationService.getOperationTimestamp(operation)),
+    [deferredOps],
+  );
 
   const flatItems = useMemo(() => {
     const items: FlatItem[] = [];
-    for (const [date, ops] of sortedOps) {
-      items.push({ type: 'header', date });
-      for (const item of ops) {
+    for (const group of sortedOps) {
+      items.push({ type: 'header', date: formatDate(group.dateStart, 'PP') });
+      for (const item of group.items) {
         items.push({ type: 'operation', item });
       }
     }
 
     return items;
-  }, [sortedOps]);
+  }, [sortedOps, formatDate]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 

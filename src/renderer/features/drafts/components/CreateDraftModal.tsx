@@ -127,18 +127,15 @@ export const CreateDraftModal = () => {
   const txAsset = useTransactionAsset(coreTx, selectedChain?.chainId ?? ('0x00' as ChainId));
 
   const externalTitle = useTransformer(operationTitleTransformer, {
-    operation: decodedTransaction
-      ? ({ transaction: decodedTransaction, chainId: selectedChain?.chainId } as never)
-      : null,
+    operation:
+      decodedTransaction && selectedChain ? { transaction: decodedTransaction, chainId: selectedChain.chainId } : null,
     chains,
     asset: txAsset,
     t,
   });
 
   const operationIcon = useTransformer(operationIconTransformer, {
-    operation: (decodedTransaction
-      ? { transaction: decodedTransaction, chainId: selectedChain?.chainId }
-      : { transaction: null, chainId: selectedChain?.chainId }) as never,
+    operation: { transaction: decodedTransaction },
   });
 
   const titleData = useMemo(() => {

@@ -2,6 +2,7 @@ import { type HexString } from '@polkadot/util/types';
 import { z } from 'zod';
 
 import { authFetch, parseResponse } from '@/shared/api/backend-fetch';
+import { type ChainId } from '@/shared/core';
 import { isCorrectAccountId, isEthereumAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
@@ -18,6 +19,8 @@ const accountIdStringSchema = z
   })
   .transform(v => v as AccountId);
 
+const chainIdStringSchema = z.string().transform(v => v as ChainId);
+
 export const pathNodeSchema = z.object({
   kind: pathNodeKindSchema,
   accountId: accountIdStringSchema,
@@ -28,10 +31,10 @@ export type PathNode = z.infer<typeof pathNodeSchema>;
 
 const backendDraftSchema = z.object({
   id: z.string(),
-  multisigAccountId: z.string().nullable(),
-  proxyAccountId: z.string().nullable().optional(),
+  multisigAccountId: accountIdStringSchema.nullable(),
+  proxyAccountId: accountIdStringSchema.nullable().optional(),
   proxyContact: z.object({ name: z.string(), accountId: z.string() }).nullable().optional(),
-  chainId: z.string(),
+  chainId: chainIdStringSchema,
   callData: z.string().nullable(),
   decodedCallData: z.unknown().optional(),
   description: z.string().nullable(),
@@ -40,7 +43,7 @@ const backendDraftSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   signingPath: z.array(pathNodeSchema).default([]),
-  initiatorAccountId: z.string().nullable().optional().default(null),
+  initiatorAccountId: accountIdStringSchema.nullable().optional().default(null),
 });
 
 export type Draft = z.infer<typeof backendDraftSchema>;

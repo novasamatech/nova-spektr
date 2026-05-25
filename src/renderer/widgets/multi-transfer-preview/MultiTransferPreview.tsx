@@ -3,13 +3,12 @@ import { type ReactNode, memo, useCallback, useMemo, useState } from 'react';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nullable, toAccountId } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, CaptionText, FootnoteText } from '@/shared/ui';
-import { Account, AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
-import { useAccountName } from '@/domains/network';
 import { type MultiTransferRow, type ValidationIssue, MultiTransferFieldError } from '@/entities/multi-transfer';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 
 type RowStatus = 'error' | 'warning' | 'valid';
@@ -105,7 +104,7 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
               {nullable(row.recipient.parsed) || nullable(chain) ? (
                 <span className="break-all">{row.recipient.raw}</span>
               ) : (
-                <TargetAccount recipient={row.recipient.parsed} chain={chain} />
+                <NamedAccount accountId={toAccountId(row.recipient.parsed)} chain={chain} variant="full" />
               )}
               {fieldIssues.length > 0 && fieldIssues[0] && (
                 <CaptionText className={cnTw('text-left text-inherit', STATUS_TEXT_COLORS[status])}>
@@ -223,10 +222,4 @@ export const MultiTransferPreview = memo(({ transfers, children, chain, asset, i
       )}
     </Modal>
   );
-});
-
-const TargetAccount = memo(({ recipient, chain }: { recipient: AccountId; chain: Chain }) => {
-  const accountId = toAccountId(recipient);
-  const accountName = useAccountName({ accountId, chain });
-  return <Account accountId={recipient} title={accountName} chain={chain} variant="full" />;
 });

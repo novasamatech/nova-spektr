@@ -17,6 +17,7 @@ import { callDataExecuteFeature } from '@/features/call-data-execute';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { dashboardGovernanceFeature } from '@/features/dashboard-governance';
 import { dashboardNavigationFeature } from '@/features/dashboard-navigation';
+import { dashboardOperationsQueueFeature } from '@/features/dashboard-operations-queue';
 import { dashboardPortfolioOverviewFeature } from '@/features/dashboard-portfolio-overview';
 import { dashboardPriceChartsFeature } from '@/features/dashboard-price-charts';
 import { dashboardStakingFeature } from '@/features/dashboard-staking';
@@ -74,6 +75,7 @@ export const bootstrap = () => {
     operationsAccountSelectorFeature,
     dashboardPortfolioOverviewFeature,
     dashboardPriceChartsFeature,
+    dashboardOperationsQueueFeature,
     dashboardGovernanceFeature,
     dashboardStakingFeature,
     assetsNavigationFeature,

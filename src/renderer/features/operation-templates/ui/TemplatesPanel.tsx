@@ -27,7 +27,7 @@ export const TemplatesPanel = ({ api, chainId, callData, specVersion, onApply }:
   const { data: allTemplates } = useAllTemplates();
   const { save } = useTemplateMutations();
 
-  const { current, byOtherChain } = useMemo(() => {
+  const { current, byOtherChain, otherCount } = useMemo(() => {
     const current: OperationTemplate[] = [];
     const byOtherChain = new Map<ChainId, OperationTemplate[]>();
 
@@ -41,7 +41,10 @@ export const TemplatesPanel = ({ api, chainId, callData, specVersion, onApply }:
       }
     }
 
-    return { current, byOtherChain };
+    let otherCount = 0;
+    for (const list of byOtherChain.values()) otherCount += list.length;
+
+    return { current, byOtherChain, otherCount };
   }, [allTemplates, chainId]);
 
   const canSave = isHex(callData) && specVersion !== null;
@@ -91,7 +94,7 @@ export const TemplatesPanel = ({ api, chainId, callData, specVersion, onApply }:
               <Accordion>
                 <Accordion.Trigger>
                   <FootnoteText className="text-text-tertiary">
-                    {t('operationTemplates.otherChains', { num: byOtherChain.size })}
+                    {t('operationTemplates.otherChains', { num: otherCount })}
                   </FootnoteText>
                 </Accordion.Trigger>
                 <Accordion.Content>

@@ -97,6 +97,8 @@ export const Confirmation = ({
         wallets={wallets}
         initiators={initiators}
         signatory={confirmStore.meta.signatory}
+        resultTx={confirmStore.meta.tx}
+        coreTx={confirmStore.meta.coreTx}
       >
         <DetailRow label={t('governance.addDelegation.confirmation.target')}>
           <NamedAccount

@@ -1,8 +1,10 @@
 import { type Address, type ID, type WalletType } from '@/shared/core';
 import { type ContactTag } from '@/shared/core/types/contact';
 
+export type AccountSource = 'wallet' | 'local-contact' | 'backend-contact';
+
 export type PresetFilterCriteria = {
-  sources: ('wallet' | 'local-contact' | 'backend-contact')[];
+  sources: AccountSource[];
   entityNames: string[];
   categoryNames: string[];
   tags: ContactTag[];
@@ -25,37 +27,25 @@ export const EMPTY_FILTERS: PresetFilterCriteria = {
   tags: [],
 };
 
-type BaseEntry = {
+/**
+ * One row per `accountId` even when the address is known to multiple sources.
+ * Per-source metadata fields are only populated when `sources` contains the
+ * matching tag — narrow on `sources.includes(...)` before reading them.
+ */
+export type AccountEntry = {
   id: string;
   name: string;
   address: Address;
   accountId: string;
-};
+  /** Deduplicated names from every source (original casing), used for search. */
+  aliases: string[];
+  sources: AccountSource[];
 
-/** Wallet-backed entry: the user owns signatory keys via a wallet. */
-export type WalletAccountEntry = BaseEntry & {
-  source: 'wallet';
-  walletId: ID;
+  walletId?: ID;
   walletName?: string;
   walletType?: WalletType;
-};
 
-/** Local (user-managed) contact — no metadata fields. */
-export type LocalContactAccountEntry = BaseEntry & {
-  source: 'local-contact';
+  entityNames?: string[];
+  categoryName?: string | null;
+  tags?: ContactTag[];
 };
-
-/** Backend-synced contact — carries entity/category/tag metadata. */
-export type BackendContactAccountEntry = BaseEntry & {
-  source: 'backend-contact';
-  entityNames: string[];
-  categoryName: string | null;
-  tags: ContactTag[];
-};
-
-/**
- * Discriminated union over `source`. Field presence is dictated by the
- * discriminant — narrow with `entry.source === 'backend-contact'` to access the
- * contact metadata fields safely.
- */
-export type AccountEntry = WalletAccountEntry | LocalContactAccountEntry | BackendContactAccountEntry;

@@ -12,10 +12,24 @@ import {
 } from '@/shared/core';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 
+export const MultisigOperationStatus = {
+  Pending: 'pending',
+  Cancelled: 'cancelled',
+  Executed: 'executed',
+  Error: 'error',
+} as const;
+export type MultisigOperationStatus = (typeof MultisigOperationStatus)[keyof typeof MultisigOperationStatus];
+
+export const MultisigEventStatus = {
+  Approve: 'approve',
+  Reject: 'reject',
+} as const;
+export type MultisigEventStatus = (typeof MultisigEventStatus)[keyof typeof MultisigEventStatus];
+
 export type MultisigEvent = {
   id: string;
   accountId: AccountId;
-  status: 'approve' | 'reject';
+  status: MultisigEventStatus;
   blockCreated: BlockHeight;
   indexCreated: number;
   timestamp: number;
@@ -24,7 +38,7 @@ export type MultisigEvent = {
 
 export type MultisigOperation = {
   id: string;
-  status: 'pending' | 'cancelled' | 'executed' | 'error';
+  status: MultisigOperationStatus;
   transaction: DecodedTransaction | null;
   method: string | null;
   section: string | null;

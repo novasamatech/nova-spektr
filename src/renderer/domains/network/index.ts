@@ -49,6 +49,7 @@ export { initialOnChainFetch } from './multisig-operation/resource';
 export { multisigOperationService } from './multisig-operation/service';
 export type { MultisigOperationDeepLinkParams } from './multisig-operation/service';
 export type { MultisigEvent, MultisigOperation } from './multisig-operation/types';
+export { MultisigEventStatus, MultisigOperationStatus } from './multisig-operation/types';
 
 export {
   CONTACT_MULTISIG_WALLET_ID,

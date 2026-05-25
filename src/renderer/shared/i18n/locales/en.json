@@ -64,7 +64,7 @@
       "addTitle": "Add Connection",
       "backendRemoved": "Backend removed",
       "buttonLabel": "External source",
-      "checking": "Checking connection...",
+      "checking": "Checking connection…",
       "connectButton": "Connect",
       "connectingMessage": "Connecting...",
       "connectionLabel": "External source connection",
@@ -74,7 +74,8 @@
       "reachable": "Server is reachable",
       "tooltip": "Configure address book source",
       "tryAgainButton": "Try again",
-      "unreachable": "Server is not reachable",
+      "unreachable": "Server is not reachable. Check the URL or your connection.",
+      "wrongBackend": "This server is not an Address Book. Check the URL.",
       "unsavedChangesMessage": "You have modified the backend URL without connecting. Discard changes?",
       "unsavedChangesTitle": "Unsaved changes",
       "urlInvalidError": "Please enter a valid URL",
@@ -514,10 +515,6 @@
       "selectedCount_other": "{{count}} accounts selected"
     },
     "presets": {
-      "all": "All",
-      "overflow": "+{count} more",
-      "manage": "Manage Presets",
-      "searchPresets": "Search presets...",
       "modal": {
         "title": "Manage Presets",
         "newPreset": "New Preset",
@@ -533,7 +530,6 @@
         "searchAccounts": "Search accounts...",
         "noMatches": "No accounts match these filters",
         "matchesAll": "This preset matches all accounts",
-        "moreAccounts": "+{count} more",
         "delete": "Delete Preset",
         "deleteConfirmTitle": "Delete Preset",
         "deleteConfirmDescription": "Are you sure you want to delete \"{name}\"?",
@@ -561,6 +557,16 @@
     "noSelection": {
       "title": "No accounts selected",
       "description": "Select accounts above to view your balance"
+    },
+    "operationsQueue": {
+      "title": "Operations Queue",
+      "drafts": "Drafts",
+      "awaitingSignature": "Awaiting your signature",
+      "empty": "You're all caught up",
+      "untitledDraft": "Untitled draft",
+      "unknownOperation": "Pending operation",
+      "submitNeedsCallData": "Call data is required before submitting",
+      "submitUnavailable": "This draft can't be submitted yet"
     },
     "portfolioOverview": {
       "title": "Portfolio Overview",
@@ -2458,6 +2464,8 @@
       "account": "Account",
       "amount": "Amount",
       "callData": "Call Data",
+      "coreTx": "Underlying transaction",
+      "coreTxSame": "Underlying transaction",
       "callHash": "Call Hash",
       "controller": "Controller",
       "dateTime": "Date & Time",
@@ -2698,7 +2706,6 @@
       "tooltip": "Export operations to CSV"
     },
     "filters": {
-      "accountPlaceholder": "Accounts",
       "clearAll": "operations.filters.clearAll",
       "clearFilters": "Clear filters",
       "dateRangePlaceholder": "Date range",
@@ -2840,7 +2847,21 @@
   "presets": {
     "all": "All",
     "searchPresets": "Search presets...",
-    "manage": "Manage Presets"
+    "manage": "Manage Presets",
+    "counterTooltip": {
+      "title": "{count} of {total} accounts",
+      "wallets_one": "{count} wallet account",
+      "wallets_other": "{count} wallet accounts",
+      "indexed_one": "{count} indexed account",
+      "indexed_other": "{count} indexed accounts",
+      "localContacts_one": "{count} local contact",
+      "localContacts_other": "{count} local contacts",
+      "backendContacts_one": "{count} external contact",
+      "backendContacts_other": "{count} external contacts",
+      "overlap_one": "{count} account appears in multiple categories",
+      "overlap_other": "{count} accounts appear in multiple categories",
+      "empty": "No accounts match this filter"
+    }
   },
   "price": {
     "withCode": "{ amount } { code }",
@@ -3762,6 +3783,9 @@
   },
   "operationTemplates": {
     "saveButton": "Save as template",
+    "saveCoreTxButton": "Save as template",
+    "saveCallDataTooltip": "Save this transaction as a template to reuse the operation later.",
+    "saveCoreTxTooltip": "This is the transaction inside the proxy or multisig wrapper. Save it as a template to reuse the operation later.",
     "panelTitle": "Templates",
     "apply": "Apply",
     "delete": "Delete template",

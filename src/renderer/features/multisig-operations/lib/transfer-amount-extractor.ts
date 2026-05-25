@@ -22,6 +22,7 @@ export type TransferAmountInfo = {
   formattedAmount: string;
   /** Full display string with symbol (e.g., "10.5 DOT") */
   displayAmount: string;
+  asset: Asset;
   /** Asset symbol (e.g., "DOT", "KSM") */
   assetSymbol: string;
   /** Asset precision/decimals */
@@ -179,6 +180,7 @@ export const extractTransferAmount = (operation: MultisigOperation, chain: Chain
     rawAmount,
     formattedAmount,
     displayAmount,
+    asset,
     assetSymbol: asset.symbol,
     assetPrecision: asset.precision,
     recipient,
