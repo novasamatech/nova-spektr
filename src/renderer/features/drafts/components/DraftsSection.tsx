@@ -4,8 +4,19 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, groupByDate, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, CountChip, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
-import { Accordion, ConfirmModal, Field, Modal, TextArea, Tooltip, useNotification } from '@/shared/ui-kit';
+import {
+  Accordion,
+  Checkbox,
+  ConfirmModal,
+  Field,
+  Modal,
+  Select,
+  TextArea,
+  Tooltip,
+  useNotification,
+} from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import {
   type Draft,
@@ -20,7 +31,10 @@ import { networkModel, useApi } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { backendContactsModel } from '@/features/contacts';
+import { deriveMultisigAccountId, graphModel } from '@/features/signing-path';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { tryDecodeCallData } from '../lib/decode-call-data';
+import { deriveFinalSignerCandidates } from '../lib/final-signer-candidates';
 import { useCanCreateDraft } from '../lib/useCanCreateDraft';
 import { useSubmitDraft } from '../lib/useSubmitDraft';
 import { filterVisibleDrafts } from '../lib/visible-drafts';
@@ -93,8 +107,11 @@ export const DraftsSection = () => {
   const [showDiscardEdit, setShowDiscardEdit] = useState(false);
   const [editingDraft, setEditingDraft] = useState<Draft | null>(null);
   const [editDescription, setEditDescription] = useState('');
+  const [editFinalSignerEnabled, setEditFinalSignerEnabled] = useState(false);
+  const [editFinalSignerAccountId, setEditFinalSignerAccountId] = useState<AccountId | null>(null);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
+  const multisigByAccountId = useUnit(graphModel.$multisigByAccountId);
   const allAccounts = useUnit(accounts.$list);
   const allMultisigAccounts = useMemo(() => allAccounts.filter(accountUtils.isAnyMultisigAccount), [allAccounts]);
   const allWallets = useUnit(walletModel.$wallets);
@@ -119,8 +136,24 @@ export const DraftsSection = () => {
   const handleEditDraft = (draft: Draft) => {
     setEditingDraft(draft);
     setEditDescription(draft.description ?? '');
+    setEditFinalSignerEnabled(draft.finalSignerAccountId !== null && draft.finalSignerAccountId !== undefined);
+    setEditFinalSignerAccountId(draft.finalSignerAccountId ?? null);
     setIsEditModalOpen(true);
   };
+
+  const handleEditFinalSignerToggled = (enabled: boolean) => {
+    setEditFinalSignerEnabled(enabled);
+    if (!enabled) setEditFinalSignerAccountId(null);
+  };
+
+  const canHaveFinalSignerEdit = !!editingDraft && deriveMultisigAccountId(editingDraft.signingPath) !== null;
+  const editFinalSignerCandidates = useMemo(
+    () => (editingDraft ? deriveFinalSignerCandidates(editingDraft.signingPath, multisigByAccountId) : []),
+    [editingDraft, multisigByAccountId],
+  );
+  const nextEditFinalSigner = editFinalSignerEnabled ? editFinalSignerAccountId : null;
+  const currentEditFinalSigner = editingDraft?.finalSignerAccountId ?? null;
+  const editFinalSignerChanged = nextEditFinalSigner !== currentEditFinalSigner;
 
   // Edit-mode derived state
   const draftChain = editingDraft ? (chains[editingDraft.chainId as ChainId] ?? null) : null;
@@ -158,6 +191,7 @@ export const DraftsSection = () => {
     try {
       const response = await draftsService.updateDraft(backendUrl, editingDraft.id, {
         description: editDescription,
+        ...(editFinalSignerChanged ? { finalSignerAccountId: nextEditFinalSigner } : {}),
       });
       draftsResource.draftUpdated(response);
       toast.success(t('operations.drafts.editSuccess'));
@@ -171,7 +205,8 @@ export const DraftsSection = () => {
     }
   };
 
-  const isEditDirty = editingDraft !== null && editDescription !== (editingDraft.description ?? '');
+  const isEditDirty =
+    editingDraft !== null && (editDescription !== (editingDraft.description ?? '') || editFinalSignerChanged);
 
   const handleEditToggle = (open: boolean) => {
     if (!open && isEditDirty) {
@@ -313,6 +348,51 @@ export const DraftsSection = () => {
                   {t('operations.drafts.descriptionMaxLengthError', { max: DESCRIPTION_MAX_LENGTH })}
                 </InputHint>
               </Field>
+
+              {canWrite && canHaveFinalSignerEdit ? (
+                <Field text={t('operations.drafts.finalSignerLabel')}>
+                  {editFinalSignerCandidates.length > 0 ? (
+                    <Checkbox checked={editFinalSignerEnabled} onChange={handleEditFinalSignerToggled}>
+                      {t('operations.drafts.finalSignerToggle')}
+                    </Checkbox>
+                  ) : (
+                    <Tooltip>
+                      <Tooltip.Trigger>
+                        <div className="w-max">
+                          <Checkbox checked={false} disabled>
+                            {t('operations.drafts.finalSignerToggle')}
+                          </Checkbox>
+                        </div>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>{t('operations.drafts.finalSignerNoCandidates')}</Tooltip.Content>
+                    </Tooltip>
+                  )}
+
+                  {editFinalSignerEnabled && editFinalSignerCandidates.length > 0 && (
+                    <Select
+                      placeholder={t('operations.drafts.finalSignerPlaceholder')}
+                      value={editFinalSignerAccountId}
+                      onChange={setEditFinalSignerAccountId}
+                    >
+                      {editFinalSignerCandidates.map((accountId) => (
+                        <Select.Item key={accountId} value={accountId}>
+                          <NamedAccount accountId={accountId} chain={draftChain ?? undefined} variant="short" />
+                        </Select.Item>
+                      ))}
+                    </Select>
+                  )}
+                </Field>
+              ) : (
+                editingDraft.finalSignerAccountId && (
+                  <Field text={t('operations.drafts.finalSignerLabel')}>
+                    <NamedAccount
+                      accountId={editingDraft.finalSignerAccountId}
+                      chain={draftChain ?? undefined}
+                      variant="short"
+                    />
+                  </Field>
+                )
+              )}
 
               <Separator />
 

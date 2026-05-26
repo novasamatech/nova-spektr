@@ -51,6 +51,10 @@ export const CreateDraftModal = () => {
   const isDirty = useUnit(createDraftModel.$isDirty);
   const canContinue = useUnit(createDraftModel.$canContinue);
   const canSkip = useUnit(createDraftModel.$canSkip);
+  const canHaveFinalSigner = useUnit(createDraftModel.$canHaveFinalSigner);
+  const isFinalSignerEnabled = useUnit(createDraftModel.$isFinalSignerEnabled);
+  const finalSignerAccountId = useUnit(createDraftModel.$finalSignerAccountId);
+  const finalSignerCandidates = useUnit(createDraftModel.$finalSignerCandidates);
 
   const path = useUnit(pathModel.$path);
   const resolveName = useUnit(graphModel.$nameResolver);
@@ -198,6 +202,7 @@ export const CreateDraftModal = () => {
         proxyAccountId,
         signingPath: path,
         initiatorAccountId,
+        finalSignerAccountId: finalSignerAccountId ?? undefined,
         callData: callData || undefined,
         description: description || undefined,
       });
@@ -238,7 +243,7 @@ export const CreateDraftModal = () => {
   };
 
   const multisigName =
-    multisigHopAccountId && selectedChain ? resolveName(multisigHopAccountId as AccountId, selectedChain.chainId) : '';
+    multisigHopAccountId && selectedChain ? resolveName(multisigHopAccountId, selectedChain.chainId) : '';
 
   return (
     <>
@@ -280,9 +285,15 @@ export const CreateDraftModal = () => {
                 operationIcon={operationIcon ?? null}
                 destinationAccountId={destinationAccountId}
                 description={description}
+                canHaveFinalSigner={canHaveFinalSigner}
+                isFinalSignerEnabled={isFinalSignerEnabled}
+                finalSignerAccountId={finalSignerAccountId}
+                finalSignerCandidates={finalSignerCandidates}
                 multisigName={multisigName}
-                multisigAccountId={multisigHopAccountId as AccountId | undefined}
+                multisigAccountId={multisigHopAccountId ?? undefined}
                 onDescriptionChanged={createDraftModel.descriptionChanged}
+                onFinalSignerToggled={createDraftModel.finalSignerToggled}
+                onFinalSignerSelected={createDraftModel.finalSignerSelected}
               />
             )}
           </div>
