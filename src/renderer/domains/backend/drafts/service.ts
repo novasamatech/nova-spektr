@@ -44,6 +44,10 @@ const backendDraftSchema = z.object({
   updatedAt: z.string(),
   signingPath: z.array(pathNodeSchema).default([]),
   initiatorAccountId: accountIdStringSchema.nullable().optional().default(null),
+  // Optional, non-enforcing hint: the signatory the draft author suggests should
+  // provide the threshold-completing (executing) approval. Not derived from
+  // signingPath and never validated against multisig membership — stored as-is.
+  finalSignerAccountId: accountIdStringSchema.nullable().optional().default(null),
 });
 
 export type Draft = z.infer<typeof backendDraftSchema>;
@@ -63,6 +67,7 @@ async function createDraft(
     proxyAccountId?: string;
     signingPath?: PathNode[];
     initiatorAccountId?: string;
+    finalSignerAccountId?: string;
     callData?: string;
     description?: string;
   },
@@ -94,6 +99,8 @@ async function updateDraft(
     proxyAccountId?: string;
     signingPath?: PathNode[];
     initiatorAccountId?: string;
+    // `null` explicitly clears a previously-set final signer; `undefined` leaves it untouched.
+    finalSignerAccountId?: string | null;
   },
 ): Promise<BackendDraft> {
   const result = await authFetch(`${baseUrl}/draft-operations/${id}`, {
