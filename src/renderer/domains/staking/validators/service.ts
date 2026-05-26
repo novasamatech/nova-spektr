@@ -2,10 +2,11 @@ import { type ApiPromise } from '@polkadot/api';
 import { default as BigNumber } from 'bignumber.js';
 import { merge } from 'lodash';
 
-import { type EraIndex, type Validator } from '@/shared/core';
+import { type Chain, type EraIndex, type Validator } from '@/shared/core';
 import { keys, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
+  AssetHubChains,
   DECAY_RATE,
   DEFAULT_MAX_NOMINATORS,
   INTEREST_IDEAL,
@@ -264,24 +265,148 @@ export const getValidatorsApy = async (api: ApiPromise, validators: ApyValidator
   return getApyForValidators(totalStaked, avgRewardPercent, validators);
 };
 
+const MILLISECONDS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
+const DEFAULT_ERA_DURATION_MS = 24 * 60 * 60 * 1000;
+
 /**
- * Get average APY
- *
- * @param api ApiPromise to make RPC calls
- * @param validators Array of calculated APYs'
- *
- * @returns {Promise}
+ * Era duration fallback (ms), used when the relay-chain Babe consts are not yet
+ * available (e.g. the relay api hasn't connected). Keeps APY visible without
+ * making the dashboard depend on the relay connection.
  */
-export const getAvgApy = async (api: ApiPromise, validators: ApyValidator[]): Promise<string> => {
-  if (validators.length === 0) return '';
+const FALLBACK_ERA_DURATION_MS: Record<string, number> = {
+  [AssetHubChains.POLKADOT_AH]: 24 * 60 * 60 * 1000, // 24h
+  [AssetHubChains.KUSAMA_AH]: 6 * 60 * 60 * 1000, // 6h
+};
 
-  const totalIssuance = await getTotalIssuance(api);
-  const stake = validators.reduce((acc, { totalStake }) => {
-    return acc.plus(new BigNumber(totalStake));
-  }, new BigNumber(0));
+type IssuancePredictionCall = () => Promise<{ toJSON: () => unknown }>;
 
-  const avgRewardPercent = getAvgRewardPercent(stake, totalIssuance);
+function hasKey<K extends string>(value: unknown, key: K): value is Record<K, unknown> {
+  return typeof value === 'object' && value !== null && key in value;
+}
+
+/**
+ * Era duration in milliseconds.
+ *
+ * Asset Hub is a parachain and has no Babe pallet, so the era length is derived
+ * from the relay chain: `sessionsPerEra (Asset Hub) × epochDuration × blockTime
+ * (relay)`. The relay block time (≈6s) must be used here — using the Asset Hub
+ * block time (≈12s) would double the era length and halve the resulting APY.
+ */
+function getEraDurationMs(api: ApiPromise, timelineApi: ApiPromise, chain: Chain): number {
+  try {
+    const { babe } = timelineApi.consts;
+    if (babe?.epochDuration && babe?.expectedBlockTime) {
+      const sessionsPerEra = api.consts.staking.sessionsPerEra.toNumber();
+      const eraDuration = sessionsPerEra * babe.epochDuration.toNumber() * babe.expectedBlockTime.toNumber();
+      if (eraDuration > 0) return eraDuration;
+    }
+  } catch (error) {
+    console.warn('Unable to derive era duration from relay chain', error);
+  }
+
+  return FALLBACK_ERA_DURATION_MS[chain.chainId] ?? DEFAULT_ERA_DURATION_MS;
+}
+
+function parsePlanck(value: unknown): BigNumber | null {
+  if (typeof value === 'number') return new BigNumber(value);
+  if (typeof value === 'string') {
+    const parsed = value.startsWith('0x') ? new BigNumber(value.slice(2), 16) : new BigNumber(value);
+
+    return parsed.isFinite() ? parsed : null;
+  }
+
+  return null;
+}
+
+// Reads `nextMint = [toStakers, toTreasury]` from the inflation prediction result.
+function readStakersMint(json: unknown): BigNumber | null {
+  if (!hasKey(json, 'nextMint')) return null;
+
+  const { nextMint } = json;
+  if (!Array.isArray(nextMint) || nextMint.length === 0) return null;
+
+  return parsePlanck(nextMint[0]);
+}
+
+// Resolves the `inflation.experimentalIssuancePredictionInfo` runtime call if the chain exposes it.
+function getIssuancePredictionCall(api: ApiPromise): IssuancePredictionCall | null {
+  if (!hasKey(api.call, 'inflation')) return null;
+
+  const { inflation } = api.call;
+  if (!hasKey(inflation, 'experimentalIssuancePredictionInfo')) return null;
+
+  const predict = inflation.experimentalIssuancePredictionInfo;
+
+  // The signature cannot be inferred from the dynamically-typed runtime api.
+  return typeof predict === 'function' ? (predict as IssuancePredictionCall) : null;
+}
+
+/**
+ * Per-era reward minted to stakers (validators + nominators), before
+ * commission.
+ *
+ * Uses the `inflation.experimentalIssuancePredictionInfo` runtime API, which
+ * the runtime documents as the recommended source over re-deriving the onchain
+ * logic and which reflects the chain's real inflation model (fixed on Polkadot,
+ * curve-based on Kusama). Falls back to the last completed era's realized
+ * payout when the runtime API is unavailable.
+ */
+async function getStakersEraReward(api: ApiPromise, era: EraIndex): Promise<BigNumber | null> {
+  const predict = getIssuancePredictionCall(api);
+
+  if (predict) {
+    try {
+      const info = await predict();
+      const toStakers = readStakersMint(info.toJSON());
+      if (toStakers && toStakers.isGreaterThan(0)) return toStakers;
+    } catch (error) {
+      console.warn('inflation prediction API failed, falling back to era reward', error);
+    }
+  }
+
+  try {
+    const reward = await api.query.staking.erasValidatorReward(Math.max(era - 1, 0));
+    if (reward.isSome) return new BigNumber(reward.unwrap().toString());
+  } catch (error) {
+    console.warn(error);
+  }
+
+  return null;
+}
+
+type NetworkApyParams = {
+  api: ApiPromise;
+  timelineApi: ApiPromise;
+  chain: Chain;
+  era: EraIndex;
+  validators: ApyValidator[];
+};
+
+/**
+ * Network average staking APY shown on the dashboard.
+ *
+ * Computed from the chain's actual per-era staker reward, annualised over the
+ * era length (`reward × erasPerYear / totalStaked`) and reduced by the median
+ * validator commission. This is correct for both the legacy NPoS inflation
+ * curve (Kusama) and the fixed inflation model (Polkadot, ref. 1139) — unlike
+ * re-deriving the curve, which over-states Polkadot APY by ~2.7×.
+ */
+export const getNetworkApy = async (params: NetworkApyParams): Promise<string | null> => {
+  const { api, timelineApi, chain, era, validators } = params;
+
+  const stakersEraReward = await getStakersEraReward(api, era);
+  if (!stakersEraReward) return null;
+
+  const totalStaked = new BigNumber((await api.query.staking.erasTotalStake(era)).toString());
+  if (totalStaked.isZero()) return null;
+
+  const erasPerYear = MILLISECONDS_PER_YEAR / getEraDurationMs(api, timelineApi, chain);
+
+  const grossApr = stakersEraReward.multipliedBy(erasPerYear).div(totalStaked);
   const median = getMedianCommission(validators);
 
-  return (avgRewardPercent * (1 - median / 100) * 100).toFixed(2);
+  return grossApr
+    .multipliedBy(1 - median / 100)
+    .multipliedBy(100)
+    .toFixed(2);
 };
