@@ -6,7 +6,7 @@ import { nonNullable } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { AccountExplorers, WalletIcon } from '@/shared/ui-entities';
 import { useOperationDescription } from '@/domains/backend';
-import { type MultisigOperation, accounts } from '@/domains/network';
+import { type MultisigOperation, accounts, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
@@ -27,8 +27,7 @@ export const OperationDetails = ({ operation, children }: Props) => {
   const depositorSignatory = allAccounts.find(a => a.accountId === operation.depositor);
   const depositorWallet = depositorSignatory && wallets.find(w => w.id === depositorSignatory.walletId);
 
-  const events = operation.events;
-  const approvals = events.filter(e => e.status === 'approve');
+  const approvals = multisigOperationService.getApprovals(operation);
   const initEvent = approvals.find(e => e.accountId === operation.depositor);
   const date = new Date(operation.timestamp || initEvent?.timestamp || Date.now());
 

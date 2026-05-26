@@ -1,10 +1,21 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { debounce } from 'patronum';
+import { z } from 'zod';
 
 import { authFetch } from '@/shared/api/backend-fetch';
 import { persist } from '@/shared/api/storage';
 
-type UrlReachability = null | 'checking' | 'reachable' | 'unreachable';
+type UrlReachability = null | 'checking' | 'reachable' | 'unreachable' | 'wrongBackend';
+
+const healthResponseSchema = z.object({
+  status: z.string(),
+  info: z.object({
+    database: z.object({ status: z.string() }),
+    blockchain: z.object({ status: z.string() }),
+  }),
+});
+
+class WrongBackendError extends Error {}
 
 function normalizeUrl(url: string): string {
   return url.trim().replace(/#.*$/, '').replace(/\/+$/, '');
@@ -75,9 +86,38 @@ $backendUrl.on(urlCleared, () => null);
 $draftUrl.on(urlCleared, () => '');
 
 const checkUrlReachabilityFx = createEffect(async (url: string) => {
-  const result = await authFetch(`${url}/health`, { method: 'GET' });
-  if (!result.ok) throw new Error(`Status ${result.status}`);
-  JSON.parse(result.body);
+  let result: Awaited<ReturnType<typeof authFetch>>;
+  try {
+    result = await authFetch(`${url}/health`, { method: 'GET' });
+  } catch {
+    // Couldn't reach the server at all (DNS, timeout) — transient, retry may help.
+    throw new Error('Network unreachable');
+  }
+
+  // A non-2xx response means the server is down (proxyFetch reports refused connections as
+  // status 0), erroring, or behind a failing proxy — all transient. Only a successful response
+  // lets us judge whether we reached the *right* server, so these must never be "wrong backend".
+  if (!result.ok) {
+    throw new Error('Server unavailable');
+  }
+
+  let parsed: unknown = null;
+  try {
+    parsed = JSON.parse(result.body);
+  } catch {
+    // Non-JSON body on a 2xx — the server responded, but it isn't an Address Book.
+  }
+
+  const health = healthResponseSchema.safeParse(parsed);
+  if (!health.success) {
+    // 2xx with a foreign payload shape — pointed at the wrong server.
+    throw new WrongBackendError('Unexpected health response structure');
+  }
+
+  if (health.data.status !== 'ok') {
+    // It is an Address Book, but currently reporting unhealthy — transient.
+    throw new Error('Backend unhealthy');
+  }
 });
 
 const $urlReachable = createStore<UrlReachability>(null);
@@ -121,7 +161,7 @@ sample({
   clock: checkUrlReachabilityFx.fail,
   source: $draftUrl,
   filter: (draftUrl, { params: checkedUrl }) => normalizeUrl(draftUrl) === checkedUrl,
-  fn: (): UrlReachability => 'unreachable',
+  fn: (_, { error }): UrlReachability => (error instanceof WrongBackendError ? 'wrongBackend' : 'unreachable'),
   target: $urlReachable,
 });
 

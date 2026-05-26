@@ -19,3 +19,4 @@ export * from './createQueuedRequest';
 export * from './createAsyncTaskPool';
 export * from './download-multiple-files';
 export * from './createCache';
+export * from './dates';

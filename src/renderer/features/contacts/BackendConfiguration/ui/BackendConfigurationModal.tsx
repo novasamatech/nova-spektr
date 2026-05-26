@@ -69,7 +69,7 @@ export const BackendConfigurationModal = () => {
   const showAccountSelector = isValid && !urlUnchanged && !isSigning;
   const showConnectedAccount = urlUnchanged && authState && !isSigning;
 
-  const canConnect = isValid && selectedAccountId !== null && !isSigning;
+  const canConnect = isValid && selectedAccountId !== null && !isSigning && urlReachable !== 'wrongBackend';
 
   const title = hasBackend
     ? t('addressBook.backendConfiguration.editTitle')
@@ -133,7 +133,10 @@ export const BackendConfigurationModal = () => {
             <InputHint variant="error" active={showUrlError}>
               {t('addressBook.backendConfiguration.urlInvalidError')}
             </InputHint>
-            {urlReachable && <UrlReachabilityStatus status={urlReachable} />}
+            {/* Persistent live region so the async probe result is announced to screen readers */}
+            <div aria-live="polite" aria-atomic="true">
+              {urlReachable && <UrlReachabilityStatus status={urlReachable} />}
+            </div>
           </Field>
 
           {showConnectedAccount && (
@@ -209,9 +212,13 @@ const urlReachabilityConfig = {
     icon: <Icon name="warnCutout" size={14} className="text-icon-negative" />,
     textClass: 'text-icon-negative',
   },
+  wrongBackend: {
+    icon: <Icon name="warnCutout" size={14} className="text-icon-negative" />,
+    textClass: 'text-icon-negative',
+  },
 } as const;
 
-const UrlReachabilityStatus = ({ status }: { status: 'checking' | 'reachable' | 'unreachable' }) => {
+const UrlReachabilityStatus = ({ status }: { status: 'checking' | 'reachable' | 'unreachable' | 'wrongBackend' }) => {
   const { t } = useI18n();
   const { icon, textClass } = urlReachabilityConfig[status];
 

@@ -16,10 +16,14 @@ const $focusedDraftId = createStore<string | null>(null)
   .on(handler.triggered, (_, { draftId }) => draftId)
   .reset(focusCleared);
 
-function generateDraftDeepLink(draftId: string): string {
+function generateDraftRelativeLink(draftId: string): string {
   const searchParams = new URLSearchParams({ draftId });
 
-  return `${window.location.origin}/#${Paths.OPERATIONS}?${searchParams.toString()}`;
+  return `${Paths.OPERATIONS}?${searchParams.toString()}`;
+}
+
+function generateDraftDeepLink(draftId: string): string {
+  return `${window.location.origin}/#${generateDraftRelativeLink(draftId)}`;
 }
 
 export const draftDeepLinkModel = {
@@ -27,4 +31,5 @@ export const draftDeepLinkModel = {
   focusCleared,
   handler,
   generateDraftDeepLink,
+  generateDraftRelativeLink,
 };
