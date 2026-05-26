@@ -21,6 +21,7 @@ export const HiddenWalletsModal = () => {
   const inputQuery = useUnit(hiddenWalletsModel.$inputQuery);
   const query = useUnit(hiddenWalletsModel.$query);
   const selectionState = useUnit(hiddenWalletsModel.$selectionState);
+  const isRestoring = useUnit(hiddenWalletsModel.$isRestoring);
 
   const hiddenWallets = useUnit(hiddenWalletsModel.$hiddenWallets);
 
@@ -145,7 +146,11 @@ export const HiddenWalletsModal = () => {
         </section>
       </Modal.Content>
       <Modal.Footer align="end">
-        <Button disabled={selectionState.selectedCount === 0} onClick={handleRestore}>
+        <Button
+          disabled={selectionState.selectedCount === 0 || isRestoring}
+          isLoading={isRestoring}
+          onClick={handleRestore}
+        >
           {t('settings.hiddenWallets.restore')}
         </Button>
       </Modal.Footer>
