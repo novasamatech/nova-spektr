@@ -19,7 +19,7 @@ import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel, useApi } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
-import { backendContactsModel } from '@/features/contacts';
+import { AddressBookHealthOverlay, backendContactsModel } from '@/features/contacts';
 import { tryDecodeCallData } from '../lib/decode-call-data';
 import { useCanCreateDraft } from '../lib/useCanCreateDraft';
 import { useSubmitDraft } from '../lib/useSubmitDraft';
@@ -29,7 +29,6 @@ import { draftDeepLinkModel } from '../model/draft-deep-link';
 import '../model/drafts-model'; // side-effect: orchestration wiring
 import { submitDraftModel } from '../model/submit-draft-model';
 
-import { AddressBookHealthOverlay } from './AddressBookHealthOverlay';
 import { DraftRow } from './DraftRow';
 import { DraftSummary } from './DraftSummary';
 
