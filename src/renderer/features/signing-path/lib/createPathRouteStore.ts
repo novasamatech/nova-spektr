@@ -6,7 +6,7 @@ import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
-import { createSyntheticProxiedAccount } from './path-account-resolution';
+import { createSyntheticProxiedAccount, scopeProxiedAccount } from './path-account-resolution';
 
 const matchesNode = (account: AnyAccount, node: PathNode): boolean => {
   if (node.kind === 'proxied') {
@@ -24,24 +24,6 @@ const matchesNode = (account: AnyAccount, node: PathNode): boolean => {
   return account.accountId === node.accountId;
 };
 
-const scopeProxiedAccount = (account: AnyAccount, node: PathNode, nextNode: PathNode | undefined): AnyAccount => {
-  if (!node.proxyType || !nextNode || !accountUtils.isProxiedAccount(account)) {
-    return account;
-  }
-
-  const connections = account.connections.filter(
-    (connection) => connection.proxyAccountId === nextNode.accountId && connection.proxyType === node.proxyType,
-  );
-
-  return {
-    ...account,
-    connections:
-      connections.length > 0
-        ? connections
-        : [{ proxyAccountId: nextNode.accountId, proxyType: node.proxyType as never, delay: 0 }],
-  } as AnyAccount;
-};
-
 const resolveProxiedNodeAccount = (
   chainAccounts: AnyAccount[],
   node: PathNode,
@@ -50,7 +32,7 @@ const resolveProxiedNodeAccount = (
 ): AnyAccount | null => {
   const proxiedAccount = chainAccounts.find((a) => accountUtils.isProxiedAccount(a) && a.accountId === node.accountId);
   if (proxiedAccount) {
-    return scopeProxiedAccount(proxiedAccount, node, nextNode);
+    return scopeProxiedAccount(proxiedAccount, nextNode?.accountId, node.proxyType);
   }
 
   const flexAccount = chainAccounts.find(

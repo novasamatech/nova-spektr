@@ -2,7 +2,7 @@ import { type BackendContact } from '@/shared/core';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
-import { createSyntheticProxiedAccount } from '@/features/signing-path';
+import { createSyntheticProxiedAccount, scopeProxiedAccount } from '@/features/signing-path';
 
 export function resolveDraftProxyAccount(
   draft: Draft,
@@ -23,22 +23,7 @@ export function resolveDraftProxyAccount(
   );
 
   if (existingProxyAccount) {
-    if (!proxiedNode?.proxyType || !nextNode || !accountUtils.isProxiedAccount(existingProxyAccount)) {
-      return existingProxyAccount;
-    }
-
-    const connections = existingProxyAccount.connections.filter(
-      (connection) =>
-        connection.proxyAccountId === nextNode.accountId && connection.proxyType === proxiedNode.proxyType,
-    );
-
-    return {
-      ...existingProxyAccount,
-      connections:
-        connections.length > 0
-          ? connections
-          : [{ proxyAccountId: nextNode.accountId, proxyType: proxiedNode.proxyType as never, delay: 0 }],
-    } as AnyAccount;
+    return scopeProxiedAccount(existingProxyAccount, nextNode?.accountId, proxiedNode?.proxyType);
   }
 
   if (!proxiedNode?.proxyType || !nextNode) {

@@ -11,6 +11,7 @@ import {
 import { isEthereumAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
+import { accountUtils } from '@/entities/wallet';
 
 const SYNTHETIC_PROXY_WALLET_ID = -1;
 
@@ -54,4 +55,23 @@ export function createSyntheticProxiedAccount({
     entropyBlockNumber: 0,
     createdAt: baseAccount?.createdAt ?? 0,
   };
+}
+
+export function scopeProxiedAccount(
+  account: AnyAccount,
+  proxyAccountId: AccountId | undefined,
+  proxyType: string | undefined,
+): AnyAccount {
+  if (!proxyType || !proxyAccountId || !accountUtils.isProxiedAccount(account)) {
+    return account;
+  }
+
+  const connections = account.connections.filter(
+    (connection) => connection.proxyAccountId === proxyAccountId && connection.proxyType === proxyType,
+  );
+
+  return {
+    ...account,
+    connections: connections.length > 0 ? connections : [{ proxyAccountId, proxyType: proxyType as never, delay: 0 }],
+  } as AnyAccount;
 }

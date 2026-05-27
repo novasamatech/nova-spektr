@@ -2,7 +2,7 @@ export { pathModel } from './model/path-model';
 export { type PathNextOption, type PathSource, graphModel } from './model/graph-model';
 export { createSigningPathModel } from './lib/createSigningPathModel';
 export { createPathRouteStore } from './lib/createPathRouteStore';
-export { createSyntheticProxiedAccount } from './lib/path-account-resolution';
+export { createSyntheticProxiedAccount, scopeProxiedAccount } from './lib/path-account-resolution';
 export { pathToTxWrappers } from './lib/pathToTxWrappers';
 export {
   MAX_PATH_DEPTH,
