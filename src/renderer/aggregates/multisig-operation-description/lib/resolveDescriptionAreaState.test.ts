@@ -27,6 +27,10 @@ describe('resolveDescriptionAreaState', () => {
     expect(resolveDescriptionAreaState({ ...base, isHealthy: false, hasEverConnected: false })).toBe('hidden');
   });
 
+  it('ignores hasEverConnected while healthy (the field branch does not depend on it)', () => {
+    expect(resolveDescriptionAreaState({ ...base, hasEverConnected: false })).toBe('field');
+  });
+
   it('hides entirely for non-multisig wallets regardless of connection', () => {
     expect(resolveDescriptionAreaState({ ...base, isMultisig: false })).toBe('hidden');
     expect(resolveDescriptionAreaState({ ...base, isMultisig: false, isHealthy: false })).toBe('hidden');
