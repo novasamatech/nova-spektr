@@ -3,7 +3,7 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
 RUN corepack enable && \
-    corepack prepare pnpm@9
+    corepack prepare pnpm@10 --activate
 
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
