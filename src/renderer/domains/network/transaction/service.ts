@@ -400,6 +400,66 @@ function getInnerCallsFromCall(call: Call, proxyTarget?: AccountId, depth = 0): 
   return [call];
 }
 
+type CoreCallData = {
+  callData: HexString;
+  callHash: HexString;
+};
+
+const CORE_CALL_UNWRAP_LIMIT = 8;
+
+function createCallFromArg(api: ApiPromise, arg: unknown): Call | null {
+  if (!arg || typeof arg !== 'object' || !('toHex' in arg) || typeof arg.toHex !== 'function') {
+    return null;
+  }
+
+  try {
+    return api.registry.createType<Call>('Call', arg.toHex());
+  } catch {
+    return null;
+  }
+}
+
+function getInnerWrapperCall(api: ApiPromise, call: Call): Call | null {
+  if (call.section === 'proxy' && call.method === 'proxy') {
+    return createCallFromArg(api, call.args[2]);
+  }
+
+  if ((call.section === 'multisig' || call.section === 'utility') && call.method === 'asMulti') {
+    return createCallFromArg(api, call.args[3]);
+  }
+
+  if ((call.section === 'multisig' || call.section === 'utility') && call.method === 'asMultiThreshold1') {
+    return createCallFromArg(api, call.args[1]);
+  }
+
+  return null;
+}
+
+function getCoreCallData(
+  api: ApiPromise | null | undefined,
+  callData: HexString | null | undefined,
+): CoreCallData | null {
+  if (!api || !callData) return null;
+
+  try {
+    let call = api.registry.createType<Call>('Call', callData);
+
+    for (let depth = 0; depth < CORE_CALL_UNWRAP_LIMIT; depth++) {
+      const innerCall = getInnerWrapperCall(api, call);
+      if (!innerCall) break;
+
+      call = innerCall;
+    }
+
+    return {
+      callData: call.toHex(),
+      callHash: call.hash.toHex(),
+    };
+  } catch {
+    return null;
+  }
+}
+
 const decodeDispatchError = (error: DispatchError | SpRuntimeDispatchError, registry: Registry): string => {
   let errorInfo = error.toString();
 
@@ -545,6 +605,7 @@ export const transactionService = {
   getTransactionWeight,
 
   getInnerCallsFromCall,
+  getCoreCallData,
 
   splitExtrinsic,
   submitExtrinsic,

@@ -2464,6 +2464,8 @@
       "account": "Account",
       "amount": "Amount",
       "callData": "Call Data",
+      "coreCallData": "Core Call Data",
+      "coreCallHash": "Core Call Hash",
       "coreTx": "Underlying transaction",
       "coreTxSame": "Underlying transaction",
       "callHash": "Call Hash",

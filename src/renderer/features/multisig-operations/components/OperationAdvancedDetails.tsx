@@ -9,7 +9,7 @@ import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Copy, Modal, Skeleton, Tooltip, useNotification } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, transactionService as networkTransactionService } from '@/domains/network';
 import { networkModel, useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { transactionService } from '@/entities/transaction';
@@ -35,21 +35,25 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
   const explorers = chain?.explorers;
 
   const { indexCreated, blockCreated, deposit, callHash, callData } = operation;
+  const displayCall = useMemo(
+    () => networkTransactionService.getCoreCallData(api, callData) ?? { callData, callHash },
+    [api, callData, callHash],
+  );
 
   const jsonArgs = useMemo(() => {
-    if (!callData || !api || !chain) {
+    if (!displayCall.callData || !api || !chain) {
       return null;
     }
 
     try {
-      const call = transactionService.createCallFromCallData(callData, api);
+      const call = transactionService.createCallFromCallData(displayCall.callData, api);
       if (!call) return null;
 
       return transactionService.formatCall(call, chain);
     } catch {
       return null;
     }
-  }, [api, chain, callData]);
+  }, [api, chain, displayCall.callData]);
 
   const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
@@ -97,23 +101,23 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
       </div>
 
       <div className="flex flex-col gap-y-2">
-        {callHash && (
-          <DetailRow label={t('operation.details.callHash')} className="text-text-secondary">
-            <Copy value={callHash}>
+        {displayCall.callHash && (
+          <DetailRow label={t('operation.details.coreCallHash')} className="text-text-secondary">
+            <Copy value={displayCall.callHash}>
               <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
-                <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
+                <FootnoteText className="text-inherit">{truncate(displayCall.callHash, 7, 8)}</FootnoteText>
                 <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
               </button>
             </Copy>
           </DetailRow>
         )}
 
-        {callData && (
-          <DetailRow label={t('operation.details.callData')} className="text-text-secondary">
+        {displayCall.callData && (
+          <DetailRow label={t('operation.details.coreCallData')} className="text-text-secondary">
             <div className="flex items-center gap-1">
-              <Copy value={callData}>
+              <Copy value={displayCall.callData}>
                 <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
-                  <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
+                  <FootnoteText className="text-inherit">{truncate(displayCall.callData, 7, 8)}</FootnoteText>
                   <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
                 </button>
               </Copy>
