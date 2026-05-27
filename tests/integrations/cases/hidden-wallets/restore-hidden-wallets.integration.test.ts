@@ -1,4 +1,4 @@
-import { allSettled } from 'effector';
+import { allSettled, createEffect, fork } from 'effector';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { type Wallet, WalletType } from '@/shared/core';
@@ -40,6 +40,33 @@ describe('Hidden wallets — restore from settings', () => {
     expect(env.getState(walletModel.$hiddenWallets)).toHaveLength(0);
     expect(env.getState(walletModel.$wallets)).toHaveLength(1);
     expect(env.getState(hiddenWalletsModel.$selectedWallets).size).toBe(0);
+  });
+
+  it('exposes restore pending state while wallets are being restored', async () => {
+    const wallet = makeHiddenWallet(1);
+    let resolveRestore!: () => void;
+    const restoreWalletsFx = createEffect(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveRestore = resolve;
+        }),
+    );
+    const scope = fork({
+      handlers: [[walletModel.restoreWallets, restoreWalletsFx]],
+    });
+
+    await allSettled(walletModel.__test.$rawWallets, { scope, params: [wallet] });
+    await allSettled(accounts.__test.$list, { scope, params: [] });
+    await allSettled(hiddenWalletsModel.toggleWalletSelection, { scope, params: wallet });
+
+    const restoring = allSettled(hiddenWalletsModel.restoreWallets, { scope });
+
+    expect(scope.getState(hiddenWalletsModel.$isRestoring)).toBe(true);
+
+    resolveRestore();
+    await restoring;
+
+    expect(scope.getState(hiddenWalletsModel.$isRestoring)).toBe(false);
   });
 
   it('restores a group of wallets and leaves unselected ones hidden', async () => {

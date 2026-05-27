@@ -86,16 +86,25 @@ export class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  async updateAll(items: (UpdateSpec<T> & { id: K })[]): Promise<number[] | undefined> {
+  async updateAll(items: (UpdateSpec<T> & { id: K })[]): Promise<K[] | undefined> {
     if (items.length === 0) {
       return undefined;
     }
-    try {
-      const updates = items.map((item) => {
-        return this.dexieTable.update(item.id, item);
-      });
 
-      return Promise.all(updates);
+    const updateItem = (item: UpdateSpec<T> & { id: K }) => this.dexieTable.update(item.id, item);
+
+    try {
+      try {
+        await this.dexieTable.bulkUpdate(
+          items.map(({ id, ...changes }) => ({ key: id, changes: changes as UpdateSpec<T> })),
+        );
+      } catch {
+        await this.dexieTable.db.transaction('rw', this.dexieTable, () => {
+          return Promise.all(items.map(updateItem));
+        });
+      }
+
+      return items.map((item) => item.id);
     } catch (error) {
       console.log('Error updating object - ', error);
 

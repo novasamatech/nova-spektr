@@ -6,7 +6,7 @@ import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
+import { BodyText, Icon, Loader, SmallTitleText } from '@/shared/ui';
 import { Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
 import { useWalletName } from '@/domains/network';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -87,7 +87,10 @@ const WalletSelectTrigger = memo(
 const WalletSelectDropdown = memo(() => {
   const { t } = useI18n();
 
-  const filterQuery = useUnit(walletList.$query);
+  const { filterQuery, isDropdownLoading } = useUnit({
+    filterQuery: walletList.$query,
+    isDropdownLoading: walletSelectUI.$isDropdownLoading,
+  });
 
   const selectWallet = useCallback((wallet: Wallet) => {
     walletSelect.select(wallet.id);
@@ -112,19 +115,27 @@ const WalletSelectDropdown = memo(() => {
       </div>
 
       <ScrollArea>
-        <div className="flex flex-col gap-1 divide-y divide-divider p-1 empty:p-0">
-          <Slot
-            id={walletGroupSlot}
-            props={{
-              query: filterQuery,
-              onSelect: selectWallet,
-            }}
-          />
-        </div>
-        <div className="hidden h-full flex-col items-center justify-center gap-2 p-4 [*:empty~&]:flex">
-          <Graphics name="emptyList" size={64} />
-          <BodyText className="text-center text-text-tertiary">{t('wallets.emptyList')}</BodyText>
-        </div>
+        {isDropdownLoading ? (
+          <div className="flex min-h-40 items-center justify-center p-4">
+            <Loader color="primary" size={24} />
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-1 divide-y divide-divider p-1 empty:p-0">
+              <Slot
+                id={walletGroupSlot}
+                props={{
+                  query: filterQuery,
+                  onSelect: selectWallet,
+                }}
+              />
+            </div>
+            <div className="hidden h-full flex-col items-center justify-center gap-2 p-4 [*:empty~&]:flex">
+              <Graphics name="emptyList" size={64} />
+              <BodyText className="text-center text-text-tertiary">{t('wallets.emptyList')}</BodyText>
+            </div>
+          </>
+        )}
       </ScrollArea>
     </section>
   );

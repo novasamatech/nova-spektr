@@ -8,31 +8,37 @@ import { hideUnnamedWalletsModel } from '../model/model';
 export const HideUnnamedWalletsButton = () => {
   const { t } = useI18n();
   const { toast } = useNotification();
-  const mode = useUnit(hideUnnamedWalletsModel.$mode);
+  const { mode, displayMode, isUpdating } = useUnit({
+    mode: hideUnnamedWalletsModel.$mode,
+    displayMode: hideUnnamedWalletsModel.$displayMode,
+    isUpdating: hideUnnamedWalletsModel.$isUpdating,
+  });
 
   if (mode === 'none') return null;
 
   const isHideMode = mode === 'hide';
+  const displayHideMode = displayMode === 'hide';
 
   const handleClick = async () => {
-    if (isHideMode) {
-      const wallets = await hideUnnamedWalletsModel.hideAll();
-      if (wallets.length === 0) return;
-      toast.success(t('features.hide-unnamed-wallets.hiddenToast'));
-    } else {
-      const wallets = await hideUnnamedWalletsModel.unhideAll();
-      if (wallets.length === 0) return;
-      toast.success(t('features.hide-unnamed-wallets.restoredToast'));
-    }
+    if (isUpdating) return;
+
+    const wallets = isHideMode ? await hideUnnamedWalletsModel.hideAll() : await hideUnnamedWalletsModel.unhideAll();
+    if (wallets.length === 0) return;
+
+    toast.success(
+      isHideMode ? t('features.hide-unnamed-wallets.hiddenToast') : t('features.hide-unnamed-wallets.restoredToast'),
+    );
   };
 
   return (
     <Tooltip>
       <Tooltip.Trigger>
-        <IconButton name={isHideMode ? 'eye' : 'eyeSlashed'} onClick={handleClick} />
+        <IconButton name={displayHideMode ? 'eye' : 'eyeSlashed'} disabled={isUpdating} onClick={handleClick} />
       </Tooltip.Trigger>
       <Tooltip.Content>
-        {isHideMode ? t('features.hide-unnamed-wallets.hideTooltip') : t('features.hide-unnamed-wallets.unhideTooltip')}
+        {displayHideMode
+          ? t('features.hide-unnamed-wallets.hideTooltip')
+          : t('features.hide-unnamed-wallets.unhideTooltip')}
       </Tooltip.Content>
     </Tooltip>
   );
