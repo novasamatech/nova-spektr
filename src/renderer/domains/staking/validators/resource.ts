@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createStore } from 'effector';
 
-import { type ChainId, type EraIndex } from '@/shared/core';
+import { type Chain, type ChainId, type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createQueryResource } from '@/shared/query';
 import { type ValidatorMap } from '../types';
 
-import { getAvgApy, validatorsService } from './service';
+import { getNetworkApy, validatorsService } from './service';
 
 export type ValidatorsResourceParams = {
   chainId: ChainId;
@@ -67,6 +67,9 @@ export { cacheKey as nominatorsCacheKey };
 
 export type ApyResourceParams = {
   api: ApiPromise;
+  // Relay-chain api, used to derive the era duration (Asset Hub has no Babe pallet).
+  timelineApi: ApiPromise;
+  chain: Chain;
   chainId: ChainId;
   era: EraIndex;
 };
@@ -77,14 +80,11 @@ export const apyResource = createQueryResource<ApyResourceParams>({
   key: ({ chainId, era }) => [chainId, String(era)],
 })
   .name('networkApy')
-  .request<string | null>(async ({ api, era }) => {
+  .request<string | null>(async ({ api, timelineApi, chain, era }) => {
     const validatorMap = await validatorsService.getValidatorsWithInfo(api, era);
-    const apyValidators = Object.values(validatorMap).filter(
-      v => v.totalStake !== undefined && v.commission !== undefined,
-    );
-    if (apyValidators.length === 0) return null;
-    const result = await getAvgApy(api, apyValidators);
-    return result || null;
+    const validators = Object.values(validatorMap).filter(v => v.commission !== undefined);
+
+    return getNetworkApy({ api, timelineApi, chain, era, validators });
   })
   .cache({
     store: $apyCache,

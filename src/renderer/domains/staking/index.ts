@@ -11,7 +11,7 @@ export { stakingService } from './staking/service';
 export { useStaking } from './staking/hooks';
 
 export { nominators, validators } from './validators/store';
-export { getAvgApy, validatorsService } from './validators/service';
+export { validatorsService } from './validators/service';
 export { useNetworkApy, useNominators, useValidators } from './validators/hooks';
 
 export { rewards } from './rewards/store';

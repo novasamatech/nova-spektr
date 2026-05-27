@@ -1,6 +1,6 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useUnit } from 'effector-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { groupByDate } from '@/shared/lib/utils';
@@ -73,12 +73,25 @@ export const Operations = () => {
   }, [sortedOps, formatDate]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const listContainerRef = useRef<HTMLDivElement>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
+
+  // Keep scrollMargin in sync with the container's offset from the scroll root.
+  // DraftsSection above the list has variable height; without this the virtualizer
+  // computes scroll offsets relative to the wrong origin and items disappear on scroll.
+  useLayoutEffect(() => {
+    const el = listContainerRef.current;
+    if (!el) return;
+    const newMargin = el.offsetTop;
+    setScrollMargin(prev => (prev === newMargin ? prev : newMargin));
+  });
 
   const virtualizer = useVirtualizer({
     count: flatItems.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: index => (flatItems[index]?.type === 'header' ? 44 : 74),
     overscan: 15,
+    scrollMargin,
     getItemKey: index => {
       const item = flatItems[index];
       if (!item) return `unknown-${index}`;
@@ -130,6 +143,7 @@ export const Operations = () => {
 
           {deferredOps.length > 0 && (
             <div
+              ref={listContainerRef}
               style={{
                 height: `${virtualizer.getTotalSize()}px`,
                 width: '100%',
@@ -150,7 +164,7 @@ export const Operations = () => {
                       top: 0,
                       left: 0,
                       width: '100%',
-                      transform: `translateY(${virtualRow.start}px)`,
+                      transform: `translateY(${virtualRow.start - scrollMargin}px)`,
                     }}
                   >
                     {isHeaderItem(item) ? (

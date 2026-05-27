@@ -93,6 +93,10 @@ export const useStakingOverview = (accountIds: string[]): StakingOverviewData =>
   const polkadotApi = useApi(POLKADOT_AH_CHAIN_ID);
   const kusamaApi = useApi(KUSAMA_AH_CHAIN_ID);
 
+  // Relay-chain apis — needed to derive the era duration for APY (Asset Hub has no Babe pallet).
+  const polkadotRelayApi = useApi(chains[POLKADOT_AH_CHAIN_ID]?.parentId ?? POLKADOT_AH_CHAIN_ID);
+  const kusamaRelayApi = useApi(chains[KUSAMA_AH_CHAIN_ID]?.parentId ?? KUSAMA_AH_CHAIN_ID);
+
   const { data: polkadotEra } = useActiveEra({ chainId: POLKADOT_AH_CHAIN_ID, api: polkadotApi });
   const { data: kusamaEra } = useActiveEra({ chainId: KUSAMA_AH_CHAIN_ID, api: kusamaApi });
 
@@ -120,11 +124,15 @@ export const useStakingOverview = (accountIds: string[]): StakingOverviewData =>
 
   const { data: polkadotApy, pending: polkadotApyPending } = useNetworkApy({
     api: polkadotApi,
+    timelineApi: polkadotRelayApi ?? polkadotApi,
+    chain: chains[POLKADOT_AH_CHAIN_ID] ?? null,
     era: polkadotEra,
     chainId: POLKADOT_AH_CHAIN_ID,
   });
   const { data: kusamaApy, pending: kusamaApyPending } = useNetworkApy({
     api: kusamaApi,
+    timelineApi: kusamaRelayApi ?? kusamaApi,
+    chain: chains[KUSAMA_AH_CHAIN_ID] ?? null,
     era: kusamaEra,
     chainId: KUSAMA_AH_CHAIN_ID,
   });
