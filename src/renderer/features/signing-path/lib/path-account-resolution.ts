@@ -13,7 +13,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
-const SYNTHETIC_PROXY_WALLET_ID = -1;
+const SYNTHETIC_PROXY_WALLET_ID = -2;
 
 type CreateSyntheticProxiedAccountParams = {
   accountId: AccountId;

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { type BackendContact, AccountType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type Draft, type PathNode } from '@/domains/backend';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, isContactMultisigAccount } from '@/domains/network';
 
 import { resolveDraftProxyAccount } from './draft-account-resolution';
 
@@ -80,6 +80,7 @@ describe('resolveDraftProxyAccount', () => {
       accountType: AccountType.PROXIED,
       connections: [{ proxyAccountId: acc(2), proxyType: 'Governance', delay: 0 }],
     });
+    expect(account && isContactMultisigAccount(account)).toBe(false);
   });
 
   it('falls back to the backend contact name when draft proxy contact is missing', () => {
