@@ -19,6 +19,7 @@ export const $defaultFeatures = createStore({
   codex: false,
   importDB: isDev(),
   operations: true,
+  operationsQueueWidget: false,
   basket: true,
   contacts: true,
   addressBookStatus: true,
