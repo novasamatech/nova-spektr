@@ -382,5 +382,29 @@ describe('Submit Draft — signing path drives the route', () => {
       expect(signatory).not.toBeNull();
       expect(signatory!.accountId).toBe(SIGNER_ID);
     });
+
+    it('keeps a proxied path leaf in $signatories when the account graph cannot rediscover it', async () => {
+      // Proxied draft routes can be valid from the saved signingPath even when
+      // the generic graph has no registered proxied-wallet children handler in
+      // this scope. The submit modal must still see the saved path leaf as a
+      // signatory instead of showing the empty-account state.
+      env = await buildEnv([proxiedAccount, signerAccount]);
+
+      const draft = makeDraft(
+        [
+          { kind: 'proxied', accountId: PROXIED_ID },
+          { kind: 'signer', accountId: SIGNER_ID },
+        ],
+        { proxyAccountId: PROXIED_ID, initiatorAccountId: SIGNER_ID },
+      );
+
+      await allSettled(submitDraftModel.flowStarted, {
+        scope: env.scope,
+        params: { draft, initiator: proxiedAccount, chain: polkadotChain },
+      });
+
+      expect(env.getState(submitDraftModel.$signatories).map((s) => s.accountId)[0]).toBe(SIGNER_ID);
+      expect(env.getState(submitDraftModel.$signatoryStore)?.accountId).toBe(SIGNER_ID);
+    });
   });
 });

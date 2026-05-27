@@ -16,11 +16,13 @@ import {
   useDrafts,
 } from '@/domains/backend';
 import { accounts, useWalletsNames } from '@/domains/network';
+import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { backendContactsModel } from '@/features/contacts';
 import { tryDecodeCallData } from '../lib/decode-call-data';
+import { resolveDraftProxyAccount } from '../lib/draft-account-resolution';
 import { useCanCreateDraft } from '../lib/useCanCreateDraft';
 import { useSubmitDraft } from '../lib/useSubmitDraft';
 import { filterVisibleDrafts } from '../lib/visible-drafts';
@@ -100,6 +102,7 @@ export const DraftsSection = () => {
   const allWallets = useUnit(walletModel.$wallets);
   const multisigWallets = useMemo(() => allWallets.filter(walletUtils.isAnyMultisig), [allWallets]);
   const chains = useUnit(networkModel.$chains);
+  const backendContacts = useUnit(contactModel.$backendContacts);
 
   const resolvedWallets = useWalletsNames(multisigWallets);
 
@@ -227,9 +230,7 @@ export const DraftsSection = () => {
                             allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null
                           }
                           proxyAccount={
-                            draft.proxyAccountId
-                              ? (allAccounts.find((a) => a.accountId === draft.proxyAccountId) ?? null)
-                              : null
+                            draft.proxyAccountId ? resolveDraftProxyAccount(draft, allAccounts, backendContacts) : null
                           }
                           rowRef={
                             focusedDraftId === draft.id
