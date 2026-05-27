@@ -3,7 +3,7 @@ import { produce } from 'immer';
 import { interval, throttle } from 'patronum';
 
 import { type Done, persist } from '@/shared/api/storage';
-import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount, AccountType } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type DateRange } from '@/shared/ui-kit';
@@ -148,14 +148,17 @@ const $operationsWithAccounts = combine(
   {
     operations: multisigOperation.$list,
     multisigAccounts: $presetScopedMultisigAccounts,
+    allAccounts: accounts.$list,
     accountsPopulated: accounts.$populated,
   },
-  ({ operations, multisigAccounts, accountsPopulated }): OperationWithAccount[] => {
+  ({ operations, multisigAccounts, allAccounts, accountsPopulated }): OperationWithAccount[] => {
     if (!accountsPopulated) return [];
 
     // Build lookup maps for O(1) account resolution instead of O(m) linear scan per operation
     const byAccountId = new Map<string, (MultisigAccount | FlexibleMultisigAccount)[]>();
     const byMultisigAccountId = new Map<string, (MultisigAccount | FlexibleMultisigAccount)[]>();
+    const regularMultisigById = new Map<AccountId, MultisigAccount>();
+
     for (const acc of multisigAccounts) {
       if (accountUtils.isFlexibleMultisigAccount(acc)) {
         const key = `${acc.accountId}:${acc.multisigAccountId}`;
@@ -167,9 +170,29 @@ const $operationsWithAccounts = combine(
         mList.push(acc);
         byMultisigAccountId.set(acc.multisigAccountId, mList);
       } else if (accountUtils.isMultisigAccount(acc)) {
+        regularMultisigById.set(acc.accountId, acc);
+
         const list = byMultisigAccountId.get(acc.accountId) ?? [];
         list.push(acc);
         byMultisigAccountId.set(acc.accountId, list);
+      }
+    }
+
+    const byProxiedMultisigAccountId = new Map<string, FlexibleMultisigAccount>();
+    for (const proxied of allAccounts.filter(accountUtils.isProxiedAccount)) {
+      for (const connection of proxied.connections) {
+        const multisig = regularMultisigById.get(connection.proxyAccountId);
+        if (!multisig) continue;
+
+        const key = `${proxied.accountId}:${multisig.accountId}`;
+        byProxiedMultisigAccountId.set(key, {
+          ...proxied,
+          accountType: AccountType.FLEX_MULTISIG,
+          multisigAccountId: multisig.accountId,
+          signatories: multisig.signatories,
+          threshold: multisig.threshold,
+          proxyType: connection.proxyType,
+        });
       }
     }
 
@@ -178,6 +201,9 @@ const $operationsWithAccounts = combine(
         const key = `${op.proxiedAccountId}:${op.multisigAccountId}`;
         const flex = byAccountId.get(key)?.find(a => accountUtils.isFlexibleMultisigAccount(a));
         if (flex) return flex;
+
+        const proxiedMultisig = byProxiedMultisigAccountId.get(key);
+        if (proxiedMultisig) return proxiedMultisig;
       }
       const candidates = byMultisigAccountId.get(op.multisigAccountId);
       return candidates?.find(a => accountUtils.isMultisigAccount(a)) ?? candidates?.[0];

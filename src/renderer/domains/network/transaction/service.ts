@@ -6,7 +6,7 @@ import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 
 import { type HexString, type Transaction as DeprecatedTransaction } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { type AnyAccount } from '../account/types';
@@ -403,6 +403,7 @@ function getInnerCallsFromCall(call: Call, proxyTarget?: AccountId, depth = 0): 
 type CoreCallData = {
   callData: HexString;
   callHash: HexString;
+  proxiedAccountId?: AccountId;
 };
 
 const CORE_CALL_UNWRAP_LIMIT = 8;
@@ -435,6 +436,13 @@ function getInnerWrapperCall(api: ApiPromise, call: Call): Call | null {
   return null;
 }
 
+function getProxiedAccountIdFromCall(call: Call): AccountId | undefined {
+  if (call.section !== 'proxy' || call.method !== 'proxy') return undefined;
+
+  const real = call.args[0]?.toString();
+  return real ? toAccountId(real) : undefined;
+}
+
 function getCoreCallData(
   api: ApiPromise | null | undefined,
   callData: HexString | null | undefined,
@@ -443,8 +451,11 @@ function getCoreCallData(
 
   try {
     let call = api.registry.createType<Call>('Call', callData);
+    let proxiedAccountId: AccountId | undefined;
 
     for (let depth = 0; depth < CORE_CALL_UNWRAP_LIMIT; depth++) {
+      proxiedAccountId ??= getProxiedAccountIdFromCall(call);
+
       const innerCall = getInnerWrapperCall(api, call);
       if (!innerCall) break;
 
@@ -454,6 +465,7 @@ function getCoreCallData(
     return {
       callData: call.toHex(),
       callHash: call.hash.toHex(),
+      ...(proxiedAccountId ? { proxiedAccountId } : {}),
     };
   } catch {
     return null;

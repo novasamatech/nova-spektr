@@ -311,6 +311,7 @@ describe('Transaction service', () => {
       const api = await createMockApi();
       const transferCallData =
         '0x04030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8' as HexString;
+      const proxiedAccountId = '0xe4485f31d7848a3f4540dac93d8c056e7cb18b534fbab0c8367a81e1b85e464a';
       const wrappedCallData =
         '0x1e0000e4485f31d7848a3f4540dac93d8c056e7cb18b534fbab0c8367a81e1b85e464a001f0102000468161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a2420004030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e802e8030000' as HexString;
 
@@ -318,6 +319,7 @@ describe('Transaction service', () => {
 
       expect(result?.callData).toEqual(transferCallData);
       expect(result?.callHash).toEqual(api.registry.createType('Call', transferCallData).hash.toHex());
+      expect(result?.proxiedAccountId).toEqual(proxiedAccountId);
     });
 
     it('keeps plain business calls unchanged', async () => {

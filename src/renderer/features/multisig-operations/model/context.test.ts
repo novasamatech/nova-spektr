@@ -6,7 +6,7 @@ vi.mock('../components/Operation', () => ({
   operationTitleTransformer: { createTransformer: () => {} },
 }));
 
-import { type MultisigAccount } from '@/shared/core';
+import { type MultisigAccount, AccountType, ProxyVariant } from '@/shared/core';
 import { createAccountId, polkadotChainId } from '@/shared/mocks';
 import { accounts, multisigOperation } from '@/domains/network';
 
@@ -15,6 +15,7 @@ import { deepLinkModel } from './deep-link';
 
 describe('operations context model', () => {
   const mockAccountId = createAccountId(1);
+  const mockProxiedAccountId = createAccountId(2);
 
   const mockMultisigAccount = {
     id: '1',
@@ -49,6 +50,11 @@ describe('operations context model', () => {
       timestamp: Date.now(),
     };
   };
+
+  const createMockProxiedOperation = (callHash = '0xproxy') => ({
+    ...createMockOperation('pending', callHash),
+    proxiedAccountId: mockProxiedAccountId,
+  });
 
   describe('Tab switching based on focused operation', () => {
     it('should switch to pending tab when focused operation is pending', async () => {
@@ -308,6 +314,47 @@ describe('operations context model', () => {
 
       const pendingCount = scope.getState(operationsContextModel.$pendingOperationsCount);
       expect(pendingCount).toBe(1); // Only pendingOp2, since pendingOp1 is hidden
+    });
+
+    it('should resolve proxied regular multisig operations to the proxied source account', async () => {
+      const proxiedOperation = createMockProxiedOperation();
+      const proxiedAccount = {
+        id: 'proxied-1',
+        walletId: 2,
+        name: 'Pure proxied',
+        accountId: mockProxiedAccountId,
+        accountType: AccountType.PROXIED,
+        type: 'chain',
+        chainId: polkadotChainId,
+        cryptoType: 0,
+        signingType: 'signing',
+        createdAt: 0,
+        connections: [{ proxyAccountId: mockAccountId, proxyType: 'Any', delay: 0 }],
+        proxyVariant: ProxyVariant.PURE,
+        deposit: '0',
+        extrinsicIndex: 1,
+        entropyBlockNumber: 1,
+      };
+
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [proxiedOperation])
+          .set(operationsContextModel.$tab, 'pending')
+          .set(accounts.__test.$populated, true)
+          .set(accounts.__test.$list, [mockMultisigAccount, proxiedAccount]),
+      });
+
+      const filtered = scope.getState(operationsContextModel.$filteredOperations);
+      const account = filtered[0]?.account;
+
+      expect(filtered).toHaveLength(1);
+      expect(account?.accountType).toBe(AccountType.FLEX_MULTISIG);
+      if (account?.accountType !== AccountType.FLEX_MULTISIG) {
+        throw new Error('Expected a flexible multisig display account');
+      }
+      expect(account.accountId).toBe(mockProxiedAccountId);
+      expect(account.multisigAccountId).toBe(mockAccountId);
+      expect(account.proxyType).toBe('Any');
     });
   });
 });
