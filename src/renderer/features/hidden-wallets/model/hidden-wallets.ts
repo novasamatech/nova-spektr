@@ -107,6 +107,7 @@ export const hiddenWalletsModel = {
   $query, // Debounced query for expensive operations
   $selectedWallets,
   $selectionState,
+  $isRestoring: restoreWalletsFx.pending,
 
   // Events
   changeQuery,
