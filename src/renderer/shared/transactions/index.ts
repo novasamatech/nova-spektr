@@ -1,3 +1,4 @@
+export { activeOperationRoute } from './activeOperationRoute';
 export { createFeeCalculator } from './createFeeCalculator';
 export { createMultisigDeposit } from './createMultisigDeposit';
 export { createTxStore } from './createTxStore';

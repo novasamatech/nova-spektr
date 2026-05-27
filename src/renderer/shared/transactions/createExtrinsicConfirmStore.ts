@@ -7,6 +7,8 @@ import { nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount, type AnyTransaction } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
+import { activeOperationRoute } from './activeOperationRoute';
+
 export type ExtrinsicConfirmInfo = {
   api: ApiPromise;
   initiator: AnyAccount;
@@ -37,6 +39,15 @@ export const createExtrinsicConfirmStore = <Input extends ExtrinsicConfirmInfo>(
   const resetConfirm = createEvent();
 
   const $store = restore<Input[]>(init, []);
+
+  // Publish the active operation's resolved route so cross-cutting consumers
+  // (e.g. the multisig-operation description aggregate) can detect a multisig in
+  // the signing path — including one reached via a proxy — without prop-drilling.
+  sample({
+    clock: $store,
+    fn: (store) => store.flatMap((item) => item.route),
+    target: activeOperationRoute.activeRouteChanged,
+  });
 
   const $confirms = combine($store, wallets, (store, wallets): ConfirmItem<Input>[] => {
     if (!wallets.length) return [];
