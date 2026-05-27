@@ -10,6 +10,7 @@ import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
 import { CallDataConfirmSection } from '@/features/operations/OperationsConfirm/common/CallDataConfirmSection';
+import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
 import { MultiTransferPreview } from '@/widgets/multi-transfer-preview';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -77,6 +78,10 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             )}
           </TransactionDetails>
         </Box>
+
+        <div className="px-5 pb-4">
+          <MultisigOperationDescriptionField />
+        </div>
       </ScrollArea>
 
       <Modal.Footer align="between">

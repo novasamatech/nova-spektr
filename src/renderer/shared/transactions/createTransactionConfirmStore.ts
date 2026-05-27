@@ -7,6 +7,8 @@ import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { operationsUtils } from '@/entities/operations';
 import { walletUtils } from '@/entities/wallet';
 
+import { activeOperationRoute } from './activeOperationRoute';
+
 export type TxConfirmInfo = {
   id?: number;
   initiator: AnyAccount;
@@ -45,6 +47,15 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
   const resetConfirm = createEvent();
 
   const $store = restore<Input[]>(init, []);
+
+  // Publish the active operation's resolved route so cross-cutting consumers
+  // (e.g. the multisig-operation description aggregate) can detect a multisig in
+  // the signing path — including one reached via a proxy — without prop-drilling.
+  sample({
+    clock: $store,
+    fn: (store) => store.flatMap((item) => item.route),
+    target: activeOperationRoute.activeRouteChanged,
+  });
 
   const $confirms = combine($store, $wallets, (store, wallets): ConfirmItem<Input>[] => {
     if (!wallets.length) return [];

@@ -11,6 +11,7 @@ import { SignButton } from '@/entities/operations';
 import { type VestingScheduleRaw } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { CallDataConfirmSection } from '@/features/operations/OperationsConfirm/common/CallDataConfirmSection';
+import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { VestingSchedulePreview } from '@/widgets/vesting-schedule-preview';
@@ -93,6 +94,10 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             )}
           </TransactionDetails>
         </Box>
+
+        <div className="px-5 pb-4">
+          <MultisigOperationDescriptionField />
+        </div>
       </ScrollArea>
 
       <Modal.Footer align="between">
