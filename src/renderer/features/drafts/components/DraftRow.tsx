@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type ChainId, CryptoType } from '@/shared/core';
+import { type ChainId, type Wallet, CryptoType, WalletType } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, isEthereumAccountId, toAccountId } from '@/shared/lib/utils';
@@ -144,7 +144,22 @@ export const DraftRow = ({
   const displayAccountIdRaw = draft.proxyAccountId ?? draft.multisigAccountId;
   const displayAccountId = displayAccountIdRaw ? toAccountId(displayAccountIdRaw) : undefined;
   const displayAccount = draft.proxyAccountId ? proxyAccount : baseMultisigAccount;
-  const displayWallet = displayAccount ? wallets.find((w) => w.id === displayAccount.walletId) : undefined;
+  const displayWallet = useMemo<Wallet | undefined>(() => {
+    if (!displayAccount) return undefined;
+
+    const wallet = wallets.find((w) => w.id === displayAccount.walletId);
+
+    if (draft.proxyAccountId && accountUtils.isProxiedAccount(displayAccount) && wallet?.type !== WalletType.PROXIED) {
+      return {
+        id: displayAccount.walletId,
+        name: draft.proxyContact?.name ?? displayAccount.name,
+        type: WalletType.PROXIED,
+        accounts: [displayAccount],
+      };
+    }
+
+    return wallet;
+  }, [displayAccount, draft.proxyAccountId, draft.proxyContact?.name, wallets]);
 
   return (
     <div
