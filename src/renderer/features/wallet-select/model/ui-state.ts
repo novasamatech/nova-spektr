@@ -6,15 +6,20 @@ import { createEvent, createStore } from 'effector';
 const opened = createEvent();
 const closed = createEvent();
 const toggled = createEvent<boolean>();
+const dropdownLoadingChanged = createEvent<boolean>();
 
 const $isOpen = createStore(false)
   .on(opened, () => true)
   .on(closed, () => false)
   .on(toggled, (_, value) => value);
 
+const $isDropdownLoading = createStore(false).on(dropdownLoadingChanged, (_, value) => value);
+
 export const walletSelectUI = {
   $isOpen,
+  $isDropdownLoading,
   opened,
   closed,
   toggled,
+  dropdownLoadingChanged,
 };
