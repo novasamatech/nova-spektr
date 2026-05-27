@@ -2,10 +2,12 @@ import { combine, createEvent, createStore, sample } from 'effector';
 
 import { type Chain, type ChainId } from '@/shared/core';
 import { isHex } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
 import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { graphModel, pathModel } from '@/features/signing-path';
+import { deriveMultisigAccountId, graphModel, pathModel } from '@/features/signing-path';
+import { deriveFinalSignerCandidates } from '../lib/final-signer-candidates';
 
 export type Step = 'call-data' | 'select-path' | 'confirm';
 
@@ -51,6 +53,8 @@ const callDataChanged = createEvent<string>();
 const inputModeChanged = createEvent<'paste' | 'build'>();
 const chainSelected = createEvent<Chain | null>();
 const descriptionChanged = createEvent<string>();
+const finalSignerToggled = createEvent<boolean>();
+const finalSignerSelected = createEvent<AccountId | null>();
 
 const advance = (s: Step) => STEPS_ORDER[Math.min(STEPS_ORDER.indexOf(s) + 1, STEPS_ORDER.length - 1)] ?? s;
 const revert = (s: Step) => STEPS_ORDER[Math.max(STEPS_ORDER.indexOf(s) - 1, 0)] ?? s;
@@ -83,6 +87,21 @@ const $selectedChain = createStore<Chain | null>(null)
 const $description = createStore<string>('')
   .on(descriptionChanged, (_, d) => d)
   .reset(modalClosed);
+
+// Optional "Final Signer" hint — only meaningful when the path has a multisig.
+const $isFinalSignerEnabled = createStore(false)
+  .on(finalSignerToggled, (_, enabled) => enabled)
+  .reset(modalClosed);
+
+const $finalSignerAccountId = createStore<AccountId | null>(null)
+  .on(finalSignerSelected, (_, accountId) => accountId)
+  .reset(modalClosed);
+
+const $canHaveFinalSigner = pathModel.$path.map((path) => deriveMultisigAccountId(path) !== null);
+
+const $finalSignerCandidates = combine(pathModel.$path, graphModel.$multisigByAccountId, (path, multisigByAccountId) =>
+  deriveFinalSignerCandidates(path, multisigByAccountId),
+);
 
 sample({
   clock: createDraftRequested,
@@ -141,6 +160,37 @@ sample({
 
 sample({ clock: modalClosed, target: graphModel.cachesCleared });
 
+// Disable the toggle once the path can no longer host a final signer (e.g. the
+// user edited away the multisig). Clock on the source `$path` store rather than
+// the derived `$canHaveFinalSigner` — a derived store as a sample clock isn't
+// scope-local across forks. Routed through `finalSignerToggled(false)` so the
+// selection-clearing sample below fires too.
+sample({
+  clock: pathModel.$path,
+  filter: (path) => deriveMultisigAccountId(path) === null,
+  fn: () => false,
+  target: finalSignerToggled,
+});
+
+// Unchecking (manual or auto) clears any selected final signer.
+sample({
+  clock: finalSignerToggled,
+  filter: (enabled) => !enabled,
+  fn: () => null,
+  target: finalSignerSelected,
+});
+
+// Drop a selection that's no longer a valid candidate (path edited beneath it).
+// Clock on `$path` (source store) for the same scope-locality reason as above.
+sample({
+  clock: pathModel.$path,
+  source: { selected: $finalSignerAccountId, multisigByAccountId: graphModel.$multisigByAccountId },
+  filter: ({ selected, multisigByAccountId }, path) =>
+    selected !== null && !deriveFinalSignerCandidates(path, multisigByAccountId).includes(selected),
+  fn: () => null,
+  target: finalSignerSelected,
+});
+
 const $callDataErrorKey = $callData.map((hex) =>
   hex.length > 0 && !isHex(hex) ? ('operations.drafts.callDataErrorHex' as const) : null,
 );
@@ -183,12 +233,18 @@ export const createDraftModel = {
   inputModeChanged,
   chainSelected,
   descriptionChanged,
+  finalSignerToggled,
+  finalSignerSelected,
   $isOpen,
   $activeStep,
   $callData,
   $inputMode,
   $selectedChain,
   $description,
+  $isFinalSignerEnabled,
+  $finalSignerAccountId,
+  $canHaveFinalSigner,
+  $finalSignerCandidates,
   $callDataErrorKey,
   $isDescriptionTooLong,
   $isDirty,

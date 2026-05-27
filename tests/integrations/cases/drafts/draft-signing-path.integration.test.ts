@@ -115,6 +115,7 @@ const makeDraft = (signingPath: PathNode[], overrides: Partial<Draft> = {}): Dra
   updatedAt: '2026-01-01T00:00:00Z',
   signingPath,
   initiatorAccountId: null,
+  finalSignerAccountId: null,
   ...overrides,
 });
 
@@ -381,6 +382,58 @@ describe('Submit Draft — signing path drives the route', () => {
       const signatory = env.getState(submitDraftModel.$signatoryStore);
       expect(signatory).not.toBeNull();
       expect(signatory!.accountId).toBe(SIGNER_ID);
+    });
+  });
+
+  describe('final signer is non-enforcing metadata', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Drafts',
+        feature: 'Submit Draft',
+        story: 'Final signer does not influence the submit flow',
+      });
+    });
+
+    // Run the submit flow in an isolated env and capture the outputs that drive
+    // the wrapped extrinsic / fee / route / pre-selected signatory.
+    const runFlowOutputs = async (draft: Draft) => {
+      const localEnv = await buildEnv([multisigTop, signerAccount]);
+      await allSettled(submitDraftModel.flowStarted, {
+        scope: localEnv.scope,
+        params: { draft, initiator: multisigTop, chain: polkadotChain },
+      });
+      const outputs = {
+        initiator: localEnv.getState(submitDraftModel.$initiator)?.accountId ?? null,
+        route: localEnv.getState(submitDraftModel.$route).map((a) => a.accountId),
+        signatory: localEnv.getState(submitDraftModel.$signatoryStore)?.accountId ?? null,
+        pathError: localEnv.getState(submitDraftModel.$pathResolutionError),
+      };
+      await localEnv.cleanup();
+
+      return outputs;
+    };
+
+    it('yields identical submit-flow outputs with and without a final signer', async () => {
+      const path: PathNode[] = [
+        { kind: 'multisig', accountId: MULTISIG_TOP_ID },
+        { kind: 'signer', accountId: SIGNER_ID },
+      ];
+      const withoutFinalSigner = makeDraft(path, {
+        multisigAccountId: MULTISIG_TOP_ID,
+        initiatorAccountId: SIGNER_ID,
+      });
+      // An arbitrary, non-signatory accountId — proves the hint can't reroute.
+      const withFinalSigner = makeDraft(path, {
+        multisigAccountId: MULTISIG_TOP_ID,
+        initiatorAccountId: SIGNER_ID,
+        finalSignerAccountId: SIGNER_2_ID,
+      });
+
+      const baseline = await runFlowOutputs(withoutFinalSigner);
+      const withHint = await runFlowOutputs(withFinalSigner);
+
+      expect(withHint).toEqual(baseline);
+      expect(withHint.route).toEqual([MULTISIG_TOP_ID, SIGNER_ID]);
     });
   });
 });

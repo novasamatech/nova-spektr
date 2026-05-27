@@ -11,10 +11,11 @@ import {
   Separator,
   SmallTitleText,
 } from '@/shared/ui';
-import { Field, TextArea } from '@/shared/ui-kit';
+import { Checkbox, Field, Select, TextArea, Tooltip } from '@/shared/ui-kit';
 import { type PathNode } from '@/domains/backend';
 import { type OperationTitle } from '@/features/multisig-operations';
 import { PathBreadcrumb, PathReviewPopover } from '@/features/signing-path';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { DraftSummary } from '../components/DraftSummary';
 import { DESCRIPTION_MAX_LENGTH } from '../model/create-draft-model';
 
@@ -28,6 +29,12 @@ type Props = {
   destinationAccountId: AccountId | null;
   description: string;
   onDescriptionChanged: (v: string) => void;
+  canHaveFinalSigner: boolean;
+  isFinalSignerEnabled: boolean;
+  finalSignerAccountId: AccountId | null;
+  finalSignerCandidates: AccountId[];
+  onFinalSignerToggled: (enabled: boolean) => void;
+  onFinalSignerSelected: (accountId: AccountId | null) => void;
   // Legacy-shape props for DraftSummary — required while DraftSummary hasn't been updated yet:
   multisigName?: string;
   multisigAccountId?: AccountId;
@@ -45,12 +52,20 @@ export const StepReview = ({
   destinationAccountId,
   description,
   onDescriptionChanged,
+  canHaveFinalSigner,
+  isFinalSignerEnabled,
+  finalSignerAccountId,
+  finalSignerCandidates,
+  onFinalSignerToggled,
+  onFinalSignerSelected,
   multisigName,
   multisigAccountId,
   walletType,
   threshold,
 }: Props) => {
   const { t } = useI18n();
+
+  const hasFinalSignerCandidates = finalSignerCandidates.length > 0;
 
   // Render the operation title as a pill in the card header — strip it from the body rows.
   const summaryTitleData = titleData ? { ...titleData, title: undefined } : null;
@@ -86,6 +101,44 @@ export const StepReview = ({
           {t('operations.drafts.descriptionMaxLengthError', { max: DESCRIPTION_MAX_LENGTH })}
         </InputHint>
       </Field>
+
+      {canHaveFinalSigner && (
+        <div className="flex flex-col gap-y-2">
+          {hasFinalSignerCandidates ? (
+            <Checkbox checked={isFinalSignerEnabled} onChange={onFinalSignerToggled}>
+              {t('operations.drafts.finalSignerToggle')}
+            </Checkbox>
+          ) : (
+            <Tooltip>
+              <Tooltip.Trigger>
+                <div className="w-max">
+                  <Checkbox checked={false} disabled>
+                    {t('operations.drafts.finalSignerToggle')}
+                  </Checkbox>
+                </div>
+              </Tooltip.Trigger>
+              <Tooltip.Content>{t('operations.drafts.finalSignerNoCandidates')}</Tooltip.Content>
+            </Tooltip>
+          )}
+
+          {isFinalSignerEnabled && hasFinalSignerCandidates && (
+            <>
+              <Select
+                placeholder={t('operations.drafts.finalSignerPlaceholder')}
+                value={finalSignerAccountId}
+                onChange={onFinalSignerSelected}
+              >
+                {finalSignerCandidates.map((accountId) => (
+                  <Select.Item key={accountId} value={accountId}>
+                    <NamedAccount accountId={accountId} chain={chain ?? undefined} variant="short" />
+                  </Select.Item>
+                ))}
+              </Select>
+              <HelpText className="text-text-secondary">{t('operations.drafts.finalSignerHint')}</HelpText>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-col rounded-lg border border-container-border bg-white">
         <div className="flex items-center justify-between gap-3 px-4 py-3.5">

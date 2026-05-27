@@ -1,3 +1,4 @@
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
 
 export const MAX_PATH_DEPTH = 6;
@@ -78,11 +79,11 @@ export function isCycleFreeAppend(path: PathNode[], next: PathNode): boolean {
   return !path.some((n) => n.accountId === next.accountId);
 }
 
-export function deriveMultisigAccountId(path: PathNode[]): string | null {
+export function deriveMultisigAccountId(path: PathNode[]): AccountId | null {
   return path.findLast((n) => n.kind === 'multisig')?.accountId ?? null;
 }
 
-export function deriveInitiatorAccountId(path: PathNode[]): string | null {
+export function deriveInitiatorAccountId(path: PathNode[]): AccountId | null {
   const last = path.at(-1);
   return last?.kind === 'signer' ? last.accountId : null;
 }
