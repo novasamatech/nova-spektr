@@ -14,6 +14,7 @@ import { type AnyAccount } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
 const SYNTHETIC_PROXY_WALLET_ID = -2;
+const KNOWN_PROXY_TYPES = new Set<string>(Object.values(ProxyTypes));
 
 type CreateSyntheticProxiedAccountParams = {
   accountId: AccountId;
@@ -25,6 +26,17 @@ type CreateSyntheticProxiedAccountParams = {
   proxyType?: string;
 };
 
+const isProxyType = (proxyType: string): proxyType is ProxyType => {
+  return KNOWN_PROXY_TYPES.has(proxyType);
+};
+
+const toProxyType = (proxyType: string | undefined, fallbackToAny = false): ProxyType | null => {
+  const resolvedProxyType = proxyType ?? (fallbackToAny ? ProxyTypes.ANY : undefined);
+  if (!resolvedProxyType) return null;
+
+  return isProxyType(resolvedProxyType) ? resolvedProxyType : null;
+};
+
 export function createSyntheticProxiedAccount({
   accountId,
   chainId,
@@ -34,9 +46,9 @@ export function createSyntheticProxiedAccount({
   proxyAccountId,
   proxyType,
 }: CreateSyntheticProxiedAccountParams): ProxiedAccount {
-  const connection = proxyAccountId
-    ? [{ proxyAccountId, proxyType: (proxyType ?? ProxyTypes.ANY) as ProxyType, delay: 0 }]
-    : [];
+  const resolvedProxyType = toProxyType(proxyType, true);
+  const connection =
+    proxyAccountId && resolvedProxyType ? [{ proxyAccountId, proxyType: resolvedProxyType, delay: 0 }] : [];
 
   return {
     id: id ?? `synthetic-proxied:${chainId}:${accountId}:${proxyAccountId ?? 'none'}`,
@@ -62,16 +74,18 @@ export function scopeProxiedAccount(
   proxyAccountId: AccountId | undefined,
   proxyType: string | undefined,
 ): AnyAccount {
-  if (!proxyType || !proxyAccountId || !accountUtils.isProxiedAccount(account)) {
+  const resolvedProxyType = toProxyType(proxyType);
+
+  if (!resolvedProxyType || !proxyAccountId || !accountUtils.isProxiedAccount(account)) {
     return account;
   }
 
   const connections = account.connections.filter(
-    (connection) => connection.proxyAccountId === proxyAccountId && connection.proxyType === proxyType,
+    (connection) => connection.proxyAccountId === proxyAccountId && connection.proxyType === resolvedProxyType,
   );
 
   return {
     ...account,
-    connections: connections.length > 0 ? connections : [{ proxyAccountId, proxyType: proxyType as never, delay: 0 }],
+    connections: connections.length > 0 ? connections : [{ proxyAccountId, proxyType: resolvedProxyType, delay: 0 }],
   } as AnyAccount;
 }

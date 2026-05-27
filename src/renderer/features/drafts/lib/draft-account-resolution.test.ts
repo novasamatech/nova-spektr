@@ -100,4 +100,18 @@ describe('resolveDraftProxyAccount', () => {
       connections: [{ proxyAccountId: acc(2), proxyType: 'Governance', delay: 0 }],
     });
   });
+
+  it('does not synthesize a proxy connection for an unknown proxy type', () => {
+    const account = resolveDraftProxyAccount(
+      makeDraft({ signingPath: [proxied(acc(1), 'InvalidProxyType'), signer(acc(2))] }),
+      [],
+      [],
+    );
+
+    expect(account).toMatchObject({
+      accountId: acc(1),
+      accountType: AccountType.PROXIED,
+      connections: [],
+    });
+  });
 });

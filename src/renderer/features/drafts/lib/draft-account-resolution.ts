@@ -11,9 +11,9 @@ export function resolveDraftProxyAccount(
 ): AnyAccount | null {
   if (!draft.proxyAccountId) return null;
 
-  const proxiedNode = draft.signingPath.find(
-    (node, index) => index === 0 && node.kind === 'proxied' && node.accountId === draft.proxyAccountId,
-  );
+  const firstNode = draft.signingPath[0];
+  const proxiedNode =
+    firstNode?.kind === 'proxied' && firstNode.accountId === draft.proxyAccountId ? firstNode : undefined;
   const nextNode = proxiedNode ? draft.signingPath[1] : undefined;
 
   const existingProxyAccount = allAccounts.find(

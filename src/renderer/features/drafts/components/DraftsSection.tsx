@@ -103,6 +103,17 @@ export const DraftsSection = () => {
   const multisigWallets = useMemo(() => allWallets.filter(walletUtils.isAnyMultisig), [allWallets]);
   const chains = useUnit(networkModel.$chains);
   const backendContacts = useUnit(contactModel.$backendContacts);
+  const draftProxyAccounts = useMemo(() => {
+    const resolved = new Map<Draft['id'], ReturnType<typeof resolveDraftProxyAccount>>();
+
+    for (const draft of visibleDrafts) {
+      if (draft.proxyAccountId) {
+        resolved.set(draft.id, resolveDraftProxyAccount(draft, allAccounts, backendContacts));
+      }
+    }
+
+    return resolved;
+  }, [visibleDrafts, allAccounts, backendContacts]);
 
   const resolvedWallets = useWalletsNames(multisigWallets);
 
@@ -229,9 +240,7 @@ export const DraftsSection = () => {
                           multisigAccount={
                             allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null
                           }
-                          proxyAccount={
-                            draft.proxyAccountId ? resolveDraftProxyAccount(draft, allAccounts, backendContacts) : null
-                          }
+                          proxyAccount={draft.proxyAccountId ? (draftProxyAccounts.get(draft.id) ?? null) : null}
                           rowRef={
                             focusedDraftId === draft.id
                               ? (el) => {

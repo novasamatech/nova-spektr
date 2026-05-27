@@ -124,7 +124,7 @@ describe('createPathRouteStore', () => {
     const proxyId = acc(2);
     const signerId = acc(3);
     const path: PathNode[] = [
-      { kind: 'proxied', accountId: proxiedId, proxyType: 'Governance' as never },
+      { kind: 'proxied', accountId: proxiedId, proxyType: 'Governance' },
       multisig(proxyId),
       signer(signerId),
     ];
@@ -200,6 +200,26 @@ describe('createPathRouteStore', () => {
     expect(route?.[0]).toMatchObject({
       accountType: AccountType.PROXIED,
       connections: [{ proxyAccountId: acc(2), proxyType: 'Governance', delay: 0 }],
+    });
+  });
+
+  it('does not synthesize a proxy connection for an unknown proxy type', () => {
+    const path: PathNode[] = [proxied(acc(1), 'InvalidProxyType'), multisig(acc(2)), signer(acc(3))];
+    const $path = createStore<PathNode[]>(path);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([
+        [accounts.__test.$list, [makeAccount(acc(1)), makeMultisigAccount(acc(2)), makeAccount(acc(3))]],
+      ]),
+    });
+
+    const route = scope.getState($route);
+
+    expect(route?.[0]).toMatchObject({
+      accountType: AccountType.PROXIED,
+      connections: [],
     });
   });
 
