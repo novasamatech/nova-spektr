@@ -26,7 +26,7 @@
       "onAutoForward": "notify"
     }
   },
-  "postCreateCommand": "npm install -g pnpm@latest && pnpm install",
+  "postCreateCommand": "corepack enable && corepack prepare pnpm@11.4.0 --activate && pnpm install",
   "customizations": {
     "vscode": {
       "settings": {

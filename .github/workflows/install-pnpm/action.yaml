@@ -5,7 +5,7 @@ runs:
       uses: pnpm/action-setup@v4
       id: pnpm-install
       with:
-        version: 10
+        version: 11.4.0
         run_install: false
 
     - name: 🤞 Use Node.js

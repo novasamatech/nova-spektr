@@ -3,6 +3,7 @@
   "description": "Polkadot Enterprise application",
   "type": "module",
   "version": "2.10.0",
+  "packageManager": "pnpm@11.4.0",
   "main": "./release/build/main.cjs",
   "repository": "https://github.com/novasamatech/nova-spektr",
   "license": "MIT",
@@ -81,7 +82,7 @@
   },
   "engines": {
     "node": ">=24.x",
-    "pnpm": ">=9.x"
+    "pnpm": ">=11 <12"
   },
   "dependencies": {
     "@apollo/client": "3.13.9",
@@ -281,22 +282,5 @@
   "sideEffects": [
     "*.css",
     "*.ts"
-  ],
-  "pnpm": {
-    "peerDependencyRules": {
-      "allowedVersions": {
-        "vite": "8"
-      }
-    },
-    "onlyBuiltDependencies": [
-      "@swc/core",
-      "@tailwindcss/oxide",
-      "electron",
-      "electron-winstaller",
-      "esbuild",
-      "oxc-resolver",
-      "sharp",
-      "unrs-resolver"
-    ]
-  }
+  ]
 }
