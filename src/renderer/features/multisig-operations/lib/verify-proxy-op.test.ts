@@ -36,6 +36,13 @@ const proxyWrap = (inner: DecodedTransaction) =>
     args: { real: pureProxy, forceProxyType: 'Any', transaction: inner },
   });
 
+const batchAll = (transactions: DecodedTransaction[]) =>
+  tx({
+    section: 'utility',
+    method: 'batchAll',
+    args: { transactions },
+  });
+
 const operation = (transaction: DecodedTransaction | null): MultisigOperation =>
   ({
     id: 'op-1',
@@ -130,6 +137,22 @@ describe('parseVerifyProxyOperation', () => {
       memo: 'Q1 audit sign-off',
     });
     const op = operation(proxyWrap(remarkWithEvent(payloadWithMemo)));
+    expect(parseVerifyProxyOperation(op)).toEqual({
+      delegateAccountId: delegate,
+      pureProxyAccountId: pureProxy,
+      memo: 'Q1 audit sign-off',
+    });
+  });
+
+  test('returns memo when verify-proxy call is nested in a batch', () => {
+    const payloadWithMemo = JSON.stringify({
+      kind: VERIFY_PROXY_REMARK_KIND,
+      delegateAccountId: delegate,
+      pureProxyAccountId: pureProxy,
+      memo: 'Q1 audit sign-off',
+    });
+    const op = operation(batchAll([proxyWrap(remarkWithEvent(payloadWithMemo))]));
+
     expect(parseVerifyProxyOperation(op)).toEqual({
       delegateAccountId: delegate,
       pureProxyAccountId: pureProxy,
