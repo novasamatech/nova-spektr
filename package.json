@@ -17,6 +17,7 @@
     "local:preview": "npm run renderer:dev && npm run renderer:preview",
     "start": "pnpm r clean:build main:dev preload:dev && concurrently \"pnpm main:dev:watch\" \"pnpm preload:dev:watch\" \"pnpm renderer:dev:watch\" \"node scripts/waitForRenderer.mjs && pnpm electron\"",
     "start:renderer": "pnpm renderer:dev:watch",
+    "start:renderer:container": "pnpm renderer:dev:watch --host 0.0.0.0",
     "renderer:dev": "cross-env CHAINS_FILE=chains_dev TOKENS_FILE=tokens_dev LOGGER=false vite build --mode development -c vite.config.renderer.ts",
     "renderer:dev:watch": "cross-env CHAINS_FILE=chains_dev TOKENS_FILE=tokens_dev LOGGER=false vite --mode development -c vite.config.renderer.ts",
     "renderer:staging": "cross-env CHAINS_FILE=chains TOKENS_FILE=tokens vite build --mode staging -c vite.config.renderer.ts",
