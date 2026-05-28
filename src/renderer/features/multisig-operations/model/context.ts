@@ -3,7 +3,13 @@ import { produce } from 'immer';
 import { interval, throttle } from 'patronum';
 
 import { type Done, persist } from '@/shared/api/storage';
-import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount, AccountType } from '@/shared/core';
+import {
+  type ChainId,
+  type FlexibleMultisigAccount,
+  type MultisigAccount,
+  type ProxiedAccount,
+  AccountType,
+} from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type DateRange } from '@/shared/ui-kit';
@@ -19,7 +25,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { filterOperation } from '../lib/operations-filter';
+import { type OperationsFilterContext, filterOperation } from '../lib/operations-filter';
 
 import { deepLinkModel } from './deep-link';
 import { multisigOperationsFeature } from './feature';
@@ -102,7 +108,23 @@ const $initiators = combine(
   },
 );
 
-const $walletMultisigAccounts = accounts.$list.map(accs => accs.filter(accountUtils.isAnyMultisigAccount));
+const haveSameRefs = <T>(next: T[], prev: T[]) => {
+  if (next.length !== prev.length) return false;
+
+  return next.every((item, index) => item === prev[index]);
+};
+
+const $walletMultisigAccountsRaw = accounts.$list.map(accs => accs.filter(accountUtils.isAnyMultisigAccount));
+const $walletMultisigAccounts = createStore<(MultisigAccount | FlexibleMultisigAccount)[]>([], {
+  updateFilter: (next, prev) => !haveSameRefs(next, prev),
+});
+$walletMultisigAccounts.on($walletMultisigAccountsRaw, (_, next) => next);
+
+const $proxiedAccountsRaw = accounts.$list.map(accs => accs.filter(accountUtils.isProxiedAccount));
+const $proxiedAccounts = createStore<ProxiedAccount[]>([], {
+  updateFilter: (next, prev) => !haveSameRefs(next, prev),
+});
+$proxiedAccounts.on($proxiedAccountsRaw, (_, next) => next);
 
 // Union of user-owned multisig accounts + synthetic records built from
 // contact-backed multisigs discovered by `contactMultisigsModel`. Dedupe drops
@@ -142,16 +164,33 @@ const $presetScopedMultisigAccounts = combine(
 
 const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isAnyMultisig));
 
+const haveSameWalletSearchEntries = (
+  next: OperationsFilterContext['multisigWallets'],
+  prev: OperationsFilterContext['multisigWallets'],
+) => {
+  if (next.length !== prev.length) return false;
+
+  return next.every((wallet, index) => wallet.id === prev[index]?.id && wallet.name === prev[index]?.name);
+};
+
+const $multisigWalletSearchEntriesRaw = $multisigWallets.map((wallets): OperationsFilterContext['multisigWallets'] =>
+  wallets.map(({ id, name }) => ({ id, name })),
+);
+const $multisigWalletSearchEntries = createStore<OperationsFilterContext['multisigWallets']>([], {
+  updateFilter: (next, prev) => !haveSameWalletSearchEntries(next, prev),
+});
+$multisigWalletSearchEntries.on($multisigWalletSearchEntriesRaw, (_, next) => next);
+
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 
 const $operationsWithAccounts = combine(
   {
     operations: multisigOperation.$list,
     multisigAccounts: $presetScopedMultisigAccounts,
-    allAccounts: accounts.$list,
+    proxiedAccounts: $proxiedAccounts,
     accountsPopulated: accounts.$populated,
   },
-  ({ operations, multisigAccounts, allAccounts, accountsPopulated }): OperationWithAccount[] => {
+  ({ operations, multisigAccounts, proxiedAccounts, accountsPopulated }): OperationWithAccount[] => {
     if (!accountsPopulated) return [];
 
     // Build lookup maps for O(1) account resolution instead of O(m) linear scan per operation
@@ -179,7 +218,7 @@ const $operationsWithAccounts = combine(
     }
 
     const byProxiedMultisigAccountId = new Map<string, FlexibleMultisigAccount>();
-    for (const proxied of allAccounts.filter(accountUtils.isProxiedAccount)) {
+    for (const proxied of proxiedAccounts) {
       for (const connection of proxied.connections) {
         const multisig = regularMultisigById.get(connection.proxyAccountId);
         if (!multisig) continue;
@@ -225,7 +264,7 @@ const $filteredOperations = combine(
     filter: $filter,
     tab: $tab,
     hiddenIds: $hiddenOperationIds,
-    multisigWallets: $multisigWallets,
+    multisigWallets: $multisigWalletSearchEntries,
     chains: networkModel.$chains,
   },
   ({ operationsWithAccounts, filter, tab, hiddenIds, multisigWallets, chains }): OperationWithAccount[] => {
