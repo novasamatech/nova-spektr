@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { MockProvider } from '@polkadot/rpc-provider/mock';
 import { TypeRegistry } from '@polkadot/types';
 import { type Call } from '@polkadot/types/interfaces';
-import { describe } from 'vitest';
+import { describe, vi } from 'vitest';
 
 import { type HexString } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -331,6 +331,33 @@ describe('Transaction service', () => {
 
       expect(result?.callData).toEqual(transferCallData);
       expect(result?.callHash).toEqual(api.registry.createType('Call', transferCallData).hash.toHex());
+    });
+
+    it('keeps utility.asMulti calls unchanged', () => {
+      const callData = '0xaaaa' as HexString;
+      const callHash = '0xbbbb';
+      const innerCallData = '0xcccc';
+      const utilityAsMultiCall = {
+        section: 'utility',
+        method: 'asMulti',
+        args: [undefined, undefined, undefined, { toHex: () => innerCallData }],
+        toHex: () => callData,
+        hash: { toHex: () => callHash },
+      } as unknown as Call;
+      const innerCall = {
+        section: 'balances',
+        method: 'transferKeepAlive',
+        args: [],
+        toHex: () => innerCallData,
+        hash: { toHex: () => '0xdddd' },
+      } as unknown as Call;
+      const createType = vi.fn().mockReturnValueOnce(utilityAsMultiCall).mockReturnValueOnce(innerCall);
+      const api = { registry: { createType } } as unknown as ApiPromise;
+
+      const result = transactionService.getCoreCallData(api, callData);
+
+      expect(result).toEqual({ callData, callHash });
+      expect(createType).toHaveBeenCalledTimes(1);
     });
   });
 });

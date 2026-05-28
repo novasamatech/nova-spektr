@@ -425,7 +425,7 @@ function getInnerWrapperCall(api: ApiPromise, call: Call): Call | null {
     return createCallFromArg(api, call.args[2]);
   }
 
-  if ((call.section === 'multisig' || call.section === 'utility') && call.method === 'asMulti') {
+  if (call.section === 'multisig' && call.method === 'asMulti') {
     return createCallFromArg(api, call.args[3]);
   }
 
