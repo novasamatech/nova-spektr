@@ -10,4 +10,9 @@ export {
   authModel,
   backendConfigurationModel,
 } from './BackendConfiguration';
-export { SyncStatusBadge, backendContactsModel } from './BackendContacts';
+export {
+  AddressBookHealthOverlay,
+  ReconnectAddressBookButton,
+  SyncStatusBadge,
+  backendContactsModel,
+} from './BackendContacts';
