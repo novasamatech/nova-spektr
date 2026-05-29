@@ -7,7 +7,7 @@ import { type ComponentProps, useCallback, useEffect, useMemo, useRef, useState 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@/shared/ui';
-import { Modal, useNotification } from '@/shared/ui-kit';
+import { Input, Modal, useNotification } from '@/shared/ui-kit';
 import {
   type PresetFilterCriteria,
   type PresetType,
@@ -220,24 +220,28 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
               />
             </div>
 
+            <div className="flex flex-col gap-y-1">
+              <label className="text-footnote text-text-tertiary">{t('dashboard.presets.modal.name')}</label>
+              <Input
+                value={editName}
+                placeholder={t('dashboard.presets.modal.namePlaceholder')}
+                maxLength={30}
+                width="full"
+                onChange={setEditName}
+              />
+            </div>
+
             <SourceBreakdownBar entries={matchedEntries} total={allEntries.length} tone="light" />
 
             {editType === 'filter' ? (
               <>
-                <PresetFilterEditor
-                  name={editName}
-                  filters={editFilters}
-                  onNameChange={setEditName}
-                  onFiltersChange={setEditFilters}
-                />
+                <PresetFilterEditor filters={editFilters} onFiltersChange={setEditFilters} />
                 <MatchedAccountsPreview matched={matchedEntries} totalEntries={allEntries.length} />
               </>
             ) : (
               <CustomAccountSelector
-                name={editName}
                 allEntries={allEntries}
                 selectedIds={editSelectedIds}
-                onNameChange={setEditName}
                 onSelectedIdsChange={setEditSelectedIds}
               />
             )}
