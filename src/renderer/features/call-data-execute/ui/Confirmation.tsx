@@ -10,6 +10,7 @@ import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { transactionService } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
+import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
 import { FeeWithLabel } from '@/widgets/transaction-fee';
 import { confirmModel } from '../model/confirm';
 
@@ -80,6 +81,10 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
           <FeeWithLabel asset={asset} fee={fee} />
         </TransactionDetails>
       </Box>
+
+      <div className="px-5 pb-4">
+        <MultisigOperationDescriptionField />
+      </div>
 
       <Modal.Footer align="between">
         {onGoBack && (
