@@ -42,7 +42,7 @@ export const Root = ({ children, footer, count }: PropsWithChildren<Props>) => {
   const currentPage = currentTx + 1;
 
   return (
-    <div className="flex w-[478px] flex-col overflow-hidden">
+    <div className="flex w-full flex-col overflow-hidden">
       <ScrollArea>
         <Carousel item={currentTx.toString()}>
           <div className="bg-background-default py-4" ref={scrollRef}>

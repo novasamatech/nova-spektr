@@ -62,7 +62,7 @@ export const RemoveVotesShardsModal = ({ votes, chain, asset, api, onClose }: Pr
   }
 
   return (
-    <Modal isOpen={isModalOpen} size="fit" height="fit" onToggle={onClose}>
+    <Modal isOpen={isModalOpen} size="mdlg" height="fit" onToggle={onClose}>
       <Modal.Title close>
         <OperationTitle title={t('operations.modalTitles.removeVoteOn')} chainId={chain.chainId}></OperationTitle>
       </Modal.Title>
