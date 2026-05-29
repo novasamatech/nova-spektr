@@ -4,14 +4,11 @@ import { useMemo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { MultiSelect } from '@/shared/ui';
-import { Input } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
 import { type AccountSource, type PresetFilterCriteria } from '@/aggregates/account-presets';
 
 type Props = {
-  name: string;
   filters: PresetFilterCriteria;
-  onNameChange: (name: string) => void;
   onFiltersChange: (filters: PresetFilterCriteria) => void;
 };
 
@@ -26,7 +23,7 @@ const SOURCE_OPTIONS: SourceOption[] = [
   { id: 'backend-contact', label: 'dashboard.presets.sources.backendContact' },
 ];
 
-export const PresetFilterEditor = ({ name, filters, onNameChange, onFiltersChange }: Props) => {
+export const PresetFilterEditor = ({ filters, onFiltersChange }: Props) => {
   const { t } = useI18n();
   const backendContacts = useUnit(contactModel.$backendContacts);
 
@@ -86,17 +83,6 @@ export const PresetFilterEditor = ({ name, filters, onNameChange, onFiltersChang
 
   return (
     <div className="flex flex-col gap-y-3">
-      <div className="flex flex-col gap-y-1">
-        <label className="text-footnote text-text-tertiary">{t('dashboard.presets.modal.name')}</label>
-        <Input
-          value={name}
-          placeholder={t('dashboard.presets.modal.namePlaceholder')}
-          maxLength={30}
-          width="full"
-          onChange={onNameChange}
-        />
-      </div>
-
       <div className="flex flex-col gap-y-1">
         <span className="text-footnote text-text-tertiary">{t('dashboard.presets.modal.sourceType')}</span>
         <div className="flex flex-wrap gap-2">
