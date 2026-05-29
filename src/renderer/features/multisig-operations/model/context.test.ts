@@ -1,4 +1,4 @@
-import { allSettled, fork } from 'effector';
+import { type Scope, allSettled, createWatch, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
 // Mock components that cause circular dependency issues
@@ -6,15 +6,17 @@ vi.mock('../components/Operation', () => ({
   operationTitleTransformer: { createTransformer: () => {} },
 }));
 
-import { type MultisigAccount } from '@/shared/core';
+import { type MultisigAccount, AccountType, ProxyVariant, WalletType } from '@/shared/core';
 import { createAccountId, polkadotChainId } from '@/shared/mocks';
 import { accounts, multisigOperation } from '@/domains/network';
+import { walletModel } from '@/entities/wallet';
 
 import { operationsContextModel } from './context';
 import { deepLinkModel } from './deep-link';
 
 describe('operations context model', () => {
   const mockAccountId = createAccountId(1);
+  const mockProxiedAccountId = createAccountId(2);
 
   const mockMultisigAccount = {
     id: '1',
@@ -48,6 +50,25 @@ describe('operations context model', () => {
       events: [],
       timestamp: Date.now(),
     };
+  };
+
+  const createMockProxiedOperation = (callHash = '0xproxy') => ({
+    ...createMockOperation('pending', callHash),
+    proxiedAccountId: mockProxiedAccountId,
+  });
+
+  const populateAccounts = (scope: Scope, accountList: unknown[]) => {
+    return allSettled(accounts.__test.$list, {
+      scope,
+      params: accountList as never,
+    });
+  };
+
+  const populateWallets = (scope: Scope, wallets: unknown[]) => {
+    return allSettled(walletModel.__test.$rawWallets, {
+      scope,
+      params: wallets as never,
+    });
   };
 
   describe('Tab switching based on focused operation', () => {
@@ -231,9 +252,9 @@ describe('operations context model', () => {
           .set(multisigOperation.__test.$cachedOperations, [pendingOp1, pendingOp2])
           .set(operationsContextModel.$hiddenOperationIds, [pendingOp1.id])
           .set(operationsContextModel.$tab, 'pending')
-          .set(accounts.__test.$populated, true)
-          .set(accounts.__test.$list, [mockMultisigAccount]),
+          .set(accounts.__test.$populated, true),
       });
+      await populateAccounts(scope, [mockMultisigAccount]);
 
       const filtered = scope.getState(operationsContextModel.$filteredOperations);
       expect(filtered).toHaveLength(1);
@@ -249,9 +270,9 @@ describe('operations context model', () => {
           .set(multisigOperation.__test.$cachedOperations, [pendingOp, hiddenOp])
           .set(operationsContextModel.$hiddenOperationIds, [hiddenOp.id])
           .set(operationsContextModel.$tab, 'hidden')
-          .set(accounts.__test.$populated, true)
-          .set(accounts.__test.$list, [mockMultisigAccount]),
+          .set(accounts.__test.$populated, true),
       });
+      await populateAccounts(scope, [mockMultisigAccount]);
 
       const filtered = scope.getState(operationsContextModel.$filteredOperations);
       expect(filtered).toHaveLength(1);
@@ -267,9 +288,9 @@ describe('operations context model', () => {
         values: new Map()
           .set(multisigOperation.__test.$cachedOperations, [op1, op2, op3])
           .set(operationsContextModel.$hiddenOperationIds, [op1.id, op2.id])
-          .set(accounts.__test.$populated, true)
-          .set(accounts.__test.$list, [mockMultisigAccount]),
+          .set(accounts.__test.$populated, true),
       });
+      await populateAccounts(scope, [mockMultisigAccount]);
 
       const count = scope.getState(operationsContextModel.$hiddenOperationsCount);
       expect(count).toBe(2);
@@ -302,12 +323,105 @@ describe('operations context model', () => {
         values: new Map()
           .set(multisigOperation.__test.$cachedOperations, [pendingOp1, pendingOp2, executedOp])
           .set(operationsContextModel.$hiddenOperationIds, [pendingOp1.id])
-          .set(accounts.__test.$populated, true)
-          .set(accounts.__test.$list, [mockMultisigAccount]),
+          .set(accounts.__test.$populated, true),
       });
+      await populateAccounts(scope, [mockMultisigAccount]);
 
       const pendingCount = scope.getState(operationsContextModel.$pendingOperationsCount);
       expect(pendingCount).toBe(1); // Only pendingOp2, since pendingOp1 is hidden
+    });
+
+    it('should resolve proxied regular multisig operations to the proxied source account', async () => {
+      const proxiedOperation = createMockProxiedOperation();
+      const proxiedAccount = {
+        id: 'proxied-1',
+        walletId: 2,
+        name: 'Pure proxied',
+        accountId: mockProxiedAccountId,
+        accountType: AccountType.PROXIED,
+        type: 'chain',
+        chainId: polkadotChainId,
+        cryptoType: 0,
+        signingType: 'signing',
+        createdAt: 0,
+        connections: [{ proxyAccountId: mockAccountId, proxyType: 'Any', delay: 0 }],
+        proxyVariant: ProxyVariant.PURE,
+        deposit: '0',
+        extrinsicIndex: 1,
+        entropyBlockNumber: 1,
+      };
+
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [proxiedOperation])
+          .set(operationsContextModel.$tab, 'pending')
+          .set(accounts.__test.$populated, true),
+      });
+      await populateAccounts(scope, [mockMultisigAccount, proxiedAccount]);
+
+      const filtered = scope.getState(operationsContextModel.$filteredOperations);
+      const account = filtered[0]?.account;
+
+      expect(filtered).toHaveLength(1);
+      expect(account?.accountType).toBe(AccountType.FLEX_MULTISIG);
+      if (account?.accountType !== AccountType.FLEX_MULTISIG) {
+        throw new Error('Expected a flexible multisig display account');
+      }
+      expect(account.accountId).toBe(mockProxiedAccountId);
+      expect(account.multisigAccountId).toBe(mockAccountId);
+      expect(account.proxyType).toBe('Any');
+    });
+
+    it('should not rebuild filtered operations when unrelated accounts change', async () => {
+      const proxiedOperation = createMockProxiedOperation();
+      const proxiedAccount = {
+        id: 'proxied-1',
+        walletId: 2,
+        name: 'Pure proxied',
+        accountId: mockProxiedAccountId,
+        accountType: AccountType.PROXIED,
+        type: 'chain',
+        chainId: polkadotChainId,
+        cryptoType: 0,
+        signingType: 'signing',
+        createdAt: 0,
+        connections: [{ proxyAccountId: mockAccountId, proxyType: 'Any', delay: 0 }],
+        proxyVariant: ProxyVariant.PURE,
+        deposit: '0',
+        extrinsicIndex: 1,
+        entropyBlockNumber: 1,
+      };
+      const regularAccount = {
+        id: 'regular-1',
+        walletId: 3,
+        name: 'Regular',
+        accountId: createAccountId(3),
+        accountType: AccountType.CHAIN,
+        type: 'chain',
+        chainId: polkadotChainId,
+        cryptoType: 0,
+        signingType: 'signing',
+        createdAt: 0,
+      };
+
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [proxiedOperation])
+          .set(operationsContextModel.$tab, 'pending')
+          .set(accounts.__test.$populated, true),
+      });
+      await populateWallets(scope, [{ id: 1, name: 'Test Multisig Wallet', type: WalletType.MULTISIG }]);
+      await populateAccounts(scope, [mockMultisigAccount, proxiedAccount, regularAccount]);
+      const spy = vi.fn();
+      createWatch({ unit: operationsContextModel.$filteredOperations.updates, fn: spy, scope });
+
+      await populateAccounts(scope, [
+        mockMultisigAccount,
+        proxiedAccount,
+        { ...regularAccount, name: 'Regular updated' },
+      ]);
+
+      expect(spy).not.toHaveBeenCalled();
     });
   });
 });

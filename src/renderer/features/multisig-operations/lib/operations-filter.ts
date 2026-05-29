@@ -29,7 +29,7 @@ export interface OperationsFilterContext {
   filters: OperationsFilterCriteria;
   tab: OperationsFilterTab;
   hiddenIds: string[];
-  multisigWallets: Wallet[];
+  multisigWallets: Pick<Wallet, 'id' | 'name'>[];
   chains: Record<ChainId, Chain>;
 }
 
@@ -128,7 +128,7 @@ export const matchesSearch = (
   searchQuery: string | undefined,
   chains: Record<ChainId, Chain>,
   account: MultisigAccount | FlexibleMultisigAccount,
-  multisigWallets: Wallet[],
+  multisigWallets: Pick<Wallet, 'id' | 'name'>[],
 ) => {
   const query = searchQuery?.trim().toLowerCase();
   if (!query) return true;

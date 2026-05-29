@@ -6,7 +6,7 @@ import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 
 import { type HexString, type Transaction as DeprecatedTransaction } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { type AnyAccount } from '../account/types';
@@ -400,6 +400,78 @@ function getInnerCallsFromCall(call: Call, proxyTarget?: AccountId, depth = 0): 
   return [call];
 }
 
+type CoreCallData = {
+  callData: HexString;
+  callHash: HexString;
+  proxiedAccountId?: AccountId;
+};
+
+const CORE_CALL_UNWRAP_LIMIT = 8;
+
+function createCallFromArg(api: ApiPromise, arg: unknown): Call | null {
+  if (!arg || typeof arg !== 'object' || !('toHex' in arg) || typeof arg.toHex !== 'function') {
+    return null;
+  }
+
+  try {
+    return api.registry.createType<Call>('Call', arg.toHex());
+  } catch {
+    return null;
+  }
+}
+
+function getInnerWrapperCall(api: ApiPromise, call: Call): Call | null {
+  if (call.section === 'proxy' && call.method === 'proxy') {
+    return createCallFromArg(api, call.args[2]);
+  }
+
+  if (call.section === 'multisig' && call.method === 'asMulti') {
+    return createCallFromArg(api, call.args[3]);
+  }
+
+  if ((call.section === 'multisig' || call.section === 'utility') && call.method === 'asMultiThreshold1') {
+    return createCallFromArg(api, call.args[1]);
+  }
+
+  return null;
+}
+
+function getProxiedAccountIdFromCall(call: Call): AccountId | undefined {
+  if (call.section !== 'proxy' || call.method !== 'proxy') return undefined;
+
+  const real = call.args[0]?.toString();
+  return real ? toAccountId(real) : undefined;
+}
+
+function getCoreCallData(
+  api: ApiPromise | null | undefined,
+  callData: HexString | null | undefined,
+): CoreCallData | null {
+  if (!api || !callData) return null;
+
+  try {
+    let call = api.registry.createType<Call>('Call', callData);
+    let proxiedAccountId: AccountId | undefined;
+
+    for (let depth = 0; depth < CORE_CALL_UNWRAP_LIMIT; depth++) {
+      proxiedAccountId ??= getProxiedAccountIdFromCall(call);
+
+      const innerCall = getInnerWrapperCall(api, call);
+      if (!innerCall) break;
+
+      call = innerCall;
+    }
+
+    return {
+      callData: call.toHex(),
+      callHash: call.hash.toHex(),
+      ...(proxiedAccountId ? { proxiedAccountId } : {}),
+    };
+  } catch {
+    return null;
+  }
+}
+
 const decodeDispatchError = (error: DispatchError | SpRuntimeDispatchError, registry: Registry): string => {
   let errorInfo = error.toString();
 
@@ -545,6 +617,7 @@ export const transactionService = {
   getTransactionWeight,
 
   getInnerCallsFromCall,
+  getCoreCallData,
 
   splitExtrinsic,
   submitExtrinsic,

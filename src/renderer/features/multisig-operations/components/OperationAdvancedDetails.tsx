@@ -2,6 +2,7 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
+import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, getNativeAsset, nullable, truncate } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
@@ -9,7 +10,7 @@ import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Copy, Modal, Skeleton, Tooltip, useNotification } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, transactionService as networkTransactionService } from '@/domains/network';
 import { networkModel, useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { transactionService } from '@/entities/transaction';
@@ -23,6 +24,19 @@ type Props = {
 const InteractionStyle =
   'rounded-sm hover:bg-action-background-hover hover:text-text-primary cursor-pointer py-[3px] px-2 -mr-2';
 
+type DisplayCall = {
+  callHash?: HexString | null;
+};
+
+export const getCallDetailsLabelKeys = (displayCall: DisplayCall, outerCall: DisplayCall) => {
+  const isCoreCall = Boolean(displayCall.callHash && outerCall.callHash && displayCall.callHash !== outerCall.callHash);
+
+  return {
+    callHash: isCoreCall ? 'operation.details.coreCallHash' : 'operation.details.callHash',
+    callData: isCoreCall ? 'operation.details.coreCallData' : 'operation.details.callData',
+  } as const;
+};
+
 export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
   const { t } = useI18n();
   const { toast } = useNotification();
@@ -35,21 +49,26 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
   const explorers = chain?.explorers;
 
   const { indexCreated, blockCreated, deposit, callHash, callData } = operation;
+  const displayCall = useMemo(
+    () => networkTransactionService.getCoreCallData(api, callData) ?? { callData, callHash },
+    [api, callData, callHash],
+  );
+  const callDetailsLabelKeys = getCallDetailsLabelKeys(displayCall, operation);
 
   const jsonArgs = useMemo(() => {
-    if (!callData || !api || !chain) {
+    if (!displayCall.callData || !api || !chain) {
       return null;
     }
 
     try {
-      const call = transactionService.createCallFromCallData(callData, api);
+      const call = transactionService.createCallFromCallData(displayCall.callData, api);
       if (!call) return null;
 
       return transactionService.formatCall(call, chain);
     } catch {
       return null;
     }
-  }, [api, chain, callData]);
+  }, [api, chain, displayCall.callData]);
 
   const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
@@ -97,23 +116,23 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
       </div>
 
       <div className="flex flex-col gap-y-2">
-        {callHash && (
-          <DetailRow label={t('operation.details.callHash')} className="text-text-secondary">
-            <Copy value={callHash}>
+        {displayCall.callHash && (
+          <DetailRow label={t(callDetailsLabelKeys.callHash)} className="text-text-secondary">
+            <Copy value={displayCall.callHash}>
               <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
-                <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
+                <FootnoteText className="text-inherit">{truncate(displayCall.callHash, 7, 8)}</FootnoteText>
                 <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
               </button>
             </Copy>
           </DetailRow>
         )}
 
-        {callData && (
-          <DetailRow label={t('operation.details.callData')} className="text-text-secondary">
+        {displayCall.callData && (
+          <DetailRow label={t(callDetailsLabelKeys.callData)} className="text-text-secondary">
             <div className="flex items-center gap-1">
-              <Copy value={callData}>
+              <Copy value={displayCall.callData}>
                 <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
-                  <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
+                  <FootnoteText className="text-inherit">{truncate(displayCall.callData, 7, 8)}</FootnoteText>
                   <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
                 </button>
               </Copy>
