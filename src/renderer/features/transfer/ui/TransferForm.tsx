@@ -19,6 +19,7 @@ import {
   performSearch,
   toAccountId,
   toAddress,
+  toShortAddress,
   validateAddress,
   withdrawableAmount,
 } from '@/shared/lib/utils';
@@ -26,7 +27,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, CaptionText, FootnoteText, Icon, IconButton, InputHint, Switch } from '@/shared/ui';
 import { AccountSelect, Address, Identicon, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
-import { accountService, useAccountName, useAccountsNames } from '@/domains/network';
+import { accountService, useAccountName, useAccountsNames, useWalletName } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
@@ -410,6 +411,13 @@ const Destination = memo(() => {
   const isDestinationReadonly = useUnit(formModel.$isDestinationReadonly);
 
   const [query, setQuery] = useState('');
+  // Keep the editable Combobox mounted while the field is focused; only swap to
+  // the read-only name card once the recipient is committed (blur/selection).
+  // Swapping on raw value validity yanks focus mid-typing/paste and blocks edits.
+  const [isRecipientFocused, setRecipientFocused] = useState(false);
+  // Pulls focus into the Combobox the next time it mounts (after clear or when
+  // re-entering edit from the card), so the user doesn't have to click again.
+  const [autoFocusRecipient, setAutoFocusRecipient] = useState(false);
 
   const isMyselfXcmEnabled = useUnit(formModel.$isMyselfXcmEnabled);
 
@@ -442,11 +450,23 @@ const Destination = memo(() => {
     return wallets.find((wallet) => wallet.accounts.some((a) => a.accountId === recipientAccountId)) ?? null;
   }, [wallets, recipientAccountId]);
 
-  // Show the named display only for a contact or local wallet; otherwise NamedAccount's
-  // short-address fallback would render the address twice instead of just once.
+  // Run the standard resolution chain (custom name → contact → on-chain identity
+  // → wallet name). `resolveAccountName` falls back to a short address when none
+  // match, so we render the rich NamedAccount only when resolution produced a
+  // real name — otherwise NamedAccount would print the address twice.
+  const recipientWalletName = useWalletName(recipientWallet);
+  const recipientName = useAccountName({
+    accountId: recipientAccountId,
+    chain,
+    title: recipientWalletName ?? undefined,
+  });
   const recipientHasName = useMemo(() => {
-    return nonNullable(recipientWallet) || contacts.some((contact) => contact.accountId === recipientAccountId);
-  }, [recipientAccountId, recipientWallet, contacts]);
+    if (nullable(recipientAccountId) || !recipientName) return false;
+
+    const shortAddress = toShortAddress(toAddress(recipientAccountId, { prefix: chain?.addressPrefix }), 5);
+
+    return recipientName !== shortAddress;
+  }, [recipientAccountId, recipientName, chain]);
 
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
     if (nullable(chain)) return [];
@@ -555,6 +575,18 @@ const Destination = memo(() => {
     destination.onChange('');
     destination.markAsTouched();
     setQuery('');
+    // The card unmounts and the Combobox remounts; ask it to grab focus so the
+    // user can immediately retype instead of clicking the field again.
+    setAutoFocusRecipient(true);
+  };
+
+  // Return to the editable Combobox with the value intact so a committed
+  // recipient can be edited in place instead of cleared and retyped.
+  const handleEditRecipient = () => {
+    if (isDestinationReadonly) return;
+
+    setRecipientFocused(true);
+    setAutoFocusRecipient(true);
   };
 
   const prefixElement = (
@@ -569,9 +601,17 @@ const Destination = memo(() => {
   return (
     <Field text={t('transfer.recipientLabel')}>
       <Box direction="row" gap={2} horizontalAlign="center" verticalAlign="center">
-        {recipientAccountId ? (
-          <div className="flex min-h-[42px] w-full items-center gap-x-2 rounded-sm border border-filter-border bg-input-background px-[11px] py-1.5">
-            <div className="min-w-0 flex-1">
+        {recipientAccountId && !isRecipientFocused ? (
+          <div
+            data-testid={TEST_IDS.OPERATIONS.RECIPIENT_CARD}
+            className="flex h-[42px] w-full items-center gap-x-2 rounded-sm border border-filter-border bg-input-background px-[11px]"
+          >
+            <button
+              type="button"
+              className="min-w-0 flex-1 cursor-text text-left"
+              disabled={isDestinationReadonly}
+              onClick={handleEditRecipient}
+            >
               {recipientHasName ? (
                 <NamedAccount
                   accountId={recipientAccountId}
@@ -589,8 +629,15 @@ const Destination = memo(() => {
                   address={toAddress(recipientAccountId, { prefix: chain?.addressPrefix })}
                 />
               )}
-            </div>
-            {!isDestinationReadonly && <IconButton name="close" size={16} onClick={handleClearRecipient} />}
+            </button>
+            {!isDestinationReadonly && (
+              <IconButton
+                name="close"
+                size={16}
+                testId={TEST_IDS.OPERATIONS.RECIPIENT_CLEAR}
+                onClick={handleClearRecipient}
+              />
+            )}
           </div>
         ) : (
           <Combobox
@@ -601,8 +648,16 @@ const Destination = memo(() => {
             value={destination.value.trim()}
             prefixElement={prefixElement}
             height="md"
+            autoFocus={autoFocusRecipient}
             onChange={destination.onChange}
-            onBlur={destination.markAsTouched}
+            onFocus={() => {
+              setRecipientFocused(true);
+              setAutoFocusRecipient(false);
+            }}
+            onBlur={() => {
+              setRecipientFocused(false);
+              destination.markAsTouched();
+            }}
             onInput={setQuery}
           >
             {allOptions.map((group) => (

@@ -38,7 +38,7 @@ const Context = createContext<ContextProps & ExpandedContextProps>({});
 
 type InputProps = Pick<
   ComponentProps<typeof Input>,
-  'disabled' | 'invalid' | 'placeholder' | 'height' | 'prefixElement' | 'onChange' | 'onBlur'
+  'disabled' | 'invalid' | 'placeholder' | 'height' | 'prefixElement' | 'onChange' | 'onBlur' | 'onFocus' | 'autoFocus'
 >;
 
 type ControlledPopoverProps = {
@@ -81,7 +81,7 @@ const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inpu
   );
 };
 
-const Trigger = ({ placeholder, onBlur, ...inputProps }: InputProps) => {
+const Trigger = ({ placeholder, onBlur, onFocus, ...inputProps }: InputProps) => {
   const { onOpenChange, comboboxRef, anchorRef } = useContext(Context);
 
   return (
@@ -92,7 +92,10 @@ const Trigger = ({ placeholder, onBlur, ...inputProps }: InputProps) => {
           ref={comboboxRef}
           placeholder={placeholder}
           render={({ onChange, ...props }) => <Input {...props} {...inputProps} onChangeEvent={onChange} />}
-          onFocus={() => onOpenChange?.(true)}
+          onFocus={event => {
+            onOpenChange?.(true);
+            onFocus?.(event);
+          }}
           onBlur={event => {
             onOpenChange?.(false);
             onBlur?.(event);

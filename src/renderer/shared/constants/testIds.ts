@@ -43,6 +43,8 @@ export const TEST_IDS = {
     AVAILABLE_BALANCE: 'available-balance',
     AVAILABLE_BALANCE_LOADER: 'available-balance-loader',
     RECIPIENT_INPUT: 'operations-recipient-input',
+    RECIPIENT_CARD: 'operations-recipient-card',
+    RECIPIENT_CLEAR: 'operations-recipient-clear',
     QR_CODE_CONTAINER: 'operations-qr-code-container',
     SIGNATORY_SELECTOR: 'operations-signatory-selector',
     SIGNATORY_SELECTOR_OPTION: 'Address',
