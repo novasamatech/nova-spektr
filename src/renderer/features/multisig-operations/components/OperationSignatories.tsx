@@ -8,14 +8,15 @@ import {
   type ProxyType,
   type Signatory,
   type Wallet,
+  ProxyTypes,
   TransactionType,
 } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
-import { Address, WalletIcon } from '@/shared/ui-entities';
+import { Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { Address } from '@/shared/ui-entities';
 import {
   type AnyAccount,
   type MultisigOperation,
@@ -28,7 +29,7 @@ import { useChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard } from '@/entities/signatory';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { WalletName } from '@/widgets/NameResolver';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 import LogModal from './LogModal';
 
@@ -54,7 +55,7 @@ const SignatoryAddress = ({ accountId, chain }: SignatoryAddressProps) => {
 const getOperationProxyType = (operation: MultisigOperation): ProxyType | null => {
   if (operation.transaction?.type !== TransactionType.PROXY) return null;
 
-  return operation.transaction.args.forceProxyType as ProxyType;
+  return Object.values(ProxyTypes).find(proxyType => proxyType === operation.transaction?.args.forceProxyType) ?? null;
 };
 
 export const operationOverviewSlot = createSlot<{
@@ -64,7 +65,7 @@ export const operationOverviewSlot = createSlot<{
   exclusive?: boolean;
 }>();
 
-type WalletSignatory = Signatory & { wallet: Wallet };
+type WalletSignatory = Signatory & { account: AnyAccount; wallet: Wallet };
 
 type Props = {
   operation: MultisigOperation;
@@ -105,9 +106,10 @@ export const OperationSignatories = ({ operation, account }: Props) => {
   const walletSignatories: WalletSignatory[] = signatoriesList.reduce((acc: WalletSignatory[], signatory) => {
     const signatoryAccounts = accountsList.filter(account => account.accountId === signatory.accountId);
     const signatoryWallet = wallets.find(w => signatoryAccounts.some(account => account.walletId === w.id));
+    const signatoryAccount = signatoryAccounts.find(account => account.walletId === signatoryWallet?.id);
 
-    if (signatoryWallet) {
-      acc.push({ ...signatory, wallet: signatoryWallet });
+    if (signatoryAccount && signatoryWallet) {
+      acc.push({ ...signatory, account: signatoryAccount, wallet: signatoryWallet });
     }
 
     return acc;
@@ -195,10 +197,14 @@ export const OperationSignatories = ({ operation, account }: Props) => {
                   key={signatory.accountId}
                   status={operationDetailsUtils.getSignatoryStatus(operation.events, signatory.accountId)}
                 >
-                  <WalletIcon type={signatory.wallet.type} size={20} />
-                  <BodyText className="mr-auto truncate text-inherit">
-                    <WalletName wallet={signatory.wallet} />
-                  </BodyText>
+                  <NamedAccount
+                    accountId={signatory.account.accountId}
+                    chain={chain ?? undefined}
+                    title={signatory.account.name}
+                    wallet={signatory.wallet}
+                    variant="short"
+                    iconSize={20}
+                  />
                 </SignatoryCard>
               ))}
             </ul>
