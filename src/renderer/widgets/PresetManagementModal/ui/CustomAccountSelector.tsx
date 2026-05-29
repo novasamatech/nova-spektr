@@ -4,21 +4,19 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, includesMultiple, toShortAddress } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
-import { Checkbox, Input, SearchInput } from '@/shared/ui-kit';
+import { Checkbox, SearchInput } from '@/shared/ui-kit';
 import { type AccountEntry } from '@/aggregates/account-presets';
 
 import { AccountEntryRowBadges } from './AccountEntryRowBadges';
 import { VirtualAccountList } from './VirtualAccountList';
 
 type Props = {
-  name: string;
   allEntries: AccountEntry[];
   selectedIds: string[];
-  onNameChange: (name: string) => void;
   onSelectedIdsChange: (ids: string[]) => void;
 };
 
-export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameChange, onSelectedIdsChange }: Props) => {
+export const CustomAccountSelector = ({ allEntries, selectedIds, onSelectedIdsChange }: Props) => {
   const { t } = useI18n();
   const [search, setSearch] = useState('');
 
@@ -56,21 +54,6 @@ export const CustomAccountSelector = ({ name, allEntries, selectedIds, onNameCha
 
   return (
     <div className="flex flex-col gap-y-3">
-      <div className="flex flex-col gap-y-1">
-        <label className="text-footnote text-text-tertiary">{t('dashboard.presets.modal.name')}</label>
-        <Input
-          value={name}
-          placeholder={t('dashboard.presets.modal.namePlaceholder')}
-          maxLength={30}
-          width="full"
-          onChange={onNameChange}
-        />
-      </div>
-
-      <FootnoteText className="text-text-tertiary">
-        {t('dashboard.presets.modal.selectedCount', { count: selectedIds.length })}
-      </FootnoteText>
-
       <SearchInput value={search} placeholder={t('dashboard.presets.modal.searchAccounts')} onChange={setSearch} />
 
       <div className="rounded-sm px-2 py-1">
