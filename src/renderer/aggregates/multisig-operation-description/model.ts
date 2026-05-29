@@ -5,12 +5,11 @@ import { toast } from 'sonner';
 import { type ChainId } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { activeOperationRoute } from '@/shared/transactions';
 import { HttpError, operationDescriptionsResource, operationsService } from '@/domains/backend';
-import { type AnyAccount, type Extrinsic, multisigOperationService } from '@/domains/network';
+import { type Extrinsic, multisigOperationService } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
-import { accountUtils, walletUtils } from '@/entities/wallet';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
-import { walletSelect } from '@/aggregates/wallet-select';
 // Deep import on purpose: this aggregate is loaded early by form-models, and the
 // @/features/contacts barrel re-exports heavy contact UI — going through it is the
 // cycle trap described in CLAUDE.md. The model file is pure Effector.
@@ -22,6 +21,7 @@ import { backendContactsModel } from '@/features/contacts/BackendContacts/model/
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 
+import { findRouteMultisigAccountId } from './lib/findRouteMultisigAccountId';
 import { resolveDescriptionAreaState } from './lib/resolveDescriptionAreaState';
 
 // Drafts feature pushes flow-active state via setDraftFlowActive — we don't
@@ -37,42 +37,25 @@ const $description = createStore('')
 
 const $isDraftFlowActive = createStore(false).on(setDraftFlowActive, (_, value) => value);
 
-const $isMultisigInitiator = walletSelect.$selectedWallet.map(walletUtils.isAnyMultisig);
+// The multisig accountId reached by the current operation's signing-path route,
+// or null. The route is published by the confirm-store factories, so this works
+// for a multisig signed directly AND for one reached via a proxy (where the
+// selected wallet is the proxied account, not a multisig) — mirroring how the
+// multisig deposit is detected.
+const $routeMultisigAccountId = activeOperationRoute.$activeOperationRoute.map(findRouteMultisigAccountId);
 
-// Set of multisig accountIds that the active wallet operates as. For a regular
-// multisig: the single chain-agnostic accountId. For a flexible multisig: the
-// inner `multisigAccountId` of every per-chain entry. We can't constrain by
-// chain here (the aggregate is rendered before signing has chain context), so
-// any one match is enough to enable the input.
-const $activeMultisigAccountIds = walletSelect.$selectedAccounts.map(accounts => {
-  const ids = new Set<AccountId>();
-  for (const account of accounts) {
-    if (accountUtils.isMultisigAccount(account)) {
-      ids.add(account.accountId);
-    } else if (accountUtils.isFlexibleMultisigAccount(account)) {
-      ids.add(account.multisigAccountId);
-    }
-  }
-
-  return ids;
-});
-
-// True iff at least one of the active wallet's multisig accountIds is present
-// in the user's address-book contacts. Descriptions only make sense for
-// multisigs the user has registered there — that's the audience that can read
-// them back.
+// True iff the route's multisig is present in the user's address-book contacts.
+// Descriptions only make sense for multisigs the user has registered there —
+// that's the audience that can read them back.
 const $isMultisigInAddressBook = combine(
   {
-    multisigIds: $activeMultisigAccountIds,
+    multisigId: $routeMultisigAccountId,
     contacts: contactModel.$backendContacts,
   },
-  ({ multisigIds, contacts }) => {
-    if (multisigIds.size === 0) return false;
-    for (const contact of contacts) {
-      if (multisigIds.has(contact.accountId)) return true;
-    }
+  ({ multisigId, contacts }) => {
+    if (multisigId === null) return false;
 
-    return false;
+    return contacts.some(contact => contact.accountId === multisigId);
   },
 );
 
@@ -83,7 +66,7 @@ const $isMultisigInAddressBook = combine(
 // multisig that has connected before gets the reconnect affordance.
 const $descriptionAreaState = combine(
   {
-    isMultisig: $isMultisigInitiator,
+    isMultisig: $routeMultisigAccountId.map(nonNullable),
     isDraftActive: $isDraftFlowActive,
     isHealthy: backendContactsModel.$isHealthy,
     isInAddressBook: $isMultisigInAddressBook,
@@ -107,27 +90,11 @@ type PendingContext = {
 
 const $pendingContext = createStore<PendingContext | null>(null).reset(signModel.init);
 
-function findMultisigAccountId(accounts: AnyAccount[], chainId: ChainId): AccountId | null {
-  for (const account of accounts) {
-    if (accountUtils.isFlexibleMultisigAccount(account) && account.chainId === chainId) {
-      return account.multisigAccountId;
-    }
-  }
-  for (const account of accounts) {
-    if (accountUtils.isMultisigAccount(account)) {
-      return account.accountId;
-    }
-  }
-
-  return null;
-}
-
 sample({
   clock: signModel.signed,
   source: {
     description: $description,
-    selectedWallet: walletSelect.$selectedWallet,
-    selectedAccounts: walletSelect.$selectedAccounts,
+    multisigAccountId: $routeMultisigAccountId,
     signStore: signModel.$signStore,
     isAuthenticated: authModel.$isAuthenticated,
     isInAddressBook: $isMultisigInAddressBook,
@@ -135,25 +102,22 @@ sample({
   },
   filter: (s): boolean => {
     if (s.description.length === 0) return false;
-    if (!walletUtils.isAnyMultisig(s.selectedWallet)) return false;
+    if (s.multisigAccountId === null) return false;
     if (!s.isAuthenticated) return false;
     if (!s.isInAddressBook) return false;
     if (!nonNullable(s.signStore) || s.signStore.length === 0) return false;
     // Drafts post their own description via submit-draft-model — don't double-post.
     if (s.isDraftActive) return false;
 
-    const chainId = s.signStore[0]!.chain.chainId;
-
-    return nonNullable(findMultisigAccountId(s.selectedAccounts, chainId));
+    return true;
   },
   fn: (s): PendingContext => {
     const payload = s.signStore![0]!;
-    const chainId = payload.chain.chainId;
 
     return {
       description: s.description,
-      chainId,
-      multisigAccountId: findMultisigAccountId(s.selectedAccounts, chainId)!,
+      chainId: payload.chain.chainId,
+      multisigAccountId: s.multisigAccountId!,
       extrinsic: payload.extrinsic,
     };
   },
