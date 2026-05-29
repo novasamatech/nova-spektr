@@ -1,4 +1,4 @@
-import { type Scope, allSettled } from 'effector';
+import { type Event, type Scope, allSettled, createStore } from 'effector';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
@@ -15,6 +15,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type Draft, type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
+import { balanceSubModel } from '@/features/assets-balances';
 import { submitDraftModel } from '@/features/drafts/model/submit-draft-model';
 import { polkadotChain, polkadotChainId, vaultWallet } from '../../fixtures/index';
 import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
@@ -139,6 +140,11 @@ const setupAccountHandlers = async (scope: Scope) => {
     },
   });
 };
+
+// `.watch` is blocked by `effector/no-watch`; collect payloads in a store instead.
+const payloadsStore = <T>(event: Event<T>) => createStore<T[]>([]).on(event, (s, p) => [...s, p]);
+
+const $balanceFetchPayloads = payloadsStore(balanceSubModel.fetchAccountIds);
 
 const buildEnv = async (testAccounts: AnyAccount[]): Promise<FeatureTestEnvironment> => {
   // `autoPopulate: false` + direct `withStoreValue` — the test storage uses a
@@ -346,6 +352,40 @@ describe('Submit Draft — signing path drives the route', () => {
       expect(route.map((a) => a.accountId)).toEqual([MULTISIG_TOP_ID, MULTISIG_MID_ID, SIGNER_ID]);
       expect(route).toHaveLength(3);
       expect(route.every((a) => a.accountId !== SIGNER_2_ID)).toBe(true);
+    });
+  });
+
+  describe('balance prefetch for validation', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Drafts',
+        feature: 'Submit Draft',
+        story: 'Submit prefetches fee and multisig-deposit payer balances',
+      });
+    });
+
+    it('requests balances for nested multisig deposit payers on flow start', async () => {
+      env = await buildEnv([multisigTop, multisigMid, signerAccount]);
+
+      const draft = makeDraft(
+        [
+          { kind: 'multisig', accountId: MULTISIG_TOP_ID },
+          { kind: 'multisig', accountId: MULTISIG_MID_ID },
+          { kind: 'signer', accountId: SIGNER_ID },
+        ],
+        { multisigAccountId: MULTISIG_MID_ID, initiatorAccountId: SIGNER_ID },
+      );
+
+      await allSettled(submitDraftModel.flowStarted, {
+        scope: env.scope,
+        params: { draft, initiator: multisigMid, chain: polkadotChain },
+      });
+
+      const calls = env.getState($balanceFetchPayloads);
+      const lastCall = calls.at(-1);
+      expect(lastCall?.map(({ accountId }) => accountId)).toEqual([MULTISIG_MID_ID, SIGNER_ID]);
+      expect(lastCall?.map(({ chain }) => chain.chainId)).toEqual([polkadotChainId, polkadotChainId]);
+      expect(env.getState(submitDraftModel.$validationValid)).toBe(false);
     });
   });
 
