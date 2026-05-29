@@ -9,13 +9,21 @@ import { HttpError, operationDescriptionsResource, operationsService } from '@/d
 import { type AnyAccount, type Extrinsic, multisigOperationService } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { accountUtils, walletUtils } from '@/entities/wallet';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
 import { walletSelect } from '@/aggregates/wallet-select';
+// Deep import on purpose: this aggregate is loaded early by form-models, and the
+// @/features/contacts barrel re-exports heavy contact UI — going through it is the
+// cycle trap described in CLAUDE.md. The model file is pure Effector.
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular load via the heavy @/features/contacts barrel
+import { backendContactsModel } from '@/features/contacts/BackendContacts/model/backend-contacts-model';
 // Import signModel directly from its model file to avoid pulling in
 // OperationSign/index.ts (which re-exports the UI). OperationSign UI imports
 // this aggregate, so going through the barrel would create a circular load.
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
+
+import { resolveDescriptionAreaState } from './lib/resolveDescriptionAreaState';
+
 // Drafts feature pushes flow-active state via setDraftFlowActive — we don't
 // import from features/drafts here, since drafts → submit-draft-model →
 // OperationSign barrel → UI → aggregate would form a cycle.
@@ -36,7 +44,7 @@ const $isMultisigInitiator = walletSelect.$selectedWallet.map(walletUtils.isAnyM
 // inner `multisigAccountId` of every per-chain entry. We can't constrain by
 // chain here (the aggregate is rendered before signing has chain context), so
 // any one match is enough to enable the input.
-const $activeMultisigAccountIds = walletSelect.$selectedAccounts.map((accounts) => {
+const $activeMultisigAccountIds = walletSelect.$selectedAccounts.map(accounts => {
   const ids = new Set<AccountId>();
   for (const account of accounts) {
     if (accountUtils.isMultisigAccount(account)) {
@@ -68,19 +76,24 @@ const $isMultisigInAddressBook = combine(
   },
 );
 
-// True when the description input should render in the sign step. Drafts carry
-// their own description set at creation, so the input is hidden during draft
-// submissions to avoid double-posting and confusing UX.
-const $showInput = combine(
+// Field vs. reconnect vs. hidden for the description area on initiation confirm
+// screens. Drafts carry their own description (hidden during draft flow). Field
+// gates on $isHealthy (stricter than authenticated — guarantees the POST can
+// succeed). When disconnected we can't verify per-multisig membership, so any
+// multisig that has connected before gets the reconnect affordance.
+const $descriptionAreaState = combine(
   {
     isMultisig: $isMultisigInitiator,
-    isAuthenticated: authModel.$isAuthenticated,
-    isInAddressBook: $isMultisigInAddressBook,
     isDraftActive: $isDraftFlowActive,
+    isHealthy: backendContactsModel.$isHealthy,
+    isInAddressBook: $isMultisigInAddressBook,
+    hasEverConnected: connectionHistoryModel.$hasEverConnected,
   },
-  ({ isMultisig, isAuthenticated, isInAddressBook, isDraftActive }) =>
-    isMultisig && isAuthenticated && isInAddressBook && !isDraftActive,
+  resolveDescriptionAreaState,
 );
+
+const $showField = $descriptionAreaState.map(state => state === 'field');
+const $showReconnect = $descriptionAreaState.map(state => state === 'reconnect');
 
 // Snapshot captured at sign time. Both $description and signModel.$signStore
 // reset when OperationSign unmounts (gate.flow.close), which races with the
@@ -187,10 +200,10 @@ sample({
     if (!nonNullable(s.pending)) return false;
     if (!nonNullable(s.baseUrl)) return false;
 
-    return results.some((r) => r.result === ExtrinsicResult.SUCCESS);
+    return results.some(r => r.result === ExtrinsicResult.SUCCESS);
   },
   fn: (s, results): PostParams => {
-    const successResult = results.find((r) => r.result === ExtrinsicResult.SUCCESS) as SuccessResult;
+    const successResult = results.find(r => r.result === ExtrinsicResult.SUCCESS) as SuccessResult;
     const pending = s.pending!;
     const callHash = extractCallHash(pending.extrinsic, successResult.params.extrinsicHash);
 
@@ -226,7 +239,8 @@ sample({
 
 export const multisigOperationDescription = {
   $description,
-  $showInput,
+  $showField,
+  $showReconnect,
   setDescription,
   setDraftFlowActive,
 };
