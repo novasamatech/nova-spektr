@@ -3,6 +3,7 @@
   "description": "Polkadot Enterprise application",
   "type": "module",
   "version": "2.10.0",
+  "packageManager": "pnpm@11.4.0",
   "main": "./release/build/main.cjs",
   "repository": "https://github.com/novasamatech/nova-spektr",
   "license": "MIT",
@@ -16,6 +17,7 @@
     "local:preview": "npm run renderer:dev && npm run renderer:preview",
     "start": "pnpm r clean:build main:dev preload:dev && concurrently \"pnpm main:dev:watch\" \"pnpm preload:dev:watch\" \"pnpm renderer:dev:watch\" \"node scripts/waitForRenderer.mjs && pnpm electron\"",
     "start:renderer": "pnpm renderer:dev:watch",
+    "start:renderer:container": "pnpm renderer:dev:watch --host 0.0.0.0",
     "renderer:dev": "cross-env CHAINS_FILE=chains_dev TOKENS_FILE=tokens_dev LOGGER=false vite build --mode development -c vite.config.renderer.ts",
     "renderer:dev:watch": "cross-env CHAINS_FILE=chains_dev TOKENS_FILE=tokens_dev LOGGER=false vite --mode development -c vite.config.renderer.ts",
     "renderer:staging": "cross-env CHAINS_FILE=chains TOKENS_FILE=tokens vite build --mode staging -c vite.config.renderer.ts",
@@ -81,7 +83,7 @@
   },
   "engines": {
     "node": ">=24.x",
-    "pnpm": ">=9.x"
+    "pnpm": ">=11 <12"
   },
   "dependencies": {
     "@apollo/client": "3.13.9",
@@ -281,22 +283,5 @@
   "sideEffects": [
     "*.css",
     "*.ts"
-  ],
-  "pnpm": {
-    "peerDependencyRules": {
-      "allowedVersions": {
-        "vite": "8"
-      }
-    },
-    "onlyBuiltDependencies": [
-      "@swc/core",
-      "@tailwindcss/oxide",
-      "electron",
-      "electron-winstaller",
-      "esbuild",
-      "oxc-resolver",
-      "sharp",
-      "unrs-resolver"
-    ]
-  }
+  ]
 }

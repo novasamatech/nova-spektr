@@ -59,7 +59,8 @@ const makeMultisigAccount = (accountId: AccountId): AnyAccount => {
   } as unknown as AnyAccount;
 };
 
-const proxied = (accountId: AccountId): PathNode => ({ kind: 'proxied', accountId });
+const proxied = (accountId: AccountId, proxyType?: string): PathNode =>
+  proxyType ? { kind: 'proxied', accountId, proxyType } : { kind: 'proxied', accountId };
 const multisig = (accountId: AccountId): PathNode => ({ kind: 'multisig', accountId });
 const signer = (accountId: AccountId): PathNode => ({ kind: 'signer', accountId });
 
@@ -123,7 +124,7 @@ describe('createPathRouteStore', () => {
     const proxyId = acc(2);
     const signerId = acc(3);
     const path: PathNode[] = [
-      { kind: 'proxied', accountId: proxiedId, proxyType: 'Governance' as never },
+      { kind: 'proxied', accountId: proxiedId, proxyType: 'Governance' },
       multisig(proxyId),
       signer(signerId),
     ];
@@ -177,10 +178,52 @@ describe('createPathRouteStore', () => {
     expect(scope.getState($route)).toEqual([proxiedAt1, multisigAt2, signerAt3]);
   });
 
-  it('returns null when a proxied node has no Proxied/Flex account, only a same-accountId generic entry', () => {
-    // No local ProxiedAccount → wrap pipeline can't produce proxy.proxy.
-    // Better to block (and surface the path-unresolved error) than to silently
-    // pick the generic account and drop the proxy layer.
+  it('synthesizes a Proxied account when a proxied node only has a same-accountId generic entry', () => {
+    // A draft can target a proxied source that is also present as a plain
+    // wallet account. The saved path kind + proxyType is enough to preserve
+    // the proxy.proxy layer instead of rendering/routing through the plain
+    // account.
+    const path: PathNode[] = [proxied(acc(1), 'Governance'), multisig(acc(2)), signer(acc(3))];
+    const $path = createStore<PathNode[]>(path);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([
+        [accounts.__test.$list, [makeAccount(acc(1)), makeMultisigAccount(acc(2)), makeAccount(acc(3))]],
+      ]),
+    });
+
+    const route = scope.getState($route);
+
+    expect(route?.map((account) => account.accountId)).toEqual([acc(1), acc(2), acc(3)]);
+    expect(route?.[0]).toMatchObject({
+      accountType: AccountType.PROXIED,
+      connections: [{ proxyAccountId: acc(2), proxyType: 'Governance', delay: 0 }],
+    });
+  });
+
+  it('does not synthesize a proxy connection for an unknown proxy type', () => {
+    const path: PathNode[] = [proxied(acc(1), 'InvalidProxyType'), multisig(acc(2)), signer(acc(3))];
+    const $path = createStore<PathNode[]>(path);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([
+        [accounts.__test.$list, [makeAccount(acc(1)), makeMultisigAccount(acc(2)), makeAccount(acc(3))]],
+      ]),
+    });
+
+    const route = scope.getState($route);
+
+    expect(route?.[0]).toMatchObject({
+      accountType: AccountType.PROXIED,
+      connections: [],
+    });
+  });
+
+  it('returns null when a proxied node cannot be resolved and has no proxyType to synthesize from', () => {
     const path: PathNode[] = [proxied(acc(1)), multisig(acc(2)), signer(acc(3))];
     const $path = createStore<PathNode[]>(path);
     const $chain = createStore<Chain | null>(CHAIN_A);

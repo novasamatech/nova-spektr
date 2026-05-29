@@ -3,14 +3,20 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { type Address, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { performSearch, toAddress, toShortAddress } from '@/shared/lib/utils';
+import {
+  isEthereumAccountId,
+  isSubstrateAccountId,
+  performSearch,
+  toAddress,
+  toShortAddress,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HelpText } from '@/shared/ui';
 import { AccountExplorers, Address as AddressDisplay, Identicon } from '@/shared/ui-entities';
 import { Field, Select, Tabs } from '@/shared/ui-kit';
 import { accountService, accounts as accountsStore, identity, useAccountName } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
-import { networkModel } from '@/entities/network';
+import { networkModel, networkUtils } from '@/entities/network';
 import {
   type ContactCandidate,
   type MultisigCandidate,
@@ -29,6 +35,14 @@ type Props = {
 };
 
 type Mode = 'modify' | 'replace';
+
+export const filterCandidatesByChainFamily = (candidates: MultisigCandidate[], chain: Chain): MultisigCandidate[] => {
+  const isEthereumChain = networkUtils.isEthereumBased(chain.options);
+
+  return candidates.filter((candidate) =>
+    isEthereumChain ? isEthereumAccountId(candidate.accountId) : isSubstrateAccountId(candidate.accountId),
+  );
+};
 
 export const UnifiedPicker = ({ chain, currentControllerAddress, currentThreshold }: Props) => {
   const { t } = useI18n();
@@ -56,7 +70,7 @@ export const UnifiedPicker = ({ chain, currentControllerAddress, currentThreshol
 
   const selectableCandidates = useMemo(
     () =>
-      candidates
+      filterCandidatesByChainFamily(candidates, chain)
         .filter((c) => c.address !== currentControllerAddress)
         .map((c) => {
           const resolved = accountService.resolveAccountName({
@@ -69,7 +83,7 @@ export const UnifiedPicker = ({ chain, currentControllerAddress, currentThreshol
           });
           return { ...c, name: resolved === shortAddressFor(c.accountId) ? c.name : resolved };
         }),
-    [candidates, currentControllerAddress, chain, allAccounts, allContacts, allIdentities, allChains, shortAddressFor],
+    [candidates, chain, currentControllerAddress, allAccounts, allContacts, allIdentities, allChains, shortAddressFor],
   );
 
   const filtered = useMemo(

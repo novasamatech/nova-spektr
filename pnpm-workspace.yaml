@@ -1,0 +1,20 @@
+packages:
+  - .
+
+savePrefix: ''
+minimumReleaseAge: 4320
+blockExoticSubdeps: false
+
+peerDependencyRules:
+  allowedVersions:
+    vite: '8'
+
+allowBuilds:
+  '@swc/core': true
+  '@tailwindcss/oxide': true
+  electron: true
+  electron-winstaller: true
+  esbuild: true
+  oxc-resolver: true
+  sharp: true
+  unrs-resolver: true

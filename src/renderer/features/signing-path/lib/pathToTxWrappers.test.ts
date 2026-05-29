@@ -48,7 +48,7 @@ describe('pathToTxWrappers', () => {
     const proxy = makeAccount(proxyId, 2);
     const signer = makeAccount(signerId, 3);
     const path: PathNode[] = [
-      { kind: 'proxied', accountId: proxiedId, proxyType: 'Governance' as never },
+      { kind: 'proxied', accountId: proxiedId, proxyType: 'Governance' },
       { kind: 'signer', accountId: proxyId },
     ];
     const wallets = [
