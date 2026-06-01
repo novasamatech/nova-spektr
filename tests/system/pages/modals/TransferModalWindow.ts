@@ -135,6 +135,14 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     });
   }
 
+  public async clearRecipient(): Promise<void> {
+    await step('Clear the committed recipient back to the address input', async () => {
+      // Blurring the input commits the value and reveals the read-only card with its clear button.
+      await this.page.getByTestId(TransferModalElements.recipientInputLocator).blur();
+      await this.page.getByTestId(TransferModalElements.recipientClearLocator).click();
+    });
+  }
+
   public async clickMyselfButton(): Promise<void> {
     await step(`Click 'Myself' button to fill in address`, async () => {
       await this.page.getByTestId(TransferModalElements.myselfButton).click();

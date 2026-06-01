@@ -19,14 +19,15 @@ import {
   performSearch,
   toAccountId,
   toAddress,
+  toShortAddress,
   validateAddress,
   withdrawableAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Alert, Button, CaptionText, FootnoteText, Icon, InputHint, Switch } from '@/shared/ui';
+import { Alert, Button, CaptionText, FootnoteText, Icon, IconButton, InputHint, Switch } from '@/shared/ui';
 import { AccountSelect, Address, Identicon, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
-import { accountService, useAccountName, useAccountsNames } from '@/domains/network';
+import { accountService, useAccountName, useAccountsNames, useWalletName } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
@@ -36,6 +37,7 @@ import { AmountInput } from '@/features/assets-balances';
 import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { SigningPathSection, graphModel } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
 import { TRANSFER_ALLOWED_PROXY_TYPES, formModel } from '../model/form-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
@@ -409,6 +411,13 @@ const Destination = memo(() => {
   const isDestinationReadonly = useUnit(formModel.$isDestinationReadonly);
 
   const [query, setQuery] = useState('');
+  // Keep the editable Combobox mounted while the field is focused; only swap to
+  // the read-only name card once the recipient is committed (blur/selection).
+  // Swapping on raw value validity yanks focus mid-typing/paste and blocks edits.
+  const [isRecipientFocused, setRecipientFocused] = useState(false);
+  // Pulls focus into the Combobox the next time it mounts (after clear or when
+  // re-entering edit from the card), so the user doesn't have to click again.
+  const [autoFocusRecipient, setAutoFocusRecipient] = useState(false);
 
   const isMyselfXcmEnabled = useUnit(formModel.$isMyselfXcmEnabled);
 
@@ -427,6 +436,37 @@ const Destination = memo(() => {
   }, [chain]);
 
   const resolvedAccounts = useAccountsNames(accountsList, chain);
+
+  const recipientAccountId = useMemo(() => {
+    const trimmed = destination.value.trim();
+    if (!chain || !validateAddress(trimmed, chain)) return null;
+
+    return toAccountId(trimmed);
+  }, [destination.value, chain]);
+
+  const recipientWallet = useMemo(() => {
+    if (nullable(recipientAccountId)) return null;
+
+    return wallets.find((wallet) => wallet.accounts.some((a) => a.accountId === recipientAccountId)) ?? null;
+  }, [wallets, recipientAccountId]);
+
+  // Run the standard resolution chain (custom name → contact → on-chain identity
+  // → wallet name). `resolveAccountName` falls back to a short address when none
+  // match, so we render the rich NamedAccount only when resolution produced a
+  // real name — otherwise NamedAccount would print the address twice.
+  const recipientWalletName = useWalletName(recipientWallet);
+  const recipientName = useAccountName({
+    accountId: recipientAccountId,
+    chain,
+    title: recipientWalletName ?? undefined,
+  });
+  const recipientHasName = useMemo(() => {
+    if (nullable(recipientAccountId) || !recipientName) return false;
+
+    const shortAddress = toShortAddress(toAddress(recipientAccountId, { prefix: chain?.addressPrefix }), 5);
+
+    return recipientName !== shortAddress;
+  }, [recipientAccountId, recipientName, chain]);
 
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
     if (nullable(chain)) return [];
@@ -531,6 +571,24 @@ const Destination = memo(() => {
     setQuery('');
   };
 
+  const handleClearRecipient = () => {
+    destination.onChange('');
+    destination.markAsTouched();
+    setQuery('');
+    // The card unmounts and the Combobox remounts; ask it to grab focus so the
+    // user can immediately retype instead of clicking the field again.
+    setAutoFocusRecipient(true);
+  };
+
+  // Return to the editable Combobox with the value intact so a committed
+  // recipient can be edited in place instead of cleared and retyped.
+  const handleEditRecipient = () => {
+    if (isDestinationReadonly) return;
+
+    setRecipientFocused(true);
+    setAutoFocusRecipient(true);
+  };
+
   const prefixElement = (
     <Identicon
       invalid={destination.touched && destination.hasError}
@@ -543,28 +601,79 @@ const Destination = memo(() => {
   return (
     <Field text={t('transfer.recipientLabel')}>
       <Box direction="row" gap={2} horizontalAlign="center" verticalAlign="center">
-        <Combobox
-          data-testid={TEST_IDS.OPERATIONS.RECIPIENT_INPUT}
-          placeholder={t('transfer.recipientPlaceholder')}
-          invalid={destination.touched && destination.hasError}
-          disabled={isDestinationReadonly}
-          value={destination.value.trim()}
-          prefixElement={prefixElement}
-          height="md"
-          onChange={destination.onChange}
-          onBlur={destination.markAsTouched}
-          onInput={setQuery}
-        >
-          {allOptions.map((group) => (
-            <Combobox.Group key={group.id} title={group.label}>
-              {group.items.map((option) => (
-                <Combobox.Item key={`${option.id}-${option.value.walletId ?? 'unknown'}`} value={option.value.address}>
-                  {option.label}
-                </Combobox.Item>
-              ))}
-            </Combobox.Group>
-          ))}
-        </Combobox>
+        {recipientAccountId && !isRecipientFocused ? (
+          <div
+            data-testid={TEST_IDS.OPERATIONS.RECIPIENT_CARD}
+            className="flex h-[42px] w-full items-center gap-x-2 rounded-sm border border-filter-border bg-input-background px-[11px]"
+          >
+            <button
+              type="button"
+              className="min-w-0 flex-1 cursor-text text-left"
+              disabled={isDestinationReadonly}
+              onClick={handleEditRecipient}
+            >
+              {recipientHasName ? (
+                <NamedAccount
+                  accountId={recipientAccountId}
+                  chain={chain}
+                  wallet={recipientWallet}
+                  variant="truncate"
+                  iconSize={20}
+                  hideExplorers
+                />
+              ) : (
+                <Address
+                  showIcon
+                  iconSize={20}
+                  variant="truncate"
+                  address={toAddress(recipientAccountId, { prefix: chain?.addressPrefix })}
+                />
+              )}
+            </button>
+            {!isDestinationReadonly && (
+              <IconButton
+                name="close"
+                size={16}
+                testId={TEST_IDS.OPERATIONS.RECIPIENT_CLEAR}
+                onClick={handleClearRecipient}
+              />
+            )}
+          </div>
+        ) : (
+          <Combobox
+            data-testid={TEST_IDS.OPERATIONS.RECIPIENT_INPUT}
+            placeholder={t('transfer.recipientPlaceholder')}
+            invalid={destination.touched && destination.hasError}
+            disabled={isDestinationReadonly}
+            value={destination.value.trim()}
+            prefixElement={prefixElement}
+            height="md"
+            autoFocus={autoFocusRecipient}
+            onChange={destination.onChange}
+            onFocus={() => {
+              setRecipientFocused(true);
+              setAutoFocusRecipient(false);
+            }}
+            onBlur={() => {
+              setRecipientFocused(false);
+              destination.markAsTouched();
+            }}
+            onInput={setQuery}
+          >
+            {allOptions.map((group) => (
+              <Combobox.Group key={group.id} title={group.label}>
+                {group.items.map((option) => (
+                  <Combobox.Item
+                    key={`${option.id}-${option.value.walletId ?? 'unknown'}`}
+                    value={option.value.address}
+                  >
+                    {option.label}
+                  </Combobox.Item>
+                ))}
+              </Combobox.Group>
+            ))}
+          </Combobox>
+        )}
         {isMyselfXcmEnabled && !isDestinationReadonly && (
           <Button pallet="secondary" testId={TEST_IDS.OPERATIONS.MYSELF_BUTTON} onClick={handleChange}>
             {t('transfer.myselfButton')}

@@ -8,6 +8,8 @@ export class TransferModalElements {
   static tokenAmountLocator = 'AssetBalance';
   static amountInputLocator = TEST_IDS.OPERATIONS.AMOUNT_INPUT;
   static recipientInputLocator = TEST_IDS.OPERATIONS.RECIPIENT_INPUT;
+  static recipientCardLocator = TEST_IDS.OPERATIONS.RECIPIENT_CARD;
+  static recipientClearLocator = TEST_IDS.OPERATIONS.RECIPIENT_CLEAR;
   static myselfButton = TEST_IDS.OPERATIONS.MYSELF_BUTTON;
   static signatoryLocator = TEST_IDS.OPERATIONS.SIGNATORY_SELECTOR;
   static signatoryOptionLocator = TEST_IDS.OPERATIONS.SIGNATORY_SELECTOR_OPTION;
