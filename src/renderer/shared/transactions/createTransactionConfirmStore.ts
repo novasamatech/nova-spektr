@@ -7,6 +7,8 @@ import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { operationsUtils } from '@/entities/operations';
 import { walletUtils } from '@/entities/wallet';
 
+import { activeOperationRoute } from './activeOperationRoute';
+
 export type TxConfirmInfo = {
   id?: number;
   initiator: AnyAccount;
@@ -45,6 +47,16 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
   const resetConfirm = createEvent();
 
   const $store = restore<Input[]>(init, []);
+
+  // Publish the route + chain for cross-cutting consumers (see activeOperationRoute).
+  sample({
+    clock: $store,
+    fn: (store) => ({
+      route: store.flatMap((item) => item.route),
+      chain: store.at(0)?.chain ?? null,
+    }),
+    target: activeOperationRoute.activeOperationChanged,
+  });
 
   const $confirms = combine($store, $wallets, (store, wallets): ConfirmItem<Input>[] => {
     if (!wallets.length) return [];

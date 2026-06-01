@@ -5,17 +5,25 @@ import { toast } from 'sonner';
 import { type ChainId } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { HttpError, operationDescriptionsResource, operationsService } from '@/domains/backend';
-import { type AnyAccount, type Extrinsic, multisigOperationService } from '@/domains/network';
+import { activeOperationRoute } from '@/shared/transactions';
+import { HttpError, PERMISSIONS, operationDescriptionsResource, operationsService } from '@/domains/backend';
+import { type Extrinsic, multisigOperationService } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
-import { accountUtils, walletUtils } from '@/entities/wallet';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
+// Deep import on purpose: this aggregate is loaded early by form-models, and the
+// @/features/contacts barrel re-exports heavy contact UI — going through it is the
+// cycle trap described in CLAUDE.md. The model file is pure Effector.
+// eslint-disable-next-line boundaries/entry-point -- direct import to avoid circular load via the heavy @/features/contacts barrel
+import { backendContactsModel } from '@/features/contacts/BackendContacts/model/backend-contacts-model';
 // Import signModel directly from its model file to avoid pulling in
 // OperationSign/index.ts (which re-exports the UI). OperationSign UI imports
 // this aggregate, so going through the barrel would create a circular load.
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
+
+import { findRouteMultisigAccountId } from './lib/findRouteMultisigAccountId';
+import { resolveDescriptionAreaState } from './lib/resolveDescriptionAreaState';
+
 // Drafts feature pushes flow-active state via setDraftFlowActive — we don't
 // import from features/drafts here, since drafts → submit-draft-model →
 // OperationSign barrel → UI → aggregate would form a cycle.
@@ -29,58 +37,58 @@ const $description = createStore('')
 
 const $isDraftFlowActive = createStore(false).on(setDraftFlowActive, (_, value) => value);
 
-const $isMultisigInitiator = walletSelect.$selectedWallet.map(walletUtils.isAnyMultisig);
+// The multisig accountId reached by the current operation's signing-path route,
+// or null. The route is published by the confirm-store factories, so this works
+// for a multisig signed directly AND for one reached via a proxy (where the
+// selected wallet is the proxied account, not a multisig) — mirroring how the
+// multisig deposit is detected.
+const $routeMultisigAccountId = activeOperationRoute.$activeOperationRoute.map(findRouteMultisigAccountId);
 
-// Set of multisig accountIds that the active wallet operates as. For a regular
-// multisig: the single chain-agnostic accountId. For a flexible multisig: the
-// inner `multisigAccountId` of every per-chain entry. We can't constrain by
-// chain here (the aggregate is rendered before signing has chain context), so
-// any one match is enough to enable the input.
-const $activeMultisigAccountIds = walletSelect.$selectedAccounts.map((accounts) => {
-  const ids = new Set<AccountId>();
-  for (const account of accounts) {
-    if (accountUtils.isMultisigAccount(account)) {
-      ids.add(account.accountId);
-    } else if (accountUtils.isFlexibleMultisigAccount(account)) {
-      ids.add(account.multisigAccountId);
-    }
-  }
+// Caller holds the backend `operation:write` permission. Without it the POST is
+// rejected at the permissions guard, so the description field is pointless. Read
+// from $authState, which is only populated while connected — that's why the
+// resolver only consults this on its healthy branch.
+const $hasWritePermission = authModel.$authState.map(
+  state => state?.permissions.includes(PERMISSIONS.OPERATION_WRITE) ?? false,
+);
 
-  return ids;
-});
-
-// True iff at least one of the active wallet's multisig accountIds is present
-// in the user's address-book contacts. Descriptions only make sense for
-// multisigs the user has registered there — that's the audience that can read
-// them back.
+// True iff the route's multisig is present in the user's address-book contacts.
+// Descriptions only make sense for multisigs the user has registered there —
+// that's the audience that can read them back. The backend mirrors this: a POST
+// for a multisig outside the caller's reachable contacts answers 400/403.
 const $isMultisigInAddressBook = combine(
   {
-    multisigIds: $activeMultisigAccountIds,
+    multisigId: $routeMultisigAccountId,
     contacts: contactModel.$backendContacts,
   },
-  ({ multisigIds, contacts }) => {
-    if (multisigIds.size === 0) return false;
-    for (const contact of contacts) {
-      if (multisigIds.has(contact.accountId)) return true;
-    }
+  ({ multisigId, contacts }) => {
+    if (multisigId === null) return false;
 
-    return false;
+    return contacts.some(contact => contact.accountId === multisigId);
   },
 );
 
-// True when the description input should render in the sign step. Drafts carry
-// their own description set at creation, so the input is hidden during draft
-// submissions to avoid double-posting and confusing UX.
-const $showInput = combine(
+// Field / error / reconnect / hidden for the description area on initiation
+// confirm screens — see resolveDescriptionAreaState for the full decision table.
+// Gates on $isHealthy (stricter than authenticated — guarantees the POST can
+// succeed) and mirrors the backend's write authorization (operation:write
+// permission + multisig is a reachable contact) so the user never hits a
+// guaranteed 400/403.
+const $descriptionAreaState = combine(
   {
-    isMultisig: $isMultisigInitiator,
-    isAuthenticated: authModel.$isAuthenticated,
-    isInAddressBook: $isMultisigInAddressBook,
+    isMultisig: $routeMultisigAccountId.map(nonNullable),
     isDraftActive: $isDraftFlowActive,
+    hasWritePermission: $hasWritePermission,
+    isHealthy: backendContactsModel.$isHealthy,
+    isInAddressBook: $isMultisigInAddressBook,
+    hasEverConnected: connectionHistoryModel.$hasEverConnected,
   },
-  ({ isMultisig, isAuthenticated, isInAddressBook, isDraftActive }) =>
-    isMultisig && isAuthenticated && isInAddressBook && !isDraftActive,
+  resolveDescriptionAreaState,
 );
+
+const $showField = $descriptionAreaState.map(state => state === 'field');
+const $showReconnect = $descriptionAreaState.map(state => state === 'reconnect');
+const $showError = $descriptionAreaState.map(state => state === 'error');
 
 // Snapshot captured at sign time. Both $description and signModel.$signStore
 // reset when OperationSign unmounts (gate.flow.close), which races with the
@@ -94,27 +102,11 @@ type PendingContext = {
 
 const $pendingContext = createStore<PendingContext | null>(null).reset(signModel.init);
 
-function findMultisigAccountId(accounts: AnyAccount[], chainId: ChainId): AccountId | null {
-  for (const account of accounts) {
-    if (accountUtils.isFlexibleMultisigAccount(account) && account.chainId === chainId) {
-      return account.multisigAccountId;
-    }
-  }
-  for (const account of accounts) {
-    if (accountUtils.isMultisigAccount(account)) {
-      return account.accountId;
-    }
-  }
-
-  return null;
-}
-
 sample({
   clock: signModel.signed,
   source: {
     description: $description,
-    selectedWallet: walletSelect.$selectedWallet,
-    selectedAccounts: walletSelect.$selectedAccounts,
+    multisigAccountId: $routeMultisigAccountId,
     signStore: signModel.$signStore,
     isAuthenticated: authModel.$isAuthenticated,
     isInAddressBook: $isMultisigInAddressBook,
@@ -122,25 +114,22 @@ sample({
   },
   filter: (s): boolean => {
     if (s.description.length === 0) return false;
-    if (!walletUtils.isAnyMultisig(s.selectedWallet)) return false;
+    if (s.multisigAccountId === null) return false;
     if (!s.isAuthenticated) return false;
     if (!s.isInAddressBook) return false;
     if (!nonNullable(s.signStore) || s.signStore.length === 0) return false;
     // Drafts post their own description via submit-draft-model — don't double-post.
     if (s.isDraftActive) return false;
 
-    const chainId = s.signStore[0]!.chain.chainId;
-
-    return nonNullable(findMultisigAccountId(s.selectedAccounts, chainId));
+    return true;
   },
   fn: (s): PendingContext => {
     const payload = s.signStore![0]!;
-    const chainId = payload.chain.chainId;
 
     return {
       description: s.description,
-      chainId,
-      multisigAccountId: findMultisigAccountId(s.selectedAccounts, chainId)!,
+      chainId: payload.chain.chainId,
+      multisigAccountId: s.multisigAccountId!,
       extrinsic: payload.extrinsic,
     };
   },
@@ -187,10 +176,10 @@ sample({
     if (!nonNullable(s.pending)) return false;
     if (!nonNullable(s.baseUrl)) return false;
 
-    return results.some((r) => r.result === ExtrinsicResult.SUCCESS);
+    return results.some(r => r.result === ExtrinsicResult.SUCCESS);
   },
   fn: (s, results): PostParams => {
-    const successResult = results.find((r) => r.result === ExtrinsicResult.SUCCESS) as SuccessResult;
+    const successResult = results.find(r => r.result === ExtrinsicResult.SUCCESS) as SuccessResult;
     const pending = s.pending!;
     const callHash = extractCallHash(pending.extrinsic, successResult.params.extrinsicHash);
 
@@ -226,7 +215,12 @@ sample({
 
 export const multisigOperationDescription = {
   $description,
-  $showInput,
+  $showField,
+  $showReconnect,
+  $showError,
+  // Multisig + chain of the current route — render the account in the error state.
+  $multisigAccountId: $routeMultisigAccountId,
+  $chain: activeOperationRoute.$activeOperationChain,
   setDescription,
   setDraftFlowActive,
 };

@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren } from 'react';
 
-import { backendContactsModel } from '@/features/contacts';
+import { backendContactsModel } from '../model/backend-contacts-model';
 
 import { ReconnectAddressBookButton } from './ReconnectAddressBookButton';
 
@@ -17,7 +17,8 @@ type Props = {
 /**
  * Wraps any block that depends on a healthy address-book connection. When the
  * address book is offline, a dim+blur overlay covers the children and surfaces
- * a Reconnect button — same affordance used in `DraftsSection`.
+ * a Reconnect button — the shared affordance used by drafts and operation
+ * confirm screens.
  */
 export const AddressBookHealthOverlay = ({ isHealthy: isHealthyOverride, children }: PropsWithChildren<Props>) => {
   const isHealthyFromStore = useUnit(backendContactsModel.$isHealthy);

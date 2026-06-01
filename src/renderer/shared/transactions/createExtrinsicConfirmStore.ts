@@ -7,6 +7,8 @@ import { nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount, type AnyTransaction } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
+import { activeOperationRoute } from './activeOperationRoute';
+
 export type ExtrinsicConfirmInfo = {
   api: ApiPromise;
   initiator: AnyAccount;
@@ -37,6 +39,16 @@ export const createExtrinsicConfirmStore = <Input extends ExtrinsicConfirmInfo>(
   const resetConfirm = createEvent();
 
   const $store = restore<Input[]>(init, []);
+
+  // Publish the route + chain for cross-cutting consumers (see activeOperationRoute).
+  sample({
+    clock: $store,
+    fn: (store) => ({
+      route: store.flatMap((item) => item.route),
+      chain: store.at(0)?.chain ?? null,
+    }),
+    target: activeOperationRoute.activeOperationChanged,
+  });
 
   const $confirms = combine($store, wallets, (store, wallets): ConfirmItem<Input>[] => {
     if (!wallets.length) return [];
