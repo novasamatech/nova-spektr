@@ -3,10 +3,10 @@ import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
 import { Separator } from '@/shared/ui';
-import { Account } from '@/shared/ui-entities';
 import { Field, TextArea } from '@/shared/ui-kit';
 import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
 import { AddressBookHealthOverlay } from '@/features/contacts';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 /**
  * Renders the operation-description area on the Confirmation step. Which of
@@ -39,7 +39,12 @@ export const MultisigOperationDescriptionField = () => {
                 i18nKey="operation.descriptionMultisigNotInBook"
                 components={{
                   account: multisigAccountId ? (
-                    <Account accountId={multisigAccountId} chain={chain} variant="short" hideExplorers />
+                    <NamedAccount
+                      accountId={multisigAccountId}
+                      chain={chain ?? undefined}
+                      variant="short"
+                      hideExplorers
+                    />
                   ) : (
                     <span />
                   ),
