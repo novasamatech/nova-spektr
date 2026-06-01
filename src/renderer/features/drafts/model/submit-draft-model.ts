@@ -33,11 +33,12 @@ import {
   multisigOperationService,
   transactionService,
 } from '@/domains/network';
-import { balanceModel } from '@/entities/balance';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
 import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
+import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { createPathRouteStore } from '@/features/signing-path';
@@ -316,6 +317,54 @@ const $signatories = combine($graphSignatories, $savedPathSignatory, (graphSigna
 
 const $asset = $chain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
 
+const getDraftSubmitBalanceAccounts = (route: AnyAccount[]): AnyAccount[] => {
+  const accountsById = new Map<string, AnyAccount>();
+
+  const addAccount = (account: AnyAccount | null) => {
+    if (nullable(account) || accountsById.has(account.accountId)) return;
+    accountsById.set(account.accountId, account);
+  };
+
+  for (const account of route) {
+    if (accountUtils.isAnyMultisigAccount(account)) {
+      addAccount(accountService.findNextAccount(route, account));
+    }
+  }
+
+  addAccount(accountService.findSignatory(route));
+
+  return Array.from(accountsById.values());
+};
+
+const $validationBalanceRequests = combine({ route: $route, chain: $chain }, ({ route, chain }) => {
+  if (nullable(chain)) return [];
+
+  return getDraftSubmitBalanceAccounts(route).map((account) => ({
+    accountId: account.accountId,
+    chain,
+  }));
+});
+
+sample({
+  clock: $validationBalanceRequests,
+  filter: (requests) => requests.length > 0,
+  target: balanceSubModel.fetchAccountIds,
+});
+
+const $validationBalances = combine(
+  { balances: balanceModel.$balanceMap, requests: $validationBalanceRequests, asset: $asset },
+  ({ balances, requests, asset }) => {
+    if (nullable(asset) || requests.length === 0) return null;
+
+    const hasRequiredBalances = requests.every(({ accountId, chain }) => {
+      const balanceId = balanceUtils.constructBalanceId(accountId, chain.chainId, asset.assetId);
+      return nonNullable(balances[balanceId]);
+    });
+
+    return hasRequiredBalances ? balances : null;
+  },
+);
+
 const draftSubmitValidator = createTxValidator();
 
 const {
@@ -328,7 +377,7 @@ const {
   params: {
     api: $api,
     asset: $asset,
-    balances: balanceModel.$balanceMap,
+    balances: $validationBalances,
     route: $route,
     transaction: $wrappedTx,
   },
