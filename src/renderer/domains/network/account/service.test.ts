@@ -1,6 +1,14 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { type BackendContact, type Chain, type Contact, AccountNameType, CryptoType, SigningType } from '@/shared/core';
+import {
+  type BackendContact,
+  type Chain,
+  type Contact,
+  AccountNameType,
+  AccountType,
+  CryptoType,
+  SigningType,
+} from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import {
   createAccountId,
@@ -357,6 +365,163 @@ describe('account service', () => {
       });
 
       expect(accountService.findInitiators(accounts, polkadotChain)).toEqual([proxy]);
+    });
+  });
+
+  describe('findAccountsWithoutSigners', () => {
+    interface TestProxied extends ChainAccount {
+      accountType: AccountType.PROXIED;
+      connections: { proxyAccountId: AccountId }[];
+    }
+
+    interface TestMultisig extends UniversalAccount {
+      accountType: AccountType.MULTISIG;
+      signatories: { accountId: AccountId }[];
+    }
+
+    const isTestProxied = (account: AnyAccount): account is TestProxied =>
+      'accountType' in account && account.accountType === AccountType.PROXIED;
+
+    const isTestMultisig = (account: AnyAccount): account is TestMultisig =>
+      'accountType' in account && account.accountType === AccountType.MULTISIG;
+
+    const chains: Record<string, Chain> = {
+      [polkadotChainId]: polkadotChain,
+      [kusamaChainId]: kusamaChain,
+    };
+
+    const registerHandlers = () => {
+      accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+        body: ({ account, chain }) =>
+          accountService.isChainAccount(account) ? account.chainId === chain.chainId : true,
+        available: () => true,
+      });
+      // a "signable" leaf is a Polkadot Vault key; derived accounts are watch-only
+      accountService.accountActionPermissionAnyOf.registerHandler({
+        body: ({ account }) => account.signingType === SigningType.POLKADOT_VAULT,
+        available: () => true,
+      });
+      accountService.accountCollectChildrenPipeline.registerHandler({
+        body(children, { account, accounts }) {
+          if (isTestProxied(account)) {
+            return accounts
+              .filter(a => account.connections.some(c => c.proxyAccountId === a.accountId))
+              .concat(children);
+          }
+          if (isTestMultisig(account)) {
+            return accounts.filter(a => account.signatories.some(s => s.accountId === a.accountId)).concat(children);
+          }
+          return children;
+        },
+        available: () => true,
+      });
+    };
+
+    const signerKey: ChainAccount = {
+      id: 'signer',
+      type: 'chain',
+      name: 'signer',
+      walletId: 1,
+      chainId: polkadotChainId,
+      accountId: createAccountId('signer'),
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.POLKADOT_VAULT,
+      createdAt: Date.now(),
+    };
+
+    const proxied: TestProxied = {
+      id: 'proxied',
+      type: 'chain',
+      accountType: AccountType.PROXIED,
+      name: 'proxied',
+      walletId: 2,
+      chainId: polkadotChainId,
+      accountId: createAccountId('proxied'),
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
+      createdAt: Date.now(),
+      connections: [{ proxyAccountId: signerKey.accountId }],
+    };
+
+    const multisig: TestMultisig = {
+      id: 'multisig',
+      type: 'universal',
+      accountType: AccountType.MULTISIG,
+      name: 'multisig',
+      walletId: 3,
+      accountId: createAccountId('multisig'),
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
+      createdAt: Date.now(),
+      signatories: [{ accountId: signerKey.accountId }],
+    };
+
+    it('keeps a proxied while its delegate is a signable local account', () => {
+      registerHandlers();
+
+      expect(accountService.findAccountsWithoutSigners([signerKey, proxied], chains)).toEqual([]);
+    });
+
+    it('orphans a proxied once its last signable delegate is gone', () => {
+      registerHandlers();
+
+      expect(accountService.findAccountsWithoutSigners([proxied], chains)).toEqual([proxied]);
+    });
+
+    it('orphans a multisig once its last signatory is gone', () => {
+      registerHandlers();
+
+      expect(accountService.findAccountsWithoutSigners([signerKey, multisig], chains)).toEqual([]);
+      expect(accountService.findAccountsWithoutSigners([multisig], chains)).toEqual([multisig]);
+    });
+
+    it('collapses a whole chain at once (proxied of a multisig of a removed key)', () => {
+      registerHandlers();
+
+      const proxiedOfMultisig: TestProxied = {
+        ...proxied,
+        id: 'proxied-of-multisig',
+        walletId: 4,
+        accountId: createAccountId('proxied-of-multisig'),
+        connections: [{ proxyAccountId: multisig.accountId }],
+      };
+
+      const all = [signerKey, multisig, proxiedOfMultisig];
+
+      expect(accountService.findAccountsWithoutSigners(all, chains)).toEqual([]);
+
+      // remove the only signable key: both the multisig and the proxied above it collapse
+      const orphans = accountService.findAccountsWithoutSigners([multisig, proxiedOfMultisig], chains);
+      expect(orphans).toEqual(expect.arrayContaining([multisig, proxiedOfMultisig]));
+      expect(orphans).toHaveLength(2);
+    });
+
+    it('keeps a universal multisig while it is signable on any one chain', () => {
+      registerHandlers();
+
+      const kusamaSigner: ChainAccount = {
+        ...signerKey,
+        id: 'kusama-signer',
+        walletId: 5,
+        chainId: kusamaChainId,
+        accountId: createAccountId('kusama-signer'),
+      };
+      const kusamaMultisig: TestMultisig = {
+        ...multisig,
+        signatories: [{ accountId: kusamaSigner.accountId }],
+      };
+
+      // signable only on kusama, but the cross-chain pass keeps it
+      expect(accountService.findAccountsWithoutSigners([kusamaSigner, kusamaMultisig], chains)).toEqual([]);
+      // signer gone everywhere → orphaned
+      expect(accountService.findAccountsWithoutSigners([kusamaMultisig], chains)).toEqual([kusamaMultisig]);
+    });
+
+    it('keeps a derived account it cannot evaluate on any provided chain', () => {
+      registerHandlers();
+
+      // no chains to build a graph on → nothing is evaluated, so nothing is deleted
+      expect(accountService.findAccountsWithoutSigners([proxied], {})).toEqual([]);
     });
   });
 
