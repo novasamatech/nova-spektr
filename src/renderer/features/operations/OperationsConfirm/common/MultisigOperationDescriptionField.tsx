@@ -37,7 +37,7 @@ export const MultisigOperationDescriptionField = () => {
           <AddressBookHealthOverlay isHealthy={false}>
             <Field text={t('operation.descriptionLabel')}>
               <TextArea
-                value=""
+                value={description}
                 placeholder={t('operation.descriptionPlaceholder')}
                 rows={2}
                 maxLength={500}
