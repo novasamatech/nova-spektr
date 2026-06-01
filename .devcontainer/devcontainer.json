@@ -26,7 +26,7 @@
       "onAutoForward": "notify"
     }
   },
-  "postCreateCommand": "npm install -g pnpm@latest && pnpm install",
+  "postCreateCommand": "npm install -g pnpm@11.4.0 && pnpm install",
   "customizations": {
     "vscode": {
       "settings": {

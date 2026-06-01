@@ -94,7 +94,6 @@ const config: UserConfigFn = async ({ mode, command }) => {
     },
     assetsInclude: ['**/*.wasm'],
     server: {
-      // host: renderer.server.host,
       port: renderer.server.port,
     },
     plugins: [

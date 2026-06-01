@@ -9,7 +9,7 @@ import { OperationsQueueWidget } from './ui/OperationsQueueWidget';
 export const dashboardOperationsQueueFeature = createFeature({
   name: 'dashboard/operationsQueue',
   input: createStore({}),
-  enable: $features.map(({ dashboard }) => dashboard),
+  enable: $features.map(({ operationsQueueWidget }) => operationsQueueWidget),
 });
 
 dashboardOperationsQueueFeature.inject(dashboardWidgetsSlot, {

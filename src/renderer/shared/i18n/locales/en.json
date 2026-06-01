@@ -2464,6 +2464,8 @@
       "account": "Account",
       "amount": "Amount",
       "callData": "Call Data",
+      "coreCallData": "Core Call Data",
+      "coreCallHash": "Core Call Hash",
       "coreTx": "Underlying transaction",
       "coreTxSame": "Underlying transaction",
       "callHash": "Call Hash",
@@ -2489,6 +2491,7 @@
       "sender": "Sender",
       "senderAccount": "Sender account",
       "senderProxiedWallet": "Sender proxied wallet",
+      "signerAccount": "Signer Account",
       "timePoint": "Time Point",
       "toNetwork": "To network",
       "validators": "Validators",
@@ -2599,7 +2602,7 @@
       "signTitle_other": "Confirm { count } operations on your { walletName } app",
       "tryAgainButton": "Try again"
     },
-    "walletSignatoriesTitle": "Your wallets",
+    "walletSignatoriesTitle": "Your accounts",
     "xcmFee": "Cross-chain fee"
   },
   "operations": {

@@ -47,9 +47,9 @@
 
 ## Requirements
 
-Minimum version of `Node.js` is `v20.x`.
+Minimum version of `Node.js` is `v24.x`.
 
-Minimum version of `pnpm` is `v9.x`.
+Minimum version of `pnpm` is `v11.x`.
 
 ## Commands
 

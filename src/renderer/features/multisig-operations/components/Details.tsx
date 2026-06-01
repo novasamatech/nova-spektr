@@ -195,13 +195,15 @@ export const Details = ({ api, operation, account, multisigAccount, chain, signa
       )}
 
       {signatory && signatoryWallet && (
-        <DetailRow label={t('transfer.signatoryLabel')} className="text-text-secondary">
+        <DetailRow label={t('operation.details.signerAccount')} className="text-text-secondary">
           <Box direction="row" gap={2}>
-            <WalletIcon type={signatoryWallet.type} size={16} />
-            <span>
-              <WalletName wallet={signatoryWallet} />
-            </span>
-            {chain ? <AccountExplorers accountId={signatory.accountId} chain={chain} /> : null}
+            <NamedAccount
+              chain={chain}
+              accountId={signatory.accountId}
+              title={signatory.name}
+              wallet={signatoryWallet}
+              variant="short"
+            />
           </Box>
         </DetailRow>
       )}

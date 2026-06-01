@@ -11,7 +11,7 @@ ADD . /project
 WORKDIR /project
 
 RUN corepack enable && \
-    corepack prepare pnpm@10 --activate
+    corepack prepare pnpm@11.4.0 --activate
 
 RUN pnpm install --frozen-lockfile
 

@@ -25,6 +25,7 @@ import { createQueryResource, createSubscriptionResource } from '@/shared/query'
 import { type MapCacheFn } from '@/shared/query/types';
 // eslint-disable-next-line boundaries/entry-point
 import { decodeCallData, extractSectionMethodFromCallData } from '@/entities/transaction/lib/callDataDecoder';
+import { transactionService } from '../transaction/service';
 
 import { INDEXER_URL } from './constants';
 import { multisigOperationService } from './service';
@@ -82,9 +83,10 @@ async function createOperationFromMultisig({
 
   let decodedTransaction: DecodedTransaction | null = null;
   let extractedMeta: { section: string; method: string } | null = null;
+  const coreCallData = transactionService.getCoreCallData(api, callData);
   try {
     if (callData && validateCallData(callData, callHash)) {
-      decodedTransaction = decodeCallData(api, multisigAccountId, callData, nativeAssetId);
+      decodedTransaction = decodeCallData(api, multisigAccountId, coreCallData?.callData ?? callData, nativeAssetId);
     }
   } catch (error) {
     console.warn('Failed to decode call data', { callHash, error });
@@ -93,7 +95,8 @@ async function createOperationFromMultisig({
     }
   }
 
-  const proxiedAccountId = multisigOperationService.extractProxiedAccountId(decodedTransaction);
+  const proxiedAccountId =
+    coreCallData?.proxiedAccountId ?? multisigOperationService.extractProxiedAccountId(decodedTransaction);
 
   return {
     id: operationId,
@@ -107,8 +110,8 @@ async function createOperationFromMultisig({
     blockCreated: pjsSchema.helpers.toBlockHeight(blockHeight),
     indexCreated: extrinsicIndex,
     deposit: multisig.deposit,
-    method: transaction?.method?.method ?? extractedMeta?.method ?? null,
-    section: transaction?.method?.section ?? extractedMeta?.section ?? null,
+    method: decodedTransaction?.method ?? transaction?.method?.method ?? extractedMeta?.method ?? null,
+    section: decodedTransaction?.section ?? transaction?.method?.section ?? extractedMeta?.section ?? null,
     timestamp,
     events,
     transaction: decodedTransaction,
@@ -209,10 +212,16 @@ function mapSubqueryOperationRecord(
 
   let transaction: DecodedTransaction | null = null;
   let extractedMeta: { section: string; method: string } | null = null;
+  const coreCallData = transactionService.getCoreCallData(api, response.callData);
 
   try {
     if (response.callData && validateCallData(response.callData, response.callHash)) {
-      transaction = decodeCallData(api, multisigAccountId, response.callData, getNativeAssetId(chain.assets));
+      transaction = decodeCallData(
+        api,
+        multisigAccountId,
+        coreCallData?.callData ?? response.callData,
+        getNativeAssetId(chain.assets),
+      );
     }
   } catch (error) {
     console.warn('Failed to decode call data from indexer response', { callHash: response.callHash, error });
@@ -224,13 +233,14 @@ function mapSubqueryOperationRecord(
     }
   }
 
-  const proxiedAccountId = multisigOperationService.extractProxiedAccountId(transaction);
+  const proxiedAccountId =
+    coreCallData?.proxiedAccountId ?? multisigOperationService.extractProxiedAccountId(transaction);
 
   return {
     id: operationId,
     transaction,
-    section: response.section ?? extractedMeta?.section ?? null,
-    method: response.method ?? extractedMeta?.method ?? null,
+    section: transaction?.section ?? response.section ?? extractedMeta?.section ?? null,
+    method: transaction?.method ?? response.method ?? extractedMeta?.method ?? null,
     timestamp: response.timestamp,
     multisigAccountId,
     ...(proxiedAccountId ? { proxiedAccountId } : {}),

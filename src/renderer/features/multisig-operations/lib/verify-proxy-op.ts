@@ -13,13 +13,33 @@ export type VerifyProxyOpInfo = {
 };
 
 const isProxyWrap = (tx: DecodedTransaction): boolean => tx.section === 'proxy' && tx.method === 'proxy';
+const BATCH_METHODS = new Set(['batch', 'batchAll', 'forceBatch']);
 
-const unwrapProxyOrNull = (tx: DecodedTransaction | null): DecodedTransaction | null => {
-  if (nullable(tx) || !isProxyWrap(tx)) return null;
-  const inner = (tx.args['transaction'] as DecodedTransaction | null) ?? null;
-  if (nullable(inner)) return null;
-  // Tolerate nested proxy.proxy wrappers (defensive — real ops shouldn't nest).
-  return isProxyWrap(inner) ? unwrapProxyOrNull(inner) : inner;
+const findVerifyProxyRemark = (tx: DecodedTransaction | null): DecodedTransaction | null => {
+  if (nullable(tx)) return null;
+
+  if (isProxyWrap(tx)) {
+    const inner = (tx.args['transaction'] as DecodedTransaction | null) ?? null;
+    if (nullable(inner)) return null;
+
+    if (inner.section === 'system' && inner.method === 'remarkWithEvent') {
+      return inner;
+    }
+
+    return findVerifyProxyRemark(inner);
+  }
+
+  if (tx.section === 'utility' && BATCH_METHODS.has(tx.method)) {
+    const transactions = tx.args['transactions'];
+    if (!Array.isArray(transactions)) return null;
+
+    for (const child of transactions as DecodedTransaction[]) {
+      const found = findVerifyProxyRemark(child);
+      if (found) return found;
+    }
+  }
+
+  return null;
 };
 
 // Verify-proxy ping shape: `proxy.proxy(real=pure, call=system.remarkWithEvent(<verify-proxy marker>))`.
@@ -27,9 +47,8 @@ const unwrapProxyOrNull = (tx: DecodedTransaction | null): DecodedTransaction | 
 // `features/proxy-verify/lib/build-verify-proxy.ts`), and additionally require the marker payload
 // so incidental proxy.remarkWithEvent ops don't render here.
 export const parseVerifyProxyOperation = (operation: MultisigOperation): VerifyProxyOpInfo | null => {
-  const inner = unwrapProxyOrNull(operation.transaction);
+  const inner = findVerifyProxyRemark(operation.transaction);
   if (nullable(inner)) return null;
-  if (inner.section !== 'system' || inner.method !== 'remarkWithEvent') return null;
   const remark = inner.args['remark'];
   if (typeof remark !== 'string') return null;
   const payload = parseVerifyProxyMarker(remark);

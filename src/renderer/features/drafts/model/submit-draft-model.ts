@@ -282,10 +282,34 @@ const { $: $fee } = createFeeCalculator({
   extrinsic: $wrappedExtrinsic,
 });
 
-const $signatories = createSignatoriesStore({
+const $graphSignatories = createSignatoriesStore({
   chain: $chain,
   accounts: walletModel.$availableAccounts,
   initiator: $initiator,
+});
+
+// Path-driven drafts persist the signer as the final path node. Use that as
+// an explicit signatory source as well: proxied routes can be valid even when
+// the generic account graph cannot rediscover the leaf from the current wallet
+// topology.
+const $savedPathSignatory = combine(
+  { draft: $draft, accounts: walletModel.$availableAccounts },
+  ({ draft, accounts }): AnyAccount | null => {
+    if (!draft?.initiatorAccountId) return null;
+    if (!Array.isArray(draft.signingPath) || draft.signingPath.length === 0) return null;
+
+    return (
+      accounts.find((a) => a.accountId === draft.initiatorAccountId && accountService.hasPermissionToMakeActions(a)) ??
+      null
+    );
+  },
+);
+
+const $signatories = combine($graphSignatories, $savedPathSignatory, (graphSignatories, savedPathSignatory) => {
+  if (!savedPathSignatory) return graphSignatories;
+  if (graphSignatories.some((s) => s.accountId === savedPathSignatory.accountId)) return graphSignatories;
+
+  return [savedPathSignatory, ...graphSignatories];
 });
 
 // --- Pre-submit validation (generic: fee + multisig deposit) ---
