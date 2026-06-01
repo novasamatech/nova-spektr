@@ -10,6 +10,7 @@ import {
   type Contact,
   type Wallet,
   AccountNameType,
+  AccountType,
   WalletType,
   isBackendContact,
   isLocalContact,
@@ -430,6 +431,70 @@ function findSignatories(account: AnyAccount, accounts: AnyAccount[], chain: Cha
 }
 
 /**
+ * Derived accounts (multisig, flexible multisig, proxied) exist locally only
+ * because a signable local account sits behind them as a signatory or
+ * delegate.
+ */
+function isDerivedAccount(account: AnyAccount): boolean {
+  if (!('accountType' in account)) return false;
+
+  const { accountType } = account;
+
+  return (
+    accountType === AccountType.MULTISIG ||
+    accountType === AccountType.FLEX_MULTISIG ||
+    accountType === AccountType.PROXIED
+  );
+}
+
+/**
+ * Find derived accounts that no longer reach a signable local account on any
+ * chain they are available on. Such an account is orphaned — its last local
+ * signer is gone — so it can be removed from local state alone, without
+ * consulting the indexer or the chain. The dependency graph is followed
+ * recursively, so a chain of derived accounts (a proxied of a multisig of a
+ * removed key) collapses in a single evaluation.
+ *
+ * An account is only considered when it could actually be placed in a graph on
+ * at least one of the given chains; an account we cannot evaluate is kept.
+ */
+function findAccountsWithoutSigners(accounts: AnyAccount[], chains: Record<ChainId, Chain>): AnyAccount[] {
+  const derivedAccounts = accounts.filter(isDerivedAccount);
+  if (derivedAccounts.length === 0) {
+    return [];
+  }
+
+  const evaluatedAccounts = new Set<AnyAccount>();
+  const accountsWithSigner = new Set<AnyAccount>();
+
+  for (const chain of Object.values(chains)) {
+    const graphs = createAccountGraphs(accounts, chain);
+
+    for (const [account, node] of graphs) {
+      evaluatedAccounts.add(account);
+      if (accountsWithSigner.has(account)) continue;
+
+      let hasSigner = false;
+      traverseGraph(node, {
+        enter(current) {
+          if (current.children.length === 0 && hasPermissionToMakeActions(current.account)) {
+            hasSigner = true;
+            // stop the traversal: one signable leaf is enough to keep the account
+            return false;
+          }
+        },
+      });
+
+      if (hasSigner) {
+        accountsWithSigner.add(account);
+      }
+    }
+  }
+
+  return derivedAccounts.filter(account => evaluatedAccounts.has(account) && !accountsWithSigner.has(account));
+}
+
+/**
  * Find graphs roots.
  */
 function findInitiators(accounts: AnyAccount[], chain: Chain): AnyAccount[] {
@@ -626,6 +691,7 @@ export const accountService = {
   createAccountGraphs: createAccountGraphs,
   findLeafs,
   findSignatories,
+  findAccountsWithoutSigners,
   findInitiators,
   findRoute,
   findInitiator,
