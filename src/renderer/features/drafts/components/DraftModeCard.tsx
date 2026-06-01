@@ -4,10 +4,8 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Switch } from '@/shared/ui';
 import { connectionHistoryModel } from '@/aggregates/backend';
-import { backendContactsModel } from '@/features/contacts';
+import { AddressBookHealthOverlay, backendContactsModel } from '@/features/contacts';
 import { useCanCreateDraft } from '../lib/useCanCreateDraft';
-
-import { AddressBookHealthOverlay } from './AddressBookHealthOverlay';
 
 type Props = {
   isOn: boolean;

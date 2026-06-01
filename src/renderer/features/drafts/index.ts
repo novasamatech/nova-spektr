@@ -3,12 +3,10 @@ import { modalsSlot } from '@/features/app-shell';
 
 import { CreateDraftModalSlot } from './components/CreateDraftModalSlot';
 
-export { AddressBookHealthOverlay } from './components/AddressBookHealthOverlay';
 export { DraftFormBody } from './components/DraftFormBody';
 export { DraftModeCard } from './components/DraftModeCard';
 export { DraftSigningPath } from './components/DraftSigningPath';
 export { DraftsSection } from './components/DraftsSectionLazy';
-export { ReconnectAddressBookButton } from './components/ReconnectAddressBookButton';
 export { draftAccountsOverviewSlot } from './lib/draft-row-slot';
 export { type DraftNetworkStore, createDraftModeBinding } from './lib/createDraftModeBinding';
 export { useCanCreateDraft } from './lib/useCanCreateDraft';
