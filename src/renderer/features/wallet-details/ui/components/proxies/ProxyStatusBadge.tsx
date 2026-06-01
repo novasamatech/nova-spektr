@@ -8,7 +8,7 @@ const STATUS_TO_LABEL_VARIANT: Record<WalletProxyStatus, LabelVariant> = {
   not_verified: 'orange',
   pending_verification: 'blue',
   pending_addition: 'lightBlue',
-  not_verified_no_wallet: 'gray',
+  not_verified_no_wallet: 'orange',
 };
 
 const STATUS_I18N_KEYS: Record<WalletProxyStatus, string> = {
