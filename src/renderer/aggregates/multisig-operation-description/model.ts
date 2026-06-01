@@ -6,7 +6,7 @@ import { type ChainId } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { activeOperationRoute } from '@/shared/transactions';
-import { HttpError, operationDescriptionsResource, operationsService } from '@/domains/backend';
+import { HttpError, PERMISSIONS, operationDescriptionsResource, operationsService } from '@/domains/backend';
 import { type Extrinsic, multisigOperationService } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
@@ -44,9 +44,18 @@ const $isDraftFlowActive = createStore(false).on(setDraftFlowActive, (_, value) 
 // multisig deposit is detected.
 const $routeMultisigAccountId = activeOperationRoute.$activeOperationRoute.map(findRouteMultisigAccountId);
 
+// Caller holds the backend `operation:write` permission. Without it the POST is
+// rejected at the permissions guard, so the description field is pointless. Read
+// from $authState, which is only populated while connected — that's why the
+// resolver only consults this on its healthy branch.
+const $hasWritePermission = authModel.$authState.map(
+  state => state?.permissions.includes(PERMISSIONS.OPERATION_WRITE) ?? false,
+);
+
 // True iff the route's multisig is present in the user's address-book contacts.
 // Descriptions only make sense for multisigs the user has registered there —
-// that's the audience that can read them back.
+// that's the audience that can read them back. The backend mirrors this: a POST
+// for a multisig outside the caller's reachable contacts answers 400/403.
 const $isMultisigInAddressBook = combine(
   {
     multisigId: $routeMultisigAccountId,
@@ -59,15 +68,17 @@ const $isMultisigInAddressBook = combine(
   },
 );
 
-// Field vs. reconnect vs. hidden for the description area on initiation confirm
-// screens. Drafts carry their own description (hidden during draft flow). Field
-// gates on $isHealthy (stricter than authenticated — guarantees the POST can
-// succeed). When disconnected we can't verify per-multisig membership, so any
-// multisig that has connected before gets the reconnect affordance.
+// Field / error / reconnect / hidden for the description area on initiation
+// confirm screens — see resolveDescriptionAreaState for the full decision table.
+// Gates on $isHealthy (stricter than authenticated — guarantees the POST can
+// succeed) and mirrors the backend's write authorization (operation:write
+// permission + multisig is a reachable contact) so the user never hits a
+// guaranteed 400/403.
 const $descriptionAreaState = combine(
   {
     isMultisig: $routeMultisigAccountId.map(nonNullable),
     isDraftActive: $isDraftFlowActive,
+    hasWritePermission: $hasWritePermission,
     isHealthy: backendContactsModel.$isHealthy,
     isInAddressBook: $isMultisigInAddressBook,
     hasEverConnected: connectionHistoryModel.$hasEverConnected,
@@ -77,6 +88,7 @@ const $descriptionAreaState = combine(
 
 const $showField = $descriptionAreaState.map(state => state === 'field');
 const $showReconnect = $descriptionAreaState.map(state => state === 'reconnect');
+const $showError = $descriptionAreaState.map(state => state === 'error');
 
 // Snapshot captured at sign time. Both $description and signModel.$signStore
 // reset when OperationSign unmounts (gate.flow.close), which races with the
@@ -205,6 +217,10 @@ export const multisigOperationDescription = {
   $description,
   $showField,
   $showReconnect,
+  $showError,
+  // Multisig + chain of the current route — render the account in the error state.
+  $multisigAccountId: $routeMultisigAccountId,
+  $chain: activeOperationRoute.$activeOperationChain,
   setDescription,
   setDraftFlowActive,
 };

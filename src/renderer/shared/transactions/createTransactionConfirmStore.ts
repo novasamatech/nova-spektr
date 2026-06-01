@@ -48,13 +48,14 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
 
   const $store = restore<Input[]>(init, []);
 
-  // Publish the active operation's resolved route so cross-cutting consumers
-  // (e.g. the multisig-operation description aggregate) can detect a multisig in
-  // the signing path — including one reached via a proxy — without prop-drilling.
+  // Publish the route + chain for cross-cutting consumers (see activeOperationRoute).
   sample({
     clock: $store,
-    fn: (store) => store.flatMap((item) => item.route),
-    target: activeOperationRoute.activeRouteChanged,
+    fn: (store) => ({
+      route: store.flatMap((item) => item.route),
+      chain: store.at(0)?.chain ?? null,
+    }),
+    target: activeOperationRoute.activeOperationChanged,
   });
 
   const $confirms = combine($store, $wallets, (store, wallets): ConfirmItem<Input>[] => {

@@ -1,39 +1,53 @@
 import { useUnit } from 'effector-react';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
 import { Separator } from '@/shared/ui';
+import { Account } from '@/shared/ui-entities';
 import { Field, TextArea } from '@/shared/ui-kit';
 import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
 import { AddressBookHealthOverlay } from '@/features/contacts';
 
 /**
- * Renders the multisig-operation description input on the per-flow Confirmation
- * step. Self-gating via the aggregate:
- *
- * - Field state — interactive description input (connected, multisig in address
- *   book, not a draft flow).
- * - Reconnect state — the input is disabled and covered by a reconnect overlay
- *   (address book offline but the user has connected before).
- * - Otherwise — renders nothing.
- *
- * The captured value is read at sign time by the aggregate, snapshotted, and
- * posted to the backend after the extrinsic is included.
+ * Renders the operation-description area on the Confirmation step. Which of
+ * field / error / reconnect / hidden is shown is decided by the aggregate — see
+ * resolveDescriptionAreaState. The captured value is read at sign time and
+ * posted to the address book after the extrinsic is included.
  */
 export const MultisigOperationDescriptionField = () => {
   const { t } = useI18n();
-  const { showField, showReconnect, description } = useUnit({
+  const { showField, showReconnect, showError, description, multisigAccountId, chain } = useUnit({
     showField: multisigOperationDescription.$showField,
     showReconnect: multisigOperationDescription.$showReconnect,
+    showError: multisigOperationDescription.$showError,
     description: multisigOperationDescription.$description,
+    multisigAccountId: multisigOperationDescription.$multisigAccountId,
+    chain: multisigOperationDescription.$chain,
   });
 
-  if (!showField && !showReconnect) return null;
+  if (!showField && !showReconnect && !showError) return null;
 
   return (
     <>
       <Separator className="my-1 w-full" />
       <div className="w-full">
-        {showReconnect ? (
+        {showError ? (
+          <Field text={t('operation.descriptionLabel')}>
+            <div className="flex w-full flex-wrap items-center gap-x-1 gap-y-1 rounded-lg border border-alert-border-negative bg-alert-background-negative p-3 text-footnote text-text-primary">
+              <Trans
+                t={t}
+                i18nKey="operation.descriptionMultisigNotInBook"
+                components={{
+                  account: multisigAccountId ? (
+                    <Account accountId={multisigAccountId} chain={chain} variant="short" hideExplorers />
+                  ) : (
+                    <span />
+                  ),
+                }}
+              />
+            </div>
+          </Field>
+        ) : showReconnect ? (
           <AddressBookHealthOverlay isHealthy={false}>
             <Field text={t('operation.descriptionLabel')}>
               <TextArea
