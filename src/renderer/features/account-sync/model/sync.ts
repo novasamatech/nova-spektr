@@ -3,6 +3,7 @@ import { attach, createEffect, createStore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import {
+  type Chain,
   type ChainId,
   type CreateFlexibleMultisigOperationParams,
   type CreateMultisigCreatedParams,
@@ -43,6 +44,7 @@ import {
   type AccountIdentity,
   type AnyAccount,
   type SyncedAccount,
+  accountService,
   accountSync,
   accountSyncService,
   accounts,
@@ -94,6 +96,44 @@ sample({
   clock: walletModel.walletsRemoved.doneData,
   filter: (removed) => Array.isArray(removed) && removed.length > 0,
   target: accountSync.syncAccounts,
+});
+
+// Local orphan-collapse. A derived wallet (multisig / flexible multisig /
+// proxied) exists only because a signable local account sits behind it. When
+// that last signer is gone — the user removed it, or an upstream derived wallet
+// was itself removed — the dependent wallet is provably orphaned and is removed
+// immediately from local state, with no indexer or on-chain call. The dependency
+// graph is followed recursively, so a whole chain collapses in one pass.
+//
+// Runs on wallet removal and as the first step of every sync pass, so a derived
+// wallet never lingers waiting for an external source to confirm its absence.
+// The remaining indexer/on-chain delete path then only handles the other cause:
+// an on-chain relationship revoked while a local signer is still present.
+const collapseOrphanedWalletsFx = createEffect(
+  ({ allAccounts, chains }: { allAccounts: AnyAccount[]; chains: Record<ChainId, Chain> }): number[] => {
+    const orphanedAccounts = accountService.findAccountsWithoutSigners(allAccounts, chains);
+
+    return Array.from(new Set(orphanedAccounts.map((account) => account.walletId)));
+  },
+);
+
+sample({
+  clock: [walletModel.events.walletRemovedSuccess, accountSync.syncAccounts],
+  source: {
+    allAccounts: accounts.$list,
+    chains: networkModel.$chains,
+  },
+  target: collapseOrphanedWalletsFx,
+});
+
+// walletsRemoved is the batch effect — it never re-fires walletRemovedSuccess
+// (a single-wallet signal), so this can't loop. A follow-up sync pass re-runs the
+// collapse, which is idempotent: the recursive first pass already removed the
+// whole orphan chain, so the next pass finds nothing.
+sample({
+  clock: collapseOrphanedWalletsFx.doneData,
+  filter: (walletIds) => walletIds.length > 0,
+  target: walletModel.walletsRemoved,
 });
 
 // TODO
