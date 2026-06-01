@@ -84,30 +84,46 @@ sequenceDiagram
     Seeds->>Identity: request names for every discovered account
     Note over Wallets: once accounts + identities are in
     Wallets->>Wallets: create new, update changed, reconcile proxy links
-    Note over Wallets: deletions pass the safety checks below
+    Note over Wallets: deletions follow the two rules below
     Wallets-->>Seeds: if anything was deleted, cascade another pass
 ```
 
 A pass discovers accounts, fetches each chain's last-indexed block and the identities
 used to name new wallets, then reconciles the wallet store: create what's new, update
-what changed, and delete what's gone — under strict guards.
+what changed, and delete what's gone.
 
-### Deletion safety rules
+### When a derived wallet is deleted
 
-Sync must never delete a real wallet just because the indexer is behind. So a derived
-wallet is removed **only** when:
+A derived wallet is removed for one of two distinct reasons, decided differently. The
+distinction matters: confusing them is what used to leave orphaned wallets behind.
 
-- its chain was actually part of this sync pass, **and**
-- the indexer reports a last-processed block for that chain (un-indexed chains never
-  trigger deletes), **and**
-- that last-processed block is **at or past** the block the account was created at —
-  so an account created after the indexer's checkpoint is kept until the indexer
-  catches up.
+**1. Its local source is gone — immediate, local, no source needed.** A derived wallet
+is only _yours_ because one of your **signable** accounts sits behind it as a signatory
+or delegate — possibly through a chain of other derived wallets. The moment that last
+signable account disappears (you removed the wallet, or an upstream derived wallet was
+itself removed), the dependent wallet is provably orphaned and is deleted **right away,
+from local data alone** — no indexer, no chain call. Because the dependency is followed
+recursively, a single pass collapses a whole chain at once (a proxied of a multisig of a
+removed key). This check runs both when you remove a wallet **and** as the first step of
+every sync pass, so a derived wallet never lingers waiting for a source to respond.
 
-For **proxied** wallets there is an extra on-chain check before deletion: the wallet
-is kept if **any** of its delegates is still a local account, verified against live
-chain state. Chains that can't be reached are left untouched. A wrongful removal, if
-it ever happened, heals on the next pass.
+```mermaid
+flowchart TD
+    START["Wallet removed / sync pass starts"] --> Q{"Does the derived wallet still reach<br/>a signable local account?"}
+    Q -- "no" --> DEL["Delete now — provably orphaned<br/>(works offline)"]
+    Q -- "yes" --> KEEP["Keep — only an on-chain change<br/>could remove it (rule 2)"]
+    style DEL fill:#b71c1c,color:#fff
+    style KEEP fill:#1b5e20,color:#fff
+```
+
+**2. The on-chain relationship was revoked — confirmed against sources.** The wallet
+still has a local signer, but the proxy was revoked or the multisig dissolved on-chain.
+This needs external confirmation and the indexer can lag, so deletion stays guarded: the
+chain must have been part of the pass, the indexer must report a last-processed block for
+it, and that block must be **at or past** the account's creation block (accounts newer
+than the indexer's checkpoint are kept until it catches up). Proxied wallets get an extra
+on-chain check — kept if any delegate is still valid on live chain state; unreachable
+chains are left untouched. A wrongful removal here heals on the next pass.
 
 ## Related
 
