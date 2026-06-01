@@ -11,6 +11,8 @@ const selectChain = createEvent<ChainId>();
 
 const $selectedChainId = createStore<ChainId>(DEFAULT_STAKING_CHAIN);
 
+$selectedChainId.on(selectChain, (_, chainId) => chainId);
+
 persist({
   key: STAKING_NETWORK,
   store: $selectedChainId,
