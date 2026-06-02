@@ -34,6 +34,18 @@ async function createDescription(
   }
 }
 
+async function updateDescription(baseUrl: string, id: string, description: string): Promise<void> {
+  const result = await authFetch(`${baseUrl}/operations/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ description }),
+  });
+
+  if (!result.ok) {
+    throw new HttpError(result.status, result.body);
+  }
+}
+
 async function fetchDescriptionsByIds(baseUrl: string, ids: string[]): Promise<BackendOperation[]> {
   if (ids.length === 0) return [];
 
@@ -80,4 +92,4 @@ async function fetchAllDescriptions(baseUrl: string): Promise<BackendOperation[]
   return operations;
 }
 
-export const operationsService = { createDescription, fetchDescriptionsByIds, fetchAllDescriptions };
+export const operationsService = { createDescription, updateDescription, fetchDescriptionsByIds, fetchAllDescriptions };

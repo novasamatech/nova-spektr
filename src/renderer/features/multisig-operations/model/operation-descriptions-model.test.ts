@@ -89,6 +89,26 @@ describe('operationDescriptionsResource', () => {
     expect(linkedDraftIds.size).toBe(1);
   });
 
+  it('should preserve linked draft id when updating an existing description optimistically', async () => {
+    fetchSpy.mockResolvedValue([{ id: 'op-10', description: 'Before edit', draftId: 'draft-abc' }]);
+
+    const scope = fork();
+
+    await allSettled(operationDescriptionsResource.start, {
+      scope,
+      params: { baseUrl: 'https://backend.test', ids: ['op-10'] },
+    });
+
+    await allSettled(operationDescriptionsResource.descriptionCreated, {
+      scope,
+      params: { id: 'op-10', description: 'After edit' },
+    });
+
+    expect(scope.getState(operationDescriptionsResource.$cache)).toEqual({
+      'op-10': { description: 'After edit', draftId: 'draft-abc' },
+    });
+  });
+
   it('should clear cache on resetDescriptions', async () => {
     const scope = fork();
 

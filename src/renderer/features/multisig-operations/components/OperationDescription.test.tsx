@@ -22,6 +22,8 @@ const testState = vi.hoisted(() => {
     stores,
     description: null as string | null,
     createDescription: vi.fn(),
+    updateDescription: vi.fn(),
+    editStarted: vi.fn(),
     descriptionCreated: vi.fn(),
     values: new Map<symbol, unknown>(),
   };
@@ -39,13 +41,18 @@ vi.mock('@/shared/i18n', () => ({
   useI18n: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
+        'addressBook.auth.reconnectButton': 'Reconnect',
+        'addressBook.auth.reconnectTooltip': 'Address book is disconnected. Reconnect to restore access.',
         'operation.addDescriptionButton': 'Add description',
         'operation.cancelDescriptionButton': 'Cancel',
         'operation.descriptionLabel': 'Description',
         'operation.descriptionMultisigNotInBook': 'Multisig is not in the address book',
         'operation.descriptionPlaceholder': 'Add an optional note for this operation...',
         'operation.descriptionSaveError': 'Failed to store description',
+        'operation.editDescriptionButton': 'Edit',
+        'operation.editDescriptionTitle': 'Edit description',
         'operation.saveDescriptionButton': 'Save',
+        'operation.showDescriptionButton': 'Show full',
       };
 
       return translations[key] ?? key;
@@ -78,13 +85,17 @@ vi.mock('@/domains/backend', () => ({
   },
   operationsService: {
     createDescription: testState.createDescription,
+    updateDescription: testState.updateDescription,
   },
   useOperationDescription: () => testState.description,
 }));
 
 vi.mock('@/aggregates/backend', () => ({
   authModel: { $authState: testState.stores.authState },
-  backendConfigurationModel: { $backendUrl: testState.stores.backendUrl },
+  backendConfigurationModel: {
+    $backendUrl: testState.stores.backendUrl,
+    events: { editStarted: testState.editStarted },
+  },
   connectionHistoryModel: { $hasEverConnected: testState.stores.hasEverConnected },
 }));
 
@@ -127,6 +138,9 @@ describe('OperationDescription', () => {
     testState.description = null;
     testState.createDescription.mockReset();
     testState.createDescription.mockResolvedValue(undefined);
+    testState.updateDescription.mockReset();
+    testState.updateDescription.mockResolvedValue(undefined);
+    testState.editStarted.mockReset();
     testState.descriptionCreated.mockReset();
     testState.values.set(testState.stores.authState, { permissions: ['operation:write'] });
     testState.values.set(testState.stores.backendUrl, 'https://backend.test');
@@ -135,24 +149,54 @@ describe('OperationDescription', () => {
     testState.values.set(testState.stores.isHealthy, true);
   });
 
-  it('shows an existing description as read-only without add controls', () => {
+  it('shows an existing description with edit controls but without add controls', () => {
     testState.description = 'Already described';
 
     renderDescription();
 
     expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('Already described')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Add description' })).not.toBeInTheDocument();
   });
 
-  it('shows reconnect UI when the address book is unhealthy', () => {
+  it('patches an existing description and updates the shared description cache', async () => {
+    const user = userEvent.setup();
+    testState.description = 'Already described';
+
+    renderDescription();
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Edit description' })).toBeInTheDocument();
+
+    const field = screen.getByPlaceholderText('Add an optional note for this operation...');
+    expect(field).toHaveValue('Already described');
+
+    await user.clear(field);
+    await user.type(field, 'Updated context');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(testState.updateDescription).toHaveBeenCalledWith('https://backend.test', operation.id, 'Updated context');
+    });
+    expect(testState.descriptionCreated).toHaveBeenCalledWith({
+      id: operation.id,
+      description: 'Updated context',
+    });
+    expect(testState.createDescription).not.toHaveBeenCalled();
+  });
+
+  it('shows slim reconnect UI when the address book is unhealthy', async () => {
+    const user = userEvent.setup();
     testState.values.set(testState.stores.isHealthy, false);
 
     renderDescription();
 
     expect(screen.getByText('Description')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Add an optional note for this operation...')).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Reconnect' })).toBeInTheDocument();
+    expect(screen.queryByText('Address book is disconnected.')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Reconnect' }));
+    expect(testState.editStarted).toHaveBeenCalled();
   });
 
   it('shows the address-book error when the multisig is missing from contacts', () => {

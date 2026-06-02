@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Trans } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -18,8 +18,10 @@ import {
 import { type MultisigOperation } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
-import { AddressBookHealthOverlay, backendContactsModel } from '@/features/contacts';
+import { backendContactsModel } from '@/features/contacts';
 import { NamedAccount } from '@/widgets/NameResolver';
+
+import { OperationDescriptionReconnect } from './OperationDescriptionReconnect';
 
 type Props = {
   operation: MultisigOperation;
@@ -27,6 +29,7 @@ type Props = {
 };
 
 const DESCRIPTION_PREVIEW_LENGTH = 40;
+type DescriptionModalMode = 'add' | 'edit';
 
 export const OperationDescription = ({ operation, chain }: Props) => {
   const { t } = useI18n();
@@ -39,9 +42,96 @@ export const OperationDescription = ({ operation, chain }: Props) => {
     isHealthy: backendContactsModel.$isHealthy,
   });
 
-  const [isAdding, setIsAdding] = useState(false);
+  const [modalMode, setModalMode] = useState<DescriptionModalMode | null>(null);
   const [draft, setDraft] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  const hasWritePermission = authState?.permissions.includes(PERMISSIONS.OPERATION_WRITE) ?? false;
+  const isInAddressBook = contacts.some(contact => contact.accountId === operation.multisigAccountId);
+  const descriptionToSave = draft.trim();
+  const canSave = Boolean(baseUrl) && descriptionToSave.length > 0 && !isSaving;
+  const canEditDescription = Boolean(baseUrl) && isHealthy && hasWritePermission;
+
+  const handleCancel = () => {
+    setDraft('');
+    setModalMode(null);
+  };
+
+  const handleModalToggle = (open: boolean) => {
+    if (open) {
+      const nextMode = description ? 'edit' : 'add';
+      setDraft(description ?? '');
+      setModalMode(nextMode);
+    } else {
+      handleCancel();
+    }
+  };
+
+  const handleSave = async () => {
+    if (!baseUrl || !modalMode || descriptionToSave.length === 0) return;
+
+    setIsSaving(true);
+
+    try {
+      if (modalMode === 'edit') {
+        await operationsService.updateDescription(baseUrl, operation.id, descriptionToSave);
+      } else {
+        await operationsService.createDescription(baseUrl, {
+          multisigAccountId: operation.multisigAccountId,
+          chainId: operation.chainId,
+          callHash: operation.callHash,
+          blockNumber: operation.blockCreated,
+          extrinsicIndex: operation.indexCreated,
+          description: descriptionToSave,
+        });
+      }
+
+      operationDescriptionsResource.descriptionCreated({
+        id: operation.id,
+        description: descriptionToSave,
+      });
+      handleCancel();
+    } catch (error) {
+      const errorDescription =
+        error instanceof HttpError && error.status === 403
+          ? t('addressBook.sources.errorForbidden')
+          : error instanceof Error
+            ? error.message
+            : String(error);
+      toast.error(t('operation.descriptionSaveError'), { description: errorDescription });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const renderDescriptionEditorModal = (trigger: ReactNode) => (
+    <Modal size="mdlg" height="fit" isOpen={modalMode !== null} onToggle={handleModalToggle}>
+      <Modal.Trigger>{trigger}</Modal.Trigger>
+      <Modal.Title close>
+        {modalMode === 'edit' ? t('operation.editDescriptionTitle') : t('operation.addDescriptionButton')}
+      </Modal.Title>
+      <Modal.Content>
+        <div className="px-5 py-2">
+          <TextArea
+            value={draft}
+            placeholder={t('operation.descriptionPlaceholder')}
+            rows={8}
+            maxLength={500}
+            autoFocus
+            onChange={setDraft}
+          />
+        </div>
+      </Modal.Content>
+      <Modal.Footer>
+        <Button size="sm" variant="text" onClick={handleCancel}>
+          {t('operation.cancelDescriptionButton')}
+        </Button>
+        <Button size="sm" disabled={!canSave} isLoading={isSaving} onClick={handleSave}>
+          {t('operation.saveDescriptionButton')}
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
 
   if (description) {
     const isLongDescription = description.length > DESCRIPTION_PREVIEW_LENGTH;
@@ -51,7 +141,7 @@ export const OperationDescription = ({ operation, chain }: Props) => {
 
     return (
       <DetailRow label={t('operation.descriptionLabel')}>
-        <div className="flex min-w-0 items-center justify-end gap-x-1">
+        <div className="flex min-w-0 items-center justify-end gap-x-3">
           <FootnoteText className="max-w-full truncate text-right text-text-secondary">{preview}</FootnoteText>
           {isLongDescription && (
             <Modal size="mdlg" height="fit">
@@ -70,13 +160,17 @@ export const OperationDescription = ({ operation, chain }: Props) => {
               </Modal.Content>
             </Modal>
           )}
+          {canEditDescription &&
+            renderDescriptionEditorModal(
+              <Button size="sm" variant="text" className="shrink-0 p-0">
+                {t('operation.editDescriptionButton')}
+              </Button>,
+            )}
         </div>
       </DetailRow>
     );
   }
 
-  const hasWritePermission = authState?.permissions.includes(PERMISSIONS.OPERATION_WRITE) ?? false;
-  const isInAddressBook = contacts.some(contact => contact.accountId === operation.multisigAccountId);
   const state = resolveDescriptionAreaState({
     isMultisig: true,
     isDraftActive: false,
@@ -87,56 +181,6 @@ export const OperationDescription = ({ operation, chain }: Props) => {
   });
 
   if (state === 'hidden') return null;
-
-  const descriptionToSave = draft.trim();
-  const canSave = Boolean(baseUrl) && descriptionToSave.length > 0 && !isSaving;
-
-  const handleCancel = () => {
-    setDraft('');
-    setIsAdding(false);
-  };
-
-  const handleModalToggle = (open: boolean) => {
-    if (open) {
-      setIsAdding(true);
-    } else {
-      handleCancel();
-    }
-  };
-
-  const handleSave = async () => {
-    if (!baseUrl || descriptionToSave.length === 0) return;
-
-    setIsSaving(true);
-
-    try {
-      await operationsService.createDescription(baseUrl, {
-        multisigAccountId: operation.multisigAccountId,
-        chainId: operation.chainId,
-        callHash: operation.callHash,
-        blockNumber: operation.blockCreated,
-        extrinsicIndex: operation.indexCreated,
-        description: descriptionToSave,
-      });
-
-      operationDescriptionsResource.descriptionCreated({
-        id: operation.id,
-        description: descriptionToSave,
-      });
-      setDraft('');
-      setIsAdding(false);
-    } catch (error) {
-      const errorDescription =
-        error instanceof HttpError && error.status === 403
-          ? t('addressBook.sources.errorForbidden')
-          : error instanceof Error
-            ? error.message
-            : String(error);
-      toast.error(t('operation.descriptionSaveError'), { description: errorDescription });
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   if (state === 'error') {
     return (
@@ -158,51 +202,19 @@ export const OperationDescription = ({ operation, chain }: Props) => {
 
   if (state === 'reconnect') {
     return (
-      <DetailRow label={t('operation.descriptionLabel')} wrapperClassName="items-start">
-        <AddressBookHealthOverlay isHealthy={false}>
-          <TextArea
-            value=""
-            placeholder={t('operation.descriptionPlaceholder')}
-            rows={2}
-            maxLength={500}
-            disabled
-            onChange={() => {}}
-          />
-        </AddressBookHealthOverlay>
+      <DetailRow label={t('operation.descriptionLabel')}>
+        <OperationDescriptionReconnect />
       </DetailRow>
     );
   }
 
   return (
     <DetailRow label={t('operation.descriptionLabel')}>
-      <Modal size="mdlg" height="fit" isOpen={isAdding} onToggle={handleModalToggle}>
-        <Modal.Trigger>
-          <Button size="sm" variant="text" className="p-0">
-            {t('operation.addDescriptionButton')}
-          </Button>
-        </Modal.Trigger>
-        <Modal.Title close>{t('operation.addDescriptionButton')}</Modal.Title>
-        <Modal.Content>
-          <div className="px-5 py-2">
-            <TextArea
-              value={draft}
-              placeholder={t('operation.descriptionPlaceholder')}
-              rows={8}
-              maxLength={500}
-              autoFocus
-              onChange={setDraft}
-            />
-          </div>
-        </Modal.Content>
-        <Modal.Footer>
-          <Button size="sm" variant="text" onClick={handleCancel}>
-            {t('operation.cancelDescriptionButton')}
-          </Button>
-          <Button size="sm" disabled={!canSave} isLoading={isSaving} onClick={handleSave}>
-            {t('operation.saveDescriptionButton')}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {renderDescriptionEditorModal(
+        <Button size="sm" variant="text" className="p-0">
+          {t('operation.addDescriptionButton')}
+        </Button>,
+      )}
     </DetailRow>
   );
 };

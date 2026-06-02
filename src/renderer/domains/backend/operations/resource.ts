@@ -41,7 +41,7 @@ const resource = createQueryResource<DescriptionsParams>({
 const descriptionCreated = createEvent<{ id: string; description: string; draftId?: string }>();
 $cache.on(descriptionCreated, (state, { id, description, draftId }) => ({
   ...state,
-  [id]: { description, draftId: draftId ?? null },
+  [id]: { description, draftId: draftId ?? state[id]?.draftId ?? null },
 }));
 
 const resetDescriptions = createEvent();

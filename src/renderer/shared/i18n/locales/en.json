@@ -2452,6 +2452,8 @@
     "descriptionPlaceholder": "Add an optional note for this operation...",
     "descriptionSaveError": "Failed to store description",
     "descriptionMultisigNotInBook": "Multisig <account></account> needs to be added to the address book to post a description. Please contact your administrator.",
+    "editDescriptionButton": "Edit",
+    "editDescriptionTitle": "Edit description",
     "saveDescriptionButton": "Save",
     "showDescriptionButton": "Show full",
     "createFlexibleMultisig": {
