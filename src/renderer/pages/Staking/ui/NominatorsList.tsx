@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type Asset, type Chain, type VaultBaseAccount, type VaultShardAccount } from '@/shared/core';
+import { type Asset, type Chain, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -18,7 +18,7 @@ import { ShardedList } from './ShardedList';
 import { TimeToEra } from './TimeToEra';
 
 type Props = {
-  nominators: (NominatorInfo<VaultBaseAccount> | NominatorInfo<VaultShardAccount>[])[];
+  nominators: (NominatorInfo<AnyAccount> | NominatorInfo<VaultShardAccount>[])[];
   isStakingLoading: boolean;
   api: ApiPromise | null;
   timelineApi: ApiPromise | null;
@@ -27,6 +27,29 @@ type Props = {
   chain: Chain;
   onCheckValidators: (stash?: AccountId) => void;
   onToggleNominator: (nominator: AccountId, value?: boolean) => void;
+};
+
+type NominatorContentProps = {
+  stake: NominatorInfo<AnyAccount>;
+  chain: Chain;
+  badge?: ReactNode;
+};
+
+const NominatorContent = ({ stake, chain, badge }: NominatorContentProps) => {
+  const accountName = useAccountName({ accountId: stake.account.accountId, chain });
+
+  return (
+    <>
+      <Address
+        title={accountName}
+        variant="truncate"
+        address={toAddress(stake.account.accountId, { prefix: chain.addressPrefix })}
+        showIcon
+        iconSize={20}
+      />
+      <div className="ml-auto">{badge}</div>
+    </>
+  );
 };
 
 export const NominatorsList = ({
@@ -83,19 +106,7 @@ export const NominatorsList = ({
   };
 
   const getContent = (stake: NominatorInfo<AnyAccount>): ReactNode => {
-    const accountName = useAccountName({ accountId: stake.account.accountId, chain });
-    return (
-      <>
-        <Address
-          title={accountName}
-          variant="truncate"
-          address={toAddress(stake.account.accountId, { prefix: chain.addressPrefix })}
-          showIcon
-          iconSize={20}
-        />
-        <div className="ml-auto">{getUnstakeBadge(stake) || getRedeemBadge(stake)}</div>
-      </>
-    );
+    return <NominatorContent stake={stake} chain={chain} badge={getUnstakeBadge(stake) || getRedeemBadge(stake)} />;
   };
 
   const hasShards = nominators.some(Array.isArray);
