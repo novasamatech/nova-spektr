@@ -33,3 +33,31 @@ export function compactVertical(layout: Record<string, Rect>): Record<string, Re
 
   return result;
 }
+
+export function clampRect(rect: Rect, min: Size): Rect {
+  // Anchor x within the grid, reserving room for at least the minimum width,
+  // then shrink the width to whatever still fits to the right of that anchor.
+  const x = Math.min(GRID_COLUMNS - min.w, Math.max(0, rect.x));
+  const w = Math.min(GRID_COLUMNS - x, Math.max(min.w, rect.w));
+  const h = Math.max(min.h, rect.h);
+  const y = Math.max(0, rect.y);
+
+  return { x, y, w, h };
+}
+
+export function resolveCollisions(layout: Record<string, Rect>, movedKey: string): Record<string, Rect> {
+  const moved = layout[movedKey];
+  if (!moved) return layout;
+
+  // Push anything overlapping the moved widget below it, then compact.
+  // compactVertical processes top-to-bottom, so the moved widget (highest) stays put
+  // while displaced widgets flow back up around it — consistent with vertical compaction.
+  const working: Record<string, Rect> = { ...layout };
+  for (const [key, rect] of Object.entries(working)) {
+    if (key !== movedKey && rectsOverlap(moved, rect)) {
+      working[key] = { ...rect, y: moved.y + moved.h };
+    }
+  }
+
+  return compactVertical(working);
+}
