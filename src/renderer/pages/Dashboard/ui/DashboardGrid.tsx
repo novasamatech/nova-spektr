@@ -71,11 +71,16 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
 
   const orderedKeys = useMemo(() => {
     const keys = available.map((h) => h.key!);
+    // A stored layout (including the empty `{}` left by a reset) means seed new
+    // widgets by body.order. Only on genuine first load (no stored tab) do we
+    // migrate from the legacy widget order.
+    if (widgetLayout[tab] !== undefined) return keys;
+
     const legacy = readLegacyOrder(tab).filter((k) => keys.includes(k));
     const rest = keys.filter((k) => !legacy.includes(k));
 
     return [...legacy, ...rest];
-  }, [available, tab]);
+  }, [available, tab, widgetLayout]);
 
   const stored = widgetLayout[tab];
 

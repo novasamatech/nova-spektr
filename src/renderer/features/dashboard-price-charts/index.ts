@@ -15,6 +15,6 @@ export const dashboardPriceChartsFeature = createFeature({
 dashboardPriceChartsFeature.inject(dashboardWidgetsSlot, {
   order: 1,
   render: PriceChartsWidget,
-  defaultSize: { w: 2, h: 3 },
+  defaultSize: { w: 2, h: 2 },
   minSize: { w: 1, h: 2 },
 });

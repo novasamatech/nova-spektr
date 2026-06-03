@@ -13,8 +13,8 @@ export const dashboardOperationsQueueFeature = createFeature({
 });
 
 dashboardOperationsQueueFeature.inject(dashboardWidgetsSlot, {
-  order: 2,
+  order: 3,
   render: OperationsQueueWidget,
-  defaultSize: { w: 4, h: 3 },
+  defaultSize: { w: 2, h: 4 },
   minSize: { w: 2, h: 2 },
 });

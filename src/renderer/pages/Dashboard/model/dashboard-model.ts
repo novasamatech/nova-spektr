@@ -37,12 +37,7 @@ $widgetLayout
 
     return { ...state, [tab]: resolveCollisions(resized, key) };
   })
-  .on(layoutReset, (state, { tab }) => {
-    const next = { ...state };
-    delete next[tab];
-
-    return next;
-  });
+  .on(layoutReset, (state, { tab }) => ({ ...state, [tab]: {} }));
 
 $activeTab.on(tabChanged, (_, tab) => tab);
 

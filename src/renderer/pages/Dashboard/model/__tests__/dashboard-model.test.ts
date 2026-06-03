@@ -34,4 +34,12 @@ describe('dashboardModel.$widgetLayout', () => {
     expect(layout.b).toEqual({ x: 0, y: 0, w: 2, h: 2 });
     expect(layout.a).toEqual({ x: 0, y: 2, w: 2, h: 2 });
   });
+
+  it('reset empties the tab layout', async () => {
+    const scope = fork({
+      values: [[dashboardModel.$widgetLayout, { overview: { a: { x: 0, y: 0, w: 2, h: 2 } } }]],
+    });
+    await allSettled(dashboardModel.layoutReset, { scope, params: { tab: 'overview' } });
+    expect(scope.getState(dashboardModel.$widgetLayout).overview).toEqual({});
+  });
 });
