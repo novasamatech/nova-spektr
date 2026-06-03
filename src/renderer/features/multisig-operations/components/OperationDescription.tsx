@@ -18,10 +18,8 @@ import {
 import { type MultisigOperation } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
-import { backendContactsModel } from '@/features/contacts';
+import { ReconnectAddressBookButton, backendContactsModel } from '@/features/contacts';
 import { NamedAccount } from '@/widgets/NameResolver';
-
-import { OperationDescriptionReconnect } from './OperationDescriptionReconnect';
 
 type Props = {
   operation: MultisigOperation;
@@ -198,7 +196,13 @@ export const OperationDescription = ({ operation, chain }: Props) => {
   if (state === 'reconnect') {
     return (
       <DetailRow label={t('operation.descriptionLabel')}>
-        <OperationDescriptionReconnect />
+        <ReconnectAddressBookButton
+          size="sm"
+          variant="text"
+          iconSize={14}
+          label={t('addressBook.auth.reconnectButton')}
+          className="shrink-0 gap-x-1 p-0"
+        />
       </DetailRow>
     );
   }

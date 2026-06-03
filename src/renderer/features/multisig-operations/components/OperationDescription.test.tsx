@@ -110,6 +110,9 @@ vi.mock('@/features/contacts', () => ({
       {isHealthy === false && <button>Reconnect</button>}
     </div>
   ),
+  ReconnectAddressBookButton: ({ label = 'Reconnect' }: { label?: string }) => (
+    <button onClick={() => testState.editStarted()}>{label}</button>
+  ),
   backendContactsModel: { $isHealthy: testState.stores.isHealthy },
 }));
 

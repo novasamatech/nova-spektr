@@ -4,27 +4,41 @@ import { Tooltip } from '@/shared/ui-kit';
 import { backendConfigurationModel } from '@/aggregates/backend';
 
 type Props = {
-  variant?: 'fill' | 'chip';
+  className?: string;
+  iconSize?: 14 | 16;
+  label?: string;
+  size?: 'sm' | 'md';
+  variant?: 'fill' | 'chip' | 'text';
 };
 
-export const ReconnectAddressBookButton = ({ variant = 'chip' }: Props) => {
+export const ReconnectAddressBookButton = ({
+  className,
+  iconSize = 16,
+  label,
+  size = 'md',
+  variant = 'chip',
+}: Props) => {
   const { t } = useI18n();
 
   const handleClick = () => {
     backendConfigurationModel.events.editStarted();
   };
 
+  const buttonLabel = label ?? t('operations.drafts.reconnectOverlayButton');
+
   return (
     <Tooltip>
       <Tooltip.Trigger>
         <div>
           <Button
+            size={size}
             variant={variant}
             pallet="secondary"
-            prefixElement={<Icon name="refresh" size={16} className="text-tab-icon-inactive" />}
+            className={className}
+            prefixElement={<Icon name="refresh" size={iconSize} className="text-tab-icon-inactive" />}
             onClick={handleClick}
           >
-            {t('operations.drafts.reconnectOverlayButton')}
+            {buttonLabel}
           </Button>
         </div>
       </Tooltip.Trigger>
