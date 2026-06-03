@@ -110,10 +110,7 @@ describe('syncLayout migration path', () => {
     const withNew = syncLayout(seeded, ['charts', 'portfolio', 'queue'], sizes);
     expect(withNew.queue).toBeDefined();
     // queue lands at or below the existing widgets
-    const existingBottom = Math.max(
-      seeded.charts!.y + seeded.charts!.h,
-      seeded.portfolio!.y + seeded.portfolio!.h,
-    );
+    const existingBottom = Math.max(seeded.charts!.y + seeded.charts!.h, seeded.portfolio!.y + seeded.portfolio!.h);
     expect(withNew.queue!.y).toBeGreaterThanOrEqual(existingBottom);
     // and the existing widgets keep their positions
     expect(withNew.charts).toEqual(seeded.charts);
