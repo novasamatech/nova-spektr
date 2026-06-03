@@ -498,6 +498,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "resetLayout": "Reset layout",
     "tabs": {
       "overview": "Overview",
       "staking": "Staking",

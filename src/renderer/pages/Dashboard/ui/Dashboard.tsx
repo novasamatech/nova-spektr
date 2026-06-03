@@ -74,6 +74,13 @@ export const Dashboard = () => {
         {allEntries.length > 0 && (
           <div className="flex items-center gap-x-2 rounded-xl bg-white p-2">
             <IconButton className={editMode ? 'text-icon-accent' : ''} name="edit" onClick={editModeToggled} />
+            {editMode && (
+              <IconButton
+                name="refresh"
+                aria-label={t('dashboard.resetLayout')}
+                onClick={() => dashboardModel.layoutReset({ tab: activeTab })}
+              />
+            )}
             <Slot id={dashboardPresetSwitcherSlot} />
           </div>
         )}
