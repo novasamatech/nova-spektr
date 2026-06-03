@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { chainsService } from '@/shared/api/network';
 import { type Asset, type Chain } from '@/shared/core';
@@ -7,11 +7,12 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { includesMultiple, nullable } from '@/shared/lib/utils';
 import { Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { type AnyAccount, accountService } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { useAssetsPrices } from '@/domains/price';
 import { EmptyAssetsState } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
 import { walletSelect } from '@/aggregates/wallet-select';
 
@@ -24,8 +25,13 @@ type Props = {
 };
 export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances }: Props) => {
   const activeWallet = useUnit(walletSelect.$selectedWallet);
+  const wallets = useUnit(walletModel.$wallets);
+  const isLoadingWallets = useUnit(walletModel.$isLoadingWallets);
   const activeWalletAccounts = useUnit(walletSelect.$selectedAccounts);
+  const accountsPopulated = useUnit(accounts.$populated);
+  const accountAvailabilityRevision = useUnit(accountService.$accountAvailabilityRevision);
   const balances = useUnit(balanceModel.$balanceMap);
+  const balancesPopulated = useUnit(balanceModel.$populated);
 
   const fiatFlag = useUnit(currencySelect.$fiatFlag);
   const currency = useUnit(currencySelect.$activeCurrency);
@@ -37,12 +43,23 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances }: Pr
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
   const [filteredChains, setFilteredChains] = useState<Chain[]>([]);
 
-  const { list, isLoading } = useDeferredList({ list: filteredChains, forceFirstRender: true });
+  const visibleAccountIds = useMemo(() => new Set(visibleAccounts.map((a) => a.accountId)), [visibleAccounts]);
+  const networkDataPopulated = Object.keys(chains).length > 0 && Object.keys(connections).length > 0;
+  const visibleAccountsPopulated =
+    accountsPopulated && !isLoadingWallets && (wallets.length === 0 || activeWallet !== null);
+  const chainViewLoading = !balancesPopulated || !networkDataPopulated || !visibleAccountsPopulated;
+  const emptyStateAvailable = Boolean(query) || hideZeroBalances;
+
+  const { list, isLoading } = useDeferredList({
+    list: filteredChains,
+    isLoading: chainViewLoading,
+    forceFirstRender: true,
+  });
+  const shouldShowLoader = isLoading && list.length === 0;
+  const shouldShowEmptyState = emptyStateAvailable && list.length === 0 && !isLoading;
 
   useEffect(() => {
     if (!visibleAccounts.length) return;
-
-    const visibleAccountIds = new Set(visibleAccounts.map((a) => a.accountId));
 
     const filteredChains = Object.values(chains).filter((chain) => {
       const connection = connections[chain.chainId];
@@ -66,7 +83,17 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances }: Pr
     );
 
     setSortedChains(sortedChains);
-  }, [activeWalletAccounts, balances, assetsPrices, connections, visibleAccounts]);
+  }, [
+    activeWalletAccounts,
+    balances,
+    assetsPrices,
+    chains,
+    connections,
+    currency,
+    fiatFlag,
+    visibleAccountIds,
+    accountAvailabilityRevision,
+  ]);
 
   useEffect(() => {
     let filteredChains: Chain[] = [];
@@ -105,14 +132,14 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances }: Pr
     }
   }, [sortedChains, query]);
 
-  if (!visibleAccounts.length) {
+  if (!visibleAccounts.length && !chainViewLoading) {
     return null;
   }
 
   return (
     <div className="flex h-full w-full flex-col gap-y-4 overflow-y-scroll">
       <div className="flex min-h-full w-full flex-col items-center gap-y-4 py-4">
-        {isLoading && (
+        {shouldShowLoader && (
           <Box fillContainer verticalAlign="center" horizontalAlign="center">
             <Loader color="primary" size={32} />
           </Box>
@@ -128,7 +155,7 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances }: Pr
             wallet={activeWallet}
           />
         ))}
-        <EmptyAssetsState />
+        {shouldShowEmptyState && <EmptyAssetsState />}
       </div>
     </div>
   );

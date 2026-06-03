@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
 import { Header, Loader } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
 import { AssetsListView } from '@/entities/asset';
 import { AssetsSearch, AssetsSettings, assetsSearchModel, assetsSettingsModel } from '@/features/assets';
 import { AssetTransactionModal } from '@/features/assets-transaction';
@@ -17,6 +18,12 @@ const AssetsChainView = lazy(() =>
 );
 
 import { assetsModel } from './model/assets-model';
+
+const assetsFallback = (
+  <Box fillContainer verticalAlign="center" horizontalAlign="center">
+    <Loader color="primary" size={32} />
+  </Box>
+);
 
 export const Assets = () => {
   const { t } = useI18n();
@@ -38,12 +45,12 @@ export const Assets = () => {
         <ShardSelectorButton />
         <div className="flex h-full w-full flex-col gap-y-4 overflow-y-scroll">
           {assetsView === AssetsListView.TOKEN_CENTRIC && (
-            <Suspense fallback={<Loader color="primary" className="m-auto" />}>
+            <Suspense fallback={assetsFallback}>
               <AssetsPortfolioView />
             </Suspense>
           )}
           {assetsView === AssetsListView.CHAIN_CENTRIC && (
-            <Suspense fallback={<Loader color="primary" className="m-auto" />}>
+            <Suspense fallback={assetsFallback}>
               <AssetsChainView query={query} visibleAccounts={visibleAccounts} hideZeroBalances={hideZeroBalances} />
             </Suspense>
           )}

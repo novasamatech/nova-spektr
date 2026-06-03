@@ -1,13 +1,14 @@
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { persist } from 'effector-storage/local';
-import { once } from 'patronum';
+import { and } from 'patronum';
 
 import { type AssetByChains } from '@/shared/core';
 import { includesMultiple, nonNullable, nullable } from '@/shared/lib/utils';
-import { type AnyAccount, accountService } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { shardsModel, shardsUtils } from '@/features/wallets';
@@ -60,8 +61,9 @@ const $allInitiators = combine(
   {
     accounts: walletSelect.$selectedAccounts,
     chains: networkModel.$chains,
+    accountAvailabilityRevision: accountService.$accountAvailabilityRevision,
   },
-  ({ accounts, chains }) => {
+  ({ accounts, chains, accountAvailabilityRevision: _accountAvailabilityRevision }) => {
     if (nullable(accounts) || Object.keys(chains).length === 0) return [];
     const result = new Set<AnyAccount>();
 
@@ -232,13 +234,71 @@ const $sortedTokens = combine(
   },
 );
 
-const $tokensPopulated = createStore(false).on(once($sortedTokens.updates), () => true);
+const $emptyStateAvailable = combine(
+  {
+    query: $query,
+    hideZeroBalances: $hideZeroBalances,
+  },
+  ({ query, hideZeroBalances }) => Boolean(query) || hideZeroBalances,
+);
+
+const $walletsPopulated = combine(
+  {
+    isLoadingWallets: walletModel.$isLoadingWallets,
+    wallets: walletModel.$wallets,
+    selectedWallet: walletSelect.$selectedWallet,
+  },
+  ({ isLoadingWallets, wallets, selectedWallet }) => {
+    if (isLoadingWallets) return false;
+    if (wallets.length === 0) return true;
+
+    return nonNullable(selectedWallet) && selectedWallet.accounts.length > 0;
+  },
+);
+
+const $networkDataPopulated = combine(
+  {
+    chains: networkModel.$chains,
+    connections: networkModel.$connections,
+  },
+  ({ chains, connections }) => Object.keys(chains).length > 0 && Object.keys(connections).length > 0,
+);
+
+const $tokensPopulated = and(
+  $defaultTokens.map((tokens) => nonNullable(tokens)),
+  accounts.$populated,
+  $networkDataPopulated,
+  balanceModel.$populated,
+  $walletsPopulated,
+);
+
+const $networksLoading = combine(networkModel.$connectionStatuses, (statuses) =>
+  Object.values(statuses).some(networkUtils.isConnectingStatus),
+);
+
+const $isLoading = combine(
+  {
+    tokensPopulated: $tokensPopulated,
+    sortedTokens: $sortedTokens,
+    emptyStateAvailable: $emptyStateAvailable,
+    networksLoading: $networksLoading,
+  },
+  ({ tokensPopulated, sortedTokens, emptyStateAvailable, networksLoading }) => {
+    if (!tokensPopulated) return true;
+    if (sortedTokens.length > 0) return false;
+    if (emptyStateAvailable) return false;
+
+    return networksLoading;
+  },
+);
 
 export const portfolioModel = {
   $activeView,
   $accounts: $allInitiators,
   $sortedTokens,
   $tokensPopulated,
+  $isLoading,
+  $emptyStateAvailable,
 
   populate: populateFx,
 
@@ -253,5 +313,7 @@ export const portfolioModel = {
   _test: {
     $defaultTokens,
     $query,
+    $networksLoading,
+    $networkDataPopulated,
   },
 };

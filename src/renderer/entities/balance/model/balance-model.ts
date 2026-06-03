@@ -4,7 +4,7 @@ import { readonly, spread } from 'patronum';
 
 import { balanceMapper, storageService } from '@/shared/api/storage';
 import { type Balance, type BalanceDraft, type BalanceMap } from '@/shared/core';
-import { createBuffer, createQueuedEffect } from '@/shared/effector';
+import { createBuffer, createQueuedEffect, populated } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceUtils } from '../lib/balance-utils';
 
@@ -37,6 +37,7 @@ const removeBalancesFx = createQueuedEffect(async (balances: Balance[]) => {
 const populateFx = createQueuedEffect(async (): Promise<Balance[]> => {
   return storageService.balances.readAll().then((balances) => balances.map(balanceMapper.fromDB));
 });
+const $populated = populated(populateFx);
 
 sample({
   clock: bufferedUpdate,
@@ -105,6 +106,7 @@ sample({
 export const balanceModel = {
   $balances,
   $balanceMap: readonly($balanceMap),
+  $populated,
 
   populate: populateFx,
 
@@ -114,6 +116,7 @@ export const balanceModel = {
 
   __test: {
     $balanceMap,
+    $populated,
     removeBalancesFx,
   },
 };
