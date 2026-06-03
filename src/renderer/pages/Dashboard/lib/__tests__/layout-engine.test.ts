@@ -93,3 +93,30 @@ describe('syncLayout', () => {
     expect(result.b).toEqual({ x: 2, y: 1, w: 2, h: 2 });
   });
 });
+
+describe('syncLayout migration path', () => {
+  it('reproduces a legacy order and appends a newly-added widget at the bottom', () => {
+    const sizes = {
+      portfolio: { w: 2, h: 4 },
+      charts: { w: 2, h: 3 },
+      queue: { w: 4, h: 3 },
+    };
+
+    // First load: empty stored, seeded from legacy order [charts, portfolio]
+    const seeded = syncLayout({}, ['charts', 'portfolio'], sizes);
+    expect(seeded.charts!.y).toBeLessThanOrEqual(seeded.portfolio!.y);
+
+    // Later: a new widget 'queue' becomes available
+    const withNew = syncLayout(seeded, ['charts', 'portfolio', 'queue'], sizes);
+    expect(withNew.queue).toBeDefined();
+    // queue lands at or below the existing widgets
+    const existingBottom = Math.max(
+      seeded.charts!.y + seeded.charts!.h,
+      seeded.portfolio!.y + seeded.portfolio!.h,
+    );
+    expect(withNew.queue!.y).toBeGreaterThanOrEqual(existingBottom);
+    // and the existing widgets keep their positions
+    expect(withNew.charts).toEqual(seeded.charts);
+    expect(withNew.portfolio).toEqual(seeded.portfolio);
+  });
+});
