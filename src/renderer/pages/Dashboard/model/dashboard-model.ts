@@ -4,18 +4,45 @@ import { persist } from 'effector-storage/local';
 import { contactModel } from '@/entities/contact';
 import { walletModel } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
+import { type Rect, resolveCollisions } from '../lib/layout-engine';
 
 const tabChanged = createEvent<string>();
-const widgetOrderChanged = createEvent<{ tab: string; order: string[] }>();
 const editModeToggled = createEvent();
+
+const layoutSet = createEvent<{ tab: string; layout: Record<string, Rect> }>();
+const widgetMoved = createEvent<{ tab: string; key: string; x: number; y: number }>();
+const widgetResized = createEvent<{ tab: string; key: string; w: number; h: number }>();
+const layoutReset = createEvent<{ tab: string }>();
 
 const $activeTab = createStore('overview');
 const $editMode = createStore(false);
 $editMode.on(editModeToggled, (state) => !state);
 
-const $widgetOrder = createStore<Record<string, string[]>>({});
-persist({ store: $widgetOrder, key: 'dashboard-widget-order', sync: true });
-$widgetOrder.on(widgetOrderChanged, (state, { tab, order }) => ({ ...state, [tab]: order }));
+const $widgetLayout = createStore<Record<string, Record<string, Rect>>>({});
+persist({ store: $widgetLayout, key: 'dashboard-widget-layout-v1', sync: true });
+
+$widgetLayout
+  .on(layoutSet, (state, { tab, layout }) => ({ ...state, [tab]: layout }))
+  .on(widgetMoved, (state, { tab, key, x, y }) => {
+    const tabLayout = state[tab];
+    if (!tabLayout?.[key]) return state;
+    const moved = { ...tabLayout, [key]: { ...tabLayout[key]!, x, y } };
+
+    return { ...state, [tab]: resolveCollisions(moved, key) };
+  })
+  .on(widgetResized, (state, { tab, key, w, h }) => {
+    const tabLayout = state[tab];
+    if (!tabLayout?.[key]) return state;
+    const resized = { ...tabLayout, [key]: { ...tabLayout[key]!, w, h } };
+
+    return { ...state, [tab]: resolveCollisions(resized, key) };
+  })
+  .on(layoutReset, (state, { tab }) => {
+    const next = { ...state };
+    delete next[tab];
+
+    return next;
+  });
 
 $activeTab.on(tabChanged, (_, tab) => tab);
 
@@ -61,9 +88,12 @@ export const dashboardModel = {
   $selectedAccounts,
   $selectedContactAccountIds,
   $activeTab,
-  $widgetOrder,
+  $widgetLayout,
   $editMode,
   tabChanged,
-  widgetOrderChanged,
+  layoutSet,
+  widgetMoved,
+  widgetResized,
+  layoutReset,
   editModeToggled,
 };

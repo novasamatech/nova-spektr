@@ -4,6 +4,7 @@ import { useUnit } from 'effector-react';
 import { type ComponentProps, type ComponentType, memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import { type SlotIdentifier, type SlotProps } from '@/shared/di/createSlot';
+import { type Rect, GRID_COLUMNS } from '../lib/layout-engine';
 import { dashboardModel } from '../model/dashboard-model';
 
 import { WidgetSortableProvider } from './WidgetSortableContext';
@@ -19,8 +20,21 @@ type Props<P extends SlotProps> = {
 
 const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }: Props<P>) => {
   const handlers = useUnit(slot.$handlers);
-  const widgetOrder = useUnit(dashboardModel.$widgetOrder);
-  const onOrderChanged = useUnit(dashboardModel.widgetOrderChanged);
+  const widgetLayout = useUnit(dashboardModel.$widgetLayout);
+  const onLayoutSet = useUnit(dashboardModel.layoutSet);
+
+  // Bridge: derive a 1D order from the stored 2D layout (sorted by position).
+  // Full 2D rendering lands in Task 10; this keeps existing DnD reorder working.
+  const widgetOrder = useMemo<Record<string, string[]>>(() => {
+    const result: Record<string, string[]> = {};
+    for (const [tabKey, layout] of Object.entries(widgetLayout)) {
+      result[tabKey] = Object.entries(layout)
+        .sort(([, a], [, b]) => a.y - b.y || a.x - b.x)
+        .map(([key]) => key);
+    }
+
+    return result;
+  }, [widgetLayout]);
 
   const availableHandlers = useMemo(() => {
     return handlers.filter((h) => {
@@ -80,11 +94,18 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
   );
 
   const handleDragEnd = useCallback(() => {
-    if (dragKeysRef.current) {
-      onOrderChanged({ tab, order: dragKeysRef.current });
+    const keys = dragKeysRef.current;
+    if (keys) {
+      // Bridge: persist the new order as a vertically stacked layout.
+      // Real 2D placement (preserving widths/heights) lands in Task 10.
+      const layout: Record<string, Rect> = {};
+      for (const [index, key] of keys.entries()) {
+        layout[key] = { x: 0, y: index, w: GRID_COLUMNS, h: 1 };
+      }
+      onLayoutSet({ tab, layout });
     }
     setDragKeys(null);
-  }, [tab, onOrderChanged]);
+  }, [tab, onLayoutSet]);
 
   const componentProps = (props ?? EMPTY_PROPS) satisfies Record<string, unknown>;
 
