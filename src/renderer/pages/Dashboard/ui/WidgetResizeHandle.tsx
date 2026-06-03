@@ -1,10 +1,12 @@
 import { type PointerEvent, useRef } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { GRID_COLUMNS, ROW_HEIGHT_PX } from '../lib/layout-engine';
 
 import { useWidgetSortable } from './WidgetSortableContext';
 
 export const WidgetResizeHandle = () => {
+  const { t } = useI18n();
   const ctx = useWidgetSortable();
   const start = useRef<{ px: number; py: number; w: number; h: number; colWidth: number } | null>(null);
 
@@ -39,7 +41,7 @@ export const WidgetResizeHandle = () => {
   return (
     <div
       role="slider"
-      aria-label="Resize widget"
+      aria-label={t('dashboard.resizeWidget')}
       tabIndex={-1}
       className="absolute right-0.5 bottom-0.5 z-10 h-4 w-4 cursor-se-resize rounded-sm bg-primary-button-background-default/40 hover:bg-primary-button-background-default/70"
       onPointerDown={onPointerDown}

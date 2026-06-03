@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { type ComponentProps, type ComponentType, memo, useEffect, useMemo } from 'react';
 
 import { type SlotIdentifier, type SlotProps } from '@/shared/di/createSlot';
-import { type Rect, type Size, GRID_COLUMNS, syncLayout } from '../lib/layout-engine';
+import { type Rect, type Size, GRID_COLUMNS, ROW_HEIGHT_PX, syncLayout } from '../lib/layout-engine';
 import { readLegacyOrder } from '../lib/legacy-order';
 import { dashboardModel } from '../model/dashboard-model';
 
@@ -100,9 +100,11 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
     const overId = event.operation.target?.id ? String(event.operation.target.id) : null;
     if (!activeId || !overId || activeId === overId) return;
 
+    const moved = effective[activeId];
     const target = effective[overId];
-    if (!target) return;
-    widgetMoved({ tab, key: activeId, x: target.x, y: target.y });
+    if (!moved || !target) return;
+    const x = Math.min(target.x, GRID_COLUMNS - moved.w);
+    widgetMoved({ tab, key: activeId, x: Math.max(0, x), y: target.y });
   };
 
   const componentProps = (props ?? EMPTY_PROPS) satisfies Record<string, unknown>;
@@ -111,8 +113,11 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
   return (
     <DragDropProvider onDragEnd={handleDragEnd}>
       <div
-        className="grid h-full w-full items-start gap-4 overflow-y-auto p-3"
-        style={{ gridTemplateColumns: `repeat(${GRID_COLUMNS}, minmax(0, 1fr))`, gridAutoRows: 'min-content' }}
+        className="grid h-full w-full gap-4 overflow-y-auto p-3"
+        style={{
+          gridTemplateColumns: `repeat(${GRID_COLUMNS}, minmax(0, 1fr))`,
+          gridAutoRows: `${ROW_HEIGHT_PX}px`,
+        }}
       >
         {renderKeys.map((key, index) => {
           const handler = handlersByKey.get(key);

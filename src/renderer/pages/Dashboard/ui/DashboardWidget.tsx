@@ -1,7 +1,7 @@
 import { type ReactNode, memo } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { ROW_HEIGHT_PX } from '../lib/layout-engine';
 
 import { WidgetResizeHandle } from './WidgetResizeHandle';
 import { useWidgetSortable } from './WidgetSortableContext';
@@ -12,16 +12,10 @@ type Props = {
   card?: boolean;
 };
 
-const COL_SPAN_CLASS: Record<number, string> = {
-  1: 'col-span-1',
-  2: 'col-span-2',
-  3: 'col-span-3',
-  4: 'col-span-4',
-};
-
 const CARD_CLASS = 'rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
 export const DashboardWidget = memo(({ children, className, card = true }: Props) => {
+  const { t } = useI18n();
   const ctx = useWidgetSortable();
   const rect = ctx?.rect;
 
@@ -29,10 +23,16 @@ export const DashboardWidget = memo(({ children, className, card = true }: Props
     <div
       ref={ctx?.sortableRef}
       data-widget-cell
-      style={rect ? { gridRowEnd: `span ${rect.h}`, height: rect.h * ROW_HEIGHT_PX } : undefined}
+      style={
+        rect
+          ? {
+              gridColumn: `${rect.x + 1} / span ${rect.w}`,
+              gridRow: `${rect.y + 1} / span ${rect.h}`,
+            }
+          : undefined
+      }
       className={cnTw(
-        rect ? COL_SPAN_CLASS[rect.w] : 'col-span-2',
-        'flex min-h-0 flex-col',
+        'flex h-full min-h-0 flex-col',
         card && CARD_CLASS,
         ctx && 'relative transition-shadow duration-200',
         ctx?.editMode && 'ring-2 ring-primary-button-background-default/30',
@@ -45,7 +45,7 @@ export const DashboardWidget = memo(({ children, className, card = true }: Props
           ref={ctx.handleRef}
           type="button"
           className="absolute -top-2.5 -left-2.5 z-10 flex h-6 w-6 cursor-grab items-center justify-center rounded-full bg-primary-button-background-default text-white shadow-card-shadow active:cursor-grabbing"
-          aria-label="Drag to reorder"
+          aria-label={t('dashboard.dragWidget')}
         >
           <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
             <circle cx="5" cy="3" r="1.5" />

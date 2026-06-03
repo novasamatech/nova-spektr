@@ -34,17 +34,6 @@ export function compactVertical(layout: Record<string, Rect>): Record<string, Re
   return result;
 }
 
-export function clampRect(rect: Rect, min: Size): Rect {
-  // Anchor x within the grid, reserving room for at least the minimum width,
-  // then shrink the width to whatever still fits to the right of that anchor.
-  const x = Math.min(GRID_COLUMNS - min.w, Math.max(0, rect.x));
-  const w = Math.min(GRID_COLUMNS - x, Math.max(min.w, rect.w));
-  const h = Math.max(min.h, rect.h);
-  const y = Math.max(0, rect.y);
-
-  return { x, y, w, h };
-}
-
 export function resolveCollisions(layout: Record<string, Rect>, movedKey: string): Record<string, Rect> {
   const moved = layout[movedKey];
   if (!moved) return layout;
@@ -69,12 +58,6 @@ function bottomOf(layout: Record<string, Rect>): number {
   }
 
   return bottom;
-}
-
-export function placeNew(layout: Record<string, Rect>, key: string, size: Size): Record<string, Rect> {
-  const next = { ...layout, [key]: { x: 0, y: bottomOf(layout), w: size.w, h: size.h } };
-
-  return compactVertical(next);
 }
 
 export function syncLayout(
