@@ -141,6 +141,7 @@ For example, a selected wallet or network for working within a specific feature.
     - model.ts
     - hooks.ts (optional) effector-react bindings
     - service.ts (optional)
+    - README.md product spec — see [Feature specs](/code/style/feature-specs)
     - index.ts
 </FileTree>
 
@@ -169,5 +170,10 @@ Feature **must not**:
     - hooks/ custom React hooks
     - model/ effector stores, events, and effects
     - feature.ts feature identifier created with `createFeature` + `feature.inject(...)` integrations
+    - README.md product spec — see [Feature specs](/code/style/feature-specs)
     - index.ts (or index.tsx) public exports
 </FileTree>
+
+A non-trivial feature carries a colocated `README.md` product spec describing its
+behaviour (states, scenarios, lifecycle). Draft it with the feature author and ship
+it in the same change — see [Feature specs](/code/style/feature-specs).

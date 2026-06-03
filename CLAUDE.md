@@ -11,6 +11,7 @@ Project documentation:
 - @docs/content/docs/onboarding/links.mdx
 - @docs/content/docs/code/style/naming.md
 - @docs/content/docs/code/style/effector.md
+- @docs/content/docs/code/style/feature-specs.md
 
 ## Workflow Orchestration
 
@@ -56,6 +57,24 @@ Project documentation:
 4. Explain Changes: High-level summary at each step
 5. Document Results: Add review to 'tasks/todo.md'
 6. Capture Lessons: Update 'tasks/lessons.md' after corrections
+
+## Feature Spec READMEs
+
+Non-trivial features and aggregates carry a colocated `README.md` — a **product
+spec** of what the code does and why (states, scenarios, lifecycle), not how it is
+wired. Full convention and template: @docs/content/docs/code/style/feature-specs.md.
+Worked example: `src/renderer/aggregates/multisig-operation-description/README.md`.
+
+- **Before changing a feature**: look for its `README.md` and read it first — it is
+  the source of product truth. If the code you touch contradicts it, surface that.
+- **When adding a feature or materially changing behavior**: draft or update the
+  `README.md` as part of the change, then get the author's approval on it before
+  finalizing — treat the spec as a deliverable alongside the code, never an
+  afterthought.
+- **Keep it in sync**: update the README in the same change that alters behavior;
+  never let it drift. Product-level English, mermaid diagrams where they help.
+- **Scope**: one README per feature/aggregate folder. Skip it for trivial,
+  presentation-only, or purely mechanical modules.
 
 ## Core Principles
 - Simplicity First: Make every change as simple as possible. Impact minimal code.
