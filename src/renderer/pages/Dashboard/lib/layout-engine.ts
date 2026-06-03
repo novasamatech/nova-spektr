@@ -61,3 +61,50 @@ export function resolveCollisions(layout: Record<string, Rect>, movedKey: string
 
   return compactVertical(working);
 }
+
+function bottomOf(layout: Record<string, Rect>): number {
+  let bottom = 0;
+  for (const rect of Object.values(layout)) {
+    bottom = Math.max(bottom, rect.y + rect.h);
+  }
+
+  return bottom;
+}
+
+export function placeNew(layout: Record<string, Rect>, key: string, size: Size): Record<string, Rect> {
+  const next = { ...layout, [key]: { x: 0, y: bottomOf(layout), w: size.w, h: size.h } };
+
+  return compactVertical(next);
+}
+
+export function syncLayout(
+  stored: Record<string, Rect>,
+  orderedKeys: string[],
+  sizes: Record<string, Size>,
+): Record<string, Rect> {
+  // Keep known rects in the given order; this also drops stale keys not in orderedKeys.
+  const result: Record<string, Rect> = {};
+  for (const key of orderedKeys) {
+    if (stored[key]) result[key] = stored[key]!;
+  }
+
+  // Place missing widgets in order, flowing left-to-right then wrapping rows
+  // (this reproduces the old CSS auto-flow on first-time migration).
+  let cursorX = 0;
+  let cursorY = bottomOf(result);
+  let rowMaxH = 0;
+  for (const key of orderedKeys) {
+    if (result[key]) continue;
+    const size = sizes[key] ?? { w: 2, h: 3 };
+    if (cursorX + size.w > GRID_COLUMNS) {
+      cursorY += rowMaxH;
+      cursorX = 0;
+      rowMaxH = 0;
+    }
+    result[key] = { x: cursorX, y: cursorY, w: size.w, h: size.h };
+    cursorX += size.w;
+    rowMaxH = Math.max(rowMaxH, size.h);
+  }
+
+  return compactVertical(result);
+}
