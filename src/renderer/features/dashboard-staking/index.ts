@@ -38,15 +38,15 @@ export const dashboardMonthlyRewardsFeature = createFeature({
 dashboardStakingFeature.inject(dashboardStakingSlot, {
   order: 0,
   render: StakingOverviewWidget,
-  defaultSize: { w: 4, h: 2 },
+  defaultSize: { w: 2, h: 5 },
   minSize: { w: 2, h: 2 },
 });
 
 dashboardTotalRewardsFeature.inject(dashboardStakingSlot, {
   order: 1,
   render: TotalRewardsWidget,
-  defaultSize: { w: 2, h: 2 },
-  minSize: { w: 1, h: 2 },
+  defaultSize: { w: 2, h: 5 },
+  minSize: { w: 2, h: 2 },
 });
 
 dashboardStakingSummaryFeature.inject(dashboardWidgetsSlot, {
@@ -59,6 +59,6 @@ dashboardStakingSummaryFeature.inject(dashboardWidgetsSlot, {
 dashboardMonthlyRewardsFeature.inject(dashboardStakingSlot, {
   order: 2,
   render: MonthlyRewardsWidget,
-  defaultSize: { w: 2, h: 3 },
-  minSize: { w: 1, h: 2 },
+  defaultSize: { w: 4, h: 5 },
+  minSize: { w: 2, h: 3 },
 });
