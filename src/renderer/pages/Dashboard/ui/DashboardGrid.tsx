@@ -1,18 +1,21 @@
-import { move } from '@dnd-kit/helpers';
 import { DragDropProvider } from '@dnd-kit/react';
 import { useUnit } from 'effector-react';
-import { type ComponentProps, type ComponentType, memo, useCallback, useMemo, useRef, useState } from 'react';
+import { type ComponentProps, type ComponentType, memo, useEffect, useMemo } from 'react';
 
 import { type SlotIdentifier, type SlotProps } from '@/shared/di/createSlot';
-import { type Rect, GRID_COLUMNS } from '../lib/layout-engine';
+import { type Size, GRID_COLUMNS, syncLayout } from '../lib/layout-engine';
+import { readLegacyOrder } from '../lib/legacy-order';
 import { dashboardModel } from '../model/dashboard-model';
 
+import { type WidgetGridMeta } from './Dashboard';
 import { WidgetSortableProvider } from './WidgetSortableContext';
 
 const EMPTY_PROPS: Record<string, unknown> = {};
+const FALLBACK_DEFAULT: Size = { w: 2, h: 3 };
+const FALLBACK_MIN: Size = { w: 1, h: 2 };
 
 type Props<P extends SlotProps> = {
-  slot: SlotIdentifier<P>;
+  slot: SlotIdentifier<P, WidgetGridMeta>;
   tab: string;
   props: P;
   editMode: boolean;
@@ -21,106 +24,106 @@ type Props<P extends SlotProps> = {
 const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }: Props<P>) => {
   const handlers = useUnit(slot.$handlers);
   const widgetLayout = useUnit(dashboardModel.$widgetLayout);
-  const onLayoutSet = useUnit(dashboardModel.layoutSet);
+  const layoutSet = useUnit(dashboardModel.layoutSet);
+  const widgetMoved = useUnit(dashboardModel.widgetMoved);
+  const widgetResized = useUnit(dashboardModel.widgetResized);
 
-  // Bridge: derive a 1D order from the stored 2D layout (sorted by position).
-  // Full 2D rendering lands in Task 10; this keeps existing DnD reorder working.
-  const widgetOrder = useMemo<Record<string, string[]>>(() => {
-    const result: Record<string, string[]> = {};
-    for (const [tabKey, layout] of Object.entries(widgetLayout)) {
-      result[tabKey] = Object.entries(layout)
+  const available = useMemo(
+    () =>
+      handlers
+        .filter((h) => {
+          try {
+            return h.available() && h.key != null;
+          } catch {
+            return false;
+          }
+        })
+        .sort((a, b) => (a.body.order ?? 0) - (b.body.order ?? 0)),
+    [handlers],
+  );
+
+  const sizes = useMemo(() => {
+    const map: Record<string, Size> = {};
+    const mins: Record<string, Size> = {};
+    for (const h of available) {
+      map[h.key!] = h.body.defaultSize ?? FALLBACK_DEFAULT;
+      mins[h.key!] = h.body.minSize ?? FALLBACK_MIN;
+    }
+
+    return { defaults: map, mins };
+  }, [available]);
+
+  const orderedKeys = useMemo(() => {
+    const keys = available.map((h) => h.key!);
+    const legacy = readLegacyOrder(tab).filter((k) => keys.includes(k));
+    const rest = keys.filter((k) => !legacy.includes(k));
+
+    return [...legacy, ...rest];
+  }, [available, tab]);
+
+  const stored = widgetLayout[tab];
+
+  const effective = useMemo(
+    () => syncLayout(stored ?? {}, orderedKeys, sizes.defaults),
+    [stored, orderedKeys, sizes.defaults],
+  );
+
+  useEffect(() => {
+    if (JSON.stringify(effective) !== JSON.stringify(stored ?? {})) {
+      layoutSet({ tab, layout: effective });
+    }
+  }, [effective, stored, tab, layoutSet]);
+
+  const renderKeys = useMemo(
+    () =>
+      Object.entries(effective)
         .sort(([, a], [, b]) => a.y - b.y || a.x - b.x)
-        .map(([key]) => key);
-    }
-
-    return result;
-  }, [widgetLayout]);
-
-  const availableHandlers = useMemo(() => {
-    return handlers.filter((h) => {
-      try {
-        return h.available();
-      } catch {
-        return false;
-      }
-    });
-  }, [handlers]);
-
-  const { orderedHandlers, handlersByKey } = useMemo(() => {
-    const byKey = new Map(availableHandlers.map((h) => [h.key, h]));
-
-    const savedOrder = widgetOrder[tab];
-    if (!savedOrder || savedOrder.length === 0) {
-      const sorted = [...availableHandlers].sort((a, b) => (a.body.order ?? 0) - (b.body.order ?? 0));
-
-      return { orderedHandlers: sorted, handlersByKey: byKey };
-    }
-
-    const ordered = savedOrder.filter((key) => byKey.has(key)).map((key) => byKey.get(key)!);
-
-    const orderedKeySet = new Set(savedOrder);
-    const newHandlers = availableHandlers
-      .filter((h) => h.key && !orderedKeySet.has(h.key))
-      .sort((a, b) => (a.body.order ?? 0) - (b.body.order ?? 0));
-
-    return { orderedHandlers: [...ordered, ...newHandlers], handlersByKey: byKey };
-  }, [availableHandlers, widgetOrder, tab]);
-
-  const storeKeys = useMemo(
-    () => orderedHandlers.map((h) => h.key).filter((key): key is string => key != null),
-    [orderedHandlers],
+        .map(([key]) => key),
+    [effective],
   );
 
-  const [dragKeys, setDragKeys] = useState<string[] | null>(null);
-  const dragKeysRef = useRef<string[] | null>(null);
-  dragKeysRef.current = dragKeys;
+  const handleDragEnd: ComponentProps<typeof DragDropProvider>['onDragEnd'] = (event) => {
+    const activeId = String(event.operation.source?.id ?? '');
+    const overId = event.operation.target?.id ? String(event.operation.target.id) : null;
+    if (!activeId || !overId || activeId === overId) return;
 
-  const displayKeys = dragKeys ?? storeKeys;
-
-  const handleDragStart = useCallback(() => {
-    setDragKeys(storeKeys);
-  }, [storeKeys]);
-
-  const handleDragOver: ComponentProps<typeof DragDropProvider>['onDragOver'] = useCallback(
-    (event: Parameters<NonNullable<ComponentProps<typeof DragDropProvider>['onDragOver']>>[0]) => {
-      setDragKeys((prev) => {
-        if (!prev) return prev;
-        const next = move(prev, event);
-
-        return next.join(',') === prev.join(',') ? prev : next;
-      });
-    },
-    [],
-  );
-
-  const handleDragEnd = useCallback(() => {
-    const keys = dragKeysRef.current;
-    if (keys) {
-      // Bridge: persist the new order as a vertically stacked layout.
-      // Real 2D placement (preserving widths/heights) lands in Task 10.
-      const layout: Record<string, Rect> = {};
-      for (const [index, key] of keys.entries()) {
-        layout[key] = { x: 0, y: index, w: GRID_COLUMNS, h: 1 };
-      }
-      onLayoutSet({ tab, layout });
-    }
-    setDragKeys(null);
-  }, [tab, onLayoutSet]);
+    const target = effective[overId];
+    if (!target) return;
+    widgetMoved({ tab, key: activeId, x: target.x, y: target.y });
+  };
 
   const componentProps = (props ?? EMPTY_PROPS) satisfies Record<string, unknown>;
+  const handlersByKey = useMemo(() => new Map(available.map((h) => [h.key!, h])), [available]);
 
   return (
-    <DragDropProvider onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
-      <div className="grid h-full w-full grid-cols-4 items-start gap-4 overflow-y-auto p-3">
-        {displayKeys.map((key, index) => {
+    <DragDropProvider onDragEnd={handleDragEnd}>
+      <div
+        className="grid h-full w-full items-start gap-4 overflow-y-auto p-3"
+        style={{ gridTemplateColumns: `repeat(${GRID_COLUMNS}, minmax(0, 1fr))`, gridAutoRows: 'min-content' }}
+      >
+        {renderKeys.map((key, index) => {
           const handler = handlersByKey.get(key);
-          if (!handler) return null;
+          const rect = effective[key];
+          if (!handler || !rect) return null;
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const Component = handler.body.render as ComponentType<any>;
+          const min = sizes.mins[key] ?? FALLBACK_MIN;
 
           return (
-            <WidgetSortableProvider key={key} id={key} index={index} editMode={editMode}>
+            <WidgetSortableProvider
+              key={key}
+              id={key}
+              index={index}
+              editMode={editMode}
+              rect={rect}
+              minSize={min}
+              onResize={(next: Size) => {
+                const w = Math.max(min.w, Math.min(next.w, GRID_COLUMNS - rect.x));
+                const h = Math.max(min.h, next.h);
+                widgetResized({ tab, key, w, h });
+              }}
+            >
               <Component {...componentProps} />
             </WidgetSortableProvider>
           );

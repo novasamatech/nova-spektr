@@ -32,7 +32,7 @@ export const GovernanceOverviewWidget = ({ accountIds, allEntries }: Props) => {
 
   if (accountIds.length === 0) {
     return (
-      <DashboardWidget colSpan={2}>
+      <DashboardWidget>
         <FootnoteText className="text-text-tertiary">{t('dashboard.governanceOverview.title')}</FootnoteText>
         <div className="flex flex-col items-center gap-y-1 py-6">
           <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
@@ -45,7 +45,7 @@ export const GovernanceOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const selectedChain = selectedChainId ? chains.find((c) => c.chainId === selectedChainId) : null;
 
   return (
-    <DashboardWidget colSpan={2}>
+    <DashboardWidget>
       <FootnoteText className="text-text-tertiary">{t('dashboard.governanceOverview.title')}</FootnoteText>
       <TitleText className="mt-1">
         {pending ? <Skeleton width={30} height={7} /> : <Price amount={totalFiat ?? '0'} currency={currency} />}

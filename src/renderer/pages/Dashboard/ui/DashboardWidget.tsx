@@ -1,11 +1,12 @@
 import { type ReactNode, memo } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
+import { ROW_HEIGHT_PX } from '../lib/layout-engine';
 
+import { WidgetResizeHandle } from './WidgetResizeHandle';
 import { useWidgetSortable } from './WidgetSortableContext';
 
 type Props = {
-  colSpan?: 1 | 2 | 3 | 4;
   children: ReactNode;
   className?: string;
   card?: boolean;
@@ -20,14 +21,18 @@ const COL_SPAN_CLASS: Record<number, string> = {
 
 const CARD_CLASS = 'rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
-export const DashboardWidget = memo(({ colSpan = 2, children, className, card = true }: Props) => {
+export const DashboardWidget = memo(({ children, className, card = true }: Props) => {
   const ctx = useWidgetSortable();
+  const rect = ctx?.rect;
 
   return (
     <div
       ref={ctx?.sortableRef}
+      data-widget-cell
+      style={rect ? { gridRowEnd: `span ${rect.h}`, height: rect.h * ROW_HEIGHT_PX } : undefined}
       className={cnTw(
-        COL_SPAN_CLASS[colSpan],
+        rect ? COL_SPAN_CLASS[rect.w] : 'col-span-2',
+        'flex min-h-0 flex-col',
         card && CARD_CLASS,
         ctx && 'relative transition-shadow duration-200',
         ctx?.editMode && 'ring-2 ring-primary-button-background-default/30',
@@ -52,7 +57,8 @@ export const DashboardWidget = memo(({ colSpan = 2, children, className, card = 
           </svg>
         </button>
       )}
-      {children}
+      <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+      {ctx?.editMode && rect && <WidgetResizeHandle />}
     </div>
   );
 });

@@ -44,7 +44,7 @@ export const StakingSummaryWidget = ({ accountIds }: Props) => {
   const hasStaking = chains.length > 0;
 
   return (
-    <DashboardWidget colSpan={1}>
+    <DashboardWidget>
       <FootnoteText className="text-text-tertiary">{t('dashboard.stakingSummary.title')}</FootnoteText>
 
       {pending && !hasStaking && (
