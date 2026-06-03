@@ -8,19 +8,24 @@ import { isIdentifier } from './helpers';
 import { type Identifier } from './types';
 
 // Public interface
-export type SlotHandler<Props> = FunctionComponent<Props> | SlotHandlerExtended<Props>;
+export type SlotHandler<Props, Meta = object> = FunctionComponent<Props> | SlotHandlerExtended<Props, Meta>;
 
-export type SlotHandlerExtended<Props> = {
+export type SlotHandlerExtended<Props, Meta = object> = {
   order?: number;
   render: FunctionComponent<Props>;
-};
+} & Partial<Meta>;
 
 type SlotRenderParameters<Props> = {
   props: Props;
   divider?: ReactNode;
 };
 
-export type SlotIdentifier<Props> = Identifier<Props, ReactNode[], SlotHandler<Props>, SlotHandlerExtended<Props>> & {
+export type SlotIdentifier<Props, Meta = object> = Identifier<
+  Props,
+  ReactNode[],
+  SlotHandler<Props, Meta>,
+  SlotHandlerExtended<Props, Meta>
+> & {
   render: (params: SlotRenderParameters<Props>) => ReactNode[];
 };
 
@@ -32,8 +37,15 @@ export const normalizeSlotHandler = <Props,>(body: SlotHandler<Props>): SlotHand
   return isFunction(body) ? { render: body } : body;
 };
 
-export const createSlot = <Props extends SlotProps = void>(config?: { name: string }): SlotIdentifier<Props> => {
-  const identifier = createAbstractIdentifier<Props, ReactNode[], SlotHandler<Props>, SlotHandlerExtended<Props>>({
+export const createSlot = <Props extends SlotProps = void, Meta = object>(config?: {
+  name: string;
+}): SlotIdentifier<Props, Meta> => {
+  const identifier = createAbstractIdentifier<
+    Props,
+    ReactNode[],
+    SlotHandler<Props, Meta>,
+    SlotHandlerExtended<Props, Meta>
+  >({
     type: 'slot',
     name: config?.name ?? 'unknownSlot',
     processHandler: handler => ({
