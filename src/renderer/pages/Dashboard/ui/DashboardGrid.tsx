@@ -1,6 +1,6 @@
 import { DragDropProvider } from '@dnd-kit/react';
 import { useUnit } from 'effector-react';
-import { type ComponentProps, type ComponentType, memo, useEffect, useMemo } from 'react';
+import { type ComponentProps, type ComponentType, memo, useEffect, useMemo, useRef } from 'react';
 
 import { type SlotIdentifier, type SlotProps } from '@/shared/di/createSlot';
 import { type Rect, type Size, GRID_COLUMNS, ROW_HEIGHT_PX, syncLayout } from '../lib/layout-engine';
@@ -13,6 +13,7 @@ import { WidgetSortableProvider } from './WidgetSortableContext';
 const EMPTY_PROPS: Record<string, unknown> = {};
 const FALLBACK_DEFAULT: Size = { w: 2, h: 3 };
 const FALLBACK_MIN: Size = { w: 1, h: 2 };
+const GAP_PX = 16; // matches the grid's gap-4
 
 const layoutsEqual = (a: Record<string, Rect>, b: Record<string, Rect>): boolean => {
   const ak = Object.keys(a);
@@ -40,6 +41,8 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
   const layoutSet = useUnit(dashboardModel.layoutSet);
   const widgetMoved = useUnit(dashboardModel.widgetMoved);
   const widgetResized = useUnit(dashboardModel.widgetResized);
+
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const available = useMemo(
     () =>
@@ -97,14 +100,25 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
 
   const handleDragEnd: ComponentProps<typeof DragDropProvider>['onDragEnd'] = (event) => {
     const activeId = String(event.operation.source?.id ?? '');
-    const overId = event.operation.target?.id ? String(event.operation.target.id) : null;
-    if (!activeId || !overId || activeId === overId) return;
+    if (!activeId) return;
 
     const moved = effective[activeId];
-    const target = effective[overId];
-    if (!moved || !target) return;
-    const x = Math.min(target.x, GRID_COLUMNS - moved.w);
-    widgetMoved({ tab, key: activeId, x: Math.max(0, x), y: target.y });
+    const grid = gridRef.current;
+    const pointer = event.operation.position?.current;
+    if (!moved || !grid || !pointer) return;
+
+    const gridRect = grid.getBoundingClientRect();
+    const colWidth = gridRect.width / GRID_COLUMNS;
+    const rowStride = ROW_HEIGHT_PX + GAP_PX;
+
+    const rawX = Math.floor((pointer.x - gridRect.left) / colWidth);
+    const rawY = Math.floor((pointer.y - gridRect.top) / rowStride);
+
+    const x = Math.max(0, Math.min(rawX, GRID_COLUMNS - moved.w));
+    const y = Math.max(0, rawY);
+
+    if (x === moved.x && y === moved.y) return;
+    widgetMoved({ tab, key: activeId, x, y });
   };
 
   const componentProps = (props ?? EMPTY_PROPS) satisfies Record<string, unknown>;
@@ -113,6 +127,7 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
   return (
     <DragDropProvider onDragEnd={handleDragEnd}>
       <div
+        ref={gridRef}
         className="grid h-full w-full gap-4 overflow-y-auto p-3"
         style={{
           gridTemplateColumns: `repeat(${GRID_COLUMNS}, minmax(0, 1fr))`,
