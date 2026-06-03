@@ -1,5 +1,5 @@
 import { useSortable } from '@dnd-kit/react/sortable';
-import { type ReactNode, type RefObject, createContext, useContext, useMemo, useRef } from 'react';
+import { type ReactNode, type RefObject, createContext, useContext, useMemo, useRef, useState } from 'react';
 
 import { type Rect, type Size } from '../lib/layout-engine';
 
@@ -10,7 +10,8 @@ type WidgetSortableContextValue = {
   isDragging: boolean;
   rect: Rect;
   minSize: Size;
-  onResize: (next: Size) => void;
+  resizePreview: (next: Size) => void;
+  resizeCommit: () => void;
 };
 
 const WidgetSortableContext = createContext<WidgetSortableContextValue | null>(null);
@@ -29,6 +30,7 @@ type ProviderProps = {
 
 export const WidgetSortableProvider = ({ id, index, editMode, rect, minSize, onResize, children }: ProviderProps) => {
   const handleRef = useRef<HTMLButtonElement>(null);
+  const [preview, setPreview] = useState<Size | null>(null);
   const { ref, isDragging } = useSortable({
     id,
     index,
@@ -37,8 +39,20 @@ export const WidgetSortableProvider = ({ id, index, editMode, rect, minSize, onR
   });
 
   const value = useMemo(
-    () => ({ sortableRef: ref, handleRef, editMode, isDragging, rect, minSize, onResize }),
-    [ref, handleRef, editMode, isDragging, rect, minSize, onResize],
+    () => ({
+      sortableRef: ref,
+      handleRef,
+      editMode,
+      isDragging,
+      rect: preview ? { ...rect, w: preview.w, h: preview.h } : rect,
+      minSize,
+      resizePreview: (next: Size) => setPreview(next),
+      resizeCommit: () => {
+        if (preview) onResize(preview);
+        setPreview(null);
+      },
+    }),
+    [ref, handleRef, editMode, isDragging, rect, minSize, onResize, preview],
   );
 
   return <WidgetSortableContext.Provider value={value}>{children}</WidgetSortableContext.Provider>;

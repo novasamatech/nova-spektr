@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { type ComponentProps, type ComponentType, memo, useEffect, useMemo } from 'react';
 
 import { type SlotIdentifier, type SlotProps } from '@/shared/di/createSlot';
-import { type Size, GRID_COLUMNS, syncLayout } from '../lib/layout-engine';
+import { type Rect, type Size, GRID_COLUMNS, syncLayout } from '../lib/layout-engine';
 import { readLegacyOrder } from '../lib/legacy-order';
 import { dashboardModel } from '../model/dashboard-model';
 
@@ -13,6 +13,19 @@ import { WidgetSortableProvider } from './WidgetSortableContext';
 const EMPTY_PROPS: Record<string, unknown> = {};
 const FALLBACK_DEFAULT: Size = { w: 2, h: 3 };
 const FALLBACK_MIN: Size = { w: 1, h: 2 };
+
+const layoutsEqual = (a: Record<string, Rect>, b: Record<string, Rect>): boolean => {
+  const ak = Object.keys(a);
+  const bk = Object.keys(b);
+  if (ak.length !== bk.length) return false;
+
+  return ak.every((k) => {
+    const x = a[k];
+    const y = b[k];
+
+    return !!y && x!.x === y.x && x!.y === y.y && x!.w === y.w && x!.h === y.h;
+  });
+};
 
 type Props<P extends SlotProps> = {
   slot: SlotIdentifier<P, WidgetGridMeta>;
@@ -69,7 +82,7 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
   );
 
   useEffect(() => {
-    if (JSON.stringify(effective) !== JSON.stringify(stored ?? {})) {
+    if (!layoutsEqual(effective, stored ?? {})) {
       layoutSet({ tab, layout: effective });
     }
   }, [effective, stored, tab, layoutSet]);

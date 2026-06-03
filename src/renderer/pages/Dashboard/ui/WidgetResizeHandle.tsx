@@ -27,12 +27,11 @@ export const WidgetResizeHandle = () => {
     const dH = Math.round((e.clientY - py) / ROW_HEIGHT_PX);
     const nextW = Math.max(ctx.minSize.w, Math.min(GRID_COLUMNS, w + dW));
     const nextH = Math.max(ctx.minSize.h, h + dH);
-    if (nextW !== ctx.rect.w || nextH !== ctx.rect.h) {
-      ctx.onResize({ w: nextW, h: nextH });
-    }
+    ctx.resizePreview({ w: nextW, h: nextH });
   };
 
   const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
+    ctx.resizeCommit();
     start.current = null;
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
