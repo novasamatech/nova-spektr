@@ -15,7 +15,7 @@ import {
   createTxValidator,
   getActionRequiredAmount,
 } from '@/shared/transactions';
-import { HttpError, operationDescriptionsResource, operationsService } from '@/domains/backend';
+import { descriptionSaveErrorMessage, operationDescriptionsResource, operationsService } from '@/domains/backend';
 import {
   type AnyAccount,
   type MultisigOperation,
@@ -286,8 +286,7 @@ sample({
 });
 
 const showDescriptionErrorFx = createEffect((error: Error) => {
-  const description =
-    error instanceof HttpError && error.status === 403 ? t('addressBook.sources.errorForbidden') : error.message;
+  const description = descriptionSaveErrorMessage(error, t);
   toast.error(t('operation.descriptionSaveError'), { description });
 });
 

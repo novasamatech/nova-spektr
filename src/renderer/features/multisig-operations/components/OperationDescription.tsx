@@ -9,8 +9,8 @@ import { resolveDescriptionAreaState } from '@/shared/lib/operation-description/
 import { Button, DetailRow, FootnoteText } from '@/shared/ui';
 import { Modal, TextArea } from '@/shared/ui-kit';
 import {
-  HttpError,
   PERMISSIONS,
+  descriptionSaveErrorMessage,
   operationDescriptionsResource,
   operationsService,
   useOperationDescription,
@@ -92,12 +92,7 @@ export const OperationDescription = ({ operation, chain }: Props) => {
       });
       handleCancel();
     } catch (error) {
-      const errorDescription =
-        error instanceof HttpError && error.status === 403
-          ? t('addressBook.sources.errorForbidden')
-          : error instanceof Error
-            ? error.message
-            : String(error);
+      const errorDescription = descriptionSaveErrorMessage(error, t);
       toast.error(t('operation.descriptionSaveError'), { description: errorDescription });
     } finally {
       setIsSaving(false);

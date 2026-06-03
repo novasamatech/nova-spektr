@@ -6,7 +6,12 @@ import { type ChainId } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { activeOperationRoute } from '@/shared/transactions';
-import { HttpError, PERMISSIONS, operationDescriptionsResource, operationsService } from '@/domains/backend';
+import {
+  PERMISSIONS,
+  descriptionSaveErrorMessage,
+  operationDescriptionsResource,
+  operationsService,
+} from '@/domains/backend';
 import { type Extrinsic, multisigOperationService } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
@@ -203,8 +208,7 @@ sample({
 });
 
 const showErrorFx = createEffect((error: Error) => {
-  const description =
-    error instanceof HttpError && error.status === 403 ? t('addressBook.sources.errorForbidden') : error.message;
+  const description = descriptionSaveErrorMessage(error, t);
   toast.error(t('operation.descriptionSaveError'), { description });
 });
 
