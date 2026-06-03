@@ -5,26 +5,25 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Header, IconButton, SmallTitleText } from '@/shared/ui';
 import { Tabs } from '@/shared/ui-kit';
+import { type Size } from '../lib/layout-engine';
 import { dashboardModel } from '../model/dashboard-model';
 
 import { DashboardGrid } from './DashboardGrid';
 
+export type WidgetGridMeta = { defaultSize: Size; minSize: Size };
+
+type WidgetSlotProps = {
+  accountIds: string[];
+  allEntries: { accountId: string; name: string; address: string }[];
+};
+
 export const dashboardPresetSwitcherSlot = createSlot({ name: 'dashboardPresetSwitcher' });
 
-export const dashboardWidgetsSlot = createSlot<{
-  accountIds: string[];
-  allEntries: { accountId: string; name: string; address: string }[];
-}>({ name: 'dashboardWidgets' });
+export const dashboardWidgetsSlot = createSlot<WidgetSlotProps, WidgetGridMeta>({ name: 'dashboardWidgets' });
 
-export const dashboardStakingSlot = createSlot<{
-  accountIds: string[];
-  allEntries: { accountId: string; name: string; address: string }[];
-}>({ name: 'dashboardStaking' });
+export const dashboardStakingSlot = createSlot<WidgetSlotProps, WidgetGridMeta>({ name: 'dashboardStaking' });
 
-export const dashboardGovernanceSlot = createSlot<{
-  accountIds: string[];
-  allEntries: { accountId: string; name: string; address: string }[];
-}>({ name: 'dashboardGovernance' });
+export const dashboardGovernanceSlot = createSlot<WidgetSlotProps, WidgetGridMeta>({ name: 'dashboardGovernance' });
 
 // const TABS = ['overview', 'staking', 'governance', 'alerts'] as const;
 const TABS = ['overview', 'staking', 'governance'] as const;
