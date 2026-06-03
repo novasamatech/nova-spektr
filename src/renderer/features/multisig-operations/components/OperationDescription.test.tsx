@@ -160,6 +160,16 @@ describe('OperationDescription', () => {
     expect(screen.queryByRole('button', { name: 'Add description' })).not.toBeInTheDocument();
   });
 
+  it('hides edit controls for an existing description when the multisig is missing from contacts', () => {
+    testState.description = 'Already described';
+    testState.values.set(testState.stores.contacts, []);
+
+    renderDescription();
+
+    expect(screen.getByText('Already described')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+  });
+
   it('patches an existing description and updates the shared description cache', async () => {
     const user = userEvent.setup();
     testState.description = 'Already described';

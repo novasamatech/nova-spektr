@@ -50,7 +50,7 @@ export const OperationDescription = ({ operation, chain }: Props) => {
   const isInAddressBook = contacts.some(contact => contact.accountId === operation.multisigAccountId);
   const descriptionToSave = draft.trim();
   const canSave = Boolean(baseUrl) && descriptionToSave.length > 0 && !isSaving;
-  const canEditDescription = Boolean(baseUrl) && isHealthy && hasWritePermission;
+  const canEditDescription = Boolean(baseUrl) && isHealthy && hasWritePermission && isInAddressBook;
 
   const handleCancel = () => {
     setDraft('');
