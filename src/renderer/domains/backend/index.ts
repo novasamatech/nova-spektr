@@ -5,6 +5,7 @@ export { type Permission, PERMISSIONS } from './auth/constants';
 export { operationsService } from './operations/service';
 export { operationDescriptionsResource } from './operations/resource';
 export { useIsDraftLinkedOperation, useOperationDescription, useOperationDescriptionsFetch } from './operations/hooks';
+export { descriptionSaveErrorMessage } from './operations/descriptionSaveErrorMessage';
 
 export { HttpError, backendContactsService } from './contacts/service';
 
