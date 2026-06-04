@@ -30,15 +30,17 @@ export const AssetsPortfolioView = () => {
   const { t } = useI18n();
 
   const sortedTokens = useUnit(portfolioModel.$sortedTokens);
-  const tokensPopulated = useUnit(portfolioModel.$tokensPopulated);
+  const portfolioLoading = useUnit(portfolioModel.$isLoading);
+  const emptyStateAvailable = useUnit(portfolioModel.$emptyStateAvailable);
   const fiatFlag = useUnit(currencySelect.$fiatFlag);
   const wallet = useUnit(walletSelect.$selectedWallet);
 
   const { list, isLoading } = useDeferredList({
     list: sortedTokens,
-    isLoading: !tokensPopulated,
+    isLoading: portfolioLoading,
     forceFirstRender: true,
   });
+  const shouldShowEmptyState = emptyStateAvailable && list.length === 0 && !isLoading;
 
   return (
     <div className="flex min-h-full w-full flex-col items-center gap-y-2 py-4">
@@ -70,7 +72,7 @@ export const AssetsPortfolioView = () => {
           </Box>
         )}
 
-        <EmptyAssetsState />
+        {shouldShowEmptyState && <EmptyAssetsState />}
       </ul>
     </div>
   );

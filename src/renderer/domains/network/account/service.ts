@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { createStore, sample } from 'effector';
 
 import {
   type Asset,
@@ -41,6 +42,15 @@ const accountAvailabilityOnChainAnyOf = createAnyOf<{ account: AnyAccount; chain
 const accountActionPermissionAnyOf = createAnyOf<{ account: AnyAccount }>();
 const accountCanSignMultipleAnyOf = createAnyOf<{ account: AnyAccount }>();
 const accountCollectChildrenPipeline = createPipeline<AnyAccount[], { account: AnyAccount; accounts: AnyAccount[] }>();
+const $accountAvailabilityRevision = createStore(0);
+
+sample({
+  clock: accountAvailabilityOnChainAnyOf.updateHandlers,
+  source: $accountAvailabilityRevision,
+  fn: revision => revision + 1,
+  target: $accountAvailabilityRevision,
+});
+
 const validateRouteBalancesTransformer = createTransformer<
   {
     api: ApiPromise;
@@ -660,6 +670,7 @@ function hasTransactionValidationErrors(
 
 export const accountService = {
   accountAvailabilityOnChainAnyOf,
+  $accountAvailabilityRevision,
   accountActionPermissionAnyOf,
   accountCanSignMultipleAnyOf,
   accountCollectChildrenPipeline,
