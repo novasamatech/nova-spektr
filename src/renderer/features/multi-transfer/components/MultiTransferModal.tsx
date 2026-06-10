@@ -57,7 +57,7 @@ export const MultiTransferModal = () => {
           <Dropdown.Item>{t('navigation.multiTransferLabel')}</Dropdown.Item>
         </Modal.Trigger>
         <Modal.Title close>{getModalTitle(chain.value)}</Modal.Title>
-        <Modal.Content disableScroll>
+        <Modal.Content>
           {multiTransferUtils.isInitStep(step) && <MultiTransferForm formId={FORM_ID} />}
           {multiTransferUtils.isConfirmStep(step) && <Confirmation onGoBack={() => formModel.stepChanged(Step.INIT)} />}
           {multiTransferUtils.isSignStep(step) && (

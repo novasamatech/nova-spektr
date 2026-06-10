@@ -2846,7 +2846,7 @@
       "details": {
         "targetSection": "Verifying wallet",
         "openProxyDetails": "Open wallet details",
-        "memo": "Memo"
+        "remark": "Remark"
       }
     },
     "viewOperation": "View operation"
@@ -3680,9 +3680,12 @@
       "statusPendingVerification": "Pending verification",
       "statusPendingDelegation": "Pending delegation",
       "verifyFormResolvingAccounts": "Resolving proxy account…",
-      "verifyMemoLabel": "Memo",
-      "verifyMemoPlaceholder": "Optional note (max 200 chars)",
-      "verifyConfirmMemo": "Memo",
+      "verifyRemarkLabel": "Remark",
+      "verifyRemarkPlaceholder": "Optional remark text (max 200 chars)",
+      "verifyConfirmRemark": "Remark",
+      "verifyRemarkInfoTitle": "What goes on chain",
+      "verifyRemarkInfoDescription": "Verification submits a system.remarkWithEvent call through the proxy. The remark carries a service payload so Nova Spektr can match the executed operation back to this proxy:",
+      "verifyRemarkInfoHint": "Your text is included as the \"remark\" field of this payload.",
       "verifyViaProxy": "Verify proxy",
       "notVerifiedHeadline": "This proxy is not verified yet.",
       "verifyDescription": "Verify submits a `system.remarkWithEvent` via the proxy so we can confirm it on-chain. Because the proxy is a multisig, it's submitted as a multisig proposal-signatories must approve it before it executes.",

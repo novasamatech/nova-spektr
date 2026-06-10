@@ -129,54 +129,69 @@ describe('parseVerifyProxyOperation', () => {
     });
   });
 
-  test('returns memo when present in the marker payload', () => {
-    const payloadWithMemo = JSON.stringify({
+  test('returns remark text when present in the marker payload', () => {
+    const payloadWithRemark = JSON.stringify({
+      kind: VERIFY_PROXY_REMARK_KIND,
+      delegateAccountId: delegate,
+      pureProxyAccountId: pureProxy,
+      remark: 'Q1 audit sign-off',
+    });
+    const op = operation(proxyWrap(remarkWithEvent(payloadWithRemark)));
+    expect(parseVerifyProxyOperation(op)).toEqual({
+      delegateAccountId: delegate,
+      pureProxyAccountId: pureProxy,
+      remark: 'Q1 audit sign-off',
+    });
+  });
+
+  test('returns remark text from the legacy `memo` key', () => {
+    const legacyPayload = JSON.stringify({
       kind: VERIFY_PROXY_REMARK_KIND,
       delegateAccountId: delegate,
       pureProxyAccountId: pureProxy,
       memo: 'Q1 audit sign-off',
     });
-    const op = operation(proxyWrap(remarkWithEvent(payloadWithMemo)));
+    const op = operation(proxyWrap(remarkWithEvent(legacyPayload)));
     expect(parseVerifyProxyOperation(op)).toEqual({
       delegateAccountId: delegate,
       pureProxyAccountId: pureProxy,
-      memo: 'Q1 audit sign-off',
+      remark: 'Q1 audit sign-off',
     });
   });
 
-  test('returns memo when verify-proxy call is nested in a batch', () => {
-    const payloadWithMemo = JSON.stringify({
+  test('returns remark text when verify-proxy call is nested in a batch', () => {
+    const payloadWithRemark = JSON.stringify({
       kind: VERIFY_PROXY_REMARK_KIND,
       delegateAccountId: delegate,
       pureProxyAccountId: pureProxy,
-      memo: 'Q1 audit sign-off',
+      remark: 'Q1 audit sign-off',
     });
-    const op = operation(batchAll([proxyWrap(remarkWithEvent(payloadWithMemo))]));
+    const op = operation(batchAll([proxyWrap(remarkWithEvent(payloadWithRemark))]));
 
     expect(parseVerifyProxyOperation(op)).toEqual({
       delegateAccountId: delegate,
       pureProxyAccountId: pureProxy,
-      memo: 'Q1 audit sign-off',
+      remark: 'Q1 audit sign-off',
     });
   });
 
-  test('returns no memo property when memo is absent from marker payload', () => {
+  test('returns no remark property when remark is absent from marker payload', () => {
     const op = operation(proxyWrap(remarkWithEvent(markerPayload)));
     const result = parseVerifyProxyOperation(op);
     expect(result).not.toBeNull();
-    expect('memo' in result!).toBe(false);
+    expect('remark' in result!).toBe(false);
   });
 
-  test('ignores empty-string memo in marker payload', () => {
-    const payloadEmptyMemo = JSON.stringify({
+  test('ignores empty-string remark in marker payload', () => {
+    const payloadEmptyRemark = JSON.stringify({
       kind: VERIFY_PROXY_REMARK_KIND,
       delegateAccountId: delegate,
       pureProxyAccountId: pureProxy,
-      memo: '',
+      remark: '',
     });
-    const op = operation(proxyWrap(remarkWithEvent(payloadEmptyMemo)));
+    const op = operation(proxyWrap(remarkWithEvent(payloadEmptyRemark)));
     const result = parseVerifyProxyOperation(op);
     expect(result).not.toBeNull();
-    expect('memo' in result!).toBe(false);
+    expect('remark' in result!).toBe(false);
   });
 });

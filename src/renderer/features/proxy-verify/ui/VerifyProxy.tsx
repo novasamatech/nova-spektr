@@ -66,7 +66,7 @@ export const VerifyProxy = ({ wallet, proxy, children }: Props) => {
 
       <Modal isOpen={isModalOpen} size="mdlg" onToggle={closeModal}>
         <Modal.Title close>{getModalTitle()}</Modal.Title>
-        <Modal.Content disableScroll>
+        <Modal.Content>
           {verifyProxyUtils.isInitStep(step) && <VerifyProxyForm chainId={proxy.chainId} onGoBack={closeModal} />}
 
           {verifyProxyUtils.isConfirmStep(step) && (

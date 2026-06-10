@@ -36,7 +36,7 @@ export const CallDataSubmit = memo(() => {
         <Dropdown.Item>{t('navigation.callDataLabel')}</Dropdown.Item>
       </Modal.Trigger>
       <Modal.Title close>{t('callData.title')}</Modal.Title>
-      <Modal.Content disableScroll>
+      <Modal.Content>
         {callDataUtils.isInitStep(step) && <CallDataForm />}
         {callDataUtils.isConfirmStep(step) && <Confirmation onGoBack={() => formModel.stepChanged(Step.INIT)} />}
         {callDataUtils.isSignStep(step) && <OperationSign onGoBack={() => formModel.stepChanged(Step.CONFIRM)} />}
