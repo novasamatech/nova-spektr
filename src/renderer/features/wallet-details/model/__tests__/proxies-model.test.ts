@@ -285,6 +285,38 @@ describe('features/wallet-details/model/proxies-model', () => {
       const ops: MultisigOperation[] = [makeOp({ id: 'transfer', transaction: transfer })];
       expect(findLatestExecutedOperation(ops, chainId, pureProxy, proxyMultisig)?.id).toBe('transfer');
     });
+
+    // Flex delegate routes through its own pure before reaching the target:
+    // proxy.proxy(real=flexPure, proxy.proxy(real=target, remark)).
+    // `proxiedAccountId` mirrors extractProxiedAccountId and holds the OUTERMOST real.
+    const flexPure = ('0x' + 'cc'.repeat(32)) as AccountId;
+    const flexDelegatedTx = (targetReal: AccountId) =>
+      decodedTx('proxy', 'proxy', {
+        real: flexPure,
+        forceProxyType: ProxyTypes.ANY,
+        transaction: decodedTx('proxy', 'proxy', {
+          real: targetReal,
+          forceProxyType: ProxyTypes.ANY,
+          transaction: decodedTx('system', 'remarkWithEvent', { remark: 'ping' }),
+        }),
+      });
+
+    test('matches flex-delegated executed ops where the row pure is the innermost proxy.proxy real', () => {
+      const ops: MultisigOperation[] = [
+        makeOp({ id: 'nested', proxiedAccountId: flexPure, transaction: flexDelegatedTx(pureProxy) }),
+      ];
+
+      expect(findLatestExecutedOperation(ops, chainId, pureProxy, proxyMultisig)?.id).toBe('nested');
+    });
+
+    test('does not match nested executed ops whose innermost real targets a different pure', () => {
+      const otherPure = ('0x' + 'dd'.repeat(32)) as AccountId;
+      const ops: MultisigOperation[] = [
+        makeOp({ id: 'nested', proxiedAccountId: flexPure, transaction: flexDelegatedTx(otherPure) }),
+      ];
+
+      expect(findLatestExecutedOperation(ops, chainId, pureProxy, proxyMultisig)).toBeNull();
+    });
   });
 
   describe('isProxyVerifiable', () => {

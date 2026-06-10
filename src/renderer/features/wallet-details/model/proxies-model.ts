@@ -216,7 +216,11 @@ function findLatestExecutedOperation(
     if (op.chainId !== chainId) continue;
     if (op.status !== 'executed') continue;
     if (op.multisigAccountId !== proxyMultisigAccountId) continue;
-    if (op.proxiedAccountId !== pureProxyAccountId) continue;
+
+    // `op.proxiedAccountId` is the OUTERMOST proxy.proxy real — for flex-delegated ops that's
+    // the flex's own pure. Prefer the innermost real; fall back when call data isn't decodable.
+    const targetPureProxy = extractProxyExecutionArgs(op.transaction)?.real ?? op.proxiedAccountId;
+    if (targetPureProxy !== pureProxyAccountId) continue;
 
     // Lenient: any executed multisig op routed via this (multisig signer, pure proxy)
     // pair proves the proxy authority works, so it counts as "verified". The strict

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { authFetch } from '@/shared/api/backend-fetch';
+import { authFetch, parseResponse } from '@/shared/api/backend-fetch';
 import { HttpError } from '../contacts/service';
 
 const backendOperationSchema = z.object({
@@ -72,17 +72,32 @@ async function fetchDescriptionsByIds(baseUrl: string, ids: string[]): Promise<B
   return operations;
 }
 
+const paginatedOperationsSchema = z.object({
+  data: z.array(z.unknown()),
+  total: z.number(),
+});
+
+// Backend caps pageSize at 100
+const OPERATIONS_PAGE_SIZE = 100;
+
+async function fetchDescriptionsPage(baseUrl: string, page: number) {
+  const result = await authFetch(`${baseUrl}/operations?page=${page}&pageSize=${OPERATIONS_PAGE_SIZE}`, {
+    method: 'GET',
+  });
+
+  return parseResponse(result, paginatedOperationsSchema);
+}
+
 async function fetchAllDescriptions(baseUrl: string): Promise<BackendOperation[]> {
-  const result = await authFetch(`${baseUrl}/operations`, { method: 'GET' });
+  const firstPage = await fetchDescriptionsPage(baseUrl, 1);
 
-  if (!result.ok) {
-    throw new Error(`Failed to fetch all operations: ${result.status}`);
-  }
+  const totalPages = Math.ceil(firstPage.total / OPERATIONS_PAGE_SIZE);
+  const restPages = await Promise.all(
+    Array.from({ length: totalPages - 1 }, (_, index) => fetchDescriptionsPage(baseUrl, index + 2)),
+  );
 
-  const body: unknown = JSON.parse(result.body);
-  const items = Array.isArray(body) ? body : [];
   const operations: BackendOperation[] = [];
-  for (const item of items) {
+  for (const item of [firstPage, ...restPages].flatMap(page => page.data)) {
     const parsed = backendOperationSchema.safeParse(item);
     if (parsed.success) {
       operations.push(parsed.data);
