@@ -153,6 +153,8 @@ export const CreateDraftModal = () => {
 
   const handleTemplateApply = (templateCallData: string) => {
     createDraftModel.callDataChanged(templateCallData);
+    // jump straight to the builder — the user's next step is tweaking the arguments
+    createDraftModel.inputModeChanged('build');
   };
 
   const handleToggle = (open: boolean) => {

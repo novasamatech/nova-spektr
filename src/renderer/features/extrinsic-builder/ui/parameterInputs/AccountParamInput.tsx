@@ -4,7 +4,14 @@ import { uniqBy } from 'lodash';
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { includesMultiple, performSearch, toAddress, validateAddress } from '@/shared/lib/utils';
+import {
+  includesMultiple,
+  isCorrectAccountId,
+  performSearch,
+  toAccountId,
+  toAddress,
+  validateAddress,
+} from '@/shared/lib/utils';
 import { CaptionText } from '@/shared/ui';
 import { Address, Identicon } from '@/shared/ui-entities';
 import { Combobox } from '@/shared/ui-kit';
@@ -36,52 +43,45 @@ export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
   const uniqueAccountsList = useMemo(() => uniqBy(accountsList, 'accountId'), [accountsList]);
   const resolvedAccounts = useAccountsNames(uniqueAccountsList, null);
 
-  // Collect all known addresses for selection detection
-  const knownAddresses = useMemo(() => {
-    if (!chain) return new Set<string>();
-    const addresses = new Set<string>();
-    for (const account of resolvedAccounts) {
-      addresses.add(toAddress(account.accountId, { prefix: chain.prefix }));
-    }
-    for (const contact of contacts) {
-      addresses.add(toAddress(contact.accountId, { prefix: chain.prefix }));
-    }
-
-    return addresses;
-  }, [chain, resolvedAccounts, contacts]);
-
   const searchQuery = isEditing ? inputText : '';
+
+  // A full address typed in any ss58 prefix matches by accountId;
+  // toAccountId falls back to '0x00' for undecodable values (e.g. EVM)
+  const queryAccountId = useMemo(() => {
+    if (!searchQuery || !validateAddress(searchQuery)) return null;
+    const accountId = toAccountId(searchQuery);
+
+    return isCorrectAccountId(accountId) ? accountId : null;
+  }, [searchQuery]);
 
   const accountOptions = useMemo(() => {
     if (!chain) return [];
 
     return resolvedAccounts
+      .map((account) => ({
+        accountId: account.accountId,
+        name: account.name,
+        address: toAddress(account.accountId, { prefix: chain.prefix }),
+      }))
       .filter((account) => {
-        const address = toAddress(account.accountId, { prefix: chain.prefix });
+        if (queryAccountId) return account.accountId === queryAccountId;
 
-        return !searchQuery || includesMultiple([account.name, address], searchQuery);
-      })
-      .slice(0, 20)
-      .map((account) => {
-        const address = toAddress(account.accountId, { prefix: chain.prefix });
-
-        return { id: address, name: account.name, address };
+        return !searchQuery || includesMultiple([account.name, account.address], searchQuery);
       });
-  }, [searchQuery, chain, resolvedAccounts]);
+  }, [searchQuery, queryAccountId, chain, resolvedAccounts]);
 
   const contactOptions = useMemo(() => {
-    if (searchQuery && validateAddress(searchQuery)) return [];
+    const filtered = queryAccountId
+      ? contacts.filter((contact) => contact.accountId === queryAccountId)
+      : searchQuery
+        ? performSearch({ query: searchQuery, records: contacts, weights: { name: 1, address: 0.5 } })
+        : contacts;
 
-    const filtered = searchQuery
-      ? performSearch({ query: searchQuery, records: contacts, weights: { name: 1, address: 0.5 } })
-      : contacts;
-
-    return filtered.slice(0, 10).map((contact) => {
-      const address = toAddress(contact.accountId, { prefix: chain?.prefix });
-
-      return { id: contact.name, name: contact.name, address };
-    });
-  }, [searchQuery, contacts, chain]);
+    return filtered.map((contact) => ({
+      name: contact.name,
+      address: toAddress(contact.accountId, { prefix: chain?.prefix }),
+    }));
+  }, [searchQuery, queryAccountId, contacts, chain]);
 
   const displayValue = isEditing ? inputText : value;
 
@@ -89,23 +89,18 @@ export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
     <Identicon size={20} address={toAddress(value, { prefix: chain?.prefix })} background={false} />
   ) : undefined;
 
-  const handleChange = useCallback(
+  const handleSelect = useCallback(
     (val: string) => {
-      if (knownAddresses.has(val)) {
-        // Selected from list
-        onChange(val);
-        setIsEditing(false);
-        setInputText('');
-      } else {
-        setInputText(val);
-      }
+      onChange(val);
+      setIsEditing(false);
+      setInputText('');
     },
-    [knownAddresses, onChange],
+    [onChange],
   );
 
   const handleBlur = useCallback(() => {
-    // Commit whatever was typed as the value
-    if (isEditing && inputText) {
+    // Commit whatever was typed as the value; an empty commit clears it
+    if (isEditing) {
       onChange(inputText);
     }
     setIsEditing(false);
@@ -119,7 +114,8 @@ export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
       prefixElement={prefixElement}
       height="sm"
       onBlur={handleBlur}
-      onChange={handleChange}
+      onChange={setInputText}
+      onSelect={handleSelect}
       onInput={(v) => {
         setIsEditing(true);
         setInputText(v);
@@ -134,7 +130,7 @@ export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
           }
         >
           {accountOptions.map((opt) => (
-            <Combobox.Item key={opt.id} value={opt.address}>
+            <Combobox.Item key={opt.address} value={opt.address}>
               <Address showIcon title={opt.name} address={opt.address} />
             </Combobox.Item>
           ))}
@@ -149,7 +145,7 @@ export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
           }
         >
           {contactOptions.map((opt) => (
-            <Combobox.Item key={`contact-${opt.id}`} value={opt.address}>
+            <Combobox.Item key={`contact-${opt.name}`} value={opt.address}>
               <Address showIcon title={opt.name} address={opt.address} />
             </Combobox.Item>
           ))}
