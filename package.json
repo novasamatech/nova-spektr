@@ -72,6 +72,7 @@
     "lint": "pnpm lint:generic ./src",
     "lint:tests": "pnpm lint:generic ./tests",
     "lint:fix": "pnpm fmt:fix && pnpm lint --fix --quiet",
+    "check:feature-map": "node scripts/check-feature-index.mjs",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build -o $(pnpm --silent run config folders.storybookBuild)",
     "githook:pre-commit": "lint-staged --relative",
