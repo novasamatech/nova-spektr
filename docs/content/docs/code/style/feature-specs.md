@@ -77,7 +77,7 @@ maps, import-cycle notes, internal helper signatures. Those belong in code comme
 ````markdown
 # <Feature name>
 
-> Part of the [Feature Map](../README.md)
+> Part of the [Feature Map](../README.md) — Last reviewed: YYYY-MM-DD
 
 ## Overview
 
@@ -113,3 +113,7 @@ Adjacent flows, backend contracts, or constraints that shape the behaviour.
 
 Match the depth to the feature — a small feature needs only Overview + States. The backlink path shown is for
 `features/<name>/`; from `aggregates/<name>/` it is `../../features/README.md`.
+
+The `Last reviewed` date records when the spec was last checked against the code. Whenever a module's code changes, the
+spec must be re-reviewed and the date bumped in the same PR — CI compares the date against the PR base and fails if it
+did not move.

@@ -31,10 +31,23 @@ The canonical human-facing convention (what goes in a spec, the author-approval 
 Use the template from the canonical convention doc (`docs/content/docs/code/style/feature-specs.md`, section "Template")
 — do not restate it here; the doc is the single source for the spec's structure.
 
-One addition the template already includes but is easy to miss: the **backlink line is mandatory** and sits right after
-the `# Title` heading: `> Part of the [Feature Map](../README.md)` from `features/<name>/`,
-`> Part of the [Feature Map](../../features/README.md)` from `aggregates/<name>/`. Match the depth to the feature — a
-small one needs only Overview + States.
+One addition the template already includes but is easy to miss: the **backlink line is mandatory**, sits right after the
+`# Title` heading, and carries the **`Last reviewed` date**:
+
+```markdown
+> Part of the [Feature Map](../README.md) — Last reviewed: YYYY-MM-DD
+```
+
+(from `aggregates/<name>/` the path is `../../features/README.md`). Match the depth to the feature — a small one needs
+only Overview + States.
+
+**Date rules** (stamp with today's date, `date +%F`):
+
+- Creating a spec → set the date.
+- Updating a spec → bump the date.
+- Changing a module's code while the spec stays accurate → re-read the spec, confirm it still matches, bump the date —
+  the bump is the record that the spec was re-reviewed. CI fails the PR if module code changed and the date did not
+  move.
 
 ## Feature Map maintenance rules
 
@@ -72,10 +85,11 @@ pnpm check:feature-map
 ```
 
 Fix every reported problem before finishing. The script verifies: every module listed exactly once, no stale entries,
-documented modules linked, backlinks present, `(no spec planned)` markers consistent with reality.
+documented modules linked, backlinks present with a `Last reviewed` date, `(no spec planned)` markers consistent with
+reality.
 
 CI (lint workflow) runs it with `--changed <PR base>`, which additionally fails the PR when a changed feature/aggregate
-has no spec, or its code changed without a spec update. So whenever you touch a module's code, either update its
-README.md in the same change (even a verified "still accurate" touch counts as review), write the missing spec, or mark
-a trivial module `(no spec planned)` in the map. To reproduce the CI check locally:
-`pnpm check:feature-map --changed origin/dev` (committed changes only).
+has no spec, or its code changed without the spec's `Last reviewed` date moving. So whenever you touch a module's code,
+either review the spec and bump its date in the same change, write the missing spec, or mark a trivial module
+`(no spec planned)` in the map. To reproduce the CI check locally: `pnpm check:feature-map --changed origin/dev`
+(committed changes only).

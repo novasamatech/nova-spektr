@@ -35,6 +35,8 @@ const aggregates = listModules(AGGREGATES_DIR);
 const map = readFileSync(MAP_PATH, 'utf8');
 const errors = [];
 
+const REVIEWED_DATE_PATTERN = /Last reviewed: (\d{4}-\d{2}-\d{2})/;
+
 // Re-join list items wrapped by prettier (proseWrap: always indents
 // continuation lines of a "- " item with two spaces).
 const lines = [];
@@ -116,8 +118,15 @@ for (const entry of entries) {
     } else if (entry.link !== expectedLink) {
       errors.push(`${entry.layer}/${entry.name} link should be "${expectedLink}", got "${entry.link}"`);
     }
-    if (!readFileSync(readmePath, 'utf8').includes(expectedBacklink)) {
+    const readme = readFileSync(readmePath, 'utf8');
+    if (!readme.includes(expectedBacklink)) {
       errors.push(`${entry.layer}/${entry.name}/README.md is missing the backlink line "${expectedBacklink}"`);
+    }
+    if (!REVIEWED_DATE_PATTERN.test(readme)) {
+      errors.push(
+        `${entry.layer}/${entry.name}/README.md is missing a "Last reviewed: YYYY-MM-DD" date on the backlink line — ` +
+          `run the feature-specs skill to review the spec and stamp it`,
+      );
     }
   } else if (entry.link !== null) {
     errors.push(`${entry.layer}/${entry.name} is linked in the map but has no README.md`);
@@ -134,9 +143,11 @@ if (changedFlagIndex !== -1) {
     process.exit(1);
   }
 
+  let mergeBase;
   let diffOutput;
   try {
-    diffOutput = execSync(`git diff --name-only ${baseRef}...HEAD`, { cwd: ROOT, encoding: 'utf8' });
+    mergeBase = execSync(`git merge-base ${baseRef} HEAD`, { cwd: ROOT, encoding: 'utf8' }).trim();
+    diffOutput = execSync(`git diff --name-only ${mergeBase} HEAD`, { cwd: ROOT, encoding: 'utf8' });
   } catch {
     console.error(`Could not diff against "${baseRef}" — is the ref fetched?`);
     process.exit(1);
@@ -151,10 +162,8 @@ if (changedFlagIndex !== -1) {
       layer: match[1],
       name: match[2],
       codeChanged: false,
-      readmeChanged: false,
     };
-    if (match[3] === 'README.md') module.readmeChanged = true;
-    else module.codeChanged = true;
+    if (match[3] !== 'README.md') module.codeChanged = true;
     changedModules.set(key, module);
   }
 
@@ -166,16 +175,35 @@ if (changedFlagIndex !== -1) {
     const entry = entries.find((e) => e.layer === module.layer && e.name === module.name);
     if (entry?.noSpecPlanned) continue;
 
-    const hasReadme = existsSync(join(dir, module.name, 'README.md'));
-    if (!hasReadme) {
+    const readmePath = join(dir, module.name, 'README.md');
+    if (!existsSync(readmePath)) {
       errors.push(
         `${module.layer}/${module.name} changed but has no spec — run the feature-specs skill to create one ` +
           `(or mark it "(no spec planned)" in the Feature Map if it is trivial)`,
       );
-    } else if (module.codeChanged && !module.readmeChanged) {
+      continue;
+    }
+
+    if (!module.codeChanged) continue;
+
+    // code changed → the spec must be re-reviewed: its "Last reviewed" date
+    // must move past the date in the merge base (a new spec always passes)
+    let baseReadme = null;
+    try {
+      baseReadme = execSync(`git show ${mergeBase}:src/renderer/${module.layer}/${module.name}/README.md`, {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+    } catch {
+      // README does not exist in the merge base — spec is new in this change
+    }
+    const baseDate = baseReadme?.match(REVIEWED_DATE_PATTERN)?.[1] ?? null;
+    const currentDate = readFileSync(readmePath, 'utf8').match(REVIEWED_DATE_PATTERN)?.[1] ?? null;
+    if (baseDate !== null && currentDate === baseDate) {
       errors.push(
-        `${module.layer}/${module.name} code changed but its spec README.md was not updated — ` +
-          `run the feature-specs skill to review the spec and reconcile it with the change`,
+        `${module.layer}/${module.name} code changed but the spec's "Last reviewed" date was not updated — ` +
+          `run the feature-specs skill to review the spec and bump the date`,
       );
     }
   }
