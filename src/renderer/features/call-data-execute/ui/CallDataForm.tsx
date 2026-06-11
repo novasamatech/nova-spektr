@@ -50,28 +50,28 @@ export const CallDataForm = () => {
 
   return (
     <>
-      <ScrollArea>
-        <div className="flex flex-col gap-y-4 px-5 pb-4">
-          <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
-          {isDraftMode && (
-            <DraftSigningPath
-              chainId={chain?.chainId ?? null}
-              asset={chain ? getNativeAsset(chain.assets) : null}
-              $draftPath={formModel.$draftSigningPath}
-              draftPathCommitted={formModel.events.draftPathCommitted}
-              draftPathEditStarted={formModel.events.draftPathEditStarted}
-              draftPathEditEnded={formModel.events.draftPathEditEnded}
-            />
-          )}
-          <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
-            <div className="flex flex-col gap-y-4">
-              {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
-              <form id="call-data-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
-                <NetworkSelect />
-                {!isDraftMode && <InitiatorSelect />}
-                {!isDraftMode && showSignatories && <SignatorySelect />}
+      <div className="flex min-h-0 flex-1 flex-col">
+        <ScrollArea>
+          <div className="flex flex-col gap-y-4 px-5 pb-4">
+            <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
+            {isDraftMode && (
+              <DraftSigningPath
+                chainId={chain?.chainId ?? null}
+                asset={chain ? getNativeAsset(chain.assets) : null}
+                $draftPath={formModel.$draftSigningPath}
+                draftPathCommitted={formModel.events.draftPathCommitted}
+                draftPathEditStarted={formModel.events.draftPathEditStarted}
+                draftPathEditEnded={formModel.events.draftPathEditEnded}
+              />
+            )}
+            <DraftFormBody $isDraftMode={formModel.$isDraftMode} $isDraftPathComplete={formModel.$isDraftPathComplete}>
+              <div className="flex flex-col gap-y-4">
+                {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+                <form id="call-data-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
+                  <NetworkSelect />
+                  {!isDraftMode && <InitiatorSelect />}
+                  {!isDraftMode && showSignatories && <SignatorySelect />}
 
-                <div className="-mb-2">
                   <Tabs value={inputMode} onChange={(value) => inputModeChanged(value as InputMode)}>
                     <Tabs.List>
                       <Tabs.Trigger value={InputMode.PASTE}>{t('callData.mode.paste')}</Tabs.Trigger>
@@ -88,41 +88,41 @@ export const CallDataForm = () => {
                       />
                     </Tabs.Content>
                   </Tabs>
-                </div>
-              </form>
-            </div>
-          </DraftFormBody>
-        </div>
+                </form>
+              </div>
+            </DraftFormBody>
+          </div>
 
-        {nonNullable(chain) && (
-          <OperationTemplatesToolbar
-            api={api}
-            chainId={chain.chainId}
-            callData={callDataValue}
-            specVersion={specVersion}
-            modalWidth="37rem"
-            onApply={templateApplied}
-          />
-        )}
-
-        <Separator />
-
-        <Box padding={[4, 5]}>
-          {nonNullable(args) && (
-            <div className="flex flex-col gap-y-3">
-              <SmallTitleText>{t('callData.isCorrect')}</SmallTitleText>
-              <JsonArgs value={args} />
-            </div>
+          {nonNullable(chain) && (
+            <OperationTemplatesToolbar
+              api={api}
+              chainId={chain.chainId}
+              callData={callDataValue}
+              specVersion={specVersion}
+              modalWidth="37rem"
+              onApply={templateApplied}
+            />
           )}
-          {nullable(args) && (
-            <div className="flex flex-col items-center gap-y-2 px-10 py-20">
-              <Icon size={64} name="empty" className="mb-4" />
-              <SmallTitleText>{t('callData.noDecodedTxTitle')}</SmallTitleText>
-              <FootnoteText className="text-text-tertiary">{t('callData.noDecodedTxDescription')}</FootnoteText>
-            </div>
-          )}
-        </Box>
-      </ScrollArea>
+
+          <Separator />
+
+          <Box padding={[4, 5]}>
+            {nonNullable(args) && (
+              <div className="flex flex-col gap-y-3">
+                <SmallTitleText>{t('callData.isCorrect')}</SmallTitleText>
+                <JsonArgs value={args} />
+              </div>
+            )}
+            {nullable(args) && (
+              <div className="flex flex-col items-center gap-y-2 px-10 py-20">
+                <Icon size={64} name="empty" className="mb-4" />
+                <SmallTitleText>{t('callData.noDecodedTxTitle')}</SmallTitleText>
+                <FootnoteText className="text-text-tertiary">{t('callData.noDecodedTxDescription')}</FootnoteText>
+              </div>
+            )}
+          </Box>
+        </ScrollArea>
+      </div>
 
       <ActionsSection />
     </>
