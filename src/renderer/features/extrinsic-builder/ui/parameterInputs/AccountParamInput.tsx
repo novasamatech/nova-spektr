@@ -43,7 +43,10 @@ export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
   const uniqueAccountsList = useMemo(() => uniqBy(accountsList, 'accountId'), [accountsList]);
   const resolvedAccounts = useAccountsNames(uniqueAccountsList, null);
 
-  const searchQuery = isEditing ? inputText : '';
+  const displayValue = isEditing ? inputText : value;
+  // Suggestions always filter by what the input shows, so re-focusing a filled
+  // field lists the matching entries instead of the full address book
+  const searchQuery = displayValue;
 
   // A full address typed in any ss58 prefix matches by accountId;
   // toAccountId falls back to '0x00' for undecodable values (e.g. EVM)
@@ -82,8 +85,6 @@ export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
       address: toAddress(contact.accountId, { prefix: chain?.prefix }),
     }));
   }, [searchQuery, queryAccountId, contacts, chain]);
-
-  const displayValue = isEditing ? inputText : value;
 
   const prefixElement = value ? (
     <Identicon size={20} address={toAddress(value, { prefix: chain?.prefix })} background={false} />
