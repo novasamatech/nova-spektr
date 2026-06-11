@@ -45,6 +45,9 @@
 
 # Development
 
+Product behaviour of individual features is documented in colocated spec READMEs,
+indexed in the [Feature Map](src/renderer/features/README.md).
+
 ## Requirements
 
 Minimum version of `Node.js` is `v24.x`.
