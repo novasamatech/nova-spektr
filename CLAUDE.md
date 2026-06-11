@@ -62,9 +62,10 @@ Project documentation:
 Non-trivial features and aggregates carry a colocated `README.md` product spec,
 indexed in the Feature Map (`src/renderer/features/README.md`). **When creating
 or materially changing a feature/aggregate, or writing/updating a spec README,
-invoke the `feature-specs` skill** — it owns the convention, template, and
-Feature Map maintenance rules. Before changing a feature, read its README first
-if one exists; surface any contradiction between spec and code.
+invoke the `feature-specs` skill** — it carries the operational rules and
+Feature Map maintenance steps; the canonical convention lives in
+`docs/content/docs/code/style/feature-specs.md`. Before changing a feature, read
+its README first if one exists; surface any contradiction between spec and code.
 
 ## Core Principles
 - Simplicity First: Make every change as simple as possible. Impact minimal code.
