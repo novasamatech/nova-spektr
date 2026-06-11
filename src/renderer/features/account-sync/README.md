@@ -1,5 +1,7 @@
 # Account Sync
 
+> Part of the [Feature Map](../README.md)
+
 ## Overview
 
 **Account sync** keeps the user's _derived_ wallets in step with on-chain reality.
