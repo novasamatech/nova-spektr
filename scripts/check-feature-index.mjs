@@ -72,7 +72,9 @@ for (const entry of entries) {
   const expectedLink =
     entry.layer === 'features' ? `./${entry.name}/README.md` : `../aggregates/${entry.name}/README.md`;
   const expectedBacklink =
-    entry.layer === 'features' ? '[Feature Map](../README.md)' : '[Feature Map](../../features/README.md)';
+    entry.layer === 'features'
+      ? '> Part of the [Feature Map](../README.md)'
+      : '> Part of the [Feature Map](../../features/README.md)';
 
   if (existsSync(readmePath)) {
     documented += 1;
@@ -82,7 +84,7 @@ for (const entry of entries) {
       errors.push(`${entry.layer}/${entry.name} link should be "${expectedLink}", got "${entry.link}"`);
     }
     if (!readFileSync(readmePath, 'utf8').includes(expectedBacklink)) {
-      errors.push(`${entry.layer}/${entry.name}/README.md is missing the backlink "> Part of the ${expectedBacklink}"`);
+      errors.push(`${entry.layer}/${entry.name}/README.md is missing the backlink line "${expectedBacklink}"`);
     }
   } else if (entry.link !== null) {
     errors.push(`${entry.layer}/${entry.name} is linked in the map but has no README.md`);
