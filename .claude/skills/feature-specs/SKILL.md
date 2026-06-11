@@ -72,5 +72,10 @@ pnpm check:feature-map
 ```
 
 Fix every reported problem before finishing. The script verifies: every module listed exactly once, no stale entries,
-documented modules linked, backlinks present, `(no spec planned)` markers consistent with reality. It also runs in CI
-(lint workflow), so an out-of-sync map fails the PR.
+documented modules linked, backlinks present, `(no spec planned)` markers consistent with reality.
+
+CI (lint workflow) runs it with `--changed <PR base>`, which additionally fails the PR when a changed feature/aggregate
+has no spec, or its code changed without a spec update. So whenever you touch a module's code, either update its
+README.md in the same change (even a verified "still accurate" touch counts as review), write the missing spec, or mark
+a trivial module `(no spec planned)` in the map. To reproduce the CI check locally:
+`pnpm check:feature-map --changed origin/dev` (committed changes only).

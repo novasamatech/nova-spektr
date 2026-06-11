@@ -21,5 +21,4 @@
 - [ ] I have provided screenshot of the working feature (if applicable)
 - [ ] I have provided description of the changes and any additional context that might help reviewers perform more accurate review
 - [ ] I have added tests that cover the base logic (if applicable)
-- [ ] I have checked the feature spec (`README.md`) of the modules I'm changing and updated it together with the Feature Map (`src/renderer/features/README.md`) (if applicable) — the `feature-specs` skill in Claude Code automates the update
 - [ ] My code follows the project's coding standards and style guidelines

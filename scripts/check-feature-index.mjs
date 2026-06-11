@@ -2,10 +2,15 @@
 /**
  * Validates the Feature Map (src/renderer/features/README.md) against the
  * filesystem: every feature/aggregate is listed exactly once, documented
- * modules are linked, spec READMEs carry the Feature Map backlink, and
- * "no spec planned" markers don't contradict reality. Exits non-zero on any
- * drift and prints a coverage summary on success.
+ * modules are linked, spec READMEs carry the Feature Map backlink, and "no spec
+ * planned" markers don't contradict reality. Exits non-zero on any drift and
+ * prints a coverage summary on success.
+ *
+ * With `--changed <base-ref>` it additionally diffs HEAD against the merge base
+ * with <base-ref> and fails when a changed feature/aggregate has no spec or its
+ * code changed without a spec update (used in CI with the PR base).
  */
+import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -119,9 +124,67 @@ for (const entry of entries) {
   }
 }
 
+// --changed <base-ref>: fail when a changed module lacks a spec or its code
+// changed without a spec update
+const changedFlagIndex = process.argv.indexOf('--changed');
+if (changedFlagIndex !== -1) {
+  const baseRef = process.argv[changedFlagIndex + 1];
+  if (!baseRef) {
+    console.error('Usage: check-feature-index.mjs --changed <base-ref>');
+    process.exit(1);
+  }
+
+  let diffOutput;
+  try {
+    diffOutput = execSync(`git diff --name-only ${baseRef}...HEAD`, { cwd: ROOT, encoding: 'utf8' });
+  } catch {
+    console.error(`Could not diff against "${baseRef}" — is the ref fetched?`);
+    process.exit(1);
+  }
+
+  const changedModules = new Map();
+  for (const file of diffOutput.split('\n')) {
+    const match = file.match(/^src\/renderer\/(features|aggregates)\/([\w.-]+)\/(.+)$/);
+    if (!match) continue;
+    const key = `${match[1]}/${match[2]}`;
+    const module = changedModules.get(key) ?? {
+      layer: match[1],
+      name: match[2],
+      codeChanged: false,
+      readmeChanged: false,
+    };
+    if (match[3] === 'README.md') module.readmeChanged = true;
+    else module.codeChanged = true;
+    changedModules.set(key, module);
+  }
+
+  for (const module of changedModules.values()) {
+    const dir = module.layer === 'features' ? FEATURES_DIR : AGGREGATES_DIR;
+    // a deleted module surfaces as a stale map entry in the structural checks
+    if (!existsSync(join(dir, module.name))) continue;
+
+    const entry = entries.find((e) => e.layer === module.layer && e.name === module.name);
+    if (entry?.noSpecPlanned) continue;
+
+    const hasReadme = existsSync(join(dir, module.name, 'README.md'));
+    if (!hasReadme) {
+      errors.push(
+        `${module.layer}/${module.name} changed but has no spec — run the feature-specs skill to create one ` +
+          `(or mark it "(no spec planned)" in the Feature Map if it is trivial)`,
+      );
+    } else if (module.codeChanged && !module.readmeChanged) {
+      errors.push(
+        `${module.layer}/${module.name} code changed but its spec README.md was not updated — ` +
+          `run the feature-specs skill to review the spec and reconcile it with the change`,
+      );
+    }
+  }
+}
+
 if (errors.length > 0) {
   console.error(`Feature Map check failed — ${errors.length} problem(s):\n`);
   for (const error of errors) console.error(`  - ${error}`);
+  console.error('\nRun the `feature-specs` skill in Claude Code to create/update specs and fix the Feature Map.');
   process.exit(1);
 }
 

@@ -33,7 +33,8 @@ All specs are indexed in the **Feature Map** — `src/renderer/features/README.m
 aggregate grouped by product area. Documented modules link to their spec; trivial modules are marked
 `(no spec planned)`; every spec links back with a `> Part of the [Feature Map](...)` line right after its title. When
 adding or renaming a module, or adding a spec, update the map in the same change; `pnpm check:feature-map` verifies the
-map is in sync (it also runs in CI) and prints the current coverage.
+map is in sync and prints the current coverage. In CI the check also fails the PR when a changed module has no spec or
+its code changed without a spec update — touching a module means reviewing its spec in the same PR.
 
 ## When to write or update one
 
