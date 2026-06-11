@@ -34,6 +34,14 @@ src/renderer/features/<name>/README.md
 
 Worked example: `src/renderer/aggregates/multisig-operation-description/README.md`.
 
+All specs are indexed in the **Feature Map** — `src/renderer/features/README.md` —
+a curated list of every feature and aggregate grouped by product area, with a
+`Documented: N / M` coverage counter. Documented modules link to their spec;
+every spec links back with a `> Part of the [Feature Map](...)` line right after
+its title. When adding or renaming a module, or adding a spec, update the map in
+the same change; `node scripts/check-feature-index.mjs` verifies the map and the
+counter are in sync.
+
 ## When to write or update one
 
 - **New feature / aggregate** with user-visible behaviour or non-obvious rules →
@@ -77,6 +85,8 @@ signatures. Those belong in code comments, not the spec.
 
 ````markdown
 # <Feature name>
+
+> Part of the [Feature Map](../README.md)
 
 ## Overview
 What this feature is, the problem it solves, and the one-line behaviour summary.
