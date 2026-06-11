@@ -182,6 +182,9 @@ section; related modules in other sections are referenced via "See also" notes.
 - `notifications`
 - `notifications-navigation`
 
+> See also: [`send-to-contact`](#transfers) — the transfer flow launched from the
+> contacts page.
+
 ## App Shell & Platform
 
 - `app-shell`
