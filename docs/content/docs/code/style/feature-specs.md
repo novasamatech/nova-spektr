@@ -116,3 +116,5 @@ Adjacent flows, backend contracts, or constraints that shape the behaviour.
 ````
 
 Match the depth to the feature — a small feature needs only Overview + States.
+The backlink path shown is for `features/<name>/`; from `aggregates/<name>/` it is
+`../../features/README.md`.
