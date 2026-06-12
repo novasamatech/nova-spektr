@@ -45,11 +45,17 @@ type ControlledPopoverProps = {
   value: string;
   onChange: (value: string) => void;
   onInput: (value: string) => void;
+  /**
+   * Fired only when the user picks an item from the list. Without it item
+   * selection falls back to `onChange`, which is also fired on typing — pass
+   * `onSelect` when the consumer needs to tell the two apart.
+   */
+  onSelect?: (value: string) => void;
 };
 
 type RootProps = PropsWithChildren<ControlledPopoverProps & ContextProps & InputProps>;
 
-const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inputProps }: RootProps) => {
+const Root = ({ testId = 'Combobox', value, onChange, onInput, onSelect, children, ...inputProps }: RootProps) => {
   const comboboxRef = useRef<HTMLInputElement | null>(null);
   const listboxRef = useRef<HTMLDivElement | null>(null);
   const anchorRef = useRef<HTMLDivElement | null>(null);
@@ -69,7 +75,7 @@ const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inpu
             defaultSelectedValue={value}
             value={value}
             selectedValue={value}
-            setSelectedValue={onChange}
+            setSelectedValue={onSelect ?? onChange}
             setValue={value => startTransition(() => onChange(value.trim()))}
           >
             <Trigger {...inputProps} onChange={onInput} />

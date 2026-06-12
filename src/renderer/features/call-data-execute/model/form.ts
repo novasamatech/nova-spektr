@@ -330,6 +330,13 @@ sample({
   target: form.fields.callData.change,
 });
 
+// jump straight to the builder — the user's next step is tweaking the arguments
+sample({
+  clock: templateApplied,
+  fn: () => InputMode.BUILD,
+  target: inputModeChanged,
+});
+
 // flow setup
 
 // Preselect initiator on form open
