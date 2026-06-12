@@ -48,21 +48,21 @@ describe('features/proxy-verify/lib/build-verify-proxy', () => {
       expect(call.args.forceProxyType).toBe(ProxyTypes.NON_TRANSFER);
     });
 
-    test('embeds memo into the remark payload when provided', () => {
+    test('embeds remark text into the marker payload when provided', () => {
       const call = buildVerifyProxyCall({
         chainId,
         delegateAccountId: delegate,
         pureProxyAccountId: pure,
         proxyType: ProxyTypes.ANY,
-        memo: 'annual audit',
+        remark: 'annual audit',
       });
 
       const inner = call.args.transaction;
       const marker = parseVerifyProxyMarker(inner.args.remark);
-      expect(marker?.memo).toBe('annual audit');
+      expect(marker?.remark).toBe('annual audit');
     });
 
-    test('omits memo key from remark payload when memo is not provided', () => {
+    test('omits remark key from marker payload when remark is not provided', () => {
       const call = buildVerifyProxyCall({
         chainId,
         delegateAccountId: delegate,
@@ -73,7 +73,19 @@ describe('features/proxy-verify/lib/build-verify-proxy', () => {
       const inner = call.args.transaction;
       const marker = parseVerifyProxyMarker(inner.args.remark);
       expect(marker).not.toBeNull();
-      expect('memo' in marker!).toBe(false);
+      expect('remark' in marker!).toBe(false);
+    });
+
+    test('parses legacy `memo` key from in-flight pings as remark text', () => {
+      const legacyPayload = JSON.stringify({
+        kind: VERIFY_PROXY_REMARK_KIND,
+        delegateAccountId: delegate,
+        pureProxyAccountId: pure,
+        memo: 'annual audit',
+      });
+
+      const marker = parseVerifyProxyMarker(legacyPayload);
+      expect(marker?.remark).toBe('annual audit');
     });
   });
 

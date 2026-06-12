@@ -15,15 +15,29 @@ export type VerifyProxyMarkerPayload = {
   kind: typeof VERIFY_PROXY_REMARK_KIND;
   delegateAccountId: AccountId;
   pureProxyAccountId: AccountId;
-  memo?: string;
+  remark?: string;
 };
 
-type BuildVerifyProxyRemarkTxParams = {
-  chainId: ChainId;
-  accountId: AccountId;
+type VerifyProxyMarkerParams = {
   delegateAccountId: AccountId;
   pureProxyAccountId: AccountId;
-  memo?: string;
+  remark?: string;
+};
+
+export const buildVerifyProxyMarkerPayload = ({
+  delegateAccountId,
+  pureProxyAccountId,
+  remark,
+}: VerifyProxyMarkerParams): VerifyProxyMarkerPayload => ({
+  kind: VERIFY_PROXY_REMARK_KIND,
+  delegateAccountId,
+  pureProxyAccountId,
+  ...(remark ? { remark } : {}),
+});
+
+type BuildVerifyProxyRemarkTxParams = VerifyProxyMarkerParams & {
+  chainId: ChainId;
+  accountId: AccountId;
 };
 
 export const buildVerifyProxyRemarkTx = ({
@@ -31,14 +45,9 @@ export const buildVerifyProxyRemarkTx = ({
   accountId,
   delegateAccountId,
   pureProxyAccountId,
-  memo,
+  remark,
 }: BuildVerifyProxyRemarkTxParams): Transaction => {
-  const payload: VerifyProxyMarkerPayload = {
-    kind: VERIFY_PROXY_REMARK_KIND,
-    delegateAccountId,
-    pureProxyAccountId,
-    ...(memo ? { memo } : {}),
-  };
+  const payload = buildVerifyProxyMarkerPayload({ delegateAccountId, pureProxyAccountId, remark });
 
   return {
     chainId,
@@ -72,10 +81,12 @@ export const parseVerifyProxyMarker = (remark: string): VerifyProxyMarkerPayload
   const delegate = obj['delegateAccountId'];
   const pure = obj['pureProxyAccountId'];
   if (typeof delegate !== 'string' || typeof pure !== 'string') return null;
+  // `memo` is the legacy key for the user text — older builds' pings are still in flight.
+  const remarkText = typeof obj['remark'] === 'string' && obj['remark'] ? obj['remark'] : obj['memo'];
   return {
     kind: VERIFY_PROXY_REMARK_KIND,
     delegateAccountId: toAccountId(delegate),
     pureProxyAccountId: toAccountId(pure),
-    ...(typeof obj['memo'] === 'string' && obj['memo'] ? { memo: obj['memo'] } : {}),
+    ...(typeof remarkText === 'string' && remarkText ? { remark: remarkText } : {}),
   };
 };

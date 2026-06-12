@@ -8,6 +8,7 @@ import { type Form, createForm } from '@/shared/forms';
 import { getNativeAsset, nonNullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
+  buildVerifyProxyMarkerPayload,
   createComplexTxStore,
   createMultisigDeposit,
   createSignatoriesStore,
@@ -72,7 +73,7 @@ type ResolveResult = { ok: true; store: VerifyStore } | { ok: false; reason: Ver
 
 type FormParams = {
   signatory: AnyAccount | null;
-  memo: string;
+  remark: string;
 };
 
 function resolveVerifyStore({ chains, allAccounts }: ResolveCtx, input: VerifyFlowInput): ResolveResult {
@@ -197,7 +198,7 @@ const { $signingPath, signingPathChanged, $signatoryFromPath, recomputeForSigner
 
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
-    memo: {
+    remark: {
       defaultValue: '',
     },
     signatory: {
@@ -245,10 +246,10 @@ const form: Form<FormParams> = createForm<FormParams>({
 const $coreTx = combine(
   {
     signatory: form.fields.signatory.$value,
-    memo: form.fields.memo.$value,
+    remark: form.fields.remark.$value,
     data: $verifyStore,
   },
-  ({ signatory, memo, data }) => {
+  ({ signatory, remark, data }) => {
     if (!signatory || !data) return null;
 
     return buildVerifyProxyCall({
@@ -256,10 +257,22 @@ const $coreTx = combine(
       delegateAccountId: data.proxy.proxyAccountId,
       pureProxyAccountId: data.proxy.pureProxyAccountId,
       proxyType: data.proxy.proxyType,
-      memo: memo || undefined,
+      remark: remark || undefined,
     });
   },
 );
+
+// Marker payload for the form's info popover — built by the same helper as the
+// `system.remarkWithEvent` call in `$coreTx`, so the preview can't drift from it.
+const $remarkPayload = combine($verifyStore, form.fields.remark.$value, (data, remark) => {
+  if (!data) return null;
+
+  return buildVerifyProxyMarkerPayload({
+    delegateAccountId: data.proxy.proxyAccountId,
+    pureProxyAccountId: data.proxy.pureProxyAccountId,
+    remark: remark || undefined,
+  });
+});
 
 const $api = combine({ store: $verifyStore, apis: networkModel.$apis }, ({ store, apis }) =>
   store ? (apis[store.chain.chainId] ?? null) : null,
@@ -338,14 +351,14 @@ const confirmEvent = sample({
     multisigDeposit: $multisigDeposit,
     verifyStore: $verifyStore,
     route: $route,
-    memo: form.fields.memo.$value,
+    remark: form.fields.remark.$value,
     signingPath: $signingPath,
   },
   fn: (source, clock) => {
     return { ...source, ...clock };
   },
 }).filterMap(
-  ({ tx, coreTx, chain, initiator, fee, multisigDeposit, verifyStore, route, signatory, memo, signingPath }) => {
+  ({ tx, coreTx, chain, initiator, fee, multisigDeposit, verifyStore, route, signatory, remark, signingPath }) => {
     if (
       nonNullable(tx) &&
       nonNullable(chain) &&
@@ -369,7 +382,7 @@ const confirmEvent = sample({
           proxyType: verifyStore.proxy.proxyType,
           pureProxyAccountId: verifyStore.proxy.pureProxyAccountId,
           proxyAccountId: verifyStore.proxy.proxyAccountId,
-          memo: memo || undefined,
+          remark: remark || undefined,
           signingPath,
         } satisfies VerifyProxyConfirm,
       ];
@@ -538,6 +551,7 @@ export const verifyProxyModel = {
   $errors,
   $canSubmit,
   $lastGuardFailure,
+  $remarkPayload,
 
   form,
 

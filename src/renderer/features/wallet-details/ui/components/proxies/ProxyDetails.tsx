@@ -267,7 +267,9 @@ export const ProxyDetails = ({ proxy, verifyAction, editAction, onRemove, onClos
       proxy.delay > 0 ? 'walletDetails.proxies.cannotAutoVerifyDelay' : 'walletDetails.proxies.cannotAutoVerify';
     const explanation = (
       <FootnoteText className="text-text-secondary">
-        {proxy.proxyMultisigAccountId ? t(multisigExplanationKey) : t('walletDetails.proxies.nonMultisigDescription')}
+        {proxy.proxyMultisigAccountId
+          ? t(multisigExplanationKey, { type: proxy.proxyType })
+          : t('walletDetails.proxies.nonMultisigDescription')}
       </FootnoteText>
     );
 

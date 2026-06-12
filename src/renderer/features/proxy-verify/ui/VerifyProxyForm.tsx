@@ -14,6 +14,8 @@ import { SigningPathSection } from '@/features/signing-path';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { verifyProxyModel } from '../model/verify-proxy-model';
 
+import { RemarkInfoPopover } from './RemarkInfoPopover';
+
 type Props = {
   chainId: ChainId;
   onGoBack: () => void;
@@ -34,7 +36,7 @@ export const VerifyProxyForm = ({ chainId, onGoBack }: Props) => {
       <TransactionValidationError errors={errors} wallets={wallets} />
       <form id="verify-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <Signatories chainId={chainId} />
-        <MemoField />
+        <RemarkField />
       </form>
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection chainId={chainId} />
@@ -103,19 +105,19 @@ const FeeSection = ({ chainId }: { chainId: ChainId }) => {
   );
 };
 
-const MemoField = () => {
+const RemarkField = () => {
   const { t } = useI18n();
   const {
-    fields: { memo },
+    fields: { remark },
   } = useForm(verifyProxyModel.form);
 
   return (
-    <Field text={t('walletDetails.proxies.verifyMemoLabel')}>
+    <Field text={t('walletDetails.proxies.verifyRemarkLabel')} action={<RemarkInfoPopover />}>
       <Input
-        placeholder={t('walletDetails.proxies.verifyMemoPlaceholder')}
-        value={memo.value}
+        placeholder={t('walletDetails.proxies.verifyRemarkPlaceholder')}
+        value={remark.value}
         maxLength={200}
-        onChange={memo.onChange}
+        onChange={remark.onChange}
       />
     </Field>
   );

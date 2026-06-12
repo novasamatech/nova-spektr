@@ -51,10 +51,10 @@ export const VerifyProxyOperationDetails = ({ operation }: Props) => {
         </FootnoteText>
       </div>
 
-      {info.memo && (
+      {info.remark && (
         <div className="flex flex-col gap-y-2">
-          <SmallTitleText>{t('operations.verifyProxy.details.memo')}</SmallTitleText>
-          <FootnoteText className="break-all text-text-secondary">{info.memo}</FootnoteText>
+          <SmallTitleText>{t('operations.verifyProxy.details.remark')}</SmallTitleText>
+          <FootnoteText className="break-all text-text-secondary">{info.remark}</FootnoteText>
         </div>
       )}
 
