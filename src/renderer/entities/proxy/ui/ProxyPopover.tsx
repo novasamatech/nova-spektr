@@ -16,9 +16,9 @@ export const ProxyPopover = ({ children }: PropsWithChildren) => {
   return (
     <Popover dialog>
       <Popover.Trigger>
-        <div className="h-4">
+        <div className={children ? 'w-fit' : 'h-4'}>
           {children ? (
-            <LabelHelpBox className="mt-4 mb-6">{children}</LabelHelpBox>
+            <LabelHelpBox>{children}</LabelHelpBox>
           ) : (
             <IconButton name="questionOutline" className="hover:text-icon-hover active:text-icon-active" size={16} />
           )}
