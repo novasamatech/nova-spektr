@@ -1,14 +1,16 @@
 import { combine, createEffect, createEvent, createStore, merge, sample } from 'effector';
+import { persist as persistLocal } from 'effector-storage/local';
 import { t } from 'i18next';
 import { interval, once } from 'patronum';
 import { toast } from 'sonner';
 
 import { persist } from '@/shared/api/storage';
 import { type ChainId } from '@/shared/core';
-import { assert, toAccountId } from '@/shared/lib/utils';
+import { assert, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { backendAuthService } from '@/domains/backend';
 import { type AnyAccount } from '@/domains/network';
+import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { polkadotExtensionService } from '@/features/extension-wallet';
 import { messageSignModel } from '@/features/operations/OperationMessageSign';
@@ -55,6 +57,10 @@ const $connectionResult = createStore<ConnectionResult>({ status: 'idle' });
 const $challengeId = createStore<string | null>(null);
 
 $selectedChainId.on(chainSelected, (_, chainId) => chainId);
+
+// Polkadot relay until the first successful sign-in, then the last successfully used chain.
+const $defaultAuthChainId = createStore<ChainId>(DEFAULT_AUTH_CHAIN_ID);
+persistLocal({ store: $defaultAuthChainId, key: 'address-book-default-auth-chain-id', sync: true });
 
 const $lastAuthedAccountId = createStore<AccountId | null>(null);
 persist({ store: $lastAuthedAccountId, key: 'address-book-last-authed-account-id' });
@@ -196,9 +202,21 @@ const resetAuthUiTriggers = [
 
 $authStep.on(resetAuthUiTriggers, () => 'selectAccount');
 $selectedAccountId.on(resetAuthUiTriggers, () => null);
-$selectedChainId.on(resetAuthUiTriggers, () => DEFAULT_AUTH_CHAIN_ID);
 $error.on(resetAuthUiTriggers, () => null);
 $challengeId.on(resetAuthUiTriggers, () => null);
+
+sample({
+  clock: resetAuthUiTriggers,
+  source: { defaultChainId: $defaultAuthChainId, chains: networkModel.$chains },
+  fn: ({ defaultChainId, chains }) => {
+    // The saved chain may have been removed from the chains config since it was saved;
+    // trust it while chains are still loading.
+    const isKnownChain = nonNullable(chains[defaultChainId]) || Object.keys(chains).length === 0;
+
+    return isKnownChain ? defaultChainId : DEFAULT_AUTH_CHAIN_ID;
+  },
+  target: $selectedChainId,
+});
 
 // Wiring: signConfirmed → requestChallengeFx
 $authStep.on(signConfirmed, () => 'signing');
@@ -273,6 +291,14 @@ sample({
     permissions: verifyData.permissions,
   }),
   target: $authState,
+});
+
+// Must stay declared before the connectCompleted sample below — it has to read
+// $selectedChainId before the connectCompleted-triggered reset overwrites it.
+sample({
+  clock: verifySignatureFx.done,
+  source: $selectedChainId,
+  target: $defaultAuthChainId,
 });
 
 const signInSucceeded = createEvent();
@@ -470,5 +496,7 @@ export const authModel = {
   __test: {
     logoutFx,
     checkSessionFx,
+    verifySignatureFx,
+    $defaultAuthChainId,
   },
 };
