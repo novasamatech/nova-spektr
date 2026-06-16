@@ -10,7 +10,7 @@
  * with <base-ref> and fails when a changed feature/aggregate has no spec or its
  * code changed without a spec update (used in CI with the PR base).
  */
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -146,8 +146,8 @@ if (changedFlagIndex !== -1) {
   let mergeBase;
   let diffOutput;
   try {
-    mergeBase = execSync(`git merge-base ${baseRef} HEAD`, { cwd: ROOT, encoding: 'utf8' }).trim();
-    diffOutput = execSync(`git diff --name-only ${mergeBase} HEAD`, { cwd: ROOT, encoding: 'utf8' });
+    mergeBase = execFileSync('git', ['merge-base', baseRef, 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+    diffOutput = execFileSync('git', ['diff', '--name-only', mergeBase, 'HEAD'], { cwd: ROOT, encoding: 'utf8' });
   } catch {
     console.error(`Could not diff against "${baseRef}" — is the ref fetched?`);
     process.exit(1);
@@ -190,7 +190,7 @@ if (changedFlagIndex !== -1) {
     // must move past the date in the merge base (a new spec always passes)
     let baseReadme = null;
     try {
-      baseReadme = execSync(`git show ${mergeBase}:src/renderer/${module.layer}/${module.name}/README.md`, {
+      baseReadme = execFileSync('git', ['show', `${mergeBase}:src/renderer/${module.layer}/${module.name}/README.md`], {
         cwd: ROOT,
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
@@ -200,9 +200,9 @@ if (changedFlagIndex !== -1) {
     }
     const baseDate = baseReadme?.match(REVIEWED_DATE_PATTERN)?.[1] ?? null;
     const currentDate = readFileSync(readmePath, 'utf8').match(REVIEWED_DATE_PATTERN)?.[1] ?? null;
-    if (baseDate !== null && currentDate === baseDate) {
+    if (baseDate !== null && (currentDate === null || currentDate <= baseDate)) {
       errors.push(
-        `${module.layer}/${module.name} code changed but the spec's "Last reviewed" date was not updated — ` +
+        `${module.layer}/${module.name} code changed but the spec's "Last reviewed" date was not bumped — ` +
           `run the feature-specs skill to review the spec and bump the date`,
       );
     }
