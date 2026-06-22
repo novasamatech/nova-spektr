@@ -55,7 +55,7 @@ export const VestedTransferModal = () => {
           <Dropdown.Item>{t('navigation.vestedTransfersLabel')}</Dropdown.Item>
         </Modal.Trigger>
         <Modal.Title close>{getModalTitle(chain.value)}</Modal.Title>
-        <Modal.Content>
+        <Modal.Content disableScroll>
           {vestedTransferUtils.isInitStep(step) && <VestedTransferForm />}
           {vestedTransferUtils.isConfirmStep(step) && (
             <Confirmation onGoBack={() => formModel.stepChanged(Step.INIT)} />
