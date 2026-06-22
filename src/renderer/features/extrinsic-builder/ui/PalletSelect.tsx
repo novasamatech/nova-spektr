@@ -19,7 +19,7 @@ export const PalletSelect = memo(({ options, value, onChange }: Props) => {
   );
 
   return (
-    <Field text={t('extrinsicBuilder.pallet')}>
+    <Field text={t('extrinsicBuilder.pallet')} clickableLabel={false}>
       <Combobox
         placeholder={t('extrinsicBuilder.palletPlaceholder')}
         value={displayValue}

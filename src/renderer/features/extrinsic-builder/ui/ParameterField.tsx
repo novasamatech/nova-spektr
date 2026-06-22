@@ -55,7 +55,7 @@ export const ParameterField = memo(({ name, typeDef, value, onChange, depth, api
   const label = `${name}: ${typeDef.typeName}${kindHint}`;
 
   return (
-    <Field text={<FootnoteText className="text-text-secondary">{label}</FootnoteText>}>
+    <Field text={<FootnoteText className="text-text-secondary">{label}</FootnoteText>} clickableLabel={false}>
       <ParameterInput typeDef={typeDef} value={value} depth={depth} api={api} onChange={onChange} />
     </Field>
   );

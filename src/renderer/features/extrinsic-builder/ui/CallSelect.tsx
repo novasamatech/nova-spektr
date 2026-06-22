@@ -20,7 +20,7 @@ export const CallSelect = memo(({ options, value, disabled, onChange }: Props) =
   );
 
   return (
-    <Field text={t('extrinsicBuilder.call')}>
+    <Field text={t('extrinsicBuilder.call')} clickableLabel={false}>
       <Combobox
         placeholder={t('extrinsicBuilder.callPlaceholder')}
         value={displayValue}
