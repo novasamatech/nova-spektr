@@ -5,6 +5,43 @@ savePrefix: ''
 minimumReleaseAge: 4320
 blockExoticSubdeps: false
 
+# Security overrides for transitive dependencies (CVE fixes). Targeted selectors
+# (e.g. `tar@7`) only touch the vulnerable major and leave unrelated copies alone.
+overrides:
+  pbkdf2: 3.1.3 # CVE-2025-6545 / CVE-2025-6547
+  sha.js: 2.4.12 # CVE-2025-9288
+  tmp: 0.2.4 # CVE-2026-44705 / CVE-2025-54798
+  js-yaml: 4.1.1 # CVE-2025-64718
+  mdast-util-to-hast: 13.2.1 # CVE-2025-66400
+  qs: 6.14.1 # CVE-2026-2391 / CVE-2025-15284 / CVE-2026-8723
+  preact: 10.27.3 # CVE-2026-22028
+  h3: 1.15.5 # CVE-2026-23527 / CVE-2026-33128
+  axios: 1.13.5 # CVE-2026-25639 and others
+  rollup: 4.59.0 # CVE-2026-27606
+  svgo: 3.3.3 # CVE-2026-29074
+  undici: 7.24.0 # CVE-2026-1528 / CVE-2026-1525 / CVE-2026-1527
+  flatted: 3.4.2 # CVE-2026-33228
+  '@xmldom/xmldom': 0.8.12 # CVE-2026-34601 and others
+  defu: 6.1.5 # CVE-2026-35209
+  follow-redirects: 1.16.0 # GHSA-r4q5-vmmm-2653
+  postcss: 8.5.10 # CVE-2026-41305
+  ip-address: 10.1.1 # CVE-2026-42338
+  fast-uri: 3.1.1 # CVE-2026-6321 / CVE-2026-6322
+  '@tootallnate/once': 2.0.1 # CVE-2026-3449
+  shell-quote: 1.8.4 # CVE-2026-9277
+  devalue: 5.3.2 # CVE-2025-57820 and others
+  esbuild: 0.28.1 # GHSA-gv7w-rqvm-qjhr
+  react-router: 7.9.6 # CVE-2026-21884 and others
+  'brace-expansion@2': 2.0.2 # CVE-2025-5889 / CVE-2026-33750
+  'glob@11': 11.1.0 # CVE-2025-64756
+  'bn.js@5': 5.2.3 # CVE-2026-2739
+  'minimatch@9': 9.0.6 # CVE-2026-26996 / CVE-2026-27903
+  'picomatch@2': 2.3.2 # CVE-2026-33671 / CVE-2026-33672
+  'ws@8': 8.20.1 # CVE-2026-45736
+  'tar@7': 7.5.3 # CVE-2026-23745 and others
+  playwright: 1.58.0 # CVE-2025-59288 (transitive via react-scan)
+  playwright-core: 1.58.0 # CVE-2025-59288
+
 peerDependencyRules:
   allowedVersions:
     vite: '8'
