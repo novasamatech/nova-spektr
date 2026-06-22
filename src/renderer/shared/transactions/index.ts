@@ -19,6 +19,7 @@ export {
 export {
   type VerifyProxyMarkerPayload,
   VERIFY_PROXY_REMARK_KIND,
+  buildVerifyProxyMarkerPayload,
   buildVerifyProxyRemarkTx,
   parseVerifyProxyMarker,
 } from './verifyProxyMarker';

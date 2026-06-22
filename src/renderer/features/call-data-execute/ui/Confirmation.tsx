@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Button, ButtonWebLink, DetailRow, Icon, LargeTitleText, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
-import { Box, Modal } from '@/shared/ui-kit';
+import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { transactionService } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
@@ -50,41 +50,43 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
 
   return (
     <>
-      <div className="mb-2 flex flex-col items-center gap-y-3 px-5 py-4">
-        <Icon className="text-icon-default" name="unknownConfirm" size={60} />
-        <LargeTitleText className="font-manrope">{t('callData.confirmation.title')}</LargeTitleText>
-      </div>
+      <ScrollArea>
+        <div className="mb-2 flex flex-col items-center gap-y-3 px-5 py-4">
+          <Icon className="text-icon-default" name="unknownConfirm" size={60} />
+          <LargeTitleText className="font-manrope">{t('callData.confirmation.title')}</LargeTitleText>
+        </div>
 
-      <Box padding={[4, 5]}>
-        <TransactionDetails chain={chain} wallets={wallets} initiators={[initiator]} signatory={signatory}>
-          <DetailRow label={t('callData.confirmation.fields.externalExplorer.label')}>
-            <ButtonWebLink className="p-0" size="sm" variant="text" href={decodedLink} target="_blank">
-              {t('callData.confirmation.fields.externalExplorer.value')}
-            </ButtonWebLink>
-          </DetailRow>
-          <DetailRow label={t('callData.confirmation.fields.details.label')}>
-            <Modal size="lg" height="fit">
-              <Modal.Trigger>
-                <Button className="p-0" size="sm" variant="text">
-                  {t('callData.confirmation.fields.details.value')}
-                </Button>
-              </Modal.Trigger>
-              <Modal.Title close>{t('callData.confirmation.fields.details.label')}</Modal.Title>
-              <Modal.Content>
-                <Box padding={5}>
-                  <JsonArgs value={args} />
-                </Box>
-              </Modal.Content>
-            </Modal>
-          </DetailRow>
-          <Separator className="w-full pr-2" />
-          <FeeWithLabel asset={asset} fee={fee} />
-        </TransactionDetails>
-      </Box>
+        <Box padding={[4, 5]}>
+          <TransactionDetails chain={chain} wallets={wallets} initiators={[initiator]} signatory={signatory}>
+            <DetailRow label={t('callData.confirmation.fields.externalExplorer.label')}>
+              <ButtonWebLink className="p-0" size="sm" variant="text" href={decodedLink} target="_blank">
+                {t('callData.confirmation.fields.externalExplorer.value')}
+              </ButtonWebLink>
+            </DetailRow>
+            <DetailRow label={t('callData.confirmation.fields.details.label')}>
+              <Modal size="lg" height="fit">
+                <Modal.Trigger>
+                  <Button className="p-0" size="sm" variant="text">
+                    {t('callData.confirmation.fields.details.value')}
+                  </Button>
+                </Modal.Trigger>
+                <Modal.Title close>{t('callData.confirmation.fields.details.label')}</Modal.Title>
+                <Modal.Content>
+                  <Box padding={5}>
+                    <JsonArgs value={args} />
+                  </Box>
+                </Modal.Content>
+              </Modal>
+            </DetailRow>
+            <Separator className="w-full pr-2" />
+            <FeeWithLabel asset={asset} fee={fee} />
+          </TransactionDetails>
+        </Box>
 
-      <div className="px-5 pb-4">
-        <MultisigOperationDescriptionField />
-      </div>
+        <div className="px-5 pb-4">
+          <MultisigOperationDescriptionField />
+        </div>
+      </ScrollArea>
 
       <Modal.Footer align="between">
         {onGoBack && (

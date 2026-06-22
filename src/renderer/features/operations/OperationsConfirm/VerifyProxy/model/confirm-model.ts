@@ -12,7 +12,7 @@ export type VerifyProxyConfirm = TxConfirmInfo & {
   proxyType: ProxyType;
   pureProxyAccountId: AccountId;
   proxyAccountId: AccountId;
-  memo?: string;
+  remark?: string;
   signingPath?: PathNode[];
 };
 
