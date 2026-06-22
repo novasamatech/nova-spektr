@@ -8,16 +8,22 @@ type Props = {
    * opens an editor for the selected value).
    */
   action?: ReactNode;
+  /**
+   * Whether clicking the field text focuses the wrapped control. Disable for
+   * controls that open a dropdown on focus (e.g. Combobox) so the clickable
+   * area stays limited to the visible input box.
+   */
+  clickableLabel?: boolean;
   testId?: string;
 };
 
-export const Field = ({ text, action, testId, children }: PropsWithChildren<Props>) => {
+export const Field = ({ text, action, clickableLabel = true, testId, children }: PropsWithChildren<Props>) => {
   // When an action is provided, it must live OUTSIDE the <label> — otherwise
   // clicking the action chip is forwarded to the wrapped form control (e.g.
   // opens a signatory dropdown when the user only meant to trigger the
   // action). Without an action, keep the original single-label structure so
   // clicking the field text still focuses the control.
-  if (action) {
+  if (action || !clickableLabel) {
     return (
       <div className="flex w-full flex-col gap-y-2" data-testid={testId}>
         <div className="flex items-center justify-between gap-2 text-footnote font-medium text-text-tertiary">
