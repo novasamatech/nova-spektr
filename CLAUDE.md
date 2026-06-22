@@ -11,7 +11,6 @@ Project documentation:
 - @docs/content/docs/onboarding/links.mdx
 - @docs/content/docs/code/style/naming.md
 - @docs/content/docs/code/style/effector.md
-- @docs/content/docs/code/style/feature-specs.md
 
 ## Workflow Orchestration
 
@@ -60,21 +59,13 @@ Project documentation:
 
 ## Feature Spec READMEs
 
-Non-trivial features and aggregates carry a colocated `README.md` — a **product
-spec** of what the code does and why (states, scenarios, lifecycle), not how it is
-wired. Full convention and template: @docs/content/docs/code/style/feature-specs.md.
-Worked example: `src/renderer/aggregates/multisig-operation-description/README.md`.
-
-- **Before changing a feature**: look for its `README.md` and read it first — it is
-  the source of product truth. If the code you touch contradicts it, surface that.
-- **When adding a feature or materially changing behavior**: draft or update the
-  `README.md` as part of the change, then get the author's approval on it before
-  finalizing — treat the spec as a deliverable alongside the code, never an
-  afterthought.
-- **Keep it in sync**: update the README in the same change that alters behavior;
-  never let it drift. Product-level English, mermaid diagrams where they help.
-- **Scope**: one README per feature/aggregate folder. Skip it for trivial,
-  presentation-only, or purely mechanical modules.
+Non-trivial features and aggregates carry a colocated `README.md` product spec,
+indexed in the Feature Map (`src/renderer/features/README.md`). **When creating
+or materially changing a feature/aggregate, or writing/updating a spec README,
+invoke the `feature-specs` skill** — it carries the operational rules and
+Feature Map maintenance steps; the canonical convention lives in
+`docs/content/docs/code/style/feature-specs.md`. Before changing a feature, read
+its README first if one exists; surface any contradiction between spec and code.
 
 ## Core Principles
 - Simplicity First: Make every change as simple as possible. Impact minimal code.
