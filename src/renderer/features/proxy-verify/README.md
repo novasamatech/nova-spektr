@@ -1,5 +1,7 @@
 # Proxy verification
 
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-06-22
+
 ## Overview
 
 Lets a user prove that a newly added proxy (delegate) actually has working authority over a pure-proxied wallet. The

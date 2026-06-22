@@ -57,7 +57,7 @@ notes.
 - `proxy-basket`
 - `proxy-operation-details`
 - `proxy-remove`
-- `proxy-verify`
+- [`proxy-verify`](./proxy-verify/README.md)
 - `proxied-add-pure`
 - `proxied-wallet`
 
@@ -185,7 +185,7 @@ notes.
 - `dapp-browser`
 - `import-db`
 - `emptyList` (no spec planned)
-- `backend` (aggregate)
+- [`backend`](../aggregates/backend/README.md) (aggregate)
 
 ---
 

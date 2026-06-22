@@ -1,5 +1,7 @@
 # Address book backend connection & authentication
 
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-06-22
+
 ## Overview
 
 Lets the user connect Nova Spektr to a self-hosted address-book backend and prove account ownership by signing a
