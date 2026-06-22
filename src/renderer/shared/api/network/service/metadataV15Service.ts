@@ -3,6 +3,7 @@ import { compactStripLength, hexToU8a, u8aToHex } from '@polkadot/util';
 
 import { storageService } from '@/shared/api/storage';
 import { type ChainId, type HexString } from '@/shared/core';
+import { readSpecVersion } from '@/shared/lib/utils';
 
 const METADATA_V15 = 15;
 const METADATA_V15_SCALE_ENCODED = '0x0f000000';
@@ -97,19 +98,50 @@ async function resolveMetadataV15(
   key: string,
 ): Promise<HexString> {
   const allMetadata = await storageService.metadata.readAll();
-  const dbEntry = allMetadata.find(
+  const dbEntries = allMetadata.filter(
     (m) => m.chainId === chainId && m.runtimeVersion === runtimeVersion && m.metadataVersion === METADATA_V15,
   );
 
-  if (dbEntry) {
+  for (const dbEntry of dbEntries) {
     const decoded = ensureDecodedV15(dbEntry.metadata);
-    decodedV15Cache.set(key, decoded);
 
-    return decoded;
+    // The row is labeled with `runtimeVersion`, but the labeling and the bytes are
+    // written separately, so a stale blob can end up stamped with the new runtime
+    // version. Trust the bytes: if their spec version disagrees, drop the row and
+    // refetch instead of feeding stale metadata downstream (e.g. to merkleize).
+    if (specVersionMatches(decoded, runtimeVersion)) {
+      decodedV15Cache.set(key, decoded);
+
+      return decoded;
+    }
+  }
+
+  // None of the labeled rows carried matching bytes — drop the stale ones.
+  if (dbEntries.length > 0) {
+    await storageService.metadata.deleteAll(dbEntries.map((entry) => entry.id));
   }
 
   const decoded = await fetchFromRpc(api);
+
+  if (!specVersionMatches(decoded, runtimeVersion)) {
+    throw new Error(
+      `[metadataV15Service] Fetched metadata spec version does not match runtime version ${runtimeVersion}`,
+    );
+  }
+
   decodedV15Cache.set(key, decoded);
 
   return decoded;
+}
+
+/**
+ * True when the spec version encoded in the metadata bytes equals
+ * `runtimeVersion`.
+ */
+function specVersionMatches(decodedMetadata: HexString, runtimeVersion: number): boolean {
+  try {
+    return readSpecVersion(decodedMetadata) === runtimeVersion;
+  } catch {
+    return false;
+  }
 }

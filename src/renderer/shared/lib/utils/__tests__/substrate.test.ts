@@ -1,9 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_TWO } from '@polkadot/util';
 
-import { type Chain } from '@/shared/core';
+import { type Chain, type HexString } from '@/shared/core';
+// eslint-disable-next-line boundaries/entry-point -- reusing a real metadata blob fixture in tests only
+import { metadata as KUSAMA_V14_METADATA } from '@/entities/transaction/lib/__tests__/metadata';
 import { DEFAULT_TIME, THRESHOLD } from '../constants';
-import { getExpectedBlockTime } from '../substrate';
+import { getExpectedBlockTime, readSpecVersion } from '../substrate';
 
 describe('shared/lib/onChainUtils/substrate', () => {
   const blockTime = new BN(10_000);
@@ -43,5 +45,15 @@ describe('shared/lib/onChainUtils/substrate', () => {
     };
     const time = getTime(params);
     expect(time).toEqual(DEFAULT_TIME);
+  });
+});
+
+describe('readSpecVersion', () => {
+  test('reads spec version from the System.Version constant of v14 metadata', () => {
+    expect(readSpecVersion(KUSAMA_V14_METADATA as HexString)).toEqual(9430);
+  });
+
+  test('throws when the bytes are not decodable metadata', () => {
+    expect(() => readSpecVersion('0xdeadbeef' as HexString)).toThrow();
   });
 });

@@ -55,6 +55,7 @@ export const ScanSingleframeQr = ({
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [qrPayload, setQrPayload] = useState<Uint8Array>();
+  const [error, setError] = useState(false);
 
   const isMetadataProofsSupported = chain.additional?.supportsGenericLedgerApp ?? false;
   const isEthereumAccount = accountUtils.isEthereumBased(account);
@@ -63,6 +64,7 @@ export const ScanSingleframeQr = ({
     const currentId = ++setupIdRef.current;
     setTxPayload(undefined);
     setQrPayload(undefined);
+    setError(false);
 
     setupTransaction(currentId).catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
   }, [tab]);
@@ -149,8 +151,11 @@ export const ScanSingleframeQr = ({
         setQrPayload(qrPayload);
         onResetCountdown(mortalitySeconds);
       }
-    } catch (error) {
-      console.warn(error);
+    } catch (e) {
+      console.warn(e);
+      if (setupId === undefined || setupId === setupIdRef.current) {
+        setError(true);
+      }
     }
   };
 
@@ -158,6 +163,7 @@ export const ScanSingleframeQr = ({
     const currentId = ++setupIdRef.current;
     setTxPayload(undefined);
     setQrPayload(undefined);
+    setError(false);
     setupTransaction(currentId).catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
   };
 
@@ -167,6 +173,7 @@ export const ScanSingleframeQr = ({
         countdown={countdown}
         chainId={chain.chainId}
         isLegacyQR={tab === 'legacy'}
+        error={error}
         testId={TEST_IDS.OPERATIONS.QR_CODE_CONTAINER}
         tabSlot={
           isMetadataProofsSupported ? (

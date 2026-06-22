@@ -3096,6 +3096,7 @@
     "continueButton": "Continue",
     "generateNewQrButton": "Generate new QR code",
     "loadingMetadata": "Loading metadata...",
+    "metadataLoadError": "Couldn’t load up-to-date metadata. Please try again.",
     "loadingQr": "Generating QR code...",
     "loadingSignData": "Preparing signing data...",
     "metadataPortalLink": "Update metadata in Polkadot Vault",

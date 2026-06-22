@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type u32 } from '@polkadot/types';
+import { type u32, Metadata, TypeRegistry } from '@polkadot/types';
 import { type SignerPayloadJSON } from '@polkadot/types/types/extrinsic';
 import { BN, BN_TWO, bnMin, hexToU8a, isHex, numberToU8a, u8aToHex, u8aToNumber } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
@@ -244,3 +244,34 @@ export const getSecondsDurationToBlock = (timeToBlock: number): number => {
 export const numberToScaleEncoded = (value: number) => u8aToHex(numberToU8a(value));
 
 export const scaleEncodedToNumber = (value: string) => u8aToNumber(hexToU8a(value));
+
+/**
+ * Decodes the `spec_version` carried inside the `System.Version` constant of a
+ * SCALE-encoded runtime metadata blob (`RuntimeMetadataPrefixed`, v14 or v15).
+ *
+ * This reads the spec version from the metadata bytes themselves, independent
+ * of any externally provided/cached label — use it to detect metadata that has
+ * been mislabeled with a runtime version it does not actually belong to.
+ *
+ * @param metadataHex - Hex of the full metadata blob (with the `meta` magic
+ *   prefix)
+ *
+ * @returns The decoded spec version
+ */
+export const readSpecVersion = (metadataHex: HexString): number => {
+  const registry = new TypeRegistry();
+  const metadata = new Metadata(registry, metadataHex);
+  registry.setMetadata(metadata);
+
+  const system = metadata.asLatest.pallets.find((pallet) => pallet.name.toString() === 'System');
+  const versionConstant = system?.constants.find((constant) => constant.name.toString() === 'Version');
+
+  assert(versionConstant, 'System.Version constant not found in metadata');
+
+  const versionType = registry.createLookupType(versionConstant.type);
+  // `createType` returns an opaque `Codec`; the System.Version constant always
+  // decodes to a RuntimeVersion struct, so reading `specVersion` requires a cast.
+  const runtimeVersion = registry.createType(versionType, versionConstant.value.toU8a(true));
+
+  return (runtimeVersion as unknown as { specVersion: u32 }).specVersion.toNumber();
+};
