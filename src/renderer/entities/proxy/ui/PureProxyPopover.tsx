@@ -16,9 +16,9 @@ export const PureProxyPopover = ({ children }: PropsWithChildren) => {
   return (
     <Popover>
       <Popover.Trigger>
-        <div>
+        <div className={children ? 'w-fit' : undefined}>
           {children ? (
-            <LabelHelpBox className="mt-4 mb-6">{children}</LabelHelpBox>
+            <LabelHelpBox>{children}</LabelHelpBox>
           ) : (
             <Icon name="questionOutline" className="hover:text-icon-hover active:text-icon-active" size={16} />
           )}
