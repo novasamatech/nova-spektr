@@ -10,6 +10,7 @@ type Props = {
   countdown: number | null;
   chainId: ChainId;
   isLegacyQR?: boolean;
+  error?: boolean;
   testId?: string;
   tabSlot?: ReactNode;
   onQrReset: () => void;
@@ -23,6 +24,7 @@ export const QrGeneratorContainer = ({
   tabSlot,
   onQrReset,
   isLegacyQR = true,
+  error = false,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
@@ -45,7 +47,17 @@ export const QrGeneratorContainer = ({
         className="relative flex min-h-[250px] w-[250px] flex-col items-center justify-center gap-y-4"
         data-testid={testId}
       >
-        {children &&
+        {error ? (
+          <>
+            {/* metadata (or payload) failed to load */}
+            <Icon name="qrFrame" className="absolute h-full w-full" />
+            <FootnoteText className="px-2 text-center">{t('signing.metadataLoadError')}</FootnoteText>
+            <Button className="z-10" size="sm" prefixElement={<Icon size={16} name="refresh" />} onClick={onQrReset}>
+              {t('signing.generateNewQrButton')}
+            </Button>
+          </>
+        ) : (
+          children &&
           (countdown === null || countdown > 0 ? (
             children
           ) : (
@@ -57,7 +69,8 @@ export const QrGeneratorContainer = ({
                 {t('signing.generateNewQrButton')}
               </Button>
             </>
-          ))}
+          ))
+        )}
       </div>
 
       <div className="mt-6 mb-4 flex flex-row items-center gap-x-2 py-1">

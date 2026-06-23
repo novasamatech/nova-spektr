@@ -56,6 +56,7 @@ export const ScanMultiframeQr = ({
 
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
   const [qrPayload, setQrPayload] = useState<Uint8Array>();
+  const [error, setError] = useState(false);
 
   const signingType = signingPayloads[0]!.signatory.signingType;
   const isMetadataProofsSupported = signingPayloads[0]!.chain.additional?.supportsGenericLedgerApp ?? false;
@@ -64,8 +65,14 @@ export const ScanMultiframeQr = ({
     const currentId = ++setupIdRef.current;
     setTxPayloads([]);
     setQrPayload(undefined);
+    setError(false);
 
-    setupTransactions(currentId).catch(() => console.warn('ScanMultiQr | setupTransactions() failed'));
+    setupTransactions(currentId).catch((e) => {
+      console.warn('ScanMultiQr | setupTransactions() failed', e);
+      if (currentId === setupIdRef.current) {
+        setError(true);
+      }
+    });
   }, [tab]);
 
   const setupTransactions = async (setupId?: number): Promise<void> => {
@@ -200,7 +207,13 @@ export const ScanMultiframeQr = ({
     const currentId = ++setupIdRef.current;
     setTxPayloads([]);
     setQrPayload(undefined);
-    setupTransactions(currentId).catch(() => console.warn('ScanMultiQr | setupTransactions() failed'));
+    setError(false);
+    setupTransactions(currentId).catch((e) => {
+      console.warn('ScanMultiQr | setupTransactions() failed', e);
+      if (currentId === setupIdRef.current) {
+        setError(true);
+      }
+    });
   };
 
   return (
@@ -209,6 +222,7 @@ export const ScanMultiframeQr = ({
         countdown={countdown}
         chainId={signingPayloads[0]!.chain.chainId}
         isLegacyQR={tab === 'legacy'}
+        error={error}
         testId={TEST_IDS.OPERATIONS.QR_CODE_CONTAINER}
         tabSlot={
           isMetadataProofsSupported ? (
