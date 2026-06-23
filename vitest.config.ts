@@ -51,21 +51,12 @@ const config: ViteUserConfigFnPromise = async (options) => {
       globals: true,
       environment: 'happy-dom',
       setupFiles: resolve(folders.root, './vitest.setup.js'),
-      reporters: [
-        'default',
-        'junit',
-        [
-          'allure-vitest/reporter',
-          {
-            resultsDir: resolve(folders.root, './allure-results'),
-            links: {
-              issue: {
-                urlTemplate: 'https://github.com/novasamatech/nova-spektr/issues/%s',
-              },
-            },
-          },
-        ],
-      ],
+      // Allure reporter is intentionally omitted here: the unit workflow only
+      // publishes junit.xml and never uploads allure-results, so the per-test
+      // allure serialization was pure overhead. Allure stays in the integration
+      // config (tests/integrations/vitest.config.ts), where it is uploaded to
+      // Allure TestOps.
+      reporters: ['default', 'junit'],
       outputFile: {
         junit: resolve(folders.root, './junit.xml'),
       },
@@ -86,6 +77,14 @@ const config: ViteUserConfigFnPromise = async (options) => {
         reporter: 'json-summary',
       },
       pool: 'forks',
+      // Worker count for the forks pool. Vitest defaults to the number of CPUs;
+      // on CI we tune it via VITEST_MAX_FORKS per shard runner. Left undefined
+      // locally so dev machines keep using all cores.
+      poolOptions: {
+        forks: {
+          ...(process.env.VITEST_MAX_FORKS ? { maxForks: Number(process.env.VITEST_MAX_FORKS) } : {}),
+        },
+      },
       maxConcurrency: 8,
       deps: { optimizer: { web: { enabled: true } } },
     },
