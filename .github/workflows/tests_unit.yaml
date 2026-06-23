@@ -11,9 +11,19 @@ permissions:
   pull-requests: write
   checks: write
 
+env:
+  # GitHub-hosted ubuntu-latest runners expose 4 vCPUs. Match the forks pool to it.
+  VITEST_MAX_FORKS: 4
+  NODE_OPTIONS: '--max-old-space-size=8192'
+
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
+    strategy:
+      # Run every shard even if one fails, so the report covers the whole suite.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
 
     steps:
       - name: ⚙️Checkout
@@ -22,14 +32,34 @@ jobs:
       - name: ⚙️Install dependencies
         uses: ./.github/workflows/install-pnpm
 
-      - name: 🧪 Run tests
-        run: pnpm test:unit
+      - name: 🧪 Run tests (shard ${{ matrix.shard }}/4)
+        run: pnpm test:unit --shard=${{ matrix.shard }}/4 --outputFile.junit=./junit-${{ matrix.shard }}.xml
+
+      - name: ⬆️ Upload shard report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-${{ matrix.shard }}
+          path: ./junit-${{ matrix.shard }}.xml
+          retention-days: 1
+
+  publish-results:
+    needs: unit-tests
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Download shard reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: junit-*
+          path: ./reports
+          merge-multiple: true
 
       - name: 📄 Post results
-        if: always()
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: ./junit.xml
+          files: ./reports/junit-*.xml
           check_name: 'Unit Test Results'
           comment_mode: 'changes'
           github_token: ${{ secrets.GITHUB_TOKEN }}
