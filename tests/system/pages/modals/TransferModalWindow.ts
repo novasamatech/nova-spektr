@@ -57,8 +57,8 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     await step('Wait until all fees are loaded', async () => {
       const loaders = await feeLoaders.all();
       for (const loader of loaders) {
-        // TODO: investigate why it took so long to load the fees
-        await expect(loader).toBeHidden({ timeout: 30_000 });
+        // Fee estimation runs a live dry-run against public RPCs, which can be slow.
+        await expect(loader).toBeHidden({ timeout: 60_000 });
       }
     });
 

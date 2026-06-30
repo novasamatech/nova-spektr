@@ -92,7 +92,7 @@ type WorkerFixtureConfig = {
 };
 
 function createWorkerScopedFixture(config: WorkerFixtureConfig) {
-  const { dbFixture, waitForConnections = true, connectionTimeout = 60_000 } = config;
+  const { dbFixture, waitForConnections = true, connectionTimeout = 90_000 } = config;
 
   return base.extend<WorkerScopedTestFixtures, WorkerScopedWorkerFixtures>({
     workerContext: [
