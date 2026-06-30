@@ -51,6 +51,7 @@ export const TEST_IDS = {
     XCM_SELECTOR: 'operations-xcm-selector',
     MYSELF_BUTTON: 'myself-button',
     FEE_LOADER: 'fee-loader',
+    SIGN_BUTTON: 'operation-sign-button',
   },
   GOVERNANCE: {
     FILTER_BUTTON: 'governance-filter-button',

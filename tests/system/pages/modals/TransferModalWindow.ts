@@ -188,7 +188,12 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
   public async close(): Promise<BasePage> {
     await step('Close transfer modal', async () => {
       const modal = this.page.getByTestId(TEST_IDS.TRANSFER.MODAL);
-      await modal.getByTestId(TEST_IDS.CLOSE_BUTTON).click();
+      // Once a recipient is committed, the recipient "clear" icon-button reuses the same
+      // close icon as the modal header close button. Scope to the modal's own close button
+      // by excluding the recipient-clear test id to avoid a strict-mode violation.
+      await modal
+        .locator(`button[aria-label="icon button: close"]:not([data-testid="${TEST_IDS.OPERATIONS.RECIPIENT_CLEAR}"])`)
+        .click();
       await modal.waitFor({ state: 'hidden', timeout: 15000 });
     });
 

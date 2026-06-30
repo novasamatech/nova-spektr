@@ -1,5 +1,6 @@
 import { t } from 'i18next';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type SignableWalletFamily, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, Icon } from '@/shared/ui';
@@ -42,6 +43,7 @@ export const SignButton = ({ disabled, isDefault, isLoading, type, className, on
   return (
     <Button
       className={className}
+      testId={TEST_IDS.OPERATIONS.SIGN_BUTTON}
       disabled={disabled}
       isLoading={isLoading}
       prefixElement={

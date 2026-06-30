@@ -19,7 +19,7 @@ export class ConfirmationModalWindow extends BaseModal<ConfirmationModalElements
   public async confirm(): Promise<SigningModalWindow> {
     return await step('Confirm transaction', async () => {
       await this.checkForAlerts();
-      await this.page.getByRole('button', { name: ConfirmationModalElements.confirmButton }).click();
+      await this.page.getByTestId(ConfirmationModalElements.confirmButton).click();
       await this.checkForAlerts();
       return new SigningModalWindow(this.page, new SigningModalElements(), this.previousPage);
     });
