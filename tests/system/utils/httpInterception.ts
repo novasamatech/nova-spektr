@@ -33,7 +33,10 @@ export async function interceptRoute({
 export async function interceptGovernanceSubquery(page: Page, mockData: any) {
   return interceptRoute({
     page,
-    routePattern: '**/subquery-governance-polkadot-prod.novasama-tech.org/**',
+    // The governance-delegations endpoint differs per environment: the dev chains config
+    // (chains_dev.json) points Polkadot to "-stg", while production uses "-prod". Match any
+    // env suffix so the mock intercepts regardless of which chains file the suite runs with.
+    routePattern: '**/subquery-governance-polkadot-*.novasama-tech.org/**',
     mockData,
   });
 }
