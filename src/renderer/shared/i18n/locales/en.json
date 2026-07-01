@@ -2518,6 +2518,16 @@
     },
     "inProgress": "Submitting approval...",
     "logButton": "Log",
+    "notifySigners": {
+      "button": "Notify remaining signers",
+      "success": "Reminded {count} signer(s)",
+      "nobodyPending": "No signers are waiting on this yet",
+      "errorTitle": "Couldn't notify signers",
+      "errorForbidden": "You can only notify signers of operations you created or approved",
+      "errorNotAvailable": "This operation isn't available for reminders yet",
+      "errorRateLimited": "You've already sent a reminder. Next one allowed at {time}",
+      "errorRateLimitedNoTime": "You've already sent a reminder. Please try again later"
+    },
     "multisigExistsDescription": "Due to the blockchain limitations, multisig operations with identical details can't be in a signing status simultaneously. Wait for the current one to be signed or reject it to create a new one.",
     "multisigExistsTitle": "Same transaction already exist",
     "networkFee": "Network fee",
