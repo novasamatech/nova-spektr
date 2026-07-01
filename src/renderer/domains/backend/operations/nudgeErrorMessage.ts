@@ -11,7 +11,10 @@ export function nudgeErrorMessage(error: unknown, t: TFunction): string {
     if (error.status === 429) {
       const match = error.message.match(ISO_TIMESTAMP);
       if (match) {
-        return t('operation.notifySigners.errorRateLimited', { time: new Date(match[1]!).toLocaleString() });
+        const date = new Date(match[1]!);
+        if (!Number.isNaN(date.getTime())) {
+          return t('operation.notifySigners.errorRateLimited', { time: date.toLocaleString() });
+        }
       }
 
       return t('operation.notifySigners.errorRateLimitedNoTime');
