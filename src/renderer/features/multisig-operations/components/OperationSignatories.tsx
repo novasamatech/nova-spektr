@@ -32,6 +32,7 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
 
 import LogModal from './LogModal';
+import { NotifySignersButton } from './NotifySignersButton';
 
 type SignatoryAddressProps = {
   accountId: AccountId;
@@ -167,6 +168,7 @@ export const OperationSignatories = ({ operation, account }: Props) => {
           >
             {t('operation.logButton')}
           </Button>
+          <NotifySignersButton operation={operation} />
         </div>
         {!isExternalMultisig && (
           <Slot
