@@ -56,6 +56,7 @@ export const NotifySignersButton = ({ operation }: Props) => {
 
   return (
     <Button
+      className="shrink-0 whitespace-nowrap"
       pallet="secondary"
       variant="fill"
       size="sm"

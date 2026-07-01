@@ -2519,7 +2519,7 @@
     "inProgress": "Submitting approval...",
     "logButton": "Log",
     "notifySigners": {
-      "button": "Notify remaining signers",
+      "button": "Notify signers",
       "success": "Reminded {count} signer(s)",
       "successPartial": "Reminded {count} signer(s); {unreachable} couldn't be reached",
       "nobodyPending": "No signers are waiting on this yet",
