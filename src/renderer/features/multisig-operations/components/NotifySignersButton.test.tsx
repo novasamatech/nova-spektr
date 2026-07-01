@@ -131,6 +131,33 @@ describe('NotifySignersButton', () => {
     expect(testState.toastDefault).not.toHaveBeenCalled();
   });
 
+  it('shows an error toast when signers were only skipped and nobody was notified', async () => {
+    setConnected(true);
+    testState.nudge.mockResolvedValue({ notified: 0, skipped: 2, failed: 0 });
+
+    render(<NotifySignersButton operation={op('pending')} />);
+    await userEvent.click(screen.getByRole('button'));
+
+    await waitFor(() =>
+      expect(testState.toastError).toHaveBeenCalledWith('operation.notifySigners.errorTitle', {
+        description: 'operation.notifySigners.deliveryFailed',
+      }),
+    );
+    expect(testState.toastDefault).not.toHaveBeenCalled();
+  });
+
+  it('shows a partial success toast when some signers were notified and some were unreachable', async () => {
+    setConnected(true);
+    testState.nudge.mockResolvedValue({ notified: 2, skipped: 0, failed: 1 });
+
+    render(<NotifySignersButton operation={op('pending')} />);
+    await userEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => expect(testState.toastSuccess).toHaveBeenCalledWith('operation.notifySigners.successPartial'));
+    expect(testState.toastDefault).not.toHaveBeenCalled();
+    expect(testState.toastError).not.toHaveBeenCalled();
+  });
+
   it('disables the button while the nudge is in flight', async () => {
     setConnected(true);
     let resolveNudge: (v: unknown) => void;

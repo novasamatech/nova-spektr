@@ -33,9 +33,14 @@ export const NotifySignersButton = ({ operation }: Props) => {
     setIsNotifying(true);
     try {
       const result = await operationsService.nudge(baseUrl, operation.id);
+      const unreachable = result.failed + result.skipped;
       if (result.notified > 0) {
-        toast.success(t('operation.notifySigners.success', { count: result.notified }));
-      } else if (result.failed > 0) {
+        if (unreachable > 0) {
+          toast.success(t('operation.notifySigners.successPartial', { count: result.notified, unreachable }));
+        } else {
+          toast.success(t('operation.notifySigners.success', { count: result.notified }));
+        }
+      } else if (unreachable > 0) {
         toast.error(t('operation.notifySigners.errorTitle'), {
           description: t('operation.notifySigners.deliveryFailed'),
         });
