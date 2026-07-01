@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import { useI18n } from '@/shared/i18n';
 import { Button, Icon } from '@/shared/ui';
+import { Tooltip } from '@/shared/ui-kit';
 import { nudgeErrorMessage, operationsService } from '@/domains/backend';
 import { type MultisigOperation, MultisigOperationStatus } from '@/domains/network';
 import { backendConfigurationModel } from '@/aggregates/backend';
@@ -55,17 +56,22 @@ export const NotifySignersButton = ({ operation }: Props) => {
   };
 
   return (
-    <Button
-      className="shrink-0 whitespace-nowrap"
-      pallet="secondary"
-      variant="fill"
-      size="sm"
-      prefixElement={<Icon name="notification" size={16} />}
-      disabled={isNotifying}
-      isLoading={isNotifying}
-      onClick={handleNotify}
-    >
-      {t('operation.notifySigners.button')}
-    </Button>
+    <Tooltip>
+      <Tooltip.Trigger>
+        <Button
+          className="shrink-0 whitespace-nowrap"
+          pallet="secondary"
+          variant="fill"
+          size="sm"
+          prefixElement={<Icon name="notification" size={16} />}
+          disabled={isNotifying}
+          isLoading={isNotifying}
+          onClick={handleNotify}
+        >
+          {t('operation.notifySigners.button')}
+        </Button>
+      </Tooltip.Trigger>
+      <Tooltip.Content>{t('operation.notifySigners.tooltip')}</Tooltip.Content>
+    </Tooltip>
   );
 };

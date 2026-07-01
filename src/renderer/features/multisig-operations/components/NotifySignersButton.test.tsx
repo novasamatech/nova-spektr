@@ -56,6 +56,13 @@ vi.mock('@/shared/ui', () => ({
   Icon: () => null,
 }));
 
+vi.mock('@/shared/ui-kit', () => ({
+  Tooltip: Object.assign(({ children }: { children: unknown }) => children as never, {
+    Trigger: ({ children }: { children: unknown }) => children as never,
+    Content: () => null,
+  }),
+}));
+
 import { NotifySignersButton } from './NotifySignersButton';
 
 const op = (status: string) => ({ id: 'op-1', status }) as any;

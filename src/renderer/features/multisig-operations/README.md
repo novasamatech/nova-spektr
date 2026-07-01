@@ -231,13 +231,14 @@ flowchart TD
 
 ### Notify remaining signers
 
-On a **pending** operation, when the address-book backend is connected and healthy, a **Notify remaining signers**
-button lets a signatory push an Element (Matrix) reminder to the signatories whose approval is still outstanding. The
-button appears purely on _backend connected + operation pending_ — it does not depend on wallet ownership, so it can
-show on a tracked external multisig too; the backend then authorizes the specific caller. The backend owns the rules —
-it only ever reminds still-pending signers, authorizes the caller (only the operation's creator or a signatory who has
-already approved may nudge), and rate-limits repeat nudges. A signer who cannot be reached (delivery failed, or no
-Element handle on file) counts as _unreachable_. Feedback is delivered entirely through toasts:
+On a **pending** operation, when the address-book backend is connected and healthy, a **Notify signers** button
+(tooltip: _Notify signatories to sign the operation via Element_) lets a signatory push an Element (Matrix) reminder to
+the signatories whose approval is still outstanding. The button appears purely on _backend connected + operation
+pending_ — it does not depend on wallet ownership, so it can show on a tracked external multisig too; the backend then
+authorizes the specific caller. The backend owns the rules — it only ever reminds still-pending signers, authorizes the
+caller (only the operation's creator or a signatory who has already approved may nudge), and rate-limits repeat nudges.
+A signer who cannot be reached (delivery failed, or no Element handle on file) counts as _unreachable_. Feedback is
+delivered entirely through toasts:
 
 | Outcome                                                              | Toast                                                                            |
 | -------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
