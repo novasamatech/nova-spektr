@@ -77,18 +77,21 @@ The available **actions** on a row follow these rules:
 ### Notify remaining signers
 
 On a **pending** operation, when the address-book backend is connected, a **Notify remaining signers** button lets an
-authorized signatory push an Element (Matrix) reminder to the signatories whose approval is still outstanding. The
-backend owns the rules — it only ever reminds still-pending signers, authorizes the caller (only the operation's creator
-or a signatory who has already approved may nudge), and rate-limits repeat nudges. Feedback is delivered entirely through
-toasts:
+authorized signatory push an Element (Matrix) reminder to the signatories whose approval is still outstanding. The button
+appears purely on *backend connected + operation pending* — it does not depend on wallet ownership, so it can show on a
+tracked external multisig too; the backend then authorizes the specific caller. The backend owns the rules — it only ever
+reminds still-pending signers, authorizes the caller (only the operation's creator or a signatory who has already
+approved may nudge), and rate-limits repeat nudges. A signer who cannot be reached (delivery failed, or no Element handle
+on file) counts as *unreachable*. Feedback is delivered entirely through toasts:
 
 | Outcome | Toast |
 | ------- | ----- |
-| One or more signers reminded | Success — *reminded N signer(s)* |
-| Nobody is left to remind | Neutral — *nobody pending* |
-| Reminders attempted but delivery failed | Error — *delivery failed* |
+| All targeted signers reminded | Success — *reminded N signer(s)* |
+| Some reminded, some unreachable | Success — *reminded N signer(s); M couldn't be reached* |
+| Nobody was still pending | Neutral — *no signers are waiting yet* |
+| No one could be reached (every target unreachable) | Error — *couldn't reach the signers* |
 | Backend rejects the caller (not creator/approver) | Error — *forbidden* |
-| Feature not yet available on the backend | Error — *not available* |
+| Operation not yet available for reminders (backend hasn't synced it) | Error — *this operation isn't available for reminders yet* |
 | Nudged too soon after the last one | Error — *rate-limited* (includes the time the next nudge is allowed, when known) |
 
 The button hides itself entirely once the operation is no longer pending or when the backend is offline.
@@ -119,8 +122,8 @@ which the operation moves to History. Alternatively, the depositor can reject th
   so the row offers *Add call data* instead of *Approve*.
 - **Network unreachable / operation gone** — approving or rejecting surfaces a modal (network not available, connection
   timeout, account or operation not found, already signed) rather than failing silently.
-- **Nudge rejected** — authorization (403), rate-limit (429), unavailable backend (404), or delivery failure are each
-  turned into an explanatory toast; nothing is sent when no signer is still pending.
+- **Nudge rejected** — authorization (403), rate-limit (429), the operation not yet synced by the backend (404), or
+  delivery failure are each turned into an explanatory toast; nothing is sent when no signer is still pending.
 
 ## Related
 
