@@ -38,7 +38,7 @@ notes.
 
 ## Multisig
 
-- `multisig-operations`
+- [`multisig-operations`](./multisig-operations/README.md)
 - `multisig-wallet`
 - `multisig-wallet-create`
 - `flexible-change-signatories`
