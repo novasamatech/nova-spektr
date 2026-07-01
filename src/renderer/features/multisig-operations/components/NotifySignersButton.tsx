@@ -42,9 +42,12 @@ export const NotifySignersButton = ({ operation }: Props) => {
           toast.success(t('operation.notifySigners.success', { count: result.notified }));
         }
       } else if (unreachable > 0) {
-        toast.error(t('operation.notifySigners.errorTitle'), {
-          description: t('operation.notifySigners.deliveryFailed'),
-        });
+        // When every unreached signer is missing a Matrix handle, say so specifically.
+        const description =
+          result.unreachableNoMatrixId === unreachable
+            ? t('operation.notifySigners.errorNoMatrixId')
+            : t('operation.notifySigners.deliveryFailed');
+        toast.error(t('operation.notifySigners.errorTitle'), { description });
       } else {
         toast(t('operation.notifySigners.nobodyPending'));
       }

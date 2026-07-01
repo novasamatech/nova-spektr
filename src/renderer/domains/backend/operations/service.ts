@@ -15,6 +15,9 @@ const nudgeResultSchema = z.object({
   notified: z.number(),
   skipped: z.number(),
   failed: z.number(),
+  // How many of the skipped signers have no Matrix handle on file. Optional for backward
+  // compatibility with backends that predate this field.
+  unreachableNoMatrixId: z.number().optional().default(0),
 });
 
 export type NudgeResult = z.infer<typeof nudgeResultSchema>;

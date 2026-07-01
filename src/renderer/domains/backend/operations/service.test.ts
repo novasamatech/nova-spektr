@@ -18,13 +18,13 @@ describe('operationsService.nudge', () => {
       ok: true,
       status: 200,
       headers: {},
-      body: JSON.stringify({ notified: 2, skipped: 0, failed: 1 }),
+      body: JSON.stringify({ notified: 2, skipped: 3, failed: 1, unreachableNoMatrixId: 2 }),
     });
 
     const result = await operationsService.nudge('https://backend.test', 'op-1');
 
     expect(authFetchMock).toHaveBeenCalledWith('https://backend.test/operations/op-1/nudge', { method: 'POST' });
-    expect(result).toEqual({ notified: 2, skipped: 0, failed: 1 });
+    expect(result).toEqual({ notified: 2, skipped: 3, failed: 1, unreachableNoMatrixId: 2 });
   });
 
   it('throws HttpError with the status on a failed response', async () => {

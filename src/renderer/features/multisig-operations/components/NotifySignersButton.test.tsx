@@ -138,9 +138,24 @@ describe('NotifySignersButton', () => {
     expect(testState.toastDefault).not.toHaveBeenCalled();
   });
 
-  it('shows an error toast when signers were only skipped and nobody was notified', async () => {
+  it('shows the no-Matrix-id message when every unreached signer lacks a Matrix handle', async () => {
     setConnected(true);
-    testState.nudge.mockResolvedValue({ notified: 0, skipped: 2, failed: 0 });
+    testState.nudge.mockResolvedValue({ notified: 0, skipped: 2, failed: 0, unreachableNoMatrixId: 2 });
+
+    render(<NotifySignersButton operation={op('pending')} />);
+    await userEvent.click(screen.getByRole('button'));
+
+    await waitFor(() =>
+      expect(testState.toastError).toHaveBeenCalledWith('operation.notifySigners.errorTitle', {
+        description: 'operation.notifySigners.errorNoMatrixId',
+      }),
+    );
+    expect(testState.toastDefault).not.toHaveBeenCalled();
+  });
+
+  it('shows the generic delivery-failure message when only some unreached signers lack a Matrix handle', async () => {
+    setConnected(true);
+    testState.nudge.mockResolvedValue({ notified: 0, skipped: 2, failed: 0, unreachableNoMatrixId: 1 });
 
     render(<NotifySignersButton operation={op('pending')} />);
     await userEvent.click(screen.getByRole('button'));

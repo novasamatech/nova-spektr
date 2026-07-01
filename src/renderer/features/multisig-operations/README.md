@@ -245,7 +245,8 @@ delivered entirely through toasts:
 | All targeted signers reminded                                        | Success — _reminded N signer(s)_                                                 |
 | Some reminded, some unreachable                                      | Success — _reminded N signer(s); M couldn't be reached_                          |
 | Nobody was still pending                                             | Neutral — _no signers are waiting yet_                                           |
-| No one could be reached (every target unreachable)                   | Error — _couldn't reach the signers_                                             |
+| Nobody reached, all pending signers lack an Element handle           | Error — _the pending signers have no Element handle in the address book yet_     |
+| Nobody reached for other reasons (delivery failed / room not joined) | Error — _couldn't reach the signers_                                             |
 | Backend rejects the caller (not creator/approver)                    | Error — _forbidden_                                                              |
 | Operation not yet available for reminders (backend hasn't synced it) | Error — _this operation isn't available for reminders yet_                       |
 | Nudged too soon after the last one                                   | Error — _rate-limited_ (includes the time the next nudge is allowed, when known) |
