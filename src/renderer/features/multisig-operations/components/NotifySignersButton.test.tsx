@@ -91,7 +91,7 @@ describe('NotifySignersButton', () => {
     await userEvent.click(screen.getByRole('button'));
 
     expect(testState.nudge).toHaveBeenCalledWith('https://backend.test', 'op-1');
-    await waitFor(() => expect(testState.toastSuccess).toHaveBeenCalled());
+    await waitFor(() => expect(testState.toastSuccess).toHaveBeenCalledWith('operation.notifySigners.success'));
   });
 
   it('shows the neutral toast when nobody is pending', async () => {
@@ -111,6 +111,40 @@ describe('NotifySignersButton', () => {
     render(<NotifySignersButton operation={op('pending')} />);
     await userEvent.click(screen.getByRole('button'));
 
-    await waitFor(() => expect(testState.toastError).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(testState.toastError).toHaveBeenCalledWith('operation.notifySigners.errorTitle', { description: 'boom' }),
+    );
+  });
+
+  it('shows an error toast when deliveries fail and nobody was notified', async () => {
+    setConnected(true);
+    testState.nudge.mockResolvedValue({ notified: 0, skipped: 0, failed: 3 });
+
+    render(<NotifySignersButton operation={op('pending')} />);
+    await userEvent.click(screen.getByRole('button'));
+
+    await waitFor(() =>
+      expect(testState.toastError).toHaveBeenCalledWith('operation.notifySigners.errorTitle', {
+        description: 'operation.notifySigners.deliveryFailed',
+      }),
+    );
+    expect(testState.toastDefault).not.toHaveBeenCalled();
+  });
+
+  it('disables the button while the nudge is in flight', async () => {
+    setConnected(true);
+    let resolveNudge: (v: unknown) => void;
+    testState.nudge.mockReturnValue(
+      new Promise(r => {
+        resolveNudge = r;
+      }),
+    );
+
+    render(<NotifySignersButton operation={op('pending')} />);
+    await userEvent.click(screen.getByRole('button'));
+    expect(screen.getByRole('button')).toBeDisabled();
+
+    resolveNudge!({ notified: 1, skipped: 0, failed: 0 });
+    await waitFor(() => expect(screen.getByRole('button')).not.toBeDisabled());
   });
 });

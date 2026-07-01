@@ -35,6 +35,10 @@ export const NotifySignersButton = ({ operation }: Props) => {
       const result = await operationsService.nudge(baseUrl, operation.id);
       if (result.notified > 0) {
         toast.success(t('operation.notifySigners.success', { count: result.notified }));
+      } else if (result.failed > 0) {
+        toast.error(t('operation.notifySigners.errorTitle'), {
+          description: t('operation.notifySigners.deliveryFailed'),
+        });
       } else {
         toast(t('operation.notifySigners.nobodyPending'));
       }
