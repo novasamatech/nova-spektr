@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/fonts/fonts.css">
+  <link rel="stylesheet" href="_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/_ds_bundle.css">
+  <link rel="stylesheet" href="_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/styles.css">
+  <script src="_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/_ds_bundle.js"></script>
+  <script src="_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/lib/identicon.js"></script>
+  <style>
+    body { margin: 0; }
+    .nsnav:hover { background: #4545890a; }
+    .nsroom:hover { background: #4545890a; }
+    .nschip:hover { background: #45458914; }
+    .nssend:hover { filter: brightness(.94); }
+    .nsicobtn { transition: background .12s, color .12s; }
+    .nsicobtn:hover { background: #4545890f; color: #363643 !important; }
+    .nsthread { transition: background .12s, border-color .12s; }
+    .nsthread:hover { background: #4545890f; }
+    .nslink:hover { text-decoration: underline; }
+    .nsfield:focus-within { border-color: #4649f6 !important; }
+    .nsprimary { transition: filter .12s; }
+    .nsprimary:hover { filter: brightness(.95); }
+    .nssecbtn:hover { background: #4545890a; }
+    .nsglyph svg { color: #fff !important; }
+    .nsmsg:hover { background: #4545890a; }
+    .nsmsg:hover .nshovertime { opacity: 1; }
+    .nscompose:focus-within { border-color: #b9b9ef !important; }
+    @keyframes nsspin { to { transform: rotate(360deg); } }
+    .nsscrollarea::-webkit-scrollbar { width: 10px; }
+    .nsscrollarea::-webkit-scrollbar-thumb { background: #4545891f; border-radius: 8px; border: 3px solid transparent; background-clip: padding-box; }
+    .nsscrollarea::-webkit-scrollbar-thumb:hover { background: #45458933; background-clip: padding-box; }
+  </style>
+</helmet>
+<x-import component-from-global-scope="NovaSpektrUIKit.MemoryRouter" hint-size="100%,100%">
+<x-import component-from-global-scope="NovaSpektrUIKit.I18Provider" hint-size="100%,100%">
+<x-import component-from-global-scope="NovaSpektrUIKit.NotificationProvider" hint-size="100%,100%">
+<x-import component-from-global-scope="NovaSpektrUIKit.ThemeProvider" theme="light" icon-style="colored" body-as-portal-container="{{ true }}" hint-size="100%,100%">
+
+<div data-screen-label="Element Chat" style="display:flex; height:100vh; min-height:820px; background:#fafafb; font-family:Inter, system-ui, -apple-system, sans-serif; color:#363643;">
+
+  <aside style="width:{{ asideW }}; flex:0 0 {{ asideW }}; background:#fff; border-right:1px solid #4545890f; display:flex; flex-direction:column; padding:{{ asidePad }}; transition:width .16s ease, padding .16s ease;">
+    <sc-if value="{{ sidebarExpanded }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid #4545891f; border-radius:12px; cursor:pointer;">
+        <img class="nsimg" data-src="{{ walletIcon }}" width="30" height="30" style="border-radius:50%; flex:0 0 30px; background:#eee;" alt="">
+        <div style="flex:1; min-width:0;">
+          <div style="font:600 13px Inter; color:#363643; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">solocrack</div>
+          <div style="font:400 11px Inter; color:#79797d;">$371.25</div>
+        </div>
+        <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="14" hint-size="14px,14px"></x-import></span>
+      </div>
+    </sc-if>
+    <sc-if value="{{ sidebarCollapsed }}" hint-placeholder-val="{{ false }}">
+      <div title="solocrack" style="display:flex; justify-content:center; padding:4px 0 2px; cursor:pointer;">
+        <img class="nsimg" data-src="{{ walletIcon }}" width="32" height="32" style="border-radius:50%; background:#eee;" alt="">
+      </div>
+    </sc-if>
+
+    <nav style="margin-top:14px; display:flex; flex-direction:column; gap:2px;">
+      <sc-for list="{{ navTop }}" as="n" hint-placeholder-count="6">
+        <div class="nsnav" title="{{ n.label }}" style="display:flex; align-items:center; gap:12px; padding:{{ n.pad }}; border-radius:9px; cursor:pointer; background:{{ n.bg }}; justify-content:{{ n.justify }};">
+          <span style="display:inline-flex; color:{{ n.iconColor }}; position:relative;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="{{ n.icon }}" size="18" hint-size="18px,18px"></x-import></span>
+          <sc-if value="{{ n.showLabel }}" hint-placeholder-val="{{ true }}"><span style="flex:1; font-family:Inter; font-size:13px; font-weight:{{ n.weight }}; color:{{ n.color }};">{{ n.label }}</span></sc-if>
+          <sc-if value="{{ n.chevron }}" hint-placeholder-val="{{ false }}">
+            <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="14" hint-size="14px,14px"></x-import></span>
+          </sc-if>
+        </div>
+      </sc-for>
+    </nav>
+
+    <div style="flex:1;"></div>
+
+    <div style="display:flex; flex-direction:column; gap:2px; border-top:1px solid #4545890f; padding-top:8px;">
+      <sc-for list="{{ navBottom }}" as="n" hint-placeholder-count="5">
+        <div onClick="{{ n.onClick }}" class="nsnav" title="{{ n.label }}" style="display:flex; align-items:center; gap:12px; padding:{{ n.pad }}; border-radius:9px; cursor:pointer; background:{{ n.bg }}; justify-content:{{ n.justify }};">
+          <span style="display:inline-flex; color:{{ n.iconColor }}; position:relative;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="{{ n.icon }}" size="18" hint-size="18px,18px"></x-import>
+            <sc-if value="{{ n.dot }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; top:-3px; right:-4px; width:8px; height:8px; border-radius:50%; background:{{ n.dotColor }}; box-shadow:0 0 0 2px #fff;"></span></sc-if>
+          </span>
+          <sc-if value="{{ n.showLabel }}" hint-placeholder-val="{{ true }}"><span style="flex:1; font-family:Inter; font-size:13px; font-weight:{{ n.weight }}; color:{{ n.color }};">{{ n.label }}</span></sc-if>
+          <sc-if value="{{ n.showBadge }}" hint-placeholder-val="{{ false }}">
+            <span style="min-width:18px; height:18px; padding:0 6px; border-radius:9px; background:{{ n.badgeBg }}; color:{{ n.badgeColor }}; font:600 11px Inter; display:inline-flex; align-items:center; justify-content:center;">{{ n.badge }}</span>
+          </sc-if>
+        </div>
+      </sc-for>
+      <div onClick="{{ onToggleSidebar }}" class="nsnav" title="{{ collapseLabel }}" style="display:flex; align-items:center; gap:12px; padding:{{ collapsePad }}; border-radius:9px; cursor:pointer; justify-content:{{ collapseJustify }};">
+        <span style="color:#868692; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="{{ collapseIcon }}" size="18" hint-size="18px,18px"></x-import></span>
+        <sc-if value="{{ sidebarExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1; font:500 13px Inter; color:#868692;">Collapse</span></sc-if>
+      </div>
+    </div>
+  </aside>
+
+  <sc-if value="{{ notAuthed }}" hint-placeholder-val="{{ true }}">
+    <main style="flex:1; min-width:0; display:flex; align-items:center; justify-content:center; padding:32px; background:#fafafb; position:relative; overflow:auto;">
+      <div style="position:absolute; inset:0; background:radial-gradient(1100px 520px at 50% -8%, {{ accentWashSoft }}, transparent 60%); pointer-events:none;"></div>
+
+      <div style="position:relative; width:400px; max-width:100%; display:flex; flex-direction:column; align-items:stretch;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:14px; margin-bottom:26px;">
+          <div style="width:56px; height:56px; border-radius:16px; background:{{ accent }}; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 22px {{ accentWash }};">
+            <span class="nsglyph" style="display:inline-flex; color:#fff;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="chat" size="26" hint-size="26px,26px"></x-import></span>
+          </div>
+          <div style="text-align:center;">
+            <div style="font:700 20px Inter; letter-spacing:-.01em; color:#363643;">Sign in to Element</div>
+            <div style="font:400 13px Inter; color:#79797d; margin-top:5px;">Connect your Matrix account to chat inside Nova&nbsp;Spektr.</div>
+          </div>
+        </div>
+
+        <div style="background:#fff; border:1px solid #4545891f; border-radius:16px; box-shadow:0 4px 24px rgba(54,54,67,.05); padding:22px;">
+          <div style="font:600 11px Inter; letter-spacing:.05em; text-transform:uppercase; color:#a4a4ad; margin-bottom:7px;">Homeserver</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; height:44px; padding:0 12px 0 14px; background:#4545890a; border:1px solid #4545891f; border-radius:11px; margin-bottom:18px;">
+            <div style="display:flex; align-items:center; gap:9px; min-width:0;">
+              <span style="color:#79797d; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="globe" size="16" hint-size="16px,16px"></x-import></span>
+              <span style="font:500 14px Inter; color:#363643;">{{ homeserver }}</span>
+            </div>
+            <span class="nslink" style="font:600 13px Inter; color:{{ accent }}; cursor:pointer;">Edit</span>
+          </div>
+
+          <div style="font:600 11px Inter; letter-spacing:.05em; text-transform:uppercase; color:#a4a4ad; margin-bottom:7px;">Username</div>
+          <div class="nsfield" style="display:flex; align-items:center; gap:2px; height:44px; padding:0 12px; background:#fff; border:1px solid #4545891f; border-radius:11px; margin-bottom:16px; transition:border-color .12s;">
+            <span style="font:500 14px Inter; color:#a4a4ad;">@</span>
+            <input value="{{ username }}" onChange="{{ onUsername }}" placeholder="username" style="flex:1; min-width:0; border:0; outline:0; background:transparent; font:500 14px Inter; color:#363643;">
+            <span style="font:500 14px Inter; color:#a4a4ad; white-space:nowrap;">:{{ homeserver }}</span>
+          </div>
+
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;">
+            <span style="font:600 11px Inter; letter-spacing:.05em; text-transform:uppercase; color:#a4a4ad;">Password</span>
+            <span class="nslink" style="font:500 12px Inter; color:{{ accent }}; cursor:pointer;">Forgot?</span>
+          </div>
+          <div class="nsfield" style="display:flex; align-items:center; gap:8px; height:44px; padding:0 12px; background:#fff; border:1px solid #4545891f; border-radius:11px; margin-bottom:20px; transition:border-color .12s;">
+            <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="lock" size="16" hint-size="16px,16px"></x-import></span>
+            <input type="password" value="{{ password }}" onChange="{{ onPassword }}" placeholder="Enter your password" style="flex:1; min-width:0; border:0; outline:0; background:transparent; font:500 14px Inter; color:#363643; letter-spacing:.12em;">
+          </div>
+
+          <div onClick="{{ onSignIn }}" class="nsprimary" style="height:46px; border-radius:12px; background:{{ accent }}; color:#fff; font:600 14px Inter; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; box-shadow:0 6px 16px {{ accentWash }};">
+            <span style="display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="checkmarkOutline" size="16" hint-size="16px,16px"></x-import></span>
+            Sign in
+          </div>
+
+          <div style="display:flex; align-items:center; gap:12px; margin:18px 0;">
+            <div style="flex:1; height:1px; background:#4545891f;"></div>
+            <span style="font:500 11px Inter; color:#a4a4ad;">OR</span>
+            <div style="flex:1; height:1px; background:#4545891f;"></div>
+          </div>
+
+          <div class="nssecbtn" style="height:44px; border-radius:12px; border:1px solid #4545891f; color:#363643; font:600 13px Inter; display:flex; align-items:center; justify-content:center; gap:9px; cursor:pointer; transition:background .12s;">
+            <span style="color:#79797d; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="switch" size="16" hint-size="16px,16px"></x-import></span>
+            Sign in with QR code
+          </div>
+        </div>
+
+        <div style="text-align:center; font:400 13px Inter; color:#79797d; margin-top:18px;">New to Matrix? <span class="nslink" style="color:{{ accent }}; font-weight:600; cursor:pointer;">Create account</span></div>
+      </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ authed }}" hint-placeholder-val="{{ false }}">
+    <main style="flex:1; min-width:0; display:flex; overflow:hidden;">
+
+      <div style="width:312px; flex:0 0 312px; background:#fff; border-right:1px solid #4545890f; display:flex; flex-direction:column; overflow:hidden;">
+        <div style="display:flex; align-items:center; gap:10px; padding:16px 16px 12px;">
+          <div style="flex:1; font:700 19px Inter; letter-spacing:-.01em; color:#363643;">Chat</div>
+          <span class="nsicobtn" style="width:32px; height:32px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; color:#79797d; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="magic" size="16" hint-size="16px,16px"></x-import></span>
+          <span class="nsicobtn" style="width:32px; height:32px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; color:#79797d; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="add" size="17" hint-size="17px,17px"></x-import></span>
+        </div>
+
+        <div style="padding:0 16px 12px;">
+          <div style="display:flex; align-items:center; gap:8px; height:38px; padding:0 12px; background:#4545890a; border:1px solid #4545891f; border-radius:11px;">
+            <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="search" size="16" hint-size="16px,16px"></x-import></span>
+            <input value="{{ roomSearch }}" onChange="{{ onRoomSearch }}" placeholder="Search rooms" style="flex:1; min-width:0; border:0; outline:0; background:transparent; font:400 13px Inter; color:#363643;">
+            <span style="font:500 11px Inter; color:#c3c3cb; border:1px solid #4545891f; border-radius:5px; padding:1px 5px;">⌘K</span>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:7px; padding:0 16px 12px;">
+          <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3">
+            <div onClick="{{ f.onClick }}" class="nschip" style="padding:5px 13px; border-radius:16px; background:{{ f.bg }}; border:1px solid {{ f.border }}; font:600 12px Inter; color:{{ f.color }}; cursor:pointer;">{{ f.label }}</div>
+          </sc-for>
+        </div>
+
+        <div class="nsscrollarea" style="flex:1; overflow-y:auto; padding:0 8px 12px;">
+          <sc-for list="{{ rooms }}" as="r" hint-placeholder-count="9">
+            <div onClick="{{ r.onClick }}" class="nsroom" style="display:flex; align-items:center; gap:11px; padding:9px 8px; border-radius:11px; cursor:pointer; background:{{ r.bg }}; position:relative;">
+              <sc-if value="{{ r.active }}" hint-placeholder-val="{{ false }}">
+                <span style="position:absolute; left:-8px; top:50%; transform:translateY(-50%); width:3px; height:22px; border-radius:0 3px 3px 0; background:{{ accent }};"></span>
+              </sc-if>
+              <div style="position:relative; flex:0 0 38px;">
+                <div style="width:38px; height:38px; border-radius:50%; background:{{ r.avatarBg }}; display:flex; align-items:center; justify-content:center; font:600 15px Inter; color:{{ r.avatarColor }}; overflow:hidden;">
+                  <sc-if value="{{ r.hasImg }}" hint-placeholder-val="{{ false }}">
+                    <img class="nsimg" data-src="{{ r.img }}" width="38" height="38" style="border-radius:50%;" alt="">
+                  </sc-if>
+                  <sc-if value="{{ r.noImg }}" hint-placeholder-val="{{ true }}">
+                    <span>{{ r.initial }}</span>
+                  </sc-if>
+                </div>
+                <sc-if value="{{ r.net }}" hint-placeholder-val="{{ false }}">
+                  <span style="position:absolute; right:-2px; bottom:-2px; width:16px; height:16px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 2px #fff;"><span style="color:#4649f6; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="globe" size="12" hint-size="12px,12px"></x-import></span></span>
+                </sc-if>
+              </div>
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="flex:1; min-width:0; font:{{ r.nameWeight }} 14px Inter; color:{{ r.nameColor }}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.name }}</span>
+                  <span style="font:400 11px Inter; color:#c3c3cb; flex:0 0 auto;">{{ r.time }}</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
+                  <span style="flex:1; min-width:0; font:400 12px Inter; color:{{ r.previewColor }}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.preview }}</span>
+                  <sc-if value="{{ r.unreadBadge }}" hint-placeholder-val="{{ false }}">
+                    <span style="min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:{{ r.unreadBg }}; color:#fff; font:600 11px Inter; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto;">{{ r.unreadBadge }}</span>
+                  </sc-if>
+                  <sc-if value="{{ r.unreadDot }}" hint-placeholder-val="{{ false }}">
+                    <span style="width:8px; height:8px; border-radius:50%; background:#a4a4ad; flex:0 0 8px;"></span>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <sc-if value="{{ hasRoom }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; background:#fff; overflow:hidden; position:relative;">
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid #4545890f;">
+            <div style="width:36px; height:36px; border-radius:50%; background:{{ room.avatarBg }}; display:flex; align-items:center; justify-content:center; font:600 14px Inter; color:{{ room.avatarColor }}; flex:0 0 36px;">{{ room.initial }}</div>
+            <div style="flex:1; min-width:0;">
+              <div style="display:flex; align-items:center; gap:7px;">
+                <span style="font:600 15px Inter; color:#363643; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ room.name }}</span>
+                <span style="color:#c3c3cb; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="history" size="14" hint-size="14px,14px"></x-import></span>
+              </div>
+              <div style="font:400 12px Inter; color:#a4a4ad; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ room.topic }}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:2px;">
+              <span onClick="{{ onOpenThreadList }}" class="nsicobtn" title="Threads" style="width:34px; height:34px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; color:{{ threadsIconColor }}; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="chat" size="17" hint-size="17px,17px"></x-import></span>
+              <span class="nsicobtn" title="Room info" style="width:34px; height:34px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; color:#79797d; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="info" size="17" hint-size="17px,17px"></x-import></span>
+              <div onClick="{{ onToggleParticipants }}" class="nschip" title="View participants" style="display:flex; align-items:center; gap:6px; margin-left:6px; padding:4px 8px 4px 6px; border-radius:16px; background:{{ participantsChipBg }}; cursor:pointer;">
+                <div style="display:flex;">
+                  <sc-for list="{{ room.members }}" as="m" hint-placeholder-count="3">
+                    <span style="width:22px; height:22px; border-radius:50%; background:{{ m.bg }}; color:{{ m.color }}; font:600 10px Inter; display:inline-flex; align-items:center; justify-content:center; margin-left:-6px; box-shadow:0 0 0 2px #fff;">{{ m.initial }}</span>
+                  </sc-for>
+                </div>
+                <span style="font:600 12px Inter; color:#79797d;">{{ room.memberCount }}</span>
+                <span style="color:#a4a4ad; display:inline-flex; transition:transform .15s; transform:rotate({{ participantsChevron }}deg);"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="13" hint-size="13px,13px"></x-import></span>
+              </div>
+            </div>
+          </div>
+
+          <sc-if value="{{ participantsOpen }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ onCloseParticipants }}" style="position:absolute; inset:0; z-index:40;"></div>
+            <div style="position:absolute; top:58px; right:14px; z-index:41; width:308px; max-height:440px; display:flex; flex-direction:column; background:#fff; border:1px solid #4545891f; border-radius:14px; box-shadow:0 16px 40px rgba(54,54,67,.18); overflow:hidden;">
+              <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px;">
+                <span style="font:600 14px Inter; color:#363643;">Participants</span>
+                <span style="min-width:20px; height:20px; padding:0 7px; border-radius:10px; background:#4545890f; color:#79797d; font:600 11px Inter; display:inline-flex; align-items:center; justify-content:center;">{{ room.memberCount }}</span>
+              </div>
+              <div class="nsscrollarea" style="flex:1; overflow-y:auto; padding:2px 8px 8px;">
+                <sc-for list="{{ participants }}" as="p" hint-placeholder-count="5">
+                  <div class="nsroom" style="display:flex; align-items:center; gap:11px; padding:8px; border-radius:10px; cursor:pointer;">
+                    <div style="position:relative; flex:0 0 34px;">
+                      <div style="width:34px; height:34px; border-radius:50%; background:{{ p.bg }}; color:{{ p.color }}; font:600 13px Inter; display:flex; align-items:center; justify-content:center;">{{ p.initial }}</div>
+                      <sc-if value="{{ p.online }}" hint-placeholder-val="{{ false }}">
+                        <span style="position:absolute; right:-1px; bottom:-1px; width:11px; height:11px; border-radius:50%; background:#01a63e; box-shadow:0 0 0 2px #fff;"></span>
+                      </sc-if>
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                      <div style="font:500 13px Inter; color:#363643; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ p.name }}</div>
+                      <div style="font:400 11px Inter; color:{{ p.statusColor }};">{{ p.status }}</div>
+                    </div>
+                    <sc-if value="{{ p.showRole }}" hint-placeholder-val="{{ false }}">
+                      <span style="font:600 10px Inter; letter-spacing:.03em; color:{{ p.roleColor }}; background:{{ p.roleBg }}; border-radius:12px; padding:2px 8px; flex:0 0 auto;">{{ p.role }}</span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+              <div onClick="{{ onInvite }}" class="nssecbtn" style="display:flex; align-items:center; justify-content:center; gap:8px; margin:0 12px 12px; height:38px; border:1px solid #4545891f; border-radius:10px; color:{{ accent }}; font:600 13px Inter; cursor:pointer;">
+                <span style="display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="add" size="15" hint-size="15px,15px"></x-import></span>
+                Invite people
+              </div>
+            </div>
+          </sc-if>
+
+          <div class="nsscrollarea" style="flex:1; overflow-y:auto; padding:14px 0 8px;">
+            <div style="max-width:940px; margin:0 auto; padding:0 28px;">
+              <sc-for list="{{ timeline }}" as="it" hint-placeholder-count="4">
+
+                <sc-if value="{{ it.isDivider }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; align-items:center; gap:14px; padding:14px 0 6px;">
+                    <div style="flex:1; height:1px; background:#4545891f;"></div>
+                    <span style="font:600 12px Inter; color:#a4a4ad;">{{ it.label }}</span>
+                    <div style="flex:1; height:1px; background:#4545891f;"></div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ it.isEvent }}" hint-placeholder-val="{{ false }}">
+                  <div class="nsmsg" style="display:flex; align-items:center; gap:12px; padding:5px 12px; border-radius:8px; margin:1px 0;">
+                    <span style="width:52px; flex:0 0 52px; text-align:right; font:400 11px Inter; color:#c3c3cb;">{{ it.time }}</span>
+                    <span style="width:22px; height:22px; border-radius:50%; background:{{ it.avatarBg }}; color:{{ it.avatarColor }}; font:600 10px Inter; display:inline-flex; align-items:center; justify-content:center; flex:0 0 22px;">{{ it.initial }}</span>
+                    <span style="font:400 13px Inter; color:#a4a4ad;">{{ it.text }}</span>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ it.isGroup }}" hint-placeholder-val="{{ true }}">
+                  <div class="nsmsg" style="display:flex; gap:14px; padding:{{ msgPadY }} 12px; border-radius:8px; margin:2px 0;">
+                    <div style="width:40px; height:40px; border-radius:50%; background:{{ it.avatarBg }}; color:{{ it.avatarColor }}; font:600 16px Inter; display:flex; align-items:center; justify-content:center; flex:0 0 40px;">{{ it.initial }}</div>
+                    <div style="flex:1; min-width:0;">
+                      <div style="display:flex; align-items:baseline; gap:9px;">
+                        <span style="font:600 14px Inter; color:{{ it.nameColor }};">{{ it.name }}</span>
+                        <span style="font:400 11px Inter; color:#c3c3cb;">{{ it.time }}</span>
+                      </div>
+                      <div style="margin-top:3px; display:flex; flex-direction:column; gap:7px;">
+                        <sc-for list="{{ it.blocks }}" as="b" hint-placeholder-count="2">
+                          <sc-if value="{{ b.isText }}" hint-placeholder-val="{{ true }}">
+                            <div style="font:400 14px/1.55 Inter; color:#363643;">{{ b.text }}</div>
+                          </sc-if>
+                          <sc-if value="{{ b.isBullets }}" hint-placeholder-val="{{ false }}">
+                            <div style="display:flex; flex-direction:column; gap:5px; padding-left:2px;">
+                              <sc-for list="{{ b.items }}" as="li" hint-placeholder-count="3">
+                                <div style="display:flex; gap:10px; font:400 14px/1.5 Inter; color:#363643;">
+                                  <span style="color:#c3c3cb; flex:0 0 auto;">•</span>
+                                  <span style="flex:1;">{{ li }}</span>
+                                </div>
+                              </sc-for>
+                            </div>
+                          </sc-if>
+                          <sc-if value="{{ b.isMention }}" hint-placeholder-val="{{ false }}">
+                            <div style="font:400 14px/1.55 Inter; color:#363643;">
+                              <span style="display:inline-flex; align-items:center; gap:5px; padding:1px 9px 1px 3px; border-radius:20px; background:#2b2b36; color:#fff; vertical-align:baseline;">
+                                <span style="width:17px; height:17px; border-radius:50%; background:{{ b.pillBg }}; color:{{ b.pillColor }}; font:600 9px Inter; display:inline-flex; align-items:center; justify-content:center;">{{ b.pillInitial }}</span>
+                                <span style="font:600 12px Inter;">{{ b.pill }}</span>
+                              </span>
+                              <span>&nbsp;{{ b.text }}</span>
+                            </div>
+                          </sc-if>
+                          <sc-if value="{{ b.isCode }}" hint-placeholder-val="{{ false }}">
+                            <div style="font:400 12.5px/1.5 'SF Mono',ui-monospace,monospace; color:#c4356b; background:#f521630f; border:1px solid #f5216322; border-radius:8px; padding:9px 12px; white-space:pre-wrap; word-break:break-word;">{{ b.text }}</div>
+                          </sc-if>
+                          <sc-if value="{{ b.isLink }}" hint-placeholder-val="{{ false }}">
+                            <div style="font:400 14px/1.55 Inter; color:#363643;">{{ b.text }} <span class="nslink" style="color:{{ accent }}; cursor:pointer;">{{ b.linkText }}</span></div>
+                          </sc-if>
+                          <sc-if value="{{ b.isImageError }}" hint-placeholder-val="{{ false }}">
+                            <div style="display:inline-flex; align-items:center; gap:8px; font:400 13px Inter; color:#f52163; background:#f521630a; border:1px dashed #f5216333; border-radius:8px; padding:8px 12px; align-self:flex-start;">
+                              <span style="display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="warnCutout" size="15" hint-size="15px,15px"></x-import></span>
+                              Error downloading image
+                            </div>
+                          </sc-if>
+                          <sc-if value="{{ b.isThread }}" hint-placeholder-val="{{ false }}">
+                            <div onClick="{{ b.onClick }}" class="nsthread" style="display:flex; align-items:center; gap:10px; align-self:flex-start; max-width:520px; margin-top:2px; padding:8px 12px 8px 10px; border:1px solid #4545891f; border-radius:12px; cursor:pointer;">
+                              <span style="color:{{ accent }}; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="chat" size="16" hint-size="16px,16px"></x-import></span>
+                              <span style="font:600 12px Inter; color:{{ accent }};">{{ b.count }} replies</span>
+                              <span style="width:20px; height:20px; border-radius:50%; background:{{ b.lastBg }}; color:{{ b.lastColor }}; font:600 9px Inter; display:inline-flex; align-items:center; justify-content:center; flex:0 0 20px;">{{ b.lastInitial }}</span>
+                              <span style="min-width:0; font:400 12px Inter; color:#79797d; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><span style="font-weight:600; color:#363643;">{{ b.lastName }}</span> {{ b.preview }}</span>
+                            </div>
+                          </sc-if>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </div>
+                </sc-if>
+
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="padding:6px 28px 20px;">
+            <div style="max-width:940px; margin:0 auto;">
+              <div class="nscompose" style="display:flex; align-items:flex-end; gap:8px; padding:8px 10px 8px 14px; background:#fff; border:1px solid #4545891f; border-radius:14px; transition:border-color .12s; box-shadow:0 2px 10px rgba(54,54,67,.04);">
+                <span class="nsicobtn" style="width:32px; height:32px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; color:#a4a4ad; cursor:pointer; flex:0 0 32px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="10" r="1.1" fill="currentColor"/><circle cx="15" cy="10" r="1.1" fill="currentColor"/><path d="M8.5 14.5C9.3 15.6 10.5 16.2 12 16.2C13.5 16.2 14.7 15.6 15.5 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+                <textarea value="{{ composer }}" onChange="{{ onComposer }}" onKeyDown="{{ onComposerKey }}" placeholder="Send a message…" rows="1" style="flex:1; min-width:0; resize:none; border:0; outline:0; background:transparent; font:400 14px/1.5 Inter; color:#363643; padding:6px 0; max-height:120px;"></textarea>
+                <span class="nsicobtn" style="width:32px; height:32px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; color:#a4a4ad; cursor:pointer; flex:0 0 32px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 12l6-6a3.5 3.5 0 015 5l-8 8a5 5 0 01-7-7l8-8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <div onClick="{{ onSend }}" class="nssend" style="width:36px; height:36px; border-radius:10px; background:{{ sendBg }}; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 36px; transition:filter .12s;">
+                  <span class="nsglyph" style="display:inline-flex; color:#fff;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="sendArrow" size="16" hint-size="16px,16px"></x-import></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ noRoom }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:#fafafb; padding:40px;">
+          <div style="width:80px; height:80px; border-radius:24px; background:#fff; border:1px solid #4545891f; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 26px rgba(54,54,67,.06);">
+            <span style="color:{{ accent }}; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="chat" size="34" hint-size="34px,34px"></x-import></span>
+          </div>
+          <div style="text-align:center; max-width:340px;">
+            <div style="font:700 18px Inter; color:#363643;">Pick a conversation</div>
+            <div style="font:400 13px Inter; color:#79797d; margin-top:6px; line-height:1.5;">Select a room from the list to start reading and sending messages. Your chats stay end-to-end encrypted.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ threadOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="width:400px; flex:0 0 400px; background:#fff; border-left:1px solid #4545890f; display:flex; flex-direction:column; overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:10px; padding:13px 16px; border-bottom:1px solid #4545890f;">
+            <span style="color:{{ accent }}; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="chat" size="17" hint-size="17px,17px"></x-import></span>
+            <div style="flex:1;">
+              <div style="font:600 14px Inter; color:#363643;">Thread</div>
+              <div style="font:400 11px Inter; color:#a4a4ad;">{{ thread.roomName }}</div>
+            </div>
+            <span onClick="{{ onCloseThread }}" class="nsicobtn" style="width:30px; height:30px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; color:#a4a4ad; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="close" size="16" hint-size="16px,16px"></x-import></span>
+          </div>
+
+          <div class="nsscrollarea" style="flex:1; overflow-y:auto; padding:14px 16px;">
+            <div style="display:flex; gap:12px; padding-bottom:12px; border-bottom:1px solid #4545890f;">
+              <div style="width:34px; height:34px; border-radius:50%; background:{{ thread.rootBg }}; color:{{ thread.rootColor }}; font:600 14px Inter; display:flex; align-items:center; justify-content:center; flex:0 0 34px;">{{ thread.rootInitial }}</div>
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:baseline; gap:8px;">
+                  <span style="font:600 13px Inter; color:{{ thread.rootNameColor }};">{{ thread.rootName }}</span>
+                  <span style="font:400 11px Inter; color:#c3c3cb;">{{ thread.rootTime }}</span>
+                </div>
+                <div style="font:400 13px/1.5 Inter; color:#363643; margin-top:3px;">{{ thread.rootText }}</div>
+              </div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:12px; padding:12px 0 6px;">
+              <span style="font:600 11px Inter; color:#a4a4ad;">{{ thread.replyCount }} replies</span>
+              <div style="flex:1; height:1px; background:#4545891f;"></div>
+            </div>
+
+            <sc-for list="{{ thread.replies }}" as="rp" hint-placeholder-count="3">
+              <div class="nsmsg" style="display:flex; gap:12px; padding:7px 6px; border-radius:8px; margin:1px -6px;">
+                <div style="width:32px; height:32px; border-radius:50%; background:{{ rp.bg }}; color:{{ rp.color }}; font:600 13px Inter; display:flex; align-items:center; justify-content:center; flex:0 0 32px;">{{ rp.initial }}</div>
+                <div style="flex:1; min-width:0;">
+                  <div style="display:flex; align-items:baseline; gap:8px;">
+                    <span style="font:600 13px Inter; color:{{ rp.nameColor }};">{{ rp.name }}</span>
+                    <span style="font:400 11px Inter; color:#c3c3cb;">{{ rp.time }}</span>
+                  </div>
+                  <div style="font:400 13px/1.5 Inter; color:#363643; margin-top:2px;">{{ rp.text }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="padding:10px 16px 16px;">
+            <div class="nscompose" style="display:flex; align-items:center; gap:8px; padding:6px 8px 6px 12px; background:#fff; border:1px solid #4545891f; border-radius:12px; transition:border-color .12s;">
+              <input value="{{ threadComposer }}" onChange="{{ onThreadComposer }}" onKeyDown="{{ onThreadKey }}" placeholder="Reply in thread…" style="flex:1; min-width:0; border:0; outline:0; background:transparent; font:400 13px Inter; color:#363643; padding:6px 0;">
+              <div onClick="{{ onSendThread }}" class="nssend" style="width:32px; height:32px; border-radius:9px; background:{{ accent }}; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 32px;">
+                <span class="nsglyph" style="display:inline-flex; color:#fff;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="sendArrow" size="14" hint-size="14px,14px"></x-import></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </main>
+  </sc-if>
+
+</div>
+
+</x-import>
+</x-import>
+</x-import>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;signedIn&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Chat&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#4649f6&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#4649f6&quot;,&quot;#0dbd8b&quot;,&quot;#8b5cf6&quot;],&quot;section&quot;:&quot;Chat&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;comfortable&quot;,&quot;options&quot;:[&quot;comfortable&quot;,&quot;compact&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Chat&quot;}}">
+class Component extends DCLogic {
+  A = '_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/assets';
+
+  state = {
+    authed: null,
+    homeserver: 'matrix.org',
+    username: 'solocrack',
+    password: 'hunter2hunter',
+    roomSearch: '',
+    filter: 'all',
+    activeRoom: null,
+    sidebarCollapsed: false,
+    composer: '',
+    threadId: null,
+    participantsOpen: false,
+    threadComposer: '',
+    extraMsgs: {},
+    threadExtra: {}
+  };
+
+  componentDidMount() { this.syncImgs(); this.waitIcon(); }
+  componentDidUpdate() { this.syncImgs(); }
+  waitIcon() {
+    if (typeof window !== 'undefined' && window.nsPolkadotIcon) { this.forceUpdate(); return; }
+    if (this._t === undefined) this._t = 0;
+    if (this._t++ < 80) setTimeout(() => this.waitIcon(), 50);
+  }
+  syncImgs() {
+    document.querySelectorAll('img.nsimg').forEach(im => {
+      const d = im.getAttribute('data-src');
+      if (d && d.indexOf('{{') < 0 && im.getAttribute('src') !== d) im.setAttribute('src', d);
+    });
+  }
+  hash(s) { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h; }
+  idicon(seed) { return (typeof window !== 'undefined' && window.nsPolkadotIcon) ? window.nsPolkadotIcon(seed, 64) : ''; }
+  addr(seed, prefix) { return (typeof window !== 'undefined' && window.nsAddress) ? window.nsAddress(seed, prefix) : seed; }
+
+  isAuthed() { const s = this.state.authed; return s === null ? !!this.props.signedIn : s; }
+
+  signIn() { this.setState({ authed: true }); }
+  onUsername(e) { this.setState({ username: e && e.target ? e.target.value : '' }); }
+  onPassword(e) { this.setState({ password: e && e.target ? e.target.value : '' }); }
+  onRoomSearch(e) { this.setState({ roomSearch: e && e.target ? e.target.value : '' }); }
+  setFilter(f) { this.setState({ filter: f }); }
+  selectRoom(id) { this.setState({ activeRoom: id, threadId: null, participantsOpen: false }); }
+  toggleSidebar() { this.setState(s => ({ sidebarCollapsed: !s.sidebarCollapsed })); }
+  toggleParticipants() { this.setState(s => ({ participantsOpen: !s.participantsOpen })); }
+  closeParticipants() { this.setState({ participantsOpen: false }); }
+  onComposer(e) { this.setState({ composer: e && e.target ? e.target.value : '' }); }
+  onComposerKey(e) { if (e && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(); } }
+  send() {
+    const txt = (this.state.composer || '').trim();
+    if (!txt) return;
+    const rid = this.activeId();
+    this.setState(s => {
+      const cur = (s.extraMsgs[rid] || []).slice();
+      cur.push({ text: txt, time: this.nowTime() });
+      return { extraMsgs: { ...s.extraMsgs, [rid]: cur }, composer: '' };
+    });
+  }
+  openThread(id) { this.setState({ threadId: id }); }
+  closeThread() { this.setState({ threadId: null }); }
+  onThreadComposer(e) { this.setState({ threadComposer: e && e.target ? e.target.value : '' }); }
+  onThreadKey(e) { if (e && e.key === 'Enter') { e.preventDefault(); this.sendThread(); } }
+  sendThread() {
+    const txt = (this.state.threadComposer || '').trim();
+    if (!txt) return;
+    const tid = this.state.threadId;
+    this.setState(s => {
+      const cur = (s.threadExtra[tid] || []).slice();
+      cur.push({ name: 'You', initial: 'Y', text: txt, time: this.nowTime() });
+      return { threadExtra: { ...s.threadExtra, [tid]: cur }, threadComposer: '' };
+    });
+  }
+  nowTime() { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+
+  accent() { return this.props.accent || '#4649f6'; }
+  hex2rgba(hex, a) {
+    const h = (hex || '#4649f6').replace('#', '');
+    const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
+    return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+  }
+
+  // avatar color pairs keyed by seed
+  avPair(seed) {
+    const pairs = [
+      ['#ede9fe', '#7c3aed'], ['#fde8ef', '#db2777'], ['#e0f2fe', '#0284c7'],
+      ['#dcfce7', '#16a34a'], ['#fef3c7', '#d97706'], ['#e0e7ff', '#4649f6'],
+      ['#ffe4e6', '#e11d48'], ['#ccfbf1', '#0d9488'], ['#f3e8ff', '#9333ea']
+    ];
+    return pairs[this.hash(seed) % pairs.length];
+  }
+
+  rng(seed) { let s = (seed >>> 0) || 1; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
+  data() { if (!this._data) this._data = this.genData(); return this._data; }
+  activeId() { return this.state.activeRoom || ((this.data().rooms[0] || {}).id); }
+  roomData() { return this.data().rooms; }
+
+  genData() {
+    const rnd = this.rng(20260701);
+    const pick = (a) => a[Math.floor(rnd() * a.length)];
+    const chance = (p) => rnd() < p;
+    const ri = (n) => Math.floor(rnd() * n);
+
+    const first = ['Mia', 'Leo', 'Noah', 'Ava', 'Ivan', 'Sara', 'Nina', 'Omar', 'Lena', 'Kai', 'Ruby', 'Theo', 'Yuki', 'Dana', 'Milo', 'Freya', 'Arlo', 'Zoe', 'Hugo', 'Nora'];
+    const last = ['Vance', 'Orlova', 'Bright', 'Mercer', 'Fischer', 'Adeyemi', 'Sato', 'Novak', 'Reyes', 'Holt', 'Bauer', 'Costa', 'Okoro', 'Marsh', 'Lindqvist'];
+    const people = []; const usedN = {};
+    while (people.length < 16) { const n = pick(first) + ' ' + pick(last); if (usedN[n]) continue; usedN[n] = 1; people.push({ name: n, seed: n.toLowerCase().replace(/[^a-z]/g, '') }); }
+    const person = () => people[ri(people.length)];
+
+    const roomNames = ['Weekly Sync', 'Design Guild', 'Release Crew', 'Watercooler', 'Ops Room', 'Product Chat', 'Frontend Guild', 'Random', 'Announcements', 'Support Desk', 'QA Channel', 'Infra Team', 'Coffee Break', 'Standup Notes', 'General', 'Marketing', 'Research Lab'];
+    const shortMsgs = ['Just pushed the latest changes, can someone review?', 'Sounds good to me 👍', 'Let\u2019s pick this up after standup.', 'Anyone free for a quick call?', 'Updated the doc with the new numbers.', 'Thanks, that clears it up!', 'I\u2019ll take a look this afternoon.', 'Merged — deploying now.', 'Nice work on this one 🎉', 'Can we move the meeting to 3pm?', 'Draft is ready for feedback whenever.', 'Great catch, fixing it now.', 'Working from home today, ping me here.', 'Added you to the review.', 'Let me double-check and get back to you.', 'Shipped it, closing the ticket.', 'Where did we land on the naming?', 'Agreed, let\u2019s go with option B.'];
+    const intros = ['Quick update from my side:', 'Notes from today:', 'Heads up, a couple things:', 'Summary of the changes:'];
+    const bulletSets = [
+      ['Cleaned up the onboarding flow', 'Fixed the timezone bug on the dashboard', 'Bumped a few dependencies'],
+      ['Two blockers to sort before Friday', 'Owner assigned to each item', 'Follow-up scheduled for Monday'],
+      ['Copy reviewed and approved', 'Icons exported at 2x', 'Handoff doc updated']
+    ];
+    const roomTimes = ['09:12', '10:04', '08:40', '14:22', '16:05', 'Mon', 'Tue', 'Yesterday', 'Fri', 'Wed', '28 Jun'];
+
+    const rooms = []; const timelines = {}; const threads = {}; const roomThreads = {};
+    const usedR = {};
+    const N = 10;
+    for (let i = 0; i < N; i++) {
+      let rn; do { rn = pick(roomNames); } while (usedR[rn]); usedR[rn] = 1;
+      const id = 'r' + i;
+      const mc = 3 + ri(18);
+      const dm = mc <= 4;
+      const unread = chance(0.35) ? (1 + ri(9)) : 0;
+      const dot = !unread && chance(0.25);
+      const net = !dm && chance(0.4);
+
+      const senders = []; const sc = 3 + ri(2);
+      for (let k = 0; k < sc; k++) senders.push(person());
+      const tl = []; const myThreads = []; let lastText = '';
+      const groupN = 2 + ri(3);
+      for (let g = 0; g < groupN; g++) {
+        const sender = senders[ri(senders.length)];
+        const blocks = [];
+        if (chance(0.26)) {
+          const bs = pick(bulletSets);
+          blocks.push({ kind: 'text', text: pick(intros) });
+          blocks.push({ kind: 'bullets', items: bs });
+          lastText = bs[0];
+        } else {
+          const t = pick(shortMsgs); blocks.push({ kind: 'text', text: t }); lastText = t;
+          if (chance(0.3)) { const t2 = pick(shortMsgs); blocks.push({ kind: 'text', text: t2 }); lastText = t2; }
+        }
+        if (chance(0.3)) {
+          const tid = 't' + i + '_' + g;
+          const rc = 2 + ri(6);
+          const lp = person();
+          blocks.push({ kind: 'thread', id: tid, count: rc, lastSeed: lp.seed, lastName: lp.name, preview: pick(shortMsgs) });
+          myThreads.push(tid);
+          const replies = [];
+          for (let z = 0; z < rc; z++) { const rp = person(); replies.push({ seed: rp.seed, name: rp.name, time: '09:' + String(10 + z).padStart(2, '0'), text: pick(shortMsgs) }); }
+          threads[tid] = { roomName: rn, rootSeed: sender.seed, rootName: sender.name, rootTime: '09:1' + g, rootText: (blocks.find(b => b.kind === 'text') || {}).text || pick(shortMsgs), replies };
+        }
+        tl.push({ type: 'group', name: sender.name, seed: sender.seed, time: '09:' + String(12 + g * 9).padStart(2, '0'), blocks });
+      }
+      if (chance(0.6)) {
+        const ev = person();
+        tl.splice(Math.min(1, tl.length), 0, { type: 'divider', label: 'Yesterday' });
+        tl.splice(Math.min(2, tl.length), 0, { type: 'event', name: ev.name, seed: ev.seed, time: '10:29', text: ev.name + (chance(0.5) ? ' joined the room' : ' changed the room name') });
+      }
+      timelines[id] = tl; roomThreads[id] = myThreads;
+      const av = this.avPair(id);
+      const members = [person(), person(), person()].map(p => { const q = this.avPair(p.seed); return { bg: q[0], color: q[1], initial: p.name[0].toUpperCase() }; });
+      const partN = Math.min(mc, 14);
+      const parts = [{ name: 'You', seed: 'you-' + id, role: 'Admin', online: true }];
+      const usedP = { ['you-' + id]: 1 }; let att = 0;
+      while (parts.length < partN && att < 80) { att++; const p = person(); if (usedP[p.seed]) continue; usedP[p.seed] = 1; parts.push({ name: p.name, seed: p.seed, role: chance(0.18) ? 'Moderator' : 'Member', online: chance(0.5) }); }
+      rooms.push({ id, name: rn, initial: rn.replace(/[^A-Za-z]/g, '')[0].toUpperCase(), avatar: av, time: pick(roomTimes), preview: (lastText || '').slice(0, 42), unread, dot, net, dm, memberCount: mc, members, participants: parts, topic: dm ? 'Direct message' : (mc + ' members') });
+    }
+    return { rooms, timelines, threads, roomThreads };
+  }
+
+  timelineFor(rid) {
+    const gen = this.data().timelines[rid]; if (gen) return gen;
+    const acc = this.accent();
+    if (rid === 'spektr') {
+      return [
+        { type: 'group', name: 'Andrei Eres', seed: 'andrei', time: '09:12', blocks: [
+          { kind: 'text', text: 'Pushed the notification service update. Quick summary of what landed in this build:' },
+          { kind: 'bullets', items: [
+            'Draft reminders — signers with unsigned drafts get one digest per run, bundled into a single message.',
+            'On-chain signer alerts are merged into the same daily message and sent alongside the draft reminder.',
+            'Delivery-failure alerting — one failure digest per run to a configurable address list.',
+            'Manual trigger — nudge a pending operation\u2019s remaining signers on demand, rate-limited per requester.'
+          ] },
+          { kind: 'text', text: 'The Spektr-side manual-trigger button is still in progress — the backend endpoint is live, the UI lands next.' },
+          { kind: 'mention', pill: 'Adam Murphy', pillSeed: 'adam', text: 'heartbeat needs NOTIFICATION_HEARTBEAT_URL set, and email alerting needs SMTP configured in the admin panel.' },
+          { kind: 'link', text: 'Also double-check DATA_SECRET is set on the deployment — that was likely why the previous build wouldn\u2019t start. See', linkText: 'instructions' },
+          { kind: 'thread', id: 'th-1', count: 3, lastSeed: 'adam', lastName: 'Adam Murphy', preview: 'don\u2019t rush :-) let me check the implemented option' }
+        ] },
+        { type: 'group', name: 'Adam Murphy', seed: 'adam', time: '09:40', blocks: [
+          { kind: 'imageError' },
+          { kind: 'text', text: 'Getting this error on the matrix bot right after the upgrade:' },
+          { kind: 'code', text: 'MatrixError: M_UNKNOWN (status 500)\n  at sync() — homeserver refused the filter' },
+          { kind: 'thread', id: 'th-2', count: 7, lastSeed: 'andrei', lastName: 'Andrei Eres', preview: 'try again, I bumped it to 1.3.1' }
+        ] },
+        { type: 'divider', label: 'Yesterday' },
+        { type: 'event', name: 'Matej', seed: 'matej', time: '10:29', text: 'Matej — OOO (June 29th) changed their display name to Matej' },
+        { type: 'group', name: 'Tom Ryan', seed: 'tom', time: '08:05', blocks: [
+          { kind: 'text', text: 'Morning — release notes are drafted, I\u2019ll circulate them before standup. Nothing blocking on my side.' }
+        ] }
+      ];
+    }
+    if (rid === 'triangle') {
+      return [
+        { type: 'group', name: 'Heartbeat Bot', seed: 'hb', time: '10:04', blocks: [
+          { kind: 'text', text: 'All 12 monitored endpoints reporting healthy. Last incident cleared 4h ago.' }
+        ] },
+        { type: 'group', name: 'Andrei Eres', seed: 'andrei', time: '10:04', blocks: [
+          { kind: 'text', text: 'Nice, green across the board. Let\u2019s keep the OnCall URL pointed at the staging Grafana for now.' }
+        ] }
+      ];
+    }
+    if (rid === 'e2e') {
+      return [
+        { type: 'group', name: 'CI Runner', seed: 'ci', time: '09:20', blocks: [
+          { kind: 'text', text: 'run #4821 passed — 214 specs, 6m 12s on PaseoV2.' },
+          { kind: 'code', text: '✓ multisig approve flow\n✓ draft submit + call data\n✓ notifications digest' }
+        ] }
+      ];
+    }
+    return [
+      { type: 'group', name: 'You', seed: 'you', time: '—', blocks: [
+        { kind: 'text', text: 'No messages here yet. Say hello 👋' }
+      ] }
+    ];
+  }
+
+  threadData(tid) {
+    const gen = this.data().threads[tid]; if (gen) return gen;
+    const base = {
+      'th-1': { roomName: 'Spektr Parity Build', rootSeed: 'andrei', rootName: 'Andrei Eres', rootTime: '09:12',
+        rootText: 'The Spektr-side manual-trigger button is still in progress — the backend endpoint is live, the UI lands next.',
+        replies: [
+          { seed: 'adam', name: 'Adam Murphy', time: '09:15', text: 'don\u2019t rush :-) let me check the implemented option first' },
+          { seed: 'adam', name: 'Adam Murphy', time: '09:16', text: 'the backend endpoint works from curl, so no hurry on the button' },
+          { seed: 'andrei', name: 'Andrei Eres', time: '09:22', text: 'great — I\u2019ll wire the 2-hour rate limit into the UI then.' }
+        ] },
+      'th-2': { roomName: 'Spektr Parity Build', rootSeed: 'adam', rootName: 'Adam Murphy', rootTime: '09:40',
+        rootText: 'Getting this error on the matrix bot right after the upgrade — MatrixError: M_UNKNOWN (status 500).',
+        replies: [
+          { seed: 'andrei', name: 'Andrei Eres', time: '09:41', text: 'which SDK version are you on?' },
+          { seed: 'adam', name: 'Adam Murphy', time: '09:42', text: '1.2.9' },
+          { seed: 'andrei', name: 'Andrei Eres', time: '09:43', text: 'that\u2019s it — the filter format changed. try again, I bumped it to 1.3.1' },
+          { seed: 'adam', name: 'Adam Murphy', time: '09:47', text: 'updating now' },
+          { seed: 'adam', name: 'Adam Murphy', time: '09:52', text: 'works 🎉 thanks' },
+          { seed: 'andrei', name: 'Andrei Eres', time: '09:53', text: 'np — I\u2019ll pin 1.3.1 in the compose file' },
+          { seed: 'tom', name: 'Tom Ryan', time: '09:58', text: 'adding it to the release notes' }
+        ] }
+    };
+    return base[tid] || null;
+  }
+
+  nameColor(seed) {
+    const colors = ['#7c3aed', '#db2777', '#0284c7', '#16a34a', '#d97706', '#4649f6', '#0d9488', '#9333ea'];
+    return colors[this.hash(seed) % colors.length];
+  }
+
+  renderVals() {
+    const st = this.state;
+    const acc = this.accent();
+    const authed = this.isAuthed();
+    const compact = this.props.density === 'compact';
+    const col = st.sidebarCollapsed;
+
+    // nav
+    const mkNavTop = (icon, label, opts) => ({ icon, label, chevron: !!(opts && opts.chevron) && !col, bg: 'transparent', color: '#363643', iconColor: '#868692', weight: 500, showLabel: !col, justify: col ? 'center' : 'flex-start', pad: col ? '11px 0' : '9px 10px' });
+    const navTop = [
+      mkNavTop('asset', 'Portfolio', {}),
+      mkNavTop('staking', 'Staking', {}),
+      mkNavTop('governance', 'Governance', {}),
+      mkNavTop('fellowshipNav', 'Fellowship', {}),
+      mkNavTop('addressBook', 'Address Book', {}),
+      mkNavTop('magic', 'Custom operation', { chevron: true })
+    ];
+    const navBottom = [
+      { key: 'chat', icon: 'chat', label: 'Chat', active: true, badge: this.data().rooms.reduce((a, r) => a + (r.unread || 0), 0) || null },
+      { key: 'dashboard', icon: 'dashboard', label: 'Dashboard' },
+      { key: 'operations', icon: 'operations', label: 'Multisig Operations', badge: 9, mutedBadge: true },
+      { key: 'notifications', icon: 'notification', label: 'Notifications' },
+      { key: 'settings', icon: 'settings', label: 'Settings' }
+    ].map(n => ({
+      icon: n.icon, label: n.label,
+      bg: n.active ? this.hex2rgba(acc, 0.08) : 'transparent',
+      color: n.active ? acc : '#363643',
+      iconColor: n.active ? acc : '#868692',
+      weight: n.active ? 600 : 500,
+      badge: n.badge,
+      badgeBg: n.active ? acc : '#4545890f',
+      badgeColor: n.active ? '#fff' : '#79797d',
+      showLabel: !col, justify: col ? 'center' : 'flex-start', pad: col ? '11px 0' : '9px 10px',
+      showBadge: !!n.badge && !col,
+      dot: col && !!n.badge, dotColor: n.active ? acc : '#4649f6',
+      onClick: () => {}
+    }));
+
+    // rooms
+    const q = (st.roomSearch || '').trim().toLowerCase();
+    let roomList = this.roomData();
+    if (st.filter === 'unreads') roomList = roomList.filter(r => r.unread > 0 || r.dot);
+    if (st.filter === 'people') roomList = roomList.filter(r => r.dm);
+    if (q) roomList = roomList.filter(r => r.name.toLowerCase().indexOf(q) >= 0);
+
+    const activeId = this.activeId();
+    const rooms = roomList.map(r => {
+      const active = r.id === activeId;
+      const av = r.avatar || this.avPair(r.id);
+      const hasUnread = r.unread > 0;
+      return {
+        onClick: () => this.selectRoom(r.id),
+        active,
+        bg: active ? this.hex2rgba(acc, 0.07) : 'transparent',
+        avatarBg: av[0], avatarColor: av[1], initial: r.initial,
+        hasImg: false, noImg: true, img: '',
+        net: !!r.net,
+        name: r.name,
+        nameColor: (hasUnread || r.dot) ? '#363643' : '#363643',
+        nameWeight: (hasUnread || r.dot) ? 600 : 500,
+        time: r.time,
+        preview: r.preview,
+        previewColor: hasUnread ? '#363643' : '#a4a4ad',
+        unreadBadge: hasUnread ? r.unread : null,
+        unreadBg: r.muted ? '#a4a4ad' : acc,
+        unreadDot: !hasUnread && !!r.dot
+      };
+    });
+
+    const filters = [
+      { key: 'all', label: 'All' },
+      { key: 'unreads', label: 'Unreads' },
+      { key: 'people', label: 'People' }
+    ].map(f => {
+      const on = st.filter === f.key;
+      return { label: f.label, onClick: () => this.setFilter(f.key),
+        bg: on ? this.hex2rgba(acc, 0.1) : '#4545890a',
+        border: on ? this.hex2rgba(acc, 0.28) : '#4545891f',
+        color: on ? acc : '#79797d' };
+    });
+
+    // active room + timeline
+    const roomRaw = this.roomData().find(r => r.id === activeId);
+    const hasRoom = !!roomRaw;
+    let room = null, timeline = [], participants = [];
+    if (roomRaw) {
+      const av = roomRaw.avatar || this.avPair(roomRaw.id);
+      room = {
+        avatarBg: av[0], avatarColor: av[1], initial: roomRaw.initial,
+        name: roomRaw.name,
+        topic: roomRaw.topic,
+        memberCount: roomRaw.memberCount,
+        members: roomRaw.members
+      };
+      participants = (roomRaw.participants || []).map(p => {
+        const isYou = String(p.seed).indexOf('you-') === 0;
+        const q = isYou ? [this.hex2rgba(acc, 0.14), acc] : this.avPair(p.seed);
+        return {
+          bg: q[0], color: q[1], initial: p.name[0].toUpperCase(),
+          name: isYou ? 'You' : p.name,
+          online: p.online,
+          status: p.online ? 'Online' : 'Offline',
+          statusColor: p.online ? '#01a63e' : '#a4a4ad',
+          showRole: p.role !== 'Member',
+          role: p.role,
+          roleColor: p.role === 'Admin' ? acc : '#79797d',
+          roleBg: p.role === 'Admin' ? this.hex2rgba(acc, 0.1) : '#4545890f'
+        };
+      });
+      const rawTl = this.timelineFor(activeId);
+      timeline = rawTl.map(it => {
+        if (it.type === 'divider') return { isDivider: true, isEvent: false, isGroup: false, label: it.label };
+        if (it.type === 'event') {
+          const p = this.avPair(it.seed);
+          return { isDivider: false, isEvent: true, isGroup: false, time: it.time, avatarBg: p[0], avatarColor: p[1], initial: it.name[0].toUpperCase(), text: it.text };
+        }
+        const p = this.avPair(it.seed);
+        return {
+          isDivider: false, isEvent: false, isGroup: true,
+          avatarBg: p[0], avatarColor: p[1], initial: it.name[0].toUpperCase(),
+          name: it.name, nameColor: this.nameColor(it.seed), time: it.time,
+          blocks: (it.blocks || []).map(b => {
+            const base = { isText: false, isBullets: false, isMention: false, isCode: false, isLink: false, isImageError: false, isThread: false };
+            if (b.kind === 'text') return { ...base, isText: true, text: b.text };
+            if (b.kind === 'bullets') return { ...base, isBullets: true, items: b.items };
+            if (b.kind === 'mention') { const pp = this.avPair(b.pillSeed); return { ...base, isMention: true, pill: b.pill, pillBg: pp[0], pillColor: pp[1], pillInitial: b.pill[0].toUpperCase(), text: b.text }; }
+            if (b.kind === 'code') return { ...base, isCode: true, text: b.text };
+            if (b.kind === 'link') return { ...base, isLink: true, text: b.text, linkText: b.linkText };
+            if (b.kind === 'imageError') return { ...base, isImageError: true };
+            if (b.kind === 'thread') { const lp = this.avPair(b.lastSeed); return { ...base, isThread: true, count: b.count, lastBg: lp[0], lastColor: lp[1], lastInitial: b.lastName[0].toUpperCase(), lastName: b.lastName, preview: b.preview, onClick: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.openThread(b.id); } }; }
+            return { ...base, isText: true, text: '' };
+          })
+        };
+      });
+      // appended sent messages
+      const extra = st.extraMsgs[activeId] || [];
+      extra.forEach(m => {
+        timeline.push({ isDivider: false, isEvent: false, isGroup: true,
+          avatarBg: this.hex2rgba(acc, 0.14), avatarColor: acc, initial: 'Y',
+          name: 'You', nameColor: acc, time: m.time,
+          blocks: [{ isText: true, isBullets: false, isMention: false, isCode: false, isLink: false, isImageError: false, isThread: false, text: m.text }] });
+      });
+    }
+
+    // thread panel
+    const threadRaw = st.threadId ? this.threadData(st.threadId) : null;
+    let thread = null;
+    if (threadRaw) {
+      const rp = this.avPair(threadRaw.rootSeed);
+      const replies = threadRaw.replies.concat(st.threadExtra[st.threadId] || []).map(r => {
+        const pp = r.seed ? this.avPair(r.seed) : [this.hex2rgba(acc, 0.14), acc];
+        return { bg: pp[0], color: pp[1], initial: (r.initial || r.name[0]).toUpperCase(), name: r.name, nameColor: r.seed ? this.nameColor(r.seed) : acc, time: r.time, text: r.text };
+      });
+      thread = {
+        roomName: threadRaw.roomName,
+        rootBg: rp[0], rootColor: rp[1], rootInitial: threadRaw.rootName[0].toUpperCase(),
+        rootName: threadRaw.rootName, rootNameColor: this.nameColor(threadRaw.rootSeed), rootTime: threadRaw.rootTime, rootText: threadRaw.rootText,
+        replyCount: replies.length, replies
+      };
+    }
+
+    return {
+      notAuthed: !authed,
+      authed,
+      accent: acc,
+      sidebarExpanded: !col, sidebarCollapsed: col,
+      asideW: col ? '64px' : '240px', asidePad: col ? '14px 8px 10px' : '14px 12px 10px',
+      collapseIcon: col ? 'right' : 'left', collapseLabel: col ? 'Expand' : 'Collapse',
+      collapsePad: col ? '11px 0' : '9px 10px', collapseJustify: col ? 'center' : 'flex-start',
+      onToggleSidebar: () => this.toggleSidebar(),
+      accentWash: this.hex2rgba(acc, 0.28),
+      accentWashSoft: this.hex2rgba(acc, 0.09),
+      sendBg: (st.composer || '').trim() ? acc : '#c9c9d4',
+      msgPadY: compact ? '3px' : '6px',
+      walletIcon: this.idicon(this.addr('solocrack-wallet', 0)),
+      navTop, navBottom,
+      homeserver: st.homeserver,
+      username: st.username,
+      password: st.password,
+      onUsername: (e) => this.onUsername(e),
+      onPassword: (e) => this.onPassword(e),
+      onSignIn: () => this.signIn(),
+      roomSearch: st.roomSearch,
+      onRoomSearch: (e) => this.onRoomSearch(e),
+      filters, rooms,
+      hasRoom, noRoom: !hasRoom,
+      room, timeline, participants,
+      participantsOpen: !!st.participantsOpen,
+      participantsChipBg: st.participantsOpen ? this.hex2rgba(acc, 0.1) : '#4545890a',
+      participantsChevron: st.participantsOpen ? 180 : 0,
+      onToggleParticipants: () => this.toggleParticipants(),
+      onCloseParticipants: () => this.closeParticipants(),
+      onInvite: () => this.closeParticipants(),
+      threadsIconColor: st.threadId ? acc : '#79797d',
+      onOpenThreadList: () => { const t = this.data().roomThreads[this.activeId()] || []; if (t.length) this.openThread(t[0]); },
+      composer: st.composer,
+      onComposer: (e) => this.onComposer(e),
+      onComposerKey: (e) => this.onComposerKey(e),
+      onSend: () => this.send(),
+      threadOpen: !!thread,
+      thread: thread || {},
+      threadComposer: st.threadComposer,
+      onThreadComposer: (e) => this.onThreadComposer(e),
+      onThreadKey: (e) => this.onThreadKey(e),
+      onSendThread: () => this.sendThread(),
+      onCloseThread: () => this.closeThread()
+    };
+  }
+}
+</script>
+</body>
+</html>

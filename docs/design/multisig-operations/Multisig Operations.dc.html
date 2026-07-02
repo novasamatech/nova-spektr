@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<template id="__bundler_thumbnail">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="20" fill="#4649f6"/>
+  <g fill="#fff">
+    <rect x="30" y="34" width="40" height="7" rx="3.5"/>
+    <rect x="30" y="47" width="40" height="7" rx="3.5" opacity="0.7"/>
+    <rect x="30" y="60" width="40" height="7" rx="3.5" opacity="0.45"/>
+  </g>
+</svg>
+</template>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/fonts/fonts.css">
+  <link rel="stylesheet" href="_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/_ds_bundle.css">
+  <link rel="stylesheet" href="_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/styles.css">
+  <script src="_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/_ds_bundle.js"></script>
+  <script src="_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/lib/identicon.js"></script>
+  <style>
+    body { margin: 0; }
+    .nsop-card { transition: box-shadow .12s; }
+    .nsop-card:hover { box-shadow: 0 2px 8px rgba(54,54,67,.10); }
+    .nsnav:hover { background: #4545890a; }
+    .nshdr .nssort { opacity: .5; transition: opacity .12s; }
+    .nshdr:hover .nssort { opacity: 1; }
+    .nshdr.active .nssort { opacity: 1; }
+    .nslink:hover { color: #4649f6 !important; }
+    .nsnewdraft:hover { border-color: #b9b9ef; color: #4649f6; }
+    .nsglyph svg { color: #fff !important; }
+    .nsdocicon svg { color: #4649f6 !important; }
+    .nsgraph { opacity: 0; transition: opacity .12s, filter .12s; }
+    .nsaddr:hover .nsgraph { opacity: 1; }
+    .nsgraph:hover { filter: brightness(0.92); }
+    .nsdel svg { color: #c3c3cb !important; }
+    .nsdel:hover svg { color: #f52163 !important; }
+    .nsadddesc { opacity: 0; transition: opacity .12s; }
+    .nsop-card:hover .nsadddesc { opacity: 1; }
+    .nscopy svg { color: #c3c3cb !important; }
+    .nscopy:hover svg { color: #4649f6 !important; }
+    .nstoolbtn:hover { background: #4545890f !important; }
+    .nstoolbtn-del:hover { background: #f521630f !important; }
+    .nstoolbtn svg { color: inherit !important; }
+    .nsscroll > * { min-width: 1280px; }
+    @keyframes nsspin { to { transform: rotate(360deg); } }
+  </style>
+</helmet>
+<x-import component-from-global-scope="NovaSpektrUIKit.MemoryRouter" hint-size="100%,100%">
+<x-import component-from-global-scope="NovaSpektrUIKit.I18Provider" hint-size="100%,100%">
+<x-import component-from-global-scope="NovaSpektrUIKit.NotificationProvider" hint-size="100%,100%">
+<x-import component-from-global-scope="NovaSpektrUIKit.ThemeProvider" theme="light" icon-style="colored" body-as-portal-container="{{ true }}" hint-size="100%,100%">
+
+<div data-screen-label="Multisig Operations" style="display:flex; height:100vh; min-height:820px; background:#fafafb; font-family:Inter, system-ui, -apple-system, sans-serif; color:#363643;">
+
+  <aside style="width:{{ asideW }}; flex:0 0 {{ asideW }}; background:#fff; border-right:1px solid #4545890f; display:flex; flex-direction:column; padding:{{ asidePad }}; transition:width .16s ease, padding .16s ease;">
+    <sc-if value="{{ sidebarExpanded }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid #4545891f; border-radius:12px; cursor:pointer;">
+        <img class="nsimg" data-src="{{ walletIcon }}" width="30" height="30" style="border-radius:50%; flex:0 0 30px; background:#eee;" alt="">
+        <div style="flex:1; min-width:0;">
+          <div style="font:600 13px Inter; color:#363643; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">solocrack</div>
+          <div style="font:400 11px Inter; color:#79797d;">$371.25</div>
+        </div>
+        <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="14" hint-size="14px,14px"></x-import></span>
+      </div>
+    </sc-if>
+    <sc-if value="{{ sidebarCollapsed }}" hint-placeholder-val="{{ false }}">
+      <div title="solocrack" style="display:flex; justify-content:center; padding:4px 0 2px; cursor:pointer;">
+        <img class="nsimg" data-src="{{ walletIcon }}" width="32" height="32" style="border-radius:50%; background:#eee;" alt="">
+      </div>
+    </sc-if>
+
+    <nav style="margin-top:14px; display:flex; flex-direction:column; gap:2px;">
+      <sc-for list="{{ navTop }}" as="n" hint-placeholder-count="6">
+        <div onClick="{{ n.onClick }}" class="nsnav" title="{{ n.label }}" style="display:flex; align-items:center; gap:12px; padding:{{ n.pad }}; border-radius:9px; cursor:pointer; background:{{ n.bg }}; justify-content:{{ n.justify }};">
+          <span style="display:inline-flex; color:{{ n.iconColor }}; position:relative;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="{{ n.icon }}" size="18" hint-size="18px,18px"></x-import>
+            <sc-if value="{{ n.dot }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; top:-3px; right:-4px; width:8px; height:8px; border-radius:50%; background:{{ n.dotColor }}; box-shadow:0 0 0 2px #fff;"></span></sc-if>
+          </span>
+          <sc-if value="{{ n.showLabel }}" hint-placeholder-val="{{ true }}"><span style="flex:1; font-family:Inter; font-size:13px; font-weight:{{ n.weight }}; color:{{ n.color }};">{{ n.label }}</span></sc-if>
+          <sc-if value="{{ n.chevron }}" hint-placeholder-val="{{ false }}">
+            <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="14" hint-size="14px,14px"></x-import></span>
+          </sc-if>
+        </div>
+      </sc-for>
+    </nav>
+
+    <div style="flex:1;"></div>
+
+    <div style="display:flex; flex-direction:column; gap:2px; border-top:1px solid #4545890f; padding-top:8px;">
+      <sc-for list="{{ navBottom }}" as="n" hint-placeholder-count="4">
+        <div onClick="{{ n.onClick }}" class="nsnav" title="{{ n.label }}" style="display:flex; align-items:center; gap:12px; padding:{{ n.pad }}; border-radius:9px; cursor:pointer; background:{{ n.bg }}; justify-content:{{ n.justify }};">
+          <span style="display:inline-flex; color:{{ n.iconColor }}; position:relative;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="{{ n.icon }}" size="18" hint-size="18px,18px"></x-import>
+            <sc-if value="{{ n.dot }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; top:-3px; right:-4px; width:8px; height:8px; border-radius:50%; background:{{ n.dotColor }}; box-shadow:0 0 0 2px #fff;"></span></sc-if>
+          </span>
+          <sc-if value="{{ n.showLabel }}" hint-placeholder-val="{{ true }}"><span style="flex:1; font-family:Inter; font-size:13px; font-weight:{{ n.weight }}; color:{{ n.color }};">{{ n.label }}</span></sc-if>
+          <sc-if value="{{ n.showBadge }}" hint-placeholder-val="{{ false }}">
+            <span style="font:600 12px Inter; color:#868692;">{{ n.badge }}</span>
+          </sc-if>
+        </div>
+      </sc-for>
+      <div onClick="{{ onToggleSidebar }}" class="nsnav" title="{{ collapseLabel }}" style="display:flex; align-items:center; gap:12px; padding:{{ collapsePad }}; border-radius:9px; cursor:pointer; justify-content:{{ collapseJustify }};">
+        <span style="color:#868692; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="{{ collapseIcon }}" size="18" hint-size="18px,18px"></x-import></span>
+        <sc-if value="{{ sidebarExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1; font:500 13px Inter; color:#868692;">Collapse</span></sc-if>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex:1; display:flex; flex-direction:column; min-width:0; overflow:hidden;">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 16px 15px; gap:16px;">
+      <div style="font:700 22px Inter; color:#363643; letter-spacing:-.01em;">Multisig Operations</div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px; width:230px; height:36px; padding:0 12px; background:#fff; border:1px solid #4545891f; border-radius:10px;">
+          <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="search" size="16" hint-size="16px,16px"></x-import></span>
+          <input value="{{ searchVal }}" onChange="{{ onSearch }}" placeholder="Search" style="flex:1; min-width:0; border:0; outline:0; background:transparent; font:400 13px Inter; color:#363643;">
+        </div>
+        <div style="display:flex; align-items:center; background:#fff; border:1px solid #4545891f; border-radius:10px; height:36px; overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:6px; padding:0 10px; height:100%; font:600 12px Inter; color:#363643;">All <span style="background:#e1e2fe; color:#4649f6; border-radius:8px; padding:1px 6px; font:600 11px Inter;">109</span></div>
+          <div style="display:flex; align-items:center; gap:6px; padding:0 10px; height:100%; border-left:1px solid #4545891f; font:600 12px Inter; color:#79797d;">ллпд <span style="background:#4545890f; color:#79797d; border-radius:8px; padding:1px 6px; font:600 11px Inter;">1</span></div>
+        </div>
+        <div style="width:36px; height:36px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #4545891f; border-radius:10px; color:#79797d; cursor:pointer;">
+          <x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="switch" size="16" hint-size="16px,16px"></x-import>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:4px 16px 16px; gap:16px;">
+      <div style="display:flex; align-items:center; gap:2px; background:#4545890f; border-radius:10px; padding:3px;">
+        <sc-if value="{{ tabsNotMerged }}" hint-placeholder-val="{{ true }}">
+          <div onClick="{{ onTabPending }}" style="display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:8px; cursor:pointer; background:{{ pendBg }}; box-shadow:{{ pendShadow }}; font-family:Inter; font-size:13px; font-weight:600; color:{{ pendColor }};">Pending <span style="color:#a4a4ad;">{{ pendingCount }}</span></div>
+          <div onClick="{{ onTabHistory }}" style="display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:8px; cursor:pointer; background:{{ histBg }}; box-shadow:{{ histShadow }}; font-family:Inter; font-size:13px; font-weight:600; color:{{ histColor }};">History <span style="color:#a4a4ad;">{{ historyCount }}</span></div>
+        </sc-if>
+        <sc-if value="{{ tabsMerged }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:8px; background:#fff; box-shadow:0 1px 2px rgba(54,54,67,.08); font-family:Inter; font-size:13px; font-weight:600; color:#363643;">All operations <span style="color:#a4a4ad;">{{ mergedCount }}</span></div>
+        </sc-if>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <sc-if value="{{ filtersActive }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ onClearFilters }}" style="display:flex; align-items:center; gap:6px; height:36px; padding:0 10px; border-radius:10px; font:600 13px Inter; color:#4649f6; cursor:pointer;">
+            <span style="display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="close" size="14" hint-size="14px,14px"></x-import></span>
+            Clear filters
+          </div>
+        </sc-if>
+        <div style="display:flex; align-items:center; gap:8px; height:36px; padding:0 12px; background:#fff; border:1px solid #4545891f; border-radius:10px; font:500 13px Inter; color:#79797d; cursor:pointer;">
+          <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="calendar" size="15" hint-size="15px,15px"></x-import></span>
+          Date range
+        </div>
+        <div style="position:relative;">
+          <div onClick="{{ onToggleStatusDD }}" style="display:flex; align-items:center; gap:8px; height:36px; padding:0 12px; background:#fff; border:1px solid #4545891f; border-radius:10px; font:500 13px Inter; color:#363643; cursor:pointer;">
+            Status
+            <sc-if value="{{ statusCountShow }}" hint-placeholder-val="{{ false }}"><span style="background:#e1e2fe; color:#4649f6; border-radius:8px; padding:1px 6px; font:600 11px Inter;">{{ statusCount }}</span></sc-if>
+            <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="14" hint-size="14px,14px"></x-import></span>
+          </div>
+          <sc-if value="{{ ddStatusOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute; top:42px; left:0; z-index:30; width:190px; background:#fff; border:1px solid #4545891f; border-radius:12px; box-shadow:0 8px 24px rgba(54,54,67,.14); padding:6px;">
+              <sc-for list="{{ statusOptions }}" as="opt" hint-placeholder-count="4">
+                <div onClick="{{ opt.onClick }}" class="nsnav" style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; cursor:pointer;">
+                  <span style="width:16px; height:16px; border-radius:5px; border:1.5px solid {{ opt.borderColor }}; background:{{ opt.checkColor }}; flex:0 0 16px;"></span>
+                  <span style="font:500 13px Inter; color:#363643;">{{ opt.name }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; height:36px; padding:0 12px; background:#fff; border:1px solid #4545891f; border-radius:10px; font:500 13px Inter; color:#363643; cursor:pointer;">
+          Proxy type
+          <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="14" hint-size="14px,14px"></x-import></span>
+        </div>
+        <div style="position:relative;">
+          <div onClick="{{ onToggleNetDD }}" style="display:flex; align-items:center; gap:8px; height:36px; padding:0 12px; background:#fff; border:1px solid #4545891f; border-radius:10px; font:500 13px Inter; color:#363643; cursor:pointer;">
+            Networks
+            <sc-if value="{{ netCountShow }}" hint-placeholder-val="{{ false }}"><span style="background:#e1e2fe; color:#4649f6; border-radius:8px; padding:1px 6px; font:600 11px Inter;">{{ netCount }}</span></sc-if>
+            <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="14" hint-size="14px,14px"></x-import></span>
+          </div>
+          <sc-if value="{{ ddNetOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute; top:42px; right:0; z-index:30; width:220px; background:#fff; border:1px solid #4545891f; border-radius:12px; box-shadow:0 8px 24px rgba(54,54,67,.14); padding:6px;">
+              <sc-for list="{{ netOptions }}" as="opt" hint-placeholder-count="2">
+                <div onClick="{{ opt.onClick }}" class="nsnav" style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; cursor:pointer;">
+                  <span style="width:16px; height:16px; border-radius:5px; border:1.5px solid {{ opt.borderColor }}; background:{{ opt.checkColor }}; flex:0 0 16px;"></span>
+                  <span style="font:500 13px Inter; color:#363643;">{{ opt.name }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+        <div style="position:relative;">
+          <div onClick="{{ onToggleTypeDD }}" style="display:flex; align-items:center; gap:8px; height:36px; padding:0 12px; background:#fff; border:1px solid #4545891f; border-radius:10px; font:500 13px Inter; color:#363643; cursor:pointer;">
+            Operation type
+            <sc-if value="{{ typeCountShow }}" hint-placeholder-val="{{ false }}"><span style="background:#e1e2fe; color:#4649f6; border-radius:8px; padding:1px 6px; font:600 11px Inter;">{{ typeCount }}</span></sc-if>
+            <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="14" hint-size="14px,14px"></x-import></span>
+          </div>
+          <sc-if value="{{ ddTypeOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute; top:42px; right:0; z-index:30; width:190px; background:#fff; border:1px solid #4545891f; border-radius:12px; box-shadow:0 8px 24px rgba(54,54,67,.14); padding:6px;">
+              <sc-for list="{{ typeOptions }}" as="opt" hint-placeholder-count="4">
+                <div onClick="{{ opt.onClick }}" class="nsnav" style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; cursor:pointer;">
+                  <span style="width:16px; height:16px; border-radius:5px; border:1.5px solid {{ opt.borderColor }}; background:{{ opt.checkColor }}; flex:0 0 16px;"></span>
+                  <span style="font:500 13px Inter; color:#363643;">{{ opt.name }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+        <div style="width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:#a4a4ad; cursor:pointer;">
+          <x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="export" size="18" hint-size="18px,18px"></x-import>
+        </div>
+      </div>
+    </div>
+
+    <div class="nsscroll" style="flex:1; overflow:auto; padding:0 16px 40px;">
+      <div style="min-width:1280px;">
+      <sc-if value="{{ showSyncBar }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; align-items:center; justify-content:center; gap:10px; padding:6px 0 10px;">
+          <div style="width:18px; height:18px; border:2px solid #4649f6; border-right-color:transparent; border-radius:50%; animation:nsspin .8s linear infinite;"></div>
+          <span style="font:400 13px Inter; color:#79797d;">Syncing networks... 7/12</span>
+        </div>
+      </sc-if>
+
+      <div style="position:sticky; top:0; z-index:10; background:#fafafb; display:flex; align-items:center; gap:8px; padding:8px 16px; box-shadow:0 1px 0 #4545890f;">
+        <div style="width:{{ leftColW }}; flex:0 0 {{ leftColW }}; display:flex; align-items:center; gap:8px;">
+          <div onClick="{{ sortType.onClick }}" title="Sort by operation type" class="nshdr {{ sortType.activeClass }}" style="flex:1; display:flex; align-items:center; gap:4px; cursor:pointer;">
+            <span style="font:600 11px Inter; color:{{ sortType.color }}; letter-spacing:.05em; text-transform:uppercase;">Operation</span>
+            <span class="nssort" style="display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;">
+              <span style="width:0; height:0; border-left:3.5px solid transparent; border-right:3.5px solid transparent; border-bottom:4px solid {{ sortType.upColor }};"></span>
+              <span style="width:0; height:0; border-left:3.5px solid transparent; border-right:3.5px solid transparent; border-top:4px solid {{ sortType.downColor }};"></span>
+            </span>
+          </div>
+          <div onClick="{{ sortParam.onClick }}" title="Sort by value (amount, vote stake, etc.)" class="nshdr {{ sortParam.activeClass }}" style="width:{{ valueColW }}; flex:0 0 {{ valueColW }}; display:flex; align-items:center; gap:4px; cursor:pointer;">
+            <span style="font:600 11px Inter; color:{{ sortParam.color }}; letter-spacing:.05em; text-transform:uppercase;" data-comment-anchor="f9dc777d20-span">Value</span>
+            <span class="nssort" style="display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;">
+              <span style="width:0; height:0; border-left:3.5px solid transparent; border-right:3.5px solid transparent; border-bottom:4px solid {{ sortParam.upColor }};"></span>
+              <span style="width:0; height:0; border-left:3.5px solid transparent; border-right:3.5px solid transparent; border-top:4px solid {{ sortParam.downColor }};"></span>
+            </span>
+          </div>
+        </div>
+        <div style="flex:1; display:flex; align-items:center; gap:14px;">
+          <div onClick="{{ sortSubmitter.onClick }}" title="Sort by submitter \u2014 who broadcasts the operation on chain" class="nshdr {{ sortSubmitter.activeClass }}" style="width:{{ submitterColW }}; flex:0 0 {{ submitterColW }}; display:flex; align-items:center; gap:4px; cursor:pointer;">
+            <span style="font:600 11px Inter; color:{{ sortSubmitter.color }}; letter-spacing:.05em; text-transform:uppercase;" data-comment-anchor="cd7727404c-span">Submitter</span>
+            <span class="nssort" style="display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;">
+              <span style="width:0; height:0; border-left:3.5px solid transparent; border-right:3.5px solid transparent; border-bottom:4px solid {{ sortSubmitter.upColor }};"></span>
+              <span style="width:0; height:0; border-left:3.5px solid transparent; border-right:3.5px solid transparent; border-top:4px solid {{ sortSubmitter.downColor }};"></span>
+            </span>
+          </div>
+          <div style="flex:1; min-width:0; padding-left:16px;">
+            <span style="font:600 11px Inter; color:#a4a4ad; letter-spacing:.05em; text-transform:uppercase;">Description</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; flex:0 0 auto;">
+            <span style="width:96px; flex:0 0 96px;"></span>
+            <span style="width:110px; margin:0 4px;"></span>
+            <span style="width:{{ actionsColW }}; flex:0 0 {{ actionsColW }};"></span>
+            <span style="width:16px;"></span>
+            <span style="width:16px;"></span>
+          </div>
+        </div>
+      </div>
+
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+        <div style="position:relative;">
+          <div style="opacity:{{ g.dimOpacity }}; pointer-events:{{ g.dimPointer }};">
+          <div style="display:flex; align-items:center; gap:8px; padding:16px 16px 6px;">
+            <div onClick="{{ g.onToggleCollapse }}" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <span style="display:inline-flex; color:#a4a4ad; transition:transform .15s ease; transform:rotate({{ g.collapseRot }}deg);"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="15" hint-size="15px,15px"></x-import></span>
+              <span style="font:600 13px Inter; color:#363643;">{{ g.label }}</span>
+              <span style="min-width:18px; height:18px; padding:0 6px; border-radius:9px; background:#4545890f; color:#79797d; font:600 11px Inter; display:inline-flex; align-items:center; justify-content:center;">{{ g.count }}</span>
+            </div>
+          </div>
+          <sc-if value="{{ g.notCollapsed }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <sc-for list="{{ g.ops }}" as="op" hint-placeholder-count="3">
+              <div class="nsop-card" style="background:#fff; border-radius:8px;">
+                <div onClick="{{ op.onToggle }}" style="display:flex; align-items:center; gap:8px; height:68px; padding:0 16px; overflow:hidden; cursor:pointer;">
+
+                  <div style="display:flex; align-items:center; gap:8px; width:{{ leftColW }}; flex:0 0 {{ leftColW }}; overflow:hidden;">
+                    <sc-if value="{{ op.isDraft }}" hint-placeholder-val="{{ false }}">
+                      <div class="nsdocicon" style="width:28px; height:28px; border-radius:8px; flex:0 0 28px; display:flex; align-items:center; justify-content:center; background:#ececfe; color:#4649f6;">
+                        <x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="document" size="16" hint-size="16px,16px"></x-import>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ op.notDraft }}" hint-placeholder-val="{{ true }}">
+                      <div style="width:28px; height:28px; border-radius:50%; flex:0 0 28px; display:flex; align-items:center; justify-content:center; background:{{ op.iconBg }};">
+                        <sc-if value="{{ op.isUnknown }}" hint-placeholder-val="{{ true }}">
+                          <span style="color:#fff; font:700 14px Inter;">?</span>
+                        </sc-if>
+                        <sc-if value="{{ op.hasGlyph }}" hint-placeholder-val="{{ false }}">
+                          <span class="nsglyph" style="color:#fff; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="{{ op.glyphIcon }}" size="18" hint-size="18px,18px"></x-import></span>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+
+                    <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; overflow:hidden;">
+                      <div style="font:500 14px Inter; color:{{ op.titleColor }}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ op.title }}</div>
+                      <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+                        <img class="nsimg" data-src="{{ op.chainIcon }}" width="16" height="16" style="flex:0 0 16px;" alt="">
+                        <span style="font:400 12px Inter; color:#a4a4ad; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ op.chain }}</span>
+                      </div>
+                    </div>
+
+                    <div style="width:{{ valueColW }}; flex:0 0 {{ valueColW }}; display:flex; align-items:center; gap:8px;">
+                      <sc-if value="{{ op.hasAmount }}" hint-placeholder-val="{{ false }}">
+                        <img class="nsimg" data-src="{{ op.tokenIcon }}" width="28" height="28" style="flex:0 0 28px; border-radius:50%;" alt="">
+                        <div style="min-width:0;">
+                          <div style="font:500 14px Inter; color:#363643; white-space:nowrap;">{{ op.amount }}</div>
+                          <div style="font:400 12px Inter; color:#a4a4ad; white-space:nowrap;">{{ op.fiat }}</div>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ op.badge }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:inline-flex; align-items:center; padding:3px 8px; border:1px solid #01a63e3d; border-radius:20px;">
+                          <span style="font:600 10px Inter; color:#01a63e; letter-spacing:.04em;" data-comment-anchor="dbdc92d37b-span">VERIFIED SWAP</span>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </div>
+
+                  <sc-if value="{{ op.isDraft }}" hint-placeholder-val="{{ false }}">
+                    <div style="flex:1; min-width:0; display:flex; align-items:center; gap:14px;">
+                      <div class="nsaddr" style="width:{{ submitterColW }}; flex:0 0 {{ submitterColW }}; display:flex; align-items:center; gap:8px; position:relative;">
+                        <img class="nsimg" data-src="{{ op.acctIcon }}" width="28" height="28" style="flex:0 0 28px; border-radius:50%; background:#fff;" alt="">
+                        <div style="min-width:0; overflow:hidden;">
+                          <div style="font:500 13px Inter; color:#363643; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ op.submitterName }}</div>
+                          <div style="font:400 12px Inter; color:#a4a4ad; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ op.addrBottom }}</div>
+                        </div>
+                      </div>
+
+                      <div style="flex:1; min-width:0; padding-left:16px;" title="{{ op.descTitle }}">
+                        <sc-if value="{{ op.hasDescription }}" hint-placeholder-val="{{ true }}">
+                          <span data-comment-anchor="4e32cc0ea1-div" style="display:block; font:400 13px Inter; color:#79797d; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ op.description }}</span>
+                        </sc-if>
+                        <sc-if value="{{ op.showAddDescYes }}" hint-placeholder-val="{{ false }}">
+                          <span onClick="{{ op.onEdit }}" class="nsadddesc nslink" title="Add description" style="display:inline-flex; align-items:center; gap:5px; font:500 13px Inter; color:#4649f6; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="add" size="13" hint-size="13px,13px"></x-import> Add description</span>
+                        </sc-if>
+                        <sc-if value="{{ op.showAddDescNo }}" hint-placeholder-val="{{ false }}">
+                          <span class="nsadddesc" title="{{ op.addDescTooltip }}" style="display:inline-flex; align-items:center; gap:5px; font:500 13px Inter; color:#c3c3cb; cursor:not-allowed;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="lock" size="13" hint-size="13px,13px"></x-import> Add description</span>
+                        </sc-if>
+                      </div>
+
+                      <div style="display:flex; align-items:center; gap:8px; flex:0 0 auto;">
+                        <div data-comment-anchor="3cada67dd4-button" style="width:{{ actionsColW }}; flex:0 0 {{ actionsColW }}; display:flex; align-items:center; gap:8px; justify-content:flex-end;">
+                          <sc-if value="{{ op.canEdit }}" hint-placeholder-val="{{ true }}">
+                            <button onClick="{{ op.onEdit }}" style="flex:1; height:26px; border:0; border-radius:34px; background:#4545890f; color:#79797d; font:600 12px Inter; cursor:pointer;" data-comment-anchor="b7efcd3e48-button">Edit</button>
+                          </sc-if>
+                          <sc-if value="{{ op.draftSubmit }}" hint-placeholder-val="{{ true }}">
+                            <button onClick="{{ op.onSubmit }}" style="flex:1; height:26px; border:0; border-radius:34px; background:#4649f6; color:#fff; font:600 12px Inter; cursor:pointer;">Submit</button>
+                          </sc-if>
+                          <sc-if value="{{ op.draftAddWallet }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ op.onAddWallet }}" style="flex:1; height:26px; border:0; border-radius:34px; background:#ededfe; color:#4649f6; font:600 12px Inter; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:5px;">Add wallet <span style="display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="12" hint-size="12px,12px"></x-import></span></button>
+                          </sc-if>
+                          <sc-if value="{{ op.draftAddCallData }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ op.onAddCallData }}" style="flex:1; height:26px; border:0; border-radius:34px; background:#4649f6; color:#fff; font:600 12px Inter; cursor:pointer;">Add call data</button>
+                          </sc-if>
+                        </div>
+
+                        <span style="width:16px; flex:0 0 16px;"></span>
+                        <span onClick="{{ op.onToggle }}" style="color:#c3c3cb; display:inline-flex; cursor:pointer; transition:transform .15s ease; transform:rotate({{ op.chevronRot }}deg);"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="16" hint-size="16px,16px"></x-import></span>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ op.notDraft }}" hint-placeholder-val="{{ true }}">
+                    <div style="flex:1; min-width:0; display:flex; align-items:center; gap:14px;">
+                      <div style="width:{{ submitterColW }}; flex:0 0 {{ submitterColW }}; display:flex; align-items:center; gap:8px; overflow:hidden;">
+                        <img class="nsimg" data-src="{{ op.acctIcon }}" width="28" height="28" style="flex:0 0 28px; border-radius:50%; background:#fff;" alt="">
+                        <div style="min-width:0; overflow:hidden;">
+                          <div style="font:500 13px Inter; color:#363643; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ op.addrTop }}</div>
+                          <div style="font:400 12px Inter; color:#a4a4ad; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ op.addrBottom }}</div>
+                        </div>
+                      </div>
+
+                      <div style="flex:1; min-width:0; padding-left:16px;" title="{{ op.descTitle }}">
+                        <sc-if value="{{ op.hasDescription }}" hint-placeholder-val="{{ false }}">
+                          <span style="display:block; font:400 13px Inter; color:#79797d; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ op.description }}</span>
+                        </sc-if>
+                        <sc-if value="{{ op.showAddDescYes }}" hint-placeholder-val="{{ false }}">
+                          <span onClick="{{ op.onEdit }}" class="nsadddesc nslink" title="Add description" style="display:inline-flex; align-items:center; gap:5px; font:500 13px Inter; color:#4649f6; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="add" size="13" hint-size="13px,13px"></x-import> Add description</span>
+                        </sc-if>
+                        <sc-if value="{{ op.showAddDescNo }}" hint-placeholder-val="{{ false }}">
+                          <span class="nsadddesc" title="{{ op.addDescTooltip }}" style="display:inline-flex; align-items:center; gap:5px; font:500 13px Inter; color:#c3c3cb; cursor:not-allowed;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="lock" size="13" hint-size="13px,13px"></x-import> Add description</span>
+                        </sc-if>
+                      </div>
+
+                      <div style="display:flex; align-items:center; gap:8px; flex:0 0 auto;">
+                        <div style="width:96px; flex:0 0 96px; display:flex; justify-content:flex-start;">
+                          <sc-if value="{{ op.fromDraft }}" hint-placeholder-val="{{ false }}">
+                            <div title="{{ op.description }}" style="display:inline-flex; align-items:center; padding:3px 9px; border:1px solid #4649f64d; border-radius:20px; background:#4649f614;">
+                              <span style="font:600 10px Inter; color:#4649f6; letter-spacing:.04em; white-space:nowrap;">FROM DRAFT</span>
+                            </div>
+                          </sc-if>
+                        </div>
+                        <div style="width:110px; display:flex; justify-content:center; margin:0 4px;" data-comment-anchor="1853b857d5-div">
+                          <div style="display:inline-flex; align-items:center; padding:3px 9px; border:1px solid #e6e6ec; border-radius:20px;">
+                            <span style="font:600 10px Inter; letter-spacing:.03em; white-space:nowrap; color:{{ op.statusColor }};">{{ op.statusText }}</span>
+                          </div>
+                        </div>
+
+                        <div style="width:{{ actionsColW }}; flex:0 0 {{ actionsColW }}; display:flex; align-items:center; gap:8px; justify-content:flex-end;">
+                          <sc-if value="{{ op.showReject }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ op.onReject }}" style="flex:1; height:26px; border:0; border-radius:34px; background:#f521630f; color:#f52163; font:600 12px Inter; cursor:pointer;">Reject</button>
+                          </sc-if>
+                          <sc-if value="{{ op.showApprove }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ op.onApprove }}" style="flex:1; height:26px; border:0; border-radius:34px; background:#4649f6; color:#fff; font:600 12px Inter; cursor:pointer;">Approve</button>
+                          </sc-if>
+                        </div>
+
+                        <span style="width:16px; flex:0 0 16px;"></span>
+                        <span onClick="{{ op.onToggle }}" style="color:#c3c3cb; display:inline-flex; cursor:pointer; transition:transform .15s ease; transform:rotate({{ op.chevronRot }}deg);"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="16" hint-size="16px,16px"></x-import></span>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                </div>
+
+                <sc-if value="{{ op.expanded }}" hint-placeholder-val="{{ false }}">
+                  <div style="border-top:1px solid #4545890f;">
+                    <div style="display:flex; align-items:stretch;">
+                    <div style="flex:1; min-width:0; padding:18px 24px; display:flex; flex-direction:column; gap:14px;">
+                      <div style="font:600 14px Inter; color:#363643;">Details</div>
+
+                      <sc-if value="{{ op.recipient }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                          <span style="font:400 13px Inter; color:#79797d;">Recipient</span>
+                          <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                            <img class="nsimg" data-src="{{ op.recipientIcon }}" width="22" height="22" style="flex:0 0 22px; border-radius:50%;" alt="">
+                            <div style="min-width:0; text-align:right;">
+                              <div style="font:500 13px Inter; color:#363643; white-space:nowrap;">{{ op.recipientName }}</div>
+                              <div style="font:400 11px Inter; color:#a4a4ad; font-family:'SF Mono',ui-monospace,monospace;">{{ op.recipient }}</div>
+                            </div>
+                            <span class="nscopy" style="display:inline-flex; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="copy" size="14" hint-size="14px,14px"></x-import></span>
+                          </div>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{ op.showInitiator }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                          <span style="font:400 13px Inter; color:#79797d;">Initiator</span>
+                          <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                            <img class="nsimg" data-src="{{ op.initiatorIcon }}" width="22" height="22" style="flex:0 0 22px; border-radius:50%;" alt="">
+                            <div style="min-width:0; text-align:right;">
+                              <div style="font:500 13px Inter; color:#363643; white-space:nowrap;">{{ op.initiatorName }}</div>
+                              <div style="font:400 11px Inter; color:#a4a4ad; font-family:'SF Mono',ui-monospace,monospace;">{{ op.initiatorAddr }}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </sc-if>
+
+                      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                        <span style="font:400 13px Inter; color:#79797d;">Network</span>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <img class="nsimg" data-src="{{ op.chainIcon }}" width="18" height="18" style="flex:0 0 18px;" alt="">
+                          <span style="font:500 13px Inter; color:#363643;">{{ op.chain }}</span>
+                        </div>
+                      </div>
+
+                      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                        <span style="font:400 13px Inter; color:#79797d;">Date &amp; Time</span>
+                        <span style="font:500 13px Inter; color:#363643;">{{ op.dateTime }}</span>
+                      </div>
+
+                      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">
+                        <span style="font:400 13px Inter; color:#79797d; flex:0 0 auto;">Description</span>
+                        <div style="display:flex; align-items:center; gap:8px; min-width:0; justify-content:flex-end;">
+                          <sc-if value="{{ op.hasDescription }}" hint-placeholder-val="{{ true }}">
+                            <span style="font:500 13px Inter; color:#363643; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ op.description }}</span>
+                            <span onClick="{{ op.onOpenDesc }}" class="nslink" title="Open description" data-comment-anchor="26d8bc8b4a-span" style="font:600 13px Inter; color:#4649f6; cursor:pointer; flex:0 0 auto;">Open</span>
+                          </sc-if>
+                          <sc-if value="{{ op.noDescDetail }}" hint-placeholder-val="{{ false }}">
+                            <span onClick="{{ op.onOpenDesc }}" class="nslink" style="font:600 13px Inter; color:#4649f6; cursor:pointer;">Add description</span>
+                          </sc-if>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="width:1px; flex:0 0 1px; background:#4545890f;"></div>
+
+                    <div style="flex:1; min-width:0; padding:18px 24px; display:flex; flex-direction:column; gap:2px;">
+                      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                        <span onClick="{{ op.onTabSignatories }}" style="font:600 14px Inter; color:{{ op.sigTabColor }}; cursor:pointer;">Signatories</span>
+                        <span onClick="{{ op.onTabLog }}" style="display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border-radius:8px; background:{{ op.logTabBg }}; cursor:pointer;">
+                          <span style="font:600 12px Inter; color:{{ op.logTabColor }};">Log</span>
+                          <span style="min-width:16px; height:16px; padding:0 5px; border-radius:8px; background:#4545890f; color:#79797d; font:600 10px Inter; display:inline-flex; align-items:center; justify-content:center;">{{ op.logCount }}</span>
+                        </span>
+                        <span style="flex:1;"></span>
+                        <button onClick="{{ op.onOverview }}" class="nstoolbtn" data-comment-anchor="9f5cdc7646-span" title="Overview account structure" style="width:30px; height:30px; border-radius:8px; border:0; background:transparent; display:inline-flex; align-items:center; justify-content:center; color:#79797d; cursor:pointer;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.4 8H7.2M7.2 8V4.4C7.2 4.18 7.38 4 7.6 4H10.4M7.2 8V11.6C7.2 11.82 7.38 12 7.6 12H10.4" stroke="#79797d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="2.6" cy="8" r="1.7" fill="#79797d"></circle><circle cx="11.6" cy="4" r="1.7" fill="#79797d"></circle><circle cx="11.6" cy="12" r="1.7" fill="#79797d"></circle></svg></button>
+                        <span onClick="{{ op.onShare }}" class="nstoolbtn" title="Share operation link" style="width:30px; height:30px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; color:#79797d; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="share" size="16" hint-size="16px,16px"></x-import></span>
+                      </div>
+
+                      <sc-if value="{{ op.showSignatories }}" hint-placeholder-val="{{ true }}">
+                        <sc-for list="{{ op.signatories }}" as="s" hint-placeholder-count="2">
+                          <div style="display:flex; align-items:center; gap:10px; padding:7px 0;">
+                            <img class="nsimg" data-src="{{ s.icon }}" width="28" height="28" style="flex:0 0 28px; border-radius:50%;" alt="">
+                            <div style="flex:1; min-width:0;">
+                              <div style="font:500 13px Inter; color:#363643; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ s.name }}</div>
+                              <div style="font:400 11px Inter; color:#a4a4ad; font-family:'SF Mono',ui-monospace,monospace;">{{ s.addr }}</div>
+                            </div>
+                            <span style="display:inline-flex; align-items:center; padding:3px 8px; border:1px solid {{ s.pillBorder }}; border-radius:20px;">
+                              <span style="font:600 10px Inter; letter-spacing:.04em; color:{{ s.pillColor }};">{{ s.pillText }}</span>
+                            </span>
+                          </div>
+                        </sc-for>
+                      </sc-if>
+
+                      <sc-if value="{{ op.showLog }}" hint-placeholder-val="{{ false }}">
+                        <sc-for list="{{ op.logEntries }}" as="l" hint-placeholder-count="2">
+                          <div style="display:flex; align-items:flex-start; gap:10px; padding:7px 0;">
+                            <span style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; flex:0 0 24px; border-radius:50%; background:{{ l.iconBg }};"><span style="display:inline-flex; color:#fff;" class="nsglyph"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="{{ l.icon }}" size="13" hint-size="13px,13px"></x-import></span></span>
+                            <div style="flex:1; min-width:0;">
+                              <div style="font:500 13px Inter; color:#363643;">{{ l.title }}</div>
+                              <div style="font:400 11px Inter; color:#a4a4ad;">{{ l.sub }}</div>
+                            </div>
+                          </div>
+                        </sc-for>
+                      </sc-if>
+                    </div>
+
+                    <div style="width:1px; flex:0 0 1px; background:#4545890f;"></div>
+
+                    <div style="flex:1; min-width:0; padding:18px 24px; display:flex; flex-direction:column; gap:14px;">
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="flex:1; font:600 14px Inter; color:#363643;">Advanced</div>
+                        <sc-if value="{{ op.notDraft }}" hint-placeholder-val="{{ true }}">
+                          <span onClick="{{ op.onHide }}" class="nstoolbtn" title="Hide from your list" style="width:30px; height:30px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; color:#79797d; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="eyeSlashed" size="16" hint-size="16px,16px"></x-import></span>
+                        </sc-if>
+                        <sc-if value="{{ op.canDelete }}" hint-placeholder-val="{{ false }}">
+                          <span onClick="{{ op.onDelete }}" class="nstoolbtn nstoolbtn-del" title="Delete draft" style="width:30px; height:30px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; color:#f52163; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="delete" size="16" hint-size="16px,16px"></x-import></span>
+                        </sc-if>
+                      </div>
+
+                      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                        <span style="font:400 13px Inter; color:#79797d;">Call Hash</span>
+                        <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                          <span style="font:500 13px Inter; color:#363643; font-family:'SF Mono',ui-monospace,monospace;">{{ op.callHash }}</span>
+                          <span class="nscopy" style="display:inline-flex; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="copy" size="14" hint-size="14px,14px"></x-import></span>
+                        </div>
+                      </div>
+
+                      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                        <span style="font:400 13px Inter; color:#79797d;">Call Data</span>
+                        <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                          <span style="font:500 13px Inter; color:#363643; font-family:'SF Mono',ui-monospace,monospace;">{{ op.callData }}</span>
+                          <span class="nscopy" style="display:inline-flex; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="copy" size="14" hint-size="14px,14px"></x-import></span>
+                        </div>
+                      </div>
+
+                      <sc-if value="{{ op.notDraft }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                        <span style="font:400 13px Inter; color:#79797d;" data-comment-anchor="a06323b3e0-span">Time Point</span>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <span style="font:500 13px Inter; color:#363643;">{{ op.timePoint }}</span>
+                          <span class="nscopy" style="display:inline-flex; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="globe" size="14" hint-size="14px,14px"></x-import></span>
+                        </div>
+                      </div>
+                      </sc-if>
+                    </div>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ g.showNewDraft }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ onAddDraft }}" class="nsnewdraft" style="display:flex; align-items:center; justify-content:center; gap:8px; height:48px; border:1.5px dashed #c9c9e6; border-radius:8px; color:#868692; cursor:pointer; transition:border-color .12s, color .12s;">
+                <span style="display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="addCircle" size="18" hint-size="18px,18px"></x-import></span>
+                <span style="font:500 13px Inter;">New draft</span>
+              </div>
+            </sc-if>
+          </div>
+          </sc-if>
+          </div>
+          <sc-if value="{{ g.disconnected }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:5;">
+              <button onClick="{{ onReconnect }}" style="display:inline-flex; align-items:center; gap:9px; height:46px; padding:0 24px; border:1px solid #4545891f; border-radius:26px; background:#fafafb; color:#363643; font:600 14px Inter; cursor:pointer;">
+                <span style="display:inline-flex; animation:{{ reconnectAnim }};"><svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.9 7.5a5.4 5.4 0 1 1-1.6-3.83" stroke="#363643" stroke-width="1.5" stroke-linecap="round"></path><path d="M13 1.6v2.3h-2.3" stroke="#363643" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                {{ reconnectLabel }}
+              </button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:90px 0; gap:6px;">
+          <span style="font:500 15px Inter; color:#79797d;">{{ emptyText }}</span>
+          <span style="font:400 13px Inter; color:#a4a4ad;">Try adjusting filters or search</span>
+        </div>
+      </sc-if>
+      </div>
+    </div>
+  </main>
+
+  <sc-if value="{{ overviewOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ onCloseOverview }}" style="position:fixed; inset:0; background:rgba(54,54,67,.42); z-index:130; display:flex; align-items:center; justify-content:center; padding:28px;">
+      <div onClick="{{ onModalStop }}" style="width:100%; max-width:1280px; height:86vh; background:#fff; border-radius:16px; box-shadow:0 20px 60px rgba(54,54,67,.28); display:flex; flex-direction:column; overflow:hidden;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 24px;">
+          <span style="font:700 18px Inter; color:#363643;">Account Overview</span>
+          <span onClick="{{ onCloseOverview }}" style="display:inline-flex; color:#a4a4ad; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="close" size="18" hint-size="18px,18px"></x-import></span>
+        </div>
+        <div style="flex:1; min-height:0; background:#fafafb; background-image:radial-gradient(#dcdce4 1px, transparent 1px); background-size:26px 26px; overflow:auto; display:flex; flex-direction:column;">
+          <div style="display:flex; align-items:center; gap:14px; padding:16px 20px 0;">
+            <div style="display:flex; align-items:center; gap:8px; height:38px; padding:0 12px; background:#fff; border:1px solid #4545891f; border-radius:10px; font:500 13px Inter; color:#363643; cursor:pointer;">
+              <img class="nsimg" data-src="{{ ovChainIcon }}" width="18" height="18" style="flex:0 0 18px;" alt="">
+              {{ ovChain }}
+              <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="14" hint-size="14px,14px"></x-import></span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; height:38px; padding:0 12px; background:#fff; border:1px solid #4545891f; border-radius:10px; font:500 13px Inter; color:#363643; cursor:pointer;">
+              <img class="nsimg" data-src="{{ ovAcctIcon }}" width="18" height="18" style="flex:0 0 18px; border-radius:50%;" alt="">
+              {{ ovName }}
+              <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="14" hint-size="14px,14px"></x-import></span>
+            </div>
+            <span class="nslink" style="font:600 13px Inter; color:#4649f6; cursor:pointer;">Focus on selected</span>
+            <span style="flex:1;"></span>
+            <span class="nslink" style="font:600 13px Inter; color:#4649f6; cursor:pointer;">Reset</span>
+            <div style="display:flex; align-items:center; gap:8px; height:38px; padding:0 12px; background:#fff; border:1px solid #4545891f; border-radius:10px; font:500 13px Inter; color:#363643; cursor:pointer;">
+              Bezier Curve
+              <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="14" hint-size="14px,14px"></x-import></span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; height:38px; padding:0 12px; background:#fff; border:1px solid #4545891f; border-radius:10px; font:500 13px Inter; color:#363643; cursor:pointer;">
+              Dashed
+              <span style="color:#a4a4ad; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="shelfDown" size="14" hint-size="14px,14px"></x-import></span>
+            </div>
+          </div>
+          <div style="position:relative; width:1160px; height:600px; margin:24px auto 20px; flex:0 0 auto;">
+            <svg width="1160" height="600" viewBox="0 0 1160 600" fill="none" style="position:absolute; inset:0;" xmlns="http://www.w3.org/2000/svg">
+              <sc-for list="{{ ovCurves }}" as="c" hint-placeholder-count="2">
+                <path d="{{ c.d }}" stroke="#14a793" stroke-width="2.5" stroke-dasharray="8 8"></path>
+              </sc-for>
+              <path d="M 746 284 L 770 300 L 746 316" stroke="#14a793" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <sc-for list="{{ ovSigs }}" as="s" hint-placeholder-count="2">
+              <div style="position:absolute; left:40px; top:{{ s.top }}; width:310px; background:#fff; border-radius:10px; box-shadow:0 2px 12px rgba(54,54,67,.10); border-left:4px solid #e3e3ea;">
+                <div style="padding:13px 18px 11px; border-bottom:1px solid #4545890f; font:600 17px Inter; color:#363643;">Signatory</div>
+                <div style="display:flex; align-items:center; gap:12px; padding:13px 18px;">
+                  <img class="nsimg" data-src="{{ s.icon }}" width="36" height="36" style="flex:0 0 36px; border-radius:50%;" alt="">
+                  <div style="min-width:0;">
+                    <div style="font:500 15px Inter; color:#363643; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ s.name }}</div>
+                    <div style="font:400 13px Inter; color:#a4a4ad;">{{ s.addr }}</div>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="position:absolute; left:780px; top:238px; width:340px; border-radius:10px; overflow:hidden; box-shadow:0 6px 20px rgba(20,167,147,.22); border-left:4px solid #0e8d7c;">
+              <div style="display:flex; align-items:center; justify-content:space-between; background:#14a793; padding:12px 16px;">
+                <span style="font:700 17px Inter; color:#fff;">Multisig</span>
+                <span style="font:600 15px Inter; color:#fff;">{{ ovRatio }}</span>
+              </div>
+              <div style="background:#fff; display:flex; align-items:center; gap:12px; padding:13px 16px;">
+                <img class="nsimg" data-src="{{ ovAcctIcon }}" width="36" height="36" style="flex:0 0 36px; border-radius:50%;" alt="">
+                <div style="min-width:0;">
+                  <div style="font:500 15px Inter; color:#363643;">{{ ovName }}</div>
+                  <div style="font:400 13px Inter; color:#a4a4ad;">{{ ovAddr }}</div>
+                </div>
+              </div>
+            </div>
+            <div style="position:absolute; left:12px; bottom:12px; display:flex; flex-direction:column; gap:6px;">
+              <div style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #4545891f; border-radius:8px; color:#363643; font:500 17px Inter; cursor:pointer;">+</div>
+              <div style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #4545891f; border-radius:8px; color:#363643; font:500 17px Inter; cursor:pointer;">&#8722;</div>
+              <div style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #4545891f; border-radius:8px; color:#363643; cursor:pointer;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 4.5V1h3.5M13 4.5V1H9.5M1 9.5V13h3.5M13 9.5V13H9.5" stroke="#363643" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toastVisible }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; right:24px; bottom:24px; z-index:140; display:flex; align-items:center; gap:10px; background:#fff; border-radius:12px; box-shadow:0 8px 30px rgba(54,54,67,.18); padding:15px 20px; min-width:280px;">
+      <span style="color:#01a63e; display:inline-flex;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="checkmarkOutline" size="18" hint-size="18px,18px"></x-import></span>
+      <span style="font:500 14px Inter; color:#363643;">Operation link copied!</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ descModalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ onCloseDesc }}" style="position:fixed; inset:0; background:rgba(54,54,67,.42); z-index:120; display:flex; align-items:center; justify-content:center; padding:24px;">
+      <div onClick="{{ onModalStop }}" style="width:460px; max-width:100%; background:#fff; border-radius:16px; box-shadow:0 20px 60px rgba(54,54,67,.28); padding:22px 22px 18px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+          <span style="font:600 16px Inter; color:#363643;">Description</span>
+          <span onClick="{{ onCloseDesc }}" style="display:inline-flex; color:#a4a4ad; cursor:pointer;"><x-import component-from-global-scope="NovaSpektrUIKit.Icon" name="close" size="18" hint-size="18px,18px"></x-import></span>
+        </div>
+        <textarea value="{{ descModalText }}" onChange="{{ onDescChange }}" placeholder="Describe this operation so signatories know what they are approving" style="width:100%; box-sizing:border-box; min-height:120px; resize:vertical; border:1px solid #4545891f; border-radius:10px; padding:12px 14px; font:400 14px Inter; color:#363643; outline:none;"></textarea>
+        <div style="display:flex; align-items:center; justify-content:flex-end; gap:8px; margin-top:16px;">
+          <button onClick="{{ onCloseDesc }}" style="height:36px; padding:0 16px; border:1px solid #4545891f; border-radius:10px; background:#fff; color:#363643; font:600 13px Inter; cursor:pointer;">Cancel</button>
+          <button onClick="{{ onSaveDesc }}" style="height:36px; padding:0 18px; border:0; border-radius:10px; background:#4649f6; color:#fff; font:600 13px Inter; cursor:pointer;">Save</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-import>
+</x-import>
+</x-import>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;showSyncBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Page state&quot;},&quot;connectionState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;connected&quot;,&quot;disconnected&quot;],&quot;default&quot;:&quot;connected&quot;,&quot;tsType&quot;:&quot;'connected' | 'disconnected'&quot;,&quot;section&quot;:&quot;Page state&quot;},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;signatory&quot;,&quot;submitter-only&quot;],&quot;default&quot;:&quot;signatory&quot;,&quot;tsType&quot;:&quot;'signatory' | 'submitter-only'&quot;,&quot;section&quot;:&quot;Permissions&quot;},&quot;operationColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:272,&quot;min&quot;:180,&quot;max&quot;:400,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;valueColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:200,&quot;min&quot;:120,&quot;max&quot;:240,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;submitterColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:200,&quot;min&quot;:120,&quot;max&quot;:240,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;actionsColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:168,&quot;min&quot;:130,&quot;max&quot;:260,&quot;step&quot;:2,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;}}">
+class Component extends DCLogic {
+  A = '_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/assets';
+
+  state = {
+    tab: 'pending', search: '', openDD: null, netSel: {}, typeSel: {}, statusSel: {}, activeNav: 'operations', sortBy: null, sortDir: 'asc', collapsed: {}, detailTabs: {}, descModal: null, sidebarCollapsed: false, overviewId: null, toast: false,
+    ops: [
+      // --- Drafts: created locally, not yet broadcast / signed ---
+      { id: 'dr1', date: '22 Jun 2026', title: 'Transfer', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'transfer',
+        token: 'dot', amount: '1 DOT', fiat: '$8.20',
+        addrTop: 'acct-msig-vault', submitter: 'Msig vault/ext-1', description: 'Notification \u2014 initiator ext-1',
+        txStatus: 'draft', draftState: 'add_wallet', signed: 0, threshold: 2 },
+      { id: 'dr2', date: '20 May 2026', title: 'Transfer All', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'transfer',
+        addrTop: 'acct-pure-proxy', submitter: 'Financial Pure Proxy', description: 'Sweep ops hot wallet',
+        txStatus: 'draft', draftState: 'submit', locked: true, signed: 0, threshold: 2 },
+      { id: 'dr3', date: '20 May 2026', title: 'System: Remark with event', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'unknown',
+        addrTop: 'acct-pure-proxy', submitter: 'Financial Pure Proxy', description: 'Governance remark \u2014 Q2 report',
+        txStatus: 'draft', draftState: 'submit', signed: 0, threshold: 3 },
+      { id: 'dr4', date: '20 May 2026', title: 'Vote', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'vote',
+        token: 'dot', amount: '50 DOT', fiat: 'Aye \u00b7 1x',
+        addrTop: 'acct-pure-proxy', submitter: 'Financial Pure Proxy', description: 'Referendum #1284 \u2014 Aye',
+        txStatus: 'draft', draftState: 'submit', signed: 0, threshold: 2 },
+      { id: 'dr5', date: '15 May 2026', title: 'Unknown Operation', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'unknown',
+        addrTop: 'acct-ms-test', submitter: 'MS test', description: 'Imported call \u00b7 needs call data',
+        txStatus: 'draft', draftState: 'add_call_data', signed: 0, threshold: 2 },
+
+      // --- In progress: broadcast, awaiting signatures ---
+      { id: 'ip1', date: '21 May 2026', title: 'Utility: Batch all', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'unknown',
+        description: 'Treasury top-up \u2014 batch 14', inAddressBook: true, fromDraft: true,
+        addrTop: 'acct-treasury', txStatus: 'in_progress', signed: 1, threshold: 2, reject: true, approve: true },
+      { id: 'ip2', date: '18 May 2026', title: 'System: Remark with event', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'unknown',
+        inAddressBook: true,
+        addrTop: 'acct-treasury', txStatus: 'in_progress', signed: 1, threshold: 3, reject: true, approve: true },
+      { id: 'ip3', date: '9 May 2026', title: 'Transfer', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'transfer',
+        token: 'dot', amount: '0.1 DOT', fiat: '$0.08493', inAddressBook: false,
+        addrTop: 'acct-payouts', txStatus: 'in_progress', signed: 1, threshold: 2, reject: true, approve: true },
+      { id: 'ip4', date: '2 May 2026', title: 'Edit flexible multisig', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'edit', badge: 'VERIFIED SWAP',
+        description: 'Flexible multisig \u2014 new threshold', inAddressBook: true,
+        addrTop: 'acct-flex', txStatus: 'in_progress', signed: 2, threshold: 3, reject: false, approve: true },
+      { id: 'ip5', date: '30 Apr 2026', title: 'Transfer', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'transfer',
+        token: 'dot', amount: '320 DOT', fiat: '$2,624.00', inAddressBook: true, description: 'Contributor payouts \u2014 April',
+        addrTop: 'acct-payouts', txStatus: 'in_progress', signed: 1, threshold: 2, reject: true, approve: true },
+      { id: 'ip6', date: '28 Apr 2026', title: 'Transfer', chain: 'Kusama', chainIcon: 'kusama', kind: 'transfer',
+        token: 'ksm', amount: '12 KSM', fiat: '$280.80', inAddressBook: true, description: 'KSM ops replenish',
+        addrTop: 'acct-ksm', txStatus: 'in_progress', signed: 0, threshold: 2, reject: true, approve: true },
+      { id: 'ip7', date: '26 Apr 2026', title: 'Vote', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'vote',
+        token: 'dot', amount: '120 DOT', fiat: 'Nay \u00b7 2x', inAddressBook: true, description: 'Referendum #1291 \u2014 Nay',
+        addrTop: 'acct-treasury', txStatus: 'in_progress', signed: 1, threshold: 3, reject: true, approve: true },
+      { id: 'ip8', date: '24 Apr 2026', title: 'Utility: Batch all', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'unknown',
+        inAddressBook: false,
+        addrTop: 'acct-ops', txStatus: 'in_progress', signed: 1, threshold: 2, reject: true, approve: true },
+      { id: 'ip9', date: '23 Apr 2026', title: 'Transfer', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'transfer',
+        token: 'usdt', amount: '5,000 USDT', fiat: '$5,000.00', inAddressBook: true, fromDraft: true, description: 'Vendor invoice #204',
+        addrTop: 'acct-treasury', txStatus: 'in_progress', signed: 2, threshold: 3, reject: true, approve: true },
+      { id: 'ip10', date: '22 Apr 2026', title: 'System: Remark with event', chain: 'Kusama', chainIcon: 'kusama', kind: 'unknown',
+        inAddressBook: true, description: 'On-chain memo \u2014 audit ref',
+        addrTop: 'acct-ksm', txStatus: 'in_progress', signed: 1, threshold: 2, reject: true, approve: true },
+
+      // --- Completed: executed on-chain ---
+      { id: 'cp1', date: '21 Apr 2026', title: 'Transfer', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'transfer',
+        token: 'dot', amount: '250 DOT', fiat: '$2,050.00',
+        addrTop: 'acct-payouts', txStatus: 'completed', signed: 2, threshold: 2 },
+      { id: 'cp2', date: '12 Apr 2026', title: 'Utility: Batch all', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'unknown',
+        addrTop: 'acct-treasury', txStatus: 'completed', signed: 2, threshold: 2 },
+      { id: 'cp3', date: '5 Mar 2026', title: 'Transfer', chain: 'Kusama', chainIcon: 'kusama', kind: 'transfer',
+        token: 'ksm', amount: '4.2 KSM', fiat: '$98.28',
+        addrTop: 'acct-ksm', txStatus: 'completed', signed: 2, threshold: 2 },
+
+      // --- Rejected / cancelled ---
+      { id: 'cn1', date: '28 Feb 2026', title: 'Transfer', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'transfer',
+        token: 'dot', amount: '1,000 DOT', fiat: '$8,200.00',
+        addrTop: 'acct-treasury', txStatus: 'cancelled', signed: 1, threshold: 2 },
+      { id: 'cn2', date: '31 Jan 2026', title: 'Utility: Batch all', chain: 'Kusama', chainIcon: 'kusama', kind: 'unknown',
+        addrTop: 'acct-ops', txStatus: 'cancelled', signed: 0, threshold: 3 }
+    ]
+  };
+
+  componentDidMount() { this.syncImgs(); this.waitIcon(); }
+  componentDidUpdate() { this.syncImgs(); }
+  waitIcon() {
+    if (typeof window !== 'undefined' && window.nsPolkadotIcon) { this.forceUpdate(); return; }
+    if (this._t === undefined) this._t = 0;
+    if (this._t++ < 80) setTimeout(() => this.waitIcon(), 50);
+  }
+  syncImgs() {
+    document.querySelectorAll('img.nsimg').forEach(im => {
+      const d = im.getAttribute('data-src');
+      if (d && d.indexOf('{{') < 0 && im.getAttribute('src') !== d) im.setAttribute('src', d);
+    });
+  }
+
+  hash(s) { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h; }
+
+  idicon(seed) { return (typeof window !== 'undefined' && window.nsPolkadotIcon) ? window.nsPolkadotIcon(seed, 64) : this.fallbackIdicon(seed); }
+
+  fallbackIdicon(seed) {
+    const positions = [[0, 0]];
+    for (let i = 0; i < 6; i++) { const a = Math.PI / 180 * (i * 60); positions.push([Math.cos(a) * 11, Math.sin(a) * 11]); }
+    for (let i = 0; i < 12; i++) { const a = Math.PI / 180 * (i * 30 + 15); positions.push([Math.cos(a) * 22, Math.sin(a) * 22]); }
+    let h = this.hash(seed || 'x');
+    const dots = positions.map((p) => {
+      h = (Math.imul(h, 1103515245) + 12345) >>> 0;
+      const hue = h % 360; const sat = 58 + (h >> 9) % 26; const lig = 46 + (h >> 17) % 20;
+      return '<circle cx="' + (p[0] + 32).toFixed(1) + '" cy="' + (p[1] + 32).toFixed(1) + '" r="5.2" fill="hsl(' + hue + ',' + sat + '%,' + lig + '%)"/>';
+    }).join('');
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#fff"/>' + dots + '</svg>';
+    return 'data:image/svg+xml;base64,' + btoa(svg);
+  }
+
+  approve(id) {
+    this.setState(s => ({ ops: s.ops.map(o => {
+      if (o.id !== id) return o;
+      const signed = Math.min(o.signed + 1, o.threshold);
+      const done = signed >= o.threshold;
+      return { ...o, signed, txStatus: done ? 'completed' : 'in_progress', reject: done ? false : o.reject, approve: done ? false : o.approve };
+    }) }));
+  }
+
+  reject(id) {
+    this.setState(s => ({ ops: s.ops.map(o => o.id === id ? { ...o, txStatus: 'cancelled', reject: false, approve: false } : o) }));
+  }
+
+  continueDraft(id) {
+    this.setState(s => ({ ops: s.ops.map(o => o.id === id ? { ...o, txStatus: 'in_progress', reject: true, approve: true } : o) }));
+  }
+
+  submitDraft(id) {
+    this.setState(s => ({ ops: s.ops.map(o => o.id === id ? { ...o, txStatus: 'in_progress', signed: 1, reject: true, approve: true } : o) }));
+  }
+
+  openDescModal(id) { const op = this.state.ops.find(o => o.id === id); this.setState({ descModal: { id, text: (op && op.description) || '' } }); }
+  onDescChange(e) { const v = e && e.target ? e.target.value : ''; this.setState(s => ({ descModal: { id: s.descModal.id, text: v } })); }
+  saveDescModal() { this.setState(s => ({ ops: s.ops.map(o => o.id === s.descModal.id ? { ...o, description: s.descModal.text } : o), descModal: null })); }
+  closeDescModal() { this.setState({ descModal: null }); }
+
+  deleteDraft(id) {
+    this.setState(s => ({ ops: s.ops.filter(o => o.id !== id) }));
+  }
+
+  hideOp(id) {
+    this.setState(s => ({ ops: s.ops.map(o => o.id === id ? { ...o, hidden: true, expanded: false } : o) }));
+  }
+
+  addDraft() {
+    const draft = { id: 'dr-new-' + Date.now(), date: 'Today', title: 'Unknown Operation', chain: 'Polkadot Asset Hub', chainIcon: 'asset-hub', kind: 'unknown',
+      addrTop: 'acct-ms-test', submitter: 'MS test', description: 'New operation draft', txStatus: 'draft', draftState: 'add_call_data', signed: 0, threshold: 2 };
+    this.setState(s => ({ ops: [draft, ...s.ops] }));
+  }
+
+  toggle(id) {
+    this.setState(s => ({ ops: s.ops.map(o => o.id === id ? { ...o, expanded: !o.expanded } : o) }));
+  }
+
+  faux(s) {
+    const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz123456789';
+    let h = this.hash(s); let out = '';
+    for (let i = 0; i < 11; i++) { h = (Math.imul(h, 1103515245) + 12345) >>> 0; out += a[h % a.length]; }
+    return out.slice(0, 5) + '...' + out.slice(8);
+  }
+
+  addr(seed, prefix) { return (typeof window !== 'undefined' && window.nsAddress) ? window.nsAddress(seed, prefix) : seed; }
+  short(a, x, y) { return (typeof window !== 'undefined' && window.nsShort) ? window.nsShort(a, x, y) : a; }
+
+  opType(o) {
+    const t = (o.title || '').toLowerCase();
+    if (t.indexOf('transfer') === 0) return 'Transfer';
+    if (t.indexOf('utility') === 0) return 'Utility';
+    if (t.indexOf('system') === 0) return 'System';
+    if (t.indexOf('edit') === 0) return 'Edit';
+    return 'Other';
+  }
+
+  setTab(tab) { this.setState({ tab, openDD: null }); }
+  onSearch(e) { this.setState({ search: e && e.target ? e.target.value : '' }); }
+  toggleDD(name) { this.setState(s => ({ openDD: s.openDD === name ? null : name })); }
+  toggleNet(name) { this.setState(s => { const n = { ...s.netSel }; n[name] = !n[name]; return { netSel: n }; }); }
+  toggleType(name) { this.setState(s => { const t = { ...s.typeSel }; t[name] = !t[name]; return { typeSel: t }; }); }
+  toggleStatus(key) { this.setState(s => { const t = { ...s.statusSel }; t[key] = !t[key]; return { statusSel: t }; }); }
+  clearFilters() { this.setState({ netSel: {}, typeSel: {}, statusSel: {}, openDD: null }); }
+  canManageDrafts() { return (this.props.role ?? 'signatory') !== 'submitter-only'; }
+  reconnect() { this.setState({ reconnecting: true }); setTimeout(() => this.setState({ reconnecting: false }), 1400); }
+  showToast() { if (this._toastT) clearTimeout(this._toastT); this.setState({ toast: true }); this._toastT = setTimeout(() => this.setState({ toast: false }), 2500); }
+  closeOverview() { this.setState({ overviewId: null }); }
+  setNav(key) { this.setState({ activeNav: key }); }
+  toggleSidebar() { this.setState(s => ({ sidebarCollapsed: !s.sidebarCollapsed })); }
+  toggleCollapse(key) { this.setState(s => { const c = { ...s.collapsed }; c[key] = !c[key]; return { collapsed: c }; }); }
+  setDetailTab(id, tab) { this.setState(s => { const d = { ...(s.detailTabs || {}) }; d[id] = tab; return { detailTabs: d }; }); }
+  setSort(key) {
+    this.setState(s => {
+      if (s.sortBy !== key) return { sortBy: key, sortDir: 'asc' };
+      if (s.sortDir === 'asc') return { sortDir: 'desc' };
+      return { sortBy: null, sortDir: 'asc' };
+    });
+  }
+  sortKeyVal(o, key) {
+    if (key === 'type') return this.opType(o) + ' ' + o.title;
+    if (key === 'param') { if (!o.amount) return -1; const n = parseFloat(String(o.amount).replace(/[^0-9.]/g, '')); return isNaN(n) ? 0 : n; }
+    if (key === 'submitter') return o.addrTop;
+    if (key === 'status') return { draft: 0, in_progress: 1, completed: 2, cancelled: 3 }[o.txStatus] || 0;
+    return 0;
+  }
+
+  vm(o) {
+    const ts = o.txStatus;
+    const iconBg = ts === 'draft' ? '#a4a4ad' : ts === 'in_progress' ? '#f68f07' : ts === 'completed' ? '#01a63e' : '#f52163';
+    const statusText = ts === 'draft' ? 'DRAFT'
+      : ts === 'in_progress' ? (o.signed + ' OF ' + o.threshold + ' SIGNED')
+      : ts === 'completed' ? 'EXECUTED' : 'REJECTED';
+    const statusPallet = ts === 'in_progress' ? 'default' : ts === 'completed' ? 'success' : ts === 'cancelled' ? 'error' : 'default';
+    const statusColor = ts === 'completed' ? '#01a63e' : ts === 'cancelled' ? '#f52163' : '#79797d';
+    const isKsm = o.chainIcon === 'kusama';
+    const fee = isKsm ? '0.000089 KSM' : '0.0151 DOT';
+    const deposit = isKsm ? '0.2 KSM' : '20.008 DOT';
+    const callHash = '0x' + ((this.hash(o.id) >>> 0).toString(16).padStart(8, '0')) + ((this.hash(o.addrTop) >>> 0).toString(16).padStart(8, '0')) + '\u2026';
+    const prefix = isKsm ? 2 : 0;
+    const sender = this.addr(o.addrTop, prefix);
+    const recipientAddr = o.kind === 'transfer' ? this.addr(o.addrTop + '-dest', prefix) : null;
+    const recipientNames = ['Ext-1', 'Cold storage', 'Ops payout', 'Treasury sink'];
+    const recipientName = recipientNames[this.hash(o.addrTop + 'r') % recipientNames.length];
+    const ht = this.hash(o.id) >>> 0;
+    const dateTime = o.date + ', ' + String(8 + (ht % 13)).padStart(2, '0') + ':' + String(ht % 60).padStart(2, '0');
+    const hex8 = (x) => (this.hash(x) >>> 0).toString(16).padStart(8, '0');
+    const callData = (o.draftState === 'add_call_data') ? '\u2014' : ('0x' + hex8(o.id + 'cd') + '\u2026' + hex8(o.addrTop + 'cd'));
+    const timePoint = (o.txStatus === 'draft') ? '\u2014' : ((14000000 + ht % 900000) + '-' + (ht % 6));
+    const sigNames = ['My multisig signatory', 'Hot wallet key', 'Cold storage key'];
+    const signatories = [];
+    for (let i = 0; i < o.threshold; i++) {
+      const ok = i < o.signed;
+      const sigAddr = this.addr(o.addrTop + '#sig' + i, prefix);
+      signatories.push({
+        name: sigNames[i] || ('Signatory ' + (i + 1)),
+        icon: this.idicon(sigAddr),
+        addr: this.short(sigAddr, 6, 6),
+        signed: ok,
+        pillText: ok ? 'SIGNED' : 'UNSIGNED',
+        pillColor: ok ? '#01a63e' : '#a4a4ad',
+        pillBorder: ok ? '#01a63e3d' : '#e6e6ec',
+        statusText: ok ? 'Signed' : 'Pending',
+        statusColor: ok ? '#01a63e' : '#a4a4ad',
+        statusIcon: ok ? 'checkmarkOutline' : 'clock'
+      });
+    }
+    const logEntries = [{ title: 'Operation created', sub: dateTime, icon: 'add', iconBg: '#a4a4ad' }];
+    signatories.forEach(s => { if (s.signed) logEntries.push({ title: 'Approved by ' + s.name, sub: dateTime, icon: 'checkmarkOutline', iconBg: '#01a63e' }); });
+    const dtab = (this.state.detailTabs && this.state.detailTabs[o.id]) || 'signatories';
+    return {
+      ...o,
+      iconBg,
+      isUnknown: o.kind === 'unknown',
+      hasGlyph: o.kind !== 'unknown',
+      glyphIcon: o.kind === 'transfer' ? 'transferMst' : 'editKeys',
+      hasAmount: !!o.token,
+      tokenIcon: o.token ? this.A + '/tokens/' + o.token + '.svg' : '',
+      chainIcon: this.A + '/chains/' + (o.chainIcon === 'asset-hub' ? 'polkadot' : o.chainIcon) + '.svg',
+      acctIcon: this.idicon(sender),
+      addrTop: this.short(sender, 6, 6),
+      addrBottom: this.short(sender, 11, 11),
+      statusText, statusPallet, statusColor,
+      fromDraft: !!o.fromDraft && ts === 'in_progress',
+      showReject: o.reject && ts === 'in_progress',
+      showApprove: o.approve && ts === 'in_progress',
+      showContinue: ts === 'draft',
+      expanded: !!o.expanded,
+      chevronRot: o.expanded ? 180 : 0,
+      isDraft: ts === 'draft',
+      notDraft: ts !== 'draft',
+      titleColor: o.title === 'Unknown Operation' ? '#a4a4ad' : '#363643',
+      submitterName: o.submitter || this.short(sender, 6, 6),
+      description: o.description || '',
+      hasDescription: !!(o.description && o.description.length),
+      showDescCell: !!(o.description && o.description.length) || ts === 'in_progress',
+      showAddDescYes: ts === 'in_progress' && !(o.description && o.description.length) && !!o.inAddressBook,
+      showAddDescNo: ts === 'in_progress' && !(o.description && o.description.length) && !o.inAddressBook,
+      descTitle: (o.description && o.description.length) ? o.description : '',
+      addDescTooltip: this.short(sender, 6, 6) + ' is not in your address book. Contact your admin to add it before describing this operation.',
+      draftSubmit: ts === 'draft' && o.draftState === 'submit',
+      canEdit: ts === 'draft' && !o.locked && this.canManageDrafts(),
+      canDelete: ts === 'draft' && !o.locked && this.canManageDrafts(),
+      lockedDraft: ts === 'draft' && !!o.locked,
+      draftAddWallet: ts === 'draft' && o.draftState === 'add_wallet',
+      draftAddCallData: ts === 'draft' && o.draftState === 'add_call_data',
+      onOverview: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setState({ overviewId: o.id }); },
+      onOpenDesc: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.openDescModal(o.id); },
+      showInitiator: ts === 'draft',
+      initiatorName: signatories[0] ? signatories[0].name : '',
+      initiatorIcon: signatories[0] ? signatories[0].icon : '',
+      initiatorAddr: signatories[0] ? signatories[0].addr : '',
+      onEdit: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+      onSubmit: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.submitDraft(o.id); },
+      onAddWallet: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+      onAddCallData: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+      onDelete: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.deleteDraft(o.id); },
+      onShare: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.showToast(); },
+      onHide: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.hideOp(o.id); },
+      sigText: o.signed + ' of ' + o.threshold,
+      recipient: recipientAddr ? this.short(recipientAddr, 8, 8) : null,
+      recipientIcon: this.idicon(recipientAddr || sender),
+      fee, deposit, callHash, signatories,
+      dateTime, recipientName, callData, timePoint, logEntries,
+      noDescDetail: !(o.description && o.description.length),
+      logCount: o.signed,
+      showSignatories: dtab === 'signatories',
+      showLog: dtab === 'log',
+      sigTabColor: dtab === 'signatories' ? '#363643' : '#a4a4ad',
+      logTabColor: dtab === 'log' ? '#363643' : '#79797d',
+      logTabBg: dtab === 'log' ? '#4545890f' : 'transparent',
+      onTabSignatories: () => this.setDetailTab(o.id, 'signatories'),
+      onTabLog: () => this.setDetailTab(o.id, 'log'),
+      onToggle: () => this.toggle(o.id),
+      onApprove: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.approve(o.id); },
+      onReject: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.reject(o.id); },
+      onContinue: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.continueDraft(o.id); }
+    };
+  }
+
+  renderVals() {
+    const st = this.state;
+    const q = (st.search || '').trim().toLowerCase();
+    const nets = Object.keys(st.netSel).filter(k => st.netSel[k]);
+    const types = Object.keys(st.typeSel).filter(k => st.typeSel[k]);
+    const statuses = Object.keys(st.statusSel).filter(k => st.statusSel[k]);
+    const isPending = st.tab === 'pending';
+
+    const PENDING_STATUSES = ['draft', 'in_progress'];
+    const SECTION_LABELS = { draft: 'Drafts', in_progress: 'In progress', completed: 'Completed', cancelled: 'Rejected', hidden: 'Hidden' };
+    const filtersActive = nets.length > 0 || types.length > 0 || statuses.length > 0;
+    const ALL_STATUSES = ['draft', 'in_progress', 'completed', 'cancelled', 'hidden'];
+    const tabStatuses = filtersActive ? ALL_STATUSES : (isPending ? PENDING_STATUSES : ['completed', 'cancelled']);
+    const eff = (o) => o.hidden ? 'hidden' : o.txStatus;
+
+    let ops;
+    if (filtersActive) {
+      ops = st.ops.filter(o => statuses.length ? statuses.indexOf(eff(o)) >= 0 : !o.hidden);
+    } else {
+      ops = st.ops.filter(o => tabStatuses.indexOf(o.txStatus) >= 0 && !o.hidden);
+    }
+    if (q) ops = ops.filter(o => (o.title + ' ' + o.chain + ' ' + o.addrTop).toLowerCase().indexOf(q) >= 0);
+    if (nets.length) ops = ops.filter(o => nets.indexOf(o.chain) >= 0);
+    if (types.length) ops = ops.filter(o => types.indexOf(this.opType(o)) >= 0);
+
+    const groups = tabStatuses
+      .map(key => ({ key, label: SECTION_LABELS[key], ops: ops.filter(o => eff(o) === key) }))
+      .filter(sec => sec.ops.length > 0)
+      .map(sec => {
+        let rows = sec.ops.slice();
+        if (st.sortBy) {
+          const dir = st.sortDir === 'desc' ? -1 : 1;
+          rows.sort((a, b) => {
+            const va = this.sortKeyVal(a, st.sortBy), vb = this.sortKeyVal(b, st.sortBy);
+            if (va < vb) return -1 * dir;
+            if (va > vb) return 1 * dir;
+            return 0;
+          });
+        }
+        const gDis = ((this.props.connectionState ?? 'connected') === 'disconnected') && sec.key === 'draft';
+        return { label: sec.label, count: sec.ops.length, isDraftGroup: sec.key === 'draft', showNewDraft: sec.key === 'draft' && this.canManageDrafts(), disconnected: gDis, dimOpacity: gDis ? 0.25 : 1, dimPointer: gDis ? 'none' : 'auto', key: sec.key, notCollapsed: !st.collapsed[sec.key], collapseRot: st.collapsed[sec.key] ? 0 : 180, onToggleCollapse: () => this.toggleCollapse(sec.key), ops: rows.map(o => this.vm(o)) };
+      });
+
+    const pendingCount = st.ops.filter(o => PENDING_STATUSES.indexOf(o.txStatus) >= 0 && !o.hidden).length;
+    const historyCount = st.ops.filter(o => PENDING_STATUSES.indexOf(o.txStatus) < 0 && !o.hidden).length;
+    const navKey = st.activeNav;
+    const mkSort = (key) => {
+      const active = st.sortBy === key;
+      return {
+        onClick: () => this.setSort(key),
+        color: active ? '#363643' : '#a4a4ad',
+        activeClass: active ? 'active' : '',
+        upColor: active && st.sortDir === 'asc' ? '#4649f6' : '#c3c3cb',
+        downColor: active && st.sortDir === 'desc' ? '#4649f6' : '#c3c3cb'
+      };
+    };
+    const col = st.sidebarCollapsed;
+    const mkNav = (key, icon, label, opts) => {
+      const hasBadge = !!(opts && opts.badge);
+      return {
+        key, icon, label,
+        chevron: !!(opts && opts.chevron) && !col, badge: opts && opts.badge,
+        showBadge: hasBadge && !col, showLabel: !col,
+        justify: col ? 'center' : 'flex-start', pad: col ? '11px 0' : '9px 10px',
+        dot: col && hasBadge, dotColor: '#4649f6',
+        bg: navKey === key ? 'rgba(70,73,246,.08)' : 'transparent',
+        color: navKey === key ? '#4649f6' : '#363643',
+        iconColor: navKey === key ? '#4649f6' : '#868692',
+        weight: navKey === key ? 600 : 500,
+        onClick: () => this.setNav(key)
+      };
+    };
+
+    return {
+      groups,
+      sidebarExpanded: !col, sidebarCollapsed: col,
+      asideW: col ? '64px' : '240px', asidePad: col ? '14px 8px 10px' : '14px 12px 10px',
+      collapseIcon: col ? 'right' : 'left', collapseLabel: col ? 'Expand' : 'Collapse',
+      collapsePad: col ? '11px 0' : '9px 10px', collapseJustify: col ? 'center' : 'flex-start',
+      onToggleSidebar: () => this.toggleSidebar(),
+      sortType: mkSort('type'),
+      sortParam: mkSort('param'),
+      sortSubmitter: mkSort('submitter'),
+      valueColW: (this.props.valueColWidth ?? 200) + 'px',
+      leftColW: ((this.props.operationColWidth ?? 272) + 8 + (this.props.valueColWidth ?? 200)) + 'px',
+      submitterColW: (this.props.submitterColWidth ?? 200) + 'px',
+      actionsColW: (this.props.actionsColWidth ?? 168) + 'px',
+      sortStatus: mkSort('status'),
+      onAddDraft: () => this.addDraft(),
+      ...(() => {
+        const ovOp = st.overviewId ? st.ops.find(o => o.id === st.overviewId) : null;
+        if (!ovOp) return { overviewOpen: false, ovSigs: [], ovCurves: [], ovChain: '', ovChainIcon: '', ovAcctIcon: '', ovName: '', ovAddr: '', ovRatio: '' };
+        const v = this.vm(ovOp);
+        const n = v.signatories.length;
+        const ys = n === 1 ? [245] : n === 2 ? [120, 370] : [40, 245, 450];
+        return {
+          overviewOpen: true,
+          ovChain: v.chain, ovChainIcon: v.chainIcon, ovAcctIcon: v.acctIcon,
+          ovName: v.addrTop, ovAddr: v.addrBottom,
+          ovRatio: ovOp.signed + ' out of ' + ovOp.threshold,
+          ovSigs: v.signatories.slice(0, 3).map((s, i) => ({ name: s.name, icon: s.icon, addr: s.addr, top: ys[i] + 'px' })),
+          ovCurves: ys.slice(0, n).map(y => ({ d: 'M 352 ' + (y + 78) + ' C 560 ' + (y + 78) + ' 590 300 748 300' }))
+        };
+      })(),
+      onCloseOverview: () => this.closeOverview(),
+      toastVisible: !!st.toast,
+      descModalOpen: !!st.descModal,
+      descModalText: st.descModal ? st.descModal.text : '',
+      onDescChange: (e) => this.onDescChange(e),
+      onSaveDesc: () => this.saveDescModal(),
+      onCloseDesc: () => this.closeDescModal(),
+      onModalStop: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+      isEmpty: groups.length === 0,
+      hasRows: groups.length > 0,
+      emptyText: filtersActive ? 'No operations match the filters' : (isPending ? 'No pending operations' : 'No operations in history'),
+      pendingCount, historyCount,
+      tabsMerged: filtersActive, tabsNotMerged: !filtersActive,
+      mergedCount: groups.reduce((n, g) => n + g.count, 0),
+      filtersActive,
+      onClearFilters: () => this.clearFilters(),
+      showSyncBar: this.props.showSyncBar ?? false,
+      showReconnect: (this.props.connectionState ?? 'connected') === 'disconnected',
+      reconnectLabel: st.reconnecting ? 'Reconnecting\u2026' : 'Reconnect',
+      reconnectAnim: st.reconnecting ? 'nsspin .8s linear infinite' : 'none',
+      onReconnect: () => this.reconnect(),
+      statusCount: statuses.length, statusCountShow: statuses.length > 0,
+      netCount: nets.length, netCountShow: nets.length > 0,
+      typeCount: types.length, typeCountShow: types.length > 0,
+      pendBg: isPending ? '#fff' : 'transparent',
+      pendColor: isPending ? '#363643' : '#79797d',
+      pendShadow: isPending ? '0 1px 2px rgba(54,54,67,.08)' : 'none',
+      histBg: !isPending ? '#fff' : 'transparent',
+      histColor: !isPending ? '#363643' : '#79797d',
+      histShadow: !isPending ? '0 1px 2px rgba(54,54,67,.08)' : 'none',
+      searchVal: st.search,
+      onSearch: (e) => this.onSearch(e),
+      onTabPending: () => this.setTab('pending'),
+      onTabHistory: () => this.setTab('history'),
+      ddNetOpen: st.openDD === 'net',
+      ddTypeOpen: st.openDD === 'type',
+      ddStatusOpen: st.openDD === 'status',
+      statusActive: statuses.length > 0,
+      onToggleNetDD: () => this.toggleDD('net'),
+      onToggleTypeDD: () => this.toggleDD('type'),
+      onToggleStatusDD: () => this.toggleDD('status'),
+      netOptions: ['Polkadot Asset Hub', 'Kusama'].map(n => ({ name: n, onClick: () => this.toggleNet(n), checkColor: st.netSel[n] ? '#4649f6' : 'transparent', borderColor: st.netSel[n] ? '#4649f6' : '#c3c3cb' })),
+      typeOptions: ['Transfer', 'Utility', 'System', 'Edit'].map(n => ({ name: n, onClick: () => this.toggleType(n), checkColor: st.typeSel[n] ? '#4649f6' : 'transparent', borderColor: st.typeSel[n] ? '#4649f6' : '#c3c3cb' })),
+      statusOptions: [['draft', 'Draft'], ['in_progress', 'In progress'], ['completed', 'Completed'], ['cancelled', 'Rejected'], ['hidden', 'Hidden']].map(([k, n]) => ({ name: n, onClick: () => this.toggleStatus(k), checkColor: st.statusSel[k] ? '#4649f6' : 'transparent', borderColor: st.statusSel[k] ? '#4649f6' : '#c3c3cb' })),
+      walletIcon: this.idicon(this.addr('solocrack-wallet', 0)),
+      navTop: [
+        mkNav('portfolio', 'asset', 'Portfolio', {}),
+        mkNav('staking', 'staking', 'Staking', {}),
+        mkNav('governance', 'governance', 'Governance', {}),
+        mkNav('fellowship', 'fellowshipNav', 'Fellowship', {}),
+        mkNav('addressBook', 'addressBook', 'Address Book', {}),
+        mkNav('custom', 'magic', 'Custom operation', { chevron: true })
+      ],
+      navBottom: [
+        mkNav('dashboard', 'dashboard', 'Dashboard', {}),
+        mkNav('operations', 'operations', 'Multisig Operations', { badge: pendingCount }),
+        mkNav('notifications', 'notification', 'Notifications', {}),
+        mkNav('settings', 'settings', 'Settings', {})
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
