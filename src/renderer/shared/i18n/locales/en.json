@@ -2096,7 +2096,6 @@
     "errorSignedMessage": "tried to sign this operation",
     "initiatedMessage": "created this operation",
     "signedMessage": "signed this operation",
-    "title": "Log",
     "unknownMessage": " made an unknown action"
   },
   "multisigOperations": {
@@ -2445,7 +2444,6 @@
     "connectionTimeoutDescription": "Can't connect to the network in 10 seconds. You can retry later with the same link.",
     "connectionTimeoutRetryButton": "Retry",
     "connectionTimeoutTitle": "Connection timeout",
-    "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
     "cancelDescriptionButton": "Cancel",
     "descriptionLabel": "Description",
@@ -2609,7 +2607,6 @@
       "signTitle_other": "Confirm { count } operations on your { walletName } app",
       "tryAgainButton": "Try again"
     },
-    "walletSignatoriesTitle": "Your accounts",
     "xcmFee": "Cross-chain fee"
   },
   "operations": {

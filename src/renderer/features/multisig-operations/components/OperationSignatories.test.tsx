@@ -29,8 +29,6 @@ vi.mock('@/shared/di', () => ({
 vi.mock('@/shared/i18n', () => ({
   useI18n: () => ({
     t: (key: string) => {
-      if (key === 'operation.walletSignatoriesTitle') return 'Your accounts';
-      if (key === 'operation.contactSignatoriesTitle') return 'Contacts';
       if (key === 'operation.signatoriesTitle') return 'Signatories';
       if (key === 'operation.logButton') return 'Log';
       if (key === 'operation.openOverviewButton') return 'Open overview';

@@ -153,7 +153,7 @@ export const DraftRow = ({
       ref={rowRef}
       className={cnTw(
         'rounded bg-block-background-default transition-shadow hover:shadow-card-shadow',
-        isHighlighted && 'ring-2 ring-icon-accent',
+        isHighlighted && 'ring-2 ring-icon-accent ring-inset',
       )}
     >
       <div className="group/row flex h-[68px] w-full items-center gap-x-2 overflow-hidden px-4">
