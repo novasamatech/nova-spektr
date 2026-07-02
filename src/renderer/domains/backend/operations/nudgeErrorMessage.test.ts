@@ -18,19 +18,35 @@ describe('nudgeErrorMessage', () => {
     expect(nudgeErrorMessage(new HttpError(404, 'x'), t)).toBe('operation.notifySigners.errorNotAvailable');
   });
 
-  it('maps 429 with a timestamp to the rate-limited message including the time', () => {
+  it('maps 429 with a near timestamp to the rate-limited message with minutes left', () => {
+    const nextAllowed = new Date(Date.now() + 40 * 60_000).toISOString();
     const error = new HttpError(
       429,
-      '{"message":"Nudge rate limit reached. Next nudge allowed at 2026-07-01T10:00:00.000Z"}',
+      `{"message":"Nudge for this multisig was sent recently. Next nudge allowed at ${nextAllowed}"}`,
     );
 
     const message = nudgeErrorMessage(error, t);
 
     expect(message).toContain('operation.notifySigners.errorRateLimited');
-    expect(message).toContain('time');
-    // July 1 is safe across timezones, so the year is stable. Avoid asserting the full
-    // toLocaleString() output, which is locale/timezone-dependent and would be flaky in CI.
-    expect(message).toContain('2026');
+    expect(message).toContain('operation.notifySigners.durationMinutes');
+    expect(message).toContain('40');
+  });
+
+  it('maps 429 with a distant timestamp to the rate-limited message with hours left', () => {
+    const nextAllowed = new Date(Date.now() + 3 * 3_600_000).toISOString();
+    const error = new HttpError(429, `{"message":"Next nudge allowed at ${nextAllowed}"}`);
+
+    const message = nudgeErrorMessage(error, t);
+
+    expect(message).toContain('operation.notifySigners.errorRateLimited');
+    expect(message).toContain('operation.notifySigners.durationHours');
+    expect(message).toContain('3');
+  });
+
+  it('maps 429 with a timestamp already in the past to the generic rate-limited message', () => {
+    const error = new HttpError(429, '{"message":"Next nudge allowed at 2026-07-01T10:00:00.000Z"}');
+
+    expect(nudgeErrorMessage(error, t)).toBe('operation.notifySigners.errorRateLimitedNoTime');
   });
 
   it('maps 429 without a parseable timestamp to the generic rate-limited message', () => {

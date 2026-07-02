@@ -3,7 +3,12 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const testState = vi.hoisted(() => {
-  const stores = { baseUrl: Symbol('baseUrl'), isHealthy: Symbol('isHealthy') };
+  const stores = {
+    baseUrl: Symbol('baseUrl'),
+    isHealthy: Symbol('isHealthy'),
+    authState: Symbol('authState'),
+    backendContacts: Symbol('backendContacts'),
+  };
 
   return {
     stores,
@@ -41,6 +46,11 @@ vi.mock('@/domains/backend', () => ({
 
 vi.mock('@/aggregates/backend', () => ({
   backendConfigurationModel: { $backendUrl: testState.stores.baseUrl },
+  authModel: { $authState: testState.stores.authState },
+}));
+
+vi.mock('@/entities/contact', () => ({
+  contactModel: { $backendContacts: testState.stores.backendContacts },
 }));
 
 vi.mock('@/features/contacts', () => ({
@@ -65,11 +75,24 @@ vi.mock('@/shared/ui-kit', () => ({
 
 import { NotifySignersButton } from './NotifySignersButton';
 
-const op = (status: string) => ({ id: 'op-1', status }) as any;
+const SESSION_ACCOUNT = 'session-account';
+const MULTISIG_ACCOUNT = 'multisig-account';
+
+const op = (status: string, overrides: Record<string, unknown> = {}) =>
+  ({
+    id: 'op-1',
+    status,
+    multisigAccountId: MULTISIG_ACCOUNT,
+    depositor: SESSION_ACCOUNT,
+    events: [],
+    ...overrides,
+  }) as any;
 
 function setConnected(connected: boolean) {
   testState.values.set(testState.stores.baseUrl, connected ? 'https://backend.test' : null);
   testState.values.set(testState.stores.isHealthy, connected);
+  testState.values.set(testState.stores.authState, { accountId: SESSION_ACCOUNT });
+  testState.values.set(testState.stores.backendContacts, [{ accountId: MULTISIG_ACCOUNT }]);
 }
 
 describe('NotifySignersButton', () => {
@@ -90,9 +113,35 @@ describe('NotifySignersButton', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it('renders nothing when the multisig is not in the external address book', () => {
+    setConnected(true);
+    testState.values.set(testState.stores.backendContacts, [{ accountId: 'some-other-account' }]);
+
+    const { container } = render(<NotifySignersButton operation={op('pending')} />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('disables the button until the session account has signed the operation', () => {
+    setConnected(true);
+
+    render(<NotifySignersButton operation={op('pending', { depositor: 'someone-else' })} />);
+    expect(screen.getByRole('button')).toBeDisabled();
+  });
+
+  it('enables the button when the session account approved via an event', () => {
+    setConnected(true);
+    const operation = op('pending', {
+      depositor: 'someone-else',
+      events: [{ accountId: SESSION_ACCOUNT, status: 'approve' }],
+    });
+
+    render(<NotifySignersButton operation={operation} />);
+    expect(screen.getByRole('button')).not.toBeDisabled();
+  });
+
   it('nudges and shows a success toast when signers are notified', async () => {
     setConnected(true);
-    testState.nudge.mockResolvedValue({ notified: 2, skipped: 0, failed: 0 });
+    testState.nudge.mockResolvedValue({ notified: 2, skipped: 0, failed: 0, notifiedNames: [] });
 
     render(<NotifySignersButton operation={op('pending')} />);
     await userEvent.click(screen.getByRole('button'));
@@ -101,9 +150,31 @@ describe('NotifySignersButton', () => {
     await waitFor(() => expect(testState.toastSuccess).toHaveBeenCalledWith('operation.notifySigners.success'));
   });
 
+  it('shows the named success toast when the backend reports who was notified', async () => {
+    setConnected(true);
+    testState.nudge.mockResolvedValue({ notified: 2, skipped: 0, failed: 0, notifiedNames: ['Alice', 'Bob'] });
+
+    render(<NotifySignersButton operation={op('pending')} />);
+    await userEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => expect(testState.toastSuccess).toHaveBeenCalledWith('operation.notifySigners.successNames'));
+  });
+
+  it('shows the named partial toast when some named signers were unreachable', async () => {
+    setConnected(true);
+    testState.nudge.mockResolvedValue({ notified: 1, skipped: 1, failed: 0, notifiedNames: ['Alice'] });
+
+    render(<NotifySignersButton operation={op('pending')} />);
+    await userEvent.click(screen.getByRole('button'));
+
+    await waitFor(() =>
+      expect(testState.toastSuccess).toHaveBeenCalledWith('operation.notifySigners.successNamesPartial'),
+    );
+  });
+
   it('shows the neutral toast when nobody is pending', async () => {
     setConnected(true);
-    testState.nudge.mockResolvedValue({ notified: 0, skipped: 0, failed: 0 });
+    testState.nudge.mockResolvedValue({ notified: 0, skipped: 0, failed: 0, notifiedNames: [] });
 
     render(<NotifySignersButton operation={op('pending')} />);
     await userEvent.click(screen.getByRole('button'));
@@ -125,7 +196,7 @@ describe('NotifySignersButton', () => {
 
   it('shows an error toast when deliveries fail and nobody was notified', async () => {
     setConnected(true);
-    testState.nudge.mockResolvedValue({ notified: 0, skipped: 0, failed: 3 });
+    testState.nudge.mockResolvedValue({ notified: 0, skipped: 0, failed: 3, notifiedNames: [] });
 
     render(<NotifySignersButton operation={op('pending')} />);
     await userEvent.click(screen.getByRole('button'));
@@ -170,7 +241,7 @@ describe('NotifySignersButton', () => {
 
   it('shows a partial success toast when some signers were notified and some were unreachable', async () => {
     setConnected(true);
-    testState.nudge.mockResolvedValue({ notified: 2, skipped: 0, failed: 1 });
+    testState.nudge.mockResolvedValue({ notified: 2, skipped: 0, failed: 1, notifiedNames: [] });
 
     render(<NotifySignersButton operation={op('pending')} />);
     await userEvent.click(screen.getByRole('button'));
@@ -193,7 +264,7 @@ describe('NotifySignersButton', () => {
     await userEvent.click(screen.getByRole('button'));
     expect(screen.getByRole('button')).toBeDisabled();
 
-    resolveNudge!({ notified: 1, skipped: 0, failed: 0 });
+    resolveNudge!({ notified: 1, skipped: 0, failed: 0, notifiedNames: [] });
     await waitFor(() => expect(screen.getByRole('button')).not.toBeDisabled());
   });
 });

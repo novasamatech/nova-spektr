@@ -12,8 +12,16 @@ export function nudgeErrorMessage(error: unknown, t: TFunction): string {
       const match = error.message.match(ISO_TIMESTAMP);
       if (match) {
         const date = new Date(match[1]!);
-        if (!Number.isNaN(date.getTime())) {
-          return t('operation.notifySigners.errorRateLimited', { time: date.toLocaleString() });
+        // The cooldown is shared per multisig, so phrase the wait as a duration rather than
+        // an absolute time — "in 40 minutes" reads the same regardless of who pinged last.
+        const minutesLeft = Math.ceil((date.getTime() - Date.now()) / 60_000);
+        if (!Number.isNaN(date.getTime()) && minutesLeft > 0) {
+          const duration =
+            minutesLeft < 60
+              ? t('operation.notifySigners.durationMinutes', { count: minutesLeft })
+              : t('operation.notifySigners.durationHours', { count: Math.ceil(minutesLeft / 60) });
+
+          return t('operation.notifySigners.errorRateLimited', { duration });
         }
       }
 
