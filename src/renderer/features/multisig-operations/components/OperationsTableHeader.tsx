@@ -65,7 +65,7 @@ export const OperationsTableHeader = () => {
   const sort = useUnit(operationsContextModel.$sort);
 
   return (
-    <div className="sticky top-0 z-10 flex items-center gap-x-2 border-b border-divider bg-main-app-background px-4 py-2">
+    <div className="sticky top-0 z-10 flex items-center gap-x-2 border-b border-divider bg-background-default px-4 py-2">
       <div className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}>
         <HeaderCell
           className={operationColumns.titleCell}
