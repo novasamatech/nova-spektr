@@ -16,7 +16,7 @@ type SortArrowsProps = {
 const SortArrows = ({ direction }: SortArrowsProps) => (
   <span
     className={cnTw(
-      'flex flex-col items-center gap-[2px] opacity-50 transition-opacity group-hover:opacity-100',
+      'flex flex-col items-center gap-[2px] opacity-50 transition-opacity group-hover/sort:opacity-100',
       direction !== null && 'opacity-100',
     )}
   >
@@ -51,7 +51,11 @@ const HeaderCell = ({ label, sortKey, sort, className, title }: HeaderCellProps)
     <button
       type="button"
       title={title}
-      className={cnTw(className, 'group flex items-center gap-x-1 outline-none')}
+      className={cnTw(
+        'group/sort flex items-center gap-x-1 rounded-sm',
+        'focus-visible:outline-2 focus-visible:outline-icon-accent',
+        className,
+      )}
       onClick={() => operationsContextModel.sortToggled(sortKey)}
     >
       <span className={cnTw(LABEL_CLASS, active ? 'text-text-primary' : 'text-text-tertiary')}>{label}</span>
