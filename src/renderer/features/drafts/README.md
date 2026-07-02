@@ -11,7 +11,7 @@ right permissions) can review, edit, share, submit, or delete a draft.
 
 Drafts surface as a collapsible **Drafts section** above the operations table on the
 [Operations view's](../multisig-operations/README.md) Pending tab, styled and column-aligned like operation rows. A
-compact read-only subsection also appears in the dashboard's operations queue.
+compact subsection with the same submit gating also appears in the dashboard's operations queue.
 
 ## Who can use it / when it applies
 
@@ -20,8 +20,8 @@ Everything about drafts is backend data, gated by the address-book connection an
 - The section renders only once the user has **connected the address book at least once**; while the backend is
   unhealthy the section is dimmed under a reconnect overlay.
 - **Seeing** drafts requires the _draft read_ permission (without it the section hides entirely).
-- **Creating and editing** requires _draft write_ — without it the "New draft" row and Edit buttons are disabled with an
-  explanatory tooltip.
+- **Creating and editing** requires _draft write_ — without it the "New draft" row is disabled with an explanatory
+  tooltip, and the per-row Edit buttons are absent entirely.
 - **Deleting** requires _draft delete_ — without it the delete control is absent.
 - **Submitting** additionally requires an active backend session, the draft's call data, and a local account matching
   the draft's source (see [Submitting](#submitting)).

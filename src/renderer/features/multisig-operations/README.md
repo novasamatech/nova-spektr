@@ -38,7 +38,7 @@ Per operation, what the user can _do_ depends on their relationship to it:
 | **View** (details, signatories, log, call data, advanced) | Always — to anyone who can see the operation                                                                                                                                                            |
 | **Approve**                                               | Pending, the user owns an _actionable_ signatory (a signatory account that hasn't approved yet, is reachable on-chain, and is not watch-only), and — for the final signing — valid call data is present |
 | **Add call data**                                         | Pending, the user is the _final_ required signer, but the operation's call data is missing/invalid                                                                                                      |
-| **Reject**                                                | Pending, and the user owns the **depositor** account (the original initiator)                                                                                                                           |
+| **Reject**                                                | Pending, and the user owns the **depositor** account (the original initiator), reachable on the operation's chain and not watch-only                                                                    |
 | **Add wallet** (external multisig)                        | Pending external multisig — a pairing prompt instead of sign buttons                                                                                                                                    |
 | **Attach / edit description**                             | See [Address book availability](#address-book-availability)                                                                                                                                             |
 | **Hide / unhide**, **share link**, **export**             | Always                                                                                                                                                                                                  |
@@ -200,9 +200,10 @@ data exists, the operation decodes throughout the view and the **Approve** butto
 
 ### Rejecting
 
-Only the **depositor** (the original initiator) can **reject** a pending operation. Rejecting is a two-step
-confirm-then-sign flow that submits a cancellation; the deposit returns to the depositor and the operation moves to the
-**Rejected** section on the History tab.
+Only the **depositor** (the original initiator) can **reject** a pending operation — the depositor account must be
+reachable on the operation's chain and not watch-only. Rejecting is a two-step confirm-then-sign flow that submits a
+cancellation; the deposit returns to the depositor and the operation moves to the **Rejected** section on the History
+tab.
 
 ### Deep-link edge cases
 
@@ -295,9 +296,11 @@ expands it so the target can be focused. The list is virtualised for long histor
 The sticky table header offers **sorting** on three columns, applied **within each section**. Clicking a column cycles
 ascending → descending → off:
 
-- **Operation** — alphabetically by the recognised operation type.
+- **Operation** — by the recognised operation type (its internal type identifier, so like operations group together; the
+  order does not exactly match the displayed titles).
 - **Value** — by token amount. This is an approximation: amounts are compared numerically across different assets
-  without fiat conversion, and operations with no extractable amount sort below all others.
+  without fiat conversion, and operations with no extractable amount count as the lowest value (first ascending, last
+  descending).
 - **Submitter** — alphabetically by the multisig's wallet name (falling back to its account id).
 
 With sorting off, operations keep their on-chain creation order. The list can be narrowed by **search** and five
