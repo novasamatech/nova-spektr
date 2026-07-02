@@ -2709,7 +2709,6 @@
     },
     "clearSearchAndFilters": "Clear search and filters",
     "createdOperationDescription": "The changes will take effect after the other signatories sign.",
-    "emptyStateFiltersHint": "Try adjusting filters or search",
     "export": {
       "tooltip": "Export operations to CSV"
     },

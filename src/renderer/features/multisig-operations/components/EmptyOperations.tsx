@@ -1,5 +1,5 @@
 import { useI18n } from '@/shared/i18n';
-import { BodyText, Button, FootnoteText, TitleText } from '@/shared/ui';
+import { BodyText, Button, TitleText } from '@/shared/ui';
 import { Graphics } from '@/shared/ui-kit';
 import { type TabFilter, operationsContextModel } from '../model/context';
 
@@ -33,15 +33,9 @@ export const EmptyOperations = ({ isEmptyFromFilters, tab }: Props) => {
         </BodyText>
 
         {isEmptyFromFilters && (
-          <>
-            <FootnoteText align="center" className="text-text-tertiary">
-              {t('operations.emptyStateFiltersHint')}
-            </FootnoteText>
-
-            <Button variant="text" pallet="primary" onClick={() => operationsContextModel.resetFilters()}>
-              {t('operations.clearSearchAndFilters')}
-            </Button>
-          </>
+          <Button variant="text" pallet="primary" onClick={() => operationsContextModel.resetFilters()}>
+            {t('operations.clearSearchAndFilters')}
+          </Button>
         )}
       </div>
     </div>
