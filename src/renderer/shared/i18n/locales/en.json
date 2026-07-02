@@ -2784,6 +2784,15 @@
       "synced": "Synced",
       "syncing": "Syncing networks... {synced}/{total}"
     },
+    "table": {
+      "operation": "Operation",
+      "value": "Value",
+      "submitter": "Submitter",
+      "description": "Description",
+      "sortByType": "Sort by operation type",
+      "sortByValue": "Sort by value (amount, vote stake, etc.)",
+      "sortBySubmitter": "Sort by submitter"
+    },
     "tabs": {
       "hidden": "Hidden",
       "history": "History",
