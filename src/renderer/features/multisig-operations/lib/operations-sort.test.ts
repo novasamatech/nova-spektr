@@ -2,9 +2,9 @@ import { describe, expect, test } from 'vitest';
 
 import { type Asset, type AssetId, type Chain, type ChainId, AssetType, TransactionType } from '@/shared/core';
 import { type MultisigOperation } from '@/domains/network';
-import { type OperationWithAccount } from '../model/context';
 
 import { type SortContext, getNextSortState, sortOperations } from './operations-sort';
+import { type OperationWithAccount } from './types';
 
 const MOCK_CHAIN_ID = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' as ChainId;
 const MOCK_ACCOUNT_ID = '5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY' as never;

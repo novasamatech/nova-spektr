@@ -26,15 +26,14 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { type OperationsFilterContext, filterOperation } from '../lib/operations-filter';
-import { type OperationSection } from '../lib/operations-sections';
+import { type OperationSection, SECTION_ORDER, getOperationSection } from '../lib/operations-sections';
+import { type OperationsSort, type SortKey, getNextSortState, sortOperations } from '../lib/operations-sort';
+import { type OperationWithAccount } from '../lib/types';
 
 import { deepLinkModel } from './deep-link';
 import { multisigOperationsFeature } from './feature';
 
-export type OperationWithAccount = {
-  operation: MultisigOperation;
-  account: MultisigAccount | FlexibleMultisigAccount;
-};
+export { type OperationWithAccount } from '../lib/types';
 
 interface SelectedFilters {
   network: string[];
@@ -83,9 +82,22 @@ const $isFiltersSelected = $filter.map(filter =>
     filter.network.length ||
       filter.type.length ||
       filter.proxyType.length ||
+      filter.status.length ||
       filter.dateRange?.from ||
       filter.dateRange?.to ||
       filter.searchQuery,
+  ),
+);
+
+// Any non-search filter active → tabs collapse to "All operations" (search alone doesn't merge scope).
+const $isScopeMerged = $filter.map(filter =>
+  Boolean(
+    filter.network.length ||
+      filter.type.length ||
+      filter.proxyType.length ||
+      filter.status.length ||
+      filter.dateRange?.from ||
+      filter.dateRange?.to,
   ),
 );
 
@@ -269,8 +281,17 @@ const $filteredOperations = combine(
     hiddenIds: $hiddenOperationIds,
     multisigWallets: $multisigWalletSearchEntries,
     chains: networkModel.$chains,
+    isScopeMerged: $isScopeMerged,
   },
-  ({ operationsWithAccounts, filter, tab, hiddenIds, multisigWallets, chains }): OperationWithAccount[] => {
+  ({
+    operationsWithAccounts,
+    filter,
+    tab,
+    hiddenIds,
+    multisigWallets,
+    chains,
+    isScopeMerged,
+  }): OperationWithAccount[] => {
     return operationsWithAccounts.filter(({ operation, account }) =>
       filterOperation(operation, account, {
         filters: filter,
@@ -278,8 +299,7 @@ const $filteredOperations = combine(
         hiddenIds,
         multisigWallets,
         chains,
-        // Task 2 wires the real merged-scope condition; libs default to per-tab filtering for now.
-        isScopeMerged: false,
+        isScopeMerged,
       }),
     );
   },
@@ -297,6 +317,49 @@ const $pendingOperationsCount = combine(
     operationsWithAccounts.filter(
       ({ operation }) => operation.status === 'pending' && !hiddenIds.includes(operation.id),
     ).length,
+);
+
+const $historyOperationsCount = combine(
+  { operationsWithAccounts: $operationsWithAccounts, hiddenIds: $hiddenOperationIds },
+  ({ operationsWithAccounts, hiddenIds }) =>
+    operationsWithAccounts.filter(
+      ({ operation }) => operation.status !== 'pending' && !hiddenIds.includes(operation.id),
+    ).length,
+);
+
+const $allOperationsCount = $filteredOperations.map(operations => operations.length);
+
+const sortToggled = createEvent<SortKey>();
+const $sort = createStore<OperationsSort>(null).on(sortToggled, getNextSortState);
+
+const toggleSection = createEvent<OperationSection>();
+const $collapsedSections = createStore<Partial<Record<OperationSection, boolean>>>({}).on(
+  toggleSection,
+  (state, section) => ({ ...state, [section]: !state[section] }),
+);
+
+const $sectionedOperations = combine(
+  {
+    operations: $filteredOperations,
+    sort: $sort,
+    chains: networkModel.$chains,
+    multisigWallets: $multisigWalletSearchEntries,
+  },
+  ({ operations, sort, chains, multisigWallets }) => {
+    const buckets = new Map<OperationSection, OperationWithAccount[]>();
+    for (const item of operations) {
+      const section = getOperationSection(item.operation);
+      const list = buckets.get(section) ?? [];
+      list.push(item);
+      buckets.set(section, list);
+    }
+
+    return SECTION_ORDER.filter(section => buckets.has(section)).map(section => {
+      const items = buckets.get(section) ?? [];
+
+      return { section, items: sortOperations(items, sort, { chains, multisigWallets }) };
+    });
+  },
 );
 
 const $isTabDataLoading = combine(
@@ -388,7 +451,9 @@ const $chainSyncState = combine(
 export const operationsContextModel = {
   $filter,
   $isFiltersSelected,
+  $isScopeMerged,
   $filteredOperations,
+  $sectionedOperations,
   $multisigAccounts,
   $presetScopedMultisigAccounts,
   $multisigWallets,
@@ -398,11 +463,17 @@ export const operationsContextModel = {
   $hiddenOperationIds,
   $hiddenOperationsCount,
   $pendingOperationsCount,
+  $historyOperationsCount,
+  $allOperationsCount,
   $chainSyncState,
+  $sort,
+  $collapsedSections,
 
   setFilter,
   resetFilters,
   setTab: setTab,
   hideOperation,
   unhideOperation,
+  sortToggled,
+  toggleSection,
 };

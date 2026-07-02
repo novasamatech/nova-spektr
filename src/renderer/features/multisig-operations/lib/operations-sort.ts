@@ -1,8 +1,8 @@
 import { type Chain, type ChainId, type Wallet } from '@/shared/core';
-import { type OperationWithAccount } from '../model/context';
 
 import { getFilterableTxType } from './operations-filter';
 import { extractTransferAmount } from './transfer-amount-extractor';
+import { type OperationWithAccount } from './types';
 
 export type SortKey = 'type' | 'value' | 'submitter';
 export type SortDirection = 'asc' | 'desc';
