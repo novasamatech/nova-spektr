@@ -156,7 +156,7 @@ export const DraftRow = ({
         isHighlighted && 'ring-2 ring-icon-accent',
       )}
     >
-      <div className="flex h-[68px] w-full items-center gap-x-2 overflow-hidden px-4">
+      <div className="group/row flex h-[68px] w-full items-center gap-x-2 overflow-hidden px-4">
         <div className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}>
           <DraftIcon />
 
@@ -179,7 +179,7 @@ export const DraftRow = ({
           {amount && <OperationAmount value={amount.value} asset={amount.asset} className={operationColumns.value} />}
         </div>
 
-        <div className={cnTw(operationColumns.submitter, 'flex items-center')}>
+        <div className={cnTw(operationColumns.submitter, 'flex items-center gap-x-1')}>
           {displayAccountId && (
             <NamedAccount
               accountId={displayAccountId}
@@ -190,6 +190,29 @@ export const DraftRow = ({
               variant="short"
             />
           )}
+          {hasOverview && (
+            <div
+              className="shrink-0 opacity-0 transition-opacity group-focus-within/row:opacity-100 group-hover/row:opacity-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Slot
+                id={draftAccountsOverviewSlot}
+                props={{
+                  walletAccounts: overviewWalletAccounts,
+                  initialChainId: draft.chainId,
+                  exclusive: true,
+                  trigger: (
+                    <Tooltip>
+                      <Tooltip.Trigger>
+                        <IconButton name="accountStructure" className="text-icon-default" />
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>{t('operations.drafts.overviewButton')}</Tooltip.Content>
+                    </Tooltip>
+                  ),
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <div className={operationColumns.description}>
@@ -199,36 +222,17 @@ export const DraftRow = ({
         <div className={operationColumns.draftBadge} />
         <div className={operationColumns.status} />
 
-        <div
-          className={cnTw(operationColumns.actions, 'flex items-center justify-end gap-1')}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {hasOverview && (
-            <Slot
-              id={draftAccountsOverviewSlot}
-              props={{
-                walletAccounts: overviewWalletAccounts,
-                initialChainId: draft.chainId,
-                exclusive: true,
-                trigger: (
-                  <Tooltip>
-                    <Tooltip.Trigger>
-                      <IconButton name="details" />
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>{t('operations.drafts.overviewButton')}</Tooltip.Content>
-                  </Tooltip>
-                ),
-              }}
-            />
-          )}
-
+        <div className={cnTw(operationColumns.actions, 'flex items-center gap-2')} onClick={(e) => e.stopPropagation()}>
           {canWrite && !isSubmitted && (
-            <Tooltip>
-              <Tooltip.Trigger>
-                <IconButton name="edit" onClick={() => onEdit(draft)} />
-              </Tooltip.Trigger>
-              <Tooltip.Content>{t('operations.drafts.editButton')}</Tooltip.Content>
-            </Tooltip>
+            <Button
+              size="sm"
+              variant="fill"
+              pallet="secondary"
+              className="min-w-0 flex-1"
+              onClick={() => onEdit(draft)}
+            >
+              {t('operations.drafts.editButton')}
+            </Button>
           )}
 
           <div className="min-w-0 flex-1">
@@ -274,19 +278,12 @@ export const DraftRow = ({
               </Tooltip>
             )}
           </div>
+        </div>
 
-          <Tooltip>
-            <Tooltip.Trigger>
-              <Copy
-                value={draftDeepLinkModel.generateDraftDeepLink(draft.id)}
-                notification={t('operations.drafts.linkCopied')}
-              >
-                <IconButton className="shrink-0 text-icon-default" name="share" />
-              </Copy>
-            </Tooltip.Trigger>
-            <Tooltip.Content>{t('operations.drafts.shareDraftTooltip')}</Tooltip.Content>
-          </Tooltip>
-
+        <div
+          className={cnTw(operationColumns.trailingSpacer, 'flex items-center justify-center')}
+          onClick={(e) => e.stopPropagation()}
+        >
           {canDelete && !isSubmitted && (
             <ConfirmModal
               cancelText={t('operations.drafts.deleteCancel')}
@@ -297,14 +294,28 @@ export const DraftRow = ({
               onConfirm={() => onDelete(draft.id)}
             >
               <ConfirmModal.Trigger>
-                <IconButton name="delete" className="text-icon-default hover:text-text-negative" />
+                <IconButton name="delete" size={16} className="p-0 text-icon-default hover:text-text-negative" />
               </ConfirmModal.Trigger>
             </ConfirmModal>
           )}
         </div>
 
-        <div className={operationColumns.trailingSpacer} />
-        <div className={operationColumns.chevron} />
+        <div
+          className={cnTw(operationColumns.chevron, 'flex items-center justify-center')}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Tooltip>
+            <Tooltip.Trigger>
+              <Copy
+                value={draftDeepLinkModel.generateDraftDeepLink(draft.id)}
+                notification={t('operations.drafts.linkCopied')}
+              >
+                <IconButton name="share" size={16} className="p-0 text-icon-default" />
+              </Copy>
+            </Tooltip.Trigger>
+            <Tooltip.Content>{t('operations.drafts.shareDraftTooltip')}</Tooltip.Content>
+          </Tooltip>
+        </div>
       </div>
     </div>
   );
