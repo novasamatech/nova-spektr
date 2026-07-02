@@ -2,10 +2,9 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
+import { operationColumns } from '@/shared/ui/operations-table-layout';
 import { type OperationsSort, type SortDirection, type SortKey } from '../lib/operations-sort';
 import { operationsContextModel } from '../model/context';
-
-import { operationColumns } from './table-layout';
 
 const LABEL_CLASS = 'truncate text-caption uppercase';
 

@@ -5,6 +5,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { CountChip, FootnoteText, Icon, Loader } from '@/shared/ui';
+import { OPERATIONS_MIN_WIDTH, ROW_GAP, ROW_HEIGHT, SECTION_HEADER_HEIGHT } from '@/shared/ui/operations-table-layout';
 import { AsyncItem, Box, ScrollArea } from '@/shared/ui-kit';
 import { useOperationDescriptionsFetch } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
@@ -24,7 +25,6 @@ import { AlreadySignedModal } from './modals/AlreadySignedModal';
 import { ConnectionTimeoutModal } from './modals/ConnectionTimeoutModal';
 import { NetworkNotAvailableModal } from './modals/NetworkNotAvailableModal';
 import { OperationNotFoundModal } from './modals/OperationNotFoundModal';
-import { OPERATIONS_MIN_WIDTH, ROW_GAP, ROW_HEIGHT, SECTION_HEADER_HEIGHT } from './table-layout';
 
 type FlatItem =
   | { type: 'section'; section: OperationSection; count: number }

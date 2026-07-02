@@ -16,6 +16,7 @@ import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatSectionAndMethod, toAddress } from '@/shared/lib/utils';
 import { Accordion, CaptionText } from '@/shared/ui';
+import { operationColumns } from '@/shared/ui/operations-table-layout';
 import { Tooltip } from '@/shared/ui-kit';
 import { useIsDraftLinkedOperation, useOperationDescription } from '@/domains/backend';
 import { type MultisigOperation } from '@/domains/network';
@@ -41,7 +42,6 @@ import { OperationActions } from './OperationActions';
 import { OperationDescriptionCell } from './OperationDescriptionCell';
 import { OperationFullInfo } from './OperationFullInfo';
 import { OperationIcon } from './OperationIcon';
-import { operationColumns } from './table-layout';
 
 type Props = {
   operation: MultisigOperation;
