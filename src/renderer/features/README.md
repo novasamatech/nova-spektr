@@ -38,7 +38,7 @@ notes.
 
 ## Multisig
 
-- `multisig-operations`
+- [`multisig-operations`](./multisig-operations/README.md)
 - `multisig-wallet`
 - `multisig-wallet-create`
 - `flexible-change-signatories`
@@ -145,7 +145,7 @@ notes.
 - `app-custom-operations`
 - `call-data-execute`
 - `extrinsic-builder`
-- `drafts`
+- [`drafts`](./drafts/README.md)
 - `signing-path`
 - `sign-wallet-connect` (no spec planned)
 
