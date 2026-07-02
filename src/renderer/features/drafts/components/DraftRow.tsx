@@ -6,6 +6,7 @@ import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, isEthereumAccountId, toAccountId } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, HelpText, IconButton } from '@/shared/ui';
+import { operationColumns } from '@/shared/ui/operations-table-layout';
 import { ConfirmModal, Copy, Tooltip } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount, contactMultisigsModel } from '@/domains/network';
@@ -44,34 +45,20 @@ type DraftRowProps = {
   onSubmit: (draft: Draft) => void;
 };
 
-const DESCRIPTION_MAX_CHARS = 60;
-
 const DraftDescription = ({ description }: { description: string | null | undefined }) => {
   const { t } = useI18n();
 
   if (!description) {
     return (
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 truncate">
         <FootnoteText className="text-text-tertiary italic">{t('operations.drafts.noDescription')}</FootnoteText>
       </div>
     );
   }
 
-  const isTrimmed = description.length > DESCRIPTION_MAX_CHARS;
-  const visible = isTrimmed ? `${description.slice(0, DESCRIPTION_MAX_CHARS).trimEnd()}…` : description;
-
   return (
-    <div className="min-w-0 flex-1">
-      <Tooltip side="top" open={isTrimmed ? undefined : false}>
-        <Tooltip.Trigger>
-          <div>
-            <FootnoteText className="text-text-primary">{visible}</FootnoteText>
-          </div>
-        </Tooltip.Trigger>
-        <Tooltip.Content>
-          <div className="max-w-[400px] break-words whitespace-normal">{description}</div>
-        </Tooltip.Content>
-      </Tooltip>
+    <div className="min-w-0 truncate" title={description}>
+      <FootnoteText className="truncate text-text-primary">{description}</FootnoteText>
     </div>
   );
 };
@@ -90,7 +77,7 @@ export const DraftRow = ({
   onEdit,
   onSubmit,
 }: DraftRowProps) => {
-  const { t } = useI18n();
+  const { t, formatDate } = useI18n();
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
@@ -165,72 +152,88 @@ export const DraftRow = ({
     <div
       ref={rowRef}
       className={cnTw(
-        'mx-0.5 overflow-hidden bg-block-background-default',
-        'rounded transition-shadow hover:shadow-card-shadow',
+        'rounded bg-block-background-default transition-shadow hover:shadow-card-shadow',
         isHighlighted && 'ring-2 ring-icon-accent',
       )}
     >
-      <div className="flex min-h-[52px] w-full min-w-0 items-center gap-x-3 px-4 py-2">
-        <DraftIcon />
+      <div className="flex h-[68px] w-full items-center gap-x-2 overflow-hidden px-4">
+        <div className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}>
+          <DraftIcon />
 
-        <div className="flex w-[200px] shrink-0 flex-col justify-center gap-y-0.5 overflow-hidden">
-          <FootnoteText className="truncate text-text-primary">
-            {operationTitle ?? <span className="text-text-tertiary">{t('operations.titles.unknown')}</span>}
-          </FootnoteText>
-          {chain ? (
-            <ChainTitle chainId={chain.chainId} fontClass="text-help-text text-text-tertiary" />
-          ) : (
-            <HelpText className="text-text-negative">{t('operations.drafts.unknownChain')}</HelpText>
-          )}
+          <div className={cnTw(operationColumns.titleCell, 'flex flex-col justify-center gap-y-0.5 overflow-hidden')}>
+            <FootnoteText className="truncate text-text-primary">
+              {operationTitle ?? <span className="text-text-tertiary">{t('operations.titles.unknown')}</span>}
+            </FootnoteText>
+            <div className="flex items-center gap-x-1.5 overflow-hidden">
+              {chain ? (
+                <ChainTitle chainId={chain.chainId} fontClass="text-help-text text-text-tertiary" />
+              ) : (
+                <HelpText className="text-text-negative">{t('operations.drafts.unknownChain')}</HelpText>
+              )}
+              <HelpText className="shrink-0 text-text-tertiary">
+                · {formatDate(new Date(draft.createdAt), 'PP')}
+              </HelpText>
+            </div>
+          </div>
+
+          {amount && <OperationAmount value={amount.value} asset={amount.asset} className={operationColumns.value} />}
         </div>
 
-        <DraftDescription description={draft.description} />
-
-        <div className="flex w-[200px] shrink-0 items-center">
-          {amount && <OperationAmount value={amount.value} asset={amount.asset} />}
-        </div>
-
-        <div className="flex w-[200px] shrink-0 items-center">
+        <div className={cnTw(operationColumns.submitter, 'flex items-center')}>
           {displayAccountId && (
             <NamedAccount
               accountId={displayAccountId}
               chain={chain}
               wallet={displayWallet}
-              iconSize={32}
+              iconSize={28}
               hideExplorers
               variant="short"
             />
           )}
         </div>
 
-        <div className="flex shrink-0 items-center gap-x-1" onClick={(e) => e.stopPropagation()}>
-          <div className="flex w-[90px] shrink-0 items-center justify-center">
-            {hasOverview && (
-              <Slot
-                id={draftAccountsOverviewSlot}
-                props={{
-                  walletAccounts: overviewWalletAccounts,
-                  initialChainId: draft.chainId,
-                  exclusive: true,
-                  trigger: (
-                    <Button size="sm" variant="text">
-                      {t('operations.drafts.overviewButton')}
-                    </Button>
-                  ),
-                }}
-              />
-            )}
-          </div>
-          <div className="flex w-[40px] shrink-0 items-center justify-center">
-            {canWrite && !isSubmitted && (
-              <Button size="sm" variant="text" onClick={() => onEdit(draft)}>
-                {t('operations.drafts.editButton')}
-              </Button>
-            )}
-          </div>
-          <div className="flex w-[130px] shrink-0 items-center justify-center">
+        <div className={operationColumns.description}>
+          <DraftDescription description={draft.description} />
+        </div>
+
+        <div className={operationColumns.draftBadge} />
+        <div className={operationColumns.status} />
+
+        <div
+          className={cnTw(operationColumns.actions, 'flex items-center justify-end gap-1')}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {hasOverview && (
+            <Slot
+              id={draftAccountsOverviewSlot}
+              props={{
+                walletAccounts: overviewWalletAccounts,
+                initialChainId: draft.chainId,
+                exclusive: true,
+                trigger: (
+                  <Tooltip>
+                    <Tooltip.Trigger>
+                      <IconButton name="details" />
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>{t('operations.drafts.overviewButton')}</Tooltip.Content>
+                  </Tooltip>
+                ),
+              }}
+            />
+          )}
+
+          {canWrite && !isSubmitted && (
+            <Tooltip>
+              <Tooltip.Trigger>
+                <IconButton name="edit" onClick={() => onEdit(draft)} />
+              </Tooltip.Trigger>
+              <Tooltip.Content>{t('operations.drafts.editButton')}</Tooltip.Content>
+            </Tooltip>
+          )}
+
+          <div className="min-w-0 flex-1">
             {isSubmitted ? (
-              <div className="flex items-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">
+              <div className="flex items-center justify-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">
                 <CaptionText className="text-icon-positive uppercase">
                   {t('operations.drafts.submittedBadge')}
                 </CaptionText>
@@ -243,6 +246,7 @@ export const DraftRow = ({
                   <Button
                     size="sm"
                     variant="fill"
+                    className="w-full"
                     disabled={!isAuthenticated || !canWrite}
                     onClick={() => onSubmit(draft)}
                   >
@@ -256,7 +260,13 @@ export const DraftRow = ({
             ) : (
               <Tooltip open={isAuthenticated ? false : undefined}>
                 <Tooltip.Trigger>
-                  <Button size="sm" variant="fill" disabled={!isAuthenticated} onClick={() => onSubmit(draft)}>
+                  <Button
+                    size="sm"
+                    variant="fill"
+                    className="w-full"
+                    disabled={!isAuthenticated}
+                    onClick={() => onSubmit(draft)}
+                  >
                     {t('operations.drafts.submitButton')}
                   </Button>
                 </Tooltip.Trigger>
@@ -264,6 +274,7 @@ export const DraftRow = ({
               </Tooltip>
             )}
           </div>
+
           <Tooltip>
             <Tooltip.Trigger>
               <Copy
@@ -275,23 +286,25 @@ export const DraftRow = ({
             </Tooltip.Trigger>
             <Tooltip.Content>{t('operations.drafts.shareDraftTooltip')}</Tooltip.Content>
           </Tooltip>
-          <div className="flex w-[35px] shrink-0 items-center justify-center">
-            {canDelete && !isSubmitted && (
-              <ConfirmModal
-                cancelText={t('operations.drafts.deleteCancel')}
-                confirmText={t('operations.drafts.deleteConfirm')}
-                description={t('operations.drafts.deleteDescription')}
-                title={t('operations.drafts.deleteTitle')}
-                type="warning"
-                onConfirm={() => onDelete(draft.id)}
-              >
-                <ConfirmModal.Trigger>
-                  <IconButton name="delete" className="text-icon-default hover:text-text-negative" />
-                </ConfirmModal.Trigger>
-              </ConfirmModal>
-            )}
-          </div>
+
+          {canDelete && !isSubmitted && (
+            <ConfirmModal
+              cancelText={t('operations.drafts.deleteCancel')}
+              confirmText={t('operations.drafts.deleteConfirm')}
+              description={t('operations.drafts.deleteDescription')}
+              title={t('operations.drafts.deleteTitle')}
+              type="warning"
+              onConfirm={() => onDelete(draft.id)}
+            >
+              <ConfirmModal.Trigger>
+                <IconButton name="delete" className="text-icon-default hover:text-text-negative" />
+              </ConfirmModal.Trigger>
+            </ConfirmModal>
+          )}
         </div>
+
+        <div className={operationColumns.trailingSpacer} />
+        <div className={operationColumns.chevron} />
       </div>
     </div>
   );

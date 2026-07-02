@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, groupByDate, toAccountId } from '@/shared/lib/utils';
+import { cnTw, toAccountId } from '@/shared/lib/utils';
 import { Button, CountChip, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { Accordion, ConfirmModal, Field, Modal, TextArea, Tooltip, useNotification } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
@@ -35,7 +35,7 @@ import { DraftRow } from './DraftRow';
 import { DraftSummary } from './DraftSummary';
 
 export const DraftsSection = () => {
-  const { t, formatDate } = useI18n();
+  const { t } = useI18n();
   const { toast } = useNotification();
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
@@ -57,8 +57,8 @@ export const DraftsSection = () => {
     [drafts, linkedDraftIds, operationsLoaded],
   );
 
-  const groupedDrafts = useMemo(
-    () => groupByDate(visibleDrafts, (d) => new Date(d.createdAt).getTime()),
+  const sortedDrafts = useMemo(
+    () => [...visibleDrafts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
     [visibleDrafts],
   );
 
@@ -211,49 +211,42 @@ export const DraftsSection = () => {
         <div aria-hidden={!isHealthy} inert={!isHealthy || undefined}>
           <Accordion initialOpen>
             <Accordion.Trigger sticky>
-              <div className="flex items-center gap-2 py-2">
-                <FootnoteText className="font-medium text-text-secondary">{t('operations.drafts.title')}</FootnoteText>
+              <div className="flex items-center gap-2">
+                <FootnoteText className="font-semibold text-text-primary normal-case">
+                  {t('operations.drafts.title')}
+                </FootnoteText>
                 {isHealthy && visibleDrafts.length > 0 && <CountChip count={visibleDrafts.length} />}
               </div>
             </Accordion.Trigger>
             <Accordion.Content>
               <div className="mt-1 flex flex-col gap-y-1.5">
                 {isHealthy &&
-                  groupedDrafts.map((group, groupIndex) => (
-                    <div key={group.dateKey} className="flex flex-col gap-y-1.5">
-                      <div className={groupIndex > 0 ? 'pt-4 pb-1 pl-2' : 'pb-1 pl-2'}>
-                        <FootnoteText className="text-text-tertiary">{formatDate(group.dateStart, 'PP')}</FootnoteText>
-                      </div>
-                      {group.items.map((draft) => (
-                        <DraftRow
-                          key={draft.id}
-                          canDelete={canDelete}
-                          canWrite={canWrite}
-                          isSubmitted={submittedDraftIds.has(draft.id)}
-                          hasInitiator={
-                            draft.proxyAccountId
-                              ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
-                              : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
-                          }
-                          isHighlighted={focusedDraftId === draft.id}
-                          multisigAccount={
-                            allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null
-                          }
-                          proxyAccount={draft.proxyAccountId ? (draftProxyAccounts.get(draft.id) ?? null) : null}
-                          rowRef={
-                            focusedDraftId === draft.id
-                              ? (el) => {
-                                  highlightedRef.current = el;
-                                }
-                              : undefined
-                          }
-                          draft={draft}
-                          onDelete={handleDeleteDraft}
-                          onEdit={handleEditDraft}
-                          onSubmit={submitDraft}
-                        />
-                      ))}
-                    </div>
+                  sortedDrafts.map((draft) => (
+                    <DraftRow
+                      key={draft.id}
+                      canDelete={canDelete}
+                      canWrite={canWrite}
+                      isSubmitted={submittedDraftIds.has(draft.id)}
+                      hasInitiator={
+                        draft.proxyAccountId
+                          ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
+                          : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
+                      }
+                      isHighlighted={focusedDraftId === draft.id}
+                      multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
+                      proxyAccount={draft.proxyAccountId ? (draftProxyAccounts.get(draft.id) ?? null) : null}
+                      rowRef={
+                        focusedDraftId === draft.id
+                          ? (el) => {
+                              highlightedRef.current = el;
+                            }
+                          : undefined
+                      }
+                      draft={draft}
+                      onDelete={handleDeleteDraft}
+                      onEdit={handleEditDraft}
+                      onSubmit={submitDraft}
+                    />
                   ))}
 
                 <Tooltip open={canWrite ? false : undefined}>
@@ -261,7 +254,7 @@ export const DraftsSection = () => {
                     <div>
                       <button
                         className={cnTw(
-                          'group w-full rounded-lg border-2 border-dashed border-shade-12 px-4 py-3.5 transition-all',
+                          'group flex h-12 w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-shade-12 transition-all',
                           canWrite
                             ? 'cursor-pointer hover:border-icon-accent hover:bg-icon-accent/4 active:scale-[0.998]'
                             : 'cursor-not-allowed opacity-50',
@@ -270,18 +263,14 @@ export const DraftsSection = () => {
                         type="button"
                         onClick={() => canWrite && createDraftModel.createDraftRequested()}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-dashed border-shade-12 transition-colors group-hover:border-icon-accent group-hover:bg-icon-accent/10">
-                            <Icon
-                              name="add"
-                              size={14}
-                              className="text-text-tertiary transition-colors group-hover:text-icon-accent"
-                            />
-                          </div>
-                          <FootnoteText className="font-medium text-text-tertiary transition-colors group-hover:text-icon-accent">
-                            {t('operations.drafts.createNew')}
-                          </FootnoteText>
-                        </div>
+                        <Icon
+                          name="add"
+                          size={14}
+                          className="text-text-tertiary transition-colors group-hover:text-icon-accent"
+                        />
+                        <FootnoteText className="font-medium text-text-tertiary transition-colors group-hover:text-icon-accent">
+                          {t('operations.drafts.createNew')}
+                        </FootnoteText>
                       </button>
                     </div>
                   </Tooltip.Trigger>
