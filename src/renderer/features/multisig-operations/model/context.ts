@@ -26,6 +26,7 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { type OperationsFilterContext, filterOperation } from '../lib/operations-filter';
+import { type OperationSection } from '../lib/operations-sections';
 
 import { deepLinkModel } from './deep-link';
 import { multisigOperationsFeature } from './feature';
@@ -39,6 +40,7 @@ interface SelectedFilters {
   network: string[];
   type: string[];
   proxyType: string[];
+  status: OperationSection[];
   dateRange?: DateRange;
   searchQuery: string;
 }
@@ -59,6 +61,7 @@ const initialFilter: SelectedFilters = {
   network: [],
   type: [],
   proxyType: [],
+  status: [],
   dateRange: undefined,
   searchQuery: '',
 };
@@ -275,6 +278,8 @@ const $filteredOperations = combine(
         hiddenIds,
         multisigWallets,
         chains,
+        // Task 2 wires the real merged-scope condition; libs default to per-tab filtering for now.
+        isScopeMerged: false,
       }),
     );
   },
