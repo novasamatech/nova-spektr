@@ -208,11 +208,11 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
             </div>
 
             <div className={cnTw(operationColumns.status, 'flex justify-center')}>
-              <OperationTitleStatus operation={operation} account={multisigAccount} />
+              <OperationTitleStatus operation={operation} account={multisigAccount} className="mx-0 w-auto" />
             </div>
 
             <div className={cnTw(operationColumns.actions, 'flex justify-end')}>
-              <OperationActions operation={operation} account={multisigAccount} />
+              <OperationActions operation={operation} account={multisigAccount} className="w-full" />
             </div>
 
             <div className={operationColumns.trailingSpacer} />

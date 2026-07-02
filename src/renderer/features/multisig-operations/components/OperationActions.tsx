@@ -3,7 +3,7 @@ import { memo } from 'react';
 
 import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { validateCallData } from '@/shared/lib/utils';
+import { cnTw, validateCallData } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import {
   type MultisigOperation,
@@ -23,9 +23,15 @@ import { RejectTxModal } from './modals/RejectTx';
 type Props = {
   operation: MultisigOperation;
   account: MultisigAccount | FlexibleMultisigAccount;
+  /**
+   * Width override for the actions block. Defaults to the fixed 220px used by
+   * standalone consumers (dashboard queue); table rows pass `w-full` so the
+   * column governs the width.
+   */
+  className?: string;
 };
 
-export const OperationActions = memo(({ operation, account }: Props) => {
+export const OperationActions = memo(({ operation, account, className }: Props) => {
   const { t } = useI18n();
   const { api, chain } = useNetworkData(operation.chainId);
   const allAccounts = useUnit(accounts.$list);
@@ -59,14 +65,14 @@ export const OperationActions = memo(({ operation, account }: Props) => {
 
   if (isContact) {
     return (
-      <div className="flex w-[220px] shrink-0" onClick={e => e.stopPropagation()}>
+      <div className={cnTw('flex w-[220px] shrink-0', className)} onClick={e => e.stopPropagation()}>
         <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
       </div>
     );
   }
 
   return (
-    <div className="grid w-[220px] shrink-0 grid-cols-2 gap-x-2" onClick={e => e.stopPropagation()}>
+    <div className={cnTw('grid w-[220px] shrink-0 grid-cols-2 gap-x-2', className)} onClick={e => e.stopPropagation()}>
       <div className="flex">
         {api && chain && isRejectAvailable && (
           <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
