@@ -2526,7 +2526,7 @@
       "successNames": "Notified {names} to sign the transaction",
       "successPartial": "Reminded {count} signer(s); {unreachable} couldn't be reached",
       "successNamesPartial": "Notified {names} to sign the transaction; {unreachable} couldn't be reached",
-      "nobodyPending": "No signers are waiting on this yet",
+      "nobodyPending": "The notification service hasn't synced this operation yet. Please try again later",
       "errorTitle": "Couldn't notify signers",
       "errorForbidden": "Only a signatory who has already signed can send notifications",
       "errorNotAvailable": "This operation isn't available for reminders yet",

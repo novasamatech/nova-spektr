@@ -250,7 +250,7 @@ delivered entirely through toasts:
 | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | All targeted signers reminded                                        | Success — _notified {names} to sign the transaction_ (falls back to a count if names are unavailable) |
 | Some reminded, some unreachable                                      | Success — _notified {names}; M couldn't be reached_ (same count fallback)                             |
-| Nobody was still pending                                             | Neutral — _no signers are waiting yet_                                                                |
+| Backend has no pending reminders for this operation (not synced yet) | Neutral — _the notification service hasn't synced this operation yet, try again later_                |
 | Nobody reached, all pending signers lack an Element handle           | Error — _the pending signers have no Element handle in the address book yet_                          |
 | Nobody reached for other reasons (delivery failed / room not joined) | Error — _couldn't reach the signers_                                                                  |
 | Backend rejects the caller (not a signatory who signed)              | Error — _only a signatory who has already signed can send notifications_                              |
