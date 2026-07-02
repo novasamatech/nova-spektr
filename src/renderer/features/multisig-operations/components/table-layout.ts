@@ -1,4 +1,4 @@
-export const opColumns = {
+export const operationColumns = {
   leftBlock: 'w-[480px] shrink-0', // icon + title/chain + value
   titleCell: 'flex-1 min-w-0',
   value: 'w-[200px] shrink-0',

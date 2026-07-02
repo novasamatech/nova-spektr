@@ -77,18 +77,6 @@ const $filter = createStore(initialFilter)
   )
   .reset(resetFilters);
 
-const $isFiltersSelected = $filter.map(filter =>
-  Boolean(
-    filter.network.length ||
-      filter.type.length ||
-      filter.proxyType.length ||
-      filter.status.length ||
-      filter.dateRange?.from ||
-      filter.dateRange?.to ||
-      filter.searchQuery,
-  ),
-);
-
 // Any non-search filter active → tabs collapse to "All operations" (search alone doesn't merge scope).
 const $isScopeMerged = $filter.map(filter =>
   Boolean(
@@ -100,6 +88,8 @@ const $isScopeMerged = $filter.map(filter =>
       filter.dateRange?.to,
   ),
 );
+
+const $isFiltersSelected = combine($isScopeMerged, $filter, (merged, filter) => merged || Boolean(filter.searchQuery));
 
 const $tab = createStore<TabFilter>('pending').on(setTab, (_, tab) => tab);
 
@@ -327,7 +317,7 @@ const $historyOperationsCount = combine(
     ).length,
 );
 
-const $allOperationsCount = $filteredOperations.map(operations => operations.length);
+const $visibleOperationsCount = $filteredOperations.map(operations => operations.length);
 
 const sortToggled = createEvent<SortKey>();
 const $sort = createStore<OperationsSort>(null).on(sortToggled, getNextSortState);
@@ -354,11 +344,15 @@ const $sectionedOperations = combine(
       buckets.set(section, list);
     }
 
-    return SECTION_ORDER.filter(section => buckets.has(section)).map(section => {
-      const items = buckets.get(section) ?? [];
+    const sections: { section: OperationSection; items: OperationWithAccount[] }[] = [];
+    for (const section of SECTION_ORDER) {
+      const items = buckets.get(section);
+      if (!items) continue;
 
-      return { section, items: sortOperations(items, sort, { chains, multisigWallets }) };
-    });
+      sections.push({ section, items: sortOperations(items, sort, { chains, multisigWallets }) });
+    }
+
+    return sections;
   },
 );
 
@@ -464,7 +458,7 @@ export const operationsContextModel = {
   $hiddenOperationsCount,
   $pendingOperationsCount,
   $historyOperationsCount,
-  $allOperationsCount,
+  $visibleOperationsCount,
   $chainSyncState,
   $sort,
   $collapsedSections,
