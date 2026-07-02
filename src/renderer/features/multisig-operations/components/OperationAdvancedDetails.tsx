@@ -1,14 +1,12 @@
-import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, getNativeAsset, nullable, truncate } from '@/shared/lib/utils';
+import { cnTw, truncate } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
-import { AssetBalance } from '@/shared/ui-entities';
-import { Copy, Modal, Skeleton, Tooltip, useNotification } from '@/shared/ui-kit';
+import { Copy, Modal, Tooltip, useNotification } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import { type MultisigOperation, transactionService as networkTransactionService } from '@/domains/network';
 import { networkModel, useNetworkData } from '@/entities/network';
@@ -45,10 +43,9 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
   const chain = chains[operation.chainId];
   const { api } = useNetworkData(operation.chainId);
 
-  const nativeAsset = getNativeAsset(chain?.assets ?? []);
   const explorers = chain?.explorers;
 
-  const { indexCreated, blockCreated, deposit, callHash, callData } = operation;
+  const { indexCreated, blockCreated, callHash, callData } = operation;
   const displayCall = useMemo(
     () => networkTransactionService.getCoreCallData(api, callData) ?? { callData, callHash },
     [api, callData, callHash],
@@ -152,24 +149,6 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
                 </Modal>
               )}
             </div>
-          </DetailRow>
-        )}
-
-        {!nullable(deposit) && nativeAsset && (
-          <DetailRow label={t('operation.details.deposit')} className="text-text-secondary">
-            {/* `deposit` may rehydrate from cache as a plain BN-shaped object (no prototype),
-                which makes formatBalance render `NaN` with a trillions suffix. Trust only a real
-                BN instance or a numeric string; anything else stays under a skeleton until a
-                fresh on-chain fetch replaces it. */}
-            {BN.isBN(deposit) || (typeof deposit === 'string' && /^-?\d+$/.test(deposit)) ? (
-              <AssetBalance
-                value={deposit}
-                asset={nativeAsset}
-                className="py-[3px] text-footnote text-text-secondary"
-              />
-            ) : (
-              <Skeleton height={4} width={24} />
-            )}
           </DetailRow>
         )}
 
