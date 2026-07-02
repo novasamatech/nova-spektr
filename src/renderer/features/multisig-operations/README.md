@@ -282,9 +282,11 @@ operation switches back to Pending.
 
 **Merged scope.** When any **non-search filter** is active (status, network, type, proxy type, or date range), the tabs
 collapse into a single **"All operations"** pill showing the total matching count, and the filter applies across all
-statuses at once — pending and resolved results appear together, each under its status section. Hidden operations never
-leak into the merged scope; they remain reachable only through the Hidden tab. Search alone does not merge the scope —
-it narrows the current tab. Clearing the filters restores the tabs.
+statuses at once — pending and resolved results appear together, each under its status section. Activating such a filter
+also normalizes the underlying tab to Pending, regardless of which tab was active beforehand — so the merged scope
+always includes the drafts section. Hidden operations never leak into the merged scope; they remain reachable only
+through the Hidden tab. Search alone does not merge the scope — it narrows the current tab. Clearing the filters
+restores the tabs, reopening on Pending.
 
 ### Sections, sorting, and navigation
 

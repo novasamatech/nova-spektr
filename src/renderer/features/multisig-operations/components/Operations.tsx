@@ -60,6 +60,7 @@ export const Operations = () => {
   // so useDeferredList (which defers via useDeferredValue) only adds latency.
   const isDeferredLoading = isTabDataLoading;
   const deferredOps = filteredOps;
+  const showDrafts = tab === 'pending' && hasEverConnected;
 
   const flatItems = useMemo(() => {
     const items: FlatItem[] = [];
@@ -129,9 +130,9 @@ export const Operations = () => {
 
       {hasMultisigAccounts && (
         <div className="h-full overflow-x-auto overflow-y-hidden">
-          <div className={cnTw('h-full', deferredOps.length > 0 && OPERATIONS_MIN_WIDTH)}>
+          <div className={cnTw('h-full', (deferredOps.length > 0 || showDrafts) && OPERATIONS_MIN_WIDTH)}>
             <ScrollArea viewportRef={scrollRef}>
-              {tab === 'pending' && hasEverConnected && <DraftsSection />}
+              {showDrafts && <DraftsSection />}
 
               {deferredOps.length > 0 && <OperationsTableHeader />}
 

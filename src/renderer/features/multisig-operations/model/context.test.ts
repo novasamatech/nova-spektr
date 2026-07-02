@@ -506,6 +506,36 @@ describe('operations context model', () => {
 
       expect(scope.getState(operationsContextModel.$isScopeMerged)).toBe(true);
     });
+
+    it('should normalize the tab to pending when a non-search filter merges the scope from the hidden tab', async () => {
+      const scope = fork({
+        values: new Map().set(operationsContextModel.$tab, 'hidden'),
+      });
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { status: ['completed'] } });
+
+      expect(scope.getState(operationsContextModel.$tab)).toBe('pending');
+    });
+
+    it('should normalize the tab to pending when a non-search filter merges the scope from the history tab', async () => {
+      const scope = fork({
+        values: new Map().set(operationsContextModel.$tab, 'history'),
+      });
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { network: ['polkadot'] } });
+
+      expect(scope.getState(operationsContextModel.$tab)).toBe('pending');
+    });
+
+    it('should not touch the tab when a pure search filter does not merge the scope', async () => {
+      const scope = fork({
+        values: new Map().set(operationsContextModel.$tab, 'history'),
+      });
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { searchQuery: 'abc' } });
+
+      expect(scope.getState(operationsContextModel.$tab)).toBe('history');
+    });
   });
 
   describe('Filters selected', () => {

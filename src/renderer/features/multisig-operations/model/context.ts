@@ -438,6 +438,16 @@ sample({
   target: setTab,
 });
 
+// Merged scope always behaves as pending-based (hidden ops excluded, drafts visible) —
+// force the tab to 'pending' whenever a non-search filter activates from another tab.
+sample({
+  clock: setFilter,
+  source: { tab: $tab, isMerged: $isScopeMerged },
+  filter: ({ tab, isMerged }) => isMerged && tab !== 'pending',
+  fn: (): TabFilter => 'pending',
+  target: setTab,
+});
+
 // Auto-switch to pending when all hidden operations are unhidden
 sample({
   clock: $hiddenOperationIds,
