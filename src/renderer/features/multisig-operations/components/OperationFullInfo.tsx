@@ -14,6 +14,11 @@ type Props = {
   operation: MultisigOperation;
   account: MultisigAccount | FlexibleMultisigAccount;
   tab: TabFilter;
+  /**
+   * Shareable deep link to this operation. Not yet consumed here — Task 6 wires
+   * it into the Signatories header.
+   */
+  deepLink: string;
 };
 
 type SlotProps = {
