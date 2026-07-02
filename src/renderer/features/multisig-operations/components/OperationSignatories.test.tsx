@@ -40,17 +40,24 @@ vi.mock('@/shared/i18n', () => ({
 }));
 
 vi.mock('@/shared/lib/utils', () => ({
+  cnTw: (...classNames: unknown[]) => classNames.filter(Boolean).join(' '),
   nonNullable: <T,>(value: T | null | undefined): value is T => value !== null && value !== undefined,
   toAddress: (accountId: AccountId) => accountId,
 }));
 
 vi.mock('@/shared/ui', () => ({
-  BodyText: ({ children }: { children: ReactNode }) => <span>{children}</span>,
-  Button: ({ children }: { children: ReactNode }) => <button>{children}</button>,
-  CaptionText: ({ children }: { children: ReactNode }) => <span>{children}</span>,
+  CountChip: ({ count }: { count: number }) => <span>{count}</span>,
   FootnoteText: ({ children }: { children: ReactNode }) => <h4>{children}</h4>,
-  Icon: () => null,
+  IconButton: () => <button type="button" />,
   SmallTitleText: ({ children }: { children: ReactNode }) => <h3>{children}</h3>,
+}));
+
+vi.mock('@/shared/ui-kit', () => ({
+  Copy: ({ children }: { children: ReactNode }) => children,
+  Tooltip: Object.assign(({ children }: { children: ReactNode }) => children, {
+    Trigger: ({ children }: { children: ReactNode }) => children,
+    Content: ({ children }: { children: ReactNode }) => children,
+  }),
 }));
 
 vi.mock('@/shared/ui-entities', () => ({
@@ -93,8 +100,8 @@ vi.mock('@/widgets/NameResolver', () => ({
   WalletName: ({ wallet }: { wallet: Wallet }) => <span>{wallet.name}</span>,
 }));
 
-vi.mock('./LogModal', () => ({
-  default: () => null,
+vi.mock('./OperationLog', () => ({
+  OperationLog: () => null,
 }));
 
 const ownedSignatoryId = '0x01' as AccountId;
@@ -135,11 +142,18 @@ const multisigAccount = {
 
 describe('OperationSignatories', () => {
   it('renders owned signatories as accounts instead of wallets', () => {
-    render(<OperationSignatories operation={operation} account={multisigAccount} />);
+    render(<OperationSignatories operation={operation} account={multisigAccount} deepLink="https://example.com" />);
 
-    expect(screen.getByText('Your accounts')).toBeInTheDocument();
     expect(screen.getByText('Alice Signer')).toBeInTheDocument();
-    expect(screen.queryByText('Your wallets')).not.toBeInTheDocument();
     expect(screen.queryByText('Signer Wallet')).not.toBeInTheDocument();
+  });
+
+  it('renders a flat signatory list without group headers', () => {
+    render(<OperationSignatories operation={operation} account={multisigAccount} deepLink="https://example.com" />);
+
+    expect(screen.queryByText('Your accounts')).not.toBeInTheDocument();
+    expect(screen.queryByText('Contacts')).not.toBeInTheDocument();
+    expect(screen.getByText('Alice Signer')).toBeInTheDocument();
+    expect(screen.getByText(contactSignatoryId)).toBeInTheDocument();
   });
 });

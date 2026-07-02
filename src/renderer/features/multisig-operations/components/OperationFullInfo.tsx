@@ -15,8 +15,8 @@ type Props = {
   account: MultisigAccount | FlexibleMultisigAccount;
   tab: TabFilter;
   /**
-   * Shareable deep link to this operation. Not yet consumed here — Task 6 wires
-   * it into the Signatories header.
+   * Shareable deep link to this operation, surfaced by the Signatories header's
+   * Share action.
    */
   deepLink: string;
 };
@@ -28,7 +28,7 @@ type SlotProps = {
 
 export const operationDetailsSlot = createSlot<SlotProps>();
 
-export const OperationFullInfo = memo(({ operation, account, tab }: Props) => {
+export const OperationFullInfo = memo(({ operation, account, tab, deepLink }: Props) => {
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
 
   return (
@@ -37,7 +37,7 @@ export const OperationFullInfo = memo(({ operation, account, tab }: Props) => {
         <Slot id={operationDetailsSlot} props={{ operation, showCoreTransaction }} />
       </OperationDetails>
 
-      {account && <OperationSignatories operation={operation} account={account} />}
+      {account && <OperationSignatories operation={operation} account={account} deepLink={deepLink} />}
 
       <OperationAdvancedDetails operation={operation} tab={tab} />
     </div>
