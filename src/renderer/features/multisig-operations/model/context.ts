@@ -408,6 +408,25 @@ sample({
   target: setTab,
 });
 
+// Deep link into a collapsed section must expand it, otherwise the focused
+// operation is excluded from the virtualized list and scroll-to-focus no-ops.
+sample({
+  clock: deepLinkModel.$focusedOperationId,
+  source: { operations: multisigOperation.$list, collapsed: $collapsedSections },
+  filter: ({ operations, collapsed }, operationId) => {
+    if (nullable(operationId)) return false;
+    const operation = operations.find(op => op.id === operationId);
+
+    return nonNullable(operation) && Boolean(collapsed[getOperationSection(operation)]);
+  },
+  fn: ({ operations, collapsed }, operationId) => {
+    const operation = operations.find(op => op.id === operationId)!;
+
+    return { ...collapsed, [getOperationSection(operation)]: false };
+  },
+  target: $collapsedSections,
+});
+
 // Reset to pending tab every time the Operations page is opened (skip if deep link is active)
 sample({
   clock: multisigOperationsFeature.gate.open,

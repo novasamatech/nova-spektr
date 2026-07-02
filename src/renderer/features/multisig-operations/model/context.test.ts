@@ -459,6 +459,35 @@ describe('operations context model', () => {
         completed: true,
       });
     });
+
+    it('should expand the collapsed section of a deep-linked operation', async () => {
+      const mockOperation = createMockOperation('pending');
+
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [mockOperation])
+          .set(operationsContextModel.$collapsedSections, { in_progress: true, completed: true }),
+      });
+
+      await allSettled(deepLinkModel.$focusedOperationId, { scope, params: mockOperation.id });
+
+      expect(scope.getState(operationsContextModel.$collapsedSections)).toEqual({
+        in_progress: false,
+        completed: true,
+      });
+    });
+
+    it('should keep collapsed sections untouched when deep-linked operation is not found', async () => {
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [])
+          .set(operationsContextModel.$collapsedSections, { in_progress: true }),
+      });
+
+      await allSettled(deepLinkModel.$focusedOperationId, { scope, params: 'non-existent-operation-id' });
+
+      expect(scope.getState(operationsContextModel.$collapsedSections)).toEqual({ in_progress: true });
+    });
   });
 
   describe('Scope merged', () => {

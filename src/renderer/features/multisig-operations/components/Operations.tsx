@@ -24,7 +24,7 @@ import { AlreadySignedModal } from './modals/AlreadySignedModal';
 import { ConnectionTimeoutModal } from './modals/ConnectionTimeoutModal';
 import { NetworkNotAvailableModal } from './modals/NetworkNotAvailableModal';
 import { OperationNotFoundModal } from './modals/OperationNotFoundModal';
-import { OPERATIONS_MIN_WIDTH, ROW_HEIGHT, SECTION_HEADER_HEIGHT } from './table-layout';
+import { OPERATIONS_MIN_WIDTH, ROW_GAP, ROW_HEIGHT, SECTION_HEADER_HEIGHT } from './table-layout';
 
 type FlatItem =
   | { type: 'section'; section: OperationSection; count: number }
@@ -98,7 +98,7 @@ export const Operations = () => {
   const virtualizer = useVirtualizer({
     count: flatItems.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: index => (flatItems[index]?.type === 'section' ? SECTION_HEADER_HEIGHT : ROW_HEIGHT + 6),
+    estimateSize: index => (flatItems[index]?.type === 'section' ? SECTION_HEADER_HEIGHT : ROW_HEIGHT + ROW_GAP),
     overscan: 15,
     scrollMargin,
     getItemKey: index => {
@@ -135,7 +135,7 @@ export const Operations = () => {
 
       {hasMultisigAccounts && (
         <div className="h-full overflow-x-auto overflow-y-hidden">
-          <div className={cnTw(OPERATIONS_MIN_WIDTH, 'h-full')}>
+          <div className={cnTw('h-full', deferredOps.length > 0 && OPERATIONS_MIN_WIDTH)}>
             <ScrollArea viewportRef={scrollRef}>
               {tab === 'pending' && hasEverConnected && <DraftsSection />}
 
@@ -183,7 +183,12 @@ export const Operations = () => {
                         {isSectionItem(item) ? (
                           <button
                             type="button"
-                            className={cnTw('flex items-center gap-2 px-2 pb-1.5', virtualRow.index > 0 && 'pt-4')}
+                            aria-expanded={!collapsedSections[item.section]}
+                            className={cnTw(
+                              'flex items-center gap-2 rounded-sm px-2 pb-1.5',
+                              'focus-visible:outline-2 focus-visible:outline-icon-accent',
+                              virtualRow.index > 0 && 'pt-4',
+                            )}
                             onClick={() => operationsContextModel.toggleSection(item.section)}
                           >
                             <Icon

@@ -13,4 +13,6 @@ export const operationColumns = {
 
 export const OPERATIONS_MIN_WIDTH = 'min-w-[1280px]';
 export const ROW_HEIGHT = 68;
+// Vertical gap between operation cards; matches the `pb-1.5` on each virtualized row.
+export const ROW_GAP = 6;
 export const SECTION_HEADER_HEIGHT = 44;
