@@ -153,25 +153,38 @@ export const OperationSignatories = ({ operation, account, deepLink }: Props) =>
   return (
     <div className="flex flex-col border-r border-divider p-4">
       <div className="mb-4 flex items-center gap-2">
-        <button type="button" onClick={() => setActiveTab('signatories')}>
-          <SmallTitleText className={cnTw(activeTab !== 'signatories' && 'text-text-tertiary')}>
-            {t('operation.signatoriesTitle')}
-          </SmallTitleText>
-        </button>
+        <div role="tablist" aria-label={t('operation.signatoriesTitle')} className="flex items-center gap-2">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'signatories'}
+            className={cnTw(
+              'rounded-md px-2 py-1 transition-colors',
+              activeTab !== 'signatories' && 'hover:bg-action-background-hover',
+            )}
+            onClick={() => setActiveTab('signatories')}
+          >
+            <SmallTitleText className={cnTw(activeTab !== 'signatories' && 'text-text-tertiary')}>
+              {t('operation.signatoriesTitle')}
+            </SmallTitleText>
+          </button>
 
-        <button
-          type="button"
-          className={cnTw(
-            'flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors',
-            activeTab === 'log' ? 'bg-tab-background' : 'hover:bg-action-background-hover',
-          )}
-          onClick={() => setActiveTab('log')}
-        >
-          <FootnoteText className={cnTw(activeTab !== 'log' && 'text-text-tertiary')}>
-            {t('operation.logButton')}
-          </FootnoteText>
-          <CountChip count={operation.events.length} />
-        </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'log'}
+            className={cnTw(
+              'flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors',
+              activeTab === 'log' ? 'bg-tab-background' : 'hover:bg-action-background-hover',
+            )}
+            onClick={() => setActiveTab('log')}
+          >
+            <FootnoteText className={cnTw(activeTab !== 'log' && 'text-text-tertiary')}>
+              {t('operation.logButton')}
+            </FootnoteText>
+            <CountChip count={operation.events.length} />
+          </button>
+        </div>
 
         <span className="flex-1" />
 

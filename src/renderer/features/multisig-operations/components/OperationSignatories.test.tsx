@@ -53,7 +53,11 @@ vi.mock('@/shared/ui', () => ({
 }));
 
 vi.mock('@/shared/ui-kit', () => ({
-  Copy: ({ children }: { children: ReactNode }) => children,
+  Copy: ({ value, children }: { value: string; children: ReactNode }) => (
+    <span data-testid="copy" data-value={value}>
+      {children}
+    </span>
+  ),
   Tooltip: Object.assign(({ children }: { children: ReactNode }) => children, {
     Trigger: ({ children }: { children: ReactNode }) => children,
     Content: ({ children }: { children: ReactNode }) => children,
@@ -62,7 +66,6 @@ vi.mock('@/shared/ui-kit', () => ({
 
 vi.mock('@/shared/ui-entities', () => ({
   Address: ({ title, address }: { title?: string; address: string }) => <span>{title ?? address}</span>,
-  WalletIcon: () => null,
 }));
 
 vi.mock('@/domains/network', () => ({
@@ -97,7 +100,6 @@ vi.mock('@/entities/wallet', () => ({
 
 vi.mock('@/widgets/NameResolver', () => ({
   NamedAccount: ({ title, accountId }: { title?: string; accountId: AccountId }) => <span>{title ?? accountId}</span>,
-  WalletName: ({ wallet }: { wallet: Wallet }) => <span>{wallet.name}</span>,
 }));
 
 vi.mock('./OperationLog', () => ({
@@ -155,5 +157,11 @@ describe('OperationSignatories', () => {
     expect(screen.queryByText('Contacts')).not.toBeInTheDocument();
     expect(screen.getByText('Alice Signer')).toBeInTheDocument();
     expect(screen.getByText(contactSignatoryId)).toBeInTheDocument();
+  });
+
+  it('passes the deep link to the share button', () => {
+    render(<OperationSignatories operation={operation} account={multisigAccount} deepLink="https://example.com" />);
+
+    expect(screen.getByTestId('copy')).toHaveAttribute('data-value', 'https://example.com');
   });
 });
