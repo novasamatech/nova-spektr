@@ -2721,10 +2721,11 @@
       "dateRangePlaceholder": "Date range",
       "networkPlaceholder": "Networks",
       "networkSummary": "Networks",
+      "multisigStatusPlaceholder": "Status",
       "operationTypePlaceholder": "Operation type",
       "operationTypeSummary": "Operation types",
       "proxyTypePlaceholder": "Proxy type",
-      "statusPlaceholder": "Status",
+      "statusPlaceholder": "Operation status",
       "statusSummary": "Operation statuses"
     },
     "historyEmptyDescription": "Signed operations will appear here once completed.",

@@ -91,7 +91,7 @@ export const OperationsFilter = memo(() => {
       <MultiSelect
         showSelectAll
         className="w-[136px]"
-        placeholder={t('operations.filters.statusPlaceholder')}
+        placeholder={t('operations.filters.multisigStatusPlaceholder')}
         selectedIds={selectedOptions.status}
         options={StatusOptions}
         onChange={value =>
