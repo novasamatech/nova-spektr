@@ -5,9 +5,10 @@ import { memo, useMemo, useState } from 'react';
 import { ProxyTypeOrder, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
-import { Button, MultiSelect } from '@/shared/ui';
+import { Button, Icon, MultiSelect } from '@/shared/ui';
 import { DateRangePicker } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
+import { SECTION_LABEL_KEYS, SECTION_ORDER, isOperationSection } from '../lib/operations-sections';
 import { operationsContextModel } from '../model/context';
 
 export const OperationsFilter = memo(() => {
@@ -22,6 +23,11 @@ export const OperationsFilter = memo(() => {
   const [proxyTypeSearchQuery, setProxyTypeSearchQuery] = useState('');
 
   const TransactionOptions = getTransactionOptions(t);
+  const StatusOptions = SECTION_ORDER.map(section => ({
+    id: section,
+    value: section,
+    element: t(SECTION_LABEL_KEYS[section]),
+  }));
   const NetworkOptions = chainsList.map(({ chainId, name }) => ({
     id: chainId,
     value: chainId,
@@ -66,7 +72,12 @@ export const OperationsFilter = memo(() => {
   return (
     <div className="flex h-9 items-center gap-2">
       {isFiltersSelected && (
-        <Button variant="text" className="h-8.5 py-0" onClick={clearFilters}>
+        <Button
+          variant="text"
+          className="h-8.5 py-0"
+          prefixElement={<Icon name="close" size={14} />}
+          onClick={clearFilters}
+        >
           {t('operations.filters.clearFilters')}
         </Button>
       )}
@@ -77,6 +88,16 @@ export const OperationsFilter = memo(() => {
           onChange={range => operationsContextModel.setFilter({ dateRange: range })}
         />
       </div>
+      <MultiSelect
+        showSelectAll
+        className="w-[136px]"
+        placeholder={t('operations.filters.statusPlaceholder')}
+        selectedIds={selectedOptions.status}
+        options={StatusOptions}
+        onChange={value =>
+          operationsContextModel.setFilter({ status: value.map(v => v.id).filter(isOperationSection) })
+        }
+      />
       <MultiSelect
         showSelectAll
         className="w-[136px]"

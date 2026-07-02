@@ -2724,7 +2724,7 @@
       "operationTypePlaceholder": "Operation type",
       "operationTypeSummary": "Operation types",
       "proxyTypePlaceholder": "Proxy type",
-      "statusPlaceholder": "Operation status",
+      "statusPlaceholder": "Status",
       "statusSummary": "Operation statuses"
     },
     "historyEmptyDescription": "Signed operations will appear here once completed.",

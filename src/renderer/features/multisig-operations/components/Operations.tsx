@@ -11,7 +11,7 @@ import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
 import { DraftsSection } from '@/features/drafts';
-import { type OperationSection } from '../lib/operations-sections';
+import { type OperationSection, SECTION_LABEL_KEYS } from '../lib/operations-sections';
 import { type OperationWithAccount, operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
@@ -31,12 +31,6 @@ type FlatItem =
   | { type: 'operation'; item: OperationWithAccount };
 
 const isSectionItem = (item: FlatItem): item is FlatItem & { type: 'section' } => item.type === 'section';
-
-const SECTION_LABELS: Record<OperationSection, string> = {
-  in_progress: 'operations.sections.inProgress',
-  completed: 'operations.sections.completed',
-  rejected: 'operations.sections.rejected',
-};
 
 export const Operations = () => {
   const { t } = useI18n();
@@ -200,7 +194,7 @@ export const Operations = () => {
                               )}
                             />
                             <FootnoteText className="font-semibold text-text-primary">
-                              {t(SECTION_LABELS[item.section])}
+                              {t(SECTION_LABEL_KEYS[item.section])}
                             </FootnoteText>
                             <CountChip count={item.count} />
                           </button>
