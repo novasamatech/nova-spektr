@@ -159,10 +159,10 @@ export const filterOperation = (
 ) => {
   const { filters, tab, hiddenIds, multisigWallets, chains } = context;
 
-  const isHidden = hiddenIds.includes(operation.id);
   if (context.isScopeMerged) {
     // merged scope spans all statuses but never surfaces hidden ops outside the Hidden tab
-    if (tab === 'hidden' ? !isHidden : isHidden) return false;
+    const isHidden = hiddenIds.includes(operation.id);
+    if ((tab === 'hidden') !== isHidden) return false;
   } else {
     if (!matchesTab(operation, tab, hiddenIds)) return false;
   }
