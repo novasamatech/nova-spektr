@@ -25,5 +25,5 @@ export const useDescriptionEditing = (operation: MultisigOperation) => {
   const isInAddressBook = contacts.some(contact => contact.accountId === operation.multisigAccountId);
   const canEdit = Boolean(baseUrl) && isHealthy && hasWritePermission && isInAddressBook;
 
-  return { canEdit, hasWritePermission, isInAddressBook, isHealthy, hasEverConnected, baseUrl };
+  return { canEdit, hasWritePermission, isInAddressBook, isHealthy, hasEverConnected };
 };

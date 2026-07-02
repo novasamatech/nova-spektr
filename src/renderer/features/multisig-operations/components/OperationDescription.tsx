@@ -1,5 +1,3 @@
-import { Trans } from 'react-i18next';
-
 import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { resolveDescriptionAreaState } from '@/shared/lib/operation-description/resolveDescriptionAreaState';
@@ -8,10 +6,10 @@ import { Modal } from '@/shared/ui-kit';
 import { useOperationDescription } from '@/domains/backend';
 import { type MultisigOperation } from '@/domains/network';
 import { ReconnectAddressBookButton } from '@/features/contacts';
-import { NamedAccount } from '@/widgets/NameResolver';
 import { useDescriptionEditing } from '../lib/use-description-editing';
 
 import { DescriptionEditorModal } from './DescriptionEditorModal';
+import { DescriptionNotInBookMessage } from './DescriptionNotInBookMessage';
 
 type Props = {
   operation: MultisigOperation;
@@ -83,15 +81,7 @@ export const OperationDescription = ({ operation, chain }: Props) => {
     return (
       <DetailRow label={t('operation.descriptionLabel')} wrapperClassName="items-start">
         <div className="flex w-full flex-wrap items-center gap-x-1 gap-y-1 rounded-lg border border-alert-border-negative bg-alert-background-negative p-3 text-footnote text-text-primary">
-          <Trans
-            t={t}
-            i18nKey="operation.descriptionMultisigNotInBook"
-            components={{
-              account: (
-                <NamedAccount accountId={operation.multisigAccountId} chain={chain} variant="short" hideExplorers />
-              ),
-            }}
-          />
+          <DescriptionNotInBookMessage operation={operation} chain={chain} />
         </div>
       </DetailRow>
     );
