@@ -2719,9 +2719,9 @@
       "clearAll": "operations.filters.clearAll",
       "clearFilters": "Clear filters",
       "dateRangePlaceholder": "Date range",
+      "multisigStatusPlaceholder": "Status",
       "networkPlaceholder": "Networks",
       "networkSummary": "Networks",
-      "multisigStatusPlaceholder": "Status",
       "operationTypePlaceholder": "Operation type",
       "operationTypeSummary": "Operation types",
       "proxyTypePlaceholder": "Proxy type",
@@ -2800,6 +2800,7 @@
       "sortBySubmitter": "Sort by submitter"
     },
     "tabs": {
+      "all": "All operations",
       "hidden": "Hidden",
       "history": "History",
       "pending": "Pending"

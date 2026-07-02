@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { type MultisigOperation } from '@/domains/network';
 
-import { SECTION_ORDER, getOperationSection } from './operations-sections';
+import { SECTION_LABEL_KEYS, SECTION_ORDER, getOperationSection, isOperationSection } from './operations-sections';
 
 const MOCK_ACCOUNT_ID = '5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY' as never;
 
@@ -46,5 +46,19 @@ describe('operations-sections', () => {
 
   test('SECTION_ORDER is in_progress, completed, rejected', () => {
     expect(SECTION_ORDER).toEqual(['in_progress', 'completed', 'rejected']);
+  });
+
+  describe('isOperationSection', () => {
+    test.each(SECTION_ORDER)('returns true for %s', section => {
+      expect(isOperationSection(section)).toBe(true);
+    });
+
+    test('returns false for an arbitrary string', () => {
+      expect(isOperationSection('not_a_section')).toBe(false);
+    });
+  });
+
+  test('SECTION_LABEL_KEYS covers exactly SECTION_ORDER', () => {
+    expect(Object.keys(SECTION_LABEL_KEYS).sort()).toEqual([...SECTION_ORDER].sort());
   });
 });
