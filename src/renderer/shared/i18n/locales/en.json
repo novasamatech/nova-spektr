@@ -2777,6 +2777,11 @@
     "pendingEmptyDescription": "Once you or a multisig signer create an operation, it will appear here.",
     "pendingEmptyTitle": "Pending operations list is empty",
     "searchPlaceholder": "Search",
+    "sections": {
+      "completed": "Completed",
+      "inProgress": "In progress",
+      "rejected": "Rejected"
+    },
     "shareOperationTooltip": "Share transaction link with signatories",
     "sync": {
       "connecting": "Connecting to networks...",
