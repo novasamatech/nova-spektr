@@ -276,6 +276,7 @@ const DEFAULT_ERA_DURATION_MS = 24 * 60 * 60 * 1000;
 const FALLBACK_ERA_DURATION_MS: Record<string, number> = {
   [AssetHubChains.POLKADOT_AH]: 24 * 60 * 60 * 1000, // 24h
   [AssetHubChains.KUSAMA_AH]: 6 * 60 * 60 * 1000, // 6h
+  [AssetHubChains.WESTEND_AH]: 6 * 60 * 60 * 1000, // 6h
 };
 
 type IssuancePredictionCall = () => Promise<{ toJSON: () => unknown }>;
