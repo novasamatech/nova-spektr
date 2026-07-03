@@ -62,10 +62,7 @@ export const MORTALITY_PERIOD_MS = 5 * 60 * 1000;
 
 const CHAINS_CONFIG_VERSION = 'v2';
 const TOKENS_CONFIG_VERSION = 'v1';
-// TODO: revert to `main` before merge — points at the Westend Asset Hub config PR branch for testing
-// https://github.com/novasamatech/nova-spektr-utils/pull/253
-const CHAINS_CONFIG_BRANCH = 'feat/westend-asset-hub-prod';
-export const CHAINS_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/${CHAINS_CONFIG_BRANCH}/chains/${CHAINS_CONFIG_VERSION}/${process.env.CHAINS_FILE + '.json'}`;
+export const CHAINS_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/chains/${CHAINS_CONFIG_VERSION}/${process.env.CHAINS_FILE + '.json'}`;
 export const TOKENS_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/tokens/${TOKENS_CONFIG_VERSION}/${process.env.TOKENS_FILE + '.json'}`;
 
 // We need to map the chain id to the SpellSDK's chain name for the xcm transfers while using the ParaSpell SDK
