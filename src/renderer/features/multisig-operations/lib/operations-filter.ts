@@ -15,13 +15,13 @@ import { type MultisigOperation } from '@/domains/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 
-import { type OperationSection, getOperationSection } from './operations-sections';
+import { type StatusFilterValue, getOperationSection } from './operations-sections';
 
 export interface OperationsFilterCriteria {
   network: string[];
   type: string[];
   proxyType: string[];
-  status: OperationSection[];
+  status: StatusFilterValue[];
   dateRange?: DateRange;
   searchQuery: string;
 }
@@ -96,8 +96,15 @@ export const matchesTab = (operation: MultisigOperation, tab: OperationsFilterTa
   }
 };
 
-export const matchesStatus = (operation: MultisigOperation, statuses: OperationSection[]) =>
-  statuses.length === 0 || statuses.includes(getOperationSection(operation));
+export const matchesStatus = (operation: MultisigOperation, statuses: StatusFilterValue[], hiddenIds: string[]) => {
+  if (statuses.length === 0) return true;
+
+  // A hidden operation matches only the dedicated `hidden` status; an
+  // operation never matches `drafts` (drafts are not operations).
+  const section = hiddenIds.includes(operation.id) ? 'hidden' : getOperationSection(operation);
+
+  return statuses.includes(section);
+};
 
 export const matchesNetwork = (operation: MultisigOperation, networkIds: string[]) => {
   if (networkIds.length === 0) return true;
@@ -160,13 +167,18 @@ export const filterOperation = (
   const { filters, tab, hiddenIds, multisigWallets, chains } = context;
 
   if (context.isScopeMerged) {
-    // merged scope spans all statuses but never surfaces hidden ops outside the Hidden tab
     const isHidden = hiddenIds.includes(operation.id);
-    if ((tab === 'hidden') !== isHidden) return false;
+    if (tab === 'hidden') {
+      // deep link into a hidden operation keeps the Hidden tab even while merged
+      if (!isHidden) return false;
+    } else if (isHidden && !filters.status.includes('hidden')) {
+      // merged scope surfaces hidden ops only when the Status filter asks for them
+      return false;
+    }
   } else {
     if (!matchesTab(operation, tab, hiddenIds)) return false;
   }
-  if (!matchesStatus(operation, filters.status)) return false;
+  if (!matchesStatus(operation, filters.status, hiddenIds)) return false;
   if (!matchesNetwork(operation, filters.network)) return false;
   if (!matchesTxType(operation, filters.type)) return false;
   if (!matchesProxyType(filters.proxyType, account)) return false;

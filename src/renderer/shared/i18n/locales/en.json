@@ -2687,6 +2687,10 @@
       "summaryNoCallData": "No call data - you'll add it when submitting this operation.",
       "linkCopied": "Draft link copied!",
       "shareDraftTooltip": "Share draft link with signatories",
+      "createdByLabel": "Created by",
+      "pathRoleProxied": "Proxied",
+      "pathRoleMultisig": "Multisig",
+      "pathRoleSigner": "Signer",
       "selectMultisigForProxy": "Proxy multisig",
       "proxyLabel": "Proxy",
       "viewDraft": "View draft",
@@ -2777,6 +2781,7 @@
     "searchPlaceholder": "Search",
     "sections": {
       "completed": "Completed",
+      "hidden": "Hidden",
       "inProgress": "In progress",
       "rejected": "Rejected"
     },

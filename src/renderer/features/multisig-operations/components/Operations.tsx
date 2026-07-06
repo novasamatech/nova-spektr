@@ -38,6 +38,7 @@ export const Operations = () => {
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
   const multisigAccounts = useUnit(operationsContextModel.$multisigAccounts);
+  const filter = useUnit(operationsContextModel.$filter);
   const isFiltersSelected = useUnit(operationsContextModel.$isFiltersSelected);
   const filteredOps = useUnit(operationsContextModel.$filteredOperations);
   const sectionedOps = useUnit(operationsContextModel.$sectionedOperations);
@@ -60,7 +61,10 @@ export const Operations = () => {
   // so useDeferredList (which defers via useDeferredValue) only adds latency.
   const isDeferredLoading = isTabDataLoading;
   const deferredOps = filteredOps;
-  const showDrafts = tab === 'pending' && hasEverConnected;
+  // Drafts obey the Status filter like any other section: visible when no
+  // status is selected or when `drafts` is among the selected statuses.
+  const matchesStatusFilter = filter.status.length === 0 || filter.status.includes('drafts');
+  const showDrafts = tab === 'pending' && hasEverConnected && matchesStatusFilter;
 
   const flatItems = useMemo(() => {
     const items: FlatItem[] = [];
@@ -132,9 +136,9 @@ export const Operations = () => {
         <div className="h-full overflow-x-auto overflow-y-hidden">
           <div className={cnTw('h-full', (deferredOps.length > 0 || showDrafts) && OPERATIONS_MIN_WIDTH)}>
             <ScrollArea viewportRef={scrollRef}>
-              {showDrafts && <DraftsSection />}
+              {(deferredOps.length > 0 || showDrafts) && <OperationsTableHeader />}
 
-              {deferredOps.length > 0 && <OperationsTableHeader />}
+              {showDrafts && <DraftsSection />}
 
               {(isDeferredLoading || isDeepLinkLoading) && (
                 <div className="mt-4 flex w-full items-center justify-center gap-x-3">

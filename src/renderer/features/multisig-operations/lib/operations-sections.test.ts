@@ -2,7 +2,15 @@ import { describe, expect, test } from 'vitest';
 
 import { type MultisigOperation } from '@/domains/network';
 
-import { SECTION_LABEL_KEYS, SECTION_ORDER, getOperationSection, isOperationSection } from './operations-sections';
+import {
+  SECTION_LABEL_KEYS,
+  SECTION_ORDER,
+  STATUS_FILTER_LABEL_KEYS,
+  STATUS_FILTER_ORDER,
+  getOperationSection,
+  isOperationSection,
+  isStatusFilterValue,
+} from './operations-sections';
 
 const MOCK_ACCOUNT_ID = '5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY' as never;
 
@@ -44,8 +52,12 @@ describe('operations-sections', () => {
     });
   });
 
-  test('SECTION_ORDER is in_progress, completed, rejected', () => {
-    expect(SECTION_ORDER).toEqual(['in_progress', 'completed', 'rejected']);
+  test('SECTION_ORDER is in_progress, completed, rejected, hidden', () => {
+    expect(SECTION_ORDER).toEqual(['in_progress', 'completed', 'rejected', 'hidden']);
+  });
+
+  test('STATUS_FILTER_ORDER prepends drafts to the sections', () => {
+    expect(STATUS_FILTER_ORDER).toEqual(['drafts', 'in_progress', 'completed', 'rejected', 'hidden']);
   });
 
   describe('isOperationSection', () => {
@@ -56,9 +68,27 @@ describe('operations-sections', () => {
     test('returns false for an arbitrary string', () => {
       expect(isOperationSection('not_a_section')).toBe(false);
     });
+
+    test('returns false for drafts (not an operation section)', () => {
+      expect(isOperationSection('drafts')).toBe(false);
+    });
+  });
+
+  describe('isStatusFilterValue', () => {
+    test.each(STATUS_FILTER_ORDER)('returns true for %s', status => {
+      expect(isStatusFilterValue(status)).toBe(true);
+    });
+
+    test('returns false for an arbitrary string', () => {
+      expect(isStatusFilterValue('not_a_status')).toBe(false);
+    });
   });
 
   test('SECTION_LABEL_KEYS covers exactly SECTION_ORDER', () => {
     expect(Object.keys(SECTION_LABEL_KEYS).sort()).toEqual([...SECTION_ORDER].sort());
+  });
+
+  test('STATUS_FILTER_LABEL_KEYS covers exactly STATUS_FILTER_ORDER', () => {
+    expect(Object.keys(STATUS_FILTER_LABEL_KEYS).sort()).toEqual([...STATUS_FILTER_ORDER].sort());
   });
 });

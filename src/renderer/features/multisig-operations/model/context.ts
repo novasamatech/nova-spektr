@@ -26,7 +26,12 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { type OperationsFilterContext, filterOperation } from '../lib/operations-filter';
-import { type OperationSection, SECTION_ORDER, getOperationSection } from '../lib/operations-sections';
+import {
+  type OperationSection,
+  type StatusFilterValue,
+  SECTION_ORDER,
+  getOperationSection,
+} from '../lib/operations-sections';
 import { type OperationsSort, type SortKey, getNextSortState, sortOperations } from '../lib/operations-sort';
 import { type OperationWithAccount } from '../lib/types';
 
@@ -39,7 +44,7 @@ interface SelectedFilters {
   network: string[];
   type: string[];
   proxyType: string[];
-  status: OperationSection[];
+  status: StatusFilterValue[];
   dateRange?: DateRange;
   searchQuery: string;
 }
@@ -334,11 +339,16 @@ const $sectionedOperations = combine(
     sort: $sort,
     chains: networkModel.$chains,
     multisigWallets: $multisigWalletSearchEntries,
+    hiddenIds: $hiddenOperationIds,
+    isScopeMerged: $isScopeMerged,
   },
-  ({ operations, sort, chains, multisigWallets }) => {
+  ({ operations, sort, chains, multisigWallets, hiddenIds, isScopeMerged }) => {
     const buckets = new Map<OperationSection, OperationWithAccount[]>();
     for (const item of operations) {
-      const section = getOperationSection(item.operation);
+      // In the merged scope hidden ops (surfaced via the Status filter) get their
+      // own trailing section; on the Hidden tab they keep their status sections.
+      const isHidden = isScopeMerged && hiddenIds.includes(item.operation.id);
+      const section = isHidden ? 'hidden' : getOperationSection(item.operation);
       const list = buckets.get(section) ?? [];
       list.push(item);
       buckets.set(section, list);

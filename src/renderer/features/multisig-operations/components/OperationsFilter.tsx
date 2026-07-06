@@ -8,7 +8,7 @@ import { performSearch } from '@/shared/lib/utils';
 import { Button, Icon, MultiSelect } from '@/shared/ui';
 import { DateRangePicker } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
-import { SECTION_LABEL_KEYS, SECTION_ORDER, isOperationSection } from '../lib/operations-sections';
+import { STATUS_FILTER_LABEL_KEYS, STATUS_FILTER_ORDER, isStatusFilterValue } from '../lib/operations-sections';
 import { operationsContextModel } from '../model/context';
 
 export const OperationsFilter = memo(() => {
@@ -23,10 +23,10 @@ export const OperationsFilter = memo(() => {
   const [proxyTypeSearchQuery, setProxyTypeSearchQuery] = useState('');
 
   const TransactionOptions = getTransactionOptions(t);
-  const StatusOptions = SECTION_ORDER.map(section => ({
-    id: section,
-    value: section,
-    element: t(SECTION_LABEL_KEYS[section]),
+  const StatusOptions = STATUS_FILTER_ORDER.map(status => ({
+    id: status,
+    value: status,
+    element: t(STATUS_FILTER_LABEL_KEYS[status]),
   }));
   const NetworkOptions = chainsList.map(({ chainId, name }) => ({
     id: chainId,
@@ -95,7 +95,7 @@ export const OperationsFilter = memo(() => {
         selectedIds={selectedOptions.status}
         options={StatusOptions}
         onChange={value =>
-          operationsContextModel.setFilter({ status: value.map(v => v.id).filter(isOperationSection) })
+          operationsContextModel.setFilter({ status: value.map(v => v.id).filter(isStatusFilterValue) })
         }
       />
       <MultiSelect

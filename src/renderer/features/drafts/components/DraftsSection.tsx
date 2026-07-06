@@ -5,16 +5,9 @@ import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAccountId } from '@/shared/lib/utils';
 import { Button, CountChip, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
-import { Accordion, ConfirmModal, Field, Modal, TextArea, Tooltip, useNotification } from '@/shared/ui-kit';
+import { ConfirmModal, Field, Modal, TextArea, Tooltip, useNotification } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
-import {
-  type Draft,
-  PERMISSIONS,
-  draftsResource,
-  draftsService,
-  operationDescriptionsResource,
-  useDrafts,
-} from '@/domains/backend';
+import { type Draft, PERMISSIONS, draftsResource, draftsService } from '@/domains/backend';
 import { accounts, useWalletsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
@@ -25,7 +18,7 @@ import { tryDecodeCallData } from '../lib/decode-call-data';
 import { resolveDraftProxyAccount } from '../lib/draft-account-resolution';
 import { useCanCreateDraft } from '../lib/useCanCreateDraft';
 import { useSubmitDraft } from '../lib/useSubmitDraft';
-import { filterVisibleDrafts } from '../lib/visible-drafts';
+import { useVisibleDrafts } from '../lib/useVisibleDrafts';
 import { DESCRIPTION_MAX_LENGTH, createDraftModel } from '../model/create-draft-model';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
 import '../model/drafts-model'; // side-effect: orchestration wiring
@@ -47,15 +40,9 @@ export const DraftsSection = () => {
   const canWrite = useCanCreateDraft();
   const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);
 
-  const { data: drafts } = useDrafts(canRead ? backendUrl : null);
+  const { drafts: visibleDrafts } = useVisibleDrafts();
   const submittedDraftIds = useUnit(submitDraftModel.$submittedDraftIds);
-  const linkedDraftIds = useUnit(operationDescriptionsResource.$linkedDraftIds);
-  const operationsLoaded = useUnit(operationDescriptionsResource.$operationsLoaded);
-
-  const visibleDrafts = useMemo(
-    () => filterVisibleDrafts(drafts, linkedDraftIds, operationsLoaded),
-    [drafts, linkedDraftIds, operationsLoaded],
-  );
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const sortedDrafts = useMemo(
     () => [...visibleDrafts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
@@ -206,79 +193,86 @@ export const DraftsSection = () => {
   if (isHealthy && !canRead) return null;
 
   return (
-    <div className="mb-6">
+    <div className="mb-4">
       <AddressBookHealthOverlay isHealthy={isHealthy}>
         <div aria-hidden={!isHealthy} inert={!isHealthy || undefined}>
-          <Accordion initialOpen>
-            <Accordion.Trigger sticky>
-              <div className="flex items-center gap-2">
-                <FootnoteText className="font-semibold text-text-primary normal-case">
-                  {t('operations.drafts.title')}
-                </FootnoteText>
-                {isHealthy && visibleDrafts.length > 0 && <CountChip count={visibleDrafts.length} />}
-              </div>
-            </Accordion.Trigger>
-            <Accordion.Content>
-              <div className="mt-1 flex flex-col gap-y-1.5">
-                {isHealthy &&
-                  sortedDrafts.map((draft) => (
-                    <DraftRow
-                      key={draft.id}
-                      canDelete={canDelete}
-                      canWrite={canWrite}
-                      isSubmitted={submittedDraftIds.has(draft.id)}
-                      hasInitiator={
-                        draft.proxyAccountId
-                          ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
-                          : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
-                      }
-                      isHighlighted={focusedDraftId === draft.id}
-                      multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
-                      proxyAccount={draft.proxyAccountId ? (draftProxyAccounts.get(draft.id) ?? null) : null}
-                      rowRef={
-                        focusedDraftId === draft.id
-                          ? (el) => {
-                              highlightedRef.current = el;
-                            }
-                          : undefined
-                      }
-                      draft={draft}
-                      onDelete={handleDeleteDraft}
-                      onEdit={handleEditDraft}
-                      onSubmit={submitDraft}
-                    />
-                  ))}
+          <button
+            type="button"
+            aria-expanded={!isCollapsed}
+            className={cnTw(
+              'flex items-center gap-2 rounded-sm px-2 pt-3 pb-1.5',
+              'focus-visible:outline-2 focus-visible:outline-icon-accent',
+            )}
+            onClick={() => setIsCollapsed((collapsed) => !collapsed)}
+          >
+            <Icon
+              name="shelfDown"
+              size={15}
+              className={cnTw('text-icon-default transition-transform', isCollapsed ? 'rotate-0' : 'rotate-180')}
+            />
+            <FootnoteText className="font-semibold text-text-primary">{t('operations.drafts.title')}</FootnoteText>
+            {isHealthy && visibleDrafts.length > 0 && <CountChip count={visibleDrafts.length} />}
+          </button>
+          {!isCollapsed && (
+            <div className="flex flex-col gap-y-1.5">
+              {isHealthy &&
+                sortedDrafts.map((draft) => (
+                  <DraftRow
+                    key={draft.id}
+                    canDelete={canDelete}
+                    canWrite={canWrite}
+                    isSubmitted={submittedDraftIds.has(draft.id)}
+                    hasInitiator={
+                      draft.proxyAccountId
+                        ? allAccounts.some((a) => a.accountId === draft.proxyAccountId)
+                        : allMultisigAccounts.some((a) => a.accountId === draft.multisigAccountId)
+                    }
+                    isHighlighted={focusedDraftId === draft.id}
+                    multisigAccount={allMultisigAccounts.find((a) => a.accountId === draft.multisigAccountId) ?? null}
+                    proxyAccount={draft.proxyAccountId ? (draftProxyAccounts.get(draft.id) ?? null) : null}
+                    rowRef={
+                      focusedDraftId === draft.id
+                        ? (el) => {
+                            highlightedRef.current = el;
+                          }
+                        : undefined
+                    }
+                    draft={draft}
+                    onDelete={handleDeleteDraft}
+                    onEdit={handleEditDraft}
+                    onSubmit={submitDraft}
+                  />
+                ))}
 
-                <Tooltip open={canWrite ? false : undefined}>
-                  <Tooltip.Trigger>
-                    <div>
-                      <button
-                        className={cnTw(
-                          'group flex h-12 w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-shade-12 transition-all',
-                          canWrite
-                            ? 'cursor-pointer hover:border-icon-accent hover:bg-icon-accent/4 active:scale-[0.998]'
-                            : 'cursor-not-allowed opacity-50',
-                        )}
-                        disabled={!canWrite}
-                        type="button"
-                        onClick={() => canWrite && createDraftModel.createDraftRequested()}
-                      >
-                        <Icon
-                          name="add"
-                          size={14}
-                          className="text-text-tertiary transition-colors group-hover:text-icon-accent"
-                        />
-                        <FootnoteText className="font-medium text-text-tertiary transition-colors group-hover:text-icon-accent">
-                          {t('operations.drafts.createNew')}
-                        </FootnoteText>
-                      </button>
-                    </div>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>{t('operations.drafts.noWritePermission')}</Tooltip.Content>
-                </Tooltip>
-              </div>
-            </Accordion.Content>
-          </Accordion>
+              <Tooltip open={canWrite ? false : undefined}>
+                <Tooltip.Trigger>
+                  <div>
+                    <button
+                      className={cnTw(
+                        'group flex h-12 w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-shade-12 transition-all',
+                        canWrite
+                          ? 'cursor-pointer hover:border-icon-accent hover:bg-icon-accent/4 active:scale-[0.998]'
+                          : 'cursor-not-allowed opacity-50',
+                      )}
+                      disabled={!canWrite}
+                      type="button"
+                      onClick={() => canWrite && createDraftModel.createDraftRequested()}
+                    >
+                      <Icon
+                        name="add"
+                        size={14}
+                        className="text-text-tertiary transition-colors group-hover:text-icon-accent"
+                      />
+                      <FootnoteText className="font-medium text-text-tertiary transition-colors group-hover:text-icon-accent">
+                        {t('operations.drafts.createNew')}
+                      </FootnoteText>
+                    </button>
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('operations.drafts.noWritePermission')}</Tooltip.Content>
+              </Tooltip>
+            </div>
+          )}
         </div>
       </AddressBookHealthOverlay>
 

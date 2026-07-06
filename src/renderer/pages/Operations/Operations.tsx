@@ -4,6 +4,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { Box, Tabs } from '@/shared/ui-kit';
+import { useVisibleDrafts } from '@/features/drafts';
 import {
   ExportButton,
   Operations as OperationsList,
@@ -23,6 +24,13 @@ export const Operations = () => {
   const hiddenCount = useUnit(operationsContextModel.$hiddenOperationsCount);
   const isScopeMerged = useUnit(operationsContextModel.$isScopeMerged);
   const visibleCount = useUnit(operationsContextModel.$visibleOperationsCount);
+  const filter = useUnit(operationsContextModel.$filter);
+  const { drafts: visibleDrafts } = useVisibleDrafts();
+
+  // The merged scope hosts the drafts section (gated by the Status filter), so
+  // its rows join the "All operations" total.
+  const draftsInScope = filter.status.length === 0 || filter.status.includes('drafts');
+  const mergedCount = visibleCount + (draftsInScope ? visibleDrafts.length : 0);
 
   const noop = () => {};
 
@@ -43,7 +51,7 @@ export const Operations = () => {
             <div className="mb-2 flex shrink-0 gap-x-1 rounded-md bg-tab-background p-0.5">
               <div className="flex w-full cursor-default items-center justify-center gap-1 rounded-sm bg-white px-4 py-1.5 text-button-small text-text-primary shadow-card-shadow">
                 {t('operations.tabs.all')}
-                <span className="ml-1 text-text-tertiary">{visibleCount}</span>
+                <span className="ml-1 text-text-tertiary">{mergedCount}</span>
               </div>
             </div>
           ) : (

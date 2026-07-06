@@ -573,5 +573,52 @@ describe('operations context model', () => {
       expect(sections[0]?.items.map(i => i.operation.id)).toEqual([pendingOp.id]);
       expect(sections[1]?.items.map(i => i.operation.id)).toEqual([executedOp.id]);
     });
+
+    it('should bucket hidden operations into a trailing hidden section in the merged scope', async () => {
+      const pendingOp = createMockOperation('pending', '0xabc');
+      const hiddenOp = createMockOperation('pending', '0xdef');
+
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [pendingOp, hiddenOp])
+          .set(operationsContextModel.$tab, 'pending')
+          .set(operationsContextModel.$hiddenOperationIds, [hiddenOp.id])
+          .set(accounts.__test.$populated, true),
+      });
+      await populateAccounts(scope, [mockMultisigAccount]);
+      await allSettled(operationsContextModel.setFilter, {
+        scope,
+        params: { status: ['in_progress', 'hidden'] },
+      });
+
+      const sections = scope.getState(operationsContextModel.$sectionedOperations);
+
+      expect(sections.map(s => s.section)).toEqual(['in_progress', 'hidden']);
+      expect(sections[0]?.items.map(i => i.operation.id)).toEqual([pendingOp.id]);
+      expect(sections[1]?.items.map(i => i.operation.id)).toEqual([hiddenOp.id]);
+    });
+
+    it('should exclude hidden operations from the merged scope when hidden status is not selected', async () => {
+      const pendingOp = createMockOperation('pending', '0xabc');
+      const hiddenOp = createMockOperation('pending', '0xdef');
+
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [pendingOp, hiddenOp])
+          .set(operationsContextModel.$tab, 'pending')
+          .set(operationsContextModel.$hiddenOperationIds, [hiddenOp.id])
+          .set(accounts.__test.$populated, true),
+      });
+      await populateAccounts(scope, [mockMultisigAccount]);
+      await allSettled(operationsContextModel.setFilter, {
+        scope,
+        params: { status: ['in_progress'] },
+      });
+
+      const sections = scope.getState(operationsContextModel.$sectionedOperations);
+
+      expect(sections.map(s => s.section)).toEqual(['in_progress']);
+      expect(sections[0]?.items.map(i => i.operation.id)).toEqual([pendingOp.id]);
+    });
   });
 });
