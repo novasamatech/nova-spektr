@@ -242,7 +242,7 @@ const METADATAS_QUERY = gql`
 
 const metadataSchema = z.object({
   chain: z.string(),
-  lastProcessedHeight: z.number(),
+  lastProcessedHeight: z.number().nullable(),
   genesisHash: z.string<ChainId>(),
 });
 
@@ -250,13 +250,14 @@ export const indexedBlocksProvider = {
   async fn(): Promise<Map<ChainId, number>> {
     const client = new GraphQLClient(INDEXER_URL);
     const response = await client.request<{
-      _metadatas: { nodes: { chain: string; genesisHash: ChainId; lastProcessedHeight: number }[] };
+      _metadatas: { nodes: { chain: string; genesisHash: ChainId; lastProcessedHeight: number | null }[] };
     }>(METADATAS_QUERY);
 
     const parsedData = response._metadatas.nodes.map(x => metadataSchema.parse(x));
     const metadataMap = new Map<ChainId, number>();
 
     for (const meta of parsedData) {
+      if (nullable(meta.lastProcessedHeight)) continue;
       metadataMap.set(meta.genesisHash, meta.lastProcessedHeight);
     }
 
