@@ -38,7 +38,9 @@ export const DraftsSection = () => {
 
   const canRead = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_READ) ?? false);
   const canWrite = useCanCreateDraft();
-  const canDelete = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_DELETE) ?? false);
+  // Deleting a draft is write-gated: the backend dropped the dedicated
+  // `operation-draft:delete` permission (DELETE endpoint checks `:write`).
+  const canDelete = canWrite;
 
   const { drafts: visibleDrafts } = useVisibleDrafts();
   const submittedDraftIds = useUnit(submitDraftModel.$submittedDraftIds);

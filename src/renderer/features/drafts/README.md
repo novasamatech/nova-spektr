@@ -23,7 +23,8 @@ Everything about drafts is backend data, gated by the address-book connection an
 - **Seeing** drafts requires the _draft read_ permission (without it the section hides entirely).
 - **Creating and editing** requires _draft write_ — without it the "New draft" row is disabled with an explanatory
   tooltip, and the per-row Edit buttons are absent entirely.
-- **Deleting** requires _draft delete_ — without it the delete control is absent.
+- **Deleting** requires _draft write_ (the backend dropped its dedicated delete permission) — without it the delete
+  control is absent.
 - **Submitting** additionally requires an active backend session, the draft's call data, and a local account matching
   the draft's source (see [Submitting](#submitting)).
 
@@ -54,7 +55,7 @@ Like an operation row, a draft row **expands** into three panels; the secondary 
   two icon actions: **Open overview**, which opens the account-structure view anchored on the draft's exact signing
   path, and **Share**, which copies the draft's deep link (opening the link scrolls to and highlights the draft).
 - **Advanced** — the call data (copyable, with a decoded JSON view once it decodes), or a hint that call data will be
-  added on submission. The header carries the **Delete** trash icon (delete permission, not yet submitted) behind a
+  added on submission. The header carries the **Delete** trash icon (write permission, not yet submitted) behind a
   confirmation dialog.
 
 A draft that has been **linked to a live operation** (submitted by anyone) leaves the list automatically — the resulting
