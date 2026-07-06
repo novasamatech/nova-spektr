@@ -12,6 +12,7 @@ import {
   type ExtrinsicConfirmInfo,
   createExtrinsicConfirmStore,
   createFeeCalculator,
+  createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
   createTxValidator,
@@ -316,6 +317,17 @@ const $signatories = combine($graphSignatories, $savedPathSignatory, (graphSigna
 // --- Pre-submit validation (generic: fee + multisig deposit) ---
 
 const $asset = $chain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
+
+const $multisigThreshold = $route.map((route) => {
+  const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+
+  return multisigAccount ? multisigAccount.threshold : null;
+});
+
+const { $multisigDeposit, $pending: $multisigDepositPending } = createMultisigDeposit({
+  $threshold: $multisigThreshold,
+  $api,
+});
 
 const getDraftSubmitBalanceAccounts = (route: AnyAccount[]): AnyAccount[] => {
   const accountsById = new Map<string, AnyAccount>();
@@ -810,6 +822,9 @@ export const submitDraftModel = {
   $route,
   $pathResolutionError,
   $submittedDraftIds,
+  $multisigThreshold,
+  $multisigDeposit,
+  $multisigDepositPending,
   $validationErrors,
   $validationValid,
   $validationPending,
