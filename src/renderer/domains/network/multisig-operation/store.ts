@@ -345,7 +345,13 @@ const $completedLiveOperations = combine(
       if (!events || events.length === 0) return op;
 
       const newEvents = uniqBy(op.events.concat(events.map(e => e.event)), e => e.id);
-      const newStatus = newEvents.find(e => e.status === 'reject') ? 'cancelled' : 'executed';
+      // A reject event ⇒ cancelled; a MultisigExecuted with a failed inner call ⇒ error;
+      // otherwise executed. Keeps parity with the indexer's error status on the live path.
+      const newStatus = newEvents.find(e => e.status === 'reject')
+        ? 'cancelled'
+        : events.some(e => e.executionResult === 'error')
+          ? 'error'
+          : 'executed';
       return { ...op, events: newEvents, status: newStatus };
     }) satisfies MultisigOperation[];
   },
@@ -552,5 +558,7 @@ export const multisigOperation = {
     $fetchedChainIds: $initializedChainIds,
     $offChainReady: $offChainFetched,
     $onChainReady: $initialOnChainFetched,
+    $completedLiveOperations,
+    $removedFromChainStorageOperations,
   },
 };

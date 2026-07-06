@@ -553,7 +553,13 @@ export const subscribeNewMultisigEventsResource = createSubscriptionResource<{
   })
   .build();
 
-export const $completionEvents = createStore<{ chainId: ChainId; operationId: string; event: MultisigEvent }[]>([]);
+// Outcome of a MultisigExecuted event's inner call: success or error. `null` for
+// non-execution events (approvals/cancellations), which carry no DispatchResult.
+export type ExecutionResult = 'success' | 'error' | null;
+
+export const $completionEvents = createStore<
+  { chainId: ChainId; operationId: string; event: MultisigEvent; executionResult: ExecutionResult }[]
+>([]);
 
 export const subscribeEventsResource = createSubscriptionResource<{
   api: ApiPromise;
@@ -561,42 +567,54 @@ export const subscribeEventsResource = createSubscriptionResource<{
 }>({
   key: ({ api, accountId }) => `${api.genesisHash.toHex()}-${accountId}`,
 })
-  .subscribe<{ event: MultisigEvent; operationId: string }>(async ({ api, accountId }, callback) => {
-    return await polkadotjsHelpers.subscribeSystemEvents(
-      { api, section: 'multisig', methods: ['MultisigApproval', 'MultisigExecuted', 'MultisigCancelled'] },
-      event => {
-        const data = multisigEvent.parse(event.data);
+  .subscribe<{ event: MultisigEvent; operationId: string; executionResult: ExecutionResult }>(
+    async ({ api, accountId }, callback) => {
+      return await polkadotjsHelpers.subscribeSystemEvents(
+        { api, section: 'multisig', methods: ['MultisigApproval', 'MultisigExecuted', 'MultisigCancelled'] },
+        event => {
+          const data = multisigEvent.parse(event.data);
 
-        if (data.multisigAccountId !== accountId) return;
+          if (data.multisigAccountId !== accountId) return;
 
-        const operationId = multisigOperationService.getOperationId(
-          api.genesisHash.toHex(),
-          data.callHash,
-          data.multisigAccountId,
-          data.timepoint.height,
-          data.timepoint.index,
-        );
+          const operationId = multisigOperationService.getOperationId(
+            api.genesisHash.toHex(),
+            data.callHash,
+            data.multisigAccountId,
+            data.timepoint.height,
+            data.timepoint.index,
+          );
 
-        const eventStatus = event.method === 'MultisigCancelled' ? 'reject' : 'approve';
+          const eventStatus = event.method === 'MultisigCancelled' ? 'reject' : 'approve';
+          // MultisigExecuted carries the inner call's DispatchResult; a non-Ok result means the
+          // multisig extrinsic itself succeeded but the dispatched call failed. Normalize it here
+          // (mirroring the indexer's getExecutionResult) so a live-caught failure surfaces as error.
+          const executionResult: ExecutionResult =
+            event.method === 'MultisigExecuted' && 'status' in data
+              ? data.status === 'Ok'
+                ? 'success'
+                : 'error'
+              : null;
 
-        callback({
-          operationId,
-          event: {
-            id: multisigOperationService.getEventId(operationId, data.accountId, eventStatus),
-            accountId: data.accountId,
-            status: eventStatus,
-            indexCreated: data.timepoint.index,
-            blockCreated: data.timepoint.height,
-            timestamp: Date.now(),
-          },
-        });
-      },
-    );
-  })
+          callback({
+            operationId,
+            executionResult,
+            event: {
+              id: multisigOperationService.getEventId(operationId, data.accountId, eventStatus),
+              accountId: data.accountId,
+              status: eventStatus,
+              indexCreated: data.timepoint.index,
+              blockCreated: data.timepoint.height,
+              timestamp: Date.now(),
+            },
+          });
+        },
+      );
+    },
+  )
   .cache({
     store: $completionEvents,
-    map: (state, { event, operationId }, { api }) => {
-      return [...state, { chainId: api.genesisHash.toHex(), operationId, event }];
+    map: (state, { event, operationId, executionResult }, { api }) => {
+      return [...state, { chainId: api.genesisHash.toHex(), operationId, event, executionResult }];
     },
   })
   .build();
