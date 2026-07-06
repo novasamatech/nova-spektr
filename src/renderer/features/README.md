@@ -145,7 +145,7 @@ notes.
 - `app-custom-operations`
 - `call-data-execute`
 - `extrinsic-builder`
-- `drafts`
+- [`drafts`](./drafts/README.md)
 - `signing-path`
 - `sign-wallet-connect` (no spec planned)
 
