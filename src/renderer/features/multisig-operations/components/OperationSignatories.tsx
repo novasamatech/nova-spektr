@@ -49,6 +49,9 @@ const SignatoryAddress = ({ accountId, chain }: SignatoryAddressProps) => {
       variant="short"
       canCopy
       showIcon
+      // Matches the wallet-resolved branch's NamedAccount iconSize so both row
+      // kinds start their text at the same offset.
+      iconSize={20}
     />
   );
 };

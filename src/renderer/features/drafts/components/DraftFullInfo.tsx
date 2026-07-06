@@ -103,6 +103,9 @@ export const DraftFullInfo = ({
                 accountId={toAccountId(draft.multisigAccountId)}
                 chain={chain}
                 wallet={multisigWallet}
+                // Wallet badge defaults to 32px; the surrounding detail rows use
+                // 16px identicons, so pin the size to keep addresses aligned.
+                iconSize={16}
               />
             </DetailRow>
           )}
