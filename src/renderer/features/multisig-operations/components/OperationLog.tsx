@@ -6,8 +6,9 @@ import { type Chain, type Wallet, type WalletsMap } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, sortByDateAsc, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton } from '@/shared/ui';
+import { BodyText, ExplorerLink, FootnoteText, IconButton } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
+import { Box, Popover } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigEvent, type MultisigOperation, useAccountName } from '@/domains/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -78,7 +79,7 @@ export const OperationLog = ({ operation, chain }: Props) => {
   const filteredAccountMap = getFilteredAccountsMap(filteredWalletsMap);
 
   return (
-    <div className="flex max-h-[500px] flex-col gap-y-4 overflow-y-auto">
+    <div className="flex flex-col gap-y-4">
       {groupedEvents.map(([date, events]) => (
         <section className="w-full" key={date}>
           <FootnoteText as="h4" className="mb-4 text-text-tertiary">
@@ -120,19 +121,22 @@ export const OperationLog = ({ operation, chain }: Props) => {
                       <BodyText className="text-text-tertiary">{formatDate(Number(event.timestamp), 'p')}</BodyText>
 
                       {explorerLinks.length > 0 && (
-                        <div>
-                          <ContextMenu button={<IconButton name="info" size={16} />}>
-                            <ContextMenu.Group>
-                              <ul className="flex flex-col space-y-2">
+                        <Popover align="end" dialog>
+                          <Popover.Trigger>
+                            <IconButton name="info" size={16} onClick={e => e.stopPropagation()} />
+                          </Popover.Trigger>
+                          <Popover.Content>
+                            <Box padding={4} width="230px">
+                              <ul className="flex flex-col gap-y-2">
                                 {explorerLinks.map(({ name, href }) => (
                                   <li key={name}>
                                     <ExplorerLink name={name} href={href} />
                                   </li>
                                 ))}
                               </ul>
-                            </ContextMenu.Group>
-                          </ContextMenu>
-                        </div>
+                            </Box>
+                          </Popover.Content>
+                        </Popover>
                       )}
                     </div>
                   </li>
