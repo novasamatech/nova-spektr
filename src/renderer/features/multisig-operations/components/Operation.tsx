@@ -133,7 +133,9 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   return (
     <div className="focus-active:shadow-card-shadow rounded bg-block-background-default transition-shadow hover:shadow-card-shadow">
       <Accordion isDefaultOpen={isDefaultOpen}>
-        <Accordion.Button buttonClass="px-4">
+        {/* text-left: Disclosure.Button is a <button>, whose default centered
+            text-align cascades into the address/description lines */}
+        <Accordion.Button buttonClass="px-4 text-left">
           <div className="group/row flex h-[68px] w-full items-center gap-x-2 overflow-hidden">
             {proxyEdit ? (
               <div className={operationColumns.leftBlock}>

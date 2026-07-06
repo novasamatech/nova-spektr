@@ -155,7 +155,9 @@ export const DraftRow = ({
       )}
     >
       <Accordion>
-        <Accordion.Button buttonClass="px-4">
+        {/* text-left: Disclosure.Button is a <button>, whose default centered
+            text-align cascades into the address/description lines */}
+        <Accordion.Button buttonClass="px-4 text-left">
           <div className="flex h-[68px] w-full items-center gap-x-2 overflow-hidden">
             <div className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}>
               <DraftIcon />
