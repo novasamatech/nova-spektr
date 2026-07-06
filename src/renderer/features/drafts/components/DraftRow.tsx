@@ -2,12 +2,11 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type ChainId, type Wallet, CryptoType, WalletType } from '@/shared/core';
-import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, isEthereumAccountId, toAccountId } from '@/shared/lib/utils';
-import { Button, CaptionText, FootnoteText, HelpText, IconButton } from '@/shared/ui';
+import { Accordion, Button, CaptionText, FootnoteText, HelpText, IconButton } from '@/shared/ui';
 import { operationColumns } from '@/shared/ui/operations-table-layout';
-import { ConfirmModal, Copy, Tooltip } from '@/shared/ui-kit';
+import { ConfirmModal, Tooltip } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount, contactMultisigsModel } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
@@ -18,11 +17,10 @@ import { authModel } from '@/aggregates/backend';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
-import { draftAccountsOverviewSlot } from '../lib/draft-row-slot';
 import { useDraftOperationTitle } from '../lib/useDraftOperationTitle';
 import { useDraftTransactionAmount } from '../lib/useDraftTransactionAmount';
-import { draftDeepLinkModel } from '../model/draft-deep-link';
 
+import { DraftFullInfo } from './DraftFullInfo';
 import { DraftIcon } from './DraftIcon';
 
 type DraftRowProps = {
@@ -152,171 +150,154 @@ export const DraftRow = ({
     <div
       ref={rowRef}
       className={cnTw(
-        'rounded bg-block-background-default transition-shadow hover:shadow-card-shadow',
+        'focus-active:shadow-card-shadow rounded bg-block-background-default transition-shadow hover:shadow-card-shadow',
         isHighlighted && 'ring-2 ring-icon-accent ring-inset',
       )}
     >
-      <div className="group/row flex h-[68px] w-full items-center gap-x-2 overflow-hidden px-4">
-        <div className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}>
-          <DraftIcon />
+      <Accordion>
+        <Accordion.Button buttonClass="px-4">
+          <div className="flex h-[68px] w-full items-center gap-x-2 overflow-hidden">
+            <div className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}>
+              <DraftIcon />
 
-          <div className={cnTw(operationColumns.titleCell, 'flex flex-col justify-center gap-y-0.5 overflow-hidden')}>
-            <FootnoteText className="truncate text-text-primary">
-              {operationTitle ?? <span className="text-text-tertiary">{t('operations.titles.unknown')}</span>}
-            </FootnoteText>
-            <div className="flex items-center gap-x-1.5 overflow-hidden">
-              {chain ? (
-                <ChainTitle chainId={chain.chainId} fontClass="text-help-text text-text-tertiary" />
-              ) : (
-                <HelpText className="text-text-negative">{t('operations.drafts.unknownChain')}</HelpText>
+              <div
+                className={cnTw(operationColumns.titleCell, 'flex flex-col justify-center gap-y-0.5 overflow-hidden')}
+              >
+                <FootnoteText className="truncate text-text-primary">
+                  {operationTitle ?? <span className="text-text-tertiary">{t('operations.titles.unknown')}</span>}
+                </FootnoteText>
+                <div className="flex items-center gap-x-1.5 overflow-hidden">
+                  {chain ? (
+                    <ChainTitle chainId={chain.chainId} fontClass="text-help-text text-text-tertiary" />
+                  ) : (
+                    <HelpText className="text-text-negative">{t('operations.drafts.unknownChain')}</HelpText>
+                  )}
+                  <HelpText className="shrink-0 text-text-tertiary">
+                    · {formatDate(new Date(draft.createdAt), 'PP')}
+                  </HelpText>
+                </div>
+              </div>
+
+              {amount && (
+                <OperationAmount value={amount.value} asset={amount.asset} className={operationColumns.value} />
               )}
-              <HelpText className="shrink-0 text-text-tertiary">
-                · {formatDate(new Date(draft.createdAt), 'PP')}
-              </HelpText>
             </div>
-          </div>
 
-          {amount && <OperationAmount value={amount.value} asset={amount.asset} className={operationColumns.value} />}
-        </div>
+            <div className={cnTw(operationColumns.submitter, 'flex items-center')}>
+              {displayAccountId && (
+                <NamedAccount
+                  accountId={displayAccountId}
+                  chain={chain}
+                  wallet={displayWallet}
+                  iconSize={28}
+                  hideExplorers
+                  variant="short"
+                />
+              )}
+            </div>
 
-        <div className={cnTw(operationColumns.submitter, 'flex items-center gap-x-1')}>
-          {displayAccountId && (
-            <NamedAccount
-              accountId={displayAccountId}
-              chain={chain}
-              wallet={displayWallet}
-              iconSize={28}
-              hideExplorers
-              variant="short"
-            />
-          )}
-          {hasOverview && (
+            <div className={operationColumns.description}>
+              <DraftDescription description={draft.description} />
+            </div>
+
+            <div className={operationColumns.draftBadge} />
+            <div className={operationColumns.status} />
+
             <div
-              className="shrink-0 opacity-0 transition-opacity group-focus-within/row:opacity-100 group-hover/row:opacity-100"
+              className={cnTw(operationColumns.actions, 'flex items-center gap-2')}
               onClick={(e) => e.stopPropagation()}
             >
-              <Slot
-                id={draftAccountsOverviewSlot}
-                props={{
-                  walletAccounts: overviewWalletAccounts,
-                  initialChainId: draft.chainId,
-                  exclusive: true,
-                  trigger: (
-                    <Tooltip>
-                      <Tooltip.Trigger>
-                        <IconButton name="accountStructure" className="text-icon-default" />
-                      </Tooltip.Trigger>
-                      <Tooltip.Content>{t('operations.drafts.overviewButton')}</Tooltip.Content>
-                    </Tooltip>
-                  ),
-                }}
-              />
-            </div>
-          )}
-        </div>
+              {canWrite && !isSubmitted && (
+                <Button
+                  size="sm"
+                  variant="fill"
+                  pallet="secondary"
+                  className="min-w-0 flex-1"
+                  onClick={() => onEdit(draft)}
+                >
+                  {t('operations.drafts.editButton')}
+                </Button>
+              )}
 
-        <div className={operationColumns.description}>
-          <DraftDescription description={draft.description} />
-        </div>
-
-        <div className={operationColumns.draftBadge} />
-        <div className={operationColumns.status} />
-
-        <div className={cnTw(operationColumns.actions, 'flex items-center gap-2')} onClick={(e) => e.stopPropagation()}>
-          {canWrite && !isSubmitted && (
-            <Button
-              size="sm"
-              variant="fill"
-              pallet="secondary"
-              className="min-w-0 flex-1"
-              onClick={() => onEdit(draft)}
-            >
-              {t('operations.drafts.editButton')}
-            </Button>
-          )}
-
-          <div className="min-w-0 flex-1">
-            {isSubmitted ? (
-              <div className="flex items-center justify-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">
-                <CaptionText className="text-icon-positive uppercase">
-                  {t('operations.drafts.submittedBadge')}
-                </CaptionText>
+              <div className="min-w-0 flex-1">
+                {isSubmitted ? (
+                  <div className="flex items-center justify-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">
+                    <CaptionText className="text-icon-positive uppercase">
+                      {t('operations.drafts.submittedBadge')}
+                    </CaptionText>
+                  </div>
+                ) : !hasInitiator ? (
+                  <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
+                ) : !draft.callData ? (
+                  <Tooltip open={canWrite && isAuthenticated ? false : undefined}>
+                    <Tooltip.Trigger>
+                      <Button
+                        size="sm"
+                        variant="fill"
+                        className="w-full"
+                        disabled={!isAuthenticated || !canWrite}
+                        onClick={() => onSubmit(draft)}
+                      >
+                        {t('operations.drafts.addCallDataButton')}
+                      </Button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>
+                      {!isAuthenticated
+                        ? t('operations.drafts.connectToSubmit')
+                        : t('operations.drafts.noWritePermission')}
+                    </Tooltip.Content>
+                  </Tooltip>
+                ) : (
+                  <Tooltip open={isAuthenticated ? false : undefined}>
+                    <Tooltip.Trigger>
+                      <Button
+                        size="sm"
+                        variant="fill"
+                        className="w-full"
+                        disabled={!isAuthenticated}
+                        onClick={() => onSubmit(draft)}
+                      >
+                        {t('operations.drafts.submitButton')}
+                      </Button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>{t('operations.drafts.connectToSubmit')}</Tooltip.Content>
+                  </Tooltip>
+                )}
               </div>
-            ) : !hasInitiator ? (
-              <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
-            ) : !draft.callData ? (
-              <Tooltip open={canWrite && isAuthenticated ? false : undefined}>
-                <Tooltip.Trigger>
-                  <Button
-                    size="sm"
-                    variant="fill"
-                    className="w-full"
-                    disabled={!isAuthenticated || !canWrite}
-                    onClick={() => onSubmit(draft)}
-                  >
-                    {t('operations.drafts.addCallDataButton')}
-                  </Button>
-                </Tooltip.Trigger>
-                <Tooltip.Content>
-                  {!isAuthenticated ? t('operations.drafts.connectToSubmit') : t('operations.drafts.noWritePermission')}
-                </Tooltip.Content>
-              </Tooltip>
-            ) : (
-              <Tooltip open={isAuthenticated ? false : undefined}>
-                <Tooltip.Trigger>
-                  <Button
-                    size="sm"
-                    variant="fill"
-                    className="w-full"
-                    disabled={!isAuthenticated}
-                    onClick={() => onSubmit(draft)}
-                  >
-                    {t('operations.drafts.submitButton')}
-                  </Button>
-                </Tooltip.Trigger>
-                <Tooltip.Content>{t('operations.drafts.connectToSubmit')}</Tooltip.Content>
-              </Tooltip>
-            )}
-          </div>
-        </div>
+            </div>
 
-        <div
-          className={cnTw(operationColumns.trailingSpacer, 'flex items-center justify-center')}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {canDelete && !isSubmitted && (
-            <ConfirmModal
-              cancelText={t('operations.drafts.deleteCancel')}
-              confirmText={t('operations.drafts.deleteConfirm')}
-              description={t('operations.drafts.deleteDescription')}
-              title={t('operations.drafts.deleteTitle')}
-              type="warning"
-              onConfirm={() => onDelete(draft.id)}
+            <div
+              className={cnTw(operationColumns.trailingSpacer, 'flex items-center justify-center')}
+              onClick={(e) => e.stopPropagation()}
             >
-              <ConfirmModal.Trigger>
-                <IconButton name="delete" size={16} className="p-0 text-icon-default hover:text-text-negative" />
-              </ConfirmModal.Trigger>
-            </ConfirmModal>
-          )}
-        </div>
-
-        <div
-          className={cnTw(operationColumns.chevron, 'flex items-center justify-center')}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Tooltip>
-            <Tooltip.Trigger>
-              <Copy
-                value={draftDeepLinkModel.generateDraftDeepLink(draft.id)}
-                notification={t('operations.drafts.linkCopied')}
-              >
-                <IconButton name="share" size={16} className="p-0 text-icon-default" />
-              </Copy>
-            </Tooltip.Trigger>
-            <Tooltip.Content>{t('operations.drafts.shareDraftTooltip')}</Tooltip.Content>
-          </Tooltip>
-        </div>
-      </div>
+              {canDelete && !isSubmitted && (
+                <ConfirmModal
+                  cancelText={t('operations.drafts.deleteCancel')}
+                  confirmText={t('operations.drafts.deleteConfirm')}
+                  description={t('operations.drafts.deleteDescription')}
+                  title={t('operations.drafts.deleteTitle')}
+                  type="warning"
+                  onConfirm={() => onDelete(draft.id)}
+                >
+                  <ConfirmModal.Trigger>
+                    <IconButton name="delete" size={16} className="p-0 text-icon-default hover:text-text-negative" />
+                  </ConfirmModal.Trigger>
+                </ConfirmModal>
+              )}
+            </div>
+          </div>
+        </Accordion.Button>
+        <Accordion.Content>
+          <div className="border-t border-divider">
+            <DraftFullInfo
+              draft={draft}
+              chain={chain ?? null}
+              multisigAccount={baseMultisigAccount}
+              overviewWalletAccounts={hasOverview ? overviewWalletAccounts : []}
+            />
+          </div>
+        </Accordion.Content>
+      </Accordion>
     </div>
   );
 };
