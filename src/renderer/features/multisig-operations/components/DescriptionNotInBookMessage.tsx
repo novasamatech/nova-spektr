@@ -18,12 +18,19 @@ type Props = {
 export const DescriptionNotInBookMessage = ({ operation, chain }: Props) => {
   const { t } = useI18n();
 
+  // Match the Submitter cell's address format: a universal multisig renders
+  // with the default prefix; only a chain-bound flexible multisig (proxied
+  // operation) uses the chain's prefix.
+  const displayChain = operation.proxiedAccountId ? chain : undefined;
+
   return (
     <Trans
       t={t}
       i18nKey="operation.descriptionMultisigNotInBook"
       components={{
-        account: <NamedAccount accountId={operation.multisigAccountId} chain={chain} variant="short" hideExplorers />,
+        account: (
+          <NamedAccount accountId={operation.multisigAccountId} chain={displayChain} variant="short" hideExplorers />
+        ),
       }}
     />
   );
