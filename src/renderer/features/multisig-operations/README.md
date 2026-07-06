@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-02
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-06
 
 ## Overview
 
@@ -16,7 +16,7 @@ attaching a shared description.
 
 The list is a **table**: a sticky column header (Operation / Value / Submitter / Description) with sortable columns sits
 above rows grouped into collapsible **status sections** (In progress / Completed / Rejected). Saved **drafts** awaiting
-submission appear in their own section above the table on the Pending tab.
+submission appear as the first collapsible section under the same table header on the Pending tab.
 
 ## Who can use it / when it applies
 
@@ -281,19 +281,22 @@ The view opens on **Pending**; a deep link switches to the tab holding the focus
 operation switches back to Pending.
 
 **Merged scope.** When any **non-search filter** is active (status, network, type, proxy type, or date range), the tabs
-collapse into a single **"All operations"** pill showing the total matching count, and the filter applies across all
-statuses at once — pending and resolved results appear together, each under its status section. Activating such a filter
-also normalizes the underlying tab to Pending, regardless of which tab was active beforehand — so the merged scope
-always includes the drafts section. Hidden operations never leak into the merged scope; they remain reachable only
-through the Hidden tab. Search alone does not merge the scope — it narrows the current tab. Clearing the filters
-restores the tabs, reopening on Pending.
+collapse into a single **"All operations"** pill showing the total matching count (drafts rows included when the drafts
+section is in scope), and the filter applies across all statuses at once — pending and resolved results appear
+together, each under its status section. Activating such a filter also normalizes the underlying tab to Pending,
+regardless of which tab was active beforehand — so the merged scope always includes the drafts section (subject to the
+Status filter, below). Hidden operations join the merged scope only when the Status filter selects **Hidden** — they
+then appear under a trailing **Hidden** section; otherwise they remain reachable only through the Hidden tab. Search
+alone does not merge the scope — it narrows the current tab. Clearing the filters restores the tabs, reopening on
+Pending.
 
 ### Sections, sorting, and navigation
 
 Within a tab, operations are grouped into **status sections** — **In progress**, **Completed**, **Rejected** — each with
 a collapsible header showing its count (so the Pending tab has one section, History has up to two, and the merged scope
-can show all three). Collapsing a section is remembered while the page is open; a deep link into a collapsed section
-expands it so the target can be focused. The list is virtualised for long histories.
+can additionally show a trailing **Hidden** section when the Status filter selects it). Collapsing a section is
+remembered while the page is open; a deep link into a collapsed section expands it so the target can be focused. The
+list is virtualised for long histories.
 
 The sticky table header offers **sorting** on three columns, applied **within each section**. Clicking a column cycles
 ascending → descending → off:
@@ -310,7 +313,10 @@ With sorting off, operations keep their on-chain creation order. The list can be
 
 - **Search** — matches the multisig wallet name, the multisig address, or the call hash.
 - **Date range** — a from/to (or from-only) interval.
-- **Status** — In progress / Completed / Rejected.
+- **Status** — Drafts / In progress / Completed / Rejected / Hidden. Drafts and hidden operations obey the same logic
+  as the regular statuses: with no status selected the scope behaves as before (drafts visible on Pending, hidden ops
+  confined to the Hidden tab); selecting statuses shows exactly the chosen kinds — e.g. **Drafts** alone shows only the
+  drafts section, **Hidden** surfaces hidden operations in their own section.
 - **Proxy type** — for flexible multisigs, filters by the proxy's access type.
 - **Network** — matches the operation's chain or, for XCM, its destination chain.
 - **Transaction type** — Transfer, Cross-chain, the staking / governance / proxy types, or Unknown.
@@ -331,12 +337,15 @@ A **Clear** control appears once any filter is active.
 
 ### Drafts section
 
-On the **Pending** tab (once the address book has ever been connected), saved operation **drafts** render in their own
-collapsible section above the table, styled and column-aligned like operation rows, newest first. A draft row shows the
-would-be operation (title, network and creation date, amount, submitter), an Edit action, and its primary control
-(submit or the step it is blocked on); drafts can be shared, edited, and deleted subject to backend permissions. Once a
-draft is submitted, it leaves the section and its resulting operation row is badged **FROM DRAFT**. The drafts flow
-itself (creation, review, submission) belongs to the `drafts` feature — this view only hosts its section.
+On the **Pending** tab (once the address book has ever been connected), saved operation **drafts** render as the first
+collapsible section of the table — under the shared column header, above the status sections — styled and
+column-aligned like operation rows, newest first. The section obeys the **Status filter** (visible with no status
+selected, or when **Drafts** is selected). A draft row shows the would-be operation (title, network and creation date,
+amount, submitter), an Edit action, and its primary control (submit or the step it is blocked on); like an operation
+row it **expands** into a details panel; drafts can be shared, edited, and deleted subject to backend permissions. Once
+a draft is submitted, it leaves the section and its resulting operation row is badged **FROM DRAFT**. The drafts flow
+itself (creation, review, submission, the row's panels) belongs to the `drafts` feature — this view only hosts its
+section.
 
 ## Lifecycle
 

@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-02
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-06
 
 ## Overview
 
@@ -9,9 +9,10 @@ operation — its call, its signing path, and a mandatory description of intent 
 the shared **address-book backend**, so every co-signer with access sees the same draft list, and any of them (with the
 right permissions) can review, edit, share, submit, or delete a draft.
 
-Drafts surface as a collapsible **Drafts section** above the operations table on the
-[Operations view's](../multisig-operations/README.md) Pending tab, styled and column-aligned like operation rows. A
-compact subsection with the same submit gating also appears in the dashboard's operations queue.
+Drafts surface as a collapsible **Drafts section** inside the operations table on the
+[Operations view's](../multisig-operations/README.md) Pending tab — the first section under the shared column header,
+styled and column-aligned like operation rows, gated by the view's Status filter. A compact subsection with the same
+submit gating also appears in the dashboard's operations queue.
 
 ## Who can use it / when it applies
 
@@ -34,8 +35,7 @@ Drafts are listed flat, **newest first**, each row column-aligned with the opera
   and the chain name with the draft's creation date inline.
 - **Value** — the amount and asset, when one can be extracted from the call.
 - **Submitter** — the draft's source account (the proxied source for a proxy-routed draft, otherwise the multisig),
-  resolved to a name; hovering the row reveals an **overview** icon that opens the account-structure view anchored on
-  the draft's exact signing path (proxied → multisig → chosen signer).
+  resolved to a name.
 - **Description** — the draft's note inline (an italic "No description" placeholder when absent).
 - **Actions** — an **Edit** button (write permission, not yet submitted) plus one primary control:
 
@@ -47,7 +47,16 @@ Drafts are listed flat, **newest first**, each row column-aligned with the opera
   | **Submit**          | Call data present and a local source account exists; disabled with a tooltip when signed out   |
 
 - **Delete** — a trash icon (delete permission) behind a confirmation dialog.
-- **Share** — copies the draft's deep link; opening the link scrolls to and highlights the draft.
+
+Like an operation row, a draft row **expands** into three panels:
+
+- **Details** — network, multisig (and proxy, when the draft routes through one), threshold, who created the draft and
+  when, plus the full description.
+- **Signing path** — the draft's stored execution hops (proxied → multisig → chosen signer). The panel header carries
+  two icon actions: **Open overview**, which opens the account-structure view anchored on the draft's exact signing
+  path, and **Share**, which copies the draft's deep link (opening the link scrolls to and highlights the draft).
+- **Advanced** — the call data (copyable, with a decoded JSON view once it decodes), or a hint that call data will be
+  added on submission.
 
 A draft that has been **linked to a live operation** (submitted by anyone) leaves the list automatically — the resulting
 operation row in the table carries a **FROM DRAFT** badge instead, and the draft's description becomes the operation's
