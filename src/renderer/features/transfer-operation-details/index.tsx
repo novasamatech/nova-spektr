@@ -1,15 +1,11 @@
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
-import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { AssetBalance } from '@/shared/ui-entities';
 import {
-  TransactionTitle,
   findCoreTransaction,
   getTransactionAmount,
   isTransferTransaction,
   isXcmTransaction,
-  useTransactionAsset,
 } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 import { confirmTransactionInfoSlot } from '@/features/multisig-operations';
@@ -67,36 +63,6 @@ multisigOperationsSDK(transferOperationDetailFeature, {
     }
 
     return null;
-  },
-  logTitle({ operation, showCoreTransaction }) {
-    const { t } = useI18n();
-    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-    const asset = useTransactionAsset(transaction, operation.chainId);
-    const amount = transaction ? getTransactionAmount(transaction) : null;
-
-    if (isTransferTransaction(transaction)) {
-      const titleKey =
-        transaction?.type === TransactionType.TRANSFER_ALL
-          ? 'operations.titles.transferAll'
-          : 'operations.titles.transfer';
-
-      return (
-        <TransactionTitle className="overflow-hidden" title={t(titleKey, { asset: asset?.symbol })}>
-          {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
-        </TransactionTitle>
-      );
-    }
-
-    if (isXcmTransaction(transaction)) {
-      return (
-        <TransactionTitle
-          className="overflow-hidden"
-          title={t('operations.titles.crossChainTransfer', { asset: asset?.symbol })}
-        >
-          {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
-        </TransactionTitle>
-      );
-    }
   },
   details({ operation, showCoreTransaction }) {
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;

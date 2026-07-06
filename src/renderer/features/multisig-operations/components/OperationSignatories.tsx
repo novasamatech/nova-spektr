@@ -249,7 +249,7 @@ export const OperationSignatories = ({ operation, account, deepLink }: Props) =>
           })}
         </ul>
       ) : (
-        <OperationLog operation={operation} account={account} chain={chain} />
+        <OperationLog operation={operation} chain={chain} />
       )}
     </div>
   );

@@ -168,8 +168,9 @@ day (oldest first). It distinguishes three event kinds:
 
 Each entry names the signer (resolved to a wallet or contact name, with wallet or identicon avatar), the time of day,
 and — where the chain has explorers — a link to the approving/rejecting extrinsic. There is no separate "executed" log
-line: the final approval is just another _Signed_ event; overall progress is shown by the signed-of-threshold status in
-the log header. A freshly created operation always has at least the initiation event, so the log is never empty.
+line: the final approval is just another _Signed_ event; overall progress is shown by the row's signed-of-threshold
+status pill. The log carries no header of its own — only the event feed. A freshly created operation always has at
+least the initiation event, so the log is never empty.
 
 ## Actions
 

@@ -1,4 +1,3 @@
-export { operationLogTitleTransformer } from './components/OperationLog';
 export { type OperationTitle, operationTitleTransformer } from './components/Operation';
 export { operationDetailsSlot } from './components/OperationFullInfo';
 export { operationOverviewSlot } from './components/OperationSignatories';

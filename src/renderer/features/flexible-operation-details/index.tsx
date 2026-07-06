@@ -3,8 +3,6 @@ import { nullable } from '@/shared/lib/utils';
 import { isEditFlexibleTransaction } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
-import { FlexibleOperationTitle } from './components/FlexibleOperationTitle';
-
 export const flexibleOperationDetailFeature = createFeature({
   name: 'flexible/operation-details',
 });
@@ -23,11 +21,6 @@ multisigOperationsSDK(flexibleOperationDetailFeature, {
         title: t('operations.titles.editFlexible'),
         sourceChainId: operation.chainId,
       };
-    }
-  },
-  logTitle({ operation }) {
-    if (isEditFlexibleTransaction(operation.transaction)) {
-      return <FlexibleOperationTitle operation={operation} title="operations.titles.editFlexible" />;
     }
   },
   details() {

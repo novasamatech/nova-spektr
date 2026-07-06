@@ -1,36 +1,19 @@
 import { useUnit } from 'effector-react';
 import { groupBy } from 'lodash';
-import { type ReactNode, useMemo } from 'react';
+import { useMemo } from 'react';
 
-import {
-  type Chain,
-  type FlexibleMultisigAccount,
-  type MultisigAccount,
-  type Wallet,
-  type WalletsMap,
-} from '@/shared/core';
-import { createTransformer, useTransformer } from '@/shared/di';
+import { type Chain, type Wallet, type WalletsMap } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatSectionAndMethod, nonNullable, sortByDateAsc, toAddress } from '@/shared/lib/utils';
+import { nonNullable, sortByDateAsc, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
-import {
-  type AnyAccount,
-  type MultisigEvent,
-  type MultisigOperation,
-  multisigOperationService,
-  useAccountName,
-} from '@/domains/network';
-import { Status, operationDetailsUtils } from '@/entities/operations';
-import { TransactionTitle } from '@/entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-
-import { OperationIcon } from './OperationIcon';
+import { type AnyAccount, type MultisigEvent, type MultisigOperation, useAccountName } from '@/domains/network';
+import { operationDetailsUtils } from '@/entities/operations';
+import { walletModel, walletUtils } from '@/entities/wallet';
 
 type Props = {
   operation: MultisigOperation;
-  account: MultisigAccount | FlexibleMultisigAccount;
   chain: Chain | null;
 };
 
@@ -81,53 +64,21 @@ const getFilteredAccountsMap = (walletsMap: WalletsMap) => {
   }, {});
 };
 
-export const operationLogTitleTransformer = createTransformer<
-  { operation: MultisigOperation; showCoreTransaction?: boolean },
-  ReactNode
->();
-
-export const OperationLog = ({ operation, account, chain }: Props) => {
-  const { t, formatDate } = useI18n();
+export const OperationLog = ({ operation, chain }: Props) => {
+  const { formatDate } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
-  const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
-
-  const { status, events } = operation;
 
   const groupedEvents = useMemo(() => {
-    const groups = groupBy(events, ({ timestamp }) => formatDate(timestamp || 0, 'PP'));
+    const groups = groupBy(operation.events, ({ timestamp }) => formatDate(timestamp || 0, 'PP'));
     return Object.entries(groups).sort(sortByDateAsc);
-  }, [events]);
-
-  const externalTitleNode = useTransformer(operationLogTitleTransformer, { operation, showCoreTransaction });
+  }, [operation.events]);
 
   const filteredWalletsMap = getFilteredWalletsMap(wallets);
   const filteredAccountMap = getFilteredAccountsMap(filteredWalletsMap);
-  const approvals = multisigOperationService.getApprovals(operation);
-
-  let titleNode;
-
-  if (externalTitleNode) {
-    titleNode = externalTitleNode;
-  } else {
-    const title =
-      operation.section && operation.method
-        ? formatSectionAndMethod(operation.section, operation.method)
-        : t('operations.titles.unknown');
-    titleNode = <TransactionTitle className="flex-1" title={title} />;
-  }
 
   return (
     <div className="flex max-h-[500px] flex-col gap-y-4 overflow-y-auto">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <OperationIcon operation={operation} account={account} />
-          {titleNode}
-        </div>
-
-        <Status status={status} signed={approvals.length} threshold={account?.threshold || 0} />
-      </div>
-
       {groupedEvents.map(([date, events]) => (
         <section className="w-full" key={date}>
           <FootnoteText as="h4" className="mb-4 text-text-tertiary">
