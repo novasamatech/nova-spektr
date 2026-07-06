@@ -12,11 +12,10 @@ import { type MultisigOperation, transactionService as networkTransactionService
 import { networkModel, useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { transactionService } from '@/entities/transaction';
-import { type TabFilter, operationsContextModel } from '../model/context';
+import { operationsContextModel } from '../model/context';
 
 type Props = {
   operation: MultisigOperation;
-  tab: TabFilter;
 };
 
 const InteractionStyle =
@@ -35,11 +34,12 @@ export const getCallDetailsLabelKeys = (displayCall: DisplayCall, outerCall: Dis
   } as const;
 };
 
-export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
+export const OperationAdvancedDetails = ({ operation }: Props) => {
   const { t } = useI18n();
   const { toast } = useNotification();
 
   const chains = useUnit(networkModel.$chains);
+  const hiddenOperationIds = useUnit(operationsContextModel.$hiddenOperationIds);
   const chain = chains[operation.chainId];
   const { api } = useNetworkData(operation.chainId);
 
@@ -69,7 +69,10 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
 
   const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
-  const isHiddenTab = tab === 'hidden';
+  // Keyed off the actual hidden state (not the active tab): the merged scope
+  // can surface hidden operations via the Status filter while the tab stays
+  // Pending, and the control must still offer "Unhide" there.
+  const isHidden = hiddenOperationIds.includes(operation.id);
 
   const handleHideOperation = () => {
     operationsContextModel.hideOperation(operation.id);
@@ -103,12 +106,12 @@ export const OperationAdvancedDetails = ({ operation, tab }: Props) => {
         <Tooltip>
           <Tooltip.Trigger>
             <IconButton
-              name={isHiddenTab ? 'eye' : 'eyeSlashed'}
+              name={isHidden ? 'eye' : 'eyeSlashed'}
               className="text-icon-default"
-              onClick={isHiddenTab ? handleUnhideOperation : handleHideOperation}
+              onClick={isHidden ? handleUnhideOperation : handleHideOperation}
             />
           </Tooltip.Trigger>
-          <Tooltip.Content>{isHiddenTab ? t('operation.unhideButton') : t('operation.hideButton')}</Tooltip.Content>
+          <Tooltip.Content>{isHidden ? t('operation.unhideButton') : t('operation.hideButton')}</Tooltip.Content>
         </Tooltip>
       </div>
 

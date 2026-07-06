@@ -37,7 +37,7 @@ Drafts are listed flat, **newest first**, each row column-aligned with the opera
 - **Submitter** — the draft's source account (the proxied source for a proxy-routed draft, otherwise the multisig),
   resolved to a name.
 - **Description** — the draft's note inline (an italic "No description" placeholder when absent).
-- **Actions** — an **Edit** button (write permission, not yet submitted) plus one primary control:
+- **Actions** — one primary control:
 
   | Primary control     | When                                                                                           |
   | ------------------- | ---------------------------------------------------------------------------------------------- |
@@ -46,17 +46,16 @@ Drafts are listed flat, **newest first**, each row column-aligned with the opera
   | **Add call data**   | The draft has no call data yet — opens the submit flow at the call-data step                   |
   | **Submit**          | Call data present and a local source account exists; disabled with a tooltip when signed out   |
 
-- **Delete** — a trash icon (delete permission) behind a confirmation dialog.
-
-Like an operation row, a draft row **expands** into three panels:
+Like an operation row, a draft row **expands** into three panels; the secondary actions live in their headers:
 
 - **Details** — network, multisig (and proxy, when the draft routes through one), threshold, who created the draft and
-  when, plus the full description.
+  when, plus the full description. The header carries the **Edit** button (write permission, not yet submitted).
 - **Signing path** — the draft's stored execution hops (proxied → multisig → chosen signer). The panel header carries
   two icon actions: **Open overview**, which opens the account-structure view anchored on the draft's exact signing
   path, and **Share**, which copies the draft's deep link (opening the link scrolls to and highlights the draft).
 - **Advanced** — the call data (copyable, with a decoded JSON view once it decodes), or a hint that call data will be
-  added on submission.
+  added on submission. The header carries the **Delete** trash icon (delete permission, not yet submitted) behind a
+  confirmation dialog.
 
 A draft that has been **linked to a live operation** (submitted by anyone) leaves the list automatically — the resulting
 operation row in the table carries a **FROM DRAFT** badge instead, and the draft's description becomes the operation's

@@ -215,7 +215,6 @@ export const Operations = () => {
                                 operation={item.item.operation}
                                 multisigAccount={item.item.account}
                                 isDefaultOpen={item.item.operation.id === focusedOperationId}
-                                tab={tab}
                                 chains={chains}
                                 wallets={wallets}
                               />

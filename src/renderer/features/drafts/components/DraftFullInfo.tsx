@@ -5,9 +5,9 @@ import { type Chain } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { toAccountId, truncate } from '@/shared/lib/utils';
-import { DetailRow, FootnoteText, HelpText, Icon, IconButton, SmallTitleText } from '@/shared/ui';
+import { Button, DetailRow, FootnoteText, HelpText, Icon, IconButton, SmallTitleText } from '@/shared/ui';
 import { ChainIcon } from '@/shared/ui-entities';
-import { Box, Copy, Modal, Tooltip } from '@/shared/ui-kit';
+import { Box, ConfirmModal, Copy, Modal, Tooltip } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import { type Draft, type PathNode } from '@/domains/backend';
 import { type AnyAccount } from '@/domains/network';
@@ -25,6 +25,10 @@ type Props = {
   multisigAccount: AnyAccount | null;
   /** Accounts feeding the account-structure overview (proxied first). */
   overviewWalletAccounts: AnyAccount[];
+  canEdit: boolean;
+  canDelete: boolean;
+  onEdit: (draft: Draft) => void;
+  onDelete: (id: string) => void;
 };
 
 const PATH_ROLE_KEYS: Record<PathNode['kind'], string> = {
@@ -33,7 +37,16 @@ const PATH_ROLE_KEYS: Record<PathNode['kind'], string> = {
   signer: 'operations.drafts.pathRoleSigner',
 };
 
-export const DraftFullInfo = ({ draft, chain, multisigAccount, overviewWalletAccounts }: Props) => {
+export const DraftFullInfo = ({
+  draft,
+  chain,
+  multisigAccount,
+  overviewWalletAccounts,
+  canEdit,
+  canDelete,
+  onEdit,
+  onDelete,
+}: Props) => {
   const { t, formatDate } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
 
@@ -64,7 +77,14 @@ export const DraftFullInfo = ({ draft, chain, multisigAccount, overviewWalletAcc
   return (
     <div className="grid grid-cols-3">
       <div className="flex flex-col gap-y-4 border-r border-divider p-4">
-        <SmallTitleText>{t('operation.detailsTitle')}</SmallTitleText>
+        <div className="flex items-center justify-between">
+          <SmallTitleText>{t('operation.detailsTitle')}</SmallTitleText>
+          {canEdit && (
+            <Button size="sm" variant="fill" pallet="secondary" onClick={() => onEdit(draft)}>
+              {t('operations.drafts.editButton')}
+            </Button>
+          )}
+        </div>
 
         <div className="flex flex-col gap-y-2">
           {chain && (
@@ -183,7 +203,23 @@ export const DraftFullInfo = ({ draft, chain, multisigAccount, overviewWalletAcc
       </div>
 
       <div className="flex flex-col gap-y-4 p-4">
-        <SmallTitleText>{t('operation.advanced')}</SmallTitleText>
+        <div className="flex items-center justify-between">
+          <SmallTitleText>{t('operation.advanced')}</SmallTitleText>
+          {canDelete && (
+            <ConfirmModal
+              cancelText={t('operations.drafts.deleteCancel')}
+              confirmText={t('operations.drafts.deleteConfirm')}
+              description={t('operations.drafts.deleteDescription')}
+              title={t('operations.drafts.deleteTitle')}
+              type="warning"
+              onConfirm={() => onDelete(draft.id)}
+            >
+              <ConfirmModal.Trigger>
+                <IconButton name="delete" className="text-icon-default hover:text-text-negative" />
+              </ConfirmModal.Trigger>
+            </ConfirmModal>
+          )}
+        </div>
 
         <div className="flex flex-col gap-y-2">
           {draft.callData ? (

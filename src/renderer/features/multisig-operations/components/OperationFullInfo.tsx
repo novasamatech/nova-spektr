@@ -4,7 +4,6 @@ import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/cor
 import { Slot, createSlot } from '@/shared/di';
 import { type MultisigOperation } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
-import { type TabFilter } from '../model/context';
 
 import { OperationAdvancedDetails } from './OperationAdvancedDetails';
 import { OperationDetails } from './OperationDetails';
@@ -13,7 +12,6 @@ import { OperationSignatories } from './OperationSignatories';
 type Props = {
   operation: MultisigOperation;
   account: MultisigAccount | FlexibleMultisigAccount;
-  tab: TabFilter;
   /**
    * Shareable deep link to this operation, surfaced by the Signatories header's
    * Share action.
@@ -28,7 +26,7 @@ type SlotProps = {
 
 export const operationDetailsSlot = createSlot<SlotProps>();
 
-export const OperationFullInfo = memo(({ operation, account, tab, deepLink }: Props) => {
+export const OperationFullInfo = memo(({ operation, account, deepLink }: Props) => {
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
 
   return (
@@ -39,7 +37,7 @@ export const OperationFullInfo = memo(({ operation, account, tab, deepLink }: Pr
 
       {account && <OperationSignatories operation={operation} account={account} deepLink={deepLink} />}
 
-      <OperationAdvancedDetails operation={operation} tab={tab} />
+      <OperationAdvancedDetails operation={operation} />
     </div>
   );
 });

@@ -4,9 +4,9 @@ import { useMemo } from 'react';
 import { type ChainId, type Wallet, CryptoType, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, isEthereumAccountId, toAccountId } from '@/shared/lib/utils';
-import { Accordion, Button, CaptionText, FootnoteText, HelpText, IconButton } from '@/shared/ui';
+import { Accordion, Button, CaptionText, FootnoteText, HelpText } from '@/shared/ui';
 import { operationColumns } from '@/shared/ui/operations-table-layout';
-import { ConfirmModal, Tooltip } from '@/shared/ui-kit';
+import { Tooltip } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount, contactMultisigsModel } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
@@ -203,22 +203,7 @@ export const DraftRow = ({
             <div className={operationColumns.draftBadge} />
             <div className={operationColumns.status} />
 
-            <div
-              className={cnTw(operationColumns.actions, 'flex items-center gap-2')}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {canWrite && !isSubmitted && (
-                <Button
-                  size="sm"
-                  variant="fill"
-                  pallet="secondary"
-                  className="min-w-0 flex-1"
-                  onClick={() => onEdit(draft)}
-                >
-                  {t('operations.drafts.editButton')}
-                </Button>
-              )}
-
+            <div className={cnTw(operationColumns.actions, 'flex items-center')} onClick={(e) => e.stopPropagation()}>
               <div className="min-w-0 flex-1">
                 {isSubmitted ? (
                   <div className="flex items-center justify-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">
@@ -266,25 +251,7 @@ export const DraftRow = ({
               </div>
             </div>
 
-            <div
-              className={cnTw(operationColumns.trailingSpacer, 'flex items-center justify-center')}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {canDelete && !isSubmitted && (
-                <ConfirmModal
-                  cancelText={t('operations.drafts.deleteCancel')}
-                  confirmText={t('operations.drafts.deleteConfirm')}
-                  description={t('operations.drafts.deleteDescription')}
-                  title={t('operations.drafts.deleteTitle')}
-                  type="warning"
-                  onConfirm={() => onDelete(draft.id)}
-                >
-                  <ConfirmModal.Trigger>
-                    <IconButton name="delete" size={16} className="p-0 text-icon-default hover:text-text-negative" />
-                  </ConfirmModal.Trigger>
-                </ConfirmModal>
-              )}
-            </div>
+            <div className={operationColumns.trailingSpacer} />
           </div>
         </Accordion.Button>
         <Accordion.Content>
@@ -294,6 +261,10 @@ export const DraftRow = ({
               chain={chain ?? null}
               multisigAccount={baseMultisigAccount}
               overviewWalletAccounts={hasOverview ? overviewWalletAccounts : []}
+              canEdit={canWrite && !isSubmitted}
+              canDelete={canDelete && !isSubmitted}
+              onEdit={onEdit}
+              onDelete={onDelete}
             />
           </div>
         </Accordion.Content>

@@ -33,7 +33,6 @@ import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
 import { parseProxyEditOperation } from '../lib/proxy-edit';
 import { parseVerifyProxyOperation } from '../lib/verify-proxy-op';
-import { type TabFilter } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 import { EditControllerOperationCard } from '../ui/EditControllerOperationCard';
 import { VerifyProxyOperationCard } from '../ui/VerifyProxyOperationCard';
@@ -47,7 +46,6 @@ type Props = {
   operation: MultisigOperation;
   multisigAccount: MultisigAccount | FlexibleMultisigAccount;
   isDefaultOpen?: boolean;
-  tab: TabFilter;
   chains: Record<ChainId, Chain>;
   wallets: Wallet[];
 };
@@ -83,7 +81,7 @@ export const operationTitleTransformer = createTransformer<
   OperationTitle
 >();
 
-export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false, tab, chains, wallets }: Props) => {
+export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false, chains, wallets }: Props) => {
   const { t } = useI18n();
   const description = useOperationDescription(operation.id);
   const isDraftLinked = useIsDraftLinkedOperation(operation.id);
@@ -220,7 +218,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
         </Accordion.Button>
         <Accordion.Content>
           <div className="border-t border-divider">
-            <OperationFullInfo operation={operation} account={multisigAccount} tab={tab} deepLink={deepLink} />
+            <OperationFullInfo operation={operation} account={multisigAccount} deepLink={deepLink} />
           </div>
         </Accordion.Content>
       </Accordion>
