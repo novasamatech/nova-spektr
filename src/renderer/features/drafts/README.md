@@ -1,6 +1,6 @@
 # Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-06
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-07
 
 ## Overview
 
@@ -15,7 +15,15 @@ signing key opens that same draft later and submits it. Because drafts live on t
 multi-user: shareable via a deep link (`Paths.OPERATIONS?draftId=…`), auto-fetched on sign-in, and re-polled every 30s —
 so every client picks up others' add / update / remove changes and raises an in-app notification for them.
 
+The whole feature is **backend-only and gated on authentication**: drafts are fetched exclusively while the user is
+signed in to the backend, and the local cache is cleared the moment the connection drops. An unauthenticated user sees
+no drafts at all — creating, viewing, and submitting all require an active backend session. See *Sync & reconnect* for
+the connection lifecycle.
+
 ## Who can use it / when it applies
+
+**Authentication is a hard precondition for everything below** — an active backend session is required to see, create,
+edit, or submit drafts.
 
 - **Creating** a draft requires being signed in to the backend and holding the draft-write permission
   (`useCanCreateDraft`). Available from a dedicated "Create Draft" modal, or implicitly from another transaction form
@@ -86,14 +94,55 @@ A staged flow: **call data (conditional) → confirm → sign → submit**.
 | Undecodable / missing call data | Bad or absent call data at create or submit entry | Blocked with a clear hint |
 | Post-submit sync failure | Recording the operation description fails after a successful on-chain submit | A toast with a **Retry** action; the draft stays visible and retryable |
 
+## Sync & reconnect
+
+Drafts are a backend-backed shared cache; the client keeps it converged through a simple fetch-and-poll loop tied to the
+backend session:
+
+- **On sign-in** — the client does a full fetch of all drafts (and their operation descriptions) into the local cache.
+- **While authenticated** — it re-polls every 30s, so add / update / remove changes made by other clients show up within
+  one interval and raise an in-app notification.
+- **On sign-out or connection loss** — polling stops and the **local cache is reset**, so drafts disappear from the UI
+  until the backend is reachable again.
+- **On reconnect** — re-authenticating triggers a fresh full fetch that repopulates the cache. This first
+  post-reset fetch is treated as **initial population**, not as a batch of new drafts — so a reconnect does *not* spam
+  "draft added" notifications for the entire list; only genuine deltas observed after repopulation notify.
+- **Self-mutation de-duplication** — a client's own create / update / delete is suppressed in the change diff, so you are
+  never notified about your own action when the next fetch echoes it back.
+
+```mermaid
+flowchart TD
+    OUT["Signed out / disconnected<br/>(no drafts, cache empty)"] -->|"sign in"| FETCH["Full fetch<br/>(initial population — no notifications)"]
+    FETCH --> POLL["Authenticated<br/>re-poll every 30s"]
+    POLL -->|"tick: remote delta"| NOTIFY["Update cache<br/>+ notify (skip own mutations)"]
+    NOTIFY --> POLL
+    POLL -->|"sign out / connection lost"| RESET["Stop polling<br/>reset cache"]
+    RESET --> OUT
+```
+
 ## Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Created: coordinator saves draft
+    Created --> Distributed: fetched by other clients
+    Distributed --> Edited: update call data / description
+    Edited --> Distributed
+    Distributed --> Submitted: signatory signs & broadcasts
+    Submitted --> Described: operation description links draft ↔ on-chain op
+    Described --> [*]
+    Distributed --> Deleted: removed
+    Deleted --> [*]
+```
 
 1. **Create** — draft appears on the backend, local cache updates, success toast.
 2. **Distribute** — visible to other backend users; deep link plus in-app notifications on add/update/remove (a client's
    own mutations are de-duplicated so it isn't notified of its own actions).
-3. **Edit** — call data and description can be updated (notably the late-call-data path at submit time).
+3. **Edit** — call data and the **description** can be updated (notably the late-call-data path at submit time). The
+   description is authored at create (required, max 500 chars) and travels with the draft.
 4. **Submit** — sign and broadcast; on success an operation description ties the draft to the resulting multisig
-   operation.
+   operation, so that operation **inherits the draft's description** (the multisig flow's own description input is
+   suppressed during a draft submission).
 5. **Delete** — drafts can be removed. Periodic backend polling keeps all connected clients' caches converged.
 
 ## Related
