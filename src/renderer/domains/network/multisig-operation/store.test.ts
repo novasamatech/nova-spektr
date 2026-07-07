@@ -5,9 +5,9 @@ import { type ChainId, AccountType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accounts } from '../account/store';
 
-import { fetchOffchainResource, initialOnChainFetch } from './resource';
+import { $completionEvents, fetchOffchainResource, initialOnChainFetch } from './resource';
 import { multisigOperation } from './store';
-import { type MultisigOperation } from './types';
+import { type MultisigEvent, type MultisigOperation } from './types';
 
 describe('multisigOperation store', () => {
   const mockChainId1 = '0x123' as ChainId;
@@ -222,6 +222,54 @@ describe('multisigOperation store', () => {
       await allSettled(nukeAccounts, { scope, params: [plainMultisig] });
 
       expect(scope.getState(multisigOperation.__test.$cachedOperations)).toBe(original);
+    });
+  });
+
+  describe('live-completion status derivation', () => {
+    const MULTI_ID = '0xmulti' as AccountId;
+
+    const baseOp = {
+      id: 'op-1',
+      status: 'pending',
+      multisigAccountId: MULTI_ID,
+      chainId: mockChainId1,
+      events: [],
+    } as unknown as MultisigOperation;
+
+    const approveEvent: MultisigEvent = { id: 'e-approve', status: 'approve' } as unknown as MultisigEvent;
+    const rejectEvent: MultisigEvent = { id: 'e-reject', status: 'reject' } as unknown as MultisigEvent;
+
+    const completion = (event: MultisigEvent, executionResult: 'success' | 'error' | null) => ({
+      chainId: mockChainId1,
+      operationId: baseOp.id,
+      event,
+      executionResult,
+    });
+
+    const deriveStatus = async (
+      completionEvents: ReturnType<typeof completion>[],
+    ): Promise<MultisigOperation['status'] | undefined> => {
+      const scope = fork({
+        values: new Map<any, any>([
+          [multisigOperation.__test.$removedFromChainStorageOperations, [baseOp]],
+          [$completionEvents, completionEvents],
+        ]),
+      });
+
+      const derived = scope.getState(multisigOperation.__test.$completedLiveOperations);
+      return derived[0]?.status;
+    };
+
+    it('marks a successful MultisigExecuted as executed', async () => {
+      expect(await deriveStatus([completion(approveEvent, 'success')])).toBe('executed');
+    });
+
+    it('marks a failed inner-call MultisigExecuted as error', async () => {
+      expect(await deriveStatus([completion(approveEvent, 'error')])).toBe('error');
+    });
+
+    it('marks a MultisigCancelled as cancelled, taking precedence over a failed execution', async () => {
+      expect(await deriveStatus([completion(rejectEvent, null), completion(approveEvent, 'error')])).toBe('cancelled');
     });
   });
 });
