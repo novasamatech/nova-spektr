@@ -126,7 +126,7 @@ flowchart TD
 stateDiagram-v2
     [*] --> Created: coordinator saves draft
     Created --> Distributed: fetched by other clients
-    Distributed --> Edited: update call data / description
+    Distributed --> Edited: update description
     Edited --> Distributed
     Distributed --> Submitted: signatory signs & broadcasts
     Submitted --> Described: operation description links draft ↔ on-chain op
@@ -138,8 +138,10 @@ stateDiagram-v2
 1. **Create** — draft appears on the backend, local cache updates, success toast.
 2. **Distribute** — visible to other backend users; deep link plus in-app notifications on add/update/remove (a client's
    own mutations are de-duplicated so it isn't notified of its own actions).
-3. **Edit** — call data and the **description** can be updated (notably the late-call-data path at submit time). The
-   description is authored at create (required, max 500 chars) and travels with the draft.
+3. **Edit** — only the **description** can be updated after a draft is created (required at create, max 500 chars). Call
+   data is **not editable**: the only time it is written post-create is the one-time *late fill* of call data that was
+   skipped at create (see the conditional call-data step in the submit flow) — completing a missing field, not editing an
+   existing one.
 4. **Submit** — sign and broadcast; on success an operation description ties the draft to the resulting multisig
    operation, so that operation **inherits the draft's description** (the multisig flow's own description input is
    suppressed during a draft submission).
