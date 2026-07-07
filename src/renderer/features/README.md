@@ -24,8 +24,8 @@ notes.
 - `hide-unnamed-wallets`
 - `extension-wallet`
 - `ledger-wallet-pairing`
-- `polkadot-vault-wallet`
-- `polkadot-vault-wallet-pairing`
+- [`polkadot-vault-wallet`](./polkadot-vault-wallet/README.md)
+- [`polkadot-vault-wallet-pairing`](./polkadot-vault-wallet-pairing/README.md)
 - `wallet-connect-wallet`
 - `wallet-connect-wallet-pairing`
 - `watch-only-wallet`
