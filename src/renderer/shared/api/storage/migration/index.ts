@@ -18,3 +18,4 @@ export { addAccountCreatedAt } from './migration-17';
 export { backupContactsBeforePKChange, migrateContactsToStringIds, restoreContactsAfterPKChange } from './migration-18';
 export { dropPersistedBackendContacts } from './migration-19';
 export { migrateWalletsHiddenReason } from './migration-20';
+export { resetVaultAccountNameType } from './migration-21';

@@ -4,6 +4,7 @@ import {
   type DraftAccount,
   type VaultChainAccount,
   type VaultShardAccount,
+  AccountNameType,
   AccountType,
   CryptoType,
   KeyType,
@@ -25,6 +26,7 @@ function createDraftAccount(
   return {
     type: 'chain',
     name: draft.derivationPath,
+    nameType: AccountNameType.GENERATED,
     keyType: KeyType.CUSTOM,
     chainId: draft.chainId,
     accountType: isSharded ? AccountType.SHARD : AccountType.CHAIN,

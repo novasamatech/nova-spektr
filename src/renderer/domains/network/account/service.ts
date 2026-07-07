@@ -334,6 +334,10 @@ function resolveAccountName({
     }
   }
 
+  if (relatedAccount?.name) {
+    return relatedAccount.name;
+  }
+
   let prefix = chain?.addressPrefix;
 
   if (!prefix) {

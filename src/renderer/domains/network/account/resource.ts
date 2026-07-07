@@ -1,4 +1,4 @@
-import { attach, combine, createStore } from 'effector';
+import { attach, combine, createStore, sample } from 'effector';
 
 import { type Chain, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -187,3 +187,113 @@ export const accountsNameResource = createQueryResource<AccountsNameParams>({
     },
   })
   .build();
+
+// useResource only re-fetches a resource when its request params change, so
+// once an account/wallet name is resolved and cached it stays cached even
+// after the data it was resolved from changes (e.g. reconnecting the backend
+// address book, or editing a local contact) — a mounted consumer (e.g. an
+// open Transfer modal) would otherwise show a stale name until it remounts.
+// Track the params behind every resolved cache entry, then recompute them
+// all whenever contacts change so mounted views pick up the update live.
+const $contacts = getContactsStore();
+
+const $accountNameParams = createStore<Record<string, AccountNameParams>>({});
+
+sample({
+  clock: accountNameResource.push,
+  source: $accountNameParams,
+  fn: (state, { params }) => ({ ...state, [createAccountNameCacheKey(params)]: params }),
+  target: $accountNameParams,
+});
+
+sample({
+  clock: accountsNameResource.push,
+  source: $accountNameParams,
+  fn: (state, { params }) => {
+    const next = { ...state };
+
+    for (const account of params.accounts) {
+      const accountParams: AccountNameParams = { accountId: account.accountId, chain: params.chain };
+      next[createAccountNameCacheKey(accountParams)] = accountParams;
+    }
+
+    return next;
+  },
+  target: $accountNameParams,
+});
+
+const $walletNameParams = createStore<Record<string, WalletNameParams>>({});
+
+sample({
+  clock: walletsNameResource.push,
+  source: $walletNameParams,
+  fn: (state, { params }) => {
+    const next = { ...state };
+
+    for (const wallet of params.wallets) {
+      const walletParams: WalletNameParams = { wallet };
+      next[createWalletNameCacheKey(walletParams)] = walletParams;
+    }
+
+    return next;
+  },
+  target: $walletNameParams,
+});
+
+sample({
+  clock: $contacts,
+  source: {
+    accountParams: $accountNameParams,
+    contacts: $contacts,
+    identities: identity.$list,
+    chains: networkModel.$chains,
+    accounts: accounts.$list,
+  },
+  filter: ({ accountParams }) => Object.keys(accountParams).length > 0,
+  fn: ({ accountParams, contacts, identities, chains, accounts: allAccounts }) => {
+    const next: NameCache = {};
+
+    for (const [key, params] of Object.entries(accountParams)) {
+      next[key] = accountService.resolveAccountName({
+        accountId: params.accountId,
+        chain: params.chain,
+        title: params.title,
+        contacts,
+        identities,
+        chains,
+        accounts: allAccounts,
+      });
+    }
+
+    return next;
+  },
+  target: $accountNameCache,
+});
+
+sample({
+  clock: $contacts,
+  source: {
+    walletParams: $walletNameParams,
+    contacts: $contacts,
+    identities: identity.$list,
+    chains: networkModel.$chains,
+    accounts: accounts.$list,
+  },
+  filter: ({ walletParams }) => Object.keys(walletParams).length > 0,
+  fn: ({ walletParams, contacts, identities, chains, accounts: allAccounts }) => {
+    const next: NameCache = {};
+
+    for (const [key, params] of Object.entries(walletParams)) {
+      next[key] = accountService.resolveWalletName({
+        wallet: params.wallet,
+        contacts,
+        identities,
+        chains,
+        accounts: allAccounts,
+      });
+    }
+
+    return next;
+  },
+  target: $walletNameCache,
+});

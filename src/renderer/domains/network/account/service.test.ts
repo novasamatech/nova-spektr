@@ -632,7 +632,7 @@ describe('account service', () => {
       expect(result).toBe('Identity Name');
     });
 
-    it('should return short address if no contact or identity', () => {
+    it('should return short address if no contact, identity or stored account name', () => {
       const result = accountService.resolveAccountName({
         accountId,
         chain: polkadotChain,
@@ -643,6 +643,27 @@ describe('account service', () => {
       });
 
       expect(result).toMatch(/^[A-Za-z0-9]{5}\.\.\.[A-Za-z0-9]{5}$/);
+    });
+
+    it('should return the stored generated name if no contact or identity match', () => {
+      const generatedAccountId = createAccountId('generated');
+      const generatedAccount: ChainAccount = {
+        ...chainAccount,
+        accountId: generatedAccountId,
+        nameType: AccountNameType.GENERATED,
+        name: 'Main',
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId: generatedAccountId,
+        chain: polkadotChain,
+        accounts: [generatedAccount],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('Main');
     });
 
     it('should prioritize custom name over local contact', () => {
