@@ -58,7 +58,7 @@ notes.
 - `proxy-operation-details`
 - `proxy-remove`
 - [`proxy-verify`](./proxy-verify/README.md)
-- `proxied-add-pure`
+- [`proxied-add-pure`](./proxied-add-pure/README.md)
 - `proxied-wallet`
 
 > See also: [`account-sync`](#wallets--onboarding) — discovers proxied wallets on-chain.
