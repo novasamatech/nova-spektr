@@ -759,6 +759,106 @@ describe('account service', () => {
 
       expect(result).toBe('Backend Contact Name');
     });
+
+    it('should use the passed-in account instead of re-deriving it from accountId, when a different account shares the same accountId', () => {
+      const sharedAccountId = createAccountId('shared');
+
+      // Found first by a plain accountId-only lookup, and CUSTOM — would win under
+      // the old accounts.find(accountId) logic even though it's the wrong account.
+      const arrayFirstAccount: ChainAccount = {
+        ...chainAccount,
+        id: 'array-first',
+        accountId: sharedAccountId,
+        nameType: AccountNameType.CUSTOM,
+        name: 'Array First',
+      };
+      // The account the caller actually knows it's resolving a name for.
+      const passedAccount: ChainAccount = {
+        ...chainAccount,
+        id: 'passed',
+        accountId: sharedAccountId,
+        nameType: AccountNameType.GENERATED,
+        name: 'Passed Account',
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId: sharedAccountId,
+        chain: polkadotChain,
+        account: passedAccount,
+        accounts: [arrayFirstAccount, passedAccount],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('Passed Account');
+    });
+
+    it('should prefer a chain-matching account when accountId is ambiguous and no specific account is passed', () => {
+      const sharedAccountId = createAccountId('shared-chain');
+
+      const kusamaCandidate: ChainAccount = {
+        ...chainAccount,
+        id: 'kusama-candidate',
+        accountId: sharedAccountId,
+        chainId: kusamaChainId,
+        nameType: AccountNameType.GENERATED,
+        name: 'Kusama Candidate',
+      };
+      const polkadotCandidate: ChainAccount = {
+        ...chainAccount,
+        id: 'polkadot-candidate',
+        accountId: sharedAccountId,
+        chainId: polkadotChainId,
+        nameType: AccountNameType.GENERATED,
+        name: 'Polkadot Candidate',
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId: sharedAccountId,
+        chain: polkadotChain,
+        // Kusama candidate listed first — a plain array-order find would pick it.
+        accounts: [kusamaCandidate, polkadotCandidate],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('Polkadot Candidate');
+    });
+
+    it('should prefer a CUSTOM-named account over a GENERATED one when accountId is ambiguous and chain does not disambiguate', () => {
+      const sharedAccountId = createAccountId('shared-custom');
+
+      // e.g. a Vault-derived key's raw derivation path...
+      const generatedCandidate: ChainAccount = {
+        ...chainAccount,
+        id: 'generated-candidate',
+        accountId: sharedAccountId,
+        nameType: AccountNameType.GENERATED,
+        name: '//kusama//hot//0',
+      };
+      // ...that shouldn't shadow a user's custom-named watch-only account for the same address.
+      const customCandidate: ChainAccount = {
+        ...chainAccount,
+        id: 'custom-candidate',
+        accountId: sharedAccountId,
+        nameType: AccountNameType.CUSTOM,
+        name: 'My Watch-Only',
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId: sharedAccountId,
+        chain: null,
+        // Generated candidate listed first — a plain array-order find would pick it.
+        accounts: [generatedCandidate, customCandidate],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('My Watch-Only');
+    });
   });
 
   describe('resolveWalletName', () => {
