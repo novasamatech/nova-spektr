@@ -144,7 +144,42 @@ type ResolveAccountNameParams = {
   chains: Record<string, Chain>;
   chain?: Chain | null;
   title?: string;
+  /**
+   * The specific account this name is being resolved for, when the caller
+   * already knows it. Skips the accountId-only lookup below, which cannot
+   * disambiguate between different accounts (e.g. across wallets) that happen
+   * to share the same accountId.
+   */
+  account?: AnyAccount;
 };
+
+/**
+ * AccountId alone doesn't disambiguate between accounts that share it across
+ * different wallets (e.g. a Vault derived key and an unrelated watch-only
+ * account for the same address). Prefer a chain-matching account, then one with
+ * a user-chosen (CUSTOM) name, before falling back to array order.
+ */
+function findRelatedAccount(
+  accounts: AnyAccount[],
+  accountId: AccountId,
+  chain?: Chain | null,
+): AnyAccount | undefined {
+  const candidates = accounts.filter(account => account.accountId === accountId);
+  if (candidates.length <= 1) {
+    return candidates[0];
+  }
+
+  if (chain) {
+    const chainMatch = candidates.find(
+      account => accountService.isChainAccount(account) && account.chainId === chain.chainId,
+    );
+    if (chainMatch) {
+      return chainMatch;
+    }
+  }
+
+  return candidates.find(isCustomAccountName) ?? candidates[0];
+}
 
 function getAccountById(accounts: AnyAccount[], accountId: AccountId | null): AnyAccount | undefined {
   if (nullable(accountId)) {
@@ -307,12 +342,13 @@ function resolveAccountName({
   identities,
   chains,
   title,
+  account,
 }: ResolveAccountNameParams): string {
   if (title) {
     return title;
   }
 
-  const relatedAccount = accounts.find(account => account.accountId === accountId);
+  const relatedAccount = account ?? findRelatedAccount(accounts, accountId, chain);
   if (relatedAccount && isCustomAccountName(relatedAccount)) {
     return relatedAccount.name;
   }
@@ -332,6 +368,10 @@ function resolveAccountName({
     if (identity) {
       return identity.name;
     }
+  }
+
+  if (relatedAccount?.name) {
+    return relatedAccount.name;
   }
 
   let prefix = chain?.addressPrefix;

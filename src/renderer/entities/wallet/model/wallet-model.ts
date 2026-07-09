@@ -13,6 +13,7 @@ import {
   type WatchOnlyAccount,
   type WcAccount,
   AccountNameType,
+  AccountType,
 } from '@/shared/core';
 import { groupBy, nonNullable, toKeysRecord } from '@/shared/lib/utils';
 import { accounts } from '@/domains/network';
@@ -67,6 +68,23 @@ type CreateResult = {
   wallet: Wallet;
   accounts: AnyAccount[];
 };
+
+// CHAIN/SHARD accounts are exclusively Polkadot Vault derived keys (auto-labeled
+// with a derivation path, never user-typed) — every other account type here is
+// a root/base account whose name the user chose, so CUSTOM is the right default
+// for those. Keying off accountType means any future Vault-derived-key creation
+// path gets the right default automatically, instead of relying on every call
+// site to remember to stamp it explicitly. accountType isn't part of the
+// domains/network account shape (only shared/core's wallet-specific account
+// types carry it), so it's read defensively via an `in` check.
+function defaultAccountNameType(account: object): AccountNameType {
+  const isVaultDerivedKey =
+    'accountType' in account &&
+    (account.accountType === AccountType.CHAIN || account.accountType === AccountType.SHARD);
+
+  return isVaultDerivedKey ? AccountNameType.GENERATED : AccountNameType.CUSTOM;
+}
+
 const createWalletFx = createEffect(
   async ({ wallet, accounts: accountDrafts }: WalletCreateParams): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create(wallet);
@@ -77,7 +95,7 @@ const createWalletFx = createEffect(
       acc.push({
         ...account,
         walletId: dbWallet.id,
-        nameType: account.nameType ?? AccountNameType.CUSTOM,
+        nameType: account.nameType ?? defaultAccountNameType(account),
       } as AnyAccountDraft);
 
       return acc;
