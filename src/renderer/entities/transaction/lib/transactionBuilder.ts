@@ -660,12 +660,14 @@ function buildCreateFlexibleMultisig({
     delay: 0,
   });
 
+  // create inner batch containing both proxy operations
   const innerBatch = buildBatchAll({
     chain,
     accountId: signatoryAccountId,
     transactions: [addProxyTx, removeProxyTx],
   });
 
+  // wrap inner batch in single proxy call
   const proxyWrapper = {
     chainId: chain.chainId,
     accountId: signatoryAccountId,

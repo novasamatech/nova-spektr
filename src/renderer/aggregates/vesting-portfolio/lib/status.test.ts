@@ -4,22 +4,28 @@ import { isFullyResolved, isLoadingMore, resolveStatus } from './status';
 
 describe('isFullyResolved', () => {
   it('is false while any chain has yet to report', () => {
-    expect(isFullyResolved({ enabledCount: 10, unresolved: 1, loadingWallets: false })).toBe(false);
+    expect(isFullyResolved({ chainsLoaded: true, unresolved: 1, loadingWallets: false })).toBe(false);
   });
 
   it('is false while the wallets are still loading', () => {
     // No accounts yet means no chain has anything to look up, so every chain
     // "resolves" instantly — the empty state that would follow is a lie told
     // before the question was asked.
-    expect(isFullyResolved({ enabledCount: 10, unresolved: 0, loadingWallets: true })).toBe(false);
+    expect(isFullyResolved({ chainsLoaded: true, unresolved: 0, loadingWallets: true })).toBe(false);
   });
 
   it('is false before the network config has loaded', () => {
-    expect(isFullyResolved({ enabledCount: 0, unresolved: 0, loadingWallets: false })).toBe(false);
+    expect(isFullyResolved({ chainsLoaded: false, unresolved: 0, loadingWallets: false })).toBe(false);
   });
 
   it('is true once every enabled chain has reported', () => {
-    expect(isFullyResolved({ enabledCount: 10, unresolved: 0, loadingWallets: false })).toBe(true);
+    expect(isFullyResolved({ chainsLoaded: true, unresolved: 0, loadingWallets: false })).toBe(true);
+  });
+
+  it('is true when the user has disabled every chain — a real, empty answer', () => {
+    // Nothing left that could hold vesting. Treating this as "still loading"
+    // would spin the skeleton for the life of the app.
+    expect(isFullyResolved({ chainsLoaded: true, unresolved: 0, loadingWallets: false })).toBe(true);
   });
 });
 

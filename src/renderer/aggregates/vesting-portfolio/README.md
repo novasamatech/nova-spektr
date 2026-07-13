@@ -34,25 +34,29 @@ A chain is *unresolved* while it might still surface a schedule, and *resolved* 
 | -------------------------------------------------- | -------------------------------------------------- |
 | Disabled                                           | not part of the question                           |
 | Still connecting (no api yet)                      | **unresolved** — its runtime is not readable yet    |
-| Still connecting after a 30s grace period          | given up on — see below                            |
 | Failed to connect (ERROR)                          | resolved — it will never answer                    |
 | Connected, runtime has no vesting pallet           | resolved — vesting is impossible there             |
 | Connected, vesting pallet, no account addresses it | resolved — nothing of ours to look up              |
 | Connected, vesting pallet, our accounts            | resolved **only** once its schedules have arrived  |
+| Anything still outstanding after 30s               | given up on — see below                            |
 
 Wallets are part of the question too: while they are still being read there are no keys to look up, every chain would
-resolve trivially, and the empty state would be a lie told before the question was asked.
+resolve trivially, and the empty state would be a lie told before the question was asked. The same goes for the network
+config: a user who has disabled *every* chain, on the other hand, has given a real (and empty) answer, and is shown it.
 
-**The grace period.** The app opens a connection to every enabled chain, and a chain whose RPC is down never settles —
-its socket keeps retrying, so it sits in "connecting" (or flaps between error and connecting) for the entire life of the
-app. Across dozens of chains that is the norm, not the exception, and waiting on such a chain forever would leave the
-loader spinning and — for a wallet with no vesting — the skeleton up, permanently. So a chain that has not connected
-within **30 seconds** is given up on. A chain that *has* connected is always waited for: its storage read answers in
-milliseconds, so there is no reason to give up on it.
+**The deadline.** The app opens a connection to every enabled chain, and a chain whose RPC is down never settles — its
+socket keeps retrying, so it sits in "connecting" (or flaps between error and connecting) for the entire life of the
+app. Across dozens of chains that is the norm, not the exception. A chain that connects but never *answers* is rarer and
+subtler — a degraded RPC that holds the socket open, a storage subscription that dies without a word — but from here the
+two are indistinguishable, and either would leave the loader spinning and, for a wallet with no vesting, the skeleton up
+permanently. So **every chain still outstanding after 30 seconds is given up on**, connected or not.
 
-The cost of the grace being too short is a false "no vesting" — the very thing this model exists to prevent — so it is
+The cost of the deadline being too short is a false "no vesting" — the very thing this model exists to prevent — so it is
 deliberately generous, and the cost of it being too long is only a loader that lingers. If a given-up-on chain does
-connect later and turns out to hold vesting, its schedules simply appear.
+report later and turns out to hold vesting, its schedules simply appear.
+
+The clock restarts on every activation, not just on a new account set: a timer armed on a previous visit keeps running
+while the block is unmounted, and without the restart the next visit would open with its grace already spent.
 
 ```mermaid
 flowchart TD

@@ -230,6 +230,7 @@ function validateCSV(records: VestingScheduleRaw[], options: ValidationSchemaOpt
 
     const targetAccountId = toAccountId(record?.target ?? '');
 
+    // Build target occurrences map
     targetOccurrences[targetAccountId] = (targetOccurrences[targetAccountId] ?? 0) + 1;
     validationOptions.targetOccurrences = targetOccurrences;
 

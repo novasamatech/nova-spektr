@@ -1,8 +1,12 @@
 import { type VestingStatus } from '../types';
 
 type ResolvedSource = {
-  /** Non-disabled chains. Zero means the network config has not loaded yet. */
-  enabledCount: number;
+  /**
+   * The network config has been read. False only before it loads — a user who
+   * has disabled every chain still counts as loaded, and their (genuinely
+   * empty) answer must be allowed through rather than left spinning forever.
+   */
+  chainsLoaded: boolean;
   /** Chains that have yet to say whether they hold vesting. */
   unresolved: number;
   /** Wallets are still being read from storage. */
@@ -14,11 +18,11 @@ type ResolvedSource = {
  * condition may the block say the wallet has no vesting.
  *
  * Wallets are part of the question: before they load there are no keys to look
- * up, and "no keys" would otherwise resolve instantly into a false empty
- * state.
+ * up, and "no keys" would otherwise resolve instantly into a false empty state.
+ * The network config is part of it for the same reason.
  */
-export const isFullyResolved = ({ enabledCount, unresolved, loadingWallets }: ResolvedSource): boolean =>
-  !loadingWallets && enabledCount > 0 && unresolved === 0;
+export const isFullyResolved = ({ chainsLoaded, unresolved, loadingWallets }: ResolvedSource): boolean =>
+  !loadingWallets && chainsLoaded && unresolved === 0;
 
 type StatusSource = {
   hasSchedules: boolean;

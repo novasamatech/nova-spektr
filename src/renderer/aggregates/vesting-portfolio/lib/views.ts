@@ -205,7 +205,8 @@ export const computeVesting = ({
 
       accountViews.push({
         key,
-        account: account ?? ({ accountId: typedAccountId } as AnyAccount),
+        accountId: typedAccountId,
+        account: account ?? null,
         chainId,
         total: vesting.total,
         stillLocked: vesting.stillLocked,
@@ -224,15 +225,12 @@ export const computeVesting = ({
       claimableFiat = claimableFiat.plus(addFiat(asset, vesting.claimable));
       if (perDayRate) perDayFiat = perDayFiat.plus(addFiat(asset, perDayRate));
 
-      const blocksToEnd = vesting.endBlock.sub(currentBlockBN);
-      if (blocksToEnd.gtn(0) && blockTimeMs != null) {
-        const date = new Date(Date.now() + blocksToEnd.toNumber() * blockTimeMs);
-        if (!lastUnlockDate || date > lastUnlockDate) lastUnlockDate = date;
-      }
+      const date = blocksToDate(vesting.endBlock.sub(currentBlockBN));
+      if (date && (!lastUnlockDate || date > lastUnlockDate)) lastUnlockDate = date;
     }
   }
 
-  accountViews.sort((a, b) => (b.stillLocked.gt(a.stillLocked) ? 1 : -1));
+  accountViews.sort((a, b) => b.stillLocked.cmp(a.stillLocked));
 
   return {
     accountViews,
@@ -271,7 +269,7 @@ export const fingerprintViews = (views: AccountVestingView[]): string =>
         view.perDayRate ?? '-',
         view.claimable_signable,
         view.claimBlockReason ?? '-',
-        view.account.id ?? '-',
+        view.account?.id ?? '-',
         schedules,
       ].join('/');
     })

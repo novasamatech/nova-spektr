@@ -74,7 +74,7 @@ describe('countUnresolvedChains', () => {
       }),
     );
 
-    expect(result).toEqual({ enabledCount: 1, unresolved: 1 });
+    expect(result).toEqual({ chainsLoaded: true, unresolved: 1 });
   });
 
   it('resolves a connected chain whose runtime has no vesting pallet', () => {
@@ -113,7 +113,13 @@ describe('countUnresolvedChains', () => {
       }),
     );
 
-    expect(result).toEqual({ enabledCount: 0, unresolved: 0 });
+    // Disabling every chain is a loaded config with nothing left to ask, not an
+    // unloaded one — the empty answer it yields is a real one.
+    expect(result).toEqual({ chainsLoaded: true, unresolved: 0 });
+  });
+
+  it('reports the network config as unloaded when there are no connections at all', () => {
+    expect(countUnresolvedChains(source({}))).toEqual({ chainsLoaded: false, unresolved: 0 });
   });
 
   it('holds a vesting-capable chain unresolved until its schedules land', () => {
@@ -147,21 +153,23 @@ describe('countUnresolvedChains', () => {
     expect(countUnresolvedChains(source({ ...stuck, graceExpired: true })).unresolved).toBe(0);
   });
 
-  it('keeps waiting on a connected chain even after the grace period — its answer is milliseconds away', () => {
+  it('gives up on a connected chain that has gone silent, once the grace period has passed', () => {
+    // A connected chain normally answers in milliseconds, so it is waited for.
+    // But a degraded RPC can hold the socket open and never deliver the storage
+    // subscription, and that wedges the skeleton for the life of the app just as
+    // a dead RPC would. The deadline is the only thing standing between that and
+    // a permanent loader.
     const api = vestingApi();
     const polkadot = chain(POLKADOT);
+    const silent = {
+      connections: { [POLKADOT]: connection(POLKADOT) },
+      statuses: { [POLKADOT]: ConnectionStatus.CONNECTED },
+      chains: { [POLKADOT]: polkadot },
+      apis: { [POLKADOT]: api },
+    };
 
-    const result = countUnresolvedChains(
-      source({
-        connections: { [POLKADOT]: connection(POLKADOT) },
-        statuses: { [POLKADOT]: ConnectionStatus.CONNECTED },
-        chains: { [POLKADOT]: polkadot },
-        apis: { [POLKADOT]: api },
-        graceExpired: true,
-      }),
-    );
-
-    expect(result.unresolved).toBe(1);
+    expect(countUnresolvedChains(source({ ...silent, graceExpired: false })).unresolved).toBe(1);
+    expect(countUnresolvedChains(source({ ...silent, graceExpired: true })).unresolved).toBe(0);
   });
 
   it('goes unresolved again for an account set the cache has not been asked about', () => {

@@ -3,9 +3,9 @@ import { combine, createEffect, createEvent, createStore, merge, sample, scopeBi
 import { debounce } from 'patronum';
 
 import { type Chain, type ChainId } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { nonNullable } from '@/shared/lib/utils';
 import { type ResourceRequestKey } from '@/shared/query';
-import { block } from '@/domains/network';
+import { type AnyAccount, block } from '@/domains/network';
 import { type VestingChainRequest, vestingSchedulesResource } from '@/domains/vesting';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -24,27 +24,42 @@ import {
 import { type AccountVestingView, type VestingSummary, EMPTY_SUMMARY } from './types';
 
 /**
- * Every key of every visible wallet. Hidden wallets are left out: the confirm
- * store resolves the initiator's wallet out of the visible list, so an account
- * from a hidden wallet would drop the confirmation on the floor.
+ * The accounts of every visible wallet. Hidden wallets are left out: the
+ * confirm store resolves the initiator's wallet out of the visible list, so an
+ * account from a hidden wallet would drop the confirmation on the floor.
  *
  * `$availableAccounts` republishes a fresh array on any wallet edit — a renamed
- * wallet, a balance-driven refresh — while the key set behind it rarely moves.
- * Returning the previous array when the keys are unchanged keeps the store from
- * emitting (effector compares by reference), so the whole graph below —
- * requests, subscriptions, the settled latch — only reacts when the question
- * itself changes.
+ * wallet, a balance-driven refresh — while the accounts behind it rarely move.
+ * Nothing below cares about a wallet's name, only about which accounts exist,
+ * so returning the previous array whenever the identities are unchanged keeps
+ * the store from emitting (effector compares by reference). That spares the
+ * whole graph — requests, subscriptions, the settled latch, and the claim
+ * resolutions and view math, which rebuild the account graph and re-run the
+ * vesting arithmetic — from reacting to a change that cannot alter their
+ * result.
  */
-let lastAccountIds: AccountId[] = [];
-const $accountIds = walletModel.$availableAccounts.map(accounts => {
-  const ids = [...new Set(accounts.map(account => account.accountId))].sort();
-  const unchanged = ids.length === lastAccountIds.length && ids.every((id, index) => id === lastAccountIds[index]);
-  if (unchanged) return lastAccountIds;
+const isSameAccountSet = (next: AnyAccount[], prev: AnyAccount[]) =>
+  next.length === prev.length &&
+  next.every((account, index) => {
+    const previous = prev[index];
 
-  lastAccountIds = ids;
+    return (
+      nonNullable(previous) &&
+      account.id === previous.id &&
+      account.accountId === previous.accountId &&
+      account.walletId === previous.walletId
+    );
+  });
 
-  return ids;
-});
+// `updateFilter` rather than a comparison inside `map`: a skipped update keeps
+// the previous value *and its reference*, which is what every derived store
+// below reads to decide whether it has anything to recompute.
+const $availableAccounts = createStore<AnyAccount[]>([], {
+  updateFilter: (next, prev) => !isSameAccountSet(next, prev),
+}).on(walletModel.$availableAccounts, (_, accounts) => accounts);
+
+/** Every key of every visible wallet. Stable for as long as the account set is. */
+const $accountIds = $availableAccounts.map(accounts => [...new Set(accounts.map(account => account.accountId))].sort());
 
 const $requests = combine(
   { chains: networkModel.$chains, apis: networkModel.$apis, accountIds: $accountIds },
@@ -145,27 +160,34 @@ sample({
 // Readiness
 
 /**
- * How long a chain is given to connect before we stop counting it as a chain
+ * How long a chain is given to report before we stop counting it as a chain
  * that might still surface vesting.
  *
  * Generous on purpose: the cost of being too eager is a false "no vesting", the
  * very thing this model exists to prevent. The cost of being too patient is
- * only a loader that lingers. Chains that do connect are never subject to this
- * — they answer in milliseconds — so this bounds one case only: an RPC that is
- * down.
+ * only a loader that lingers.
  */
 const GRACE_MS = 30_000;
 
 const graceElapsed = debounce({
-  // Restarts on a new account set: that is a fresh question, and the chains get
-  // their full grace to answer it.
+  // Restarts on a new account set, and on every activation: each is a fresh
+  // question, and the chains get their full grace to answer it.
   source: merge([activated, $accountIds]),
   timeout: GRACE_MS,
 });
 
+/**
+ * The deadline has passed — see `countUnresolvedChains`.
+ *
+ * `activated` resets it as well as re-arming the debounce above. The timer is
+ * not cancelled when the block leaves the screen, so one armed on a previous
+ * visit fires while nothing is mounted; without this reset the _next_ visit
+ * would open with the grace already spent and give up on every still-connecting
+ * chain immediately — a false "no vesting" on the very first frame.
+ */
 const $graceExpired = createStore(false)
   .on(graceElapsed, () => true)
-  .reset([$accountIds, deactivated]);
+  .reset([$accountIds, activated, deactivated]);
 
 const $resolution = combine(
   {
@@ -218,7 +240,7 @@ const $loadingMore = combine({ status: $status, fullyResolved: $fullyResolved },
 // Views
 
 const $claimResolutions = combine(
-  { data: $data, chains: networkModel.$chains, availableAccounts: walletModel.$availableAccounts },
+  { data: $data, chains: networkModel.$chains, availableAccounts: $availableAccounts },
   ({ data, chains, availableAccounts }) => computeClaimResolutions(data, chains, availableAccounts),
 );
 
@@ -229,7 +251,7 @@ const $vesting = combine(
     balances: balanceModel.$balanceMap,
     currentBlock: block.$currentBlock,
     blockTimes: block.blockTimeResource.$cache,
-    availableAccounts: walletModel.$availableAccounts,
+    availableAccounts: $availableAccounts,
     claimResolutions: $claimResolutions,
     prices: currencySelect.$assetsPrices,
     currency: currencySelect.$activeCurrency,
@@ -237,19 +259,34 @@ const $vesting = combine(
   computeVesting,
 );
 
-// Balances and block heights update on their own schedules; most of those
-// updates leave every printed figure unchanged. The fingerprints below turn
-// those into no-ops instead of re-renders — which matters most while a claim is
-// being signed, when the sign step must not be disturbed.
-const $accountViews = createStore<AccountVestingView[]>([], {
-  updateFilter: (next, prev) => fingerprintViews(next) !== fingerprintViews(prev),
-});
-$accountViews.on($vesting, (_, { accountViews }) => accountViews);
+/**
+ * Balances and block heights update on their own schedules; most of those
+ * updates leave every printed figure unchanged. Fingerprinting turns them into
+ * no-ops instead of re-renders — which matters most while a claim is being
+ * signed, when the sign step must not be disturbed.
+ *
+ * The fingerprint is kept _alongside_ the value rather than recomputed inside
+ * `updateFilter`, which would rebuild the unchanged previous fingerprint on
+ * every block tick just to compare it.
+ */
+type Fingerprinted<T> = { value: T; fingerprint: string };
 
-const $summary = createStore<VestingSummary>(EMPTY_SUMMARY, {
-  updateFilter: (next, prev) => fingerprintSummary(next) !== fingerprintSummary(prev),
+const fingerprinted = <T>(value: T, fingerprint: (value: T) => string): Fingerprinted<T> => ({
+  value,
+  fingerprint: fingerprint(value),
 });
-$summary.on($vesting, (_, { summary }) => summary);
+
+const $accountViewsState = createStore(fingerprinted<AccountVestingView[]>([], fingerprintViews), {
+  updateFilter: (next, prev) => next.fingerprint !== prev.fingerprint,
+}).on($vesting, (_, { accountViews }) => fingerprinted(accountViews, fingerprintViews));
+
+const $accountViews = $accountViewsState.map(state => state.value);
+
+const $summaryState = createStore(fingerprinted<VestingSummary>(EMPTY_SUMMARY, fingerprintSummary), {
+  updateFilter: (next, prev) => next.fingerprint !== prev.fingerprint,
+}).on($vesting, (_, { summary }) => fingerprinted(summary, fingerprintSummary));
+
+const $summary = $summaryState.map(state => state.value);
 
 export const vestingPortfolioModel = {
   $status,

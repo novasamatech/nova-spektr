@@ -28,6 +28,10 @@ it.
 - **Claiming** requires a signable account from the current wallet (Vault, WalletConnect, multisig, proxy…). Watch-only
   accounts and contacts are shown for transparency but cannot be claimed. Multisig/proxy accounts are wrapped
   automatically; each claim is one `vesting.vest()` transaction per account.
+- The **signing route** is seeded with the default path and can be changed on the confirm screen. It is not a cosmetic
+  choice: the account at the end of the route is the one that pays the fee and reserves the multisig deposit, so it is
+  never picked silently when the wallet offers more than one. Changing it re-wraps the transaction, re-estimates the fee
+  and re-validates.
 - One address can back **several local accounts** — an imported wallet plus, say, a proxied wallet auto-discovered for
   the same key on another chain, or a WalletConnect wallet carrying one account per chain of its session. Vesting is
   read per key, so all of them show the same schedules, but the claim resolves the account that actually reaches a
@@ -71,7 +75,8 @@ soon as the first schedule lands, with a small spinner while the remaining chain
 | Fully unlocked schedule   | `lockedNow == 0` for a schedule                                            | "Fully unlocked" replaces the unlock-date text, in the same muted style                                                                                                                                      |
 | Cliff                     | `vestedSoFar == 0` for a schedule                                          | "Cliff until DATE — nothing to unlock yet" (plain "In cliff…" while the date is unknown); no claim offered                                                                                                   |
 | Claim unavailable         | Vested tokens are ready, but no local account signs for them on this chain | A muted reason where "Claim all" would sit ("Your wallet can't sign on this network"); schedules stay visible                                                                                                |
-| Confirm                   | "Claim all" pressed                                                        | "Unlocks now" + "Keeps vesting" + network fee for the account, then Sign & submit                                                                                                                            |
+| Confirm                   | "Claim all" pressed                                                        | Signing route, "Unlocks now" + "Keeps vesting", network fee (and multisig deposit), then Sign & submit                                                                                                       |
+| Claim unaffordable        | The signer cannot cover the fee, or cannot reserve the multisig deposit    | The confirm explains which, and **Sign is blocked**. Switching the signing route re-checks it                                                                                                                |
 
 ## Lifecycle
 
@@ -87,9 +92,25 @@ flowchart TD
     C --> SIGN["Sign"] --> SUB["Submit"] --> DONE["Vested tokens released"]
 ```
 
-The claim prepares the wrapped transaction for the account (resolving the multisig/proxy signing route and estimating
-the fee), shows a confirm, then signs and submits. On submit the on-chain vesting lock drops and the freed amount
-becomes transferable (unless a larger staking/vote lock still dominates `frozen`).
+The claim prepares the wrapped transaction for the account (resolving the multisig/proxy signing route, estimating the
+fee and validating it), shows a confirm, then signs and submits. On submit the on-chain vesting lock drops and the freed
+amount becomes transferable (unless a larger staking/vote lock still dominates `frozen`).
+
+### Can the claim actually be paid for?
+
+Worth spelling out, because a vesting account is the one account most likely to look like it cannot pay. On Polkadot and
+Kusama `UnvestedFundsAllowedWithdrawReasons` is `except(TRANSFER | RESERVE)`, so pallet_vesting's lock blocks exactly two
+things: **transfers and reserves**. It does *not* block transaction payment. So an account whose entire balance is still
+vesting can pay its own claim fee out of that locked balance, down to the existential deposit — no chicken-and-egg.
+
+Two cases do fail, and both are checked before signing:
+
+- **The multisig deposit is a reserve**, which the vesting lock *does* block. A signatory whose balance is vesting-locked
+  cannot back a multisig claim, however large that balance is.
+- **A co-existing staking or conviction-vote lock** carries `WithdrawReasons::all()`, which *does* cover fees. Such an
+  account can be unable to pay even though its vesting lock alone would have allowed it.
+
+Both surface on the confirm screen and block the sign button rather than failing on-chain.
 
 Once the submitted extrinsic lands with success, the **account modal ("Vesting details") closes automatically**. The
 schedule figures behind it need no manual refresh: the schedules and their `VESTING` balance locks are **live

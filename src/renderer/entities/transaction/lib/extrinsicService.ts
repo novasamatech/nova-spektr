@@ -9,6 +9,10 @@ import { multisigOperationService } from '@/domains/network';
 
 import { isControllerMissing, isOldMultisigPallet } from './common/utils';
 
+/**
+ * Converts asset value to appropriate format for createType. If the value is
+ * hex string, converts to Uint8Array, otherwise returns as is
+ */
 const prepareAssetForType = (asset: any) => {
   return isHex(asset) ? hexToU8a(asset) : asset;
 };

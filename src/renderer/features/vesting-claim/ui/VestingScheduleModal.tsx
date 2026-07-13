@@ -91,7 +91,7 @@ export const VestingScheduleModal = () => {
               return (
                 <div key={view.key} className="rounded-xl border border-divider p-4">
                   <div className="flex items-center justify-between gap-x-3">
-                    <NamedAccount accountId={view.account.accountId} chain={chain} variant="full" />
+                    <NamedAccount accountId={view.accountId} chain={chain} variant="full" />
                     <div className="flex flex-col items-end">
                       <AssetBalance value={view.stillLocked.toString()} asset={asset} showSymbol />
                       {asset && <AssetFiatBalance asset={asset} amount={view.stillLocked.toString()} />}

@@ -49,6 +49,8 @@ type FormData = {
   vestingSchedule: VestingSchedule[];
 };
 
+// steps management
+
 const stepChanged = createEvent<Step>();
 const flowStarted = createEvent();
 const flowFinished = createEvent();
@@ -199,6 +201,8 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   signatory: form.fields.signatory.$value,
   routeOverride: $pathRoute,
 });
+
+// validations
 
 const validator = createTxValidator<{
   amount: BN;
@@ -443,6 +447,8 @@ sample({
   target: [stepChanged, form.reset],
 });
 
+// flow setup
+
 sample({
   clock: [flowStarted, $availableChains],
   source: {
@@ -554,6 +560,8 @@ wireDraftCloseRedirect({
   flowFinished,
   destination: Paths.OPERATIONS,
 });
+
+// submit flow
 
 const showConfirmation = sample({
   clock: form.submit.doneData,

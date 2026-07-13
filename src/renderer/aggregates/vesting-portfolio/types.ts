@@ -1,6 +1,7 @@
 import { type BN } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type ComputedVestingSchedule } from '@/domains/vesting';
 
@@ -49,7 +50,18 @@ export type ScheduleView = ComputedVestingSchedule & {
  */
 export type AccountVestingView = {
   key: string;
-  account: AnyAccount;
+  /**
+   * The key the schedules were read for. Always present — it is what we looked
+   * up.
+   */
+  accountId: AccountId;
+  /**
+   * The local account behind that key, for display and (when
+   * `claimable_signable`) for signing. `null` when the key is not ours — a
+   * contact, or a hidden wallet's account — in which case `claimBlockReason`
+   * says so.
+   */
+  account: AnyAccount | null;
   chainId: string;
   total: BN;
   stillLocked: BN;

@@ -13,7 +13,7 @@ import { currencySelect } from '@/aggregates/currency-select';
 import { type AccountVestingView, type ClaimBlockReason, vestingPortfolioModel } from '@/aggregates/vesting-portfolio';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
-import { type ClaimRequest, claimModel } from '../model/claim';
+import { claimModel } from '../model/claim';
 import { modalModel } from '../model/modal-model';
 
 const CLAIM_BLOCK_HINT: Record<ClaimBlockReason, string> = {
@@ -46,15 +46,14 @@ export const AccountScheduleModal = () => {
   // for that account, so a claim is always a single-account request.
   const handleClaim = (target: AccountVestingView) => {
     const targetChain = chains[target.chainId as ChainId];
-    if (!targetChain || !target.claimable_signable || !target.claimable.gtn(0)) return;
+    if (!targetChain || !target.account || !target.claimable_signable || !target.claimable.gtn(0)) return;
 
-    const request: ClaimRequest = {
+    claimModel.claimStarted({
       chain: targetChain,
       initiator: target.account,
       claimable: target.claimable,
       stillLocked: target.stillLocked,
-    };
-    claimModel.claimStarted([request]);
+    });
   };
 
   return (
@@ -63,7 +62,7 @@ export const AccountScheduleModal = () => {
       <Modal.Content>
         {view && (
           <div className="flex flex-col gap-y-4 p-5">
-            <NamedAccount accountId={view.account.accountId} chain={chain} variant="full" />
+            <NamedAccount accountId={view.accountId} chain={chain} variant="full" />
 
             <div className="flex items-center gap-x-4 rounded-lg bg-block-background p-4">
               <div className="flex min-w-0 flex-1 flex-col gap-y-1.5">

@@ -75,14 +75,17 @@ type ResolutionSource = {
  * or its runtime has no vesting pallet, or no account of ours addresses it, or
  * — the only case where the answer is a real one — its schedules have arrived.
  *
- * The one thing that must never be waited on forever is a chain whose RPC is
- * simply dead. The app opens a provider for every enabled chain, and a socket
- * that cannot connect keeps retrying — the chain sits in CONNECTING, or flaps
+ * The one thing that must never be waited on forever is a chain that cannot
+ * answer. The app opens a provider for every enabled chain, and a socket that
+ * cannot connect keeps retrying — the chain sits in CONNECTING, or flaps
  * between ERROR and CONNECTING, for the life of the app. Across dozens of
- * chains, at least one such chain is the norm rather than the exception, and
- * waiting on it would spin the loader forever. So once the grace period passes,
- * a chain that still has no api is given up on. A chain that _is_ connected
- * stays worth waiting for: its storage read answers in milliseconds.
+ * chains at least one such chain is the norm rather than the exception, and
+ * waiting on it would spin the loader forever. A chain that connects but never
+ * answers is rarer and subtler — a degraded RPC that holds the socket open, or
+ * a storage subscription that dies without a word — but it wedges the block
+ * exactly the same way, and from here the two are indistinguishable. So once
+ * the grace period passes, every chain still outstanding is given up on,
+ * connected or not.
  */
 export const countUnresolvedChains = ({
   connections,
@@ -92,7 +95,7 @@ export const countUnresolvedChains = ({
   accountIds,
   cache,
   graceExpired,
-}: ResolutionSource): { enabledCount: number; unresolved: number } => {
+}: ResolutionSource): { chainsLoaded: boolean; unresolved: number } => {
   const enabled = Object.values(connections).filter(c => c.connectionType !== ConnectionType.DISABLED);
   let unresolved = 0;
 
@@ -104,11 +107,16 @@ export const countUnresolvedChains = ({
     // Failed to connect — it will never report, and hanging on it would keep the
     // skeleton up forever.
     if (statuses[chainId] === ConnectionStatus.ERROR) continue;
+    // The deadline has passed. Stop waiting on everything still outstanding: a
+    // chain whose RPC never came up and a chain that connected but has gone
+    // silent both hold the skeleton for the life of the app, and neither is
+    // distinguishable from here.
+    if (graceExpired) continue;
 
     const api = apis[chainId];
     if (!api) {
       // Still connecting: worth waiting for, but not indefinitely.
-      if (!graceExpired) unresolved++;
+      unresolved++;
       continue;
     }
 
@@ -119,5 +127,5 @@ export const countUnresolvedChains = ({
     if (!cache[vestingSchedulesResource.createKey(request)]) unresolved++;
   }
 
-  return { enabledCount: enabled.length, unresolved };
+  return { chainsLoaded: Object.keys(connections).length > 0, unresolved };
 };
