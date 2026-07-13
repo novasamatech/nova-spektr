@@ -1,15 +1,19 @@
-import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type Asset, type Balance, type BalanceId, type Chain } from '@/shared/core';
-import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { createTxValidator, getActionRequiredAmount } from '@/shared/transactions';
-import { type AnyAccount, transactionService } from '@/domains/network';
+import { type Chain } from '@/shared/core';
+import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
+import {
+  createComplexTxStore,
+  createTxValidationStore,
+  createTxValidator,
+  getActionRequiredAmount,
+} from '@/shared/transactions';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
@@ -31,7 +35,7 @@ const claimStarted = createEvent<ClaimRequest>();
 const flowFinished = createEvent();
 const stepChanged = createEvent<Step>();
 
-const $step = readonly(restore(stepChanged, Step.NONE));
+const $step = createStore(Step.NONE).on(stepChanged, (_, step) => step);
 
 /**
  * The claim the user pressed on, snapshotted. The figures behind it keep moving
@@ -40,6 +44,22 @@ const $step = readonly(restore(stepChanged, Step.NONE));
 const $claim = createStore<ClaimRequest | null>(null)
   .on(claimStarted, (_, request) => request)
   .reset(flowFinished);
+
+/**
+ * The confirm opens on the click, not on the data.
+ *
+ * Everything it leads with — the amount unlocking, the amount that keeps
+ * vesting, the account, the chain — is already in hand the moment the button is
+ * pressed. The fee, the wrapped transaction and the validation each cost a
+ * round trip to the node, and gating the modal on them meant staring at a dead
+ * button for the length of three of them. They stream in behind their own
+ * loaders instead, and the sign button stays disabled until they land.
+ */
+sample({
+  clock: claimStarted,
+  fn: () => Step.CONFIRM,
+  target: stepChanged,
+});
 
 const $chain = $claim.map((claim) => claim?.chain ?? null);
 const $initiator = $claim.map((claim) => claim?.initiator ?? null);
@@ -56,11 +76,29 @@ const $api = combine(networkModel.$apis, $chain, (apis, chain) => (chain ? (apis
  * must not be made silently on the user's behalf when their wallet offers more
  * than one.
  */
-const { $signingPath, signingPathChanged, $pathRoute } = createSigningPathModel({
+const { $signingPath, signingPathChanged, $signatoryFromPath, $pathRoute } = createSigningPathModel({
   initiator: $initiator,
   chain: $chain,
   resetOn: flowFinished,
 });
+
+const $coreTx = combine($chain, $initiator, (chain, initiator) =>
+  chain && initiator ? transactionBuilder.buildVest({ chain, accountId: initiator.accountId }) : null,
+);
+
+// Wraps the call for the route, and re-estimates the fee whenever the route
+// changes — switching signatory re-prices the claim against the new signer.
+const { $route, $tx, $fee, $pendingFee, $pendingWrapping } = createComplexTxStore({
+  api: $api,
+  chain: $chain,
+  transaction: $coreTx,
+  accounts: accounts.$list,
+  initiator: $initiator,
+  signatory: $signatoryFromPath,
+  routeOverride: $pathRoute,
+});
+
+const $signatory = combine($route, $initiator, (route, initiator) => route.at(-1) ?? initiator);
 
 /**
  * `vesting.vest()` moves nothing of its own, so there are no operation-specific
@@ -70,91 +108,79 @@ const { $signingPath, signingPathChanged, $pathRoute } = createSigningPathModel(
  * so it blocks the multisig deposit outright, and a co-existing staking or
  * conviction-vote lock (those cover fees too) can leave nothing to pay with.
  */
-const validateClaim = createTxValidator();
+const validator = createTxValidator();
 
-type PrepareParams = {
-  claim: ClaimRequest | null;
-  route: AnyAccount[] | null;
-  api: ApiPromise | null;
-  asset: Asset | null;
-  balances: Record<BalanceId, Balance>;
-};
+const {
+  $errors,
+  $valid: $isTxValid,
+  $pending: $validating,
+  $balanceValidationResults,
+} = createTxValidationStore({
+  validator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
+});
 
-const prepareClaimFx = createEffect(
-  async ({ claim, route, api, asset, balances }: PrepareParams): Promise<ClaimConfirm | null> => {
-    if (nullable(claim) || nullable(api) || nullable(asset)) return null;
+const $hasMultisigAccount = $route.map((route) => route.some((account) => accountUtils.isAnyMultisigAccount(account)));
 
-    const { chain, initiator, claimable, stillLocked } = claim;
+const $multisigDeposit = $balanceValidationResults.map((results) =>
+  getActionRequiredAmount(results, 'multisig deposit').reduce(
+    (deposit, action) => deposit.add(action.required),
+    BN_ZERO,
+  ),
+);
 
-    // `$pathRoute` is null for a trivial path — an account that signs for itself.
-    const effectiveRoute = route && route.length > 0 ? route : [initiator];
-    const signer = effectiveRoute.at(-1) ?? initiator;
+/** Everything the node had to tell us has arrived, and it all checks out. */
+const $canSign = combine(
+  { tx: $tx, valid: $isTxValid, pendingFee: $pendingFee, pendingWrapping: $pendingWrapping, validating: $validating },
+  ({ tx, valid, pendingFee, pendingWrapping, validating }) =>
+    nonNullable(tx) && valid && !pendingFee && !pendingWrapping && !validating,
+);
 
-    const coreTx = transactionBuilder.buildVest({ chain, accountId: initiator.accountId });
-    const tx = await transactionService.wrapLegacyTransaction(coreTx, effectiveRoute, api);
-    tx.accountId = signer.accountId;
+/** Any of the round trips the confirm is still waiting on. */
+const $preparing = combine(
+  { pendingFee: $pendingFee, pendingWrapping: $pendingWrapping, validating: $validating },
+  ({ pendingFee, pendingWrapping, validating }) => pendingFee || pendingWrapping || validating,
+);
 
-    const extrinsic = getExtrinsic[tx.type](tx.args, api);
-    const signerAddress = toAddress(signer.accountId, { prefix: chain.addressPrefix });
-    const { partialFee } = await extrinsic.paymentInfo(signerAddress);
-
-    const validation = await validateClaim({ api, asset, route: effectiveRoute, transaction: tx, balances });
-
-    const multisigDeposit = getActionRequiredAmount(validation.balanceValidationResults, 'multisig deposit').reduce(
-      (deposit, action) => deposit.add(action.required),
-      BN_ZERO,
-    );
+// The confirm store is what the sign step reads, so it is (re)filled as soon as
+// the wrapped transaction exists — and again whenever the route changes it.
+const $confirmDraft = combine(
+  {
+    claim: $claim,
+    chain: $chain,
+    initiator: $initiator,
+    signatory: $signatory,
+    route: $route,
+    tx: $tx,
+    coreTx: $coreTx,
+  },
+  ({ claim, chain, initiator, signatory, route, tx, coreTx }): ClaimConfirm | null => {
+    if (!claim || !chain || !initiator || !signatory || !tx || !coreTx) return null;
 
     return {
       chain,
       initiator,
-      signatory: signer,
-      route: effectiveRoute,
+      signatory,
+      route: route.length > 0 ? route : [initiator],
       tx,
       coreTx,
-      fee: partialFee.toBn().toString(),
-      claimable: claimable.toString(),
-      stillLocked: stillLocked.toString(),
-      hasMultisigAccount: effectiveRoute.some((account) => accountUtils.isAnyMultisigAccount(account)),
-      multisigDeposit,
-      errors: validation.errors,
+      claimable: claim.claimable.toString(),
+      stillLocked: claim.stillLocked.toString(),
     };
   },
 );
 
-// Re-prepared whenever the route changes, so switching signatory re-wraps the
-// transaction, re-estimates its fee and re-validates against the new signer's
-// balance. Held to the steps where the confirm is still editable — `$pathRoute`
-// also tracks the account list, and an account landing mid-signature must not
-// swap the transaction out from under the sign step.
 sample({
-  clock: [$claim, $pathRoute],
-  source: {
-    claim: $claim,
-    route: $pathRoute,
-    api: $api,
-    asset: $asset,
-    balances: balanceModel.$balanceMap,
-    step: $step,
-  },
-  filter: ({ claim, step }) => nonNullable(claim) && (step === Step.NONE || step === Step.CONFIRM),
-  fn: ({ claim, route, api, asset, balances }): PrepareParams => ({ claim, route, api, asset, balances }),
-  target: prepareClaimFx,
-});
-
-sample({
-  clock: prepareClaimFx.doneData,
+  clock: $confirmDraft,
   filter: nonNullable,
   fn: (confirm: ClaimConfirm) => [confirm],
   target: confirmModel.init,
-});
-
-sample({
-  clock: prepareClaimFx.doneData,
-  source: $step,
-  filter: (step, confirm) => nonNullable(confirm) && step === Step.NONE,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
 });
 
 sample({
@@ -219,12 +245,21 @@ sample({
 });
 
 export const claimModel = {
-  $step,
+  $step: readonly($step),
   $confirms,
-  $preparing: prepareClaimFx.pending,
+  $claim,
   $chain,
   $asset,
+  $initiator,
+  $signatory,
   $signingPath,
+  $fee,
+  $pendingFee,
+  $errors,
+  $hasMultisigAccount,
+  $multisigDeposit,
+  $preparing,
+  $canSign,
 
   claimStarted,
   flowFinished,

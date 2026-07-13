@@ -92,9 +92,12 @@ flowchart TD
     C --> SIGN["Sign"] --> SUB["Submit"] --> DONE["Vested tokens released"]
 ```
 
-The claim prepares the wrapped transaction for the account (resolving the multisig/proxy signing route, estimating the
-fee and validating it), shows a confirm, then signs and submits. On submit the on-chain vesting lock drops and the freed
-amount becomes transferable (unless a larger staking/vote lock still dominates `frozen`).
+**The confirm opens on the click, not on the data.** Everything it leads with — the amount unlocking, the amount that
+keeps vesting, the account, the chain — is already in hand when the button is pressed. The wrapped transaction, the fee
+and the validation each cost a round trip to the node, so they are *not* awaited: the modal opens immediately and they
+stream in behind their own loaders, with the sign button disabled until they land. Changing the signing route re-runs
+them in place. On submit the on-chain vesting lock drops and the freed amount becomes transferable (unless a larger
+staking/vote lock still dominates `frozen`).
 
 ### Can the claim actually be paid for?
 

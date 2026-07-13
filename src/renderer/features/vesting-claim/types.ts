@@ -1,17 +1,5 @@
-import { type BN } from '@polkadot/util';
-
 import { type TxConfirmInfo } from '@/shared/transactions';
-import {
-  type TransactionValidationBalanceError,
-  type TransactionValidationFatalError,
-  type TransactionValidationPermissionError,
-} from '@/shared/ui-entities';
 import { type AnyAccount } from '@/domains/network';
-
-export type ClaimValidationError =
-  | TransactionValidationBalanceError
-  | TransactionValidationPermissionError
-  | TransactionValidationFatalError;
 
 export const enum Step {
   NONE,
@@ -26,19 +14,15 @@ export type ClaimTarget = {
   accountId: AnyAccount['accountId'];
 };
 
+/**
+ * What the sign and submit steps carry. The fee, the multisig deposit and the
+ * validation errors are deliberately _not_ here: each costs a round trip and
+ * arrives after the confirm is already on screen, so they live in their own
+ * stores and are read live rather than snapshotted into this one.
+ */
 export type ClaimConfirm = TxConfirmInfo & {
-  fee: string;
   /** Amount released now by `vesting.vest()`. */
   claimable: string;
   /** Amount that keeps vesting after the claim. */
   stillLocked: string;
-  hasMultisigAccount: boolean;
-  /** Deposit the signatory reserves on a multisig route; zero otherwise. */
-  multisigDeposit: BN;
-  /**
-   * Why the claim cannot be signed as configured — an unaffordable fee, an
-   * unreservable multisig deposit, a wallet without permission. Empty when it
-   * can. Blocks the sign button.
-   */
-  errors: ClaimValidationError[];
 };
