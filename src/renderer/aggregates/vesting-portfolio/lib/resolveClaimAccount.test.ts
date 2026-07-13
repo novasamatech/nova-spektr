@@ -67,7 +67,7 @@ const registerHandlers = () => {
   accountService.accountCollectChildrenPipeline.registerHandler({
     body: (children, { account, accounts }) => {
       if (isProxiedAccount(account)) {
-        return accounts.filter((a) => a.accountId === account.proxiedAccountId);
+        return accounts.filter(a => a.accountId === account.proxiedAccountId);
       }
 
       return children;
@@ -202,7 +202,7 @@ describe('resolveClaimAccount', () => {
       accountType: AccountType.WALLET_CONNECT,
     }));
 
-    expect(wcAccounts.every((account) => accountService.hasPermissionToMakeActions(account))).toBe(true);
+    expect(wcAccounts.every(account => accountService.hasPermissionToMakeActions(account))).toBe(true);
     expect(resolveClaimAccount(wcAccounts, polkadotChain, wcAccounts)).toEqual({
       account: null,
       reason: 'chain-unsupported',

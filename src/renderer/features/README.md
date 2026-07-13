@@ -123,6 +123,7 @@ notes.
 - [`vested-transfer`](./vested-transfer/README.md)
 - `vested-transfer-operation-details` (no spec planned)
 - [`vesting-claim`](./vesting-claim/README.md)
+- [`vesting-portfolio`](../aggregates/vesting-portfolio/README.md) (aggregate)
 - `send-to-contact`
 
 ## Assets & Balances
@@ -168,7 +169,8 @@ notes.
 - `dashboard-price-charts`
 - `dashboard-staking`
 
-> See also: [`vesting-claim`](#transfers) — its callout is injected into the Portfolio Overview card.
+> See also: [`vesting-claim`](#transfers) and [`vesting-portfolio`](#transfers) — the vesting callout is injected into
+> the Portfolio Overview card.
 
 ## Contacts & Notifications
 

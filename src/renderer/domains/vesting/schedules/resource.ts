@@ -1,9 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createStore } from 'effector';
 
-import { type Chain, type ChainId } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createSubscriptionResource } from '@/shared/query';
+import { type ResourceRequestKey, createSubscriptionResource, wrapKeyFactory } from '@/shared/query';
 import { type ChainVestingLocks, type ChainVestingSchedules } from '../lib/types';
 import { vestingService } from '../lib/vestingService';
 
@@ -23,7 +23,15 @@ export type ChainVestingEntry = {
   locks: ChainVestingLocks;
 };
 
-type CacheState = Record<ChainId, ChainVestingEntry>;
+/**
+ * Keyed by chain **and** account set: a different account set is a different
+ * request, so it reads as a cache miss (loading) rather than silently serving
+ * the previous set's schedules.
+ */
+type CacheState = Record<ResourceRequestKey, ChainVestingEntry>;
+
+const vestingKey = ({ chain, accountIds }: VestingChainRequest) => [chain.chainId, ...accountIds];
+const createVestingKey = wrapKeyFactory(vestingKey);
 
 /**
  * Per-chain subscription: `vesting.vesting` and the `VESTING` balance lock are
@@ -33,7 +41,7 @@ type CacheState = Record<ChainId, ChainVestingEntry>;
  * pruned) flows straight into any subscribed component — no manual refetch.
  */
 export const vestingSchedulesResource = createSubscriptionResource<VestingChainRequest>({
-  key: ({ chain, accountIds }) => [chain.chainId, ...accountIds],
+  key: vestingKey,
 })
   .subscribe<ChainVestingEntry>(({ api, accountIds }, callback) => {
     // Runtime gate: only pallet_vesting chains that expose the claim call.
@@ -77,6 +85,6 @@ export const vestingSchedulesResource = createSubscriptionResource<VestingChainR
   })
   .cache<CacheState>({
     store: createStore<CacheState>({}),
-    map: (state, entry, { chain }) => ({ ...state, [chain.chainId]: entry }),
+    map: (state, entry, params) => ({ ...state, [createVestingKey(params)]: entry }),
   })
   .build();

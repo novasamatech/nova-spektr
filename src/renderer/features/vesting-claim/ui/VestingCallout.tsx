@@ -1,28 +1,25 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon, Loader } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { currencySelect } from '@/aggregates/currency-select';
+import { type VestingSummary, vestingPortfolioModel } from '@/aggregates/vesting-portfolio';
 import { FiatBalance } from '@/widgets/price';
-import { type WalletVestingSummary } from '../hooks/useWalletVesting';
 import { modalModel } from '../model/modal-model';
 
-type Props = {
-  summary: WalletVestingSummary;
-  pending: boolean;
-  loadingMore: boolean;
-};
-
-export const VestingCallout = memo(({ summary, pending, loadingMore }: Props) => {
+export const VestingCallout = () => {
   const { t } = useI18n();
+
   const currency = useUnit(currencySelect.$activeCurrency);
+  const status = useUnit(vestingPortfolioModel.$status);
+  const summary = useUnit(vestingPortfolioModel.$summary);
+  const loadingMore = useUnit(vestingPortfolioModel.$loadingMore);
 
   // Fiat amount as a display string (grouped, with the active currency's symbol
   // or code) — matches how the rest of the app prints fiat.
-  const formatFiat = (value: WalletVestingSummary['perDayFiat']) => {
+  const formatFiat = (value: VestingSummary['perDayFiat']) => {
     const amount = formatFiatBalance(value.toString(), 0).formatted;
 
     return currency?.symbol
@@ -30,10 +27,10 @@ export const VestingCallout = memo(({ summary, pending, loadingMore }: Props) =>
       : t('price.withCode', { code: currency?.code ?? '', amount });
   };
 
-  // Show the skeleton the whole time the data is loading — the summary is only
-  // trustworthy once `pending` is false (see useWalletVesting readiness gate), so
-  // the block never flips between states while chains connect.
-  if (pending) {
+  // Not every chain that could hold vesting has reported yet, so nothing may be
+  // said about the absence of it — hold the skeleton rather than claim an empty
+  // wallet we would have to take back a second later.
+  if (status === 'loading') {
     return (
       <div className="mt-3 flex w-full items-center gap-x-3 rounded-lg border border-divider px-3 py-2.5">
         <Skeleton width="32px" height="32px" />
@@ -46,8 +43,8 @@ export const VestingCallout = memo(({ summary, pending, loadingMore }: Props) =>
     );
   }
 
-  // Loaded, and the selected accounts have no active vesting — say so explicitly.
-  if (summary.schedulesCount === 0) {
+  // Every chain reported, and none of them holds vesting for these accounts.
+  if (status === 'empty') {
     return (
       <div className="mt-3 flex w-full items-center gap-x-3 rounded-lg border border-divider px-3 py-2.5">
         <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-block-background-hover">
@@ -103,4 +100,4 @@ export const VestingCallout = memo(({ summary, pending, loadingMore }: Props) =>
       </span>
     </button>
   );
-});
+};

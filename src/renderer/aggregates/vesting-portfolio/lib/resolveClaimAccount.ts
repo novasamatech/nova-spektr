@@ -41,19 +41,19 @@ export const resolveClaimAccount = (
 ): ClaimAccountResolution => {
   if (candidates.length === 0) return { account: null, reason: 'no-local-account' };
 
-  const onChain = candidates.filter((account) => accountService.isAccountAvailableOnChain(account, chain));
+  const onChain = candidates.filter(account => accountService.isAccountAvailableOnChain(account, chain));
   if (onChain.length === 0) return { account: null, reason: 'chain-unsupported' };
 
   const account =
-    onChain.find((candidate) => accountService.hasPermissionToMakeActions(candidate)) ??
-    onChain.find((candidate) => accountService.findSignatories(candidate, allAccounts, chain).length > 0) ??
+    onChain.find(candidate => accountService.hasPermissionToMakeActions(candidate)) ??
+    onChain.find(candidate => accountService.findSignatories(candidate, allAccounts, chain).length > 0) ??
     null;
 
   if (account) return { account, reason: null };
 
   // Watch-only is the everyday reason nothing signs here, and the user can act
   // on it (re-import the key properly) — name it instead of the generic text.
-  const watchOnly = onChain.every((candidate) => accountUtils.isWatchOnlyAccount(candidate));
+  const watchOnly = onChain.every(candidate => accountUtils.isWatchOnlyAccount(candidate));
 
   return { account: null, reason: watchOnly ? 'watch-only' : 'no-signer' };
 };

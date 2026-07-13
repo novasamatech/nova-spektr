@@ -1,11 +1,11 @@
 # Vesting claim
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-09
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-13
 
 ## Overview
 
-Lets a user see the vesting schedules held by their selected accounts and **claim** the tokens that have already vested,
-turning `vesting.vest()` — an otherwise hidden extrinsic — into a first-class flow. Recipients of vested transfers (team
+Lets a user see the vesting schedules held by their accounts and **claim** the tokens that have already vested, turning
+`vesting.vest()` — an otherwise hidden extrinsic — into a first-class flow. Recipients of vested transfers (team
 allocations, airdrops, crowdloan rewards) can now tell how much has unlocked and release it to their transferable
 balance.
 
@@ -13,11 +13,17 @@ The feature surfaces as a callout inside the dashboard **Portfolio Overview** ca
 `portfolioVestingSlot`), opening a schedule modal → per-account modal → a standard confirm/sign/submit claim. Amounts
 are token-first with fiat as the secondary value, consistent with the rest of the portfolio.
 
+What is vesting, and whether that answer can be trusted yet, is decided by the
+[`vesting-portfolio`](../../aggregates/vesting-portfolio/README.md) aggregate; this feature presents it and claims from
+it.
+
 ## Who can use it / when it applies
 
-- Appears only when at least one selected account has an active vesting schedule on a **vesting-capable chain** —
-  detected at runtime by the presence of `api.query.vesting.vesting` and `api.tx.vesting.vest` (this excludes
-  `orml_vesting` chains, which use a different call and are out of scope).
+- Covers **every non-hidden account**, not the dashboard's selected subset — vesting belongs to the wallet, not to the
+  card's account filter. The callout therefore takes no account list from the page it sits in.
+- A schedule counts when it sits on a **vesting-capable chain** — detected at runtime by the presence of
+  `api.query.vesting.vesting` and `api.tx.vesting.vest` (this excludes `orml_vesting` chains, which use a different call
+  and are out of scope).
 - The callout is part of the Portfolio Overview card, which itself renders only while fiat display is enabled.
 - **Claiming** requires a signable account from the current wallet (Vault, WalletConnect, multisig, proxy…). Watch-only
   accounts and contacts are shown for transparency but cannot be claimed. Multisig/proxy accounts are wrapped
@@ -48,11 +54,17 @@ block:
 - dates ("Fully unlocks 28 Feb 2026 · in 52d", "Cliff until 1 Mar 2026") are projected from the timeline chain's
   expected block time; while that block time is unknown the modal falls back to the plain "Vesting" / "In cliff" texts.
 
+The callout's own three states — skeleton, "no vesting", and content — are governed by the
+[`vesting-portfolio`](../../aggregates/vesting-portfolio/README.md) readiness rule: the skeleton holds until every chain
+that could hold vesting has reported, so "no vesting" is never shown as a guess and then taken back. Content appears as
+soon as the first schedule lands, with a small spinner while the remaining chains report.
+
 | State                     | When it appears                                                            | What the user sees                                                                                                                                                                                           |
 | ------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| No callout                | No active schedule on the selected accounts                                | Portfolio Overview looks unchanged                                                                                                                                                                           |
-| Vested distribution slice | Any selected account has a vesting lock                                    | An indigo "Vested" bar in "Distribution by balance type"                                                                                                                                                     |
-| Callout                   | ≥1 active schedule                                                         | "N active vesting schedules · fully unlocks by DATE", plus a "ready" pill when claimable                                                                                                                     |
+| Skeleton                  | A chain that could hold vesting has yet to report                          | A placeholder row where the callout will be                                                                                                                                                                  |
+| No vesting                | Every chain reported; none holds a schedule for these accounts             | A muted "no active vesting" row                                                                                                                                                                              |
+| Vested distribution slice | Any account has a vesting lock                                             | An indigo "Vested" bar in "Distribution by balance type"                                                                                                                                                     |
+| Callout                   | ≥1 active schedule                                                         | "N active vesting schedules · fully unlocks by DATE", plus a "ready" pill when claimable, and a spinner while chains still report                                                                            |
 | Schedule modal            | Callout clicked                                                            | Totals (vesting / schedules / ready-to-unlock), Day/Week/Month unlock-rate toggle, one row per account                                                                                                       |
 | Account modal             | "See schedule" clicked                                                     | Account totals with "Claim all", an "Unlocking ≈ $X per day" line, and per-schedule cards: asset icon, "Schedule N · SYMBOL", per-schedule "≈ rate / day · fiat", progress bar, "Fully unlocks DATE · in Nd" |
 | Schedule ready            | A schedule's attributed ready amount > 0                                   | Below a separator: "X TOKEN / $Y ready to claim" — informational only; claiming happens via the account-level "Claim all"                                                                                    |
@@ -88,9 +100,10 @@ lands, and for changes made from another device. On a failed submit both modals 
 
 ## Related
 
-- `domains/vesting` — the live schedule/lock subscription (`vestingSchedulesResource`) and the pure
-  `vestingClaimService` math. The feature's `useVestingSchedules` hook drives one pooled subscription per
-  vesting-capable chain.
+- [`vesting-portfolio`](../../aggregates/vesting-portfolio/README.md) — what is vesting, and when that answer may be
+  trusted; owns the live subscriptions this feature renders from.
+- `domains/vesting` — the live schedule/lock subscription (`vestingSchedulesResource`) and the pure `vestingClaimService`
+  math.
 - `dashboard-portfolio-overview` — hosts the callout slot and renders the new "Vested" allocation category.
 - `vested-transfer` — the inverse operation (creating vesting); shares the `vesting` pallet and confirm/sign infra.
 - `operations/OperationSign`, `operations/OperationSubmit`, `shared/transactions` — the reused signing/submission stack.

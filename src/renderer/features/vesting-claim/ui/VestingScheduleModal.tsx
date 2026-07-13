@@ -1,31 +1,29 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
 
-import { type Chain, type ChainId } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { Button, FootnoteText, HelpText, Loader, Separator, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
+import { vestingPortfolioModel } from '@/aggregates/vesting-portfolio';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance, FiatBalance } from '@/widgets/price';
-import { type WalletVesting } from '../hooks/useWalletVesting';
 import { modalModel } from '../model/modal-model';
 
-type Props = {
-  vesting: WalletVesting;
-  chains: Record<ChainId, Chain>;
-};
-
-export const VestingScheduleModal = memo(({ vesting, chains }: Props) => {
+export const VestingScheduleModal = () => {
   const { t } = useI18n();
 
   const isOpen = useUnit(modalModel.$scheduleModalOpen);
   // AssetFiatBalance renders nothing when fiat is off — gate the separators too, or they'd dangle.
   const fiatFlag = useUnit(currencySelect.$fiatFlag);
 
-  const { summary, accountViews, loadingMore } = vesting;
+  const chains = useUnit(networkModel.$chains);
+  const summary = useUnit(vestingPortfolioModel.$summary);
+  const accountViews = useUnit(vestingPortfolioModel.$accountViews);
+  const loadingMore = useUnit(vestingPortfolioModel.$loadingMore);
 
   return (
     <Modal isOpen={isOpen} size="lg" height="fit" onToggle={(open) => !open && modalModel.scheduleModalClosed()}>
@@ -157,7 +155,7 @@ export const VestingScheduleModal = memo(({ vesting, chains }: Props) => {
       </Modal.Content>
     </Modal>
   );
-});
+};
 
 // Non-translatable punctuation used to compose the unlocking summary line.
 const Approx = () => <span className="text-text-tertiary">≈</span>;

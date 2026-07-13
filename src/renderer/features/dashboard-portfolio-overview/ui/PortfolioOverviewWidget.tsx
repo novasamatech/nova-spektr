@@ -22,8 +22,12 @@ type EntryLike = { accountId: string; name: string; address: string };
 /**
  * Rendered inside the Portfolio Overview card, just below the balance-type
  * distribution. The vesting-claim feature injects its callout here.
+ *
+ * Propless by design: vesting is shown for every non-hidden account, which the
+ * injected block reads for itself — this card's account selection is none of
+ * its business.
  */
-export const portfolioVestingSlot = createSlot<{ accountIds: string[] }>({ name: 'portfolioVesting' });
+export const portfolioVestingSlot = createSlot({ name: 'portfolioVesting' });
 
 type ViewMode = 'asset' | 'chain';
 
@@ -87,7 +91,7 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
         {allocation && <BalanceAllocationBars allocation={allocation} />}
       </div>
 
-      <Slot id={portfolioVestingSlot} props={{ accountIds }} />
+      <Slot id={portfolioVestingSlot} />
 
       {hasData && (
         <>

@@ -90,10 +90,11 @@ describe('vestingSchedulesResource', () => {
       [[vestingLock(600)]],
     );
     const scope = fork();
+    const params = { api, chain, accountIds: [ACCOUNT] };
 
-    await allSettled(vestingSchedulesResource.subscribe, { scope, params: { api, chain, accountIds: [ACCOUNT] } });
+    await allSettled(vestingSchedulesResource.subscribe, { scope, params });
 
-    const entry = scope.getState(vestingSchedulesResource.$cache)[chain.chainId];
+    const entry = scope.getState(vestingSchedulesResource.$cache)[vestingSchedulesResource.createKey(params)];
     expect(entry?.schedules[ACCOUNT]).toHaveLength(1);
     expect(entry?.schedules[ACCOUNT]?.[0]?.locked.toString()).toBe('1000');
     expect(entry?.locks[ACCOUNT]?.toString()).toBe('600');
@@ -106,13 +107,14 @@ describe('vestingSchedulesResource', () => {
       [[vestingLock(600)]],
     );
     const scope = fork();
+    const params = { api, chain, accountIds: [ACCOUNT] };
 
-    await allSettled(vestingSchedulesResource.subscribe, { scope, params: { api, chain, accountIds: [ACCOUNT] } });
+    await allSettled(vestingSchedulesResource.subscribe, { scope, params });
     // Re-fire the locks subscription with a smaller lock — the callback pushes
     // into the scope bound at subscribe time.
     emitLocks([[vestingLock(200)]]);
 
-    const entry = scope.getState(vestingSchedulesResource.$cache)[chain.chainId];
+    const entry = scope.getState(vestingSchedulesResource.$cache)[vestingSchedulesResource.createKey(params)];
     expect(entry?.locks[ACCOUNT]?.toString()).toBe('200');
   });
 

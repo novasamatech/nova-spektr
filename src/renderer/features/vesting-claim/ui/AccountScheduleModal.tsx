@@ -1,21 +1,20 @@
 import { type BN } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
 
-import { type Chain, type ChainId } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, HelpText, Separator, SmallTitleText } from '@/shared/ui';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
+import { type AccountVestingView, type ClaimBlockReason, vestingPortfolioModel } from '@/aggregates/vesting-portfolio';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
-import { type WalletVesting } from '../hooks/useWalletVesting';
-import { type ClaimBlockReason } from '../lib/resolveClaimAccount';
+import { type ClaimRequest, claimModel } from '../model/claim';
 import { modalModel } from '../model/modal-model';
-import { type AccountVestingView } from '../types';
 
 const CLAIM_BLOCK_HINT: Record<ClaimBlockReason, string> = {
   'chain-unsupported': 'vesting.account.cantClaimChainUnsupported',
@@ -24,17 +23,13 @@ const CLAIM_BLOCK_HINT: Record<ClaimBlockReason, string> = {
   'no-local-account': 'vesting.account.cantClaimNotYours',
 };
 
-type Props = {
-  vesting: WalletVesting;
-  chains: Record<ChainId, Chain>;
-  onClaim: (view: AccountVestingView) => void;
-};
-
-export const AccountScheduleModal = memo(({ vesting, chains, onClaim }: Props) => {
+export const AccountScheduleModal = () => {
   const { t } = useI18n();
 
+  const chains = useUnit(networkModel.$chains);
+  const accountViews = useUnit(vestingPortfolioModel.$accountViews);
   const openKey = useUnit(modalModel.$openAccountKey);
-  const view = vesting.accountViews.find((v) => v.key === openKey) ?? null;
+  const view = accountViews.find((v) => v.key === openKey) ?? null;
 
   // AssetFiatBalance renders nothing when fiat is off — gate the separators too, or they'd dangle.
   const showFiat = Boolean(useUnit(currencySelect.$fiatFlag));
@@ -45,6 +40,21 @@ export const AccountScheduleModal = memo(({ vesting, chains, onClaim }: Props) =
   const formatToken = (value: BN) => {
     const { value: amount, suffix } = formatBalance(value.toString(), asset?.precision ?? 0);
     return `${amount}${suffix}${asset?.symbol ? ` ${asset.symbol}` : ''}`;
+  };
+
+  // Claiming is per account: one `vesting.vest()` releases every vested schedule
+  // for that account, so a claim is always a single-account request.
+  const handleClaim = (target: AccountVestingView) => {
+    const targetChain = chains[target.chainId as ChainId];
+    if (!targetChain || !target.claimable_signable || !target.claimable.gtn(0)) return;
+
+    const request: ClaimRequest = {
+      chain: targetChain,
+      initiator: target.account,
+      claimable: target.claimable,
+      stillLocked: target.stillLocked,
+    };
+    claimModel.claimStarted([request]);
   };
 
   return (
@@ -104,7 +114,7 @@ export const AccountScheduleModal = memo(({ vesting, chains, onClaim }: Props) =
                         size="sm"
                         className="whitespace-nowrap"
                         disabled={!view.claimable_signable}
-                        onClick={() => onClaim(view)}
+                        onClick={() => handleClaim(view)}
                       >
                         {t('vesting.account.claimAll')}
                       </Button>
@@ -249,7 +259,7 @@ export const AccountScheduleModal = memo(({ vesting, chains, onClaim }: Props) =
       </Modal.Content>
     </Modal>
   );
-});
+};
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

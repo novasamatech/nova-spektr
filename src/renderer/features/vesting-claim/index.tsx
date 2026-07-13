@@ -16,9 +16,9 @@ export const vestingClaimFeature = createFeature({
 // throw here would take the whole widget down with it. Isolate it — on failure
 // the callout simply renders nothing and Portfolio Overview stays intact.
 // Plain function component (not memo/lazy) — the slot render system calls it directly.
-const VestingRootIsolated = (props: { accountIds: string[] }) => (
+const VestingRootIsolated = () => (
   <ErrorBoundary fallback={null}>
-    <VestingRoot {...props} />
+    <VestingRoot />
   </ErrorBoundary>
 );
 
