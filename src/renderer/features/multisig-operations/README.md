@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-02
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-13
 
 ## Overview
 
@@ -56,6 +56,7 @@ panel. Unrecognised or still-undecoded calls fall back to a generic presentation
 | **Cross-chain (XCM)**      | teleports, reserve transfers, `xTokens`, `polkadotXcm` variants                                                                      | "Cross-chain transfer" with **two** chain chips (source → destination) and the amount                           |
 | **Multi-transfer**         | a batch made entirely of transfers                                                                                                   | "Multi Transfer" with the **summed** amount                                                                     |
 | **Vested transfer**        | vested transfer (also inside a batch)                                                                                                | "Vested transfer" with the locked amount                                                                        |
+| **Vesting claim**          | claiming the already-vested part of a vesting lock                                                                                   | "Claim vested" — carries no amount of its own (the network decides how much unlocks)                            |
 | **Staking**                | Start Staking (bond), Change Validators (nominate), Stake More, Unstake, Restake, Withdraw Unstaked (redeem), Set reward destination | each with its own title/icon and, where relevant, amount                                                        |
 | **Governance**             | Vote, Remove vote, Unlock, Delegate, Revoke delegation, Edit Delegation                                                              | each with its own title/icon; vote shows the conviction amount                                                  |
 | **Proxy management**       | Add proxy, Create pure proxy, Revoke proxy, Revoke pure proxy                                                                        | "…delegated authority (proxy)" titles; details show delegate/revoke target and access type                      |
@@ -191,10 +192,9 @@ action, and a re-sync badge).
 - **External multisig discovery.** Contact-backed external multisigs (and their operations) exist in the list only
   because a contact matches them, so losing the backend connection drops backend-contact-derived external multisigs on
   the next refresh; locally stored contacts still seed discovery.
-- **Notify remaining signers.** Requires _backend connected + operation pending + multisig known to the external
-  address book_; it does not depend on wallet ownership, so it can appear on a tracked external multisig too. The
-  button is disabled until the backend session account has signed the operation; the backend independently enforces
-  the same rule.
+- **Notify remaining signers.** Requires _backend connected + operation pending + multisig known to the external address
+  book_; it does not depend on wallet ownership, so it can appear on a tracked external multisig too. The button is
+  disabled until the backend session account has signed the operation; the backend independently enforces the same rule.
 - **Operation description.** The description is a short note the initiator attaches, published to the shared address
   book so co-signers see the operation's context.
 
@@ -242,8 +242,8 @@ backend session account is among the operation's approvers (or is its depositor)
 the tooltip _Available after you sign the operation with your signatory_; once signed, it is active with the tooltip
 _Notify signatories to sign the operation via Element_. The backend still owns enforcement — it only ever reminds
 still-pending signers, rejects non-signatories and signatories who have not signed yet (403), and rate-limits nudges
-**per multisig account**: a recent nudge by _anyone_ for that multisig blocks the next one until the window elapses.
-A signer who cannot be reached (delivery failed, or no Element handle on file) counts as _unreachable_. Feedback is
+**per multisig account**: a recent nudge by _anyone_ for that multisig blocks the next one until the window elapses. A
+signer who cannot be reached (delivery failed, or no Element handle on file) counts as _unreachable_. Feedback is
 delivered entirely through toasts:
 
 | Outcome                                                              | Toast                                                                                                 |
@@ -327,9 +327,9 @@ after which the operation moves to History. Alternatively the depositor can reje
 - **Network unreachable / operation gone** — approving, rejecting, or deep-linking surfaces an explanatory modal
   (network not available, connection timeout, account or operation not found, already signed) rather than failing
   silently.
-- **Nudge rejected** — authorization (403 — only a signatory who signed), per-multisig rate-limit (429 — shown as
-  "next one available in N minutes/hours"), the operation not yet synced by the backend (404), or delivery failure are
-  each turned into an explanatory toast; nothing is sent when no signer is still pending.
+- **Nudge rejected** — authorization (403 — only a signatory who signed), per-multisig rate-limit (429 — shown as "next
+  one available in N minutes/hours"), the operation not yet synced by the backend (404), or delivery failure are each
+  turned into an explanatory toast; nothing is sent when no signer is still pending.
 
 ## Related
 

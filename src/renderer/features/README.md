@@ -120,8 +120,8 @@ notes.
 - `transfer-operation-details`
 - `multi-transfer`
 - `multi-transfer-operation-details`
-- `vested-transfer`
-- `vested-transfer-operation-details`
+- [`vested-transfer`](./vested-transfer/README.md)
+- `vested-transfer-operation-details` (no spec planned)
 - [`vesting-claim`](./vesting-claim/README.md)
 - `send-to-contact`
 
@@ -164,7 +164,7 @@ notes.
 - `dashboard-governance`
 - `dashboard-navigation` (no spec planned)
 - `dashboard-operations-queue`
-- `dashboard-portfolio-overview`
+- [`dashboard-portfolio-overview`](./dashboard-portfolio-overview/README.md)
 - `dashboard-price-charts`
 - `dashboard-staking`
 
