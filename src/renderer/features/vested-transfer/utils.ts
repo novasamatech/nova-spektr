@@ -9,7 +9,7 @@ import {
   type VestingScheduleRaw,
   VestingFieldError,
   VestingFieldWarning,
-} from '@/entities/vesting';
+} from '@/domains/vesting';
 
 import { type ValidationSchemaOptions, Step } from './types';
 
@@ -230,7 +230,6 @@ function validateCSV(records: VestingScheduleRaw[], options: ValidationSchemaOpt
 
     const targetAccountId = toAccountId(record?.target ?? '');
 
-    // Build target occurrences map
     targetOccurrences[targetAccountId] = (targetOccurrences[targetAccountId] ?? 0) + 1;
     validationOptions.targetOccurrences = targetOccurrences;
 

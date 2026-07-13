@@ -10,15 +10,18 @@ type Props = {
 };
 
 type BarConfig = {
-  labelKey: 'assetBalance.transferable' | 'assetBalance.locked' | 'assetBalance.reserved';
+  labelKey: 'assetBalance.transferable' | 'assetBalance.locked' | 'assetBalance.reserved' | 'assetBalance.vested';
   color: string;
   pct: number;
+  /** When true the bar is only rendered if it carries a non-zero share. */
+  hideWhenEmpty?: boolean;
 };
 
 const BARS: ((allocation: AllocationData) => BarConfig)[] = [
   (a) => ({ labelKey: 'assetBalance.transferable', color: ALLOCATION_COLORS.transferable, pct: a.transferablePct }),
   (a) => ({ labelKey: 'assetBalance.locked', color: ALLOCATION_COLORS.locked, pct: a.lockedPct }),
   (a) => ({ labelKey: 'assetBalance.reserved', color: ALLOCATION_COLORS.reserved, pct: a.reservedPct }),
+  (a) => ({ labelKey: 'assetBalance.vested', color: ALLOCATION_COLORS.vested, pct: a.vestedPct, hideWhenEmpty: true }),
 ];
 
 export const BalanceAllocationBars = memo(({ allocation }: Props) => {
@@ -28,7 +31,8 @@ export const BalanceAllocationBars = memo(({ allocation }: Props) => {
     <div className="flex min-w-[300px] flex-col gap-2">
       <FootnoteText className="text-text-tertiary">{t('dashboard.portfolioOverview.assetAllocation')}</FootnoteText>
       {BARS.map((getConfig) => {
-        const { labelKey, color, pct } = getConfig(allocation);
+        const { labelKey, color, pct, hideWhenEmpty } = getConfig(allocation);
+        if (hideWhenEmpty && pct < 0.05) return null;
         const displayPct = pct.toFixed(1);
 
         return (

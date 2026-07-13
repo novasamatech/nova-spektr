@@ -264,6 +264,14 @@ export const votedAmountBN = (balance: Balance) => {
   return bnLocks;
 };
 
+export const vestedLockedAmountBN = (balance: Balance | null): BN => {
+  if (nullable(balance)) return BN_ZERO;
+
+  return balance.locked
+    .filter((lock) => lock.type === LockTypes.VESTING)
+    .reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);
+};
+
 export const unlockingAmount = (unlocking: Unlocking[] = []): string => {
   if (unlocking.length === 0) return ZERO_BALANCE;
 

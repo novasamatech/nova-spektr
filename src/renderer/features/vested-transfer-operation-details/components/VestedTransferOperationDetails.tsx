@@ -5,9 +5,9 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, DetailRow } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
+import { type VestingScheduleRaw } from '@/domains/vesting';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { type VestingScheduleRaw } from '@/entities/vesting';
 import { VestingSchedulePreview } from '@/widgets/vesting-schedule-preview';
 
 type Props = {

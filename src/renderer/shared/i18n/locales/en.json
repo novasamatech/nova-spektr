@@ -196,7 +196,8 @@
     "number": "{value, number}",
     "numberWithSuffix": "{value, number}{suffix}",
     "reserved": "Reserved",
-    "transferable": "Transferable"
+    "transferable": "Transferable",
+    "vested": "Vested"
   },
   "assethubMigration": {
     "automaticMigration": "Migration happens automatically, no action needed.",
@@ -2659,7 +2660,7 @@
       "accountNotInAddressBook": "This account is not in the address book contacts. Add it to contacts before creating a draft.",
       "connectToCreate": "Sign in to create drafts",
       "connectToSubmit": "Sign in to submit drafts",
-      "noWritePermission": "You do not have permission to create drafts. Contact your admin.", 
+      "noWritePermission": "You do not have permission to create drafts. Contact your admin.",
       "noMultisigsInAddressBook": "No multisig accounts found. Add a multisig wallet first.",
       "noDescription": "No description",
       "unknownMultisig": "Unknown multisig",
@@ -2786,6 +2787,7 @@
       "unknownOn": "Unknown Operation on",
       "unlockOn": "Unlock on",
       "unstakeOn": "Unstake { asset } on",
+      "vest": "Claim vested",
       "vestedTransfer": "Vested transfer",
       "vestedTransferOn": "Vested transfer on",
       "verifyProxy": "Verify proxy",
@@ -3625,6 +3627,56 @@
         }
       },
       "title": "Parsed file"
+    }
+  },
+  "vesting": {
+    "callout": {
+      "activeSchedules_one": "{count} active vesting schedule",
+      "activeSchedules_other": "{count} active vesting schedules",
+      "unlockingRate": "Unlocking ≈ {rate}/day",
+      "unlockingGradually": "Unlocking gradually",
+      "subtitleWithDate": "{prefix} · fully unlocks by {date}",
+      "empty": "No active vesting schedules",
+      "ready": "ready",
+      "schedule": "Schedule"
+    },
+    "schedule": {
+      "title": "Vesting schedules",
+      "totalVesting": "Total vesting",
+      "activeSchedules": "Active schedules",
+      "readyToUnlock": "Ready to unlock",
+      "unlocking": "Unlocking",
+      "unlockingPerDayLabel": "Unlocking per day",
+      "unlocked": "Unlocked",
+      "readyShort": "Ready to claim",
+      "averageUnlockRate": "Average unlock rate",
+      "unlockingPerDay": "unlocking per day",
+      "seeSchedule": "See schedule",
+      "loadingMore": "Loading more schedules…"
+    },
+    "account": {
+      "title": "Vesting details",
+      "claimAll": "Claim all",
+      "cantClaimChainUnsupported": "Your wallet can't sign on this network",
+      "cantClaimNoSigner": "No account in your wallets can sign this claim",
+      "cantClaimNotYours": "This account isn't in your wallets",
+      "cantClaimWatchOnly": "This is a watch-only account",
+      "scheduleLabel": "Schedule {index} · {symbol}",
+      "unlockedOf": "Unlocked {unlocked} of {total}",
+      "inCliff": "In cliff — nothing to unlock yet",
+      "cliffUntil": "Cliff until {date} — nothing to unlock yet",
+      "vesting": "Vesting",
+      "fullyUnlocked": "Fully unlocked",
+      "fullyUnlocksOn": "Fully unlocks {date} · in {days}d",
+      "readyToClaim": "Ready to claim",
+      "perDayLong": "per day"
+    },
+    "confirm": {
+      "labels": {
+        "unlocksNow": "Unlocks now",
+        "keepsVesting": "Keeps vesting"
+      },
+      "hint": "Claiming releases the vested amount from the vesting lock. The network fee is paid from your transferable balance."
     }
   },
   "voteChart": {

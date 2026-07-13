@@ -122,6 +122,7 @@ notes.
 - `multi-transfer-operation-details`
 - `vested-transfer`
 - `vested-transfer-operation-details`
+- [`vesting-claim`](./vesting-claim/README.md)
 - `send-to-contact`
 
 ## Assets & Balances
@@ -166,6 +167,8 @@ notes.
 - `dashboard-portfolio-overview`
 - `dashboard-price-charts`
 - `dashboard-staking`
+
+> See also: [`vesting-claim`](#transfers) — its callout is injected into the Portfolio Overview card.
 
 ## Contacts & Notifications
 

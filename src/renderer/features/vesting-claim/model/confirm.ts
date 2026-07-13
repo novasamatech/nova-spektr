@@ -1,21 +1,10 @@
-import { type BN } from '@polkadot/util';
-
-import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
-import { type ValidationIssue, type VestingSchedule } from '@/domains/vesting';
+import { createTransactionConfirmStore } from '@/shared/transactions';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
+import { type ClaimConfirm } from '../types';
 
-export type VestedTransferConfirm = TxConfirmInfo & {
-  fee: string;
-  amount: string;
-  hasMultisigAccount: boolean;
-  multisigDeposit: BN;
-  vestingSchedule: VestingSchedule[];
-  issues: ValidationIssue[] | null;
-};
-
-const confirmStore = createTransactionConfirmStore<VestedTransferConfirm>({
+const confirmStore = createTransactionConfirmStore<ClaimConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
   $multisigTransactions: selectedWalletMultisigOperations.$list,

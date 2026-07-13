@@ -29,6 +29,7 @@ import { operationsNavigationFeature } from '@/features/operations-navigation';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
 import { vestedTransferFeature } from '@/features/vested-transfer';
+import { vestingClaimFeature } from '@/features/vesting-claim';
 
 const configureDomains = () => {
   const config = createFeature({ name: 'spektr/config' });
@@ -89,6 +90,7 @@ export const bootstrap = () => {
     stakingNavigationFeature,
     governanceNavigationFeature,
     vestedTransferFeature,
+    vestingClaimFeature,
     multiTransferFeature,
     import('@/features/app-custom-operations').then(({ appCustomOperationsFeature }) => appCustomOperationsFeature),
 

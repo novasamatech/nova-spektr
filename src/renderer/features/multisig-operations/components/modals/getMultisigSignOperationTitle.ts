@@ -17,6 +17,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.TRANSFER_ALLOW_DEATH]: crossChain =>
     `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
   [TransactionType.VESTED_TRANSFER]: () => `operations.modalTitles.vestedTransfer`,
+  [TransactionType.VEST]: () => `operations.modalTitles.vest`,
   [TransactionType.MULTISIG_AS_MULTI]: () => 'operations.modalTitles.approveMultisig',
   [TransactionType.MULTISIG_APPROVE_AS_MULTI]: () => 'operations.modalTitles.approveMultisig',
   [TransactionType.MULTISIG_CANCEL_AS_MULTI]: () => 'operations.modalTitles.cancelMultisig',

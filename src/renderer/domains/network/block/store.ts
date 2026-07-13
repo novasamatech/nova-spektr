@@ -9,17 +9,15 @@ import { entries, getCurrentBlockNumber } from '@/shared/lib/utils';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 
-import { blockResource } from './resource';
+import { blockResource, blockTimeResource } from './resource';
 
 export const $apis = networkModel.$apis;
 
-// Store mapping chain IDs to their current block heights
 const $currentBlock = createStore<Record<ChainId, BlockHeight>>({});
 
 const startBlockListening = createEvent();
 const stopBlockListening = createEvent();
 
-// Create an effect factory for getting a block for a specific chain
 const getBlockForChainFx = createEffect(async ({ chainId, api }: { chainId: ChainId; api: ApiPromise }) => {
   try {
     const blockNumber = await getCurrentBlockNumber(api);
@@ -32,7 +30,6 @@ const getBlockForChainFx = createEffect(async ({ chainId, api }: { chainId: Chai
   }
 });
 
-// Set up interval to check block numbers
 const { tick } = interval({
   start: startBlockListening,
   stop: stopBlockListening,
@@ -40,14 +37,12 @@ const { tick } = interval({
   leading: true,
 });
 
-// Start listening when there are APIs available
 sample({
   source: $apis,
   filter: apis => Object.keys(apis).length > 0,
   target: [stopBlockListening, startBlockListening],
 });
 
-// On each tick, use series to trigger requests for all APIs
 sample({
   clock: tick,
   source: $apis,
@@ -55,7 +50,6 @@ sample({
   target: series(getBlockForChainFx, { parallel: true }),
 });
 
-// Update block map when any chain's block height is fetched
 sample({
   clock: getBlockForChainFx.doneData,
   source: $currentBlock,
@@ -71,6 +65,7 @@ sample({
 
 export const block = {
   blockResource,
+  blockTimeResource,
   $currentBlock,
   startBlockListening,
   stopBlockListening,

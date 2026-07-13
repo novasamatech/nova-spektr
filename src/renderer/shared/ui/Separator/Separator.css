@@ -14,3 +14,7 @@
   height: 100%;
   content: '';
 }
+/* Without a label the two flanking lines sit adjacent and read as a 2px line — keep just one. */
+.spektr-vertical-separator:empty::after {
+  content: none;
+}

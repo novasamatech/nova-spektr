@@ -20,7 +20,7 @@ import { AssetBalance } from '@/shared/ui-entities';
 import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
 import { useBlockTimestamp } from '@/domains/network';
-import { type ValidationIssue, type VestingScheduleRaw, VestingFieldError } from '@/entities/vesting';
+import { type ValidationIssue, type VestingScheduleRaw, VestingFieldError } from '@/domains/vesting';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 

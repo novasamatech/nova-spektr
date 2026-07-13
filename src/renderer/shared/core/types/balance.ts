@@ -65,6 +65,12 @@ export const enum LockTypes {
    */
   STAKING = '0x7374616b696e6720',
   CONVICTION_VOTE = '0x7079636f6e766f74',
+  /**
+   * Balance lock set by pallet_vesting (`VESTING_ID = *b"vesting "`). The
+   * frozen amount still subject to a vesting schedule; released by
+   * `vesting.vest()`.
+   */
+  VESTING = '0x76657374696e6720',
 }
 
 export type BalanceMap = Record<BalanceId, Balance>;

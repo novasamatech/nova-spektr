@@ -19,16 +19,16 @@ import {
   getActionRequiredAmount,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts, balanceService, block } from '@/domains/network';
-import { balanceModel } from '@/entities/balance';
-import { networkModel } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
 import {
   type ValidationIssue,
   type VestingSchedule,
   type VestingScheduleRaw,
   VestingCsvError,
   vestingService,
-} from '@/entities/vesting';
+} from '@/domains/vesting';
+import { balanceModel } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
@@ -48,8 +48,6 @@ type FormData = {
   signatory: AnyAccount | null;
   vestingSchedule: VestingSchedule[];
 };
-
-// steps management
 
 const stepChanged = createEvent<Step>();
 const flowStarted = createEvent();
@@ -201,8 +199,6 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   signatory: form.fields.signatory.$value,
   routeOverride: $pathRoute,
 });
-
-// validations
 
 const validator = createTxValidator<{
   amount: BN;
@@ -447,8 +443,6 @@ sample({
   target: [stepChanged, form.reset],
 });
 
-// flow setup
-
 sample({
   clock: [flowStarted, $availableChains],
   source: {
@@ -560,8 +554,6 @@ wireDraftCloseRedirect({
   flowFinished,
   destination: Paths.OPERATIONS,
 });
-
-// submit flow
 
 const showConfirmation = sample({
   clock: form.submit.doneData,

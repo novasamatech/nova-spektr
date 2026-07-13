@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, SmallTitleText, TitleText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
@@ -17,6 +18,12 @@ import { HoldingsList } from './HoldingsList';
 import { Price } from './Price';
 
 type EntryLike = { accountId: string; name: string; address: string };
+
+/**
+ * Rendered inside the Portfolio Overview card, just below the balance-type
+ * distribution. The vesting-claim feature injects its callout here.
+ */
+export const portfolioVestingSlot = createSlot<{ accountIds: string[] }>({ name: 'portfolioVesting' });
 
 type ViewMode = 'asset' | 'chain';
 
@@ -79,6 +86,8 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
         </div>
         {allocation && <BalanceAllocationBars allocation={allocation} />}
       </div>
+
+      <Slot id={portfolioVestingSlot} props={{ accountIds }} />
 
       {hasData && (
         <>
