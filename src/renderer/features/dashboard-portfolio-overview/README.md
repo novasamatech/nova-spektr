@@ -48,17 +48,30 @@ Four independent bars (not one stacked bar), each labelled with its own percenta
 
 - **Transferable** — the spendable part of `free` after frozen/reserved are taken into account.
 - **Reserved** — the account's reserved balance.
-- **Locked** — a **residual**, `total − transferable − reserved`, not a direct on-chain read.
-- **Vested** — the sum of `VESTING`-type balance locks.
+- **Locked** — a **residual**, `free − transferable`, not a direct on-chain read.
+- **Vested** — the `VESTING` balance lock, **carved out of Locked rather than added beside it**.
 
-Vested is **clamped to the Locked residual and then subtracted out of it**, so the four bars never exceed 100% and
-Locked can never go negative. The clamp is needed because a chain reports `frozen` as the **maximum** of all locks, not
-their sum: an account with a larger competing lock (staking, governance) can therefore see its Vested bar clamped below
-the true vesting figure. That is a deliberate trade — an understated Vested bar beats a negative Locked bar.
+Vesting is not a fourth kind of balance — it is one of the locks that make an account's funds frozen in the first place,
+so a vesting user's coins were already inside the Locked bar before this category existed. Vested simply names that
+slice. The four bars sum to 100%.
 
-Transferable, Locked and Reserved always render, even at 0.0%. **Vested is hidden below 0.05%**, so a user with no
-vesting sees exactly the three bars they saw before the category existed, and dust vesting does not add a bar that
-rounds to nothing.
+The split is computed **per balance, in token units, before anything is converted to fiat or summed with any other
+account** (`lib/computeAllocation.ts`). That matters because of two `pallet_balances` rules:
+
+- `frozen` is the **maximum** of an account's locks and freezes, never their sum — locks overlap. An account with 40
+  vesting and 60 staked has 60 frozen, not 100, and the bars show Locked 20 / Vested 40.
+- `reducible_balance` discounts `reserved` from `frozen` (`untouchable = frozen − reserved`), so a vesting lock fully
+  covered by an account's reserved balance restricts nothing and must not show up as Vested at all.
+
+Clamping each balance's Vested to its own Locked keeps both rules honest and, critically, stops one account's vesting
+lock from being subtracted from a **different** account's Locked share.
+
+The vesting lock only shrinks when `vesting.vest()` runs, so it still covers funds that have vested but were never
+claimed. Those funds really are untransferable until the claim lands, so counting them as Vested reflects what the
+balance actually does — the Vested bar and the claim callout below it are describing the same coins.
+
+All four bars always render, even at 0.0% — the set of categories is fixed, so the card reads the same way for every
+account and a user can see that they have no vesting rather than having to infer it from an absent bar.
 
 The per-row allocation bars inside the detail modals are a separate, **stacked** three-segment bar
 (transferable/locked/reserved) and deliberately still **fold vesting into Locked** — the Vested split exists only at the
