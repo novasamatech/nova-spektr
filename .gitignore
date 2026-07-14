@@ -43,3 +43,8 @@ allure-results
 # Superpowers brainstorming artifacts
 .superpowers/
 docs/superpowers/
+
+# design-sync local tooling and generated bundles (bridge sources live on chore/design-sync-ui-kit)
+/.design-sync/
+/.ds-sync/
+/ds-bundle/
