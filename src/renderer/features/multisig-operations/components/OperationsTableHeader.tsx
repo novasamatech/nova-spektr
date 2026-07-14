@@ -3,6 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { operationColumns } from '@/shared/ui/operations-table-layout';
+import { connectionHistoryModel } from '@/aggregates/backend';
 import { type OperationsSort, type SortDirection, type SortKey } from '../lib/operations-sort';
 import { operationsContextModel } from '../model/context';
 
@@ -66,6 +67,7 @@ const HeaderCell = ({ label, sortKey, sort, className, title }: HeaderCellProps)
 export const OperationsTableHeader = () => {
   const { t } = useI18n();
   const sort = useUnit(operationsContextModel.$sort);
+  const hasEverConnected = useUnit(connectionHistoryModel.$hasEverConnected);
 
   return (
     <div className="sticky top-0 z-10 flex items-center gap-x-2 border-b border-divider bg-background-default px-4 py-2">
@@ -94,8 +96,10 @@ export const OperationsTableHeader = () => {
         title={t('operations.table.sortBySubmitter')}
       />
 
+      {/* Descriptions come from the external address book — hide the label (keeping the column spacer)
+          until it has been connected, mirroring the drafts section gate. */}
       <div className={cnTw(operationColumns.description, LABEL_CLASS, 'text-text-tertiary')}>
-        {t('operations.table.description')}
+        {hasEverConnected && t('operations.table.description')}
       </div>
 
       <div className={operationColumns.draftBadge} />

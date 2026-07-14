@@ -124,9 +124,46 @@ describe('operations-sort', () => {
 
     const items = [fiveUnitsOp, usdtOp, noAmountOp, oneUnitOp];
 
-    test('returns input order unchanged when sort is null', () => {
-      const result = sortOperations(items, null, context);
-      expect(result).toBe(items);
+    test('defaults to newest-first by timestamp when sort is null', () => {
+      const oldOp: OperationWithAccount = {
+        operation: createMockOperation({ id: 'op-old', timestamp: new Date('2024-01-01').getTime() }),
+        account: mockAccount,
+      };
+      const newOp: OperationWithAccount = {
+        operation: createMockOperation({ id: 'op-new', timestamp: new Date('2024-03-01').getTime() }),
+        account: mockAccount,
+      };
+      const midOp: OperationWithAccount = {
+        operation: createMockOperation({ id: 'op-mid', timestamp: new Date('2024-02-01').getTime() }),
+        account: mockAccount,
+      };
+
+      const input = [oldOp, newOp, midOp];
+      const result = sortOperations(input, null, context);
+
+      expect(result.map(i => i.operation.id)).toEqual(['op-new', 'op-mid', 'op-old']);
+      // input must not be mutated
+      expect(input.map(i => i.operation.id)).toEqual(['op-old', 'op-new', 'op-mid']);
+    });
+
+    test('breaks equal-timestamp ties by block and index, newest first', () => {
+      const timestamp = new Date('2024-01-15').getTime();
+      const earlyBlock: OperationWithAccount = {
+        operation: createMockOperation({ id: 'op-block-100', timestamp, blockCreated: 100 as never, indexCreated: 1 }),
+        account: mockAccount,
+      };
+      const lateBlock: OperationWithAccount = {
+        operation: createMockOperation({ id: 'op-block-200', timestamp, blockCreated: 200 as never, indexCreated: 1 }),
+        account: mockAccount,
+      };
+      const lateIndex: OperationWithAccount = {
+        operation: createMockOperation({ id: 'op-index-5', timestamp, blockCreated: 100 as never, indexCreated: 5 }),
+        account: mockAccount,
+      };
+
+      const result = sortOperations([earlyBlock, lateIndex, lateBlock], null, context);
+
+      expect(result.map(i => i.operation.id)).toEqual(['op-block-200', 'op-index-5', 'op-block-100']);
     });
 
     test('value asc orders no-amount, then 1 DOT, then 5 DOT, then 100 USDT', () => {

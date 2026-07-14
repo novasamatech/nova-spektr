@@ -15,8 +15,10 @@ approving or rejecting it, inspecting its decoded call, supplying missing call d
 a shared description, and (when the address book is connected) nudging the signatories who still need to act.
 
 The list is a **table**: a sticky column header (Operation / Value / Submitter / Description) with sortable columns sits
-above rows grouped into collapsible **status sections** (In progress / Completed / Rejected). Saved **drafts** awaiting
-submission appear as the first collapsible section under the same table header on the Pending tab.
+above rows grouped into collapsible **status sections** (In progress / Completed / Rejected). The **Description** header
+label is shown only once the external address book has been connected (descriptions are address-book data) — the same
+gate that reveals the drafts section; until then the column area stays blank. Saved **drafts** awaiting submission
+appear as the first collapsible section under the same table header on the Pending tab.
 
 ## Who can use it / when it applies
 
@@ -348,8 +350,8 @@ ascending → descending → off:
   descending).
 - **Submitter** — alphabetically by the multisig's wallet name (falling back to its account id).
 
-With sorting off, operations keep their on-chain creation order. The list can be narrowed by **search** and five
-**filters**:
+With sorting off, operations are ordered **newest first** by their creation time (block and extrinsic index break
+ties). The list can be narrowed by **search** and five **filters**:
 
 - **Search** — matches the multisig wallet name, the multisig address, or the call hash.
 - **Date range** — a from/to (or from-only) interval.

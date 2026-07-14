@@ -35,12 +35,21 @@ const getSubmitterKey = ({ operation, account }: OperationWithAccount, wallets: 
   return (wallet?.name ?? operation.multisigAccountId).toLowerCase();
 };
 
+const sortByNewest = (items: OperationWithAccount[]): OperationWithAccount[] => {
+  return items.toSorted(
+    (a, b) =>
+      b.operation.timestamp - a.operation.timestamp ||
+      b.operation.blockCreated - a.operation.blockCreated ||
+      b.operation.indexCreated - a.operation.indexCreated,
+  );
+};
+
 export const sortOperations = (
   items: OperationWithAccount[],
   sort: OperationsSort,
   context: SortContext,
 ): OperationWithAccount[] => {
-  if (!sort) return items;
+  if (!sort) return sortByNewest(items);
 
   const direction = sort.direction === 'desc' ? -1 : 1;
   const getSortKey = (item: OperationWithAccount): string | number => {
