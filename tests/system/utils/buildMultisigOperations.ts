@@ -2,7 +2,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { Keyring } from '@polkadot/keyring';
 import { u8aToHex } from '@polkadot/util';
-import { createKeyMulti, cryptoWaitReady, encodeAddress } from '@polkadot/util-crypto';
+import { createKeyMulti, cryptoWaitReady } from '@polkadot/util-crypto';
 
 import { type IndexedDBData } from './interactWithDatabase';
 
@@ -30,7 +30,6 @@ const CHAINS_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-u
 // Polkadot relay genesis — used as the XCM destination so the row shows two chain chips.
 const POLKADOT_RELAY_CHAIN_ID = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 
-const SUBSTRATE_PREFIX = 0;
 const DOT = 10n ** 10n; // 10 decimals
 const AMOUNT = (DOT / 10n).toString(); // 0.1 DOT
 const CRYPTO_TYPE_SR25519 = 0; // CryptoType.SR25519
@@ -49,8 +48,6 @@ export type BuiltData = {
   operationRecords: { database: string; table: string; key: string; value: unknown[] };
   covered: { family: string; kind: OperationKind; title: string }[];
   skipped: { family: string; reason: string }[];
-  regularMultisigName: string;
-  flexibleMultisigName: string;
 };
 
 type Account = { seed: string; accountId: string };
@@ -382,8 +379,11 @@ const callHash = (ext: Ext) => ext.method.hash.toHex();
 
 let opCounter = 0;
 
+// Deterministic bases for synthetic time points (block height + ms timestamp).
+const BLOCK_BASE = 1_000_000;
+const TIMESTAMP_BASE_MS = 1_700_000_000_000;
+
 function assembleOperation(params: {
-  kind: OperationKind;
   multisigAccountId: string;
   proxiedAccountId?: string;
   depositor: string;
@@ -392,10 +392,10 @@ function assembleOperation(params: {
   transaction: Tx | null;
 }) {
   const { proxiedAccountId, depositor, callData, hash, transaction } = params;
-  const block = 1_000_000 + opCounter;
+  const block = BLOCK_BASE + opCounter;
   const index = opCounter;
   opCounter += 1;
-  const timestamp = 1_700_000_000_000 + opCounter * 1000;
+  const timestamp = TIMESTAMP_BASE_MS + opCounter * 1000;
   const id = `${ASSET_HUB_CHAIN_ID}-${hash}-${params.multisigAccountId}-${block}-${index}`;
 
   return {
@@ -467,7 +467,6 @@ export async function buildMultisigOperations(): Promise<BuiltData> {
         const transaction = spec.transaction(regularCtx);
         operations.push(
           assembleOperation({
-            kind: 'regular',
             multisigAccountId: regularMsigId,
             depositor: regularSigs[0]!.accountId,
             callData: coreExt ? callHex(coreExt) : null,
@@ -497,7 +496,6 @@ export async function buildMultisigOperations(): Promise<BuiltData> {
         }
         operations.push(
           assembleOperation({
-            kind: 'flexible',
             multisigAccountId: flexMsigId,
             proxiedAccountId: proxiedFacade.accountId,
             depositor: flexSigs[0]!.accountId,
@@ -540,7 +538,6 @@ export async function buildMultisigOperations(): Promise<BuiltData> {
       });
       operations.push(
         assembleOperation({
-          kind: 'flexible',
           multisigAccountId: flexMsigId,
           proxiedAccountId: proxiedFacade.accountId,
           depositor: flexSigs[0]!.accountId,
@@ -572,7 +569,6 @@ export async function buildMultisigOperations(): Promise<BuiltData> {
       });
       operations.push(
         assembleOperation({
-          kind: 'flexible',
           multisigAccountId: flexMsigId,
           proxiedAccountId: proxiedFacade.accountId,
           depositor: flexSigs[0]!.accountId,
@@ -603,7 +599,6 @@ export async function buildMultisigOperations(): Promise<BuiltData> {
       });
       operations.push(
         assembleOperation({
-          kind: 'flexible',
           multisigAccountId: flexMsigId,
           proxiedAccountId: proxiedFacade.accountId,
           depositor: flexSigs[0]!.accountId,
@@ -620,7 +615,6 @@ export async function buildMultisigOperations(): Promise<BuiltData> {
     // ── A single undecoded operation (no call data → "Unknown Operation") ───────
     operations.push(
       assembleOperation({
-        kind: 'regular',
         multisigAccountId: regularMsigId,
         depositor: regularSigs[0]!.accountId,
         callData: null,
@@ -704,13 +698,8 @@ export async function buildMultisigOperations(): Promise<BuiltData> {
       },
       covered,
       skipped,
-      regularMultisigName,
-      flexibleMultisigName,
     };
   } finally {
     await api.disconnect();
   }
 }
-
-// Exposed for potential address assertions.
-export const toSubstrateAddress = (accountId: string) => encodeAddress(accountId, SUBSTRATE_PREFIX);

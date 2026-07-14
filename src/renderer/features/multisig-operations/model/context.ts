@@ -369,12 +369,18 @@ const $sectionedOperations = combine(
 const $isTabDataLoading = combine(
   {
     tab: $tab,
+    isScopeMerged: $isScopeMerged,
     onChainReady: multisigOperation.$onChainReady,
     offChainReady: multisigOperation.$offChainReady,
     accountsPopulated: accounts.$populated,
   },
-  ({ tab, onChainReady, offChainReady, accountsPopulated }) => {
+  ({ tab, isScopeMerged, onChainReady, offChainReady, accountsPopulated }) => {
     if (!accountsPopulated) return true;
+
+    // Merged scope shows pending (on-chain) and resolved (off-chain indexer) ops
+    // together, so it must wait on both — keying off the (forced-pending) tab would
+    // stop the loader early and flash the empty state before history rows load.
+    if (isScopeMerged) return !onChainReady || !offChainReady;
 
     return tab === 'pending' ? !onChainReady : !offChainReady;
   },
