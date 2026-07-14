@@ -106,6 +106,7 @@ const T = {
   BATCH_ALL: 'batchAll',
   ADD_PROXY: 'add_proxy',
   REMOVE_PROXY: 'remove_proxy',
+  PROXY: 'proxy',
   CREATE_PURE_PROXY: 'create_pure_proxy',
   KILL_PURE_PROXY: 'kill_pure_proxy',
   UNLOCK: 'unlock',
@@ -362,12 +363,6 @@ const FAMILIES: FamilySpec[] = [
     build: (api) => api.tx.system.remark('0xdeadbeef'),
     transaction: (c) => tx(c.msigId, 'system', 'remark', undefined, { remark: '0xdeadbeef' }),
   },
-  {
-    family: 'unknown',
-    title: 'Unknown Operation',
-    build: () => null, // no callData → renders as Unknown Operation
-    transaction: () => null,
-  },
 ];
 
 async function connectAssetHub(): Promise<{ api: ApiPromise; nodeUrl: string }> {
@@ -517,22 +512,25 @@ export async function buildMultisigOperations(): Promise<BuiltData> {
       }
     }
 
-    // ── Edit flexible multisig (flexible-only special card) ────────────────────
+    // Inner add/remove-proxy display args use bare address strings for `delegate`
+    // (that's what the app decoder emits via `.toString()`), which the
+    // edit-flexible / verify-proxy detectors require.
+    const addProxyTx = tx(flexMsigId, 'proxy', 'addProxy', T.ADD_PROXY, {
+      delegate: delegateNew.accountId,
+      proxyType: 'Any',
+      delay: 0,
+    });
+
+    // ── Edit flexible multisig — Atomic swap (add + remove in one batch) ───────
     try {
-      const addProxy = api.tx.proxy.addProxy(dest(delegateNew.accountId), 'Any', 0);
-      const removeProxy = api.tx.proxy.removeProxy(dest(delegateOld.accountId), 'Any', 0);
-      const batch = api.tx.utility.batchAll([addProxy, removeProxy]);
+      const batch = api.tx.utility.batchAll([
+        api.tx.proxy.addProxy(dest(delegateNew.accountId), 'Any', 0),
+        api.tx.proxy.removeProxy(dest(delegateOld.accountId), 'Any', 0),
+      ]);
       const wrapped = api.tx.proxy.proxy(dest(proxiedFacade.accountId), null, batch);
-      // The edit-flexible detector reads `delegate`/`proxyType` as plain strings
-      // (that's what the app decoder emits via `.toString()`), so the inner
-      // add/remove-proxy args here must use bare address strings, not `{ Id }`.
-      const editTx: Tx = tx(flexMsigId, 'utility', 'batchAll', T.BATCH_ALL, {
+      const atomicEditTx: Tx = tx(flexMsigId, 'utility', 'batchAll', T.BATCH_ALL, {
         transactions: [
-          tx(flexMsigId, 'proxy', 'addProxy', T.ADD_PROXY, {
-            delegate: delegateNew.accountId,
-            proxyType: 'Any',
-            delay: 0,
-          }),
+          addProxyTx,
           tx(flexMsigId, 'proxy', 'removeProxy', T.REMOVE_PROXY, {
             delegate: delegateOld.accountId,
             proxyType: 'Any',
@@ -548,18 +546,89 @@ export async function buildMultisigOperations(): Promise<BuiltData> {
           depositor: flexSigs[0]!.accountId,
           callData: callHex(wrapped),
           hash: callHash(wrapped),
-          transaction: editTx,
+          transaction: atomicEditTx,
         }),
       );
-      covered.push({ family: 'editFlexible', kind: 'flexible', title: 'Edit flexible multisig' });
+      covered.push({ family: 'editFlexibleAtomic', kind: 'flexible', title: 'Edit flexible multisig' });
     } catch (e) {
-      skipped.push({ family: 'editFlexible (flexible)', reason: errorMessage(e) });
+      skipped.push({ family: 'editFlexibleAtomic (flexible)', reason: errorMessage(e) });
     }
 
-    // Note: the "verify proxy" special card requires a `system.remarkWithEvent`
-    // carrying a verify-proxy marker payload (`parseVerifyProxyMarker`) — forging
-    // that needs app-coupled code, so it is intentionally out of scope here (it
-    // would otherwise render as a plain "System: Remark" and add no signal).
+    // ── Edit flexible multisig — Verified swap (add-only batch + marker remark) ─
+    // The old controller is recovered from an `edit-flexible-controller` JSON marker
+    // remark instead of a `removeProxy`, which flips the card to "Verified swap".
+    try {
+      const editMarker = JSON.stringify({
+        kind: 'edit-flexible-controller',
+        oldControllerAccountId: delegateOld.accountId,
+      });
+      const batch = api.tx.utility.batchAll([
+        api.tx.proxy.addProxy(dest(delegateNew.accountId), 'Any', 0),
+        api.tx.system.remark(editMarker),
+      ]);
+      const wrapped = api.tx.proxy.proxy(dest(proxiedFacade.accountId), null, batch);
+      const verifiedEditTx: Tx = tx(flexMsigId, 'utility', 'batchAll', T.BATCH_ALL, {
+        transactions: [addProxyTx, tx(flexMsigId, 'system', 'remark', undefined, { remark: editMarker })],
+      });
+      operations.push(
+        assembleOperation({
+          kind: 'flexible',
+          multisigAccountId: flexMsigId,
+          proxiedAccountId: proxiedFacade.accountId,
+          depositor: flexSigs[0]!.accountId,
+          callData: callHex(wrapped),
+          hash: callHash(wrapped),
+          transaction: verifiedEditTx,
+        }),
+      );
+      covered.push({ family: 'editFlexibleVerified', kind: 'flexible', title: 'Edit flexible multisig' });
+    } catch (e) {
+      skipped.push({ family: 'editFlexibleVerified (flexible)', reason: errorMessage(e) });
+    }
+
+    // ── Verify proxy — the verification ping from the verified-swap flow ────────
+    // `proxy.proxy(pure, system.remarkWithEvent(<verify-proxy marker>))`. The
+    // detector needs the `proxy.proxy` wrapper in `transaction`, so unlike the
+    // other flexible ops we keep the wrapper here rather than the unwrapped core.
+    try {
+      const verifyMarker = JSON.stringify({
+        kind: 'verify-proxy',
+        delegateAccountId: delegateNew.accountId,
+        pureProxyAccountId: proxiedFacade.accountId,
+      });
+      const ping = api.tx.proxy.proxy(dest(proxiedFacade.accountId), null, api.tx.system.remarkWithEvent(verifyMarker));
+      const verifyTx: Tx = tx(flexMsigId, 'proxy', 'proxy', T.PROXY, {
+        real: proxiedFacade.accountId,
+        transaction: tx(flexMsigId, 'system', 'remarkWithEvent', undefined, { remark: verifyMarker }),
+      });
+      operations.push(
+        assembleOperation({
+          kind: 'flexible',
+          multisigAccountId: flexMsigId,
+          proxiedAccountId: proxiedFacade.accountId,
+          depositor: flexSigs[0]!.accountId,
+          callData: callHex(ping),
+          hash: callHash(ping),
+          transaction: verifyTx,
+        }),
+      );
+      covered.push({ family: 'verifyProxy', kind: 'flexible', title: 'Verification for wallet' });
+    } catch (e) {
+      skipped.push({ family: 'verifyProxy (flexible)', reason: errorMessage(e) });
+    }
+
+    // ── A single undecoded operation (no call data → "Unknown Operation") ───────
+    operations.push(
+      assembleOperation({
+        kind: 'regular',
+        multisigAccountId: regularMsigId,
+        depositor: regularSigs[0]!.accountId,
+        callData: null,
+        hash: `0x${'ee'.repeat(32)}`,
+        transaction: null,
+      }),
+    );
+    covered.push({ family: 'unknown', kind: 'regular', title: 'Unknown Operation' });
 
     // ── DB rows (wallets + accounts) ───────────────────────────────────────────
     const regularMultisigName = 'E2E Multisig';

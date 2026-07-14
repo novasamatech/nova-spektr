@@ -44,9 +44,10 @@ test.describe('Multisig Operations — all operation types', { tag: ['@regress']
     await operationsPage.expectPendingCount(built.covered.length);
 
     // Every distinct family title that was built from the live runtime is rendered
-    // (scrolling the virtualized list), including the flexible-only "Edit flexible
-    // multisig" special card.
+    // (scrolling the virtualized list), including the flexible-only special cards:
+    // "Edit flexible multisig" and "Verification for wallet". Both edit-flexible
+    // modes are asserted via their tags (Atomic swap / Verified swap).
     const titles = [...new Set(built.covered.map((c) => c.title))];
-    await operationsPage.expectTitlesByScrolling(titles);
+    await operationsPage.expectTitlesByScrolling([...titles, 'Atomic swap', 'Verified swap']);
   });
 });
