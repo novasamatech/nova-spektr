@@ -47,6 +47,9 @@ export const ExportKeysModal = ({ wallet, onClose, children }: Props) => {
       accountService
         .filterAccountsByWallet(allAccounts, walletId)
         .filter((a) => accountUtils.isVaultChainAccount(a) || accountUtils.isVaultShardAccount(a)),
+    // `fn` allocates a new array every run, so without this any unrelated change to
+    // accounts.$list would re-encode the QR payload.
+    updateFilter: (next, prev) => next.length !== prev.length || next.some((a, index) => a !== prev[index]),
   });
 
   const exportAccounts = useMemo(() => {

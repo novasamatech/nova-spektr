@@ -102,12 +102,15 @@ export const VaultAccountsList = memo(({ chains, accountsMap, className, onShard
                         chain={chain}
                         onClick={isSharded ? () => onShardClick?.(account) : undefined}
                       >
-                        <Box gap={0.5}>
-                          <FootnoteText className="text-text-tertiary">
-                            {t('general.explorers.derivationTitle')}
-                          </FootnoteText>
-                          <HelpText className="break-all text-text-secondary">{derivationPath}</HelpText>
-                        </Box>
+                        {/* Shards have no accountId, so DerivedAccount renders no explorers popover to host this. */}
+                        {!isSharded && (
+                          <Box gap={0.5}>
+                            <FootnoteText className="text-text-tertiary">
+                              {t('general.explorers.derivationTitle')}
+                            </FootnoteText>
+                            <HelpText className="break-all text-text-secondary">{derivationPath}</HelpText>
+                          </Box>
+                        )}
                       </DerivedAccount>
                     </li>
                   );

@@ -119,6 +119,33 @@ describe('features/wallets/KeyConstructor/model/constructor-model', () => {
     expect(getErrors(scope, 1)).toEqual([DerivationError.DUPLICATE]);
   });
 
+  test('should report DUPLICATE on both keys even when only one of them was blurred', async () => {
+    // Key '0' is blurred; key '1' is still being typed into. A collision is symmetric,
+    // so the error must not land on '0' alone.
+    const scope = fork({
+      values: new Map()
+        .set(networkModel.$chains, chainsMap)
+        .set(constructorModel.$keys, { '0': { chainId: POLKADOT, derivationPath: '//staking' } }),
+    });
+
+    await allSettled(constructorModel.validateKey, { scope, params: '0' });
+    expect(getErrors(scope, 0)).toEqual([]);
+
+    await allSettled(constructorModel.addKey, { scope });
+    const addedKeyId = Object.keys(scope.getState(constructorModel.$keys)).find((id) => id !== '0')!;
+
+    // A freshly added key is empty — it must not show an error before the user types.
+    expect(scope.getState(constructorModel.$errors)).not.toHaveProperty(addedKeyId);
+
+    await allSettled(constructorModel.updateKey, {
+      scope,
+      params: [addedKeyId, { chainId: POLKADOT, derivationPath: '//staking' }],
+    });
+
+    expect(getErrors(scope, 0)).toEqual([DerivationError.DUPLICATE]);
+    expect(scope.getState(constructorModel.$errors)[addedKeyId]).toEqual([DerivationError.DUPLICATE]);
+  });
+
   test('should drop errors of a removed key', async () => {
     const scope = await validateAll([
       { chainId: POLKADOT, derivationPath: '//staking' },

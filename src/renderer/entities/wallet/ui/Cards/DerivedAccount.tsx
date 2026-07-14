@@ -74,7 +74,6 @@ export const DerivedAccount = ({ account, chain, showSuffix, className, children
               title={derivationPath}
               titleClass="text-body text-text-secondary"
               iconSize={20}
-              hideExplorers={nullable(chain)}
             >
               {children}
             </Account>
@@ -84,10 +83,10 @@ export const DerivedAccount = ({ account, chain, showSuffix, className, children
 
       <div
         className={cnTw(
-          'absolute right-2 bg-white pl-2 opacity-0 transition-all',
+          // Never interactive — must not swallow clicks aimed at the explorers button underneath.
+          'pointer-events-none absolute right-2 bg-white pl-2 opacity-0 transition-all',
           'group-hover:bg-background-suffix-hover group-focus:bg-background-suffix-hover',
-          // Invisible by default — must not swallow clicks aimed at the explorers button.
-          showSuffix ? 'opacity-100' : 'pointer-events-none',
+          showSuffix && 'opacity-100',
         )}
       >
         <FootnoteText align="right" className="text-text-tertiary">
