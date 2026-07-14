@@ -148,7 +148,7 @@ notes.
 - `call-data-execute`
 - `extrinsic-builder`
 - [`drafts`](./drafts/README.md)
-- `signing-path`
+- [`signing-path`](./signing-path/README.md)
 - `sign-wallet-connect` (no spec planned)
 
 ## Basket
