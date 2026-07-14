@@ -1,6 +1,6 @@
 import { WellKnownChain } from '@substrate/connect';
 
-import { type Address, type ChainId, type Explorer, type HexString } from '@/shared/core';
+import { type Address, type Chain, type ChainId, type Explorer, type HexString } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { toAddress } from './address';
@@ -12,6 +12,20 @@ export const toLocalChainId = (chainId?: ChainId): string => {
 
 export const toHexChainId = (chainId?: string): ChainId | undefined => {
   return `0x${chainId?.replace('0x', '')}`;
+};
+
+/**
+ * The chain whose blocks a pallet on `chain` counts in. For a migrated Asset
+ * Hub that is its relay chain — `pallet_vesting` there stores relay block
+ * numbers — and for everyone else it is the chain itself.
+ *
+ * Anything that turns one of those block numbers into a date must read _both_
+ * the current height and the expected block time from this chain. Mixing the
+ * two (a relay block dated with an Asset Hub's 2s clock) silently scales every
+ * projection.
+ */
+export const getTimelineChainId = (chain: Chain): ChainId => {
+  return chain.additional?.timelineChain ?? chain.chainId;
 };
 
 type WithAddress = { address: Address };

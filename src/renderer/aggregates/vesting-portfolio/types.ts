@@ -20,11 +20,11 @@ export type VestingStatus = 'loading' | 'empty' | 'ready';
 /** A single vesting schedule prepared for display. */
 export type ScheduleView = ComputedVestingSchedule & {
   index: number;
-  /** Whether the schedule is still locked in a cliff (nothing vested yet). */
-  inCliff: boolean;
   /**
-   * Tokens this schedule unlocks per day. `null` while the timeline chain's
-   * block time is unknown or once the schedule has fully vested.
+   * Tokens this schedule releases over the next 24 hours — what it _actually_
+   * releases, not `perBlock × blocksPerDay`: zero while the start block is more
+   * than a day away, and never more than what is still locked. `null` while the
+   * timeline chain's block time is unknown.
    */
   perDayRate: BN | null;
   /**
@@ -33,10 +33,11 @@ export type ScheduleView = ComputedVestingSchedule & {
    */
   fullyUnlocksAt: Date | null;
   /**
-   * Projected date the cliff ends (start block reached); `null` when unknown or
-   * not in cliff.
+   * Projected date the schedule starts releasing — the end of a cliff, or the
+   * first unlock of a gradual schedule. `null` once it has started, or while
+   * the block time is unknown.
    */
-  cliffEndsAt: Date | null;
+  startsAt: Date | null;
   /**
    * Portion of the account's claimable attributed to this schedule — a
    * display-level split; `vesting.vest()` still claims per account.
@@ -66,11 +67,10 @@ export type AccountVestingView = {
   total: BN;
   stillLocked: BN;
   claimable: BN;
-  /** Tokens unlocked per block, summed across still-vesting schedules. */
-  perBlockRate: BN;
   /**
-   * Tokens unlocked per day, derived from the timeline chain's expected block
-   * time. `null` while that block time is not fetched yet.
+   * Tokens the account's schedules release over the next 24 hours, projected
+   * from the timeline chain's expected block time. `null` while that block time
+   * is not fetched yet.
    */
   perDayRate: BN | null;
   endBlock: BN;

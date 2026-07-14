@@ -1,16 +1,22 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
+import { useClock } from '@/shared/lib/hooks';
 import { formatFiatBalance } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon, Loader } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { currencySelect } from '@/aggregates/currency-select';
 import { type VestingSummary, vestingPortfolioModel } from '@/aggregates/vesting-portfolio';
 import { FiatBalance } from '@/widgets/price';
+import { formatUnlockDate } from '../lib/datetime';
 import { modalModel } from '../model/modal-model';
 
 export const VestingCallout = () => {
   const { t } = useI18n();
+
+  // Only needed to decide whether the unlock date is near enough to print a
+  // clock time for; a minute's resolution is ample.
+  const now = useClock(60_000);
 
   const currency = useUnit(currencySelect.$activeCurrency);
   const status = useUnit(vestingPortfolioModel.$status);
@@ -55,9 +61,7 @@ export const VestingCallout = () => {
     );
   }
 
-  const unlockDate = summary.lastUnlockDate
-    ? summary.lastUnlockDate.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
-    : null;
+  const unlockDate = summary.lastUnlockDate ? formatUnlockDate(summary.lastUnlockDate, now) : null;
 
   // Prefer the concrete per-day unlock rate ("Unlocking ≈ $2,840/day"); fall back
   // to the generic phrasing while the block time (and thus the rate) isn't known.

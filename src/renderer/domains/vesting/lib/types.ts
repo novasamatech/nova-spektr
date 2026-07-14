@@ -96,6 +96,18 @@ export type ComputedVestingSchedule = VestingScheduleInfo & {
   vestedSoFar: BN;
   /** Block at which the schedule is fully vested. */
   endBlock: BN;
+  /**
+   * The whole amount is released in a single block (`perBlock >= locked`) — the
+   * shape of a cliff, and the only schedule for which "unlocking per day" is
+   * meaningless.
+   *
+   * This is a property of the schedule, not of where the chain has got to. A
+   * schedule whose start block simply lies in the future is _not_ a cliff; it
+   * is a gradual schedule that has yet to begin — see {@link hasStarted}.
+   */
+  isCliff: boolean;
+  /** The chain has reached `startingBlock`, so the schedule is releasing. */
+  hasStarted: boolean;
 };
 
 /** Aggregated vesting figures for a single account on a single chain. */
@@ -109,8 +121,6 @@ export type AccountVesting = {
    * stillLocked)`).
    */
   claimable: BN;
-  /** Tokens unlocked per block, summed across schedules. */
-  perBlockRate: BN;
   /** The latest block at which any schedule fully vests. */
   endBlock: BN;
   /** Per-schedule computed figures. */

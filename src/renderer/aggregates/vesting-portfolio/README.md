@@ -81,6 +81,26 @@ Two rules keep the states honest over time:
   shown for the current account set, a chain going unresolved again reports as `loadingMore` — it never throws a settled
   block back to a skeleton. Changing the account set resets the latch: that is a new question.
 
+## The figures
+
+Two rules decide every number the consumer prints, and both exist because the obvious version of them is wrong.
+
+**Everything is timed on the schedule's own chain.** `pallet_vesting` on a migrated Asset Hub stores *relay* block
+numbers, so the current height *and* the expected block time must both be read from the **timeline chain** (`additional
+.timelineChain`, falling back to the chain itself). Pairing one chain's blocks with another's clock silently scales
+every rate and every date by the ratio between them — Kusama Asset Hub's 2s against its relay's 6s is a factor of three.
+A chain whose block time has not been fetched yet gets **no rate and no dates** rather than a plausible-looking guess.
+
+**The daily unlock is what a day actually releases**, obtained by projecting each schedule 24 hours forward and
+subtracting it from itself — never `perBlock × blocksPerDay`. That naive rate ignores both ends of the schedule and so
+overstates anything that runs for less than a day, without bound: a 0.05 KSM vesting that completes within the hour was
+reported as unlocking 4.32 KSM a day. The projection is zero while the start block is more than a day out, and never
+exceeds what the schedule still holds. An account's daily figure is simply the sum of its schedules'.
+
+A **cliff** is a schedule that releases its whole amount in one block (`perBlock ≥ locked`) — a property of its shape,
+not of where the chain has got to. A schedule whose start block merely lies in the future has *not started*; if it vests
+gradually it is not a cliff, and saying so was the second half of the same bug.
+
 ## Lifecycle
 
 Schedules and their `VESTING` balance locks are **live subscriptions** (one pooled per chain + account set, from
@@ -90,14 +110,27 @@ that connects late simply joins, and its schedules appear under the existing con
 Because the subscriptions are live, a claim landing on-chain — its lock drops, a fully-vested schedule is pruned — flows
 back in without any refetch. So does a change made on another device.
 
-Vesting figures move with every block, but almost none of those movements change a printed number. The aggregate
-compares what would be displayed against what is displayed and drops the update when they match, so a background block
-tick or a balance refresh cannot re-render the UI — least of all a claim mid-signature.
+**The head is subscribed to, not polled.** The schedules almost never change — they move only when someone calls
+`vest()` or a new vested transfer lands — while *every figure derived from them* changes with the timeline chain's
+current block. So the block is what has to be live, and re-fetching the (unchanged) schedules on a timer would correct
+nothing. Each timeline chain's head is therefore subscribed to for as long as the block is on screen, sharing the pooled,
+ref-counted `blockResource`: chains that share a timeline (every migrated Asset Hub points at its relay) are watched
+once, and nothing is watched at all once the block leaves the screen. The background poll behind `$currentBlock` remains
+a floor — heights only move forward, so the aggregate simply takes whichever source is further ahead, and neither a
+first frame with no head yet nor a head left over from an earlier visit can show a stale figure.
+
+This is what keeps the block honest about time: a cliff ends, a schedule starts vesting, an amount becomes claimable, and
+the UI says so within a block — with no interval, no refetch, and nothing for the user to reload.
+
+Vesting figures move with every block, but most of those movements change nothing that is printed. The aggregate compares
+what *would* be displayed against what *is* displayed and drops the update when they match, so a schedule sitting in its
+cliff, or one long finished, costs nothing per block — and no update can disturb a claim mid-signature, which reads its
+own snapshot.
 
 ## Related
 
 - [`vesting-claim`](../../features/vesting-claim/README.md) — the dashboard block and the claim flow built on this data.
 - `domains/vesting` — the live schedules/locks subscription and the pure vesting math.
-- `domains/network` (`block`) — the current block height and each timeline chain's expected block time, from which the
-  unlock rates and dates are projected.
+- `domains/network` (`block`) — the timeline chains' live heads (`blockResource`) and their expected block times, from
+  which the unlock rates and dates are projected.
 - `currency-select` — the active currency and prices behind the summary's fiat figures.

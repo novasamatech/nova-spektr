@@ -86,6 +86,23 @@ const $coreTx = combine($chain, $initiator, (chain, initiator) =>
   chain && initiator ? transactionBuilder.buildVest({ chain, accountId: initiator.accountId }) : null,
 );
 
+/**
+ * Who signs the claim.
+ *
+ * A multisig or proxied initiator signs through the path — its leaf is the
+ * signer. A **regular account signs for itself**, and for one the signing path
+ * is empty by design (`pickDefaultPath` bails on any initiator that is neither
+ * multisig nor proxied), so the path yields no signatory at all.
+ *
+ * Falling back to the initiator is therefore not a nicety: without it the route
+ * comes out empty, the wrapping step throws "Signatory is required", and the
+ * transaction — and with it the fee — is never built. The confirm then sits on
+ * a fee spinner that never resolves, with no way to sign. Every other operation
+ * form has the same fallback; this one derived its signatory purely from the
+ * path.
+ */
+const $routeSignatory = combine($signatoryFromPath, $initiator, (fromPath, initiator) => fromPath ?? initiator);
+
 // Wraps the call for the route, and re-estimates the fee whenever the route
 // changes — switching signatory re-prices the claim against the new signer.
 const { $route, $tx, $fee, $pendingFee, $pendingWrapping } = createComplexTxStore({
@@ -94,7 +111,7 @@ const { $route, $tx, $fee, $pendingFee, $pendingWrapping } = createComplexTxStor
   transaction: $coreTx,
   accounts: accounts.$list,
   initiator: $initiator,
-  signatory: $signatoryFromPath,
+  signatory: $routeSignatory,
   routeOverride: $pathRoute,
 });
 
@@ -252,6 +269,10 @@ export const claimModel = {
   $asset,
   $initiator,
   $signatory,
+  // The hops the claim is wrapped through. Exposed because an empty route is the
+  // one state in which nothing downstream — transaction, fee, signing — can be
+  // built at all, and that failure is otherwise invisible.
+  $route,
   $signingPath,
   $fee,
   $pendingFee,

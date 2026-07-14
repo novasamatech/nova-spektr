@@ -3664,12 +3664,24 @@
       "scheduleLabel": "Schedule {index} · {symbol}",
       "unlockedOf": "Unlocked {unlocked} of {total}",
       "inCliff": "In cliff — nothing to unlock yet",
-      "cliffUntil": "Cliff until {date} — nothing to unlock yet",
+      "inCliffShort": "In cliff",
+      "cliffUntil": "Cliff until {when} — nothing to unlock yet",
+      "notStarted": "Not started",
+      "startsOn": "Vesting starts {when}",
       "vesting": "Vesting",
       "fullyUnlocked": "Fully unlocked",
-      "fullyUnlocksOn": "Fully unlocks {date} · in {days}d",
+      "fullyUnlocksOn": "Fully unlocks {when}",
       "readyToClaim": "Ready to claim",
       "perDayLong": "per day"
+    },
+    "duration": {
+      "dateIn": "{date} · in {left}",
+      "days": "{days}d",
+      "daysHours": "{days}d {hours}h",
+      "hours": "{hours}h",
+      "hoursMinutes": "{hours}h {minutes}m",
+      "minutes": "{minutes}m",
+      "lessThanMinute": "< 1m"
     },
     "confirm": {
       "labels": {

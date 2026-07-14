@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
+import { getNativeAsset, getTimelineChainId } from '@/shared/lib/utils';
 import { Button, DetailRow, Icon, Separator } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
@@ -25,6 +25,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const apis = useUnit(networkModel.$apis);
+  const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
   const confirms = useUnit(confirmModel.$confirms);
   const confirm = confirms.at(0) ?? null;
@@ -41,8 +42,9 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
     unlockedAtStartBlock: vesting.unlockedAtStartBlock?.toString(),
   }));
 
-  const timelineChainId = chain.additional?.timelineChain;
-  const timelineApi = (nonNullable(timelineChainId) ? apis[timelineChainId] : apis[chain.chainId]) ?? null;
+  const timelineChainId = getTimelineChainId(chain);
+  const timelineChain = chains[timelineChainId] ?? null;
+  const timelineApi = apis[timelineChainId] ?? null;
   const asset = getNativeAsset(chain.assets);
   const api = apis?.[chain.chainId] ?? null;
 
@@ -68,6 +70,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             <DetailRow label={t('vestedTransfer.confirmation.labels.parsedFile')}>
               <VestingSchedulePreview
                 timelineApi={timelineApi}
+                timelineChain={timelineChain}
                 chain={chain}
                 asset={asset}
                 vestingSchedule={vestingScheduleRaw}

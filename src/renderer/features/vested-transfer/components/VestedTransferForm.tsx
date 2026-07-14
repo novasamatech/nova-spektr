@@ -5,7 +5,7 @@ import { type FormEvent, memo, useEffect, useState } from 'react';
 import vested_transfer_template_url from '@/shared/assets/templates/vested-transfer-template.csv?url';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { getTimelineChainId, nonNullable, nullable } from '@/shared/lib/utils';
 import { Alert, Button, DetailRow, FootnoteText, Icon, InfoLink, InputHint } from '@/shared/ui';
 import { AssetBalance, ChainSelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
@@ -147,12 +147,12 @@ const UploadCSV = () => {
   const csvError = useUnit(formModel.$csvError);
   const csvIssues = useUnit(formModel.$csvIssues);
   const apis = useUnit(networkModel.$apis);
+  const chains = useUnit(networkModel.$chains);
   const minVestedTransfer = useUnit(formModel.$minVestedTransfer);
 
-  const timelineChainId = chain?.additional?.timelineChain;
-  const timelineApi = nonNullable(timelineChainId)
-    ? (apis[timelineChainId] ?? null)
-    : ((chain && apis[chain.chainId]) ?? null);
+  const timelineChainId = chain ? getTimelineChainId(chain) : null;
+  const timelineChain = timelineChainId ? (chains[timelineChainId] ?? null) : null;
+  const timelineApi = timelineChainId ? (apis[timelineChainId] ?? null) : null;
 
   const hasError = nonNullable(csvError);
   const hasParsedCsv = parsedCsv && parsedCsv.length > 0;
@@ -189,6 +189,7 @@ const UploadCSV = () => {
           {showPreview && (
             <VestingSchedulePreview
               timelineApi={timelineApi}
+              timelineChain={timelineChain}
               chain={chain}
               asset={asset}
               vestingSchedule={parsedCsv}

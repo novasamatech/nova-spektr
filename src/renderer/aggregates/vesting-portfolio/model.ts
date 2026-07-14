@@ -3,8 +3,7 @@ import { combine, createEffect, createEvent, createStore, merge, sample, scopeBi
 import { debounce } from 'patronum';
 
 import { type Chain, type ChainId } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
-import { type ResourceRequestKey } from '@/shared/query';
+import { getTimelineChainId, nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount, block } from '@/domains/network';
 import { type VestingChainRequest, vestingSchedulesResource } from '@/domains/vesting';
 import { balanceModel } from '@/entities/balance';
@@ -12,6 +11,7 @@ import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
 
+import { mergeBlockHeights } from './lib/blockHeights';
 import { buildRequests, countUnresolvedChains } from './lib/requests';
 import { isFullyResolved, isLoadingMore, resolveStatus } from './lib/status';
 import {
@@ -21,6 +21,7 @@ import {
   fingerprintSummary,
   fingerprintViews,
 } from './lib/views';
+import { wireSubscriptions } from './lib/wireSubscriptions';
 import { type AccountVestingView, type VestingSummary, EMPTY_SUMMARY } from './types';
 
 /**
@@ -78,54 +79,50 @@ const $active = createStore(false)
 
 const $desiredRequests = combine($active, $requests, (active, requests) => (active ? requests : []));
 
-const $subscribedKeys = createStore<ResourceRequestKey[]>([]);
+wireSubscriptions(vestingSchedulesResource, $desiredRequests);
 
-type SubscriptionDiff = {
-  added: VestingChainRequest[];
-  removed: ResourceRequestKey[];
-  next: ResourceRequestKey[];
-};
+/**
+ * The heads the figures are read against.
+ *
+ * Everything this aggregate prints — what has vested, what is claimable,
+ * whether a schedule is still in its cliff, when it starts and when it ends —
+ * is a function of the timeline chain's current block. Nothing else moves: the
+ * schedules and locks are push subscriptions that only fire when the chain
+ * actually changes them.
+ *
+ * So the head is the thing that has to be live. It used to be read from a
+ * background poll that refreshes once a minute — and that a backgrounded window
+ * throttles further — which left the block showing a cliff that had ended ten
+ * minutes earlier, and no amount of re-fetching the (unchanged) schedules would
+ * have corrected it. While the block is on screen we hold a real subscription
+ * to each timeline chain's head instead.
+ *
+ * Several chains commonly share one timeline chain (every migrated Asset Hub
+ * points at its relay), so the same head is subscribed to once. `blockResource`
+ * is pooled and ref-counted: this costs nothing when the block leaves the
+ * screen, and nothing extra when another part of the app already watches the
+ * same chain.
+ */
+const $desiredHeads = combine(
+  { requests: $desiredRequests, apis: networkModel.$apis },
+  ({ requests, apis }): { api: ApiPromise }[] => {
+    const timelineApis = new Map<ChainId, ApiPromise>();
 
-// The resource's subscribe/unsubscribe are events; `scopeBind` keeps them bound
-// to the scope this ran in (tests fork a scope, the app does not).
-const syncSubscriptionsFx = createEffect(({ added, removed }: SubscriptionDiff) => {
-  const subscribe = scopeBind(vestingSchedulesResource.subscribe, { safe: true });
-  const unsubscribe = scopeBind(vestingSchedulesResource.unsubscribe, { safe: true });
+    for (const { chain } of requests) {
+      const timelineChainId = getTimelineChainId(chain);
+      const api = apis[timelineChainId];
+      if (api) {
+        timelineApis.set(timelineChainId, api);
+      }
+    }
 
-  for (const request of added) {
-    subscribe(request);
-  }
-  for (const key of removed) {
-    unsubscribe(key);
-  }
-});
-
-sample({
-  clock: $desiredRequests,
-  source: $subscribedKeys,
-  // An unchanged request set must not touch the ref-counted subscriptions — the
-  // requests themselves are rebuilt on every chain and wallet update.
-  filter: (subscribed, desired) => {
-    if (subscribed.length !== desired.length) return true;
-    const subscribedSet = new Set(subscribed);
-
-    return desired.some(request => !subscribedSet.has(vestingSchedulesResource.createKey(request)));
+    return [...timelineApis.values()].map(api => ({ api }));
   },
-  fn: (subscribed, desired): SubscriptionDiff => {
-    const next = desired.map(request => vestingSchedulesResource.createKey(request));
-    const nextSet = new Set(next);
-    const subscribedSet = new Set(subscribed);
+);
 
-    return {
-      added: desired.filter(request => !subscribedSet.has(vestingSchedulesResource.createKey(request))),
-      removed: subscribed.filter(key => !nextSet.has(key)),
-      next,
-    };
-  },
-  target: syncSubscriptionsFx,
-});
+wireSubscriptions(block.blockResource, $desiredHeads);
 
-$subscribedKeys.on(syncSubscriptionsFx, (_, { next }) => next);
+const $blockHeights = combine(block.blockResource.$cache, block.$currentBlock, mergeBlockHeights);
 
 // The schedules' block counts belong to the chain's timeline chain (the relay
 // chain, for migrated Asset Hubs). The query resource caches each block time
@@ -140,7 +137,7 @@ const fetchBlockTimesFx = createEffect(({ requests, chains, apis }: BlockTimeSou
   const start = scopeBind(block.blockTimeResource.start, { safe: true });
 
   for (const { chain } of requests) {
-    const timelineChainId = chain.additional?.timelineChain ?? chain.chainId;
+    const timelineChainId = getTimelineChainId(chain);
     const timelineChain = chains[timelineChainId];
     const timelineApi = apis[timelineChainId];
     if (timelineChain && timelineApi) {
@@ -249,7 +246,7 @@ const $vesting = combine(
     data: $data,
     chains: networkModel.$chains,
     balances: balanceModel.$balanceMap,
-    currentBlock: block.$currentBlock,
+    currentBlock: $blockHeights,
     blockTimes: block.blockTimeResource.$cache,
     availableAccounts: $availableAccounts,
     claimResolutions: $claimResolutions,

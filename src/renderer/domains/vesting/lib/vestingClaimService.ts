@@ -6,28 +6,60 @@ export const vestingClaimService = {
   computeSchedule,
   computeAccountVesting,
   distributeClaimable,
+  vestedAt,
+  unlockBetween,
 };
 
 /**
- * Derives the current figures for a single vesting schedule at `currentBlock`.
+ * How much of the schedule has vested by `block` — pallet_vesting's
+ * `locked_at`, inverted.
  *
- * Mirrors pallet_vesting: `per_block()` is clamped to at least 1 (schedules
- * with a stored `perBlock` of 0 exist on chain), and `locked_at(now)` uses a
- * saturating subtraction so blocks before `startingBlock` keep the full amount
- * locked.
+ * Mirrors the pallet: `per_block()` is clamped to at least 1 (schedules with a
+ * stored `perBlock` of 0 exist on chain), the elapsed count saturates at zero
+ * so blocks before `startingBlock` vest nothing, and the total is capped at
+ * `locked` so blocks past the end vest nothing more.
  */
+function vestedAt(schedule: VestingScheduleInfo, block: BN): BN {
+  const perBlock = BN.max(schedule.perBlock, BN_ONE);
+  const elapsed = BN.max(BN_ZERO, block.sub(schedule.startingBlock));
+
+  return BN.min(schedule.locked, perBlock.mul(elapsed));
+}
+
+/**
+ * How much the schedule releases between two blocks.
+ *
+ * This — not `perBlock × blocks` — is the only honest answer to "how much
+ * unlocks over the next day", because it respects _both_ ends of the schedule:
+ * a schedule that has not started releases nothing until it does, and one that
+ * finishes within the window releases only what is left of it. `perBlock ×
+ * blocksPerDay` happily reports a daily rate many times the schedule's entire
+ * size for anything that runs for less than a day — a cliff, which pays out in
+ * a single block, worst of all.
+ */
+function unlockBetween(schedule: VestingScheduleInfo, fromBlock: BN, toBlock: BN): BN {
+  return BN.max(BN_ZERO, vestedAt(schedule, toBlock).sub(vestedAt(schedule, fromBlock)));
+}
+
+/** Derives the current figures for a single vesting schedule at `currentBlock`. */
 function computeSchedule(schedule: VestingScheduleInfo, currentBlock: BN): ComputedVestingSchedule {
   const perBlock = BN.max(schedule.perBlock, BN_ONE);
-  const elapsed = BN.max(BN_ZERO, currentBlock.sub(schedule.startingBlock));
 
-  const vestedSoFar = BN.min(schedule.locked, perBlock.mul(elapsed));
+  const vestedSoFar = vestedAt(schedule, currentBlock);
   const lockedNow = schedule.locked.sub(vestedSoFar);
 
   // ceil(locked / perBlock) blocks after the start the schedule is fully vested.
   const durationBlocks = schedule.locked.add(perBlock).sub(BN_ONE).div(perBlock);
   const endBlock = schedule.startingBlock.add(durationBlocks);
 
-  return { ...schedule, lockedNow, vestedSoFar, endBlock };
+  return {
+    ...schedule,
+    lockedNow,
+    vestedSoFar,
+    endBlock,
+    isCliff: perBlock.gte(schedule.locked),
+    hasStarted: currentBlock.gte(schedule.startingBlock),
+  };
 }
 
 /**
@@ -44,17 +76,11 @@ function computeAccountVesting(schedules: VestingScheduleInfo[], currentBlock: B
 
   let total = BN_ZERO;
   let stillLocked = BN_ZERO;
-  let perBlockRate = BN_ZERO;
   let endBlock = BN_ZERO;
 
   for (const schedule of computed) {
     total = total.add(schedule.locked);
     stillLocked = stillLocked.add(schedule.lockedNow);
-
-    // Only schedules that are still vesting contribute to the unlock rate.
-    if (!schedule.lockedNow.isZero()) {
-      perBlockRate = perBlockRate.add(BN.max(schedule.perBlock, BN_ONE));
-    }
 
     if (schedule.endBlock.gt(endBlock)) {
       endBlock = schedule.endBlock;
@@ -63,7 +89,7 @@ function computeAccountVesting(schedules: VestingScheduleInfo[], currentBlock: B
 
   const claimable = BN.max(BN_ZERO, lockAmount.sub(stillLocked));
 
-  return { total, stillLocked, claimable, perBlockRate, endBlock, schedules: computed };
+  return { total, stillLocked, claimable, endBlock, schedules: computed };
 }
 
 /**

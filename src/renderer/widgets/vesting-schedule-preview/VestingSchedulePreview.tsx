@@ -42,7 +42,17 @@ type CellComponentProps = {
 type Props = PropsWithChildren & {
   vestingSchedule: VestingScheduleRaw[];
   children: ReactNode;
+  /**
+   * The chain the schedules' block numbers belong to, and its api. For a
+   * migrated Asset Hub that is the relay chain, not `chain` — pallet_vesting
+   * there counts in relay blocks. The two must come as a pair: the block time
+   * used to date a starting block is read from the chain's config, so a
+   * timeline api paired with `chain` would date relay blocks with the Asset
+   * Hub's clock.
+   */
   timelineApi: ApiPromise | null;
+  timelineChain: Chain | null;
+  /** The chain the transfer happens on — addresses, asset, fees. */
   chain: Chain | null;
   asset: Asset | null;
   issues?: ValidationIssue[] | null;
@@ -53,7 +63,17 @@ type Props = PropsWithChildren & {
 const PAGE_SIZE = 50;
 
 export const VestingSchedulePreview = memo(
-  ({ vestingSchedule, children, timelineApi, chain, asset, issues, minVestedTransfer, onDownloadClick }: Props) => {
+  ({
+    vestingSchedule,
+    children,
+    timelineApi,
+    timelineChain,
+    chain,
+    asset,
+    issues,
+    minVestedTransfer,
+    onDownloadClick,
+  }: Props) => {
     const { t } = useI18n();
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
@@ -222,7 +242,7 @@ export const VestingSchedulePreview = memo(
             renderCell(row, 'startingBlock', ({ row, status }) => (
               <StartingBlock
                 timelineApi={timelineApi}
-                chain={chain}
+                timelineChain={timelineChain}
                 status={status}
                 startingBlock={row.startingBlock}
               />
@@ -318,7 +338,7 @@ export const VestingSchedulePreview = memo(
       }
 
       return baseColumns;
-    }, [t, chain, asset, getRowIssues, getFieldIssues, timelineApi, vestingSchedule]);
+    }, [t, chain, asset, getRowIssues, getFieldIssues, timelineApi, timelineChain, vestingSchedule]);
 
     return (
       <Modal size={hasUnlockedAtStartBlock ? 'xxl' : 'xl'} height="fit">
@@ -397,12 +417,12 @@ const FieldIssues = memo(
 const StartingBlock = memo(
   ({
     timelineApi,
-    chain,
+    timelineChain,
     status,
     startingBlock,
   }: {
     timelineApi: ApiPromise | null;
-    chain: Chain | null;
+    timelineChain: Chain | null;
     status: RowStatus;
     startingBlock: string;
   }) => {
@@ -411,10 +431,12 @@ const StartingBlock = memo(
     const blockNum = Number(startingBlock);
     const startingBlockHeight = blockNum > 0 ? pjsSchema.helpers.toBlockHeight(blockNum) : null;
 
+    // Dated on the timeline chain's clock: the starting block is one of *its*
+    // blocks, so both the current height and the block time must come from it.
     const { data: blockTime } = useBlockTimestamp({
       api: timelineApi,
       blockHeight: startingBlockHeight,
-      chain,
+      chain: timelineChain,
     });
 
     let date: string | null = null;

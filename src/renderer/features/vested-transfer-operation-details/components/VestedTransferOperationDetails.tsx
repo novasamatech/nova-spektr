@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { getNativeAsset, getTimelineChainId, nullable } from '@/shared/lib/utils';
 import { Button, DetailRow } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
 import { type VestingScheduleRaw } from '@/domains/vesting';
@@ -25,8 +25,9 @@ export const VestedTransferOperationDetails = ({ operation }: Props) => {
 
   if (nullable(transaction) || nullable(chain)) return null;
 
-  const timelineChainId = chain.additional?.timelineChain;
-  const timelineApi = (nonNullable(timelineChainId) ? apis[timelineChainId] : apis[chain.chainId]) ?? null;
+  const timelineChainId = getTimelineChainId(chain);
+  const timelineChain = chains[timelineChainId] ?? null;
+  const timelineApi = apis[timelineChainId] ?? null;
   const asset = getNativeAsset(chain.assets);
 
   const vestingSchedule: VestingScheduleRaw[] =
@@ -36,7 +37,13 @@ export const VestedTransferOperationDetails = ({ operation }: Props) => {
 
   return (
     <DetailRow label={t('operation.details.parsedFile')} className="text-text-secondary">
-      <VestingSchedulePreview timelineApi={timelineApi} chain={chain} asset={asset} vestingSchedule={vestingSchedule}>
+      <VestingSchedulePreview
+        timelineApi={timelineApi}
+        timelineChain={timelineChain}
+        chain={chain}
+        asset={asset}
+        vestingSchedule={vestingSchedule}
+      >
         <Button className="p-0" size="sm" variant="text">
           {t('vestedTransfer.parsedFile.buttons.openPreview')}
         </Button>

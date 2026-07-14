@@ -4,6 +4,7 @@ import { useUnit } from 'effector-react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { useClock } from '@/shared/lib/hooks';
 import { formatBalance, getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, HelpText, Separator, SmallTitleText } from '@/shared/ui';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
@@ -13,6 +14,7 @@ import { currencySelect } from '@/aggregates/currency-select';
 import { type AccountVestingView, type ClaimBlockReason, vestingPortfolioModel } from '@/aggregates/vesting-portfolio';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
+import { formatUnlockMoment } from '../lib/datetime';
 import { claimModel } from '../model/claim';
 import { modalModel } from '../model/modal-model';
 
@@ -25,6 +27,11 @@ const CLAIM_BLOCK_HINT: Record<ClaimBlockReason, string> = {
 
 export const AccountScheduleModal = () => {
   const { t } = useI18n();
+
+  // The projected dates are absolute, so the countdowns beside them have to be
+  // recomputed against the wall clock — the vesting stores only republish when a
+  // figure changes, and during a cliff none of them does.
+  const now = useClock(30_000);
 
   const chains = useUnit(networkModel.$chains);
   const accountViews = useUnit(vestingPortfolioModel.$accountViews);
@@ -146,9 +153,9 @@ export const AccountScheduleModal = () => {
 
                 const fullyVested = schedule.lockedNow.isZero();
                 const hasReady = schedule.claimableNow.gtn(0);
-                const daysLeft = schedule.fullyUnlocksAt
-                  ? Math.max(1, Math.ceil((schedule.fullyUnlocksAt.getTime() - Date.now()) / DAY_MS))
-                  : null;
+                // A cliff pays out in a single block, so it has no daily rate to
+                // show — and "unlocks fully on DATE" is already the cliff line below.
+                const showRate = !schedule.isCliff && schedule.perDayRate?.gtn(0);
 
                 return (
                   <div key={schedule.index} className="rounded-xl border border-divider p-4">
@@ -159,7 +166,7 @@ export const AccountScheduleModal = () => {
                           <FootnoteText>
                             {t('vesting.account.scheduleLabel', { index: schedule.index, symbol: asset?.symbol ?? '' })}
                           </FootnoteText>
-                          {schedule.perDayRate && (
+                          {showRate && schedule.perDayRate && (
                             <div className="flex items-center gap-x-1 text-help-text text-text-tertiary">
                               <span>{t('vesting.schedule.unlockingPerDayLabel')}</span>
                               <Approx />
@@ -203,29 +210,42 @@ export const AccountScheduleModal = () => {
                           total: formatToken(schedule.locked),
                         })}
                       </HelpText>
-                      {fullyVested ? (
-                        <HelpText className="text-text-tertiary">{t('vesting.account.fullyUnlocked')}</HelpText>
-                      ) : schedule.fullyUnlocksAt && daysLeft != null ? (
-                        <HelpText className="text-text-tertiary">
-                          {t('vesting.account.fullyUnlocksOn', {
-                            date: formatDate(schedule.fullyUnlocksAt),
-                            days: daysLeft,
-                          })}
-                        </HelpText>
-                      ) : schedule.inCliff ? (
-                        <HelpText className="text-text-tertiary">{t('vesting.account.inCliff')}</HelpText>
-                      ) : (
-                        <HelpText className="text-text-tertiary">{t('vesting.account.vesting')}</HelpText>
-                      )}
+                      <HelpText className="text-text-tertiary">
+                        {fullyVested
+                          ? t('vesting.account.fullyUnlocked')
+                          : schedule.isCliff
+                            ? t('vesting.account.inCliffShort')
+                            : schedule.fullyUnlocksAt
+                              ? t('vesting.account.fullyUnlocksOn', {
+                                  when: formatUnlockMoment(schedule.fullyUnlocksAt, now, t),
+                                })
+                              : t('vesting.account.vesting')}
+                      </HelpText>
                     </div>
 
-                    {schedule.inCliff ? (
+                    {/* A cliff releases everything in one block, so until that block it holds the
+                        whole amount; a gradual schedule whose start is still ahead simply hasn't
+                        begun. Both are "nothing yet", but only the first is a cliff. */}
+                    {schedule.isCliff && !fullyVested ? (
                       <>
                         <Separator className="my-3 border-divider" />
                         <HelpText className="text-text-tertiary">
-                          {schedule.cliffEndsAt
-                            ? t('vesting.account.cliffUntil', { date: formatDate(schedule.cliffEndsAt) })
+                          {schedule.startsAt
+                            ? t('vesting.account.cliffUntil', {
+                                when: formatUnlockMoment(schedule.startsAt, now, t),
+                              })
                             : t('vesting.account.inCliff')}
+                        </HelpText>
+                      </>
+                    ) : !schedule.hasStarted && !fullyVested ? (
+                      <>
+                        <Separator className="my-3 border-divider" />
+                        <HelpText className="text-text-tertiary">
+                          {schedule.startsAt
+                            ? t('vesting.account.startsOn', {
+                                when: formatUnlockMoment(schedule.startsAt, now, t),
+                              })
+                            : t('vesting.account.notStarted')}
                         </HelpText>
                       </>
                     ) : (
@@ -259,12 +279,6 @@ export const AccountScheduleModal = () => {
     </Modal>
   );
 };
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-// "28 Feb 2026" — same format the vesting callout uses for the unlock date.
-const formatDate = (date: Date) =>
-  date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
 // Non-translatable punctuation used to compose the unlock-rate lines.
 const Approx = () => <span className="text-text-tertiary">≈</span>;

@@ -1,8 +1,14 @@
-import { BN, BN_ONE, BN_ZERO } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 
 import { type Asset, type Balance, type Chain, type ChainId } from '@/shared/core';
-import { getNativeAsset, getRoundedValue, nonNullable, vestedLockedAmountBN } from '@/shared/lib/utils';
+import {
+  getNativeAsset,
+  getRoundedValue,
+  getTimelineChainId,
+  nonNullable,
+  vestedLockedAmountBN,
+} from '@/shared/lib/utils';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query';
 import { type AnyAccount } from '@/domains/network';
@@ -11,6 +17,7 @@ import {
   type ChainVestingEntry,
   type VestingChainRequest,
   type VestingData,
+  type VestingScheduleInfo,
   vestingClaimService,
   vestingSchedulesResource,
 } from '@/domains/vesting';
@@ -148,8 +155,9 @@ export const computeVesting = ({
     if (!asset) continue;
 
     // Vesting schedules are denominated in blocks of the chain's timeline chain
-    // (the relay chain, for migrated Asset Hubs).
-    const timelineChainId = chain.additional?.timelineChain ?? chain.chainId;
+    // (the relay chain, for migrated Asset Hubs) — so the height *and* the block
+    // time below must both be read from that chain, never from `chain` itself.
+    const timelineChainId = getTimelineChainId(chain);
     const blockHeight = currentBlock[timelineChainId];
     if (blockHeight == null) continue;
     const currentBlockBN = new BN(blockHeight);
@@ -159,10 +167,17 @@ export const computeVesting = ({
     // computed from a wrong assumption.
     const blockTimeMs = blockTimes[timelineChainId]?.toNumber() ?? null;
     const blocksPerDay = blockTimeMs != null && blockTimeMs > 0 ? new BN(Math.round(DAY_MS / blockTimeMs)) : null;
+    const blockInADay = blocksPerDay ? currentBlockBN.add(blocksPerDay) : null;
 
-    // Projects "in N blocks" to a wall-clock date; null when the block time is
-    // unknown, the moment has passed, or the block count is corrupt/absurd.
-    const blocksToDate = (blocks: BN): Date | null => {
+    // What a schedule actually releases over the next 24h — see `unlockBetween`.
+    const unlockPerDay = (schedule: VestingScheduleInfo): BN | null => {
+      return blockInADay ? vestingClaimService.unlockBetween(schedule, currentBlockBN, blockInADay) : null;
+    };
+
+    // Projects a block of the timeline chain to a wall-clock date; null when the
+    // block time is unknown, the block has passed, or its number is absurd.
+    const blockToDate = (block: BN): Date | null => {
+      const blocks = block.sub(currentBlockBN);
       if (blockTimeMs == null || !blocks.gtn(0) || blocks.gt(MAX_SAFE_BLOCKS)) return null;
 
       return new Date(Date.now() + blocks.toNumber() * blockTimeMs);
@@ -178,23 +193,26 @@ export const computeVesting = ({
       const lockAmount = onchainLock ?? vestedLockedAmountBN(balance ?? null);
 
       const vesting = vestingClaimService.computeAccountVesting(schedules, currentBlockBN, lockAmount);
-      const perDayRate = blocksPerDay ? vesting.perBlockRate.mul(blocksPerDay) : null;
       const claimableShares = vestingClaimService.distributeClaimable(vesting.schedules, vesting.claimable);
 
       const scheduleViews: ScheduleView[] = vesting.schedules.map((schedule, index) => {
-        const inCliff = schedule.vestedSoFar.isZero();
         const stillVesting = !schedule.lockedNow.isZero();
 
         return {
           ...schedule,
           index: index + 1,
-          inCliff,
-          perDayRate: blocksPerDay && stillVesting ? BN.max(schedule.perBlock, BN_ONE).mul(blocksPerDay) : null,
-          fullyUnlocksAt: stillVesting ? blocksToDate(schedule.endBlock.sub(currentBlockBN)) : null,
-          cliffEndsAt: inCliff ? blocksToDate(schedule.startingBlock.sub(currentBlockBN)) : null,
+          perDayRate: stillVesting ? unlockPerDay(schedule) : null,
+          fullyUnlocksAt: stillVesting ? blockToDate(schedule.endBlock) : null,
+          startsAt: schedule.hasStarted ? null : blockToDate(schedule.startingBlock),
           claimableNow: claimableShares[index] ?? BN_ZERO,
         };
       });
+
+      // The account's next 24h is just the sum of its schedules' — a schedule
+      // that is done, or that has not started, contributes nothing on its own.
+      const perDayRate = blockInADay
+        ? scheduleViews.reduce((sum, schedule) => sum.add(schedule.perDayRate ?? BN_ZERO), BN_ZERO)
+        : null;
 
       const key = `${chainId}-${accountId}`;
       // Any candidate renders the same identicon and name; only the claim
@@ -211,7 +229,6 @@ export const computeVesting = ({
         total: vesting.total,
         stillLocked: vesting.stillLocked,
         claimable: vesting.claimable,
-        perBlockRate: vesting.perBlockRate,
         perDayRate,
         endBlock: vesting.endBlock,
         schedules: scheduleViews,
@@ -225,7 +242,7 @@ export const computeVesting = ({
       claimableFiat = claimableFiat.plus(addFiat(asset, vesting.claimable));
       if (perDayRate) perDayFiat = perDayFiat.plus(addFiat(asset, perDayRate));
 
-      const date = blocksToDate(vesting.endBlock.sub(currentBlockBN));
+      const date = vesting.stillLocked.isZero() ? null : blockToDate(vesting.endBlock);
       if (date && (!lastUnlockDate || date > lastUnlockDate)) lastUnlockDate = date;
     }
   }
@@ -257,8 +274,11 @@ export const computeVesting = ({
 export const fingerprintViews = (views: AccountVestingView[]): string =>
   views
     .map(view => {
+      // `perDayRate` earns its place: as a schedule's start block draws within a
+      // day, the amount it releases over the next 24h starts to climb while
+      // every other figure here — nothing vested, nothing claimable — sits still.
       const schedules = view.schedules
-        .map(s => `${s.locked}:${s.lockedNow}:${s.vestedSoFar}:${s.claimableNow}`)
+        .map(s => `${s.locked}:${s.lockedNow}:${s.vestedSoFar}:${s.claimableNow}:${s.perDayRate ?? '-'}`)
         .join(',');
 
       return [
@@ -275,14 +295,17 @@ export const fingerprintViews = (views: AccountVestingView[]): string =>
     })
     .join('|');
 
+// The unlock date is printed to the minute once it is close, so it is compared
+// to the minute — but no finer. The projection drifts by seconds on every block,
+// and re-rendering the dashboard for that would be churn.
+const MINUTE_MS = 60 * 1000;
+
 export const fingerprintSummary = (summary: VestingSummary): string =>
   [
     summary.totalVestingFiat.toFixed(2),
     summary.claimableFiat.toFixed(2),
     summary.perDayFiat.toFixed(2),
     summary.schedulesCount,
-    // Only the day is printed — a projection that drifts by seconds each block
-    // must not re-render the block.
-    summary.lastUnlockDate?.toDateString() ?? '-',
+    summary.lastUnlockDate ? Math.floor(summary.lastUnlockDate.getTime() / MINUTE_MS) : '-',
     summary.hasClaim,
   ].join('/');

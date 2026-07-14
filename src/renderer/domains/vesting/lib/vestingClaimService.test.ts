@@ -11,13 +11,52 @@ const schedule = (locked: number, perBlock: number, startingBlock: number): Vest
 });
 
 describe('vestingClaimService.computeSchedule', () => {
-  it('keeps everything locked before the start block (cliff)', () => {
+  it('keeps everything locked before the start block', () => {
     const result = vestingClaimService.computeSchedule(schedule(1000, 10, 100), new BN(50));
 
     expect(result.vestedSoFar.toString()).toBe('0');
     expect(result.lockedNow.toString()).toBe('1000');
     // ceil(1000 / 10) = 100 blocks -> ends at 200
     expect(result.endBlock.toString()).toBe('200');
+  });
+
+  it('calls a single-block release a cliff, and a gradual schedule not one — however far off its start is', () => {
+    // The pair pallet_vesting stores for a cliffed vested transfer: the cliff
+    // amount, which unlocks whole at the start block, and the rest, which
+    // vests from that same block onwards.
+    const cliff = vestingClaimService.computeSchedule(schedule(50_000_000, 50_000_000, 34_364_257), new BN(34_000_000));
+    const gradual = vestingClaimService.computeSchedule(
+      schedule(49_950_000_000, 50_000_000, 34_364_257),
+      new BN(34_000_000),
+    );
+
+    expect(cliff.isCliff).toBe(true);
+    expect(gradual.isCliff).toBe(false);
+
+    // Neither has started — which on its own says nothing about being a cliff.
+    expect(cliff.hasStarted).toBe(false);
+    expect(gradual.hasStarted).toBe(false);
+    expect(cliff.vestedSoFar.isZero()).toBe(true);
+    expect(gradual.vestedSoFar.isZero()).toBe(true);
+
+    // The cliff is done one block after it starts; the gradual one runs 999 blocks.
+    expect(cliff.endBlock.toString()).toBe('34364258');
+    expect(gradual.endBlock.toString()).toBe('34365256');
+  });
+
+  it('marks a schedule started once the chain reaches its start block', () => {
+    const before = vestingClaimService.computeSchedule(schedule(1000, 10, 100), new BN(99));
+    const at = vestingClaimService.computeSchedule(schedule(1000, 10, 100), new BN(100));
+
+    expect(before.hasStarted).toBe(false);
+    expect(at.hasStarted).toBe(true);
+  });
+
+  it('treats a schedule that over-releases (perBlock > locked) as a cliff', () => {
+    const result = vestingClaimService.computeSchedule(schedule(500, 1000, 100), new BN(50));
+
+    expect(result.isCliff).toBe(true);
+    expect(result.endBlock.toString()).toBe('101');
   });
 
   it('linearly vests part-way through', () => {
@@ -45,6 +84,76 @@ describe('vestingClaimService.computeSchedule', () => {
   });
 });
 
+describe('vestingClaimService.unlockBetween', () => {
+  const BLOCKS_PER_DAY = new BN(14_400); // Kusama relay, 6s blocks
+
+  it('is the plain rate while the schedule runs across the whole window', () => {
+    // 100 000 blocks of runway at 10/block — a day makes no dent in it.
+    const result = vestingClaimService.unlockBetween(
+      schedule(1_000_000, 10, 0),
+      new BN(100),
+      new BN(100).add(BLOCKS_PER_DAY),
+    );
+
+    expect(result.toString()).toBe((10 * 14_400).toString());
+  });
+
+  it('releases nothing while the start block is more than a window away', () => {
+    const result = vestingClaimService.unlockBetween(
+      schedule(1_000_000, 10, 50_000),
+      new BN(100),
+      new BN(100).add(BLOCKS_PER_DAY),
+    );
+
+    expect(result.toString()).toBe('0');
+  });
+
+  it('counts only the part of the window that falls after the start block', () => {
+    // Starts 400 blocks out; 14 000 of the day's 14 400 blocks vest, at 10 each.
+    const result = vestingClaimService.unlockBetween(
+      schedule(1_000_000, 10, 500),
+      new BN(100),
+      new BN(100).add(BLOCKS_PER_DAY),
+    );
+
+    expect(result.toString()).toBe((10 * 14_000).toString());
+  });
+
+  it('never releases more than the schedule holds — the bug that showed 4.32 KSM of a 0.05 KSM vesting', () => {
+    // The user's real pair, a block before they start. `perBlock × blocksPerDay`
+    // would claim 50 000 000 × 14 400 = 720 000 000 000 planks *each*, ~29x the
+    // 50 000 000 000 planks the whole vesting is worth. Both finish inside the day.
+    const from = new BN(34_364_256);
+    const to = from.add(BLOCKS_PER_DAY);
+
+    const cliff = vestingClaimService.unlockBetween(schedule(50_000_000, 50_000_000, 34_364_257), from, to);
+    const gradual = vestingClaimService.unlockBetween(schedule(49_950_000_000, 50_000_000, 34_364_257), from, to);
+
+    expect(cliff.toString()).toBe('50000000');
+    expect(gradual.toString()).toBe('49950000000');
+    // Everything the account holds unlocks within the day, and not a plank more.
+    expect(cliff.add(gradual).toString()).toBe('50000000000');
+  });
+
+  it('releases only what is left of a schedule already under way', () => {
+    // 1000 locked, 10/block, started at 0: by block 950 only 500 is left, and
+    // that is all the next day can release however long the window is.
+    const result = vestingClaimService.unlockBetween(schedule(1000, 10, 0), new BN(50), new BN(50).add(BLOCKS_PER_DAY));
+
+    expect(result.toString()).toBe('500');
+  });
+
+  it('releases nothing from a schedule that has already finished', () => {
+    const result = vestingClaimService.unlockBetween(
+      schedule(1000, 10, 0),
+      new BN(5000),
+      new BN(5000).add(BLOCKS_PER_DAY),
+    );
+
+    expect(result.toString()).toBe('0');
+  });
+});
+
 describe('vestingClaimService.computeAccountVesting', () => {
   it('aggregates multiple schedules with different start blocks', () => {
     const schedules = [schedule(1000, 10, 100), schedule(500, 5, 0)];
@@ -55,8 +164,6 @@ describe('vestingClaimService.computeAccountVesting', () => {
     expect(result.total.toString()).toBe('1500');
     expect(result.stillLocked.toString()).toBe('700');
     expect(result.claimable.toString()).toBe('0');
-    // only the still-vesting schedule (s1) contributes to the rate
-    expect(result.perBlockRate.toString()).toBe('10');
     // latest end block: s1 ends at 200, s2 at 100
     expect(result.endBlock.toString()).toBe('200');
   });

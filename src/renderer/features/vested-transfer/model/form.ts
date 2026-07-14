@@ -6,7 +6,7 @@ import { chainsService } from '@/shared/api/network';
 import { type Chain, ChainOptions } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
-import { assert, getNativeAsset, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
+import { assert, getNativeAsset, getTimelineChainId, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { createAccountId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
@@ -103,8 +103,7 @@ const { $: $minStartingBlock } = createStoreFromEffect({
   defaultValue: null,
   params: { currentBlock: block.$currentBlock, chain: form.fields.chain.$value },
   fn: ({ currentBlock, chain }) => {
-    const timelineChainId = chain.additional?.timelineChain ?? chain.chainId;
-    return new BN(vestingService.getMinStartingBlock(currentBlock, timelineChainId));
+    return new BN(vestingService.getMinStartingBlock(currentBlock, getTimelineChainId(chain)));
   },
 });
 
