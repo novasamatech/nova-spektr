@@ -184,9 +184,8 @@ export const Operations = () => {
                             type="button"
                             aria-expanded={!collapsedSections[item.section]}
                             className={cnTw(
-                              'flex items-center gap-2 rounded-sm px-2 pb-1.5',
+                              'flex items-center gap-2 rounded-sm px-2 pt-4 pb-1.5',
                               'focus-visible:outline-2 focus-visible:outline-icon-accent',
-                              virtualRow.index > 0 && 'pt-4',
                             )}
                             onClick={() => operationsContextModel.toggleSection(item.section)}
                           >

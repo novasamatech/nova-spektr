@@ -195,14 +195,14 @@ export const DraftsSection = () => {
   if (isHealthy && !canRead) return null;
 
   return (
-    <div className="mb-4">
+    <div>
       <AddressBookHealthOverlay isHealthy={isHealthy}>
         <div aria-hidden={!isHealthy} inert={!isHealthy || undefined}>
           <button
             type="button"
             aria-expanded={!isCollapsed}
             className={cnTw(
-              'flex items-center gap-2 rounded-sm px-2 pt-3 pb-1.5',
+              'flex items-center gap-2 rounded-sm px-2 pt-4 pb-1.5',
               'focus-visible:outline-2 focus-visible:outline-icon-accent',
             )}
             onClick={() => setIsCollapsed((collapsed) => !collapsed)}
