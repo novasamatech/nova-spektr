@@ -345,9 +345,10 @@ ascending → descending → off:
 
 - **Operation** — by the recognised operation type (its internal type identifier, so like operations group together; the
   order does not exactly match the displayed titles).
-- **Value** — by token amount. This is an approximation: amounts are compared numerically across different assets
-  without fiat conversion, and operations with no extractable amount count as the lowest value (first ascending, last
-  descending).
+- **Value** — groups by what the row shows, then by amount. Operations whose Value column displays an amount sort
+  numerically (an approximation: amounts are compared across different assets without fiat conversion); after them come
+  operations that carry a value the column does not render (batch contents, staking/governance amounts, transfer-all);
+  last, operations with no value at all. Ascending flips the whole order (no-value first, largest amount last).
 - **Submitter** — alphabetically by the multisig's wallet name (falling back to its account id).
 
 With sorting off, operations are ordered **newest first** by their creation time (block and extrinsic index break

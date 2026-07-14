@@ -176,6 +176,43 @@ describe('operations-sort', () => {
       expect(result.map(i => i.operation.id)).toEqual(['op-usdt', 'op-five', 'op-one', 'op-remark']);
     });
 
+    test('value sort tiers: displayed amounts, then hidden values, then no value', () => {
+      const delegateOp: OperationWithAccount = {
+        operation: createMockOperation({
+          id: 'op-delegate',
+          transaction: {
+            type: TransactionType.DELEGATE,
+            section: 'convictionVoting',
+            method: 'delegate',
+            args: { balance: '999990000000000' },
+          } as never,
+        }),
+        account: mockAccount,
+      };
+      const batchOp: OperationWithAccount = {
+        operation: createMockOperation({
+          id: 'op-batch',
+          transaction: {
+            type: TransactionType.BATCH_ALL,
+            section: 'utility',
+            method: 'batchAll',
+            args: { transactions: [{ type: TransactionType.TRANSFER, args: { value: '10000000000' } }] },
+          } as never,
+        }),
+        account: mockAccount,
+      };
+
+      const input = [delegateOp, noAmountOp, oneUnitOp, batchOp, fiveUnitsOp];
+
+      const desc = sortOperations(input, { by: 'value', direction: 'desc' }, context);
+      // Delegate carries a huge hidden balance but the Value column shows nothing —
+      // it must stay in the middle tier, not outrank displayed transfer amounts.
+      expect(desc.map(i => i.operation.id)).toEqual(['op-five', 'op-one', 'op-delegate', 'op-batch', 'op-remark']);
+
+      const asc = sortOperations(input, { by: 'value', direction: 'asc' }, context);
+      expect(asc.map(i => i.operation.id)).toEqual(['op-remark', 'op-delegate', 'op-batch', 'op-one', 'op-five']);
+    });
+
     test('value asc treats non-numeric amount as no amount', () => {
       const brokenOp = createTransferItem('op-broken', 'not-a-number');
       const result = sortOperations([oneUnitOp, brokenOp], { by: 'value', direction: 'asc' }, context);
