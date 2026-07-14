@@ -40,26 +40,9 @@ const $keys = createStore<Record<string, DerivationKeyDraft>>({});
 const $hasChanged = createStore(false).reset(init);
 const $errors = createStore<Record<string, DerivationError[]>>({}).reset(init);
 
-function getOtherDerivationPaths(
-  keyId: string,
-  relayChainId: ChainId,
-  isEthereumBased: boolean,
-  keys: Record<string, DerivationKeyDraft>,
-  chains: Record<ChainId, Chain>,
-) {
+function getOtherDerivationPaths(keyId: string, chainId: ChainId, keys: Record<string, DerivationKeyDraft>) {
   return Object.entries(keys)
-    .filter(([otherKeyId]) => otherKeyId !== keyId)
-    .filter(([, otherKey]) => {
-      const otherChain = chains[otherKey.chainId];
-
-      if (isEthereumBased) {
-        const isOtherKeyEthereumBased = networkUtils.isEthereumBased(otherChain?.options);
-        return isOtherKeyEthereumBased;
-      }
-
-      const isOtherKeyOnTheSameRelayChain = (otherChain?.parentId ?? otherChain?.chainId) === relayChainId;
-      return isOtherKeyOnTheSameRelayChain;
-    })
+    .filter(([otherKeyId, otherKey]) => otherKeyId !== keyId && otherKey.chainId === chainId)
     .map(([, otherKey]) => otherKey.derivationPath);
 }
 
@@ -75,10 +58,9 @@ function getKeyValidationErrors(
   const chain = chains[chainId];
   if (nullable(chain)) return [];
 
-  const relayChainId = chain.parentId ?? chain.chainId;
   const isEthereumBased = networkUtils.isEthereumBased(chain.options);
 
-  const otherPaths = getOtherDerivationPaths(keyId, relayChainId, isEthereumBased, keys, chains);
+  const otherPaths = getOtherDerivationPaths(keyId, chainId, keys);
   const { errors } = validateDerivation(derivationPath, { otherPaths, isEthereumBased });
 
   return errors;
@@ -209,6 +191,24 @@ sample({
   fn: ({ errors, keys, chains }, keyId) =>
     produce(errors, (draft) => {
       draft[keyId] = getKeyValidationErrors(keyId, keys, chains);
+    }),
+  target: $errors,
+});
+
+// Duplicates are scoped to a chain, so editing one key can resolve or introduce
+// an error on another. Keys are only validated after the user has touched them.
+sample({
+  clock: $keys,
+  source: { errors: $errors, chains: networkModel.$chains },
+  fn: ({ errors, chains }, keys) =>
+    produce(errors, (draft) => {
+      for (const keyId of Object.keys(draft)) {
+        if (nullable(keys[keyId])) {
+          delete draft[keyId];
+        } else {
+          draft[keyId] = getKeyValidationErrors(keyId, keys, chains);
+        }
+      }
     }),
   target: $errors,
 });

@@ -1,13 +1,15 @@
 import { encodeAddress } from '@polkadot/util-crypto';
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type PropsWithChildren, useMemo, useState } from 'react';
 
 import { type Address, type PolkadotVaultWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, SmallTitleText } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
+import { accountService, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { OperationResult, QrTxGenerator, createDynamicDerivationExportPayload } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 import { walletDetailsUtils } from '@/features/wallet-details';
 import { exportKeysUtils } from '../lib/export-keys-utils';
 
@@ -36,22 +38,33 @@ export const ExportKeysModal = ({ wallet, onClose, children }: Props) => {
     handleClose();
   };
 
-  const downloadKeysFile = () => {
-    exportKeysUtils.exportVaultWallet(wallet, wallet.rootAccountId, accounts);
-    setDownloadModalOpen(true);
-  };
+  // Read from the live account list rather than the deprecated wallet.accounts,
+  // which is a snapshot taken when the wallet details modal was opened.
+  const walletAccounts = useStoreMap({
+    store: accounts.$list,
+    keys: [wallet.id],
+    fn: (allAccounts, [walletId]) =>
+      accountService
+        .filterAccountsByWallet(allAccounts, walletId)
+        .filter((a) => accountUtils.isVaultChainAccount(a) || accountUtils.isVaultShardAccount(a)),
+  });
 
-  const accounts = useMemo(() => {
-    const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
+  const exportAccounts = useMemo(() => {
+    const accountsMap = walletDetailsUtils.getVaultAccountsMap(walletAccounts);
     //todo sort these accounts
 
     return Object.values(accountsMap).flat();
-  }, [wallet]);
+  }, [walletAccounts]);
+
+  const downloadKeysFile = () => {
+    exportKeysUtils.exportVaultWallet(wallet, wallet.rootAccountId, exportAccounts);
+    setDownloadModalOpen(true);
+  };
 
   const qrPayload = useMemo(() => {
     const address = encodeAddress(wallet.rootAccountId) as Address;
-    return createDynamicDerivationExportPayload(wallet.name, address, accounts.flat(), chains);
-  }, [wallet.name, wallet.rootAccountId, accounts, chains]);
+    return createDynamicDerivationExportPayload(wallet.name, address, exportAccounts.flat(), chains);
+  }, [wallet.name, wallet.rootAccountId, exportAccounts, chains]);
 
   return (
     <Modal size="md" height="fit" isOpen={isOpen} onToggle={onToggle}>
