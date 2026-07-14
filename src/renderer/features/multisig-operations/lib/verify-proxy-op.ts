@@ -18,15 +18,12 @@ const BATCH_METHODS = new Set(['batch', 'batchAll', 'forceBatch']);
 const findVerifyProxyRemark = (tx: DecodedTransaction | null): DecodedTransaction | null => {
   if (nullable(tx)) return null;
 
+  if (tx.section === 'system' && tx.method === 'remarkWithEvent') {
+    return tx;
+  }
+
   if (isProxyWrap(tx)) {
-    const inner = (tx.args['transaction'] as DecodedTransaction | null) ?? null;
-    if (nullable(inner)) return null;
-
-    if (inner.section === 'system' && inner.method === 'remarkWithEvent') {
-      return inner;
-    }
-
-    return findVerifyProxyRemark(inner);
+    return findVerifyProxyRemark((tx.args['transaction'] as DecodedTransaction | null) ?? null);
   }
 
   if (tx.section === 'utility' && BATCH_METHODS.has(tx.method)) {
@@ -42,10 +39,12 @@ const findVerifyProxyRemark = (tx: DecodedTransaction | null): DecodedTransactio
   return null;
 };
 
-// Verify-proxy ping shape: `proxy.proxy(real=pure, call=system.remarkWithEvent(<verify-proxy marker>))`.
-// We require the proxy.proxy wrap (a bare remarkWithEvent isn't how the ping is built — see
-// `features/proxy-verify/lib/build-verify-proxy.ts`), and additionally require the marker payload
-// so incidental proxy.remarkWithEvent ops don't render here.
+// The ping is built as `proxy.proxy(real=pure, call=system.remarkWithEvent(<verify-proxy marker>))`
+// (see `features/proxy-verify/lib/build-verify-proxy.ts`), but the multisig-operation domain decodes
+// the CORE call data (proxy wrap stripped into `proxiedAccountId` — domains/network/multisig-operation
+// resource), so the stored transaction is often a bare `system.remarkWithEvent`. Accept the remark at
+// any of these levels; the verify-proxy marker payload is the discriminator that keeps incidental
+// remarkWithEvent ops from rendering here.
 export const parseVerifyProxyOperation = (operation: MultisigOperation): VerifyProxyOpInfo | null => {
   const inner = findVerifyProxyRemark(operation.transaction);
   if (nullable(inner)) return null;
