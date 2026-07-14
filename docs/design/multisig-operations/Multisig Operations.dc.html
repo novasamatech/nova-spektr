@@ -47,7 +47,7 @@
     .nstoolbtn:hover { background: #4545890f !important; }
     .nstoolbtn-del:hover { background: #f521630f !important; }
     .nstoolbtn svg { color: inherit !important; }
-    .nsscroll > * { min-width: 1280px; }
+    .nsscroll > * { min-width: 1060px; }
     @keyframes nsspin { to { transform: rotate(360deg); } }
   </style>
 </helmet>
@@ -212,7 +212,7 @@
     </div>
 
     <div class="nsscroll" style="flex:1; overflow:auto; padding:0 16px 40px;">
-      <div style="min-width:1280px;">
+      <div style="min-width:1060px;">
       <sc-if value="{{ showSyncBar }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex; align-items:center; justify-content:center; gap:10px; padding:6px 0 10px;">
           <div style="width:18px; height:18px; border:2px solid #4649f6; border-right-color:transparent; border-radius:50%; animation:nsspin .8s linear infinite;"></div>
@@ -693,7 +693,7 @@
 </x-import>
 </x-import>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;showSyncBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Page state&quot;},&quot;connectionState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;connected&quot;,&quot;disconnected&quot;,&quot;never-connected&quot;],&quot;default&quot;:&quot;connected&quot;,&quot;tsType&quot;:&quot;'connected' | 'disconnected' | 'never-connected'&quot;,&quot;section&quot;:&quot;Page state&quot;},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;signatory&quot;,&quot;submitter-only&quot;],&quot;default&quot;:&quot;signatory&quot;,&quot;tsType&quot;:&quot;'signatory' | 'submitter-only'&quot;,&quot;section&quot;:&quot;Permissions&quot;},&quot;operationColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:272,&quot;min&quot;:180,&quot;max&quot;:400,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;valueColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:200,&quot;min&quot;:120,&quot;max&quot;:240,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;submitterColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:200,&quot;min&quot;:120,&quot;max&quot;:240,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;actionsColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:168,&quot;min&quot;:130,&quot;max&quot;:260,&quot;step&quot;:2,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;showSyncBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Page state&quot;},&quot;connectionState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;connected&quot;,&quot;disconnected&quot;,&quot;never-connected&quot;],&quot;default&quot;:&quot;connected&quot;,&quot;tsType&quot;:&quot;'connected' | 'disconnected' | 'never-connected'&quot;,&quot;section&quot;:&quot;Page state&quot;},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;signatory&quot;,&quot;submitter-only&quot;],&quot;default&quot;:&quot;signatory&quot;,&quot;tsType&quot;:&quot;'signatory' | 'submitter-only'&quot;,&quot;section&quot;:&quot;Permissions&quot;},&quot;operationColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:240,&quot;min&quot;:180,&quot;max&quot;:400,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;valueColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:140,&quot;min&quot;:120,&quot;max&quot;:240,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;submitterColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:180,&quot;min&quot;:120,&quot;max&quot;:240,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;actionsColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:168,&quot;min&quot;:130,&quot;max&quot;:260,&quot;step&quot;:2,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;}}">
 class Component extends DCLogic {
   A = '_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/assets';
 

@@ -27,6 +27,12 @@ padding-left:16) + Status(110) + Actions(220) + delete-slot(16) + share(16) + ch
   mirrors the app's `hasEverConnected` gate. `disconnected` keeps the dimmed-drafts + Reconnect behaviour (2026-07-14).
 - Default list order (no column sort active) is **newest first** by creation time; mock data is static, the rule lives
   in the app (2026-07-14).
+- **Row must fit the default 1372px app window** (240px sidebar + 32px page padding → 1100px for the list). Column
+  defaults trimmed: operation 272→240, value 200→140, submitter 200→180; list min-width 1280→1060. In the app the
+  dedicated draft-badge column and the trailing 16px spacer were removed (badge pill now lives in the Description
+  cell) — 2026-07-14.
+- Value sort groups by what the row shows: displayed amounts (sorted) → hidden values (batches, staking/governance
+  amounts) → no value; ties fall back to newest-first (2026-07-14).
 
 ## Expanded detail panel — action placement (Stepan)
 
