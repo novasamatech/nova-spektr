@@ -131,7 +131,10 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   }
 
   return (
-    <div className="focus-active:shadow-card-shadow rounded bg-block-background-default transition-shadow hover:shadow-card-shadow">
+    <div
+      data-operation-id={operation.id}
+      className="focus-active:shadow-card-shadow rounded bg-block-background-default transition-shadow hover:shadow-card-shadow"
+    >
       <Accordion isDefaultOpen={isDefaultOpen}>
         {/* text-left: Disclosure.Button is a <button>, whose default centered
             text-align cascades into the address/description lines */}

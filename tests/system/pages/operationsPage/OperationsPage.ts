@@ -85,12 +85,7 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
    */
   public async expectTitlesByScrolling(titles: string[]): Promise<void> {
     await step(`Scroll the list and expect ${titles.length} operation titles`, async () => {
-      const viewport = await this.page
-        .locator('[data-radix-scroll-area-viewport]')
-        .filter({ hasText: 'Submitter' })
-        .first()
-        .elementHandle();
-      if (!viewport) throw new Error('operations list viewport not found');
+      const viewport = await this.listViewportHandle();
 
       const remaining = new Set(titles);
       await viewport.evaluate((el) => {
@@ -114,6 +109,73 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
       }
 
       expect([...remaining], `titles never rendered: ${[...remaining].join(', ')}`).toEqual([]);
+    });
+  }
+
+  /** The scrollable viewport of the operations list (via the sticky header). */
+  private async listViewportHandle() {
+    const handle = await this.page
+      .locator('[data-radix-scroll-area-viewport]')
+      .filter({ hasText: 'Submitter' })
+      .first()
+      .elementHandle();
+    if (!handle) throw new Error('operations list viewport not found');
+    return handle;
+  }
+
+  /**
+   * Scrolls the whole virtualized list and, for every operation row (tracked by
+   * its unique `data-operation-id`), expands it and asserts the details panel
+   * rendered. Proves that **all** seeded operations parsed into distinct,
+   * expandable rows — not just that each title appears somewhere — and leaves
+   * the details visible for inspection. Returns the number of rows processed.
+   */
+  public async expandEachOperation(expectedCount: number): Promise<number> {
+    return step(`Expand and verify details for all ${expectedCount} operations`, async () => {
+      const viewport = await this.listViewportHandle();
+      await viewport.evaluate((el) => {
+        el.scrollTop = 0;
+      });
+      await this.page.waitForTimeout(150);
+
+      const processed = new Set<string>();
+      for (let step = 0; step < 500 && processed.size < expectedCount; step++) {
+        const rows = this.page.locator('[data-operation-id]');
+        const count = await rows.count();
+
+        let expandedOne = false;
+        for (let i = 0; i < count; i++) {
+          const id = await rows.nth(i).getAttribute('data-operation-id');
+          if (!id || processed.has(id)) continue;
+
+          // Re-locate by id (not positional): expanding a row shifts the DOM, so
+          // `nth(i)` would drift to a different element for the details check.
+          const row = this.page.locator(`[data-operation-id="${id}"]`);
+          if (!(await row.isVisible().catch(() => false))) continue;
+
+          // Toggle via the row's own accordion button (focus + Enter) — avoids
+          // hitting nested action buttons or copyable identicons by position.
+          await row.locator('button').first().press('Enter');
+          // The expanded panel always renders a "Details" section (incl. special cards).
+          await expect(row.getByText('Details', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+          processed.add(id);
+          expandedOne = true;
+          break; // re-fetch: expanding shifts the rows below
+        }
+
+        if (expandedOne) continue;
+
+        const moved = await viewport.evaluate((el) => {
+          const before = el.scrollTop;
+          el.scrollTop = Math.min(el.scrollTop + el.clientHeight * 0.5, el.scrollHeight);
+          return el.scrollTop !== before;
+        });
+        await this.page.waitForTimeout(60);
+        if (!moved) break;
+      }
+
+      expect(processed.size, `expanded ${processed.size} of ${expectedCount} operations`).toBe(expectedCount);
+      return processed.size;
     });
   }
 

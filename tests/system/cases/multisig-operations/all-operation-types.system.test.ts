@@ -49,5 +49,9 @@ test.describe('Multisig Operations — all operation types', { tag: ['@regress']
     // modes are asserted via their tags (Atomic swap / Verified swap).
     const titles = [...new Set(built.covered.map((c) => c.title))];
     await operationsPage.expectTitlesByScrolling([...titles, 'Atomic swap', 'Verified swap']);
+
+    // Verify EVERY seeded operation parsed into its own row and expand each one's
+    // details (Details / Signatories / Advanced) so they are visible.
+    await operationsPage.expandEachOperation(built.covered.length);
   });
 });
