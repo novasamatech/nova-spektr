@@ -36,6 +36,9 @@ test.describe('Multisig Operations — drafts section', { tag: ['@regress'] }, (
     // draft that has none), and the call-data split drives Submit vs Add-call-data.
     await operationsPage.expectDraftContent(scenario);
 
+    // Once Asset Hub connects, the transfer drafts decode to a real "Transfer" title.
+    await operationsPage.expectDecodedTransferTitle(scenario);
+
     // A draft row expands into its Details panel (regular + flexible alike).
     await operationsPage.expandFirstDraftAndExpectDetails(scenario);
   });

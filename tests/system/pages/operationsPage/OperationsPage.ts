@@ -3,6 +3,7 @@ import { step } from 'allure-js-commons';
 
 import { type DraftScenario } from '../../utils/buildDraftScenario';
 import { type BuiltData } from '../../utils/buildMultisigOperations';
+import { type OperationWithDescriptionScenario } from '../../utils/buildOperationWithDescription';
 import { injectDataInDatabase } from '../../utils/interactWithDatabase';
 import { BasePage } from '../BasePage';
 import { type OperationsPageElements } from '../_elements/OperationsPageElements';
@@ -211,8 +212,9 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
    * The backend URL lives in `spektr-cache` (idb-keyval) exactly like the app's
    * own `persist`, so hydrating it on reload fires session recovery → the
    * mocked `GET /auth/me` → authenticated state → drafts/contacts/operations
-   * fetches (all mocked). RPC websockets are blocked, so the app never decodes
-   * a draft; the rows render from the backend fields alone.
+   * fetches (all mocked). Only Asset Hub websockets are allowed through, so the
+   * app connects to Asset Hub and decodes the transfer drafts to their real
+   * "Transfer" title, while every other chain stays blocked to keep it fast.
    */
   public async seedDraftsAndOpen(scenario: DraftScenario): Promise<OperationsPage> {
     return step('Mock the address book, seed drafts, and open the Operations view', async () => {
@@ -235,9 +237,13 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
       // the drafts section is under test.
       await this.writeCacheValue('spektr-cache', 'effector', 'multisig-operations', []);
 
-      // Block RPC before the reload so no chain api connects — drafts render
-      // straight from the mocked backend, no live decode or subscription.
-      await this.page.routeWebSocket(/.*/, (ws) => ws.close());
+      // Allow only Asset Hub websockets — the app connects there and decodes the
+      // transfer drafts; every other chain's ws is closed so the run stays fast.
+      const allowedHosts = new Set(scenario.assetHubHosts);
+      await this.page.routeWebSocket(
+        (url) => !allowedHosts.has(url.host),
+        (ws) => ws.close(),
+      );
 
       await this.page.waitForTimeout(2000); // let IndexedDB writes settle
 
@@ -255,20 +261,42 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
   }
 
   private async mockBackend(scenario: DraftScenario): Promise<void> {
-    await step('Mock the address-book backend endpoints', async () => {
-      const json = (body: unknown) => ({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(body),
-      });
+    await this.routeAddressBook(scenario.backendUrl, {
+      session: scenario.session,
+      contacts: scenario.contacts,
+      drafts: scenario.drafts,
+      operations: [],
+    });
+  }
 
-      // Draft-operations must be registered before the broader /operations route
-      // so its more specific pattern is matched first (last-registered wins in
-      // Playwright, and these regexes don't overlap — but keep the intent clear).
-      await this.page.route(/\/operations(\?|$)/, (route) => route.fulfill(json([])));
-      await this.page.route(/\/auth\/me(\?|$)/, (route) => route.fulfill(json(scenario.session)));
-      await this.page.route(/\/contacts(\?|$)/, (route) => route.fulfill(json(scenario.contacts)));
-      await this.page.route(/\/draft-operations(\?|$)/, (route) => route.fulfill(json(scenario.drafts)));
+  /**
+   * Mocks the address-book backend so the app authenticates (session recovery →
+   * `GET /auth/me`), reports healthy (`GET /contacts` resolves), and serves the
+   * given drafts and operation descriptions. Payloads default to empty.
+   *
+   * Every route is scoped to the backend **host** — matching by path alone
+   * would also hijack the Vite dev server's own module URLs (e.g.
+   * `/src/renderer/entities/operations/…`) and break the app load.
+   */
+  private async routeAddressBook(
+    backendUrl: string,
+    opts: { session: unknown; contacts: unknown; drafts?: unknown; operations?: unknown },
+  ): Promise<void> {
+    await step('Mock the address-book backend endpoints', async () => {
+      const json = (body: unknown) => JSON.stringify(body);
+
+      await this.page.route(`${backendUrl}/**`, (route) => {
+        const path = new URL(route.request().url()).pathname;
+
+        let body: unknown;
+        if (path.startsWith('/auth/me')) body = opts.session;
+        else if (path.startsWith('/contacts')) body = opts.contacts;
+        else if (path.startsWith('/draft-operations')) body = opts.drafts ?? { data: [], total: 0 };
+        else if (path.startsWith('/operations')) body = opts.operations ?? [];
+        else body = {};
+
+        return route.fulfill({ status: 200, contentType: 'application/json', body: json(body) });
+      });
     });
   }
 
@@ -328,6 +356,22 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
     });
   }
 
+  /**
+   * The "with call data" drafts carry a real transfer call, so once Asset Hub
+   * connects they decode from "Unknown Operation" to their "Transfer" title.
+   */
+  public async expectDecodedTransferTitle(scenario: DraftScenario): Promise<void> {
+    await step(
+      `Expect ${scenario.expected.transferCount} drafts to decode to "${scenario.expected.transferTitle}"`,
+      async () => {
+        await expect(this.page.getByText(scenario.expected.transferTitle, { exact: true })).toHaveCount(
+          scenario.expected.transferCount,
+          { timeout: 60_000 }, // Asset Hub connect + metadata sync before the call decodes
+        );
+      },
+    );
+  }
+
   /** Expanding a draft row reveals its Details panel. */
   public async expandFirstDraftAndExpectDetails(scenario: DraftScenario): Promise<void> {
     await step('Expand the first draft row and expect its Details panel', async () => {
@@ -336,6 +380,70 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
       const row = this.page.locator('button', { hasText: description }).first();
       await row.click();
       await expect(this.page.getByText('Details', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+    });
+  }
+
+  // ── Operation (non-draft) with a backend description ────────────────────────
+
+  /**
+   * Seeds a single multisig operation (with its own pre-built `transaction`, so
+   * it renders offline), mocks the address book so it authenticates and serves
+   * the operation's description, then opens the Operations view. RPC is blocked
+   * — the operation decodes from its cached transaction, and the description
+   * comes from the mocked backend keyed by the operation's id.
+   */
+  public async seedOperationWithDescriptionAndOpen(
+    scenario: OperationWithDescriptionScenario,
+  ): Promise<OperationsPage> {
+    return step('Mock the address book, seed the operation, and open the Operations view', async () => {
+      await this.routeAddressBook(scenario.backendUrl, {
+        session: scenario.session,
+        contacts: scenario.contacts,
+        operations: scenario.operationDescriptions,
+      });
+
+      await this.page.addInitScript(() => {
+        window.localStorage.setItem('address-book-has-ever-connected', 'true');
+      });
+
+      await this.goto(this.pageElements.onboardingUrl);
+      await this.page.getByText(this.pageElements.onboardingLabel).waitFor();
+
+      await injectDataInDatabase(this.page, scenario.walletRows);
+      await injectDataInDatabase(this.page, scenario.accountRows);
+      await this.writeCacheValue('spektr-cache', 'effector', 'address-book-backend-url', scenario.backendUrl);
+      await this.writeOperationsCache(scenario.operationRecords);
+
+      // Block RPC — the operation renders from its cached transaction, and the
+      // description arrives over the mocked HTTP backend, not the chain.
+      await this.page.routeWebSocket(/.*/, (ws) => ws.close());
+
+      await this.page.waitForTimeout(2000); // let IndexedDB writes settle
+
+      await this.page.reload();
+      await this.page.getByTestId(this.pageElements.walletButton).waitFor();
+
+      await this.page.evaluate(() => {
+        window.location.hash = '#/operations';
+      });
+      await this.page.getByText(this.pageElements.inProgressSection).first().waitFor();
+
+      return this;
+    });
+  }
+
+  /**
+   * The seeded operation renders with its decoded title, submitter, and the
+   * backend description.
+   */
+  public async expectOperationWithDescription(scenario: OperationWithDescriptionScenario): Promise<void> {
+    await step('Expect the operation title, submitter, and backend description', async () => {
+      await expect(this.page.getByText(scenario.expected.title, { exact: true }).first()).toBeVisible();
+      await expect(this.page.getByText(scenario.expected.submitter, { exact: true }).first()).toBeVisible();
+      // The description is address-book data fetched from the mocked backend.
+      await expect(this.page.getByText(scenario.expected.description, { exact: true }).first()).toBeVisible({
+        timeout: 15_000,
+      });
     });
   }
 }
