@@ -1,10 +1,15 @@
 import { type Locator, expect } from '@playwright/test';
 import { step } from 'allure-js-commons';
 
+import { type DraftScenario } from '../../utils/buildDraftScenario';
 import { type BuiltData } from '../../utils/buildMultisigOperations';
 import { injectDataInDatabase } from '../../utils/interactWithDatabase';
 import { BasePage } from '../BasePage';
 import { type OperationsPageElements } from '../_elements/OperationsPageElements';
+
+const DRAFTS_SECTION_TITLE = 'Drafts';
+const SUBMIT_BUTTON = 'Submit';
+const ADD_CALL_DATA_BUTTON = 'Add call data';
 
 export class OperationsPage extends BasePage<OperationsPageElements> {
   /**
@@ -193,6 +198,144 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
   public async expectPendingCount(count: number): Promise<void> {
     await step(`Expect the Pending tab count to be ${count}`, async () => {
       await expect(this.page.getByRole('tab', { name: new RegExp(`Pending\\s*${count}`) })).toBeVisible();
+    });
+  }
+
+  // ── Drafts section ──────────────────────────────────────────────────────────
+
+  /**
+   * Seeds the local wallets/accounts, mocks the "external address book" backend
+   * so the app authenticates and reports the address book healthy, then opens
+   * the Operations view with the seeded drafts rendered in the Drafts section.
+   *
+   * The backend URL lives in `spektr-cache` (idb-keyval) exactly like the app's
+   * own `persist`, so hydrating it on reload fires session recovery → the
+   * mocked `GET /auth/me` → authenticated state → drafts/contacts/operations
+   * fetches (all mocked). RPC websockets are blocked, so the app never decodes
+   * a draft; the rows render from the backend fields alone.
+   */
+  public async seedDraftsAndOpen(scenario: DraftScenario): Promise<OperationsPage> {
+    return step('Mock the address book, seed drafts, and open the Operations view', async () => {
+      await this.mockBackend(scenario);
+
+      // `hasEverConnected` gates the drafts section; seed it before the app boots.
+      // (Successful auth also sets it, but seeding removes the ordering race.)
+      await this.page.addInitScript(() => {
+        window.localStorage.setItem('address-book-has-ever-connected', 'true');
+      });
+
+      await this.goto(this.pageElements.onboardingUrl);
+      await this.page.getByText(this.pageElements.onboardingLabel).waitFor();
+
+      await injectDataInDatabase(this.page, scenario.walletRows);
+      await injectDataInDatabase(this.page, scenario.accountRows);
+      // The persisted backend URL — hydrating it triggers session recovery.
+      await this.writeCacheValue('spektr-cache', 'effector', 'address-book-backend-url', scenario.backendUrl);
+      // An empty operations cache keeps the list free of live operations so only
+      // the drafts section is under test.
+      await this.writeCacheValue('spektr-cache', 'effector', 'multisig-operations', []);
+
+      // Block RPC before the reload so no chain api connects — drafts render
+      // straight from the mocked backend, no live decode or subscription.
+      await this.page.routeWebSocket(/.*/, (ws) => ws.close());
+
+      await this.page.waitForTimeout(2000); // let IndexedDB writes settle
+
+      await this.page.reload();
+      await this.page.getByTestId(this.pageElements.walletButton).waitFor();
+
+      await this.page.evaluate(() => {
+        window.location.hash = '#/operations';
+      });
+      // The first draft's description proves the section fetched and rendered.
+      await this.page.getByText(scenario.expected.descriptions[0]!, { exact: true }).waitFor();
+
+      return this;
+    });
+  }
+
+  private async mockBackend(scenario: DraftScenario): Promise<void> {
+    await step('Mock the address-book backend endpoints', async () => {
+      const json = (body: unknown) => ({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(body),
+      });
+
+      // Draft-operations must be registered before the broader /operations route
+      // so its more specific pattern is matched first (last-registered wins in
+      // Playwright, and these regexes don't overlap — but keep the intent clear).
+      await this.page.route(/\/operations(\?|$)/, (route) => route.fulfill(json([])));
+      await this.page.route(/\/auth\/me(\?|$)/, (route) => route.fulfill(json(scenario.session)));
+      await this.page.route(/\/contacts(\?|$)/, (route) => route.fulfill(json(scenario.contacts)));
+      await this.page.route(/\/draft-operations(\?|$)/, (route) => route.fulfill(json(scenario.drafts)));
+    });
+  }
+
+  private async writeCacheValue(database: string, table: string, key: string, value: unknown): Promise<void> {
+    await step(`Write ${key} into ${database}`, async () => {
+      await this.page.evaluate(
+        async ({ database, table, key, value }) => {
+          await new Promise<void>((resolve, reject) => {
+            const request = indexedDB.open(database);
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => {
+              const db = request.result;
+              const tx = db.transaction(table, 'readwrite');
+              // idb-keyval store uses out-of-line keys, so the key is passed explicitly.
+              tx.objectStore(table).put(value, key);
+              tx.oncomplete = () => resolve();
+              tx.onerror = () => reject(tx.error);
+            };
+          });
+        },
+        { database, table, key, value },
+      );
+    });
+  }
+
+  /**
+   * The Drafts section renders with a count chip equal to the seeded draft
+   * count.
+   */
+  public async expectDraftsCount(count: number): Promise<void> {
+    await step(`Expect the Drafts section to show ${count} drafts`, async () => {
+      await expect(
+        this.page.getByRole('button', { name: new RegExp(`${DRAFTS_SECTION_TITLE}\\s*${count}`) }),
+      ).toBeVisible();
+    });
+  }
+
+  /**
+   * Every seeded description is rendered inline in its row, and the call-data /
+   * no-call-data split shows as Submit vs Add-call-data primary controls.
+   */
+  public async expectDraftContent(scenario: DraftScenario): Promise<void> {
+    await step('Expect draft descriptions and primary controls', async () => {
+      for (const description of scenario.expected.descriptions) {
+        await expect(this.page.getByText(description, { exact: true })).toBeVisible();
+      }
+
+      // The no-description draft shows the italic placeholder.
+      await expect(this.page.getByText('No description', { exact: true })).toBeVisible();
+
+      await expect(this.page.getByRole('button', { name: SUBMIT_BUTTON, exact: true })).toHaveCount(
+        scenario.expected.submitCount,
+      );
+      await expect(this.page.getByRole('button', { name: ADD_CALL_DATA_BUTTON, exact: true })).toHaveCount(
+        scenario.expected.addCallDataCount,
+      );
+    });
+  }
+
+  /** Expanding a draft row reveals its Details panel. */
+  public async expandFirstDraftAndExpectDetails(scenario: DraftScenario): Promise<void> {
+    await step('Expand the first draft row and expect its Details panel', async () => {
+      const description = scenario.expected.descriptions[0]!;
+      // The row's accordion button is the ancestor button carrying the description.
+      const row = this.page.locator('button', { hasText: description }).first();
+      await row.click();
+      await expect(this.page.getByText('Details', { exact: true }).first()).toBeVisible({ timeout: 5000 });
     });
   }
 }
