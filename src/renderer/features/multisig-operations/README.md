@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-06
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-14
 
 ## Overview
 
@@ -11,8 +11,8 @@ hide — and lets the user act on each without leaving the list.
 A multisig operation is created when one signatory initiates a call; it then needs a threshold of approvals before it
 executes on-chain. Until that happens the operation is a shared, half-finished thing: any co-signer needs to see what it
 is, who has already signed, and whether it is their turn. This view is where that happens — reading an operation,
-approving or rejecting it, inspecting its decoded call, supplying missing call data, following its event log, and
-attaching a shared description.
+approving or rejecting it, inspecting its decoded call, supplying missing call data, following its event log, attaching
+a shared description, and (when the address book is connected) nudging the signatories who still need to act.
 
 The list is a **table**: a sticky column header (Operation / Value / Submitter / Description) with sortable columns sits
 above rows grouped into collapsible **status sections** (In progress / Completed / Rejected). Saved **drafts** awaiting
@@ -39,6 +39,7 @@ Per operation, what the user can _do_ depends on their relationship to it:
 | **Approve**                                               | Pending, the user owns an _actionable_ signatory (a signatory account that hasn't approved yet, is reachable on-chain, and is not watch-only), and — for the final signing — valid call data is present |
 | **Add call data**                                         | Pending, the user is the _final_ required signer, but the operation's call data is missing/invalid                                                                                                      |
 | **Reject**                                                | Pending, and the user owns the **depositor** account (the original initiator), reachable on the operation's chain and not watch-only                                                                    |
+| **Notify remaining signers**                              | Pending, the address-book backend is connected and healthy, and the multisig is in the external address book; active only after the backend session account has signed (disabled with a tooltip before) |
 | **Add wallet** (external multisig)                        | Pending external multisig — a pairing prompt instead of sign buttons                                                                                                                                    |
 | **Attach / edit description**                             | See [Address book availability](#address-book-availability)                                                                                                                                             |
 | **Hide / unhide**, **share link**, **export**             | Always                                                                                                                                                                                                  |
@@ -125,7 +126,8 @@ three panels:
 - **Details** — depositor, timestamp, the recognised transaction's specifics, and the shared **operation description**
   (preview with a "show full" expansion and an Edit action when editing is allowed). Special shapes render their bespoke
   details here.
-- **Signatories** — the signatory list and the operation's activity **Log**, plus the header actions. Detailed below.
+- **Signatories** — the signatory list and the operation's activity **Log**, plus the header actions (including **Notify
+  remaining signers** when applicable). Detailed below.
 - **Advanced** — call hash, call data with a formatted JSON view (once known), the on-chain time point with an explorer
   link, and the **hide / unhide** control. When the outer and core calls differ (proxy/batch wrappers), the labels
   switch to "Core call hash" / "Core call data".
@@ -148,8 +150,11 @@ On a resolved operation without a description the cell is simply empty.
 ### Signatories and the log
 
 The Signatories panel header carries two tabs — **Signatories** and **Log** (with a badge counting the operation's
-events) — and two icon actions:
+events) — plus header actions:
 
+- **Notify remaining signers** — on a pending operation with the address-book backend connected and the multisig known
+  to the external address book, a button that nudges the still-pending signatories (see
+  [Notify remaining signers](#notify-remaining-signers)); otherwise it renders nothing.
 - **Open overview** — opens the account-structure view for the multisig. Hidden for external multisigs; for a flexible
   multisig it is trimmed to the proxied account, its backing multisig, and the one proxy connection this operation uses.
 - **Share** — copies the operation's deep link (with a confirmation toast).
@@ -227,6 +232,10 @@ action, and a re-sync badge).
 - **External multisig discovery.** Contact-backed external multisigs (and their operations) exist in the list only
   because a contact matches them, so losing the backend connection drops backend-contact-derived external multisigs on
   the next refresh; locally stored contacts still seed discovery.
+- **Notify remaining signers.** Requires _backend connected + operation pending + multisig known to the external
+  address book_; it does not depend on wallet ownership, so it can appear on a tracked external multisig too. The
+  button is disabled until the backend session account has signed the operation; the backend independently enforces
+  the same rule.
 - **Operation description.** The description is a short note the initiator attaches, published to the shared address
   book so co-signers see the operation's context.
 - **Drafts.** The drafts section on the Pending tab is backend data — it appears only once the user has connected the
@@ -265,6 +274,36 @@ flowchart TD
 | **Error**     | Connected & healthy, write permission, but the multisig is **not** in the address book | Row: a locked hint whose tooltip names the multisig and asks to add it to the address book; Details: the same message inline |
 | **Reconnect** | Backend unhealthy, but the user has connected before                                   | A slim **Reconnect** prompt in the Details panel; the row cell stays empty                                                   |
 | **Hidden**    | Connected without write permission, or the address book was never used                 | Nothing                                                                                                                      |
+
+### Notify remaining signers
+
+On a **pending** operation, when the address-book backend is connected and healthy **and the multisig is known to the
+external address book** (a backend contact matches its account), a **Notify** button lets a signatory push an Element
+(Matrix) reminder to the signatories whose approval is still outstanding. The button does not depend on wallet
+ownership, so it can show on a tracked external multisig too.
+
+Only a signatory who has **already signed** the operation may notify. The button mirrors that rule locally: until the
+backend session account is among the operation's approvers (or is its depositor), the button renders **disabled** with
+the tooltip _Available after you sign the operation with your signatory_; once signed, it is active with the tooltip
+_Notify signatories to sign the operation via Element_. The backend still owns enforcement — it only ever reminds
+still-pending signers, rejects non-signatories and signatories who have not signed yet (403), and rate-limits nudges
+**per multisig account**: a recent nudge by _anyone_ for that multisig blocks the next one until the window elapses.
+A signer who cannot be reached (delivery failed, or no Element handle on file) counts as _unreachable_. Feedback is
+delivered entirely through toasts:
+
+| Outcome                                                              | Toast                                                                                                 |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| All targeted signers reminded                                        | Success — _notified {names} to sign the transaction_ (falls back to a count if names are unavailable) |
+| Some reminded, some unreachable                                      | Success — _notified {names}; M couldn't be reached_ (same count fallback)                             |
+| Backend has no pending reminders for this operation (not synced yet) | Neutral — _the notification service hasn't synced this operation yet, try again later_                |
+| Nobody reached, all pending signers lack an Element handle           | Error — _the pending signers have no Element handle in the address book yet_                          |
+| Nobody reached for other reasons (delivery failed / room not joined) | Error — _couldn't reach the signers_                                                                  |
+| Backend rejects the caller (not a signatory who signed)              | Error — _only a signatory who has already signed can send notifications_                              |
+| Operation not yet available for reminders (backend hasn't synced it) | Error — _this operation isn't available for reminders yet_                                            |
+| Nudged too soon after the last one (any requester, same multisig)    | Error — _rate-limited_, phrased as a wait: _next one available in N minutes/hours_ (when known)       |
+
+The button hides itself entirely once the operation is no longer pending, when the backend is offline, or when the
+multisig is absent from the external address book.
 
 ## List view
 
@@ -360,6 +399,8 @@ flowchart TD
     ACT -- "Add call data (final signer, call missing)" --> REVIEW
     ACT -- "Approve (reaches threshold)" --> EXEC["Executes the call on-chain<br/>→ Completed (History)"]
     ACT -- "Reject (by depositor)" --> CANCEL["Cancelled, deposit returned<br/>→ Rejected (History)"]
+    REVIEW -- "Notify remaining signers" --> NUDGE["Backend reminds still-pending signers"]
+    NUDGE --> LIST
 ```
 
 **Happy path.** An operation is initiated and appears as _pending_ for every co-signer. Each actionable signatory
@@ -376,19 +417,21 @@ operation, cancelling it.
 - **Network unreachable / operation gone** — approving, rejecting, or deep-linking surfaces an explanatory modal
   (network not available, connection timeout, account or operation not found, already signed) rather than failing
   silently.
+- **Nudge rejected** — authorization (403 — only a signatory who signed), per-multisig rate-limit (429 — shown as
+  "next one available in N minutes/hours"), the operation not yet synced by the backend (404), or delivery failure are
+  each turned into an explanatory toast; nothing is sent when no signer is still pending.
 
 ## Related
 
 - [`multisig-operation-description`](../../aggregates/multisig-operation-description/README.md) — the shared note
   attached to an operation; this view reads it (row cell and Details panel), lets signatories add/edit it through the
   description editor, and posts it on the confirmation/approval flows.
-- **Address-book backend connection** — supplies contact names, external-multisig discovery, descriptions, and drafts.
-  Connection health, reconnection, and session expiry are governed by the backend aggregate.
+- **Address-book backend connection** — the same backend that stores descriptions also backs _Notify remaining signers_
+  and supplies contact names, external-multisig discovery, and drafts. The nudge endpoint owns authorization and
+  per-multisig rate-limiting; this view decides whether to show the button (pending operation + connected backend +
+  multisig in the address book), disables it until the session account has signed, and maps the backend's response onto
+  a toast. Connection health, reconnection, and session expiry are governed by the backend aggregate.
 - **Drafts** (`features/drafts`) — the Pending tab hosts the drafts section; a submitted draft is badged on its
   resulting operation row.
 - **Wallet pairing** — for a tracked external multisig, the per-operation action is an **Add wallet** prompt that pairs
   a wallet holding an actual signatory key, turning the read-only row into an actionable one.
-
-<!-- Pending merge note: branch `feat/notify-signers-manual-push` adds a "Notify remaining signers" capability to this
-view; on merge, fold its sections (actions-table row, "Notify remaining signers" under Address book availability,
-lifecycle edge, Related entry) into this spec. -->

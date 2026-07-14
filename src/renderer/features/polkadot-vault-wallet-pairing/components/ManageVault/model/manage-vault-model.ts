@@ -12,7 +12,7 @@ import {
   type VaultShardAccount,
   SigningType,
 } from '@/shared/core';
-import { AccountType, CryptoType, KeyType } from '@/shared/core';
+import { AccountNameType, AccountType, CryptoType, KeyType } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
@@ -100,6 +100,7 @@ sample({
       keys.push({
         chainId: chain.chainId,
         name: KEY_NAMES[KeyType.MAIN],
+        nameType: AccountNameType.GENERATED,
         derivationPath: `//${chain.specName}`,
         cryptoType: networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519,
         signingType: SigningType.POLKADOT_VAULT,
@@ -117,6 +118,7 @@ sample({
       keys.push({
         chainId: chain.chainId,
         name: key.derivationPath,
+        nameType: AccountNameType.GENERATED,
         derivationPath: key.derivationPath,
         cryptoType: networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519,
         signingType: SigningType.POLKADOT_VAULT,

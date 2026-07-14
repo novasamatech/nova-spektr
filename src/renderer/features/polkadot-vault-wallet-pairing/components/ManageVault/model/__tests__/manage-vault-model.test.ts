@@ -1,7 +1,7 @@
 import { hexToU8a } from '@polkadot/util';
 import { allSettled, fork } from 'effector';
 
-import { type VaultChainAccount, CryptoType, SigningType } from '@/shared/core';
+import { type VaultChainAccount, AccountNameType, CryptoType, SigningType } from '@/shared/core';
 import { TEST_HASH } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
@@ -62,6 +62,7 @@ describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
       derivationPath: '//polkadot',
       keyType: 'main',
       name: 'Main',
+      nameType: AccountNameType.GENERATED,
       accountType: 'chain',
       type: 'chain',
       createdAt: expect.any(Number),

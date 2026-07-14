@@ -11,6 +11,19 @@ const backendOperationSchema = z.object({
 
 type BackendOperation = z.infer<typeof backendOperationSchema>;
 
+const nudgeResultSchema = z.object({
+  notified: z.number(),
+  skipped: z.number(),
+  failed: z.number(),
+  // How many of the skipped signers have no Matrix handle on file. Optional for backward
+  // compatibility with backends that predate this field.
+  unreachableNoMatrixId: z.number().optional().default(0),
+  // Names of the signers that were actually notified. Optional for backward compatibility.
+  notifiedNames: z.array(z.string()).optional().default([]),
+});
+
+export type NudgeResult = z.infer<typeof nudgeResultSchema>;
+
 async function createDescription(
   baseUrl: string,
   params: {
@@ -44,6 +57,18 @@ async function updateDescription(baseUrl: string, id: string, description: strin
   if (!result.ok) {
     throw new HttpError(result.status, result.body);
   }
+}
+
+async function nudge(baseUrl: string, operationId: string): Promise<NudgeResult> {
+  const result = await authFetch(`${baseUrl}/operations/${encodeURIComponent(operationId)}/nudge`, {
+    method: 'POST',
+  });
+
+  if (!result.ok) {
+    throw new HttpError(result.status, result.body);
+  }
+
+  return nudgeResultSchema.parse(JSON.parse(result.body));
 }
 
 async function fetchDescriptionsByIds(baseUrl: string, ids: string[]): Promise<BackendOperation[]> {
@@ -92,4 +117,10 @@ async function fetchAllDescriptions(baseUrl: string): Promise<BackendOperation[]
   return operations;
 }
 
-export const operationsService = { createDescription, updateDescription, fetchDescriptionsByIds, fetchAllDescriptions };
+export const operationsService = {
+  createDescription,
+  updateDescription,
+  fetchDescriptionsByIds,
+  fetchAllDescriptions,
+  nudge,
+};

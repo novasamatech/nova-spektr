@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { getNativeAsset, nullable, toAddress } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import {
   Alert,
   Button,
@@ -32,7 +32,7 @@ import { OperationSign, OperationSubmit } from '@/features/operations';
 import { PathBreadcrumb, PathReviewPopover } from '@/features/signing-path';
 import { WalletDetails } from '@/features/wallet-details';
 import { NamedAccount } from '@/widgets/NameResolver';
-import { FeeWithLabel } from '@/widgets/transaction-fee';
+import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { submitDraftModel } from '../model/submit-draft-model';
 
 type Props = {
@@ -130,6 +130,9 @@ const ConfirmStep = () => {
   const signatories = useUnit(submitDraftModel.$signatories);
   const selectedSignatory = useUnit(submitDraftModel.$signatoryStore);
   const fee = useUnit(submitDraftModel.$fee);
+  const multisigThreshold = useUnit(submitDraftModel.$multisigThreshold);
+  const multisigDeposit = useUnit(submitDraftModel.$multisigDeposit);
+  const multisigDepositPending = useUnit(submitDraftModel.$multisigDepositPending);
   const wrappedExtrinsic = useUnit(submitDraftModel.$wrappedExtrinsic);
   const wrappedTxError = useUnit(submitDraftModel.$wrappedTxError);
   const wrappedTxErrorKind = useUnit(submitDraftModel.$wrappedTxErrorKind);
@@ -395,6 +398,9 @@ const ConfirmStep = () => {
             </DetailRow>
           )}
           <Separator className="w-full pr-2" />
+          {nonNullable(multisigThreshold) && (
+            <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={multisigDepositPending} />
+          )}
           <FeeWithLabel asset={asset} fee={fee} />
         </dl>
       </Box>

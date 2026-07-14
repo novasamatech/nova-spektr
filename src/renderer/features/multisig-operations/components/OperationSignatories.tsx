@@ -32,6 +32,7 @@ import { SignatoryCard } from '@/entities/signatory';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
 
+import { NotifySignersButton } from './NotifySignersButton';
 import { OperationLog } from './OperationLog';
 
 type SignatoryAddressProps = {
@@ -188,6 +189,8 @@ export const OperationSignatories = ({ operation, account, deepLink }: Props) =>
             <CountChip count={operation.events.length} />
           </button>
         </div>
+
+        <NotifySignersButton operation={operation} />
 
         <span className="flex-1" />
 

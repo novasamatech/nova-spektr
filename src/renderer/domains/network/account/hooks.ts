@@ -31,6 +31,7 @@ export const useAccountsNames = (accounts: AnyAccount[], chain?: Chain | null) =
         const key = createAccountNameCacheKey({
           accountId: account.accountId,
           chain,
+          account,
         });
         result[key] = cache[key] ?? account.name;
       }
@@ -42,6 +43,7 @@ export const useAccountsNames = (accounts: AnyAccount[], chain?: Chain | null) =
     const key = createAccountNameCacheKey({
       accountId: account.accountId,
       chain,
+      account,
     });
     const resolvedName = accountNames[key];
     return resolvedName ? { ...account, name: resolvedName } : account;

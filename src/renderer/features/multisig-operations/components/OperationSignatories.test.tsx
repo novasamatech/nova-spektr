@@ -104,6 +104,8 @@ vi.mock('./OperationLog', () => ({
   OperationLog: () => null,
 }));
 
+vi.mock('./NotifySignersButton', () => ({ NotifySignersButton: () => null }));
+
 const ownedSignatoryId = '0x01' as AccountId;
 const contactSignatoryId = '0x02' as AccountId;
 const signerWalletId = 1;
