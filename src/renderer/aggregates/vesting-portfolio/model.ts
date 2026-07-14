@@ -4,6 +4,7 @@ import { debounce } from 'patronum';
 
 import { type Chain, type ChainId } from '@/shared/core';
 import { getTimelineChainId, nonNullable } from '@/shared/lib/utils';
+import { type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, block } from '@/domains/network';
 import { type VestingChainRequest, vestingSchedulesResource } from '@/domains/vesting';
 import { balanceModel } from '@/entities/balance';
@@ -11,7 +12,7 @@ import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
 
-import { mergeBlockHeights } from './lib/blockHeights';
+import { mergeBlockHeights, pickTimelineHeights, sameHeights } from './lib/blockHeights';
 import { buildRequests, countUnresolvedChains } from './lib/requests';
 import { isFullyResolved, isLoadingMore, resolveStatus } from './lib/status';
 import {
@@ -122,7 +123,28 @@ const $desiredHeads = combine(
 
 wireSubscriptions(block.blockResource, $desiredHeads);
 
-const $blockHeights = combine(block.blockResource.$cache, block.$currentBlock, mergeBlockHeights);
+const $knownHeights = combine(block.blockResource.$cache, block.$currentBlock, mergeBlockHeights);
+
+/**
+ * Only the timeline chains matter here, and only when their height actually
+ * moves — see `pickTimelineHeights`. The `updateFilter` is what keeps the
+ * once-a-minute poll of every other connected chain from re-running the vesting
+ * computation.
+ */
+const $blockHeights = createStore<Record<ChainId, BlockHeight>>(
+  {},
+  { updateFilter: (next, prev) => !sameHeights(next, prev) },
+);
+
+sample({
+  // `activated` as well as the two sources: heights the background poll had
+  // already collected before this model was reached emit no update of their own,
+  // and the block would open against an empty map until the next tick.
+  clock: [$knownHeights, $requests, activated],
+  source: { heights: $knownHeights, requests: $requests },
+  fn: pickTimelineHeights,
+  target: $blockHeights,
+});
 
 // The schedules' block counts belong to the chain's timeline chain (the relay
 // chain, for migrated Asset Hubs). The query resource caches each block time
@@ -194,6 +216,7 @@ const $resolution = combine(
     apis: networkModel.$apis,
     accountIds: $accountIds,
     cache: vestingSchedulesResource.$cache,
+    blockHeights: $blockHeights,
     graceExpired: $graceExpired,
   },
   countUnresolvedChains,
@@ -205,34 +228,6 @@ const $fullyResolved = combine(
 );
 
 const $data = combine($requests, vestingSchedulesResource.$cache, collectVestingData);
-
-const $hasSchedules = $data.map(data => Object.keys(data.schedules).length > 0);
-
-/**
- * A terminal state has been shown for the current account set — see
- * `resolveStatus`.
- */
-const $settledOnce = createStore(false);
-
-sample({
-  clock: combine($hasSchedules, $fullyResolved, (hasSchedules, fullyResolved) => hasSchedules || fullyResolved),
-  filter: Boolean,
-  target: $settledOnce,
-});
-
-// A different account set is a different question — ask it from scratch.
-sample({
-  clock: $accountIds,
-  fn: () => false,
-  target: $settledOnce,
-});
-
-const $status = combine(
-  { hasSchedules: $hasSchedules, fullyResolved: $fullyResolved, settledOnce: $settledOnce },
-  resolveStatus,
-);
-
-const $loadingMore = combine({ status: $status, fullyResolved: $fullyResolved }, isLoadingMore);
 
 // Views
 
@@ -284,6 +279,51 @@ const $summaryState = createStore(fingerprinted<VestingSummary>(EMPTY_SUMMARY, f
 }).on($vesting, (_, { summary }) => fingerprinted(summary, fingerprintSummary));
 
 const $summary = $summaryState.map(state => state.value);
+
+// Status
+
+/**
+ * There is vesting to show.
+ *
+ * Read off the rendered rows rather than the raw schedules: a chain whose
+ * schedules have arrived but whose timeline head has not can produce no rows at
+ * all (see `computeVesting`), and calling that "ready" is what let the callout
+ * advertise a schedule count the modal could not back. `countUnresolvedChains`
+ * keeps such a chain unresolved, so the block waits on its loader — bounded, as
+ * ever, by the grace period.
+ */
+const $hasSchedules = $accountViews.map(views => views.length > 0);
+
+/**
+ * A terminal state has been shown for the current account set — see
+ * `resolveStatus`.
+ */
+const $settledOnce = createStore(false);
+
+// Clocked on the two source stores rather than on an inline `combine` of them:
+// emission tracking of a derived-store clock is not scope-local under `fork()`,
+// and this latch would then misbehave in forked tests.
+sample({
+  clock: [$hasSchedules, $fullyResolved],
+  source: { hasSchedules: $hasSchedules, fullyResolved: $fullyResolved },
+  filter: ({ hasSchedules, fullyResolved }) => hasSchedules || fullyResolved,
+  fn: () => true,
+  target: $settledOnce,
+});
+
+// A different account set is a different question — ask it from scratch.
+sample({
+  clock: $accountIds,
+  fn: () => false,
+  target: $settledOnce,
+});
+
+const $status = combine(
+  { hasSchedules: $hasSchedules, fullyResolved: $fullyResolved, settledOnce: $settledOnce },
+  resolveStatus,
+);
+
+const $loadingMore = combine({ status: $status, fullyResolved: $fullyResolved }, isLoadingMore);
 
 export const vestingPortfolioModel = {
   $status,

@@ -16,9 +16,21 @@ export const vestingService = {
   subscribeVestingLocksForAccounts,
 };
 
-function getMinStartingBlock(currentBlock: Record<ChainId, BlockHeight>, timelineChainId: ChainId): BN {
-  const minStartingBlock = currentBlock[timelineChainId]!;
-  return new BN(minStartingBlock);
+/**
+ * The lowest block a new schedule may sensibly start at — the timeline chain's
+ * current head.
+ *
+ * `null` while that height is unknown: before the block poll's first tick, or
+ * for as long as the timeline chain (the relay, for a migrated Asset Hub) is
+ * disconnected or disabled. Asserting the height instead would hand callers
+ * `new BN(undefined)`, which BN quietly coerces to zero — and a floor of zero
+ * passes every starting block there is, turning the past-block warning off
+ * without a word.
+ */
+function getMinStartingBlock(currentBlock: Record<ChainId, BlockHeight>, timelineChainId: ChainId): BN | null {
+  const minStartingBlock = currentBlock[timelineChainId];
+
+  return minStartingBlock == null ? null : new BN(minStartingBlock);
 }
 
 function getMinVestedTransfer(api: ApiPromise): BN {

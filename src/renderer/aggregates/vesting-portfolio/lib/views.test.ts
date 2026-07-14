@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { describe, expect, it } from 'vitest';
 
-import { type Asset, type Balance, type Chain, type ChainId, AssetType } from '@/shared/core';
+import { type Asset, type BalanceMap, type Chain, type ChainId, AssetType } from '@/shared/core';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type VestingData, type VestingScheduleInfo } from '@/domains/vesting';
@@ -44,9 +44,14 @@ type Over = {
   lock?: number;
   currentBlock?: number;
   blockTimes?: Record<ChainId, BN>;
+  /**
+   * Heights as published. Defaults to the relay's; `{}` stands for "not known
+   * yet".
+   */
+  heights?: Record<ChainId, BlockHeight>;
 };
 
-const compute = ({ schedules = [], lock = 0, currentBlock = 0, blockTimes }: Over) => {
+const compute = ({ schedules = [], lock = 0, currentBlock = 0, blockTimes, heights }: Over) => {
   const data: VestingData = {
     schedules: { [ASSET_HUB]: { [ACCOUNT]: schedules } },
     locks: { [ASSET_HUB]: { [ACCOUNT]: new BN(lock) } },
@@ -55,10 +60,10 @@ const compute = ({ schedules = [], lock = 0, currentBlock = 0, blockTimes }: Ove
   return computeVesting({
     data,
     chains: { [ASSET_HUB]: assetHub() } as Record<ChainId, Chain>,
-    balances: {} as Record<string, Balance>,
+    balances: {} as BalanceMap,
     // Only the relay's height is published — the Asset Hub's own is irrelevant
     // to schedules denominated in relay blocks.
-    currentBlock: { [RELAY]: currentBlock as BlockHeight } as Record<ChainId, BlockHeight>,
+    currentBlock: heights ?? ({ [RELAY]: currentBlock as BlockHeight } as Record<ChainId, BlockHeight>),
     blockTimes: blockTimes ?? ({ [RELAY]: RELAY_BLOCK_TIME } as Record<ChainId, BN>),
     availableAccounts: [] as AnyAccount[],
     claimResolutions: new Map(),
@@ -173,5 +178,43 @@ describe('computeVesting — cliff and start', () => {
     expect(cliff?.perDayRate).toBeNull();
     expect(cliff?.fullyUnlocksAt).toBeNull();
     expect(cliff?.startsAt).toBeNull();
+  });
+});
+
+describe('computeVesting — the summary', () => {
+  it('announces a claim on the token amount, with no price feed in sight', () => {
+    // No currency and no price entry, as on a dev chain or a newly listed token:
+    // every fiat figure is zero, yet the claim is perfectly real, the rows show a
+    // claim button — and the callout badge used to disagree with them, because it
+    // was read off the fiat total.
+    const { accountViews, summary } = compute({
+      schedules: [CLIFF, GRADUAL],
+      lock: TOTAL_LOCK,
+      currentBlock: START + 1,
+    });
+
+    expect(accountViews[0]!.claimable.gtn(0)).toBe(true);
+    expect(summary.claimableFiat.toString()).toBe('0');
+    expect(summary.hasClaim).toBe(true);
+  });
+
+  it('counts only the schedules it could build rows for', () => {
+    // The relay's height has not landed, so not a figure on this Asset Hub can be
+    // computed and no row is built. The count must not advertise schedules the
+    // modal has nothing to show for.
+    const { accountViews, summary } = compute({
+      schedules: [CLIFF, GRADUAL],
+      lock: TOTAL_LOCK,
+      heights: {} as Record<ChainId, BlockHeight>,
+    });
+
+    expect(accountViews).toEqual([]);
+    expect(summary.schedulesCount).toBe(0);
+    expect(summary.hasClaim).toBe(false);
+
+    // With the height, both schedules are counted.
+    expect(compute({ schedules: [CLIFF, GRADUAL], lock: TOTAL_LOCK, currentBlock: START }).summary.schedulesCount).toBe(
+      2,
+    );
   });
 });

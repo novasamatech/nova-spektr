@@ -1,8 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { type Chain, type ChainId, type Connection, ConnectionStatus, ConnectionType } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { getTimelineChainId, nonNullable } from '@/shared/lib/utils';
+import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query';
 import { accountService } from '@/domains/network';
 import { type ChainVestingEntry, type VestingChainRequest, vestingSchedulesResource } from '@/domains/vesting';
@@ -58,6 +58,8 @@ type ResolutionSource = {
   apis: Apis;
   accountIds: AccountId[];
   cache: Cache;
+  /** Heads of the timeline chains — see the height check below. */
+  blockHeights: Record<ChainId, BlockHeight>;
   /** The wait for chains to connect has run out — see `GRACE_MS` in the model. */
   graceExpired: boolean;
 };
@@ -94,6 +96,7 @@ export const countUnresolvedChains = ({
   apis,
   accountIds,
   cache,
+  blockHeights,
   graceExpired,
 }: ResolutionSource): { chainsLoaded: boolean; unresolved: number } => {
   const enabled = Object.values(connections).filter(c => c.connectionType !== ConnectionType.DISABLED);
@@ -124,7 +127,20 @@ export const countUnresolvedChains = ({
     // Connected, and its runtime says vesting is impossible here.
     if (!request) continue;
 
-    if (!cache[vestingSchedulesResource.createKey(request)]) unresolved++;
+    const entry = cache[vestingSchedulesResource.createKey(request)];
+    if (!entry) {
+      unresolved++;
+      continue;
+    }
+
+    // The schedules are here, but they are denominated in the blocks of the
+    // chain's timeline chain (the relay, for a migrated Asset Hub), and every
+    // figure drawn from them is read against that chain's head. Until the height
+    // lands the chain cannot produce a single row, so it has not answered yet —
+    // counting it as resolved is what let the callout announce schedules the
+    // modal then had nothing to show for.
+    const holdsSchedules = Object.keys(entry.schedules).length > 0;
+    if (holdsSchedules && blockHeights[getTimelineChainId(chain)] == null) unresolved++;
   }
 
   return { chainsLoaded: Object.keys(connections).length > 0, unresolved };

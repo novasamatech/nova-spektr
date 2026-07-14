@@ -2841,6 +2841,7 @@
       "unknown": "Unknown Operation",
       "unlock": "Unlock",
       "unstake": "Unstake",
+      "vest": "Claim vested",
       "vestedTransfer": "Vested transfer",
       "vote": "Vote"
     },

@@ -78,10 +78,28 @@ export const vestingSchedulesResource = createSubscriptionResource<VestingChainR
       emit();
     });
 
-    return () => {
-      schedulesUnsub.then(unsub => unsub());
-      locksUnsub.then(unsub => unsub());
-    };
+    // Hand the pending subscriptions to the framework as a promised unsubscribe —
+    // `createSubscriptionResource` awaits it before tearing down. A sync closure
+    // that only `.then`s them leaves both promises floating, so a connection
+    // dropping mid-subscribe surfaces as an unhandled rejection.
+    //
+    // Settled rather than `all`: if one storage read fails and the other lands,
+    // the survivor still has to be unsubscribed, and it would otherwise leak.
+    return Promise.allSettled([schedulesUnsub, locksUnsub]).then(results => {
+      const unsubs: (() => void)[] = [];
+
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          unsubs.push(result.value);
+        } else {
+          console.error('failed to subscribe to vesting schedules', result.reason);
+        }
+      }
+
+      return () => {
+        for (const unsub of unsubs) unsub();
+      };
+    });
   })
   .cache<CacheState>({
     store: createStore<CacheState>({}),

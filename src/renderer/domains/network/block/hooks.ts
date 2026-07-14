@@ -41,7 +41,7 @@ export const useBlockTimestamp = ({
   const timestamp = useMemo(() => {
     if (nullable(currentBlock) || nullable(blockHeight) || nullable(blockTime)) return null;
     return getCreatedDate(blockHeight, currentBlock, blockTime.toNumber());
-  }, [currentBlock, blockTime]);
+  }, [currentBlock, blockHeight, blockTime]);
 
   return { data: timestamp, pending: pendingCurrentBlock || pendingBlockTime };
 };

@@ -99,12 +99,14 @@ const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis)
   chain ? (apis[chain.chainId] ?? null) : null,
 );
 
+// Stays `null` for as long as the timeline chain's head is unknown — the block
+// poll has not ticked yet, or the chain is disconnected. The validation schema
+// skips the past-block warning in that case rather than measuring against a
+// zero floor, which would pass every starting block.
 const { $: $minStartingBlock } = createStoreFromEffect({
   defaultValue: null,
   params: { currentBlock: block.$currentBlock, chain: form.fields.chain.$value },
-  fn: ({ currentBlock, chain }) => {
-    return new BN(vestingService.getMinStartingBlock(currentBlock, getTimelineChainId(chain)));
-  },
+  fn: ({ currentBlock, chain }) => vestingService.getMinStartingBlock(currentBlock, getTimelineChainId(chain)),
 });
 
 const { $: $minVestedTransfer } = createStoreFromEffect({
@@ -339,7 +341,8 @@ const validateFileFx = attach({
     { minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules },
   ) => {
     assert(parsedFile);
-    assert(minStartingBlock);
+    // `minStartingBlock` is deliberately not asserted: a null head means the
+    // past-block warning is skipped, not that the file cannot be validated.
     assert(minVestedTransfer);
     assert(maxVestingSchedules);
     assert(existingVestingSchedules);

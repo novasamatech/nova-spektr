@@ -1,7 +1,7 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 
-import { type Asset, type Balance, type Chain, type ChainId } from '@/shared/core';
+import { type Asset, type BalanceMap, type Chain, type ChainId } from '@/shared/core';
 import {
   getNativeAsset,
   getRoundedValue,
@@ -21,7 +21,8 @@ import {
   vestingClaimService,
   vestingSchedulesResource,
 } from '@/domains/vesting';
-import { type AccountVestingView, type ScheduleView, type VestingSummary } from '../types';
+import { balanceUtils } from '@/entities/balance';
+import { type AccountVestingView, type ScheduleView, type VestingSummary, EMPTY_SUMMARY } from '../types';
 
 import { type ClaimAccountResolution, resolveClaimAccount } from './resolveClaimAccount';
 
@@ -52,12 +53,6 @@ export const collectVestingData = (
 
   return { schedules, locks };
 };
-
-export const countSchedules = (data: VestingData): number =>
-  Object.values(data.schedules).reduce(
-    (total, perChain) => total + Object.values(perChain).reduce((sum, schedules) => sum + schedules.length, 0),
-    0,
-  );
 
 /**
  * Which local account claims for each (chain, key) pair that holds schedules.
@@ -102,7 +97,7 @@ const groupAccountsById = (accounts: AnyAccount[]): Map<AccountId, AnyAccount[]>
 type VestingSource = {
   data: VestingData;
   chains: Record<ChainId, Chain>;
-  balances: Record<string, Balance>;
+  balances: BalanceMap;
   currentBlock: Record<ChainId, BlockHeight>;
   blockTimes: Record<ChainId, BN>;
   availableAccounts: AnyAccount[];
@@ -126,18 +121,23 @@ export const computeVesting = ({
   prices,
   currency,
 }: VestingSource): { accountViews: AccountVestingView[]; summary: VestingSummary } => {
-  const accountsById = groupAccountsById(availableAccounts);
-
-  const balanceByKey = new Map<string, Balance>();
-  for (const balance of Object.values(balances)) {
-    balanceByKey.set(`${balance.accountId}-${balance.chainId}-${balance.assetId}`, balance);
+  // Nothing here to compute — and, crucially, nothing to walk the account graph
+  // or the global balance map for. This runs on every balance push (about once a
+  // second while subscriptions are live) for every user, vesting or not, so the
+  // no-schedules case must cost nothing.
+  if (Object.keys(data.schedules).length === 0) {
+    return { accountViews: [], summary: EMPTY_SUMMARY };
   }
+
+  const accountsById = groupAccountsById(availableAccounts);
 
   const accountViews: AccountVestingView[] = [];
   let totalVestingFiat = new BigNumber(0);
   let claimableFiat = new BigNumber(0);
   let perDayFiat = new BigNumber(0);
   let lastUnlockDate: Date | null = null;
+  let schedulesCount = 0;
+  let hasClaim = false;
 
   const addFiat = (asset: Asset, amount: BN): BigNumber => {
     if (!currency || !asset.priceId) return new BigNumber(0);
@@ -157,6 +157,13 @@ export const computeVesting = ({
     // Vesting schedules are denominated in blocks of the chain's timeline chain
     // (the relay chain, for migrated Asset Hubs) — so the height *and* the block
     // time below must both be read from that chain, never from `chain` itself.
+    //
+    // Nothing this chain holds can be stated without that height: what has
+    // vested, what is claimable, whether a schedule has even started are all
+    // read against it. So the chain is skipped — and `countUnresolvedChains`
+    // holds it *unresolved* for as long as the height is missing, so the block
+    // stays on its loader instead of announcing a schedule count it can show no
+    // rows for.
     const timelineChainId = getTimelineChainId(chain);
     const blockHeight = currentBlock[timelineChainId];
     if (blockHeight == null) continue;
@@ -185,7 +192,10 @@ export const computeVesting = ({
 
     for (const [accountId, schedules] of Object.entries(perChain)) {
       const typedAccountId = accountId as AccountId;
-      const balance = balanceByKey.get(`${accountId}-${chainId}-${asset.assetId}`);
+      // Looked up by key rather than by re-indexing the balance map: that map
+      // holds every account × chain × asset the wallet has, and only the handful
+      // of pairs that hold schedules is ever read from it.
+      const balance = balances[balanceUtils.constructBalanceId(typedAccountId, chain.chainId, asset.assetId)];
       // The live vesting lock fetched alongside the schedules is authoritative
       // (it's read from this chain regardless of the global balance
       // subscription); fall back to the balance store only if it's missing.
@@ -238,6 +248,13 @@ export const computeVesting = ({
         claimBlockReason: resolution ? resolution.reason : 'no-local-account',
       });
 
+      schedulesCount += scheduleViews.length;
+      // Read off the token amount, never off `claimableFiat`: an asset with no
+      // price feed (a dev chain, a newly listed token, a failed CoinGecko fetch)
+      // contributes 0 fiat while still being perfectly claimable, and the rows
+      // below would then offer a claim button the callout's badge denies.
+      if (vesting.claimable.gtn(0)) hasClaim = true;
+
       totalVestingFiat = totalVestingFiat.plus(addFiat(asset, lockAmount));
       claimableFiat = claimableFiat.plus(addFiat(asset, vesting.claimable));
       if (perDayRate) perDayFiat = perDayFiat.plus(addFiat(asset, perDayRate));
@@ -255,12 +272,12 @@ export const computeVesting = ({
       totalVestingFiat,
       claimableFiat,
       perDayFiat,
-      // Counted straight from the fetched schedules, so the callout can appear as
-      // soon as they load — without waiting for the block height, balances and
-      // prices the figures above depend on.
-      schedulesCount: countSchedules(data),
+      // Counted off the rows that were actually built, not off the raw schedules:
+      // the callout and the modal are one click apart, and a count the modal has
+      // no rows to back is worse than a count that arrives a moment later.
+      schedulesCount,
       lastUnlockDate,
-      hasClaim: claimableFiat.gt(0),
+      hasClaim,
     },
   };
 };

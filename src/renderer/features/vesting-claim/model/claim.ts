@@ -226,10 +226,14 @@ sample({
   target: signModel.events.formInitiated,
 });
 
+// `signModel.signed` is global — every operation in the app signs through it.
+// Only a flow that is *at* the sign step may claim the signature: a flow parked
+// on CONFIRM (or abandoned there, with a Vault request still in flight
+// elsewhere) would otherwise submit a foreign payload as its own.
 sample({
   clock: signModel.signed,
   source: $step,
-  filter: (step) => step !== Step.NONE,
+  filter: (step) => step === Step.SIGN,
   fn: (_, payload) => payload,
   target: submitModel.init,
 });
@@ -237,7 +241,7 @@ sample({
 sample({
   clock: signModel.signed,
   source: $step,
-  filter: (step) => step !== Step.NONE,
+  filter: (step) => step === Step.SIGN,
   fn: () => Step.SUBMIT,
   target: stepChanged,
 });

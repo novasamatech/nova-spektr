@@ -38,6 +38,7 @@ A chain is *unresolved* while it might still surface a schedule, and *resolved* 
 | Connected, runtime has no vesting pallet           | resolved — vesting is impossible there             |
 | Connected, vesting pallet, no account addresses it | resolved — nothing of ours to look up              |
 | Connected, vesting pallet, our accounts            | resolved **only** once its schedules have arrived  |
+| Schedules arrived, timeline chain's head unknown   | **unresolved** — no figure can be read yet          |
 | Anything still outstanding after 30s               | given up on — see below                            |
 
 Wallets are part of the question too: while they are still being read there are no keys to look up, every chain would
@@ -70,13 +71,16 @@ flowchart TD
 | State     | When it appears                                                | What the consumer shows                        |
 | --------- | -------------------------------------------------------------- | ---------------------------------------------- |
 | `loading` | Any chain may still surface a schedule, or wallets are loading  | Skeleton                                       |
-| `ready`   | At least one schedule is known — shown immediately, not awaited | Content, with `loadingMore` while chains report |
+| `ready`   | At least one **row** can be shown — not awaited any further      | Content, with `loadingMore` while chains report |
 | `empty`   | Every chain resolved and none holds vesting                     | "No vesting" row                               |
 
 Two rules keep the states honest over time:
 
-- **Content leads.** The first schedule to land flips the block to `ready`; the chains still reporting are shown as a
-  quiet "loading more" spinner rather than holding the whole block back.
+- **Content leads.** The first row to land flips the block to `ready`; the chains still reporting are shown as a quiet
+  "loading more" spinner rather than holding the whole block back. `ready` is read off the *rendered rows*, and the
+  summary's schedule count is counted off them too: a chain whose schedules are known but whose timeline head is not can
+  build no row, and a callout advertising a count the modal has no rows to back is worse than one that arrives a moment
+  later.
 - **Answers latch.** Chains connect, error and reconnect for the entire life of the app. Once a terminal state has been
   shown for the current account set, a chain going unresolved again reports as `loadingMore` — it never throws a settled
   block back to a skeleton. Changing the account set resets the latch: that is a new question.
@@ -89,7 +93,14 @@ Two rules decide every number the consumer prints, and both exist because the ob
 numbers, so the current height *and* the expected block time must both be read from the **timeline chain** (`additional
 .timelineChain`, falling back to the chain itself). Pairing one chain's blocks with another's clock silently scales
 every rate and every date by the ratio between them — Kusama Asset Hub's 2s against its relay's 6s is a factor of three.
-A chain whose block time has not been fetched yet gets **no rate and no dates** rather than a plausible-looking guess.
+A chain whose block time has not been fetched yet gets **no rate and no dates** rather than a plausible-looking guess,
+and one whose timeline *height* is unknown gets **no rows at all** — nothing it holds can be stated without that height
+— while staying unresolved, so the block waits on its loader instead of announcing a total it cannot itemise.
+
+**Claimability is a token fact, not a fiat one.** The summary's `hasClaim` — the callout's badge, the "Ready to unlock"
+tile — is read off the claimable BN, never off its fiat value: an asset with no price feed (a dev chain, a newly listed
+token, a failed price fetch) is worth 0 in fiat and still perfectly claimable, and the rows would then offer a claim
+button the callout denies.
 
 **The daily unlock is what a day actually releases**, obtained by projecting each schedule 24 hours forward and
 subtracting it from itself — never `perBlock × blocksPerDay`. That naive rate ignores both ends of the schedule and so

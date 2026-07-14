@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { describe, expect, it } from 'vitest';
 
 import { type Chain, type ChainId, type Connection, ConnectionStatus, ConnectionType } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query';
 import { type ChainVestingEntry, vestingSchedulesResource } from '@/domains/vesting';
 
@@ -22,6 +22,8 @@ const connection = (chainId: string, connectionType = ConnectionType.AUTO_BALANC
 
 const POLKADOT = '0xpolkadot';
 const KUSAMA = '0xkusama';
+const ASSET_HUB = '0xassethub';
+const RELAY = '0xrelay';
 
 const source = (over: {
   connections?: Record<string, Connection>;
@@ -30,6 +32,7 @@ const source = (over: {
   apis?: Record<string, ApiPromise>;
   accountIds?: AccountId[];
   cache?: Record<ResourceRequestKey, ChainVestingEntry>;
+  blockHeights?: Record<string, BlockHeight>;
   graceExpired?: boolean;
 }) => ({
   connections: (over.connections ?? {}) as Record<ChainId, Connection>,
@@ -38,6 +41,7 @@ const source = (over: {
   apis: (over.apis ?? {}) as Record<ChainId, ApiPromise>,
   accountIds: over.accountIds ?? [ACCOUNT],
   cache: over.cache ?? {},
+  blockHeights: (over.blockHeights ?? {}) as Record<ChainId, BlockHeight>,
   graceExpired: over.graceExpired ?? false,
 });
 
@@ -170,6 +174,53 @@ describe('countUnresolvedChains', () => {
 
     expect(countUnresolvedChains(source({ ...silent, graceExpired: false })).unresolved).toBe(1);
     expect(countUnresolvedChains(source({ ...silent, graceExpired: true })).unresolved).toBe(0);
+  });
+
+  it('holds a chain whose schedules arrived but whose timeline head has not', () => {
+    // The schedules of a migrated Asset Hub are counted in *relay* blocks. Until
+    // the relay's height is known, `computeVesting` can build no row for them —
+    // so the chain has not really answered, and calling it resolved is what let
+    // the callout announce a count the schedule modal had nothing to show for.
+    const api = vestingApi();
+    const assetHub = { ...chain(ASSET_HUB), additional: { timelineChain: RELAY } } as unknown as Chain;
+    const key = vestingSchedulesResource.createKey({ api, chain: assetHub, accountIds: [ACCOUNT] });
+
+    const withSchedules = {
+      connections: { [ASSET_HUB]: connection(ASSET_HUB) },
+      statuses: { [ASSET_HUB]: ConnectionStatus.CONNECTED },
+      chains: { [ASSET_HUB]: assetHub },
+      apis: { [ASSET_HUB]: api },
+      cache: { [key]: { schedules: { [ACCOUNT]: [] }, locks: {} } },
+    };
+
+    expect(countUnresolvedChains(source(withSchedules)).unresolved).toBe(1);
+
+    // The relay's head lands — now every figure the rows print can be computed.
+    expect(
+      countUnresolvedChains(source({ ...withSchedules, blockHeights: { [RELAY]: 100 as BlockHeight } })).unresolved,
+    ).toBe(0);
+
+    // And the deadline still bounds the wait, as it does everywhere else here.
+    expect(countUnresolvedChains(source({ ...withSchedules, graceExpired: true })).unresolved).toBe(0);
+  });
+
+  it('does not wait on a head for a chain that reported no schedules', () => {
+    // Nothing to date against a block: the chain has given its answer.
+    const api = vestingApi();
+    const polkadot = chain(POLKADOT);
+    const key = vestingSchedulesResource.createKey({ api, chain: polkadot, accountIds: [ACCOUNT] });
+
+    const result = countUnresolvedChains(
+      source({
+        connections: { [POLKADOT]: connection(POLKADOT) },
+        statuses: { [POLKADOT]: ConnectionStatus.CONNECTED },
+        chains: { [POLKADOT]: polkadot },
+        apis: { [POLKADOT]: api },
+        cache: { [key]: { schedules: {}, locks: {} } },
+      }),
+    );
+
+    expect(result.unresolved).toBe(0);
   });
 
   it('goes unresolved again for an account set the cache has not been asked about', () => {

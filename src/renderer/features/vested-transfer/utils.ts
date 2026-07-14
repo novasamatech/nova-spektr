@@ -114,7 +114,9 @@ function createValidationSchema(options: ValidationSchemaOptions) {
         .refine((bn) => bn.lt(MAX_U128), VestingFieldError.OUT_OF_RANGE),
 
       startingBlock: safeBN()
-        .refine((bn) => bn.gt(minStartingBlock), VestingFieldWarning.START_BLOCK_IN_PAST)
+        // Without the timeline chain's head there is no floor to compare to, so
+        // the check is skipped outright rather than silently passing everything.
+        .refine((bn) => nullable(minStartingBlock) || bn.gt(minStartingBlock), VestingFieldWarning.START_BLOCK_IN_PAST)
         .refine((bn) => bn.gt(BN_ZERO) && bn.lt(MAX_U32), VestingFieldError.OUT_OF_RANGE),
 
       perBlock: safeBN().refine((bn) => bn.gt(BN_ZERO) && bn.lt(MAX_U128), VestingFieldError.OUT_OF_RANGE),
