@@ -30,8 +30,8 @@ export const VestingScheduleModal = () => {
       <Modal.Title close>{t('vesting.schedule.title')}</Modal.Title>
       <Modal.Content>
         <div className="flex flex-col gap-y-4 p-5">
-          <div className="flex w-fit items-center gap-x-5 rounded-lg bg-block-background p-4">
-            <div className="flex flex-col gap-y-1.5">
+          <div className="flex w-full items-center gap-x-5 rounded-lg bg-block-background p-4">
+            <div className="flex flex-1 flex-col gap-y-1.5">
               <HelpText className="whitespace-nowrap text-text-tertiary">{t('vesting.schedule.totalVesting')}</HelpText>
               <FiatBalance
                 amount={summary.totalVestingFiat.toFixed(2)}
@@ -39,7 +39,7 @@ export const VestingScheduleModal = () => {
               />
             </div>
             <Separator vertical className="h-8" />
-            <div className="flex flex-col gap-y-1.5">
+            <div className="flex flex-1 flex-col gap-y-1.5">
               <HelpText className="whitespace-nowrap text-text-tertiary">
                 {t('vesting.schedule.activeSchedules')}
               </HelpText>
@@ -48,7 +48,7 @@ export const VestingScheduleModal = () => {
             {summary.hasClaim && (
               <>
                 <Separator vertical className="h-8" />
-                <div className="flex flex-col gap-y-1.5">
+                <div className="flex flex-1 flex-col gap-y-1.5">
                   <HelpText className="whitespace-nowrap text-text-tertiary">
                     {t('vesting.schedule.readyToUnlock')}
                   </HelpText>
