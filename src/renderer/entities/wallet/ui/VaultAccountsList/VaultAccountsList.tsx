@@ -1,12 +1,11 @@
 import { useUnit } from 'effector-react';
 import { entries, groupBy } from 'lodash';
-import { memo, useMemo } from 'react';
+import { Fragment, memo, useMemo } from 'react';
 
 import { type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon, Separator } from '@/shared/ui';
-import { AccountExplorers } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -75,8 +74,8 @@ export const VaultAccountsList = memo(({ chains, accountsMap, className, onShard
   return (
     <div className={cnTw('flex flex-col overflow-y-auto', className)}>
       {chainGroups.map((group, groupIndex) => (
-        <>
-          <Accordion initialOpen key={group.id}>
+        <Fragment key={group.id}>
+          <Accordion initialOpen>
             <Accordion.Trigger>
               <span className="normal-case">
                 {group.chain === EVM_GROUP_ID ? (
@@ -88,30 +87,27 @@ export const VaultAccountsList = memo(({ chains, accountsMap, className, onShard
               <FootnoteText className="text-text-tertiary">{group.accounts.length}</FootnoteText>
             </Accordion.Trigger>
             <Accordion.Content>
-              <ul>
+              <ul className="pl-4">
                 {group.accounts.map((account) => {
                   const isSharded = accountUtils.isAccountWithShards(account);
-                  const accountId = isSharded ? account[0]!.accountId : account.accountId;
                   const chain = allChains[isSharded ? account[0]!.chainId : account.chainId]!;
                   const derivationPath = accountUtils.getDerivationPath(account);
 
                   return (
-                    <li className="mb-2 last:mb-0" key={derivationPath}>
+                    // A group spans a whole relay family, but derivation paths are only
+                    // unique per chain — the path alone collides across chains.
+                    <li className="mb-2 last:mb-0" key={`${chain.chainId}-${derivationPath}`}>
                       <DerivedAccount
                         account={account}
-                        addressPrefix={chain.addressPrefix}
+                        chain={chain}
                         onClick={isSharded ? () => onShardClick?.(account) : undefined}
                       >
-                        {!isSharded && (
-                          <AccountExplorers accountId={accountId} chain={chain}>
-                            <Box gap={0.5}>
-                              <FootnoteText className="text-text-tertiary">
-                                {t('general.explorers.derivationTitle')}
-                              </FootnoteText>
-                              <HelpText className="break-all text-text-secondary">{derivationPath}</HelpText>
-                            </Box>
-                          </AccountExplorers>
-                        )}
+                        <Box gap={0.5}>
+                          <FootnoteText className="text-text-tertiary">
+                            {t('general.explorers.derivationTitle')}
+                          </FootnoteText>
+                          <HelpText className="break-all text-text-secondary">{derivationPath}</HelpText>
+                        </Box>
                       </DerivedAccount>
                     </li>
                   );
@@ -120,7 +116,7 @@ export const VaultAccountsList = memo(({ chains, accountsMap, className, onShard
             </Accordion.Content>
           </Accordion>
           {groupIndex !== chainGroups.length - 1 && <Separator className="my-4 w-full" />}
-        </>
+        </Fragment>
       ))}
     </div>
   );

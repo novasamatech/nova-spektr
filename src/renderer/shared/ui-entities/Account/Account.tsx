@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { type PropsWithChildren, memo } from 'react';
 
 import { type Address as AddresssType, type Chain, type WalletType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
@@ -7,7 +7,8 @@ import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
 import { WalletAccountIcon } from '../WalletAccountIcon/WalletAccountIcon';
 
-type Props = {
+/** Children are rendered as an extra section inside the explorers popover. */
+type Props = PropsWithChildren<{
   accountId: AccountId | AddresssType;
   title?: string;
   titleClass?: string;
@@ -20,7 +21,7 @@ type Props = {
   addressTestId?: string;
   explorersTestId?: string;
   hideExplorers?: boolean;
-};
+}>;
 
 export const Account = memo(
   ({
@@ -36,6 +37,7 @@ export const Account = memo(
     addressTestId,
     explorersTestId,
     hideExplorers,
+    children,
   }: Props) => {
     const address = toAddress(accountId, { prefix: chain?.addressPrefix });
     const showWalletBadge = !hideIcon && walletType !== undefined;
@@ -60,7 +62,11 @@ export const Account = memo(
           address={address}
           testId={addressTestId}
         />
-        {!hideExplorers && <AccountExplorers accountId={accountId} chain={chain} testId={explorersTestId} />}
+        {!hideExplorers && (
+          <AccountExplorers accountId={accountId} chain={chain} testId={explorersTestId}>
+            {children}
+          </AccountExplorers>
+        )}
       </div>
     );
   },
