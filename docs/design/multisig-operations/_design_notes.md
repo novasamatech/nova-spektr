@@ -20,7 +20,13 @@ padding-left:16) + Status(110) + Actions(220) + delete-slot(16) + share(16) + ch
 
 - Sortable headers: Parameter/Submitter only. **Status & Actions headers removed** (Stepan). Status column: draft
   "DRAFT" pill removed (empty 110px spacer); in-progress keeps threshold pill "X OF Y SIGNED" (no header).
-- Sections (Drafts/In progress/…) collapsible via header click.
+- Sections (Drafts/In progress/…) collapsible via header click. Section headers: uniform `padding:16px 16px 6px`,
+  first one included (the app initially shipped the first header without top padding — fixed to match).
+- `connectionState` now has a third option **`never-connected`** (address book never used): the Drafts group AND the
+  **Description column header** are hidden entirely (the column keeps its flex space so rows stay aligned) — this
+  mirrors the app's `hasEverConnected` gate. `disconnected` keeps the dimmed-drafts + Reconnect behaviour (2026-07-14).
+- Default list order (no column sort active) is **newest first** by creation time; mock data is static, the rule lives
+  in the app (2026-07-14).
 
 ## Expanded detail panel — action placement (Stepan)
 

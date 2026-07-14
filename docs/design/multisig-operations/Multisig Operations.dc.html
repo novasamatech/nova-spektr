@@ -246,7 +246,9 @@
             </span>
           </div>
           <div style="flex:1; min-width:0; padding-left:16px;">
-            <span style="font:600 11px Inter; color:#a4a4ad; letter-spacing:.05em; text-transform:uppercase;">Description</span>
+            <sc-if value="{{ showDescriptionHeader }}" hint-placeholder-val="{{ true }}">
+              <span style="font:600 11px Inter; color:#a4a4ad; letter-spacing:.05em; text-transform:uppercase;">Description</span>
+            </sc-if>
           </div>
           <div style="display:flex; align-items:center; gap:8px; flex:0 0 auto;">
             <span style="width:96px; flex:0 0 96px;"></span>
@@ -691,7 +693,7 @@
 </x-import>
 </x-import>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;showSyncBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Page state&quot;},&quot;connectionState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;connected&quot;,&quot;disconnected&quot;],&quot;default&quot;:&quot;connected&quot;,&quot;tsType&quot;:&quot;'connected' | 'disconnected'&quot;,&quot;section&quot;:&quot;Page state&quot;},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;signatory&quot;,&quot;submitter-only&quot;],&quot;default&quot;:&quot;signatory&quot;,&quot;tsType&quot;:&quot;'signatory' | 'submitter-only'&quot;,&quot;section&quot;:&quot;Permissions&quot;},&quot;operationColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:272,&quot;min&quot;:180,&quot;max&quot;:400,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;valueColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:200,&quot;min&quot;:120,&quot;max&quot;:240,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;submitterColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:200,&quot;min&quot;:120,&quot;max&quot;:240,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;actionsColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:168,&quot;min&quot;:130,&quot;max&quot;:260,&quot;step&quot;:2,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;showSyncBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Page state&quot;},&quot;connectionState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;connected&quot;,&quot;disconnected&quot;,&quot;never-connected&quot;],&quot;default&quot;:&quot;connected&quot;,&quot;tsType&quot;:&quot;'connected' | 'disconnected' | 'never-connected'&quot;,&quot;section&quot;:&quot;Page state&quot;},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;signatory&quot;,&quot;submitter-only&quot;],&quot;default&quot;:&quot;signatory&quot;,&quot;tsType&quot;:&quot;'signatory' | 'submitter-only'&quot;,&quot;section&quot;:&quot;Permissions&quot;},&quot;operationColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:272,&quot;min&quot;:180,&quot;max&quot;:400,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;valueColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:200,&quot;min&quot;:120,&quot;max&quot;:240,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;submitterColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:200,&quot;min&quot;:120,&quot;max&quot;:240,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;},&quot;actionsColWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:168,&quot;min&quot;:130,&quot;max&quot;:260,&quot;step&quot;:2,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Table columns&quot;}}">
 class Component extends DCLogic {
   A = '_ds/nova-spektr-ui-kit-96397356-2650-408a-8274-6bde039e2ef8/assets';
 
@@ -1031,9 +1033,10 @@ class Component extends DCLogic {
     if (nets.length) ops = ops.filter(o => nets.indexOf(o.chain) >= 0);
     if (types.length) ops = ops.filter(o => types.indexOf(this.opType(o)) >= 0);
 
+    const connState = this.props.connectionState ?? 'connected';
     const groups = tabStatuses
       .map(key => ({ key, label: SECTION_LABELS[key], ops: ops.filter(o => eff(o) === key) }))
-      .filter(sec => sec.ops.length > 0)
+      .filter(sec => sec.ops.length > 0 && !(connState === 'never-connected' && sec.key === 'draft'))
       .map(sec => {
         let rows = sec.ops.slice();
         if (st.sortBy) {
@@ -1045,7 +1048,7 @@ class Component extends DCLogic {
             return 0;
           });
         }
-        const gDis = ((this.props.connectionState ?? 'connected') === 'disconnected') && sec.key === 'draft';
+        const gDis = (connState === 'disconnected') && sec.key === 'draft';
         return { label: sec.label, count: sec.ops.length, isDraftGroup: sec.key === 'draft', showNewDraft: sec.key === 'draft' && this.canManageDrafts(), disconnected: gDis, dimOpacity: gDis ? 0.25 : 1, dimPointer: gDis ? 'none' : 'auto', key: sec.key, notCollapsed: !st.collapsed[sec.key], collapseRot: st.collapsed[sec.key] ? 0 : 180, onToggleCollapse: () => this.toggleCollapse(sec.key), ops: rows.map(o => this.vm(o)) };
       });
 
@@ -1081,6 +1084,7 @@ class Component extends DCLogic {
 
     return {
       groups,
+      showDescriptionHeader: connState !== 'never-connected',
       sidebarExpanded: !col, sidebarCollapsed: col,
       asideW: col ? '64px' : '240px', asidePad: col ? '14px 8px 10px' : '14px 12px 10px',
       collapseIcon: col ? 'right' : 'left', collapseLabel: col ? 'Expand' : 'Collapse',
