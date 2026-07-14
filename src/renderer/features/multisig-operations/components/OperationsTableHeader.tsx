@@ -102,10 +102,8 @@ export const OperationsTableHeader = () => {
         {hasEverConnected && t('operations.table.description')}
       </div>
 
-      <div className={operationColumns.draftBadge} />
       <div className={operationColumns.status} />
       <div className={operationColumns.actions} />
-      <div className={operationColumns.trailingSpacer} />
       <div className={operationColumns.chevron} />
     </div>
   );

@@ -202,7 +202,6 @@ export const DraftRow = ({
               <DraftDescription description={draft.description} />
             </div>
 
-            <div className={operationColumns.draftBadge} />
             <div className={operationColumns.status} />
 
             <div className={cnTw(operationColumns.actions, 'flex items-center')} onClick={(e) => e.stopPropagation()}>
@@ -252,8 +251,6 @@ export const DraftRow = ({
                 )}
               </div>
             </div>
-
-            <div className={operationColumns.trailingSpacer} />
           </div>
         </Accordion.Button>
         <Accordion.Content>

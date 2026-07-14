@@ -1,17 +1,17 @@
 export const operationColumns = {
-  leftBlock: 'w-[480px] shrink-0', // icon + title/chain + value
+  leftBlock: 'w-[388px] shrink-0', // icon + title/chain (240) + value (140)
   titleCell: 'flex-1 min-w-0',
-  value: 'w-[200px] shrink-0',
-  submitter: 'w-[200px] shrink-0',
+  value: 'w-[140px] shrink-0',
+  submitter: 'w-[180px] shrink-0',
   description: 'flex-1 min-w-0 pl-4',
-  draftBadge: 'w-[96px] shrink-0',
   status: 'w-[110px] shrink-0',
   actions: 'w-[168px] shrink-0',
-  trailingSpacer: 'w-4 shrink-0',
   chevron: 'w-4 shrink-0',
 } as const;
 
-export const OPERATIONS_MIN_WIDTH = 'min-w-[1280px]';
+// Fits the default 1372px window with the expanded 240px sidebar (1100px of content):
+// fixed columns sum to 950px, leaving >=110px for the description cell.
+export const OPERATIONS_MIN_WIDTH = 'min-w-[1060px]';
 export const ROW_HEIGHT = 68;
 // Vertical gap between operation cards; matches the `pb-1.5` on each virtualized row.
 export const ROW_GAP = 6;

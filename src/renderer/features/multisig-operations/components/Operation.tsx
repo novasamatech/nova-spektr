@@ -191,15 +191,11 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
               )}
             </div>
 
-            <div className={operationColumns.description}>
-              <OperationDescriptionCell operation={operation} chain={chains[operation.chainId]} />
-            </div>
-
-            <div className={operationColumns.draftBadge}>
+            <div className={cnTw(operationColumns.description, 'flex items-center gap-x-2')}>
               {isDraftLinked && (
                 <Tooltip open={description ? undefined : false}>
                   <Tooltip.Trigger>
-                    <div className="inline-flex items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
+                    <div className="inline-flex shrink-0 items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
                       <CaptionText className="text-icon-accent uppercase">
                         {t('operations.drafts.operationBadge')}
                       </CaptionText>
@@ -208,6 +204,9 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                   <Tooltip.Content>{description}</Tooltip.Content>
                 </Tooltip>
               )}
+              <div className="min-w-0 flex-1">
+                <OperationDescriptionCell operation={operation} chain={chains[operation.chainId]} />
+              </div>
             </div>
 
             <div className={cnTw(operationColumns.status, 'flex justify-center')}>
@@ -217,8 +216,6 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
             <div className={cnTw(operationColumns.actions, 'flex justify-end')}>
               <OperationActions operation={operation} account={multisigAccount} className="w-full" />
             </div>
-
-            <div className={operationColumns.trailingSpacer} />
           </div>
         </Accordion.Button>
         <Accordion.Content>
