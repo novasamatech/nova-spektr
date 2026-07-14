@@ -1,5 +1,12 @@
 import { type Chain, type ChainId, type Wallet, TransactionType } from '@/shared/core';
-import { TransferTypes, XcmTypes, findCoreTransaction } from '@/entities/transaction';
+import { getNativeAsset } from '@/shared/lib/utils';
+import {
+  TransferTypes,
+  XcmTypes,
+  findCoreTransaction,
+  getTransactionAmount,
+  isMultiTransferTransaction,
+} from '@/entities/transaction';
 
 import { getFilterableTxType } from './operations-filter';
 import { extractTransferAmount, hasTransferAmount } from './transfer-amount-extractor';
@@ -21,33 +28,57 @@ export type SortContext = {
   multisigWallets: Pick<Wallet, 'id' | 'name'>[];
 };
 
-// Types whose amount the Value column actually renders in the row.
+// Types whose amount the Value column actually renders in the row (single
+// calls; multi-transfer batches are matched via isMultiTransferTransaction).
 const DISPLAYED_AMOUNT_TYPES = new Set<TransactionType>([
   ...TransferTypes,
   ...XcmTypes,
   TransactionType.VESTED_TRANSFER,
 ]);
 
-type ValueRank = { tier: number; amount: number };
-
 /**
- * Ranks an operation for the Value sort so the list groups by what the user
- * sees: tier 2 — the Value column shows the amount (sorted numerically within
- * the tier); tier 1 — the operation carries some extractable value that the
- * column does not render (batches, staking/governance amounts, transfer all);
- * tier 0 — no value at all.
+ * The amount the Value column renders for this operation, in asset units, or
+ * null when the column shows nothing for it.
  */
-const getValueRank = ({ operation }: OperationWithAccount, chains: SortContext['chains']): ValueRank => {
+const getDisplayedAmount = ({ operation }: OperationWithAccount, chains: SortContext['chains']): number | null => {
   const coreTx = findCoreTransaction(operation.transaction);
-  const info = extractTransferAmount(operation, chains[operation.chainId] ?? null);
+  if (!coreTx?.type) return null;
 
-  if (info && coreTx?.type && DISPLAYED_AMOUNT_TYPES.has(coreTx.type)) {
+  if (DISPLAYED_AMOUNT_TYPES.has(coreTx.type)) {
+    const info = extractTransferAmount(operation, chains[operation.chainId] ?? null);
+    if (!info) return null;
+
     const amount = Number(info.rawAmount) / 10 ** info.assetPrecision;
 
-    return { tier: 2, amount: Number.isNaN(amount) ? 0 : amount };
+    return Number.isNaN(amount) ? null : amount;
   }
 
-  return { tier: info || hasTransferAmount(operation) ? 1 : 0, amount: 0 };
+  // Multi-transfer batches render the summed native-asset amount in the column.
+  if (isMultiTransferTransaction(coreTx)) {
+    const chain = chains[operation.chainId];
+    const nativeAsset = chain ? getNativeAsset(chain.assets) : null;
+    const transactions = coreTx.args['transactions'];
+    if (!nativeAsset || !Array.isArray(transactions)) return null;
+
+    const total = transactions.reduce((sum, tx) => sum + (Number(getTransactionAmount(tx)) || 0), 0);
+
+    return total / 10 ** nativeAsset.precision;
+  }
+
+  return null;
+};
+
+/**
+ * Value sort key groups by what the user sees: >= 0 — the displayed amount
+ * (sorted numerically within the group); -1 — the operation carries some value
+ * the column does not render (batch contents, staking/governance amounts,
+ * transfer all); -2 — no value at all.
+ */
+const getValueKey = (item: OperationWithAccount, chains: SortContext['chains']): number => {
+  const displayed = getDisplayedAmount(item, chains);
+  if (displayed !== null) return displayed;
+
+  return hasTransferAmount(item.operation) ? -1 : -2;
 };
 
 const getSubmitterKey = ({ operation, account }: OperationWithAccount, wallets: SortContext['multisigWallets']) => {
@@ -79,12 +110,8 @@ export const sortOperations = (
 
   if (sort.by === 'value') {
     return items
-      .map(item => ({ item, rank: getValueRank(item, context.chains) }))
-      .sort((a, b) => {
-        const byRank = (a.rank.tier - b.rank.tier || a.rank.amount - b.rank.amount) * direction;
-
-        return byRank || compareNewest(a.item, b.item);
-      })
+      .map(item => ({ item, key: getValueKey(item, context.chains) }))
+      .sort((a, b) => (a.key - b.key) * direction || compareNewest(a.item, b.item))
       .map(({ item }) => item);
   }
 

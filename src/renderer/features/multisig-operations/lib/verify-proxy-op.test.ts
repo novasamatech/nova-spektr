@@ -104,6 +104,14 @@ describe('parseVerifyProxyOperation', () => {
     expect(parseVerifyProxyOperation(operation(remarkWithEvent('just a note')))).toBeNull();
   });
 
+  test('scans past an ordinary remark in a batch to find the marker', () => {
+    const op = operation(batchAll([remarkWithEvent('just a note'), proxyWrap(remarkWithEvent(markerPayload))]));
+    expect(parseVerifyProxyOperation(op)).toEqual({
+      delegateAccountId: delegate,
+      pureProxyAccountId: pureProxy,
+    });
+  });
+
   test('returns null when remark JSON has wrong kind', () => {
     const wrongKind = JSON.stringify({
       kind: 'something-else',

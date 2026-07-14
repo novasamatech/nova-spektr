@@ -115,9 +115,9 @@ A collapsed row is a fixed-height card whose cells line up with the sticky table
   shapes (edit-flexible, verify-proxy) render their bespoke card across the Operation and Value cells instead.
 - **Value** — the operation's amount and asset, when one can be extracted from the (core) call.
 - **Submitter** — the multisig account, resolved to its wallet/contact name with an identicon.
-- **Description** — the shared operation note, inline. See [Description in the row](#description-in-the-row).
-- **From draft** — an uppercase **FROM DRAFT** badge when the operation originated from a submitted draft; hovering it
-  shows the operation's description.
+- **Description** — the shared operation note, inline. See [Description in the row](#description-in-the-row). When the
+  operation originated from a submitted draft, an uppercase **FROM DRAFT** badge leads the cell; hovering it shows the
+  operation's description.
 - **Status** — a bordered pill: **"X of Y signed"** while pending, **Executed** or **Rejected** once resolved.
 - **Actions** — Approve / Reject / Add call data buttons per the rules above (or the Add-wallet pairing prompt for an
   external multisig).
@@ -176,8 +176,8 @@ day (oldest first). It distinguishes three event kinds:
 Each entry names the signer (resolved to a wallet or contact name, with wallet or identicon avatar), the time of day,
 and — where the chain has explorers — a link to the approving/rejecting extrinsic. There is no separate "executed" log
 line: the final approval is just another _Signed_ event; overall progress is shown by the row's signed-of-threshold
-status pill. The log carries no header of its own — only the event feed. A freshly created operation always has at
-least the initiation event, so the log is never empty.
+status pill. The log carries no header of its own — only the event feed. A freshly created operation always has at least
+the initiation event, so the log is never empty.
 
 ## Actions
 
@@ -234,10 +234,9 @@ action, and a re-sync badge).
 - **External multisig discovery.** Contact-backed external multisigs (and their operations) exist in the list only
   because a contact matches them, so losing the backend connection drops backend-contact-derived external multisigs on
   the next refresh; locally stored contacts still seed discovery.
-- **Notify remaining signers.** Requires _backend connected + operation pending + multisig known to the external
-  address book_; it does not depend on wallet ownership, so it can appear on a tracked external multisig too. The
-  button is disabled until the backend session account has signed the operation; the backend independently enforces
-  the same rule.
+- **Notify remaining signers.** Requires _backend connected + operation pending + multisig known to the external address
+  book_; it does not depend on wallet ownership, so it can appear on a tracked external multisig too. The button is
+  disabled until the backend session account has signed the operation; the backend independently enforces the same rule.
 - **Operation description.** The description is a short note the initiator attaches, published to the shared address
   book so co-signers see the operation's context.
 - **Drafts.** The drafts section on the Pending tab is backend data — it appears only once the user has connected the
@@ -289,8 +288,8 @@ backend session account is among the operation's approvers (or is its depositor)
 the tooltip _Available after you sign the operation with your signatory_; once signed, it is active with the tooltip
 _Notify signatories to sign the operation via Element_. The backend still owns enforcement — it only ever reminds
 still-pending signers, rejects non-signatories and signatories who have not signed yet (403), and rate-limits nudges
-**per multisig account**: a recent nudge by _anyone_ for that multisig blocks the next one until the window elapses.
-A signer who cannot be reached (delivery failed, or no Element handle on file) counts as _unreachable_. Feedback is
+**per multisig account**: a recent nudge by _anyone_ for that multisig blocks the next one until the window elapses. A
+signer who cannot be reached (delivery failed, or no Element handle on file) counts as _unreachable_. Feedback is
 delivered entirely through toasts:
 
 | Outcome                                                              | Toast                                                                                                 |
@@ -324,13 +323,12 @@ operation switches back to Pending.
 
 **Merged scope.** When any **non-search filter** is active (status, network, type, proxy type, or date range), the tabs
 collapse into a single **"All operations"** pill showing the total matching count (drafts rows included when the drafts
-section is in scope), and the filter applies across all statuses at once — pending and resolved results appear
-together, each under its status section. Activating such a filter also normalizes the underlying tab to Pending,
-regardless of which tab was active beforehand — so the merged scope always includes the drafts section (subject to the
-Status filter, below). Hidden operations join the merged scope only when the Status filter selects **Hidden** — they
-then appear under a trailing **Hidden** section; otherwise they remain reachable only through the Hidden tab. Search
-alone does not merge the scope — it narrows the current tab. Clearing the filters restores the tabs, reopening on
-Pending.
+section is in scope), and the filter applies across all statuses at once — pending and resolved results appear together,
+each under its status section. Activating such a filter also normalizes the underlying tab to Pending, regardless of
+which tab was active beforehand — so the merged scope always includes the drafts section (subject to the Status filter,
+below). Hidden operations join the merged scope only when the Status filter selects **Hidden** — they then appear under
+a trailing **Hidden** section; otherwise they remain reachable only through the Hidden tab. Search alone does not merge
+the scope — it narrows the current tab. Clearing the filters restores the tabs, reopening on Pending.
 
 ### Sections, sorting, and navigation
 
@@ -351,13 +349,13 @@ ascending → descending → off:
   last, operations with no value at all. Ascending flips the whole order (no-value first, largest amount last).
 - **Submitter** — alphabetically by the multisig's wallet name (falling back to its account id).
 
-With sorting off, operations are ordered **newest first** by their creation time (block and extrinsic index break
-ties). The list can be narrowed by **search** and five **filters**:
+With sorting off, operations are ordered **newest first** by their creation time (block and extrinsic index break ties).
+The list can be narrowed by **search** and five **filters**:
 
 - **Search** — matches the multisig wallet name, the multisig address, or the call hash.
 - **Date range** — a from/to (or from-only) interval.
-- **Status** — Drafts / In progress / Completed / Rejected / Hidden. Drafts and hidden operations obey the same logic
-  as the regular statuses: with no status selected the scope behaves as before (drafts visible on Pending, hidden ops
+- **Status** — Drafts / In progress / Completed / Rejected / Hidden. Drafts and hidden operations obey the same logic as
+  the regular statuses: with no status selected the scope behaves as before (drafts visible on Pending, hidden ops
   confined to the Hidden tab); selecting statuses shows exactly the chosen kinds — e.g. **Drafts** alone shows only the
   drafts section, **Hidden** surfaces hidden operations in their own section.
 - **Proxy type** — for flexible multisigs, filters by the proxy's access type.
@@ -381,14 +379,13 @@ A **Clear** control appears once any filter is active.
 ### Drafts section
 
 On the **Pending** tab (once the address book has ever been connected), saved operation **drafts** render as the first
-collapsible section of the table — under the shared column header, above the status sections — styled and
-column-aligned like operation rows, newest first. The section obeys the **Status filter** (visible with no status
-selected, or when **Drafts** is selected). A draft row shows the would-be operation (title, network and creation date,
-amount, submitter), an Edit action, and its primary control (submit or the step it is blocked on); like an operation
-row it **expands** into a details panel; drafts can be shared, edited, and deleted subject to backend permissions. Once
-a draft is submitted, it leaves the section and its resulting operation row is badged **FROM DRAFT**. The drafts flow
-itself (creation, review, submission, the row's panels) belongs to the `drafts` feature — this view only hosts its
-section.
+collapsible section of the table — under the shared column header, above the status sections — styled and column-aligned
+like operation rows, newest first. The section obeys the **Status filter** (visible with no status selected, or when
+**Drafts** is selected). A draft row shows the would-be operation (title, network and creation date, amount, submitter),
+an Edit action, and its primary control (submit or the step it is blocked on); like an operation row it **expands** into
+a details panel; drafts can be shared, edited, and deleted subject to backend permissions. Once a draft is submitted, it
+leaves the section and its resulting operation row is badged **FROM DRAFT**. The drafts flow itself (creation, review,
+submission, the row's panels) belongs to the `drafts` feature — this view only hosts its section.
 
 ## Lifecycle
 
@@ -420,9 +417,9 @@ operation, cancelling it.
 - **Network unreachable / operation gone** — approving, rejecting, or deep-linking surfaces an explanatory modal
   (network not available, connection timeout, account or operation not found, already signed) rather than failing
   silently.
-- **Nudge rejected** — authorization (403 — only a signatory who signed), per-multisig rate-limit (429 — shown as
-  "next one available in N minutes/hours"), the operation not yet synced by the backend (404), or delivery failure are
-  each turned into an explanatory toast; nothing is sent when no signer is still pending.
+- **Nudge rejected** — authorization (403 — only a signatory who signed), per-multisig rate-limit (429 — shown as "next
+  one available in N minutes/hours"), the operation not yet synced by the backend (404), or delivery failure are each
+  turned into an explanatory toast; nothing is sent when no signer is still pending.
 
 ## Related
 

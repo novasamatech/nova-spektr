@@ -189,34 +189,72 @@ describe('operations-sort', () => {
         }),
         account: mockAccount,
       };
-      const batchOp: OperationWithAccount = {
+      // batchAll of TRANSFERs only = multi-transfer: the Value column renders the summed amount (3 DOT).
+      const multiTransferOp: OperationWithAccount = {
         operation: createMockOperation({
-          id: 'op-batch',
+          id: 'op-multi',
           transaction: {
             type: TransactionType.BATCH_ALL,
             section: 'utility',
             method: 'batchAll',
-            args: { transactions: [{ type: TransactionType.TRANSFER, args: { value: '10000000000' } }] },
+            args: {
+              transactions: [
+                { type: TransactionType.TRANSFER, args: { value: '10000000000' } },
+                { type: TransactionType.TRANSFER, args: { value: '20000000000' } },
+              ],
+            },
+          } as never,
+        }),
+        account: mockAccount,
+      };
+      // Mixed batch is not a multi-transfer: it carries value but the column shows nothing.
+      const mixedBatchOp: OperationWithAccount = {
+        operation: createMockOperation({
+          id: 'op-mixed',
+          transaction: {
+            type: TransactionType.BATCH_ALL,
+            section: 'utility',
+            method: 'batchAll',
+            args: {
+              transactions: [
+                { type: TransactionType.TRANSFER, args: { value: '10000000000' } },
+                { type: TransactionType.REMARK, args: {} },
+              ],
+            },
           } as never,
         }),
         account: mockAccount,
       };
 
-      const input = [delegateOp, noAmountOp, oneUnitOp, batchOp, fiveUnitsOp];
+      const input = [delegateOp, noAmountOp, oneUnitOp, multiTransferOp, fiveUnitsOp, mixedBatchOp];
 
       const desc = sortOperations(input, { by: 'value', direction: 'desc' }, context);
       // Delegate carries a huge hidden balance but the Value column shows nothing —
       // it must stay in the middle tier, not outrank displayed transfer amounts.
-      expect(desc.map(i => i.operation.id)).toEqual(['op-five', 'op-one', 'op-delegate', 'op-batch', 'op-remark']);
+      expect(desc.map(i => i.operation.id)).toEqual([
+        'op-five',
+        'op-multi',
+        'op-one',
+        'op-delegate',
+        'op-mixed',
+        'op-remark',
+      ]);
 
       const asc = sortOperations(input, { by: 'value', direction: 'asc' }, context);
-      expect(asc.map(i => i.operation.id)).toEqual(['op-remark', 'op-delegate', 'op-batch', 'op-one', 'op-five']);
+      expect(asc.map(i => i.operation.id)).toEqual([
+        'op-remark',
+        'op-delegate',
+        'op-mixed',
+        'op-one',
+        'op-multi',
+        'op-five',
+      ]);
     });
 
-    test('value asc treats non-numeric amount as no amount', () => {
+    test('value asc puts a non-numeric amount into the hidden-value tier, above no-value ops', () => {
       const brokenOp = createTransferItem('op-broken', 'not-a-number');
-      const result = sortOperations([oneUnitOp, brokenOp], { by: 'value', direction: 'asc' }, context);
-      expect(result.map(i => i.operation.id)).toEqual(['op-broken', 'op-one']);
+      const result = sortOperations([oneUnitOp, brokenOp, noAmountOp], { by: 'value', direction: 'asc' }, context);
+      expect(result.map(i => i.operation.id)).toEqual(['op-remark', 'op-broken', 'op-one']);
     });
 
     test('type asc orders remark, transfer, unknown', () => {

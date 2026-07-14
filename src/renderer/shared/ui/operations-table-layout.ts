@@ -1,5 +1,5 @@
 export const operationColumns = {
-  leftBlock: 'w-[388px] shrink-0', // icon + title/chain (240) + value (140)
+  leftBlock: 'w-[388px] shrink-0', // icon + title/chain (240) + gap (8) + value (140)
   titleCell: 'flex-1 min-w-0',
   value: 'w-[140px] shrink-0',
   submitter: 'w-[180px] shrink-0',
