@@ -55,7 +55,7 @@ Like an operation row, a draft row **expands** into three panels; the secondary 
 
 - **Details** — network, multisig (and proxy, when the draft routes through one), threshold, who created the draft and
   when, plus the full description. The header carries the **Edit** button (write permission, not yet submitted).
-- **Signing path** — the draft's stored execution hops (proxied → multisig → chosen signer). The panel header carries
+- **Signing path** — the draft's stored execution hops, labelled Proxied → Multisig → Initiator. The panel header carries
   two icon actions: **Open overview**, which opens the account-structure view anchored on the draft's exact signing
   path, and **Share**, which copies the draft's deep link (opening the link scrolls to and highlights the draft).
 - **Advanced** — the call data (copyable, with a decoded JSON view once it decodes), or a hint that call data will be

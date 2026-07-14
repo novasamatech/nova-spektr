@@ -34,7 +34,7 @@ type Props = {
 const PATH_ROLE_KEYS: Record<PathNode['kind'], string> = {
   proxied: 'operations.drafts.pathRoleProxied',
   multisig: 'operations.drafts.pathRoleMultisig',
-  signer: 'operations.drafts.pathRoleSigner',
+  signer: 'operations.drafts.pathRoleInitiator',
 };
 
 export const DraftFullInfo = ({

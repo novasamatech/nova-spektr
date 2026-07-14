@@ -2711,7 +2711,7 @@
       "createdByLabel": "Created by",
       "pathRoleProxied": "Proxied",
       "pathRoleMultisig": "Multisig",
-      "pathRoleSigner": "Signer",
+      "pathRoleInitiator": "Initiator",
       "selectMultisigForProxy": "Proxy multisig",
       "proxyLabel": "Proxy",
       "viewDraft": "View draft",
