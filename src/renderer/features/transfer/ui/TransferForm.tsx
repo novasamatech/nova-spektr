@@ -449,6 +449,17 @@ const Destination = memo(() => {
     return wallets.find((wallet) => wallet.accounts.some((a) => a.accountId === recipientAccountId)) ?? null;
   }, [wallets, recipientAccountId]);
 
+  // Prefer the recipient's own resolved account name over the wallet name:
+  // accountId-based resolution never sees the account object, so a key-set
+  // vault recipient would show the wallet name instead of the key name the
+  // dropdown and account selector display (`resolvedAccounts` runs the same
+  // resolution the dropdown items use).
+  const recipientAccount = useMemo(() => {
+    if (nullable(recipientAccountId)) return null;
+
+    return resolvedAccounts.find((account) => account.accountId === recipientAccountId) ?? null;
+  }, [resolvedAccounts, recipientAccountId]);
+
   // Run the standard resolution chain (custom name → contact → on-chain identity
   // → wallet name). `resolveAccountName` falls back to a short address when none
   // match, so we render the rich NamedAccount only when resolution produced a
@@ -457,7 +468,7 @@ const Destination = memo(() => {
   const recipientName = useAccountName({
     accountId: recipientAccountId,
     chain,
-    title: recipientWalletName ?? undefined,
+    title: recipientAccount?.name ?? recipientWalletName ?? undefined,
   });
   const recipientHasName = useMemo(() => {
     if (nullable(recipientAccountId) || !recipientName) return false;
@@ -613,6 +624,7 @@ const Destination = memo(() => {
                 <NamedAccount
                   accountId={recipientAccountId}
                   chain={chain}
+                  title={recipientAccount?.name}
                   wallet={recipientWallet}
                   variant="truncate"
                   iconSize={20}
