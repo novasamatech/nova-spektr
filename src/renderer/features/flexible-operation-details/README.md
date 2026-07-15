@@ -56,8 +56,26 @@ Added to the shared rows (depositor, date/time, description):
 
 In the verified flow the new controller must prove it can act for the proxied account before the old one is removed.
 That proof is its own multisig operation — a ping
-`proxy.proxy( real = pure proxy, system.remarkWithEvent( verify marker ) )` — presented by the Operations view's _Verify
-proxy_ card:
+`proxy.proxy( real = pure proxy, system.remarkWithEvent( verify marker ) )`, built by the
+[`proxy-verify`](../proxy-verify/README.md) flow and dispatched by the new controller through the pure proxy. Only proxy
+types that can dispatch a remark are verifiable this way: **Any** and **NonTransfer**.
+
+**The marker.** The `system.remarkWithEvent` body is a JSON payload
+`{ kind: "verify-proxy", delegateAccountId, pureProxyAccountId, remark? }`:
+
+- `kind` is the discriminator — an ordinary `remarkWithEvent` operation without it is never presented (or counted) as a
+  verification.
+- The `(delegate, pure proxy)` pair lets the executed operation be matched back to the exact proxy row being verified —
+  without it, _any_ executed operation through that multisig + pure-proxy pair would flip the row to verified, a false
+  positive for incidental operations.
+- `remark` is optional user text shown in the details (older pings carry it under the legacy `memo` key — still
+  accepted).
+- On-chain the remark arrives hex-encoded; local builds keep the JSON string — both are parsed. A payload whose account
+  ids don't decode is rejected, so a crafted remark can't render as a verification ping.
+- The marker is accepted at any level — bare `remarkWithEvent`, proxy-wrapped, or inside a batch — because the
+  multisig-operation domain often stores the core call with the proxy wrapper already stripped.
+
+**Presentation** (the Operations view's _Verify proxy_ card):
 
 - **Row** — title **"Verification for wallet"** with a **"Verification"** tag (tooltip: _"Signer is proving control of
   the proxied wallet via a marker remark"_).
@@ -65,14 +83,22 @@ proxy_ card:
   text, and **Open wallet details** (the pure proxy wallet's Proxies tab, where the delegate's verification status is
   surfaced).
 
-The marker payload is the discriminator — an ordinary `remarkWithEvent` operation without it is not presented as a
-verification.
+**Outcome.** When the ping executes, the wallet-details proxies model matches the emitted marker back to the
+`(delegate, pure proxy)` row and marks that controller **verified** — unblocking the removal of the old one.
+
+Note the two remark flavours are deliberately distinct: the **verify ping** uses `system.remarkWithEvent` (its execution
+must be observable on-chain), while the **old-controller marker** inside the verified edit batch is a plain
+`system.remark`; an outer `remarkWithEvent` next to the edit batch carries new-controller metadata only when the new
+multisig isn't known locally, and the detectors never conflate the three.
 
 ## Fallback title and icon (this feature proper)
 
 For the exact shape `proxy.proxy( batchAll[ addProxy, removeProxy ] )` this feature registers the generic row title
-**"Edit flexible multisig"** and the delegated-authorities icon. It applies only when the bespoke detectors above do not
-claim the operation (they match a superset of shapes and take precedence), and it adds no Details rows of its own.
+**"Edit flexible multisig"** and the delegated-authorities icon, and adds no Details rows of its own. In the operations
+table it is effectively shadowed: the domain stores a flexible-multisig operation's call with the proxy wrapper already
+stripped (so this detector's `proxy.proxy` requirement doesn't match), and the bespoke card claims the operation anyway.
+Where it does surface is the other consumers of the shared title/icon transformers — **draft rows** and **multisig
+notifications** — whose decoded calls keep the full wrapper.
 
 ## Related
 
