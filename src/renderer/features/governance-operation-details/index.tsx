@@ -2,10 +2,9 @@ import { t } from 'i18next';
 
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
-import { useI18n } from '@/shared/i18n';
 import { getAssetById, nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
-import { TransactionTitle, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
+import { findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
 import { GovernanceDelegateDetails } from './components/GovernanceDelegateDetails';
@@ -64,14 +63,6 @@ multisigOperationsSDK(governanceOperationDetailFeature, {
         amount: asset && amount ? { value: amount, asset } : undefined,
         sourceChainId: operation.chainId,
       };
-    }
-  },
-  logTitle({ operation, showCoreTransaction }) {
-    const { t } = useI18n();
-    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-    const title = transaction?.type && getOperationTitle(transaction.type);
-    if (title) {
-      return <TransactionTitle className="overflow-hidden" title={t(title || '')} />;
     }
   },
   details({ operation, showCoreTransaction }) {

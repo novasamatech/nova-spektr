@@ -3,10 +3,9 @@ import { t } from 'i18next';
 
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
-import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
-import { TransactionTitle, findCoreBatchAll, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
+import { findCoreBatchAll, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 import { confirmTransactionInfoSlot } from '@/features/multisig-operations';
 
@@ -93,24 +92,6 @@ multisigOperationsSDK(vestedTransferOperationDetailFeature, {
         amount: asset && amount ? { value: amount, asset } : undefined,
         sourceChainId: operation.chainId,
       };
-    }
-  },
-  logTitle({ operation, showCoreTransaction }) {
-    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-
-    if (nullable(transaction)) {
-      return null;
-    }
-
-    const { t } = useI18n();
-    const transactionFromBatchAll = findCoreBatchAll(transaction);
-
-    const title =
-      (transaction?.type && getOperationTitle(transaction.type)) ||
-      (transactionFromBatchAll?.type && getOperationTitle(transactionFromBatchAll.type));
-
-    if (title) {
-      return <TransactionTitle className="overflow-hidden" title={t(title || '')} />;
     }
   },
   details({ operation, showCoreTransaction }) {

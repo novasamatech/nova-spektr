@@ -1,14 +1,8 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
 import { createFeature } from '@/shared/feature';
-import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
-import {
-  TransactionTitle,
-  findCoreTransaction,
-  getTransactionAmount,
-  isMultiTransferTransaction,
-} from '@/entities/transaction';
+import { findCoreTransaction, getTransactionAmount, isMultiTransferTransaction } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 import { confirmTransactionInfoSlot } from '@/features/multisig-operations';
 
@@ -56,19 +50,6 @@ multisigOperationsSDK(multiTransferOperationDetailFeature, {
         amount: asset && amount ? { value: amount, asset } : undefined,
         sourceChainId: operation.chainId,
       };
-    }
-  },
-  logTitle({ operation, showCoreTransaction }) {
-    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-
-    if (nullable(transaction)) {
-      return null;
-    }
-
-    const { t } = useI18n();
-
-    if (isMultiTransferTransaction(transaction)) {
-      return <TransactionTitle className="overflow-hidden" title={t('operations.titles.multiTransfer')} />;
     }
   },
   details({ operation, showCoreTransaction }) {

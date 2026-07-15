@@ -424,4 +424,201 @@ describe('operations context model', () => {
       expect(spy).not.toHaveBeenCalled();
     });
   });
+
+  describe('Sort state', () => {
+    it('should cycle through asc, desc and null on repeated sortToggled', async () => {
+      const scope = fork();
+
+      await allSettled(operationsContextModel.sortToggled, { scope, params: 'value' });
+      expect(scope.getState(operationsContextModel.$sort)).toEqual({ by: 'value', direction: 'asc' });
+
+      await allSettled(operationsContextModel.sortToggled, { scope, params: 'value' });
+      expect(scope.getState(operationsContextModel.$sort)).toEqual({ by: 'value', direction: 'desc' });
+
+      await allSettled(operationsContextModel.sortToggled, { scope, params: 'value' });
+      expect(scope.getState(operationsContextModel.$sort)).toBeNull();
+    });
+  });
+
+  describe('Collapsed sections', () => {
+    it('should toggle collapsed state per section independently', async () => {
+      const scope = fork();
+
+      await allSettled(operationsContextModel.toggleSection, { scope, params: 'in_progress' });
+      expect(scope.getState(operationsContextModel.$collapsedSections)).toEqual({ in_progress: true });
+
+      await allSettled(operationsContextModel.toggleSection, { scope, params: 'completed' });
+      expect(scope.getState(operationsContextModel.$collapsedSections)).toEqual({
+        in_progress: true,
+        completed: true,
+      });
+
+      await allSettled(operationsContextModel.toggleSection, { scope, params: 'in_progress' });
+      expect(scope.getState(operationsContextModel.$collapsedSections)).toEqual({
+        in_progress: false,
+        completed: true,
+      });
+    });
+
+    it('should expand the collapsed section of a deep-linked operation', async () => {
+      const mockOperation = createMockOperation('pending');
+
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [mockOperation])
+          .set(operationsContextModel.$collapsedSections, { in_progress: true, completed: true }),
+      });
+
+      await allSettled(deepLinkModel.$focusedOperationId, { scope, params: mockOperation.id });
+
+      expect(scope.getState(operationsContextModel.$collapsedSections)).toEqual({
+        in_progress: false,
+        completed: true,
+      });
+    });
+
+    it('should keep collapsed sections untouched when deep-linked operation is not found', async () => {
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [])
+          .set(operationsContextModel.$collapsedSections, { in_progress: true }),
+      });
+
+      await allSettled(deepLinkModel.$focusedOperationId, { scope, params: 'non-existent-operation-id' });
+
+      expect(scope.getState(operationsContextModel.$collapsedSections)).toEqual({ in_progress: true });
+    });
+  });
+
+  describe('Scope merged', () => {
+    it('should be false for a pure search filter', async () => {
+      const scope = fork();
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { searchQuery: 'abc' } });
+
+      expect(scope.getState(operationsContextModel.$isScopeMerged)).toBe(false);
+    });
+
+    it('should be true when a status filter is set', async () => {
+      const scope = fork();
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { status: ['completed'] } });
+
+      expect(scope.getState(operationsContextModel.$isScopeMerged)).toBe(true);
+    });
+
+    it('should normalize the tab to pending when a non-search filter merges the scope from the hidden tab', async () => {
+      const scope = fork({
+        values: new Map().set(operationsContextModel.$tab, 'hidden'),
+      });
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { status: ['completed'] } });
+
+      expect(scope.getState(operationsContextModel.$tab)).toBe('pending');
+    });
+
+    it('should normalize the tab to pending when a non-search filter merges the scope from the history tab', async () => {
+      const scope = fork({
+        values: new Map().set(operationsContextModel.$tab, 'history'),
+      });
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { network: ['polkadot'] } });
+
+      expect(scope.getState(operationsContextModel.$tab)).toBe('pending');
+    });
+
+    it('should not touch the tab when a pure search filter does not merge the scope', async () => {
+      const scope = fork({
+        values: new Map().set(operationsContextModel.$tab, 'history'),
+      });
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { searchQuery: 'abc' } });
+
+      expect(scope.getState(operationsContextModel.$tab)).toBe('history');
+    });
+  });
+
+  describe('Filters selected', () => {
+    it('should be true when only a status filter is set', async () => {
+      const scope = fork();
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { status: ['completed'] } });
+
+      expect(scope.getState(operationsContextModel.$isFiltersSelected)).toBe(true);
+    });
+  });
+
+  describe('Sectioned operations', () => {
+    it('should group operations into sections following SECTION_ORDER', async () => {
+      const pendingOp = createMockOperation('pending', '0xabc');
+      const executedOp = createMockOperation('executed', '0xdef');
+
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [pendingOp, executedOp])
+          .set(operationsContextModel.$tab, 'pending')
+          .set(accounts.__test.$populated, true),
+      });
+      await populateAccounts(scope, [mockMultisigAccount]);
+      // Setting a status filter merges the scope, so both pending and completed operations
+      // pass the tab filter and end up bucketed by section.
+      await allSettled(operationsContextModel.setFilter, {
+        scope,
+        params: { status: ['in_progress', 'completed'] },
+      });
+
+      const sections = scope.getState(operationsContextModel.$sectionedOperations);
+
+      expect(sections.map(s => s.section)).toEqual(['in_progress', 'completed']);
+      expect(sections[0]?.items.map(i => i.operation.id)).toEqual([pendingOp.id]);
+      expect(sections[1]?.items.map(i => i.operation.id)).toEqual([executedOp.id]);
+    });
+
+    it('should bucket hidden operations into a trailing hidden section in the merged scope', async () => {
+      const pendingOp = createMockOperation('pending', '0xabc');
+      const hiddenOp = createMockOperation('pending', '0xdef');
+
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [pendingOp, hiddenOp])
+          .set(operationsContextModel.$tab, 'pending')
+          .set(operationsContextModel.$hiddenOperationIds, [hiddenOp.id])
+          .set(accounts.__test.$populated, true),
+      });
+      await populateAccounts(scope, [mockMultisigAccount]);
+      await allSettled(operationsContextModel.setFilter, {
+        scope,
+        params: { status: ['in_progress', 'hidden'] },
+      });
+
+      const sections = scope.getState(operationsContextModel.$sectionedOperations);
+
+      expect(sections.map(s => s.section)).toEqual(['in_progress', 'hidden']);
+      expect(sections[0]?.items.map(i => i.operation.id)).toEqual([pendingOp.id]);
+      expect(sections[1]?.items.map(i => i.operation.id)).toEqual([hiddenOp.id]);
+    });
+
+    it('should exclude hidden operations from the merged scope when hidden status is not selected', async () => {
+      const pendingOp = createMockOperation('pending', '0xabc');
+      const hiddenOp = createMockOperation('pending', '0xdef');
+
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [pendingOp, hiddenOp])
+          .set(operationsContextModel.$tab, 'pending')
+          .set(operationsContextModel.$hiddenOperationIds, [hiddenOp.id])
+          .set(accounts.__test.$populated, true),
+      });
+      await populateAccounts(scope, [mockMultisigAccount]);
+      await allSettled(operationsContextModel.setFilter, {
+        scope,
+        params: { status: ['in_progress'] },
+      });
+
+      const sections = scope.getState(operationsContextModel.$sectionedOperations);
+
+      expect(sections.map(s => s.section)).toEqual(['in_progress']);
+      expect(sections[0]?.items.map(i => i.operation.id)).toEqual([pendingOp.id]);
+    });
+  });
 });

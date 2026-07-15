@@ -1,5 +1,6 @@
 /* eslint-disable import-x/max-dependencies */
 
+import AccountStructureIcon from '@/shared/assets/images/functionals/account-structure.svg?jsx';
 import AddCircleIcon from '@/shared/assets/images/functionals/add-circle.svg?jsx';
 import AddIcon from '@/shared/assets/images/functionals/add.svg?jsx';
 import ApproveFellowshipVotingIcon from '@/shared/assets/images/functionals/approve-fellowship-voting.svg?jsx';
@@ -66,6 +67,7 @@ import WithdrawIcon from '@/shared/assets/images/functionals/withdraw.svg?jsx';
 import ChangeSignatoriesIcon from '@/shared/assets/images/functionals/сhangesignatories.svg?jsx';
 
 const FunctionalImages = {
+  accountStructure: { svg: AccountStructureIcon },
   calendar: { svg: CalendarIcon },
   copy: { svg: CopyIcon },
   close: { svg: CloseIcon },

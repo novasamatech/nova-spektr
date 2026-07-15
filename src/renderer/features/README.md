@@ -42,7 +42,7 @@ notes.
 - `multisig-wallet`
 - `multisig-wallet-create`
 - `flexible-change-signatories`
-- `flexible-operation-details`
+- `flexible-operation-details` (no spec planned)
 - `multisig-candidates` (aggregate)
 - [`multisig-operation-description`](../aggregates/multisig-operation-description/README.md) (aggregate)
 - `selected-wallet-multisig-operations` (aggregate)
@@ -55,7 +55,7 @@ notes.
 - `proxies`
 - `proxy-add`
 - `proxy-basket`
-- `proxy-operation-details`
+- `proxy-operation-details` (no spec planned)
 - `proxy-remove`
 - [`proxy-verify`](./proxy-verify/README.md)
 - [`proxied-add-pure`](./proxied-add-pure/README.md)
@@ -71,7 +71,7 @@ notes.
 - `staking-bond-extra`
 - `staking-bond-nominate`
 - `staking-nominate`
-- `staking-operation-details`
+- `staking-operation-details` (no spec planned)
 - `staking-payee`
 - `staking-restake`
 - `staking-unstake`
@@ -86,7 +86,7 @@ notes.
 - `governance`
 - `governance-navigation` (no spec planned)
 - `governance-basket`
-- `governance-operation-details`
+- `governance-operation-details` (no spec planned)
 - `governance-meta-provider` (aggregate)
 
 > See also: [`dashboard-governance`](#dashboard) — governance summary on the dashboard.
@@ -117,9 +117,9 @@ notes.
 
 - `transfer`
 - `transfer-basket`
-- `transfer-operation-details`
+- `transfer-operation-details` (no spec planned)
 - `multi-transfer`
-- `multi-transfer-operation-details`
+- `multi-transfer-operation-details` (no spec planned)
 - [`vested-transfer`](./vested-transfer/README.md)
 - `vested-transfer-operation-details` (no spec planned)
 - [`vesting-claim`](./vesting-claim/README.md)
