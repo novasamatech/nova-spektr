@@ -115,7 +115,7 @@ notes.
 
 ## Transfers
 
-- `transfer`
+- [`transfer`](./transfer/README.md)
 - `transfer-basket`
 - `transfer-operation-details` (no spec planned)
 - `multi-transfer`

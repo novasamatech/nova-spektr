@@ -1,4 +1,4 @@
-import { type Event, type Scope, allSettled, createStore } from 'effector';
+import { type Event, allSettled, createStore } from 'effector';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
@@ -13,12 +13,17 @@ import {
 import { createAccountId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type Draft, type PathNode } from '@/domains/backend';
-import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { balanceSubModel } from '@/features/assets-balances';
 import { submitDraftModel } from '@/features/drafts/model/submit-draft-model';
 import { polkadotChain, polkadotChainId, vaultWallet } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
+import {
+  type FeatureTestEnvironment,
+  FeatureTestBuilder,
+  allureMetadata,
+  seedAccountHandlers,
+} from '../../utils/index';
 
 // --- Local fixtures: production typeguards check the `accountType`
 // discriminator (set when the account is persisted — see
@@ -119,28 +124,6 @@ const makeDraft = (signingPath: PathNode[], overrides: Partial<Draft> = {}): Dra
   ...overrides,
 });
 
-// Handlers must be installed in the fork scope — `combine` reads them via
-// `$handlers.getState()` from the currently-active scope, not the global
-// default. Registering through `allSettled(... { scope })` writes to the
-// fork's `$handlers` store so `filterAccountsOnChain` works inside derived
-// stores under test.
-const setupAccountHandlers = async (scope: Scope) => {
-  await allSettled(accountService.accountAvailabilityOnChainAnyOf.registerHandler, {
-    scope,
-    params: {
-      body: ({ account, chain }) => (accountService.isChainAccount(account) ? account.chainId === chain.chainId : true),
-      available: () => true,
-    },
-  });
-  await allSettled(accountService.accountActionPermissionAnyOf.registerHandler, {
-    scope,
-    params: {
-      body: ({ account }) => account.signingType !== SigningType.WATCH_ONLY,
-      available: () => true,
-    },
-  });
-};
-
 // `.watch` is blocked by `effector/no-watch`; collect payloads in a store instead.
 const payloadsStore = <T>(event: Event<T>) => createStore<T[]>([]).on(event, (s, p) => [...s, p]);
 
@@ -157,7 +140,7 @@ const buildEnv = async (testAccounts: AnyAccount[]): Promise<FeatureTestEnvironm
     .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet])
     .withStoreValue(accounts.__test.$list, testAccounts)
     .build();
-  await setupAccountHandlers(env.scope);
+  await seedAccountHandlers(env.scope);
 
   return env;
 };

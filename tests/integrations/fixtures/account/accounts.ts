@@ -1,4 +1,4 @@
-import { CryptoType, SigningType } from '@/shared/core';
+import { AccountType, CryptoType, SigningType } from '@/shared/core';
 import { createAccountId, createVaultChainAccount } from '@/shared/mocks';
 import { type AnyAccount } from '@/domains/network';
 import { assetHubChainId, polkadotChainId } from '../chain';
@@ -64,6 +64,7 @@ export const multisigAccount: AnyAccount = {
   walletId: multisigWallet.id,
   name: 'Multisig Account',
   type: 'universal',
+  accountType: AccountType.MULTISIG,
   cryptoType: CryptoType.SR25519,
   signingType: SigningType.MULTISIG,
   threshold: 2,
