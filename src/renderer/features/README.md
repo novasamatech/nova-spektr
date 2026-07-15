@@ -14,7 +14,7 @@ notes.
 - `account-selector`
 - [`account-sync`](./account-sync/README.md)
 - `accounts-structure`
-- `wallets`
+- [`wallets`](./wallets/README.md)
 - `wallet-details`
 - `wallet-fiat-balance`
 - `wallet-pairing`
