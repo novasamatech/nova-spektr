@@ -292,6 +292,41 @@ describe('computeChainRowAllocations', () => {
     expect(alloc.locked.pct).toBeCloseTo(5.9, 0);
   });
 
+  test('carves the vesting lock out of the locked amount', () => {
+    // transferable = 1000 - max(0, 400-0) = 600, locked total = 1000 - 600 = 400
+    // vested = min(vestingLock=300, 400) = 300, locked = 100
+    const balances = [
+      makeBalance({
+        accountId: 'acc1',
+        chainId: 'chain1',
+        assetId: 0,
+        free: 1000,
+        reserved: 0,
+        frozen: 400,
+        vestingLock: 300,
+      }),
+    ];
+    const balanceMap = Object.fromEntries(balances.map((b) => [b.id, b]));
+    const chains = makeChains([{ chainId: 'chain1', assetId: 0, priceId: 'polkadot', symbol: 'DOT', precision: 0 }]);
+    const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
+
+    const result = computeChainRowAllocations({
+      assetIds: [0],
+      chainId: 'chain1' as any,
+      accountIds: ['acc1'],
+      balanceMap: balanceMap as any,
+      chains: chains as any,
+      prices,
+      currency: makeCurrency(),
+    });
+
+    const alloc = result.get(0)!;
+    expect(alloc.vested).toEqual({ pct: 30, raw: '300', fiat: '300' });
+    expect(alloc.locked).toEqual({ pct: 10, raw: '100', fiat: '100' });
+    expect(alloc.transferable).toEqual({ pct: 60, raw: '600', fiat: '600' });
+    expect(alloc.reserved.pct).toBe(0);
+  });
+
   test('omits assets with zero balance', () => {
     const balances = [
       makeBalance({ accountId: 'acc1', chainId: 'chain1', assetId: 5, free: 0, reserved: 0, frozen: 0 }),

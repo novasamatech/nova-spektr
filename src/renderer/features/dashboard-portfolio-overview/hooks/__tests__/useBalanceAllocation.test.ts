@@ -91,7 +91,10 @@ describe('computeBalanceAllocation', () => {
     });
 
     expect(result).not.toBeNull();
-    expect(result!.grandTotal).toEqual('0');
+    // no priced asset contributes fiat — every type stays at zero
+    for (const total of Object.values(result!.types)) {
+      expect(total.fiat).toEqual('0');
+    }
     expect(result!.unpricedVested).toHaveLength(1);
     expect(result!.unpricedVested[0]!.asset.assetId).toEqual(1);
     expect(result!.unpricedVested[0]!.tokens.toString()).toEqual('600');
@@ -207,7 +210,9 @@ describe('computeBalanceAllocation', () => {
     expect(result!.types.vested.fiat).toEqual('600');
     expect(result!.types.locked.fiat).toEqual('300');
     expect(result!.types.reserved.fiat).toEqual('0');
-    expect(result!.grandTotal).toEqual('2000');
+    // per-type fiats partition the whole 2000 portfolio
+    const totalFiat = Object.values(result!.types).reduce((sum, total) => sum + Number(total.fiat), 0);
+    expect(totalFiat).toEqual(2000);
     expect(result!.unpricedVested).toHaveLength(0);
   });
 

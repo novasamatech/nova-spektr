@@ -1,7 +1,7 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { type Balance, LockTypes } from '@/shared/core';
-import { transferableAmountBN } from '@/shared/lib/utils';
+import { type Balance } from '@/shared/core';
+import { transferableAmountBN, vestedLockedAmountBN } from '@/shared/lib/utils';
 
 export type BalanceType = 'transferable' | 'reserved' | 'locked' | 'vested';
 
@@ -38,11 +38,7 @@ export function splitBalanceByType(balance: Balance): Record<BalanceType, BN> {
   const total = balance.free.add(balance.reserved);
 
   const lockedTotal = BN.max(BN_ZERO, total.sub(transferable).sub(balance.reserved));
-  // sum ALL vesting-type locks (matches vestedLockedAmountBN); a balance can
-  // carry more than one VESTING lock and taking only the first understates it
-  const vestingLock = balance.locked
-    .filter((lock) => lock.type === LockTypes.VESTING)
-    .reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);
+  const vestingLock = vestedLockedAmountBN(balance);
   const vestedFromLocked = BN.min(vestingLock, lockedTotal);
   const vestedFromReserved = BN.min(vestingLock.sub(vestedFromLocked), balance.reserved);
 

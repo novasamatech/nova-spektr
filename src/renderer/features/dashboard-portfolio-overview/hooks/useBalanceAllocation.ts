@@ -27,7 +27,6 @@ export type UnpricedVested = {
 
 export type AllocationData = {
   types: Record<BalanceType, BalanceTypeTotal>;
-  grandTotal: string;
   unpricedVested: UnpricedVested[];
 };
 
@@ -94,7 +93,7 @@ export function computeBalanceAllocation(params: BalanceAllocationParams): Alloc
     pct: grandTotal.isZero() ? 0 : totals[type].div(grandTotal).multipliedBy(100).toNumber(),
   }));
 
-  return { types, grandTotal: grandTotal.toString(), unpricedVested };
+  return { types, unpricedVested };
 }
 
 export const useBalanceAllocation = (accountIds: string[]): AllocationData | null => {

@@ -6,6 +6,10 @@ import { AssetDetailsModalElements } from '../_elements/AssetDetailsModalElement
 import { type DashboardPageElements } from '../_elements/DashboardPageElements';
 import { AssetDetailsModalWindow } from '../modals/AssetDetailsModalWindow';
 
+// mirrors BalanceType from the dashboard-portfolio-overview feature lib, which is
+// not exported through a barrel reachable from e2e code
+type BalanceTypeChip = 'transferable' | 'reserved' | 'locked' | 'vested';
+
 /**
  * Dashboard widgets are wrapped in a dnd-kit sortable container that carries
  * `aria-disabled="true"` outside of edit mode. Playwright's actionability check
@@ -30,7 +34,7 @@ export class BaseDashboardPage extends BasePage<DashboardPageElements> {
     return this.page.getByText(this.pageElements.portfolioOverviewTitle).locator('..');
   }
 
-  public getBalanceTypeChip(type: 'transferable' | 'reserved' | 'locked' | 'vested'): Locator {
+  public getBalanceTypeChip(type: BalanceTypeChip): Locator {
     return this.page.getByTestId(`${this.pageElements.balanceTypeChipPrefix}-${type}`);
   }
 
@@ -44,7 +48,7 @@ export class BaseDashboardPage extends BasePage<DashboardPageElements> {
     return this.page.getByTestId(this.pageElements.holdingRow);
   }
 
-  public async clickBalanceTypeChip(type: 'transferable' | 'reserved' | 'locked' | 'vested'): Promise<this> {
+  public async clickBalanceTypeChip(type: BalanceTypeChip): Promise<this> {
     await step(`Click "${type}" balance type chip`, async () => {
       await this.getBalanceTypeChip(type).click({ force: true });
     });

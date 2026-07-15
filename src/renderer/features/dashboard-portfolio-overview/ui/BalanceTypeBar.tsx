@@ -27,9 +27,9 @@ export const BalanceTypeBar = memo(({ allocation, currency, syncing, selectedTyp
   const visibleTypes = BALANCE_TYPES.filter(
     (type) => allocation.types[type].pct > 0 || (type === 'vested' && hasUnpricedVested),
   );
-  const barTypes = visibleTypes.filter((type) => allocation.types[type].pct > 0);
   // a chip without a fiat share has nothing to cross-filter in the fiat-based list
   const isFilterable = (type: BalanceType) => allocation.types[type].pct > 0;
+  const barTypes = visibleTypes.filter(isFilterable);
 
   const renderChipValue = (type: BalanceType) => {
     if (type !== 'vested' || !hasUnpricedVested) {

@@ -32,17 +32,16 @@ type Props = {
 
 export const AllocationChart = memo(({ data, total, scopeLabel, scopeColor, countLabelKey, currency }: Props) => {
   const { t } = useI18n();
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [hoverId, setHoverId] = useState<string | null>(null);
 
-  const handleEnter = useCallback((_: unknown, index: number) => setHoverIndex(index), []);
-  const handleLeave = useCallback(() => setHoverIndex(null), []);
+  const handleEnter = useCallback((_: unknown, index: number) => setHoverId(data[index]?.id ?? null), [data]);
+  const handleLeave = useCallback(() => setHoverId(null), []);
 
   if (data.length === 0) return null;
 
   const totalValue = data.reduce((sum, slice) => sum + slice.value, 0);
-  // hover state can outlive the slice it pointed to when data shrinks — treat out-of-range as no hover
-  const activeHoverIndex = hoverIndex !== null && hoverIndex < data.length ? hoverIndex : null;
-  const hovered = activeHoverIndex === null ? null : (data[activeHoverIndex] ?? null);
+  // hover is tracked by slice id so it survives data reorders/removals — a stale id resolves to no hover
+  const hovered = hoverId === null ? null : (data.find((slice) => slice.id === hoverId) ?? null);
   const hoveredPct = hovered && totalValue > 0 ? ((hovered.value / totalValue) * 100).toFixed(1) : '0.0';
   // one "pct · amount" line fits ~18 chars in the donut hole; longer combos get
   // a deliberate two-line layout instead of an arbitrary mid-amount wrap
@@ -66,13 +65,13 @@ export const AllocationChart = memo(({ data, total, scopeLabel, scopeColor, coun
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
         >
-          {data.map((slice, index) => (
+          {data.map((slice) => (
             <Cell
               key={slice.id}
               fill={slice.color}
               className={cnTw(
                 'transition-[fill-opacity]',
-                activeHoverIndex !== null && activeHoverIndex !== index ? '[fill-opacity:0.3]' : '[fill-opacity:1]',
+                hovered !== null && hovered.id !== slice.id ? '[fill-opacity:0.3]' : '[fill-opacity:1]',
               )}
             />
           ))}

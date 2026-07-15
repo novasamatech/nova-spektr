@@ -2,6 +2,7 @@ import { default as BigNumber } from 'bignumber.js';
 
 import { type Balance, type Chain, type ChainId } from '@/shared/core';
 import { getRoundedValue } from '@/shared/lib/utils';
+import { type PriceObject } from '@/domains/price';
 
 import { type BalanceType, BALANCE_TYPES, makeByType, splitBalanceByType } from './balanceTypes';
 
@@ -13,14 +14,12 @@ export type AllocationSegment = {
 
 export type RowAllocation = Record<BalanceType, AllocationSegment>;
 
-type PriceMap = Record<string, Record<string, { price: number; change: number }>>;
-
 type AssetAllocParams = {
   accountIds: string[];
   priceId: string;
   balanceMap: Record<string, Balance>;
   chains: Record<string, Chain>;
-  prices: PriceMap;
+  prices: PriceObject;
   currency: { coingeckoId: string };
 };
 
@@ -30,7 +29,7 @@ type ChainAllocParams = {
   accountIds: string[];
   balanceMap: Record<string, Balance>;
   chains: Record<string, Chain>;
-  prices: PriceMap;
+  prices: PriceObject;
   currency: { coingeckoId: string };
 };
 
