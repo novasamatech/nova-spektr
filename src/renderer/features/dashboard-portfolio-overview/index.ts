@@ -8,7 +8,9 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { dashboardWidgetsSlot } from '@/pages/Dashboard';
 import { dashboardModel } from '@/pages/Dashboard/model/dashboard-model';
 
-import { PortfolioOverviewWidget } from './ui/PortfolioOverviewWidget';
+import { PortfolioOverviewWidget, portfolioVestingSlot } from './ui/PortfolioOverviewWidget';
+
+export { portfolioVestingSlot };
 
 export const dashboardPortfolioOverviewFeature = createFeature({
   name: 'dashboard/portfolio-overview',

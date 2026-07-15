@@ -1,4 +1,4 @@
-import { fork } from 'effector';
+import { createStore, fork } from 'effector';
 import { describe, expect, it } from 'vitest';
 
 import { type ChainId, AccountType, CryptoType, SigningType } from '@/shared/core';
@@ -498,6 +498,53 @@ describe('graph-model', () => {
 
       const ownSources = scope.getState(graphModel.$sourcesFor(CHAIN, { restrictToOwn: true }));
       expect(ownSources.map((s) => s.accountId)).not.toContain(proxiedAcc);
+    });
+  });
+
+  describe('$defaultPathFor caching', () => {
+    // Every flow that calls its store `$initiator` gets the same `shortName`,
+    // and `createSigningPathModel` builds each caller's `$chainId` itself — so a
+    // name-keyed cache collapsed the vesting claim, multisig approve/reject and
+    // RemoveVotes onto one entry. The loser silently traversed the winner's
+    // initiator (null), leaving its signing path empty, its route empty, and its
+    // transaction — and therefore its fee — never built.
+    it('gives flows with identically-named stores their own path', () => {
+      const multi = acc(1);
+      const signer = acc(2);
+      const scope = fork({
+        values: makeValues(
+          [makeContact(multi, 'Multi', { signatories: [signer], threshold: 1 })],
+          [],
+          [makeOwnAccount(signer)],
+        ),
+      });
+
+      // One flow with a real initiator, one idle — both naming their stores
+      // exactly as the effector SWC plugin does in the dev server.
+      const $activeInitiator = createStore<AnyAccount | null>(makeOwnMultisigAccount(multi, [signer], 1), {
+        name: '$initiator',
+      });
+      const $activeChainId = createStore<ChainId | null>(CHAIN, { name: '$chainId' });
+
+      const $idleInitiator = createStore<AnyAccount | null>(null, { name: '$initiator' });
+      const $idleChainId = createStore<ChainId | null>(CHAIN, { name: '$chainId' });
+
+      const $activePath = graphModel.$defaultPathFor($activeInitiator, $activeChainId);
+      const $idlePath = graphModel.$defaultPathFor($idleInitiator, $idleChainId);
+
+      expect($activePath).not.toBe($idlePath);
+
+      // Each flow answers for its own initiator: the idle one must not be handed
+      // the active one's path, nor the active one the idle one's emptiness.
+      expect(scope.getState($activePath).at(-1)).toMatchObject({ kind: 'signer', accountId: signer });
+      expect(scope.getState($idlePath)).toEqual([]);
+    });
+
+    it('still shares one combine between callers passing the very same stores', () => {
+      const $initiator = createStore<AnyAccount | null>(null);
+      const $chainId = createStore<ChainId | null>(CHAIN);
+
+      expect(graphModel.$defaultPathFor($initiator, $chainId)).toBe(graphModel.$defaultPathFor($initiator, $chainId));
     });
   });
 });

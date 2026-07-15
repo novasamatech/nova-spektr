@@ -11,7 +11,12 @@ export const enum Step {
 }
 
 export type ValidationSchemaOptions = {
-  minStartingBlock: BN;
+  /**
+   * The timeline chain's current head. `null` while it is unknown, in which
+   * case the past-block warning is skipped — there is nothing to compare
+   * against.
+   */
+  minStartingBlock: BN | null;
   minVestedTransfer: BN;
   maxVestingSchedules: BN;
   existingVestingSchedules: Record<AccountId, number>;

@@ -10,7 +10,7 @@ type Props = {
 };
 
 type BarConfig = {
-  labelKey: 'assetBalance.transferable' | 'assetBalance.locked' | 'assetBalance.reserved';
+  labelKey: 'assetBalance.transferable' | 'assetBalance.locked' | 'assetBalance.reserved' | 'assetBalance.vested';
   color: string;
   pct: number;
 };
@@ -19,6 +19,7 @@ const BARS: ((allocation: AllocationData) => BarConfig)[] = [
   (a) => ({ labelKey: 'assetBalance.transferable', color: ALLOCATION_COLORS.transferable, pct: a.transferablePct }),
   (a) => ({ labelKey: 'assetBalance.locked', color: ALLOCATION_COLORS.locked, pct: a.lockedPct }),
   (a) => ({ labelKey: 'assetBalance.reserved', color: ALLOCATION_COLORS.reserved, pct: a.reservedPct }),
+  (a) => ({ labelKey: 'assetBalance.vested', color: ALLOCATION_COLORS.vested, pct: a.vestedPct }),
 ];
 
 export const BalanceAllocationBars = memo(({ allocation }: Props) => {

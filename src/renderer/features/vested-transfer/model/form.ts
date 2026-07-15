@@ -6,7 +6,7 @@ import { chainsService } from '@/shared/api/network';
 import { type Chain, ChainOptions } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
-import { assert, getNativeAsset, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
+import { assert, getNativeAsset, getTimelineChainId, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { createAccountId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
@@ -19,16 +19,16 @@ import {
   getActionRequiredAmount,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts, balanceService, block } from '@/domains/network';
-import { balanceModel } from '@/entities/balance';
-import { networkModel } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
 import {
   type ValidationIssue,
   type VestingSchedule,
   type VestingScheduleRaw,
   VestingCsvError,
   vestingService,
-} from '@/entities/vesting';
+} from '@/domains/vesting';
+import { balanceModel } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
@@ -99,13 +99,14 @@ const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis)
   chain ? (apis[chain.chainId] ?? null) : null,
 );
 
+// Stays `null` for as long as the timeline chain's head is unknown — the block
+// poll has not ticked yet, or the chain is disconnected. The validation schema
+// skips the past-block warning in that case rather than measuring against a
+// zero floor, which would pass every starting block.
 const { $: $minStartingBlock } = createStoreFromEffect({
   defaultValue: null,
   params: { currentBlock: block.$currentBlock, chain: form.fields.chain.$value },
-  fn: ({ currentBlock, chain }) => {
-    const timelineChainId = chain.additional?.timelineChain ?? chain.chainId;
-    return new BN(vestingService.getMinStartingBlock(currentBlock, timelineChainId));
-  },
+  fn: ({ currentBlock, chain }) => vestingService.getMinStartingBlock(currentBlock, getTimelineChainId(chain)),
 });
 
 const { $: $minVestedTransfer } = createStoreFromEffect({
@@ -340,7 +341,8 @@ const validateFileFx = attach({
     { minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules },
   ) => {
     assert(parsedFile);
-    assert(minStartingBlock);
+    // `minStartingBlock` is deliberately not asserted: a null head means the
+    // past-block warning is skipped, not that the file cannot be validated.
     assert(minVestedTransfer);
     assert(maxVestingSchedules);
     assert(existingVestingSchedules);
