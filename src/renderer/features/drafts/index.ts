@@ -15,6 +15,7 @@ export { wireDraftSourceBalance } from './lib/wireDraftSourceBalance';
 export { type DraftSeed, createDraftModel } from './model/create-draft-model';
 export { type Draft } from '@/domains/backend';
 export { filterVisibleDrafts } from './lib/visible-drafts';
+export { type DraftListScope, filterDraftsByScope } from './lib/draft-scope';
 export { draftDeepLinkModel } from './model/draft-deep-link';
 export { DraftIcon } from './components/DraftIcon';
 export { useReadableDrafts } from './lib/useReadableDrafts';

@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-14
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-15
 
 ## Overview
 
@@ -347,7 +347,8 @@ ascending → descending → off:
   numerically (an approximation: amounts are compared across different assets without fiat conversion); after them come
   operations that carry a value the column does not render (batch contents, staking/governance amounts, transfer-all);
   last, operations with no value at all. Ascending flips the whole order (no-value first, largest amount last).
-- **Submitter** — alphabetically by the multisig's wallet name (falling back to its account id).
+- **Submitter** — alphabetically by the name the Submitter column renders: the resolved wallet name for wallet-backed
+  accounts, the contact name for contact-backed multisigs, with a short-address fallback.
 
 With sorting off, operations are ordered **newest first** by their creation time (block and extrinsic index break ties).
 The list can be narrowed by **search** and five **filters**:
@@ -357,7 +358,11 @@ The list can be narrowed by **search** and five **filters**:
 - **Status** — Drafts / In progress / Completed / Rejected / Hidden. Drafts and hidden operations obey the same logic as
   the regular statuses: with no status selected the scope behaves as before (drafts visible on Pending, hidden ops
   confined to the Hidden tab); selecting statuses shows exactly the chosen kinds — e.g. **Drafts** alone shows only the
-  drafts section, **Hidden** surfaces hidden operations in their own section.
+  drafts section, **Hidden** surfaces hidden operations in their own section. Beyond the Status gate, draft rows honor
+  the filters a draft can evaluate — network (the draft's chain), date range (creation date), and search (description or
+  address) — while an active transaction-type or proxy-type filter puts every draft out of scope (a draft's call may be
+  absent or undecoded), so the drafts section and the merged "All operations" count stay consistent with the filtered
+  list.
 - **Proxy type** — for flexible multisigs, filters by the proxy's access type.
 - **Network** — matches the operation's chain or, for XCM, its destination chain.
 - **Transaction type** — Transfer, Cross-chain, the staking / governance / proxy types, or Unknown.

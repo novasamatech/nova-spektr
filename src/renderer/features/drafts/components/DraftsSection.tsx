@@ -16,6 +16,7 @@ import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { AddressBookHealthOverlay, backendContactsModel } from '@/features/contacts';
 import { tryDecodeCallData } from '../lib/decode-call-data';
 import { resolveDraftProxyAccount } from '../lib/draft-account-resolution';
+import { type DraftListScope } from '../lib/draft-scope';
 import { useCanCreateDraft } from '../lib/useCanCreateDraft';
 import { useSubmitDraft } from '../lib/useSubmitDraft';
 import { useVisibleDrafts } from '../lib/useVisibleDrafts';
@@ -27,7 +28,12 @@ import { submitDraftModel } from '../model/submit-draft-model';
 import { DraftRow } from './DraftRow';
 import { DraftSummary } from './DraftSummary';
 
-export const DraftsSection = () => {
+type Props = {
+  /** Narrows drafts to the Operations view's active non-status filters. */
+  scope?: DraftListScope;
+};
+
+export const DraftsSection = ({ scope }: Props) => {
   const { t } = useI18n();
   const { toast } = useNotification();
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
@@ -42,7 +48,7 @@ export const DraftsSection = () => {
   // `operation-draft:delete` permission (DELETE endpoint checks `:write`).
   const canDelete = canWrite;
 
-  const { drafts: visibleDrafts } = useVisibleDrafts();
+  const { drafts: visibleDrafts } = useVisibleDrafts(scope);
   const submittedDraftIds = useUnit(submitDraftModel.$submittedDraftIds);
   const [isCollapsed, setIsCollapsed] = useState(false);
 

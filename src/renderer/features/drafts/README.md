@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-14
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-15
 
 ## Overview
 
@@ -11,12 +11,14 @@ right permissions) can review, edit, share, submit, or delete a draft.
 
 Drafts surface as a collapsible **Drafts section** inside the operations table on the
 [Operations view's](../multisig-operations/README.md) Pending tab — the first section under the shared column header,
-styled and column-aligned like operation rows, gated by the view's Status filter. A compact subsection with the same
-submit gating also appears in the dashboard's operations queue.
+styled and column-aligned like operation rows, gated by the view's Status filter and narrowed by the filters a draft can
+evaluate (network, date range, search; an active transaction-type or proxy-type filter hides all drafts — see the
+Operations view spec). A compact subsection with the same submit gating also appears in the dashboard's operations
+queue.
 
 Because drafts live on the backend they are inherently multi-user: shareable via a deep link
-(`Paths.OPERATIONS?draftId=…`), auto-fetched on sign-in, and re-polled every 30s — so every client picks up others'
-add / update / remove changes and raises an in-app notification for them (see [Sync & reconnect](#sync--reconnect)).
+(`Paths.OPERATIONS?draftId=…`), auto-fetched on sign-in, and re-polled every 30s — so every client picks up others' add
+/ update / remove changes and raises an in-app notification for them (see [Sync & reconnect](#sync--reconnect)).
 
 ## Who can use it / when it applies
 
@@ -55,9 +57,10 @@ Like an operation row, a draft row **expands** into three panels; the secondary 
 
 - **Details** — network, multisig (and proxy, when the draft routes through one), threshold, who created the draft and
   when, plus the full description. The header carries the **Edit** button (write permission, not yet submitted).
-- **Signing path** — the draft's stored execution hops, labelled Proxied → Multisig → Initiator. The panel header carries
-  two icon actions: **Open overview**, which opens the account-structure view anchored on the draft's exact signing
-  path, and **Share**, which copies the draft's deep link (opening the link scrolls to and highlights the draft).
+- **Signing path** — the draft's stored execution hops, labelled Proxied → Multisig → Initiator. The panel header
+  carries two icon actions: **Open overview**, which opens the account-structure view anchored on the draft's exact
+  signing path, and **Share**, which copies the draft's deep link (opening the link scrolls to and highlights the
+  draft).
 - **Advanced** — the call data (copyable, with a decoded JSON view once it decodes), or a hint that call data will be
   added on submission. The header carries the **Delete** trash icon (write permission, not yet submitted) behind a
   confirmation dialog.
@@ -72,8 +75,8 @@ Below the rows, a dashed **"New draft"** row starts the creation flow (write per
 
 The signing path is the heart of the feature. A draft does not just say "sign this transaction" — it encodes the exact
 **route** through the account topology: proxy hops, multisig hops, ending at a signer. This matters because one
-transaction can be reachable by multiple routes, and signing through the wrong route wraps the call differently
-(e.g. `proxy.proxy(real, call)` vs a bare multisig `as_multi`).
+transaction can be reachable by multiple routes, and signing through the wrong route wraps the call differently (e.g.
+`proxy.proxy(real, call)` vs a bare multisig `as_multi`).
 
 At submit time the saved path is resolved back into concrete accounts and **strictly followed** — the flow never
 silently re-routes. The canonical initiator is the path's first node (important for nested multisigs, where the deepest
@@ -103,19 +106,18 @@ context); closing with unsaved changes asks for confirmation.
 
 ## Submitting
 
-Submitting turns a draft into a real on-chain multisig operation. The **Submit** action opens a staged flow —
-**call data (conditional) → confirm → sign → submit** — that reconstructs the draft's transaction and signing path,
-lets the user confirm and sign (adapting to the signer's wallet type), and submits the first approval — creating the
-pending operation every co-signer then sees in the operations table.
+Submitting turns a draft into a real on-chain multisig operation. The **Submit** action opens a staged flow — **call
+data (conditional) → confirm → sign → submit** — that reconstructs the draft's transaction and signing path, lets the
+user confirm and sign (adapting to the signer's wallet type), and submits the first approval — creating the pending
+operation every co-signer then sees in the operations table.
 
 - **Call data** (only if the draft was saved without it) — the submitter pastes call data, sees a decoded preview, and
   confirms; this patches the draft on the backend, then advances to confirm.
 - **Confirm** — shows the signing path as a breadcrumb (plus a review popover for paths of length ≥ 2), a signatory
   selector when more than one valid signatory exists, wallet/account/signatory details, description, an external decode
-  link, expandable call args, the **fee**, the **multisig deposit** when the route contains a multisig, and
-  **validation errors** from a balance-aware validator that checks every account that must pay along the route. The Sign
-  button stays disabled until the wrapped extrinsic and fee are ready, validation passes, and the initiator is
-  available.
+  link, expandable call args, the **fee**, the **multisig deposit** when the route contains a multisig, and **validation
+  errors** from a balance-aware validator that checks every account that must pay along the route. The Sign button stays
+  disabled until the wrapped extrinsic and fee are ready, validation passes, and the initiator is available.
 - **Sign / Submit** — hands off to the shared `OperationSign` and `OperationSubmit` flows. On success it shows a success
   toast and records a backend operation description linking the draft to the resulting on-chain operation, so the
   multisig operation inherits the draft's description. A **Submitted** badge shows until the backend confirms.
@@ -127,14 +129,14 @@ the submit flow (see [States / scenarios](#states--scenarios)).
 
 ## States / scenarios
 
-| State                           | When it appears                                                                                          | What the user sees                                                                             |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Path unresolvable               | The saved path can't be re-resolved against the current wallets (e.g. a wallet on the route was removed) | The flow is **blocked** with a signing-path-unresolved error — never wrapped to the raw tx     |
-| Extrinsic build failure         | Wrapping the call fails                                                                                   | A generic extrinsic error (debounced ~300ms so transient init states don't flash red)          |
-| No signatories                  | The wallet holds no account that can sign                                                                 | An empty-account warning, with an add-account affordance for Polkadot Vault                     |
-| Initiator unavailable           | The draft's stored initiator can no longer sign                                                           | A banner asking the user to pick a replacement signatory; signing disabled until they do        |
-| Undecodable / missing call data | Bad or absent call data at create or submit entry                                                        | Blocked with a clear hint                                                                       |
-| Post-submit sync failure        | Recording the operation description fails after a successful on-chain submit                             | A toast with a **Retry** action; the draft stays visible and retryable                          |
+| State                           | When it appears                                                                                          | What the user sees                                                                         |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Path unresolvable               | The saved path can't be re-resolved against the current wallets (e.g. a wallet on the route was removed) | The flow is **blocked** with a signing-path-unresolved error — never wrapped to the raw tx |
+| Extrinsic build failure         | Wrapping the call fails                                                                                  | A generic extrinsic error (debounced ~300ms so transient init states don't flash red)      |
+| No signatories                  | The wallet holds no account that can sign                                                                | An empty-account warning, with an add-account affordance for Polkadot Vault                |
+| Initiator unavailable           | The draft's stored initiator can no longer sign                                                          | A banner asking the user to pick a replacement signatory; signing disabled until they do   |
+| Undecodable / missing call data | Bad or absent call data at create or submit entry                                                        | Blocked with a clear hint                                                                  |
+| Post-submit sync failure        | Recording the operation description fails after a successful on-chain submit                             | A toast with a **Retry** action; the draft stays visible and retryable                     |
 
 ## Sync & reconnect
 
@@ -186,8 +188,8 @@ in the submit flow) — completing a missing field, not editing an existing one.
 - [`multisig-operation-description`](../../aggregates/multisig-operation-description/README.md) — a submitted draft's
   description is published as the operation's shared note (the confirmation screen hides its own description field
   during a draft submission).
-- **`signing-path`** — provides the path graph model, path node types, route resolution, validation, and the
-  breadcrumb / review UI. Drafts are a persistence and coordination layer on top of it.
+- **`signing-path`** — provides the path graph model, path node types, route resolution, validation, and the breadcrumb
+  / review UI. Drafts are a persistence and coordination layer on top of it.
 - **`OperationSign` / `OperationSubmit`** (shared operations) — the actual sign-and-broadcast machinery.
 - **`backend` domain** — draft CRUD and cache, operation descriptions, auth, and permissions.
 - **Dashboard operations queue** — shows a compact drafts subsection with the same submit gating.

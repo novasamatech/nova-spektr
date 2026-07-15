@@ -19,8 +19,10 @@ import {
   accountService,
   accounts,
   contactMultisigsModel,
+  identity,
   multisigOperation,
 } from '@/domains/network';
+import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
@@ -338,11 +340,14 @@ const $sectionedOperations = combine(
     operations: $filteredOperations,
     sort: $sort,
     chains: networkModel.$chains,
-    multisigWallets: $multisigWalletSearchEntries,
+    wallets: walletModel.$wallets,
+    allAccounts: accounts.$list,
+    contacts: contactModel.$contacts,
+    identities: identity.$list,
     hiddenIds: $hiddenOperationIds,
     isScopeMerged: $isScopeMerged,
   },
-  ({ operations, sort, chains, multisigWallets, hiddenIds, isScopeMerged }) => {
+  ({ operations, sort, chains, wallets, allAccounts, contacts, identities, hiddenIds, isScopeMerged }) => {
     const buckets = new Map<OperationSection, OperationWithAccount[]>();
     for (const item of operations) {
       // In the merged scope hidden ops (surfaced via the Status filter) get their
@@ -359,7 +364,10 @@ const $sectionedOperations = combine(
       const items = buckets.get(section);
       if (!items) continue;
 
-      sections.push({ section, items: sortOperations(items, sort, { chains, multisigWallets }) });
+      sections.push({
+        section,
+        items: sortOperations(items, sort, { chains, wallets, accounts: allAccounts, contacts, identities }),
+      });
     }
 
     return sections;

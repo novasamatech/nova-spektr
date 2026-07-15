@@ -1,12 +1,15 @@
-import { type Chain, type ChainId, type Wallet, TransactionType } from '@/shared/core';
+import { type Chain, type ChainId, type Contact, type Wallet, TransactionType } from '@/shared/core';
 import { getNativeAsset } from '@/shared/lib/utils';
+import { type AnyAccount, type IdentityMap, accountService } from '@/domains/network';
 import {
   TransferTypes,
   XcmTypes,
   findCoreTransaction,
   getTransactionAmount,
   isMultiTransferTransaction,
+  isVestedTransferTransaction,
 } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 
 import { getFilterableTxType } from './operations-filter';
 import { extractTransferAmount, hasTransferAmount } from './transfer-amount-extractor';
@@ -25,7 +28,10 @@ export const getNextSortState = (current: OperationsSort, key: SortKey): Operati
 
 export type SortContext = {
   chains: Record<ChainId, Chain>;
-  multisigWallets: Pick<Wallet, 'id' | 'name'>[];
+  wallets: Wallet[];
+  accounts: AnyAccount[];
+  contacts: Contact[];
+  identities: IdentityMap;
 };
 
 // Types whose amount the Value column actually renders in the row (single
@@ -53,8 +59,10 @@ const getDisplayedAmount = ({ operation }: OperationWithAccount, chains: SortCon
     return Number.isNaN(amount) ? null : amount;
   }
 
-  // Multi-transfer batches render the summed native-asset amount in the column.
-  if (isMultiTransferTransaction(coreTx)) {
+  // Multi-transfer batches and vested transfers with a cliff or multi-entry
+  // schedule (utility.batchAll of vestedTransfer calls) render the summed
+  // native-asset amount in the column.
+  if (isMultiTransferTransaction(coreTx) || isVestedTransferTransaction(coreTx)) {
     const chain = chains[operation.chainId];
     const nativeAsset = chain ? getNativeAsset(chain.assets) : null;
     const transactions = coreTx.args['transactions'];
@@ -81,10 +89,25 @@ const getValueKey = (item: OperationWithAccount, chains: SortContext['chains']):
   return hasTransferAmount(item.operation) ? -1 : -2;
 };
 
-const getSubmitterKey = ({ operation, account }: OperationWithAccount, wallets: SortContext['multisigWallets']) => {
+// Mirrors NamedAccount in the Submitter column: a wallet-backed account renders
+// its resolved wallet name; contact-backed multisigs (walletId -1) resolve
+// through contacts/identity down to a short-address fallback.
+const getSubmitterKey = ({ account }: OperationWithAccount, context: SortContext): string => {
+  const { wallets, accounts, contacts, identities, chains } = context;
   const wallet = wallets.find(w => w.id === account.walletId);
 
-  return (wallet?.name ?? operation.multisigAccountId).toLowerCase();
+  const name = wallet
+    ? accountService.resolveWalletName({ wallet, accounts, contacts, identities, chains })
+    : accountService.resolveAccountName({
+        accountId: account.accountId,
+        chain: accountUtils.isFlexibleMultisigAccount(account) ? chains[account.chainId] : undefined,
+        accounts,
+        contacts,
+        identities,
+        chains,
+      });
+
+  return name.toLowerCase();
 };
 
 const compareNewest = (a: OperationWithAccount, b: OperationWithAccount): number => {
@@ -118,7 +141,7 @@ export const sortOperations = (
   const getSortKey = (item: OperationWithAccount): string => {
     if (sort.by === 'type') return getFilterableTxType(item.operation);
 
-    return getSubmitterKey(item, context.multisigWallets);
+    return getSubmitterKey(item, context);
   };
 
   return items

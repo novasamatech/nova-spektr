@@ -81,6 +81,7 @@ export const Operations = () => {
   }, [sectionedOps, collapsedSections]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const aboveListRef = useRef<HTMLDivElement>(null);
   const listContainerRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
 
@@ -93,6 +94,24 @@ export const Operations = () => {
     const newMargin = el.offsetTop;
     setScrollMargin(prev => (prev === newMargin ? prev : newMargin));
   });
+
+  // DraftsSection mutates its own height from local state (collapse toggle,
+  // expandable draft rows) without re-rendering Operations, so the effect above
+  // never fires for it — observe the content above the list to keep
+  // scrollMargin following those changes.
+  useLayoutEffect(() => {
+    const above = aboveListRef.current;
+    if (!above) return;
+
+    const observer = new ResizeObserver(() => {
+      const el = listContainerRef.current;
+      if (!el) return;
+      setScrollMargin(prev => (prev === el.offsetTop ? prev : el.offsetTop));
+    });
+    observer.observe(above);
+
+    return () => observer.disconnect();
+  }, [hasMultisigAccounts]);
 
   const virtualizer = useVirtualizer({
     count: flatItems.length,
@@ -136,16 +155,18 @@ export const Operations = () => {
         <div className="h-full overflow-x-auto overflow-y-hidden">
           <div className={cnTw('h-full', (deferredOps.length > 0 || showDrafts) && OPERATIONS_MIN_WIDTH)}>
             <ScrollArea viewportRef={scrollRef}>
-              {(deferredOps.length > 0 || showDrafts) && <OperationsTableHeader />}
+              <div ref={aboveListRef}>
+                {(deferredOps.length > 0 || showDrafts) && <OperationsTableHeader />}
 
-              {showDrafts && <DraftsSection />}
+                {showDrafts && <DraftsSection scope={filter} />}
 
-              {(isDeferredLoading || isDeepLinkLoading) && (
-                <div className="mt-4 flex w-full items-center justify-center gap-x-3">
-                  <Loader color="primary" size={25} />
-                  <ChainSyncStatus />
-                </div>
-              )}
+                {(isDeferredLoading || isDeepLinkLoading) && (
+                  <div className="mt-4 flex w-full items-center justify-center gap-x-3">
+                    <Loader color="primary" size={25} />
+                    <ChainSyncStatus />
+                  </div>
+                )}
+              </div>
 
               {!isDeferredLoading && deferredOps.length === 0 && (
                 <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>

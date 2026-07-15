@@ -1,6 +1,15 @@
 import { describe, expect, test } from 'vitest';
 
-import { type Asset, type AssetId, type Chain, type ChainId, AssetType, TransactionType } from '@/shared/core';
+import {
+  type Asset,
+  type AssetId,
+  type Chain,
+  type ChainId,
+  type Wallet,
+  AssetType,
+  TransactionType,
+  WalletType,
+} from '@/shared/core';
 import { type MultisigOperation } from '@/domains/network';
 
 import { type SortContext, getNextSortState, sortOperations } from './operations-sort';
@@ -59,9 +68,15 @@ const mockChain = {
   icon: '',
 } as Chain;
 
+const createMockWallet = (id: number, name: string, type: WalletType = WalletType.MULTISIG): Wallet =>
+  ({ id, name, type, accounts: [] }) as never;
+
 const context: SortContext = {
   chains: { [MOCK_CHAIN_ID]: mockChain },
-  multisigWallets: [{ id: 1, name: 'MyWallet' }],
+  wallets: [createMockWallet(1, 'MyWallet')],
+  accounts: [],
+  contacts: [],
+  identities: {},
 };
 
 const createTransferItem = (id: string, value: string): OperationWithAccount => ({
@@ -251,6 +266,37 @@ describe('operations-sort', () => {
       ]);
     });
 
+    test('value sort puts a vested transfer with a cliff (batchAll of vestedTransfer) into the displayed tier', () => {
+      // buildVestedTransfer emits utility.batchAll of vestedTransfer calls when the
+      // schedule has a cliff or more than one entry; the row renders the summed amount.
+      const vestedBatchOp: OperationWithAccount = {
+        operation: createMockOperation({
+          id: 'op-vested-batch',
+          transaction: {
+            type: TransactionType.BATCH_ALL,
+            section: 'utility',
+            method: 'batchAll',
+            args: {
+              transactions: [
+                // 400 + 600 = 1000 DOT at precision 10
+                { type: TransactionType.VESTED_TRANSFER, args: { schedule: { locked: '4000000000000' } } },
+                { type: TransactionType.VESTED_TRANSFER, args: { schedule: { locked: '6000000000000' } } },
+              ],
+            },
+          } as never,
+        }),
+        account: mockAccount,
+      };
+
+      // A row displaying 1000 DOT must outrank a plain 5 DOT transfer under Value desc,
+      // not fall into the hidden-value tier below it.
+      const desc = sortOperations([fiveUnitsOp, vestedBatchOp], { by: 'value', direction: 'desc' }, context);
+      expect(desc.map(i => i.operation.id)).toEqual(['op-vested-batch', 'op-five']);
+
+      const asc = sortOperations([vestedBatchOp, fiveUnitsOp], { by: 'value', direction: 'asc' }, context);
+      expect(asc.map(i => i.operation.id)).toEqual(['op-five', 'op-vested-batch']);
+    });
+
     test('value asc puts a non-numeric amount into the hidden-value tier, above no-value ops', () => {
       const brokenOp = createTransferItem('op-broken', 'not-a-number');
       const result = sortOperations([oneUnitOp, brokenOp, noAmountOp], { by: 'value', direction: 'asc' }, context);
@@ -266,7 +312,7 @@ describe('operations-sort', () => {
       expect(result.map(i => i.operation.id)).toEqual(['op-remark', 'op-one', 'op-unknown']);
     });
 
-    test('submitter asc orders by wallet name with accountId fallback for missing wallet', () => {
+    test('submitter asc orders by wallet name with address fallback for missing wallet', () => {
       const alphaOp: OperationWithAccount = {
         operation: createMockOperation({ id: 'op-alpha' }),
         account: { accountId: MOCK_ACCOUNT_ID, accountType: 'multisig', walletId: 1 } as never,
@@ -280,11 +326,8 @@ describe('operations-sort', () => {
         account: { accountId: MOCK_ACCOUNT_ID, accountType: 'multisig', walletId: 99 } as never,
       };
       const submitterContext: SortContext = {
-        chains: context.chains,
-        multisigWallets: [
-          { id: 1, name: 'Alpha' },
-          { id: 2, name: 'beta' },
-        ],
+        ...context,
+        wallets: [createMockWallet(1, 'Alpha'), createMockWallet(2, 'beta')],
       };
 
       const result = sortOperations(
@@ -294,6 +337,49 @@ describe('operations-sort', () => {
       );
       // fallback key '5gnj...' sorts before letter-led wallet names
       expect(result.map(i => i.operation.id)).toEqual(['op-no-wallet', 'op-alpha', 'op-beta']);
+    });
+
+    test('submitter sorts contact-backed multisigs by their rendered contact name, not raw accountId', () => {
+      // Real multisig wallet "Alpha" and a contact-backed multisig (walletId -1)
+      // whose row renders the contact name "Zeta" via NamedAccount.
+      const alphaOp: OperationWithAccount = {
+        operation: createMockOperation({ id: 'op-alpha' }),
+        account: { accountId: MOCK_ACCOUNT_ID, accountType: 'multisig', walletId: 1 } as never,
+      };
+      const zetaOp: OperationWithAccount = {
+        operation: createMockOperation({ id: 'op-zeta' }),
+        account: { accountId: MOCK_ACCOUNT_ID, accountType: 'multisig', walletId: -1 } as never,
+      };
+      const submitterContext: SortContext = {
+        ...context,
+        wallets: [createMockWallet(1, 'Alpha')],
+        contacts: [
+          { id: 'c1', name: 'Zeta', address: '' as never, accountId: MOCK_ACCOUNT_ID as never, source: 'local' },
+        ],
+      };
+
+      const result = sortOperations([zetaOp, alphaOp], { by: 'submitter', direction: 'asc' }, submitterContext);
+      expect(result.map(i => i.operation.id)).toEqual(['op-alpha', 'op-zeta']);
+    });
+
+    test('submitter resolves display accounts against all wallets, not only multisig ones', () => {
+      // The proxied→flexible display accounts synthesized in model/context.ts carry
+      // a PROXIED walletId — the row still renders that wallet's name.
+      const alphaOp: OperationWithAccount = {
+        operation: createMockOperation({ id: 'op-alpha' }),
+        account: { accountId: MOCK_ACCOUNT_ID, accountType: 'multisig', walletId: 1 } as never,
+      };
+      const proxiedOp: OperationWithAccount = {
+        operation: createMockOperation({ id: 'op-proxied' }),
+        account: { accountId: MOCK_ACCOUNT_ID, accountType: 'flexible_multisig', walletId: 7 } as never,
+      };
+      const submitterContext: SortContext = {
+        ...context,
+        wallets: [createMockWallet(1, 'Alpha'), createMockWallet(7, 'Zulu proxied', WalletType.PROXIED)],
+      };
+
+      const result = sortOperations([proxiedOp, alphaOp], { by: 'submitter', direction: 'asc' }, submitterContext);
+      expect(result.map(i => i.operation.id)).toEqual(['op-alpha', 'op-proxied']);
     });
 
     test('keeps input order for equal keys', () => {

@@ -25,7 +25,9 @@ export const Operations = () => {
   const isScopeMerged = useUnit(operationsContextModel.$isScopeMerged);
   const visibleCount = useUnit(operationsContextModel.$visibleOperationsCount);
   const filter = useUnit(operationsContextModel.$filter);
-  const { drafts: visibleDrafts } = useVisibleDrafts();
+  // Scoped by the same non-status filters as the operations list, so the
+  // merged count only includes drafts the section actually shows.
+  const { drafts: visibleDrafts } = useVisibleDrafts(filter);
 
   // The merged scope hosts the drafts section (gated by the Status filter), so
   // its rows join the "All operations" total.
