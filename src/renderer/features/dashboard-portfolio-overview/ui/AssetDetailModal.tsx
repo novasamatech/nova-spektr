@@ -2,14 +2,16 @@ import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { formatBalance } from '@/shared/lib/utils';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HelpText } from '@/shared/ui';
-import { AssetIcon, Identicon } from '@/shared/ui-entities';
+import { AssetIcon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
 import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { type BreakdownRow, useHoldingBreakdown } from '../hooks/useHoldingBreakdown';
 import { type Holding } from '../hooks/useHoldings';
 import { type RowAllocation, computeAssetRowAllocations } from '../lib/computeRowAllocations';
@@ -67,13 +69,15 @@ export const AssetDetailModal = memo(({ holding, accountIds, allEntries, currenc
         title: t('dashboard.portfolioOverview.assetDetail.address'),
         width: '28%',
         render: (_, item) => (
-          <div className="flex items-center gap-2">
-            <Identicon address={toAddress(item.address)} />
-            <div className="min-w-0">
-              <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
-              <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
-            </div>
-          </div>
+          <NamedAccount
+            accountId={pjsSchema.helpers.toAccountId(item.accountId)}
+            chain={undefined}
+            title={item.name || undefined}
+            titleClass="truncate font-semibold"
+            variant="short"
+            iconSize={24}
+            hideExplorers
+          />
         ),
       },
       {

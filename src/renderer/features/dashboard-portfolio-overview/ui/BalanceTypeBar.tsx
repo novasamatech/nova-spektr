@@ -62,6 +62,8 @@ export const BalanceTypeBar = memo(({ allocation, currency, syncing, selectedTyp
             'flex cursor-pointer items-center gap-1 text-help-text font-semibold text-tab-text-accent transition-opacity',
             selectedType ? 'opacity-100' : 'pointer-events-none opacity-0',
           )}
+          tabIndex={selectedType ? undefined : -1}
+          aria-hidden={!selectedType}
           onClick={onClear}
         >
           {t('dashboard.portfolioOverview.showAll')}
