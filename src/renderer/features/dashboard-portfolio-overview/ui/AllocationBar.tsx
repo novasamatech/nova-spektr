@@ -12,12 +12,13 @@ type Props = {
 
 const SEGMENTS: {
   key: keyof RowAllocation;
-  labelKey: 'assetBalance.transferable' | 'assetBalance.locked' | 'assetBalance.reserved';
+  labelKey: 'assetBalance.transferable' | 'assetBalance.locked' | 'assetBalance.reserved' | 'assetBalance.vested';
   color: string;
 }[] = [
   { key: 'transferablePct', labelKey: 'assetBalance.transferable', color: ALLOCATION_COLORS.transferable },
   { key: 'lockedPct', labelKey: 'assetBalance.locked', color: ALLOCATION_COLORS.locked },
   { key: 'reservedPct', labelKey: 'assetBalance.reserved', color: ALLOCATION_COLORS.reserved },
+  { key: 'vestedPct', labelKey: 'assetBalance.vested', color: ALLOCATION_COLORS.vested },
 ];
 
 export const AllocationBar = memo(({ allocation }: Props) => {

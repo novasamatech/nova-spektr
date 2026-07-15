@@ -39,6 +39,7 @@ export const $defaultFeatures = createStore({
   callData: true,
   hiddenWallets: true,
   vestedTransfer: true,
+  vestingClaim: true,
   multiTransfer: true,
   appCustomOperations: true,
 

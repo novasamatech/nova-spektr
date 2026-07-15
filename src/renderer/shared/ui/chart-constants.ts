@@ -42,6 +42,7 @@ export const getColorByIndex = (index: number): string =>
 
 export const ALLOCATION_COLORS = {
   transferable: '#53A867',
-  locked: '#5A5FE0',
+  locked: '#64748B',
   reserved: '#F7931A',
+  vested: '#4649F6',
 } as const;

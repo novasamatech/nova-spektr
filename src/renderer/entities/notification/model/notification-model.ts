@@ -72,8 +72,7 @@ const EVENT_MATCHERS: Record<NotificationEvent, (n: CreateNotificationParams) =>
       NotificationType.PROXY_CREATED,
     ].includes(n.type),
   [NotificationEvent.OPERATION_CREATED]: (n) =>
-    (n.type === NotificationType.MULTISIG_OPERATION && n.status === 'info') ||
-    n.type === NotificationType.DRAFT_CHANGE,
+    (n.type === NotificationType.MULTISIG_OPERATION && n.status === 'info') || n.type === NotificationType.DRAFT_CHANGE,
   [NotificationEvent.OPERATION_EXECUTED]: (n) =>
     (n.type === NotificationType.MULTISIG_OPERATION || n.type === NotificationType.MULTISIG_EVENT) &&
     n.status === 'success',

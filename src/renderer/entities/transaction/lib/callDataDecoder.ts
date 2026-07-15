@@ -259,6 +259,9 @@ const getCallDataParser: Record<
       },
     };
   },
+  [TransactionType.VEST]: (): Record<string, any> => {
+    return {};
+  },
   [TransactionType.ASSET_TRANSFER]: (decoded): Record<string, any> => {
     return {
       assetId: decoded.args[0]!.toString(),
@@ -720,5 +723,6 @@ const getVestingTxType = (method: string, section: string): TransactionType | un
 
   return {
     vestedTransfer: TransactionType.VESTED_TRANSFER,
+    vest: TransactionType.VEST,
   }[method];
 };

@@ -20,9 +20,14 @@ vestedTransferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ opera
   return <TransactionAmount operation={operation} />;
 });
 
+// `VEST` is the claim side of the same pallet: a multisig account with a vesting
+// schedule can raise `vesting.vest()` from the claim flow, so co-signers meet the
+// operation in their list and it needs a card of its own — without one it renders
+// as `unknownMst` with a raw `vesting: vest` title.
 const getOperationTitle = (transactionType: TransactionType): string | undefined => {
   const Title: { [key in TransactionType]?: string } = {
     [TransactionType.VESTED_TRANSFER]: t('operations.titles.vestedTransfer'),
+    [TransactionType.VEST]: t('operations.titles.vest'),
   };
 
   return Title[transactionType];
@@ -31,6 +36,7 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
 const getOperationIcon = (transactionType: TransactionType): IconNames | undefined => {
   const Icons: { [key in TransactionType]?: IconNames } = {
     [TransactionType.VESTED_TRANSFER]: 'vestedTransferMst',
+    [TransactionType.VEST]: 'vestedTransferMst',
   };
 
   return Icons[transactionType];

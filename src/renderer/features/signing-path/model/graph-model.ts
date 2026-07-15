@@ -690,7 +690,29 @@ function $nextOptionsForNode(node: PathNode, chainId: ChainId, opts?: GraphOptio
   return $store;
 }
 
-const defaultPathCache = new Map<string, Store<PathNode[]>>();
+/**
+ * Cached default paths, keyed by the **identity** of the input stores.
+ *
+ * It used to key on `shortName`, which is a _display label_, not an identity —
+ * and in the dev server the effector SWC plugin (`addNames: true`) sets it from
+ * the variable name. Every flow that calls its store `$initiator` therefore
+ * produced the same label, and `$chainId` is created _inside_
+ * `createSigningPathModel`, so that half of the key was identical for all 27
+ * callers. The result: `$initiator:$chainId:*` was one cache entry shared by
+ * the vesting claim, multisig approve/reject and RemoveVotes, and whichever
+ * module was evaluated first handed its store to everyone else. The losers
+ * silently traversed _someone else's_ initiator — normally null — so their
+ * signing path stayed empty, their route came out empty, wrapping threw
+ * "Signatory is required", and the transaction (and its fee) never
+ * materialised.
+ *
+ * It only bit in development: without the plugin, unnamed stores fall back to a
+ * unique id and the keys never collided.
+ */
+const defaultPathCache = new Map<
+  Store<AnyAccount | null>,
+  Map<Store<ChainId | null>, Map<string, Store<PathNode[]>>>
+>();
 
 function $defaultPathFor(
   initiatorStore: Store<AnyAccount | null>,
@@ -699,10 +721,22 @@ function $defaultPathFor(
 ): Store<PathNode[]> {
   const allowedProxyTypes = opts?.allowedProxyTypes;
   // Two callers passing the same input stores + opts share one combine — keeps
-  // graph traversal cheap when consumers re-render. Identity of the input
-  // stores is part of the key so different forms get distinct caches.
-  const cacheKey = `${initiatorStore.shortName}:${chainIdStore.shortName}:${allowedProxyTypes ? [...allowedProxyTypes].sort().join(',') : '*'}`;
-  const $cached = defaultPathCache.get(cacheKey);
+  // graph traversal cheap when consumers re-render.
+  const optsKey = allowedProxyTypes ? [...allowedProxyTypes].sort().join(',') : '*';
+
+  let byChainId = defaultPathCache.get(initiatorStore);
+  if (!byChainId) {
+    byChainId = new Map();
+    defaultPathCache.set(initiatorStore, byChainId);
+  }
+
+  let byOpts = byChainId.get(chainIdStore);
+  if (!byOpts) {
+    byOpts = new Map();
+    byChainId.set(chainIdStore, byOpts);
+  }
+
+  const $cached = byOpts.get(optsKey);
   if ($cached) return $cached;
 
   const $store = combine(
@@ -728,7 +762,7 @@ function $defaultPathFor(
       });
     },
   );
-  defaultPathCache.set(cacheKey, $store);
+  byOpts.set(optsKey, $store);
 
   return $store;
 }

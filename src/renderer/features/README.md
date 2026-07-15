@@ -120,8 +120,10 @@ notes.
 - `transfer-operation-details` (no spec planned)
 - `multi-transfer`
 - `multi-transfer-operation-details` (no spec planned)
-- `vested-transfer`
+- [`vested-transfer`](./vested-transfer/README.md)
 - `vested-transfer-operation-details` (no spec planned)
+- [`vesting-claim`](./vesting-claim/README.md)
+- [`vesting-portfolio`](../aggregates/vesting-portfolio/README.md) (aggregate)
 - `send-to-contact`
 
 ## Assets & Balances
@@ -146,7 +148,7 @@ notes.
 - `call-data-execute`
 - `extrinsic-builder`
 - [`drafts`](./drafts/README.md)
-- `signing-path`
+- [`signing-path`](./signing-path/README.md)
 - `sign-wallet-connect` (no spec planned)
 
 ## Basket
@@ -163,9 +165,12 @@ notes.
 - `dashboard-governance`
 - `dashboard-navigation` (no spec planned)
 - `dashboard-operations-queue`
-- `dashboard-portfolio-overview`
+- [`dashboard-portfolio-overview`](./dashboard-portfolio-overview/README.md)
 - `dashboard-price-charts`
 - `dashboard-staking`
+
+> See also: [`vesting-claim`](#transfers) and [`vesting-portfolio`](#transfers) — the vesting callout is injected into
+> the Portfolio Overview card.
 
 ## Contacts & Notifications
 
