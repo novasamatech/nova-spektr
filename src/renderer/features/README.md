@@ -118,7 +118,7 @@ notes.
 - `transfer`
 - `transfer-basket`
 - `transfer-operation-details`
-- `multi-transfer`
+- [`multi-transfer`](./multi-transfer/README.md)
 - `multi-transfer-operation-details`
 - [`vested-transfer`](./vested-transfer/README.md)
 - `vested-transfer-operation-details` (no spec planned)
@@ -145,7 +145,7 @@ notes.
 - `operations-navigation` (no spec planned)
 - `operation-templates`
 - `app-custom-operations`
-- `call-data-execute`
+- [`call-data-execute`](./call-data-execute/README.md)
 - `extrinsic-builder`
 - [`drafts`](./drafts/README.md)
 - [`signing-path`](./signing-path/README.md)
