@@ -95,8 +95,21 @@ describe('parseVerifyProxyOperation', () => {
     expect(parseVerifyProxyOperation(operation(proxyWrap(inner)))).toBeNull();
   });
 
-  test('returns null for remarkWithEvent without proxy wrap (out of expected shape)', () => {
-    expect(parseVerifyProxyOperation(operation(remarkWithEvent(markerPayload)))).toBeNull();
+  test('recognizes a bare remarkWithEvent (domain stores the core call with the proxy wrap stripped)', () => {
+    const info = parseVerifyProxyOperation(operation(remarkWithEvent(markerPayload)));
+    expect(info).toEqual({ delegateAccountId: delegate, pureProxyAccountId: pureProxy });
+  });
+
+  test('returns null for a bare remarkWithEvent without a valid marker', () => {
+    expect(parseVerifyProxyOperation(operation(remarkWithEvent('just a note')))).toBeNull();
+  });
+
+  test('scans past an ordinary remark in a batch to find the marker', () => {
+    const op = operation(batchAll([remarkWithEvent('just a note'), proxyWrap(remarkWithEvent(markerPayload))]));
+    expect(parseVerifyProxyOperation(op)).toEqual({
+      delegateAccountId: delegate,
+      pureProxyAccountId: pureProxy,
+    });
   });
 
   test('returns null when remark JSON has wrong kind', () => {

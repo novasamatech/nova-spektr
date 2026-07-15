@@ -1,5 +1,6 @@
 import { BN } from '@polkadot/util';
 
+import { LockTypes } from '@/shared/core';
 import { computeAssetRowAllocations, computeChainRowAllocations } from '../computeRowAllocations';
 
 // --- helpers to build mock data ---
@@ -13,6 +14,7 @@ const makeBalance = (overrides: {
   free: number;
   reserved: number;
   frozen: number;
+  vestingLock?: number;
   transferableMode?: 'holdAndFreezes' | 'legacy';
 }) => ({
   id: `${overrides.chainId}-${overrides.accountId}-${overrides.assetId}`,
@@ -28,7 +30,7 @@ const makeBalance = (overrides: {
   free: makeBN(overrides.free),
   reserved: makeBN(overrides.reserved),
   frozen: makeBN(overrides.frozen),
-  locked: [],
+  locked: overrides.vestingLock ? [{ type: LockTypes.VESTING, amount: makeBN(overrides.vestingLock) }] : [],
 });
 
 const makeChains = (
@@ -217,6 +219,42 @@ describe('computeChainRowAllocations', () => {
     expect(alloc.transferablePct).toBeCloseTo(82.4, 0);
     expect(alloc.reservedPct).toBeCloseTo(11.8, 0);
     expect(alloc.lockedPct).toBeCloseTo(5.9, 0);
+  });
+
+  test('carves the vesting lock out of locked, as the overview bars do', () => {
+    // free=1000, frozen=400 all of it a vesting lock, nothing reserved:
+    // transferable = 600, locked = 400 — and every plank of that 400 is vesting.
+    // The overview widget shows Vested 40% / Locked 0%; the row this modal draws
+    // from the same balance must not turn round and call it Locked 40%.
+    const balances = [
+      makeBalance({
+        accountId: 'acc1',
+        chainId: 'chain1',
+        assetId: 0,
+        free: 1000,
+        reserved: 0,
+        frozen: 400,
+        vestingLock: 400,
+      }),
+    ];
+    const balanceMap = Object.fromEntries(balances.map((b) => [b.id, b]));
+    const chains = makeChains([{ chainId: 'chain1', assetId: 0, priceId: 'polkadot', symbol: 'DOT', precision: 0 }]);
+    const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
+
+    const result = computeChainRowAllocations({
+      assetIds: [0],
+      chainId: 'chain1' as any,
+      accountIds: ['acc1'],
+      balanceMap: balanceMap as any,
+      chains: chains as any,
+      prices,
+      currency: makeCurrency(),
+    });
+
+    const alloc = result.get(0)!;
+    expect(alloc.transferablePct).toBeCloseTo(60, 0);
+    expect(alloc.vestedPct).toBeCloseTo(40, 0);
+    expect(alloc.lockedPct).toBeCloseTo(0, 0);
   });
 
   test('omits assets with zero balance', () => {

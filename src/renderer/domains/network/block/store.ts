@@ -9,7 +9,7 @@ import { entries, getCurrentBlockNumber } from '@/shared/lib/utils';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 
-import { blockResource } from './resource';
+import { blockResource, blockTimeResource } from './resource';
 
 export const $apis = networkModel.$apis;
 
@@ -71,6 +71,7 @@ sample({
 
 export const block = {
   blockResource,
+  blockTimeResource,
   $currentBlock,
   startBlockListening,
   stopBlockListening,

@@ -196,7 +196,8 @@
     "number": "{value, number}",
     "numberWithSuffix": "{value, number}{suffix}",
     "reserved": "Reserved",
-    "transferable": "Transferable"
+    "transferable": "Transferable",
+    "vested": "Vested"
   },
   "assethubMigration": {
     "automaticMigration": "Migration happens automatically, no action needed.",
@@ -2096,7 +2097,6 @@
     "errorSignedMessage": "tried to sign this operation",
     "initiatedMessage": "created this operation",
     "signedMessage": "signed this operation",
-    "title": "Log",
     "unknownMessage": " made an unknown action"
   },
   "multisigOperations": {
@@ -2445,7 +2445,6 @@
     "connectionTimeoutDescription": "Can't connect to the network in 10 seconds. You can retry later with the same link.",
     "connectionTimeoutRetryButton": "Retry",
     "connectionTimeoutTitle": "Connection timeout",
-    "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
     "cancelDescriptionButton": "Cancel",
     "descriptionLabel": "Description",
@@ -2583,7 +2582,7 @@
     "signing": "{ signed } of { threshold } signed",
     "status": {
       "cancelled": "Rejected",
-      "error": "Error",
+      "error": "Rejected",
       "established": "Established",
       "executed": "Executed",
       "signing": "On signing"
@@ -2630,7 +2629,6 @@
       "signTitle_other": "Confirm { count } operations on your { walletName } app",
       "tryAgainButton": "Try again"
     },
-    "walletSignatoriesTitle": "Your accounts",
     "xcmFee": "Cross-chain fee"
   },
   "operations": {
@@ -2659,7 +2657,7 @@
       "accountNotInAddressBook": "This account is not in the address book contacts. Add it to contacts before creating a draft.",
       "connectToCreate": "Sign in to create drafts",
       "connectToSubmit": "Sign in to submit drafts",
-      "noWritePermission": "You do not have permission to create drafts. Contact your admin.", 
+      "noWritePermission": "You do not have permission to create drafts. Contact your admin.",
       "noMultisigsInAddressBook": "No multisig accounts found. Add a multisig wallet first.",
       "noDescription": "No description",
       "unknownMultisig": "Unknown multisig",
@@ -2711,6 +2709,10 @@
       "summaryNoCallData": "No call data - you'll add it when submitting this operation.",
       "linkCopied": "Draft link copied!",
       "shareDraftTooltip": "Share draft link with signatories",
+      "createdByLabel": "Created by",
+      "pathRoleProxied": "Proxied",
+      "pathRoleMultisig": "Multisig",
+      "pathRoleInitiator": "Initiator",
       "selectMultisigForProxy": "Proxy multisig",
       "proxyLabel": "Proxy",
       "viewDraft": "View draft",
@@ -2740,6 +2742,7 @@
       "clearAll": "operations.filters.clearAll",
       "clearFilters": "Clear filters",
       "dateRangePlaceholder": "Date range",
+      "multisigStatusPlaceholder": "Status",
       "networkPlaceholder": "Networks",
       "networkSummary": "Networks",
       "operationTypePlaceholder": "Operation type",
@@ -2786,6 +2789,7 @@
       "unknownOn": "Unknown Operation on",
       "unlockOn": "Unlock on",
       "unstakeOn": "Unstake { asset } on",
+      "vest": "Claim vested",
       "vestedTransfer": "Vested transfer",
       "vestedTransferOn": "Vested transfer on",
       "verifyProxy": "Verify proxy",
@@ -2798,6 +2802,12 @@
     "pendingEmptyDescription": "Once you or a multisig signer create an operation, it will appear here.",
     "pendingEmptyTitle": "Pending operations list is empty",
     "searchPlaceholder": "Search",
+    "sections": {
+      "completed": "Completed",
+      "hidden": "Hidden",
+      "inProgress": "In progress",
+      "rejected": "Rejected"
+    },
     "shareOperationTooltip": "Share transaction link with signatories",
     "sync": {
       "connecting": "Connecting to networks...",
@@ -2805,7 +2815,17 @@
       "synced": "Synced",
       "syncing": "Syncing networks... {synced}/{total}"
     },
+    "table": {
+      "operation": "Operation",
+      "value": "Value",
+      "submitter": "Submitter",
+      "description": "Description",
+      "sortByType": "Sort by operation type",
+      "sortByValue": "Sort by value (amount, vote stake, etc.)",
+      "sortBySubmitter": "Sort by submitter"
+    },
     "tabs": {
+      "all": "All operations",
       "hidden": "Hidden",
       "history": "History",
       "pending": "Pending"
@@ -2839,6 +2859,7 @@
       "unknown": "Unknown Operation",
       "unlock": "Unlock",
       "unstake": "Unstake",
+      "vest": "Claim vested",
       "vestedTransfer": "Vested transfer",
       "vote": "Vote"
     },
@@ -3625,6 +3646,68 @@
         }
       },
       "title": "Parsed file"
+    }
+  },
+  "vesting": {
+    "callout": {
+      "activeSchedules_one": "{count} active vesting schedule",
+      "activeSchedules_other": "{count} active vesting schedules",
+      "unlockingRate": "Unlocking ≈ {rate}/day",
+      "unlockingGradually": "Unlocking gradually",
+      "subtitleWithDate": "{prefix} · fully unlocks by {date}",
+      "empty": "No active vesting schedules",
+      "ready": "ready",
+      "schedule": "Schedule"
+    },
+    "schedule": {
+      "title": "Vesting schedules",
+      "totalVesting": "Total vesting",
+      "activeSchedules": "Active schedules",
+      "readyToUnlock": "Ready to unlock",
+      "unlocking": "Unlocking",
+      "unlockingPerDayLabel": "Unlocking per day",
+      "unlocked": "Unlocked",
+      "readyShort": "Ready to claim",
+      "averageUnlockRate": "Average unlock rate",
+      "unlockingPerDay": "unlocking per day",
+      "seeSchedule": "See schedule",
+      "loadingMore": "Loading more schedules…"
+    },
+    "account": {
+      "title": "Vesting details",
+      "claimAll": "Claim all",
+      "cantClaimChainUnsupported": "Your wallet can't sign on this network",
+      "cantClaimNoSigner": "No account in your wallets can sign this claim",
+      "cantClaimNotYours": "This account isn't in your wallets",
+      "cantClaimWatchOnly": "This is a watch-only account",
+      "scheduleLabel": "Schedule {index} · {symbol}",
+      "unlockedOf": "Unlocked {unlocked} of {total}",
+      "inCliff": "In cliff — nothing to unlock yet",
+      "inCliffShort": "In cliff",
+      "cliffUntil": "Cliff until {when} — nothing to unlock yet",
+      "notStarted": "Not started",
+      "startsOn": "Vesting starts {when}",
+      "vesting": "Vesting",
+      "fullyUnlocked": "Fully unlocked",
+      "fullyUnlocksOn": "Fully unlocks {when}",
+      "readyToClaim": "Ready to claim",
+      "perDayLong": "per day"
+    },
+    "duration": {
+      "dateIn": "{date} · in {left}",
+      "days": "{days}d",
+      "daysHours": "{days}d {hours}h",
+      "hours": "{hours}h",
+      "hoursMinutes": "{hours}h {minutes}m",
+      "minutes": "{minutes}m",
+      "lessThanMinute": "< 1m"
+    },
+    "confirm": {
+      "labels": {
+        "unlocksNow": "Unlocks now",
+        "keepsVesting": "Keeps vesting"
+      },
+      "hint": "Claiming releases the vested amount from the vesting lock. The network fee is paid from your transferable balance."
     }
   },
   "voteChart": {

@@ -35,6 +35,7 @@ export const getExtrinsic: Record<
   [TransactionType.VESTED_TRANSFER]: ({ target, locked, startingBlock, perBlock }, api) => {
     return api.tx.vesting.vestedTransfer(target, { locked, startingBlock, perBlock });
   },
+  [TransactionType.VEST]: (_, api) => api.tx.vesting.vest(),
   [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset, palletName = 'assets' }, api) => {
     const type = api.tx[palletName]!.transfer!.meta.args[0]!.type;
     // @ts-expect-error Incorrect polkadot-js/api types

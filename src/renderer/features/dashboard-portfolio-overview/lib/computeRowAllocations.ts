@@ -1,13 +1,45 @@
+import { BN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 
-import { type Balance, type Chain, type ChainId } from '@/shared/core';
-import { getRoundedValue, transferableAmountBN } from '@/shared/lib/utils';
+import { type Asset, type Balance, type Chain, type ChainId } from '@/shared/core';
+import { getRoundedValue, transferableAmountBN, vestedLockedAmountBN } from '@/shared/lib/utils';
 
 export type RowAllocation = {
   transferablePct: number;
   lockedPct: number;
   reservedPct: number;
+  /**
+   * The share held by the vesting lock. Carved _out_ of `lockedPct`, exactly as
+   * the portfolio-wide bars do it (`computeBalanceAllocation`) — the two are
+   * one click apart and must not disagree about what "Locked" means.
+   */
+  vestedPct: number;
 };
+
+type Totals = { transferable: BigNumber; reserved: BigNumber; vested: BigNumber; total: BigNumber };
+
+const emptyTotals = (): Totals => ({
+  transferable: new BigNumber(0),
+  reserved: new BigNumber(0),
+  vested: new BigNumber(0),
+  total: new BigNumber(0),
+});
+
+/** One balance's fiat figures, folded into the totals of the row it belongs to. */
+function addBalance(totals: Totals, balance: Balance, asset: Asset, price: number): Totals {
+  const transferable = transferableAmountBN(balance);
+  const locked = BN.max(BN_ZERO, balance.free.sub(transferable));
+  const vested = BN.min(vestedLockedAmountBN(balance), locked);
+
+  const toFiat = (amount: BN) => new BigNumber(getRoundedValue(amount.toString(), price, asset.precision));
+
+  return {
+    transferable: totals.transferable.plus(toFiat(transferable)),
+    reserved: totals.reserved.plus(toFiat(balance.reserved)),
+    vested: totals.vested.plus(toFiat(vested)),
+    total: totals.total.plus(toFiat(balance.free.add(balance.reserved))),
+  };
+}
 
 type PriceMap = Record<string, Record<string, { price: number; change: number }>>;
 
@@ -30,20 +62,17 @@ type ChainAllocParams = {
   currency: { coingeckoId: string };
 };
 
-function toAllocation(
-  transferableTotal: BigNumber,
-  reservedTotal: BigNumber,
-  grandTotal: BigNumber,
-): RowAllocation | null {
-  if (grandTotal.isZero()) return null;
+function toAllocation({ transferable, reserved, vested, total }: Totals): RowAllocation | null {
+  if (total.isZero()) return null;
 
-  // locked = total - transferable - reserved, clamped to zero
-  const lockedFiat = BigNumber.max(0, grandTotal.minus(transferableTotal).minus(reservedTotal));
+  // locked = total - transferable - reserved - vested, clamped to zero
+  const lockedFiat = BigNumber.max(0, total.minus(transferable).minus(reserved).minus(vested));
 
   return {
-    transferablePct: transferableTotal.div(grandTotal).multipliedBy(100).toNumber(),
-    lockedPct: lockedFiat.div(grandTotal).multipliedBy(100).toNumber(),
-    reservedPct: reservedTotal.div(grandTotal).multipliedBy(100).toNumber(),
+    transferablePct: transferable.div(total).multipliedBy(100).toNumber(),
+    lockedPct: lockedFiat.div(total).multipliedBy(100).toNumber(),
+    reservedPct: reserved.div(total).multipliedBy(100).toNumber(),
+    vestedPct: vested.div(total).multipliedBy(100).toNumber(),
   };
 }
 
@@ -54,7 +83,7 @@ export function computeAssetRowAllocations(params: AssetAllocParams): Map<string
   const accountIdSet = new Set(accountIds);
 
   // Group balances by accountId, filtering to matching priceId
-  const grouped = new Map<string, { transferable: BigNumber; reserved: BigNumber; total: BigNumber }>();
+  const grouped = new Map<string, Totals>();
 
   for (const balance of Object.values(balanceMap)) {
     if (!accountIdSet.has(balance.accountId)) continue;
@@ -68,30 +97,12 @@ export function computeAssetRowAllocations(params: AssetAllocParams): Map<string
     const priceItem = prices[asset.priceId]?.[currency.coingeckoId];
     if (!priceItem) continue;
 
-    const transferableFiat = new BigNumber(
-      getRoundedValue(transferableAmountBN(balance).toString(), priceItem.price, asset.precision),
-    );
-    const reservedFiat = new BigNumber(getRoundedValue(balance.reserved.toString(), priceItem.price, asset.precision));
-    const totalFiat = new BigNumber(
-      getRoundedValue(balance.free.add(balance.reserved).toString(), priceItem.price, asset.precision),
-    );
-
-    const existing = grouped.get(balance.accountId);
-    if (existing) {
-      existing.transferable = existing.transferable.plus(transferableFiat);
-      existing.reserved = existing.reserved.plus(reservedFiat);
-      existing.total = existing.total.plus(totalFiat);
-    } else {
-      grouped.set(balance.accountId, {
-        transferable: transferableFiat,
-        reserved: reservedFiat,
-        total: totalFiat,
-      });
-    }
+    const totals = grouped.get(balance.accountId) ?? emptyTotals();
+    grouped.set(balance.accountId, addBalance(totals, balance, asset, priceItem.price));
   }
 
-  for (const [accountId, group] of grouped) {
-    const alloc = toAllocation(group.transferable, group.reserved, group.total);
+  for (const [accountId, totals] of grouped) {
+    const alloc = toAllocation(totals);
     if (alloc) result.set(accountId, alloc);
   }
 
@@ -107,7 +118,7 @@ export function computeChainRowAllocations(params: ChainAllocParams): Map<number
   const chain = chains[chainId];
   if (!chain) return result;
 
-  const grouped = new Map<number, { transferable: BigNumber; reserved: BigNumber; total: BigNumber }>();
+  const grouped = new Map<number, Totals>();
 
   for (const balance of Object.values(balanceMap)) {
     if (!accountIdSet.has(balance.accountId)) continue;
@@ -120,30 +131,12 @@ export function computeChainRowAllocations(params: ChainAllocParams): Map<number
     const priceItem = prices[asset.priceId]?.[currency.coingeckoId];
     if (!priceItem) continue;
 
-    const transferableFiat = new BigNumber(
-      getRoundedValue(transferableAmountBN(balance).toString(), priceItem.price, asset.precision),
-    );
-    const reservedFiat = new BigNumber(getRoundedValue(balance.reserved.toString(), priceItem.price, asset.precision));
-    const totalFiat = new BigNumber(
-      getRoundedValue(balance.free.add(balance.reserved).toString(), priceItem.price, asset.precision),
-    );
-
-    const existing = grouped.get(balance.assetId);
-    if (existing) {
-      existing.transferable = existing.transferable.plus(transferableFiat);
-      existing.reserved = existing.reserved.plus(reservedFiat);
-      existing.total = existing.total.plus(totalFiat);
-    } else {
-      grouped.set(balance.assetId, {
-        transferable: transferableFiat,
-        reserved: reservedFiat,
-        total: totalFiat,
-      });
-    }
+    const totals = grouped.get(balance.assetId) ?? emptyTotals();
+    grouped.set(balance.assetId, addBalance(totals, balance, asset, priceItem.price));
   }
 
-  for (const [assetId, group] of grouped) {
-    const alloc = toAllocation(group.transferable, group.reserved, group.total);
+  for (const [assetId, totals] of grouped) {
+    const alloc = toAllocation(totals);
     if (alloc) result.set(assetId, alloc);
   }
 

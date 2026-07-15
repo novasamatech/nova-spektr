@@ -51,6 +51,7 @@ export const transactionBuilder = {
   buildKillPureProxy,
   buildRemoveProxy,
   buildVestedTransfer,
+  buildVest,
   buildMultiTransfer,
 
   buildBatchAll,
@@ -277,6 +278,19 @@ function buildChill({ chain, accountId }: ChillParams): Transaction {
     chainId: chain.chainId,
     accountId: accountId,
     type: TransactionType.CHILL,
+    args: {},
+  };
+}
+
+type VestParams = {
+  chain: Chain;
+  accountId: AccountId;
+};
+function buildVest({ chain, accountId }: VestParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    accountId: accountId,
+    type: TransactionType.VEST,
     args: {},
   };
 }

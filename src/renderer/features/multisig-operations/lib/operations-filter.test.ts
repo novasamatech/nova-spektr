@@ -11,6 +11,7 @@ import {
   matchesNetwork,
   matchesProxyType,
   matchesSearch,
+  matchesStatus,
   matchesTab,
   matchesTxType,
 } from './operations-filter';
@@ -44,12 +45,14 @@ const emptyContext: OperationsFilterContext = {
     network: [],
     type: [],
     proxyType: [],
+    status: [],
     searchQuery: '',
   },
   tab: 'pending',
   hiddenIds: [],
   multisigWallets: [],
   chains: {},
+  isScopeMerged: false,
 };
 
 describe('operations-filter', () => {
@@ -301,6 +304,34 @@ describe('operations-filter', () => {
     });
   });
 
+  describe('matchesStatus', () => {
+    test('returns true when status list is empty', () => {
+      const op = createMockOperation({ status: 'pending' });
+      expect(matchesStatus(op, [], [])).toBe(true);
+    });
+
+    test('returns true when operation section is in status list', () => {
+      const op = createMockOperation({ status: 'pending' });
+      expect(matchesStatus(op, ['in_progress'], [])).toBe(true);
+    });
+
+    test('returns false when operation section is not in status list', () => {
+      const op = createMockOperation({ status: 'pending' });
+      expect(matchesStatus(op, ['completed'], [])).toBe(false);
+    });
+
+    test('hidden operation matches only the hidden status', () => {
+      const op = createMockOperation({ id: 'op-1', status: 'pending' });
+      expect(matchesStatus(op, ['hidden'], ['op-1'])).toBe(true);
+      expect(matchesStatus(op, ['in_progress'], ['op-1'])).toBe(false);
+    });
+
+    test('operation never matches the drafts status', () => {
+      const op = createMockOperation({ status: 'pending' });
+      expect(matchesStatus(op, ['drafts'], [])).toBe(false);
+    });
+  });
+
   describe('matchesSearch', () => {
     test('returns true when searchQuery is empty or undefined', () => {
       const op = createMockOperation();
@@ -362,6 +393,83 @@ describe('operations-filter', () => {
         },
       };
       expect(filterOperation(op, mockMultisigAccount, ctx)).toBe(true);
+    });
+
+    test('merged scope: passes an executed op even when tab is pending', () => {
+      const op = createMockOperation({ id: 'op-1', status: 'executed' });
+      const ctx: OperationsFilterContext = {
+        ...emptyContext,
+        tab: 'pending',
+        isScopeMerged: true,
+      };
+      expect(filterOperation(op, mockMultisigAccount, ctx)).toBe(true);
+    });
+
+    test('merged scope: still excludes a hidden op when tab is pending', () => {
+      const op = createMockOperation({ id: 'op-1', status: 'pending' });
+      const ctx: OperationsFilterContext = {
+        ...emptyContext,
+        tab: 'pending',
+        hiddenIds: ['op-1'],
+        isScopeMerged: true,
+      };
+      expect(filterOperation(op, mockMultisigAccount, ctx)).toBe(false);
+    });
+
+    test('merged scope: includes a hidden op when the status filter asks for hidden', () => {
+      const hiddenOp = createMockOperation({ id: 'op-hidden', status: 'pending' });
+      const visibleOp = createMockOperation({ id: 'op-visible', status: 'pending' });
+      const ctx: OperationsFilterContext = {
+        ...emptyContext,
+        tab: 'pending',
+        hiddenIds: ['op-hidden'],
+        isScopeMerged: true,
+        filters: { ...emptyContext.filters, status: ['hidden'] },
+      };
+      expect(filterOperation(hiddenOp, mockMultisigAccount, ctx)).toBe(true);
+      expect(filterOperation(visibleOp, mockMultisigAccount, ctx)).toBe(false);
+    });
+
+    test('merged scope: hidden status combines with regular sections', () => {
+      const hiddenOp = createMockOperation({ id: 'op-hidden', status: 'executed' });
+      const completedOp = createMockOperation({ id: 'op-done', status: 'executed' });
+      const pendingOp = createMockOperation({ id: 'op-pending', status: 'pending' });
+      const ctx: OperationsFilterContext = {
+        ...emptyContext,
+        tab: 'pending',
+        hiddenIds: ['op-hidden'],
+        isScopeMerged: true,
+        filters: { ...emptyContext.filters, status: ['completed', 'hidden'] },
+      };
+      expect(filterOperation(hiddenOp, mockMultisigAccount, ctx)).toBe(true);
+      expect(filterOperation(completedOp, mockMultisigAccount, ctx)).toBe(true);
+      expect(filterOperation(pendingOp, mockMultisigAccount, ctx)).toBe(false);
+    });
+
+    test('merged scope: drafts-only status filters out every operation', () => {
+      const pendingOp = createMockOperation({ id: 'op-1', status: 'pending' });
+      const executedOp = createMockOperation({ id: 'op-2', status: 'executed' });
+      const ctx: OperationsFilterContext = {
+        ...emptyContext,
+        tab: 'pending',
+        isScopeMerged: true,
+        filters: { ...emptyContext.filters, status: ['drafts'] },
+      };
+      expect(filterOperation(pendingOp, mockMultisigAccount, ctx)).toBe(false);
+      expect(filterOperation(executedOp, mockMultisigAccount, ctx)).toBe(false);
+    });
+
+    test('merged scope: hidden tab shows only hidden ops', () => {
+      const hiddenOp = createMockOperation({ id: 'op-hidden', status: 'pending' });
+      const visibleOp = createMockOperation({ id: 'op-visible', status: 'executed' });
+      const ctx: OperationsFilterContext = {
+        ...emptyContext,
+        tab: 'hidden',
+        hiddenIds: ['op-hidden'],
+        isScopeMerged: true,
+      };
+      expect(filterOperation(hiddenOp, mockMultisigAccount, ctx)).toBe(true);
+      expect(filterOperation(visibleOp, mockMultisigAccount, ctx)).toBe(false);
     });
   });
 });

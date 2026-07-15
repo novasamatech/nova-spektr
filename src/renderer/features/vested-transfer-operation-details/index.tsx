@@ -3,10 +3,9 @@ import { t } from 'i18next';
 
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
-import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
-import { TransactionTitle, findCoreBatchAll, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
+import { findCoreBatchAll, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 import { confirmTransactionInfoSlot } from '@/features/multisig-operations';
 
@@ -21,9 +20,14 @@ vestedTransferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ opera
   return <TransactionAmount operation={operation} />;
 });
 
+// `VEST` is the claim side of the same pallet: a multisig account with a vesting
+// schedule can raise `vesting.vest()` from the claim flow, so co-signers meet the
+// operation in their list and it needs a card of its own — without one it renders
+// as `unknownMst` with a raw `vesting: vest` title.
 const getOperationTitle = (transactionType: TransactionType): string | undefined => {
   const Title: { [key in TransactionType]?: string } = {
     [TransactionType.VESTED_TRANSFER]: t('operations.titles.vestedTransfer'),
+    [TransactionType.VEST]: t('operations.titles.vest'),
   };
 
   return Title[transactionType];
@@ -32,6 +36,7 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
 const getOperationIcon = (transactionType: TransactionType): IconNames | undefined => {
   const Icons: { [key in TransactionType]?: IconNames } = {
     [TransactionType.VESTED_TRANSFER]: 'vestedTransferMst',
+    [TransactionType.VEST]: 'vestedTransferMst',
   };
 
   return Icons[transactionType];
@@ -87,24 +92,6 @@ multisigOperationsSDK(vestedTransferOperationDetailFeature, {
         amount: asset && amount ? { value: amount, asset } : undefined,
         sourceChainId: operation.chainId,
       };
-    }
-  },
-  logTitle({ operation, showCoreTransaction }) {
-    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-
-    if (nullable(transaction)) {
-      return null;
-    }
-
-    const { t } = useI18n();
-    const transactionFromBatchAll = findCoreBatchAll(transaction);
-
-    const title =
-      (transaction?.type && getOperationTitle(transaction.type)) ||
-      (transactionFromBatchAll?.type && getOperationTitle(transactionFromBatchAll.type));
-
-    if (title) {
-      return <TransactionTitle className="overflow-hidden" title={t(title || '')} />;
     }
   },
   details({ operation, showCoreTransaction }) {
