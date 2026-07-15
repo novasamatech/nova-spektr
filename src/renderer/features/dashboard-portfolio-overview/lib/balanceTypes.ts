@@ -38,7 +38,11 @@ export function splitBalanceByType(balance: Balance): Record<BalanceType, BN> {
   const total = balance.free.add(balance.reserved);
 
   const lockedTotal = BN.max(BN_ZERO, total.sub(transferable).sub(balance.reserved));
-  const vestingLock = balance.locked.find((lock) => lock.type === LockTypes.VESTING)?.amount ?? BN_ZERO;
+  // sum ALL vesting-type locks (matches vestedLockedAmountBN); a balance can
+  // carry more than one VESTING lock and taking only the first understates it
+  const vestingLock = balance.locked
+    .filter((lock) => lock.type === LockTypes.VESTING)
+    .reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);
   const vestedFromLocked = BN.min(vestingLock, lockedTotal);
   const vestedFromReserved = BN.min(vestingLock.sub(vestedFromLocked), balance.reserved);
 

@@ -156,6 +156,23 @@ describe('splitBalanceByType', () => {
     expect(split.vested.toNumber()).toEqual(100);
   });
 
+  test('sums multiple vesting locks into vested', () => {
+    // two separate VESTING locks (400 + 200) frozen = max(400, 200)… but real
+    // chains report frozen as the sum when both are vesting; here frozen = 600
+    // and both locks must be aggregated, not just the first (400)
+    const balance = makeBalance({
+      free: 1000,
+      frozen: 600,
+      locks: [makeLock(LockTypes.VESTING, 400), makeLock(LockTypes.VESTING, 200)],
+    });
+
+    const split = splitBalanceByType(balance);
+
+    expect(split.transferable.toNumber()).toEqual(400);
+    expect(split.vested.toNumber()).toEqual(600);
+    expect(split.locked.toNumber()).toEqual(0);
+  });
+
   test('partitions a multi-lock balance so the four buckets sum to the total', () => {
     // free=700, reserved=300, frozen=500 (holdAndFreezes) with a governance lock
     // of 500 and a vesting lock of 200 riding inside it.
