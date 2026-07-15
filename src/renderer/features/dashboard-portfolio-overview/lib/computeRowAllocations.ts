@@ -1,45 +1,17 @@
-import { BN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 
-import { type Asset, type Balance, type Chain, type ChainId } from '@/shared/core';
-import { getRoundedValue, transferableAmountBN, vestedLockedAmountBN } from '@/shared/lib/utils';
+import { type Balance, type Chain, type ChainId } from '@/shared/core';
+import { getRoundedValue } from '@/shared/lib/utils';
 
-export type RowAllocation = {
-  transferablePct: number;
-  lockedPct: number;
-  reservedPct: number;
-  /**
-   * The share held by the vesting lock. Carved _out_ of `lockedPct`, exactly as
-   * the portfolio-wide bars do it (`computeBalanceAllocation`) — the two are
-   * one click apart and must not disagree about what "Locked" means.
-   */
-  vestedPct: number;
+import { type BalanceType, BALANCE_TYPES, makeByType, splitBalanceByType } from './balanceTypes';
+
+export type AllocationSegment = {
+  pct: number;
+  raw: string;
+  fiat: string;
 };
 
-type Totals = { transferable: BigNumber; reserved: BigNumber; vested: BigNumber; total: BigNumber };
-
-const emptyTotals = (): Totals => ({
-  transferable: new BigNumber(0),
-  reserved: new BigNumber(0),
-  vested: new BigNumber(0),
-  total: new BigNumber(0),
-});
-
-/** One balance's fiat figures, folded into the totals of the row it belongs to. */
-function addBalance(totals: Totals, balance: Balance, asset: Asset, price: number): Totals {
-  const transferable = transferableAmountBN(balance);
-  const locked = BN.max(BN_ZERO, balance.free.sub(transferable));
-  const vested = BN.min(vestedLockedAmountBN(balance), locked);
-
-  const toFiat = (amount: BN) => new BigNumber(getRoundedValue(amount.toString(), price, asset.precision));
-
-  return {
-    transferable: totals.transferable.plus(toFiat(transferable)),
-    reserved: totals.reserved.plus(toFiat(balance.reserved)),
-    vested: totals.vested.plus(toFiat(vested)),
-    total: totals.total.plus(toFiat(balance.free.add(balance.reserved))),
-  };
-}
+export type RowAllocation = Record<BalanceType, AllocationSegment>;
 
 type PriceMap = Record<string, Record<string, { price: number; change: number }>>;
 
@@ -62,18 +34,33 @@ type ChainAllocParams = {
   currency: { coingeckoId: string };
 };
 
-function toAllocation({ transferable, reserved, vested, total }: Totals): RowAllocation | null {
-  if (total.isZero()) return null;
+type ByTypeAccumulator = Record<BalanceType, { raw: BigNumber; fiat: BigNumber }>;
 
-  // locked = total - transferable - reserved - vested, clamped to zero
-  const lockedFiat = BigNumber.max(0, total.minus(transferable).minus(reserved).minus(vested));
+const makeAccumulator = (): ByTypeAccumulator => makeByType(() => ({ raw: new BigNumber(0), fiat: new BigNumber(0) }));
 
-  return {
-    transferablePct: transferable.div(total).multipliedBy(100).toNumber(),
-    lockedPct: lockedFiat.div(total).multipliedBy(100).toNumber(),
-    reservedPct: reserved.div(total).multipliedBy(100).toNumber(),
-    vestedPct: vested.div(total).multipliedBy(100).toNumber(),
-  };
+function accumulate(acc: ByTypeAccumulator, balance: Balance, price: number, precision: number) {
+  const split = splitBalanceByType(balance);
+  for (const type of BALANCE_TYPES) {
+    if (split[type].isZero()) continue;
+
+    const raw = split[type].toString();
+    acc[type].raw = acc[type].raw.plus(raw);
+    acc[type].fiat = acc[type].fiat.plus(getRoundedValue(raw, price, precision));
+  }
+}
+
+function toAllocation(acc: ByTypeAccumulator): RowAllocation | null {
+  let totalFiat = new BigNumber(0);
+  for (const type of BALANCE_TYPES) {
+    totalFiat = totalFiat.plus(acc[type].fiat);
+  }
+  if (totalFiat.isZero()) return null;
+
+  return makeByType((type) => ({
+    pct: acc[type].fiat.div(totalFiat).multipliedBy(100).toNumber(),
+    raw: acc[type].raw.toFixed(0),
+    fiat: acc[type].fiat.toString(),
+  }));
 }
 
 export function computeAssetRowAllocations(params: AssetAllocParams): Map<string, RowAllocation> {
@@ -83,7 +70,7 @@ export function computeAssetRowAllocations(params: AssetAllocParams): Map<string
   const accountIdSet = new Set(accountIds);
 
   // Group balances by accountId, filtering to matching priceId
-  const grouped = new Map<string, Totals>();
+  const grouped = new Map<string, ByTypeAccumulator>();
 
   for (const balance of Object.values(balanceMap)) {
     if (!accountIdSet.has(balance.accountId)) continue;
@@ -97,12 +84,16 @@ export function computeAssetRowAllocations(params: AssetAllocParams): Map<string
     const priceItem = prices[asset.priceId]?.[currency.coingeckoId];
     if (!priceItem) continue;
 
-    const totals = grouped.get(balance.accountId) ?? emptyTotals();
-    grouped.set(balance.accountId, addBalance(totals, balance, asset, priceItem.price));
+    let acc = grouped.get(balance.accountId);
+    if (!acc) {
+      acc = makeAccumulator();
+      grouped.set(balance.accountId, acc);
+    }
+    accumulate(acc, balance, priceItem.price, asset.precision);
   }
 
-  for (const [accountId, totals] of grouped) {
-    const alloc = toAllocation(totals);
+  for (const [accountId, acc] of grouped) {
+    const alloc = toAllocation(acc);
     if (alloc) result.set(accountId, alloc);
   }
 
@@ -118,7 +109,7 @@ export function computeChainRowAllocations(params: ChainAllocParams): Map<number
   const chain = chains[chainId];
   if (!chain) return result;
 
-  const grouped = new Map<number, Totals>();
+  const grouped = new Map<number, ByTypeAccumulator>();
 
   for (const balance of Object.values(balanceMap)) {
     if (!accountIdSet.has(balance.accountId)) continue;
@@ -131,12 +122,16 @@ export function computeChainRowAllocations(params: ChainAllocParams): Map<number
     const priceItem = prices[asset.priceId]?.[currency.coingeckoId];
     if (!priceItem) continue;
 
-    const totals = grouped.get(balance.assetId) ?? emptyTotals();
-    grouped.set(balance.assetId, addBalance(totals, balance, asset, priceItem.price));
+    let acc = grouped.get(balance.assetId);
+    if (!acc) {
+      acc = makeAccumulator();
+      grouped.set(balance.assetId, acc);
+    }
+    accumulate(acc, balance, priceItem.price, asset.precision);
   }
 
-  for (const [assetId, totals] of grouped) {
-    const alloc = toAllocation(totals);
+  for (const [assetId, acc] of grouped) {
+    const alloc = toAllocation(acc);
     if (alloc) result.set(assetId, alloc);
   }
 

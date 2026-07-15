@@ -1,6 +1,5 @@
 import { BN } from '@polkadot/util';
 
-import { LockTypes } from '@/shared/core';
 import { computeAssetRowAllocations, computeChainRowAllocations } from '../computeRowAllocations';
 
 // --- helpers to build mock data ---
@@ -30,7 +29,7 @@ const makeBalance = (overrides: {
   free: makeBN(overrides.free),
   reserved: makeBN(overrides.reserved),
   frozen: makeBN(overrides.frozen),
-  locked: overrides.vestingLock ? [{ type: LockTypes.VESTING, amount: makeBN(overrides.vestingLock) }] : [],
+  locked: overrides.vestingLock ? [{ type: '0x76657374696e6720', amount: makeBN(overrides.vestingLock) }] : [],
 });
 
 const makeChains = (
@@ -88,7 +87,7 @@ const makeCurrency = (coingeckoId = 'usd') => ({
 // --- tests ---
 
 describe('computeAssetRowAllocations', () => {
-  test('returns allocation percentages for a single account with mixed balances', () => {
+  test('returns allocation segments for a single account with mixed balances', () => {
     // free=1000, reserved=200, frozen=300 (holdAndFreezes)
     // transferable = free - max(0, frozen - reserved) = 1000 - max(0, 300-200) = 1000 - 100 = 900
     // locked = total - transferable - reserved = 1200 - 900 - 200 = 100
@@ -112,9 +111,79 @@ describe('computeAssetRowAllocations', () => {
 
     expect(result.size).toBe(1);
     const alloc = result.get('acc1')!;
-    expect(alloc.transferablePct).toBeCloseTo(75, 0); // 900/1200 * 100
-    expect(alloc.reservedPct).toBeCloseTo(16.67, 0); // 200/1200 * 100
-    expect(alloc.lockedPct).toBeCloseTo(8.33, 0); // 100/1200 * 100
+    expect(alloc.transferable.pct).toBeCloseTo(75, 0); // 900/1200 * 100
+    expect(alloc.transferable.raw).toBe('900');
+    expect(alloc.reserved.pct).toBeCloseTo(16.67, 0); // 200/1200 * 100
+    expect(alloc.reserved.fiat).toBe('200');
+    expect(alloc.locked.pct).toBeCloseTo(8.33, 0); // 100/1200 * 100
+    expect(alloc.vested.pct).toBe(0);
+  });
+
+  test('carves the vesting lock out of the locked amount', () => {
+    // transferable = 1000 - max(0, 400-0) = 600, locked total = 1000 - 600 = 400
+    // vested = min(vestingLock=300, 400) = 300, locked = 100
+    const balances = [
+      makeBalance({
+        accountId: 'acc1',
+        chainId: 'chain1',
+        assetId: 0,
+        free: 1000,
+        reserved: 0,
+        frozen: 400,
+        vestingLock: 300,
+      }),
+    ];
+    const balanceMap = Object.fromEntries(balances.map((b) => [b.id, b]));
+    const chains = makeChains([{ chainId: 'chain1', assetId: 0, priceId: 'polkadot', symbol: 'DOT', precision: 0 }]);
+    const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
+
+    const result = computeAssetRowAllocations({
+      accountIds: ['acc1'],
+      priceId: 'polkadot',
+      balanceMap: balanceMap as any,
+      chains: chains as any,
+      prices,
+      currency: makeCurrency(),
+    });
+
+    const alloc = result.get('acc1')!;
+    expect(alloc.vested.raw).toBe('300');
+    expect(alloc.vested.fiat).toBe('300');
+    expect(alloc.vested.pct).toBeCloseTo(30, 0);
+    expect(alloc.locked.raw).toBe('100');
+    expect(alloc.locked.pct).toBeCloseTo(10, 0);
+  });
+
+  test('caps vested by the locked amount', () => {
+    // locked total = 100, vesting lock claims 500 -> vested = 100, locked = 0
+    const balances = [
+      makeBalance({
+        accountId: 'acc1',
+        chainId: 'chain1',
+        assetId: 0,
+        free: 1000,
+        reserved: 0,
+        frozen: 100,
+        vestingLock: 500,
+      }),
+    ];
+    const balanceMap = Object.fromEntries(balances.map((b) => [b.id, b]));
+    const chains = makeChains([{ chainId: 'chain1', assetId: 0, priceId: 'polkadot', symbol: 'DOT', precision: 0 }]);
+    const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
+
+    const result = computeAssetRowAllocations({
+      accountIds: ['acc1'],
+      priceId: 'polkadot',
+      balanceMap: balanceMap as any,
+      chains: chains as any,
+      prices,
+      currency: makeCurrency(),
+    });
+
+    const alloc = result.get('acc1')!;
+    expect(alloc.vested.raw).toBe('100');
+    expect(alloc.locked.raw).toBe('0');
+    expect(alloc.locked.pct).toBe(0);
   });
 
   test('returns 100% transferable when no locks or reserves', () => {
@@ -135,9 +204,10 @@ describe('computeAssetRowAllocations', () => {
     });
 
     const alloc = result.get('acc1')!;
-    expect(alloc.transferablePct).toBeCloseTo(100, 0);
-    expect(alloc.lockedPct).toBe(0);
-    expect(alloc.reservedPct).toBe(0);
+    expect(alloc.transferable.pct).toBeCloseTo(100, 0);
+    expect(alloc.locked.pct).toBe(0);
+    expect(alloc.reserved.pct).toBe(0);
+    expect(alloc.vested.pct).toBe(0);
   });
 
   test('omits accounts with zero balance from result', () => {
@@ -186,9 +256,10 @@ describe('computeAssetRowAllocations', () => {
     // chain2: transferable = 400, reserved = 0, total = 400
     // combined: transferable = 900, reserved = 100, total = 1100, locked = 100
     const alloc = result.get('acc1')!;
-    expect(alloc.transferablePct).toBeCloseTo(81.8, 0);
-    expect(alloc.reservedPct).toBeCloseTo(9.1, 0);
-    expect(alloc.lockedPct).toBeCloseTo(9.1, 0);
+    expect(alloc.transferable.pct).toBeCloseTo(81.8, 0);
+    expect(alloc.transferable.raw).toBe('900');
+    expect(alloc.reserved.pct).toBeCloseTo(9.1, 0);
+    expect(alloc.locked.pct).toBeCloseTo(9.1, 0);
   });
 });
 
@@ -216,45 +287,9 @@ describe('computeChainRowAllocations', () => {
     // acc2: transferable=500, reserved=0, total=500
     // combined: transferable=1400, reserved=200, total=1700, locked=100
     const alloc = result.get(0)!;
-    expect(alloc.transferablePct).toBeCloseTo(82.4, 0);
-    expect(alloc.reservedPct).toBeCloseTo(11.8, 0);
-    expect(alloc.lockedPct).toBeCloseTo(5.9, 0);
-  });
-
-  test('carves the vesting lock out of locked, as the overview bars do', () => {
-    // free=1000, frozen=400 all of it a vesting lock, nothing reserved:
-    // transferable = 600, locked = 400 — and every plank of that 400 is vesting.
-    // The overview widget shows Vested 40% / Locked 0%; the row this modal draws
-    // from the same balance must not turn round and call it Locked 40%.
-    const balances = [
-      makeBalance({
-        accountId: 'acc1',
-        chainId: 'chain1',
-        assetId: 0,
-        free: 1000,
-        reserved: 0,
-        frozen: 400,
-        vestingLock: 400,
-      }),
-    ];
-    const balanceMap = Object.fromEntries(balances.map((b) => [b.id, b]));
-    const chains = makeChains([{ chainId: 'chain1', assetId: 0, priceId: 'polkadot', symbol: 'DOT', precision: 0 }]);
-    const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
-
-    const result = computeChainRowAllocations({
-      assetIds: [0],
-      chainId: 'chain1' as any,
-      accountIds: ['acc1'],
-      balanceMap: balanceMap as any,
-      chains: chains as any,
-      prices,
-      currency: makeCurrency(),
-    });
-
-    const alloc = result.get(0)!;
-    expect(alloc.transferablePct).toBeCloseTo(60, 0);
-    expect(alloc.vestedPct).toBeCloseTo(40, 0);
-    expect(alloc.lockedPct).toBeCloseTo(0, 0);
+    expect(alloc.transferable.pct).toBeCloseTo(82.4, 0);
+    expect(alloc.reserved.pct).toBeCloseTo(11.8, 0);
+    expect(alloc.locked.pct).toBeCloseTo(5.9, 0);
   });
 
   test('omits assets with zero balance', () => {
