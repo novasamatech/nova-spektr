@@ -13,8 +13,6 @@ import {
   formatAsset,
   fromPrecision,
   getNativeAsset,
-  includesMultiple,
-  nonNullable,
   nullable,
   performSearch,
   toAccountId,
@@ -27,7 +25,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, CaptionText, FootnoteText, Icon, IconButton, InputHint, Switch } from '@/shared/ui';
 import { AccountSelect, Address, Identicon, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
-import { accountService, useAccountName, useAccountsNames, useWalletName } from '@/domains/network';
+import { useAccountName, useAccountsNames, useWalletName } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
@@ -39,6 +37,7 @@ import { SigningPathSection, graphModel } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
+import { transferUtils } from '../lib/transfer-utils';
 import { TRANSFER_ALLOWED_PROXY_TYPES, formModel } from '../model/form-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
@@ -471,13 +470,11 @@ const Destination = memo(() => {
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
     if (nullable(chain)) return [];
 
-    const filteredAccounts = resolvedAccounts.filter((account) => {
-      const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
-      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-      const queryPass = includesMultiple([account.name, address], query);
-      const isMyself = nonNullable(initiator.value) && initiator.value.accountId === account.accountId;
-
-      return isChainMatch && queryPass && !isMyself;
+    const filteredAccounts = transferUtils.filterRecipientAccounts({
+      accounts: resolvedAccounts,
+      chain,
+      query,
+      initiator: initiator.value,
     });
     const uniqueAccounts = uniqBy(filteredAccounts, 'accountId');
 
@@ -514,7 +511,7 @@ const Destination = memo(() => {
     }
 
     return ownAccountOptions;
-  }, [query, chain, resolvedAccounts, wallets, initiator.value]);
+  }, [query, chain, resolvedAccounts, wallets, initiator.value, t]);
 
   const contactOptions = useMemo<ComboboxGroup[]>(() => {
     if (validateAddress(query, chain)) return [];
@@ -542,7 +539,7 @@ const Destination = memo(() => {
         items: addressOptions,
       },
     ];
-  }, [walletsOptions, query, chain, filteredContacts]);
+  }, [query, chain, filteredContacts, t]);
 
   const options = [...walletsOptions, ...contactOptions];
 
