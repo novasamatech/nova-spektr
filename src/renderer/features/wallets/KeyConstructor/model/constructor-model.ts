@@ -125,26 +125,17 @@ function expandShardedDerivations(derivations: DerivationKeyDraft[]) {
   });
 }
 
-const submitFx = createEffect<
-  { keys: Record<string, DerivationKeyDraft>; chains: Record<ChainId, Chain> },
-  Record<string, DerivationError[]>,
-  Record<string, DerivationError[]>
->(({ keys, chains }) => {
-  const errors: Record<string, DerivationError[]> = {};
-  let hasErrors = false;
+// Pure gate for onConfirm: the per-key errors are surfaced through $touched + $errors,
+// so this only needs to block submission when anything is invalid.
+const submitFx = createEffect<{ keys: Record<string, DerivationKeyDraft>; chains: Record<ChainId, Chain> }, void>(
+  ({ keys, chains }) => {
+    const hasErrors = Object.keys(keys).some((keyId) => getKeyValidationErrors(keyId, keys, chains).length > 0);
 
-  for (const keyId of Object.keys(keys)) {
-    const validationErrors = getKeyValidationErrors(keyId, keys, chains);
-    errors[keyId] = validationErrors;
-    hasErrors = hasErrors || validationErrors.length > 0;
-  }
-
-  if (hasErrors) {
-    throw errors;
-  }
-
-  return errors;
-});
+    if (hasErrors) {
+      throw new Error('Derivation keys are invalid');
+    }
+  },
+);
 
 sample({
   clock: init,

@@ -37,10 +37,12 @@ grouped for balance display and signing.
 
 ### Derivation path validation
 
-Errors surface **when the user finishes editing a key**, not on every keystroke — a half-typed path is not an error
-yet. The exception is a duplicate: because a collision is symmetric, it is flagged on **both** colliding keys as soon
-as it exists, even if one of them has never been touched. Submitting force-reveals every error on every key, so nothing
-invalid can slip through unseen. Only the first error of a key is displayed.
+Errors first surface **when the user finishes editing a key**, not while it is still being typed for the first time — a
+half-typed path is not an error yet. Once a key has been touched, though, its errors recompute live on every keystroke,
+so re-editing a flagged key shows or clears its error as you type. The exception to the first rule is a duplicate:
+because a collision is symmetric, it is flagged on **both** colliding keys as soon as it exists, even if one of them has
+never been touched. Submitting force-reveals every error on every key, so nothing invalid can slip through unseen. Only
+the first error of a key is displayed.
 
 | Error                   | What the user sees                                                       |
 | ----------------------- | ------------------------------------------------------------------------ |

@@ -20,7 +20,9 @@ type Props = PropsWithChildren<{
 export const DerivedAccount = ({ account, chain, showSuffix, className, children, onClick }: Props) => {
   const isShardedAccount = accountUtils.isAccountWithShards(account);
   const derivationPath = accountUtils.getDerivationPath(account);
-  const accountId = isShardedAccount ? null : account.accountId;
+  // A partial Vault scan can yield an empty-string accountId; treat it as "no account"
+  // so we render the derivation path, not a broken <Account accountId="">.
+  const accountId = isShardedAccount ? null : account.accountId || null;
 
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLElement>) => {
