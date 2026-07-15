@@ -1,4 +1,4 @@
-import { attach, createApi, createEffect, createEvent, createStore, sample } from 'effector';
+import { attach, combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 import { nanoid } from 'nanoid';
 
@@ -9,7 +9,7 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { type DerivationError, TokenType, nullable, parseDerivation, validateDerivation } from '@/shared/lib/utils';
+import { DerivationError, TokenType, nullable, parseDerivation, validateDerivation } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 
@@ -38,28 +38,13 @@ const submit = createEvent();
 
 const $keys = createStore<Record<string, DerivationKeyDraft>>({});
 const $hasChanged = createStore(false).reset(init);
-const $errors = createStore<Record<string, DerivationError[]>>({}).reset(init);
 
-function getOtherDerivationPaths(
-  keyId: string,
-  relayChainId: ChainId,
-  isEthereumBased: boolean,
-  keys: Record<string, DerivationKeyDraft>,
-  chains: Record<ChainId, Chain>,
-) {
+/** Keys the user has finished editing. A key not in here is still being typed. */
+const $touched = createStore<Record<string, boolean>>({}).reset(init);
+
+function getOtherDerivationPaths(keyId: string, chainId: ChainId, keys: Record<string, DerivationKeyDraft>) {
   return Object.entries(keys)
-    .filter(([otherKeyId]) => otherKeyId !== keyId)
-    .filter(([, otherKey]) => {
-      const otherChain = chains[otherKey.chainId];
-
-      if (isEthereumBased) {
-        const isOtherKeyEthereumBased = networkUtils.isEthereumBased(otherChain?.options);
-        return isOtherKeyEthereumBased;
-      }
-
-      const isOtherKeyOnTheSameRelayChain = (otherChain?.parentId ?? otherChain?.chainId) === relayChainId;
-      return isOtherKeyOnTheSameRelayChain;
-    })
+    .filter(([otherKeyId, otherKey]) => otherKeyId !== keyId && otherKey.chainId === chainId)
     .map(([, otherKey]) => otherKey.derivationPath);
 }
 
@@ -75,14 +60,34 @@ function getKeyValidationErrors(
   const chain = chains[chainId];
   if (nullable(chain)) return [];
 
-  const relayChainId = chain.parentId ?? chain.chainId;
   const isEthereumBased = networkUtils.isEthereumBased(chain.options);
 
-  const otherPaths = getOtherDerivationPaths(keyId, relayChainId, isEthereumBased, keys, chains);
+  const otherPaths = getOtherDerivationPaths(keyId, chainId, keys);
   const { errors } = validateDerivation(derivationPath, { otherPaths, isEthereumBased });
 
   return errors;
 }
+
+const $errors = combine(
+  { keys: $keys, touched: $touched, chains: networkModel.$chains },
+  ({ keys, touched, chains }) => {
+    const errors: Record<string, DerivationError[]> = {};
+
+    for (const keyId of Object.keys(keys)) {
+      const keyErrors = getKeyValidationErrors(keyId, keys, chains);
+
+      if (touched[keyId]) {
+        errors[keyId] = keyErrors;
+      } else if (keyErrors.includes(DerivationError.DUPLICATE)) {
+        // A collision is symmetric: flag both keys, not just the one that got blurred
+        // first. Other errors stay hidden until the user is done typing the key.
+        errors[keyId] = [DerivationError.DUPLICATE];
+      }
+    }
+
+    return errors;
+  },
+);
 
 function mergeShardedAccounts(
   accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[],
@@ -120,26 +125,17 @@ function expandShardedDerivations(derivations: DerivationKeyDraft[]) {
   });
 }
 
-const submitFx = createEffect<
-  { keys: Record<string, DerivationKeyDraft>; chains: Record<ChainId, Chain> },
-  Record<string, DerivationError[]>,
-  Record<string, DerivationError[]>
->(({ keys, chains }) => {
-  const errors: Record<string, DerivationError[]> = {};
-  let hasErrors = false;
+// Pure gate for onConfirm: the per-key errors are surfaced through $touched + $errors,
+// so this only needs to block submission when anything is invalid.
+const submitFx = createEffect<{ keys: Record<string, DerivationKeyDraft>; chains: Record<ChainId, Chain> }, void>(
+  ({ keys, chains }) => {
+    const hasErrors = Object.keys(keys).some((keyId) => getKeyValidationErrors(keyId, keys, chains).length > 0);
 
-  for (const keyId of Object.keys(keys)) {
-    const validationErrors = getKeyValidationErrors(keyId, keys, chains);
-    errors[keyId] = validationErrors;
-    hasErrors = hasErrors || validationErrors.length > 0;
-  }
-
-  if (hasErrors) {
-    throw errors;
-  }
-
-  return errors;
-});
+    if (hasErrors) {
+      throw new Error('Derivation keys are invalid');
+    }
+  },
+);
 
 sample({
   clock: init,
@@ -205,12 +201,17 @@ sample({
 
 sample({
   clock: validateKey,
-  source: { errors: $errors, keys: $keys, chains: networkModel.$chains },
-  fn: ({ errors, keys, chains }, keyId) =>
-    produce(errors, (draft) => {
-      draft[keyId] = getKeyValidationErrors(keyId, keys, chains);
-    }),
-  target: $errors,
+  source: $touched,
+  fn: (touched, keyId) => ({ ...touched, [keyId]: true }),
+  target: $touched,
+});
+
+// Submitting surfaces every error, not only those on keys the user visited.
+sample({
+  clock: submit,
+  source: $keys,
+  fn: (keys) => Object.fromEntries(Object.keys(keys).map((keyId) => [keyId, true])),
+  target: $touched,
 });
 
 sample({
@@ -228,11 +229,6 @@ sample({
       callbacks?.onConfirm(expandedKeys);
     },
   }),
-});
-
-sample({
-  clock: [submitFx.doneData, submitFx.failData],
-  target: $errors,
 });
 
 export const constructorModel = {
