@@ -1,4 +1,4 @@
-import { type Scope, allSettled } from 'effector';
+import { allSettled } from 'effector';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('graphql-request', async (importOriginal) => {
@@ -16,13 +16,15 @@ vi.mock('graphql-request', async (importOriginal) => {
 import { ConnectionStatus } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { createProxiedAccount } from '@/shared/mocks';
-import { accountService, accounts } from '@/domains/network';
+import { accounts } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '@/features/transfer/model/form-model';
 import {
   assetHubChain,
   assetHubChainId,
+  multisigAccount,
+  multisigWallet,
   polkadotChain,
   polkadotChainId,
   proxiedWallet,
@@ -30,23 +32,12 @@ import {
   vaultPolkadotKeyAccount,
   vaultWallet,
 } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
-
-/**
- * DI handlers register through unscoped events at module import, so a fork
- * scope starts with an empty registry and every availability check silently
- * returns false. Register a chain-match stub inside the scope (same pattern as
- * draft-signing-path.integration.test.ts).
- */
-const seedAvailabilityHandler = async (scope: Scope) => {
-  await allSettled(accountService.accountAvailabilityOnChainAnyOf.registerHandler, {
-    scope,
-    params: {
-      body: ({ account, chain }) => (accountService.isChainAccount(account) ? account.chainId === chain.chainId : true),
-      available: () => true,
-    },
-  });
-};
+import {
+  type FeatureTestEnvironment,
+  FeatureTestBuilder,
+  allureMetadata,
+  seedAccountHandlers,
+} from '../../utils/index';
 
 /**
  * "Myself" button behavior for XCM transfers (teleport) with key-set Polkadot
@@ -80,7 +71,7 @@ describe('Transfer Form - Myself XCM destination', () => {
       .withStoreValue(walletSelect.__test.$selectedWalletId, vaultWallet.id)
       .build();
 
-    await seedAvailabilityHandler(env.scope);
+    await seedAccountHandlers(env.scope);
 
     // Teleport: Asset Hub (origin) → Polkadot relay (destination)
     await env.executeEvent(formModel.formInitiated, {
@@ -147,6 +138,44 @@ describe('Transfer Form - Myself XCM destination', () => {
       );
     });
 
+    it('should fill the multisig sender address when it is available on the destination chain', async () => {
+      // Keyless senders go through the availability rule instead of the keyed
+      // scheme match; a universal multisig passes the seeded handler, so the
+      // sender shortcut applies just like for keyed accounts.
+      env = await new FeatureTestBuilder({ autoPopulate: false })
+        .withChain(assetHubChain)
+        .withChain(polkadotChain)
+        .withConnectionStatus(assetHubChainId, ConnectionStatus.CONNECTED)
+        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
+        .withStoreValue(walletModel.__test.$rawWallets, [multisigWallet])
+        .withStoreValue(accounts.__test.$list, [multisigAccount])
+        .withStoreValue(walletSelect.__test.$selectedWalletId, multisigWallet.id)
+        .build();
+
+      await seedAccountHandlers(env.scope);
+
+      await env.executeEvent(formModel.formInitiated, {
+        chain: polkadotChain,
+        asset: polkadotChain.assets[0],
+      });
+      await allSettled(formModel.form.fields.destinationChain.change, {
+        scope: env.scope,
+        params: assetHubChain,
+      });
+      await allSettled(formModel.form.fields.initiator.change, {
+        scope: env.scope,
+        params: multisigAccount,
+      });
+
+      expect(env.getState(formModel.$isMyselfXcmEnabled)).toBe(true);
+
+      await env.executeEventVoid(formModel.myselfClicked);
+
+      expect(env.getState(formModel.form.fields.destination.$value)).toBe(
+        toAddress(multisigAccount.accountId, { prefix: assetHubChain.addressPrefix }),
+      );
+    });
+
     it('should keep Myself disabled for a keyless proxied sender on a foreign destination chain', async () => {
       // A proxied account exists only on its own chain — its address on the
       // destination chain is uncontrolled, so the sender shortcut must not
@@ -163,7 +192,7 @@ describe('Transfer Form - Myself XCM destination', () => {
         .withStoreValue(walletSelect.__test.$selectedWalletId, proxiedWallet.id)
         .build();
 
-      await seedAvailabilityHandler(env.scope);
+      await seedAccountHandlers(env.scope);
 
       // Teleport: Polkadot relay (origin, where the proxy exists) → Asset Hub
       await env.executeEvent(formModel.formInitiated, {

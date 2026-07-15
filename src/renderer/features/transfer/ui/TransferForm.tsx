@@ -443,12 +443,6 @@ const Destination = memo(() => {
     return toAccountId(trimmed);
   }, [destination.value, chain]);
 
-  const recipientWallet = useMemo(() => {
-    if (nullable(recipientAccountId)) return null;
-
-    return wallets.find((wallet) => wallet.accounts.some((a) => a.accountId === recipientAccountId)) ?? null;
-  }, [wallets, recipientAccountId]);
-
   // Prefer the recipient's own resolved account name over the wallet name:
   // accountId-based resolution never sees the account object, so a key-set
   // vault recipient would show the wallet name instead of the key name the
@@ -459,6 +453,15 @@ const Destination = memo(() => {
 
     return resolvedAccounts.find((account) => account.accountId === recipientAccountId) ?? null;
   }, [resolvedAccounts, recipientAccountId]);
+
+  // Derived from the account's walletId (not an independent lookup) so the
+  // displayed name and the wallet badge always come from the same wallet when
+  // several wallets hold the same accountId.
+  const recipientWallet = useMemo(() => {
+    if (nullable(recipientAccount)) return null;
+
+    return wallets.find((wallet) => wallet.id === recipientAccount.walletId) ?? null;
+  }, [wallets, recipientAccount]);
 
   // Run the standard resolution chain (custom name → contact → on-chain identity
   // → wallet name). `resolveAccountName` falls back to a short address when none
