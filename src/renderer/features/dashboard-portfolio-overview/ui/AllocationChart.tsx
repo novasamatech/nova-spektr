@@ -1,69 +1,125 @@
-import { memo } from 'react';
-import { Cell, Pie, PieChart, Tooltip } from 'recharts';
+import { memo, useCallback, useState } from 'react';
+import { Cell, Pie, PieChart } from 'recharts';
 
-import { formatBalance } from '@/shared/lib/utils';
-import { CHART_TOOLTIP_STYLE } from '@/shared/ui/chart-constants';
-import { type Holding } from '../hooks/useHoldings';
+import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
+import { HelpText, SmallTitleText } from '@/shared/ui';
+import { type CurrencyItem } from '@/domains/price';
 
-type Props = {
-  holdings: Holding[];
-  colors: string[];
-};
+import { Price } from './Price';
 
-type ChartEntry = {
+export type AllocationSlice = {
+  id: string;
   name: string;
   value: number;
-  percent: number;
-  index: number;
-  holding: Holding;
+  fiat: string;
+  color: string;
+  /**
+   * Pre-formatted token amount shown on hover, when the slice maps to a single
+   * asset
+   */
+  tokenAmount?: string;
 };
 
-type TooltipPayloadItem = {
-  payload: ChartEntry;
+type Props = {
+  data: AllocationSlice[];
+  total: string;
+  scopeLabel: string;
+  scopeColor?: string;
+  countLabelKey: 'assetCount' | 'networkCount';
+  currency: CurrencyItem | null;
 };
 
-const ChartTooltip = memo(({ active, payload }: { active?: boolean; payload?: TooltipPayloadItem[] }) => {
-  if (!active || !payload?.length) return null;
+export const AllocationChart = memo(({ data, total, scopeLabel, scopeColor, countLabelKey, currency }: Props) => {
+  const { t } = useI18n();
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
-  const item = payload[0];
-  if (!item) return null;
-
-  const { holding } = item.payload;
-  const { formatted, suffix } = formatBalance(holding.totalRaw, holding.precision);
-
-  return (
-    <div style={CHART_TOOLTIP_STYLE}>
-      <div style={{ fontWeight: 600 }}>{holding.symbol}</div>
-      <div>
-        {formatted}
-        {suffix} {holding.symbol}
-      </div>
-      <div>{item.payload.percent.toFixed(1)}%</div>
-    </div>
-  );
-});
-
-export const AllocationChart = memo(({ holdings, colors }: Props) => {
-  const filtered = holdings
-    .map((h, i) => ({ name: h.symbol, value: parseFloat(h.fiatValue), index: i, holding: h }))
-    .filter((d) => d.value > 0);
-
-  const total = filtered.reduce((sum, d) => sum + d.value, 0);
-  const data: ChartEntry[] = filtered.map((d) => ({
-    ...d,
-    percent: total > 0 ? (d.value / total) * 100 : 0,
-  }));
+  const handleEnter = useCallback((_: unknown, index: number) => setHoverIndex(index), []);
+  const handleLeave = useCallback(() => setHoverIndex(null), []);
 
   if (data.length === 0) return null;
 
+  const totalValue = data.reduce((sum, slice) => sum + slice.value, 0);
+  // hover state can outlive the slice it pointed to when data shrinks — treat out-of-range as no hover
+  const activeHoverIndex = hoverIndex !== null && hoverIndex < data.length ? hoverIndex : null;
+  const hovered = activeHoverIndex === null ? null : (data[activeHoverIndex] ?? null);
+  const hoveredPct = hovered && totalValue > 0 ? ((hovered.value / totalValue) * 100).toFixed(1) : '0.0';
+  // one "pct · amount" line fits ~18 chars in the donut hole; longer combos get
+  // a deliberate two-line layout instead of an arbitrary mid-amount wrap
+  const hoveredSubOneLine =
+    hovered?.tokenAmount === undefined || `${hoveredPct}% · ${hovered.tokenAmount}`.length <= 18;
+
   return (
-    <PieChart width={180} height={180}>
-      <Pie data={data} innerRadius={55} outerRadius={85} dataKey="value" stroke="none" animationDuration={400}>
-        {data.map((entry) => (
-          <Cell key={entry.name} fill={colors[entry.index % colors.length]} />
-        ))}
-      </Pie>
-      <Tooltip content={<ChartTooltip />} />
-    </PieChart>
+    // the donut is display-only — swallow mousedown so clicks don't focus the svg and draw a focus ring
+    <div
+      className="relative select-none [&_.recharts-sector]:outline-none [&_svg]:outline-none"
+      onMouseDown={(event) => event.preventDefault()}
+    >
+      <PieChart width={200} height={200}>
+        <Pie
+          data={data}
+          innerRadius={60}
+          outerRadius={95}
+          dataKey="value"
+          stroke="none"
+          animationDuration={400}
+          onMouseEnter={handleEnter}
+          onMouseLeave={handleLeave}
+        >
+          {data.map((slice, index) => (
+            <Cell
+              key={slice.id}
+              fill={slice.color}
+              className={cnTw(
+                'transition-[fill-opacity]',
+                activeHoverIndex !== null && activeHoverIndex !== index ? '[fill-opacity:0.3]' : '[fill-opacity:1]',
+              )}
+            />
+          ))}
+        </Pie>
+      </PieChart>
+
+      <div className="pointer-events-none absolute inset-[46px] flex flex-col items-center justify-center rounded-full text-center">
+        {hovered ? (
+          <>
+            <SmallTitleText>
+              <Price amount={hovered.fiat} currency={currency} />
+            </SmallTitleText>
+            <span className="mt-0.5 text-footnote font-medium" style={{ color: hovered.color }}>
+              {hovered.name}
+            </span>
+            {hoveredSubOneLine ? (
+              <HelpText className="mt-0.5 whitespace-nowrap text-text-tertiary">
+                {/* eslint-disable-next-line i18next/no-literal-string */}
+                {hovered.tokenAmount ? `${hoveredPct}% · ${hovered.tokenAmount}` : `${hoveredPct}%`}
+              </HelpText>
+            ) : (
+              <>
+                <HelpText className="mt-0.5 whitespace-nowrap text-text-tertiary">
+                  {/* eslint-disable-next-line i18next/no-literal-string */}
+                  {`${hoveredPct}%`}
+                </HelpText>
+                <HelpText className="whitespace-nowrap text-text-tertiary">{hovered.tokenAmount}</HelpText>
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            <SmallTitleText>
+              <Price amount={total} currency={currency} />
+            </SmallTitleText>
+            <span
+              className={cnTw('mt-0.5 text-footnote font-medium', !scopeColor && 'text-text-secondary')}
+              style={scopeColor ? { color: scopeColor } : undefined}
+            >
+              {scopeLabel}
+            </span>
+            <HelpText className="mt-0.5 text-text-tertiary">
+              {t(`dashboard.portfolioOverview.${countLabelKey}`, { count: data.length })}
+            </HelpText>
+          </>
+        )}
+      </div>
+    </div>
   );
 });

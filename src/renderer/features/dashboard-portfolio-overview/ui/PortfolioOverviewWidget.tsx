@@ -1,20 +1,24 @@
-import { useCallback, useState } from 'react';
+import { default as BigNumber } from 'bignumber.js';
+import { useCallback, useMemo, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, SmallTitleText, TitleText } from '@/shared/ui';
-import { Skeleton } from '@/shared/ui-kit';
+import { ALLOCATION_COLORS } from '@/shared/ui/chart-constants';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { useBalanceAllocation } from '../hooks/useBalanceAllocation';
+import { useBalancesSyncing } from '../hooks/useBalancesSyncing';
 import { type ChainHolding, useChainHoldings } from '../hooks/useChainHoldings';
 import { type Holding, useHoldings } from '../hooks/useHoldings';
+import { type BalanceType } from '../lib/balanceTypes';
 
 import { AssetDetailModal } from './AssetDetailModal';
-import { BalanceAllocationBars } from './BalanceAllocationBars';
+import { BalanceTypeBar } from './BalanceTypeBar';
 import { ChainDetailModal } from './ChainDetailModal';
-import { ChainHoldingsList } from './ChainHoldingsList';
-import { HoldingsList } from './HoldingsList';
+import { type ChainHoldingRowItem, ChainHoldingsList } from './ChainHoldingsList';
+import { type HoldingRowItem, HoldingsList } from './HoldingsList';
+import { PortfolioOverviewSkeleton } from './PortfolioOverviewSkeleton';
 import { Price } from './Price';
 
 type EntryLike = { accountId: string; name: string; address: string };
@@ -36,7 +40,7 @@ type Props = {
   allEntries: EntryLike[];
 };
 
-const toggleButtonClass = 'flex-1 cursor-pointer rounded px-3 py-1 text-footnote font-semibold transition-colors';
+const toggleButtonClass = 'cursor-pointer rounded px-4 py-1.5 text-footnote font-semibold transition-colors';
 const activeToggleClass = 'bg-white text-text-primary shadow-sm';
 const inactiveToggleClass = 'text-text-tertiary hover:text-text-secondary';
 
@@ -45,7 +49,9 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { holdings, totalFiat, fiatFlag, currency } = useHoldings(accountIds);
   const { chainHoldings } = useChainHoldings(accountIds);
   const allocation = useBalanceAllocation(accountIds);
+  const isSyncing = useBalancesSyncing();
   const [viewMode, setViewMode] = useState<ViewMode>('asset');
+  const [balanceTypeFilter, setBalanceTypeFilter] = useState<BalanceType | null>(null);
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
   const [selectedChainId, setSelectedChainId] = useState<ChainId | null>(null);
 
@@ -54,12 +60,63 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
 
   const switchToAssetView = useCallback(() => setViewMode('asset'), []);
   const switchToChainView = useCallback(() => setViewMode('chain'), []);
+  const toggleBalanceType = useCallback((type: BalanceType) => {
+    setBalanceTypeFilter((prev) => (prev === type ? null : type));
+  }, []);
+  const clearBalanceTypeFilter = useCallback(() => setBalanceTypeFilter(null), []);
   const handleHoldingSelect = useCallback((h: Holding) => setSelectedPriceId(h.priceId), []);
   const handleChainSelect = useCallback((h: ChainHolding) => setSelectedChainId(h.chainId), []);
   const closeAssetDetail = useCallback(() => setSelectedPriceId(null), []);
   const closeChainDetail = useCallback(() => setSelectedChainId(null), []);
 
-  if (!fiatFlag) return null;
+  // Holdings scoped to the active balance-type filter, with share of the scope total.
+  // Zero fiat only means "nothing of this type" under a filter — without one, keep every held asset.
+  const { assetRows, assetScopeTotal } = useMemo(() => {
+    const scoped = balanceTypeFilter
+      ? holdings
+          .map((h) => ({
+            ...h,
+            totalRaw: h.byType[balanceTypeFilter].raw,
+            fiatValue: h.byType[balanceTypeFilter].fiat,
+          }))
+          .filter((h) => new BigNumber(h.fiatValue).gt(0))
+      : holdings;
+    const scopeTotal = scoped.reduce((sum, h) => sum.plus(h.fiatValue), new BigNumber(0));
+    const rows: HoldingRowItem[] = scoped.map((h) => ({
+      ...h,
+      sharePercent: scopeTotal.gt(0) ? new BigNumber(h.fiatValue).div(scopeTotal).times(100).toNumber() : 0,
+    }));
+
+    return { assetRows: rows, assetScopeTotal: scopeTotal.toString() };
+  }, [holdings, balanceTypeFilter]);
+
+  const { chainRows, chainScopeTotal } = useMemo(() => {
+    const scoped = balanceTypeFilter
+      ? chainHoldings
+          .map((h) => ({ ...h, fiatValue: h.byType[balanceTypeFilter].fiat }))
+          .filter((h) => new BigNumber(h.fiatValue).gt(0))
+      : chainHoldings;
+    const scopeTotal = scoped.reduce((sum, h) => sum.plus(h.fiatValue), new BigNumber(0));
+    const rows: ChainHoldingRowItem[] = scoped.map((h) => ({
+      ...h,
+      sharePercent: scopeTotal.gt(0) ? new BigNumber(h.fiatValue).div(scopeTotal).times(100).toNumber() : 0,
+    }));
+
+    return { chainRows: rows, chainScopeTotal: scopeTotal.toString() };
+  }, [chainHoldings, balanceTypeFilter]);
+
+  // fiat display is off — the fiat-driven breakdown (total, allocation, donut)
+  // has nothing to show, but the injected vesting block is token-denominated
+  // and stays useful
+  if (!fiatFlag) {
+    return (
+      <DashboardWidget>
+        <FootnoteText className="text-text-tertiary">{t('dashboard.portfolioOverview.title')}</FootnoteText>
+        <BodyText className="mt-2 text-text-tertiary">{t('dashboard.portfolioOverview.fiatDisabledHint')}</BodyText>
+        <Slot id={portfolioVestingSlot} />
+      </DashboardWidget>
+    );
+  }
 
   if (accountIds.length === 0) {
     return (
@@ -73,7 +130,20 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
     );
   }
 
-  const hasData = (viewMode === 'asset' ? holdings.length > 0 : chainHoldings.length > 0) && totalFiat !== null;
+  if (totalFiat === null) {
+    return (
+      <DashboardWidget>
+        <PortfolioOverviewSkeleton />
+      </DashboardWidget>
+    );
+  }
+
+  const scopeLabel = balanceTypeFilter
+    ? t(`dashboard.portfolioOverview.balanceType.${balanceTypeFilter}`)
+    : t(viewMode === 'asset' ? 'dashboard.portfolioOverview.allAssets' : 'dashboard.portfolioOverview.allNetworks');
+  const scopeColor = balanceTypeFilter ? ALLOCATION_COLORS[balanceTypeFilter] : undefined;
+
+  const hasData = viewMode === 'asset' ? assetRows.length > 0 : chainRows.length > 0;
 
   return (
     <DashboardWidget>
@@ -81,45 +151,62 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
         <div>
           <FootnoteText className="text-text-tertiary">{t('dashboard.portfolioOverview.title')}</FootnoteText>
           <TitleText className="mt-1">
-            {totalFiat === null ? (
-              <Skeleton width={120} height={28} />
-            ) : (
-              <Price amount={totalFiat} currency={currency} />
-            )}
+            <Price amount={totalFiat} currency={currency} />
           </TitleText>
         </div>
-        {allocation && <BalanceAllocationBars allocation={allocation} />}
+        <div className="flex shrink-0 rounded-md bg-tab-background p-0.5">
+          <button
+            className={`${toggleButtonClass} ${viewMode === 'asset' ? activeToggleClass : inactiveToggleClass}`}
+            onClick={switchToAssetView}
+          >
+            {t('dashboard.portfolioOverview.byAsset')}
+          </button>
+          <button
+            className={`${toggleButtonClass} ${viewMode === 'chain' ? activeToggleClass : inactiveToggleClass}`}
+            onClick={switchToChainView}
+          >
+            {t('dashboard.portfolioOverview.byChain')}
+          </button>
+        </div>
       </div>
+
+      {allocation && (
+        <div className="mt-4">
+          <BalanceTypeBar
+            allocation={allocation}
+            currency={currency}
+            syncing={isSyncing}
+            selectedType={balanceTypeFilter}
+            onToggleType={toggleBalanceType}
+            onClear={clearBalanceTypeFilter}
+          />
+        </div>
+      )}
 
       <Slot id={portfolioVestingSlot} />
 
       {hasData && (
-        <>
-          <div className="my-4 border-t border-divider" />
-
-          <div className="mb-3 flex rounded-md bg-tab-background p-0.5">
-            <button
-              className={`${toggleButtonClass} ${viewMode === 'asset' ? activeToggleClass : inactiveToggleClass}`}
-              onClick={switchToAssetView}
-            >
-              {t('dashboard.portfolioOverview.byAsset')}
-            </button>
-            <button
-              className={`${toggleButtonClass} ${viewMode === 'chain' ? activeToggleClass : inactiveToggleClass}`}
-              onClick={switchToChainView}
-            >
-              {t('dashboard.portfolioOverview.byChain')}
-            </button>
-          </div>
-
-          <div>
-            {viewMode === 'asset' ? (
-              <HoldingsList holdings={holdings} currency={currency} onSelect={handleHoldingSelect} />
-            ) : (
-              <ChainHoldingsList chainHoldings={chainHoldings} currency={currency} onSelect={handleChainSelect} />
-            )}
-          </div>
-        </>
+        <div className="mt-4 border-t border-divider pt-4">
+          {viewMode === 'asset' ? (
+            <HoldingsList
+              holdings={assetRows}
+              totalFiat={assetScopeTotal}
+              scopeLabel={scopeLabel}
+              scopeColor={scopeColor}
+              currency={currency}
+              onSelect={handleHoldingSelect}
+            />
+          ) : (
+            <ChainHoldingsList
+              chainHoldings={chainRows}
+              totalFiat={chainScopeTotal}
+              scopeLabel={scopeLabel}
+              scopeColor={scopeColor}
+              currency={currency}
+              onSelect={handleChainSelect}
+            />
+          )}
+        </div>
       )}
 
       {selectedHolding && (
