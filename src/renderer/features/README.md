@@ -42,7 +42,7 @@ notes.
 - `multisig-wallet`
 - `multisig-wallet-create`
 - `flexible-change-signatories`
-- `flexible-operation-details` (no spec planned)
+- [`flexible-operation-details`](./flexible-operation-details/README.md)
 - `multisig-candidates` (aggregate)
 - [`multisig-operation-description`](../aggregates/multisig-operation-description/README.md) (aggregate)
 - `selected-wallet-multisig-operations` (aggregate)
@@ -55,7 +55,7 @@ notes.
 - `proxies`
 - `proxy-add`
 - `proxy-basket`
-- `proxy-operation-details` (no spec planned)
+- [`proxy-operation-details`](./proxy-operation-details/README.md)
 - `proxy-remove`
 - [`proxy-verify`](./proxy-verify/README.md)
 - [`proxied-add-pure`](./proxied-add-pure/README.md)
@@ -71,7 +71,7 @@ notes.
 - `staking-bond-extra`
 - `staking-bond-nominate`
 - `staking-nominate`
-- `staking-operation-details` (no spec planned)
+- [`staking-operation-details`](./staking-operation-details/README.md)
 - `staking-payee`
 - `staking-restake`
 - `staking-unstake`
@@ -86,7 +86,7 @@ notes.
 - `governance`
 - `governance-navigation` (no spec planned)
 - `governance-basket`
-- `governance-operation-details` (no spec planned)
+- [`governance-operation-details`](./governance-operation-details/README.md)
 - `governance-meta-provider` (aggregate)
 
 > See also: [`dashboard-governance`](#dashboard) — governance summary on the dashboard.
@@ -117,11 +117,11 @@ notes.
 
 - `transfer`
 - `transfer-basket`
-- `transfer-operation-details` (no spec planned)
+- [`transfer-operation-details`](./transfer-operation-details/README.md)
 - `multi-transfer`
-- `multi-transfer-operation-details` (no spec planned)
+- [`multi-transfer-operation-details`](./multi-transfer-operation-details/README.md)
 - [`vested-transfer`](./vested-transfer/README.md)
-- `vested-transfer-operation-details` (no spec planned)
+- [`vested-transfer-operation-details`](./vested-transfer-operation-details/README.md)
 - [`vesting-claim`](./vesting-claim/README.md)
 - [`vesting-portfolio`](../aggregates/vesting-portfolio/README.md) (aggregate)
 - `send-to-contact`
