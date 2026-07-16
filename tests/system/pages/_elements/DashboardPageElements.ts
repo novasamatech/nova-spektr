@@ -12,7 +12,7 @@ export class DashboardPageElements implements BasePageElements {
   distributionLabel = 'Asset allocation';
   showAllLabel = 'Show all';
   holdingsByAssetLabel = 'Holdings by Asset';
-  holdingsByChainLabel = 'Holdings by Chain';
+  holdingsByChainLabel = 'Holdings by Networks';
   holdingRow = TEST_IDS.DASHBOARD.HOLDING_ROW;
   balanceTypeChipPrefix = TEST_IDS.DASHBOARD.BALANCE_TYPE_CHIP;
 }

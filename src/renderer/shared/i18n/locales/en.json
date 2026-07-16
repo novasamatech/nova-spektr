@@ -572,11 +572,11 @@
     "portfolioOverview": {
       "title": "Portfolio Overview",
       "holdings": "Holdings by Asset",
-      "holdingsByChain": "Holdings by Chain",
+      "holdingsByChain": "Holdings by Networks",
       "byAsset": "Assets",
       "byChain": "Networks",
       "balanceTypeDistribution": "Asset allocation",
-      "fiatDisabledHint": "Fiat values are turned off — enable a currency in Settings to see the portfolio breakdown",
+      "fiatDisabledHint": "Fiat values are turned off - enable a currency in Settings to see the portfolio breakdown",
       "showAll": "Show all",
       "allAssets": "All assets",
       "allNetworks": "All networks",
