@@ -6,6 +6,7 @@ import {
   createAccountId,
   createProxiedAccount,
   createVaultChainAccount,
+  createWcAccount,
   kusamaChainId,
   mythosChain,
   polkadotAssetHubChain,
@@ -77,6 +78,21 @@ describe('features/transfer/lib/transfer-utils#filterRecipientAccounts', () => {
     });
 
     expect(result).toEqual([kusamaKey]);
+  });
+
+  it('should keep non-vault keyed accounts on the scheme-match path', () => {
+    // A WalletConnect account is chain-scoped for signing, but the user holds
+    // its key — like vault derived keys it must qualify by scheme match on a
+    // foreign chain, without availability handlers.
+    const wcAccount = createWcAccount('wc', walletId);
+
+    const result = transferUtils.filterRecipientAccounts({
+      accounts: [wcAccount, kusamaKey],
+      chain: polkadotAssetHubChain,
+      query: '',
+    });
+
+    expect(result).toEqual([wcAccount, kusamaKey]);
   });
 
   it('should never offer watch-only accounts through the scheme-match path', () => {
