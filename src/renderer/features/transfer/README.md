@@ -30,18 +30,19 @@ network and show both origin and destination fees.
 
 The recipient field is a searchable combobox over three groups, filtered by name or address as the user types:
 
-| Group           | Contents                                                                                                                                                                                                                                             |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Own accounts    | Accounts of **all** the user's wallets that can _receive_ on the destination chain: keyed accounts (vault keys, extension, WalletConnect) qualify by address-scheme match even when the key belongs to another chain; keyless constructs (multisig, proxied / pure proxy) are offered only where they actually exist. The sender itself is excluded. |
-| Address book    | Contacts (local and synced) whose address is valid on the destination chain.                                                                                                                                                                          |
-| Typed address   | A pasted/typed address not present above, so fresh addresses work without creating a contact.                                                                                                                                                         |
+| Group         | Contents                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Own accounts  | Accounts of **all** the user's wallets that can _receive_ on the destination chain: keyed accounts (vault keys, extension, WalletConnect — the user holds the signing key) qualify by address-scheme match even when the key belongs to another chain; everything else (multisig, proxied / pure proxy, watch-only, signatories) follows its wallet feature's availability rule. The sender itself is excluded. |
+| Address book  | Contacts (local and synced) whose address is valid on the destination chain.                                                                                                                                                                                                                                                                                                                                    |
+| Typed address | A pasted/typed address not present above, so fresh addresses work without creating a contact.                                                                                                                                                                                                                                                                                                                   |
 
-A committed recipient collapses into a card showing the resolved name — for the user's own account that is the
-account (key) name, not the wallet name — with a clear button to re-enter edit mode.
+A committed recipient collapses into a card showing the resolved name — for the user's own account that is the account
+(key) name, not the wallet name — with a clear button to re-enter edit mode.
 
 The receive-vs-sign distinction exists for key-set vaults: their chain-scoped derived keys are valid recipients on any
-scheme-compatible chain, while offering a keyless multisig/pure-proxy address on a chain where it does not exist would
-send funds to an uncontrolled address.
+scheme-compatible chain. The relaxed scheme-match rule applies only to accounts whose key the user holds; for the rest
+(multisig, pure proxy, watch-only, signatory placeholders) the transfer feature defers to the owning wallet feature's
+availability rule — offering such an address on a chain where it is not controlled would send funds into the void.
 
 ### Myself (XCM only)
 
@@ -63,8 +64,8 @@ The sender-first rule matches teleport expectations: funds move between the same
 
 - Shows the sender's transferable balance; MAX mode subtracts origin (and destination, for XCM) fees and offers an
   existential-deposit switch to either keep the account alive or send everything and let it reap.
-- Validation failures (zero amount, insufficient balance for amount + fees, destination below existential deposit)
-  block submission with inline errors; sending an amount that would kill the sender account shows a warning.
+- Validation failures (zero amount, insufficient balance for amount + fees, destination below existential deposit) block
+  submission with inline errors; sending an amount that would kill the sender account shows a warning.
 
 ### Cross-chain specifics
 
@@ -75,16 +76,16 @@ The sender-first rule matches teleport expectations: funds move between the same
 
 ### Draft mode
 
-The form can be saved as a draft (multisig flows): the user picks the signing path explicitly, fills the form and
-stores the operation for later confirmation instead of signing immediately.
+The form can be saved as a draft (multisig flows): the user picks the signing path explicitly, fills the form and stores
+the operation for later confirmation instead of signing immediately.
 
 ## Lifecycle
 
 1. User opens the form with a chain + asset context (asset can be switched inside the form).
 2. Fills sender (usually auto-picked), recipient, amount; for XCM — destination network. Fees and validation update
    live.
-3. Continue → confirmation screen → signing (wallet-specific) → submission; the operation can also go to the basket
-   or be saved as a draft instead.
+3. Continue → confirmation screen → signing (wallet-specific) → submission; the operation can also go to the basket or
+   be saved as a draft instead.
 4. Failures surface as inline validation, a dry-run error, or a submission error; the form stays editable.
 
 ## Related

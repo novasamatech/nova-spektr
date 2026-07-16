@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import { type WatchOnlyAccount, AccountType, CryptoType, SigningType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import {
+  createAccountId,
   createProxiedAccount,
   createVaultChainAccount,
   kusamaChainId,
@@ -70,6 +72,32 @@ describe('features/transfer/lib/transfer-utils#filterRecipientAccounts', () => {
 
     const result = transferUtils.filterRecipientAccounts({
       accounts: [proxiedAccount, kusamaKey],
+      chain: polkadotAssetHubChain,
+      query: '',
+    });
+
+    expect(result).toEqual([kusamaKey]);
+  });
+
+  it('should never offer watch-only accounts through the scheme-match path', () => {
+    // The user doesn't hold the key of a watch-only account, so the transfer
+    // feature can't assume the address is receivable on a scheme-compatible
+    // chain — the watch-only wallet feature's availability rule (DI handler)
+    // decides. Without registered handlers it is always excluded.
+    const watchOnlyAccount: WatchOnlyAccount = {
+      id: `${walletId} watch-only universal`,
+      type: 'universal',
+      accountType: AccountType.WATCH_ONLY,
+      accountId: createAccountId('watch-only'),
+      walletId,
+      name: 'Watch Only',
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
+      createdAt: Date.now(),
+    };
+
+    const result = transferUtils.filterRecipientAccounts({
+      accounts: [watchOnlyAccount, kusamaKey],
       chain: polkadotAssetHubChain,
       query: '',
     });

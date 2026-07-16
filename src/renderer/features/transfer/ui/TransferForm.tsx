@@ -25,7 +25,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, CaptionText, FootnoteText, Icon, IconButton, InputHint, Switch } from '@/shared/ui';
 import { AccountSelect, Address, Identicon, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
-import { useAccountName, useAccountsNames, useWalletName } from '@/domains/network';
+import { accountService, useAccountName, useAccountsNames, useWalletName } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
@@ -447,12 +447,14 @@ const Destination = memo(() => {
   // accountId-based resolution never sees the account object, so a key-set
   // vault recipient would show the wallet name instead of the key name the
   // dropdown and account selector display (`resolvedAccounts` runs the same
-  // resolution the dropdown items use).
+  // resolution the dropdown items use). `findRelatedAccount` disambiguates
+  // when the same accountId exists in several wallets (chain match, then
+  // custom-named), so the badge/name don't come from an arbitrary wallet.
   const recipientAccount = useMemo(() => {
     if (nullable(recipientAccountId)) return null;
 
-    return resolvedAccounts.find((account) => account.accountId === recipientAccountId) ?? null;
-  }, [resolvedAccounts, recipientAccountId]);
+    return accountService.findRelatedAccount(resolvedAccounts, recipientAccountId, chain) ?? null;
+  }, [resolvedAccounts, recipientAccountId, chain]);
 
   // Derived from the account's walletId (not an independent lookup) so the
   // displayed name and the wallet badge always come from the same wallet when
