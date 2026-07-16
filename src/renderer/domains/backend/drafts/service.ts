@@ -29,8 +29,16 @@ export const pathNodeSchema = z.object({
 
 export type PathNode = z.infer<typeof pathNodeSchema>;
 
+// The backend joins the linked operation onto every draft: `null` = not yet on
+// chain, present = already submitted. Only presence is read, so the shape stays
+// loose — an unrelated Operation change must never fail a draft parse.
+const linkedOperationSchema = z.object({ id: z.string() });
+
 const backendDraftSchema = z.object({
   id: z.string(),
+  // Not `.optional()`: defaulting a missing field to `null` marks every draft
+  // pending and re-offers Submit for operations already on chain.
+  operation: linkedOperationSchema.nullable(),
   multisigAccountId: accountIdStringSchema.nullable(),
   proxyAccountId: accountIdStringSchema.nullable().optional(),
   proxyContact: z.object({ name: z.string(), accountId: z.string() }).nullable().optional(),
@@ -76,11 +84,33 @@ async function createDraft(
   return parseResponse(result, backendDraftSchema);
 }
 
-async function fetchDrafts(baseUrl: string): Promise<BackendDraft[]> {
-  const result = await authFetch(`${baseUrl}/draft-operations`, { method: 'GET' });
-  const parsed = parseResponse(result, listResponseSchema);
+// Backend defaults `pageSize` to 20 and caps it at 100; an unparameterised GET
+// silently truncates.
+const PAGE_SIZE = 100;
 
-  return parsed.data;
+async function fetchDraftsPage(baseUrl: string, page: number): Promise<{ data: BackendDraft[]; total: number }> {
+  const result = await authFetch(`${baseUrl}/draft-operations?page=${page}&pageSize=${PAGE_SIZE}`, { method: 'GET' });
+
+  return parseResponse(result, listResponseSchema);
+}
+
+async function fetchDrafts(baseUrl: string): Promise<BackendDraft[]> {
+  const firstPage = await fetchDraftsPage(baseUrl, 1);
+
+  if (firstPage.total <= PAGE_SIZE) {
+    return firstPage.data;
+  }
+
+  const totalPages = Math.ceil(firstPage.total / PAGE_SIZE);
+  const remainingPages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+  const remainingResults = await Promise.all(remainingPages.map(page => fetchDraftsPage(baseUrl, page)));
+
+  const allDrafts = [firstPage.data, ...remainingResults.map(result => result.data)].flat();
+
+  // Offset paging isn't atomic and the backend's `createdAt DESC` has no
+  // tiebreaker, so a concurrent insert can return the same draft on two pages.
+  // Map keeps the later page's copy, which was read later.
+  return [...new Map(allDrafts.map(draft => [draft.id, draft])).values()];
 }
 
 async function updateDraft(

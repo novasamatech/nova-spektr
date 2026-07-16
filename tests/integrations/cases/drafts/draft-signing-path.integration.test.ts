@@ -106,6 +106,7 @@ const proxiedAccount = {
 
 const makeDraft = (signingPath: PathNode[], overrides: Partial<Draft> = {}): Draft => ({
   id: 'draft-test',
+  operation: null,
   multisigAccountId: null,
   proxyAccountId: null,
   chainId: polkadotChainId,
