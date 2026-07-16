@@ -2107,7 +2107,6 @@
     "errorSignedMessage": "tried to sign this operation",
     "initiatedMessage": "created this operation",
     "signedMessage": "signed this operation",
-    "title": "Log",
     "unknownMessage": " made an unknown action"
   },
   "multisigOperations": {
@@ -2456,7 +2455,6 @@
     "connectionTimeoutDescription": "Can't connect to the network in 10 seconds. You can retry later with the same link.",
     "connectionTimeoutRetryButton": "Retry",
     "connectionTimeoutTitle": "Connection timeout",
-    "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
     "cancelDescriptionButton": "Cancel",
     "descriptionLabel": "Description",
@@ -2594,7 +2592,7 @@
     "signing": "{ signed } of { threshold } signed",
     "status": {
       "cancelled": "Rejected",
-      "error": "Error",
+      "error": "Rejected",
       "established": "Established",
       "executed": "Executed",
       "signing": "On signing"
@@ -2641,7 +2639,6 @@
       "signTitle_other": "Confirm { count } operations on your { walletName } app",
       "tryAgainButton": "Try again"
     },
-    "walletSignatoriesTitle": "Your accounts",
     "xcmFee": "Cross-chain fee"
   },
   "operations": {
@@ -2722,6 +2719,10 @@
       "summaryNoCallData": "No call data - you'll add it when submitting this operation.",
       "linkCopied": "Draft link copied!",
       "shareDraftTooltip": "Share draft link with signatories",
+      "createdByLabel": "Created by",
+      "pathRoleProxied": "Proxied",
+      "pathRoleMultisig": "Multisig",
+      "pathRoleInitiator": "Initiator",
       "selectMultisigForProxy": "Proxy multisig",
       "proxyLabel": "Proxy",
       "viewDraft": "View draft",
@@ -2751,6 +2752,7 @@
       "clearAll": "operations.filters.clearAll",
       "clearFilters": "Clear filters",
       "dateRangePlaceholder": "Date range",
+      "multisigStatusPlaceholder": "Status",
       "networkPlaceholder": "Networks",
       "networkSummary": "Networks",
       "operationTypePlaceholder": "Operation type",
@@ -2810,6 +2812,12 @@
     "pendingEmptyDescription": "Once you or a multisig signer create an operation, it will appear here.",
     "pendingEmptyTitle": "Pending operations list is empty",
     "searchPlaceholder": "Search",
+    "sections": {
+      "completed": "Completed",
+      "hidden": "Hidden",
+      "inProgress": "In progress",
+      "rejected": "Rejected"
+    },
     "shareOperationTooltip": "Share transaction link with signatories",
     "sync": {
       "connecting": "Connecting to networks...",
@@ -2817,7 +2825,17 @@
       "synced": "Synced",
       "syncing": "Syncing networks... {synced}/{total}"
     },
+    "table": {
+      "operation": "Operation",
+      "value": "Value",
+      "submitter": "Submitter",
+      "description": "Description",
+      "sortByType": "Sort by operation type",
+      "sortByValue": "Sort by value (amount, vote stake, etc.)",
+      "sortBySubmitter": "Sort by submitter"
+    },
     "tabs": {
+      "all": "All operations",
       "hidden": "Hidden",
       "history": "History",
       "pending": "Pending"

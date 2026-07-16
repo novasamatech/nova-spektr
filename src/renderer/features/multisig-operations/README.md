@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-13
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-15
 
 ## Overview
 
@@ -13,6 +13,12 @@ executes on-chain. Until that happens the operation is a shared, half-finished t
 is, who has already signed, and whether it is their turn. This view is where that happens — reading an operation,
 approving or rejecting it, inspecting its decoded call, supplying missing call data, following its event log, attaching
 a shared description, and (when the address book is connected) nudging the signatories who still need to act.
+
+The list is a **table**: a sticky column header (Operation / Value / Submitter / Description) with sortable columns sits
+above rows grouped into collapsible **status sections** (In progress / Completed / Rejected). The **Description** header
+label is shown only once the external address book has been connected (descriptions are address-book data) — the same
+gate that reveals the drafts section; until then the column area stays blank. Saved **drafts** awaiting submission
+appear as the first collapsible section under the same table header on the Pending tab.
 
 ## Who can use it / when it applies
 
@@ -34,13 +40,14 @@ Per operation, what the user can _do_ depends on their relationship to it:
 | **View** (details, signatories, log, call data, advanced) | Always — to anyone who can see the operation                                                                                                                                                            |
 | **Approve**                                               | Pending, the user owns an _actionable_ signatory (a signatory account that hasn't approved yet, is reachable on-chain, and is not watch-only), and — for the final signing — valid call data is present |
 | **Add call data**                                         | Pending, the user is the _final_ required signer, but the operation's call data is missing/invalid                                                                                                      |
-| **Reject**                                                | Pending, and the user owns the **depositor** account (the original initiator)                                                                                                                           |
+| **Reject**                                                | Pending, and the user owns the **depositor** account (the original initiator), reachable on the operation's chain and not watch-only                                                                    |
 | **Notify remaining signers**                              | Pending, the address-book backend is connected and healthy, and the multisig is in the external address book; active only after the backend session account has signed (disabled with a tooltip before) |
 | **Add wallet** (external multisig)                        | Pending external multisig — a pairing prompt instead of sign buttons                                                                                                                                    |
 | **Attach / edit description**                             | See [Address book availability](#address-book-availability)                                                                                                                                             |
 | **Hide / unhide**, **share link**, **export**             | Always                                                                                                                                                                                                  |
 
-Watch-only accounts can view but never sign. In the **History** tab an external multisig shows no action column at all.
+Watch-only accounts can view but never sign. For an external multisig, resolved (non-pending) operations show no action
+column at all.
 
 ## Operation types
 
@@ -95,7 +102,7 @@ When the call data has not been supplied yet, only the call hash is known, so th
 shows as **"Unknown Operation"** with a generic icon (tinted by status) and no amount. A call that _is_ decoded but
 belongs to none of the families above (a bare batch, a remark, a collective call, …) shows its raw **"Section: Method"**
 label — e.g. "Utility: Batch all" — with the same generic icon. In both cases the **Advanced** panel still shows the
-call hash, deposit, and on-chain time point.
+call hash and on-chain time point.
 
 An undecoded operation is still actionable: if the current user is the final required signer, an **"Add call data"**
 action lets them paste the hex call data — validated against the call hash — which both decodes the display and unblocks
@@ -103,31 +110,65 @@ the final approval.
 
 ## The operation row and its panels
 
-A collapsed row shows the operation's title, network, amount, status, a share-link button, and — for a submitted draft —
-a badge. Special shapes (edit-flexible, verify-proxy) render their bespoke card here instead of the amount row.
-Expanding a row reveals three panels:
+A collapsed row is a fixed-height card whose cells line up with the sticky table header:
+
+- **Operation** — the recognised title with its icon, and the network name underneath (two chain chips for XCM). Special
+  shapes (edit-flexible, verify-proxy) render their bespoke card across the Operation and Value cells instead.
+- **Value** — the operation's amount and asset, when one can be extracted from the (core) call.
+- **Submitter** — the multisig account, resolved to its wallet/contact name with an identicon.
+- **Description** — the shared operation note, inline. See [Description in the row](#description-in-the-row). When the
+  operation originated from a submitted draft, an uppercase **FROM DRAFT** badge leads the cell; hovering it shows the
+  operation's description.
+- **Status** — a bordered pill: **"X of Y signed"** while pending, **Executed** or **Rejected** once resolved.
+- **Actions** — Approve / Reject / Add call data buttons per the rules above (or the Add-wallet pairing prompt for an
+  external multisig).
+
+There is no share button on the row — sharing lives in the expanded Signatories panel header. Expanding a row reveals
+three panels:
 
 - **Details** — depositor, timestamp, the recognised transaction's specifics, and the shared **operation description**
-  (see [Related](#related)). Special shapes render their bespoke details here.
-- **Signatories** — the signatory list with per-signatory status, the **Log**, **Notify remaining signers**, and (for
-  owned multisigs) **Open overview**. Detailed below.
-- **Advanced** — call hash, call data with a formatted JSON view (once known), deposit, the on-chain time point with an
-  explorer link, and the **hide / unhide** control. When the outer and core calls differ (proxy/batch wrappers), the
-  labels switch to "Core call hash" / "Core call data".
+  (preview with a "show full" expansion and an Edit action when editing is allowed). Special shapes render their bespoke
+  details here.
+- **Signatories** — the signatory list and the operation's activity **Log**, plus the header actions (including **Notify
+  remaining signers** when applicable). Detailed below.
+- **Advanced** — call hash, call data with a formatted JSON view (once known), the on-chain time point with an explorer
+  link, and the **hide / unhide** control. When the outer and core calls differ (proxy/batch wrappers), the labels
+  switch to "Core call hash" / "Core call data".
+
+### Description in the row
+
+The Description cell shows the operation's shared note inline (truncated; the full text appears on hover). When there is
+**no** description yet and the operation is still **pending**, the cell offers a way to add one, gated by the same
+address-book rules as everywhere else (see [Description states](#description-states)):
+
+- **Can edit** (backend healthy, write permission, multisig in the address book) — an **"Add description"** control,
+  revealed on row hover, opening the shared description editor.
+- **Multisig not in the address book** — a locked "Add description" hint (also hover-revealed) whose tooltip names the
+  multisig and asks to add it to the address book.
+- **Reconnect / hidden states** — the cell renders nothing; the reconnect affordance lives in the Details panel only, so
+  the table stays quiet.
+
+On a resolved operation without a description the cell is simply empty.
 
 ### Signatories and the log
 
-**Signatory list.** The list is split into two groups. **Wallet signatories** (accounts held in the user's wallets,
-shown with wallet name and icon) are ordered so the story reads top-to-bottom: a signatory who **rejected** is pinned
-first, then those who **approved** in block order, then everyone still **pending**. **Contact signatories** (the rest —
-shown as a short, copyable address with any known contact name) follow, in account order. Each signatory carries a
-status chip — **Signed**, **Rejected**, or **Unsigned** for a pending signatory (rejection takes precedence over an
-earlier approval). For an owned multisig an **Open overview** button opens the account-structure view; it is hidden for
-external multisigs, and for a flexible multisig it is trimmed to the proxied account, its backing multisig, and the one
-proxy connection this operation uses.
+The Signatories panel header carries two tabs — **Signatories** and **Log** (with a badge counting the operation's
+events) — plus header actions:
 
-**The Log.** The **Log** button (with a badge counting the operation's events) opens a chronological activity feed of
-the operation's on-chain lifecycle, grouped by day (oldest first). It distinguishes three event kinds:
+- **Notify remaining signers** — on a pending operation with the address-book backend connected and the multisig known
+  to the external address book, a button that nudges the still-pending signatories (see
+  [Notify remaining signers](#notify-remaining-signers)); otherwise it renders nothing.
+- **Open overview** — opens the account-structure view for the multisig. Hidden for external multisigs; for a flexible
+  multisig it is trimmed to the proxied account, its backing multisig, and the one proxy connection this operation uses.
+- **Share** — copies the operation's deep link (with a confirmation toast).
+
+**Signatory list.** A single flat list of all signatories, ordered so the story reads top-to-bottom: a signatory who
+**rejected** is pinned first, then those who **approved** in block order, then everyone still pending. Each signatory
+resolves to its wallet or contact name where known (falling back to a short, copyable address) and carries a status chip
+— **Signed**, **Rejected**, or **Unsigned** (rejection takes precedence over an earlier approval).
+
+**The Log.** The Log tab shows a chronological activity feed of the operation's on-chain lifecycle inline, grouped by
+day (oldest first). It distinguishes three event kinds:
 
 - **Initiated** — the depositor's first approval that created the operation.
 - **Signed** — any subsequent approval.
@@ -135,8 +176,9 @@ the operation's on-chain lifecycle, grouped by day (oldest first). It distinguis
 
 Each entry names the signer (resolved to a wallet or contact name, with wallet or identicon avatar), the time of day,
 and — where the chain has explorers — a link to the approving/rejecting extrinsic. There is no separate "executed" log
-line: the final approval is just another _Signed_ event; overall progress is shown by the signed-of-threshold status in
-the log header. A freshly created operation always has at least the initiation event, so the log is never empty.
+line: the final approval is just another _Signed_ event; overall progress is shown by the row's signed-of-threshold
+status pill. The log carries no header of its own — only the event feed. A freshly created operation always has at least
+the initiation event, so the log is never empty.
 
 ## Actions
 
@@ -167,9 +209,10 @@ data exists, the operation decodes throughout the view and the **Approve** butto
 
 ### Rejecting
 
-Only the **depositor** (the original initiator) can **reject** a pending operation. Rejecting is a two-step
-confirm-then-sign flow that submits a cancellation; the deposit returns to the depositor and the operation moves to the
-**History** tab with status _cancelled_.
+Only the **depositor** (the original initiator) can **reject** a pending operation — the depositor account must be
+reachable on the operation's chain and not watch-only. Rejecting is a two-step confirm-then-sign flow that submits a
+cancellation; the deposit returns to the depositor and the operation moves to the **Rejected** section on the History
+tab.
 
 ### Deep-link edge cases
 
@@ -197,12 +240,16 @@ action, and a re-sync badge).
   disabled until the backend session account has signed the operation; the backend independently enforces the same rule.
 - **Operation description.** The description is a short note the initiator attaches, published to the shared address
   book so co-signers see the operation's context.
+- **Drafts.** The drafts section on the Pending tab is backend data — it appears only once the user has connected the
+  address book at least once, and reads/writes are permission-gated.
 
 ### Description states
 
-An **existing** description is always shown (preview with a "show full" expansion); only the ability to **edit** it
-depends on the state below. The **empty** description area is shown, or not, per this rule (in this view the operation
-is always a multisig and never a draft submission):
+An **existing** description is always shown — inline in the row's Description cell, and in the Details panel (preview
+with a "show full" expansion); only the ability to **add or edit** it depends on the state below. Adding and editing
+happen in a shared description editor modal, reachable from both the row cell and the Details panel. The **empty**
+description area is shown, or not, per this rule (in this view the operation is always a multisig and never a draft
+submission):
 
 ```mermaid
 flowchart TD
@@ -210,10 +257,10 @@ flowchart TD
     H -- "yes" --> P{"User has write permission?"}
     P -- "no" --> HIDDEN1["Hidden"]
     P -- "yes" --> B{"Multisig in the address book?"}
-    B -- "yes" --> FIELD["Add-description field"]
+    B -- "yes" --> FIELD["Add-description control"]
     B -- "no" --> ERROR["Error — add this multisig to the address book"]
     H -- "no" --> E{"Connected before?"}
-    E -- "yes" --> RECONNECT["Reconnect prompt"]
+    E -- "yes" --> RECONNECT["Reconnect prompt (Details panel only)"]
     E -- "no" --> HIDDEN2["Hidden"]
 
     style FIELD fill:#1b5e20,color:#fff
@@ -223,12 +270,12 @@ flowchart TD
     style HIDDEN2 fill:#37474f,color:#fff
 ```
 
-| State         | When it appears                                                                        | What the user sees                                                           |
-| ------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| **Field**     | Connected & healthy, write permission, multisig is in the address book                 | An editable note (up to 500 characters)                                      |
-| **Error**     | Connected & healthy, write permission, but the multisig is **not** in the address book | An inline error naming the multisig and asking to add it to the address book |
-| **Reconnect** | Backend unhealthy, but the user has connected before                                   | A slim **Reconnect** prompt                                                  |
-| **Hidden**    | Connected without write permission, or the address book was never used                 | Nothing                                                                      |
+| State         | When it appears                                                                        | What the user sees                                                                                                           |
+| ------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Editable**  | Connected & healthy, write permission, multisig is in the address book                 | An **Add description** control (row: hover-revealed; Details: a button) opening the editor (up to 500 characters)            |
+| **Error**     | Connected & healthy, write permission, but the multisig is **not** in the address book | Row: a locked hint whose tooltip names the multisig and asks to add it to the address book; Details: the same message inline |
+| **Reconnect** | Backend unhealthy, but the user has connected before                                   | A slim **Reconnect** prompt in the Details panel; the row cell stays empty                                                   |
+| **Hidden**    | Connected without write permission, or the address book was never used                 | Nothing                                                                                                                      |
 
 ### Notify remaining signers
 
@@ -266,50 +313,98 @@ multisig is absent from the external address book.
 
 The list is split into three tabs, and an operation belongs to exactly one:
 
-| Tab         | What it holds                                                                                                        |
-| ----------- | -------------------------------------------------------------------------------------------------------------------- |
-| **Pending** | Operations still collecting approvals; also surfaces saved **drafts** awaiting submission, and carries a count badge |
-| **History** | Executed, cancelled, or errored operations                                                                           |
-| **Hidden**  | Operations the user manually hid (the tab only appears when something is hidden)                                     |
+| Tab         | What it holds                                                                                                     |
+| ----------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Pending** | Operations still collecting approvals (with a count badge); also hosts the **drafts** section awaiting submission |
+| **History** | Executed, cancelled, or errored operations (with a count badge)                                                   |
+| **Hidden**  | Operations the user manually hid (the tab only appears when something is hidden, and carries a count)             |
 
 The view opens on **Pending**; a deep link switches to the tab holding the focused operation; unhiding the last hidden
 operation switches back to Pending.
 
-### Navigating and grouping
+**Merged scope.** When any **non-search filter** is active (status, network, type, proxy type, or date range), the tabs
+collapse into a single **"All operations"** pill showing the total matching count (drafts rows included when the drafts
+section is in scope), and the filter applies across all statuses at once — pending and resolved results appear together,
+each under its status section. Activating such a filter also normalizes the underlying tab to Pending, regardless of
+which tab was active beforehand — so the merged scope always includes the drafts section (subject to the Status filter,
+below). Hidden operations join the merged scope only when the Status filter selects **Hidden** — they then appear under
+a trailing **Hidden** section; otherwise they remain reachable only through the Hidden tab. Search alone does not merge
+the scope — it narrows the current tab. Clearing the filters restores the tabs, reopening on Pending.
 
-Operations are grouped by day with a date header, and the list is virtualised for long histories. It can be narrowed by
-**search** and four **filters**:
+### Sections, sorting, and navigation
+
+Within a tab, operations are grouped into **status sections** — **In progress**, **Completed**, **Rejected** — each with
+a collapsible header showing its count (so the Pending tab has one section, History has up to two, and the merged scope
+can additionally show a trailing **Hidden** section when the Status filter selects it). Collapsing a section is
+remembered while the page is open; a deep link into a collapsed section expands it so the target can be focused. The
+list is virtualised for long histories.
+
+The sticky table header offers **sorting** on three columns, applied **within each section**. Clicking a column cycles
+ascending → descending → off:
+
+- **Operation** — by the recognised operation type (its internal type identifier, so like operations group together; the
+  order does not exactly match the displayed titles).
+- **Value** — groups by what the row shows, then by amount. Operations whose Value column displays an amount sort
+  numerically (an approximation: amounts are compared across different assets without fiat conversion); after them come
+  operations that carry a value the column does not render (batch contents, staking/governance amounts, transfer-all);
+  last, operations with no value at all. Ascending flips the whole order (no-value first, largest amount last).
+- **Submitter** — alphabetically by the name the Submitter column renders: the resolved wallet name for wallet-backed
+  accounts, the contact name for contact-backed multisigs, with a short-address fallback.
+
+With sorting off, operations are ordered **newest first** by their creation time (block and extrinsic index break ties).
+The list can be narrowed by **search** and five **filters**:
 
 - **Search** — matches the multisig wallet name, the multisig address, or the call hash.
 - **Date range** — a from/to (or from-only) interval.
+- **Status** — Drafts / In progress / Completed / Rejected / Hidden. Drafts and hidden operations obey the same logic as
+  the regular statuses: with no status selected the scope behaves as before (drafts visible on Pending, hidden ops
+  confined to the Hidden tab); selecting statuses shows exactly the chosen kinds — e.g. **Drafts** alone shows only the
+  drafts section, **Hidden** surfaces hidden operations in their own section. Beyond the Status gate, draft rows honor
+  the filters a draft can evaluate — network (the draft's chain), date range (creation date), and search (description or
+  address) — while an active transaction-type or proxy-type filter puts every draft out of scope (a draft's call may be
+  absent or undecoded), so the drafts section and the merged "All operations" count stay consistent with the filtered
+  list.
+- **Proxy type** — for flexible multisigs, filters by the proxy's access type.
 - **Network** — matches the operation's chain or, for XCM, its destination chain.
 - **Transaction type** — Transfer, Cross-chain, the staking / governance / proxy types, or Unknown.
-- **Proxy type** — for flexible multisigs, filters by the proxy's access type.
 
 A **Clear** control appears once any filter is active.
 
 ### Export, deep links, hide/unhide
 
-- **CSV export** downloads exactly the **currently filtered set** (so the active tab and every filter apply), sorted
-  newest-first, with a rich column set (status, chain, accounts, method, decoded amount and asset, recipient, call
-  hash/data, approval/rejection counts, and the raw events/args). The filename records the tab, date, and item count.
-- **Deep link** — every row has a share button; opening the link focuses and expands the exact operation, scrolling it
-  into view and switching to its tab.
+- **CSV export** downloads exactly the **currently filtered set** (so the active tab/merged scope and every filter
+  apply), sorted newest-first, with a rich column set (status, chain, accounts, method, decoded amount and asset,
+  recipient, call hash/data, approval/rejection counts, and the raw events/args). The filename records the tab, date,
+  and item count.
+- **Deep link** — the expanded Signatories panel header has a Share action that copies the operation's link; opening the
+  link switches to the right tab, expands the operation's section if collapsed, and focuses and expands the exact
+  operation, scrolling it into view.
 - **Hide / unhide** — the Advanced panel's eye control hides an operation (moving it to the Hidden tab) or unhides it;
   each action shows a toast with an **Undo**. Hidden ids are remembered across sessions.
+
+### Drafts section
+
+On the **Pending** tab (once the address book has ever been connected), saved operation **drafts** render as the first
+collapsible section of the table — under the shared column header, above the status sections — styled and column-aligned
+like operation rows, newest first. The section obeys the **Status filter** (visible with no status selected, or when
+**Drafts** is selected). A draft row shows the would-be operation (title, network and creation date, amount, submitter),
+an Edit action, and its primary control (submit or the step it is blocked on); like an operation row it **expands** into
+a details panel; drafts can be shared, edited, and deleted subject to backend permissions. Once a draft is submitted, it
+leaves the section and its resulting operation row is badged **FROM DRAFT**. The drafts flow itself (creation, review,
+submission, the row's panels) belongs to the `drafts` feature — this view only hosts its section.
 
 ## Lifecycle
 
 ```mermaid
 flowchart TD
-    NEW["Operation initiated<br/>(pending)"] --> LIST["Appears in the Pending tab<br/>for every co-signer"]
+    NEW["Operation initiated<br/>(pending)"] --> LIST["Appears in the In progress section<br/>for every co-signer"]
     LIST --> REVIEW["Co-signer reviews:<br/>details, signatories, log, call data"]
     REVIEW --> ACT{"Co-signer acts"}
     ACT -- "Approve (non-final)" --> WAIT["Records approval;<br/>more still needed"]
     WAIT --> LIST
     ACT -- "Add call data (final signer, call missing)" --> REVIEW
-    ACT -- "Approve (reaches threshold)" --> EXEC["Executes the call on-chain → History"]
-    ACT -- "Reject (by depositor)" --> CANCEL["Cancelled, deposit returned → History"]
+    ACT -- "Approve (reaches threshold)" --> EXEC["Executes the call on-chain<br/>→ Completed (History)"]
+    ACT -- "Reject (by depositor)" --> CANCEL["Cancelled, deposit returned<br/>→ Rejected (History)"]
     REVIEW -- "Notify remaining signers" --> NUDGE["Backend reminds still-pending signers"]
     NUDGE --> LIST
 ```
@@ -317,7 +412,8 @@ flowchart TD
 **Happy path.** An operation is initiated and appears as _pending_ for every co-signer. Each actionable signatory
 approves in turn; while the threshold is not yet met, approvals are non-final and just advance the count. The approval
 that reaches the threshold is the _final signing_ — it carries the full call data and executes the underlying call,
-after which the operation moves to History. Alternatively the depositor can reject the operation, cancelling it.
+after which the operation moves to the Completed section on the History tab. Alternatively the depositor can reject the
+operation, cancelling it.
 
 **Notable failures.**
 
@@ -334,14 +430,14 @@ after which the operation moves to History. Alternatively the depositor can reje
 ## Related
 
 - [`multisig-operation-description`](../../aggregates/multisig-operation-description/README.md) — the shared note
-  attached to an operation and shown in its Details panel; this view reads, displays, and (on the confirmation/approval
-  flows) writes those descriptions.
+  attached to an operation; this view reads it (row cell and Details panel), lets signatories add/edit it through the
+  description editor, and posts it on the confirmation/approval flows.
 - **Address-book backend connection** — the same backend that stores descriptions also backs _Notify remaining signers_
-  and supplies contact names and external-multisig discovery. The nudge endpoint owns authorization and per-multisig
-  rate-limiting; this view decides whether to show the button (pending operation + connected backend + multisig in the
-  address book), disables it until the session account has signed, and maps the backend's response onto a toast.
-  Connection health, reconnection, and session expiry are governed by the backend aggregate.
-- **Drafts** — the Pending tab surfaces saved operation drafts awaiting submission alongside live operations, and a
-  submitted draft is badged on its resulting operation row.
+  and supplies contact names, external-multisig discovery, and drafts. The nudge endpoint owns authorization and
+  per-multisig rate-limiting; this view decides whether to show the button (pending operation + connected backend +
+  multisig in the address book), disables it until the session account has signed, and maps the backend's response onto
+  a toast. Connection health, reconnection, and session expiry are governed by the backend aggregate.
+- **Drafts** (`features/drafts`) — the Pending tab hosts the drafts section; a submitted draft is badged on its
+  resulting operation row.
 - **Wallet pairing** — for a tracked external multisig, the per-operation action is an **Add wallet** prompt that pairs
   a wallet holding an actual signatory key, turning the read-only row into an actionable one.

@@ -9,7 +9,6 @@ import { DetailRow, FootnoteText } from '@/shared/ui';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import {
-  TransactionTitle,
   findCoreTransaction,
   getTransactionAmount,
   isAddProxyTransaction,
@@ -59,14 +58,6 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
         amount: asset && amount ? { value: amount, asset } : undefined,
         sourceChainId: operation.chainId,
       };
-    }
-  },
-  logTitle({ operation, showCoreTransaction }) {
-    const { t } = useI18n();
-    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-    const title = transaction?.type && getOperationTitle(transaction.type);
-    if (title) {
-      return <TransactionTitle className="overflow-hidden" title={t(title || '')} />;
     }
   },
   details({ operation, showCoreTransaction }) {

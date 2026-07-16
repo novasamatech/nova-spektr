@@ -28,7 +28,7 @@ export const VerifyProxyOperationCard = memo(({ chain, status }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className="flex w-[450px] items-center gap-x-3">
+    <div className="flex w-full items-center gap-x-3">
       <div className={cnTw('flex h-7 w-7 shrink-0 items-center justify-center rounded-full', StatusBackground[status])}>
         <Icon name="checkmarkOutline" size={20} className="text-white" />
       </div>
@@ -38,7 +38,7 @@ export const VerifyProxyOperationCard = memo(({ chain, status }: Props) => {
         {chain && <ChainTitle chainId={chain.chainId} fontClass="text-help-text text-text-tertiary" />}
       </div>
 
-      <div className="flex w-[200px] shrink-0 items-center">
+      <div className="flex w-[140px] shrink-0 items-center">
         <Tooltip>
           <Tooltip.Trigger>
             <div className="inline-flex items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1 text-icon-accent">

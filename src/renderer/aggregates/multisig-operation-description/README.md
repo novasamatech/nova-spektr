@@ -1,6 +1,6 @@
 # Multisig Operation Description
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-06-11
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-07-02
 
 ## Overview
 
@@ -94,9 +94,12 @@ publish their own note).
 
 ## Related description paths
 
-Operation descriptions are also written from two other flows, governed by the same address-book authorization:
+Operation descriptions are also written from other flows, governed by the same address-book authorization:
 
 - **Approving someone else's operation** — the approver is a signatory, so the multisig is always reachable; no extra
   address-book check is needed.
 - **Submitting a saved draft** — the note comes from the draft itself, which is why this feature hides its own field
   during a draft submission.
+- **The Operations view** — a pending operation's row (Description cell) and its Details panel offer add/edit through a
+  description editor modal, showing the same states as above (see
+  [`multisig-operations`](../../features/multisig-operations/README.md)).

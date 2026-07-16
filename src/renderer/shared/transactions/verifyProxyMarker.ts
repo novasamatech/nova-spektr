@@ -81,12 +81,18 @@ export const parseVerifyProxyMarker = (remark: string): VerifyProxyMarkerPayload
   const delegate = obj['delegateAccountId'];
   const pure = obj['pureProxyAccountId'];
   if (typeof delegate !== 'string' || typeof pure !== 'string') return null;
+  // toAccountId maps undecodable strings to the '0x00' sentinel — treat such a
+  // payload as no marker so crafted remarks don't render as verify-proxy pings.
+  const isDecodable = (id: string) => id !== '0x00';
+  const delegateAccountId = toAccountId(delegate);
+  const pureProxyAccountId = toAccountId(pure);
+  if (!isDecodable(delegateAccountId) || !isDecodable(pureProxyAccountId)) return null;
   // `memo` is the legacy key for the user text — older builds' pings are still in flight.
   const remarkText = typeof obj['remark'] === 'string' && obj['remark'] ? obj['remark'] : obj['memo'];
   return {
     kind: VERIFY_PROXY_REMARK_KIND,
-    delegateAccountId: toAccountId(delegate),
-    pureProxyAccountId: toAccountId(pure),
+    delegateAccountId,
+    pureProxyAccountId,
     ...(typeof remarkText === 'string' && remarkText ? { remark: remarkText } : {}),
   };
 };

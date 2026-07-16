@@ -41,7 +41,7 @@ export const EditControllerOperationCard = memo(({ info, chain }: Props) => {
     : 'border-icon-positive/30 bg-icon-positive/8 text-icon-positive';
 
   return (
-    <div className="flex w-[450px] items-center gap-x-3">
+    <div className="flex w-full items-center gap-x-3">
       <div className="flex shrink-0 items-center gap-x-1">
         <Identicon address={oldAddress} size={28} background={false} canCopy={false} />
         <span aria-hidden="true" className="text-text-tertiary">
@@ -55,7 +55,7 @@ export const EditControllerOperationCard = memo(({ info, chain }: Props) => {
         {chain && <ChainTitle chainId={chain.chainId} fontClass="text-help-text text-text-tertiary" />}
       </div>
 
-      <div className="flex w-[200px] shrink-0 items-center">
+      <div className="flex w-[140px] shrink-0 items-center">
         <Tooltip>
           <Tooltip.Trigger>
             <div className={`inline-flex items-center rounded-[20px] border px-2.5 py-1 ${tagPalette}`}>
