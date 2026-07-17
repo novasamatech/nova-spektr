@@ -5,7 +5,7 @@ import { toAddress } from '@/shared/lib/utils';
 import { createAccountId } from '@/shared/mocks';
 import { accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
-import { authModel, connectionHistoryModel } from '@/aggregates/backend';
+import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
 import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { senderAccount } from '../../fixtures/index';
 import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
@@ -104,6 +104,44 @@ describe('Recipient Verification', () => {
       .build();
 
     expect(env.getState(recipientVerificationModel.$mode)).toBe('unverifiable');
+  });
+
+  it('is unverifiable when connected and authenticated but a network issue is detected', async () => {
+    // Covers the third OR-branch of the healthy check ($hasNetworkIssue).
+    env = await new FeatureTestBuilder({ autoPopulate: false })
+      .withStoreValue(connectionHistoryModel.$hasEverConnected, true)
+      .withStoreValue(authModel.$authState, {
+        accountId: createAccountId('authed-account'),
+        accountName: 'Authed Account',
+        permissions: [],
+      })
+      .withStoreValue(authModel.$hasNetworkIssue, true)
+      .build();
+
+    expect(env.getState(recipientVerificationModel.$mode)).toBe('unverifiable');
+  });
+
+  it('turns off entirely after an explicit disconnect (urlCleared)', async () => {
+    // urlCleared resets $hasEverConnected — the README claims the feature
+    // becomes invisible after an explicit disconnect; pin that path.
+    env = await new FeatureTestBuilder({ autoPopulate: false })
+      .withStoreValue(connectionHistoryModel.$hasEverConnected, true)
+      .withStoreValue(authModel.$authState, {
+        accountId: createAccountId('authed-account'),
+        accountName: 'Authed Account',
+        permissions: [],
+      })
+      .build();
+
+    expect(env.getState(recipientVerificationModel.$mode)).toBe('active');
+
+    await env.executeEventVoid(backendConfigurationModel.events.urlCleared);
+
+    expect(env.getState(connectionHistoryModel.$hasEverConnected)).toBe(false);
+    expect(env.getState(recipientVerificationModel.$mode)).toBe('off');
+
+    const resolveWarning = env.getState(recipientVerificationModel.$resolveWarning);
+    expect(resolveWarning(strangerId)).toBe('none');
   });
 
   it('is active and warns only unknown recipients once connected and healthy', async () => {
