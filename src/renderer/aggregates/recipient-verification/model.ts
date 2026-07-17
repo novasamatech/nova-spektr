@@ -45,6 +45,5 @@ const $resolveWarning = combine($mode, $knownAccountIds, (mode, knownAccountIds)
 
 export const recipientVerificationModel = {
   $mode,
-  $knownAccountIds,
   $resolveWarning,
 };
