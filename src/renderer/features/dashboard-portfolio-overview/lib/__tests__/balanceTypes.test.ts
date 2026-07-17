@@ -86,9 +86,10 @@ describe('splitBalanceByType', () => {
     expect(split.locked.toNumber()).toEqual(300);
   });
 
-  test('carves vested out of reserved when frozen is fully covered by reserved (holdAndFreezes)', () => {
+  test('keeps reserved intact when frozen is fully covered by reserved (holdAndFreezes)', () => {
     // holdAndFreezes: transferable = free − max(0, frozen − reserved) — a vesting
-    // lock covered by a big reserve leaves the locked bucket empty
+    // lock covered by a big reserve leaves the locked bucket empty; reserved has
+    // its own causes (holds), so the vesting lock never carves into it
     const balance = makeBalance({
       free: 1000,
       reserved: 500,
@@ -100,14 +101,14 @@ describe('splitBalanceByType', () => {
     const split = splitBalanceByType(balance);
 
     expect(split.transferable.toNumber()).toEqual(1000);
-    expect(split.vested.toNumber()).toEqual(300);
-    expect(split.reserved.toNumber()).toEqual(200);
+    expect(split.vested.toNumber()).toEqual(0);
+    expect(split.reserved.toNumber()).toEqual(500);
     expect(split.locked.toNumber()).toEqual(0);
   });
 
-  test('splits vested between locked and reserved when frozen is partially covered (holdAndFreezes)', () => {
-    // transferable = 1000 − (300 − 100) = 800 → lockedTotal = 200; the remaining
-    // 100 of the vesting lock comes out of reserved
+  test('caps vested by the locked bucket when frozen is partially covered by reserved (holdAndFreezes)', () => {
+    // transferable = 1000 − (300 − 100) = 800 → lockedTotal = 200; only the part
+    // of the vesting lock that lives in the locked bucket shows as vested
     const balance = makeBalance({
       free: 1000,
       reserved: 100,
@@ -119,8 +120,28 @@ describe('splitBalanceByType', () => {
     const split = splitBalanceByType(balance);
 
     expect(split.transferable.toNumber()).toEqual(800);
-    expect(split.vested.toNumber()).toEqual(300);
-    expect(split.reserved.toNumber()).toEqual(0);
+    expect(split.vested.toNumber()).toEqual(200);
+    expect(split.reserved.toNumber()).toEqual(100);
+    expect(split.locked.toNumber()).toEqual(0);
+  });
+
+  test('does not relabel a staking hold as vested when a vesting lock overlaps it (holdAndFreezes)', () => {
+    // staking hold in reserved + vesting lock over the same account: transferable
+    // = 600 − (600 − 400) = 400, lockedTotal = 200 — the 400 staking hold stays
+    // reserved, only the uncovered 200 of the vesting lock shows as vested
+    const balance = makeBalance({
+      free: 600,
+      reserved: 400,
+      frozen: 600,
+      locks: [makeLock(LockTypes.VESTING, 600)],
+      mode: 'holdAndFreezes',
+    });
+
+    const split = splitBalanceByType(balance);
+
+    expect(split.transferable.toNumber()).toEqual(400);
+    expect(split.reserved.toNumber()).toEqual(400);
+    expect(split.vested.toNumber()).toEqual(200);
     expect(split.locked.toNumber()).toEqual(0);
   });
 
@@ -135,11 +156,9 @@ describe('splitBalanceByType', () => {
     expect(split.locked.toNumber()).toEqual(0);
   });
 
-  test('carves the whole vesting lock out of reserved when reserved fully absorbs it (holdAndFreezes)', () => {
-    // Semantic change vs the old min(vestedLockedAmount, locked) clamp: there the
-    // reserve absorbed the vesting lock and Vested read 0. Now the uncovered
-    // vesting lock is carved out of reserved so it stays visible — vested = 100,
-    // reserved drops to 0.
+  test('leaves a vesting lock fully absorbed by reserved invisible (holdAndFreezes)', () => {
+    // the freeze rides entirely on reserved funds: the reserve keeps its own
+    // label rather than being relabelled vested — vested reads 0
     const balance = makeBalance({
       free: 100,
       reserved: 100,
@@ -151,9 +170,9 @@ describe('splitBalanceByType', () => {
     const split = splitBalanceByType(balance);
 
     expect(split.transferable.toNumber()).toEqual(100);
-    expect(split.reserved.toNumber()).toEqual(0);
+    expect(split.reserved.toNumber()).toEqual(100);
     expect(split.locked.toNumber()).toEqual(0);
-    expect(split.vested.toNumber()).toEqual(100);
+    expect(split.vested.toNumber()).toEqual(0);
   });
 
   test('sums multiple vesting locks into vested', () => {

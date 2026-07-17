@@ -21,31 +21,29 @@ export function makeByType<T>(init: (type: BalanceType) => T): Record<BalanceTyp
  *
  * Substrate balance locks overlap: the frozen amount is the MAX over lock
  * amounts, not their sum, so a clean partition is impossible when a vesting
- * lock coexists with other locks. Vesting takes priority — the whole vesting
- * lock is shown as "vested" so it never hides behind a bigger
- * governance/staking lock, and "locked" is the remainder. The overlap cost:
- * funds covered by both locks are labelled "vested" even though a non-vesting
- * lock would still hold them after vest().
+ * lock coexists with other locks. Vesting takes priority — the vesting lock is
+ * shown as "vested" so it never hides behind a bigger governance/staking lock,
+ * and "locked" is the remainder. The overlap cost: funds covered by both locks
+ * are labelled "vested" even though a non-vesting lock would still hold them
+ * after vest().
  *
- * On holdAndFreezes chains frozen covered by reserved does not reduce
- * transferable, so the locked bucket can be 0 while a vesting lock exists (the
- * lock rides on reserved funds). The uncovered part of the vesting lock is then
- * carved out of "reserved" to keep vesting visible and the partition summing to
- * the total.
+ * Vested is capped by the locked bucket and never touches "reserved": reserved
+ * funds have their own causes (staking holds, deposits) that locks know nothing
+ * about, so relabelling them "vested" would misattribute them. On
+ * holdAndFreezes chains the part of a vesting lock that rides on reserved funds
+ * therefore stays in "reserved".
  */
 export function splitBalanceByType(balance: Balance): Record<BalanceType, BN> {
   const transferable = transferableAmountBN(balance);
   const total = balance.free.add(balance.reserved);
 
   const lockedTotal = BN.max(BN_ZERO, total.sub(transferable).sub(balance.reserved));
-  const vestingLock = vestedLockedAmountBN(balance);
-  const vestedFromLocked = BN.min(vestingLock, lockedTotal);
-  const vestedFromReserved = BN.min(vestingLock.sub(vestedFromLocked), balance.reserved);
+  const vested = BN.min(vestedLockedAmountBN(balance), lockedTotal);
 
   return {
     transferable,
-    reserved: balance.reserved.sub(vestedFromReserved),
-    locked: lockedTotal.sub(vestedFromLocked),
-    vested: vestedFromLocked.add(vestedFromReserved),
+    reserved: balance.reserved,
+    locked: lockedTotal.sub(vested),
+    vested,
   };
 }

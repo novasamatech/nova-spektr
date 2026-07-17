@@ -1,14 +1,14 @@
 # Portfolio Overview
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-15
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-17
 
 ## Overview
 
-The first card of the Dashboard's **Overview** tab: a fiat snapshot of everything the selected accounts hold across every
-connected chain. One card layers a grand total, a **distribution by balance type** that doubles as a cross-filter, and a
-donut + list breakdown that flips between **By Asset** and **By Chain**, each row opening a per-address / per-asset detail
-modal. Just below the distribution the card hosts a slot into which the separate vesting-claim feature injects its
-callout.
+The first card of the Dashboard's **Overview** tab: a fiat snapshot of everything the selected accounts hold across
+every connected chain. One card layers a grand total, a **distribution by balance type** that doubles as a cross-filter,
+and a donut + list breakdown that flips between **By Asset** and **By Chain**, each row opening a per-address /
+per-asset detail modal. Just below the distribution the card hosts a slot into which the separate vesting-claim feature
+injects its callout.
 
 Everything above the vesting slot is fiat-first — the card answers "what am I worth, in what, and in what shape", so an
 asset with no price feed simply does not appear there (the only exception is a vesting lock on an unpriced chain, which
@@ -34,16 +34,16 @@ mode, so its position is a default rather than a guarantee.
 
 ## States / scenarios
 
-| State                | When it appears                                     | What the user sees                                                                            |
-| -------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Fiat off             | Global "show fiat" toggle is off                    | Title + "fiat disabled" hint + the injected vesting block only; no total, bars or holdings    |
-| No selection         | No accounts selected                                | Title + "Select accounts above to view your balance"                                          |
-| Loading              | Prices/currency not resolved yet                    | Skeleton mirroring the final layout                                                           |
-| Overview             | Data ready                                           | Fiat total, Assets/Networks toggle, distribution bar + chips, vesting slot, donut + list      |
-| Balance-type filter  | A bar segment or chip clicked                        | Donut and list re-scope to that balance type; scope label + color follow; "Show all" clears   |
-| Donut hover          | Pointer over a donut segment                         | Center swaps to the hovered slice's value, name and share; a single holding renders as a ring |
-| Asset / chain detail | A holdings row is clicked                            | Modal with a per-address (asset view) or per-asset (chain view) breakdown                      |
-| Syncing              | Any selected chain is still connecting               | A small spinner beside the distribution label; the numbers keep updating as balances arrive   |
+| State                | When it appears                        | What the user sees                                                                            |
+| -------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Fiat off             | Global "show fiat" toggle is off       | Title + "fiat disabled" hint + the injected vesting block only; no total, bars or holdings    |
+| No selection         | No accounts selected                   | Title + "Select accounts above to view your balance"                                          |
+| Loading              | Prices/currency not resolved yet       | Skeleton mirroring the final layout                                                           |
+| Overview             | Data ready                             | Fiat total, Assets/Networks toggle, distribution bar + chips, vesting slot, donut + list      |
+| Balance-type filter  | A bar segment or chip clicked          | Donut and list re-scope to that balance type; scope label + color follow; "Show all" clears   |
+| Donut hover          | Pointer over a donut segment           | Center swaps to the hovered slice's value, name and share; a single holding renders as a ring |
+| Asset / chain detail | A holdings row is clicked              | Modal with a per-address (asset view) or per-asset (chain view) breakdown                     |
+| Syncing              | Any selected chain is still connecting | A small spinner beside the distribution label; the numbers keep updating as balances arrive   |
 
 The card has **no error state**: missing prices degrade into the loading / suppressed states above. The injected vesting
 callout brings its own error boundary precisely because this slot offers none.
@@ -70,12 +70,13 @@ truth (`splitBalanceByType`). Two `pallet_balances` realities shape it:
 - On `holdAndFreezes` chains a freeze covered by `reserved` does not reduce transferable, so an account can carry a
   vesting lock while its Locked bucket is zero (the lock rides on reserved funds).
 
-The rule is **vesting-priority**: the whole vesting lock is attributed to **Vested** so it never hides behind a larger
-overlapping lock. It is carved **out of Locked** first, and any remainder that rides on reserved funds is carved **out
-of Reserved** — keeping vesting visible and the four buckets summing to the account's total. The cost of the overlap is
-that funds held by both a vesting lock and a larger non-vesting lock are labelled Vested even though the other lock would
-still hold them after `vest()`. (This is a deliberate change from the earlier `min(vested, locked)` clamp, under which a
-vesting lock fully covered by reserved showed nothing — it now shows as Vested.)
+The rule is **vesting-priority within Locked**: the vesting lock is carved out of the Locked bucket first, so it never
+hides behind a larger overlapping governance/staking lock, and Locked is the remainder. The cost of the overlap is that
+funds held by both a vesting lock and a larger non-vesting lock are labelled Vested even though the other lock would
+still hold them after `vest()`. Vested is **capped by the Locked bucket** and never touches **Reserved** — reserved
+funds have their own causes (staking holds, deposits) that locks know nothing about, so a staking hold is never
+relabelled Vested. On `holdAndFreezes` chains the part of a vesting lock that rides on reserved funds therefore stays in
+Reserved.
 
 The vesting lock only shrinks when `vesting.vest()` runs, so it still covers funds that have vested but were never
 claimed. Those funds really are untransferable until the claim lands, so counting them as Vested reflects what the
@@ -84,10 +85,12 @@ balance actually does — the Vested category and the injected claim callout des
 ### Holdings
 
 - **By Asset** groups balances by price feed, so the same token across chains (DOT on Polkadot and on Asset Hub) merges
-  into one row. **By Chain** groups by chain and counts distinct priced assets.
-- Both are sorted by fiat value descending, zero-value rows dropped, and each row shows its **share of the currently
-  scoped total** (the whole portfolio, or the active balance-type slice). There is no "other" bucket, no
-  minimum-percentage grouping and no row cap — the list scrolls.
+  into one row. **By Chain** groups by chain and counts distinct priced assets; under a balance-type filter the count
+  re-scopes to assets that actually hold that balance type on the chain.
+- Both are sorted by fiat value descending **within the current scope** (under a filter, by that type's fiat),
+  zero-value rows dropped, and each row shows its **share of the currently scoped total** (the whole portfolio, or the
+  active balance-type slice). There is no "other" bucket, no minimum-percentage grouping and no row cap — the list
+  scrolls.
 - The donut mirrors the list: hovering a segment swaps the center to that slice's value/name/share and dims the rest; a
   lone holding renders as a full ring rather than being hidden.
 - Asset colors are brand-first (Polkadot pink, Kusama black, USDT, USDC…) and fall back to a shared palette; branded

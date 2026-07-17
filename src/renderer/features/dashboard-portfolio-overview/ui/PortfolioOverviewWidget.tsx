@@ -71,6 +71,8 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
 
   // Holdings scoped to the active balance-type filter, with share of the scope total.
   // Zero fiat only means "nothing of this type" under a filter — without one, keep every held asset.
+  // Scoped rows are re-sorted by the scoped fiat: the source order (and the donut
+  // palette derived from row index) follows total fiat, which is wrong under a filter.
   const { assetRows, assetScopeTotal } = useMemo(() => {
     const scoped = balanceTypeFilter
       ? holdings
@@ -80,6 +82,7 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
             fiatValue: h.byType[balanceTypeFilter].fiat,
           }))
           .filter((h) => new BigNumber(h.fiatValue).gt(0))
+          .sort((a, b) => new BigNumber(b.fiatValue).comparedTo(a.fiatValue))
       : holdings;
     const scopeTotal = scoped.reduce((sum, h) => sum.plus(h.fiatValue), new BigNumber(0));
     const rows: HoldingRowItem[] = scoped.map((h) => ({
@@ -93,8 +96,13 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { chainRows, chainScopeTotal } = useMemo(() => {
     const scoped = balanceTypeFilter
       ? chainHoldings
-          .map((h) => ({ ...h, fiatValue: h.byType[balanceTypeFilter].fiat }))
+          .map((h) => ({
+            ...h,
+            fiatValue: h.byType[balanceTypeFilter].fiat,
+            assetCount: h.byType[balanceTypeFilter].assetCount,
+          }))
           .filter((h) => new BigNumber(h.fiatValue).gt(0))
+          .sort((a, b) => new BigNumber(b.fiatValue).comparedTo(a.fiatValue))
       : chainHoldings;
     const scopeTotal = scoped.reduce((sum, h) => sum.plus(h.fiatValue), new BigNumber(0));
     const rows: ChainHoldingRowItem[] = scoped.map((h) => ({

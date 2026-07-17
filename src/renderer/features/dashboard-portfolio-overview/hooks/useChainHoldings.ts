@@ -10,7 +10,7 @@ import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
 import { type BalanceType, BALANCE_TYPES, makeByType, splitBalanceByType } from '../lib/balanceTypes';
 
-export type ChainHoldingByType = Record<BalanceType, { fiat: string }>;
+export type ChainHoldingByType = Record<BalanceType, { fiat: string; assetCount: number }>;
 
 export type ChainHolding = {
   chainId: ChainId;
@@ -28,9 +28,10 @@ export type ChainHoldingsData = {
   currency: CurrencyItem | null;
 };
 
-type ByTypeAccumulator = Record<BalanceType, BigNumber>;
+type ByTypeAccumulator = Record<BalanceType, { fiat: BigNumber; assetIds: Set<number> }>;
 
-const makeByTypeAccumulator = (): ByTypeAccumulator => makeByType(() => new BigNumber(0));
+const makeByTypeAccumulator = (): ByTypeAccumulator =>
+  makeByType(() => ({ fiat: new BigNumber(0), assetIds: new Set<number>() }));
 
 export const useChainHoldings = (accountIds: string[]): ChainHoldingsData => {
   const balanceMap = useUnit(balanceModel.$balanceMap);
@@ -93,7 +94,8 @@ export const useChainHoldings = (accountIds: string[]): ChainHoldingsData => {
         if (split[type].isZero()) continue;
 
         const typeFiat = getRoundedValue(split[type].toString(), priceItem.price, asset.precision);
-        group.byType[type] = group.byType[type].plus(typeFiat);
+        group.byType[type].fiat = group.byType[type].fiat.plus(typeFiat);
+        group.byType[type].assetIds.add(asset.assetId);
       }
     }
 
@@ -103,7 +105,10 @@ export const useChainHoldings = (accountIds: string[]): ChainHoldingsData => {
     const chainHoldings: ChainHolding[] = sorted.map(([chainId, group]) => {
       total = total.plus(group.fiatValue);
 
-      const byType: ChainHoldingByType = makeByType((type) => ({ fiat: group.byType[type].toString() }));
+      const byType: ChainHoldingByType = makeByType((type) => ({
+        fiat: group.byType[type].fiat.toString(),
+        assetCount: group.byType[type].assetIds.size,
+      }));
 
       return {
         chainId,
