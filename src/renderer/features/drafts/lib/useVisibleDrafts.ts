@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type Draft, operationDescriptionsResource } from '@/domains/backend';
+import { type Draft } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
 
 import { type DraftListScope, filterDraftsByScope } from './draft-scope';
@@ -18,15 +18,13 @@ import { filterVisibleDrafts } from './visible-drafts';
  */
 export function useVisibleDrafts(scope?: DraftListScope): { drafts: Draft[]; available: boolean } {
   const { drafts, available } = useReadableDrafts();
-  const linkedDraftIds = useUnit(operationDescriptionsResource.$linkedDraftIds);
-  const operationsLoaded = useUnit(operationDescriptionsResource.$operationsLoaded);
   const chains = useUnit(networkModel.$chains);
 
   const visibleDrafts = useMemo(() => {
-    const visible = filterVisibleDrafts(drafts, linkedDraftIds, operationsLoaded);
+    const visible = filterVisibleDrafts(drafts);
 
     return scope ? filterDraftsByScope(visible, scope, chains) : visible;
-  }, [drafts, linkedDraftIds, operationsLoaded, scope, chains]);
+  }, [drafts, scope, chains]);
 
   return { drafts: visibleDrafts, available };
 }

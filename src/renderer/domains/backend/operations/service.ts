@@ -84,26 +84,8 @@ async function fetchDescriptionsByIds(baseUrl: string, ids: string[]): Promise<B
     throw new Error(`Failed to fetch operations by ids: ${result.status}`);
   }
 
-  const body: unknown = JSON.parse(result.body);
-  const items = Array.isArray(body) ? body : [];
-  const operations: BackendOperation[] = [];
-  for (const item of items) {
-    const parsed = backendOperationSchema.safeParse(item);
-    if (parsed.success) {
-      operations.push(parsed.data);
-    }
-  }
-
-  return operations;
-}
-
-async function fetchAllDescriptions(baseUrl: string): Promise<BackendOperation[]> {
-  const result = await authFetch(`${baseUrl}/operations`, { method: 'GET' });
-
-  if (!result.ok) {
-    throw new Error(`Failed to fetch all operations: ${result.status}`);
-  }
-
+  // This endpoint is unpaginated and returns a bare array, unlike the
+  // `{ data, total }` list endpoints elsewhere.
   const body: unknown = JSON.parse(result.body);
   const items = Array.isArray(body) ? body : [];
   const operations: BackendOperation[] = [];
@@ -121,6 +103,5 @@ export const operationsService = {
   createDescription,
   updateDescription,
   fetchDescriptionsByIds,
-  fetchAllDescriptions,
   nudge,
 };

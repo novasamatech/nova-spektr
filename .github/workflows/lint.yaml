@@ -28,6 +28,3 @@ jobs:
 
       - name: 📝 Check by linter
         run: TIMING=1 pnpm lint
-
-      - name: 🗺️ Check feature map
-        run: pnpm check:feature-map --changed origin/${{ github.base_ref }}

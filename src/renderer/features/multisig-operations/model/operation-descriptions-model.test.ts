@@ -71,24 +71,6 @@ describe('operationDescriptionsResource', () => {
     });
   });
 
-  it('should track linked draft ids', async () => {
-    fetchSpy.mockResolvedValue([
-      { id: 'op-10', description: 'desc', draftId: 'draft-abc' },
-      { id: 'op-20', description: null, draftId: null },
-    ]);
-
-    const scope = fork();
-
-    await allSettled(operationDescriptionsResource.start, {
-      scope,
-      params: { baseUrl: 'https://backend.test', ids: ['op-10', 'op-20'] },
-    });
-
-    const linkedDraftIds = scope.getState(operationDescriptionsResource.$linkedDraftIds);
-    expect(linkedDraftIds.has('draft-abc')).toBe(true);
-    expect(linkedDraftIds.size).toBe(1);
-  });
-
   it('should preserve linked draft id when updating an existing description optimistically', async () => {
     fetchSpy.mockResolvedValue([{ id: 'op-10', description: 'Before edit', draftId: 'draft-abc' }]);
 

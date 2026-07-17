@@ -31,4 +31,11 @@ $cache.on(draftUpdated, (list, updated) => list.map(d => (d.id === updated.id ? 
 $cache.on(draftDeleted, (list, id) => list.filter(d => d.id !== id));
 $cache.on(resetDrafts, () => []);
 
-export const draftsResource = { ...resource, draftCreated, draftUpdated, draftDeleted, resetDrafts };
+// `$cache` starts as `[]`, so its length can't distinguish "not loaded" from
+// "loaded and empty". `useResource`'s `pending` can't serve either: it tests
+// `map(cache) ?? empty`, and `[]` is never nullish.
+const $loaded = createStore(false)
+  .on(resource.push, () => true)
+  .reset(resetDrafts);
+
+export const draftsResource = { ...resource, draftCreated, draftUpdated, draftDeleted, resetDrafts, $loaded };
