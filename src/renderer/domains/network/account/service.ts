@@ -389,7 +389,7 @@ function resolveAccountName({
 type SearchAccountsParams = {
   accounts: AnyAccount[];
   query: string;
-  resolvedAccounts: Pick<AnyAccount, 'accountId' | 'name'>[];
+  resolvedAccounts: Pick<AnyAccount, 'id' | 'name'>[];
   resolvedWallets: Pick<Wallet, 'id' | 'name'>[];
   addressPrefix?: number;
 };
@@ -416,14 +416,16 @@ function searchAccounts({
   resolvedWallets,
   addressPrefix,
 }: SearchAccountsParams): AnyAccount[] {
-  const namesByAccount = new Map(resolvedAccounts.map(a => [a.accountId, a.name]));
+  // Keyed by account.id, not accountId — the same accountId can live in several
+  // wallets with different resolved names, and the visible one must stay searchable.
+  const namesByAccount = new Map(resolvedAccounts.map(a => [a.id, a.name]));
   const namesByWallet = new Map(resolvedWallets.map(w => [w.id, w.name]));
 
   return performSearch<AnyAccount, SearchAccountsMeta>({
     records: accounts,
     query,
     getMeta: account => ({
-      displayName: namesByAccount.get(account.accountId) ?? account.name,
+      displayName: namesByAccount.get(account.id) ?? account.name,
       walletName: namesByWallet.get(account.walletId) ?? '',
       displayAddress: toAddress(account.accountId, { prefix: addressPrefix }),
     }),

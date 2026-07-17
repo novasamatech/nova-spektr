@@ -1220,8 +1220,8 @@ describe('account service', () => {
 
     // Resolved names — what the list actually displays
     const resolvedAccounts = [
-      { accountId: vaultAccount.accountId, name: 'FINOPS_DOT_PTL_JUL26_SCHEFFLER' },
-      { accountId: otherAccount.accountId, name: 'Some other account' },
+      { id: vaultAccount.id, name: 'FINOPS_DOT_PTL_JUL26_SCHEFFLER' },
+      { id: otherAccount.id, name: 'Some other account' },
     ];
 
     const resolvedWallets = [
@@ -1268,6 +1268,29 @@ describe('account service', () => {
 
     it('should return nothing when query matches neither names nor address', () => {
       expect(search('MISSING_QUERY')).toEqual([]);
+    });
+
+    it('should find account by its own resolved name when another wallet has the same accountId', () => {
+      // Same mnemonic imported into two wallets — same accountId, different account.id
+      const sharedAccountId = createAccountId('shared search account');
+      const firstAccount = { ...createSearchAccount('dup-1', 1, 'raw first'), accountId: sharedAccountId };
+      const secondAccount = { ...createSearchAccount('dup-2', 2, 'raw second'), accountId: sharedAccountId };
+
+      const duplicateResolvedAccounts = [
+        { id: firstAccount.id, name: 'First name' },
+        { id: secondAccount.id, name: 'Second name' },
+      ];
+
+      // The list dedups by accountId keeping the first account, so its name is displayed
+      const found = accountService.searchAccounts({
+        accounts: [firstAccount],
+        query: 'First name',
+        resolvedAccounts: duplicateResolvedAccounts,
+        resolvedWallets,
+        addressPrefix: 0,
+      });
+
+      expect(found).toEqual([firstAccount]);
     });
 
     it('should fall back to raw account name when there is no resolved name', () => {
