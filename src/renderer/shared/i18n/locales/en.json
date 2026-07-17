@@ -572,18 +572,30 @@
     "portfolioOverview": {
       "title": "Portfolio Overview",
       "holdings": "Holdings by Asset",
-      "holdingsByChain": "Holdings by Chain",
-      "byAsset": "By Asset",
-      "byChain": "By Chain",
+      "holdingsByChain": "Holdings by Networks",
+      "byAsset": "Assets",
+      "byChain": "Networks",
+      "balanceTypeDistribution": "Asset allocation",
+      "fiatDisabledHint": "Fiat values are turned off - enable a currency in Settings to see the portfolio breakdown",
+      "showAll": "Show all",
+      "allAssets": "All assets",
+      "allNetworks": "All networks",
+      "assetCount_one": "{count} asset",
+      "assetCount_other": "{count} assets",
+      "networkCount_one": "{count} network",
+      "networkCount_other": "{count} networks",
+      "balanceType": {
+        "transferable": "Transferable",
+        "reserved": "Reserved",
+        "locked": "Locked",
+        "vested": "Vested"
+      },
       "assetDetail": {
         "title": "{symbol} Details",
-        "totalHoldings": "Total Holdings",
         "addressCount_one": "{count} address",
         "addressCount_other": "{count} addresses",
         "address": "Address",
-        "amount": "Amount",
-        "value": "Value",
-        "share": "Share"
+        "holdings": "Holdings"
       },
       "priceChange24h": "24h change",
       "assetAllocation": "Asset Allocation",
@@ -592,9 +604,7 @@
         "assetCount_one": "{count} asset",
         "assetCount_other": "{count} assets",
         "asset": "Asset",
-        "amount": "Amount",
-        "value": "Value",
-        "share": "Share"
+        "holdings": "Holdings"
       }
     },
     "totalRewards": {

@@ -7,6 +7,9 @@ import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
+import { type BalanceType, BALANCE_TYPES, makeByType, splitBalanceByType } from '../lib/balanceTypes';
+
+export type HoldingByType = Record<BalanceType, { raw: string; fiat: string }>;
 
 export type Holding = {
   priceId: string;
@@ -17,6 +20,7 @@ export type Holding = {
   totalRaw: string;
   fiatValue: string;
   change: number | null;
+  byType: HoldingByType;
 };
 
 export type HoldingsData = {
@@ -25,6 +29,11 @@ export type HoldingsData = {
   fiatFlag: boolean | null;
   currency: CurrencyItem | null;
 };
+
+type ByTypeAccumulator = Record<BalanceType, { raw: BigNumber; fiat: BigNumber }>;
+
+const makeByTypeAccumulator = (): ByTypeAccumulator =>
+  makeByType(() => ({ raw: new BigNumber(0), fiat: new BigNumber(0) }));
 
 export const useHoldings = (accountIds: string[]): HoldingsData => {
   const balanceMap = useUnit(balanceModel.$balanceMap);
@@ -50,6 +59,7 @@ export const useHoldings = (accountIds: string[]): HoldingsData => {
         totalRaw: BigNumber;
         fiatValue: BigNumber;
         change: number | null;
+        byType: ByTypeAccumulator;
       }
     >();
 
@@ -67,13 +77,14 @@ export const useHoldings = (accountIds: string[]): HoldingsData => {
 
       const rawBN = totalAmountBN(balance);
       const fiat = getRoundedValue(totalAmount(balance), priceItem.price, asset.precision);
+      const split = splitBalanceByType(balance);
 
-      const existing = groupMap.get(asset.priceId);
-      if (existing) {
-        existing.totalRaw = existing.totalRaw.plus(rawBN.toString());
-        existing.fiatValue = existing.fiatValue.plus(fiat);
+      let group = groupMap.get(asset.priceId);
+      if (group) {
+        group.totalRaw = group.totalRaw.plus(rawBN.toString());
+        group.fiatValue = group.fiatValue.plus(fiat);
       } else {
-        groupMap.set(asset.priceId, {
+        group = {
           priceId: asset.priceId,
           symbol: asset.symbol,
           name: asset.name,
@@ -82,7 +93,18 @@ export const useHoldings = (accountIds: string[]): HoldingsData => {
           totalRaw: new BigNumber(rawBN.toString()),
           fiatValue: new BigNumber(fiat),
           change: priceItem.change ?? null,
-        });
+          byType: makeByTypeAccumulator(),
+        };
+        groupMap.set(asset.priceId, group);
+      }
+
+      for (const type of BALANCE_TYPES) {
+        if (split[type].isZero()) continue;
+
+        const typeRaw = split[type].toString();
+        const typeFiat = getRoundedValue(typeRaw, priceItem.price, asset.precision);
+        group.byType[type].raw = group.byType[type].raw.plus(typeRaw);
+        group.byType[type].fiat = group.byType[type].fiat.plus(typeFiat);
       }
     }
 
@@ -94,6 +116,11 @@ export const useHoldings = (accountIds: string[]): HoldingsData => {
     const holdings: Holding[] = sorted.map((group) => {
       total = total.plus(group.fiatValue);
 
+      const byType: HoldingByType = makeByType((type) => ({
+        raw: group.byType[type].raw.toFixed(0),
+        fiat: group.byType[type].fiat.toString(),
+      }));
+
       return {
         priceId: group.priceId,
         symbol: group.symbol,
@@ -103,6 +130,7 @@ export const useHoldings = (accountIds: string[]): HoldingsData => {
         totalRaw: group.totalRaw.toFixed(0),
         fiatValue: group.fiatValue.toString(),
         change: group.change,
+        byType,
       };
     });
 

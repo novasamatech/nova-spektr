@@ -1,6 +1,6 @@
 # Vested transfer
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-13
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-15
 
 ## Overview
 

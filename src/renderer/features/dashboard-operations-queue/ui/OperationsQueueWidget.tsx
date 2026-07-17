@@ -3,10 +3,10 @@ import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
-import { operationDescriptionsResource } from '@/domains/backend';
+import { draftsResource } from '@/domains/backend';
 import { accounts, multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { filterVisibleDrafts, useReadableDrafts } from '@/features/drafts';
+import { useVisibleDrafts } from '@/features/drafts';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { filterAwaitingSignature, filterScopedDrafts } from '../model/queue-model';
 
@@ -20,21 +20,20 @@ type Props = {
 export const OperationsQueueWidget = ({ accountIds }: Props) => {
   const { t } = useI18n();
 
-  const linkedDraftIds = useUnit(operationDescriptionsResource.$linkedDraftIds);
-  const operationsLoaded = useUnit(operationDescriptionsResource.$operationsLoaded);
   const allOperations = useUnit(multisigOperation.$list);
   const walletAccounts = useUnit(accounts.$list);
   const chains = useUnit(networkModel.$chains);
 
-  const { drafts, available: draftsAvailable } = useReadableDrafts();
+  const draftsLoaded = useUnit(draftsResource.$loaded);
+  const { drafts, available: draftsAvailable } = useVisibleDrafts();
 
   const selectedSet = useMemo(() => new Set(accountIds), [accountIds]);
 
   const scopedDrafts = useMemo(() => {
     if (!draftsAvailable) return [];
 
-    return filterScopedDrafts(filterVisibleDrafts(drafts, linkedDraftIds, operationsLoaded), selectedSet);
-  }, [drafts, linkedDraftIds, operationsLoaded, selectedSet, draftsAvailable]);
+    return filterScopedDrafts(drafts, selectedSet);
+  }, [drafts, selectedSet, draftsAvailable]);
 
   const awaiting = useMemo(
     () => filterAwaitingSignature(allOperations, walletAccounts, selectedSet, chains),
@@ -53,7 +52,7 @@ export const OperationsQueueWidget = ({ accountIds }: Props) => {
     );
   }
 
-  const isLoading = draftsAvailable && !operationsLoaded;
+  const isLoading = draftsAvailable && !draftsLoaded;
   const isEmpty = !isLoading && scopedDrafts.length === 0 && awaiting.length === 0;
 
   return (

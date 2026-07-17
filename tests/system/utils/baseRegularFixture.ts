@@ -40,7 +40,7 @@ const DB_PATHS: Record<Exclude<DbFixture, 'none'>, string> = {
   validations: 'validations/validations_tests_db.json',
 };
 
-async function applyInitFlags(context: BrowserContext) {
+export async function applyInitFlags(context: BrowserContext) {
   await context.addInitScript(() => {
     localStorage.setItem('assethub_migration_modal_seen_kusama', 'true');
     localStorage.setItem('assethub_migration_modal_seen_polkadot', 'true');

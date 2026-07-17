@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-15
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-16
 
 ## Overview
 
@@ -143,7 +143,8 @@ the submit flow (see [States / scenarios](#states--scenarios)).
 Drafts are a backend-backed shared cache; the client keeps it converged through a simple fetch-and-poll loop tied to the
 backend session:
 
-- **On sign-in** — the client does a full fetch of all drafts (and their operation descriptions) into the local cache.
+- **On sign-in** — the client does a full fetch of all drafts (paged) into the local cache. Each draft arrives with its
+  linked operation, so submission state needs no second request.
 - **While authenticated** — it re-polls every 30s, so add / update / remove changes made by other clients show up within
   one interval and raise an in-app notification.
 - **On sign-out or connection loss** — polling stops and the **local cache is reset**, so drafts disappear from the UI

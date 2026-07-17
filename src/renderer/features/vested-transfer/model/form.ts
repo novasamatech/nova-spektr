@@ -438,12 +438,6 @@ sample({
 });
 
 sample({
-  clock: signModel.signed,
-  fn: () => Step.SUBMIT,
-  target: stepChanged,
-});
-
-sample({
   clock: flowFinished,
   fn: () => Step.NONE,
   target: [stepChanged, form.reset],
@@ -642,12 +636,17 @@ sample({
   target: signModel.events.formInitiated,
 });
 
+// guard against sign results from other flows — signModel is app-wide,
+// so only advance when this flow is the one at the signing step
 sample({
   clock: signModel.signed,
   source: $step,
-  filter: (step) => step !== Step.NONE,
-  fn: (_, payload) => payload,
-  target: submitModel.init,
+  filter: (step) => step === Step.SIGN,
+  fn: (_, payload) => ({ event: payload, step: Step.SUBMIT }),
+  target: spread({
+    event: submitModel.init,
+    step: stepChanged,
+  }),
 });
 
 export const formModel = {

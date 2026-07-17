@@ -118,7 +118,7 @@ notes.
 - [`transfer`](./transfer/README.md)
 - `transfer-basket`
 - [`transfer-operation-details`](./transfer-operation-details/README.md)
-- `multi-transfer`
+- [`multi-transfer`](./multi-transfer/README.md)
 - [`multi-transfer-operation-details`](./multi-transfer-operation-details/README.md)
 - [`vested-transfer`](./vested-transfer/README.md)
 - [`vested-transfer-operation-details`](./vested-transfer-operation-details/README.md)
@@ -145,11 +145,14 @@ notes.
 - `operations-navigation` (no spec planned)
 - `operation-templates`
 - `app-custom-operations`
-- `call-data-execute`
+- [`call-data-execute`](./call-data-execute/README.md)
 - `extrinsic-builder`
 - [`drafts`](./drafts/README.md)
 - [`signing-path`](./signing-path/README.md)
 - `sign-wallet-connect` (no spec planned)
+
+> See also: [`dashboard-operations-queue`](#dashboard) — surfaces pending drafts and operations awaiting signature on
+> the dashboard.
 
 ## Basket
 
@@ -164,7 +167,7 @@ notes.
 
 - `dashboard-governance`
 - `dashboard-navigation` (no spec planned)
-- `dashboard-operations-queue`
+- [`dashboard-operations-queue`](./dashboard-operations-queue/README.md)
 - [`dashboard-portfolio-overview`](./dashboard-portfolio-overview/README.md)
 - `dashboard-price-charts`
 - `dashboard-staking`

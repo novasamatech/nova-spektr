@@ -1,16 +1,13 @@
 import { memo } from 'react';
 
-import { formatFiatBalance } from '@/shared/lib/utils';
 import { type CurrencyItem } from '@/domains/price';
+import { formatFiat } from '../lib/formatFiat';
 
 type Props = {
-  amount: string;
+  amount: string | null;
   currency: CurrencyItem | null;
 };
 
 export const Price = memo(({ amount, currency }: Props) => {
-  const { formatted } = formatFiatBalance(amount);
-  const display = currency?.symbol ? `${currency.symbol}${formatted}` : `${formatted} ${currency?.code ?? ''}`;
-
-  return <span>{display}</span>;
+  return <span>{formatFiat(amount, currency)}</span>;
 });

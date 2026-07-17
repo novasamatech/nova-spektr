@@ -1,40 +1,56 @@
-import { BN, BN_ZERO } from '@polkadot/util';
+import { type BN } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type Balance, type Chain, type ChainId } from '@/shared/core';
-import { getRoundedValue, transferableAmountBN, vestedLockedAmountBN } from '@/shared/lib/utils';
-import { useAssetsPrices } from '@/domains/price';
+import { type Asset, type Balance, type Chain } from '@/shared/core';
+import { getRoundedValue } from '@/shared/lib/utils';
+import { type PriceObject, useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
+import { type BalanceType, BALANCE_TYPES, makeByType, splitBalanceByType } from '../lib/balanceTypes';
 
-export type AllocationData = {
-  transferablePct: number;
-  lockedPct: number;
-  reservedPct: number;
-  vestedPct: number;
+export type BalanceTypeTotal = {
+  fiat: string;
+  pct: number;
 };
 
-type AllocationParams = {
+/**
+ * Vesting locked on a chain without a fiat price — cannot join the fiat bar,
+ * shown as a token amount
+ */
+export type UnpricedVested = {
+  asset: Asset;
+  tokens: BN;
+};
+
+export type AllocationData = {
+  types: Record<BalanceType, BalanceTypeTotal>;
+  unpricedVested: UnpricedVested[];
+};
+
+type BalanceAllocationParams = {
   accountIds: string[];
   balanceMap: Record<string, Balance>;
-  chains: Record<ChainId, Chain>;
-  prices: Record<string, Record<string, { price: number; change: number }>>;
+  chains: Record<string, Chain>;
+  prices: PriceObject;
   currency: { coingeckoId: string };
 };
 
-export function computeBalanceAllocation(params: AllocationParams): AllocationData | null {
+/**
+ * Pure computation behind {@link useBalanceAllocation}. Split out from the hook
+ * so the aggregation logic (unpriced-vesting grouping, empty→null) is testable
+ * without a store/React harness.
+ */
+export function computeBalanceAllocation(params: BalanceAllocationParams): AllocationData | null {
   const { accountIds, balanceMap, chains, prices, currency } = params;
 
   const accountIdSet = new Set(accountIds);
 
-  let transferableTotal = new BigNumber(0);
-  let reservedTotal = new BigNumber(0);
-  let lockedTotal = new BigNumber(0);
-  let vestedTotal = new BigNumber(0);
+  const totals: Record<BalanceType, BigNumber> = makeByType(() => new BigNumber(0));
   let grandTotal = new BigNumber(0);
+  const unpricedVestedMap = new Map<string, UnpricedVested>();
 
   for (const balance of Object.values(balanceMap)) {
     if (!accountIdSet.has(balance.accountId)) continue;
@@ -43,34 +59,41 @@ export function computeBalanceAllocation(params: AllocationParams): AllocationDa
     if (!chain) continue;
 
     const asset = chain.assets.find((a) => a.assetId === balance.assetId);
-    if (!asset?.priceId) continue;
+    if (!asset) continue;
 
-    const priceItem = prices[asset.priceId]?.[currency.coingeckoId];
-    if (!priceItem) continue;
+    const priceItem = asset.priceId ? prices[asset.priceId]?.[currency.coingeckoId] : null;
+    if (!priceItem) {
+      // unpriced chains (testnets) can still carry a vesting lock — surface it
+      // as a token amount so the Vested chip stays consistent with the banner
+      const split = splitBalanceByType(balance);
+      if (!split.vested.isZero()) {
+        const key = `${balance.chainId}:${balance.assetId}`;
+        const existing = unpricedVestedMap.get(key);
+        unpricedVestedMap.set(key, { asset, tokens: existing ? existing.tokens.add(split.vested) : split.vested });
+      }
+      continue;
+    }
 
-    const transferable = transferableAmountBN(balance);
-    const locked = BN.max(BN_ZERO, balance.free.sub(transferable));
-    const vested = BN.min(vestedLockedAmountBN(balance), locked);
+    const split = splitBalanceByType(balance);
+    for (const type of BALANCE_TYPES) {
+      if (split[type].isZero()) continue;
 
-    const toFiat = (amount: BN) => new BigNumber(getRoundedValue(amount.toString(), priceItem.price, asset.precision));
-
-    transferableTotal = transferableTotal.plus(toFiat(transferable));
-    reservedTotal = reservedTotal.plus(toFiat(balance.reserved));
-    lockedTotal = lockedTotal.plus(toFiat(locked.sub(vested)));
-    vestedTotal = vestedTotal.plus(toFiat(vested));
-    grandTotal = grandTotal.plus(toFiat(balance.free.add(balance.reserved)));
+      const fiat = new BigNumber(getRoundedValue(split[type].toString(), priceItem.price, asset.precision));
+      totals[type] = totals[type].plus(fiat);
+      grandTotal = grandTotal.plus(fiat);
+    }
   }
 
-  if (grandTotal.isZero()) return null;
+  const unpricedVested = [...unpricedVestedMap.values()];
 
-  const toPct = (value: BigNumber) => value.div(grandTotal).multipliedBy(100).toNumber();
+  if (grandTotal.isZero() && unpricedVested.length === 0) return null;
 
-  return {
-    transferablePct: toPct(transferableTotal),
-    lockedPct: toPct(lockedTotal),
-    reservedPct: toPct(reservedTotal),
-    vestedPct: toPct(vestedTotal),
-  };
+  const types: Record<BalanceType, BalanceTypeTotal> = makeByType((type) => ({
+    fiat: totals[type].toString(),
+    pct: grandTotal.isZero() ? 0 : totals[type].div(grandTotal).multipliedBy(100).toNumber(),
+  }));
+
+  return { types, unpricedVested };
 }
 
 export const useBalanceAllocation = (accountIds: string[]): AllocationData | null => {
