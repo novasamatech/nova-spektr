@@ -27,6 +27,10 @@ vi.mock('@/shared/i18n', () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }));
 
+vi.mock('../Account/Account', () => ({
+  Account: ({ title }: { title?: string }) => <span>{title}</span>,
+}));
+
 vi.mock('@/shared/api/xcm/service/xcm-error-utils', () => ({
   categorizeXcmError: () => ({ isTooExpensive: false, isFeesNotMet: false }),
   getHumanReadableXcmError: () => undefined,

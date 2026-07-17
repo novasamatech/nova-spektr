@@ -11,6 +11,7 @@ import { Alert, FootnoteText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type AnyAccount, type BalanceUpdateResult } from '@/domains/network';
 import { useAccountsNames, useWalletName } from '@/domains/network';
+import { Account } from '../Account/Account';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 const PermissionErrorItem = memo(({ wallet, permission }: { wallet: Wallet; permission: string }) => {
@@ -288,7 +289,18 @@ const TransactionBalanceError = ({
             isKeySet ? 'general.transactionErrors.balance.introAccount' : 'general.transactionErrors.balance.intro'
           }
           components={{
-            account: <span className="font-medium">{accountName}</span>,
+            account: (
+              <span className="relative top-1 -mt-1 inline-flex items-center gap-1">
+                <Account
+                  accountId={account.accountId}
+                  title={accountName}
+                  chain={null}
+                  iconSize={16}
+                  hideAddress
+                  hideExplorers
+                />
+              </span>
+            ),
             wallet: (
               <span className="relative top-1 -mt-1 inline-flex items-center gap-1">
                 <WalletIcon type={wallet.type} size={16} /> {walletName}
