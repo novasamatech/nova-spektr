@@ -151,6 +151,9 @@ notes.
 - [`signing-path`](./signing-path/README.md)
 - `sign-wallet-connect` (no spec planned)
 
+> See also: [`dashboard-operations-queue`](#dashboard) — surfaces pending drafts and operations awaiting signature on
+> the dashboard.
+
 ## Basket
 
 - `basket-navigation` (no spec planned)
@@ -164,7 +167,7 @@ notes.
 
 - `dashboard-governance`
 - `dashboard-navigation` (no spec planned)
-- `dashboard-operations-queue`
+- [`dashboard-operations-queue`](./dashboard-operations-queue/README.md)
 - [`dashboard-portfolio-overview`](./dashboard-portfolio-overview/README.md)
 - `dashboard-price-charts`
 - `dashboard-staking`
