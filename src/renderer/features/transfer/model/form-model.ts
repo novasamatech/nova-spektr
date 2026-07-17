@@ -46,6 +46,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { proxiedChainResource } from '@/entities/proxy';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { createDraftModeBinding, wireDraftSourceBalance } from '@/features/drafts';
@@ -345,6 +346,21 @@ const $destinationAccountId = combine($destination, $destinationChain, (destinat
   return validateAddress(destination, chain) ? toAccountId(destination) : null;
 });
 
+// unknown recipient warning (external address book)
+
+const riskAcknowledgedToggled = createEvent<boolean>();
+
+const $recipientWarning = combine(
+  recipientVerificationModel.$resolveWarning,
+  $destinationAccountId,
+  (resolveWarning, accountId) => resolveWarning(accountId),
+);
+
+// A new recipient (or a fresh flow) invalidates the previous acknowledgement.
+const $isRiskAcknowledged = createStore(false)
+  .on(riskAcknowledgedToggled, (_, checked) => checked)
+  .reset([form.fields.destination.change, formInitiated]);
+
 // pure proxy chain restriction
 
 // Local accounts check (synchronous)
@@ -490,6 +506,17 @@ createSubscription({
 
 // draft mode — wired through the shared factory in features/drafts
 const draftMode = createDraftModeBinding({ formInitiated, chainChanged });
+
+// Draft mode is exempt — nothing is signed when saving a draft; the warning
+// fires when the draft is eventually signed.
+const $recipientRiskAccepted = combine(
+  {
+    warning: $recipientWarning,
+    acknowledged: $isRiskAcknowledged,
+    isDraftMode: draftMode.$isDraftMode,
+  },
+  ({ warning, acknowledged, isDraftMode }) => isDraftMode || warning === 'none' || acknowledged,
+);
 
 // balance preservation strategy
 
@@ -972,6 +999,7 @@ const $canSubmit = and(
   $valid,
   not($hasDestinationBalanceError),
   not($isPureProxyChainMismatch),
+  $recipientRiskAccepted,
   or(not($isXcm), not(xcmSpellTransferModel.$isDestinationFeeLoading)),
   or(not($isXcm), $areTransactionsReady),
   or(not($isXcm), not($hasDryRunError)),
@@ -1481,6 +1509,9 @@ export const formModel = {
   $canSubmit,
   $asset,
 
+  $recipientWarning,
+  $isRiskAcknowledged,
+
   $errors,
 
   $xcmApi: xcmSpellTransferModel.$apiDestination,
@@ -1528,5 +1559,6 @@ export const formModel = {
     draftPathCommitted: draftMode.draftPathCommitted,
     draftPathEditStarted: draftMode.draftPathEditStarted,
     draftPathEditEnded: draftMode.draftPathEditEnded,
+    riskAcknowledgedToggled,
   },
 };

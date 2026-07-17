@@ -35,3 +35,6 @@ export {
   type TransactionValidationPermissionError,
   TransactionValidationError,
 } from './TransactionValidationError/TransactionValidationError';
+export { UnknownRecipientBadge } from './UnknownRecipient/UnknownRecipientBadge';
+export { UnknownRecipientAckBox } from './UnknownRecipient/UnknownRecipientAckBox';
+export { UnknownRecipientAlert } from './UnknownRecipient/UnknownRecipientAlert';

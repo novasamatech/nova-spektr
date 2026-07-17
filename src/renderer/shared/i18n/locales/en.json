@@ -3022,6 +3022,37 @@
     "unifiedAddressCopied": "Unified address copied!",
     "viewInExplorers": "View in explorers"
   },
+  "recipientVerification": {
+    "badge": {
+      "recipientUnknown": "Unknown recipient",
+      "recipientUnverifiable": "Unverified recipient",
+      "addressUnknown": "Unknown address",
+      "addressUnverifiable": "Unverified address"
+    },
+    "transfer": {
+      "title": "Unknown recipient address",
+      "body": "This address is not saved in your address book. Transfers are irreversible — confirm you have verified it.",
+      "ackLabel": "I have verified this address and understand it is not in my address book"
+    },
+    "multisigSign": {
+      "title": "Recipient is not in your address book",
+      "body": "Your signature moves this transfer closer to execution. Confirm you have verified the recipient before approving.",
+      "ackLabel": "I have verified the recipient address and approve this transfer"
+    },
+    "unverifiable": {
+      "title": "Recipient can't be verified",
+      "body": "The address book is disconnected, so recipients can't be checked. Reconnect to verify, or confirm the address manually.",
+      "ackLabel": "I have verified this address manually"
+    },
+    "confirmNote": "Sending to an address that is not in your address book.",
+    "confirmNoteUnverifiable": "The address book is disconnected — this recipient could not be verified.",
+    "reviewAlert": {
+      "title": "This recipient is not in your address book",
+      "body": "Confirm the address with your co-signers before approving — once the threshold is met the transfer is irreversible.",
+      "titleUnverifiable": "This recipient could not be verified",
+      "bodyUnverifiable": "The address book is disconnected. Reconnect it or verify the address with your co-signers before approving."
+    }
+  },
   "settings": {
     "autoUpdate": "Spektr auto updates",
     "backendSync": {

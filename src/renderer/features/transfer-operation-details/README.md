@@ -1,6 +1,6 @@
 # Transfer Operation Details
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-15
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-17
 
 ## Overview
 
@@ -42,6 +42,15 @@ Added to the shared rows (depositor, date/time, description):
 On the approve/sign flow the feature contributes the centered **amount block** — the transferred amount with its fiat
 value — when the operation is a transfer with a resolvable asset and amount.
 
+## Unknown recipient warnings
+
+When the resolved recipient carries a warning from
+[`recipient-verification`](../../aggregates/recipient-verification/README.md) (gated on the external address book
+connection), the Details panel shows an amber **review alert** directly under the Recipient row, asking co-signers to
+confirm the address with each other before approving — once the threshold is met the transfer is irreversible. It is
+informational only; the acknowledgement gate that blocks signing lives in
+[`multisig-operations`](../multisig-operations/README.md#unknown-recipient-warnings)' Approve dialog, not here.
+
 ## Supported wrappers
 
 - **`proxy.proxy`** — for flexible multisigs the call is unwrapped before matching, so a proxy-routed transfer is
@@ -53,4 +62,6 @@ value — when the operation is a transfer with a resolvable asset and amount.
 
 - [`multisig-operations`](../multisig-operations/README.md) — hosts the row, the Details panel slot, and the
   confirmation step this feature injects into.
+- [`recipient-verification`](../../aggregates/recipient-verification/README.md) — decides whether the recipient is
+  "known" and drives the review alert above.
 - [`multi-transfer-operation-details`](../multi-transfer-operation-details/README.md) — the batch counterpart.

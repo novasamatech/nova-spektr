@@ -1,0 +1,1 @@
+export { recipientVerificationModel } from './model';

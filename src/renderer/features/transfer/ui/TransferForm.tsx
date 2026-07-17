@@ -23,7 +23,14 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, CaptionText, FootnoteText, Icon, IconButton, InputHint, Switch } from '@/shared/ui';
-import { AccountSelect, Address, Identicon, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
+import {
+  AccountSelect,
+  Address,
+  Identicon,
+  TransactionValidationError,
+  UnknownRecipientAckBox,
+  WalletIcon,
+} from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
 import { accountService, useAccountName, useAccountsNames, useWalletName } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
@@ -106,6 +113,7 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
             <Destination />
             <Amount />
           </form>
+          {!isDraftMode && <UnknownRecipientSection />}
           {!isDraftMode && (
             <div className="flex flex-col gap-y-6">
               <FeeSection />
@@ -128,6 +136,20 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
         />
       )}
     </div>
+  );
+});
+
+const UnknownRecipientSection = memo(() => {
+  const warning = useUnit(formModel.$recipientWarning);
+  const isAcknowledged = useUnit(formModel.$isRiskAcknowledged);
+
+  return (
+    <UnknownRecipientAckBox
+      warning={warning}
+      context="transfer"
+      checked={isAcknowledged}
+      onToggle={formModel.events.riskAcknowledgedToggled}
+    />
   );
 });
 

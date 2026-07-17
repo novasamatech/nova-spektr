@@ -48,7 +48,9 @@ notes.
 - `selected-wallet-multisig-operations` (aggregate)
 
 > See also: [`account-sync`](#wallets--onboarding) — discovers multisig wallets on-chain;
-> [`call-data-execute`](#operations--signing) — executes pending multisig call data.
+> [`call-data-execute`](#operations--signing) — executes pending multisig call data;
+> [`recipient-verification`](#contacts--notifications) — unknown-recipient warnings in the operations list and Approve
+> dialog.
 
 ## Proxy
 
@@ -126,6 +128,9 @@ notes.
 - [`vesting-portfolio`](../aggregates/vesting-portfolio/README.md) (aggregate)
 - `send-to-contact`
 
+> See also: [`recipient-verification`](#contacts--notifications) — unknown-recipient warnings on the transfer form and
+> confirm step.
+
 ## Assets & Balances
 
 - `assets`
@@ -141,7 +146,7 @@ notes.
 
 ## Operations & Signing
 
-- `operations`
+- [`operations`](./operations/README.md)
 - `operations-navigation` (no spec planned)
 - `operation-templates`
 - `app-custom-operations`
@@ -181,8 +186,11 @@ notes.
 - `contacts-navigation` (no spec planned)
 - `notifications`
 - `notifications-navigation` (no spec planned)
+- [`recipient-verification`](../aggregates/recipient-verification/README.md) (aggregate)
 
-> See also: [`send-to-contact`](#transfers) — the transfer flow launched from the contacts page.
+> See also: [`send-to-contact`](#transfers) — the transfer flow launched from the contacts page;
+> [`transfer`](#transfers) and [`multisig-operations`](#multisig) — consume `recipient-verification` for
+> unknown-recipient warnings.
 
 ## App Shell & Platform
 
