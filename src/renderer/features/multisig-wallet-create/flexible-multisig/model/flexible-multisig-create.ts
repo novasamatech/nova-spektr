@@ -11,6 +11,7 @@ import { createStoreFromEffect } from '@/shared/effector';
 import { Step, TEST_ACCOUNTS, getNativeAsset, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import {
   createFeeCalculator,
+  createSelectedInitiatorStore,
   createSignatoriesStore,
   createTxValidationStore,
   createTxValidator,
@@ -48,12 +49,22 @@ const $error = createStore('').reset(flow.close);
 
 const signatorySelected = createEvent<AnyAccount>();
 
-const $signatory = restore(signatorySelected, null).reset(flow.close);
+const $selectedSignatory = restore(signatorySelected, null).reset(flow.close);
 
-const $initiator = createStore<AnyAccount | null>(null).reset(flow.close);
 const $initiatorWallet = createStore<Wallet | null>(null).reset(flow.close);
 
-const $route = $signatory.map(s => (s ? [s] : []));
+const $selection = signatoryModel.$signatories.map(signatories => {
+  const ownSignatory = signatories.at(0);
+  if (!ownSignatory || !ownSignatory.walletId || !ownSignatory.address) return null;
+
+  return { walletId: Number(ownSignatory.walletId), address: ownSignatory.address };
+});
+
+const $initiator = createSelectedInitiatorStore({
+  chain: formModel.$chain,
+  accounts: accounts.$list,
+  selection: $selection,
+});
 
 sample({
   clock: signatoryModel.$ownedSignatoriesWallets,
@@ -73,23 +84,15 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-// in the current implementation, the first signatory is always the signatory
-sample({
-  clock: $signatories,
-  fn: signatories => (signatories.length >= 1 ? signatories[0]! : null),
-  target: $signatory,
+// the derived first signatory is only a default — an explicit user pick from
+// SignerSelection wins while it is still present in the signatory list
+const $signatory = combine($selectedSignatory, $signatories, (selected, signatories) => {
+  if (selected && signatories.some(s => s.id === selected.id)) return selected;
+
+  return signatories.at(0) ?? null;
 });
 
-sample({
-  clock: $initiatorWallet,
-  source: { accounts: accounts.$list, chain: formModel.$chain },
-  fn: ({ accounts, chain }, wallet) => {
-    if (!wallet || !chain) return null;
-
-    return accounts.find(a => a.walletId === wallet!.id && accountService.isAccountAvailableOnChain(a, chain)) ?? null;
-  },
-  target: $initiator,
-});
+const $route = $signatory.map(s => (s ? [s] : []));
 
 sample({
   clock: $initiatorWallet,
