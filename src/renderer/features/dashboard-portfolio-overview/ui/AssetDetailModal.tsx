@@ -1,54 +1,26 @@
-import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
-import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
-import { FootnoteText } from '@/shared/ui';
-import { CHART_TOOLTIP_STYLE, FALLBACK_COLORS } from '@/shared/ui/chart-constants';
-import { AssetIcon, Identicon } from '@/shared/ui-entities';
+import { formatBalance } from '@/shared/lib/utils';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { FootnoteText, HelpText } from '@/shared/ui';
+import { AssetIcon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
 import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { type BreakdownRow, useHoldingBreakdown } from '../hooks/useHoldingBreakdown';
 import { type Holding } from '../hooks/useHoldings';
 import { type RowAllocation, computeAssetRowAllocations } from '../lib/computeRowAllocations';
 
-import { AllocationBar } from './AllocationBar';
+import { AllocationBarWithLegend } from './AllocationBarWithLegend';
 import { Price } from './Price';
 import { PriceChangeIndicator } from './PriceChangeIndicator';
 
 type AssetTableRow = BreakdownRow & { allocation: RowAllocation | null };
-
-type ChartEntry = {
-  name: string;
-  value: number;
-  index: number;
-  row: BreakdownRow;
-};
-
-type TooltipPayloadItem = {
-  payload: ChartEntry;
-};
-
-const ChartTooltip = memo(({ active, payload }: { active?: boolean; payload?: TooltipPayloadItem[] }) => {
-  if (!active || !payload?.length) return null;
-
-  const item = payload[0];
-  if (!item) return null;
-
-  const { row } = item.payload;
-
-  return (
-    <div style={CHART_TOOLTIP_STYLE}>
-      <div style={{ fontWeight: 600 }}>{row.name || toShortAddress(row.address)}</div>
-      <div>{new BigNumber(row.sharePercent).decimalPlaces(1, BigNumber.ROUND_DOWN).toFixed(1)}%</div>
-    </div>
-  );
-});
 
 type EntryLike = { accountId: string; name: string; address: string };
 
@@ -97,76 +69,55 @@ export const AssetDetailModal = memo(({ holding, accountIds, allEntries, currenc
         title: t('dashboard.portfolioOverview.assetDetail.address'),
         width: '28%',
         render: (_, item) => (
-          <div className="flex items-center gap-2">
-            <span
-              className="h-2 w-2 shrink-0 rounded-full"
-              style={{ backgroundColor: FALLBACK_COLORS[item.colorIndex % FALLBACK_COLORS.length] }}
-            />
-            <Identicon address={toAddress(item.address)} />
-            <div className="min-w-0">
-              <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
-              <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
-            </div>
-          </div>
+          <NamedAccount
+            accountId={pjsSchema.helpers.toAccountId(item.accountId)}
+            chain={undefined}
+            title={item.name || undefined}
+            titleClass="truncate font-semibold"
+            variant="short"
+            iconSize={24}
+            hideExplorers
+          />
         ),
       },
       {
         key: 'rawAmountNum',
-        title: t('dashboard.portfolioOverview.assetDetail.amount'),
+        title: t('dashboard.portfolioOverview.assetDetail.holdings'),
         sortable: true,
-        width: '20%',
+        width: '24%',
         render: (_, item) => {
           const bal = formatBalance(item.rawAmount, item.precision);
 
           return (
-            <FootnoteText className="tabular-nums">
-              {bal.formatted}
-              {bal.suffix} {item.symbol}
-            </FootnoteText>
+            <div>
+              <FootnoteText className="font-semibold tabular-nums">
+                {bal.formatted}
+                {bal.suffix} {item.symbol}
+              </FootnoteText>
+              <HelpText className="text-text-tertiary tabular-nums">
+                <Price amount={item.fiatValue} currency={currency} /> · {item.sharePercent.toFixed(1)}%
+              </HelpText>
+            </div>
           );
         },
       },
       {
-        key: 'fiatValueNum',
-        title: t('dashboard.portfolioOverview.assetDetail.value'),
-        sortable: true,
-        width: '18%',
-        render: (_, item) => (
-          <FootnoteText className="tabular-nums">
-            <Price amount={item.fiatValue} currency={currency} />
-          </FootnoteText>
-        ),
-      },
-      {
-        key: 'sharePercent',
-        title: t('dashboard.portfolioOverview.assetDetail.share'),
-        sortable: true,
-        width: '15%',
-        render: (_, item) => (
-          <FootnoteText className="tabular-nums">
-            {new BigNumber(item.sharePercent).decimalPlaces(1, BigNumber.ROUND_DOWN).toFixed(1)}%
-          </FootnoteText>
-        ),
-      },
-      {
         key: 'allocation',
         title: t('dashboard.portfolioOverview.assetAllocation'),
-        width: '19%',
-        render: (_, item) => (item.allocation ? <AllocationBar allocation={item.allocation} /> : null),
+        width: '48%',
+        render: (_, item) =>
+          item.allocation ? (
+            <AllocationBarWithLegend
+              allocation={item.allocation}
+              symbol={item.symbol}
+              precision={item.precision}
+              currency={currency}
+            />
+          ) : null,
       },
     ],
     [t, currency],
   );
-
-  const chartData = useMemo<ChartEntry[]>(
-    () =>
-      rows
-        .map((row, i) => ({ name: row.name || toShortAddress(row.address), value: row.fiatValueNum, index: i, row }))
-        .filter((d) => d.value > 0),
-    [rows],
-  );
-
-  const showChart = chartData.length > 1;
 
   return (
     <Modal isOpen size="lg" onToggle={(open) => !open && onClose()}>
@@ -195,26 +146,6 @@ export const AssetDetailModal = memo(({ holding, accountIds, allEntries, currenc
         </div>
 
         <div className="border-t border-divider" />
-
-        {showChart && (
-          <div className="flex justify-center px-5 py-3">
-            <PieChart width={180} height={180}>
-              <Pie
-                data={chartData}
-                innerRadius={55}
-                outerRadius={85}
-                dataKey="value"
-                stroke="none"
-                animationDuration={400}
-              >
-                {chartData.map((entry) => (
-                  <Cell key={entry.index} fill={FALLBACK_COLORS[entry.index % FALLBACK_COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip content={<ChartTooltip />} />
-            </PieChart>
-          </div>
-        )}
 
         <div className="overflow-y-auto px-5 pb-4" style={{ maxHeight: 440 }}>
           <Table columns={columns} data={tableData} />

@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type CallBase } from '@polkadot/types/types';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { readonly, throttle } from 'patronum';
+import { readonly, spread, throttle } from 'patronum';
 
 import { type CallData, type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
@@ -258,12 +258,6 @@ sample({
 sample({
   clock: confirmModel.startSigning,
   fn: () => Step.SIGN,
-  target: stepChanged,
-});
-
-sample({
-  clock: signModel.signed,
-  fn: () => Step.SUBMIT,
   target: stepChanged,
 });
 
@@ -530,12 +524,17 @@ sample({
   target: signModel.init,
 });
 
+// guard against sign results from other flows — signModel is app-wide,
+// so only advance when this flow is the one at the signing step
 sample({
   clock: signModel.signed,
   source: $step,
-  filter: (step) => step !== Step.NONE,
-  fn: (_, payload) => payload,
-  target: submitModel.init,
+  filter: (step) => step === Step.SIGN,
+  fn: (_, payload) => ({ event: payload, step: Step.SUBMIT }),
+  target: spread({
+    event: submitModel.init,
+    step: stepChanged,
+  }),
 });
 
 export const formModel = {
