@@ -278,7 +278,7 @@ export const createWcAccount = (id: string | number = createRandomId(), walletId
   id: id.toString(),
   accountId: createAccountId(id),
   chainId: polkadotChainId,
-  signingType: SigningType.POLKADOT_VAULT,
+  signingType: SigningType.WALLET_CONNECT,
   cryptoType: CryptoType.SR25519,
   name: `WalletConnect Account ${id}`,
   accountType: AccountType.WALLET_CONNECT,
@@ -304,7 +304,9 @@ export const createProxiedAccount = (id: string | number = createRandomId(), wal
   cryptoType: CryptoType.SR25519,
   name: `Proxied Account ${id}`,
   accountType: AccountType.PROXIED,
-  signingType: SigningType.POLKADOT_VAULT,
+  // Real proxied accounts are keyless — created with WATCH_ONLY
+  // (features/proxies/model/proxies-model.ts)
+  signingType: SigningType.WATCH_ONLY,
   walletId,
   type: 'chain',
   entropyBlockNumber: 0,

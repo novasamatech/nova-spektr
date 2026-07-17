@@ -13,8 +13,6 @@ import {
   formatAsset,
   fromPrecision,
   getNativeAsset,
-  includesMultiple,
-  nonNullable,
   nullable,
   performSearch,
   toAccountId,
@@ -39,6 +37,7 @@ import { SigningPathSection, graphModel } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
+import { transferUtils } from '../lib/transfer-utils';
 import { TRANSFER_ALLOWED_PROXY_TYPES, formModel } from '../model/form-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
@@ -444,11 +443,27 @@ const Destination = memo(() => {
     return toAccountId(trimmed);
   }, [destination.value, chain]);
 
-  const recipientWallet = useMemo(() => {
+  // Prefer the recipient's own resolved account name over the wallet name:
+  // accountId-based resolution never sees the account object, so a key-set
+  // vault recipient would show the wallet name instead of the key name the
+  // dropdown and account selector display (`resolvedAccounts` runs the same
+  // resolution the dropdown items use). `findRelatedAccount` disambiguates
+  // when the same accountId exists in several wallets (chain match, then
+  // custom-named), so the badge/name don't come from an arbitrary wallet.
+  const recipientAccount = useMemo(() => {
     if (nullable(recipientAccountId)) return null;
 
-    return wallets.find((wallet) => wallet.accounts.some((a) => a.accountId === recipientAccountId)) ?? null;
-  }, [wallets, recipientAccountId]);
+    return accountService.findRelatedAccount(resolvedAccounts, recipientAccountId, chain) ?? null;
+  }, [resolvedAccounts, recipientAccountId, chain]);
+
+  // Derived from the account's walletId (not an independent lookup) so the
+  // displayed name and the wallet badge always come from the same wallet when
+  // several wallets hold the same accountId.
+  const recipientWallet = useMemo(() => {
+    if (nullable(recipientAccount)) return null;
+
+    return wallets.find((wallet) => wallet.id === recipientAccount.walletId) ?? null;
+  }, [wallets, recipientAccount]);
 
   // Run the standard resolution chain (custom name → contact → on-chain identity
   // → wallet name). `resolveAccountName` falls back to a short address when none
@@ -458,7 +473,7 @@ const Destination = memo(() => {
   const recipientName = useAccountName({
     accountId: recipientAccountId,
     chain,
-    title: recipientWalletName ?? undefined,
+    title: recipientAccount?.name ?? recipientWalletName ?? undefined,
   });
   const recipientHasName = useMemo(() => {
     if (nullable(recipientAccountId) || !recipientName) return false;
@@ -471,13 +486,11 @@ const Destination = memo(() => {
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
     if (nullable(chain)) return [];
 
-    const filteredAccounts = resolvedAccounts.filter((account) => {
-      const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
-      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-      const queryPass = includesMultiple([account.name, address], query);
-      const isMyself = nonNullable(initiator.value) && initiator.value.accountId === account.accountId;
-
-      return isChainMatch && queryPass && !isMyself;
+    const filteredAccounts = transferUtils.filterRecipientAccounts({
+      accounts: resolvedAccounts,
+      chain,
+      query,
+      initiator: initiator.value,
     });
     const uniqueAccounts = uniqBy(filteredAccounts, 'accountId');
 
@@ -514,7 +527,7 @@ const Destination = memo(() => {
     }
 
     return ownAccountOptions;
-  }, [query, chain, resolvedAccounts, wallets, initiator.value]);
+  }, [query, chain, resolvedAccounts, wallets, initiator.value, t]);
 
   const contactOptions = useMemo<ComboboxGroup[]>(() => {
     if (validateAddress(query, chain)) return [];
@@ -542,7 +555,7 @@ const Destination = memo(() => {
         items: addressOptions,
       },
     ];
-  }, [walletsOptions, query, chain, filteredContacts]);
+  }, [query, chain, filteredContacts, t]);
 
   const options = [...walletsOptions, ...contactOptions];
 
@@ -616,6 +629,7 @@ const Destination = memo(() => {
                 <NamedAccount
                   accountId={recipientAccountId}
                   chain={chain}
+                  title={recipientAccount?.name}
                   wallet={recipientWallet}
                   variant="truncate"
                   iconSize={20}

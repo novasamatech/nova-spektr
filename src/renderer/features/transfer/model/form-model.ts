@@ -11,7 +11,6 @@ import { type Form, createForm } from '@/shared/forms';
 import {
   TEST_ADDRESS,
   TEST_EVM_ADDRESS,
-  assert,
   formatAmount,
   getAssetId,
   getNativeAsset,
@@ -52,6 +51,7 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { createDraftModeBinding, wireDraftSourceBalance } from '@/features/drafts';
 import { transferValidator } from '@/features/operations/OperationsValidation';
 import { createSigningPathModel } from '@/features/signing-path';
+import { transferUtils } from '../lib/transfer-utils';
 import { type NetworkStore, type NetworkStoreParams } from '../lib/types';
 
 import { xcmSpellTransferModel } from './xcm-spell-transfer-model';
@@ -916,12 +916,39 @@ const $destinationAccounts = combine(
   },
 );
 
+// "Myself" targets the sender's own address on the destination chain when the
+// sender can receive there (keyless senders — multisig, proxied, watch-only —
+// must pass the availability rule, see transferUtils.canReceiveOnChain).
+// Otherwise it falls back to the wallet's signing-available destination-chain
+// accounts: autofill for a single one, selection modal for several.
+const $myselfDestination = combine(
+  {
+    chain: $destinationChain,
+    initiator: form.fields.initiator.$value,
+    destinationAccounts: $destinationAccounts,
+  },
+  ({ chain, initiator, destinationAccounts }) => {
+    if (nullable(chain)) return null;
+
+    if (nonNullable(initiator) && transferUtils.canReceiveOnChain(initiator, chain)) {
+      return toAddress(initiator.accountId, { prefix: chain.addressPrefix });
+    }
+
+    const fallback = destinationAccounts.length === 1 ? destinationAccounts.at(0) : null;
+
+    return fallback ? toAddress(fallback.accountId, { prefix: chain.addressPrefix }) : null;
+  },
+);
+
 const $isMyselfXcmEnabled = combine(
   {
     isXcm: $isXcm,
+    myselfDestination: $myselfDestination,
     destinationAccounts: $destinationAccounts,
   },
-  ({ isXcm, destinationAccounts }) => isXcm && destinationAccounts.length > 0,
+  ({ isXcm, myselfDestination, destinationAccounts }) => {
+    return isXcm && (nonNullable(myselfDestination) || destinationAccounts.length > 1);
+  },
 );
 
 const $isCoreTxReady = $coreTx.map(nonNullable);
@@ -1043,26 +1070,20 @@ sample({
 
 sample({
   clock: myselfClicked,
-  source: {
-    xcmChain: $destinationChain,
-    destinationAccounts: $destinationAccounts,
-  },
-  filter: ({ xcmChain, destinationAccounts }) => {
-    return nonNullable(xcmChain) && destinationAccounts.length === 1;
-  },
-  fn: ({ xcmChain, destinationAccounts }) => {
-    const account = destinationAccounts.at(0);
-    assert(account, 'destination account not found');
-
-    return toAddress(account.accountId, { prefix: xcmChain?.addressPrefix });
-  },
+  source: $myselfDestination,
+  filter: nonNullable,
   target: form.fields.destination.change,
 });
 
 sample({
   clock: myselfClicked,
-  source: $destinationAccounts,
-  filter: (destinationAccounts) => destinationAccounts.length > 1,
+  source: {
+    myselfDestination: $myselfDestination,
+    destinationAccounts: $destinationAccounts,
+  },
+  filter: ({ myselfDestination, destinationAccounts }) => {
+    return nullable(myselfDestination) && destinationAccounts.length > 1;
+  },
   fn: () => true,
   target: $isMyselfXcmOpened,
 });

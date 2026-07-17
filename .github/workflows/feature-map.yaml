@@ -1,0 +1,21 @@
+name: Feature map
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-feature-map:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⚙️Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🗺️ Check feature map
+        run: node scripts/check-feature-index.mjs --changed origin/${{ github.base_ref }}
