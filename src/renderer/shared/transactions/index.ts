@@ -5,6 +5,7 @@ export { createTxStore } from './createTxStore';
 export { createComplexTxStore } from './createComplexTxStore';
 export { createInitiatorsStore } from './createInitiatorsStore';
 export { createSignatoriesStore } from './createSignatoriesStore';
+export { type InitiatorSelection, createSelectedInitiatorStore } from './createSelectedInitiatorStore';
 export { type ConfirmItem, type TxConfirmInfo, createTransactionConfirmStore } from './createTransactionConfirmStore';
 export { type ExtrinsicConfirmInfo, createExtrinsicConfirmStore } from './createExtrinsicConfirmStore';
 export { createTxValidationStore } from './createTxValidationStore';
