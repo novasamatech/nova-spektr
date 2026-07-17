@@ -1,12 +1,21 @@
 import { describe, expect, test } from 'vitest';
 
-import { TransactionType } from '@/shared/core';
-import { type MultisigOperation } from '@/domains/network';
+import {
+  type Contact,
+  type Wallet,
+  AccountNameType,
+  CryptoType,
+  SigningType,
+  TransactionType,
+  WalletType,
+} from '@/shared/core';
+import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 
 import {
   type OperationsFilterContext,
   filterOperation,
   getFilterableTxType,
+  getWalletSearchEntries,
   matchesDateRange,
   matchesNetwork,
   matchesProxyType,
@@ -470,6 +479,66 @@ describe('operations-filter', () => {
       };
       expect(filterOperation(hiddenOp, mockMultisigAccount, ctx)).toBe(true);
       expect(filterOperation(visibleOp, mockMultisigAccount, ctx)).toBe(false);
+    });
+  });
+
+  describe('getWalletSearchEntries', () => {
+    const multisigAccountId = '0x7f7cc72b17ac5d762869e97af14ebcc561590b6cc9eeeac7a3cdadde646c95c3' as never;
+
+    const createMultisigWallet = (nameType?: AccountNameType) => {
+      const wallet = {
+        id: 1,
+        name: 'multisig wallet',
+        type: WalletType.MULTISIG,
+        accounts: [],
+      } as unknown as Wallet;
+
+      const account = {
+        id: 'ms-account',
+        walletId: 1,
+        type: 'universal',
+        accountId: multisigAccountId,
+        name: 'multisig wallet',
+        nameType,
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.MULTISIG,
+        createdAt: 0,
+      } as unknown as AnyAccount;
+
+      return { wallet, account };
+    };
+
+    test('resolves the displayed wallet name from a backend contact', () => {
+      const { wallet, account } = createMultisigWallet();
+      const contact = {
+        id: 'contact-1',
+        name: 'FINOPS_DOT_TEAM',
+        address: 'address',
+        accountId: multisigAccountId,
+        source: 'backend',
+      } as unknown as Contact;
+
+      const entries = getWalletSearchEntries([wallet], {
+        accounts: [account],
+        contacts: [contact],
+        identities: {},
+        chains: {},
+      });
+
+      expect(entries).toEqual([{ id: 1, name: 'FINOPS_DOT_TEAM' }]);
+    });
+
+    test('keeps the custom account name when nothing overrides it', () => {
+      const { wallet, account } = createMultisigWallet(AccountNameType.CUSTOM);
+
+      const entries = getWalletSearchEntries([wallet], {
+        accounts: [account],
+        contacts: [],
+        identities: {},
+        chains: {},
+      });
+
+      expect(entries).toEqual([{ id: 1, name: 'multisig wallet' }]);
     });
   });
 });

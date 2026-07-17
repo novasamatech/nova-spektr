@@ -40,8 +40,8 @@ notes.
 
 - [`multisig-operations`](./multisig-operations/README.md)
 - `multisig-wallet`
-- `multisig-wallet-create`
-- `flexible-change-signatories`
+- [`multisig-wallet-create`](./multisig-wallet-create/README.md)
+- [`flexible-change-signatories`](./flexible-change-signatories/README.md)
 - [`flexible-operation-details`](./flexible-operation-details/README.md)
 - `multisig-candidates` (aggregate)
 - [`multisig-operation-description`](../aggregates/multisig-operation-description/README.md) (aggregate)
@@ -106,7 +106,7 @@ notes.
 - `fellowship-promotion`
 - `fellowship-referendum-details`
 - `fellowship-retention`
-- `fellowship-salary`
+- [`fellowship-salary`](./fellowship-salary/README.md)
 - `fellowship-tasks`
 - `fellowship-voting`
 - `fellowship-voting-history`

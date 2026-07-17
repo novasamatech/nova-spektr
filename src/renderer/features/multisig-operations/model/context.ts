@@ -27,7 +27,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { type OperationsFilterContext, filterOperation } from '../lib/operations-filter';
+import { type OperationsFilterContext, filterOperation, getWalletSearchEntries } from '../lib/operations-filter';
 import {
   type OperationSection,
   type StatusFilterValue,
@@ -185,8 +185,15 @@ const haveSameWalletSearchEntries = (
   return next.every((wallet, index) => wallet.id === prev[index]?.id && wallet.name === prev[index]?.name);
 };
 
-const $multisigWalletSearchEntriesRaw = $multisigWallets.map((wallets): OperationsFilterContext['multisigWallets'] =>
-  wallets.map(({ id, name }) => ({ id, name })),
+const $multisigWalletSearchEntriesRaw = combine(
+  {
+    wallets: $multisigWallets,
+    accounts: accounts.$list,
+    contacts: contactModel.$contacts,
+    identities: identity.$list,
+    chains: networkModel.$chains,
+  },
+  ({ wallets, ...sources }): OperationsFilterContext['multisigWallets'] => getWalletSearchEntries(wallets, sources),
 );
 const $multisigWalletSearchEntries = createStore<OperationsFilterContext['multisigWallets']>([], {
   updateFilter: (next, prev) => !haveSameWalletSearchEntries(next, prev),

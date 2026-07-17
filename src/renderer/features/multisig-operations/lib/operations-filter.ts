@@ -3,6 +3,7 @@ import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
 import {
   type Chain,
   type ChainId,
+  type Contact,
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type ProxyType,
@@ -11,7 +12,7 @@ import {
 } from '@/shared/core';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { type DateRange } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
+import { type AnyAccount, type IdentityMap, type MultisigOperation, accountService } from '@/domains/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 
@@ -136,6 +137,28 @@ export const matchesDateRange = (operation: MultisigOperation, dateRange: Operat
     return isAfter(txDate, startOfDay(from)) || txDate.getTime() === startOfDay(from).getTime();
   }
   return true;
+};
+
+type WalletSearchSources = {
+  accounts: AnyAccount[];
+  contacts: Contact[];
+  identities: IdentityMap;
+  chains: Record<string, Chain>;
+};
+
+/**
+ * Builds search entries with the wallet names an operation card actually
+ * displays (resolved via custom name → contact → identity), not the raw stored
+ * `wallet.name`.
+ */
+export const getWalletSearchEntries = (
+  wallets: Wallet[],
+  sources: WalletSearchSources,
+): OperationsFilterContext['multisigWallets'] => {
+  return wallets.map(wallet => ({
+    id: wallet.id,
+    name: accountService.resolveWalletName({ wallet, ...sources }),
+  }));
 };
 
 export const matchesSearch = (
