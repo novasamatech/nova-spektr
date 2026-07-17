@@ -12,7 +12,6 @@ import { Box, Combobox, Field, Input, Select } from '@/shared/ui-kit';
 import { accountService, useAccountsNames, useWalletsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { searchSignatoryAccounts } from '../../../common/searchSignatoryAccounts';
 import { type SignatoryInfo } from '../../../types';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
@@ -111,7 +110,7 @@ export const Signatory = ({
 
     if (uniqueAccounts.length === 0) return [];
 
-    const filteredAccounts = searchSignatoryAccounts({
+    const filteredAccounts = accountService.searchAccounts({
       accounts: uniqueAccounts,
       query: isOwnAccount ? signatoryQuery : query,
       resolvedAccounts,

@@ -1198,4 +1198,88 @@ describe('account service', () => {
       expect(result).toBe('My Vault Wallet');
     });
   });
+
+  describe('searchAccounts', () => {
+    const createSearchAccount = (id: string, walletId: number, name: string): AnyAccount => ({
+      id,
+      walletId,
+      name,
+      type: 'chain',
+      chainId: polkadotChainId,
+      accountId: createAccountId(`search account ${id}`),
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.POLKADOT_VAULT,
+      createdAt: Date.now(),
+    });
+
+    // Raw account names (stored key names) differ from resolved names shown in UI
+    const vaultAccount = createSearchAccount('search-1', 1, 'FINOPS_PTL_JUL26_SCHEFFLER');
+    const otherAccount = createSearchAccount('search-2', 2, 'Some other account');
+
+    const searchableAccounts = [vaultAccount, otherAccount];
+
+    // Resolved names — what the list actually displays
+    const resolvedAccounts = [
+      { accountId: vaultAccount.accountId, name: 'FINOPS_DOT_PTL_JUL26_SCHEFFLER' },
+      { accountId: otherAccount.accountId, name: 'Some other account' },
+    ];
+
+    const resolvedWallets = [
+      { id: 1, name: 'PTL Keys' },
+      { id: 2, name: 'Other Wallet' },
+    ];
+
+    const search = (query: string, addressPrefix = 0) => {
+      return accountService.searchAccounts({
+        accounts: searchableAccounts,
+        query,
+        resolvedAccounts,
+        resolvedWallets,
+        addressPrefix,
+      });
+    };
+
+    it('should return all accounts for empty query', () => {
+      expect(search('')).toEqual(searchableAccounts);
+    });
+
+    it('should find account by resolved (displayed) name when it differs from raw name', () => {
+      // raw name is "FINOPS_PTL_JUL26_SCHEFFLER", displayed name is "FINOPS_DOT_PTL_JUL26_SCHEFFLER"
+      expect(search('FINOPS_D')).toEqual([vaultAccount]);
+    });
+
+    it('should find the only matching account when full displayed name is pasted', () => {
+      expect(search('FINOPS_DOT_PTL_JUL26_SCHEFFLER')).toEqual([vaultAccount]);
+    });
+
+    it('should find account by displayed wallet name', () => {
+      expect(search('PTL Keys')).toEqual([vaultAccount]);
+    });
+
+    it('should find account by displayed address', () => {
+      const address = toAddress(vaultAccount.accountId, { prefix: 0 });
+
+      expect(search(address.slice(0, 12))).toEqual([vaultAccount]);
+    });
+
+    it('should be case insensitive', () => {
+      expect(search('finops_dot')).toEqual([vaultAccount]);
+    });
+
+    it('should return nothing when query matches neither names nor address', () => {
+      expect(search('MISSING_QUERY')).toEqual([]);
+    });
+
+    it('should fall back to raw account name when there is no resolved name', () => {
+      const found = accountService.searchAccounts({
+        accounts: searchableAccounts,
+        query: 'FINOPS_PTL',
+        resolvedAccounts: [],
+        resolvedWallets: [],
+        addressPrefix: 0,
+      });
+
+      expect(found).toEqual([vaultAccount]);
+    });
+  });
 });
