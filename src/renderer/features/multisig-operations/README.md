@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-15
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-17
 
 ## Overview
 
@@ -354,7 +354,8 @@ ascending → descending → off:
 With sorting off, operations are ordered **newest first** by their creation time (block and extrinsic index break ties).
 The list can be narrowed by **search** and five **filters**:
 
-- **Search** — matches the multisig wallet name, the multisig address, or the call hash.
+- **Search** — matches the multisig wallet name as displayed on the card (resolved through custom name → contact →
+  identity, not the raw stored name), the multisig address, or the call hash.
 - **Date range** — a from/to (or from-only) interval.
 - **Status** — Drafts / In progress / Completed / Rejected / Hidden. Drafts and hidden operations obey the same logic as
   the regular statuses: with no status selected the scope behaves as before (drafts visible on Pending, hidden ops

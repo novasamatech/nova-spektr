@@ -4,12 +4,19 @@ import { type PropsWithChildren, type ReactNode, useMemo, useState } from 'react
 
 import { type Address as AccountAddress, type Chain, type ID, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { entries, includesMultiple, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
+import { entries, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, CaptionText } from '@/shared/ui';
 import { Address, Identicon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Modal } from '@/shared/ui-kit';
-import { type AnyAccount, accountService, useAccountName, useWalletName } from '@/domains/network';
+import {
+  type AnyAccount,
+  accountService,
+  useAccountName,
+  useAccountsNames,
+  useWalletName,
+  useWalletsNames,
+} from '@/domains/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { beneficiary } from '../model/beneficiary';
@@ -88,20 +95,26 @@ export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
   };
 
   const walletsMap = useMemo(() => keyBy(wallets, 'id'), [wallets]);
+  const resolvedAccounts = useAccountsNames(accountsList, chain);
+  const resolvedWallets = useWalletsNames(wallets);
 
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
     if (!chain || accountsList.length === 0) return [];
 
-    const filteredAccounts = accountsList.filter(account => {
+    const availableAccounts = accountsList.filter(account => {
       const isNotWatchOnly = !accountUtils.isWatchOnlyAccount(account);
       const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
-      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-      const queryPass = includesMultiple([account.name, address], searchQuery);
 
-      return isChainMatch && isNotWatchOnly && queryPass;
+      return isChainMatch && isNotWatchOnly;
     });
 
-    const uniqueAccounts = uniqBy(filteredAccounts, 'accountId');
+    const uniqueAccounts = accountService.searchAccounts({
+      accounts: uniqBy(availableAccounts, 'accountId'),
+      query: searchQuery,
+      resolvedAccounts,
+      resolvedWallets,
+      addressPrefix: chain.addressPrefix,
+    });
 
     if (uniqueAccounts.length === 0) return [];
 
@@ -141,7 +154,7 @@ export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
     }
 
     return ownAccountOptions;
-  }, [chain?.chainId, accountsList, wallets, walletsMap, searchQuery]);
+  }, [chain?.chainId, accountsList, wallets, walletsMap, searchQuery, resolvedAccounts, resolvedWallets]);
 
   return (
     <Modal size="md" isOpen={open} onToggle={handleToggle}>

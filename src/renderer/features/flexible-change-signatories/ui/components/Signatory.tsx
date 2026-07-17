@@ -5,7 +5,7 @@ import { type ReactNode, useMemo, useState } from 'react';
 import { TEST_IDS } from '@/shared/constants';
 import { type Address as AccountAddress, type ID } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { includesMultiple, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { FootnoteText, IconButton } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Select } from '@/shared/ui-kit';
@@ -63,15 +63,19 @@ export const Signatory = ({ signatoryIndex, isDuplicate, isInvalidAddress, signa
   const walletsGroup = useMemo<SignatoryGroup | null>(() => {
     if (!chain || accountsList.length === 0) return null;
 
-    const filteredAccounts = accountsList.filter((account) => {
+    const availableAccounts = accountsList.filter((account) => {
       const isNotWatchOnly = !accountUtils.isWatchOnlyAccount(account);
       const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
-      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-      const queryPass = !query || includesMultiple([account.name, address], query);
-      return isChainMatch && isNotWatchOnly && queryPass;
+      return isChainMatch && isNotWatchOnly;
     });
 
-    const uniqueAccounts = uniqBy(filteredAccounts, 'accountId');
+    const uniqueAccounts = accountService.searchAccounts({
+      accounts: uniqBy(availableAccounts, 'accountId'),
+      query,
+      resolvedAccounts,
+      resolvedWallets,
+      addressPrefix: chain.addressPrefix,
+    });
     const items = new Map<string, SignatoryItem>();
 
     for (const account of uniqueAccounts) {
