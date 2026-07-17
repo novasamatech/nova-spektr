@@ -316,12 +316,13 @@ both purely informational — neither blocks viewing or approving from the list:
 
 - **Row pill.** An **UNKNOWN RECIPIENT** badge sits at the end of the row's Description cell, for any operation that
   exposes a single destination (the transfer/XCM family; other operation types never show it).
-- **Approve dialog badge.** The same warning surfaces as an **UNKNOWN ADDRESS** badge next to the Recipient label in the
-  shared Details panel used by the Approve confirmation step.
+- **Confirmation badge.** The same warning surfaces as an **UNKNOWN ADDRESS** badge next to the Recipient label in the
+  shared Details panel of the confirmation step — informational only, so it appears in **both** the Approve and the
+  Reject dialogs (the Details panel is shared between them).
 - **Approve dialog gate.** Below the badge, an amber acknowledgement box ("I have verified this address…") gates the
   **Sign** button — it stays disabled until the checkbox is ticked. The acknowledgement resets whenever the approve
-  dialog opens or closes, so it never carries across operations. The **Reject** flow is unaffected — rejecting is always
-  the safe action, so no warning or gate applies there.
+  dialog opens or closes, so it never carries across operations. The **gate** is approve-only: the Reject flow shows the
+  informational badge but never the acknowledgement box — rejecting is always the safe action.
 
 The expanded row's Details column (from
 [`transfer-operation-details`](../transfer-operation-details/README.md#unknown-recipient-warnings)) additionally shows a

@@ -50,7 +50,8 @@ of warning about a since-added contact is lower than the cost of silencing every
   [Multisig Operations](../../features/multisig-operations/README.md#unknown-recipient-warnings) and
   [Transfer Operation Details](../../features/transfer-operation-details/README.md#unknown-recipient-warnings).
 - **Multisig approve dialog** (`features/multisig-operations`) — a badge plus an acknowledgement gate on Sign. The
-  Reject flow is unaffected (rejecting is always the safe action).
+  informational badge also shows in the shared Reject dialog, but the acknowledgement gate is approve-only (rejecting is
+  always the safe action).
 
 Not yet wired up (deliberately out of scope for this iteration, but cheap to add given the shared resolver): drafts
 submission, multi-transfer, vested transfer, teleport, and the send-to-contact prefill flow (its recipient already came
