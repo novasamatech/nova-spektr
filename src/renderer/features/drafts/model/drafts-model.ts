@@ -1,4 +1,4 @@
-import { createStore, merge, sample } from 'effector';
+import { combine, createStore, merge, sample } from 'effector';
 import { t } from 'i18next';
 import { interval } from 'patronum';
 
@@ -33,7 +33,9 @@ const draftsPolling = interval({
 
 sample({
   clock: draftsPolling.tick,
-  source: backendConfigurationModel.$backendUrl,
+  source: combine(backendConfigurationModel.$backendUrl, authModel.$isConnectionAlive, (url, alive) =>
+    alive ? url : null,
+  ),
   filter: (url): url is string => url !== null,
   fn: (baseUrl: string) => ({ baseUrl }),
   target: draftsResource.start,
