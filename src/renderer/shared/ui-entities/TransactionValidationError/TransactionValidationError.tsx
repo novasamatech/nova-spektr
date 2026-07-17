@@ -227,13 +227,15 @@ const TransactionBalanceError = ({
   const { t } = useI18n();
 
   const account = errors.at(0)?.account;
-  if (nullable(account)) return null;
-  const wallet = wallets.find(w => w.id === account.walletId);
-  if (nullable(wallet)) return null;
-  const walletName = useWalletName(wallet);
+  const wallet = account ? wallets.find(w => w.id === account.walletId) : null;
 
-  const accountsForName = useMemo(() => [account], [account.id]);
+  const walletName = useWalletName(wallet);
+  const accountsForName = useMemo(() => (account ? [account] : []), [account]);
   const [resolvedAccount] = useAccountsNames(accountsForName);
+
+  if (nullable(account)) return null;
+  if (nullable(wallet)) return null;
+
   // wallet.accounts is deprecated but is the only account data this
   // presentational component receives; key-set wallets hold several keys, and
   // naming only the wallet would hide which key lacks funds
