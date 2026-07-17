@@ -54,10 +54,14 @@ const $selectedSignatory = restore(signatorySelected, null).reset(flow.close);
 const $initiatorWallet = createStore<Wallet | null>(null).reset(flow.close);
 
 const $selection = signatoryModel.$signatories.map(signatories => {
+  // the first signatory row of the form is the user's own (paying) account
   const ownSignatory = signatories.at(0);
   if (!ownSignatory || !ownSignatory.walletId || !ownSignatory.address) return null;
 
-  return { walletId: Number(ownSignatory.walletId), address: ownSignatory.address };
+  const walletId = Number(ownSignatory.walletId);
+  if (!Number.isFinite(walletId)) return null;
+
+  return { walletId, address: ownSignatory.address };
 });
 
 const $initiator = createSelectedInitiatorStore({
