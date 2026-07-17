@@ -400,6 +400,10 @@ type SearchAccountsMeta = {
   displayAddress: string;
 };
 
+// Account name is what the user most likely types, wallet name narrows a group,
+// address matters mostly for pasted values — hence the descending ranking.
+const ACCOUNT_SEARCH_WEIGHTS = { displayName: 1, walletName: 0.75, displayAddress: 0.5 };
+
 /**
  * Searches accounts by the strings a user actually sees in the list — resolved
  * account name, resolved wallet name and displayed address — instead of the raw
@@ -412,15 +416,18 @@ function searchAccounts({
   resolvedWallets,
   addressPrefix,
 }: SearchAccountsParams): AnyAccount[] {
+  const namesByAccount = new Map(resolvedAccounts.map(a => [a.accountId, a.name]));
+  const namesByWallet = new Map(resolvedWallets.map(w => [w.id, w.name]));
+
   return performSearch<AnyAccount, SearchAccountsMeta>({
     records: accounts,
     query,
     getMeta: account => ({
-      displayName: resolvedAccounts.find(a => a.accountId === account.accountId)?.name ?? account.name,
-      walletName: resolvedWallets.find(w => w.id === account.walletId)?.name ?? '',
+      displayName: namesByAccount.get(account.accountId) ?? account.name,
+      walletName: namesByWallet.get(account.walletId) ?? '',
       displayAddress: toAddress(account.accountId, { prefix: addressPrefix }),
     }),
-    weights: { displayName: 1, walletName: 0.75, displayAddress: 0.5 },
+    weights: ACCOUNT_SEARCH_WEIGHTS,
   });
 }
 
