@@ -107,9 +107,12 @@ async function fetchDrafts(baseUrl: string): Promise<BackendDraft[]> {
 
   const allDrafts = [firstPage.data, ...remainingResults.map(result => result.data)].flat();
 
-  // Offset paging isn't atomic and the backend's `createdAt DESC` has no
-  // tiebreaker, so a concurrent insert can return the same draft on two pages.
-  // Map keeps the later page's copy, which was read later.
+  // Offset paging isn't atomic: `createdAt DESC` has no tiebreaker and pages go
+  // out in parallel, so a concurrent insert can shift a row across a boundary —
+  // duplicating it onto two pages, or moving it into a page already read. The
+  // `total` from page 1 goes stale the same way, dropping the tail. Dedup by id
+  // covers the duplicates; misses heal on the next 30s poll. Real fix is a
+  // stable backend sort (`createdAt DESC, id DESC`) plus paging off a cursor.
   return [...new Map(allDrafts.map(draft => [draft.id, draft])).values()];
 }
 
