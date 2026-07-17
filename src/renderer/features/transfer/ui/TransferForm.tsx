@@ -23,7 +23,14 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, CaptionText, FootnoteText, Icon, IconButton, InputHint, Switch } from '@/shared/ui';
-import { AccountSelect, Address, Identicon, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
+import {
+  AccountSelect,
+  Address,
+  Identicon,
+  TransactionValidationError,
+  UnknownRecipientAckBox,
+  WalletIcon,
+} from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
 import { accountService, useAccountName, useAccountsNames, useWalletName } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
@@ -32,6 +39,7 @@ import { contactModel } from '@/entities/contact';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
+import { ReconnectAddressBookButton } from '@/features/contacts';
 import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { SigningPathSection, graphModel } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
@@ -106,6 +114,7 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
             <Destination />
             <Amount />
           </form>
+          {!isDraftMode && <UnknownRecipientSection />}
           {!isDraftMode && (
             <div className="flex flex-col gap-y-6">
               <FeeSection />
@@ -128,6 +137,21 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
         />
       )}
     </div>
+  );
+});
+
+const UnknownRecipientSection = memo(() => {
+  const warning = useUnit(formModel.$recipientWarning);
+  const isAcknowledged = useUnit(formModel.$isRiskAcknowledged);
+
+  return (
+    <UnknownRecipientAckBox
+      warning={warning}
+      context="transfer"
+      checked={isAcknowledged}
+      action={<ReconnectAddressBookButton />}
+      onToggle={formModel.events.riskAcknowledgedToggled}
+    />
   );
 });
 
