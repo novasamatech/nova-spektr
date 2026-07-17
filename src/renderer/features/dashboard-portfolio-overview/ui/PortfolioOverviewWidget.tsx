@@ -1,10 +1,10 @@
 import { default as BigNumber } from 'bignumber.js';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { BodyText, FootnoteText, SmallTitleText, TitleText } from '@/shared/ui';
+import { BodyText, FootnoteText, HelpText, Loader, SmallTitleText, TitleText } from '@/shared/ui';
 import { ALLOCATION_COLORS } from '@/shared/ui/chart-constants';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { useBalanceAllocation } from '../hooks/useBalanceAllocation';
@@ -27,9 +27,11 @@ type EntryLike = { accountId: string; name: string; address: string };
  * Rendered inside the Portfolio Overview card, just below the balance-type
  * distribution. The vesting-claim feature injects its callout here.
  *
- * Propless by design: vesting is shown for every non-hidden account, which the
- * injected block reads for itself — this card's account selection is none of
- * its business.
+ * The slot stays propless: vesting follows the card's account filter, but that
+ * selection is pushed to the vesting-portfolio aggregate via
+ * `accountsScopeChanged` (wired in this feature's `index.ts`) rather than
+ * threaded through the slot, so the injected block reads the scoped result for
+ * itself.
  */
 export const portfolioVestingSlot = createSlot({ name: 'portfolioVesting' });
 
@@ -44,6 +46,10 @@ const toggleButtonClass = 'cursor-pointer rounded px-4 py-1.5 text-footnote font
 const activeToggleClass = 'bg-white text-text-primary shadow-sm';
 const inactiveToggleClass = 'text-text-tertiary hover:text-text-secondary';
 
+// How long the skeleton is held for an account set that has produced nothing yet
+// before the card commits to its empty state — see the `isEmpty` branch below.
+const EMPTY_SYNC_GRACE_MS = 5000;
+
 export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const { holdings, totalFiat, fiatFlag, currency } = useHoldings(accountIds);
@@ -54,6 +60,21 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const [balanceTypeFilter, setBalanceTypeFilter] = useState<BalanceType | null>(null);
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
   const [selectedChainId, setSelectedChainId] = useState<ChainId | null>(null);
+
+  // Balances stream in shortly after prices resolve, and a chain that flaps
+  // between connecting/error keeps `isSyncing` true for the life of the app —
+  // so gating the empty state on "sync finished" alone would either flash a
+  // premature "no tokens" or never show it. Hold the skeleton for a short grace
+  // per account set instead, then commit to the empty state (still flagged as
+  // syncing while any chain keeps reporting).
+  const accountKey = accountIds.join(',');
+  const [emptyGraceElapsed, setEmptyGraceElapsed] = useState(false);
+  useEffect(() => {
+    setEmptyGraceElapsed(false);
+    const id = setTimeout(() => setEmptyGraceElapsed(true), EMPTY_SYNC_GRACE_MS);
+
+    return () => clearTimeout(id);
+  }, [accountKey]);
 
   const selectedHolding = holdings.find((h) => h.priceId === selectedPriceId) ?? null;
   const selectedChainHolding = chainHoldings.find((h) => h.chainId === selectedChainId) ?? null;
@@ -142,6 +163,50 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
     return (
       <DashboardWidget>
         <PortfolioOverviewSkeleton />
+      </DashboardWidget>
+    );
+  }
+
+  // Prices resolved, but the selected accounts hold nothing priced and there is
+  // no vesting to surface either — a real, empty answer (see `useHoldings` /
+  // `useBalanceAllocation`). Distinct from a balance-type filter that scopes to
+  // zero, which reads off the raw `holdings`, not the filtered rows.
+  const isEmpty = holdings.length === 0 && !allocation;
+  if (isEmpty) {
+    // Not confident yet: still syncing and inside the grace window. Keep the
+    // skeleton rather than flash a "no tokens" we would take back once balances
+    // land.
+    if (isSyncing && !emptyGraceElapsed) {
+      return (
+        <DashboardWidget>
+          <PortfolioOverviewSkeleton />
+        </DashboardWidget>
+      );
+    }
+
+    return (
+      <DashboardWidget>
+        <FootnoteText className="text-text-tertiary">{t('dashboard.portfolioOverview.title')}</FootnoteText>
+        <TitleText className="mt-1">
+          <Price amount={totalFiat} currency={currency} />
+        </TitleText>
+
+        <Slot id={portfolioVestingSlot} />
+
+        <div className="mt-4 flex flex-col items-center gap-y-1 border-t border-divider py-8">
+          <SmallTitleText className="text-text-tertiary">
+            {t('dashboard.portfolioOverview.noTokens.title')}
+          </SmallTitleText>
+          <BodyText className="text-center text-text-tertiary">
+            {t('dashboard.portfolioOverview.noTokens.description')}
+          </BodyText>
+          {isSyncing && (
+            <span className="mt-2 flex items-center gap-1.5">
+              <Loader size={12} color="primary" />
+              <HelpText className="text-text-tertiary">{t('dashboard.portfolioOverview.syncing')}</HelpText>
+            </span>
+          )}
+        </div>
       </DashboardWidget>
     );
   }

@@ -4,6 +4,7 @@ import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { accountService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { vestingPortfolioModel } from '@/aggregates/vesting-portfolio';
 import { balanceSubModel } from '@/features/assets-balances';
 import { dashboardWidgetsSlot } from '@/pages/Dashboard';
 import { dashboardModel } from '@/pages/Dashboard/model/dashboard-model';
@@ -22,6 +23,13 @@ sample({
   clock: dashboardModel.$selectedAccounts,
   filter: (accounts) => accounts.length > 0,
   target: balanceSubModel.fetchAccounts,
+});
+
+// Scope vesting to the card's account filter: the callout follows the selected
+// accounts rather than every non-hidden account in the wallet.
+sample({
+  clock: dashboardModel.$selectedAccounts,
+  target: vestingPortfolioModel.accountsScopeChanged,
 });
 
 sample({
