@@ -49,16 +49,10 @@ export const VestingCallout = () => {
     );
   }
 
-  // Every chain reported, and none of them holds vesting for these accounts.
+  // Every chain reported, and none of them holds vesting for these accounts —
+  // render nothing rather than a muted "no vesting" row.
   if (status === 'empty') {
-    return (
-      <div className="mt-3 flex w-full items-center gap-x-3 rounded-lg border border-divider px-3 py-2.5">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-block-background-hover">
-          <Icon name="clock" size={16} className="text-text-tertiary" />
-        </span>
-        <FootnoteText className="text-text-tertiary">{t('vesting.callout.empty')}</FootnoteText>
-      </div>
-    );
+    return null;
   }
 
   const unlockDate = summary.lastUnlockDate ? formatUnlockDate(summary.lastUnlockDate, now) : null;

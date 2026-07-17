@@ -1,6 +1,6 @@
 # Vesting claim
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-13
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-17
 
 ## Overview
 
@@ -19,8 +19,9 @@ it.
 
 ## Who can use it / when it applies
 
-- Covers **every non-hidden account**, not the dashboard's selected subset — vesting belongs to the wallet, not to the
-  card's account filter. The callout therefore takes no account list from the page it sits in.
+- Follows the dashboard's **account filter** — the callout shows vesting for the accounts currently selected in the card,
+  not the whole wallet. The account set is fed to the [`vesting-portfolio`](../../aggregates/vesting-portfolio/README.md)
+  aggregate via `accountsScopeChanged`; the callout itself stays propless and reads the scoped result.
 - A schedule counts when it sits on a **vesting-capable chain** — detected at runtime by the presence of
   `api.query.vesting.vesting` and `api.tx.vesting.vest` (this excludes `orml_vesting` chains, which use a different call
   and are out of scope).
@@ -66,15 +67,17 @@ block:
   "12m") and ticks against the wall clock. While the block time is unknown the modal falls back to the plain "Vesting" /
   "In cliff" texts.
 
-The callout's own three states — skeleton, "no vesting", and content — are governed by the
+The callout's own states — skeleton, empty (nothing), and content — are governed by the
 [`vesting-portfolio`](../../aggregates/vesting-portfolio/README.md) readiness rule: the skeleton holds until every chain
-that could hold vesting has reported, so "no vesting" is never shown as a guess and then taken back. Content appears as
-soon as the first schedule lands, with a small spinner while the remaining chains report.
+that could hold vesting has reported, so the empty state is never shown as a guess and then taken back. Once every chain
+has reported and none holds a schedule for the selected accounts, the callout **renders nothing** — no muted "no
+vesting" row. Content appears as soon as the first schedule lands, with a small spinner while the remaining chains
+report.
 
 | State                     | When it appears                                                            | What the user sees                                                                                                                                                                                           |
 | ------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Skeleton                  | A chain that could hold vesting has yet to report                          | A placeholder row where the callout will be                                                                                                                                                                  |
-| No vesting                | Every chain reported; none holds a schedule for these accounts             | A muted "no active vesting" row                                                                                                                                                                              |
+| No vesting                | Every chain reported; none holds a schedule for the selected accounts      | Nothing — the callout renders no row                                                                                                                                                                         |
 | Vested distribution slice | Any account has a vesting lock                                             | An indigo "Vested" bar in "Distribution by balance type"                                                                                                                                                     |
 | Callout                   | ≥1 active schedule                                                         | "N active vesting schedules · fully unlocks by DATE", plus a "ready" pill when claimable, and a spinner while chains still report                                                                            |
 | Schedule modal            | Callout clicked                                                            | Totals (vesting / schedules / ready-to-unlock), the average unlock rate per day, one row per account                                                                                                          |

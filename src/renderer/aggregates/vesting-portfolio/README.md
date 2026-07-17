@@ -1,23 +1,23 @@
 # Vesting portfolio
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-07-13
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-07-17
 
 ## Overview
 
-Answers one question for the whole app: **what is vesting right now, across every account the user can see?** It gathers
-the live vesting schedules of every non-hidden account on every vesting-capable chain, turns them into per-account views
-and a wallet-wide summary, and — the part that carries most of the weight — decides **whether the answer can be trusted
-yet**.
+Answers one question for the whole app: **what is vesting right now, across a given set of accounts?** It gathers the
+live vesting schedules of those accounts on every vesting-capable chain, turns them into per-account views and a
+wallet-wide summary, and — the part that carries most of the weight — decides **whether the answer can be trusted yet**.
 
 The vesting block on the dashboard ([`vesting-claim`](../../features/vesting-claim/README.md)) is its only consumer
-today. That block is self-contained: it takes no account list from the page it renders in, because vesting is not a
-property of the dashboard's account selection but of the wallet.
+today. The account set is fed in from outside via `accountsScopeChanged`: the dashboard scopes vesting to its account
+filter, so the block follows the card's selection. When no scope is set the aggregate defaults to every non-hidden
+wallet account, so it stays usable standalone.
 
 ## Who / when
 
-- Covers **all non-hidden accounts**, not the dashboard's selected subset. A hidden wallet's accounts are excluded
-  entirely — a claim from one could not be confirmed, since the confirmation resolves the initiator's wallet out of the
-  visible list.
+- Covers the **scoped account set** — the dashboard's selected accounts. The subset is always ⊆ visible accounts, so a
+  hidden wallet's accounts are excluded either way — a claim from one could not be confirmed, since the confirmation
+  resolves the initiator's wallet out of the visible list.
 - A chain participates only if its **runtime** exposes `pallet_vesting` (`query.vesting.vesting` + `tx.vesting.vest`) and
   at least one account's address scheme matches it. This is discovered from the connected chain's metadata; there is no
   static list of vesting chains.
@@ -65,14 +65,14 @@ flowchart TD
     Q1 -- "yes" --> READY["ready — content, plus a spinner while chains keep reporting"]
     Q1 -- "no" --> Q2{"Every chain resolved,<br/>wallets loaded?"}
     Q2 -- "no" --> LOAD["loading — skeleton"]
-    Q2 -- "yes" --> EMPTY["empty — 'no vesting'"]
+    Q2 -- "yes" --> EMPTY["empty — nothing shown"]
 ```
 
 | State     | When it appears                                                | What the consumer shows                        |
 | --------- | -------------------------------------------------------------- | ---------------------------------------------- |
 | `loading` | Any chain may still surface a schedule, or wallets are loading  | Skeleton                                       |
 | `ready`   | At least one **row** can be shown — not awaited any further      | Content, with `loadingMore` while chains report |
-| `empty`   | Every chain resolved and none holds vesting                     | "No vesting" row                               |
+| `empty`   | Every chain resolved and none holds vesting                     | Nothing — the callout renders no row            |
 
 Two rules keep the states honest over time:
 

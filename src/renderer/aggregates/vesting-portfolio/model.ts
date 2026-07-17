@@ -53,12 +53,26 @@ const isSameAccountSet = (next: AnyAccount[], prev: AnyAccount[]) =>
     );
   });
 
+/**
+ * The account set vesting is read for.
+ *
+ * `null` means "every visible wallet account" — the aggregate's standalone
+ * default. A consumer that scopes vesting to a subset (the dashboard's account
+ * filter) feeds that subset here, so the block follows the card's selection
+ * rather than the whole wallet. The subset is always ⊆ visible accounts, so the
+ * hidden-wallet exclusion is preserved either way.
+ */
+const accountsScopeChanged = createEvent<AnyAccount[] | null>();
+const $accountsScope = createStore<AnyAccount[] | null>(null).on(accountsScopeChanged, (_, accounts) => accounts);
+
+const $accountsSource = combine(walletModel.$availableAccounts, $accountsScope, (all, scope) => scope ?? all);
+
 // `updateFilter` rather than a comparison inside `map`: a skipped update keeps
 // the previous value *and its reference*, which is what every derived store
 // below reads to decide whether it has anything to recompute.
 const $availableAccounts = createStore<AnyAccount[]>([], {
   updateFilter: (next, prev) => !isSameAccountSet(next, prev),
-}).on(walletModel.$availableAccounts, (_, accounts) => accounts);
+}).on($accountsSource, (_, accounts) => accounts);
 
 /** Every key of every visible wallet. Stable for as long as the account set is. */
 const $accountIds = $availableAccounts.map(accounts => [...new Set(accounts.map(account => account.accountId))].sort());
@@ -333,4 +347,5 @@ export const vestingPortfolioModel = {
 
   activated,
   deactivated,
+  accountsScopeChanged,
 };

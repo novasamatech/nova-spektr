@@ -1,6 +1,6 @@
 # Portfolio Overview
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-17
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-18
 
 ## Overview
 
@@ -39,6 +39,7 @@ mode, so its position is a default rather than a guarantee.
 | Fiat off             | Global "show fiat" toggle is off       | Title + "fiat disabled" hint + the injected vesting block only; no total, bars or holdings    |
 | No selection         | No accounts selected                   | Title + "Select accounts above to view your balance"                                          |
 | Loading              | Prices/currency not resolved yet       | Skeleton mirroring the final layout                                                           |
+| No tokens            | Prices resolved, selection holds nothing priced and no vesting | Title + `$0` + vesting slot + a centered "No tokens to show" message  |
 | Overview             | Data ready                             | Fiat total, Assets/Networks toggle, distribution bar + chips, vesting slot, donut + list      |
 | Balance-type filter  | A bar segment or chip clicked          | Donut and list re-scope to that balance type; scope label + color follow; "Show all" clears   |
 | Donut hover          | Pointer over a donut segment           | Center swaps to the hovered slice's value, name and share; a single holding renders as a ring |
@@ -47,6 +48,14 @@ mode, so its position is a default rather than a guarantee.
 
 The card has **no error state**: missing prices degrade into the loading / suppressed states above. The injected vesting
 callout brings its own error boundary precisely because this slot offers none.
+
+The **No tokens** state is a real "the selected accounts hold nothing" answer, told only once we are confident of it —
+not a lie flashed while balances are still arriving. Balances stream in shortly after prices resolve, and a chain that
+keeps flapping between connecting and error leaves the global "syncing" flag raised for the life of the app, so neither
+"prices ready" nor "syncing finished" is a safe cue on its own. The card therefore holds the skeleton for a short grace
+per selection, then commits to the empty message — and keeps a small "Syncing balances…" spinner on it while any chain
+is still connecting, so a late-arriving balance reads as expected rather than as the message having been wrong. The
+vesting slot stays mounted in this state, since token-denominated vesting can exist with a zero fiat total.
 
 ### Distribution by balance type
 

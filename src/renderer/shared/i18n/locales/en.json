@@ -577,6 +577,11 @@
       "byChain": "Networks",
       "balanceTypeDistribution": "Asset allocation",
       "fiatDisabledHint": "Fiat values are turned off - enable a currency in Settings to see the portfolio breakdown",
+      "syncing": "Syncing balances...",
+      "noTokens": {
+        "title": "No tokens to show",
+        "description": "The selected accounts don't hold any tokens on connected networks"
+      },
       "showAll": "Show all",
       "allAssets": "All assets",
       "allNetworks": "All networks",
@@ -3696,7 +3701,6 @@
       "unlockingRate": "Unlocking ≈ {rate}/day",
       "unlockingGradually": "Unlocking gradually",
       "subtitleWithDate": "{prefix} · fully unlocks by {date}",
-      "empty": "No active vesting schedules",
       "ready": "ready",
       "schedule": "Schedule"
     },
