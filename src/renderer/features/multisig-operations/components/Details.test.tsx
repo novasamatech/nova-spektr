@@ -11,6 +11,7 @@ import { Details } from './Details';
 const stores = vi.hoisted(() => ({
   walletsStore: Symbol('wallets'),
   chainsStore: Symbol('chains'),
+  resolveWarningStore: Symbol('resolveWarning'),
 }));
 
 vi.mock('effector-react', () => ({
@@ -18,8 +19,13 @@ vi.mock('effector-react', () => ({
   useUnit: (store: symbol) => {
     if (store === stores.walletsStore) return testWallets;
     if (store === stores.chainsStore) return {};
+    if (store === stores.resolveWarningStore) return () => 'none';
     return undefined;
   },
+}));
+
+vi.mock('@/aggregates/recipient-verification', () => ({
+  recipientVerificationModel: { $resolveWarning: stores.resolveWarningStore },
 }));
 
 vi.mock('@/shared/i18n', () => ({
@@ -47,6 +53,7 @@ vi.mock('@/shared/ui', () => ({
 vi.mock('@/shared/ui-entities', () => ({
   AccountExplorers: () => null,
   AssetBalance: () => null,
+  UnknownRecipientBadge: () => null,
   WalletIcon: () => null,
 }));
 
