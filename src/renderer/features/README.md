@@ -40,7 +40,7 @@ notes.
 
 - [`multisig-operations`](./multisig-operations/README.md)
 - `multisig-wallet`
-- `multisig-wallet-create`
+- [`multisig-wallet-create`](./multisig-wallet-create/README.md)
 - `flexible-change-signatories`
 - [`flexible-operation-details`](./flexible-operation-details/README.md)
 - `multisig-candidates` (aggregate)
