@@ -108,6 +108,43 @@ describe('TransactionValidationError', () => {
     expect(screen.queryByText('general.transactionErrors.balance.introAccount')).not.toBeInTheDocument();
   });
 
+  it('keeps wallet-level wording for WalletConnect/Nova substrate+EVM accounts', () => {
+    const substrateAccountId = `0x${'11'.repeat(32)}` as AccountId;
+    const evmAccountId = `0x${'22'.repeat(20)}` as AccountId;
+    const substrate = {
+      ...makeKey('sub', substrateAccountId),
+      name: 'Nova Wallet',
+      signingType: SigningType.WALLET_CONNECT,
+    };
+    const evm = {
+      ...makeKey('evm', evmAccountId, '0x11'),
+      name: 'Nova Wallet',
+      cryptoType: CryptoType.ETHEREUM,
+      signingType: SigningType.WALLET_CONNECT,
+    };
+    const wallet = {
+      id: 1,
+      name: 'Nova Wallet',
+      type: WalletType.NOVA_WALLET,
+      accounts: [substrate, evm],
+    } as Wallet;
+
+    render(<TransactionValidationError errors={[makeError(substrate)]} wallets={[wallet]} />);
+
+    expect(screen.getByText('general.transactionErrors.balance.intro')).toBeInTheDocument();
+    expect(screen.queryByText('general.transactionErrors.balance.introAccount')).not.toBeInTheDocument();
+  });
+
+  it('keeps wallet-level wording when account name matches the wallet name', () => {
+    const namedA = { ...keyA, name: 'PTL Keys' };
+    const namedB = { ...keyB, name: 'PTL Keys' };
+
+    render(<TransactionValidationError errors={[makeError(namedB)]} wallets={[makeWallet([namedA, namedB])]} />);
+
+    expect(screen.getByText('general.transactionErrors.balance.intro')).toBeInTheDocument();
+    expect(screen.queryByText('general.transactionErrors.balance.introAccount')).not.toBeInTheDocument();
+  });
+
   it('falls back to the short address when the account has no resolved name', () => {
     mocks.useAccountsNames.mockReturnValueOnce([{ ...keyB, name: '' }]);
     const expectedShortAddress = toShortAddress(toAddress(keyB.accountId));

@@ -6,7 +6,15 @@ import { categorizeXcmError, getHumanReadableXcmError } from '@/shared/api/xcm/s
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Asset, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatAsset, groupBy, nonNullable, nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
+import {
+  formatAsset,
+  groupBy,
+  isEthereumAccountId,
+  nonNullable,
+  nullable,
+  toAddress,
+  toShortAddress,
+} from '@/shared/lib/utils';
 import { Alert, FootnoteText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type AnyAccount, type BalanceUpdateResult } from '@/domains/network';
@@ -238,10 +246,12 @@ const TransactionBalanceError = ({
   if (nullable(wallet)) return null;
 
   // wallet.accounts is deprecated but is the only account data this
-  // presentational component receives; key-set wallets hold several keys, and
-  // naming only the wallet would hide which key lacks funds
-  const isKeySet = new Set((wallet.accounts ?? []).map(a => a.accountId)).size > 1;
+  const failingIsEthereum = isEthereumAccountId(account.accountId);
+  const distinctKeys = new Set(
+    (wallet.accounts ?? []).filter(a => isEthereumAccountId(a.accountId) === failingIsEthereum).map(a => a.accountId),
+  ).size;
   const accountName = resolvedAccount?.name || toShortAddress(toAddress(account.accountId));
+  const isKeySet = distinctKeys > 1 && accountName !== walletName;
 
   const assetGroups = groupBy(errors, e => e.asset.symbol);
   const groupedByActionErrors = groupBy(errors, e => `${e.action}_${e.asset.symbol}`);

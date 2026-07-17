@@ -34,8 +34,8 @@ Creates a new multisig wallet from the "Add wallet" menu. Two variants are offer
 
 | State | When it appears | What the user sees |
 | ----- | --------------- | ------------------ |
-| Insufficient funds (key-set wallet) | The selected key cannot cover fee + deposits and its wallet holds more than one distinct key | "Account &lt;key&gt; of wallet &lt;wallet&gt; has insufficient funds… top up the balance of this account by N" — the named key follows the current selection |
-| Insufficient funds (single-key wallet) | Same, but the wallet has one account | "Wallet &lt;wallet&gt; has insufficient funds… top up the balance of this wallet by N" |
+| Insufficient funds (key-set wallet) | The selected key cannot cover fee + deposits and its wallet holds several distinct keys in the same crypto family (substrate vs EVM) whose names differ from the wallet — WalletConnect/Nova dual H160+substrate accounts are not key-sets | "Account &lt;key&gt; of wallet &lt;wallet&gt; has insufficient funds… top up the balance of this account by N" — the named key follows the current selection |
+| Insufficient funds (single-key wallet) | Same, but the wallet has one logical key (including WC/Nova with a separate EVM account) | "Wallet &lt;wallet&gt; has insufficient funds… top up the balance of this wallet by N" |
 | Continue disabled | Any validation error, empty/duplicate/invalid signatories, or no threshold selected | Primary action stays inactive |
 | Hidden multisig conflict | The same multisig already exists as a hidden wallet | Prompt to restore the existing wallet instead of creating a duplicate |
 
