@@ -1,6 +1,6 @@
 # Transfer
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-15
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-17
 
 ## Overview
 
@@ -79,6 +79,23 @@ The sender-first rule matches teleport expectations: funds move between the same
 The form can be saved as a draft (multisig flows): the user picks the signing path explicitly, fills the form and stores
 the operation for later confirmation instead of signing immediately.
 
+### Unknown recipient warnings
+
+Gated by [`recipient-verification`](../../aggregates/recipient-verification/README.md), which is itself gated on the
+external address book connection — nothing here shows for a user who has never connected it.
+
+- **Form.** Once a recipient resolves and carries a warning (`unknown` — not in the address book / not the user's own
+  account, or `unverifiable` — the address book can't currently vouch for anyone), an amber acknowledgement box appears
+  between the Amount block and the fee section, with a checkbox ("I have verified this address…"). **Continue** is
+  disabled until it is ticked. The checkbox resets whenever the recipient changes or a new flow starts, so an
+  acknowledgement never silently carries over to a different address; it survives the warning's own copy changing (e.g.
+  a mid-flow reconnect turning `unverifiable` into `unknown`).
+- **Draft mode exemption.** The acknowledgement gate does not apply, and the box is not shown, while saving as a draft —
+  nothing is signed yet, so the warning fires later when the draft is actually signed.
+- **Confirmation step.** A one-line amber note appears under the Recipient row restating that the address is not in the
+  address book. It is informational only — the gate already ran on the form, so there is nothing to acknowledge again
+  here.
+
 ## Lifecycle
 
 1. User opens the form with a chain + asset context (asset can be switched inside the form).
@@ -94,3 +111,5 @@ the operation for later confirmation instead of signing immediately.
 - `send-to-contact` — launches this flow with a pre-filled, read-only recipient.
 - `assets-balances` — balance data the amount/validation logic reads.
 - Name resolution (`widgets/NameResolver`) — recipient card and suggestion names follow the app-wide resolution chain.
+- [`recipient-verification`](../../aggregates/recipient-verification/README.md) — decides whether the recipient is
+  "known" and drives the unknown-recipient warnings above.
