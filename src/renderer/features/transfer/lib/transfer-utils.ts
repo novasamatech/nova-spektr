@@ -1,7 +1,6 @@
-import { type Chain } from '@/shared/core';
+import { type Chain, SigningType } from '@/shared/core';
 import { includesMultiple, nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount, accountService } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
 
 import { Step } from './types';
 
@@ -41,20 +40,33 @@ function isBasketStep(step: Step): boolean {
 }
 
 /**
+ * Signing types whose accounts represent keys the user actually holds. Keyless
+ * constructs (watch-only, multisig, proxied / pure proxy, signatory
+ * placeholders) are stamped WATCH_ONLY or MULTISIG at creation.
+ */
+const KEYED_SIGNING_TYPES = [
+  SigningType.PARITY_SIGNER,
+  SigningType.POLKADOT_VAULT,
+  SigningType.EXTENSION,
+  SigningType.WALLET_CONNECT,
+];
+
+/**
  * Checks that an account can act as a transfer recipient on the chain. Keyed
  * accounts control their address on any scheme-compatible chain even when the
  * key is scoped to another chain, so requiring signing availability would hide
- * key-set vault derived keys that are perfectly valid recipients. Keyless
- * on-chain constructs (multisig, proxied / pure proxy) exist only where their
- * pallets and relationships do — those keep the strict availability rule,
- * otherwise funds sent to them on a foreign chain are lost.
+ * key-set vault derived keys that are perfectly valid recipients. Accounts
+ * whose key the user doesn't hold (watch-only, multisig, proxied / pure proxy,
+ * signatory placeholders) keep the strict availability rule of their own wallet
+ * feature — the transfer feature can't assume such an address is controlled on
+ * a foreign chain, and funds sent there may be lost.
  */
 function canReceiveOnChain(account: AnyAccount, chain: Chain): boolean {
-  if (accountUtils.isAnyMultisigAccount(account) || accountUtils.isProxiedAccount(account)) {
-    return accountService.isAccountAvailableOnChain(account, chain);
+  if (KEYED_SIGNING_TYPES.includes(account.signingType)) {
+    return accountService.isCryptoMatch(account, chain);
   }
 
-  return accountService.isCryptoMatch(account, chain);
+  return accountService.isAccountAvailableOnChain(account, chain);
 }
 
 type FilterRecipientAccountsParams<T extends AnyAccount> = {

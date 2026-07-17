@@ -917,10 +917,10 @@ const $destinationAccounts = combine(
 );
 
 // "Myself" targets the sender's own address on the destination chain when the
-// sender can receive there (keyless multisig/proxied senders must pass the
-// availability rule — see transferUtils.canReceiveOnChain). Otherwise it falls
-// back to the wallet's signing-available destination-chain accounts: autofill
-// for a single one, selection modal for several.
+// sender can receive there (keyless senders — multisig, proxied, watch-only —
+// must pass the availability rule, see transferUtils.canReceiveOnChain).
+// Otherwise it falls back to the wallet's signing-available destination-chain
+// accounts: autofill for a single one, selection modal for several.
 const $myselfDestination = combine(
   {
     chain: $destinationChain,
