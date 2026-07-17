@@ -19,14 +19,20 @@ import {
   buildEditControllerMarkerTx,
   parseEditControllerMarker,
 } from '@/shared/transactions';
-import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { type MultisigCandidate, multisigCandidates } from '@/aggregates/multisig-candidates';
 import { changeSignatoriesModel } from '@/features/flexible-change-signatories/model/change-signatories-model';
 import { pathModel } from '@/features/signing-path';
 import { multisigWallet, polkadotChain, polkadotChainId, vaultWallet } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
+import {
+  type FeatureTestEnvironment,
+  FeatureTestBuilder,
+  allureMetadata,
+  resetAccountHandlers,
+  seedAccountHandlers,
+} from '../../utils/index';
 
 /**
  * Edit Flexible Multisig Controller — Effector model integration tests.
@@ -121,20 +127,6 @@ const flexibleSignatoryAccount: AnyAccount = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const setupAccountHandlers = () => {
-  // Mirrors the multisig-confirmation integration test pattern. The model's
-  // signatory derivation chain checks `isAccountAvailableOnChain`; register a
-  // permissive handler so chain-typed accounts on polkadot pass through.
-  accountService.accountAvailabilityOnChainAnyOf.registerHandler({
-    body: ({ account, chain }) => (accountService.isChainAccount(account) ? account.chainId === chain.chainId : true),
-    available: () => true,
-  });
-  accountService.accountActionPermissionAnyOf.registerHandler({
-    body: ({ account }) => account.signingType !== SigningType.WATCH_ONLY,
-    available: () => true,
-  });
-};
-
 const buildEnv = () =>
   new FeatureTestBuilder({ autoPopulate: false })
     .withChain(polkadotChain)
@@ -149,15 +141,14 @@ describe('Edit Flexible Multisig Controller — model', () => {
   let env: FeatureTestEnvironment;
 
   beforeEach(() => {
-    setupAccountHandlers();
+    seedAccountHandlers();
   });
 
   afterEach(async () => {
     if (env) {
       await env.cleanup();
     }
-    accountService.accountAvailabilityOnChainAnyOf.resetHandlers();
-    accountService.accountActionPermissionAnyOf.resetHandlers();
+    resetAccountHandlers();
   });
 
   describe('Step transitions', () => {

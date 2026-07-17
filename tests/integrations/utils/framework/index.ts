@@ -12,4 +12,5 @@
 export { type FeatureTestBuilderOptions, FeatureTestBuilder } from './FeatureTestBuilder';
 export { FeatureTestEnvironment } from './FeatureTestEnvironment';
 export { TestStorageBuilder } from './TestStorageBuilder';
+export { resetAccountHandlers, seedAccountHandlers } from './seedAccountHandlers';
 export * from './scenarios';

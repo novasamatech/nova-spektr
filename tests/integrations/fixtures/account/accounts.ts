@@ -1,7 +1,7 @@
-import { CryptoType, SigningType } from '@/shared/core';
-import { createAccountId } from '@/shared/mocks';
+import { AccountType, CryptoType, SigningType } from '@/shared/core';
+import { createAccountId, createVaultChainAccount } from '@/shared/mocks';
 import { type AnyAccount } from '@/domains/network';
-import { polkadotChainId } from '../chain';
+import { assetHubChainId, polkadotChainId } from '../chain';
 import { multisigWallet, proxiedWallet, vaultWallet, watchOnlyWallet } from '../wallet';
 
 /**
@@ -33,6 +33,28 @@ export const recipientAccount: AnyAccount = {
 };
 
 /**
+ * Key-set vault derived key for Asset Hub. Key-set vault wallets hold only
+ * chain-scoped derived keys — there is no universal/base account.
+ */
+export const vaultAssetHubKeyAccount: AnyAccount = createVaultChainAccount('vault-ah-key', {
+  walletId: vaultWallet.id,
+  chainId: assetHubChainId,
+  derivationPath: '//polkadot//ah',
+  name: 'Asset Hub Key',
+});
+
+/**
+ * Key-set vault derived key for Polkadot relay (same wallet as
+ * vaultAssetHubKeyAccount)
+ */
+export const vaultPolkadotKeyAccount: AnyAccount = createVaultChainAccount('vault-dot-key', {
+  walletId: vaultWallet.id,
+  chainId: polkadotChainId,
+  derivationPath: '//polkadot',
+  name: 'Polkadot Key',
+});
+
+/**
  * Multisig account (2 of 3)
  */
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -42,6 +64,7 @@ export const multisigAccount: AnyAccount = {
   walletId: multisigWallet.id,
   name: 'Multisig Account',
   type: 'universal',
+  accountType: AccountType.MULTISIG,
   cryptoType: CryptoType.SR25519,
   signingType: SigningType.MULTISIG,
   threshold: 2,

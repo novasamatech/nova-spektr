@@ -1,8 +1,8 @@
 import { allSettled } from 'effector';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { type MultisigAccount, ConnectionStatus, SigningType, TransactionType } from '@/shared/core';
-import { type MultisigOperation, accountService } from '@/domains/network';
+import { type MultisigAccount, ConnectionStatus, TransactionType } from '@/shared/core';
+import { type MultisigOperation } from '@/domains/network';
 import { approveModel } from '@/features/multisig-operations/model/approve-model';
 import { rejectModel } from '@/features/multisig-operations/model/reject-model';
 import {
@@ -14,18 +14,13 @@ import {
   signatoryAccount,
   vaultWallet,
 } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
-
-const setupAccountHandlers = () => {
-  accountService.accountAvailabilityOnChainAnyOf.registerHandler({
-    body: ({ account, chain }) => (accountService.isChainAccount(account) ? account.chainId === chain.chainId : true),
-    available: () => true,
-  });
-  accountService.accountActionPermissionAnyOf.registerHandler({
-    body: ({ account }) => account.signingType !== SigningType.WATCH_ONLY,
-    available: () => true,
-  });
-};
+import {
+  type FeatureTestEnvironment,
+  FeatureTestBuilder,
+  allureMetadata,
+  resetAccountHandlers,
+  seedAccountHandlers,
+} from '../../utils/index';
 
 const transferOperation = {
   id: `${polkadotChainId}-0xabc123-${multisigAccount.accountId}-100-1`,
@@ -85,15 +80,14 @@ describe('Multisig Operation Confirmation — Data Assembly', () => {
   let env: FeatureTestEnvironment;
 
   beforeEach(() => {
-    setupAccountHandlers();
+    seedAccountHandlers();
   });
 
   afterEach(async () => {
     if (env) {
       await env.cleanup();
     }
-    accountService.accountAvailabilityOnChainAnyOf.resetHandlers();
-    accountService.accountActionPermissionAnyOf.resetHandlers();
+    resetAccountHandlers();
   });
 
   describe('Approve flow — confirmation screen data', () => {

@@ -3,12 +3,11 @@ import { allSettled } from 'effector';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { storageService } from '@/shared/api/storage';
-import { ConnectionStatus, SigningType } from '@/shared/core';
+import { ConnectionStatus } from '@/shared/core';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type CoreMember, type Member, member } from '@/domains/collectives';
-import { accountService } from '@/domains/network';
 import { fellowshipMember } from '@/aggregates/fellowship-member';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -22,7 +21,13 @@ import {
   vaultWallet,
   watchOnlyWallet,
 } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
+import {
+  type FeatureTestEnvironment,
+  FeatureTestBuilder,
+  allureMetadata,
+  resetAccountHandlers,
+  seedAccountHandlers,
+} from '../../utils/index';
 
 /**
  * Integration tests for Fellowship Members aggregate.
@@ -50,21 +55,9 @@ describe('Fellowship Members - Integration', () => {
       });
       await env.cleanup();
     }
-    accountService.accountAvailabilityOnChainAnyOf.resetHandlers();
-    accountService.accountActionPermissionAnyOf.resetHandlers();
+    resetAccountHandlers();
     vi.restoreAllMocks();
   });
-
-  const setupAccountHandlers = () => {
-    accountService.accountAvailabilityOnChainAnyOf.registerHandler({
-      body: ({ account, chain }) => (accountService.isChainAccount(account) ? account.chainId === chain.chainId : true),
-      available: () => true,
-    });
-    accountService.accountActionPermissionAnyOf.registerHandler({
-      body: ({ account }) => account.signingType !== SigningType.WATCH_ONLY,
-      available: () => true,
-    });
-  };
 
   const setupResourceResponses = (items: (Member | CoreMember)[]) => {
     vi.spyOn(collectivePallet.storage, 'members').mockResolvedValue(
@@ -107,7 +100,7 @@ describe('Fellowship Members - Integration', () => {
       severity: 'critical',
     });
 
-    setupAccountHandlers();
+    seedAccountHandlers();
 
     env = await new FeatureTestBuilder()
       .withWallet(vaultWallet)
@@ -139,7 +132,7 @@ describe('Fellowship Members - Integration', () => {
       severity: 'critical',
     });
 
-    setupAccountHandlers();
+    seedAccountHandlers();
 
     // Mock storage read to return our test data
     vi.spyOn(storageService.wallets, 'readAll').mockResolvedValue([vaultWallet]);
@@ -177,7 +170,7 @@ describe('Fellowship Members - Integration', () => {
       story: 'Wallet Selection',
     });
 
-    setupAccountHandlers();
+    seedAccountHandlers();
 
     const sameAddressWatchOnly = {
       ...senderAccount,
@@ -235,7 +228,7 @@ describe('Fellowship Members - Integration', () => {
       story: 'Non-Member Handling',
     });
 
-    setupAccountHandlers();
+    seedAccountHandlers();
 
     // Mock storage read to return our test data
     vi.spyOn(storageService.wallets, 'readAll').mockResolvedValue([vaultWallet]);
@@ -284,7 +277,7 @@ describe('Fellowship Members - Integration', () => {
       story: 'CoreMember Properties',
     });
 
-    setupAccountHandlers();
+    seedAccountHandlers();
 
     env = await new FeatureTestBuilder()
       .withWallet(vaultWallet)
