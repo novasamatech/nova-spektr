@@ -39,7 +39,6 @@ import { contactModel } from '@/entities/contact';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
-import { ReconnectAddressBookButton } from '@/features/contacts';
 import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { SigningPathSection, graphModel } from '@/features/signing-path';
 import { walletSelectFeature } from '@/features/wallet-select';
@@ -149,7 +148,6 @@ const UnknownRecipientSection = memo(() => {
       warning={warning}
       context="transfer"
       checked={isAcknowledged}
-      action={<ReconnectAddressBookButton />}
       onToggle={formModel.events.riskAcknowledgedToggled}
     />
   );

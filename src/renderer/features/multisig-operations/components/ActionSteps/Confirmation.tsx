@@ -20,7 +20,6 @@ import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { SignButton, operationDetailsUtils } from '@/entities/operations';
 import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
-import { ReconnectAddressBookButton } from '@/features/contacts';
 import { CallDataConfirmSection } from '@/features/operations/OperationsConfirm/common/CallDataConfirmSection';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { Details } from '../Details';
@@ -130,7 +129,6 @@ export const Confirmation = ({
           warning={recipientWarning}
           context="multisigSign"
           checked={riskAcknowledged}
-          action={<ReconnectAddressBookButton />}
           onToggle={onRiskAcknowledgedChange}
         />
       )}

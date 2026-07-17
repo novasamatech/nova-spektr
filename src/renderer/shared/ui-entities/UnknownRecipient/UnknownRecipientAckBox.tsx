@@ -1,5 +1,3 @@
-import { type ReactNode } from 'react';
-
 import { useI18n } from '@/shared/i18n';
 import { type RecipientWarning } from '@/shared/lib/recipient-verification';
 import { FootnoteText, Icon } from '@/shared/ui';
@@ -14,14 +12,9 @@ type Props = {
   context: 'transfer' | 'multisigSign';
   checked: boolean;
   onToggle: (checked: boolean) => void;
-  /**
-   * Rendered under the checkbox in the unverifiable state (reconnect
-   * affordance).
-   */
-  action?: ReactNode;
 };
 
-export const UnknownRecipientAckBox = ({ warning, context, checked, onToggle, action }: Props) => {
+export const UnknownRecipientAckBox = ({ warning, context, checked, onToggle }: Props) => {
   const { t } = useI18n();
 
   if (warning === 'none') return null;
@@ -42,7 +35,6 @@ export const UnknownRecipientAckBox = ({ warning, context, checked, onToggle, ac
       <Checkbox checked={checked} onChange={checked => onToggle(checked)}>
         <FootnoteText>{t(`${copyRoot}.ackLabel`)}</FootnoteText>
       </Checkbox>
-      {isUnverifiable && action ? <div className="mt-3">{action}</div> : null}
     </div>
   );
 };
