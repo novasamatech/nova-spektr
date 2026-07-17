@@ -79,6 +79,10 @@ export const TEST_IDS = {
   TRANSFER: {
     MODAL: 'transfer-modal',
   },
+  DASHBOARD: {
+    HOLDING_ROW: 'dashboard-holding-row',
+    BALANCE_TYPE_CHIP: 'dashboard-balance-type-chip',
+  },
   PROXY_FORM: {
     ADDRESS_INPUT: 'proxy-address-input',
   },

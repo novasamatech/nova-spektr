@@ -8,6 +8,9 @@ import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
+import { type BalanceType, BALANCE_TYPES, makeByType, splitBalanceByType } from '../lib/balanceTypes';
+
+export type ChainHoldingByType = Record<BalanceType, { fiat: string; assetCount: number }>;
 
 export type ChainHolding = {
   chainId: ChainId;
@@ -15,6 +18,7 @@ export type ChainHolding = {
   chainIcon: string;
   assetCount: number;
   fiatValue: string;
+  byType: ChainHoldingByType;
 };
 
 export type ChainHoldingsData = {
@@ -23,6 +27,11 @@ export type ChainHoldingsData = {
   fiatFlag: boolean | null;
   currency: CurrencyItem | null;
 };
+
+type ByTypeAccumulator = Record<BalanceType, { fiat: BigNumber; assetIds: Set<number> }>;
+
+const makeByTypeAccumulator = (): ByTypeAccumulator =>
+  makeByType(() => ({ fiat: new BigNumber(0), assetIds: new Set<number>() }));
 
 export const useChainHoldings = (accountIds: string[]): ChainHoldingsData => {
   const balanceMap = useUnit(balanceModel.$balanceMap);
@@ -44,6 +53,7 @@ export const useChainHoldings = (accountIds: string[]): ChainHoldingsData => {
         chainIcon: string;
         assetIds: Set<number>;
         fiatValue: BigNumber;
+        byType: ByTypeAccumulator;
       }
     >();
 
@@ -63,18 +73,29 @@ export const useChainHoldings = (accountIds: string[]): ChainHoldingsData => {
       if (rawBN.isZero()) continue;
 
       const fiat = getRoundedValue(totalAmount(balance), priceItem.price, asset.precision);
+      const split = splitBalanceByType(balance);
 
-      const existing = groupMap.get(balance.chainId);
-      if (existing) {
-        existing.assetIds.add(asset.assetId);
-        existing.fiatValue = existing.fiatValue.plus(fiat);
+      let group = groupMap.get(balance.chainId);
+      if (group) {
+        group.assetIds.add(asset.assetId);
+        group.fiatValue = group.fiatValue.plus(fiat);
       } else {
-        groupMap.set(balance.chainId, {
+        group = {
           chainName: chain.name,
           chainIcon: chain.icon,
           assetIds: new Set([asset.assetId]),
           fiatValue: new BigNumber(fiat),
-        });
+          byType: makeByTypeAccumulator(),
+        };
+        groupMap.set(balance.chainId, group);
+      }
+
+      for (const type of BALANCE_TYPES) {
+        if (split[type].isZero()) continue;
+
+        const typeFiat = getRoundedValue(split[type].toString(), priceItem.price, asset.precision);
+        group.byType[type].fiat = group.byType[type].fiat.plus(typeFiat);
+        group.byType[type].assetIds.add(asset.assetId);
       }
     }
 
@@ -84,12 +105,18 @@ export const useChainHoldings = (accountIds: string[]): ChainHoldingsData => {
     const chainHoldings: ChainHolding[] = sorted.map(([chainId, group]) => {
       total = total.plus(group.fiatValue);
 
+      const byType: ChainHoldingByType = makeByType((type) => ({
+        fiat: group.byType[type].fiat.toString(),
+        assetCount: group.byType[type].assetIds.size,
+      }));
+
       return {
         chainId,
         chainName: group.chainName,
         chainIcon: group.chainIcon,
         assetCount: group.assetIds.size,
         fiatValue: group.fiatValue.toString(),
+        byType,
       };
     });
 

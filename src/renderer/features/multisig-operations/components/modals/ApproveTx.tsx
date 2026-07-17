@@ -74,6 +74,8 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const signingPayloads = useUnit(approveModel.$signingPayloads);
   const unsignedAccounts = useUnit(approveModel.$unsignedAccounts);
   const description = useUnit(approveModel.$description);
+  const recipientWarning = useUnit(approveModel.$recipientWarning);
+  const riskAcknowledged = useUnit(approveModel.$isRiskAcknowledged);
 
   const transaction = operation.transaction;
   const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(transaction), t, approveTx?.type, operation);
@@ -181,6 +183,9 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
               multisigDeposit={multisigDeposit}
               valid={valid}
               showUnderlyingTransaction
+              recipientWarning={recipientWarning}
+              riskAcknowledged={riskAcknowledged}
+              onRiskAcknowledgedChange={approveModel.riskAcknowledgedToggled}
               onSign={handleConfirm}
               onGoBack={() => setActiveStep(Step.FORM)}
             />

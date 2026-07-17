@@ -5,13 +5,15 @@ import { useUnit } from 'effector-react';
 import { type Asset, type Chain, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, getAssetById, getAssetByTypeExtras, getNativeAsset, truncate } from '@/shared/lib/utils';
+import { type RecipientWarning } from '@/shared/lib/recipient-verification';
+import { cnTw, getAssetById, getAssetByTypeExtras, getNativeAsset, nonNullable, truncate } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import {
   type TransactionValidationBalanceError,
   type TransactionValidationFatalError,
   type TransactionValidationPermissionError,
   TransactionValidationError,
+  UnknownRecipientAckBox,
 } from '@/shared/ui-entities';
 import { Box, Copy, Json, Modal } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
@@ -41,6 +43,9 @@ type Props = {
   isFeeLoading: boolean;
   isDepositRequired?: boolean;
   showUnderlyingTransaction?: boolean;
+  recipientWarning?: RecipientWarning;
+  riskAcknowledged?: boolean;
+  onRiskAcknowledgedChange?: (checked: boolean) => void;
   onSign: () => void;
   onGoBack?: () => void;
   errors?: (
@@ -65,6 +70,9 @@ export const Confirmation = ({
   errors,
   isDepositRequired = false,
   showUnderlyingTransaction = false,
+  recipientWarning = 'none',
+  riskAcknowledged = false,
+  onRiskAcknowledgedChange,
 }: Props) => {
   const { t } = useI18n();
 
@@ -73,7 +81,11 @@ export const Confirmation = ({
   const signerWallet = wallets.find(w => w.id === signAccount?.walletId);
 
   const hasRequiredDeposit = !isDepositRequired || !multisigDeposit.isZero();
-  const canSign = !isFeeLoading && hasRequiredDeposit && valid;
+  // The gate is active only when the caller wires the acknowledgement handler —
+  // otherwise a warning without a rendered ack box would dead-lock the Sign button.
+  const recipientGateActive = nonNullable(onRiskAcknowledgedChange) && recipientWarning !== 'none';
+  const recipientRiskAccepted = !recipientGateActive || riskAcknowledged;
+  const canSign = !isFeeLoading && hasRequiredDeposit && valid && recipientRiskAccepted;
 
   const transaction = operation.transaction;
   let asset: Asset | null = null;
@@ -112,6 +124,14 @@ export const Confirmation = ({
       />
       {asset && isDepositRequired && <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} />}
       {asset && <FeeWithLabel fee={fee} asset={asset} isLoading={isFeeLoading} />}
+      {onRiskAcknowledgedChange && (
+        <UnknownRecipientAckBox
+          warning={recipientWarning}
+          context="multisigSign"
+          checked={riskAcknowledged}
+          onToggle={onRiskAcknowledgedChange}
+        />
+      )}
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (
           <Button variant="text" onClick={onGoBack}>

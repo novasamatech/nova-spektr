@@ -1,4 +1,4 @@
-import { createStore, merge, sample } from 'effector';
+import { combine, createStore, merge, sample } from 'effector';
 import { t } from 'i18next';
 import { interval } from 'patronum';
 
@@ -7,7 +7,7 @@ import { pairwise } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import { deepLinkService } from '@/domains/app';
-import { type Draft, draftsResource, operationDescriptionsResource } from '@/domains/backend';
+import { type Draft, draftsResource } from '@/domains/backend';
 import { notificationModel } from '@/entities/notification';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 
@@ -15,21 +15,13 @@ import { draftDeepLinkModel } from './draft-deep-link';
 
 deepLinkService.registerHandler(draftDeepLinkModel.handler);
 
-// Auto-fetch drafts + all operation descriptions on authentication
+// Auto-fetch drafts on authentication
 sample({
   clock: authModel.$authState,
   source: backendConfigurationModel.$backendUrl,
   filter: (url, authState): url is string => url !== null && authState !== null,
   fn: (baseUrl: string) => ({ baseUrl }),
   target: draftsResource.start,
-});
-
-sample({
-  clock: authModel.$authState,
-  source: backendConfigurationModel.$backendUrl,
-  filter: (url, authState): url is string => url !== null && authState !== null,
-  fn: (baseUrl: string) => baseUrl,
-  target: operationDescriptionsResource.fetchAllFx,
 });
 
 // Poll drafts periodically while authenticated
@@ -41,18 +33,12 @@ const draftsPolling = interval({
 
 sample({
   clock: draftsPolling.tick,
-  source: backendConfigurationModel.$backendUrl,
+  source: combine(backendConfigurationModel.$backendUrl, authModel.$isConnectionAlive, (url, alive) =>
+    alive ? url : null,
+  ),
   filter: (url): url is string => url !== null,
   fn: (baseUrl: string) => ({ baseUrl }),
   target: draftsResource.start,
-});
-
-sample({
-  clock: draftsPolling.tick,
-  source: backendConfigurationModel.$backendUrl,
-  filter: (url): url is string => url !== null,
-  fn: (baseUrl: string) => baseUrl,
-  target: operationDescriptionsResource.fetchAllFx,
 });
 
 // Clear on disconnect

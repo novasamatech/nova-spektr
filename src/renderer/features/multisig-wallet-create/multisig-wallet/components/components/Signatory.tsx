@@ -5,7 +5,7 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Address as AccountAddress, type ID } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { includesMultiple, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { FootnoteText, IconButton, InputHint } from '@/shared/ui';
 import { Address, Identicon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Input, Select } from '@/shared/ui-kit';
@@ -102,20 +102,20 @@ export const Signatory = ({
       if (isOwnAccount) return isNotWatchOnly;
 
       const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
-      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-      const queryPass = includesMultiple([account.name, address], query);
 
-      return isChainMatch && isNotWatchOnly && queryPass;
+      return isChainMatch && isNotWatchOnly;
     });
 
     const uniqueAccounts = uniqBy(availableAccounts, 'accountId');
 
     if (uniqueAccounts.length === 0) return [];
 
-    const filteredAccounts = performSearch({
-      records: uniqueAccounts,
-      query: signatoryQuery,
-      weights: { name: 1, address: 0.5, id: 0.5, accountId: 0.5 },
+    const filteredAccounts = accountService.searchAccounts({
+      accounts: uniqueAccounts,
+      query: isOwnAccount ? signatoryQuery : query,
+      resolvedAccounts,
+      resolvedWallets,
+      addressPrefix: POLKADOT_ADDRESS_PREFFIX,
     });
 
     const accountOptions = new Map<string, ComboboxItem>();

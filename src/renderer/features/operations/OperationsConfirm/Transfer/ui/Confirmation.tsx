@@ -5,12 +5,18 @@ import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, Loader } from '@/shared/ui';
-import { AssetBalance, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
+import {
+  AssetBalance,
+  TransactionDetails,
+  TransactionValidationError,
+  UnknownRecipientAlert,
+} from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { PathBreadcrumb, PathReviewPopover } from '@/features/signing-path';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
@@ -34,6 +40,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
   const validationErrors = useUnit(confirmModel.$validationErrors);
   const canSubmit = useUnit(confirmModel.$canSubmit);
+  const resolveRecipientWarning = useUnit(recipientVerificationModel.$resolveWarning);
 
   const confirms = useUnit(confirmModel.$confirms);
   const confirm = useStoreMap({
@@ -60,6 +67,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const nativeAsset = getNativeAsset(meta.chain.assets);
   const isMultiHopPath = nonNullable(meta.signingPath) && meta.signingPath.length >= 2;
   const api = apis?.[meta.chain.chainId] ?? null;
+  const recipientWarning = resolveRecipientWarning(toAccountId(meta.destination));
 
   // Reused below TransactionDetails (trivial) AND below PathBreadcrumb
   // (multi-hop) — the same recipient / fee / deposit detail rows.
@@ -78,6 +86,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
       <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
         <NamedAccount accountId={toAccountId(meta.destination)} chain={meta.destinationChain} variant="short" />
       </DetailRow>
+
+      <UnknownRecipientAlert warning={recipientWarning} variant="note" />
 
       <hr className="w-full border-filter-border pr-2" />
 

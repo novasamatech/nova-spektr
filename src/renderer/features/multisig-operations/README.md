@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-15
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-17
 
 ## Overview
 
@@ -307,6 +307,27 @@ delivered entirely through toasts:
 The button hides itself entirely once the operation is no longer pending, when the backend is offline, or when the
 multisig is absent from the external address book.
 
+## Unknown recipient warnings
+
+Gated by [`recipient-verification`](../../aggregates/recipient-verification/README.md) (in turn gated on the external
+address book connection — invisible until it has been connected at least once), a transfer-family operation whose
+destination is not a known address (address-book contact or one of the user's own accounts) is flagged in two places,
+both purely informational — neither blocks viewing or approving from the list:
+
+- **Row pill.** An **UNKNOWN RECIPIENT** badge sits at the end of the row's Description cell, for any operation that
+  exposes a single destination (the transfer/XCM family; other operation types never show it).
+- **Confirmation badge.** The same warning surfaces as an **UNKNOWN ADDRESS** badge next to the Recipient label in the
+  shared Details panel of the confirmation step — informational only, so it appears in **both** the Approve and the
+  Reject dialogs (the Details panel is shared between them).
+- **Approve dialog gate.** Below the badge, an amber acknowledgement box ("I have verified this address…") gates the
+  **Sign** button — it stays disabled until the checkbox is ticked. The acknowledgement resets whenever the approve
+  dialog opens or closes, so it never carries across operations. The **gate** is approve-only: the Reject flow shows the
+  informational badge but never the acknowledgement box — rejecting is always the safe action.
+
+The expanded row's Details column (from
+[`transfer-operation-details`](../transfer-operation-details/README.md#unknown-recipient-warnings)) additionally shows a
+review alert asking co-signers to confirm the address before approving.
+
 ## List view
 
 ### Tabs
@@ -354,7 +375,8 @@ ascending → descending → off:
 With sorting off, operations are ordered **newest first** by their creation time (block and extrinsic index break ties).
 The list can be narrowed by **search** and five **filters**:
 
-- **Search** — matches the multisig wallet name, the multisig address, or the call hash.
+- **Search** — matches the multisig wallet name as displayed on the card (resolved through custom name → contact →
+  identity, not the raw stored name), the multisig address, or the call hash.
 - **Date range** — a from/to (or from-only) interval.
 - **Status** — Drafts / In progress / Completed / Rejected / Hidden. Drafts and hidden operations obey the same logic as
   the regular statuses: with no status selected the scope behaves as before (drafts visible on Pending, hidden ops
@@ -441,3 +463,7 @@ operation, cancelling it.
   resulting operation row.
 - **Wallet pairing** — for a tracked external multisig, the per-operation action is an **Add wallet** prompt that pairs
   a wallet holding an actual signatory key, turning the read-only row into an actionable one.
+- [`recipient-verification`](../../aggregates/recipient-verification/README.md) — decides whether an operation's
+  destination is "known"; drives the row pill and the Approve dialog's badge and acknowledgement gate.
+- [`transfer-operation-details`](../transfer-operation-details/README.md) — contributes the row/Details title, amount,
+  and the unknown-recipient review alert for the transfer/XCM family.

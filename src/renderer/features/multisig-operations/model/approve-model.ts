@@ -25,8 +25,10 @@ import {
 } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { operationDetailsUtils } from '@/entities/operations';
 import { MAX_WEIGHT, getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { createSigningPathModel } from '@/features/signing-path';
 
 type GetMultisigType = {
@@ -54,6 +56,16 @@ $description.on(setDescription, (_, value) => value);
 const $chain = flow.state.map(state => state.chain);
 const $operation = flow.state.map(state => state.operation);
 const $multisigAccount = flow.state.map(state => state.account);
+
+const riskAcknowledgedToggled = createEvent<boolean>();
+
+const $isRiskAcknowledged = createStore(false)
+  .on(riskAcknowledgedToggled, (_, checked) => checked)
+  .reset([flow.open, flow.close]);
+
+const $recipientWarning = combine(recipientVerificationModel.$resolveWarning, $operation, (resolveWarning, operation) =>
+  resolveWarning(operation ? (operationDetailsUtils.getDestinationAccountId(operation) ?? null) : null),
+);
 
 const $api = combine(
   {
@@ -325,9 +337,12 @@ export const approveModel = {
   $signatories,
   $signingPath,
   $description,
+  $recipientWarning,
+  $isRiskAcknowledged,
   selectSignatory,
   selectInitiator,
   setDescription,
   postDescription,
   signingPathChanged,
+  riskAcknowledgedToggled,
 };

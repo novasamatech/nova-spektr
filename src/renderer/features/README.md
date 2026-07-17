@@ -41,14 +41,16 @@ notes.
 - [`multisig-operations`](./multisig-operations/README.md)
 - `multisig-wallet`
 - [`multisig-wallet-create`](./multisig-wallet-create/README.md)
-- `flexible-change-signatories`
+- [`flexible-change-signatories`](./flexible-change-signatories/README.md)
 - [`flexible-operation-details`](./flexible-operation-details/README.md)
 - `multisig-candidates` (aggregate)
 - [`multisig-operation-description`](../aggregates/multisig-operation-description/README.md) (aggregate)
 - `selected-wallet-multisig-operations` (aggregate)
 
 > See also: [`account-sync`](#wallets--onboarding) — discovers multisig wallets on-chain;
-> [`call-data-execute`](#operations--signing) — executes pending multisig call data.
+> [`call-data-execute`](#operations--signing) — executes pending multisig call data;
+> [`recipient-verification`](#contacts--notifications) — unknown-recipient warnings in the operations list and Approve
+> dialog.
 
 ## Proxy
 
@@ -104,7 +106,7 @@ notes.
 - `fellowship-promotion`
 - `fellowship-referendum-details`
 - `fellowship-retention`
-- `fellowship-salary`
+- [`fellowship-salary`](./fellowship-salary/README.md)
 - `fellowship-tasks`
 - `fellowship-voting`
 - `fellowship-voting-history`
@@ -118,13 +120,16 @@ notes.
 - [`transfer`](./transfer/README.md)
 - `transfer-basket`
 - [`transfer-operation-details`](./transfer-operation-details/README.md)
-- `multi-transfer`
+- [`multi-transfer`](./multi-transfer/README.md)
 - [`multi-transfer-operation-details`](./multi-transfer-operation-details/README.md)
 - [`vested-transfer`](./vested-transfer/README.md)
 - [`vested-transfer-operation-details`](./vested-transfer-operation-details/README.md)
 - [`vesting-claim`](./vesting-claim/README.md)
 - [`vesting-portfolio`](../aggregates/vesting-portfolio/README.md) (aggregate)
 - `send-to-contact`
+
+> See also: [`recipient-verification`](#contacts--notifications) — unknown-recipient warnings on the transfer form and
+> confirm step.
 
 ## Assets & Balances
 
@@ -141,15 +146,18 @@ notes.
 
 ## Operations & Signing
 
-- `operations`
+- [`operations`](./operations/README.md)
 - `operations-navigation` (no spec planned)
 - `operation-templates`
 - `app-custom-operations`
-- `call-data-execute`
+- [`call-data-execute`](./call-data-execute/README.md)
 - `extrinsic-builder`
 - [`drafts`](./drafts/README.md)
 - [`signing-path`](./signing-path/README.md)
 - `sign-wallet-connect` (no spec planned)
+
+> See also: [`dashboard-operations-queue`](#dashboard) — surfaces pending drafts and operations awaiting signature on
+> the dashboard.
 
 ## Basket
 
@@ -164,7 +172,7 @@ notes.
 
 - `dashboard-governance`
 - `dashboard-navigation` (no spec planned)
-- `dashboard-operations-queue`
+- [`dashboard-operations-queue`](./dashboard-operations-queue/README.md)
 - [`dashboard-portfolio-overview`](./dashboard-portfolio-overview/README.md)
 - `dashboard-price-charts`
 - `dashboard-staking`
@@ -178,8 +186,11 @@ notes.
 - `contacts-navigation` (no spec planned)
 - `notifications`
 - `notifications-navigation` (no spec planned)
+- [`recipient-verification`](../aggregates/recipient-verification/README.md) (aggregate)
 
-> See also: [`send-to-contact`](#transfers) — the transfer flow launched from the contacts page.
+> See also: [`send-to-contact`](#transfers) — the transfer flow launched from the contacts page;
+> [`transfer`](#transfers) and [`multisig-operations`](#multisig) — consume `recipient-verification` for
+> unknown-recipient warnings.
 
 ## App Shell & Platform
 
