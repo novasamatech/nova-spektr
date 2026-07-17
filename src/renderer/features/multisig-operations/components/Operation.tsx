@@ -1,4 +1,5 @@
 import { type BN } from '@polkadot/util';
+import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { memo, useMemo } from 'react';
 
@@ -17,11 +18,12 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, formatSectionAndMethod, toAddress } from '@/shared/lib/utils';
 import { Accordion, CaptionText } from '@/shared/ui';
 import { operationColumns } from '@/shared/ui/operations-table-layout';
+import { UnknownRecipientBadge } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { useIsDraftLinkedOperation, useOperationDescription } from '@/domains/backend';
 import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
-import { OperationTitleStatus } from '@/entities/operations';
+import { OperationTitleStatus, operationDetailsUtils } from '@/entities/operations';
 import {
   TransactionTitle,
   findCoreTransaction,
@@ -29,6 +31,7 @@ import {
   useTransactionAsset,
 } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
 import { parseProxyEditOperation } from '../lib/proxy-edit';
@@ -85,6 +88,10 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   const { t } = useI18n();
   const description = useOperationDescription(operation.id);
   const isDraftLinked = useIsDraftLinkedOperation(operation.id);
+
+  const resolveRecipientWarning = useUnit(recipientVerificationModel.$resolveWarning);
+  const destinationAccountId = operationDetailsUtils.getDestinationAccountId(operation) ?? null;
+  const recipientWarning = resolveRecipientWarning(destinationAccountId);
 
   const wallet = useMemo(
     () => wallets.find(w => w.id === multisigAccount.walletId),
@@ -207,6 +214,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
               <div className="min-w-0 flex-1">
                 <OperationDescriptionCell operation={operation} chain={chains[operation.chainId]} />
               </div>
+              <UnknownRecipientBadge warning={recipientWarning} variant="recipient" />
             </div>
 
             <div className={cnTw(operationColumns.status, 'flex justify-center')}>
