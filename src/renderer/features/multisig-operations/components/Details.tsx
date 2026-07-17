@@ -17,7 +17,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, keys, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
+import { AccountExplorers, AssetBalance, UnknownRecipientBadge, WalletIcon } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation, identity } from '@/domains/network';
 import { useActiveEra, useValidators } from '@/domains/staking';
@@ -37,6 +37,7 @@ import {
   isXcmTransaction,
 } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { NamedAccount, WalletName } from '@/widgets/NameResolver';
 
 type Props = {
@@ -53,6 +54,7 @@ export const Details = ({ api, operation, account, multisigAccount, chain, signa
 
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
+  const resolveRecipientWarning = useUnit(recipientVerificationModel.$resolveWarning);
 
   const multisigWallet = multisigAccount ? wallets.find(w => w.id === multisigAccount.walletId) : undefined;
 
@@ -66,6 +68,7 @@ export const Details = ({ api, operation, account, multisigAccount, chain, signa
   const spawnerAccountId = spawner ? toAccountId(spawner) : null;
   const destinationAccountId = operationDetailsUtils.getDestinationAccountId(operation) ?? null;
   const payeeAccountId = typeof payee === 'object' ? toAccountId(payee.Account) : null;
+  const recipientWarning = resolveRecipientWarning(destinationAccountId);
 
   const delegationTarget = operationDetailsUtils.getDelegationTarget(operation);
   const delegationTracks = operationDetailsUtils.getDelegationTracks(operation);
@@ -283,7 +286,15 @@ export const Details = ({ api, operation, account, multisigAccount, chain, signa
       )}
 
       {destination && (
-        <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
+        <DetailRow
+          label={
+            <div className="flex items-center gap-x-2">
+              <FootnoteText className="text-text-tertiary">{t('operation.details.recipient')}</FootnoteText>
+              <UnknownRecipientBadge warning={recipientWarning} variant="address" />
+            </div>
+          }
+          className="text-text-secondary"
+        >
           {destinationAccountId && <NamedAccount chain={chain} accountId={destinationAccountId} variant="short" />}
         </DetailRow>
       )}

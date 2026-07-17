@@ -5,6 +5,7 @@ import { useUnit } from 'effector-react';
 import { type Asset, type Chain, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { type RecipientWarning } from '@/shared/lib/recipient-verification';
 import { cnTw, getAssetById, getAssetByTypeExtras, getNativeAsset, truncate } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import {
@@ -12,12 +13,14 @@ import {
   type TransactionValidationFatalError,
   type TransactionValidationPermissionError,
   TransactionValidationError,
+  UnknownRecipientAckBox,
 } from '@/shared/ui-entities';
 import { Box, Copy, Json, Modal } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { SignButton, operationDetailsUtils } from '@/entities/operations';
 import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { ReconnectAddressBookButton } from '@/features/contacts';
 import { CallDataConfirmSection } from '@/features/operations/OperationsConfirm/common/CallDataConfirmSection';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
 import { Details } from '../Details';
@@ -41,6 +44,9 @@ type Props = {
   isFeeLoading: boolean;
   isDepositRequired?: boolean;
   showUnderlyingTransaction?: boolean;
+  recipientWarning?: RecipientWarning;
+  riskAcknowledged?: boolean;
+  onRiskAcknowledgedChange?: (checked: boolean) => void;
   onSign: () => void;
   onGoBack?: () => void;
   errors?: (
@@ -65,6 +71,9 @@ export const Confirmation = ({
   errors,
   isDepositRequired = false,
   showUnderlyingTransaction = false,
+  recipientWarning = 'none',
+  riskAcknowledged = false,
+  onRiskAcknowledgedChange,
 }: Props) => {
   const { t } = useI18n();
 
@@ -73,7 +82,8 @@ export const Confirmation = ({
   const signerWallet = wallets.find(w => w.id === signAccount?.walletId);
 
   const hasRequiredDeposit = !isDepositRequired || !multisigDeposit.isZero();
-  const canSign = !isFeeLoading && hasRequiredDeposit && valid;
+  const recipientRiskAccepted = recipientWarning === 'none' || riskAcknowledged;
+  const canSign = !isFeeLoading && hasRequiredDeposit && valid && recipientRiskAccepted;
 
   const transaction = operation.transaction;
   let asset: Asset | null = null;
@@ -112,6 +122,15 @@ export const Confirmation = ({
       />
       {asset && isDepositRequired && <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} />}
       {asset && <FeeWithLabel fee={fee} asset={asset} isLoading={isFeeLoading} />}
+      {onRiskAcknowledgedChange && (
+        <UnknownRecipientAckBox
+          warning={recipientWarning}
+          context="multisigSign"
+          checked={riskAcknowledged}
+          action={<ReconnectAddressBookButton />}
+          onToggle={onRiskAcknowledgedChange}
+        />
+      )}
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (
           <Button variant="text" onClick={onGoBack}>
