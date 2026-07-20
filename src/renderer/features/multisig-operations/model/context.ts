@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { type Store, combine, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 import { interval, throttle } from 'patronum';
 
@@ -26,12 +26,7 @@ import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
-import {
-  $accountNameSources,
-  createAccountNameResolver,
-  haveSameMatchedIds,
-  searchOperationRows,
-} from '@/aggregates/operations-search';
+import { $searchResolvers, haveSameMatchedIds, searchOperationRows } from '@/aggregates/operations-search';
 import { walletSelect } from '@/aggregates/wallet-select';
 import {
   type WalletSearchEntry,
@@ -187,6 +182,19 @@ const $presetScopedMultisigAccounts = combine(
 
 const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isAnyMultisig));
 
+/**
+ * Mirrors a derived store into a plain one that only accepts updates which
+ * actually change the value. Used for search inputs whose sources (contacts,
+ * identities) churn while loading: without it every such update re-runs the
+ * whole filter chain even when the resolved result is identical.
+ */
+const createGuardedStore = <T>(source: Store<T>, defaultValue: T, isSame: (next: T, prev: T) => boolean) => {
+  const $guarded = createStore(defaultValue, { updateFilter: (next, prev) => !isSame(next, prev) });
+  $guarded.on(source, (_, next) => next);
+
+  return $guarded;
+};
+
 const haveSameWalletSearchEntries = (next: WalletSearchEntry[], prev: WalletSearchEntry[]) => {
   if (next.length !== prev.length) return false;
 
@@ -203,10 +211,11 @@ const $multisigWalletSearchEntriesRaw = combine(
   },
   ({ wallets, ...sources }): WalletSearchEntry[] => getWalletSearchEntries(wallets, sources),
 );
-const $multisigWalletSearchEntries = createStore<WalletSearchEntry[]>([], {
-  updateFilter: (next, prev) => !haveSameWalletSearchEntries(next, prev),
-});
-$multisigWalletSearchEntries.on($multisigWalletSearchEntriesRaw, (_, next) => next);
+const $multisigWalletSearchEntries = createGuardedStore<WalletSearchEntry[]>(
+  $multisigWalletSearchEntriesRaw,
+  [],
+  haveSameWalletSearchEntries,
+);
 
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 
@@ -290,30 +299,31 @@ const $searchMatchedOperationIdsRaw = combine(
     operationsWithAccounts: $operationsWithAccounts,
     searchQuery: $filter.map(filter => filter.searchQuery),
     multisigWallets: $multisigWalletSearchEntries,
-    nameSources: $accountNameSources,
+    chains: networkModel.$chains,
+    resolvers: $searchResolvers,
   },
-  ({ operationsWithAccounts, searchQuery, multisigWallets, nameSources }): Set<string> | null => {
+  ({ operationsWithAccounts, searchQuery, multisigWallets, chains, resolvers }): Set<string> | null => {
     if (!searchQuery.trim()) return null;
 
     const walletNames = new Map(multisigWallets.map(wallet => [wallet.id, wallet.name]));
-    const resolveName = createAccountNameResolver(nameSources);
     const rows = operationsWithAccounts.map(({ operation, account }) =>
-      buildOperationSearchRow(operation, account, nameSources.chains, walletNames),
+      buildOperationSearchRow(operation, account, chains, walletNames),
     );
 
-    return searchOperationRows(rows, searchQuery, resolveName);
+    return searchOperationRows(rows, searchQuery, resolvers);
   },
 );
 
 // Name resolution pulls in contacts and identities, which update as they load.
 // Guarding on the resulting id set stops those updates from re-running the
-// downstream filter chain when they don't change what matches — the same reason
-// $multisigWalletSearchEntries is guarded. The search itself still recomputes;
-// it is the no-query early return above that keeps the common case free.
-const $searchMatchedOperationIds = createStore<Set<string> | null>(null, {
-  updateFilter: (next, prev) => !haveSameMatchedIds(next, prev),
-});
-$searchMatchedOperationIds.on($searchMatchedOperationIdsRaw, (_, next) => next);
+// downstream filter chain when they don't change what matches. The search itself
+// still recomputes; it is the no-query early return above that keeps the common
+// case free.
+const $searchMatchedOperationIds = createGuardedStore<Set<string> | null>(
+  $searchMatchedOperationIdsRaw,
+  null,
+  haveSameMatchedIds,
+);
 
 const $filteredOperations = combine(
   {

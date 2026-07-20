@@ -82,11 +82,20 @@ transaction can be reachable by multiple routes, and signing through the wrong r
 `proxy.proxy(real, call)` vs a bare multisig `as_multi`).
 
 At submit time the saved path is resolved back into concrete accounts and **strictly followed** — the flow never
-silently re-routes. The path runs outermost-first: it starts at the source account that executes the call and ends at
-the account that signs it, so the **initiator is the path's last node** and the multisig it signs for is the last
-multisig hop before it. The route drives extrinsic wrapping, the multisig threshold/deposit, and which
-account balances get validated. **Legacy drafts** with an empty saved path fall back to automatic route discovery from
-initiator to a chosen signatory — but only when no saved path exists.
+silently re-routes. The route drives extrinsic wrapping, the multisig threshold/deposit, and which account balances get
+validated. **Legacy drafts** with an empty saved path fall back to automatic route discovery from initiator to a chosen
+signatory — but only when no saved path exists.
+
+> **Two things are called "initiator".** The path runs outermost-first: it starts at the **source** account that
+> executes the call and ends at the account that **signs** it.
+>
+> - The **source** — the path's _first_ node — is the submit flow's canonical initiator (`$initiator`). This matters
+>   for nested multisigs, where `multisigAccountId` stores the deepest hop, not the root.
+> - The **signer** — the path's _last_ node — is what the UI labels "Initiator" in the signing-path panel, what
+>   `initiatorAccountId` stores, and the person a co-signer is waiting on. This is the one the operations search
+>   matches.
+>
+> Both readings are correct in their own context; check which one a given call site means before reusing it.
 
 ## Creating a draft
 

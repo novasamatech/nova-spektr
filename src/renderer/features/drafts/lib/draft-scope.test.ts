@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'vitest';
 
 import { type Chain, type ChainId } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
 import { type Draft } from '@/domains/backend';
-import { type AccountNameResolver, searchOperationRows } from '@/aggregates/operations-search';
+import { type SearchResolvers, searchOperationRows } from '@/aggregates/operations-search';
 
 import { type DraftListScope, buildDraftSearchRow, filterDraftsByScope } from './draft-scope';
 
@@ -43,19 +44,32 @@ const emptyScope: DraftListScope = {
   searchQuery: '',
 };
 
-const names: Record<string, string> = {
-  [MOCK_ACCOUNT_ID]: 'Team Multisig',
+// Deliberately split the two name channels the way the real system splits them:
+// accountService.resolveAccountName has NO wallet step, so an account whose only
+// display name comes from its wallet resolves to '' here — exactly as it would
+// in production. A stub that answered every accountId from one table would hide
+// that, which is how the wallet-name gap survived the first round of tests.
+const accountNames: Record<string, string> = {
   [BOB_ACCOUNT_ID]: 'Adam Initiator',
   [CHARLIE_ACCOUNT_ID]: 'Charlie Signer',
 };
-const resolveName: AccountNameResolver = (accountId) => names[accountId] ?? '';
+const walletNames: Record<string, string> = {
+  [MOCK_ACCOUNT_ID]: 'Team Multisig',
+};
+
+const resolvers: SearchResolvers = {
+  resolveAccountName: (accountId) => accountNames[accountId] ?? '',
+  resolveWalletName: (accountId) => walletNames[accountId] ?? null,
+  // Real encoding — address assertions must mean something.
+  resolveAddress: (accountId, chain) => toAddress(accountId, { prefix: chain?.addressPrefix }),
+};
 
 /** Mirrors what useVisibleDrafts does: resolve names, then filter. */
 const filterWithSearch = (drafts: Draft[], scope: DraftListScope) => {
   const searchMatchedIds = searchOperationRows(
-    drafts.map((draft) => buildDraftSearchRow(draft, chains)),
+    drafts.map((draft) => buildDraftSearchRow(draft, chains, resolvers.resolveWalletName)),
     scope.searchQuery,
-    resolveName,
+    resolvers,
   );
 
   return filterDraftsByScope(drafts, scope, searchMatchedIds);
@@ -111,7 +125,13 @@ describe('filterDraftsByScope', () => {
     expect(filterWithSearch([polkadotDraft], scope).map((d) => d.id)).toEqual(['draft-dot']);
   });
 
-  test('search matches the resolved submitter name', () => {
+  test('search matches a submitter name that only the wallet supplies', () => {
+    // 'Team Multisig' is reachable only through resolveWalletName — the account
+    // resolver returns '' for this accountId, as the real one would. The row
+    // still shows it, because <NamedAccount> takes the wallet name as a hard
+    // title override, so the query must find it.
+    expect(resolvers.resolveAccountName(MOCK_ACCOUNT_ID)).toBe('');
+
     const scope = { ...emptyScope, searchQuery: 'Team Multi' };
     expect(filterWithSearch([polkadotDraft], scope).map((d) => d.id)).toEqual(['draft-dot']);
   });
@@ -188,6 +208,49 @@ describe('filterDraftsByScope', () => {
     test('a draft with no initiator simply never matches an initiator query', () => {
       const scope = { ...emptyScope, searchQuery: 'Adam' };
       expect(filterWithSearch([polkadotDraft], scope)).toEqual([]);
+    });
+
+    test('a non-signer-terminated path does not fall back to the stale stored field', () => {
+      // DraftFullInfo renders such a path as-is and shows no Initiator row, so
+      // matching initiatorAccountId here would match a name never displayed.
+      const brokenPathDraft = createMockDraft({
+        id: 'draft-broken',
+        initiatorAccountId: BOB_ACCOUNT_ID,
+        signingPath: [{ kind: 'multisig', accountId: MOCK_ACCOUNT_ID }] as never,
+      });
+
+      expect(filterWithSearch([brokenPathDraft], { ...emptyScope, searchQuery: 'Adam' })).toEqual([]);
+    });
+  });
+
+  describe('nested multisig', () => {
+    // Root multisig → nested multisig → signer. `multisigAccountId` stores the
+    // *deepest* hop, so the root appears only in the path — but the details
+    // panel lists every node, so every node must be searchable.
+    const nestedDraft = createMockDraft({
+      id: 'draft-nested',
+      multisigAccountId: CHARLIE_ACCOUNT_ID,
+      signingPath: [
+        { kind: 'multisig', accountId: MOCK_ACCOUNT_ID },
+        { kind: 'multisig', accountId: CHARLIE_ACCOUNT_ID },
+        { kind: 'signer', accountId: BOB_ACCOUNT_ID },
+      ] as never,
+    });
+
+    test('matches the root multisig, which is not in any flat field', () => {
+      // Alice at Polkadot's prefix 0 — the root hop's address.
+      expect(filterWithSearch([nestedDraft], { ...emptyScope, searchQuery: '15oF4' }).map((d) => d.id)).toEqual([
+        'draft-nested',
+      ]);
+    });
+
+    test('matches the deepest multisig and the signer too', () => {
+      expect(filterWithSearch([nestedDraft], { ...emptyScope, searchQuery: 'Charlie' }).map((d) => d.id)).toEqual([
+        'draft-nested',
+      ]);
+      expect(filterWithSearch([nestedDraft], { ...emptyScope, searchQuery: 'Adam' }).map((d) => d.id)).toEqual([
+        'draft-nested',
+      ]);
     });
   });
 });

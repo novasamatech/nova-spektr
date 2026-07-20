@@ -423,6 +423,37 @@ describe('operations context model', () => {
 
       expect(spy).not.toHaveBeenCalled();
     });
+
+    it('applies an active search to newly arrived operations in the same tick', async () => {
+      // $filteredOperations reads $operationsWithAccounts both directly and via
+      // the guarded $searchMatchedOperationIds — a diamond. If those two legs
+      // could settle a tick apart, a new operation would briefly be filtered
+      // against a stale id set and flicker into or out of the list.
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [])
+          .set(operationsContextModel.$tab, 'pending')
+          .set(accounts.__test.$populated, true),
+      });
+      await populateWallets(scope, [{ id: 1, name: 'Test Multisig Wallet', type: WalletType.MULTISIG }]);
+      await populateAccounts(scope, [mockMultisigAccount]);
+
+      // A query that matches nothing currently in the list.
+      await allSettled(operationsContextModel.setFilter, { scope, params: { searchQuery: 'zzzz-no-match' } });
+      expect(scope.getState(operationsContextModel.$filteredOperations)).toHaveLength(0);
+
+      // An operation arrives that also does not match — it must not leak through
+      // on the tick where the ids have not been recomputed yet.
+      await allSettled(multisigOperation.__test.$cachedOperations, {
+        scope,
+        params: [createMockOperation('pending')],
+      });
+      expect(scope.getState(operationsContextModel.$filteredOperations)).toHaveLength(0);
+
+      // Widening the query to something it does match brings it in.
+      await allSettled(operationsContextModel.setFilter, { scope, params: { searchQuery: '0xabc' } });
+      expect(scope.getState(operationsContextModel.$filteredOperations)).toHaveLength(1);
+    });
   });
 
   describe('Sort state', () => {

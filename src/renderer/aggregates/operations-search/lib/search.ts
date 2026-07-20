@@ -1,8 +1,8 @@
 import { type Chain } from '@/shared/core';
-import { performSearch, toAddress } from '@/shared/lib/utils';
+import { performSearch } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-import { type AccountNameResolver } from './account-name';
+import { type SearchResolvers } from './account-name';
 
 /**
  * One account a row puts on screen, with the chain its address is _rendered_
@@ -59,12 +59,14 @@ const JOIN = '\n';
  *
  * A `Set` rather than the sorted list `performSearch` returns: both lists carry
  * a meaningful order (operations by the active sort, drafts newest first), and
- * re-ranking them by match weight would scramble it.
+ * re-ranking them by match weight would scramble it. `performSearch` sorts
+ * internally and that work is discarded here — the cost is one sort over the
+ * already-matched subset, which is not worth a second search engine to avoid.
  */
 export const searchOperationRows = (
   rows: OperationSearchRow[],
   query: string,
-  resolveName: AccountNameResolver,
+  resolvers: Pick<SearchResolvers, 'resolveAccountName' | 'resolveAddress'>,
 ): Set<string> | null => {
   const trimmedQuery = query.trim();
   if (!trimmedQuery) return null;
@@ -74,10 +76,10 @@ export const searchOperationRows = (
     query: trimmedQuery,
     getMeta: row => ({
       accountNames: row.accounts
-        .flatMap(account => [account.walletName ?? '', resolveName(account.accountId, account.chain)])
+        .flatMap(account => [account.walletName ?? '', resolvers.resolveAccountName(account.accountId, account.chain)])
         .join(JOIN),
       accountAddresses: row.accounts
-        .map(account => toAddress(account.accountId, { prefix: account.chain?.addressPrefix }))
+        .map(account => resolvers.resolveAddress(account.accountId, account.chain))
         .join(JOIN),
       descriptionText: row.description ?? '',
       callHashText: row.callHash ?? '',

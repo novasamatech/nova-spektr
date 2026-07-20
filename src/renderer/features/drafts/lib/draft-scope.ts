@@ -1,6 +1,7 @@
 import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
 
 import { type Chain, type ChainId } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type DateRange } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
 import { type OperationSearchRow, type SearchAccountRef } from '@/aggregates/operations-search';
@@ -42,42 +43,54 @@ const matchesDateRange = (draft: Draft, dateRange: DateRange | undefined): boole
  * Reduces a draft to the accounts its row displays, for the shared search. A
  * draft is chain-bound, so every one of them renders with `draft.chainId`.
  *
- * All three accounts are searchable, not just the one in the collapsed row: the
- * proxy and the multisig both appear in the expanded details, and the initiator
- * is what a user is usually looking for ("which drafts is Adam expected to
- * submit?").
+ * The searchable set is **every node of the stored signing path**, which is
+ * exactly what the details panel lists (DraftFullInfo renders one row per node,
+ * labelled Proxied → Multisig → Initiator). Deriving it from the path rather
+ * than from the flat `proxyAccountId` / `multisigAccountId` /
+ * `initiatorAccountId` fields matters for nested multisigs, where
+ * `multisigAccountId` is the deepest hop and the root multisig appears only in
+ * the path.
  *
- * Initiator precedence follows the details panel (DraftFullInfo), which treats
- * a stored signing path as the source of truth and only reconstructs from
- * `initiatorAccountId` when the path is empty — otherwise the search could
- * match a name the panel never shows. A draft with neither stays out of
- * initiator queries entirely.
+ * Legacy drafts with no path fall back to the flat fields — the same
+ * reconstruction the panel does, and in the same order.
  */
-export const buildDraftSearchRow = (draft: Draft, chains: Record<ChainId, Chain>): OperationSearchRow => {
+export const buildDraftSearchRow = (
+  draft: Draft,
+  chains: Record<ChainId, Chain>,
+  resolveWalletName: (accountId: AccountId, chain?: Chain | null) => string | null,
+): OperationSearchRow => {
   const chain = chains[draft.chainId] ?? null;
-  const lastPathNode = draft.signingPath.at(-1);
-  const pathInitiator = lastPathNode?.kind === 'signer' ? lastPathNode.accountId : null;
-  const initiatorAccountId = pathInitiator ?? draft.initiatorAccountId;
+  // Matches the defensive reads in submit-draft-model: the zod default makes
+  // this an array after parsing, but drafts also arrive from cached payloads.
+  const signingPath = Array.isArray(draft.signingPath) ? draft.signingPath : [];
+
+  // The collapsed row shows this one through <NamedAccount wallet={…}>, whose
+  // wallet name is a hard override — so it is the only account whose wallet name
+  // is on screen, and the only one that needs resolving.
+  const submitterAccountId = draft.proxyAccountId ?? draft.multisigAccountId;
+
+  const pathAccountIds =
+    signingPath.length > 0
+      ? signingPath.map((node) => node.accountId)
+      : [draft.proxyAccountId, draft.multisigAccountId, draft.initiatorAccountId];
 
   const accounts: SearchAccountRef[] = [];
+  const seen = new Set<AccountId>();
 
-  if (draft.proxyAccountId) {
+  for (const accountId of [submitterAccountId, ...pathAccountIds]) {
+    if (!accountId || seen.has(accountId)) continue;
+    seen.add(accountId);
+
     accounts.push({
-      accountId: draft.proxyAccountId,
+      accountId,
       chain,
-      // DraftRow renders a proxied draft through a synthetic wallet named after
-      // the proxy contact, and <NamedAccount> takes a wallet name as a hard
-      // override — so this is the string on screen, and it must be matchable.
-      walletName: draft.proxyContact?.name ?? null,
+      walletName:
+        accountId === submitterAccountId
+          ? // A proxied draft renders through a synthetic wallet named after the
+            // proxy contact, which no resolver produces.
+            (draft.proxyContact?.name ?? resolveWalletName(accountId, chain))
+          : null,
     });
-  }
-
-  if (draft.multisigAccountId) {
-    accounts.push({ accountId: draft.multisigAccountId, chain, walletName: null });
-  }
-
-  if (initiatorAccountId) {
-    accounts.push({ accountId: initiatorAccountId, chain, walletName: null });
   }
 
   return {

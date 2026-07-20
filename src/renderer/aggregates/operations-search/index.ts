@@ -1,3 +1,3 @@
-export { type AccountNameResolver, type AccountNameSources, createAccountNameResolver } from './lib/account-name';
+export { type AccountNameSources, type SearchResolvers, createSearchResolvers } from './lib/account-name';
 export { type OperationSearchRow, type SearchAccountRef, haveSameMatchedIds, searchOperationRows } from './lib/search';
-export { $accountNameSources } from './model';
+export { $accountNameSources, $searchResolvers } from './model';

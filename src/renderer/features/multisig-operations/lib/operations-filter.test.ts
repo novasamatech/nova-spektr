@@ -10,8 +10,9 @@ import {
   TransactionType,
   WalletType,
 } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
-import { type AccountNameResolver, type OperationSearchRow, searchOperationRows } from '@/aggregates/operations-search';
+import { type OperationSearchRow, type SearchResolvers, searchOperationRows } from '@/aggregates/operations-search';
 
 import {
   type OperationsFilterContext,
@@ -358,9 +359,13 @@ describe('operations-filter', () => {
     const CHARLIE_ID = '0x90b5ab205c6974c9ea841be688864633dc9ca8a357843eeacf2314649965fe22' as never;
 
     const names: Record<string, string> = { [ALICE_ID]: 'Alice Multisig', [BOB_ID]: 'Adam Initiator' };
-    const resolveName: AccountNameResolver = accountId => names[accountId] ?? '';
+    const resolvers: Pick<SearchResolvers, 'resolveAccountName' | 'resolveAddress'> = {
+      resolveAccountName: accountId => names[accountId] ?? '',
+      // Real encoding — the prefix assertions below depend on it.
+      resolveAddress: (accountId, chain) => toAddress(accountId, { prefix: chain?.addressPrefix }),
+    };
 
-    const search = (rows: OperationSearchRow[], query: string) => searchOperationRows(rows, query, resolveName);
+    const search = (rows: OperationSearchRow[], query: string) => searchOperationRows(rows, query, resolvers);
 
     test('returns null for an empty query so no filtering is applied', () => {
       const op = createMockOperation();

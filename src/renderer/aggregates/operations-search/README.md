@@ -22,8 +22,9 @@ search resolves them the same way before matching. Typing a name you can see alw
 | A note                  | A draft's description                                                                    |
 | A call hash             | An operation's call hash                                                                 |
 
-A row's searchable accounts are every account it puts on screen, not only the one in the collapsed row: for a draft that
-is the proxy, the multisig and the initiator; for an operation, the submitter and the initiator.
+A row's searchable accounts are every account it puts on screen, not only the one in the collapsed row: for a draft
+that is **every hop of its signing path** (which is exactly what the details panel lists — so a nested multisig's root
+hop is searchable even though no flat field stores it); for an operation, the submitter and the initiator.
 
 **Known gap — an operation's description is displayed but not searchable.** Descriptions come from the address book and
 are fetched only for operations that already passed the filter, so feeding them into the filter would be circular
@@ -37,9 +38,11 @@ the meaning of that order.
 
 ### Searching the initiator
 
-The **initiator** is the account that signs the outermost multisig call. Users could previously only discover it by
-opening a draft's Submit dialog, which made "which drafts are waiting on Adam?" an unanswerable question. Searching a
-name now answers it.
+The **initiator** here is the account that **signs** the outermost multisig call — the signing path's last node, the one
+the UI labels "Initiator" and the person a co-signer is waiting on. (The drafts feature also calls the path's *first*
+node the initiator in its submit flow; that is a different account. See the drafts spec.) Users could previously only
+discover it by opening a draft's Submit dialog, which made "which drafts are waiting on Adam?" an unanswerable question.
+Searching a name now answers it.
 
 The two row types store it differently, and it is worth knowing they are not the same kind of fact:
 

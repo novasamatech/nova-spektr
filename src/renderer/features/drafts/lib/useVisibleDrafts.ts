@@ -1,9 +1,9 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type Draft } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
-import { $accountNameSources, createAccountNameResolver, searchOperationRows } from '@/aggregates/operations-search';
+import { $searchResolvers, searchOperationRows } from '@/aggregates/operations-search';
 
 import { type DraftListScope, buildDraftSearchRow, filterDraftsByScope } from './draft-scope';
 import { useReadableDrafts } from './useReadableDrafts';
@@ -20,7 +20,16 @@ import { filterVisibleDrafts } from './visible-drafts';
 export function useVisibleDrafts(scope?: DraftListScope): { drafts: Draft[]; available: boolean } {
   const { drafts, available } = useReadableDrafts();
   const chains = useUnit(networkModel.$chains);
-  const nameSources = useUnit($accountNameSources);
+
+  const hasQuery = Boolean(scope?.searchQuery.trim());
+  // Resolvers are rebuilt on every contact / identity / account / wallet update.
+  // Subscribing unconditionally would re-render every consumer on each of those
+  // — including the dashboard widget, which passes no scope and never searches.
+  const resolvers = useStoreMap({
+    store: $searchResolvers,
+    keys: [hasQuery],
+    fn: (resolvers) => (hasQuery ? resolvers : null),
+  });
 
   const visibleDrafts = useMemo(() => {
     const visible = filterVisibleDrafts(drafts);
@@ -28,18 +37,17 @@ export function useVisibleDrafts(scope?: DraftListScope): { drafts: Draft[]; ava
 
     // Names are resolved over the pre-search list: resolving over the already
     // filtered one would shrink the set as the user types and make matches
-    // disappear mid-query. Skipped entirely without a query — building the rows
-    // costs an address encoding per account, and the no-query case is the norm.
-    const searchMatchedIds = scope.searchQuery.trim()
+    // disappear mid-query.
+    const searchMatchedIds = resolvers
       ? searchOperationRows(
-          visible.map((draft) => buildDraftSearchRow(draft, chains)),
+          visible.map((draft) => buildDraftSearchRow(draft, chains, resolvers.resolveWalletName)),
           scope.searchQuery,
-          createAccountNameResolver(nameSources),
+          resolvers,
         )
       : null;
 
     return filterDraftsByScope(visible, scope, searchMatchedIds);
-  }, [drafts, scope, chains, nameSources]);
+  }, [drafts, scope, chains, resolvers]);
 
   return { drafts: visibleDrafts, available };
 }
