@@ -245,12 +245,21 @@ const TransactionBalanceError = ({
   if (nullable(account)) return null;
   if (nullable(wallet)) return null;
 
-  // wallet.accounts is deprecated but is the only account data this
+  const accountName = resolvedAccount?.name || toShortAddress(toAddress(account.accountId));
+
+  // Name the failing key only for genuine key-set wallets (a Polkadot Vault
+  // holding several distinct keys). wallet.accounts is deprecated but is the
+  // only account data this presentational component receives, and a plain
+  // `distinct accountId count > 1` misfires: WalletConnect/Nova wallets hold one
+  // logical key yet expose a per-chain account, and an EVM chain adds a second,
+  // Ethereum-shaped (H160) accountId — so a single-key wallet would read as a
+  // key-set and render "Account X of wallet X". Count distinct accountIds only
+  // within the same address family as the failing account, and require a name
+  // that actually differs from the wallet (mirrors the Signatory.tsx picker).
   const failingIsEthereum = isEthereumAccountId(account.accountId);
   const distinctKeys = new Set(
     (wallet.accounts ?? []).filter(a => isEthereumAccountId(a.accountId) === failingIsEthereum).map(a => a.accountId),
   ).size;
-  const accountName = resolvedAccount?.name || toShortAddress(toAddress(account.accountId));
   const isKeySet = distinctKeys > 1 && accountName !== walletName;
 
   const assetGroups = groupBy(errors, e => e.asset.symbol);
