@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 
 import { type Balance, LockTypes } from '@/shared/core';
-import { splitBalanceByType, vestingOverlapBN } from '../balanceTypes';
+import { splitBalanceByType, splitBalanceForHoldings, vestingOverlapBN } from '../balanceTypes';
 
 type AssetLock = Balance['locked'][number];
 
@@ -285,5 +285,64 @@ describe('vestingOverlapBN', () => {
 
     const split = splitBalanceByType(balance);
     expect(split.vested.add(vestingOverlapBN(balance)).toNumber()).toEqual(150); // free + reserved
+  });
+});
+
+/**
+ * What the holdings lists and the Vested cross-filter read. The chip prints the
+ * whole vesting lock, so the rows the filter selects have to add up to it —
+ * otherwise clicking Vested on a staking wallet selects nothing, which is the
+ * bug this exists to prevent.
+ */
+describe('splitBalanceForHoldings', () => {
+  test('counts vesting that rides on reserved, unlike the partition', () => {
+    const balance = makeBalance({
+      free: 200,
+      reserved: 800,
+      frozen: 100,
+      locks: [makeLock(LockTypes.VESTING, 100)],
+      mode: 'holdAndFreezes',
+    });
+
+    expect(splitBalanceByType(balance).vested.toNumber()).toEqual(0);
+    expect(splitBalanceForHoldings(balance).vested.toNumber()).toEqual(100);
+  });
+
+  test('matches the chip figure when the lock straddles free and reserved', () => {
+    const balance = makeBalance({
+      free: 1000,
+      reserved: 200,
+      frozen: 600,
+      locks: [makeLock(LockTypes.VESTING, 600)],
+      mode: 'holdAndFreezes',
+    });
+
+    const split = splitBalanceByType(balance);
+    expect(splitBalanceForHoldings(balance).vested.toNumber()).toEqual(
+      split.vested.add(vestingOverlapBN(balance)).toNumber(),
+    );
+  });
+
+  test('leaves the other three buckets exactly as the partition reports them', () => {
+    const balance = makeBalance({
+      free: 700,
+      reserved: 300,
+      frozen: 500,
+      locks: [makeLock(GOVERNANCE_LOCK, 500), makeLock(LockTypes.VESTING, 200)],
+      mode: 'holdAndFreezes',
+    });
+
+    const partition = splitBalanceByType(balance);
+    const holdings = splitBalanceForHoldings(balance);
+
+    for (const type of ['transferable', 'reserved', 'locked'] as const) {
+      expect(holdings[type].toString()).toEqual(partition[type].toString());
+    }
+  });
+
+  test('agrees with the partition when there is nothing to overlap', () => {
+    const balance = makeBalance({ free: 1000, frozen: 600, locks: [makeLock(LockTypes.VESTING, 600)] });
+
+    expect(splitBalanceForHoldings(balance).vested.toNumber()).toEqual(600);
   });
 });

@@ -589,8 +589,6 @@
       "assetCount_other": "{count} assets",
       "networkCount_one": "{count} network",
       "networkCount_other": "{count} networks",
-      "vestedInReserved": "in Reserved",
-      "vestedInReservedAndLocked": "in Reserved + Locked",
       "vestedNotPriced": "not priced",
       "balanceType": {
         "transferable": "Transferable",

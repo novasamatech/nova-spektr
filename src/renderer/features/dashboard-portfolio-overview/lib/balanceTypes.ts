@@ -67,10 +67,33 @@ export function splitBalanceByType(balance: Balance): Record<BalanceType, BN> {
  * the user can verify), only reported alongside.
  */
 export function vestingOverlapBN(balance: Balance): BN {
-  const total = balance.free.add(balance.reserved);
-  // Capped at the total: a lock can never exceed the balance it freezes, and a
-  // stale lock read against a since-reduced balance would otherwise overstate.
-  const vestingLock = BN.min(vestedLockedAmountBN(balance), total);
+  return BN.max(BN_ZERO, vestedTotalBN(balance).sub(splitBalanceByType(balance).vested));
+}
 
-  return BN.max(BN_ZERO, vestingLock.sub(splitBalanceByType(balance).vested));
+/**
+ * Everything under a vesting schedule, whether or not it restricts `free`.
+ *
+ * Capped at the balance: a lock can never exceed the funds it freezes, and a
+ * stale lock read against a since-reduced balance would otherwise overstate.
+ */
+export function vestedTotalBN(balance: Balance): BN {
+  return BN.min(vestedLockedAmountBN(balance), balance.free.add(balance.reserved));
+}
+
+/**
+ * The buckets the **holdings lists and the cross-filter** read, as opposed to
+ * the bar's: identical except that `vested` carries the whole vesting lock.
+ *
+ * The two differ because they answer different questions. A bar segment must be
+ * a share of a total, so it can only show vesting that occupies space of its
+ * own — hence {@link splitBalanceByType}, which caps it. A filter answers "which
+ * assets, on which networks, are under a schedule", and there the coins covered
+ * by a hold belong in the answer: they are just as vested, and leaving them out
+ * made the Vested chip select nothing at all for a staking wallet.
+ *
+ * Consequence to keep in mind: these buckets do **not** sum to the balance —
+ * `vested` overlaps `reserved`. Never feed them to anything that partitions.
+ */
+export function splitBalanceForHoldings(balance: Balance): Record<BalanceType, BN> {
+  return { ...splitBalanceByType(balance), vested: vestedTotalBN(balance) };
 }

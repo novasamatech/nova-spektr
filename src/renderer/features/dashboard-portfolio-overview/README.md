@@ -67,8 +67,8 @@ appears whenever there is vesting to report — unpriced, or overlapping Reserve
 The bar and the chips are a **cross-filter over the holdings lists**, not just a legend: clicking a segment or a chip
 scopes the donut and the list below to that balance type (the list then shows each holding's share of that type's
 total), and the scope label and accent color follow the selection. **"Show all"** — or clicking the already-active chip
-— clears the filter. The Vested chip is shown but **not** clickable whenever its figure and the filter would disagree —
-unpriced vesting has no fiat rows to scope, and an overlapping lock has no rows of its own at all.
+— clears the filter. The only chip that cannot filter is one with no priced rows behind it at all — vesting that exists
+solely on an unpriced chain.
 
 Vesting is not a fourth kind of balance — it is one of the locks that make an account's funds frozen in the first place,
 so a vesting user's coins were already frozen before this category named that slice. The split is computed **per
@@ -104,12 +104,18 @@ the user can check against a block explorer.
 So the overlapping amount is computed separately (`vestingOverlapBN`) and kept **outside** the partition:
 
 - The **chip is always shown** when there is any vesting, printing the whole vesting lock — the figure that matches the
-  schedules the callout counts — suffixed with where the money actually sits ("· in Reserved"). It carries a dashed edge
-  and a hatched swatch, and does not cross-filter: the amount it prints is no longer the amount the filter would select.
+  schedules the callout counts — with a hatched swatch marking it as overlapping rather than adjacent.
+- The chip **cross-filters like any other**, and under overlap that is its main job: scoping the holdings lists is the
+  only way to see _which_ assets, on which networks, sit under a schedule. This is why the lists count vesting through
+  `splitBalanceForHoldings` (the whole lock) while the bar partitions through `splitBalanceByType` (capped) — the rows
+  the filter selects then add up to the figure on the chip. Those buckets deliberately do **not** sum to the balance and
+  must never be fed to anything that partitions.
 - The **bar** folds the vested slice back into the segments it covers and draws the vesting as a hatched marker across
-  them, so the partition stays exact and Reserved keeps its true width. The marker is width-proportional and
-  deliberately has **no minimum width**: a trace of vesting inside a large reserved balance is a sub-pixel span and is
-  meant to vanish rather than misrepresent $2 as comparable to $10M. That case is the chip's to carry.
+  them, so the partition stays exact and Reserved keeps its true width. The marker is a **locator, not a share**: it
+  honours the same 6px floor as the segments, since a trace of vesting inside a large reserved balance would otherwise
+  be sub-pixel and invisible, and seeing which part of the bar is affected is the point of drawing it. It is
+  click-through — the hit target stays the segment underneath — and its start is clamped so the floor cannot push it
+  past the bar's rounded end.
 
 The vesting lock only shrinks when `vesting.vest()` runs, so it still covers funds that have vested but were never
 claimed — they really are untransferable until the claim lands. **The Vested chip and the claim callout therefore

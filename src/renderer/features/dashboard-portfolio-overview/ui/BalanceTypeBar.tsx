@@ -20,6 +20,10 @@ type Props = {
   onClear: () => void;
 };
 
+// Same floor the bar's segments use, so a trace of vesting stays visible instead
+// of collapsing to a sub-pixel span nobody can find.
+const MARKER_MIN_PX = 6;
+
 export const BalanceTypeBar = memo(({ allocation, currency, syncing, selectedType, onToggleType, onClear }: Props) => {
   const { t } = useI18n();
 
@@ -32,12 +36,13 @@ export const BalanceTypeBar = memo(({ allocation, currency, syncing, selectedTyp
     (type) => allocation.types[type].pct > 0 || (type === 'vested' && (hasUnpricedVested || hasOverlap)),
   );
 
-  // Cross-filtering picks rows out of the fiat list by category. A chip can only
-  // do that while the amount it prints is the amount the filter would select —
-  // which rules out a chip with no fiat share at all, and a Vested chip whose
-  // figure includes an overlap the list has no rows for.
-  const isFilterable = (type: BalanceType) =>
-    allocation.types[type].pct > 0 && (type !== 'vested' || (!hasOverlap && !hasUnpricedVested));
+  // Cross-filtering picks rows out of the fiat list by category. The Vested chip
+  // filters like any other — including under overlap, which is where it matters
+  // most: it is the only way to see *which* assets, on which networks, sit under
+  // a schedule. The holdings lists count vesting exactly as the chip does (see
+  // `splitBalanceForHoldings`), so the rows the filter selects add up to the
+  // figure on the chip. Only a chip with no priced rows behind it cannot filter.
+  const isFilterable = (type: BalanceType) => allocation.types[type].pct > 0 || (type === 'vested' && hasOverlap);
 
   /**
    * With an overlap the vested amount stops being a slice: it sits on top of
@@ -81,18 +86,11 @@ export const BalanceTypeBar = memo(({ allocation, currency, syncing, selectedTyp
       return `${tokenAmounts} · ${t('dashboard.portfolioOverview.vestedNotPriced')}`;
     }
 
-    // Where the money actually sits, so the chip explains its own absence from
-    // the bar rather than looking like a rounding error.
-    const host = hasOverlap
-      ? allocation.types.vested.pct > 0
-        ? t('dashboard.portfolioOverview.vestedInReservedAndLocked')
-        : t('dashboard.portfolioOverview.vestedInReserved')
-      : null;
-
+    // No "where it sits" suffix: the chip filters, and the rows it selects name
+    // the networks and assets far better than a label could.
     return (
       <>
         <Price amount={allocation.vestedTotalFiat} currency={currency} />
-        {host ? ` · ${host}` : null}
         {hasUnpricedVested ? ` · ${tokenAmounts}` : null}
       </>
     );
@@ -142,21 +140,29 @@ export const BalanceTypeBar = memo(({ allocation, currency, syncing, selectedTyp
           </div>
 
           {/*
-            Purely indicative: no min-width floor and no pointer events. A trace
-            of vesting inside a huge reserved balance is a sub-pixel span and is
-            meant to disappear — widening it to stay visible would show $2 as if
-            it were comparable to $10M. The chip carries that case.
+            A locator, not a share: it marks where the vesting sits, and the chip
+            beside it carries the amount. Hence the same 6px floor the segments
+            use — a trace of vesting inside a large reserved balance would
+            otherwise be a sub-pixel span and vanish, and being able to see which
+            part of the bar is affected is the whole point of drawing it.
+            Click-through to the segment underneath: the marker overlaps rather
+            than replaces it, so the hit target stays the host's.
           */}
           {overlapSpan && (
             <span
               aria-hidden
               className={cnTw(
                 'pointer-events-none absolute inset-y-0 rounded-[2px] transition-opacity',
-                selectedType ? 'opacity-30' : 'opacity-100',
+                selectedType && selectedType !== 'vested' ? 'opacity-30' : 'opacity-100',
               )}
               style={{
-                left: `${overlapSpan.left}%`,
+                // `left + width` can only exceed 100% by way of the floor below
+                // (the span itself is bounded by the total), so clamping the
+                // start by exactly that floor keeps the marker inside the bar
+                // instead of hanging past its rounded end.
+                left: `min(${overlapSpan.left}%, calc(100% - ${MARKER_MIN_PX}px))`,
                 width: `${overlapSpan.width}%`,
+                minWidth: `${MARKER_MIN_PX}px`,
                 backgroundImage: VESTED_HATCH,
               }}
             />
@@ -173,8 +179,6 @@ export const BalanceTypeBar = memo(({ allocation, currency, syncing, selectedTyp
               'flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 transition-opacity',
               isFilterable(type) ? 'cursor-pointer' : 'cursor-default',
               selectedType === type ? 'bg-hover' : 'border-token-container-border',
-              // a dashed edge marks the chip that has no segment to point at
-              type === 'vested' && hasOverlap ? 'border-dashed' : null,
               selectedType && selectedType !== type ? 'opacity-30' : 'opacity-100',
             )}
             style={{ borderColor: selectedType === type ? ALLOCATION_COLORS[type] : undefined }}
