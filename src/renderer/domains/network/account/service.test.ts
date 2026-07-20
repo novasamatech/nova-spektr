@@ -1199,6 +1199,104 @@ describe('account service', () => {
     });
   });
 
+  describe('resolveSelectedAccount', () => {
+    const registerAvailability = () => {
+      accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+        body: ({ account, chain }) =>
+          accountService.isChainAccount(account) ? account.chainId === chain.chainId : true,
+        available: () => true,
+      });
+    };
+
+    const makeChainAccount = (overrides: Partial<ChainAccount>): ChainAccount => ({
+      id: 'acc',
+      type: 'chain',
+      accountId: createAccountId('1'),
+      chainId: polkadotChainId,
+      name: '',
+      walletId: 1,
+      signingType: SigningType.POLKADOT_VAULT,
+      cryptoType: CryptoType.SR25519,
+      createdAt: Date.now(),
+      ...overrides,
+    });
+
+    it('resolves the account matching the selected address, not the first wallet account', () => {
+      registerAvailability();
+      const keyA = makeChainAccount({ id: 'a', accountId: createAccountId('10') });
+      const keyB = makeChainAccount({ id: 'b', accountId: createAccountId('11') });
+
+      const result = accountService.resolveSelectedAccount([keyA, keyB], {
+        walletId: 1,
+        address: toAddress(keyB.accountId),
+        chain: polkadotChain,
+      });
+
+      expect(result).toEqual(keyB);
+    });
+
+    it('ignores accounts of other wallets sharing the address', () => {
+      registerAvailability();
+      const foreign = makeChainAccount({ id: 'foreign', walletId: 2 });
+      const own = makeChainAccount({ id: 'own', walletId: 1 });
+
+      const result = accountService.resolveSelectedAccount([foreign, own], {
+        walletId: 1,
+        address: toAddress(own.accountId),
+        chain: polkadotChain,
+      });
+
+      expect(result).toEqual(own);
+    });
+
+    it('prefers the chain-scoped key when the wallet has several accounts with the same accountId', () => {
+      registerAvailability();
+      const universal: UniversalAccount = {
+        id: 'u',
+        type: 'universal',
+        accountId: createAccountId('1'),
+        name: '',
+        walletId: 1,
+        signingType: SigningType.POLKADOT_VAULT,
+        cryptoType: CryptoType.SR25519,
+        createdAt: Date.now(),
+      };
+      const chainKey = makeChainAccount({ id: 'c', accountId: createAccountId('1') });
+
+      const result = accountService.resolveSelectedAccount([universal, chainKey], {
+        walletId: 1,
+        address: toAddress(chainKey.accountId),
+        chain: polkadotChain,
+      });
+
+      expect(result).toEqual(chainKey);
+    });
+
+    it('returns null when the selected key is not available on the chain', () => {
+      registerAvailability();
+      const kusamaKey = makeChainAccount({ id: 'k', chainId: kusamaChainId });
+
+      const result = accountService.resolveSelectedAccount([kusamaKey], {
+        walletId: 1,
+        address: toAddress(kusamaKey.accountId),
+        chain: polkadotChain,
+      });
+
+      expect(result).toBeNull();
+    });
+
+    it('returns null for an empty address', () => {
+      registerAvailability();
+      const result = accountService.resolveSelectedAccount([makeChainAccount({})], {
+        walletId: 1,
+        address: '',
+        chain: polkadotChain,
+      });
+
+      expect(result).toBeNull();
+    });
+  });
+
   describe('searchAccounts', () => {
     const createSearchAccount = (id: string, walletId: number, name: string): AnyAccount => ({
       id,

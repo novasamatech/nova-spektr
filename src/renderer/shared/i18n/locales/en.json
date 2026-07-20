@@ -1719,7 +1719,9 @@
     "transactionErrors": {
       "balance": {
         "intro": "Wallet <wallet/> has insufficient funds to cover",
+        "introAccount": "Account <account/> of wallet <wallet/> has insufficient funds to cover",
         "required": "Please top up the balance of this wallet by { balances } and try again.",
+        "requiredAccount": "Please top up the balance of this account by { balances } and try again.",
         "section": "the {action} of {balance}"
       },
       "fatal": {
