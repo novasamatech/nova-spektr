@@ -6,7 +6,7 @@ import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type VestingData, type VestingScheduleInfo } from '@/domains/vesting';
 
-import { computeVesting } from './views';
+import { computeVesting, filterVestingData } from './views';
 
 const ACCOUNT = '0x00'.padEnd(66, '1') as AccountId;
 
@@ -216,5 +216,53 @@ describe('computeVesting — the summary', () => {
     expect(compute({ schedules: [CLIFF, GRADUAL], lock: TOTAL_LOCK, currentBlock: START }).summary.schedulesCount).toBe(
       2,
     );
+  });
+});
+
+/**
+ * Vesting is subscribed to for every visible account, once, and the dashboard's
+ * account filter is applied to the result. That filter is this function — so it
+ * is what stands between "narrow the selection" and "show someone else's
+ * schedules", and the only thing that has to keep working for the card to stop
+ * re-fetching on every change of selection.
+ */
+describe('filterVestingData', () => {
+  const OTHER = '0x00'.padEnd(66, '2') as AccountId;
+
+  const data = (): VestingData => ({
+    schedules: {
+      [ASSET_HUB]: { [ACCOUNT]: [schedule(100, 1, 0)], [OTHER]: [schedule(200, 2, 0)] },
+      [RELAY]: { [OTHER]: [schedule(300, 3, 0)] },
+    },
+    locks: {
+      [ASSET_HUB]: { [ACCOUNT]: new BN(100), [OTHER]: new BN(200) },
+      [RELAY]: { [OTHER]: new BN(300) },
+    },
+  });
+
+  it('keeps only the scoped accounts, and drops chains left with none', () => {
+    const filtered = filterVestingData(data(), [ACCOUNT]);
+
+    expect(Object.keys(filtered.schedules)).toEqual([ASSET_HUB]);
+    expect(Object.keys(filtered.schedules[ASSET_HUB] ?? {})).toEqual([ACCOUNT]);
+    // The locks are what the claimable figure is read from — scoping the
+    // schedules without them would price a row against a stranger's lock.
+    expect(Object.keys(filtered.locks[ASSET_HUB] ?? {})).toEqual([ACCOUNT]);
+    expect(filtered.locks[RELAY]).toBeUndefined();
+  });
+
+  it('returns the data untouched when there is no scope', () => {
+    const source = data();
+
+    // Reference-identical on purpose: this runs in a `combine` that feeds the
+    // whole view computation, and rebuilding an identical copy would re-run it.
+    expect(filterVestingData(source, null)).toBe(source);
+  });
+
+  it('yields nothing for a scope that holds no vesting', () => {
+    const filtered = filterVestingData(data(), ['0x00'.padEnd(66, '3') as AccountId]);
+
+    expect(filtered.schedules).toEqual({});
+    expect(filtered.locks).toEqual({});
   });
 });
