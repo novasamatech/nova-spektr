@@ -182,12 +182,9 @@ const $presetScopedMultisigAccounts = combine(
 
 const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isAnyMultisig));
 
-/**
- * Mirrors a derived store into a plain one that only accepts updates which
- * actually change the value. Used for search inputs whose sources (contacts,
- * identities) churn while loading: without it every such update re-runs the
- * whole filter chain even when the resolved result is identical.
- */
+// Search inputs derive from contacts and identities, which churn while loading.
+// Without this, every such update re-runs the filter chain even when the
+// resolved value is identical.
 const createGuardedStore = <T>(source: Store<T>, defaultValue: T, isSame: (next: T, prev: T) => boolean) => {
   const $guarded = createStore(defaultValue, { updateFilter: (next, prev) => !isSame(next, prev) });
   $guarded.on(source, (_, next) => next);
@@ -314,11 +311,9 @@ const $searchMatchedOperationIdsRaw = combine(
   },
 );
 
-// Name resolution pulls in contacts and identities, which update as they load.
-// Guarding on the resulting id set stops those updates from re-running the
-// downstream filter chain when they don't change what matches. The search itself
-// still recomputes; it is the no-query early return above that keeps the common
-// case free.
+// The search itself still recomputes on name-source churn; the guard only stops
+// it from re-running the downstream filter chain, and the no-query early return
+// above keeps the common case free.
 const $searchMatchedOperationIds = createGuardedStore<Set<string> | null>(
   $searchMatchedOperationIdsRaw,
   null,

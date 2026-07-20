@@ -348,9 +348,8 @@ describe('operations-filter', () => {
     const ALICE_ID = '0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d' as never;
     const BOB_ID = '0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48' as never;
 
-    // Prefix 2, deliberately not the SS58 default (0): a chain-bound account and
-    // a chain-agnostic one must encode differently for the prefix assertions
-    // below to mean anything.
+    // Not the SS58 default (0), so chain-bound and chain-agnostic accounts encode
+    // differently — otherwise the prefix assertions below prove nothing.
     const chains = {
       [MOCK_CHAIN_ID]: { chainId: MOCK_CHAIN_ID, name: 'Kusama', addressPrefix: 2, assets: [] } as never as Chain,
     };
@@ -400,8 +399,7 @@ describe('operations-filter', () => {
       const op = createMockOperation({ depositor: BOB_ID });
       const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map());
 
-      // Bob at the chain's prefix 2 — FoQJpP…; at the default prefix 0 he would
-      // be 14E5nq…, which must not match.
+      // Bob at prefix 2 (FoQJpP…), not at the default prefix 0 (14E5nq…).
       expect(search([row], 'FoQJpP')).toEqual(new Set(['op-1']));
       expect(search([row], '14E5nq')).toEqual(new Set());
     });
@@ -414,8 +412,8 @@ describe('operations-filter', () => {
     });
 
     describe('flexible multisig', () => {
-      // The proxied facade is what the row renders; the underlying multisig id is
-      // only a link target. Searching the latter never matched what was on screen.
+      // The row renders the proxied facade; the underlying multisig id is only a
+      // link target.
       const flexibleAccount = {
         accountId: ALICE_ID,
         accountType: 'flex_multisig',
@@ -428,8 +426,8 @@ describe('operations-filter', () => {
       const universalMultisigAccount = { accountId: ALICE_ID, accountType: 'multisig', walletId: 1 } as never;
 
       // Depositor is a third account, so a Bob match can only come from the
-      // underlying multisig id — otherwise the negative assertion below is
-      // satisfied by the initiator and the test can never fail on this bug.
+      // underlying multisig id — otherwise the initiator satisfies the negative
+      // assertion below and it can never fail.
       const flexibleOperation = createMockOperation({ multisigAccountId: BOB_ID, depositor: CHARLIE_ID });
 
       test('matches the proxied address the row displays', () => {

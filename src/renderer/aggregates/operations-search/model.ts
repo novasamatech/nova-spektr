@@ -7,11 +7,8 @@ import { walletModel } from '@/entities/wallet';
 
 import { type AccountNameSources, createSearchResolvers } from './lib/account-name';
 
-/**
- * Everything `accountService.resolveAccountName` needs, in one store, so both
- * the Effector-side operations filter and the React-side drafts filter resolve
- * display names from exactly the same inputs.
- */
+// One store, so the Effector-side operations filter and the React-side drafts
+// filter resolve names from identical inputs.
 export const $accountNameSources = combine(
   {
     accounts: accounts.$list,
@@ -22,10 +19,7 @@ export const $accountNameSources = combine(
   (sources): AccountNameSources => sources,
 );
 
-/**
- * The resolvers, rebuilt only when their sources change — so their memo caches
- * survive across keystrokes, which is where the repeated work actually is.
- */
+// A store rather than a per-search call, so the memo caches survive keystrokes.
 export const $searchResolvers = combine(
   { sources: $accountNameSources, wallets: walletModel.$wallets },
   ({ sources, wallets }) => createSearchResolvers(sources, wallets),

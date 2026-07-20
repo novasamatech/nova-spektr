@@ -163,18 +163,6 @@ export const getWalletSearchEntries = (wallets: Wallet[], sources: WalletSearchS
   }));
 };
 
-/**
- * Reduces an operation to the accounts its row displays, for the shared search.
- *
- * Two things here deliberately differ from what this used to match:
- *
- * - The submitter is `account.accountId`, not `operation.multisigAccountId`. For
- *   a flexible multisig those are different accounts (the former is the proxied
- *   facade the row renders, the latter the underlying multisig), so searching
- *   the stored id never matched the address on screen.
- * - The submitter prefix comes from `account.chainId`, not `operation.chainId`,
- *   matching the chain `<NamedAccount>` is given in the Submitter column.
- */
 export const buildOperationSearchRow = (
   operation: MultisigOperation,
   account: MultisigAccount | FlexibleMultisigAccount,
@@ -187,24 +175,22 @@ export const buildOperationSearchRow = (
     id: operation.id,
     accounts: [
       {
-        // Submitter column.
+        // Submitter column. Not `operation.multisigAccountId`: for a flexible
+        // multisig that is the underlying multisig, while the row renders the
+        // proxied facade. Only a flexible multisig is chain-bound.
         accountId: account.accountId,
-        // A universal multisig is chain-agnostic and renders with the default
-        // prefix; only a flexible multisig is bound to a chain.
         chain: isFlex ? (chains[account.chainId] ?? null) : null,
         walletName: walletNames.get(account.walletId) ?? null,
       },
       {
-        // Initiator — shown in the expanded details, not the collapsed row.
-        // Always the operation's own chain: a depositor reserved a deposit there.
+        // Initiator, shown in the expanded details.
         accountId: operation.depositor,
         chain: chains[operation.chainId] ?? null,
         walletName: null,
       },
     ],
-    // The row does render a description, but it is fetched only for operations
-    // that already passed the filter, so feeding it back in here would be
-    // circular. Drafts carry theirs inline and do search it.
+    // Rendered, but fetched only for operations that already passed the filter —
+    // matching on it here would be circular.
     description: null,
     callHash: operation.callHash,
   };

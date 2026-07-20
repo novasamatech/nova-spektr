@@ -40,19 +40,10 @@ const matchesDateRange = (draft: Draft, dateRange: DateRange | undefined): boole
 };
 
 /**
- * Reduces a draft to the accounts its row displays, for the shared search. A
- * draft is chain-bound, so every one of them renders with `draft.chainId`.
- *
- * The searchable set is **every node of the stored signing path**, which is
- * exactly what the details panel lists (DraftFullInfo renders one row per node,
- * labelled Proxied → Multisig → Initiator). Deriving it from the path rather
- * than from the flat `proxyAccountId` / `multisigAccountId` /
- * `initiatorAccountId` fields matters for nested multisigs, where
- * `multisigAccountId` is the deepest hop and the root multisig appears only in
- * the path.
- *
- * Legacy drafts with no path fall back to the flat fields — the same
- * reconstruction the panel does, and in the same order.
+ * Searches every hop of the signing path, which is what the details panel
+ * lists. The flat `multisigAccountId` holds only the deepest hop, so for a
+ * nested multisig the root would otherwise be unsearchable. Legacy drafts with
+ * no path fall back to the flat fields, as the panel does.
  */
 export const buildDraftSearchRow = (
   draft: Draft,
@@ -60,13 +51,11 @@ export const buildDraftSearchRow = (
   resolveWalletName: (accountId: AccountId, chain?: Chain | null) => string | null,
 ): OperationSearchRow => {
   const chain = chains[draft.chainId] ?? null;
-  // Matches the defensive reads in submit-draft-model: the zod default makes
-  // this an array after parsing, but drafts also arrive from cached payloads.
+  // Matches the defensive reads in submit-draft-model — drafts also arrive from
+  // cached payloads that never went through the schema.
   const signingPath = Array.isArray(draft.signingPath) ? draft.signingPath : [];
 
-  // The collapsed row shows this one through <NamedAccount wallet={…}>, whose
-  // wallet name is a hard override — so it is the only account whose wallet name
-  // is on screen, and the only one that needs resolving.
+  // The only account whose wallet name reaches the screen (collapsed row).
   const submitterAccountId = draft.proxyAccountId ?? draft.multisigAccountId;
 
   const pathAccountIds =
@@ -107,8 +96,8 @@ export const buildDraftSearchRow = (
  * filtered operations list. Status gating is handled separately by the caller
  * (drafts match only the dedicated `drafts` status).
  *
- * `searchMatchedIds` is computed by the caller (it needs resolved display
- * names) and is `null` when there is no query.
+ * `searchMatchedIds` comes from the caller because it needs resolved display
+ * names; `null` means no query.
  */
 export const filterDraftsByScope = (
   drafts: Draft[],

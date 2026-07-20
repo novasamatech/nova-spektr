@@ -10,40 +10,28 @@ export type AccountNameSources = {
   chains: Record<string, Chain>;
 };
 
-/**
- * The three strings a row can show for an account. Grouped so callers pass one
- * object and every resolver shares the same source snapshot.
- */
 export type SearchResolvers = {
-  /** The `<NamedAccount>` resolution chain, minus the wallet-name override. */
   resolveAccountName: (accountId: AccountId, chain?: Chain | null) => string;
   /**
-   * The wallet name `<NamedAccount wallet={…}>` displays. Separate because
-   * `resolveAccountName` has no wallet step — its last resort before the short
-   * address is the _account_ name — while a wallet name enters as `title`, a
-   * hard override. A row showing a wallet name is otherwise unsearchable.
+   * Separate from the account name because `resolveAccountName` has no wallet
+   * step, while `<NamedAccount wallet={…}>` passes the wallet name as `title` —
+   * a hard override. Without this, a row showing a wallet name is
+   * unsearchable.
    */
   resolveWalletName: (accountId: AccountId, chain?: Chain | null) => string | null;
-  /** SS58 address at the given chain's prefix, or the default prefix. */
   resolveAddress: (accountId: AccountId, chain?: Chain | null) => string;
 };
 
 const cacheKey = (accountId: AccountId, chain?: Chain | null) => `${accountId}:${chain?.chainId ?? 'anyChain'}`;
 
 /**
- * Builds the resolvers over one snapshot of the domain stores.
+ * Uses the pure services rather than `useAccountName` / `accountNameResource`:
+ * operations are filtered inside an Effector `combine` where hooks are
+ * unavailable, and the resource cache is only populated for accounts some
+ * component happened to render.
  *
- * Deliberately calls the pure services instead of `useAccountName` /
- * `accountNameResource`: operations are filtered inside an Effector `combine`
- * where hooks are unavailable, and a cache read would be best-effort (populated
- * only for accounts some component happened to render). Mirrors the existing
- * `getWalletSearchEntries` approach.
- *
- * Every resolver memoizes, because the search runs over every row on each
- * keystroke while `resolveAccountName` scans the contact and account lists and
- * `toAddress` runs a blake2b checksum. The caches are bound to this snapshot
- * and must never outlive it, or they would serve stale names — which is why the
- * resolvers are rebuilt whenever the sources change, and only then.
+ * The caches are bound to this `sources` snapshot and must never outlive it, or
+ * they would serve stale names — hence rebuilding on every source change.
  */
 export const createSearchResolvers = (sources: AccountNameSources, wallets: Wallet[]): SearchResolvers => {
   const nameCache = new Map<string, string>();

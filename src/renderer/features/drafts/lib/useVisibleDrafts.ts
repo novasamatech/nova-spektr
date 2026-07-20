@@ -22,9 +22,9 @@ export function useVisibleDrafts(scope?: DraftListScope): { drafts: Draft[]; ava
   const chains = useUnit(networkModel.$chains);
 
   const hasQuery = Boolean(scope?.searchQuery.trim());
-  // Resolvers are rebuilt on every contact / identity / account / wallet update.
-  // Subscribing unconditionally would re-render every consumer on each of those
-  // — including the dashboard widget, which passes no scope and never searches.
+  // Resolvers change on every contact / identity / account / wallet update.
+  // Subscribing unconditionally would re-render consumers that never search,
+  // such as the dashboard widget.
   const resolvers = useStoreMap({
     store: $searchResolvers,
     keys: [hasQuery],
@@ -35,9 +35,8 @@ export function useVisibleDrafts(scope?: DraftListScope): { drafts: Draft[]; ava
     const visible = filterVisibleDrafts(drafts);
     if (!scope) return visible;
 
-    // Names are resolved over the pre-search list: resolving over the already
-    // filtered one would shrink the set as the user types and make matches
-    // disappear mid-query.
+    // Resolved over the pre-search list: resolving over the filtered one would
+    // shrink the set as the user types, making matches disappear mid-query.
     const searchMatchedIds = resolvers
       ? searchOperationRows(
           visible.map((draft) => buildDraftSearchRow(draft, chains, resolvers.resolveWalletName)),

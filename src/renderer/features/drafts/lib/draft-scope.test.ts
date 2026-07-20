@@ -44,11 +44,9 @@ const emptyScope: DraftListScope = {
   searchQuery: '',
 };
 
-// Deliberately split the two name channels the way the real system splits them:
-// accountService.resolveAccountName has NO wallet step, so an account whose only
-// display name comes from its wallet resolves to '' here — exactly as it would
-// in production. A stub that answered every accountId from one table would hide
-// that, which is how the wallet-name gap survived the first round of tests.
+// Split the two name channels as production does: resolveAccountName has no
+// wallet step, so a wallet-name-only account resolves to ''. A single-table stub
+// would hide that — which is how the wallet-name gap survived the first tests.
 const accountNames: Record<string, string> = {
   [BOB_ACCOUNT_ID]: 'Adam Initiator',
   [CHARLIE_ACCOUNT_ID]: 'Charlie Signer',
@@ -126,10 +124,8 @@ describe('filterDraftsByScope', () => {
   });
 
   test('search matches a submitter name that only the wallet supplies', () => {
-    // 'Team Multisig' is reachable only through resolveWalletName — the account
-    // resolver returns '' for this accountId, as the real one would. The row
-    // still shows it, because <NamedAccount> takes the wallet name as a hard
-    // title override, so the query must find it.
+    // Reachable only through resolveWalletName, yet <NamedAccount> shows it as a
+    // hard title override — so the query must still find it.
     expect(resolvers.resolveAccountName(MOCK_ACCOUNT_ID)).toBe('');
 
     const scope = { ...emptyScope, searchQuery: 'Team Multi' };
@@ -144,16 +140,13 @@ describe('filterDraftsByScope', () => {
     } as Partial<Draft>);
 
     test('search matches the proxy contact name the row displays', () => {
-      // DraftRow renders a synthetic wallet named after the proxy contact, and
-      // <NamedAccount> takes a wallet name as a hard override — so this string is
-      // on screen even though no resolver produces it.
+      // On screen via the synthetic proxy wallet, though no resolver produces it.
       const scope = { ...emptyScope, searchQuery: 'Cold Proxy' };
       expect(filterWithSearch([proxiedDraft], scope).map((d) => d.id)).toEqual(['draft-proxied']);
     });
 
     test('search still matches the multisig address when a proxy is set', () => {
-      // The multisig is shown in the expanded details alongside the proxy, so a
-      // pasted multisig address must keep finding the draft.
+      // The details panel shows the multisig alongside the proxy.
       const scope = { ...emptyScope, searchQuery: '15oF4' };
       expect(filterWithSearch([proxiedDraft], scope).map((d) => d.id)).toEqual(['draft-proxied']);
     });
@@ -188,8 +181,8 @@ describe('filterDraftsByScope', () => {
     });
 
     test('a stored path wins over initiatorAccountId, matching what the details panel shows', () => {
-      // DraftFullInfo treats a non-empty signingPath as the source of truth and
-      // ignores initiatorAccountId, so the search must not match the stale field.
+      // DraftFullInfo ignores initiatorAccountId when a path exists, so matching
+      // the stale field would match a name the panel never shows.
       const divergentDraft = createMockDraft({
         id: 'draft-divergent',
         initiatorAccountId: BOB_ACCOUNT_ID,
@@ -211,8 +204,7 @@ describe('filterDraftsByScope', () => {
     });
 
     test('a non-signer-terminated path does not fall back to the stale stored field', () => {
-      // DraftFullInfo renders such a path as-is and shows no Initiator row, so
-      // matching initiatorAccountId here would match a name never displayed.
+      // The panel renders such a path as-is, with no Initiator row at all.
       const brokenPathDraft = createMockDraft({
         id: 'draft-broken',
         initiatorAccountId: BOB_ACCOUNT_ID,
@@ -224,9 +216,8 @@ describe('filterDraftsByScope', () => {
   });
 
   describe('nested multisig', () => {
-    // Root multisig → nested multisig → signer. `multisigAccountId` stores the
-    // *deepest* hop, so the root appears only in the path — but the details
-    // panel lists every node, so every node must be searchable.
+    // `multisigAccountId` stores the deepest hop, so the root exists only in the
+    // path — yet the details panel lists every node.
     const nestedDraft = createMockDraft({
       id: 'draft-nested',
       multisigAccountId: CHARLIE_ACCOUNT_ID,

@@ -4,26 +4,19 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { type SearchResolvers } from './account-name';
 
-/**
- * One account a row puts on screen, with the chain its address is _rendered_
- * with — so the query matches the address the user can actually see.
- *
- * `walletName` carries the name `<NamedAccount wallet={…}>` displays: the
- * wallet name is passed in as `title`, which is a hard override winning over
- * the whole resolution chain. Without it the search would match a name the row
- * never shows and miss the one it does.
- */
 export type SearchAccountRef = {
   accountId: AccountId;
+  /**
+   * The chain the row _renders_ this address with, so the query matches what's
+   * on screen.
+   */
   chain: Chain | null;
   walletName: string | null;
 };
 
 /**
- * A row of the operations table — an operation or a draft — reduced to the
- * strings it displays. Both row types share one shape so a single query behaves
- * the same across the list; they used to run separate hand-rolled matchers that
- * searched different fields.
+ * One shape for both row types, so a single query behaves the same across the
+ * list.
  */
 export type OperationSearchRow = {
   id: string;
@@ -39,9 +32,8 @@ type SearchMeta = {
   callHashText: string;
 };
 
-// Only *whether* a field matches matters, never the ranking — see the Set return
-// below — so these weights just have to be non-zero. They are kept meaningful so
-// the order is right should a caller ever want the ranked list.
+// Ranking is discarded (see the Set return), so these only have to be non-zero;
+// they stay meaningful in case a caller ever wants the ranked list.
 const SEARCH_WEIGHTS = {
   accountNames: 1,
   descriptionText: 0.75,
@@ -49,19 +41,16 @@ const SEARCH_WEIGHTS = {
   callHashText: 0.5,
 };
 
-// A row's account strings are matched as one joined blob. The separator is a
-// newline so a query can never span two accounts by accident.
+// Newline, so a query can never match across two accounts.
 const JOIN = '\n';
 
 /**
- * Returns the ids of rows matching the query, or `null` when the query is empty
- * (meaning "no search filter"), so callers can skip the work entirely.
+ * `null` means "no query" — callers skip filtering entirely.
  *
- * A `Set` rather than the sorted list `performSearch` returns: both lists carry
- * a meaningful order (operations by the active sort, drafts newest first), and
- * re-ranking them by match weight would scramble it. `performSearch` sorts
- * internally and that work is discarded here — the cost is one sort over the
- * already-matched subset, which is not worth a second search engine to avoid.
+ * A Set rather than `performSearch`'s sorted list: both lists carry a
+ * meaningful order (operations by the active sort, drafts newest first) that
+ * re-ranking would scramble. Its internal sort is wasted here, which is cheaper
+ * than maintaining a second search engine.
  */
 export const searchOperationRows = (
   rows: OperationSearchRow[],
