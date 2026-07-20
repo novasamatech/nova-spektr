@@ -1,6 +1,6 @@
 # Portfolio Overview
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-18
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-20
 
 ## Overview
 
@@ -34,17 +34,17 @@ mode, so its position is a default rather than a guarantee.
 
 ## States / scenarios
 
-| State                | When it appears                        | What the user sees                                                                            |
-| -------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Fiat off             | Global "show fiat" toggle is off       | Title + "fiat disabled" hint + the injected vesting block only; no total, bars or holdings    |
-| No selection         | No accounts selected                   | Title + "Select accounts above to view your balance"                                          |
-| Loading              | Prices/currency not resolved yet       | Skeleton mirroring the final layout                                                           |
-| No tokens            | Prices resolved, selection holds nothing priced and no vesting | Title + `$0` + vesting slot + a centered "No tokens to show" message  |
-| Overview             | Data ready                             | Fiat total, Assets/Networks toggle, distribution bar + chips, vesting slot, donut + list      |
-| Balance-type filter  | A bar segment or chip clicked          | Donut and list re-scope to that balance type; scope label + color follow; "Show all" clears   |
-| Donut hover          | Pointer over a donut segment           | Center swaps to the hovered slice's value, name and share; a single holding renders as a ring |
-| Asset / chain detail | A holdings row is clicked              | Modal with a per-address (asset view) or per-asset (chain view) breakdown                     |
-| Syncing              | Any selected chain is still connecting | A small spinner beside the distribution label; the numbers keep updating as balances arrive   |
+| State                | When it appears                                                | What the user sees                                                                            |
+| -------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Fiat off             | Global "show fiat" toggle is off                               | Title + "fiat disabled" hint + the injected vesting block only; no total, bars or holdings    |
+| No selection         | No accounts selected                                           | Title + "Select accounts above to view your balance"                                          |
+| Loading              | Prices/currency not resolved yet                               | Skeleton mirroring the final layout                                                           |
+| No tokens            | Prices resolved, selection holds nothing priced and no vesting | Title + `$0` + vesting slot + a centered "No tokens to show" message                          |
+| Overview             | Data ready                                                     | Fiat total, Assets/Networks toggle, distribution bar + chips, vesting slot, donut + list      |
+| Balance-type filter  | A bar segment or chip clicked                                  | Donut and list re-scope to that balance type; scope label + color follow; "Show all" clears   |
+| Donut hover          | Pointer over a donut segment                                   | Center swaps to the hovered slice's value, name and share; a single holding renders as a ring |
+| Asset / chain detail | A holdings row is clicked                                      | Modal with a per-address (asset view) or per-asset (chain view) breakdown                     |
+| Syncing              | Any selected chain is still connecting                         | A small spinner beside the distribution label; the numbers keep updating as balances arrive   |
 
 The card has **no error state**: missing prices degrade into the loading / suppressed states above. The injected vesting
 callout brings its own error boundary precisely because this slot offers none.
@@ -61,13 +61,14 @@ vesting slot stays mounted in this state, since token-denominated vesting can ex
 
 A segmented bar plus a row of chips over four categories — **Transferable / Reserved / Locked / Vested** — each labelled
 with its own fiat value. Only categories with a non-zero fiat share get a bar segment; the Vested chip additionally
-appears when there is unpriced vesting to report even if its fiat share is zero.
+appears whenever there is vesting to report — unpriced, or overlapping Reserved — even if its bar share is zero (see
+"Vesting that has no slice" below).
 
 The bar and the chips are a **cross-filter over the holdings lists**, not just a legend: clicking a segment or a chip
 scopes the donut and the list below to that balance type (the list then shows each holding's share of that type's
 total), and the scope label and accent color follow the selection. **"Show all"** — or clicking the already-active chip
-— clears the filter. A category that has only unpriced vesting behind it is shown but is **not** clickable as a filter,
-because it has no fiat rows to scope.
+— clears the filter. The Vested chip is shown but **not** clickable whenever its figure and the filter would disagree —
+unpriced vesting has no fiat rows to scope, and an overlapping lock has no rows of its own at all.
 
 Vesting is not a fourth kind of balance — it is one of the locks that make an account's funds frozen in the first place,
 so a vesting user's coins were already frozen before this category named that slice. The split is computed **per
@@ -84,12 +85,35 @@ hides behind a larger overlapping governance/staking lock, and Locked is the rem
 funds held by both a vesting lock and a larger non-vesting lock are labelled Vested even though the other lock would
 still hold them after `vest()`. Vested is **capped by the Locked bucket** and never touches **Reserved** — reserved
 funds have their own causes (staking holds, deposits) that locks know nothing about, so a staking hold is never
-relabelled Vested. On `holdAndFreezes` chains the part of a vesting lock that rides on reserved funds therefore stays in
-Reserved.
+relabelled Vested.
+
+#### Vesting that has no slice
+
+The cap above has a consequence severe enough to need its own treatment. In `pallet_balances`, `frozen` is a floor on
+**`free + reserved`**, not a claim on a slice of it — which is why the untouchable part of `free` is `frozen − reserved`
+(`AccountData::frozen` and `reducible_balance` in `polkadot-sdk`). A hold can therefore satisfy a vesting lock outright:
+a staker with 10,000 held and 5 still vesting has that 5 already covered, and **nothing in `free` is immobilised by the
+vesting at all**. Since staking on Asset Hub holds funds, this is the normal case for anyone who both stakes and vests,
+not an edge case.
+
+The partition then reports Vested as zero — correct for a bar whose segments must sum to the total, and a lie by
+omission to a user the card is simultaneously telling they have active vesting schedules. Neither obvious fix is
+acceptable: hiding the category contradicts the callout, and subtracting it from Reserved understates a raw chain figure
+the user can check against a block explorer.
+
+So the overlapping amount is computed separately (`vestingOverlapBN`) and kept **outside** the partition:
+
+- The **chip is always shown** when there is any vesting, printing the whole vesting lock — the figure that matches the
+  schedules the callout counts — suffixed with where the money actually sits ("· in Reserved"). It carries a dashed edge
+  and a hatched swatch, and does not cross-filter: the amount it prints is no longer the amount the filter would select.
+- The **bar** folds the vested slice back into the segments it covers and draws the vesting as a hatched marker across
+  them, so the partition stays exact and Reserved keeps its true width. The marker is width-proportional and
+  deliberately has **no minimum width**: a trace of vesting inside a large reserved balance is a sub-pixel span and is
+  meant to vanish rather than misrepresent $2 as comparable to $10M. That case is the chip's to carry.
 
 The vesting lock only shrinks when `vesting.vest()` runs, so it still covers funds that have vested but were never
-claimed. Those funds really are untransferable until the claim lands, so counting them as Vested reflects what the
-balance actually does — the Vested category and the injected claim callout describe the same coins.
+claimed — they really are untransferable until the claim lands. **The Vested chip and the claim callout therefore
+describe the same coins; the Vested bar segment describes only the part of them that restricts `free`.**
 
 ### Holdings
 

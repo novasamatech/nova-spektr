@@ -47,3 +47,30 @@ export function splitBalanceByType(balance: Balance): Record<BalanceType, BN> {
     vested,
   };
 }
+
+/**
+ * The part of the vesting lock that {@link splitBalanceByType} cannot report —
+ * the amount riding on reserved funds.
+ *
+ * `frozen` is a floor on `free + reserved`, not a claim on a slice of it (see
+ * `AccountData::frozen` in pallet_balances, and `reducible_balance`, which
+ * computes the untouchable part of free as `frozen - reserved`). So a vesting
+ * lock and a hold can cover the same planck: a staker with 10k held and 5 still
+ * vesting has that 5 already covered by the hold, and nothing in `free` is
+ * immobilised by the vesting at all.
+ *
+ * The partition above therefore reports zero vested for that account — correct
+ * for a bar whose segments must sum to the total, and a lie by omission to a
+ * user the app is simultaneously telling they have active vesting schedules.
+ * This is the missing amount, kept **outside** the partition: it must never be
+ * added to a total or subtracted from `reserved` (which is a raw chain figure
+ * the user can verify), only reported alongside.
+ */
+export function vestingOverlapBN(balance: Balance): BN {
+  const total = balance.free.add(balance.reserved);
+  // Capped at the total: a lock can never exceed the balance it freezes, and a
+  // stale lock read against a since-reduced balance would otherwise overstate.
+  const vestingLock = BN.min(vestedLockedAmountBN(balance), total);
+
+  return BN.max(BN_ZERO, vestingLock.sub(splitBalanceByType(balance).vested));
+}
