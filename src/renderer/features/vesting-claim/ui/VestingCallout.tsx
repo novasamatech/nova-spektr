@@ -4,7 +4,6 @@ import { useI18n } from '@/shared/i18n';
 import { useClock } from '@/shared/lib/hooks';
 import { formatFiatBalance } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon, Loader } from '@/shared/ui';
-import { Skeleton } from '@/shared/ui-kit';
 import { currencySelect } from '@/aggregates/currency-select';
 import { type VestingSummary, vestingPortfolioModel } from '@/aggregates/vesting-portfolio';
 import { FiatBalance } from '@/widgets/price';
@@ -33,25 +32,14 @@ export const VestingCallout = () => {
       : t('price.withCode', { code: currency?.code ?? '', amount });
   };
 
-  // Not every chain that could hold vesting has reported yet, so nothing may be
-  // said about the absence of it — hold the skeleton rather than claim an empty
-  // wallet we would have to take back a second later.
-  if (status === 'loading') {
-    return (
-      <div className="mt-3 flex w-full items-center gap-x-3 rounded-lg border border-divider px-3 py-2.5">
-        <Skeleton width="32px" height="32px" />
-        <div className="flex flex-1 flex-col gap-y-1.5">
-          <Skeleton width="180px" height="12px" />
-          <Skeleton width="120px" height="10px" />
-        </div>
-        <Skeleton width="72px" height="20px" />
-      </div>
-    );
-  }
-
-  // Every chain reported, and none of them holds vesting for these accounts —
-  // render nothing rather than a muted "no vesting" row.
-  if (status === 'empty') {
+  // Nothing is drawn until there is something to draw. The row is additive — it
+  // sits under a card that carries its own loading state — and most wallets have
+  // no vesting at all, so a placeholder here is a row that appears, holds for as
+  // long as the slowest chain takes to answer, and then vanishes again, for
+  // every user who was never going to see it. `loading` and `empty` are the same
+  // absence on screen; the distinction still matters to the model, which is what
+  // keeps the row from flashing in on a half-answered question.
+  if (status !== 'ready') {
     return null;
   }
 
@@ -66,10 +54,12 @@ export const VestingCallout = () => {
     ? t('vesting.callout.subtitleWithDate', { prefix: unlockingPrefix, date: unlockDate })
     : unlockingPrefix;
 
+  // The row lands after the card is already on screen — chains answer at their
+  // own pace — so it fades in rather than snapping into place.
   return (
     <button
       type="button"
-      className="mt-3 flex w-full cursor-pointer items-center gap-x-3 rounded-lg border border-badge-background-hover bg-secondary-button-background px-3 py-2.5 text-left"
+      className="mt-3 flex w-full cursor-pointer items-center gap-x-3 rounded-lg border border-badge-background-hover bg-secondary-button-background px-3 py-2.5 text-left duration-300 animate-in fade-in slide-in-from-top-1"
       onClick={() => modalModel.scheduleModalOpened()}
     >
       <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-badge-background">

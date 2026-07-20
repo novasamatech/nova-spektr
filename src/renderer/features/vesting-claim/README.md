@@ -1,6 +1,6 @@
 # Vesting claim
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-17
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-20
 
 ## Overview
 
@@ -19,9 +19,11 @@ it.
 
 ## Who can use it / when it applies
 
-- Follows the dashboard's **account filter** — the callout shows vesting for the accounts currently selected in the card,
-  not the whole wallet. The account set is fed to the [`vesting-portfolio`](../../aggregates/vesting-portfolio/README.md)
-  aggregate via `accountsScopeChanged`; the callout itself stays propless and reads the scoped result.
+- Follows the dashboard's **account filter** — the callout shows vesting for the accounts currently selected in the
+  card, not the whole wallet. The selection is fed to the
+  [`vesting-portfolio`](../../aggregates/vesting-portfolio/README.md) aggregate via `accountsScopeChanged`; the callout
+  itself stays propless and reads the scoped result. Narrowing the selection is a filter over data already held, not a
+  new lookup — see the aggregate's spec — so the row updates instantly instead of falling back to a loading state.
 - A schedule counts when it sits on a **vesting-capable chain** — detected at runtime by the presence of
   `api.query.vesting.vesting` and `api.tx.vesting.vest` (this excludes `orml_vesting` chains, which use a different call
   and are out of scope).
@@ -67,28 +69,29 @@ block:
   "12m") and ticks against the wall clock. While the block time is unknown the modal falls back to the plain "Vesting" /
   "In cliff" texts.
 
-The callout's own states — skeleton, empty (nothing), and content — are governed by the
-[`vesting-portfolio`](../../aggregates/vesting-portfolio/README.md) readiness rule: the skeleton holds until every chain
-that could hold vesting has reported, so the empty state is never shown as a guess and then taken back. Once every chain
-has reported and none holds a schedule for the selected accounts, the callout **renders nothing** — no muted "no
-vesting" row. Content appears as soon as the first schedule lands, with a small spinner while the remaining chains
-report.
+**The callout shows nothing until there is something to show.** It is an additive row under a card that carries its own
+loading state, and most wallets have no vesting at all — a placeholder here would be a row that appears, holds for as
+long as the slowest chain takes to answer, and then vanishes again, for every user who was never going to see it. So
+"still looking" and "nothing found" look identical on screen: empty. The
+[`vesting-portfolio`](../../aggregates/vesting-portfolio/README.md) readiness rule still decides _when_ content may
+appear — a schedule that lands makes the row fade in, and the remaining chains report behind a small spinner — it just
+no longer has a placeholder to govern. Any loading the user needs to see is the card's own, on the balance distribution
+row.
 
-| State                     | When it appears                                                            | What the user sees                                                                                                                                                                                           |
-| ------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Skeleton                  | A chain that could hold vesting has yet to report                          | A placeholder row where the callout will be                                                                                                                                                                  |
-| No vesting                | Every chain reported; none holds a schedule for the selected accounts      | Nothing — the callout renders no row                                                                                                                                                                         |
-| Vested distribution slice | Any account has a vesting lock                                             | An indigo "Vested" bar in "Distribution by balance type"                                                                                                                                                     |
-| Callout                   | ≥1 active schedule                                                         | "N active vesting schedules · fully unlocks by DATE", plus a "ready" pill when claimable, and a spinner while chains still report                                                                            |
-| Schedule modal            | Callout clicked                                                            | Totals (vesting / schedules / ready-to-unlock), the average unlock rate per day, one row per account                                                                                                          |
+| State                     | When it appears                                                            | What the user sees                                                                                                                                                                                               |
+| ------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Looking / no vesting      | Chains are still reporting, or all reported and none holds a schedule      | Nothing — the callout renders no row                                                                                                                                                                             |
+| Vested distribution slice | Any account has a vesting lock                                             | An indigo "Vested" bar in "Distribution by balance type"                                                                                                                                                         |
+| Callout                   | ≥1 active schedule                                                         | Fades in: "N active vesting schedules · fully unlocks by DATE", plus a "ready" pill when claimable, and a spinner while chains still report                                                                      |
+| Schedule modal            | Callout clicked                                                            | Totals (vesting / schedules / ready-to-unlock), the average unlock rate per day, one row per account                                                                                                             |
 | Account modal             | "See schedule" clicked                                                     | Account totals with "Claim all", an "Unlocking ≈ $X per day" line, and per-schedule cards: asset icon, "Schedule N · SYMBOL", per-schedule "≈ rate / day · fiat", progress bar, "Fully unlocks DATE · in 3h 20m" |
-| Schedule ready            | A schedule's attributed ready amount > 0                                   | Below a separator: "X TOKEN / $Y ready to claim" — informational only; claiming happens via the account-level "Claim all"                                                                                    |
-| Fully unlocked schedule   | `lockedNow == 0` for a schedule                                            | "Fully unlocked" replaces the unlock-date text, in the same muted style                                                                                                                                      |
-| Cliff                     | `perBlock ≥ locked` — the schedule releases everything in a single block   | "In cliff", and below a separator "Cliff until DATE — nothing to unlock yet"; no per-day rate is shown (a lump sum has none) and no claim is offered                                                          |
-| Not started               | `now < startingBlock` on a schedule that vests gradually                   | "Vesting starts DATE · in 2h 10m". **Not a cliff** — a gradual schedule that has yet to begin. Its "fully unlocks" date is shown as usual, since it is known                                                  |
-| Claim unavailable         | Vested tokens are ready, but no local account signs for them on this chain | A muted reason where "Claim all" would sit ("Your wallet can't sign on this network"); schedules stay visible                                                                                                |
-| Confirm                   | "Claim all" pressed                                                        | Signing route, "Unlocks now" + "Keeps vesting", network fee (and multisig deposit), then Sign & submit                                                                                                       |
-| Claim unaffordable        | The signer cannot cover the fee, or cannot reserve the multisig deposit    | The confirm explains which, and **Sign is blocked**. Switching the signing route re-checks it                                                                                                                |
+| Schedule ready            | A schedule's attributed ready amount > 0                                   | Below a separator: "X TOKEN / $Y ready to claim" — informational only; claiming happens via the account-level "Claim all"                                                                                        |
+| Fully unlocked schedule   | `lockedNow == 0` for a schedule                                            | "Fully unlocked" replaces the unlock-date text, in the same muted style                                                                                                                                          |
+| Cliff                     | `perBlock ≥ locked` — the schedule releases everything in a single block   | "In cliff", and below a separator "Cliff until DATE — nothing to unlock yet"; no per-day rate is shown (a lump sum has none) and no claim is offered                                                             |
+| Not started               | `now < startingBlock` on a schedule that vests gradually                   | "Vesting starts DATE · in 2h 10m". **Not a cliff** — a gradual schedule that has yet to begin. Its "fully unlocks" date is shown as usual, since it is known                                                     |
+| Claim unavailable         | Vested tokens are ready, but no local account signs for them on this chain | A muted reason where "Claim all" would sit ("Your wallet can't sign on this network"); schedules stay visible                                                                                                    |
+| Confirm                   | "Claim all" pressed                                                        | Signing route, "Unlocks now" + "Keeps vesting", network fee (and multisig deposit), then Sign & submit                                                                                                           |
+| Claim unaffordable        | The signer cannot cover the fee, or cannot reserve the multisig deposit    | The confirm explains which, and **Sign is blocked**. Switching the signing route re-checks it                                                                                                                    |
 
 ## Lifecycle
 
@@ -112,7 +115,7 @@ flowchart TD
 
 **The confirm opens on the click, not on the data.** Everything it leads with — the amount unlocking, the amount that
 keeps vesting, the account, the chain — is already in hand when the button is pressed. The wrapped transaction, the fee
-and the validation each cost a round trip to the node, so they are *not* awaited: the modal opens immediately and they
+and the validation each cost a round trip to the node, so they are _not_ awaited: the modal opens immediately and they
 stream in behind their own loaders, with the sign button disabled until they land. Changing the signing route re-runs
 them in place. On submit the on-chain vesting lock drops and the freed amount becomes transferable (unless a larger
 staking/vote lock still dominates `frozen`).
@@ -120,15 +123,16 @@ staking/vote lock still dominates `frozen`).
 ### Can the claim actually be paid for?
 
 Worth spelling out, because a vesting account is the one account most likely to look like it cannot pay. On Polkadot and
-Kusama `UnvestedFundsAllowedWithdrawReasons` is `except(TRANSFER | RESERVE)`, so pallet_vesting's lock blocks exactly two
-things: **transfers and reserves**. It does *not* block transaction payment. So an account whose entire balance is still
-vesting can pay its own claim fee out of that locked balance, down to the existential deposit — no chicken-and-egg.
+Kusama `UnvestedFundsAllowedWithdrawReasons` is `except(TRANSFER | RESERVE)`, so pallet_vesting's lock blocks exactly
+two things: **transfers and reserves**. It does _not_ block transaction payment. So an account whose entire balance is
+still vesting can pay its own claim fee out of that locked balance, down to the existential deposit — no
+chicken-and-egg.
 
 Two cases do fail, and both are checked before signing:
 
-- **The multisig deposit is a reserve**, which the vesting lock *does* block. A signatory whose balance is vesting-locked
-  cannot back a multisig claim, however large that balance is.
-- **A co-existing staking or conviction-vote lock** carries `WithdrawReasons::all()`, which *does* cover fees. Such an
+- **The multisig deposit is a reserve**, which the vesting lock _does_ block. A signatory whose balance is
+  vesting-locked cannot back a multisig claim, however large that balance is.
+- **A co-existing staking or conviction-vote lock** carries `WithdrawReasons::all()`, which _does_ cover fees. Such an
   account can be unable to pay even though its vesting lock alone would have allowed it.
 
 Both surface on the confirm screen and block the sign button rather than failing on-chain.
@@ -144,8 +148,8 @@ lands, and for changes made from another device. On a failed submit both modals 
 
 - [`vesting-portfolio`](../../aggregates/vesting-portfolio/README.md) — what is vesting, and when that answer may be
   trusted; owns the live subscriptions this feature renders from.
-- `domains/vesting` — the live schedule/lock subscription (`vestingSchedulesResource`) and the pure `vestingClaimService`
-  math.
+- `domains/vesting` — the live schedule/lock subscription (`vestingSchedulesResource`) and the pure
+  `vestingClaimService` math.
 - `dashboard-portfolio-overview` — hosts the callout slot and renders the new "Vested" allocation category.
 - `vested-transfer` — the inverse operation (creating vesting); shares the `vesting` pallet and confirm/sign infra.
 - `operations/OperationSign`, `operations/OperationSubmit`, `shared/transactions` — the reused signing/submission stack.
