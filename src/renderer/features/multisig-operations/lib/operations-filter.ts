@@ -10,11 +10,12 @@ import {
   type Wallet,
   TransactionType,
 } from '@/shared/core';
-import { nonNullable, toAddress } from '@/shared/lib/utils';
+import { nonNullable } from '@/shared/lib/utils';
 import { type DateRange } from '@/shared/ui-kit';
 import { type AnyAccount, type IdentityMap, type MultisigOperation, accountService } from '@/domains/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { type OperationSearchRow } from '@/aggregates/operations-search';
 
 import { type StatusFilterValue, getOperationSection } from './operations-sections';
 
@@ -33,8 +34,10 @@ export interface OperationsFilterContext {
   filters: OperationsFilterCriteria;
   tab: OperationsFilterTab;
   hiddenIds: string[];
-  multisigWallets: Pick<Wallet, 'id' | 'name'>[];
-  chains: Record<ChainId, Chain>;
+  // Ids matching the search query, or `null` when there is no query. Computed
+  // once for the whole list (see `buildOperationSearchRow`) rather than per
+  // operation, because resolving display names is shared work.
+  searchMatchedIds: Set<string> | null;
   // Any non-search filter active → tabs collapse to "All operations".
   isScopeMerged: boolean;
 }
@@ -146,40 +149,65 @@ type WalletSearchSources = {
   chains: Record<string, Chain>;
 };
 
+export type WalletSearchEntry = Pick<Wallet, 'id' | 'name'>;
+
 /**
  * Builds search entries with the wallet names an operation card actually
  * displays (resolved via custom name → contact → identity), not the raw stored
  * `wallet.name`.
  */
-export const getWalletSearchEntries = (
-  wallets: Wallet[],
-  sources: WalletSearchSources,
-): OperationsFilterContext['multisigWallets'] => {
+export const getWalletSearchEntries = (wallets: Wallet[], sources: WalletSearchSources): WalletSearchEntry[] => {
   return wallets.map(wallet => ({
     id: wallet.id,
     name: accountService.resolveWalletName({ wallet, ...sources }),
   }));
 };
 
-export const matchesSearch = (
+/**
+ * Reduces an operation to the accounts its row displays, for the shared search.
+ *
+ * Two things here deliberately differ from what this used to match:
+ *
+ * - The submitter is `account.accountId`, not `operation.multisigAccountId`. For
+ *   a flexible multisig those are different accounts (the former is the proxied
+ *   facade the row renders, the latter the underlying multisig), so searching
+ *   the stored id never matched the address on screen.
+ * - The submitter prefix comes from `account.chainId`, not `operation.chainId`,
+ *   matching the chain `<NamedAccount>` is given in the Submitter column.
+ */
+export const buildOperationSearchRow = (
   operation: MultisigOperation,
-  searchQuery: string | undefined,
-  chains: Record<ChainId, Chain>,
   account: MultisigAccount | FlexibleMultisigAccount,
-  multisigWallets: Pick<Wallet, 'id' | 'name'>[],
-) => {
-  const query = searchQuery?.trim().toLowerCase();
-  if (!query) return true;
-
-  const wallet = multisigWallets.find(w => w.id === account.walletId);
-  const walletName = (wallet?.name ?? '').toLowerCase();
+  chains: Record<ChainId, Chain>,
+  walletNames: Map<Wallet['id'], string>,
+): OperationSearchRow => {
   const isFlex = accountUtils.isFlexibleMultisigAccount(account);
-  const addressPrefix = isFlex ? chains[operation.chainId]?.addressPrefix : undefined;
-  const accountAddress = toAddress(operation.multisigAccountId, { prefix: addressPrefix }).toLowerCase();
 
-  return (
-    walletName.includes(query) || accountAddress.includes(query) || operation.callHash.toLowerCase().includes(query)
-  );
+  return {
+    id: operation.id,
+    accounts: [
+      {
+        // Submitter column.
+        accountId: account.accountId,
+        // A universal multisig is chain-agnostic and renders with the default
+        // prefix; only a flexible multisig is bound to a chain.
+        chain: isFlex ? (chains[account.chainId] ?? null) : null,
+        walletName: walletNames.get(account.walletId) ?? null,
+      },
+      {
+        // Initiator — shown in the expanded details, not the collapsed row.
+        // Always the operation's own chain: a depositor reserved a deposit there.
+        accountId: operation.depositor,
+        chain: chains[operation.chainId] ?? null,
+        walletName: null,
+      },
+    ],
+    // The row does render a description, but it is fetched only for operations
+    // that already passed the filter, so feeding it back in here would be
+    // circular. Drafts carry theirs inline and do search it.
+    description: null,
+    callHash: operation.callHash,
+  };
 };
 
 export const filterOperation = (
@@ -187,7 +215,7 @@ export const filterOperation = (
   account: MultisigAccount | FlexibleMultisigAccount,
   context: OperationsFilterContext,
 ) => {
-  const { filters, tab, hiddenIds, multisigWallets, chains } = context;
+  const { filters, tab, hiddenIds, searchMatchedIds } = context;
 
   if (context.isScopeMerged) {
     const isHidden = hiddenIds.includes(operation.id);
@@ -206,7 +234,7 @@ export const filterOperation = (
   if (!matchesTxType(operation, filters.type)) return false;
   if (!matchesProxyType(filters.proxyType, account)) return false;
   if (!matchesDateRange(operation, filters.dateRange)) return false;
-  if (!matchesSearch(operation, filters.searchQuery, chains, account, multisigWallets)) return false;
+  if (searchMatchedIds !== null && !searchMatchedIds.has(operation.id)) return false;
 
   return true;
 };

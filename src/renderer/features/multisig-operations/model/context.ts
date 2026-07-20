@@ -26,8 +26,19 @@ import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
+import {
+  $accountNameSources,
+  createAccountNameResolver,
+  haveSameMatchedIds,
+  searchOperationRows,
+} from '@/aggregates/operations-search';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { type OperationsFilterContext, filterOperation, getWalletSearchEntries } from '../lib/operations-filter';
+import {
+  type WalletSearchEntry,
+  buildOperationSearchRow,
+  filterOperation,
+  getWalletSearchEntries,
+} from '../lib/operations-filter';
 import {
   type OperationSection,
   type StatusFilterValue,
@@ -176,10 +187,7 @@ const $presetScopedMultisigAccounts = combine(
 
 const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isAnyMultisig));
 
-const haveSameWalletSearchEntries = (
-  next: OperationsFilterContext['multisigWallets'],
-  prev: OperationsFilterContext['multisigWallets'],
-) => {
+const haveSameWalletSearchEntries = (next: WalletSearchEntry[], prev: WalletSearchEntry[]) => {
   if (next.length !== prev.length) return false;
 
   return next.every((wallet, index) => wallet.id === prev[index]?.id && wallet.name === prev[index]?.name);
@@ -193,9 +201,9 @@ const $multisigWalletSearchEntriesRaw = combine(
     identities: identity.$list,
     chains: networkModel.$chains,
   },
-  ({ wallets, ...sources }): OperationsFilterContext['multisigWallets'] => getWalletSearchEntries(wallets, sources),
+  ({ wallets, ...sources }): WalletSearchEntry[] => getWalletSearchEntries(wallets, sources),
 );
-const $multisigWalletSearchEntries = createStore<OperationsFilterContext['multisigWallets']>([], {
+const $multisigWalletSearchEntries = createStore<WalletSearchEntry[]>([], {
   updateFilter: (next, prev) => !haveSameWalletSearchEntries(next, prev),
 });
 $multisigWalletSearchEntries.on($multisigWalletSearchEntriesRaw, (_, next) => next);
@@ -277,32 +285,52 @@ const $operationsWithAccounts = combine(
   },
 );
 
+const $searchMatchedOperationIdsRaw = combine(
+  {
+    operationsWithAccounts: $operationsWithAccounts,
+    searchQuery: $filter.map(filter => filter.searchQuery),
+    multisigWallets: $multisigWalletSearchEntries,
+    nameSources: $accountNameSources,
+  },
+  ({ operationsWithAccounts, searchQuery, multisigWallets, nameSources }): Set<string> | null => {
+    if (!searchQuery.trim()) return null;
+
+    const walletNames = new Map(multisigWallets.map(wallet => [wallet.id, wallet.name]));
+    const resolveName = createAccountNameResolver(nameSources);
+    const rows = operationsWithAccounts.map(({ operation, account }) =>
+      buildOperationSearchRow(operation, account, nameSources.chains, walletNames),
+    );
+
+    return searchOperationRows(rows, searchQuery, resolveName);
+  },
+);
+
+// Name resolution pulls in contacts and identities, which update as they load.
+// Guarding on the resulting id set stops those updates from re-running the
+// downstream filter chain when they don't change what matches — the same reason
+// $multisigWalletSearchEntries is guarded. The search itself still recomputes;
+// it is the no-query early return above that keeps the common case free.
+const $searchMatchedOperationIds = createStore<Set<string> | null>(null, {
+  updateFilter: (next, prev) => !haveSameMatchedIds(next, prev),
+});
+$searchMatchedOperationIds.on($searchMatchedOperationIdsRaw, (_, next) => next);
+
 const $filteredOperations = combine(
   {
     operationsWithAccounts: $operationsWithAccounts,
     filter: $filter,
     tab: $tab,
     hiddenIds: $hiddenOperationIds,
-    multisigWallets: $multisigWalletSearchEntries,
-    chains: networkModel.$chains,
+    searchMatchedIds: $searchMatchedOperationIds,
     isScopeMerged: $isScopeMerged,
   },
-  ({
-    operationsWithAccounts,
-    filter,
-    tab,
-    hiddenIds,
-    multisigWallets,
-    chains,
-    isScopeMerged,
-  }): OperationWithAccount[] => {
+  ({ operationsWithAccounts, filter, tab, hiddenIds, searchMatchedIds, isScopeMerged }): OperationWithAccount[] => {
     return operationsWithAccounts.filter(({ operation, account }) =>
       filterOperation(operation, account, {
         filters: filter,
         tab,
         hiddenIds,
-        multisigWallets,
-        chains,
+        searchMatchedIds,
         isScopeMerged,
       }),
     );

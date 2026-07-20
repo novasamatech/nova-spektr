@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-17
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-20
 
 ## Overview
 
@@ -375,15 +375,21 @@ ascending → descending → off:
 With sorting off, operations are ordered **newest first** by their creation time (block and extrinsic index break ties).
 The list can be narrowed by **search** and five **filters**:
 
-- **Search** — matches the multisig wallet name as displayed on the card (resolved through custom name → contact →
-  identity, not the raw stored name), the multisig address, or the call hash.
+- **Search** — matches the names and addresses the row displays: the submitter (as shown in the Submitter column,
+  resolved through custom name → contact → identity, not the raw stored name), the **initiator** — who submitted an
+  operation, or who is assigned to submit a draft — and the call hash. Addresses are matched with the prefix the row
+  renders them with. One matcher serves both operation and draft rows; the one asymmetry left is that an operation's
+  description is displayed but not searchable (it is fetched only for already-filtered operations, so matching on it
+  would be circular), while a draft's is. See
+  [`operations-search`](../../aggregates/operations-search/README.md).
 - **Date range** — a from/to (or from-only) interval.
 - **Status** — Drafts / In progress / Completed / Rejected / Hidden. Drafts and hidden operations obey the same logic as
   the regular statuses: with no status selected the scope behaves as before (drafts visible on Pending, hidden ops
   confined to the Hidden tab); selecting statuses shows exactly the chosen kinds — e.g. **Drafts** alone shows only the
   drafts section, **Hidden** surfaces hidden operations in their own section. Beyond the Status gate, draft rows honor
-  the filters a draft can evaluate — network (the draft's chain), date range (creation date), and search (description or
-  address) — while an active transaction-type or proxy-type filter puts every draft out of scope (a draft's call may be
+  the filters a draft can evaluate — network (the draft's chain), date range (creation date), and search (submitter,
+  initiator, description or address) — while an active transaction-type or proxy-type filter puts every draft out of
+  scope (a draft's call may be
   absent or undecoded), so the drafts section and the merged "All operations" count stay consistent with the filtered
   list.
 - **Proxy type** — for flexible multisigs, filters by the proxy's access type.

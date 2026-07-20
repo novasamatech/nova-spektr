@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-16
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-20
 
 ## Overview
 
@@ -13,8 +13,11 @@ Drafts surface as a collapsible **Drafts section** inside the operations table o
 [Operations view's](../multisig-operations/README.md) Pending tab — the first section under the shared column header,
 styled and column-aligned like operation rows, gated by the view's Status filter and narrowed by the filters a draft can
 evaluate (network, date range, search; an active transaction-type or proxy-type filter hides all drafts — see the
-Operations view spec). A compact subsection with the same submit gating also appears in the dashboard's operations
-queue.
+Operations view spec). Search matches a draft's description and the names and addresses of every account it shows — the
+proxy, the multisig and the assigned **initiator** — so "which drafts is Adam expected to submit?" is answerable by
+typing a name, without opening each draft's Submit dialog (see
+[`operations-search`](../../aggregates/operations-search/README.md)). A compact subsection with the same submit gating
+also appears in the dashboard's operations queue.
 
 Because drafts live on the backend they are inherently multi-user: shareable via a deep link
 (`Paths.OPERATIONS?draftId=…`), auto-fetched on sign-in, and re-polled every 30s — so every client picks up others' add
@@ -79,8 +82,9 @@ transaction can be reachable by multiple routes, and signing through the wrong r
 `proxy.proxy(real, call)` vs a bare multisig `as_multi`).
 
 At submit time the saved path is resolved back into concrete accounts and **strictly followed** — the flow never
-silently re-routes. The canonical initiator is the path's first node (important for nested multisigs, where the deepest
-multisig is the leaf, not the root). The route drives extrinsic wrapping, the multisig threshold/deposit, and which
+silently re-routes. The path runs outermost-first: it starts at the source account that executes the call and ends at
+the account that signs it, so the **initiator is the path's last node** and the multisig it signs for is the last
+multisig hop before it. The route drives extrinsic wrapping, the multisig threshold/deposit, and which
 account balances get validated. **Legacy drafts** with an empty saved path fall back to automatic route discovery from
 initiator to a chosen signatory — but only when no saved path exists.
 

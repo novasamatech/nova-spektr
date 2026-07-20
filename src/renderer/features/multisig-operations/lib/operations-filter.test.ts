@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+  type Chain,
   type Contact,
   type Wallet,
   AccountNameType,
@@ -10,16 +11,17 @@ import {
   WalletType,
 } from '@/shared/core';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
+import { type AccountNameResolver, type OperationSearchRow, searchOperationRows } from '@/aggregates/operations-search';
 
 import {
   type OperationsFilterContext,
+  buildOperationSearchRow,
   filterOperation,
   getFilterableTxType,
   getWalletSearchEntries,
   matchesDateRange,
   matchesNetwork,
   matchesProxyType,
-  matchesSearch,
   matchesStatus,
   matchesTab,
   matchesTxType,
@@ -59,8 +61,7 @@ const emptyContext: OperationsFilterContext = {
   },
   tab: 'pending',
   hiddenIds: [],
-  multisigWallets: [],
-  chains: {},
+  searchMatchedIds: null,
   isScopeMerged: false,
 };
 
@@ -341,29 +342,119 @@ describe('operations-filter', () => {
     });
   });
 
-  describe('matchesSearch', () => {
-    test('returns true when searchQuery is empty or undefined', () => {
+  describe('search', () => {
+    // Alice / Bob well-known accountIds — encode to real addresses for any prefix.
+    const ALICE_ID = '0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d' as never;
+    const BOB_ID = '0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48' as never;
+
+    // Prefix 2, deliberately not the SS58 default (0): a chain-bound account and
+    // a chain-agnostic one must encode differently for the prefix assertions
+    // below to mean anything.
+    const chains = {
+      [MOCK_CHAIN_ID]: { chainId: MOCK_CHAIN_ID, name: 'Kusama', addressPrefix: 2, assets: [] } as never as Chain,
+    };
+
+    // Charlie — a third account, so submitter/initiator assertions can't alias.
+    const CHARLIE_ID = '0x90b5ab205c6974c9ea841be688864633dc9ca8a357843eeacf2314649965fe22' as never;
+
+    const names: Record<string, string> = { [ALICE_ID]: 'Alice Multisig', [BOB_ID]: 'Adam Initiator' };
+    const resolveName: AccountNameResolver = accountId => names[accountId] ?? '';
+
+    const search = (rows: OperationSearchRow[], query: string) => searchOperationRows(rows, query, resolveName);
+
+    test('returns null for an empty query so no filtering is applied', () => {
       const op = createMockOperation();
-      expect(matchesSearch(op, undefined, {}, mockMultisigAccount, [])).toBe(true);
-      expect(matchesSearch(op, '', {}, mockMultisigAccount, [])).toBe(true);
-      expect(matchesSearch(op, '   ', {}, mockMultisigAccount, [])).toBe(true);
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map());
+
+      expect(search([row], '')).toBeNull();
+      expect(search([row], '   ')).toBeNull();
     });
 
-    test('returns true when wallet name contains query', () => {
+    test('matches the resolved wallet name', () => {
       const op = createMockOperation();
-      const mockWallet = { id: 1, name: 'MyWallet Name' } as never;
-      expect(matchesSearch(op, 'MyWallet', {}, mockMultisigAccount, [mockWallet])).toBe(true);
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map([[1, 'MyWallet Name']]));
+
+      expect(search([row], 'MyWallet')).toEqual(new Set(['op-1']));
     });
 
-    test('returns true when callHash contains query', () => {
+    test('matches the callHash', () => {
       const op = createMockOperation({ callHash: '0xabc123def' });
-      expect(matchesSearch(op, 'abc123', {}, mockMultisigAccount, [])).toBe(true);
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map());
+
+      expect(search([row], 'abc123')).toEqual(new Set(['op-1']));
     });
 
-    test('returns false when no field matches query', () => {
+    test('matches the resolved initiator name', () => {
+      const op = createMockOperation({ depositor: BOB_ID });
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map());
+
+      expect(search([row], 'Adam')).toEqual(new Set(['op-1']));
+    });
+
+    test('matches the initiator address formatted with the operation chain prefix', () => {
+      const op = createMockOperation({ depositor: BOB_ID });
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map());
+
+      // Bob at the chain's prefix 2 — FoQJpP…; at the default prefix 0 he would
+      // be 14E5nq…, which must not match.
+      expect(search([row], 'FoQJpP')).toEqual(new Set(['op-1']));
+      expect(search([row], '14E5nq')).toEqual(new Set());
+    });
+
+    test('returns an empty set when nothing matches', () => {
       const op = createMockOperation({ callHash: '0xaaa' });
-      const mockWallet = { id: 1, name: 'Wallet' } as never;
-      expect(matchesSearch(op, 'nomatch', {}, mockMultisigAccount, [mockWallet])).toBe(false);
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map([[1, 'Wallet']]));
+
+      expect(search([row], 'nomatch')).toEqual(new Set());
+    });
+
+    describe('flexible multisig', () => {
+      // The proxied facade is what the row renders; the underlying multisig id is
+      // only a link target. Searching the latter never matched what was on screen.
+      const flexibleAccount = {
+        accountId: ALICE_ID,
+        accountType: 'flex_multisig',
+        chainId: MOCK_CHAIN_ID,
+        multisigAccountId: BOB_ID,
+        walletId: 1,
+      } as never;
+
+      // Same accountId, but chain-agnostic — so it renders with the default prefix.
+      const universalMultisigAccount = { accountId: ALICE_ID, accountType: 'multisig', walletId: 1 } as never;
+
+      // Depositor is a third account, so a Bob match can only come from the
+      // underlying multisig id — otherwise the negative assertion below is
+      // satisfied by the initiator and the test can never fail on this bug.
+      const flexibleOperation = createMockOperation({ multisigAccountId: BOB_ID, depositor: CHARLIE_ID });
+
+      test('matches the proxied address the row displays', () => {
+        const row = buildOperationSearchRow(flexibleOperation, flexibleAccount, chains, new Map());
+
+        // Alice at the account's chain prefix 2 — the Submitter column's address.
+        expect(search([row], 'HNZata')).toEqual(new Set(['op-1']));
+      });
+
+      test('does not match the underlying multisig address, which the row never shows', () => {
+        const row = buildOperationSearchRow(flexibleOperation, flexibleAccount, chains, new Map());
+
+        // Bob — operation.multisigAccountId, what the old search matched instead.
+        expect(search([row], 'FoQJpP')).toEqual(new Set());
+        expect(search([row], '14E5nq')).toEqual(new Set());
+      });
+
+      test('a chain-bound account uses its chain prefix, a universal one the default', () => {
+        const op = createMockOperation({ depositor: CHARLIE_ID });
+
+        const flexRow = buildOperationSearchRow(op, flexibleAccount, chains, new Map());
+        // Alice at prefix 2, not at the default prefix 0.
+        expect(search([flexRow], 'HNZata')).toEqual(new Set(['op-1']));
+        expect(search([flexRow], '15oF4')).toEqual(new Set());
+
+        const universalRow = buildOperationSearchRow(op, universalMultisigAccount, chains, new Map());
+        // Same accountId, chain-agnostic — so the default prefix 0 instead.
+        expect(search([universalRow], '15oF4')).toEqual(new Set(['op-1']));
+        expect(search([universalRow], 'HNZata')).toEqual(new Set());
+      });
     });
   });
 
