@@ -1,6 +1,6 @@
 # Multisig Wallet Create
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-17
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-18
 
 ## Overview
 
@@ -49,22 +49,28 @@ flowchart TD
     P1 -. "close attempt" .-> WARN["Warning: leaving loses<br/>the deposit progress"]
 ```
 
-| State                           | When it appears                                                      | What the user sees                                                                                                                         |
-| ------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Type chooser**                | Right after the entry point                                          | Two cards (Flexible / Multisig) with feature bullets and wiki links; Continue enabled after picking                                        |
-| **Name & network** (flexible)   | Flexible flow, step 1                                                | Wallet name input and a network select limited to connected multisig networks; total creation cost with a fee/deposit breakdown            |
-| **Signatories & threshold**     | Classic single form step / flexible step 2                           | The signatory rows, add/remove controls, threshold select (2…N), wallet name (classic); alerts and validation errors                       |
-| **Fee network modal** (classic) | Edit icon next to the fee                                            | All multisig networks with the creation fee and the first signatory's balance, split into available / unavailable                          |
-| **Existing multisig**           | Chosen signatories + threshold already form a known multisig         | Classic: error with a shortcut to open that wallet. Flexible: informational — creating on top of an existing multisig is allowed           |
-| **Hidden multisig**             | The same multisig exists among hidden wallets                        | Info alert with a Restore button; restoring closes the flow and selects the wallet                                                         |
-| **Confirmation** (classic)      | After a valid form submit                                            | Summary: name, signatory list, threshold, signing wallet/account, multisig deposit and fee; sign button                                    |
-| **Confirmation** (flexible)     | After a valid form submit                                            | Two sequential actions — "Create pure proxy" then "Assign control" — each with its own sign/submit; a "don't leave" warning until finished |
-| **Leave warning** (flexible)    | Closing the modal after step 1 and before both transactions complete | A confirm dialog explaining that progress (and the deposit) would be lost                                                                  |
+| State                                      | When it appears                                                                                                                                                                                                                            | What the user sees                                                                                                                                   |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Type chooser**                           | Right after the entry point                                                                                                                                                                                                                | Two cards (Flexible / Multisig) with feature bullets and wiki links; Continue enabled after picking                                                  |
+| **Name & network** (flexible)              | Flexible flow, step 1                                                                                                                                                                                                                      | Wallet name input and a network select limited to connected multisig networks; total creation cost with a fee/deposit breakdown                      |
+| **Signatories & threshold**                | Classic single form step / flexible step 2                                                                                                                                                                                                 | The signatory rows, add/remove controls, threshold select (2…N), wallet name (classic); alerts and validation errors                                 |
+| **Fee network modal** (classic)            | Edit icon next to the fee                                                                                                                                                                                                                  | All multisig networks with the creation fee and the first signatory's balance, split into available / unavailable                                    |
+| **Existing multisig**                      | Chosen signatories + threshold already form a known multisig                                                                                                                                                                               | Classic: error with a shortcut to open that wallet. Flexible: informational — creating on top of an existing multisig is allowed                     |
+| **Hidden multisig**                        | The same multisig exists among hidden wallets                                                                                                                                                                                              | Info alert with a Restore button; restoring closes the flow and selects the wallet                                                                   |
+| **Confirmation** (classic)                 | After a valid form submit                                                                                                                                                                                                                  | Summary: name, signatory list, threshold, signing wallet/account, multisig deposit and fee; sign button                                              |
+| **Confirmation** (flexible)                | After a valid form submit                                                                                                                                                                                                                  | Two sequential actions — "Create pure proxy" then "Assign control" — each with its own sign/submit; a "don't leave" warning until finished           |
+| **Leave warning** (flexible)               | Closing the modal after step 1 and before both transactions complete                                                                                                                                                                       | A confirm dialog explaining that progress (and the deposit) would be lost                                                                            |
+| **Insufficient funds** (key-set wallet)    | The selected key cannot cover fee + deposits and its wallet holds several distinct keys in the same crypto family (substrate vs EVM) whose names differ from the wallet — WalletConnect/Nova dual H160+substrate accounts are not key-sets | "Account \<key\> of wallet \<wallet\> has insufficient funds… top up the balance of this account by N" — the named key follows the current selection |
+| **Insufficient funds** (single-key wallet) | Same, but the wallet has one logical key (including WC/Nova with a separate EVM account)                                                                                                                                                   | "Wallet \<wallet\> has insufficient funds… top up the balance of this wallet by N"                                                                   |
 
 ### The signatory rows
 
 - The **first row is always the user's own account** — selected from their wallets; it becomes the initiator and the
   signer of the creation transactions.
+- **Key-set wallets** (e.g. a Polkadot Vault holding several derived keys on one chain): the picker offers each key
+  separately, labelled "Wallet name (key name)". The key the user picks is the exact account used everywhere downstream
+  — fee/deposit validation, the signing payload, and error messages. The app never silently substitutes another key of
+  the same wallet.
 - Every other row is a combobox accepting either a pick from **Contacts** and **My accounts** groups, or any pasted
   address valid on the selected network.
 - **Search matches what is displayed**: options are filtered by the resolved account name (custom names, contact names,
@@ -104,7 +110,8 @@ steps is guarded by a warning dialog — the pure proxy would exist on-chain wit
 control assigned.
 
 Failures: balance/validation errors are shown inline on the form and the confirmation and block progress; a rejected or
-failed signature returns the user to the confirmation to retry.
+failed signature returns the user to the confirmation to retry. Validation always runs against the selected
+first-signatory key (never another key of the same wallet).
 
 ## Related
 
