@@ -19,6 +19,7 @@ const makeBalance = (params: {
   reserved?: number;
   frozen: number;
   locks?: AssetLock[];
+  mode?: 'legacy' | 'holdAndFreezes';
 }): Balance => {
   // structural balance fixture, matching the fields computeBalanceAllocation +
   // splitBalanceByType read (legacy transferable mode)
@@ -30,7 +31,7 @@ const makeBalance = (params: {
     reserved: new BN(params.reserved ?? 0),
     frozen: new BN(params.frozen),
     locked: params.locks ?? [],
-    transferableMode: 'legacy',
+    transferableMode: params.mode ?? 'legacy',
   };
 
   return balance as unknown as Balance;
@@ -254,5 +255,123 @@ describe('computeBalanceAllocation', () => {
     expect(result!.unpricedVested).toHaveLength(1);
     expect(result!.unpricedVested[0]!.asset.assetId).toEqual(2);
     expect(result!.unpricedVested[0]!.tokens.toString()).toEqual('500');
+  });
+
+  /**
+   * The case that started this: a staker whose holds already satisfy the
+   * vesting lock. The bar can show no vested slice — correct, nothing in `free`
+   * is immobilised — but the card must not then claim the user has no vesting
+   * while the callout beneath it counts their schedules.
+   */
+  describe('vesting that rides on reserved', () => {
+    const makeStakerWithVesting = () =>
+      // free=200, reserved=800, frozen=100 (holdAndFreezes): the 100 vesting lock
+      // is fully covered by the 800 held, so the partition attributes it nowhere.
+      makeBalance({
+        accountId: '0x01',
+        chainId: 'polkadot',
+        assetId: 0,
+        free: 200,
+        reserved: 800,
+        frozen: 100,
+        locks: [makeLock(LockTypes.VESTING, 100)],
+        mode: 'holdAndFreezes',
+      });
+
+    const compute = (balances: Balance[]) =>
+      computeBalanceAllocation({
+        accountIds: ['0x01'],
+        balanceMap: Object.fromEntries(balances.map((b, i) => [String(i), b])),
+        chains: { polkadot: makeChain('polkadot', [makeAsset(0, 'dot')]) },
+        prices: PRICES,
+        currency: CURRENCY,
+      });
+
+    test('reports the overlap instead of dropping it', () => {
+      const result = compute([makeStakerWithVesting()]);
+
+      expect(result?.types.vested.fiat).toEqual('0');
+      expect(result?.vestedOverlap.fiat).toEqual('100');
+      expect(result?.vestedTotalFiat).toEqual('100');
+    });
+
+    test('leaves the partition untouched — percentages still sum to 100', () => {
+      const result = compute([makeStakerWithVesting()]);
+
+      // reserved must stay the raw chain figure: it is verifiable against a
+      // block explorer, and carving vesting out of it would read as a bug.
+      expect(result?.types.reserved.fiat).toEqual('800');
+      expect(result?.types.transferable.fiat).toEqual('200');
+
+      const sum = (['transferable', 'reserved', 'locked', 'vested'] as const).reduce(
+        (acc, type) => acc + result!.types[type].pct,
+        0,
+      );
+      expect(sum).toBeCloseTo(100);
+      // the overlap is measured against the same total, so it can be drawn over
+      // the segments it covers — but it is not one of them
+      expect(result?.vestedOverlap.pct).toBeCloseTo(10);
+    });
+
+    test('adds the overlap to the slice when the lock straddles both', () => {
+      // free=1000, reserved=200, frozen=600 → 400 bites into free, 200 rides on reserved
+      const result = compute([
+        makeBalance({
+          accountId: '0x01',
+          chainId: 'polkadot',
+          assetId: 0,
+          free: 1000,
+          reserved: 200,
+          frozen: 600,
+          locks: [makeLock(LockTypes.VESTING, 600)],
+          mode: 'holdAndFreezes',
+        }),
+      ]);
+
+      expect(result?.types.vested.fiat).toEqual('400');
+      expect(result?.vestedOverlap.fiat).toEqual('200');
+      expect(result?.vestedTotalFiat).toEqual('600');
+    });
+
+    test('counts overlapping vesting on an unpriced chain as a token entry', () => {
+      const result = computeBalanceAllocation({
+        accountIds: ['0x01'],
+        balanceMap: {
+          a: makeBalance({
+            accountId: '0x01',
+            chainId: 'westend',
+            assetId: 0,
+            free: 200,
+            reserved: 800,
+            frozen: 100,
+            locks: [makeLock(LockTypes.VESTING, 100)],
+            mode: 'holdAndFreezes',
+          }),
+        },
+        chains: { westend: makeChain('westend', [makeAsset(0)]) },
+        prices: PRICES,
+        currency: CURRENCY,
+      });
+
+      expect(result?.unpricedVested).toHaveLength(1);
+      expect(result?.unpricedVested[0]?.tokens.toNumber()).toEqual(100);
+    });
+
+    test('reports no overlap for a wallet whose vesting bites into free', () => {
+      const result = compute([
+        makeBalance({
+          accountId: '0x01',
+          chainId: 'polkadot',
+          assetId: 0,
+          free: 1000,
+          frozen: 600,
+          locks: [makeLock(LockTypes.VESTING, 600)],
+        }),
+      ]);
+
+      expect(result?.types.vested.fiat).toEqual('600');
+      expect(result?.vestedOverlap.fiat).toEqual('0');
+      expect(result?.vestedOverlap.pct).toEqual(0);
+    });
   });
 });

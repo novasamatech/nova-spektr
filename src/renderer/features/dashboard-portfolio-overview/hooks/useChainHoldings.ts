@@ -8,7 +8,7 @@ import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
-import { type BalanceType, BALANCE_TYPES, makeByType, splitBalanceByType } from '../lib/balanceTypes';
+import { type BalanceType, BALANCE_TYPES, makeByType, splitBalanceForHoldings } from '../lib/balanceTypes';
 
 export type ChainHoldingByType = Record<BalanceType, { fiat: string; assetCount: number }>;
 
@@ -73,7 +73,7 @@ export const useChainHoldings = (accountIds: string[]): ChainHoldingsData => {
       if (rawBN.isZero()) continue;
 
       const fiat = getRoundedValue(totalAmount(balance), priceItem.price, asset.precision);
-      const split = splitBalanceByType(balance);
+      const split = splitBalanceForHoldings(balance);
 
       let group = groupMap.get(balance.chainId);
       if (group) {
