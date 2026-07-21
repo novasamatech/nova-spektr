@@ -3,6 +3,9 @@ export const operationColumns = {
   titleCell: 'flex-1 min-w-0',
   value: 'w-[140px] shrink-0',
   submitter: 'w-[180px] shrink-0',
+  // Hidden below the 2xl breakpoint so the extra column never forces horizontal
+  // scroll on narrower windows; `2xl:flex` restores it (and its layout) at ≥1536px.
+  initiator: 'hidden w-[180px] shrink-0 2xl:flex',
   description: 'flex-1 min-w-0 pl-4',
   status: 'w-[110px] shrink-0',
   actions: 'w-[168px] shrink-0',

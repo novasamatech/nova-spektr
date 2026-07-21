@@ -66,7 +66,10 @@ export const buildDraftSearchRow = (
   const accounts: SearchAccountRef[] = [];
   const seen = new Set<AccountId>();
 
-  for (const accountId of [submitterAccountId, ...pathAccountIds]) {
+  // The assigned initiator is shown in its own column, so it must be searchable
+  // even for the (malformed) case where it isn't the signing path's last hop.
+  // Deduped by `seen` below, so this is a no-op when the path already covers it.
+  for (const accountId of [submitterAccountId, ...pathAccountIds, draft.initiatorAccountId]) {
     if (!accountId || seen.has(accountId)) continue;
     seen.add(accountId);
 

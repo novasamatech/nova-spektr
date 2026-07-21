@@ -198,6 +198,19 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
               )}
             </div>
 
+            {/* Initiator = the operation's depositor (its first approver), the
+                account co-signers are waiting on. Resolved by name the same way
+                the expanded Depositor detail is; already covered by search. */}
+            <div className={cnTw(operationColumns.initiator, 'items-center')}>
+              <NamedAccount
+                accountId={operation.depositor}
+                chain={chains[operation.chainId]}
+                iconSize={28}
+                hideExplorers
+                variant="short"
+              />
+            </div>
+
             <div className={cnTw(operationColumns.description, 'flex items-center gap-x-2')}>
               {isDraftLinked && (
                 <Tooltip open={description ? undefined : false}>

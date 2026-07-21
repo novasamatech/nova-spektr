@@ -128,6 +128,7 @@ export const DraftRow = ({
 
   const displayAccountIdRaw = draft.proxyAccountId ?? draft.multisigAccountId;
   const displayAccountId = displayAccountIdRaw ? toAccountId(displayAccountIdRaw) : undefined;
+  const initiatorAccountId = draft.initiatorAccountId ? toAccountId(draft.initiatorAccountId) : undefined;
   const displayAccount = draft.proxyAccountId ? proxyAccount : baseMultisigAccount;
   const displayWallet = useMemo<Wallet | undefined>(() => {
     if (!displayAccount) return undefined;
@@ -195,6 +196,26 @@ export const DraftRow = ({
                   hideExplorers
                   variant="short"
                 />
+              )}
+            </div>
+
+            {/* Initiator (the draft's assigned signer). Resolved from address-book
+                contacts the same way the signing-path panel does — no wallet is
+                passed, so a contact/identity name surfaces. Drafts without an
+                assigned initiator stay visible with an explicit "Unassigned" mark. */}
+            <div className={cnTw(operationColumns.initiator, 'items-center')}>
+              {initiatorAccountId ? (
+                <NamedAccount
+                  accountId={initiatorAccountId}
+                  chain={chain}
+                  iconSize={28}
+                  hideExplorers
+                  variant="short"
+                />
+              ) : (
+                <FootnoteText className="truncate text-text-tertiary italic">
+                  {t('operations.drafts.noInitiator')}
+                </FootnoteText>
               )}
             </div>
 
