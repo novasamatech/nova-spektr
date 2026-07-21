@@ -1,16 +1,25 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
-import { type ReactNode, memo } from 'react';
+import { type ReactNode, memo, useMemo } from 'react';
 import { Trans } from 'react-i18next';
 
 import { categorizeXcmError, getHumanReadableXcmError } from '@/shared/api/xcm/service/xcm-error-utils';
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Asset, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatAsset, groupBy, nonNullable, nullable } from '@/shared/lib/utils';
+import {
+  formatAsset,
+  groupBy,
+  isEthereumAccountId,
+  nonNullable,
+  nullable,
+  toAddress,
+  toShortAddress,
+} from '@/shared/lib/utils';
 import { Alert, FootnoteText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type AnyAccount, type BalanceUpdateResult } from '@/domains/network';
-import { useWalletName } from '@/domains/network';
+import { useAccountsNames, useWalletName } from '@/domains/network';
+import { Account } from '../Account/Account';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 const PermissionErrorItem = memo(({ wallet, permission }: { wallet: Wallet; permission: string }) => {
@@ -227,10 +236,31 @@ const TransactionBalanceError = ({
   const { t } = useI18n();
 
   const account = errors.at(0)?.account;
-  if (nullable(account)) return null;
-  const wallet = wallets.find(w => w.id === account.walletId);
-  if (nullable(wallet)) return null;
+  const wallet = account ? wallets.find(w => w.id === account.walletId) : null;
+
   const walletName = useWalletName(wallet);
+  const accountsForName = useMemo(() => (account ? [account] : []), [account]);
+  const [resolvedAccount] = useAccountsNames(accountsForName);
+
+  if (nullable(account)) return null;
+  if (nullable(wallet)) return null;
+
+  const accountName = resolvedAccount?.name || toShortAddress(toAddress(account.accountId));
+
+  // Name the failing key only for genuine key-set wallets (a Polkadot Vault
+  // holding several distinct keys). wallet.accounts is deprecated but is the
+  // only account data this presentational component receives, and a plain
+  // `distinct accountId count > 1` misfires: WalletConnect/Nova wallets hold one
+  // logical key yet expose a per-chain account, and an EVM chain adds a second,
+  // Ethereum-shaped (H160) accountId — so a single-key wallet would read as a
+  // key-set and render "Account X of wallet X". Count distinct accountIds only
+  // within the same address family as the failing account, and require a name
+  // that actually differs from the wallet (mirrors the Signatory.tsx picker).
+  const failingIsEthereum = isEthereumAccountId(account.accountId);
+  const distinctKeys = new Set(
+    (wallet.accounts ?? []).filter(a => isEthereumAccountId(a.accountId) === failingIsEthereum).map(a => a.accountId),
+  ).size;
+  const isKeySet = distinctKeys > 1 && accountName !== walletName;
 
   const assetGroups = groupBy(errors, e => e.asset.symbol);
   const groupedByActionErrors = groupBy(errors, e => `${e.action}_${e.asset.symbol}`);
@@ -274,8 +304,22 @@ const TransactionBalanceError = ({
       <span>
         <Trans
           t={t}
-          i18nKey="general.transactionErrors.balance.intro"
+          i18nKey={
+            isKeySet ? 'general.transactionErrors.balance.introAccount' : 'general.transactionErrors.balance.intro'
+          }
           components={{
+            account: (
+              <span className="relative top-1 -mt-1 inline-flex items-center gap-1">
+                <Account
+                  accountId={account.accountId}
+                  title={accountName}
+                  chain={null}
+                  iconSize={16}
+                  hideAddress
+                  hideExplorers
+                />
+              </span>
+            ),
             wallet: (
               <span className="relative top-1 -mt-1 inline-flex items-center gap-1">
                 <WalletIcon type={wallet.type} size={16} /> {walletName}
@@ -303,9 +347,14 @@ const TransactionBalanceError = ({
           .slice(0, -1)}
       </span>
       <span data-testid={dataTestId}>
-        {t('general.transactionErrors.balance.required', {
-          balances: imbalances.map(({ asset, imbalance }) => formatAsset(imbalance, asset, { round: 'up' })).join(', '),
-        })}
+        {t(
+          isKeySet ? 'general.transactionErrors.balance.requiredAccount' : 'general.transactionErrors.balance.required',
+          {
+            balances: imbalances
+              .map(({ asset, imbalance }) => formatAsset(imbalance, asset, { round: 'up' }))
+              .join(', '),
+          },
+        )}
       </span>
     </Box>
   );

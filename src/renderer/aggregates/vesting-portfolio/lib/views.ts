@@ -55,6 +55,33 @@ export const collectVestingData = (
 };
 
 /**
+ * The subset of the collected data that belongs to `accountIds`.
+ *
+ * Vesting is subscribed to for every visible account, once — see the model — so
+ * narrowing the dashboard's account filter is this filter and nothing else: no
+ * new request, no cache miss, no loader. `null` means "no narrowing", and
+ * returns the data untouched rather than rebuilding an identical copy.
+ */
+export const filterVestingData = (data: VestingData, accountIds: AccountId[] | null): VestingData => {
+  if (!accountIds) return data;
+
+  const wanted = new Set(accountIds);
+
+  const pick = <T>(source: Record<ChainId, Record<AccountId, T>>): Record<ChainId, Record<AccountId, T>> => {
+    const result: Record<ChainId, Record<AccountId, T>> = {};
+
+    for (const [chainId, perChain] of Object.entries(source)) {
+      const kept = Object.entries(perChain).filter(([accountId]) => wanted.has(accountId as AccountId));
+      if (kept.length > 0) result[chainId as ChainId] = Object.fromEntries(kept) as Record<AccountId, T>;
+    }
+
+    return result;
+  };
+
+  return { schedules: pick(data.schedules), locks: pick(data.locks) };
+};
+
+/**
  * Which local account claims for each (chain, key) pair that holds schedules.
  * Kept apart from the view computation because `findSignatories` rebuilds the
  * account graph on every call, while the views below recompute on every block.

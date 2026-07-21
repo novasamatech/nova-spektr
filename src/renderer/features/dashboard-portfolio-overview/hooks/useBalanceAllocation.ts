@@ -9,7 +9,7 @@ import { type PriceObject, useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
-import { type BalanceType, BALANCE_TYPES, makeByType, splitBalanceByType } from '../lib/balanceTypes';
+import { type BalanceType, BALANCE_TYPES, makeByType, splitBalanceByType, vestingOverlapBN } from '../lib/balanceTypes';
 
 export type BalanceTypeTotal = {
   fiat: string;
@@ -28,6 +28,23 @@ export type UnpricedVested = {
 export type AllocationData = {
   types: Record<BalanceType, BalanceTypeTotal>;
   unpricedVested: UnpricedVested[];
+  /**
+   * Vesting that rides on reserved funds — see {@link vestingOverlapBN}.
+   *
+   * Deliberately **not** one of `types`: those four sum to the total and drive
+   * the bar's geometry, while this overlaps `reserved` rather than sitting
+   * beside it. Adding it to the partition would inflate every percentage;
+   * subtracting it from `reserved` would understate a figure the user can check
+   * against a block explorer. `pct` is expressed against the same total as
+   * `types`, so it can be drawn as a marker over the segments it covers.
+   */
+  vestedOverlap: BalanceTypeTotal;
+  /**
+   * Everything under a vesting schedule — `types.vested` plus
+   * {@link AllocationData.vestedOverlap}. What the Vested chip prints, so that
+   * the figure the user reads matches the schedules the callout below counts.
+   */
+  vestedTotalFiat: string;
 };
 
 type BalanceAllocationParams = {
@@ -50,6 +67,7 @@ export function computeBalanceAllocation(params: BalanceAllocationParams): Alloc
 
   const totals: Record<BalanceType, BigNumber> = makeByType(() => new BigNumber(0));
   let grandTotal = new BigNumber(0);
+  let overlapTotal = new BigNumber(0);
   const unpricedVestedMap = new Map<string, UnpricedVested>();
 
   for (const balance of Object.values(balanceMap)) {
@@ -61,20 +79,24 @@ export function computeBalanceAllocation(params: BalanceAllocationParams): Alloc
     const asset = chain.assets.find((a) => a.assetId === balance.assetId);
     if (!asset) continue;
 
+    const split = splitBalanceByType(balance);
+    const overlap = vestingOverlapBN(balance);
+
     const priceItem = asset.priceId ? prices[asset.priceId]?.[currency.coingeckoId] : null;
     if (!priceItem) {
       // unpriced chains (testnets) can still carry a vesting lock — surface it
-      // as a token amount so the Vested chip stays consistent with the banner
-      const split = splitBalanceByType(balance);
-      if (!split.vested.isZero()) {
+      // as a token amount so the Vested chip stays consistent with the banner.
+      // The overlapping part counts here too: it is just as real to the user,
+      // and on an unpriced chain there is no bar for it to distort.
+      const vesting = split.vested.add(overlap);
+      if (!vesting.isZero()) {
         const key = `${balance.chainId}:${balance.assetId}`;
         const existing = unpricedVestedMap.get(key);
-        unpricedVestedMap.set(key, { asset, tokens: existing ? existing.tokens.add(split.vested) : split.vested });
+        unpricedVestedMap.set(key, { asset, tokens: existing ? existing.tokens.add(vesting) : vesting });
       }
       continue;
     }
 
-    const split = splitBalanceByType(balance);
     for (const type of BALANCE_TYPES) {
       if (split[type].isZero()) continue;
 
@@ -82,18 +104,32 @@ export function computeBalanceAllocation(params: BalanceAllocationParams): Alloc
       totals[type] = totals[type].plus(fiat);
       grandTotal = grandTotal.plus(fiat);
     }
+
+    // Outside the loop above on purpose: this must not touch `grandTotal`.
+    if (!overlap.isZero()) {
+      overlapTotal = overlapTotal.plus(
+        new BigNumber(getRoundedValue(overlap.toString(), priceItem.price, asset.precision)),
+      );
+    }
   }
 
   const unpricedVested = [...unpricedVestedMap.values()];
 
   if (grandTotal.isZero() && unpricedVested.length === 0) return null;
 
-  const types: Record<BalanceType, BalanceTypeTotal> = makeByType((type) => ({
-    fiat: totals[type].toString(),
-    pct: grandTotal.isZero() ? 0 : totals[type].div(grandTotal).multipliedBy(100).toNumber(),
-  }));
+  const toTotal = (fiat: BigNumber): BalanceTypeTotal => ({
+    fiat: fiat.toString(),
+    pct: grandTotal.isZero() ? 0 : fiat.div(grandTotal).multipliedBy(100).toNumber(),
+  });
 
-  return { types, unpricedVested };
+  const types: Record<BalanceType, BalanceTypeTotal> = makeByType((type) => toTotal(totals[type]));
+
+  return {
+    types,
+    unpricedVested,
+    vestedOverlap: toTotal(overlapTotal),
+    vestedTotalFiat: totals.vested.plus(overlapTotal).toString(),
+  };
 }
 
 export const useBalanceAllocation = (accountIds: string[]): AllocationData | null => {

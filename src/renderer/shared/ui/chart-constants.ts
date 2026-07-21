@@ -46,3 +46,14 @@ export const ALLOCATION_COLORS = {
   locked: '#64748B',
   vested: '#4649F6',
 } as const;
+
+/**
+ * Fill for vesting drawn _over_ another allocation segment rather than beside
+ * it — see the Vested category in `dashboard-portfolio-overview`.
+ *
+ * Hatching rather than a flat tint on purpose: a solid block would read as one
+ * more slice of the bar, which is exactly the thing it is not. Derived from
+ * `ALLOCATION_COLORS.vested`, striped with translucent white so the host
+ * segment's own colour stays legible underneath in both themes.
+ */
+export const VESTED_HATCH = `repeating-linear-gradient(135deg, ${ALLOCATION_COLORS.vested}d9 0 3px, #ffffff59 3px 6px)`;

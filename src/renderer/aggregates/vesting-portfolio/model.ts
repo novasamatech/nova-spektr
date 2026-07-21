@@ -4,7 +4,7 @@ import { debounce } from 'patronum';
 
 import { type Chain, type ChainId } from '@/shared/core';
 import { getTimelineChainId, nonNullable } from '@/shared/lib/utils';
-import { type BlockHeight } from '@/shared/polkadotjs-schemas';
+import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, block } from '@/domains/network';
 import { type VestingChainRequest, vestingSchedulesResource } from '@/domains/vesting';
 import { balanceModel } from '@/entities/balance';
@@ -19,6 +19,7 @@ import {
   collectVestingData,
   computeClaimResolutions,
   computeVesting,
+  filterVestingData,
   fingerprintSummary,
   fingerprintViews,
 } from './lib/views';
@@ -54,28 +55,52 @@ const isSameAccountSet = (next: AnyAccount[], prev: AnyAccount[]) =>
   });
 
 /**
- * The account set vesting is read for.
+ * The account set vesting is _displayed_ for.
  *
  * `null` means "every visible wallet account" — the aggregate's standalone
  * default. A consumer that scopes vesting to a subset (the dashboard's account
- * filter) feeds that subset here, so the block follows the card's selection
- * rather than the whole wallet. The subset is always ⊆ visible accounts, so the
- * hidden-wallet exclusion is preserved either way.
+ * filter) feeds that subset here, so the block follows the card's selection.
+ *
+ * It scopes the _view_, never the lookup: what is subscribed to is always every
+ * visible account (see `$availableAccounts`), and narrowing the scope filters
+ * data already in memory. Making the scope part of the request instead — which
+ * it used to be — put it in the resource key, so every change of the card's
+ * filter read as a cache miss and threw an already-answered block back to a
+ * loader while the same chains were re-subscribed for a subset of the same
+ * accounts. This mirrors balances, where one subscription covers the wallet and
+ * the card filters the balance map.
  */
 const accountsScopeChanged = createEvent<AnyAccount[] | null>();
 const $accountsScope = createStore<AnyAccount[] | null>(null).on(accountsScopeChanged, (_, accounts) => accounts);
-
-const $accountsSource = combine(walletModel.$availableAccounts, $accountsScope, (all, scope) => scope ?? all);
 
 // `updateFilter` rather than a comparison inside `map`: a skipped update keeps
 // the previous value *and its reference*, which is what every derived store
 // below reads to decide whether it has anything to recompute.
 const $availableAccounts = createStore<AnyAccount[]>([], {
   updateFilter: (next, prev) => !isSameAccountSet(next, prev),
-}).on($accountsSource, (_, accounts) => accounts);
+}).on(walletModel.$availableAccounts, (_, accounts) => accounts);
 
-/** Every key of every visible wallet. Stable for as long as the account set is. */
-const $accountIds = $availableAccounts.map(accounts => [...new Set(accounts.map(account => account.accountId))].sort());
+const collectIds = (accounts: AnyAccount[]) => [...new Set(accounts.map(account => account.accountId))].sort();
+
+const sameIds = (next: AccountId[] | null, prev: AccountId[] | null) =>
+  next === prev ||
+  (nonNullable(next) &&
+    nonNullable(prev) &&
+    next.length === prev.length &&
+    next.every((id, index) => id === prev[index]));
+
+/**
+ * Every key of every visible wallet — what is looked up on chain. Stable for as
+ * long as the wallet's accounts are, and deliberately independent of the
+ * display scope: this is what the resource is keyed by, and the whole point of
+ * the split is that narrowing the scope must not produce a new key.
+ */
+const $accountIds = $availableAccounts.map(collectIds);
+
+/** The keys the views are narrowed to, or `null` for "all of the above". */
+const $scopedAccountIds = createStore<AccountId[] | null>(null, {
+  updateFilter: (next, prev) => !sameIds(next, prev),
+}).on($accountsScope, (_, scope) => (scope ? collectIds(scope) : null));
 
 const $requests = combine(
   { chains: networkModel.$chains, apis: networkModel.$apis, accountIds: $accountIds },
@@ -243,16 +268,26 @@ const $fullyResolved = combine(
 
 const $data = combine($requests, vestingSchedulesResource.$cache, collectVestingData);
 
+/**
+ * What the consumer sees. Everything downstream reads this rather than `$data`,
+ * so a change of scope costs one filter over data already in hand.
+ *
+ * `$availableAccounts` below stays the _full_ set on purpose: the claim account
+ * for a proxied or multisig key is resolved out of the whole wallet, and a
+ * signatory that happens to sit outside the card's filter still signs.
+ */
+const $scopedData = combine($data, $scopedAccountIds, filterVestingData);
+
 // Views
 
 const $claimResolutions = combine(
-  { data: $data, chains: networkModel.$chains, availableAccounts: $availableAccounts },
+  { data: $scopedData, chains: networkModel.$chains, availableAccounts: $availableAccounts },
   ({ data, chains, availableAccounts }) => computeClaimResolutions(data, chains, availableAccounts),
 );
 
 const $vesting = combine(
   {
-    data: $data,
+    data: $scopedData,
     chains: networkModel.$chains,
     balances: balanceModel.$balanceMap,
     currentBlock: $blockHeights,
@@ -325,7 +360,9 @@ sample({
   target: $settledOnce,
 });
 
-// A different account set is a different question — ask it from scratch.
+// A different account set is a different question — ask it from scratch. The
+// *display scope* is not that: it narrows an answer already given, so changing
+// the card's filter must leave the latch (and the block) alone.
 sample({
   clock: $accountIds,
   fn: () => false,
