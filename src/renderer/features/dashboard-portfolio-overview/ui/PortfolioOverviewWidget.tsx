@@ -8,6 +8,7 @@ import { BodyText, FootnoteText, HelpText, Loader, SmallTitleText, TitleText } f
 import { ALLOCATION_COLORS } from '@/shared/ui/chart-constants';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { useBalanceAllocation } from '../hooks/useBalanceAllocation';
+import { useBalancesArrived } from '../hooks/useBalancesArrived';
 import { useBalancesSyncing } from '../hooks/useBalancesSyncing';
 import { type ChainHolding, useChainHoldings } from '../hooks/useChainHoldings';
 import { type Holding, useHoldings } from '../hooks/useHoldings';
@@ -46,9 +47,18 @@ const toggleButtonClass = 'cursor-pointer rounded px-4 py-1.5 text-footnote font
 const activeToggleClass = 'bg-white text-text-primary shadow-sm';
 const inactiveToggleClass = 'text-text-tertiary hover:text-text-secondary';
 
-// How long the skeleton is held for an account set that has produced nothing yet
-// before the card commits to its empty state — see the `isEmpty` branch below.
-const EMPTY_SYNC_GRACE_MS = 5000;
+/**
+ * Backstop for an account set whose balances never arrive at all.
+ *
+ * Not the mechanism that decides emptiness — that is `balancesArrived`, below.
+ * This only bounds the wait, because a chain whose RPC is down keeps retrying
+ * for the life of the app and would otherwise pin the skeleton forever. Long on
+ * purpose: the cost of it being short is the very bug it replaced — a "no
+ * tokens" shown to a user who has plenty, while the Portfolio page is still
+ * shimmering for the same accounts. Matches the deadline the vesting aggregate
+ * gives chains for the same reason.
+ */
+const EMPTY_BACKSTOP_MS = 30_000;
 
 export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
@@ -56,22 +66,19 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { chainHoldings } = useChainHoldings(accountIds);
   const allocation = useBalanceAllocation(accountIds);
   const isSyncing = useBalancesSyncing();
+  const balancesArrived = useBalancesArrived(accountIds);
   const [viewMode, setViewMode] = useState<ViewMode>('asset');
   const [balanceTypeFilter, setBalanceTypeFilter] = useState<BalanceType | null>(null);
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
   const [selectedChainId, setSelectedChainId] = useState<ChainId | null>(null);
 
-  // Balances stream in shortly after prices resolve, and a chain that flaps
-  // between connecting/error keeps `isSyncing` true for the life of the app —
-  // so gating the empty state on "sync finished" alone would either flash a
-  // premature "no tokens" or never show it. Hold the skeleton for a short grace
-  // per account set instead, then commit to the empty state (still flagged as
-  // syncing while any chain keeps reporting).
+  // Re-armed per account set: a new selection is a new question, and its
+  // balances may not be in the store yet even though the previous one's were.
   const accountKey = accountIds.join(',');
-  const [emptyGraceElapsed, setEmptyGraceElapsed] = useState(false);
+  const [backstopElapsed, setBackstopElapsed] = useState(false);
   useEffect(() => {
-    setEmptyGraceElapsed(false);
-    const id = setTimeout(() => setEmptyGraceElapsed(true), EMPTY_SYNC_GRACE_MS);
+    setBackstopElapsed(false);
+    const id = setTimeout(() => setBackstopElapsed(true), EMPTY_BACKSTOP_MS);
 
     return () => clearTimeout(id);
   }, [accountKey]);
@@ -173,10 +180,12 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
   // zero, which reads off the raw `holdings`, not the filtered rows.
   const isEmpty = holdings.length === 0 && !allocation;
   if (isEmpty) {
-    // Not confident yet: still syncing and inside the grace window. Keep the
-    // skeleton rather than flash a "no tokens" we would take back once balances
-    // land.
-    if (isSyncing && !emptyGraceElapsed) {
+    // Nothing has been read for these accounts yet, so there is nothing to be
+    // empty about — shimmer, exactly as the Portfolio page does for a row whose
+    // balance has not landed. Zero holdings is not evidence on its own: a
+    // balance of zero produces none either, so the two are indistinguishable
+    // until the first record arrives.
+    if (!balancesArrived && !backstopElapsed) {
       return (
         <DashboardWidget>
           <PortfolioOverviewSkeleton />
