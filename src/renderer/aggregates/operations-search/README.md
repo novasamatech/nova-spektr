@@ -1,6 +1,6 @@
 # Operations Search
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-07-20
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-07-21
 
 ## Overview
 
@@ -17,7 +17,7 @@ search resolves them the same way before matching. Typing a name you can see alw
 | The user types          | Matches against                                                                          |
 | ----------------------- | ---------------------------------------------------------------------------------------- |
 | A submitter's name      | The resolved name shown in the Submitter column, and the wallet name displayed over it   |
-| **An initiator's name** | The resolved name of the account assigned to submit a draft / who submitted an operation |
+| **An initiator's name** | The resolved name of the account assigned to submit a draft / who submitted an operation — and, when that account is a local wallet, the wallet name the details panel shows over it |
 | An address              | Any account the row shows, formatted with the prefix that row displays it with           |
 | A note                  | A draft's description                                                                    |
 | A call hash             | An operation's call hash                                                                 |
@@ -54,6 +54,11 @@ The two row types store it differently, and it is worth knowing they are not the
 A draft's assigned initiator is never rewritten, so if a co-signer swaps the signatory at submit time, the draft keeps
 naming the originally assigned account. The two values are matched by the same query but must not be treated as
 interchangeable anywhere else (permission checks read the depositor directly).
+
+When an operation's depositor belongs to a **local wallet**, the details panel renders that wallet's name in place of
+the resolved account name, so the initiator's wallet name is searched too — the same rule the submitter already follows.
+(The panel renders the raw stored wallet name there; search matches the resolved wallet name, which is what the rest of
+the app displays. Reconciling the panel's raw rendering is a separate follow-up.)
 
 ### Addresses are matched as displayed
 

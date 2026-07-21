@@ -11,6 +11,7 @@ import {
   TransactionType,
 } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type DateRange } from '@/shared/ui-kit';
 import { type AnyAccount, type IdentityMap, type MultisigOperation, accountService } from '@/domains/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
@@ -168,8 +169,10 @@ export const buildOperationSearchRow = (
   account: MultisigAccount | FlexibleMultisigAccount,
   chains: Record<ChainId, Chain>,
   walletNames: Map<Wallet['id'], string>,
+  resolveWalletName: (accountId: AccountId, chain?: Chain | null) => string | null,
 ): OperationSearchRow => {
   const isFlex = accountUtils.isFlexibleMultisigAccount(account);
+  const initiatorChain = chains[operation.chainId] ?? null;
 
   return {
     id: operation.id,
@@ -183,10 +186,12 @@ export const buildOperationSearchRow = (
         walletName: walletNames.get(account.walletId) ?? null,
       },
       {
-        // Initiator, shown in the expanded details.
+        // Initiator, shown in the expanded details. When the depositor belongs
+        // to a local wallet, `OperationDetails` renders its wallet name rather
+        // than the resolved account name, so search must cover it too.
         accountId: operation.depositor,
-        chain: chains[operation.chainId] ?? null,
-        walletName: null,
+        chain: initiatorChain,
+        walletName: resolveWalletName(operation.depositor, initiatorChain),
       },
     ],
     // Rendered, but fetched only for operations that already passed the filter —
