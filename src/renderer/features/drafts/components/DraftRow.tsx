@@ -199,10 +199,6 @@ export const DraftRow = ({
               )}
             </div>
 
-            {/* Initiator (the draft's assigned signer). Resolved from address-book
-                contacts the same way the signing-path panel does — no wallet is
-                passed, so a contact/identity name surfaces. Drafts without an
-                assigned initiator stay visible with an explicit "Unassigned" mark. */}
             <div className={cnTw(operationColumns.initiator, 'items-center')}>
               {initiatorAccountId ? (
                 <NamedAccount
