@@ -180,9 +180,9 @@ describe('filterDraftsByScope', () => {
       expect(filterWithSearch([legacyDraft], scope).map((d) => d.id)).toEqual(['draft-legacy']);
     });
 
-    test('a stored path wins over initiatorAccountId, matching what the details panel shows', () => {
-      // DraftFullInfo ignores initiatorAccountId when a path exists, so matching
-      // the stale field would match a name the panel never shows.
+    test('surfaces initiatorAccountId in its own column even when the signing path diverges', () => {
+      // The Initiator column renders draft.initiatorAccountId directly, so both
+      // the path's signer and the assigned initiator are on screen and match.
       const divergentDraft = createMockDraft({
         id: 'draft-divergent',
         initiatorAccountId: BOB_ACCOUNT_ID,
@@ -195,7 +195,9 @@ describe('filterDraftsByScope', () => {
       expect(filterWithSearch([divergentDraft], { ...emptyScope, searchQuery: 'Charlie' }).map((d) => d.id)).toEqual([
         'draft-divergent',
       ]);
-      expect(filterWithSearch([divergentDraft], { ...emptyScope, searchQuery: 'Adam' })).toEqual([]);
+      expect(filterWithSearch([divergentDraft], { ...emptyScope, searchQuery: 'Adam' }).map((d) => d.id)).toEqual([
+        'draft-divergent',
+      ]);
     });
 
     test('a draft with no initiator simply never matches an initiator query', () => {
@@ -203,15 +205,18 @@ describe('filterDraftsByScope', () => {
       expect(filterWithSearch([polkadotDraft], scope)).toEqual([]);
     });
 
-    test('a non-signer-terminated path does not fall back to the stale stored field', () => {
-      // The panel renders such a path as-is, with no Initiator row at all.
+    test('the initiator column stays searchable when the path has no signer hop', () => {
+      // The Initiator column still shows draft.initiatorAccountId regardless of a
+      // malformed path, so it must remain matchable.
       const brokenPathDraft = createMockDraft({
         id: 'draft-broken',
         initiatorAccountId: BOB_ACCOUNT_ID,
         signingPath: [{ kind: 'multisig', accountId: MOCK_ACCOUNT_ID }] as never,
       });
 
-      expect(filterWithSearch([brokenPathDraft], { ...emptyScope, searchQuery: 'Adam' })).toEqual([]);
+      expect(filterWithSearch([brokenPathDraft], { ...emptyScope, searchQuery: 'Adam' }).map((d) => d.id)).toEqual([
+        'draft-broken',
+      ]);
     });
   });
 
