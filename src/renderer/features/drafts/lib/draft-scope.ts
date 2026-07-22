@@ -1,9 +1,10 @@
 import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
 
 import { type Chain, type ChainId } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type DateRange } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
+import { type OperationSearchRow, type SearchAccountRef } from '@/aggregates/operations-search';
 
 /**
  * The subset of the Operations view's filters a draft can honor. A draft's
@@ -38,18 +39,55 @@ const matchesDateRange = (draft: Draft, dateRange: DateRange | undefined): boole
   return true;
 };
 
-const matchesSearch = (draft: Draft, searchQuery: string, chains: Record<ChainId, Chain>): boolean => {
-  const query = searchQuery.trim().toLowerCase();
-  if (!query) return true;
+/**
+ * Searches every hop of the signing path, which is what the details panel
+ * lists. The flat `multisigAccountId` holds only the deepest hop, so for a
+ * nested multisig the root would otherwise be unsearchable. Legacy drafts with
+ * no path fall back to the flat fields, as the panel does.
+ */
+export const buildDraftSearchRow = (
+  draft: Draft,
+  chains: Record<ChainId, Chain>,
+  resolveWalletName: (accountId: AccountId, chain?: Chain | null) => string | null,
+): OperationSearchRow => {
+  const chain = chains[draft.chainId] ?? null;
+  // Matches the defensive reads in submit-draft-model — drafts also arrive from
+  // cached payloads that never went through the schema.
+  const signingPath = Array.isArray(draft.signingPath) ? draft.signingPath : [];
 
-  const prefix = chains[draft.chainId]?.addressPrefix;
-  const addresses = [draft.multisigAccountId, draft.proxyAccountId]
-    .filter((accountId) => accountId !== null && accountId !== undefined)
-    .map((accountId) => toAddress(accountId, { prefix }).toLowerCase());
+  // The only account whose wallet name reaches the screen (collapsed row).
+  const submitterAccountId = draft.proxyAccountId ?? draft.multisigAccountId;
 
-  return (
-    (draft.description ?? '').toLowerCase().includes(query) || addresses.some((address) => address.includes(query))
-  );
+  const pathAccountIds =
+    signingPath.length > 0
+      ? signingPath.map((node) => node.accountId)
+      : [draft.proxyAccountId, draft.multisigAccountId, draft.initiatorAccountId];
+
+  const accounts: SearchAccountRef[] = [];
+  const seen = new Set<AccountId>();
+
+  for (const accountId of [submitterAccountId, ...pathAccountIds]) {
+    if (!accountId || seen.has(accountId)) continue;
+    seen.add(accountId);
+
+    accounts.push({
+      accountId,
+      chain,
+      walletName:
+        accountId === submitterAccountId
+          ? // A proxied draft renders through a synthetic wallet named after the
+            // proxy contact, which no resolver produces.
+            (draft.proxyContact?.name ?? resolveWalletName(accountId, chain))
+          : null,
+    });
+  }
+
+  return {
+    id: draft.id,
+    accounts,
+    description: draft.description,
+    callHash: null,
+  };
 };
 
 /**
@@ -57,11 +95,14 @@ const matchesSearch = (draft: Draft, searchQuery: string, chains: Record<ChainId
  * section and the merged "All operations" count stay consistent with the
  * filtered operations list. Status gating is handled separately by the caller
  * (drafts match only the dedicated `drafts` status).
+ *
+ * `searchMatchedIds` comes from the caller because it needs resolved display
+ * names; `null` means no query.
  */
 export const filterDraftsByScope = (
   drafts: Draft[],
   scope: DraftListScope,
-  chains: Record<ChainId, Chain>,
+  searchMatchedIds: Set<string> | null,
 ): Draft[] => {
   if (scope.type.length > 0 || scope.proxyType.length > 0) return [];
 
@@ -69,6 +110,6 @@ export const filterDraftsByScope = (
     (draft) =>
       matchesNetwork(draft, scope.network) &&
       matchesDateRange(draft, scope.dateRange) &&
-      matchesSearch(draft, scope.searchQuery, chains),
+      (searchMatchedIds === null || searchMatchedIds.has(draft.id)),
   );
 };

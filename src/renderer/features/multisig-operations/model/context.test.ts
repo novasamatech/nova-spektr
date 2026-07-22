@@ -423,6 +423,34 @@ describe('operations context model', () => {
 
       expect(spy).not.toHaveBeenCalled();
     });
+
+    it('applies an active search to newly arrived operations in the same tick', async () => {
+      // $filteredOperations reads $operationsWithAccounts directly and via the
+      // guarded $searchMatchedOperationIds. If those legs settled a tick apart, a
+      // new operation would be filtered against a stale id set.
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [])
+          .set(operationsContextModel.$tab, 'pending')
+          .set(accounts.__test.$populated, true),
+      });
+      await populateWallets(scope, [{ id: 1, name: 'Test Multisig Wallet', type: WalletType.MULTISIG }]);
+      await populateAccounts(scope, [mockMultisigAccount]);
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { searchQuery: 'zzzz-no-match' } });
+      expect(scope.getState(operationsContextModel.$filteredOperations)).toHaveLength(0);
+
+      // A non-matching operation arrives: it must not leak through on the tick
+      // before the ids are recomputed.
+      await allSettled(multisigOperation.__test.$cachedOperations, {
+        scope,
+        params: [createMockOperation('pending')],
+      });
+      expect(scope.getState(operationsContextModel.$filteredOperations)).toHaveLength(0);
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { searchQuery: '0xabc' } });
+      expect(scope.getState(operationsContextModel.$filteredOperations)).toHaveLength(1);
+    });
   });
 
   describe('Sort state', () => {

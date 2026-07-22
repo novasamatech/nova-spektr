@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { type Store, combine, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 import { interval, throttle } from 'patronum';
 
@@ -26,8 +26,14 @@ import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
+import { $searchResolvers, haveSameMatchedIds, searchOperationRows } from '@/aggregates/operations-search';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { type OperationsFilterContext, filterOperation, getWalletSearchEntries } from '../lib/operations-filter';
+import {
+  type WalletSearchEntry,
+  buildOperationSearchRow,
+  filterOperation,
+  getWalletSearchEntries,
+} from '../lib/operations-filter';
 import {
   type OperationSection,
   type StatusFilterValue,
@@ -176,10 +182,17 @@ const $presetScopedMultisigAccounts = combine(
 
 const $multisigWallets = walletModel.$wallets.map(wallets => wallets.filter(walletUtils.isAnyMultisig));
 
-const haveSameWalletSearchEntries = (
-  next: OperationsFilterContext['multisigWallets'],
-  prev: OperationsFilterContext['multisigWallets'],
-) => {
+// Search inputs derive from contacts and identities, which churn while loading.
+// Without this, every such update re-runs the filter chain even when the
+// resolved value is identical.
+const createGuardedStore = <T>(source: Store<T>, defaultValue: T, isSame: (next: T, prev: T) => boolean) => {
+  const $guarded = createStore(defaultValue, { updateFilter: (next, prev) => !isSame(next, prev) });
+  $guarded.on(source, (_, next) => next);
+
+  return $guarded;
+};
+
+const haveSameWalletSearchEntries = (next: WalletSearchEntry[], prev: WalletSearchEntry[]) => {
   if (next.length !== prev.length) return false;
 
   return next.every((wallet, index) => wallet.id === prev[index]?.id && wallet.name === prev[index]?.name);
@@ -193,12 +206,13 @@ const $multisigWalletSearchEntriesRaw = combine(
     identities: identity.$list,
     chains: networkModel.$chains,
   },
-  ({ wallets, ...sources }): OperationsFilterContext['multisigWallets'] => getWalletSearchEntries(wallets, sources),
+  ({ wallets, ...sources }): WalletSearchEntry[] => getWalletSearchEntries(wallets, sources),
 );
-const $multisigWalletSearchEntries = createStore<OperationsFilterContext['multisigWallets']>([], {
-  updateFilter: (next, prev) => !haveSameWalletSearchEntries(next, prev),
-});
-$multisigWalletSearchEntries.on($multisigWalletSearchEntriesRaw, (_, next) => next);
+const $multisigWalletSearchEntries = createGuardedStore<WalletSearchEntry[]>(
+  $multisigWalletSearchEntriesRaw,
+  [],
+  haveSameWalletSearchEntries,
+);
 
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
 
@@ -277,32 +291,51 @@ const $operationsWithAccounts = combine(
   },
 );
 
+const $searchMatchedOperationIdsRaw = combine(
+  {
+    operationsWithAccounts: $operationsWithAccounts,
+    searchQuery: $filter.map(filter => filter.searchQuery),
+    multisigWallets: $multisigWalletSearchEntries,
+    chains: networkModel.$chains,
+    resolvers: $searchResolvers,
+  },
+  ({ operationsWithAccounts, searchQuery, multisigWallets, chains, resolvers }): Set<string> | null => {
+    if (!searchQuery.trim()) return null;
+
+    const walletNames = new Map(multisigWallets.map(wallet => [wallet.id, wallet.name]));
+    const rows = operationsWithAccounts.map(({ operation, account }) =>
+      buildOperationSearchRow(operation, account, chains, walletNames, resolvers.resolveWalletName),
+    );
+
+    return searchOperationRows(rows, searchQuery, resolvers);
+  },
+);
+
+// The search itself still recomputes on name-source churn; the guard only stops
+// it from re-running the downstream filter chain, and the no-query early return
+// above keeps the common case free.
+const $searchMatchedOperationIds = createGuardedStore<Set<string> | null>(
+  $searchMatchedOperationIdsRaw,
+  null,
+  haveSameMatchedIds,
+);
+
 const $filteredOperations = combine(
   {
     operationsWithAccounts: $operationsWithAccounts,
     filter: $filter,
     tab: $tab,
     hiddenIds: $hiddenOperationIds,
-    multisigWallets: $multisigWalletSearchEntries,
-    chains: networkModel.$chains,
+    searchMatchedIds: $searchMatchedOperationIds,
     isScopeMerged: $isScopeMerged,
   },
-  ({
-    operationsWithAccounts,
-    filter,
-    tab,
-    hiddenIds,
-    multisigWallets,
-    chains,
-    isScopeMerged,
-  }): OperationWithAccount[] => {
+  ({ operationsWithAccounts, filter, tab, hiddenIds, searchMatchedIds, isScopeMerged }): OperationWithAccount[] => {
     return operationsWithAccounts.filter(({ operation, account }) =>
       filterOperation(operation, account, {
         filters: filter,
         tab,
         hiddenIds,
-        multisigWallets,
-        chains,
+        searchMatchedIds,
         isScopeMerged,
       }),
     );

@@ -45,6 +45,7 @@ notes.
 - [`flexible-operation-details`](./flexible-operation-details/README.md)
 - `multisig-candidates` (aggregate)
 - [`multisig-operation-description`](../aggregates/multisig-operation-description/README.md) (aggregate)
+- [`operations-search`](../aggregates/operations-search/README.md) (aggregate)
 - `selected-wallet-multisig-operations` (aggregate)
 
 > See also: [`account-sync`](#wallets--onboarding) — discovers multisig wallets on-chain;
