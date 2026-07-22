@@ -55,10 +55,10 @@ A draft's assigned initiator is never rewritten, so if a co-signer swaps the sig
 naming the originally assigned account. The two values are matched by the same query but must not be treated as
 interchangeable anywhere else (permission checks read the depositor directly).
 
-When an operation's depositor belongs to a **local wallet**, the details panel renders that wallet's name in place of
-the resolved account name, so the initiator's wallet name is searched too — the same rule the submitter already follows.
-(The panel renders the raw stored wallet name there; search matches the resolved wallet name, which is what the rest of
-the app displays. Reconciling the panel's raw rendering is a separate follow-up.)
+When an operation's depositor belongs to a **local wallet**, both the collapsed **Initiator** column and the expanded
+details panel render that wallet's name in place of the resolved account name, so the initiator's wallet name is searched
+too — the same rule the submitter already follows. All three (both rendered rows and the search meta) resolve the name
+through `resolveWalletName`/`useWalletName`, so what the user sees matches what the query matches.
 
 ### Addresses are matched as displayed
 

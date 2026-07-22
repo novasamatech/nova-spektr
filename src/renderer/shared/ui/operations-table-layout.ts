@@ -3,6 +3,8 @@ export const operationColumns = {
   titleCell: 'flex-1 min-w-0',
   value: 'w-[140px] shrink-0',
   submitter: 'w-[180px] shrink-0',
+  // Hidden below 2xl (≥1536px) so the extra column never forces horizontal scroll.
+  initiator: 'hidden w-[180px] shrink-0 2xl:flex',
   description: 'flex-1 min-w-0 pl-4',
   status: 'w-[110px] shrink-0',
   actions: 'w-[168px] shrink-0',

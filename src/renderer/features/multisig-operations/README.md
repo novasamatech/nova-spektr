@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-20
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-21
 
 ## Overview
 
@@ -14,8 +14,10 @@ is, who has already signed, and whether it is their turn. This view is where tha
 approving or rejecting it, inspecting its decoded call, supplying missing call data, following its event log, attaching
 a shared description, and (when the address book is connected) nudging the signatories who still need to act.
 
-The list is a **table**: a sticky column header (Operation / Value / Submitter / Description) with sortable columns sits
-above rows grouped into collapsible **status sections** (In progress / Completed / Rejected). The **Description** header
+The list is a **table**: a sticky column header (Operation / Value / Submitter / Initiator / Description) with sortable
+columns sits above rows grouped into collapsible **status sections** (In progress / Completed / Rejected). The
+**Initiator** column is hidden on narrower windows (shown at ≥1536px) so the extra column never forces horizontal
+scroll. The **Description** header
 label is shown only once the external address book has been connected (descriptions are address-book data) — the same
 gate that reveals the drafts section; until then the column area stays blank. Saved **drafts** awaiting submission
 appear as the first collapsible section under the same table header on the Pending tab.
@@ -116,6 +118,8 @@ A collapsed row is a fixed-height card whose cells line up with the sticky table
   shapes (edit-flexible, verify-proxy) render their bespoke card across the Operation and Value cells instead.
 - **Value** — the operation's amount and asset, when one can be extracted from the (core) call.
 - **Submitter** — the multisig account, resolved to its wallet/contact name with an identicon.
+- **Initiator** — the operation's depositor (its first approver — the co-signer others are waiting on), resolved to a
+  name the same way the expanded Depositor detail is. Hidden below 1536px to avoid horizontal scroll.
 - **Description** — the shared operation note, inline. See [Description in the row](#description-in-the-row). When the
   operation originated from a submitted draft, an uppercase **FROM DRAFT** badge leads the cell; hovering it shows the
   operation's description.

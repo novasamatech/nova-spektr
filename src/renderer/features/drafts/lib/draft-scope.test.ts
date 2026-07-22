@@ -14,6 +14,7 @@ const KUSAMA_CHAIN_ID = '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca9365
 const MOCK_ACCOUNT_ID = '0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d' as never;
 const BOB_ACCOUNT_ID = '0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48' as never;
 const CHARLIE_ACCOUNT_ID = '0x90b5ab205c6974c9ea841be688864633dc9ca8a357843eeacf2314649965fe22' as never;
+const DAVE_ACCOUNT_ID = '0x306721211d5404bd9da88e0204360a1a9ab8b87c66c1bc2fcdd37f3c2222cc20' as never;
 
 const chains = {
   [POLKADOT_CHAIN_ID]: { chainId: POLKADOT_CHAIN_ID, name: 'Polkadot', addressPrefix: 0, assets: [] } as never as Chain,
@@ -53,6 +54,10 @@ const accountNames: Record<string, string> = {
 };
 const walletNames: Record<string, string> = {
   [MOCK_ACCOUNT_ID]: 'Team Multisig',
+  // A proxy submitter whose name is supplied only by the wallet resolver — no
+  // account name, no proxy contact. Mirrors a proxied draft displayed through
+  // the synthetic proxy wallet that falls back to resolveWalletName.
+  [DAVE_ACCOUNT_ID]: 'Dave Proxy Wallet',
 };
 
 const resolvers: SearchResolvers = {
@@ -150,6 +155,29 @@ describe('filterDraftsByScope', () => {
       const scope = { ...emptyScope, searchQuery: '15oF4' };
       expect(filterWithSearch([proxiedDraft], scope).map((d) => d.id)).toEqual(['draft-proxied']);
     });
+
+    describe('without a proxy contact', () => {
+      // The row falls back to the synthetic proxy wallet, whose name comes from
+      // resolveWalletName — so the search meta must match that same channel.
+      const proxiedNoContactDraft = createMockDraft({
+        id: 'draft-proxied-no-contact',
+        proxyAccountId: DAVE_ACCOUNT_ID,
+      });
+
+      test('search matches the proxy submitter name the wallet resolver supplies', () => {
+        // Reachable only through resolveWalletName — no account name for Dave.
+        expect(resolvers.resolveAccountName(DAVE_ACCOUNT_ID)).toBe('');
+
+        const scope = { ...emptyScope, searchQuery: 'Dave Proxy' };
+        expect(filterWithSearch([proxiedNoContactDraft], scope).map((d) => d.id)).toEqual(['draft-proxied-no-contact']);
+      });
+
+      test('search matches the proxy submitter address with the chain prefix', () => {
+        // Dave's accountId on Polkadot (prefix 0) starts with 126TwB...
+        const scope = { ...emptyScope, searchQuery: '126TwB' };
+        expect(filterWithSearch([proxiedNoContactDraft], scope).map((d) => d.id)).toEqual(['draft-proxied-no-contact']);
+      });
+    });
   });
 
   describe('initiator', () => {
@@ -180,9 +208,9 @@ describe('filterDraftsByScope', () => {
       expect(filterWithSearch([legacyDraft], scope).map((d) => d.id)).toEqual(['draft-legacy']);
     });
 
-    test('a stored path wins over initiatorAccountId, matching what the details panel shows', () => {
-      // DraftFullInfo ignores initiatorAccountId when a path exists, so matching
-      // the stale field would match a name the panel never shows.
+    test('surfaces initiatorAccountId in its own column even when the signing path diverges', () => {
+      // The Initiator column renders draft.initiatorAccountId directly, so both
+      // the path's signer and the assigned initiator are on screen and match.
       const divergentDraft = createMockDraft({
         id: 'draft-divergent',
         initiatorAccountId: BOB_ACCOUNT_ID,
@@ -195,7 +223,9 @@ describe('filterDraftsByScope', () => {
       expect(filterWithSearch([divergentDraft], { ...emptyScope, searchQuery: 'Charlie' }).map((d) => d.id)).toEqual([
         'draft-divergent',
       ]);
-      expect(filterWithSearch([divergentDraft], { ...emptyScope, searchQuery: 'Adam' })).toEqual([]);
+      expect(filterWithSearch([divergentDraft], { ...emptyScope, searchQuery: 'Adam' }).map((d) => d.id)).toEqual([
+        'draft-divergent',
+      ]);
     });
 
     test('a draft with no initiator simply never matches an initiator query', () => {
@@ -203,15 +233,18 @@ describe('filterDraftsByScope', () => {
       expect(filterWithSearch([polkadotDraft], scope)).toEqual([]);
     });
 
-    test('a non-signer-terminated path does not fall back to the stale stored field', () => {
-      // The panel renders such a path as-is, with no Initiator row at all.
+    test('the initiator column stays searchable when the path has no signer hop', () => {
+      // The Initiator column still shows draft.initiatorAccountId regardless of a
+      // malformed path, so it must remain matchable.
       const brokenPathDraft = createMockDraft({
         id: 'draft-broken',
         initiatorAccountId: BOB_ACCOUNT_ID,
         signingPath: [{ kind: 'multisig', accountId: MOCK_ACCOUNT_ID }] as never,
       });
 
-      expect(filterWithSearch([brokenPathDraft], { ...emptyScope, searchQuery: 'Adam' })).toEqual([]);
+      expect(filterWithSearch([brokenPathDraft], { ...emptyScope, searchQuery: 'Adam' }).map((d) => d.id)).toEqual([
+        'draft-broken',
+      ]);
     });
   });
 

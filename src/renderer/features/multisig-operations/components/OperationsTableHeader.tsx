@@ -96,6 +96,10 @@ export const OperationsTableHeader = () => {
         title={t('operations.table.sortBySubmitter')}
       />
 
+      <div className={cnTw(operationColumns.initiator, LABEL_CLASS, 'items-center text-text-tertiary')}>
+        {t('operations.table.initiator')}
+      </div>
+
       {/* Descriptions come from the external address book — hide the label (keeping the column spacer)
           until it has been connected, mirroring the drafts section gate. */}
       <div className={cnTw(operationColumns.description, LABEL_CLASS, 'text-text-tertiary')}>
