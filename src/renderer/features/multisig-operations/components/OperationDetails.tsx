@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { AccountExplorers, WalletIcon } from '@/shared/ui-entities';
-import { type MultisigOperation, accounts, multisigOperationService } from '@/domains/network';
+import { type MultisigOperation, accounts, multisigOperationService, useWalletName } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
@@ -26,6 +26,7 @@ export const OperationDetails = ({ operation, children }: Props) => {
 
   const depositorSignatory = allAccounts.find(a => a.accountId === operation.depositor);
   const depositorWallet = depositorSignatory && wallets.find(w => w.id === depositorSignatory.walletId);
+  const depositorWalletName = useWalletName(depositorWallet ?? null);
 
   const approvals = multisigOperationService.getApprovals(operation);
   const initEvent = approvals.find(e => e.accountId === operation.depositor);
@@ -41,7 +42,7 @@ export const OperationDetails = ({ operation, children }: Props) => {
             {depositorWallet ? (
               <div className="flex items-center gap-2">
                 <WalletIcon size={16} type={depositorWallet.type} />
-                <span>{depositorWallet.name}</span>
+                <span>{depositorWalletName ?? depositorWallet.name}</span>
                 <AccountExplorers accountId={depositorSignatory.accountId} chain={chain} />
               </div>
             ) : (
