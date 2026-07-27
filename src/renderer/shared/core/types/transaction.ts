@@ -40,6 +40,7 @@ export const enum TransactionType {
   BATCH_ALL = 'batchAll',
   DESTINATION = 'payee',
   CHILL = 'chill',
+  PAYOUT_STAKERS_BY_PAGE = 'payoutStakersByPage',
 
   ADD_PROXY = 'add_proxy',
   REMOVE_PROXY = 'remove_proxy',

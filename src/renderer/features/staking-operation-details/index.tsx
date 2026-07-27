@@ -23,6 +23,7 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
     [TransactionType.RESTAKE]: t('operations.titles.restake'),
     [TransactionType.DESTINATION]: t('operations.titles.destination'),
     [TransactionType.UNSTAKE]: t('operations.titles.unstake'),
+    [TransactionType.PAYOUT_STAKERS_BY_PAGE]: t('operations.titles.payoutStakers'),
   };
 
   return Title[transactionType];
@@ -37,6 +38,7 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
     [TransactionType.RESTAKE]: 'returnToStakeMst',
     [TransactionType.DESTINATION]: 'destinationMst',
     [TransactionType.UNSTAKE]: 'unstakeMst',
+    [TransactionType.PAYOUT_STAKERS_BY_PAGE]: 'redeemMst',
   };
 
   return Icon[transactionType];

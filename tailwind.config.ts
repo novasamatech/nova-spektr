@@ -18,6 +18,7 @@ const tailwindConfig: Config = {
         'modal-lg': '49rem',
         'modal-xl': '59rem',
         'modal-xxl': '69rem',
+        'modal-3xl': '85rem',
       },
       height: {
         modal: '36rem',

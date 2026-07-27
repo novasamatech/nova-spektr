@@ -94,6 +94,8 @@ export const getExtrinsic: Record<
   [TransactionType.NOMINATE]: ({ targets }, api) => api.tx.staking.nominate(targets),
   [TransactionType.DESTINATION]: ({ payee }, api) => api.tx.staking.setPayee(payee),
   [TransactionType.CHILL]: (_, api) => api.tx.staking.chill(),
+  [TransactionType.PAYOUT_STAKERS_BY_PAGE]: ({ validatorStash, era, page }, api) =>
+    api.tx.staking.payoutStakersByPage(validatorStash, era, page),
   [TransactionType.BATCH_ALL]: ({ transactions }, api) => {
     const calls = transactions.map((tx: Transaction) => getExtrinsic[tx.type](tx.args, api).method);
 

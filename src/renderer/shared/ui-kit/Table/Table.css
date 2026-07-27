@@ -1,13 +1,13 @@
 .table-container {
-  width: 100%;
   border: none;
   background-color: white;
+  width: 100%;
   overflow: hidden;
 }
 
 .table {
-  width: 100%;
   border-collapse: collapse;
+  width: 100%;
   table-layout: fixed;
 }
 
@@ -17,13 +17,13 @@
 
 .table-header-cell {
   padding: 12px;
-  text-align: left;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 18px;
   color: #a4a4ad;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 18px;
+  font-family: 'Inter', sans-serif;
   letter-spacing: -0.12px;
+  text-align: left;
 }
 
 .table-header-cell--active {
@@ -31,9 +31,9 @@
 }
 
 .table-header-cell--sortable {
+  transition: background-color 0.15s ease;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.15s ease;
 }
 
 .table-header-cell--sortable:hover {
@@ -42,8 +42,8 @@
 
 .table-header-content {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   gap: 8px;
 }
 
@@ -59,8 +59,8 @@
 }
 
 .table-header-cell--active .table-sort-indicator {
-  color: var(--text-tertiary);
   opacity: 1;
+  color: var(--text-tertiary);
 }
 
 .table-body {
@@ -68,8 +68,8 @@
 }
 
 .table-row {
-  border-bottom: none;
   transition: background-color 0.15s ease;
+  border-bottom: none;
 }
 
 .table-row:hover {
@@ -80,13 +80,35 @@
   border-bottom: none;
 }
 
+.table-row--disabled {
+  opacity: 0.5;
+}
+
+.table-row--disabled:hover {
+  background-color: transparent;
+}
+
+.table-row--disabled .table-cell,
+.table-row--disabled:hover .table-cell {
+  cursor: not-allowed;
+}
+
+.table-row--selected {
+  box-shadow: inset 3px 0 0 var(--accent-background);
+  background-color: color-mix(in srgb, var(--accent-background) 6%, transparent);
+}
+
+.table-row--selected:hover {
+  background-color: color-mix(in srgb, var(--accent-background) 10%, transparent);
+}
+
 .table-cell {
-  padding: 16px 12px;
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 20px;
-  color: #363643;
-  letter-spacing: -0.13px;
   vertical-align: middle;
+  padding: 16px 12px;
+  color: #363643;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 20px;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.13px;
 }

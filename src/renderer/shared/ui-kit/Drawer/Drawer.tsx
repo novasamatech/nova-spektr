@@ -7,16 +7,18 @@ import { IconButton } from '@/shared/ui/Buttons/IconButton/IconButton';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { useTheme } from '../Theme/useTheme';
 
-import './Modal.css';
+const DrawerOverlayContext = createContext<HTMLElement | null>(null);
 
-const ModalOverlayContext = createContext<HTMLElement | null>(null);
-
-export const useModalOverlay = () => useContext(ModalOverlayContext);
+export const useDrawerOverlay = () => useContext(DrawerOverlayContext);
 
 type Props = {
   isOpen?: boolean;
-  size: 'sm' | 'md' | 'mdlg' | 'lg' | 'xl' | 'xxl' | '3xl' | 'full' | 'fit';
-  height?: 'full' | 'lg' | 'fit';
+  /**
+   * Panel width in pixels.
+   *
+   * @default 560
+   */
+  width?: number;
   testId?: string;
   preventOutsideClick?: boolean;
   onToggle?: (open: boolean) => void;
@@ -24,11 +26,10 @@ type Props = {
 
 const Root = ({
   isOpen,
-  size = 'md',
-  height = 'fit',
+  width = 560,
   children,
   onToggle,
-  testId = 'Modal',
+  testId = 'Drawer',
   preventOutsideClick = false,
 }: PropsWithChildren<Props>) => {
   const { portalContainer } = useTheme();
@@ -38,10 +39,10 @@ const Root = ({
   const triggerNode = arrayChildren.find(child => {
     return nonNullable(child) && isObject(child) && 'type' in child && child.type === Trigger;
   });
-  const modalNodes = triggerNode ? arrayChildren.filter(child => child !== triggerNode) : arrayChildren;
+  const drawerNodes = triggerNode ? arrayChildren.filter(child => child !== triggerNode) : arrayChildren;
 
   const hasTitle =
-    modalNodes.find(child => {
+    drawerNodes.find(child => {
       return nonNullable(child) && isObject(child) && 'type' in child && child.type === Title;
     }) !== null;
 
@@ -52,41 +53,28 @@ const Root = ({
         <Dialog.Overlay
           ref={setOverlay}
           className={cnTw(
-            'absolute inset-0 z-50 flex min-h-full items-center justify-center overflow-hidden p-4',
+            'absolute inset-0 z-50 flex min-h-full justify-end overflow-hidden',
             'bg-dim-background',
             'duration-300 animate-in fade-in',
           )}
         >
-          <ModalOverlayContext.Provider value={overlay}>
+          <DrawerOverlayContext.Provider value={overlay}>
             <Dialog.Content
               aria-describedby={undefined}
               data-testid={testId}
               className={cnTw(
-                'ui-kit-modal-height flex max-w-full min-w-32 flex-col overflow-hidden',
+                'flex h-full max-w-full min-w-32 flex-col overflow-hidden',
                 'text-left align-middle text-body',
-                'transform rounded-lg bg-white shadow-modal transition-transform',
-                'duration-200 animate-in fade-in zoom-in-95',
-                {
-                  'w-modal-sm': size === 'sm',
-                  'w-modal': size === 'md',
-                  'w-148': size === 'mdlg',
-                  'w-modal-lg': size === 'lg',
-                  'w-modal-xl': size === 'xl',
-                  'w-modal-xxl': size === 'xxl',
-                  'w-modal-3xl': size === '3xl',
-                  'w-full': size === 'full',
-                  'w-fit': size === 'fit',
-                  'h-fit': height === 'fit',
-                  'h-full': height === 'full',
-                  'h-modal': height === 'lg',
-                },
+                'rounded-l-lg bg-white shadow-modal',
+                'duration-300 animate-in slide-in-from-right',
               )}
+              style={{ width }}
               onInteractOutside={preventOutsideClick ? e => e.preventDefault() : undefined}
             >
               {hasTitle ? null : <Dialog.Title hidden />}
-              {modalNodes}
+              {drawerNodes}
             </Dialog.Content>
-          </ModalOverlayContext.Provider>
+          </DrawerOverlayContext.Provider>
         </Dialog.Overlay>
       </Dialog.Portal>
     </Dialog.Root>
@@ -125,23 +113,6 @@ const Title = ({ action, close, children, gap = 'medium' }: TitleProps) => {
         </div>
       </header>
     </Dialog.Title>
-  );
-};
-
-type HeaderContentProps = PropsWithChildren<{
-  background?: 'primary' | 'secondary';
-}>;
-
-const HeaderContent = ({ children, background = 'primary' }: HeaderContentProps) => {
-  return (
-    <header
-      aria-level={2}
-      className={cnTw('shrink-0', {
-        'bg-main-app-background': background === 'secondary',
-      })}
-    >
-      {children}
-    </header>
   );
 };
 
@@ -184,10 +155,9 @@ const Footer = ({ children, align = 'end' }: PropsWithChildren<{ align?: 'start'
   );
 };
 
-export const Modal = Object.assign(Root, {
+export const Drawer = Object.assign(Root, {
   Trigger,
   Title,
-  HeaderContent,
   Content,
   Footer,
 });
