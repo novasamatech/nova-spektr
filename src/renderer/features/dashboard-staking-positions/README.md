@@ -14,17 +14,23 @@ what rewards are about to expire. The drawer answers _what exactly is wrong with
 Nothing here fetches from a node. `aggregates/staking-positions` already drives every read; this feature joins the
 caches it filled and renders them.
 
+It does own one piece of wiring, though: the dashboard's account selection also contains **address book entries**, which
+are not accounts of any wallet and would therefore never produce a position. This widget hands those ids to the
+aggregate (`trackAccountIds`) once for the whole staking tab — the KPI and rewards widgets read the resulting positions
+rather than repeating the wiring. The tracked set is replaced on every selection change and released on unmount, so it
+never grows past what the user is looking at.
+
 ## Who can use it / when it applies
 
 Visible whenever the `dashboard` feature flag is on and the wallet has at least one account. What the user may _do_ with
 a row depends on how the account can be signed for:
 
-| Access mode | When                                                                                                                       | What the row and drawer show                                                   |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `direct`    | A local, signable account                                                                                                  | Full action set                                                                |
-| `multisig`  | A multisig with at least one signatory key in this installation                                                            | Full action set, plus a `2/3` chip                                             |
-| `draft`     | A multisig with no local signatory, a proxied account whose proxy is not local, or an address with no local account at all | Full action set, plus a pencil glyph — the operation can only leave as a draft |
-| `watchOnly` | A watch-only wallet, or an account imported as watch-only                                                                  | `view only` in the row; the drawer replaces the action chips with a note       |
+| Access mode | When                                                                                                                                  | What the row and drawer show                                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `direct`    | A local, signable account                                                                                                             | Full action set                                                                |
+| `multisig`  | A multisig with at least one signatory key in this installation                                                                       | Full action set, plus a `2/3` chip                                             |
+| `draft`     | A multisig with no local signatory, a proxied account whose proxy is not local, or an address book entry with no local account at all | Full action set, plus a pencil glyph — the operation can only leave as a draft |
+| `watchOnly` | A watch-only wallet, or an account imported as watch-only                                                                             | `view only` in the row; the drawer replaces the action chips with a note       |
 
 Watch-only is not "the buttons are greyed out". The chips are **absent**, and the drawer says so in words: actions are
 unavailable by design, not broken. A disabled control invites the user to keep trying.
@@ -112,11 +118,11 @@ silently does nothing is the worse failure: the user cannot tell an unwired butt
 
 ## Known gaps
 
-- **Address-book positions do not exist yet.** `aggregates/staking-positions` derives positions from the selected
-  wallet's accounts only, so the `draft` mode is reachable today via foreign multisigs and proxied accounts, not via
-  contacts. `getAccessMode` already handles the contact case for when the aggregate widens.
 - **The "learn how staking works" link points at the docs root**, because no staking docs page is referenced anywhere in
   the app yet.
+- **A draft row's actions are still hand-off only.** An address-book position renders with the pencil glyph and its
+  chips enabled, but like every other row it only _emits_ — the events above still need a host that turns them into
+  drafts.
 
 ## Related
 

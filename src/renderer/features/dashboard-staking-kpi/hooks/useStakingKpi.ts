@@ -25,6 +25,13 @@ import { REWARDS_WINDOW_DAYS, useRewardsWindow, useRewardsWindowStart } from './
 import { useStakingChainAssets } from './useStakingChainAssets';
 import { unclaimedKey, useUnclaimedPayoutsByPosition } from './useUnclaimedPayouts';
 
+/**
+ * A position whose account is not local at all — an address-book row. That is
+ * the same verdict `getAccessMode(null, wallets)` gives the positions table, so
+ * the two surfaces never disagree about what can be done with the row.
+ */
+const DEFAULT_ACCESS_MODE: AccessMode = 'draft';
+
 export type StakingKpiData = {
   positions: StakingPosition[];
   summary: StakingSummary;
@@ -208,7 +215,7 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
         unclaimedFiat: toFiat(position.chainId, entry?.total ?? '0'),
         eras,
         payouts,
-        accessMode: accessByAccount[position.accountId] ?? 'watchOnly',
+        accessMode: accessByAccount[position.accountId] ?? DEFAULT_ACCESS_MODE,
       });
     }
 
@@ -263,7 +270,7 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
         unbonding: position.unbonding,
         totalUnbonding: position.totalUnbonding,
         redeemable: position.redeemable,
-        accessMode: accessByAccount[position.accountId] ?? 'watchOnly',
+        accessMode: accessByAccount[position.accountId] ?? DEFAULT_ACCESS_MODE,
       });
     }
 

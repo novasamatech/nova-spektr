@@ -69,6 +69,16 @@ export type StakingSummary = {
 
 const reset = createEvent();
 
+/**
+ * Follow these addresses on top of the selected wallet's own accounts.
+ *
+ * The dashboard's account selection is not a wallet: it also carries address
+ * book entries, which have no local account object at all. Passing the whole
+ * set on every selection change is the contract — the store below replaces its
+ * content rather than accumulating it.
+ */
+const trackAccountIds = createEvent<AccountId[]>();
+
 // --- Resource pools ---
 //
 // The `shared/query` resources are ref-counted pools: every `start` must be
@@ -76,6 +86,13 @@ const reset = createEvent();
 // (or in-flight request) outlives the thing that asked for it. Instead of
 // scattering that bookkeeping, every resource driven here goes through one
 // pool binding that diffs the desired request list against the started keys.
+//
+// That diff is the *only* writer of subscription state, teardown included -
+// `reset` empties the request lists instead of stopping keys behind the diff's
+// back. Two writers over one snapshot of the started keys would race: `reset`
+// also drops the tracked ids, which changes the request lists in the very same
+// tick, so one of them would double-stop a key or leave a freshly started one
+// behind.
 
 type PooledResource<Params> = {
   start: EventCallable<Params>;
@@ -119,14 +136,6 @@ function bindResourcePool<Params>(resource: PooledResource<Params>, $requests: S
     return [...desired.keys()];
   });
 
-  const stopAllFx = createEffect((activeKeys: ResourceRequestKey[]) => {
-    const stop = scopeBind(resource.stop, { safe: true });
-
-    for (const key of activeKeys) {
-      stop(key);
-    }
-  });
-
   sample({
     clock: $requests,
     source: $activeKeys,
@@ -135,15 +144,6 @@ function bindResourcePool<Params>(resource: PooledResource<Params>, $requests: S
   });
 
   $activeKeys.on(syncFx.doneData, (_, keys) => keys);
-
-  sample({
-    clock: reset,
-    source: $activeKeys,
-    filter: keys => keys.length > 0,
-    target: stopAllFx,
-  });
-
-  $activeKeys.reset(stopAllFx.done);
 
   return { $activeKeys };
 }
@@ -180,26 +180,61 @@ function filterWalletAccounts(accounts: AnyAccount[], wallet: Wallet | null): An
   return accounts.filter(account => !accountUtils.isVaultBaseAccount(account));
 }
 
+/**
+ * Addresses tracked on top of the selected wallet, kept sorted and deduplicated
+ * so an identical selection never churns the pooled subscriptions - the account
+ * list is part of every ledger and nominations key.
+ */
+const $trackedAccountIds = createStore<AccountId[]>([], {
+  updateFilter: (next, current) =>
+    next.length !== current.length || next.some((accountId, index) => accountId !== current[index]),
+});
+
+$trackedAccountIds.on(trackAccountIds, (_, accountIds) => [...new Set(accountIds)].sort());
+$trackedAccountIds.reset(reset);
+
+/**
+ * `reset` means "this aggregate wants nothing", which empties every request
+ * list and lets the pool binding release the lot. It is not permanent: tracking
+ * accounts again re-arms it, and that is exactly what the dashboard's staking
+ * widgets do when they mount.
+ */
+const $torndown = createStore(false);
+
+$torndown.on(reset, () => true).reset(trackAccountIds);
+
 const $chainAccounts = combine(
   {
     chains: $stakingChains,
     wallet: walletSelect.$selectedWallet,
     selectedAccounts: walletSelect.$selectedAccounts,
+    trackedAccountIds: $trackedAccountIds,
+    torndown: $torndown,
   },
-  ({ chains, wallet, selectedAccounts }): ChainAccounts[] => {
+  ({ chains, wallet, selectedAccounts, trackedAccountIds, torndown }): ChainAccounts[] => {
+    if (torndown) return [];
+
     const walletAccounts = filterWalletAccounts(selectedAccounts, wallet);
 
-    return chains.map(chain => ({
-      chain,
-      chainId: chain.chainId,
-      accountIds: [
-        ...new Set(
-          walletAccounts
-            .filter(account => accountService.isAccountAvailableOnChain(account, chain))
-            .map(account => account.accountId),
-        ),
-      ],
-    }));
+    return chains.map(chain => {
+      // A wallet account carries its own key scheme and chain binding, so it
+      // only joins the chains that can actually hold it.
+      const accountIds = new Set(
+        walletAccounts
+          .filter(account => accountService.isAccountAvailableOnChain(account, chain))
+          .map(account => account.accountId),
+      );
+
+      // A tracked id is a bare address with no account object behind it - there
+      // is nothing to run that check against, so it joins every staking chain.
+      // An address that is both a wallet account and a tracked one collapses
+      // into a single entry here, and therefore into a single subscription.
+      for (const accountId of trackedAccountIds) {
+        accountIds.add(accountId);
+      }
+
+      return { chain, chainId: chain.chainId, accountIds: [...accountIds] };
+    });
   },
 );
 
@@ -542,12 +577,14 @@ export const stakingPositions = {
   $stakingChains,
   $chainAccounts,
   $nominatedValidators,
+  $trackedAccountIds,
 
   $positions,
   $summary,
   $minNominatorBond,
   $pending,
 
+  trackAccountIds,
   reset,
 };
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { type ChainId, type Wallet, AccountType, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { getAccessMode, getMultisigThreshold } from '../position-access';
+import { canAct, getAccessMode, getMultisigThreshold } from '../position-access';
 
 const accountId = (index: number): AccountId => toAccountId(`0x${index.toString(16).padStart(64, '0')}`);
 
@@ -122,6 +122,21 @@ describe('getAccessMode', () => {
 
   it('reports an address with no local account as draft', () => {
     expect(getAccessMode(null, [])).toEqual('draft');
+  });
+
+  it('lands an address-book position on draft, with its actions still offered', () => {
+    // How a row is built: the position's accountId is looked up among the
+    // installation's accounts, and an address that only exists in the address
+    // book misses. The row must still offer its actions — they leave as drafts.
+    const wallets = [makeWallet(1, WalletType.POLKADOT_VAULT, [baseAccount()])];
+    const rowAccount = wallets.flatMap((w) => w.accounts).find((a) => a.accountId === CAROL) ?? null;
+
+    expect(rowAccount).toBeNull();
+
+    const mode = getAccessMode(rowAccount, wallets);
+
+    expect(mode).toEqual('draft');
+    expect(canAct(mode)).toBe(true);
   });
 
   it('reports a contact multisig (sentinel wallet id) as draft', () => {

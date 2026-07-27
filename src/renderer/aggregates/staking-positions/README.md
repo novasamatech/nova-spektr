@@ -4,9 +4,9 @@
 
 ## Overview
 
-The single source of truth for **what the selected wallet has staked, everywhere at once**. It answers three questions
-for the staking dashboard: which positions exist, what each of them is worth and earning, and whether the app is still
-finding out.
+The single source of truth for **what the dashboard's account selection has staked, everywhere at once** — the selected
+wallet's own accounts plus any address explicitly handed over for tracking. It answers three questions for the staking
+dashboard: which positions exist, what each of them is worth and earning, and whether the app is still finding out.
 
 A **position** is one bonded ledger of one account on one staking chain — its stake, what it nominates, which of those
 validators actually back it in the active era, what is unbonding, and what can be withdrawn right now. The aggregate
@@ -28,12 +28,34 @@ Accounts follow the same per-chain logic: an account is included on a chain only
 binding allow it, and a Polkadot Vault base account is dropped whenever the wallet has derived keys — the same rule the
 Staking page applies, so the two views never disagree about whose stake is whose.
 
+## Tracked accounts
+
+The dashboard's account selection is **not a wallet**. It also carries address book entries — addresses this
+installation holds no account object for. Those are handed over with `trackAccountIds(ids)`, which _replaces_ the
+tracked set; a position derived from one is a position like any other, and everything downstream (the subscriptions, the
+derivation, `$summary`) treats it identically. What makes it different is only what the row can _do_: with no local
+account behind it, the dashboard resolves it to the `draft` access mode.
+
+**The chain-availability check does not apply to a tracked id, on purpose.** That check reads an account's key scheme
+and its own chain binding — properties of an account object, which a bare address does not have. Running it against a
+plain `AccountId` would mean inventing an answer, so a tracked id joins **every** staking chain instead, and the chain
+itself decides by simply having no ledger for it. This mirrors the balance subscriptions, where wallet accounts go
+through `isAccountAvailableOnChain` and arbitrary addresses are paired with chains by the caller. An address that is
+both a wallet account and a tracked id collapses into one entry per chain, so it is never subscribed twice.
+
+**The cost is bounded by the selection, never by the address book.** Every tracked id widens the ledger and nominations
+subscriptions of every staking chain (it is part of their keys, so changing the set retires the old key and opens the
+new one). The set is therefore exactly what the user has selected on the dashboard right now: the staking widget
+replaces it whenever the selection changes and releases it on unmount. Nothing ever subscribes for the whole contact
+list.
+
 ## What it exposes
 
 | Store                  | What it answers                                                                                 |
 | ---------------------- | ----------------------------------------------------------------------------------------------- |
 | `$stakingChains`       | Which staking chains this installation has, in a stable order                                   |
-| `$chainAccounts`       | Which accounts are eligible on each of them                                                     |
+| `$chainAccounts`       | Which accounts are eligible on each of them — wallet accounts plus the tracked ids              |
+| `$trackedAccountIds`   | The addresses tracked on top of the wallet, set by `trackAccountIds`                            |
 | `$positions`           | Every position of the selection, across all chains                                              |
 | `$summary`             | Per-chain and overall totals: staked, redeemable, unbonding, active validators, position counts |
 | `$minNominatorBond`    | The minimum bond required to nominate, per chain                                                |
@@ -97,7 +119,13 @@ which gives the two properties that matter:
   union is therefore kept behind a content check, so an identical payload — or any unrelated store updating — never
   restarts the pooled exposure read. Only a genuinely different nomination set does.
 
-`reset` stops every key the aggregate started, on every resource.
+`reset` stops every key the aggregate started, on every resource, and drops the tracked ids with them. It does so by
+declaring that the aggregate **wants nothing** — the request lists go empty and the same diff releases the lot — rather
+than by stopping keys behind the diff's back. That is not a stylistic choice: `reset` changes the request lists in the
+very tick it fires (it clears the tracked ids, which are part of the ledger and nominations keys), and a second writer
+diffing the same snapshot of started keys would either double-stop one or leave a freshly started one behind. Reset is
+not permanent — tracking accounts again re-arms the aggregate, which is exactly what the dashboard's staking widgets do
+when they mount.
 
 ## What it replaces
 
@@ -115,3 +143,5 @@ live in `domains/staking` (`positionsService`) and are not duplicated here.
 - `aggregates/staking-accounts` — the classic page's account filtering and ledger subscription for the selected chain.
 - `aggregates/wallet-select`, `entities/network` — the selected wallet's accounts and the connected apis everything
   above is keyed by.
+- `features/dashboard-staking-positions` — the only caller of `trackAccountIds`: it turns the dashboard's address-book
+  selection into tracked ids once for the whole staking tab, and the other staking widgets read the resulting positions.

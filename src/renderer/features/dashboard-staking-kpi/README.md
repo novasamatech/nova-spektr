@@ -96,6 +96,11 @@ the opposite of the abbreviated `5.38M` on screen, because a spreadsheet is wher
 An action the account's access mode does not allow is **absent**, not greyed out — a watch-only row simply has no
 buttons. Everything else is a question of _which_ flow, not _whether_.
 
+The mode is resolved by the positions feature, from the account behind the position. A row whose address belongs to no
+account of this installation — an address-book position — resolves to `draft`, exactly as the positions table resolves
+it: it keeps its actions, and they can only leave as drafts. Reading a missing account as watch-only would silently hide
+the buttons on a row the table shows as actionable.
+
 The row itself never runs a transaction. Claim, Redeem and Unbond publish a request carrying the selected positions or
 payouts, and the staking flows own everything from there. Until a flow declares itself connected, those primary buttons
 render **disabled with a tooltip** saying so, rather than firing an event into the void.

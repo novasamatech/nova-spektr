@@ -7,6 +7,7 @@ import { type TableSort, Tooltip } from '@/shared/ui-kit';
 import { ValidatorSelectionModal } from '@/features/validator-selection';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { usePositionRows } from '../hooks/usePositionRows';
+import { useTrackedAddressBookAccounts } from '../hooks/useTrackedAddressBookAccounts';
 import { type PositionRow, DEFAULT_SORT, isSortColumn, sortPositionRows } from '../lib';
 import { positionActions } from '../model/position-actions';
 
@@ -26,9 +27,13 @@ type Props = {
  * Sorting is controlled rather than left to the table, because "largest stake
  * first" has to hold over planck strings no `Number` can compare — see
  * `lib/position-metrics`.
+ *
+ * This is also where the dashboard's address-book selection is handed to
+ * `aggregates/staking-positions`, once for the whole staking tab.
  */
 export const PositionsWidget = ({ accountIds }: Props) => {
   const { t } = useI18n();
+  useTrackedAddressBookAccounts(accountIds);
   const { rows, pending } = usePositionRows(accountIds);
   const actionsWired = useUnit(positionActions.$actionsWired);
   const changeValidatorsTarget = useUnit(positionActions.$changeValidatorsTarget);
