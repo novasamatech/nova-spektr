@@ -121,6 +121,15 @@ Landed so far (types clean repo-wide, 112 domain+pallet tests green):
 2. Claim flow drafts: use the app-wide draft-mode pattern (`createDraftModeBinding` slider — modal switches to draft mode; either sign txs OR create drafts, never mixed in one confirmation).
 3. "Add stake" = F7 layout via parameterized AmountFlowModal {unbond|addStake}. Approved.
 
+## Runtime verification (browser, 2026-07-27)
+Drove the renderer at https://localhost:3000 against the existing dev wallet (`parrent`, no staking positions).
+- **New Staking dashboard tab renders correctly** — matches design frame F3 (first-time empty): KPI cards show zeros and `—`, NOT skeletons (data is loaded, just empty); the Unbonding/Unclaimed footers are correctly absent; the positions panel shows the icon, "No staking positions yet", the multisig/Address-Book explainer, `Start staking` and `Learn how staking works`; the rewards card shows the asset toggle, `0 DOT ≈ $0 · last 30 days` and the empty-history text.
+- **Multi-chain fix confirmed visually**: the rewards asset toggle offers **DOT / KSM / WND** — Westend appears because it is in the dev chain config, which is exactly what the old hardcoded pair dropped.
+- **No runtime errors.** Only pre-existing effector `$fee → *` skipVoid warnings, which also fire on untouched flows.
+- **Old `/staking` page still renders** after `features/staking` was deleted — network selector, totals and the accounts list all fine, so the picker swap caused no regression.
+- ⚠️ **A washed-out, right-shifted first screenshot was an automation artifact, not a bug**: the automated tab reports `visibilityState: "hidden"`, so `requestAnimationFrame` is throttled and the Tabs carousel spring freezes mid-transition (panel opacities summed to exactly 1.0). Untouched Governance froze the same way. Forcing the settled transform rendered everything correctly. Do not "fix" this.
+- **Not verified in browser**: the validator-selection modal, and frames F5/F6/F7/F10 (claim drill-down, position drawer, unbond, draft toast). All need a funded staking account — this dev wallet holds 1.13 DOT against a 250 DOT minimum bond. Covered by 73 unit/model tests plus a render smoke test; real visual conformance is Phase 5 e2e work.
+
 ## Found bug in the OLD flow — needs a decision (not fixed; that page is out of scope)
 `features/staking-unstake` chills at `leftAmount.lte(minBond)` — `model/form-model.ts:218`, `:349`, `model/form-model-shards.ts:357`. Unbonding down to **exactly** the minimum bond leaves a still-valid nominating position, so wrapping `chill` there drops the user's nominations for no reason and they stop earning until they re-nominate. The new `staking-amount-flow` uses strict `<` (plus "a full unbond always chills, even when the minimum is unknown"). The fix is `lte` → `lt` at three sites; no test encodes the current behaviour. Left untouched because the old Staking page was explicitly scoped out — needs a go-ahead.
 
