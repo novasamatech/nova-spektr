@@ -9,11 +9,11 @@ import { Tooltip } from '@/shared/ui-kit';
 const STAKING_DOCS_URL = 'https://docs.novaspektr.io/';
 
 type Props = {
-  actionsWired: boolean;
+  startStakingWired: boolean;
   onStartStaking: () => void;
 };
 
-export const PositionsEmptyState = ({ actionsWired, onStartStaking }: Props) => {
+export const PositionsEmptyState = ({ startStakingWired, onStartStaking }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -29,10 +29,10 @@ export const PositionsEmptyState = ({ actionsWired, onStartStaking }: Props) => 
       </BodyText>
 
       <div className="mt-1 flex flex-col items-center gap-y-2">
-        <Tooltip open={actionsWired ? false : undefined}>
+        <Tooltip open={startStakingWired ? false : undefined}>
           <Tooltip.Trigger>
             <div>
-              <Button size="sm" disabled={!actionsWired} onClick={onStartStaking}>
+              <Button size="sm" disabled={!startStakingWired} onClick={onStartStaking}>
                 {t('dashboard.staking.positions.empty.action')}
               </Button>
             </div>

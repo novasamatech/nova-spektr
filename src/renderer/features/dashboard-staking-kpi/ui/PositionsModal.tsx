@@ -37,9 +37,12 @@ type Props = {
 export const PositionsModal = memo(({ rows, currency, walletByAccount, onClose }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
-  const actionsEnabled = useUnit(dashboardStakingKpiActions.$actionsEnabled);
+  const enabledActions = useUnit(dashboardStakingKpiActions.$enabledActions);
   const redeemRequested = useUnit(dashboardStakingKpiActions.redeemRequested);
   const unbondRequested = useUnit(dashboardStakingKpiActions.unbondRequested);
+
+  const redeemEnabled = enabledActions.includes('redeem');
+  const unbondEnabled = enabledActions.includes('unbond');
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -150,41 +153,52 @@ export const PositionsModal = memo(({ rows, currency, walletByAccount, onClose }
           const hasRedeemable = Number(item.redeemable) > 0;
           const hasStake = Number(item.staked) > 0;
 
+          // One tooltip per button, not one around both: the two are served by
+          // different flows, so one can be live while the other is not.
           return (
-            <Tooltip open={actionsEnabled ? false : undefined}>
-              <Tooltip.Trigger>
-                <div className="flex items-center gap-1">
-                  {hasRedeemable && (
-                    <Button
-                      variant="chip"
-                      size="sm"
-                      disabled={!actionsEnabled}
-                      onClick={() =>
-                        redeemRequested({ accountId: item.accountId, chainId: item.chainId, amount: item.redeemable })
-                      }
-                    >
-                      {t('dashboard.staking.kpi.positions.redeem')}
-                    </Button>
-                  )}
-                  {hasStake && (
-                    <Button
-                      variant="text"
-                      size="sm"
-                      disabled={!actionsEnabled}
-                      onClick={() => unbondRequested({ accountId: item.accountId, chainId: item.chainId })}
-                    >
-                      {t('dashboard.staking.kpi.positions.unbond')}
-                    </Button>
-                  )}
-                </div>
-              </Tooltip.Trigger>
-              <Tooltip.Content>{t('dashboard.staking.kpi.actionUnavailable')}</Tooltip.Content>
-            </Tooltip>
+            <div className="flex items-center gap-1">
+              {hasRedeemable && (
+                <Tooltip open={redeemEnabled ? false : undefined}>
+                  <Tooltip.Trigger>
+                    <div>
+                      <Button
+                        variant="chip"
+                        size="sm"
+                        disabled={!redeemEnabled}
+                        onClick={() =>
+                          redeemRequested({ accountId: item.accountId, chainId: item.chainId, amount: item.redeemable })
+                        }
+                      >
+                        {t('dashboard.staking.kpi.positions.redeem')}
+                      </Button>
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>{t('dashboard.staking.kpi.actionUnavailable')}</Tooltip.Content>
+                </Tooltip>
+              )}
+              {hasStake && (
+                <Tooltip open={unbondEnabled ? false : undefined}>
+                  <Tooltip.Trigger>
+                    <div>
+                      <Button
+                        variant="text"
+                        size="sm"
+                        disabled={!unbondEnabled}
+                        onClick={() => unbondRequested({ accountId: item.accountId, chainId: item.chainId })}
+                      >
+                        {t('dashboard.staking.kpi.positions.unbond')}
+                      </Button>
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>{t('dashboard.staking.kpi.actionUnavailable')}</Tooltip.Content>
+                </Tooltip>
+              )}
+            </div>
           );
         },
       },
     ],
-    [t, chains, walletByAccount, currency, actionsEnabled, redeemRequested, unbondRequested],
+    [t, chains, walletByAccount, currency, redeemEnabled, unbondEnabled, redeemRequested, unbondRequested],
   );
 
   return (

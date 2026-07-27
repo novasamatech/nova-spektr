@@ -12,7 +12,7 @@ import { AssetFiatBalance } from '@/widgets/price';
 import { useNominationRows } from '../hooks/useNominationRows';
 import { useUnclaimedRewards } from '../hooks/useUnclaimedRewards';
 import { type PositionRow, getUnbondingCountdown } from '../lib';
-import { positionActions } from '../model/position-actions';
+import { type PositionAction, positionActions } from '../model/position-actions';
 
 import { NominationsTable } from './NominationsTable';
 import { PositionStatusPill } from './PositionStatusPill';
@@ -40,7 +40,7 @@ const StatCell = ({ label, children }: { label: string; children: ReactNode }) =
  */
 export const PositionDetailDrawer = ({ row, onClose }: Props) => {
   const { t, formatDate } = useI18n();
-  const actionsWired = useUnit(positionActions.$actionsWired);
+  const wiredActions = useUnit(positionActions.$wiredActions);
   const unclaimed = useUnclaimedRewards(row?.chain ?? null, row?.accountId ?? null);
   const { rows: nominationRows, counts } = useNominationRows(row?.position ?? null);
 
@@ -75,8 +75,14 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
       }
     : null;
 
-  const renderAction = (label: string, onClick: () => void, primary = false, blockedHint?: string) => {
-    const disabled = !actionsWired || Boolean(blockedHint);
+  const renderAction = (
+    action: PositionAction,
+    label: string,
+    onClick: () => void,
+    primary = false,
+    blockedHint?: string,
+  ) => {
+    const disabled = !wiredActions.includes(action) || Boolean(blockedHint);
 
     return (
       <Tooltip open={disabled ? undefined : false}>
@@ -231,6 +237,7 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
             ) : (
               <div className="flex flex-wrap items-center gap-2">
                 {renderAction(
+                  'claim',
                   hasUnclaimed
                     ? t('dashboard.staking.positions.detail.actions.claim', { amount: claimLabelAmount })
                     : t('dashboard.staking.positions.detail.actions.claimEmpty'),
@@ -239,22 +246,24 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                   hasUnclaimed ? undefined : t('dashboard.staking.positions.detail.actions.nothingToClaim'),
                 )}
 
-                {renderAction(t('dashboard.staking.positions.detail.actions.addStake'), () =>
+                {renderAction('addStake', t('dashboard.staking.positions.detail.actions.addStake'), () =>
                   positionActions.events.addStakeRequested(actionPayload),
                 )}
 
-                {renderAction(t('dashboard.staking.positions.detail.actions.unbond'), () =>
+                {renderAction('unbond', t('dashboard.staking.positions.detail.actions.unbond'), () =>
                   positionActions.events.unbondRequested(actionPayload),
                 )}
 
-                <Button
-                  size="sm"
-                  variant="chip"
-                  pallet="secondary"
-                  onClick={() => positionActions.events.changeValidatorsRequested(actionPayload)}
-                >
-                  {t('dashboard.staking.positions.detail.actions.changeValidators')}
-                </Button>
+                {/*
+                 * Gated like the rest: the picker itself works, but nothing yet
+                 * turns the chosen set into a `nominate` transaction, so opening
+                 * it would end on a submit that goes nowhere.
+                 */}
+                {renderAction(
+                  'changeValidators',
+                  t('dashboard.staking.positions.detail.actions.changeValidators'),
+                  () => positionActions.events.changeValidatorsRequested(actionPayload),
+                )}
               </div>
             )}
 

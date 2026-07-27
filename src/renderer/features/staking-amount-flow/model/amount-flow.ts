@@ -608,6 +608,12 @@ export const createAmountFlowModel = () => {
     $confirms: confirmModel.$confirms,
 
     $isDraftMode: draftMode.$isDraftMode,
+    /**
+     * This flow asked for a draft and the create-draft modal has not closed
+     * since. A host reads it on `createDraftModel.draftCreated` to tell "the
+     * draft that just landed is mine" from any other draft in the app.
+     */
+    $initiatedDraft: draftMode.$initiatedDraft,
     $isDraftPathComplete: draftMode.$isDraftPathComplete,
     $draftSigningPath: draftMode.$draftSigningPath,
     $canSaveAsDraft,

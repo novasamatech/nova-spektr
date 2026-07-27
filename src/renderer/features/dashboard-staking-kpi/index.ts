@@ -7,7 +7,12 @@ import { dashboardStakingSlot } from '@/pages/Dashboard';
 import { dashboardStakingKpiActions } from './model/actions';
 import { StakingKpiRow } from './ui/StakingKpiRow';
 
-export type { ClaimRequestPayload, RedeemRequestPayload, UnbondRequestPayload } from './model/actions';
+export type {
+  ClaimRequestPayload,
+  RedeemRequestPayload,
+  StakingKpiAction,
+  UnbondRequestPayload,
+} from './model/actions';
 export { dashboardStakingKpiActions };
 
 export const dashboardStakingKpiFeature = createFeature({

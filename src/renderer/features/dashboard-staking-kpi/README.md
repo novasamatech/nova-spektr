@@ -102,8 +102,12 @@ it: it keeps its actions, and they can only leave as drafts. Reading a missing a
 the buttons on a row the table shows as actionable.
 
 The row itself never runs a transaction. Claim, Redeem and Unbond publish a request carrying the selected positions or
-payouts, and the staking flows own everything from there. Until a flow declares itself connected, those primary buttons
-render **disabled with a tooltip** saying so, rather than firing an event into the void.
+payouts, and the staking flows own everything from there. A host declares which of the three it has connected — **per
+action**, not one flag — and a button whose request nobody consumes renders **disabled with a tooltip** saying so,
+rather than firing an event into the void.
+
+[`staking-dashboard-actions`](../staking-dashboard-actions/README.md) is that host today: **Claim** and **Unbond** are
+live, **Redeem** is not, because the withdraw flow only renders on the Staking page.
 
 ## Lifecycle
 
@@ -123,6 +127,8 @@ in flight instead of duplicating it.
 - `domains/staking` — network APY, reward history, the unclaimed-payout scan and the claim window itself.
 - `features/dashboard-staking-positions` — the positions table below this row, and the owner of the access-mode
   resolution this row reuses.
+- [`staking-dashboard-actions`](../staking-dashboard-actions/README.md) — the host that resolves these requests into
+  flow input and announces which buttons are live.
 - `features/dashboard-portfolio-overview` — the Overview tab's equivalent card, and the house pattern for fiat, donut
   and drill-down behaviour followed here.
 - `pages/Dashboard` — hosts the staking widget slot and owns the account selection.

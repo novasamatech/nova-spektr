@@ -42,7 +42,8 @@ type Props = {
 export const ClaimModal = memo(({ rows, currency, eras, eraDurations, walletByAccount, onClose }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
-  const actionsEnabled = useUnit(dashboardStakingKpiActions.$actionsEnabled);
+  const enabledActions = useUnit(dashboardStakingKpiActions.$enabledActions);
+  const claimEnabled = enabledActions.includes('claim');
   const claimRequested = useUnit(dashboardStakingKpiActions.claimRequested);
 
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
@@ -279,10 +280,10 @@ export const ClaimModal = memo(({ rows, currency, eras, eraDurations, walletByAc
           <Button variant="text" size="sm" onClick={handleExport}>
             {t('dashboard.staking.kpi.exportCsv')}
           </Button>
-          <Tooltip open={actionsEnabled ? false : undefined}>
+          <Tooltip open={claimEnabled ? false : undefined}>
             <Tooltip.Trigger>
               <div>
-                <Button size="sm" disabled={!actionsEnabled || totals.count === 0} onClick={handleClaim}>
+                <Button size="sm" disabled={!claimEnabled || totals.count === 0} onClick={handleClaim}>
                   {t('dashboard.staking.kpi.rewards.claimSelected', { count: totals.count })}
                 </Button>
               </div>

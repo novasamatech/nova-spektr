@@ -29,17 +29,24 @@ const claimRequested = createEvent<ClaimRequestPayload>();
 const redeemRequested = createEvent<RedeemRequestPayload>();
 const unbondRequested = createEvent<UnbondRequestPayload>();
 
+export type StakingKpiAction = 'claim' | 'redeem' | 'unbond';
+
 /**
- * Whether anything is listening. Until a staking flow calls `enableActions`,
- * the primary buttons render disabled with a tooltip instead of firing an event
- * into the void — a button that appears to work and does nothing is worse than
- * one that says it is not ready yet.
+ * Which requests something is listening to.
+ *
+ * Per action, not one flag: the three are served by different flows and one of
+ * them may have no destination at all. A button whose event nobody consumes
+ * renders disabled with a tooltip instead of firing into the void — a button
+ * that appears to work and does nothing is worse than one that says it is not
+ * ready yet.
  */
-const enableActions = createEvent();
-const $actionsEnabled = createStore(false).on(enableActions, () => true);
+const enableActions = createEvent<StakingKpiAction[]>();
+const $enabledActions = createStore<StakingKpiAction[]>([]).on(enableActions, (enabled, actions) =>
+  actions.every((action) => enabled.includes(action)) ? enabled : [...new Set([...enabled, ...actions])],
+);
 
 export const dashboardStakingKpiActions = {
-  $actionsEnabled,
+  $enabledActions,
   enableActions,
 
   claimRequested,

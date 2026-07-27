@@ -38,19 +38,26 @@ const unbondRequested = createEvent<PositionActionPayload>();
 const nominationsChangeRequested = createEvent<NominationsChangePayload>();
 const startStakingRequested = createEvent();
 
+/** One per chip that hands off. `changeValidators` covers the picker's submit. */
+export type PositionAction = 'claim' | 'addStake' | 'unbond' | 'changeValidators' | 'startStaking';
+
 /**
- * Whether a host has taken responsibility for the events above.
+ * Which of the events above a host has taken responsibility for.
  *
- * Until one has, every action chip renders disabled with a tooltip saying so. A
- * chip that looks pressable and silently does nothing is the worse failure: the
- * user cannot tell an unwired button from a broken one.
+ * Per action rather than one flag, because they are wired by different flows
+ * and some of them still have no destination at all. A chip whose event nobody
+ * consumes renders disabled with a tooltip saying so — a chip that looks
+ * pressable and silently does nothing is the worse failure: the user cannot
+ * tell an unwired button from a broken one.
  */
-const $actionsWired = createStore(false);
+const $wiredActions = createStore<PositionAction[]>([]);
 
-/** Called once by whoever wires the flows — see the spec's "Phase 4 contract". */
-const actionsWired = createEvent();
+/** Called by whoever wires the flows — see the spec's "Phase 4 contract". */
+const actionsWired = createEvent<PositionAction[]>();
 
-$actionsWired.on(actionsWired, () => true);
+$wiredActions.on(actionsWired, (wired, actions) =>
+  actions.every((action) => wired.includes(action)) ? wired : [...new Set([...wired, ...actions])],
+);
 
 // --- change validators ---------------------------------------------------------
 //
@@ -110,7 +117,7 @@ sample({
 });
 
 export const positionActions = {
-  $actionsWired,
+  $wiredActions,
   $changeValidatorsTarget,
 
   events: {

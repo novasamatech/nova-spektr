@@ -153,6 +153,10 @@ export const bootstrap = () => {
     import('@/features/staking-operation-details').then(({ stakingOperationDetailFeature }) => stakingOperationDetailFeature),
     import('@/features/staking-basket').then(({ stakingBasketFeature }) => stakingBasketFeature),
 
+    import('@/features/staking-claim-rewards').then(({ stakingClaimRewardsFeature }) => stakingClaimRewardsFeature),
+    import('@/features/staking-amount-flow').then(({ stakingAmountFlowFeature }) => stakingAmountFlowFeature),
+    import('@/features/staking-dashboard-actions').then(({ stakingDashboardActionsFeature }) => stakingDashboardActionsFeature),
+
     import('@/features/staking-unstake').then(({ stakingUnstakeFeature }) => stakingUnstakeFeature),
     import('@/features/staking-withdraw').then(({ stakingWithdrawFeature }) => stakingWithdrawFeature),
     import('@/features/staking-bond-extra').then(({ stakingBondExtraFeature }) => stakingBondExtraFeature),

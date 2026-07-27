@@ -35,7 +35,7 @@ export const PositionsWidget = ({ accountIds }: Props) => {
   const { t } = useI18n();
   useTrackedAddressBookAccounts(accountIds);
   const { rows, pending } = usePositionRows(accountIds);
-  const actionsWired = useUnit(positionActions.$actionsWired);
+  const wiredActions = useUnit(positionActions.$wiredActions);
   const changeValidatorsTarget = useUnit(positionActions.$changeValidatorsTarget);
 
   const [sort, setSort] = useState<TableSort>(DEFAULT_SORT);
@@ -60,6 +60,8 @@ export const PositionsWidget = ({ accountIds }: Props) => {
     setSort(next ?? DEFAULT_SORT);
   }, []);
 
+  const startStakingWired = wiredActions.includes('startStaking');
+
   const handleRowClick = useCallback((row: PositionRow) => setOpenRowId(row.id), []);
   const closeDrawer = useCallback(() => setOpenRowId(null), []);
   const closePicker = useCallback(() => positionActions.events.changeValidatorsClosed(), []);
@@ -73,13 +75,13 @@ export const PositionsWidget = ({ accountIds }: Props) => {
           {rows.length > 0 ? <CountChip count={rows.length} /> : null}
         </div>
 
-        <Tooltip open={actionsWired ? false : undefined}>
+        <Tooltip open={startStakingWired ? false : undefined}>
           <Tooltip.Trigger>
             <div>
               <Button
                 variant="text"
                 size="sm"
-                disabled={!actionsWired}
+                disabled={!startStakingWired}
                 prefixElement={<Icon name="add" size={14} className="text-inherit" />}
                 onClick={startStaking}
               >
@@ -94,7 +96,7 @@ export const PositionsWidget = ({ accountIds }: Props) => {
       {pending && rows.length === 0 ? <PositionsTableSkeleton /> : null}
 
       {!pending && rows.length === 0 ? (
-        <PositionsEmptyState actionsWired={actionsWired} onStartStaking={startStaking} />
+        <PositionsEmptyState startStakingWired={startStakingWired} onStartStaking={startStaking} />
       ) : null}
 
       {rows.length > 0 ? (

@@ -8,7 +8,12 @@ import { PositionsWidget } from './ui/PositionsWidget';
 
 export type { MultisigThreshold, PositionAccessMode, PositionRow } from './lib';
 export { canAct, getAccessMode, getMultisigThreshold } from './lib';
-export type { ClaimPayload, NominationsChangePayload, PositionActionPayload } from './model/position-actions';
+export type {
+  ClaimPayload,
+  NominationsChangePayload,
+  PositionAction,
+  PositionActionPayload,
+} from './model/position-actions';
 export { positionActions } from './model/position-actions';
 export { usePositionRows } from './hooks/usePositionRows';
 

@@ -41,6 +41,19 @@ stakingAmountFlowFeature.inject(modalsSlot, AmountFlowIsolated);
 export const stakingAmountFlow = {
   $step: amountFlowModel.$step,
 
+  /** What a host needs to describe the operation it just handed over. */
+  $mode: amountFlowModel.$mode,
+  $chain: amountFlowModel.$chain,
+  $asset: amountFlowModel.$asset,
+  $amountPlanck: amountFlowModel.$amountPlanck,
+  $initiator: amountFlowModel.$initiator,
+  $wallet: amountFlowModel.$wallet,
+  $isDraftMode: amountFlowModel.$isDraftMode,
+  $initiatedDraft: amountFlowModel.$initiatedDraft,
+  $draftSigningPath: amountFlowModel.$draftSigningPath,
+  saveAsDraftRequested: amountFlowModel.saveAsDraftRequested,
+  flowStarted: amountFlowModel.flowStarted,
+
   unbondRequested: amountFlowModel.unbondRequested,
   addStakeRequested: amountFlowModel.addStakeRequested,
   flowCompleted: amountFlowModel.flowCompleted,

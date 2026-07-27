@@ -99,30 +99,34 @@ position while Polkadot is selected would quietly list Polkadot validators.
 Everything else is a hand-off. The dashboard builds no transaction: a table row is a place to decide something, not a
 place to sign it.
 
-### Phase 4 contract
+### Hand-off contract
 
 The widget emits, and never consumes:
 
-| Event                        | Fired by                                               |
-| ---------------------------- | ------------------------------------------------------ |
-| `claimRequested`             | The drawer's `Claim <amount>` chip                     |
-| `addStakeRequested`          | The drawer's `Add stake` chip                          |
-| `unbondRequested`            | The drawer's `Unbond` chip                             |
-| `nominationsChangeRequested` | The validator picker's submit, with the chosen set     |
-| `startStakingRequested`      | `+ New position` and the empty state's `Start staking` |
+| Event                        | Fired by                                               | Wired |
+| ---------------------------- | ------------------------------------------------------ | ----- |
+| `claimRequested`             | The drawer's `Claim <amount>` chip                     | yes   |
+| `addStakeRequested`          | The drawer's `Add stake` chip                          | yes   |
+| `unbondRequested`            | The drawer's `Unbond` chip                             | yes   |
+| `nominationsChangeRequested` | The validator picker's submit, with the chosen set     | no    |
+| `startStakingRequested`      | `+ New position` and the empty state's `Start staking` | yes   |
 
-Until a host takes responsibility for them it calls `positionActions.actionsWired()`, and every chip that has no
-destination renders disabled with a tooltip saying the flows are not connected yet. A chip that looks pressable and
-silently does nothing is the worse failure: the user cannot tell an unwired button from a broken one.
-`Change validators` is exempt — it has a real destination today.
+A host announces which of these it has taken responsibility for through `positionActions.actionsWired([...])`, and every
+chip whose action has not been announced renders disabled with a tooltip saying so. A chip that looks pressable and
+silently does nothing is the worse failure: the user cannot tell an unwired button from a broken one. The gate is **per
+action**, not one flag, because the flows behind them arrive separately.
+
+[`staking-dashboard-actions`](../staking-dashboard-actions/README.md) is that host today. `Change validators` is the one
+chip still gated: the picker works, but nothing turns the chosen set into a `nominate` transaction from the dashboard.
 
 ## Known gaps
 
 - **The "learn how staking works" link points at the docs root**, because no staking docs page is referenced anywhere in
   the app yet.
-- **A draft row's actions are still hand-off only.** An address-book position renders with the pencil glyph and its
-  chips enabled, but like every other row it only _emits_ — the events above still need a host that turns them into
-  drafts.
+- **`Change validators` is gated** until a nominate flow is reachable from the dashboard.
+- **A draft row's actions rely on the flows' own draft mode.** An address-book position renders with the pencil glyph
+  and its chips enabled; turning the hand-off into a draft is the flow's job, and the toast that confirms it belongs to
+  the wiring feature.
 
 ## Related
 
@@ -130,5 +134,7 @@ silently does nothing is the worse failure: the user cannot tell an unwired butt
 - `domains/staking` — the on-chain reads: era validators, exposure pages, unclaimed payouts, era timing.
 - `features/validator-selection` — the picker the `Change validators` chip opens, and the model that scopes the
   validator aggregate to the position's chain.
+- [`staking-dashboard-actions`](../staking-dashboard-actions/README.md) — the host that consumes the events above and
+  announces which chips are live.
 - `features/drafts` — where the pending-draft counts come from.
 - `features/dashboard-portfolio-overview` — the same card pattern on the overview tab.
