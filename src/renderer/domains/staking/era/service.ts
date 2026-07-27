@@ -1,19 +1,143 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type EraIndex } from '@/shared/core';
-import { assert } from '@/shared/lib/utils';
+import { type Chain, type EraIndex } from '@/shared/core';
+import { assert, getExpectedBlockTime, nonNullable } from '@/shared/lib/utils';
+import { stakingPallet } from '@/shared/pallet/staking';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
-export const eraService = {
-  subscribeActiveEra,
-  getActiveEra,
-  getTimeToEra,
+export type EraAnchor = {
+  /** Unix timestamp (ms) of the moment the era became active. */
+  eraStartMs: number;
+  /** Full era length in ms — countdowns are derived from the anchor. */
+  eraDurationMs: number;
 };
+
+/**
+ * Everything needed to translate the session cursor of the timeline chain into
+ * era progress.
+ */
+type EraTimeline = {
+  activeEra: EraIndex;
+  eraStartSession: number;
+  sessionsPerEra: number;
+  /** Session length measured in slots (blocks). */
+  sessionDuration: number;
+  blockTimeMs: number;
+  currentSessionIndex: number;
+  currentSlot: number;
+  genesisSlot: number;
+};
+
+const activeEraSchema = pjsSchema.optional(stakingPallet.schema.stakingActiveEraInfo);
+
+function toNumber(value: unknown): number {
+  const parsed = Number(String(value));
+
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+/**
+ * Whether the timeline chain can answer the session/babe reads the era anchor
+ * needs. Asset Hub carries neither pallet.
+ */
+function hasEraTimelinePallets(timelineApi: ApiPromise): boolean {
+  return nonNullable(timelineApi.query['session']?.['currentIndex']) && nonNullable(timelineApi.query['babe']);
+}
+
+function getSessionDuration(timelineApi: ApiPromise): number {
+  return toNumber(timelineApi.consts['babe']?.['epochDuration']);
+}
+
+/**
+ * Block time of the timeline chain — session math is counted in its slots, so
+ * the chain override is only a fallback for runtimes without babe.
+ */
+function getBlockTimeMs(timelineApi: ApiPromise, chain?: Chain): number {
+  const expectedBlockTime = toNumber(timelineApi.consts['babe']?.['expectedBlockTime']);
+  if (expectedBlockTime > 0) return expectedBlockTime;
+
+  return chain ? getExpectedBlockTime(timelineApi, chain).toNumber() : 0;
+}
+
+function getEraDurationMs(api: ApiPromise, timelineApi: ApiPromise, chain?: Chain): number {
+  const sessionsPerEra = stakingPallet.consts.sessionsPerEra(api);
+  const sessionDuration = getSessionDuration(timelineApi);
+  const blockTimeMs = getBlockTimeMs(timelineApi, chain);
+
+  return sessionsPerEra * sessionDuration * blockTimeMs;
+}
+
+/**
+ * `bondedEras` is public on staking-async runtimes and `pub(crate)` in classic
+ * `pallet_staking` — fall back to `erasStartSessionIndex` when it's absent.
+ */
+async function resolveEraStartSession(api: ApiPromise, era: EraIndex): Promise<number | null> {
+  const bondedEras = await stakingPallet.storage.bondedEras(api).catch(() => null);
+  const bondedEra = bondedEras?.find(item => item.era === era);
+
+  if (bondedEra) return bondedEra.session;
+
+  return stakingPallet.storage.erasStartSessionIndex(api, era).catch(() => null);
+}
+
+async function getEraTimeline(api: ApiPromise, timelineApi: ApiPromise, chain?: Chain): Promise<EraTimeline | null> {
+  const activeEra = await stakingPallet.storage.activeEra(api);
+  if (!activeEra) return null;
+
+  const eraStartSession = await resolveEraStartSession(api, activeEra.index);
+  if (eraStartSession === null) return null;
+
+  const sessionsPerEra = stakingPallet.consts.sessionsPerEra(api);
+  const sessionDuration = getSessionDuration(timelineApi);
+  const blockTimeMs = getBlockTimeMs(timelineApi, chain);
+
+  if (sessionsPerEra <= 0 || sessionDuration <= 0 || blockTimeMs <= 0) return null;
+
+  // Session and babe live on the relay chain. When no relay api is connected the
+  // timeline api falls back to the staking chain itself, where neither pallet
+  // exists - a missing anchor is an expected outcome there, not an error worth
+  // throwing once per era per chain.
+  if (!hasEraTimelinePallets(timelineApi)) return null;
+
+  const [currentSessionIndex, currentSlot, genesisSlot] = await Promise.all([
+    timelineApi.query.session.currentIndex(),
+    timelineApi.query.babe.currentSlot(),
+    timelineApi.query.babe.genesisSlot(),
+  ]);
+
+  return {
+    activeEra: activeEra.index,
+    eraStartSession,
+    sessionsPerEra,
+    sessionDuration,
+    blockTimeMs,
+    currentSessionIndex: toNumber(currentSessionIndex),
+    currentSlot: toNumber(currentSlot),
+    genesisSlot: toNumber(genesisSlot),
+  };
+}
+
+/**
+ * How many slots of the active era have already passed.
+ */
+function getEraProgressSlots(timeline: EraTimeline): number {
+  const sessionStartSlot = timeline.currentSessionIndex * timeline.sessionDuration + timeline.genesisSlot;
+  const sessionProgress = timeline.currentSlot - sessionStartSlot;
+  const eraProgress =
+    (timeline.currentSessionIndex - timeline.eraStartSession) * timeline.sessionDuration + sessionProgress;
+  const eraLength = timeline.sessionsPerEra * timeline.sessionDuration;
+
+  if (eraProgress > 0 && eraProgress > eraLength) {
+    return eraProgress % eraLength;
+  }
+
+  return eraProgress;
+}
 
 function subscribeActiveEra(api: ApiPromise, callback: (era?: EraIndex) => void): Promise<() => void> {
   return api.query.staking.activeEra(data => {
     try {
-      const unwrappedData = data.unwrap();
-      callback(unwrappedData.index.toNumber());
+      callback(activeEraSchema.parse(data)?.index);
     } catch (error) {
       console.warn(error);
       callback(undefined);
@@ -22,50 +146,64 @@ function subscribeActiveEra(api: ApiPromise, callback: (era?: EraIndex) => void)
 }
 
 async function getActiveEra(api: ApiPromise): Promise<EraIndex | undefined> {
-  const eraData = await api.query.staking.activeEra();
+  const activeEra = await stakingPallet.storage.activeEra(api);
 
-  if (eraData.isNone) return undefined;
+  return activeEra?.index;
+}
 
-  // @ts-expect-error TODO fix
-  return eraData.unwrap().get('index').toNumber();
+/**
+ * Stable anchor of the active era. Countdowns are derived on the client from
+ * the anchor, so it never needs polling.
+ *
+ * Returns `null` when the chain doesn't expose enough data instead of throwing.
+ */
+async function getEraStart(api: ApiPromise, timelineApi: ApiPromise, chain: Chain): Promise<EraAnchor | null> {
+  try {
+    const eraDurationMs = getEraDurationMs(api, timelineApi, chain);
+    if (eraDurationMs <= 0) return null;
+
+    const activeEra = await stakingPallet.storage.activeEra(api);
+    if (!activeEra) return null;
+
+    // `ActiveEraInfo.start` is the exact activation timestamp when the runtime
+    // exposes it — no session math needed.
+    if (activeEra.start) {
+      return { eraStartMs: activeEra.start.toNumber(), eraDurationMs };
+    }
+
+    const timeline = await getEraTimeline(api, timelineApi, chain);
+    if (!timeline) return null;
+
+    return {
+      eraStartMs: Date.now() - getEraProgressSlots(timeline) * timeline.blockTimeMs,
+      eraDurationMs,
+    };
+  } catch (error) {
+    console.warn(error);
+
+    return null;
+  }
 }
 
 async function getTimeToEra(api: ApiPromise, timelineApi: ApiPromise, destinationEra?: EraIndex): Promise<number> {
   if (!destinationEra) return 0;
 
-  const eraLength = api.consts.staking.sessionsPerEra.toNumber();
-  const sessionDuration = timelineApi.consts.babe.epochDuration.toNumber();
-  const blockTime = timelineApi.consts.babe.expectedBlockTime.toNumber() / 1000;
+  const timeline = await getEraTimeline(api, timelineApi);
+  assert(timeline, 'era timeline is not available');
 
-  const activeEra = (await api.query.staking.activeEra()).unwrap();
-  const bondedEras = await api.query.staking.bondedEras();
-  const activeEraStartSessionIndex = bondedEras.find(([e]) => e.eq(activeEra.index))?.[1].toNumber();
-
-  assert(activeEraStartSessionIndex, 'activeEraStartSessionIndex not found');
-
-  const { currentSessionIndex, currentSlot, genesisSlot } = await Promise.all([
-    timelineApi.query.session.currentIndex(),
-    timelineApi.query.babe.currentSlot(),
-    timelineApi.query.babe.genesisSlot(),
-  ]).then(([currentSessionIndex, currentSlot, genesisSlot]) => {
-    return {
-      currentSessionIndex: currentSessionIndex.toNumber(),
-      currentSlot: currentSlot.toNumber(),
-      genesisSlot: genesisSlot.toNumber(),
-    };
-  });
-
-  const sessionStartSlot = currentSessionIndex * sessionDuration + genesisSlot;
-  const sessionProgress = currentSlot - sessionStartSlot;
-  const eraProgress = (currentSessionIndex - activeEraStartSessionIndex) * sessionDuration + sessionProgress;
-  let eraRemained = eraProgress;
-  if (eraProgress > 0 && eraProgress > eraLength * sessionDuration) {
-    eraRemained = eraProgress % (eraLength * sessionDuration);
-  }
-  const leftEras = destinationEra - activeEra.index.toNumber() - 1;
-  const blocksLeftForEras = leftEras * eraLength * sessionDuration;
+  const eraProgress = getEraProgressSlots(timeline);
+  const leftEras = destinationEra - timeline.activeEra - 1;
+  const blocksLeftForEras = leftEras * timeline.sessionsPerEra * timeline.sessionDuration;
 
   const buffer = 1;
 
-  return (eraRemained + blocksLeftForEras + buffer) * blockTime;
+  return ((eraProgress + blocksLeftForEras + buffer) * timeline.blockTimeMs) / 1000;
 }
+
+export const eraService = {
+  subscribeActiveEra,
+  getActiveEra,
+  getTimeToEra,
+  getEraStart,
+  resolveEraStartSession,
+};

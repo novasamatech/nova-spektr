@@ -1,154 +1,156 @@
 import { type ApiPromise } from '@polkadot/api';
-import { default as BigNumber } from 'bignumber.js';
-import { merge } from 'lodash';
 
-import { type Chain, type EraIndex, type Validator } from '@/shared/core';
-import { keys, toAccountId } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import {
-  AssetHubChains,
-  DECAY_RATE,
-  DEFAULT_MAX_NOMINATORS,
-  INTEREST_IDEAL,
-  KUSAMA_MAX_NOMINATORS,
-  MINIMUM_INFLATION,
-  STAKED_PORTION_IDEAL,
-} from '../constants';
-import { type ApyValidator, type ValidatorMap } from '../types';
+import { type ChainId, type EraIndex } from '@/shared/core';
+import { keys } from '@/shared/lib/utils';
+import { stakingPallet } from '@/shared/pallet/staking';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { perbillToPercent } from '../apy/calculator';
+import { apyService } from '../apy/service';
+import { exposureService } from '../exposures/service';
+import { type ExposureOverviewMap } from '../exposures/types';
+import { type ValidatorMap } from '../types';
 
-function isKusamaChainId(chainId: string): boolean {
-  return chainId === '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe';
-}
+import { mapEraValidatorToLegacy, mapEraValidatorsToLegacy } from './helpers';
+import { type EraValidator, type EraValidatorMap } from './types';
+
+/**
+ * Nomination limit used when the runtime does not expose
+ * `staking.maxNominations` (staking-async runtimes dropped the const).
+ */
+const DEFAULT_MAX_VALIDATORS = 16;
+
+/**
+ * Slash defer window used when the runtime does not expose
+ * `staking.slashDeferDuration`. Matches the Polkadot value of 27 eras.
+ */
+const DEFAULT_SLASH_DEFER_DURATION = 27;
 
 export const validatorsService = {
+  getEraValidators,
   getValidatorsWithInfo,
   getValidatorsList,
   getMaxValidators,
   getNominators,
+  getCurrentSession,
+  getAuthoredBlocks,
 };
 
-async function getValidatorsList(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
-  const [stake, prefs] = await Promise.all([getValidatorFunction(api)(era), getValidatorsPrefs(api, era)]);
+type EraValidatorsParams = {
+  api: ApiPromise;
+  chainId: ChainId;
+  era: EraIndex;
+  /** Relay-chain api. Enables the authored-blocks probe. */
+  timelineApi?: ApiPromise | null;
+  /** Era exposure overviews, when already resolved by `exposuresResource`. */
+  overviews?: ExposureOverviewMap;
+};
 
-  return merge(stake, prefs) as ValidatorMap;
-}
+/**
+ * Every validator elected for the era, composed from the exposure overviews,
+ * the era preferences, reward points, slashes and APY.
+ */
+async function getEraValidators(params: EraValidatorsParams): Promise<EraValidatorMap> {
+  const { api, chainId, era, timelineApi, overviews } = params;
 
-async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
-  const [stake, prefs] = await Promise.all([getValidatorFunction(api)(era), getValidatorsPrefs(api, era)]);
+  const [resolvedOverviews, prefsEntries] = await Promise.all([
+    overviews ?? exposureService.getEraOverviews(api, era),
+    stakingPallet.storage.erasValidatorPrefs(api, era),
+  ]);
 
-  const mergedValidators = merge(stake, prefs);
+  const maxExposurePageSize = getMaxExposurePageSize(api);
+  const prefsMap = new Map(prefsEntries.map(({ validator, prefs }) => [validator, prefs]));
+  const accountIds = keys(resolvedOverviews);
 
-  try {
-    const slashes = await getSlashingSpans(api, keys(stake), era);
+  const baseValidators = accountIds.flatMap(accountId => {
+    const overview = resolvedOverviews[accountId];
+    if (!overview) return [];
 
-    return merge(mergedValidators, slashes) as ValidatorMap;
-  } catch {
-    return mergedValidators as ValidatorMap;
+    const prefs = prefsMap.get(accountId);
+
+    return [
+      {
+        accountId,
+        totalStake: overview.total,
+        ownStake: overview.own,
+        commission: prefs ? perbillToPercent(prefs.commission) : 0,
+        blocked: prefs?.blocked ?? false,
+        nominatorCount: overview.nominatorCount,
+        pageCount: overview.pageCount,
+      },
+    ];
+  });
+
+  const [eraPoints, slashed, apyMap, blocksAuthored] = await Promise.all([
+    getEraPoints(api, era),
+    getSlashedValidators(api, era, accountIds),
+    apyService.getValidatorsApy({ api, timelineApi, chain: { chainId }, era, validators: baseValidators }),
+    resolveAuthoredBlocks(timelineApi, accountIds),
+  ]);
+
+  const result: EraValidatorMap = {};
+  for (const validator of baseValidators) {
+    result[validator.accountId] = {
+      ...validator,
+      maxNominatorsRewarded: Number.isFinite(maxExposurePageSize) ? maxExposurePageSize : null,
+      oversubscribed: exposureService.checkOversubscribed(validator.nominatorCount, maxExposurePageSize),
+      slashed: slashed.has(validator.accountId),
+      eraPoints: eraPoints[validator.accountId] ?? 0,
+      blocksAuthored: blocksAuthored?.[validator.accountId] ?? null,
+      apy: apyMap[validator.accountId] ?? null,
+      elected: true,
+    } satisfies EraValidator;
   }
-}
 
-function getValidatorFunction(api: ApiPromise) {
-  return isOldRuntimeForValidators(api)
-    ? (era: EraIndex) => getValidatorsStake_OLD(api, era)
-    : (era: EraIndex) => getValidatorsStake(api, era);
+  return result;
 }
 
 /**
- * Gets Validators information including nominators that will receive rewards
- * (runtime pre1_4_0)
- *
- * @deprecated Will become deprecated after runtime upgrade for DOT/KSM
+ * @deprecated Legacy-shaped output for the features still typed against
+ *   `Validator` from `@/shared/core`. Prefer `getEraValidators`.
  */
-async function getValidatorsStake_OLD(api: ApiPromise, era: EraIndex): Promise<Record<AccountId, ValidatorStake>> {
-  const data = await api.query.staking.erasStakersClipped.entries(era);
-  const maxNominatorRewarded = getMaxNominatorRewarded(api);
+async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
+  const chainId = getChainId(api);
+  const eraValidators = await getEraValidators({ api, chainId, era });
 
-  return data.reduce<Record<AccountId, ValidatorStake>>((acc, [storageKey, type]) => {
-    const accountId = toAccountId(storageKey.args[1].toString());
-    const nominators = type.others.map(n => ({
-      who: toAccountId(n.who.toString()),
-      value: n.value.toString(),
-    }));
-
-    acc[accountId] = {
-      accountId,
-      nominators,
-      totalStake: type.total.toString(),
-      oversubscribed: type.others.length >= maxNominatorRewarded,
-      ownStake: type.own.toString(),
-    };
-
-    return acc;
-  }, {});
+  return mapEraValidatorsToLegacy(eraValidators, chainId);
 }
 
-type ValidatorStake = Pick<Validator, 'accountId' | 'totalStake' | 'oversubscribed' | 'ownStake' | 'nominators'>;
-type ValidatorPrefs = Pick<Validator, 'accountId' | 'commission' | 'blocked'>;
-
-async function getValidatorsStake(api: ApiPromise, era: EraIndex): Promise<Record<AccountId, ValidatorStake>> {
-  const data = await api.query.staking.erasStakersOverview.entries(era);
-
-  return data.reduce<Record<AccountId, ValidatorStake>>((acc, [storageKey, type]) => {
-    const accountId = toAccountId(storageKey.args[1].toString());
-
-    acc[accountId] = {
-      accountId,
-      totalStake: type.value.total.toString(),
-      oversubscribed: false,
-      ownStake: type.value.own.toString(),
-      nominators: [],
-    };
-
-    return acc;
-  }, {});
+/**
+ * @deprecated Alias of `getValidatorsWithInfo`, kept for the legacy Staking
+ *   page. Prefer `getEraValidators`.
+ */
+function getValidatorsList(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
+  return getValidatorsWithInfo(api, era);
 }
 
-async function getValidatorsPrefs(api: ApiPromise, era: EraIndex): Promise<Record<AccountId, ValidatorPrefs>> {
-  const data = await api.query.staking.erasValidatorPrefs.entries(era);
-
-  return data.reduce<Record<AccountId, ValidatorPrefs>>((acc, [storageKey, type]) => {
-    const accountId = toAccountId(storageKey.args[1].toString());
-
-    acc[accountId] = {
-      accountId,
-      commission: parseFloat(String(type.commission.toHuman())),
-      blocked: type.blocked.toHuman() as boolean,
-    };
-
-    return acc;
-  }, {});
-}
-
-function getDefaultValidatorsAmount(api: ApiPromise): number {
-  if (isKusamaChainId(api.genesisHash.toHex())) return KUSAMA_MAX_NOMINATORS;
-
-  return DEFAULT_MAX_NOMINATORS;
-}
-
+/**
+ * Maximum number of validators a nominator may back.
+ */
 function getMaxValidators(api: ApiPromise): number {
-  if (api.consts.staking.maxNominations) {
-    // @ts-expect-error TODO fix
-    return api.consts.staking.maxNominations.toNumber();
-  }
+  try {
+    return stakingPallet.consts.maxNominations(api) ?? DEFAULT_MAX_VALIDATORS;
+  } catch (error) {
+    console.warn(error);
 
-  return getDefaultValidatorsAmount(api);
+    return DEFAULT_MAX_VALIDATORS;
+  }
 }
 
+/**
+ * Validators currently nominated by the stash, in the legacy map shape.
+ */
 async function getNominators(api: ApiPromise, stash: AccountId): Promise<ValidatorMap> {
   try {
-    const data = await api.query.staking.nominators(stash);
+    const [entry] = await stakingPallet.storage.nominators(api, [stash]);
+    const targets = entry?.nominations?.targets ?? [];
+    const chainId = getChainId(api);
 
-    if (data.isNone) return {};
-
-    const nominatorsUnwraped = data.unwrap();
-    const result: Record<AccountId, Pick<Validator, 'accountId'>> = {};
-
-    for (const nominator of nominatorsUnwraped.targets.toArray()) {
-      const accountId = toAccountId(nominator.toString());
-      result[accountId] = { accountId };
+    const result: ValidatorMap = {};
+    for (const target of targets) {
+      result[target] = mapEraValidatorToLegacy(createUnknownValidator(target), chainId);
     }
 
-    return result as ValidatorMap;
+    return result;
   } catch (error) {
     console.warn(error);
 
@@ -156,258 +158,168 @@ async function getNominators(api: ApiPromise, stash: AccountId): Promise<Validat
   }
 }
 
-// TODO: remove after DOT/KSM updates their runtime
-function isOldRuntimeForValidators(api: ApiPromise): boolean {
-  return Boolean(api.consts.staking.maxNominatorRewardedPerValidator);
-}
-
-function getMaxNominatorRewarded(api: ApiPromise): number {
-  // @ts-expect-error TODO fix
-  return api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
-}
-
-async function getSlashingSpans(
-  api: ApiPromise,
-  accounts: AccountId[],
-  era: EraIndex,
-): Promise<Record<AccountId, { slashed: boolean }>> {
-  const unappliedSlashes = await api.query.staking.unappliedSlashes(era);
-
-  if (!unappliedSlashes.length) {
-    return Object.fromEntries(accounts.map(account => [account, { slashed: false }]));
-  }
-
-  const slashedSet = new Set(unappliedSlashes.map(slash => toAccountId(slash.validator.toString())));
-
-  return Object.fromEntries(accounts.map(account => [account, { slashed: slashedSet.has(account) }]));
-}
-
-const calculateYearlyInflation = (stakedPortion: number): number => {
-  let calculatedInflation;
-  if (stakedPortion <= STAKED_PORTION_IDEAL) {
-    calculatedInflation = stakedPortion * (INTEREST_IDEAL - MINIMUM_INFLATION / STAKED_PORTION_IDEAL);
-  } else {
-    calculatedInflation =
-      (INTEREST_IDEAL * STAKED_PORTION_IDEAL - MINIMUM_INFLATION) *
-      Math.pow(2, (STAKED_PORTION_IDEAL - stakedPortion) / DECAY_RATE);
-  }
-
-  return MINIMUM_INFLATION + calculatedInflation;
-};
-
-const getTotalIssuance = async (api: ApiPromise): Promise<BigNumber> => {
-  const totalIssuance = await api.query.balances.totalIssuance();
-
-  return new BigNumber(totalIssuance.toString());
-};
-
-const getAvgRewardPercent = (totalStaked: BigNumber, totalIssuance: BigNumber): number => {
-  const stakedPortion = totalStaked.div(totalIssuance).toNumber();
-  const yearlyInflation = calculateYearlyInflation(stakedPortion);
-
-  return yearlyInflation / stakedPortion;
-};
-
-const getApyForValidators = (
-  totalStaked: BigNumber,
-  avgRewardPercent: number,
-  validators: ApyValidator[],
-): Record<AccountId, number> => {
-  const avgStake = totalStaked.div(validators.length);
-
-  return validators.reduce((acc, validator) => {
-    const validatorApy = calculateValidatorApy(validator, avgRewardPercent, avgStake);
-
-    return { ...acc, [validator.accountId]: validatorApy };
-  }, {});
-};
-
-const calculateValidatorApy = (
-  validator: ApyValidator,
-  avgRewardPercent: number,
-  avgValidatorStake: BigNumber,
-): number => {
-  const yearlyRewardPercent = avgValidatorStake.multipliedBy(avgRewardPercent).div(validator.totalStake);
-  const pureApy = yearlyRewardPercent.multipliedBy(1 - validator.commission / 100);
-
-  return +pureApy.multipliedBy(100).toFixed(2);
-};
-
-const getMedianCommission = (validators: ApyValidator[]): number => {
-  const profitable = validators
-    .map(validator => validator.commission)
-    .filter(commission => commission && commission < 100)
-    .sort((a, b) => a - b);
-
-  if (!profitable.length) {
-    return 0;
-  }
-
-  return (profitable[(profitable.length - 1) >> 1]! + profitable[profitable.length >> 1]!) / 2;
-};
-
 /**
- * Get APY for list of validators
- *
- * @param api ApiPromise to make RPC calls
- * @param validators List of validators
- *
- * @returns {Promise}
+ * Current session index of the timeline (relay) chain.
  */
-export const getValidatorsApy = async (api: ApiPromise, validators: ApyValidator[]) => {
-  const totalIssuance = await getTotalIssuance(api);
-  const totalStaked = validators.reduce((acc, { totalStake }) => {
-    return acc.plus(new BigNumber(totalStake));
-  }, new BigNumber(0));
+async function getCurrentSession(timelineApi: ApiPromise): Promise<number | null> {
+  const query = timelineApi.query['session']?.['currentIndex'];
+  if (!query) return null;
 
-  const avgRewardPercent = getAvgRewardPercent(totalStaked, totalIssuance);
-
-  return getApyForValidators(totalStaked, avgRewardPercent, validators);
-};
-
-const MILLISECONDS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
-const DEFAULT_ERA_DURATION_MS = 24 * 60 * 60 * 1000;
-
-/**
- * Era duration fallback (ms), used when the relay-chain Babe consts are not yet
- * available (e.g. the relay api hasn't connected). Keeps APY visible without
- * making the dashboard depend on the relay connection.
- */
-const FALLBACK_ERA_DURATION_MS: Record<string, number> = {
-  [AssetHubChains.POLKADOT_AH]: 24 * 60 * 60 * 1000, // 24h
-  [AssetHubChains.KUSAMA_AH]: 6 * 60 * 60 * 1000, // 6h
-  [AssetHubChains.WESTEND_AH]: 6 * 60 * 60 * 1000, // 6h
-};
-
-type IssuancePredictionCall = () => Promise<{ toJSON: () => unknown }>;
-
-function hasKey<K extends string>(value: unknown, key: K): value is Record<K, unknown> {
-  return typeof value === 'object' && value !== null && key in value;
-}
-
-/**
- * Era duration in milliseconds.
- *
- * Asset Hub is a parachain and has no Babe pallet, so the era length is derived
- * from the relay chain: `sessionsPerEra (Asset Hub) × epochDuration × blockTime
- * (relay)`. The relay block time (≈6s) must be used here — using the Asset Hub
- * block time (≈12s) would double the era length and halve the resulting APY.
- */
-function getEraDurationMs(api: ApiPromise, timelineApi: ApiPromise, chain: Chain): number {
   try {
-    const { babe } = timelineApi.consts;
-    if (babe?.epochDuration && babe?.expectedBlockTime) {
-      const sessionsPerEra = api.consts.staking.sessionsPerEra.toNumber();
-      const eraDuration = sessionsPerEra * babe.epochDuration.toNumber() * babe.expectedBlockTime.toNumber();
-      if (eraDuration > 0) return eraDuration;
-    }
+    return pjsSchema.u32.parse(await query());
   } catch (error) {
-    console.warn('Unable to derive era duration from relay chain', error);
+    console.warn(error);
+
+    return null;
   }
-
-  return FALLBACK_ERA_DURATION_MS[chain.chainId] ?? DEFAULT_ERA_DURATION_MS;
-}
-
-function parsePlanck(value: unknown): BigNumber | null {
-  if (typeof value === 'number') return new BigNumber(value);
-  if (typeof value === 'string') {
-    const parsed = value.startsWith('0x') ? new BigNumber(value.slice(2), 16) : new BigNumber(value);
-
-    return parsed.isFinite() ? parsed : null;
-  }
-
-  return null;
-}
-
-// Reads `nextMint = [toStakers, toTreasury]` from the inflation prediction result.
-function readStakersMint(json: unknown): BigNumber | null {
-  if (!hasKey(json, 'nextMint')) return null;
-
-  const { nextMint } = json;
-  if (!Array.isArray(nextMint) || nextMint.length === 0) return null;
-
-  return parsePlanck(nextMint[0]);
-}
-
-// Resolves the `inflation.experimentalIssuancePredictionInfo` runtime call if the chain exposes it.
-function getIssuancePredictionCall(api: ApiPromise): IssuancePredictionCall | null {
-  if (!hasKey(api.call, 'inflation')) return null;
-
-  const { inflation } = api.call;
-  if (!hasKey(inflation, 'experimentalIssuancePredictionInfo')) return null;
-
-  const predict = inflation.experimentalIssuancePredictionInfo;
-
-  // The signature cannot be inferred from the dynamically-typed runtime api.
-  return typeof predict === 'function' ? (predict as IssuancePredictionCall) : null;
 }
 
 /**
- * Per-era reward minted to stakers (validators + nominators), before
- * commission.
+ * Blocks authored by each validator in the given session.
  *
- * Uses the `inflation.experimentalIssuancePredictionInfo` runtime API, which
- * the runtime documents as the recommended source over re-deriving the onchain
- * logic and which reflects the chain's real inflation model (fixed on Polkadot,
- * curve-based on Kusama). Falls back to the last completed era's realized
- * payout when the runtime API is unavailable.
+ * `imOnline` only exists on relay chains, so this must be probed on the
+ * timeline api - Asset Hub has no such pallet. Returns `null` when the counter
+ * is unavailable, so callers can distinguish "zero blocks" from "unknown".
  */
-async function getStakersEraReward(api: ApiPromise, era: EraIndex): Promise<BigNumber | null> {
-  const predict = getIssuancePredictionCall(api);
-
-  if (predict) {
-    try {
-      const info = await predict();
-      const toStakers = readStakersMint(info.toJSON());
-      if (toStakers && toStakers.isGreaterThan(0)) return toStakers;
-    } catch (error) {
-      console.warn('inflation prediction API failed, falling back to era reward', error);
-    }
-  }
+async function getAuthoredBlocks(
+  timelineApi: ApiPromise,
+  session: number,
+  validators: AccountId[],
+): Promise<Record<AccountId, number> | null> {
+  const query = timelineApi.query['imOnline']?.['authoredBlocks'];
+  if (!query || validators.length === 0) return null;
 
   try {
-    const reward = await api.query.staking.erasValidatorReward(Math.max(era - 1, 0));
-    if (reward.isSome) return new BigNumber(reward.unwrap().toString());
+    const raw = await query.multi(validators.map(validator => [session, validator]));
+    const counts = pjsSchema.vec(pjsSchema.u32).parse(raw);
+
+    const result: Record<AccountId, number> = {};
+    for (const [index, validator] of validators.entries()) {
+      result[validator] = counts[index] ?? 0;
+    }
+
+    return result;
+  } catch (error) {
+    console.warn(error);
+
+    return null;
+  }
+}
+
+async function resolveAuthoredBlocks(
+  timelineApi: ApiPromise | null | undefined,
+  validators: AccountId[],
+): Promise<Record<AccountId, number> | null> {
+  if (!timelineApi) return null;
+
+  const session = await getCurrentSession(timelineApi);
+  if (session === null) return null;
+
+  return getAuthoredBlocks(timelineApi, session, validators);
+}
+
+async function getEraPoints(api: ApiPromise, era: EraIndex): Promise<Record<AccountId, number>> {
+  try {
+    const points = await stakingPallet.storage.erasRewardPoints(api, era);
+
+    const result: Record<AccountId, number> = {};
+    for (const { key, value } of points.individual) {
+      result[key] = value;
+    }
+
+    return result;
+  } catch (error) {
+    console.warn(error);
+
+    return {};
+  }
+}
+
+/**
+ * Validators carrying a slash inside the defer window.
+ *
+ * The source is picked by runtime capability, not by result emptiness - an
+ * empty read is the healthy case and must not trigger a fallback.
+ *
+ * Classic runtimes expose `slashingSpans`, which answers the question directly
+ * for every validator in one batched read. Staking-async dropped that storage,
+ * so there the defer window is walked over `unappliedSlashes` instead: each era
+ * is a cheap key-only read that almost always comes back empty, and the whole
+ * walk happens once per era because the resource is keyed by era.
+ */
+async function getSlashedValidators(api: ApiPromise, era: EraIndex, validators: AccountId[]): Promise<Set<AccountId>> {
+  if (validators.length === 0) return new Set();
+
+  const slashDeferDuration = getSlashDeferDuration(api);
+
+  try {
+    const spans = await stakingPallet.storage.slashingSpans(api, validators);
+
+    if (spans) {
+      return new Set(
+        spans.flatMap(({ validator, spans }) =>
+          spans && era - spans.lastNonzeroSlash < slashDeferDuration ? [validator] : [],
+        ),
+      );
+    }
   } catch (error) {
     console.warn(error);
   }
 
-  return null;
+  const oldestEra = Math.max(0, era - slashDeferDuration + 1);
+  const eras = Array.from({ length: era - oldestEra + 1 }, (_, index) => oldestEra + index);
+
+  try {
+    const slashed = await Promise.all(eras.map(era => stakingPallet.storage.unappliedSlashKeys(api, era)));
+
+    return new Set(slashed.flat());
+  } catch (error) {
+    console.warn(error);
+
+    return new Set();
+  }
 }
 
-type NetworkApyParams = {
-  api: ApiPromise;
-  timelineApi: ApiPromise;
-  chain: Chain;
-  era: EraIndex;
-  validators: ApyValidator[];
-};
+function getSlashDeferDuration(api: ApiPromise): number {
+  try {
+    return stakingPallet.consts.slashDeferDuration(api);
+  } catch (error) {
+    console.warn(error);
 
-/**
- * Network average staking APY shown on the dashboard.
- *
- * Computed from the chain's actual per-era staker reward, annualised over the
- * era length (`reward × erasPerYear / totalStaked`) and reduced by the median
- * validator commission. This is correct for both the legacy NPoS inflation
- * curve (Kusama) and the fixed inflation model (Polkadot, ref. 1139) — unlike
- * re-deriving the curve, which over-states Polkadot APY by ~2.7×.
- */
-export const getNetworkApy = async (params: NetworkApyParams): Promise<string | null> => {
-  const { api, timelineApi, chain, era, validators } = params;
+    return DEFAULT_SLASH_DEFER_DURATION;
+  }
+}
 
-  const stakersEraReward = await getStakersEraReward(api, era);
-  if (!stakersEraReward) return null;
+function getMaxExposurePageSize(api: ApiPromise): number {
+  try {
+    return stakingPallet.consts.maxExposurePageSize(api);
+  } catch (error) {
+    console.warn(error);
 
-  const totalStaked = new BigNumber((await api.query.staking.erasTotalStake(era)).toString());
-  if (totalStaked.isZero()) return null;
+    // Without the const nothing can be proven oversubscribed - don't warn falsely.
+    return Number.POSITIVE_INFINITY;
+  }
+}
 
-  const erasPerYear = MILLISECONDS_PER_YEAR / getEraDurationMs(api, timelineApi, chain);
+function createUnknownValidator(accountId: AccountId): EraValidator {
+  return {
+    accountId,
+    totalStake: '0',
+    ownStake: '0',
+    commission: 0,
+    blocked: false,
+    nominatorCount: 0,
+    pageCount: 0,
+    maxNominatorsRewarded: null,
+    oversubscribed: false,
+    slashed: false,
+    eraPoints: 0,
+    blocksAuthored: null,
+    apy: null,
+    elected: true,
+  };
+}
 
-  const grossApr = stakersEraReward.multipliedBy(erasPerYear).div(totalStaked);
-  const median = getMedianCommission(validators);
-
-  return grossApr
-    .multipliedBy(1 - median / 100)
-    .multipliedBy(100)
-    .toFixed(2);
-};
+function getChainId(api: ApiPromise): ChainId {
+  return api.genesisHash.toHex();
+}

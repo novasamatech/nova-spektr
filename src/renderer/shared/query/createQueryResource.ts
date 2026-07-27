@@ -139,6 +139,27 @@ function build<Params, Response, Cache>({
     target: abortFx,
   });
 
+  // Per-key in-flight tracking. `requestFx` is pooled by key, so a second
+  // request for a key already in flight joins the running one instead of
+  // starting another - the flag simply stays raised until it settles.
+  $pending
+    .on(requestFx, (pending, params) => ({ ...pending, [createKey(params)]: true }))
+    .on([requestFx.done, requestFx.fail], (pending, { params }) => {
+      const key = createKey(params);
+      if (!pending[key]) return pending;
+
+      const { [key]: _settled, ...rest } = pending;
+
+      return rest;
+    })
+    .on(abortFx, (pending, key) => {
+      if (!pending[key]) return pending;
+
+      const { [key]: _aborted, ...rest } = pending;
+
+      return rest;
+    });
+
   return {
     createKey,
     push: readonly(push),

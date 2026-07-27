@@ -9,9 +9,6 @@ export const INTEREST_IDEAL = INFLATION_IDEAL / STAKED_PORTION_IDEAL;
 
 export const DECAY_RATE = 0.05;
 
-export const KUSAMA_MAX_NOMINATORS = 24;
-export const DEFAULT_MAX_NOMINATORS = 16;
-
 type AssetHubChainKey = 'POLKADOT_AH' | 'KUSAMA_AH' | 'WESTEND_AH';
 
 export const AssetHubChains: Record<AssetHubChainKey, ChainId> = {
