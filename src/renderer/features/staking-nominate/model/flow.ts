@@ -7,7 +7,7 @@ import { TEST_ADDRESS, getRelaychainAsset, nonNullable, nullable } from '@/share
 import { Paths } from '@/shared/routes';
 import { createComplexTxStore } from '@/shared/transactions';
 import { type AnyAccount, accounts, multisigOperationService } from '@/domains/network';
-import { validatorsService } from '@/domains/staking';
+import { nominations, validatorsService } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { basketOperations } from '@/aggregates/basket-operations';
@@ -16,7 +16,8 @@ import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { nominateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
-import { validatorsModel } from '@/features/staking';
+import { graphModel } from '@/features/signing-path';
+import { getDraftSigningInfo, getSigningMode, validatorSelectionModel } from '@/features/validator-selection';
 import { type FormSubmitEvent, type WalletData, Step } from '../lib/types';
 import { nominateUtils } from '../lib/utils';
 
@@ -129,7 +130,7 @@ sample({
 });
 
 sample({
-  clock: [$maxValidators.updates, validatorsModel.output.formSubmitted],
+  clock: [$maxValidators.updates, validatorSelectionModel.output.formSubmitted],
   source: {
     step: $step,
   },
@@ -143,21 +144,47 @@ sample({
   target: $validators,
 });
 
+// Changing nominations starts from the set the stash already holds, so the
+// picker opens with today's targets checked. They come from the same live
+// nominations subscription the Staking page reads; if it has not delivered this
+// stash yet the picker simply opens empty rather than showing a stale set.
 sample({
   clock: formModel.formSubmitted,
-  filter: (formData) => nonNullable(formData),
-  fn: (formData) => ({
-    event: { chain: formData.chain, asset: getRelaychainAsset(formData.chain.assets)! },
-    step: Step.VALIDATORS,
-  }),
+  source: {
+    walletData: $walletData,
+    isDraftMode: formModel.$isDraftMode,
+    draftPath: formModel.$draftSigningPath,
+    multisigByAccountId: graphModel.$multisigByAccountId,
+    resolveName: graphModel.$nameResolver,
+    nominationsCache: nominations.nominationsResource.$cache,
+  },
+  filter: (_, formData) => nonNullable(formData),
+  fn: ({ walletData, isDraftMode, draftPath, multisigByAccountId, resolveName, nominationsCache }, formData) => {
+    const { chain, initiator } = formData;
+
+    return {
+      event: {
+        chain,
+        asset: getRelaychainAsset(chain.assets)!,
+        signingMode: getSigningMode({ isDraftMode, wallet: walletData?.wallet }),
+        initiator,
+        initiatorWallet: walletData?.wallet,
+        nominatedIds: nominationsCache[chain.chainId]?.[initiator.accountId]?.targets,
+        signingInfo: isDraftMode
+          ? getDraftSigningInfo({ path: draftPath, chainId: chain.chainId, multisigByAccountId, resolveName })
+          : undefined,
+      },
+      step: Step.VALIDATORS,
+    };
+  },
   target: spread({
-    event: validatorsModel.events.formInitiated,
+    event: validatorSelectionModel.events.formInitiated,
     step: stepChanged,
   }),
 });
 
 const formSubmitted = sample({
-  clock: validatorsModel.output.formSubmitted,
+  clock: validatorSelectionModel.output.formSubmitted,
   source: {
     nominateForm: $nominateForm,
     fee: $fee,
@@ -279,7 +306,7 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: [stepChanged, validatorsModel.events.formCleared],
+  target: [stepChanged, validatorSelectionModel.events.formCleared],
 });
 
 sample({
@@ -315,7 +342,7 @@ wireDraftCloseRedirect({
 });
 
 sample({
-  clock: validatorsModel.output.formSubmitted,
+  clock: validatorSelectionModel.output.formSubmitted,
   source: formModel.$isDraftMode,
   filter: (isDraftMode) => isDraftMode,
   target: formModel.events.saveAsDraftRequested,

@@ -9,7 +9,7 @@ import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { NominateConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
-import { Validators } from '@/features/staking';
+import { ValidatorSelectionModal } from '@/features/validator-selection';
 import { Step } from '../lib/types';
 import { nominateUtils } from '../lib/utils';
 import { nominateFlowShards } from '../model/flow-shards';
@@ -39,6 +39,15 @@ export const NominateShards = () => {
   if (nominateUtils.isSubmitStep(step)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   }
+  if (nominateUtils.isValidatorsStep(step)) {
+    return (
+      <ValidatorSelectionModal
+        isOpen={isModalOpen}
+        onGoBack={() => nominateFlowShards.events.stepChanged(Step.INIT)}
+        onClose={closeModal}
+      />
+    );
+  }
   if (nominateUtils.isBasketStep(step)) {
     return (
       <OperationResult
@@ -58,9 +67,6 @@ export const NominateShards = () => {
       </Modal.Title>
       <Modal.Content>
         {nominateUtils.isInitStep(step) && <NominateFormShards onGoBack={closeModal} />}
-        {nominateUtils.isValidatorsStep(step) && (
-          <Validators onGoBack={() => nominateFlowShards.events.stepChanged(Step.INIT)} />
-        )}
         {nominateUtils.isConfirmStep(step) && (
           <Confirmation
             secondaryActionButton={

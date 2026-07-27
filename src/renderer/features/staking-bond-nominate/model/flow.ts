@@ -16,7 +16,8 @@ import { signModel } from '@/features/operations/OperationSign/model/sign-model'
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { bondNominateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { type BondNominateConfirm } from '@/features/operations/OperationsConfirm/BondNominate/model/confirm-model';
-import { validatorsModel } from '@/features/staking';
+import { graphModel } from '@/features/signing-path';
+import { getDraftSigningInfo, getSigningMode, validatorSelectionModel } from '@/features/validator-selection';
 import { type BondNominateData, type WalletData, Step } from '../lib/types';
 import { bondNominateUtils } from '../lib/utils';
 
@@ -77,7 +78,7 @@ sample({
 // Transaction & Form
 
 sample({
-  clock: [$maxValidators.updates, formModel.formChanged, validatorsModel.output.formSubmitted],
+  clock: [$maxValidators.updates, formModel.formChanged, validatorSelectionModel.output.formSubmitted],
   source: {
     step: $step,
     bondData: $bondNominateData,
@@ -139,22 +140,45 @@ sample({
   target: stepChanged,
 });
 
+// The picker is opened with everything the flow already knows about who is
+// acting: draft mode decides whether the picked set will be signed here or
+// handed to someone else, and in draft mode the committed path names that
+// signer.
 sample({
   clock: formModel.formSubmitted,
-  source: $walletData,
-  filter: (walletData: WalletData | null): walletData is WalletData => Boolean(walletData),
-  fn: ({ chain }) => ({
-    event: { chain, asset: getRelaychainAsset(chain.assets)! },
-    step: Step.VALIDATORS,
-  }),
+  source: {
+    walletData: $walletData,
+    isDraftMode: formModel.$isDraftMode,
+    draftPath: formModel.$draftSigningPath,
+    multisigByAccountId: graphModel.$multisigByAccountId,
+    resolveName: graphModel.$nameResolver,
+  },
+  filter: ({ walletData }) => nonNullable(walletData),
+  fn: ({ walletData, isDraftMode, draftPath, multisigByAccountId, resolveName }) => {
+    const { chain, wallet, shards } = walletData!;
+
+    return {
+      event: {
+        chain,
+        asset: getRelaychainAsset(chain.assets)!,
+        signingMode: getSigningMode({ isDraftMode, wallet }),
+        initiator: shards[0],
+        initiatorWallet: wallet,
+        signingInfo: isDraftMode
+          ? getDraftSigningInfo({ path: draftPath, chainId: chain.chainId, multisigByAccountId, resolveName })
+          : undefined,
+      },
+      step: Step.VALIDATORS,
+    };
+  },
   target: spread({
-    event: validatorsModel.events.formInitiated,
+    event: validatorSelectionModel.events.formInitiated,
     step: stepChanged,
   }),
 });
 
 const validatorsFormSubmitted = sample({
-  clock: validatorsModel.output.formSubmitted,
+  clock: validatorSelectionModel.output.formSubmitted,
   source: {
     bondData: $bondNominateData,
     fee: formModel.$fee,
@@ -210,7 +234,7 @@ sample({
 // validators step with draft mode on, fire the save request directly — the
 // factory's `connectSave` builds the seed and forwards it to `createDraftModel`.
 sample({
-  clock: validatorsModel.output.formSubmitted,
+  clock: validatorSelectionModel.output.formSubmitted,
   source: formModel.$isDraftMode,
   filter: (isDraftMode) => isDraftMode,
   target: formModel.events.saveAsDraftRequested,
@@ -298,7 +322,7 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: [stepChanged, formModel.formCleared, validatorsModel.events.formCleared],
+  target: [stepChanged, formModel.formCleared, validatorSelectionModel.events.formCleared],
 });
 
 sample({
