@@ -69,7 +69,9 @@ notes.
 ## Staking
 
 - `staking-navigation` (no spec planned)
+- [`staking-amount-flow`](./staking-amount-flow/README.md)
 - `staking-basket`
+- [`staking-claim-rewards`](./staking-claim-rewards/README.md)
 - `staking-bond-extra`
 - `staking-bond-nominate`
 - `staking-nominate`

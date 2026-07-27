@@ -2979,6 +2979,7 @@
       "multiTransfer": "Multi Transfer",
       "multiTransferOn": "Multi Transfer on",
       "nominateOn": "Change Validators on",
+      "payoutStakersOn": "Claim Rewards on",
       "proxy": "Proxy",
       "redeemOn": "Withdraw Unstaked { asset } on",
       "reject": "Reject",
@@ -3055,6 +3056,7 @@
       "editFlexible": "Edit flexible multisig",
       "multiTransfer": "Multi Transfer",
       "nominate": "Change Validators",
+      "payoutStakers": "Claim Rewards",
       "proxy": "Proxy",
       "redeem": "Withdraw Unstaked",
       "remark": "Remark",
@@ -3491,6 +3493,34 @@
       "startStakingLabel": "Start staking",
       "unstakeLabel": "Unstake"
     },
+    "amountFlow": {
+      "addStakeInfoDescription": "Added funds start earning from the next era. They stay bonded until you unbond them.",
+      "addStakeInfoTitle": "Starts earning next era",
+      "amountLabel": "Amount",
+      "availableLabel": "Available:",
+      "belowMinimumDescription": "Remaining stake ({remaining}) is below the {minimum} minimum active bond — the position would stop earning. Unbond everything, or leave at least {minimum}.",
+      "belowMinimumTitle": "Below the minimum active bond",
+      "cancelButton": "Cancel",
+      "confirm": {
+        "addingToStake": "Adding to stake",
+        "chillHint": "Your nominations are withdrawn together with this unbond, because too little would stay bonded to keep nominating.",
+        "resultingStake": "Stake after operation",
+        "unbonding": "Unbonding"
+      },
+      "continueButton": "Continue",
+      "maxButton": "Max",
+      "remainingStaked": "remaining staked: {amount}",
+      "stakedLabel": "Staked:",
+      "title": {
+        "addStake": "Add stake",
+        "unbond": "Unbond"
+      },
+      "unbondingInfoDescription": "Unbonding takes ~{eras} eras. No rewards are earned while unbonding.",
+      "unbondingInfoDescriptionWithDate": "Unbonding takes ~{eras} eras — funds unlock around {date}. No rewards are earned while unbonding.",
+      "unbondingInfoTitle": "Unbonding period",
+      "unlockingLimitDescription": "This account already has {count} chunks unbonding, the most the network allows. Withdraw an unlocked chunk before unbonding again.",
+      "unlockingLimitTitle": "No unbonding slots left"
+    },
     "bond": {
       "aboutRewards": "About rewards",
       "accountLabel": "Account",
@@ -3513,6 +3543,20 @@
       "signatoryPlaceholder": "Select Signatory",
       "title": "Start staking { asset } on",
       "transferableRewards": "Transferable rewards"
+    },
+    "claimRewards": {
+      "hint": "Rewards go straight to the stash's transferable balance. Anyone can send this call — the rewards reach the nominators either way.",
+      "hintBatched": "This claim is too large for one transaction, so it is split into {total} of them. You sign each in turn, and they are submitted together.",
+      "labels": {
+        "rewards": "Rewards to claim",
+        "scope": "Covering",
+        "transactions": "Transactions"
+      },
+      "otherNetworksHint_one": "Rewards on {count} other account are on a different network and were left out of this claim. Claim them from that network separately.",
+      "otherNetworksHint_other": "Rewards on {count} other accounts are on different networks and were left out of this claim. Claim them from those networks separately.",
+      "otherNetworksTitle": "Other networks not included",
+      "scopeValue": "{validators} validators across {eras} eras",
+      "title": "Claim rewards"
     },
     "confirmation": {
       "accountLabel_one": "Account",

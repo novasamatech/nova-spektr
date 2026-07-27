@@ -1,0 +1,146 @@
+# Staking amount flow (unbond / add stake)
+
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-27
+
+## Overview
+
+Asks the user **how much**, for the two staking actions that need an amount, and takes the answer through confirm → sign
+→ submit:
+
+- **Unbond** — start unbonding part or all of an active stake;
+- **Add stake** — bond more on top of an existing position.
+
+Both are entered from a position row on the staking dashboard, which hands over the position it is showing. The flow
+builds no position data of its own: the figures it leads with are already on screen when the button is pressed.
+
+### Why one feature covers two actions
+
+The approved design gives Unbond a screen (frame F7) and Add stake none — because they are the same screen. One
+position, one amount field with a `Max`, one helper line, one signing route, `Cancel` / `Continue`. The only differences
+are which figure caps the amount, which call is built and what the callouts say about the consequence.
+
+Forking them would mean two copies of the signing, fee, validation and draft plumbing so that one copy could hide a
+callout. Instead the action is a parameter of a single flow, with two entry points. Add stake therefore inherits the
+Unbond layout verbatim, which is also what the design review asked for.
+
+## Who can use it / when it applies
+
+- Opened only from a dashboard position — the flow never picks an account or a chain itself, and never opens on its own.
+- **Signing** requires an account of the current wallet that reaches a signer on the position's chain. Multisig and
+  proxied accounts are wrapped automatically; the **signing route** is seeded with the default path and can be changed
+  on the amount screen and again on the confirm. That choice is load-bearing: the account at the end of the route pays
+  the fee and reserves the multisig deposit.
+- A regular account signs for itself. For one the signing path is empty by design, and the flow falls back to the
+  initiator — without that fallback the wrapping step refuses the transaction and the confirm waits forever on a fee
+  that can never arrive.
+- **Without a local signer**, the operation can still leave as a **draft** for somebody else to sign — see _Drafts_
+  below.
+- Watch-only accounts can do neither, and the dashboard does not offer them the action in the first place.
+
+## States / scenarios
+
+The amount screen is one layout in both modes:
+
+| Element              | Unbond                                                           | Add stake                                                 |
+| -------------------- | ---------------------------------------------------------------- | --------------------------------------------------------- |
+| Title                | "Unbond"                                                         | "Add stake"                                               |
+| Chips                | Account (identicon, resolved name, short address) + network chip | same                                                      |
+| Amount label (right) | `Staked: 1.2M DOT` — the position's **active** stake             | `Available: …` — spendable balance, minus the network fee |
+| `Max`                | the whole active stake                                           | everything available after the fee                        |
+| Helper line          | `≈ $6.24M · remaining staked: 100 DOT ($520)`                    | `≈ $6.24M`                                                |
+| Warning callout      | amber, when the remainder falls below the minimum active bond    | never                                                     |
+| Info callout         | unbonding period and the projected unlock date                   | "funds start earning next era"                            |
+| Footer               | `Cancel` / `Continue`                                            | same                                                      |
+
+**The below-minimum warning does not block `Continue`.** Leaving a stub too small to nominate is legal — merely
+suboptimal — and the user may well mean it. The callout names both figures and the two ways out ("unbond everything, or
+leave at least X"), and the button stays enabled.
+
+Two boundaries are deliberate:
+
+- **exactly at the minimum** does _not_ warn — a position sitting on the minimum is still valid and still earning;
+- **a full unbond** does _not_ warn — leaving nothing behind is the intended way out, not a mistake.
+
+| State                     | When it appears                                                         | What the user sees                                                             |
+| ------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Amount                    | The dashboard requests unbond / add stake                               | The screen above, `Continue` disabled until an amount is entered               |
+| Amount too large          | Above the active stake (unbond) or above what is available (add stake)  | The field reads invalid and `Continue` is blocked                              |
+| Below minimum active bond | Remainder > 0 but under the chain's minimum nominator bond              | Amber callout; `Continue` **stays enabled**                                    |
+| No unbonding slots left   | The ledger already holds the maximum number of unbonding chunks         | Red callout, `Continue` blocked — the node would reject the call outright      |
+| Unpayable                 | The signer cannot cover the fee, or cannot reserve the multisig deposit | The error explains which, and both `Continue` and `Sign` are blocked           |
+| Confirm                   | `Continue` pressed                                                      | Amount, signing route, amount + resulting stake, network fee, multisig deposit |
+| Chill notice              | The unbond is wrapped with `chill` (see below)                          | A footnote on the confirm saying the nominations are withdrawn with it         |
+| Sign / Submit             | `Sign` pressed                                                          | The shared signing and submission screens                                      |
+
+### The unbonding callout
+
+`Unbonding takes ~28 eras — funds unlock around Aug 19. No rewards are earned while unbonding.`
+
+The era count comes from the chain's bonding duration. The **date** additionally needs the era anchor (when the current
+era started, and how long an era lasts), which the staking-positions aggregate already holds for the dashboard. When the
+chain cannot provide an anchor the line stops at the era count rather than inventing a day — a wrong date here is worse
+than no date, because the user plans around it. A projection that has gone stale (the era rolled over while the modal
+was open) is never printed in the past.
+
+### Chill on unbond
+
+Unbonding down to nothing — or to a remainder too small to nominate with — leaves the position nominating with a stake
+the network will not elect. So the unbond is wrapped as `BATCH_ALL(chill, unbond)`: the nominations are withdrawn in the
+same transaction, and the confirm says so. A partial unbond that leaves a healthy stake is a bare `unbond`.
+
+## Lifecycle
+
+```mermaid
+flowchart TD
+    D["Dashboard position row"] -->|Unbond / Add stake| A["Amount"]
+    A -->|Continue| C["Confirm"]
+    C --> S["Sign"] --> SUB["Submit"] --> DONE["Extrinsic lands"]
+    A -->|Draft mode → Save| DR["Draft created"]
+```
+
+The confirm opens on the amount, not on the node: the wrapped transaction, the fee and the validation each cost a round
+trip, so they stream in behind their own loaders with `Sign` disabled until they land. Changing the signing route
+re-runs all three in place.
+
+On a successful submit the flow reports completion once, and the dashboard refreshes what it shows. Nothing here polls:
+the position figures behind the dashboard are live subscriptions, so an unbond that lands — or a multisig one that lands
+only when the final approval does — updates the row on its own.
+
+## Drafts
+
+The amount screen carries the app-wide draft toggle. In draft mode the user picks the signing path themselves (the flow
+cannot sign for an account it has no key for), the fee and balance checks step aside — the eventual signer pays — and
+the primary button creates a **draft** instead of walking on to the confirm.
+
+**Signing and draft creation never share a confirmation.** Draft mode ends at the amount screen: it has its own button
+and its own gate, `Continue` is disabled while it is on, and a created draft closes the flow. This mirrors every other
+operation form in the app.
+
+## Rules carried over from the old staking flows
+
+The old `staking-unstake` / `staking-bond-extra` forms are welded to the Staking page and stay in place for it. Their
+_rules_, which are correct and long-proven, were carried over:
+
+- **chill on full / below-minimum unbond** — from `staking-unstake`'s form model. One correction: the old rule chilled
+  whenever the remainder fell to **or below** the minimum, so unbonding down to exactly the minimum — a position that
+  stays perfectly valid — silently dropped the user's nominations. Here the boundary is strict, matching the warning,
+  and a full unbond always chills whether or not the minimum is known.
+- **the transaction origin** is the position's own account. The old flow built the inner call from the _signatory_,
+  which for a multisig is the wrong origin.
+- **fee, existential-deposit and permission checks** — the shared validators from `operations/OperationsValidation`:
+  `unstakeValidator` for unbond, `bondExtraValidator` for add stake, the latter adding the "can this account actually
+  reserve what it is bonding" rule.
+- **`maxUnlockingChunks` guard** — the ledger cannot hold another unbonding entry once it is full, and `unbond` fails
+  outright there. The flow blocks instead of letting the extrinsic fail on chain. Redeemable chunks don't count: the
+  call consolidates those first, so they free their slot. A runtime that doesn't expose the constant gets no guard —
+  refusing an operation on the strength of a constant we failed to read would be worse.
+
+## Related
+
+- [`staking-positions`](../../aggregates/staking-positions/README.md) — owns the positions, the chain minimum bond and
+  the era anchors this flow reads; opening the modal starts no new request.
+- `dashboard-staking-positions` — where the two actions are requested from.
+- `drafts` — the draft-mode toggle, path picker and creation modal.
+- `signing-path`, `operations/OperationSign`, `operations/OperationSubmit`, `shared/transactions` — the shared signing
+  and submission stack.
+- `staking-unstake`, `staking-bond-extra` — the Staking page's own forms, untouched; the source of the rules above.

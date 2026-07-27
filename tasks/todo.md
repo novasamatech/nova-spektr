@@ -89,7 +89,15 @@ Landed so far (types clean repo-wide, 112 domain+pallet tests green):
 - [ ] Call-site swap: BondNominate.tsx / Nominate.tsx early-return standalone modal; flows' formInitiated fn extended (signingMode from $isDraftMode/walletUtils, signingInfo from signing-path, nominatedIds preselect for nominate)
 - [ ] Delete `features/staking/`, Feature Map update, i18n `staking.validatorSelection.*`, spec README (feature-specs skill)
 
-### Phase 3 — Dashboard widgets (read-only; atomic slot swap)
+### Phase 3 — Dashboard widgets ✅ DONE (commits 81a0d1f3f, 839c12e20)
+- [x] `dashboard-staking-kpi` (69 tests) — 4 cards + 3 drill-downs (donut breakdown, claim table, positions/unbonding table), CSV export, footers drop when empty, zero-layout-shift skeletons
+- [x] `dashboard-staking-positions` (40 tests) — table + F6 drawer + `getAccessMode` (shared helper, KPI agent deleted its duplicate) + pending-draft chips from `useVisibleDrafts`; `Change validators` wired end-to-end into the validator modal scoped to the position's chain
+- [x] `dashboard-staking-rewards-chart` (48 tests) — asset toggle + ranges + bucketing + per-account tooltip; era shown only where honestly derivable (Kusama's 6h eras → omitted)
+- [x] Slot swap: 3 old injections removed from `dashboardStakingSlot`, `dashboard/staking-summary` kept on Overview; 3 new features registered in bootstrap; Feature Map 128 modules
+- [x] **i18n collision caught**: two agents each created a separate `"dashboard.staking"` JSON object — duplicate keys parse fine but silently shadow, so the whole rewards-chart block was dead. Merged; verified with a duplicate-key scan across every nesting level.
+- [x] **Address-book positions** — the aggregate sourced accounts from the selected wallet only, so the design's draft-mode row was unreachable. Added `trackAccountIds` (replaces, never accumulates; bounded by the dashboard selection, never the whole address book); tracked ids skip `isAccountAvailableOnChain` (it reads properties a bare address doesn't have) and join every staking chain. Agent also found and fixed a **teardown race**: `reset` had two writers over one snapshot of active keys, which could double-stop or leak a subscription key — teardown is now expressed as "want nothing" through the single diff writer. KPI's access-mode fallback corrected from `watchOnly` to `draft` (it would have stripped actions off exactly these rows).
+
+### Phase 3 — original checklist (reference)
 - [ ] `features/dashboard-staking-kpi` (4 cards + skeletons + footers Unbonding/Unclaimed + 640px donut breakdowns + 940px claim & staked/unbonding drill-down modals + CSV export) 
 - [ ] `features/dashboard-staking-positions` (flat table sorted Staked↓, sticky-header scroll at 22+, status pills, expiry chips, access-mode cells, empty panel F3, F6 drawer with nominations table + watch-only variant)
 - [ ] `features/dashboard-staking-rewards-chart` (DOT/KSM toggle, 7d/30d/90d/1y bucketing w/ era labels, Recharts bars + hover tooltip per-account rows)
@@ -112,6 +120,9 @@ Landed so far (types clean repo-wide, 112 domain+pallet tests green):
    **Decision**: `blocksAuthored` in `EraValidator` via runtime probe on the timeline (relay) chain — if `imOnline.authoredBlocks` exists → exact per-session count (one `.multi` over elected set, column labelled "blocks this session"); else → derived estimate `round(eraPoints / 20)` with tooltip that it's derived from era points (upper bound: era points also include para-validation). "0 blocks" warning = 0 in whichever source. Both paths keep ERA PTS column exact.
 2. Claim flow drafts: use the app-wide draft-mode pattern (`createDraftModeBinding` slider — modal switches to draft mode; either sign txs OR create drafts, never mixed in one confirmation).
 3. "Add stake" = F7 layout via parameterized AmountFlowModal {unbond|addStake}. Approved.
+
+## Found bug in the OLD flow — needs a decision (not fixed; that page is out of scope)
+`features/staking-unstake` chills at `leftAmount.lte(minBond)` — `model/form-model.ts:218`, `:349`, `model/form-model-shards.ts:357`. Unbonding down to **exactly** the minimum bond leaves a still-valid nominating position, so wrapping `chill` there drops the user's nominations for no reason and they stop earning until they re-nominate. The new `staking-amount-flow` uses strict `<` (plus "a full unbond always chills, even when the minimum is unknown"). The fix is `lte` → `lt` at three sites; no test encodes the current behaviour. Left untouched because the old Staking page was explicitly scoped out — needs a go-ahead.
 
 ## Verification per phase
 `pnpm types:go` + affected unit suites + `pnpm test:integration` staking cases; renderer runtime check via `verify` skill (browser-drive) after Phases 2–4; e2e suite in Phase 5; feature-map check `pnpm check:feature-map`.
