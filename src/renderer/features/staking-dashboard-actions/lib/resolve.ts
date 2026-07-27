@@ -1,10 +1,13 @@
+import { BN } from '@polkadot/util';
+
 import { type Chain, type ChainId, type Wallet } from '@/shared/core';
-import { getRelaychainAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { ZERO_BALANCE, getRelaychainAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { type StakingPosition, type UnclaimedPayout, type UnclaimedPayouts, payoutsCacheKey } from '@/domains/staking';
 import { type AmountFlowTarget } from '@/features/staking-amount-flow';
 import { type ClaimRequest } from '@/features/staking-claim-rewards';
+import { type RedeemTarget } from '@/features/staking-confirm-flow';
 
 /**
  * Everything the KPI row leaves out.
@@ -117,16 +120,16 @@ export function readPayouts(
 }
 
 /**
- * A KPI unbond request → what the amount flow takes.
+ * A KPI request → the position a flow opens on.
  *
  * The KPI row identifies a position by address and chain only, so the position
- * itself is looked up live; without one there is no active stake to cap the
- * amount against and the flow has nothing to open on.
+ * itself is looked up live; without one the flow has nothing to open on — no
+ * active stake to cap an amount against, no ledger to redeem from.
  *
  * `account` stays nullable on purpose — an address-book position resolves to
- * `null` here, which is exactly the state the flow reads as "draft only".
+ * `null` here, which is exactly the state the flows read as "draft only".
  */
-export function resolveAmountFlowTarget(
+function resolvePositionTarget(
   { accountId, chainId }: { accountId: AccountId; chainId: ChainId },
   positions: StakingPosition[],
   sources: ResolutionSources,
@@ -149,6 +152,41 @@ export function resolveAmountFlowTarget(
     account: resolved?.account ?? null,
     wallet: resolved?.wallet ?? null,
   };
+}
+
+/** A KPI unbond request → what the amount flow takes. */
+export function resolveAmountFlowTarget(
+  request: { accountId: AccountId; chainId: ChainId },
+  positions: StakingPosition[],
+  sources: ResolutionSources,
+): AmountFlowTarget | null {
+  return resolvePositionTarget(request, positions, sources);
+}
+
+/**
+ * A KPI redeem request → what the confirm flow takes.
+ *
+ * The figure comes from the **position**, not from the request. The request
+ * carries the number the chip was showing, but `withdraw_unbonded` takes no
+ * amount at all — it withdraws whatever the ledger has unlocked — so the honest
+ * figure to lead the confirm with is the freshest one, and both come from the
+ * same aggregate anyway.
+ *
+ * A position with nothing unlocked is dropped: the call would move nothing and
+ * still cost a fee.
+ */
+export function resolveRedeemTarget(
+  request: { accountId: AccountId; chainId: ChainId },
+  positions: StakingPosition[],
+  sources: ResolutionSources,
+): RedeemTarget | null {
+  const target = resolvePositionTarget(request, positions, sources);
+  if (nullable(target)) return null;
+
+  const amount = target.position.redeemable;
+  if (new BN(amount || ZERO_BALANCE).isZero()) return null;
+
+  return { ...target, amount };
 }
 
 /** The wallet an account belongs to, or `null` when it belongs to none. */

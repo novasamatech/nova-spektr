@@ -6,8 +6,7 @@ import { type Asset, type Chain, type ChainId, type Wallet, StakingType } from '
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
 import { type AnyAccount } from '@/domains/network';
-import { type AmountFlowMode } from '@/features/staking-amount-flow';
-import { createDraftToast } from '../model/draft-toast';
+import { type DraftToastOperation, createDraftToast } from '../model/draft-toast';
 
 const accountId = (n: number): AccountId => `0x${n.toString(16).padStart(64, '0')}` as AccountId;
 const chainId = (n: number): ChainId => `0x${n.toString(16).padStart(64, '0')}` as ChainId;
@@ -32,33 +31,52 @@ function createHarness() {
   const amountSaveAsDraftRequested = createEvent();
   const amountFlowStarted = createEvent();
   const $amountInitiatedDraft = createStore(false);
-  const $mode = createStore<AmountFlowMode | null>('unbond');
+  const $amountMode = createStore<DraftToastOperation | null>('unbond');
+
+  const confirmSaveAsDraftRequested = createEvent();
+  const confirmFlowStarted = createEvent();
+  const $confirmInitiatedDraft = createStore(false);
+  const $confirmMode = createStore<DraftToastOperation | null>('redeem');
 
   const draftCreated = createEvent();
   const rewardsClaimed = createEvent();
 
   const model = createDraftToast({
-    claimFlow: {
-      saveAsDraftRequested: claimSaveAsDraftRequested,
-      claimRequested,
-      $initiatedDraft: $claimInitiatedDraft,
-      $chain: createStore<Chain | null>(chain()),
-      $asset: createStore<Asset | null>(asset()),
-      $totalAmount: createStore('8900000000000'),
-      $initiator: createStore<AnyAccount | null>(account(1)),
-      $draftSigningPath: createStore(path(1)),
-    },
-    amountFlow: {
-      saveAsDraftRequested: amountSaveAsDraftRequested,
-      flowStarted: amountFlowStarted,
-      $initiatedDraft: $amountInitiatedDraft,
-      $mode,
-      $chain: createStore<Chain | null>(chain()),
-      $asset: createStore<Asset | null>(asset()),
-      $amountPlanck: createStore(new BN('1230000000000')),
-      $initiator: createStore<AnyAccount | null>(account(2)),
-      $draftSigningPath: createStore(path(2)),
-    },
+    flows: [
+      {
+        saveAsDraftRequested: claimSaveAsDraftRequested,
+        flowStarted: claimRequested,
+        $initiatedDraft: $claimInitiatedDraft,
+        $operation: createStore<DraftToastOperation | null>('claim'),
+        $chain: createStore<Chain | null>(chain()),
+        $asset: createStore<Asset | null>(asset()),
+        $amount: createStore('8900000000000'),
+        $initiator: createStore<AnyAccount | null>(account(1)),
+        $draftSigningPath: createStore(path(1)),
+      },
+      {
+        saveAsDraftRequested: amountSaveAsDraftRequested,
+        flowStarted: amountFlowStarted,
+        $initiatedDraft: $amountInitiatedDraft,
+        $operation: $amountMode,
+        $chain: createStore<Chain | null>(chain()),
+        $asset: createStore<Asset | null>(asset()),
+        $amount: createStore(new BN('1230000000000')).map((amount) => amount.toString()),
+        $initiator: createStore<AnyAccount | null>(account(2)),
+        $draftSigningPath: createStore(path(2)),
+      },
+      {
+        saveAsDraftRequested: confirmSaveAsDraftRequested,
+        flowStarted: confirmFlowStarted,
+        $initiatedDraft: $confirmInitiatedDraft,
+        $operation: $confirmMode,
+        $chain: createStore<Chain | null>(chain()),
+        $asset: createStore<Asset | null>(asset()),
+        $amount: createStore('4500000000'),
+        $initiator: createStore<AnyAccount | null>(account(1)),
+        $draftSigningPath: createStore(path(1)),
+      },
+    ],
     $accounts: createStore([account(1), account(2)]),
     $wallets: createStore([wallet(1), wallet(2)]),
     draftCreated,
@@ -68,11 +86,15 @@ function createHarness() {
     model,
     $claimInitiatedDraft,
     $amountInitiatedDraft,
+    $confirmInitiatedDraft,
+    $confirmMode,
     events: {
       claimSaveAsDraftRequested,
       claimRequested,
       amountSaveAsDraftRequested,
       amountFlowStarted,
+      confirmSaveAsDraftRequested,
+      confirmFlowStarted,
       draftCreated,
       rewardsClaimed,
     },
@@ -109,6 +131,35 @@ describe('draft-confirmation toast', () => {
       amount: '1230000000000',
       signerAccountId: accountId(2),
     });
+  });
+
+  it('carries the confirm flow’s mode and the figure it redeems', async () => {
+    const harness = createHarness();
+    const scope = fork({ values: [[harness.$confirmInitiatedDraft, true]] });
+
+    await allSettled(harness.events.confirmSaveAsDraftRequested, { scope, params: undefined });
+    await allSettled(harness.events.draftCreated, { scope, params: undefined });
+
+    expect(scope.getState(harness.model.$toast)).toMatchObject({
+      operation: 'redeem',
+      amount: '4500000000',
+      signerAccountId: accountId(1),
+    });
+  });
+
+  it('announces a validator change, which moves nothing', async () => {
+    const harness = createHarness();
+    const scope = fork({
+      values: [
+        [harness.$confirmInitiatedDraft, true],
+        [harness.$confirmMode, 'changeValidators'],
+      ],
+    });
+
+    await allSettled(harness.events.confirmSaveAsDraftRequested, { scope, params: undefined });
+    await allSettled(harness.events.draftCreated, { scope, params: undefined });
+
+    expect(scope.getState(harness.model.$toast)).toMatchObject({ operation: 'changeValidators' });
   });
 
   it('stays silent for a signed submission', async () => {

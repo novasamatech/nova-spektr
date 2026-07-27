@@ -1,3 +1,5 @@
+import { createStore } from 'effector';
+
 import { $features } from '@/shared/config/features';
 import { accounts } from '@/domains/network';
 import { era, payouts } from '@/domains/staking';
@@ -10,9 +12,13 @@ import { createDraftModel } from '@/features/drafts';
 import { navigationModel } from '@/features/navigation';
 import { stakingAmountFlow } from '@/features/staking-amount-flow';
 import { claimRewardsModel } from '@/features/staking-claim-rewards';
+import { stakingConfirmFlow } from '@/features/staking-confirm-flow';
 
-import { createDraftToast } from './draft-toast';
+import { type DraftToastOperation, createDraftToast } from './draft-toast';
 import { createStakingDashboardActions } from './wiring';
+
+/** Both flow-backed groups of chips follow the same dev flag. */
+const $stakingEnabled = $features.map(({ staking }) => staking);
 
 /**
  * The single instance, bound to the real units.
@@ -32,6 +38,7 @@ export const stakingDashboardActions = createStakingDashboardActions({
   },
   kpi: {
     claimRequested: dashboardStakingKpiActions.claimRequested,
+    redeemRequested: dashboardStakingKpiActions.redeemRequested,
     unbondRequested: dashboardStakingKpiActions.unbondRequested,
     enableActions: dashboardStakingKpiActions.enableActions,
   },
@@ -39,6 +46,7 @@ export const stakingDashboardActions = createStakingDashboardActions({
     claimRequested: positionActions.events.claimRequested,
     addStakeRequested: positionActions.events.addStakeRequested,
     unbondRequested: positionActions.events.unbondRequested,
+    nominationsChangeRequested: positionActions.events.nominationsChangeRequested,
     startStakingRequested: positionActions.events.startStakingRequested,
     actionsWired: positionActions.actionsWired,
   },
@@ -50,33 +58,55 @@ export const stakingDashboardActions = createStakingDashboardActions({
   amountFlow: {
     unbondRequested: stakingAmountFlow.unbondRequested,
     addStakeRequested: stakingAmountFlow.addStakeRequested,
-    $enabled: $features.map(({ staking }) => staking),
+    $enabled: $stakingEnabled,
+  },
+  confirmFlow: {
+    changeValidatorsRequested: stakingConfirmFlow.changeValidatorsRequested,
+    redeemRequested: stakingConfirmFlow.redeemRequested,
+    $enabled: $stakingEnabled,
   },
   navigateTo: navigationModel.events.navigateTo,
 });
 
+/** The claim flow serves exactly one operation, so its "mode" is a constant. */
+const $claimOperation = createStore<DraftToastOperation | null>('claim');
+
 export const draftToast = createDraftToast({
-  claimFlow: {
-    saveAsDraftRequested: claimRewardsModel.saveAsDraftRequested,
-    claimRequested: claimRewardsModel.claimRequested,
-    $initiatedDraft: claimRewardsModel.$initiatedDraft,
-    $chain: claimRewardsModel.$chain,
-    $asset: claimRewardsModel.$asset,
-    $totalAmount: claimRewardsModel.$totalAmount,
-    $initiator: claimRewardsModel.$initiator,
-    $draftSigningPath: claimRewardsModel.$draftSigningPath,
-  },
-  amountFlow: {
-    saveAsDraftRequested: stakingAmountFlow.saveAsDraftRequested,
-    flowStarted: stakingAmountFlow.flowStarted,
-    $initiatedDraft: stakingAmountFlow.$initiatedDraft,
-    $mode: stakingAmountFlow.$mode,
-    $chain: stakingAmountFlow.$chain,
-    $asset: stakingAmountFlow.$asset,
-    $amountPlanck: stakingAmountFlow.$amountPlanck,
-    $initiator: stakingAmountFlow.$initiator,
-    $draftSigningPath: stakingAmountFlow.$draftSigningPath,
-  },
+  flows: [
+    {
+      saveAsDraftRequested: claimRewardsModel.saveAsDraftRequested,
+      flowStarted: claimRewardsModel.claimRequested,
+      $initiatedDraft: claimRewardsModel.$initiatedDraft,
+      $operation: $claimOperation,
+      $chain: claimRewardsModel.$chain,
+      $asset: claimRewardsModel.$asset,
+      $amount: claimRewardsModel.$totalAmount,
+      $initiator: claimRewardsModel.$initiator,
+      $draftSigningPath: claimRewardsModel.$draftSigningPath,
+    },
+    {
+      saveAsDraftRequested: stakingAmountFlow.saveAsDraftRequested,
+      flowStarted: stakingAmountFlow.flowStarted,
+      $initiatedDraft: stakingAmountFlow.$initiatedDraft,
+      $operation: stakingAmountFlow.$mode,
+      $chain: stakingAmountFlow.$chain,
+      $asset: stakingAmountFlow.$asset,
+      $amount: stakingAmountFlow.$amountPlanck.map((amount) => amount.toString()),
+      $initiator: stakingAmountFlow.$initiator,
+      $draftSigningPath: stakingAmountFlow.$draftSigningPath,
+    },
+    {
+      saveAsDraftRequested: stakingConfirmFlow.saveAsDraftRequested,
+      flowStarted: stakingConfirmFlow.flowStarted,
+      $initiatedDraft: stakingConfirmFlow.$initiatedDraft,
+      $operation: stakingConfirmFlow.$mode,
+      $chain: stakingConfirmFlow.$chain,
+      $asset: stakingConfirmFlow.$asset,
+      $amount: stakingConfirmFlow.$amount,
+      $initiator: stakingConfirmFlow.$initiator,
+      $draftSigningPath: stakingConfirmFlow.$draftSigningPath,
+    },
+  ],
   $accounts: accounts.$list,
   $wallets: walletModel.$wallets,
   draftCreated: createDraftModel.draftCreated,

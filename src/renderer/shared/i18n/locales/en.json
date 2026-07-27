@@ -671,7 +671,9 @@
         "operation": {
           "claim": "Claim {amount}",
           "unbond": "Unbond {amount}",
-          "addStake": "Add stake {amount}"
+          "addStake": "Add stake {amount}",
+          "changeValidators": "Change validators",
+          "redeem": "Redeem {amount}"
         }
       },
       "kpi": {
@@ -3602,6 +3604,20 @@
       "transferableRewards": "Transferable rewards",
       "validatorsLabel": "Validators",
       "validatorsTitle": "Selected validators"
+    },
+    "confirmFlow": {
+      "hint": {
+        "changeValidators": "The new set replaces your current nominations from the next era. Your stake stays bonded the whole time.",
+        "redeem": "Withdraws every chunk that has finished unbonding. The funds land in this account's transferable balance."
+      },
+      "labels": {
+        "redeeming": "Redeeming",
+        "validators": "New validators"
+      },
+      "title": {
+        "changeValidators": "Change validators",
+        "redeem": "Redeem"
+      }
     },
     "destination": {
       "initDestinationSubtitle": "Rewards destination",

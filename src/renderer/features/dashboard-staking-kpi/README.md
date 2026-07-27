@@ -106,8 +106,11 @@ payouts, and the staking flows own everything from there. A host declares which 
 action**, not one flag — and a button whose request nobody consumes renders **disabled with a tooltip** saying so,
 rather than firing an event into the void.
 
-[`staking-dashboard-actions`](../staking-dashboard-actions/README.md) is that host today: **Claim** and **Unbond** are
-live, **Redeem** is not, because the withdraw flow only renders on the Staking page.
+[`staking-dashboard-actions`](../staking-dashboard-actions/README.md) is that host today, and all three are live:
+**Claim** and **Unbond** through the claim and amount flows, **Redeem** through
+[`staking-confirm-flow`](../staking-confirm-flow/README.md). A redeem request names the position by address and chain;
+the figure the confirm leads with is read from the position itself, and a position with nothing unlocked is dropped
+rather than opened.
 
 ## Lifecycle
 

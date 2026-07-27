@@ -1,5 +1,4 @@
-import { type BN } from '@polkadot/util';
-import { type Event, type Store, createEvent, createStore, sample } from 'effector';
+import { type Event, type Store, combine, createEvent, createStore, sample } from 'effector';
 
 import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
@@ -7,23 +6,57 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
 import { type AnyAccount } from '@/domains/network';
 import { type AmountFlowMode } from '@/features/staking-amount-flow';
+import { type ConfirmFlowMode } from '@/features/staking-confirm-flow';
 import { findWallet } from '../lib/resolve';
 
-export type DraftToastOperation = 'claim' | AmountFlowMode;
+export type DraftToastOperation = 'claim' | AmountFlowMode | ConfirmFlowMode;
 
 /** Everything frame F10's line says, resolved down to plain values. */
 export type DraftToastContext = {
   operation: DraftToastOperation;
   chain: Chain;
   asset: Asset;
-  /** Planck the saved call moves. */
+  /** Planck the saved call moves. `'0'` when it moves nothing. */
   amount: string;
   /** Whoever has to open Drafts and sign it. */
   signerAccountId: AccountId | null;
   signerWallet: Wallet | null;
 };
 
+/**
+ * One staking flow, as far as the toast is concerned.
+ *
+ * Every flow that can save a draft looks the same from here: it says what it
+ * was asked to do, on which network, for how much, and who will have to sign
+ * it. Keeping that a list rather than a named block per flow is what lets a new
+ * staking action join the toast by being bound in `model/instance.ts`, with
+ * nothing to change here.
+ */
+export type DraftToastFlow = {
+  saveAsDraftRequested: Event<void>;
+  /** Reopening the flow invalidates whatever the last attempt described. */
+  flowStarted: Event<unknown>;
+  $initiatedDraft: Store<boolean>;
+  /** `null` while the flow is idle and holds no operation. */
+  $operation: Store<DraftToastOperation | null>;
+  $chain: Store<Chain | null>;
+  $asset: Store<Asset | null>;
+  /** Planck the saved call moves, as a decimal string. */
+  $amount: Store<string>;
+  $initiator: Store<AnyAccount | null>;
+  $draftSigningPath: Store<PathNode[]>;
+};
+
+export type DraftToastDeps = {
+  flows: DraftToastFlow[];
+  $accounts: Store<AnyAccount[]>;
+  $wallets: Store<Wallet[]>;
+  /** Fires for every draft the app creates, whoever asked for it. */
+  draftCreated: Event<void>;
+};
+
 type FlowSnapshot = {
+  operation: DraftToastOperation | null;
   chain: Chain | null;
   asset: Asset | null;
   amount: string;
@@ -31,42 +64,12 @@ type FlowSnapshot = {
   path: PathNode[];
 };
 
-export type DraftToastDeps = {
-  claimFlow: {
-    saveAsDraftRequested: Event<void>;
-    /** Reopening the flow invalidates whatever the last attempt described. */
-    claimRequested: Event<unknown>;
-    $initiatedDraft: Store<boolean>;
-    $chain: Store<Chain | null>;
-    $asset: Store<Asset | null>;
-    $totalAmount: Store<string>;
-    $initiator: Store<AnyAccount | null>;
-    $draftSigningPath: Store<PathNode[]>;
-  };
-  amountFlow: {
-    saveAsDraftRequested: Event<void>;
-    flowStarted: Event<unknown>;
-    $initiatedDraft: Store<boolean>;
-    $mode: Store<AmountFlowMode | null>;
-    $chain: Store<Chain | null>;
-    $asset: Store<Asset | null>;
-    $amountPlanck: Store<BN>;
-    $initiator: Store<AnyAccount | null>;
-    $draftSigningPath: Store<PathNode[]>;
-  };
-  $accounts: Store<AnyAccount[]>;
-  $wallets: Store<Wallet[]>;
-  /** Fires for every draft the app creates, whoever asked for it. */
-  draftCreated: Event<void>;
-};
-
 function buildContext(
-  operation: DraftToastOperation,
-  { chain, asset, amount, initiator, path }: FlowSnapshot,
+  { operation, chain, asset, amount, initiator, path }: FlowSnapshot,
   accounts: AnyAccount[],
   wallets: Wallet[],
 ): DraftToastContext | null {
-  if (nullable(chain) || nullable(asset)) return null;
+  if (nullable(operation) || nullable(chain) || nullable(asset)) return null;
 
   // The last node of a draft's path is the account that will sign it — that is
   // who the toast names, because that is who has to act.
@@ -98,38 +101,25 @@ function buildContext(
  * through `wireDraftCloseRedirect`, which resets the very stores the line is
  * built from; reading them at that point would describe an empty flow.
  */
-export const createDraftToast = ({ claimFlow, amountFlow, $accounts, $wallets, draftCreated }: DraftToastDeps) => {
+export const createDraftToast = ({ flows, $accounts, $wallets, draftCreated }: DraftToastDeps) => {
   const toastShown = createEvent();
 
-  const claimSnapshot = sample({
-    clock: claimFlow.saveAsDraftRequested,
-    source: {
-      chain: claimFlow.$chain,
-      asset: claimFlow.$asset,
-      amount: claimFlow.$totalAmount,
-      initiator: claimFlow.$initiator,
-      path: claimFlow.$draftSigningPath,
-      accounts: $accounts,
-      wallets: $wallets,
-    },
-    fn: ({ accounts, wallets, ...snapshot }) => buildContext('claim', snapshot, accounts, wallets),
-  });
-
-  const amountSnapshot = sample({
-    clock: amountFlow.saveAsDraftRequested,
-    source: {
-      mode: amountFlow.$mode,
-      chain: amountFlow.$chain,
-      asset: amountFlow.$asset,
-      amount: amountFlow.$amountPlanck,
-      initiator: amountFlow.$initiator,
-      path: amountFlow.$draftSigningPath,
-      accounts: $accounts,
-      wallets: $wallets,
-    },
-    fn: ({ mode, amount, accounts, wallets, ...snapshot }) =>
-      nullable(mode) ? null : buildContext(mode, { ...snapshot, amount: amount.toString() }, accounts, wallets),
-  });
+  const snapshots = flows.map((flow) =>
+    sample({
+      clock: flow.saveAsDraftRequested,
+      source: {
+        operation: flow.$operation,
+        chain: flow.$chain,
+        asset: flow.$asset,
+        amount: flow.$amount,
+        initiator: flow.$initiator,
+        path: flow.$draftSigningPath,
+        accounts: $accounts,
+        wallets: $wallets,
+      },
+      fn: ({ accounts, wallets, ...snapshot }) => buildContext(snapshot, accounts, wallets),
+    }),
+  );
 
   /**
    * The last thing a staking flow asked to save. Cleared once it has been
@@ -137,8 +127,8 @@ export const createDraftToast = ({ claimFlow, amountFlow, $accounts, $wallets, d
    * the next unrelated draft the user creates by hand.
    */
   const $pending = createStore<DraftToastContext | null>(null)
-    .on([claimSnapshot, amountSnapshot], (_, context) => context)
-    .reset(claimFlow.claimRequested, amountFlow.flowStarted);
+    .on(snapshots, (_, context) => context)
+    .reset(flows.map((flow) => flow.flowStarted));
 
   /**
    * A draft landed _and_ one of the staking flows is the one that asked for it.
@@ -149,12 +139,9 @@ export const createDraftToast = ({ claimFlow, amountFlow, $accounts, $wallets, d
     clock: draftCreated,
     source: {
       pending: $pending,
-      claimInitiated: claimFlow.$initiatedDraft,
-      amountInitiated: amountFlow.$initiatedDraft,
+      initiated: combine(flows.map((flow) => flow.$initiatedDraft)),
     },
-  }).filterMap(({ pending, claimInitiated, amountInitiated }) =>
-    nonNullable(pending) && (claimInitiated || amountInitiated) ? pending : undefined,
-  );
+  }).filterMap(({ pending, initiated }) => (nonNullable(pending) && initiated.some(Boolean) ? pending : undefined));
 
   $pending.reset(draftToastRaised);
 

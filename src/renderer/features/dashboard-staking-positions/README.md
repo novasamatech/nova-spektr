@@ -108,7 +108,7 @@ The widget emits, and never consumes:
 | `claimRequested`             | The drawer's `Claim <amount>` chip                     | yes   |
 | `addStakeRequested`          | The drawer's `Add stake` chip                          | yes   |
 | `unbondRequested`            | The drawer's `Unbond` chip                             | yes   |
-| `nominationsChangeRequested` | The validator picker's submit, with the chosen set     | no    |
+| `nominationsChangeRequested` | The validator picker's submit, with the chosen set     | yes   |
 | `startStakingRequested`      | `+ New position` and the empty state's `Start staking` | yes   |
 
 A host announces which of these it has taken responsibility for through `positionActions.actionsWired([...])`, and every
@@ -116,14 +116,16 @@ chip whose action has not been announced renders disabled with a tooltip saying 
 silently does nothing is the worse failure: the user cannot tell an unwired button from a broken one. The gate is **per
 action**, not one flag, because the flows behind them arrive separately.
 
-[`staking-dashboard-actions`](../staking-dashboard-actions/README.md) is that host today. `Change validators` is the one
-chip still gated: the picker works, but nothing turns the chosen set into a `nominate` transaction from the dashboard.
+[`staking-dashboard-actions`](../staking-dashboard-actions/README.md) is that host today, and every chip is now wired —
+`Change validators` included: the picked set is handed to [`staking-confirm-flow`](../staking-confirm-flow/README.md),
+which turns it into a `nominate` transaction.
 
 ## Known gaps
 
 - **The "learn how staking works" link points at the docs root**, because no staking docs page is referenced anywhere in
   the app yet.
-- **`Change validators` is gated** until a nominate flow is reachable from the dashboard.
+- **The drawer offers no `Redeem` chip.** The unbonding strip counts a chunk down but does not offer to withdraw it once
+  it unlocks; redeeming is requested from the KPI drill-down, which is where the approved design puts it.
 - **A draft row's actions rely on the flows' own draft mode.** An address-book position renders with the pencil glyph
   and its chips enabled; turning the hand-off into a draft is the flow's job, and the toast that confirms it belongs to
   the wiring feature.
@@ -134,6 +136,7 @@ chip still gated: the picker works, but nothing turns the chosen set into a `nom
 - `domains/staking` — the on-chain reads: era validators, exposure pages, unclaimed payouts, era timing.
 - `features/validator-selection` — the picker the `Change validators` chip opens, and the model that scopes the
   validator aggregate to the position's chain.
+- [`staking-confirm-flow`](../staking-confirm-flow/README.md) — signs the picked set the picker submits.
 - [`staking-dashboard-actions`](../staking-dashboard-actions/README.md) — the host that consumes the events above and
   announces which chips are live.
 - `features/drafts` — where the pending-draft counts come from.

@@ -155,6 +155,7 @@ export const bootstrap = () => {
 
     import('@/features/staking-claim-rewards').then(({ stakingClaimRewardsFeature }) => stakingClaimRewardsFeature),
     import('@/features/staking-amount-flow').then(({ stakingAmountFlowFeature }) => stakingAmountFlowFeature),
+    import('@/features/staking-confirm-flow').then(({ stakingConfirmFlowFeature }) => stakingConfirmFlowFeature),
     import('@/features/staking-dashboard-actions').then(({ stakingDashboardActionsFeature }) => stakingDashboardActionsFeature),
 
     import('@/features/staking-unstake').then(({ stakingUnstakeFeature }) => stakingUnstakeFeature),

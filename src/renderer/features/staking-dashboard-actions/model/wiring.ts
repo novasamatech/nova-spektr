@@ -7,17 +7,26 @@ import { type AnyAccount } from '@/domains/network';
 import { type StakingPosition, type UnclaimedPayouts } from '@/domains/staking';
 import {
   type ClaimRequestPayload,
+  type RedeemRequestPayload,
   type StakingKpiAction,
   type UnbondRequestPayload,
 } from '@/features/dashboard-staking-kpi';
 import {
   type ClaimPayload,
+  type NominationsChangePayload,
   type PositionAction,
   type PositionActionPayload,
 } from '@/features/dashboard-staking-positions';
 import { type AmountFlowTarget } from '@/features/staking-amount-flow';
 import { type ClaimRequest } from '@/features/staking-claim-rewards';
-import { groupRequestsByChain, readPayouts, resolveAmountFlowTarget, resolveClaimRequests } from '../lib/resolve';
+import { type ChangeValidatorsTarget, type RedeemTarget } from '@/features/staking-confirm-flow';
+import {
+  groupRequestsByChain,
+  readPayouts,
+  resolveAmountFlowTarget,
+  resolveClaimRequests,
+  resolveRedeemTarget,
+} from '../lib/resolve';
 
 /**
  * Every unit this module talks to, injected rather than imported.
@@ -39,6 +48,7 @@ export type StakingDashboardActionsDeps = {
   };
   kpi: {
     claimRequested: Event<ClaimRequestPayload>;
+    redeemRequested: Event<RedeemRequestPayload>;
     unbondRequested: Event<UnbondRequestPayload>;
     enableActions: EventCallable<StakingKpiAction[]>;
   };
@@ -46,6 +56,7 @@ export type StakingDashboardActionsDeps = {
     claimRequested: Event<ClaimPayload>;
     addStakeRequested: Event<PositionActionPayload>;
     unbondRequested: Event<PositionActionPayload>;
+    nominationsChangeRequested: Event<NominationsChangePayload>;
     startStakingRequested: Event<void>;
     actionsWired: EventCallable<PositionAction[]>;
   };
@@ -59,6 +70,12 @@ export type StakingDashboardActionsDeps = {
     unbondRequested: EventCallable<AmountFlowTarget>;
     addStakeRequested: EventCallable<AmountFlowTarget>;
     /** The amount flow lives behind the `staking` flag; its chips follow it. */
+    $enabled: Store<boolean>;
+  };
+  confirmFlow: {
+    changeValidatorsRequested: EventCallable<ChangeValidatorsTarget>;
+    redeemRequested: EventCallable<RedeemTarget>;
+    /** Behind the same `staking` flag as the amount flow. */
     $enabled: Store<boolean>;
   };
   navigateTo: EventCallable<string>;
@@ -85,6 +102,7 @@ export const createStakingDashboardActions = ({
   positions,
   claimFlow,
   amountFlow,
+  confirmFlow,
   navigateTo,
 }: StakingDashboardActionsDeps) => {
   /** Fired once by the host, so gating is observable inside a forked scope. */
@@ -201,6 +219,27 @@ export const createStakingDashboardActions = ({
 
   sample({ clock: kpiUnbondTarget, target: amountFlow.unbondRequested });
 
+  // --- confirm flow --------------------------------------------------------
+  //
+  // `NominationsChangePayload` is a structural superset of
+  // `ChangeValidatorsTarget`, so the picker's submit needs no mapping: the set
+  // the user built is the set the confirm opens with.
+
+  sample({ clock: positions.nominationsChangeRequested, target: confirmFlow.changeValidatorsRequested });
+
+  const kpiRedeemTarget = sample({
+    clock: kpi.redeemRequested,
+    source: {
+      chains: sources.$chains,
+      accounts: sources.$accounts,
+      wallets: sources.$wallets,
+      positions: sources.$positions,
+    },
+    fn: ({ positions: allPositions, ...resolution }, payload) => resolveRedeemTarget(payload, allPositions, resolution),
+  }).filterMap((target) => target ?? undefined);
+
+  sample({ clock: kpiRedeemTarget, target: confirmFlow.redeemRequested });
+
   // --- start staking -------------------------------------------------------
   //
   // A real destination rather than a modal of its own: bonding a new stash is
@@ -214,9 +253,10 @@ export const createStakingDashboardActions = ({
 
   // --- gating --------------------------------------------------------------
   //
-  // Only what is genuinely routed. `redeem` (KPI) and `changeValidators`
-  // (positions) stay out: neither has a flow reachable from the dashboard, so
-  // their buttons keep rendering disabled with the "not connected yet" tooltip.
+  // Only what is genuinely routed. Every dashboard staking action now has a
+  // destination; the two flow-backed groups still follow their feature flag, so
+  // a chip whose flow is switched off keeps rendering disabled with the "not
+  // connected yet" tooltip rather than firing into the void.
 
   sample({
     clock: wire,
@@ -244,6 +284,23 @@ export const createStakingDashboardActions = ({
   sample({
     clock: amountFlowReady,
     fn: (): StakingKpiAction[] => ['unbond'],
+    target: kpi.enableActions,
+  });
+
+  const confirmFlowReady = sample({
+    clock: [wire, confirmFlow.$enabled],
+    source: confirmFlow.$enabled,
+  }).filter({ fn: (enabled) => enabled });
+
+  sample({
+    clock: confirmFlowReady,
+    fn: (): PositionAction[] => ['changeValidators'],
+    target: positions.actionsWired,
+  });
+
+  sample({
+    clock: confirmFlowReady,
+    fn: (): StakingKpiAction[] => ['redeem'],
     target: kpi.enableActions,
   });
 

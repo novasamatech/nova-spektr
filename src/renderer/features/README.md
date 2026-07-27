@@ -72,6 +72,7 @@ notes.
 - [`staking-amount-flow`](./staking-amount-flow/README.md)
 - `staking-basket`
 - [`staking-claim-rewards`](./staking-claim-rewards/README.md)
+- [`staking-confirm-flow`](./staking-confirm-flow/README.md)
 - [`staking-dashboard-actions`](./staking-dashboard-actions/README.md)
 - `staking-bond-extra`
 - `staking-bond-nominate`

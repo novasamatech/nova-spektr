@@ -10,26 +10,30 @@ import {
 } from 'effector';
 import { describe, expect, it } from 'vitest';
 
-import { type Asset, type Chain, type ChainId, type Wallet, StakingType } from '@/shared/core';
+import { type Asset, type Chain, type ChainId, type Validator, type Wallet, StakingType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { type StakingPosition, type UnclaimedPayout, type UnclaimedPayouts, payoutsCacheKey } from '@/domains/staking';
 import {
   type ClaimRequestPayload,
+  type RedeemRequestPayload,
   type StakingKpiAction,
   type UnbondRequestPayload,
 } from '@/features/dashboard-staking-kpi';
 import {
   type ClaimPayload,
+  type NominationsChangePayload,
   type PositionAction,
   type PositionActionPayload,
 } from '@/features/dashboard-staking-positions';
 import { type AmountFlowTarget } from '@/features/staking-amount-flow';
 import { type ClaimRequest } from '@/features/staking-claim-rewards';
+import { type ChangeValidatorsTarget, type RedeemTarget } from '@/features/staking-confirm-flow';
 import { createStakingDashboardActions } from '../model/wiring';
 
 const ACTIVE_ERA = 1500;
+const REDEEMABLE = '12500000000';
 
 const accountId = (n: number): AccountId => `0x${n.toString(16).padStart(64, '0')}` as AccountId;
 const chainId = (n: number): ChainId => `0x${n.toString(16).padStart(64, '0')}` as ChainId;
@@ -56,7 +60,7 @@ const account = (n: number): AnyAccount =>
 
 const wallet = (n: number): Wallet => ({ id: n, name: `wallet-${n}`, type: 'wallet_wov' }) as unknown as Wallet;
 
-const position = (n: number, chainIndex: number): StakingPosition =>
+const position = (n: number, chainIndex: number, redeemable = '0'): StakingPosition =>
   ({
     accountId: accountId(n),
     chainId: chainId(chainIndex),
@@ -66,9 +70,12 @@ const position = (n: number, chainIndex: number): StakingPosition =>
     nominations: [],
     activeValidators: [],
     unbonding: [],
-    redeemable: '0',
+    redeemable,
     totalUnbonding: '0',
   }) as unknown as StakingPosition;
+
+const validator = (n: number): Validator =>
+  ({ accountId: accountId(n), chainId: chainId(1), totalStake: '1', ownStake: '1' }) as unknown as Validator;
 
 const payout = (era: number, amount = '100'): UnclaimedPayout => ({
   era,
@@ -91,12 +98,14 @@ type Harness = ReturnType<typeof createHarness>;
 
 function createHarness() {
   const kpiClaimRequested = createEvent<ClaimRequestPayload>();
+  const kpiRedeemRequested = createEvent<RedeemRequestPayload>();
   const kpiUnbondRequested = createEvent<UnbondRequestPayload>();
   const enableActions = createEvent<StakingKpiAction[]>();
 
   const positionClaimRequested = createEvent<ClaimPayload>();
   const positionAddStakeRequested = createEvent<PositionActionPayload>();
   const positionUnbondRequested = createEvent<PositionActionPayload>();
+  const nominationsChangeRequested = createEvent<NominationsChangePayload>();
   const startStakingRequested = createEvent();
   const actionsWired = createEvent<PositionAction[]>();
 
@@ -106,6 +115,8 @@ function createHarness() {
 
   const amountUnbondRequested = createEvent<AmountFlowTarget>();
   const amountAddStakeRequested = createEvent<AmountFlowTarget>();
+  const confirmChangeValidatorsRequested = createEvent<ChangeValidatorsTarget>();
+  const confirmRedeemRequested = createEvent<RedeemTarget>();
   const navigateTo = createEvent<string>();
 
   const $chains = createStore<Record<ChainId, Chain>>({
@@ -114,7 +125,9 @@ function createHarness() {
   });
   const $accounts = createStore<AnyAccount[]>([universalAccount(1), universalAccount(2)]);
   const $wallets = createStore<Wallet[]>([wallet(1), wallet(2)]);
-  const $positions = createStore<StakingPosition[]>([position(1, 1), position(2, 2)]);
+  // Account 1 has something withdrawable, account 2 has not — the two halves of
+  // the redeem routing.
+  const $positions = createStore<StakingPosition[]>([position(1, 1, REDEEMABLE), position(2, 2)]);
   const $eras = createStore<Record<ChainId, number>>({ [chainId(1)]: ACTIVE_ERA, [chainId(2)]: ACTIVE_ERA });
   const $payoutsCache = createStore<Record<string, UnclaimedPayouts>>({
     [payoutsCacheKey(chainId(1), accountId(1), ACTIVE_ERA)]: {
@@ -123,11 +136,13 @@ function createHarness() {
     } as unknown as UnclaimedPayouts,
   });
   const $amountFlowEnabled = createStore(true);
+  const $confirmFlowEnabled = createStore(true);
 
   const model = createStakingDashboardActions({
     sources: { $chains, $accounts, $wallets, $positions, $eras, $payoutsCache },
     kpi: {
       claimRequested: kpiClaimRequested,
+      redeemRequested: kpiRedeemRequested,
       unbondRequested: kpiUnbondRequested,
       enableActions,
     },
@@ -135,6 +150,7 @@ function createHarness() {
       claimRequested: positionClaimRequested,
       addStakeRequested: positionAddStakeRequested,
       unbondRequested: positionUnbondRequested,
+      nominationsChangeRequested,
       startStakingRequested,
       actionsWired,
     },
@@ -148,19 +164,27 @@ function createHarness() {
       addStakeRequested: amountAddStakeRequested,
       $enabled: $amountFlowEnabled,
     },
+    confirmFlow: {
+      changeValidatorsRequested: confirmChangeValidatorsRequested,
+      redeemRequested: confirmRedeemRequested,
+      $enabled: $confirmFlowEnabled,
+    },
     navigateTo,
   });
 
   return {
     model,
     $amountFlowEnabled,
+    $confirmFlowEnabled,
     events: {
       kpiClaimRequested,
+      kpiRedeemRequested,
       kpiUnbondRequested,
       enableActions,
       positionClaimRequested,
       positionAddStakeRequested,
       positionUnbondRequested,
+      nominationsChangeRequested,
       startStakingRequested,
       actionsWired,
       claimDispatched,
@@ -168,6 +192,8 @@ function createHarness() {
       claimFlowFinished,
       amountUnbondRequested,
       amountAddStakeRequested,
+      confirmChangeValidatorsRequested,
+      confirmRedeemRequested,
       navigateTo,
     },
   };
@@ -402,6 +428,66 @@ describe('staking dashboard actions wiring', () => {
     });
   });
 
+  describe('confirm flow', () => {
+    it('forwards a picked validator set unchanged', async () => {
+      const harness: Harness = createHarness();
+      const scope = await forkWithAccountAvailability();
+      const forwarded = collect(harness.events.confirmChangeValidatorsRequested, scope);
+      const payload = { ...positionPayload(1, 1), validators: [validator(11), validator(12)] };
+
+      await allSettled(harness.events.nominationsChangeRequested, { scope, params: payload });
+
+      expect(forwarded).toEqual([payload]);
+    });
+
+    it('resolves a KPI redeem request and leads with the position’s redeemable', async () => {
+      const harness: Harness = createHarness();
+      const scope = await forkWithAccountAvailability();
+      const forwarded = collect(harness.events.confirmRedeemRequested, scope);
+
+      // The request carries a stale figure; the position is the fresher source.
+      await allSettled(harness.events.kpiRedeemRequested, {
+        scope,
+        params: { accountId: accountId(1), chainId: chainId(1), amount: '1' },
+      });
+
+      expect(forwarded).toHaveLength(1);
+      expect(forwarded[0]).toMatchObject({
+        amount: REDEEMABLE,
+        chain: expect.objectContaining({ chainId: chainId(1) }),
+        account: expect.objectContaining({ accountId: accountId(1) }),
+        wallet: expect.objectContaining({ id: 1 }),
+        position: expect.objectContaining({ accountId: accountId(1) }),
+      });
+    });
+
+    it('skips a redeem request whose position has nothing unlocked', async () => {
+      const harness: Harness = createHarness();
+      const scope = await forkWithAccountAvailability();
+      const forwarded = collect(harness.events.confirmRedeemRequested, scope);
+
+      await allSettled(harness.events.kpiRedeemRequested, {
+        scope,
+        params: { accountId: accountId(2), chainId: chainId(2), amount: '900' },
+      });
+
+      expect(forwarded).toEqual([]);
+    });
+
+    it('skips a redeem request with no position behind it', async () => {
+      const harness: Harness = createHarness();
+      const scope = await forkWithAccountAvailability();
+      const forwarded = collect(harness.events.confirmRedeemRequested, scope);
+
+      await allSettled(harness.events.kpiRedeemRequested, {
+        scope,
+        params: { accountId: accountId(7), chainId: chainId(1), amount: '900' },
+      });
+
+      expect(forwarded).toEqual([]);
+    });
+  });
+
   describe('start staking', () => {
     it('sends the user to the Staking page', async () => {
       const harness: Harness = createHarness();
@@ -415,7 +501,7 @@ describe('staking dashboard actions wiring', () => {
   });
 
   describe('gating', () => {
-    it('announces only the actions that have a destination', async () => {
+    it('announces every action that has a destination', async () => {
       const harness: Harness = createHarness();
       const scope = await forkWithAccountAvailability();
       const positionActions = collect(harness.events.actionsWired, scope);
@@ -423,27 +509,33 @@ describe('staking dashboard actions wiring', () => {
 
       await allSettled(harness.model.wire, { scope, params: undefined });
 
-      const wiredPositions = positionActions.flat();
-      const enabledKpi = kpiActions.flat();
-
-      expect(wiredPositions).toEqual(expect.arrayContaining(['claim', 'startStaking', 'addStake', 'unbond']));
-      expect(enabledKpi).toEqual(expect.arrayContaining(['claim', 'unbond']));
-
-      // Neither has a flow reachable from the dashboard yet.
-      expect(wiredPositions).not.toContain('changeValidators');
-      expect(enabledKpi).not.toContain('redeem');
+      expect(positionActions.flat()).toEqual(
+        expect.arrayContaining(['claim', 'startStaking', 'addStake', 'unbond', 'changeValidators']),
+      );
+      expect(kpiActions.flat()).toEqual(expect.arrayContaining(['claim', 'unbond', 'redeem']));
     });
 
     it('leaves the amount-flow actions gated while the staking flag is off', async () => {
       const harness: Harness = createHarness();
       const scope = await forkWithAccountAvailability([[harness.$amountFlowEnabled, false]]);
       const positionActions = collect(harness.events.actionsWired, scope);
+
+      await allSettled(harness.model.wire, { scope, params: undefined });
+
+      expect(positionActions.flat()).not.toContain('unbond');
+      expect(positionActions.flat()).not.toContain('addStake');
+    });
+
+    it('leaves the confirm-flow actions gated while the staking flag is off', async () => {
+      const harness: Harness = createHarness();
+      const scope = await forkWithAccountAvailability([[harness.$confirmFlowEnabled, false]]);
+      const positionActions = collect(harness.events.actionsWired, scope);
       const kpiActions = collect(harness.events.enableActions, scope);
 
       await allSettled(harness.model.wire, { scope, params: undefined });
 
-      expect(positionActions.flat()).toEqual(['claim', 'startStaking']);
-      expect(kpiActions.flat()).toEqual(['claim']);
+      expect(positionActions.flat()).not.toContain('changeValidators');
+      expect(kpiActions.flat()).not.toContain('redeem');
     });
   });
 });

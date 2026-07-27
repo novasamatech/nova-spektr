@@ -15,6 +15,8 @@ const OPERATION_KEY: Record<DraftToastOperation, string> = {
   claim: 'dashboard.staking.draftToast.operation.claim',
   unbond: 'dashboard.staking.draftToast.operation.unbond',
   addStake: 'dashboard.staking.draftToast.operation.addStake',
+  changeValidators: 'dashboard.staking.draftToast.operation.changeValidators',
+  redeem: 'dashboard.staking.draftToast.operation.redeem',
 };
 
 const TOAST_DURATION = 8000;
