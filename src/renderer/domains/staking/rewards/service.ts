@@ -35,6 +35,12 @@ function collectRewardSources(
 
 export { collectRewardSources, isAssetHubChain };
 
+/**
+ * Pure helpers for callers that need reward sources for **several** chains at
+ * once and therefore cannot go through the per-chain `useRewardSources` hook.
+ */
+export const rewardsService = { collectRewardSources, isAssetHubChain };
+
 const GET_TOTAL_REWARDS = `
   query Rewards($addresses: [String!]) {
     accumulatedRewards(filter: { id: { in: $addresses } }) {

@@ -18,7 +18,12 @@ import { collectRewardSources, isAssetHubChain } from './service';
 const EMPTY_MAP: RewardsMap = {};
 const EMPTY_RECORDS: MonthlyRewardRecord[] = [];
 
-const useRewardSources = (chain: Chain | null, chainsMap: Record<ChainId, Chain>): RewardSource[] => {
+/**
+ * The subquery endpoints a chain's rewards can be read from — an Asset Hub also
+ * inherits its relay chain's staking indexer, which is where pre-migration
+ * history lives.
+ */
+export const useRewardSources = (chain: Chain | null, chainsMap: Record<ChainId, Chain>): RewardSource[] => {
   return useMemo<RewardSource[]>(() => {
     if (!chain) return [];
 

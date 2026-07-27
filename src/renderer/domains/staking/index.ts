@@ -1,4 +1,4 @@
-export type { MonthlyRewardRecord, Payee, RewardsMap, StakingMap, ValidatorMap } from './types';
+export type { MonthlyRewardRecord, Payee, RewardSource, RewardsMap, StakingMap, ValidatorMap } from './types';
 export { AssetHubChains, DEFAULT_STAKING_CHAIN, STAKING_NETWORK } from './constants';
 export { stakingUtils } from './helpers';
 
@@ -24,6 +24,7 @@ export { exposurePagesCacheKey } from './exposures/resource';
 export { exposureService } from './exposures/service';
 export { useExposurePages, useExposures } from './exposures/hooks';
 
+export type { ApyResourceParams } from './apy/resource';
 export { apy } from './apy/store';
 export { apyService } from './apy/service';
 export { useNetworkApy } from './apy/hooks';
@@ -53,9 +54,14 @@ export type {
 export { positionsService } from './positions/service';
 
 export type { PayoutSource, UnclaimedPayout, UnclaimedPayouts } from './payouts/types';
+export type { PayoutsResourceParams } from './payouts/resource';
 export { payouts } from './payouts/store';
+export { payoutsCacheKey } from './payouts/resource';
 export { payoutsService } from './payouts/service';
 export { useUnclaimedPayouts } from './payouts/hooks';
 
+export type { StakingRewardsParams } from './rewards/resource';
 export { rewards } from './rewards/store';
-export { useMonthlyRewards, useStakingRewards } from './rewards/hooks';
+export { rewardsCacheKey } from './rewards/resource';
+export { rewardsService } from './rewards/service';
+export { useMonthlyRewards, useRewardSources, useStakingRewards } from './rewards/hooks';

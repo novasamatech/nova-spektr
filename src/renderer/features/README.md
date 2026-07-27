@@ -179,6 +179,9 @@ notes.
 - [`dashboard-portfolio-overview`](./dashboard-portfolio-overview/README.md)
 - `dashboard-price-charts`
 - `dashboard-staking`
+- [`dashboard-staking-kpi`](./dashboard-staking-kpi/README.md)
+- [`dashboard-staking-positions`](./dashboard-staking-positions/README.md)
+- [`dashboard-staking-rewards-chart`](./dashboard-staking-rewards-chart/README.md)
 
 > See also: [`vesting-claim`](#transfers) and [`vesting-portfolio`](#transfers) — the vesting callout is injected into
 > the Portfolio Overview card.
