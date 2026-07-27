@@ -14,20 +14,32 @@
  *   });
  */
 
-import { type AssetId, ConnectionStatus } from '@/shared/core';
+import { type ApiPromise } from '@polkadot/api';
+import { allSettled } from 'effector';
+
+import { type AssetId, type Chain, type ChainId, ConnectionStatus } from '@/shared/core';
 import { createAccountId } from '@/shared/mocks';
+import { type AnyAccount, accounts as accountsDomain } from '@/domains/network';
 import { balanceUtils } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import {
+  polkadotAssetHubChain,
   polkadotChain,
   polkadotChainId,
   recipientAccount,
   senderAccount,
   senderBalance,
+  stakingAccountA,
+  stakingAccountB,
+  stakingWallet,
   vaultWallet,
   watchOnlyWallet,
 } from '../../fixtures';
 
 import { type FeatureTestEnvironment, FeatureTestBuilder } from './FeatureTestBuilder';
+import { seedAccountHandlers } from './seedAccountHandlers';
 
 /**
  * Creates a basic transfer scenario with: - Vault wallet - Sender account with
@@ -132,6 +144,62 @@ export async function createMultiAccountScenario(accountCount = 3): Promise<Feat
  */
 export async function createStorageOnlyScenario(): Promise<FeatureTestEnvironment> {
   return new FeatureTestBuilder().withWallet(vaultWallet).withAccount(senderAccount).withBalance(senderBalance).build();
+}
+
+export type StakingScenarioParams = {
+  /** Staking chains present in the running network config. */
+  chains?: Chain[];
+  accounts?: AnyAccount[];
+  /** Connected apis, keyed by chain — usually built with `createStakingApi`. */
+  apis?: Record<ChainId, ApiPromise>;
+};
+
+export type StakingScenario = {
+  env: FeatureTestEnvironment;
+  /**
+   * Flushes every pending scope computation. Chain emissions arrive through
+   * `scopeBind`-ed events, so each one has to settle before assertions.
+   */
+  settle(): Promise<void>;
+};
+
+/**
+ * Staking dashboard scenario: a wallet whose accounts are universal, the given
+ * Asset Hub chains, and the given apis.
+ *
+ * Stores seeded through `fork({ values })` never emit, so the apis are pushed
+ * afterwards — which is also the runtime order: chains and accounts are known
+ * before a node connects.
+ */
+export async function createStakingScenario({
+  chains = [polkadotAssetHubChain],
+  accounts = [stakingAccountA, stakingAccountB],
+  apis = {},
+}: StakingScenarioParams = {}): Promise<StakingScenario> {
+  const builder = new FeatureTestBuilder({ autoPopulate: false })
+    .withChains(chains)
+    .withStoreValue(walletModel.__test.$rawWallets, [stakingWallet])
+    .withStoreValue(accountsDomain.__test.$list, accounts)
+    .withStoreValue(walletSelect.__test.$selectedWalletId, stakingWallet.id);
+
+  for (const chain of chains) {
+    builder.withConnectionStatus(chain.chainId, ConnectionStatus.CONNECTED);
+  }
+
+  const env = await builder.build();
+
+  // DI handlers register through unscoped events at import time, so without
+  // this every `isAccountAvailableOnChain` check inside the scope is false and
+  // no chain ever gets an account.
+  await seedAccountHandlers(env.scope);
+
+  const settle = () => allSettled(env.scope);
+
+  if (Object.keys(apis).length > 0) {
+    await allSettled(networkModel.$apis, { scope: env.scope, params: apis });
+  }
+
+  return { env, settle };
 }
 
 /**
