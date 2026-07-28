@@ -1,9 +1,13 @@
 import { allSettled, createWatch, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type ChainId } from '@/shared/core';
+import { type ChainId, type VaultBaseAccount, AccountType, CryptoType, SigningType, WalletType } from '@/shared/core';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { polkadotChain } from '@/shared/mocks';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
 import { messageSignModel } from '@/features/operations/OperationMessageSign';
 import { DEFAULT_AUTH_CHAIN_ID } from '../../lib/auth-chain';
 import { authModel } from '../auth-model';
@@ -112,5 +116,79 @@ describe('authModel — persisted default chain', () => {
     await allSettled(authModel.events.signOutClicked, { scope });
 
     expect(scope.getState(authModel.__test.$defaultAuthChainId)).toBe(KUSAMA);
+  });
+});
+
+describe('authModel — persisted default account', () => {
+  const vaultWallet = { id: 1, type: WalletType.SINGLE_PARITY_SIGNER, name: 'Vault' };
+
+  const createVaultAccount = (id: string, accountId: AccountId): VaultBaseAccount => ({
+    id,
+    type: 'universal',
+    accountType: AccountType.BASE,
+    name: `Account ${id}`,
+    walletId: 1,
+    accountId,
+    cryptoType: CryptoType.SR25519,
+    signingType: SigningType.POLKADOT_VAULT,
+    createdAt: 0,
+  });
+
+  const createScopeWithAccounts = (defaultAccountId: AccountId) => {
+    return fork({
+      values: [
+        [walletModel.__test.$rawWallets, [vaultWallet]],
+        [accounts.__test.$list, [createVaultAccount('1', TEST_ACCOUNTS[0]), createVaultAccount('2', TEST_ACCOUNTS[1])]],
+        [authModel.__test.$defaultAuthAccountId, defaultAccountId],
+      ],
+    });
+  };
+
+  it('preselects the persisted default account on modal open', async () => {
+    const scope = createScopeWithAccounts(TEST_ACCOUNTS[1]);
+
+    await allSettled(backendConfigurationModel.events.modalOpened, { scope });
+
+    expect(scope.getState(authModel.$selectedAccountId)).toBe(TEST_ACCOUNTS[1]);
+  });
+
+  it('falls back to the first account when the saved account is gone', async () => {
+    const scope = createScopeWithAccounts(TEST_ACCOUNTS[2]);
+
+    await allSettled(backendConfigurationModel.events.modalOpened, { scope });
+
+    expect(scope.getState(authModel.$selectedAccountId)).toBe(TEST_ACCOUNTS[0]);
+  });
+
+  it('saves the account used for a successful sign-in as the new default', async () => {
+    const scope = fork({
+      values: [[authModel.$selectedAccountId, TEST_ACCOUNTS[1]]],
+      handlers: [[authModel.__test.verifySignatureFx, () => ({ permissions: [] })]],
+    });
+
+    // sessionHealthCheck (5 min interval) starts on verifySignatureFx.done and keeps the
+    // scope busy, so allSettled never resolves — poll the store instead of awaiting it.
+    void allSettled(authModel.__test.verifySignatureFx, {
+      scope,
+      params: { baseUrl: 'https://backend.test', accountId: '0x00', challengeId: 'challenge', signature: '0x01' },
+    });
+
+    await vi.waitFor(() => {
+      expect(scope.getState(authModel.__test.$defaultAuthAccountId)).toBe(TEST_ACCOUNTS[1]);
+    });
+  });
+
+  it('keeps the default account after sign-out', async () => {
+    const scope = fork({
+      values: [
+        [authModel.__test.$defaultAuthAccountId, TEST_ACCOUNTS[0]],
+        [backendConfigurationModel.$backendUrl, 'https://backend.test'],
+      ],
+      handlers: [[authModel.__test.logoutFx, () => undefined]],
+    });
+
+    await allSettled(authModel.events.signOutClicked, { scope });
+
+    expect(scope.getState(authModel.__test.$defaultAuthAccountId)).toBe(TEST_ACCOUNTS[0]);
   });
 });

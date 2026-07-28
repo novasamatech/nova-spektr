@@ -1,6 +1,6 @@
 # Address book backend connection & authentication
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-06-22
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-07-28
 
 ## Overview
 
@@ -23,6 +23,16 @@ or network issues.
 | Connected         | Session is live and the URL is unchanged       | Connected account with a disconnect action                                                  |
 | Error             | Challenge or signature verification failed     | Error alert with a "try again" action                                                       |
 | Session expired   | Background health check loses the session      | Toast with a reconnect shortcut                                                             |
+
+### Account preselection
+
+The account select preselects, in order: the currently authenticated account, the account of the last live session, or
+the account used for the last successful sign-in on this device.
+
+- The device-level preference survives disconnects and sign-outs — reconnecting preselects the account the user signed
+  in with before, instead of the first account in the list; it only changes when a later sign-in succeeds with a
+  different account.
+- If the remembered account is no longer signable in the app, the selector falls back to the first account in the list.
 
 ### Signing network selection
 
@@ -50,7 +60,7 @@ flowchart TD
 ```
 
 A successful sign-in stores the session, remembers the account and network for next time, and closes the modal. Clearing
-the URL disconnects, logs out, and forgets the remembered account (the network preference is kept).
+the URL disconnects and logs out; the remembered account and network preferences are kept for the next pairing.
 
 ## Related
 
