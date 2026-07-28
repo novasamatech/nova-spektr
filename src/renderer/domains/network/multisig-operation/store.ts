@@ -14,7 +14,7 @@ import {
   AccountType,
 } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { entries, groupBy, keys, nonNullable } from '@/shared/lib/utils';
+import { entries, groupBy, keys, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query/types';
 import { networkModel } from '@/entities/network';
@@ -336,24 +336,30 @@ const $completedLiveOperations = combine(
     removedOperations: $removedFromChainStorageOperations,
   },
   ({ completionEvents, removedOperations }) => {
-    if (!completionEvents.length || !removedOperations.length) return [];
+    if (!removedOperations.length) return [];
 
     const eventsByOperationId = groupBy(completionEvents, event => event.operationId);
-    return removedOperations.map(op => {
-      const events = eventsByOperationId[op.id];
+    const completed: MultisigOperation[] = [];
 
-      if (!events || events.length === 0) return op;
+    for (const op of removedOperations) {
+      const events = eventsByOperationId[op.id] ?? [];
+
+      // The status must come from a terminal on-chain event: a caught rejection,
+      // or a MultisigExecuted (the only event carrying an executionResult). A
+      // storage entry that disappeared while only approvals were caught did
+      // resolve, but we don't know how — labeling it "executed" would mislabel a
+      // missed cancellation and hide the executor's signature. Leave it out and
+      // let the indexer report the outcome.
+      const isRejected = events.some(e => e.event.status === 'reject');
+      const executionResult = events.find(e => nonNullable(e.executionResult))?.executionResult;
+      if (!isRejected && nullable(executionResult)) continue;
 
       const newEvents = uniqBy(op.events.concat(events.map(e => e.event)), e => e.id);
-      // A reject event ⇒ cancelled; a MultisigExecuted with a failed inner call ⇒ error;
-      // otherwise executed. Keeps parity with the indexer's error status on the live path.
-      const newStatus = newEvents.find(e => e.status === 'reject')
-        ? 'cancelled'
-        : events.some(e => e.executionResult === 'error')
-          ? 'error'
-          : 'executed';
-      return { ...op, events: newEvents, status: newStatus };
-    }) satisfies MultisigOperation[];
+      const newStatus = isRejected ? 'cancelled' : executionResult === 'error' ? 'error' : 'executed';
+      completed.push({ ...op, events: newEvents, status: newStatus });
+    }
+
+    return completed;
   },
 );
 
